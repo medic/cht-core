@@ -2,20 +2,21 @@ const utils = require('../../utils');
 const usersPage = require('../../page-objects/users/users.po.js');
 const helper = require('../../helper');
 const addUserModal = require('../../page-objects/users/add-user-modal.po.js');
+const commonElements = require('../../page-objects/common/common.po');
 
 const addedUser = 'fulltester' + new Date().getTime();
 const fullName = 'Bede Ngaruko';
 
 
 describe('Add user  : ', () => {
-  describe('creating a users ', ()=> {
+
+  afterAll(() => commonElements.goToMessagesNative());
+
+  describe('creating a users ', () => {
+
     afterEach(async () => {
-      const userPath = `/_users/org.couchdb.user:${addedUser}`;
-      const doc = await utils.request(userPath);
-      await utils.request({
-        path: `${userPath}?rev=${doc._rev}`,
-        method: 'DELETE'
-      });
+      await utils.deleteUsers([{ username: addedUser }]);
+      await utils.revertDb();
     });
 
     it('should add user with valid password', async () => {
@@ -29,8 +30,10 @@ describe('Add user  : ', () => {
     });
   });
 
-  describe('invalid entries ', ()=> {
-    afterEach(async () => { await addUserModal.closeButton().click(); });
+  describe('invalid entries ', () => {
+
+    afterEach(() => addUserModal.closeButton().click());
+
     it('should reject passwords shorter than 8 characters', async () => {
       await usersPage.openAddUserModal();
       await addUserModal.fillForm('user0', 'Not Saved', 'short');
