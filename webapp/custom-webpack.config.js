@@ -1,4 +1,5 @@
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
   resolve: {
@@ -15,6 +16,12 @@ module.exports = {
       '../../js/dropdown.jquery': 'node_modules/bootstrap/js/dropdown',
       'bikram-sambat': 'node_modules/bikram-sambat',
       'messageformat': 'node_modules/messageformat/index',
+      'lodash/core': 'node_modules/lodash/core',
+      'lodash/uniqBy': 'node_modules/lodash/uniqBy',
+      'lodash/flatten': 'node_modules/lodash/flatten',
+      'lodash/intersection': 'node_modules/lodash/intersection',
+      'lodash/partial': 'node_modules/lodash/partial',
+      'lodash/uniq': 'node_modules/lodash/uniq',
 
       // enketo geopicker widget css requires these two images as backgrounds
       // they don't exist in the enketo source and the styles are commented out in the latest version
@@ -30,6 +37,11 @@ module.exports = {
     // https://www.npmjs.com/package/moment-locales-webpack-plugin
     new MomentLocalesPlugin({
       localesToKeep: ['en', 'fr', 'es', 'bm', 'hi', 'id', 'ne', 'sw'],
+    }),
+    new BundleAnalyzerPlugin({
+      analyzerMode: 'static',
+      reportFilename: '../../../analyzer.report.html',
+      openAnalyzer: false,
     }),
   ]
 };
