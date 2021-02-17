@@ -17,11 +17,11 @@ module.exports = {
       'bikram-sambat': 'node_modules/bikram-sambat',
       'messageformat': 'node_modules/messageformat/index',
       'lodash/core': 'node_modules/lodash/core',
-      'lodash/uniqBy': 'node_modules/lodash/uniqBy',
-      'lodash/flatten': 'node_modules/lodash/flatten',
-      'lodash/intersection': 'node_modules/lodash/intersection',
-      'lodash/partial': 'node_modules/lodash/partial',
-      'lodash/uniq': 'node_modules/lodash/uniq',
+      'lodash/uniqBy': 'node_modules/lodash-es/uniqBy',
+      'lodash/flatten': 'node_modules/lodash-es/flatten',
+      'lodash/intersection': 'node_modules/lodash-es/intersection',
+      'lodash/partial': 'node_modules/lodash-es/partial',
+      'lodash/uniq': 'node_modules/lodash-es/uniq',
 
       // enketo geopicker widget css requires these two images as backgrounds
       // they don't exist in the enketo source and the styles are commented out in the latest version
