@@ -5,9 +5,6 @@ const usersPage = require('../page-objects/users/users.po.js');
 const commonElements = require('../page-objects/common/common.po.js');
 const loginPage = require('../page-objects/login/login.po.js');
 const addUserModal = require('../page-objects/users/add-user-modal.po.js');
-const constants = require('../constants');
-const { browser } = require('protractor');
-const dbName = constants.DB_NAME;
 
 const userName = 'fulltester' + new Date().getTime();
 const fullName = 'Roger Milla';
@@ -21,26 +18,15 @@ const options = {
 
 describe('Create user meta db : ', () => {
 
-  afterAll(async done => {
+  afterAll(async () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
-    return Promise.all([
-      utils.request(`/_users/org.couchdb.user:${userName}`)
-        .then(doc => utils.request({
-          path: `/_users/org.couchdb.user:${userName}?rev=${doc._rev}`,
-          method: 'DELETE'
-        })),
-      utils.revertDb(),
-      utils.request({
-        path: `/${dbName}-user-${userName}-meta`,
-        method: 'DELETE'
-      })
-    ])
-      .then(() => done()).catch(done.fail);
+    await utils.deleteUsers([{ username: userName }], true);
+    await utils.revertDb();
   });
 
-  beforeEach(async () => { await utils.beforeEach(); });
-  afterEach(async () => { await utils.afterEach(); });
+  beforeEach(() => utils.beforeEach());
+  afterEach(() => utils.afterEach());
 
   it('should allow a new user to read/write from meta db', async () => {
     await usersPage.openAddUserModal();
@@ -50,27 +36,16 @@ describe('Create user meta db : ', () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(userName, password, false);
     await commonElements.calmNative();
+    await utils.closeTour();
 
-    const doc = { _id: userName };
-    const postData = doc;
+    const doc = { _id: 'this is a random uuid' };
+    await utils.requestOnTestMetaDb(_.defaults({ method: 'POST', body: doc }, options));
 
-    await browser.wait(() => {
-      return utils.requestOnTestMetaDb(_.defaults({
-        method: 'POST',
-        body: postData
-      }, options));
-    });
+    const response = await utils.requestOnTestMetaDb(_.defaults({ path: '/_changes' }, options));
 
-    await browser.wait(() => {
-      return utils.requestOnTestMetaDb(_.defaults({
-        path: '/_changes'
-      }, options)).then(response => {
-        const changes = response.results;
-        const ids = _.map(changes, 'id').sort();
-        expect(ids[1]).toEqual(doc._id);
-        return true;
-      });
-    });
+    const changes = response.results;
+    const ids = changes.map(change => change.id).sort();
+    expect(ids[1]).toEqual(doc._id);
   });
 
 });
