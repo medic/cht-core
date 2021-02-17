@@ -2,6 +2,7 @@ const utils = require('../utils');
 const helper = require('../helper');
 const common = require('../page-objects/common/common.po');
 const messagesPo = require('../page-objects/messages/messages.po');
+const uuid = require('uuid/v4');
 
 /* eslint-disable no-console */
 describe('Send message', () => {
@@ -55,7 +56,7 @@ describe('Send message', () => {
   };
 
   const messageDoc = {
-    '_id': '4081db78-9f3a-422c-9f8f-68e9ece119ea',
+    '_id': uuid(),
     'errors': [],
     'form': null,
     'reported_date': new Date().getTime(),
@@ -66,7 +67,7 @@ describe('Send message', () => {
             'sent_by': 'admin',
             'to': '+447765902000',
             'message': 'Hello raw this is a test SMS',
-            'uuid': 'd472062d-8fd4-4035-b5b7-8d41a6dc81ca'
+            'uuid': uuid()
           }
         ],
         'state_history': [
@@ -218,7 +219,7 @@ describe('Send message', () => {
             '_id': 'alice-contact'
           },
           'message': 'Hello contact this is a test SMS',
-          'uuid': 'c47d9109-cdf3-4162-b61b-6a2435ae4814'
+          'uuid': uuid()
         };
         await utils.saveDoc(aliceMessageDoc);
         await browser.refresh();
