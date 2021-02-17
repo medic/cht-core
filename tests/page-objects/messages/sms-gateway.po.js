@@ -3,7 +3,7 @@ const commonElements = require('../common/common.po');
 const messagePo = require('../messages/messages.po');
 const reportsPo = require('../reports/reports.po');
 const helper = require('../../helper');
-const { browser, element } = require('protractor');
+const { element } = require('protractor');
 
 //page objects
 const getState = (first, second) => {
