@@ -83,7 +83,6 @@ module.exports = {
   selectFormNative: async (formId) => {
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
     await helper.waitUntilReadyNative(addButton);
-    await browser.sleep(1000); // let the refresh work here
 
     // select form
     await helper.clickElement(addButton);
