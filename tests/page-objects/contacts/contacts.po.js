@@ -41,7 +41,7 @@ module.exports = {
   },
 
   addNewDistrict: async districtName => {
-    await helper.waitUntilReady(newDistrictButton);
+    await helper.waitUntilReadyNative(newDistrictButton);
     await newDistrictButton.click();
     await helper.waitUntilReadyNative(newPersonButton);
     await newPersonButton.click();
@@ -51,7 +51,7 @@ module.exports = {
     await helper.scrollElementIntoView(contactSexField);
     await contactSexField.click();
     await genericForm.nextPageNative();
-    await helper.waitElementToBeVisible(writeName);
+    await helper.waitElementToBeVisibleNative(writeName);
     await writeName.click();
     await newPlaceName.sendKeys(districtName);
     return genericForm.submitButton.click();
@@ -69,7 +69,7 @@ module.exports = {
     await contactSexField.click();
     await genericForm.nextPageNative();
     const writeNameHC = element(by.css('[name="/data/health_center/is_name_generated"][value="false"]'));
-    await helper.waitElementToBeVisible(writeNameHC);
+    await helper.waitElementToBeVisibleNative(writeNameHC);
     await writeNameHC.click();
     await newPlaceName.sendKeys(name);
     await element(by.css('[name="/data/health_center/external_id"]')).sendKeys('1234457');
