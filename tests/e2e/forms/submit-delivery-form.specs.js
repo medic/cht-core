@@ -11,7 +11,7 @@ describe('Submit Delivery Report', () => {
   'time to refer them for PNC. Please monitor them for danger signs. Thank you!';
 
   beforeAll(async () => {
-    await Promise.all(docs.map(async doc => await utils.saveDoc(doc)));
+    await utils.saveDocs(docs);
     await deliveryReport.configureForm(userContactDoc);
   });
 

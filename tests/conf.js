@@ -23,12 +23,7 @@ const baseConfig = {
     // e2e:'e2e/**/*.js',
     e2e: [
       '**/report-date-filter.js',
-      '**/docs-by-replication-key-view.js',
-      '**/infodocs.js',
-      '**/common.specs.js',
-      '**/content-security-policy.js',
       '**/send-message.js',
-      '**/message_duplicates.spec.js',
     ],
     // performance: 'performance/**/*.js'
   },
