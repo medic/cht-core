@@ -23,19 +23,18 @@ const incomingData = element(by.css('#message-content li.incoming:first-child .d
 
 const getTaskState = async element => {
   await helper.waitUntilReadyNative(element);
-  return helper.getTextFromElement(element);
+  return helper.getTextFromElementNative(element);
 };
 
 module.exports = {
 
   showMessageList :  async () => {
     await utils.resetBrowser();
-    await helper.clickElement(element(by.id('messages-tab')));
+    await helper.clickElementNative(element(by.id('messages-tab')));
 
     // LHS
-    helper.waitElementToPresent(messagePo.messageByIndex(1));
-    await browser.waitForAngular();
-    helper.waitElementToBeVisible(messagePo.messageByIndex(1));
+    await helper.waitElementToPresentNative(messagePo.messageByIndex(1));
+    await helper.waitElementToBeVisibleNative(messagePo.messageByIndex(1));
   },
 
   messageHeading: (index) => messagePo.messageByIndex(index).element(by.css('.heading h4')),
@@ -47,8 +46,8 @@ module.exports = {
   showMessageDetails: async () => {
     // RHS
     const message = messagePo.messageByIndex(1);
-    await helper.clickElement(message.element(by.css('.summary')));
-    helper.waitElementToBeVisible(incomingData);
+    await helper.clickElementNative(message.element(by.css('.summary')));
+    await helper.waitElementToBeVisibleNative(incomingData);
   },
 
   showReport : async (reportId) => {
@@ -56,7 +55,7 @@ module.exports = {
     const report = reportsPo.reportByUUID(reportId);
     await helper.waitUntilReadyNative(report);
     await report.click();
-    await helper.waitElementToPresent(
+    await helper.waitElementToPresentNative(
       element(by.css('#reports-content .body .item-summary .icon'))
     );
   },
