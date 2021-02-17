@@ -46,10 +46,6 @@ const baseConfig = {
       'e2e/login/db-sync-filter.spec.js',
       'e2e/forms/add-family-form.specs.js',
       'e2e/target-aggregates.spec.js',
-      'e2e/infodocs.js',
-      'e2e/content-security-policy.js',
-      'e2e/transitions/message_duplicates.spec.js',
-      'e2e/navigation/*.js'
     ],
     // performance: 'performance/**/*.js'
   },
