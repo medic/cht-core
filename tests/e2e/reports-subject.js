@@ -253,7 +253,7 @@ describe('Reports Summary', () => {
 
         10000
       )
-      .catch(reportsTab.loadReport(reportID));
+      .catch(() => reportsTab.loadReport(reportID));
   };
 
   /**
@@ -274,25 +274,15 @@ describe('Reports Summary', () => {
       });
   };
 
-  beforeAll(async (done) => {
-    try {
-      await utils.updateSettings(CONFIG, true);
-      await utils.saveDocs(CONTACTS);
-      done();
-    } catch (error) {
-      done.fail(error);
-    }
+  beforeAll(async () => {
+    await utils.updateSettings(CONFIG);
+    await utils.saveDocs(CONTACTS);
   });
 
   afterAll(utils.afterEach);
 
-  afterEach(async (done) => {
-    try {
-      await utils.deleteAllDocs(CONTACTS.map(contact => contact._id)); // deletes all except these docs
-      done();
-    } catch (e) {
-      done.fail(e);
-    }
+  afterEach(() => {
+    return utils.deleteAllDocs(CONTACTS.map(contact => contact._id)); // deletes all except these docs
   });
 
   describe('Displays correct LHS and RHS summary', () => {
@@ -315,8 +305,8 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(10, 'minutes').valueOf()
       };
 
-      await commonElements.goToReportsNative();
       await saveReport(REPORT);
+      await commonElements.goToReportsNative();
       const report = await reportsTab.loadReport(REPORT._id);
       await waitForSentinel(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe(MARIA.name);
@@ -355,8 +345,8 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(20, 'minutes').valueOf()
       };
 
-      await commonElements.goToReportsNative();
       await saveReport(REPORT);
+      await commonElements.goToReportsNative();
       const report = await reportsTab.loadReport(REPORT._id);
       await waitForSentinel(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe(MARIA.name);
@@ -394,8 +384,8 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(30, 'minutes').valueOf()
       };
 
-      await commonElements.goToReportsNative();
       await saveReport(REPORT);
+      await commonElements.goToReportsNative();
       const report = await reportsTab.loadReport(REPORT._id);
       await waitForSentinel(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe('Unknown subject');
@@ -433,8 +423,8 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(40, 'minutes').valueOf()
       };
 
-      await commonElements.goToReportsNative();
       await saveReport(REPORT);
+      await commonElements.goToReportsNative();
       const report = await reportsTab.loadReport(REPORT._id);
       await waitForSentinel(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe(GEORGE.name);
@@ -478,8 +468,8 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(50, 'minutes').valueOf()
       };
 
-      await commonElements.goToReportsNative();
       await saveReport(REPORT);
+      await commonElements.goToReportsNative();
       const report = await reportsTab.loadReport(REPORT._id);
       await waitForSentinel(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe('Unknown subject');
@@ -516,8 +506,9 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(60, 'minutes').valueOf()
       };
 
-      await commonElements.goToReportsNative();
       await saveReport(REPORT);
+      await commonElements.goToReportsNative();
+
       const report = await reportsTab.loadReport(REPORT._id);
       await waitForSentinel(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe(TAG_PLACE.name);
@@ -555,8 +546,9 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(2, 'hours').valueOf()
       };
 
-      await commonElements.goToReportsNative();
       await saveReport(REPORT);
+      await commonElements.goToReportsNative();
+
       const report = await reportsTab.loadReport(REPORT._id);
       await waitForSentinel(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe('Unknown subject');
@@ -594,8 +586,9 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(10, 'hours').valueOf()
       };
 
-      await commonElements.goToReportsNative();
       await saveReport(REPORT);
+      await commonElements.goToReportsNative();
+
       const report = await reportsTab.loadReport(REPORT._id);
       await waitForSentinel(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe(CAROL.name);
@@ -633,8 +626,9 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(6, 'hours').valueOf()
       };
 
-      await commonElements.goToReportsNative();
       await saveReport(REPORT);
+      await commonElements.goToReportsNative();
+
       const report = await reportsTab.loadReport(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe(BOB_PLACE.name);
       expect(await getElementText(reportsTab.formName(report))).toBe('PID_PID');
@@ -671,8 +665,9 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(6, 'hours').valueOf()
       };
 
-      await commonElements.goToReportsNative();
       await saveReport(REPORT);
+      await commonElements.goToReportsNative();
+
       const report = await reportsTab.loadReport(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe(BOB_PLACE.name);
       expect(await getElementText(reportsTab.formName(report))).toBe('PID_PID');
