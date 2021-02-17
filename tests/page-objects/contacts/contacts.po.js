@@ -9,14 +9,13 @@ const newPersonTextBox = element(by.css('[name="/data/contact/name"]'));
 const personNotes = element(by.css('[name="/data/contact/notes"]'));
 const newPersonButton = element(by.css('[name="/data/init/create_new_person"][value="new_person"]'));
 const writeName = element(by.css('[name="/data/district_hospital/is_name_generated"][value="false"]'));
-const contactName = element(by.css('.heading-content'));
-const rows = element.all(by.className('content-row'));
+const contactName = element(by.css('contacts-content .body.meta .heading-content'));
+const rows = element.all(by.css('#contacts-list .content-row'));
 const dateOfBirthField = element(by.css('[placeholder="yyyy-mm-dd"]'));
 const contactSexField = element(by.css('[data-name="/data/contact/sex"][value="female"]'));
-const peopleRows = element.all(by.repeater('group in contactsContentCtrl.selectedContact.children'));
+const peopleRows = element.all(by.css('.right-pane .card.children li'));
 const deleteContact = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('fa fa-trash-o'));
 const contactsTab = element(by.css('#contacts-tab'));
-
 
 
 module.exports = {
@@ -32,15 +31,15 @@ module.exports = {
   contactName,
   center: () => element(by.css('.card h2')),
   name: () =>  element(by.css('.children h4 span')),
-  selectLHSRowByText: async text => {
-    module.exports.search(text);
-    helper.waitUntilReady(rows.last());
-    module.exports.clickRowByName(text);
-    helper.waitUntilReady(contactName);
+  selectLHSRowByText: async (text) => {
+    await module.exports.search(text);
+    await helper.waitUntilReadyNative(rows.last());
+    await module.exports.clickRowByName(text);
+    await helper.waitUntilReadyNative(contactName);
     expect(await contactName.getText()).toBe(text);
   },
 
-  addNewDistrict: async districtName => {
+  addNewDistrict: async (districtName) => {
     await helper.waitUntilReadyNative(newDistrictButton);
     await newDistrictButton.click();
     await helper.waitUntilReadyNative(newPersonButton);
@@ -77,50 +76,48 @@ module.exports = {
     return genericForm.submitButton.click();
   },
 
-  addClinic: (name = 'Clinic 1') => {
+  addClinic: async (name = 'Clinic 1') => {
     const newClinicButton = element(by.css('[href$="/add/clinic"]'));
-    helper.waitUntilReady(newClinicButton);
-    helper.waitElementToDisappear(by.id('snackbar'));
-    helper.clickElement(newClinicButton);
-    helper.waitElementToBeVisible(newPersonButton);
-    newPersonButton.click();
-    newPersonTextBox.sendKeys('Todd');
-    dateOfBirthField.sendKeys('2000-01-01');
-    helper.scrollElementIntoView(contactSexField);
-    contactSexField.click();
-    genericForm.nextPageNative();
+    await helper.waitUntilReadyNative(newClinicButton);
+    await helper.waitElementToDisappear(by.id('snackbar'));
+    await helper.clickElement(newClinicButton);
+    await helper.waitElementToBeVisibleNative(newPersonButton);
+    await newPersonButton.click();
+    await newPersonTextBox.sendKeys('Todd');
+    await dateOfBirthField.sendKeys('2000-01-01');
+    await helper.scrollElementIntoView(contactSexField);
+    await contactSexField.click();
+    await genericForm.nextPageNative();
     const writeNameHC = element(by.css('[name="/data/clinic/is_name_generated"][value="false"]'));
-    helper.waitElementToBeVisible(writeNameHC);
-    writeNameHC.click();
-    newPlaceName.sendKeys(name);
-    element(by.css('[name="/data/clinic/external_id"]')).sendKeys('1234457');
-    element(by.css('[name="/data/clinic/notes"]')).sendKeys('some notes');
-    genericForm.submitButton.click();
+    await helper.waitElementToBeVisibleNative(writeNameHC);
+    await writeNameHC.click();
+    await newPlaceName.sendKeys(name);
+    await element(by.css('[name="/data/clinic/external_id"]')).sendKeys('1234457');
+    await element(by.css('[name="/data/clinic/notes"]')).sendKeys('some notes');
+    await genericForm.submitButton.click();
   },
 
   refresh: () => {
     refreshButton.click();
   },
 
-  search: async query => {
+  search: async (query) => {
     await searchBox.clear();
     await searchBox.sendKeys(query);
     await searchButton.click();
   },
 
-  clickRowByName: async name => {
+  clickRowByName: async (name) => {
     await rows.filter(elem => elem.getText().then(text => text === name)).first().click();
   },
 
-  deleteContactByName: contactName => {
-    const peopleRow = peopleRows.filter((row) => {
-      return row.getText().then((text) => {
-        return text.includes(contactName);
-      });
-    });
-    helper.waitUntilReady(peopleRow);
-    peopleRow.click();
-    helper.waitUntilReady(deleteContact);
-    deleteContact.click();
+  deleteContactByName: async (contactName) => {
+    const peopleRow = await peopleRows
+      .filter((row) => row.getText().then(text => text.includes(contactName)))
+      .first();
+    await helper.waitUntilReadyNative(peopleRow);
+    await peopleRow.click();
+    await helper.waitUntilReadyNative(deleteContact);
+    await deleteContact.click();
   }
 };
