@@ -41,6 +41,7 @@ const baseConfig = {
       'e2e/users/add-user.specs.js',
       'e2e/registration-by-sms.js',
       'e2e/target-aggregates.spec.js',
+      'e2e/reports-subject.js',
       'e2e/infodocs.js',
       'e2e/content-security-policy.js',
       'e2e/navigation/*.js'
