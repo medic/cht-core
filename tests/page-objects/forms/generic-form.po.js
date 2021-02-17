@@ -86,7 +86,6 @@ module.exports = {
     await browser.sleep(1000); // let the refresh work here
 
     // select form
-    await helper.waitUntilReadyNative(addButton);
     await helper.clickElement(addButton);
     const form = module.exports.formByHref(formId);
     await helper.clickElement(form);
