@@ -81,11 +81,11 @@ describe('Send message', () => {
       await messagesPo.openSendMessageModal();
       await messagesPo.enterCheckAndSelect(RAW_PH, 1, '', RAW_PH);
       await messagesPo.messageText(smsMsg('raw'));
-      await messagesPo.sendMessage();
+      await messagesPo.submitMessage();
       await messagesPo.clickLhsEntry(RAW_PH);
 
-      expect(await element.all(by.css('#message-content li')).count()).toBe(1);
-      await messagesPo.lastMessageIs(smsMsg('raw'));
+      expect(await messagesPo.allMessages().count()).toBe(1);
+      expect(await messagesPo.lastMessageText()).toBe(smsMsg('raw'));
     });
 
     it('can send messages to contacts with phone numbers', async () => {
@@ -96,11 +96,11 @@ describe('Send message', () => {
       await messagesPo.openSendMessageModal();
       await messagesPo.enterCheckAndSelect(ALICE.name, 2, contactNameSelector, ALICE.name);
       await messagesPo.messageText(smsMsg('contact'));
-      await messagesPo.sendMessage();
+      await messagesPo.submitMessage();
       await messagesPo.clickLhsEntry(ALICE._id,ALICE.name);
 
-      expect(await element.all(by.css('#message-content li')).count()).toBe(1);
-      await messagesPo.lastMessageIs(smsMsg('contact'));
+      expect(await  messagesPo.allMessages().count()).toBe(1);
+      expect(await messagesPo.lastMessageText()).toBe(smsMsg('contact'));
     });
 
     it('can send messages to contacts under everyone at with phone numbers', async () => {
@@ -118,52 +118,33 @@ describe('Send message', () => {
         everyoneAtText(BOB_PLACE.name)
       );
       await messagesPo.messageText(smsMsg('everyoneAt'));
-      await messagesPo.sendMessage();
+      await messagesPo.submitMessage();
 
-      expect(element.all(messagesPo.messageInList(CAROL._id).locator()).count()).toBe(0);
-      expect(element.all(messagesPo.messageInList(JAROL._id).locator()).count()).toBe(0);
-      expect(element.all(messagesPo.messageInList(DAVID._id).locator()).count()).toBe(0);
+      expect(await element.all(messagesPo.messageInList(CAROL._id).locator()).count()).toBe(0);
+      expect(await element.all(messagesPo.messageInList(JAROL._id).locator()).count()).toBe(0);
+      expect(await element.all(messagesPo.messageInList(DAVID._id).locator()).count()).toBe(0);
       await messagesPo.clickLhsEntry(DAVID_AREA._id, DAVID_AREA.name);
 
-      expect(await element.all(by.css('#message-content li')).count()).toBe(1);
-      await messagesPo.lastMessageIs(smsMsg('everyoneAt'));
+      expect(await  messagesPo.allMessages().count()).toBe(1);
+      expect(await messagesPo.lastMessageText()).toBe(smsMsg('everyoneAt'));
     });
   });
 
   // Requires that 'Send message modal' describe has been run
   describe('Sending from message pane', () => {
-    const openMessageContent = async (id, name) => {
-      await common.goToMessagesNative();
-      await helper.waitUntilReadyNative(messagesPo.messageInList(id));
-      await helper.waitElementToPresentNative(messagesPo.messageInList(id), 2000);
-      await messagesPo.clickLhsEntry(id, name);
-    };
-    const enterMessageText = async message => {
-      await element(by.css('#message-footer textarea')).click();
-      await helper.waitElementToBeVisible(
-        element(by.css('#message-footer .message-actions .btn-primary'))
-      );
-      await browser.wait(
-        element(by.css('#message-footer textarea')).sendKeys(message)
-      );
-    };
     describe('Can send additional messages from message pane', () => {
       const addAnAdditionalMessage = async (id, name) => {
-        await openMessageContent(id, name);
-        await enterMessageText('Additional Message');
-
-        await element(
-          by.css('#message-footer .message-actions .btn-primary')
-        ).click();
+        await messagesPo.openMessageContent(id, name);
+        await messagesPo.enterMessageText('Additional Message');
+        await messagesPo.sendAdditionalMessage.click();
         await browser.wait(() => {
-          return element
-            .all(by.css('#message-content li'))
+          return messagesPo.allMessages()
             .count()
             .then(utils.countOf(2));
         }, 2000);
 
-        expect(await  element.all(by.css('#message-content li')).count()).toBe(2);
-        await messagesPo.lastMessageIs('Additional Message');
+        expect(await messagesPo.allMessages().count()).toBe(2);
+        expect(await messagesPo.lastMessageText()).toBe('Additional Message');
       };
 
       it('For raw contacts', async () => {
@@ -272,27 +253,23 @@ describe('Send message', () => {
 
         await utils.saveDoc(doc);
         await browser.refresh();
-        await openMessageContent(RAW_PH);
-        await enterMessageText('A second message');
+        await messagesPo.openMessageContent(RAW_PH);
+        await messagesPo.enterMessageText('A second message');
 
-        await helper.clickElementNative(element(by.css('.message-actions .btn.btn-link')));
-        await helper.waitUntilReady(element(by.id('send-message')));
-        expect(await element(by.id('send-message')).isDisplayed()).toBeTruthy();
-        expect(
-          await element.all(by.css('li.select2-selection__choice')).count()
-        ).toBe(1);
-        expect(
-          await element(by.css('#send-message select>option')).getAttribute('value')
-        ).toBe(RAW_PH);
+        await helper.clickElementNative(messagesPo.addRecipient);
+        await helper.waitUntilReady(messagesPo.sendMessageModal());
+        expect(await messagesPo.sendMessageModal().isDisplayed()).toBeTruthy();
+        expect(await messagesPo.selectChoices.count()).toBe(1);
+        expect(await messagesPo.selectedOption.getAttribute('value')).toBe(RAW_PH);
         await messagesPo.enterCheckAndSelect(ANOTHER_RAW_PH, 1, '', ANOTHER_RAW_PH, 1);
-        await messagesPo.sendMessage();
-        await openMessageContent(RAW_PH);
-        expect(await element.all(by.css('#message-content li')).count()).toBe(2);
+        await messagesPo.submitMessage();
+        await messagesPo.openMessageContent(RAW_PH);
+        expect(await  messagesPo.allMessages().count()).toBe(2);
 
-        await messagesPo.lastMessageIs('A second message');
-        await openMessageContent(ANOTHER_RAW_PH);
-        expect(await element.all(by.css('#message-content li')).count()).toBe(1);
-        await messagesPo.lastMessageIs('A second message');
+        expect(await messagesPo.lastMessageText()).toBe('A second message');
+        await messagesPo.openMessageContent(ANOTHER_RAW_PH);
+        expect(await  messagesPo.allMessages().count()).toBe(1);
+        expect(await messagesPo.lastMessageText()).toBe('A second message');
       });
       it('For existing contacts', async () => {
         const doc = {
@@ -328,36 +305,22 @@ describe('Send message', () => {
 
         await utils.saveDoc(doc);
         await browser.refresh();
-        await openMessageContent(ALICE._id, ALICE.name);
-        await enterMessageText('A second message');
+        await messagesPo.openMessageContent(ALICE._id, ALICE.name);
+        await messagesPo.enterMessageText('A second message');
 
-        await helper.clickElementNative(element(by.css('.message-actions .btn.btn-link')));
-        await helper.waitUntilReady(element(by.id('send-message')));
-        expect(await element(by.id('send-message')).isDisplayed()).toBeTruthy();
-        expect(
-          await element.all(by.css('li.select2-selection__choice')).count()
-        ).toBe(1);
-        expect(
-          await element(by.css('#send-message select>option')).getAttribute('value')
-        ).toBe(ALICE._id);
+        await helper.clickElementNative(messagesPo.addRecipient);
+        await helper.waitUntilReady(messagesPo.sendMessageModal());
+        expect(await messagesPo.sendMessageModal().isDisplayed()).toBeTruthy();
+        expect(await messagesPo.selectChoices.count()).toBe(1);
+        expect(await messagesPo.selectedOption.getAttribute('value')).toBe(ALICE._id);
         await messagesPo.enterCheckAndSelect(DAVID.name, 2, contactNameSelector, DAVID.name, 1);
-        await messagesPo.sendMessage();
-        await openMessageContent(ALICE._id, ALICE.name);
-        expect(await element.all(by.css('#message-content li')).count()).toBe(2);
-        expect(
-          await element
-            .all(by.css('#message-content li div.data>p>span'))
-            .last()
-            .getText()
-        ).toBe('A second message');
-        await openMessageContent(DAVID._id, DAVID.name);
-        expect(await element.all(by.css('#message-content li')).count()).toBe(1);
-        expect(
-          await element
-            .all(by.css('#message-content li div.data>p>span'))
-            .last()
-            .getText()
-        ).toBe('A second message');
+        await messagesPo.submitMessage();
+        await messagesPo.openMessageContent(ALICE._id, ALICE.name);
+        expect(await  messagesPo.allMessages().count()).toBe(2);
+        expect(await messagesPo.lastMessageText()).toBe('A second message');
+        await messagesPo.openMessageContent(DAVID._id, DAVID.name);
+        expect(await  messagesPo.allMessages().count()).toBe(1);
+        expect(await messagesPo.lastMessageText()).toBe('A second message');
       });
     });
   });
