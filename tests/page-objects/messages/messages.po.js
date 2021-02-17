@@ -2,7 +2,7 @@ const helper = require('../../helper');
 const utils = require('../../utils');
 const common = require('../common/common.po');
 
-const sendMessageButton = element(by.className('mm-icon mm-icon-inverse mm-icon-caption send-message')); 
+const sendMessageButton = element(by.className('mm-icon mm-icon-inverse mm-icon-caption send-message'));
 const exportButton = element(by.css('[ng-click=actionBar.left.exportFn()]'));
 const selectOptions = element.all(by.css('.select2-results__option'));
 const selectChoices = element.all(by.css('li.select2-selection__choice'));
@@ -60,22 +60,11 @@ const clickLhsEntry = async (entryId, entryName) => {
   }, 12000);
 };
 
-const enterCheckAndSelect = async (
-  searchText,
-  totalExpectedResults,
-  entrySelector,
-  entryText,
-  existingEntryCount=0
-) => {
+const enterCheckAndSelect = async (searchTxt, totalExpectedResults, entrySelector, entryTxt, existingEntryCount=0) => {
   const selectionCount = await selectChoices.count();
   expect(selectionCount).toBe(existingEntryCount);
 
-  const entry = await searchSelect2(
-    searchText,
-    totalExpectedResults,
-    entrySelector,
-    entryText
-  );
+  const entry = await searchSelect2(searchTxt, totalExpectedResults, entrySelector, entryTxt);
   await entry.click();
 
   return browser.wait(() => {
