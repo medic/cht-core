@@ -209,17 +209,17 @@ describe('Contact summary info', () => {
 
     // assert that the pregnancy card exists and has the right fields.
     expect(
-      await helper.getTextFromElement(
+      await helper.getTextFromElementNative(
         element(by.css('.content-pane .meta > div > .card .action-header h3'))
       )
     ).toBe('test.pregnancy');
     expect(
-      await helper.getTextFromElement(
+      await helper.getTextFromElementNative(
         element(by.css('.content-pane .meta > div > .card .row label'))
       )
     ).toBe('test.visits');
     expect(
-      await helper.getTextFromElement(
+      await helper.getTextFromElementNative(
         element(by.css('.content-pane .meta > div > .card .row p'))
       )
     ).toBe('1');
