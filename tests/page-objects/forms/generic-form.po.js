@@ -90,7 +90,7 @@ module.exports = {
     await helper.clickElementNative(form);
 
     // waiting for form
-    helper.waitUntilReadyNative(element(by.css('#report-form #form-title')));
+    await helper.waitUntilReadyNative(element(by.css('#report-form #form-title')));
   },
 
   formByHref: (href) => {
