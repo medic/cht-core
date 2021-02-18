@@ -1,5 +1,4 @@
 const helper = require('../../helper');
-const utils = require('../../utils');
 const common = require('../common/common.po');
 
 const sendMessageButton = element(by.className('mm-icon mm-icon-inverse mm-icon-caption send-message'));
@@ -14,14 +13,13 @@ const selectedOption = element(by.css('#send-message select>option'));
 const openMessageContent = async (id, name) => {
   await common.goToMessagesNative();
   await helper.waitUntilReadyNative(module.exports.messageInList(id));
-  await helper.waitElementToPresentNative(module.exports.messageInList(id), 2000);
   await clickLhsEntry(id, name);
 };
 
 const enterMessageText = async message => {
   await element(by.css('#message-footer textarea')).click();
-  await helper.waitElementToBeVisible(sendAdditionalMessage);
-  await browser.wait(messageTextArea.sendKeys(message));
+  await helper.waitElementToBeVisibleNative(sendAdditionalMessage);
+  await messageTextArea.sendKeys(message);
 };
 
 const searchSelect2 = async (searchText, totalExpectedResults, entrySelector, entryText) => {
@@ -39,21 +37,19 @@ const submitMessage = async () => {
 
 const lastMessageText = () => {
   const last = element.all(by.css('#message-content li div.data>p>span')).last();
-  return helper.getTextFromElement(last);
+  return helper.getTextFromElementNative(last);
 };
 
 const clickLhsEntry = async (entryId, entryName) => {
   entryName = entryName || entryId;
 
   const liElement = await module.exports.messageInList(entryId);
-  await helper.waitUntilReadyNative(liElement);
-  expect(await element.all(liElement.locator()).count()).toBe(1);
-  await liElement.click();
+  await helper.clickElementNative(liElement);
 
   return browser.wait(() => {
     const el = module.exports.messageDetailsHeader();
     if (helper.waitUntilReadyNative(el)) {
-      return helper.getTextFromElement(el).then(text => {
+      return helper.getTextFromElementNative(el).then(text => {
         return text === entryName;
       });
     }
@@ -67,10 +63,7 @@ const enterCheckAndSelect = async (searchTxt, totalExpectedResults, entrySelecto
   const entry = await searchSelect2(searchTxt, totalExpectedResults, entrySelector, entryTxt);
   await entry.click();
 
-  return browser.wait(() => {
-    return  selectChoices.count()
-      .then(utils.countOf(existingEntryCount + 1));
-  }, 2000);
+  await browser.wait(async () => await selectChoices.count() === existingEntryCount + 1);
 };
 
 module.exports = {
@@ -90,7 +83,7 @@ module.exports = {
   openSendMessageModal: async ()=> {
     await helper.clickElementNative(module.exports.sendMessage());
     await helper.waitElementToPresent(module.exports.sendMessageModal(), 5000);
-    await helper.waitElementToBeVisible(module.exports.sendMessageModal(), 5000);
+    await helper.waitElementToBeVisibleNative(module.exports.sendMessageModal(), 5000);
   },
   getSendMessageButton: ()=> {
     helper.waitUntilReady(sendMessageButton);

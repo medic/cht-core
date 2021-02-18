@@ -205,14 +205,14 @@ describe('Send message', () => {
       });
     });
     describe('Can add recipients', () => {
-      it('For raw contacts', async () => {
+      it('For raw contacts11111', async () => {
         await utils.saveDoc(messageDoc);
         await browser.refresh();
         await messagesPo.openMessageContent(RAW_PH);
         await messagesPo.enterMessageText('A second message');
 
         await helper.clickElementNative(messagesPo.addRecipient);
-        await helper.waitUntilReady(messagesPo.sendMessageModal());
+        await helper.waitUntilReadyNative(messagesPo.sendMessageModal());
         expect(await messagesPo.sendMessageModal().isDisplayed()).toBeTruthy();
         expect(await messagesPo.selectChoices.count()).toBe(1);
         expect(await messagesPo.selectedOption.getAttribute('value')).toBe(RAW_PH);
@@ -233,7 +233,7 @@ describe('Send message', () => {
         await messagesPo.enterMessageText('A second message');
 
         await helper.clickElementNative(messagesPo.addRecipient);
-        await helper.waitUntilReady(messagesPo.sendMessageModal());
+        await helper.waitUntilReadyNative(messagesPo.sendMessageModal());
         expect(await messagesPo.sendMessageModal().isDisplayed()).toBeTruthy();
         expect(await messagesPo.selectChoices.count()).toBe(1);
         expect(await messagesPo.selectedOption.getAttribute('value')).toBe(ALICE._id);
