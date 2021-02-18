@@ -37,9 +37,10 @@ const getPostOpts = (path, body) => ({
 });
 
 const postMessages = (messages) => {
+  const watchChanges = apiUtils.getApiSmsChanges(messages);
   return Promise
     .all([
-      apiUtils.getApiSmsChanges(messages),
+      watchChanges,
       utils.request(getPostOpts('/api/sms', { messages: messages }))
     ])
     .then(([changes]) => changes.map(change => change.id));
@@ -49,7 +50,7 @@ const getRecipient = doc => doc.tasks[0].messages[0].to;
 
 describe('message duplicates', () => {
   afterAll(() => utils.revertDb());
-  afterEach(() => utils.revertSettings(true));
+  afterEach(() => utils.revertSettings());
 
   it('should mark as duplicate after 5 retries by default', () => {
     const message1 = {
