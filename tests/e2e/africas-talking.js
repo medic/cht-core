@@ -160,39 +160,37 @@ describe('africas talking api', () => {
       });
     };
 
-    beforeEach(done => {
-      submitSms({ from: '+64271234567', text: 'hello', id: 'a' })
-        .then(done)
-        .catch(done.fail);
+    beforeEach(() => {
+      return submitSms({ from: '+64271234567', text: 'hello', id: 'a' });
     });
 
-    it('- shows content', () => {
-      commonElements.goToTasks();
-      commonElements.goToMessages();
+    it('- shows content', async () => {
+      await commonElements.goToTasks();
+      await commonElements.goToMessagesNative();
 
       // LHS
-      helper.waitElementToBeVisible(element(by.css('#message-list li:first-child')));
+      await helper.waitElementToBeVisibleNative(element(by.css('#message-list li:first-child')));
       const heading = element(by.css('#message-list li:first-child .heading h4'));
       const summary = element(by.css('#message-list li:first-child .summary p'));
-      expect(helper.getTextFromElement(heading)).toBe('+64271234567');
-      expect(helper.getTextFromElement(summary)).toBe('hello');
-      helper.clickElement(summary);
+      expect(await helper.getTextFromElementNative(heading)).toBe('+64271234567');
+      expect(await helper.getTextFromElementNative(summary)).toBe('hello');
+      await helper.clickElementNative(summary);
 
       // RHS
-      helper.waitElementToBeVisible(element(by.css('#message-content li.incoming:first-child .data p:first-child')));
+      const firstContentMessage = element(by.css('#message-content li.incoming:first-child .data p:first-child'));
+      await helper.waitElementToBeVisibleNative(firstContentMessage);
       const messageHeader = element(by.css('#message-header .name'));
       const messageText = element(by.css('#message-content li.incoming:first-child .data p:first-child'));
       const messageStatus = element(by.css('#message-content li.incoming:first-child .data .state.received'));
-      expect(helper.getTextFromElement(messageHeader)).toBe('+64271234567');
-      expect(helper.getTextFromElement(messageText)).toBe('hello');
-      expect(helper.getTextFromElement(messageStatus)).toBe('received');
+      expect(await helper.getTextFromElementNative(messageHeader)).toBe('+64271234567');
+      expect(await helper.getTextFromElementNative(messageText)).toBe('hello');
+      expect(await helper.getTextFromElementNative(messageStatus)).toBe('received');
 
       // database
-      return element(by.css('#message-content li.incoming:first-child')).getAttribute('data-record-id').then(id => {
-        return utils.getDoc(id).then(doc => {
-          expect(doc.sms_message && doc.sms_message.gateway_ref).toBe('a');
-        });
-      });
+      const firstListMessage = element(by.css('#message-content li.incoming:first-child'));
+      const id = await firstListMessage.getAttribute('data-id');
+      const doc = await utils.getDoc(id);
+      expect(doc.sms_message && doc.sms_message.gateway_ref).toBe('a');
     });
   });
 
@@ -213,8 +211,9 @@ describe('africas talking api', () => {
       });
     };
 
-    beforeEach(done => {
-      utils.saveDoc(report)
+    beforeEach(() => {
+      return utils
+        .saveDoc(report)
         .then(result => {
           savedDoc = result.id;
           return Promise.all([
@@ -223,23 +222,18 @@ describe('africas talking api', () => {
             submitDeliveryReport({ id: messageGatewayRef3, status: 'Failed',
               failureReason: 'InsufficientCredit', phoneNumber: messageTo3 }),
           ]);
-        })
-        .then(done)
-        .catch(done.fail);
+        });
     });
 
-    afterEach(done => {
-      utils.deleteDoc(savedDoc)
-        .then(done)
-        .catch(done.fail);
+    afterEach(() => {
+      return utils.deleteDoc(savedDoc);
     });
 
-    it('- shows content', () => {
-      commonElements.goToReports();
-      helper.waitUntilReady(element(by.css('#reports-list li:first-child')));
-      helper.clickElement(element(by.css('#reports-list li:first-child .heading')));
-      helper.waitElementToPresent(element(by.css('#reports-content .body .item-summary .icon')));
-      helper.waitForAngularComplete();
+    it('- shows content', async () => {
+      await commonElements.goToReportsNative();
+      await helper.waitUntilReadyNative(element(by.css('#reports-list li:first-child')));
+      await helper.clickElementNative(element(by.css('#reports-list li:first-child .heading')));
+      await helper.waitElementToPresentNative(element(by.css('#reports-content .body .item-summary .icon')));
 
       // tasks
       const sentTaskState = element(by.css('#reports-content .details > ul .task-list .task-state .state'));
@@ -253,10 +247,10 @@ describe('africas talking api', () => {
         '#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state')
       );
 
-      expect(helper.getTextFromElement(sentTaskState)).toBe('sent');
-      expect(helper.getTextFromElement(deliveredTaskState)).toBe('delivered');
-      expect(helper.getTextFromElement(scheduledTaskState)).toBe('scheduled');
-      expect(helper.getTextFromElement(failedTaskState)).toBe('failed');
+      expect(await helper.getTextFromElementNative(sentTaskState)).toBe('sent');
+      expect(await helper.getTextFromElementNative(deliveredTaskState)).toBe('delivered');
+      expect(await helper.getTextFromElementNative(scheduledTaskState)).toBe('scheduled');
+      expect(await helper.getTextFromElementNative(failedTaskState)).toBe('failed');
     });
   });
 

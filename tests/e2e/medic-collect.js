@@ -35,10 +35,7 @@ describe('medic-collect', () => {
       }),
     ]));
 
-  /*  afterAll(() =>
-    Promise.all([ 'form:my_app_form', 'form:my_collect_form' ].map(id =>
-      db.get(id)
-        .then((doc) => db.remove(doc)))));*/
+  afterAll(() => utils.revertDb());
 
   describe('without User-Agent header', () => {
     it('is prompted for auth details if not supplied', () => {
