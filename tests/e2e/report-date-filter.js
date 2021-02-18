@@ -85,32 +85,24 @@ describe('Filters reports', () => {
   ];
 
   const savedUuids = [];
-  beforeEach(done => {
-    protractor.promise
-      .all(reports.map(utils.saveDoc))
-      .then(results => {
-        results.forEach(result => {
-          savedUuids.push(result.id);
-        });
-        done();
-      })
-      .catch(done.fail);
+  beforeEach(async () => {
+    const results = await utils.saveDocs(reports);
+    results.forEach(result => savedUuids.push(result.id));
   });
 
   afterEach(utils.afterEach);
 
-  it('by date', () => {
-    commonElements.goToReports();
-    helper.waitElementToPresent(reportsTab.firstReport());
+  it('by date', async () => {
+    await commonElements.goToReportsNative();
+    await helper.waitUntilReadyNative(reportsTab.firstReport());
 
-    reportsTab.filterByDate(moment('05/16/2016','MM/DD/YYYY'), moment('05/17/2016','MM/DD/YYYY'));
+    await reportsTab.filterByDate(moment('05/16/2016','MM/DD/YYYY'), moment('05/17/2016','MM/DD/YYYY'));
     
-    helper.waitElementToPresent(reportsTab.listLoader());
-    helper.waitElementToPresent(reportsTab.firstReport());
+    await helper.waitUntilReadyNative(reportsTab.firstReport());
 
-    expect(reportsTab.allReports().count()).toBe(2);
-    expect(reportsTab.reportsByUUID(savedUuids[1]).count()).toBe(1);
-    expect(reportsTab.reportsByUUID(savedUuids[3]).count()).toBe(1);
+    expect(await reportsTab.allReports().count()).toBe(2);
+    expect(await reportsTab.reportsByUUID(savedUuids[1]).count()).toBe(1);
+    expect(await reportsTab.reportsByUUID(savedUuids[3]).count()).toBe(1);
 
   });
 });
