@@ -107,7 +107,8 @@
     "sw-precache": "^5.2.1",
     "tail": "^2.0.3",
     "time-grunt": "^2.0.0",
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.7",
+    "webpack-bundle-analyzer": "^4.4.0"
   },
   "bundlesize": [
     {

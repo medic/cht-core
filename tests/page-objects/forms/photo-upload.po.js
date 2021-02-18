@@ -47,8 +47,8 @@ module.exports = {
     utils.seedTestData(done, userContactDoc, docs);
   },
 
-  configureFormNative: (userContactDoc) => {
-    utils.seedTestData(userContactDoc, docs);
+  configureFormNative: async (userContactDoc) => {
+    await utils.seedTestData(userContactDoc, docs);
   },
 
   reset: () => {
