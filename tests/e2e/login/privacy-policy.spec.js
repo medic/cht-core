@@ -3,7 +3,6 @@ const commonElements = require('../../page-objects/common/common.po.js');
 const utils = require('../../utils');
 const loginPage = require('../../page-objects/login/login.po.js');
 const privacyPolicyPage = require('../../page-objects/privacy-policy/privacy-policy.po');
-const helper = require('../../helper');
 
 describe('Privacy policy', () => {
   const password = 'Sup3rSecret!';
@@ -104,10 +103,10 @@ describe('Privacy policy', () => {
 
       // After accepting, no privacy policy on next load
       await privacyPolicyPage.acceptPrivacyPolicy();
+      await utils.closeTour();
+
       await utils.resetBrowser();
       await commonElements.calmNative();
-      await utils.closeTour();
-      await helper.handleUpdateModalNative();
 
       // Check display when loading privacy policy page
       expect(await privacyPolicyPage.getPrivacyPolicyFromPage()).toEqual('English Privacy Policy\nMore markup');
@@ -142,10 +141,11 @@ describe('Privacy policy', () => {
 
       // After accepting, no privacy policy on next load
       await privacyPolicyPage.acceptPrivacyPolicy();
+      await utils.closeTour();
+      await commonElements.syncNative();
+
       await utils.resetBrowser();
       await commonElements.calmNative();
-      await utils.closeTour();
-      await helper.handleUpdateModalNative();
 
       // Check display when loading privacy policy page
       expect(await privacyPolicyPage.getPrivacyPolicyFromPage()).toEqual(frenchPolicyText);

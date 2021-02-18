@@ -50,7 +50,7 @@ module.exports = {
     const nextButton = element(by.css('button.btn.btn-primary.next-page'));
 
     for (let i = 0; i < numberOfPages; i++) {
-      await helper.waitUntilReady(nextButton);
+      await helper.waitUntilReadyNative(nextButton);
       await helper.waitElementToBeClickable(nextButton);
       await nextButton.click();
     }

@@ -88,7 +88,7 @@ module.exports = {
 
   syncNative: async () => {
     await module.exports.openMenuNative();
-    await openSubmenu('sync now');
+    await openSubmenu(['sync now', 'sync.now']);
     await helper.waitElementToPresentNative(element(by.css('.sync-status .success')));
   },
 
@@ -187,7 +187,7 @@ module.exports = {
     } else {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
-      await helper.clickElement(element(by.css('.reset-filter')));
+      await helper.clickElementNative(element(by.css('.reset-filter')));
       await browser.waitForAngular();
     }
   },
