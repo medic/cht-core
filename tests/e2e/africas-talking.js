@@ -160,9 +160,7 @@ describe('africas talking api', () => {
       });
     };
 
-    beforeEach(() => {
-      return submitSms({ from: '+64271234567', text: 'hello', id: 'a' });
-    });
+    beforeEach(() => submitSms({ from: '+64271234567', text: 'hello', id: 'a' }));
 
     it('- shows content', async () => {
       await commonElements.goToTasks();
@@ -225,9 +223,7 @@ describe('africas talking api', () => {
         });
     });
 
-    afterEach(() => {
-      return utils.deleteDoc(savedDoc);
-    });
+    afterEach(() => utils.deleteDoc(savedDoc));
 
     it('- shows content', async () => {
       await commonElements.goToReportsNative();
