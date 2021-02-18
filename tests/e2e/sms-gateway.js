@@ -159,18 +159,18 @@ describe('sms-gateway api', () => {
       const phone = '+64271234567';
       const msg = 'hello';
       await smsGatewayPo.showMessageList();
-      const messageListHeading = await helper.getTextFromElement(smsGatewayPo.messageHeading(1));
+      const messageListHeading = await helper.getTextFromElementNative(smsGatewayPo.messageHeading(1));
       expect(messageListHeading).toBe(phone);
-      const messageListSummary = await helper.getTextFromElement(smsGatewayPo.messageSummary(1));
+      const messageListSummary = await helper.getTextFromElementNative(smsGatewayPo.messageSummary(1));
       expect(messageListSummary).toBe(msg);
 
       // RHS
       await smsGatewayPo.showMessageDetails();
-      const messageHeader = await helper.getTextFromElement(messagesPo.messageDetailsHeader());
+      const messageHeader = await helper.getTextFromElementNative(messagesPo.messageDetailsHeader());
       expect(messageHeader).toBe(phone);
-      const messageText = await helper.getTextFromElement(smsGatewayPo.incomingData);
+      const messageText = await helper.getTextFromElementNative(smsGatewayPo.incomingData);
       expect(messageText).toBe(msg);
-      const messageStatus = await helper.getTextFromElement(smsGatewayPo.messageDetailStatus());
+      const messageStatus = await helper.getTextFromElementNative(smsGatewayPo.messageDetailStatus());
       await expect(messageStatus).toMatch('received');
     });
   });

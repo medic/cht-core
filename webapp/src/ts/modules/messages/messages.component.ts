@@ -28,6 +28,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   conversations = [];
   selectedConversationId = null;
   error = false;
+  private destroyed = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -52,9 +53,11 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
     this.subscriptions.unsubscribe();
     this.globalActions.unsetSelected();
     this.messagesActions.setConversations([]);
+    this.globalActions.setLeftActionBar({});
   }
 
   private subscribeToStore() {
@@ -104,6 +107,12 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   private updateActionBar() {
+    if (this.destroyed) {
+      // don't update the actionbar if the component has already been destroyed
+      // this callback can be queued up and persist even after component destruction
+      return;
+    }
+
     const leftActionBar = {
       hasResults: this.conversations && this.conversations.length > 0,
       exportFn: this.exportFn.bind({}, this.exportService),

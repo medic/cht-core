@@ -34,6 +34,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   private reportsActions;
   private servicesActions;
   private listContains;
+  private destroyed;
 
   reportsList;
   selectedReports;
@@ -136,6 +137,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.destroyed = true;
     this.subscription.unsubscribe();
     // when navigating back from another tab, if there are reports in the state, angular will try to render them
     this.reportsActions.resetReportsList();
@@ -255,6 +257,12 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   private setActionBarData() {
+    if (this.destroyed) {
+      // don't update the actionbar if the component has already been destroyed
+      // this callback can be queued up and persist even after component destruction
+      return;
+    }
+
     this.globalActions.setLeftActionBar({
       hasResults: this.hasReports,
       exportFn: this.exportFn.bind({}, this.ngZone, this.exportService),
