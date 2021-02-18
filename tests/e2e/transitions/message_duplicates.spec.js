@@ -88,6 +88,9 @@ describe('message duplicates', () => {
       .then(ids => utils.getDocs(ids))
       .then(docs => {
         docs.forEach(doc => {
+          if (doc.tasks.length > 1) {
+            console.log(JSON.stringify(doc, null, 2));
+          }
           chai.expect(doc.tasks.length).to.equal(1);
           chai.expect(doc.tasks[0].messages.length).to.equal(1);
 
@@ -158,6 +161,9 @@ describe('message duplicates', () => {
       .then(ids => utils.getDocs(ids))
       .then(docs => {
         docs.forEach(doc => {
+          if (doc.tasks.length > 1) {
+            console.log(JSON.stringify(doc, null, 2));
+          }
           chai.expect(doc.tasks.length).to.equal(1);
           chai.expect(doc.tasks[0].messages.length).to.equal(1);
 
