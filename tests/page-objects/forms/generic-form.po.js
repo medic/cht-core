@@ -85,9 +85,12 @@ module.exports = {
     await helper.waitUntilReadyNative(addButton);
 
     // select form
-    await helper.clickElement(addButton);
+    await helper.clickElementNative(addButton);
     const form = module.exports.formByHref(formId);
-    await helper.clickElement(form);
+    await helper.clickElementNative(form);
+
+    // waiting for form
+    helper.waitUntilReadyNative(element(by.css('#report-form #form-title')));
   },
 
   formByHref: (href) => {
