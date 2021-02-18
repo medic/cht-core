@@ -21,9 +21,9 @@ const contactsTab = element(by.css('#contacts-tab'));
 module.exports = {
   contactsList: () => element(by.css('#contacts-list')),
   contactContent: () => module.exports.contactsList().element(by.css('.content')),
-  cardFieldLabelText: (label) => helper.getTextFromElement(element(by.css(`.cell.${label} label`))),
+  cardFieldLabelText: (label) => helper.getTextFromElementNative(element(by.css(`.cell.${label} label`))),
   cardFieldLabel:  (label) => element(by.css(`.cell.${label} label`)),
-  cardFieldText: (label) => helper.getTextFromElement(element(by.css(`.cell.${label} p`))),
+  cardFieldText: (label) => helper.getTextFromElementNative(element(by.css(`.cell.${label} p`))),
   searchBox,
   searchButton,
   contactsTab,
@@ -59,7 +59,7 @@ module.exports = {
   addHealthCenter: async (name = 'Mavuvu Clinic') => {
     const newHealthCenterButton = element(by.css('[href$="/add/health_center"]'));
     await helper.waitUntilReadyNative(newHealthCenterButton);
-    await helper.clickElement(newHealthCenterButton);
+    await helper.clickElementNative(newHealthCenterButton);
     await helper.waitUntilReadyNative(newPersonButton);
     await newPersonButton.click();
     await newPersonTextBox.sendKeys('Gareth');
@@ -80,7 +80,7 @@ module.exports = {
     const newClinicButton = element(by.css('[href$="/add/clinic"]'));
     await helper.waitUntilReadyNative(newClinicButton);
     await helper.waitElementToDisappear(by.id('snackbar'));
-    await helper.clickElement(newClinicButton);
+    await helper.clickElementNative(newClinicButton);
     await helper.waitElementToBeVisibleNative(newPersonButton);
     await newPersonButton.click();
     await newPersonTextBox.sendKeys('Todd');
@@ -97,8 +97,8 @@ module.exports = {
     await genericForm.submitButton.click();
   },
 
-  refresh: () => {
-    refreshButton.click();
+  refresh: async () => {
+    await refreshButton.click();
   },
 
   search: async (query) => {
