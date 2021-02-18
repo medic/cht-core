@@ -26,21 +26,19 @@
       </div>
 
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'reports' && !selectMode">
-        <div class="actions dropup" dropdown [dropup]="true">
+        <div class="actions dropup" dropdown [dropup]="true" [isDisabled]="!nonContactForms?.length">
           <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" dropdownToggle dropdata-toggle="dropdown" [ngClass]="{'mm-icon-disabled': !nonContactForms?.length}">
             <span class="fa fa-plus"></span>
             <p>{{'Submit Report' | translate}}</p>
           </a>
-          <ng-container *ngIf="nonContactForms?.length">
-            <ul class="dropdown-menu mm-dropdown-menu with-icon" *dropdownMenu>
-              <li *ngFor="let form of nonContactForms; trackBy: trackByForms">
-                <a [routerLink]="['/reports', 'add', form.code]">
-                  <span [innerHTML]="form.icon | resourceIcon"></span>
-                  <span class="content">{{ form.title }}</span>
-                </a>
-              </li>
-            </ul>
-          </ng-container>
+          <ul class="dropdown-menu mm-dropdown-menu with-icon" *dropdownMenu>
+            <li *ngFor="let form of nonContactForms; trackBy: trackByForms">
+              <a [routerLink]="['/reports', 'add', form.code]">
+                <span [innerHTML]="form.icon | resourceIcon"></span>
+                <span class="content">{{ form.title }}</span>
+              </a>
+            </li>
+          </ul>
           <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" mmAuth="can_bulk_delete_reports" (click)="setSelect(true)" [ngClass]="{'mm-icon-disabled': !actionBar?.left?.hasResults}">
             <span class="fa fa-check-circle"></span>
             <p>{{'select.mode.start' | translate}}</p>
