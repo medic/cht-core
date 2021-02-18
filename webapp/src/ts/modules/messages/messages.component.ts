@@ -149,7 +149,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   updateConversations({merge = false} = {}) {
-    console.log(this.destroyed, 'destroyed');
     return this.messageContactService
       .getList()
       .then((conversations = []) => {
