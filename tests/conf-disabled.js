@@ -68,7 +68,6 @@ const baseConfig = {
     }
   },
   jasmineNodeOpts: {
-    defaultTimeoutInterval: 10000,
     // makes default jasmine reporter not display dots for every spec
     print: () => {}
   },
