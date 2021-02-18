@@ -30,7 +30,6 @@ const baseConfig = {
       'e2e/release/**/*.js',
       'e2e/sentinel/**/*.js',
       'e2e/transitions/**/*.js',
-      'e2e/users/**/*.js',
       'e2e/service-worker.js',
       'e2e/create-meta-db.js',
       'e2e/docs-by-replication-key-view.js',
@@ -46,6 +45,7 @@ const baseConfig = {
       'e2e/content-security-policy.js',
       'e2e/bulk-delete.js',
       'e2e/sms-gateway.js',
+      'e2e/users/**/*.js',
     ],
     // performance: 'performance/**/*.js'
   },
