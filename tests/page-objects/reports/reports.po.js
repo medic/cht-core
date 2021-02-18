@@ -49,11 +49,11 @@ module.exports = {
     await helper.waitElementToPresentNative(module.exports.reportSummary(), 3000);
     return report;
   },
-  filterByDate: (startDate, endDate) => {
-    dateFilter.click();
-    datePickerStart.click().clear().sendKeys(startDate.format('MM/DD/YYYY'));
-    datePickerEnd.click().clear().sendKeys( endDate.format('MM/DD/YYYY') + protractor.Key.ENTER);
-    element(by.css('#freetext')).click(); // blur the datepicker
+  filterByDate: async (startDate, endDate) => {
+    await dateFilter.click();
+    await datePickerStart.click().clear().sendKeys(startDate.format('MM/DD/YYYY'));
+    await datePickerEnd.click().clear().sendKeys( endDate.format('MM/DD/YYYY') + protractor.Key.ENTER);
+    await element(by.css('#freetext')).click(); // blur the datepicker
   },
   expectReportsToExist: uuids => {
     browser.wait(
