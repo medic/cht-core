@@ -127,7 +127,7 @@ module.exports = {
 
   expandSelectionNative: async () => {
     await helper.clickElementNative(element(by.css(itemSummary)));
-    await helper.waitElementToBeVisible(element(by.css(reportBodyDetails)), 3000);
+    await helper.waitElementToBeVisible(element(by.css(reportBodyDetails)));
   },
 
   selectAll: () => {
@@ -139,7 +139,7 @@ module.exports = {
 
   selectAllNative: async () => {
     await helper.clickElementNative(element(by.css('.action-container .select-all')));
-    await helper.waitElementToBeVisibleNative(element(by.css('#reports-content .selection-count > span')), 3000);
+    await helper.waitElementToBeVisibleNative(element(by.css('#reports-content .selection-count > span')));
     expect(await element.all(by.css(reportBody)).count()).toBe(3);
   },
 
@@ -169,10 +169,7 @@ module.exports = {
   selectReportNative: async (savedUuids) => {
     const checkbox = element(by.css(`#reports-list li[data-record-id="${savedUuids[0]}"] input[type="checkbox"]`));
     await helper.clickElementNative(checkbox);
-    await helper.waitElementToBeVisibleNative(
-      element(by.css('#reports-content .selection-count > span:first-child')),
-      3000
-    );
+    await helper.waitElementToBeVisibleNative(element(by.css('#reports-content .selection-count > span:first-child')));
     expect(await element.all(by.css(reportBody)).count()).toBe(1);
     const textContent = element(by.css('#reports-content .report-body .item-summary .sender .name'));
     expect(await helper.getTextFromElementNative(textContent)).toBe('Sharon');
