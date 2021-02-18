@@ -116,6 +116,8 @@ module.exports = {
       .filter((row) => row.getText().then(text => text.includes(contactName)))
       .first();
     await helper.waitUntilReadyNative(peopleRow);
+    // this element shows up underneath the actionbar, so the actionbar can intercept the click
+    await browser.executeScript(`arguments[0].scrollIntoView({block: "center"});`, peopleRow);
     await peopleRow.click();
     await helper.waitUntilReadyNative(deleteContact);
     await deleteContact.click();

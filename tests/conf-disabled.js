@@ -48,6 +48,7 @@ const baseConfig = {
       'e2e/login/purge.spec.js',
       'e2e/bulk-delete.js',
       'e2e/login/db-sync-filter.spec.js',
+      'e2e/sms-gateway.js',
     ],
     // performance: 'performance/**/*.js'
   },

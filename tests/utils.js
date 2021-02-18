@@ -528,8 +528,8 @@ module.exports = {
     }),
 
   seedTestData: (userContactDoc, documents) => {
-    return Promise
-      .all(documents.map(module.exports.saveDoc))
+    return module.exports
+      .saveDocs(documents)
       .then(() => module.exports.getDoc(constants.USER_CONTACT_ID))
       .then(existingContactDoc => {
         if (userContactDoc) {
