@@ -49,7 +49,7 @@ const getRecipient = doc => doc.tasks[0].messages[0].to;
 
 describe('message duplicates', () => {
   afterAll(() => utils.revertDb());
-  afterEach(() => utils.revertSettings(true));
+  afterEach(() => utils.revertSettings());
 
   it('should mark as duplicate after 5 retries by default', () => {
     const message1 = {
@@ -157,6 +157,9 @@ describe('message duplicates', () => {
       .then(ids => utils.getDocs(ids))
       .then(docs => {
         docs.forEach(doc => {
+          if (doc.tasks.length > 1) {
+            console.log(doc);
+          }
           chai.expect(doc.tasks.length).to.equal(1);
           chai.expect(doc.tasks[0].messages.length).to.equal(1);
 
