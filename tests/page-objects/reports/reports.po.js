@@ -176,8 +176,7 @@ module.exports = {
       async () => await helper.getTextFromElementNative(textContent) === 'Sharon',
       5000
     );
-    const report = element(by.css(reportBodyDetails));
-    expect(helper.waitElementToPresentNative(report)).toBeFalsy();
+    expect(await element(by.css(reportBodyDetails)).isPresent()).toBeFalsy();
   },
 
   startSelectMode: (savedUuids)=> {
