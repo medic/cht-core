@@ -587,10 +587,10 @@ module.exports = {
   /**
    * Reverts the db's settings and documents
    *
-   * @param      {Array}    except          documents to ignore, see deleteAllDocs
-   * @param      {Boolean|String}  ignoreRefresh if false, will wait for reload modal and reload. if true, will tail api logs
-   *                                      and resolve when new settings are loaded.
-   * @return     {Promise}  promise
+   * @param  {Array}            except       documents to ignore, see deleteAllDocs
+   * @param  {Boolean|String}  ignoreRefresh if false, will wait for reload modal and reload. if true, will tail api
+   *                                         logs and resolve when new settings are loaded.
+   * @return {Promise}
    */
   revertDb: revertDb,
 
