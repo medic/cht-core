@@ -75,7 +75,7 @@ module.exports = {
   },
 
   collapseSelectionNative: async () => {
-    await element(by.css(itemSummary)).click();
+    await helper.clickElementNative(element(by.css(itemSummary)));
     expect(await element(by.css(reportBodyDetails)).isPresent()).toBeFalsy();
   },
 
@@ -93,13 +93,11 @@ module.exports = {
   },
 
   deleteSelectedReportsNative: async (savedUuids) => {
-    await element(by.css('.action-container .detail-actions .delete-all')).click();
+    await helper.clickElementNative(element(by.css('.action-container .detail-actions .delete-all')));
     const confirmButton = element(by.css('.btn.submit.btn-danger'));
-    await helper.waitElementToBeClickable(confirmButton, 5000);
-    await confirmButton.click();
-    await helper.waitElementToBeClickable(confirmButton, 5000);
-    await confirmButton.click();
-    await helper.waitElementToPresent(element(by.css('#reports-list li')));
+    await helper.clickElementNative(confirmButton);
+    await helper.clickElementNative(confirmButton);
+    await helper.waitElementToPresentNative(element(by.css('#reports-list li')));
     // make sure the reports are deleted
     expect(await reportsByUUID(savedUuids[1]).count()).toBe(1);
   },
@@ -113,7 +111,7 @@ module.exports = {
   },
 
   deselectAllNative: async () => {
-    await element(by.css('.action-container .deselect-all')).click();
+    await helper.clickElementNative(element(by.css('.action-container .deselect-all')));
     expect(await element(by.css('#reports-content .selection-count > span')).isPresent()).toBeFalsy();
     expect(await element.all(by.css(reportBody)).count()).toBe(0);
   },
@@ -124,8 +122,8 @@ module.exports = {
   },
 
   expandSelectionNative: async () => {
-    await element(by.css(itemSummary)).click();
-    await helper.waitElementToBeVisible(element(by.css(reportBodyDetails)), 3000);
+    await helper.clickElementNative(element(by.css(itemSummary)));
+    await helper.waitElementToBeVisible(element(by.css(reportBodyDetails)));
   },
 
   selectAll: () => {
@@ -136,8 +134,8 @@ module.exports = {
   },
 
   selectAllNative: async () => {
-    await element(by.css('.action-container .select-all')).click();
-    await helper.waitElementToBeVisible(element(by.css('#reports-content .selection-count > span')), 3000);
+    await helper.clickElementNative(element(by.css('.action-container .select-all')));
+    await helper.waitElementToBeVisibleNative(element(by.css('#reports-content .selection-count > span')));
     expect(await element.all(by.css(reportBody)).count()).toBe(3);
   },
 
@@ -150,8 +148,8 @@ module.exports = {
 
   selectSeveralReportsNative: async (savedUuids) => {
     const checkCss = 'input[type="checkbox"]';
-    await reportsByUUID(savedUuids[0]).first().element(by.css(checkCss)).click();
-    await reportsByUUID(savedUuids[2]).first().element(by.css(checkCss)).click();
+    await helper.clickElementNative(reportsByUUID(savedUuids[0]).first().element(by.css(checkCss)));
+    await helper.clickElementNative(reportsByUUID(savedUuids[2]).first().element(by.css(checkCss)));
     await browser.sleep(1000);
     expect(await element.all(by.css(reportBody)).count()).toBe(2);
   },
@@ -165,12 +163,17 @@ module.exports = {
   },
 
   selectReportNative: async (savedUuids) => {
-    await element(by.css('#reports-list li[data-record-id="' + savedUuids[0] + '"] input[type="checkbox"]')).click();
-    await helper.waitElementToBeVisible(element(by.css('#reports-content .selection-count > span:first-child')), 3000);
+    const checkbox = element(by.css(`#reports-list li[data-record-id="${savedUuids[0]}"] input[type="checkbox"]`));
+    await helper.clickElementNative(checkbox);
+    await helper.waitElementToBeVisibleNative(element(by.css('#reports-content .selection-count > span:first-child')));
     expect(await element.all(by.css(reportBody)).count()).toBe(1);
-    expect(await element(by.css('#reports-content .report-body .item-summary .sender .name')).getText()).toBe('Sharon');
-    const reportElm = element(by.css(reportBodyDetails));
-    expect(await reportElm.isPresent()).toBeFalsy();
+
+    const textContent = element(by.css('#reports-content .report-body .item-summary .sender .name'));
+    await browser.wait(
+      async () => await helper.getTextFromElementNative(textContent) === 'Sharon',
+      5000
+    );
+    expect(await element(by.css(reportBodyDetails)).isPresent()).toBeFalsy();
   },
 
   startSelectMode: (savedUuids)=> {
@@ -197,7 +200,7 @@ module.exports = {
   },
 
   stopSelectModeNative: async (savedUuids)=> {
-    await element(by.css('.action-container .select-mode-stop')).click();
+    await helper.clickElementNative(element(by.css('.action-container .select-mode-stop')));
     const checkbox = reportsByUUID(savedUuids[0]).first().element(by.css('input[type="checkbox"]'));
     await helper.waitElementToDisappear(checkbox.locator());
   },

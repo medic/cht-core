@@ -1,4 +1,5 @@
 const utils = require('../utils');
+const helper = require('../helper');
 const commonElements = require('../page-objects/common/common.po.js');
 const reports = require('../page-objects/reports/reports.po');
 
@@ -56,6 +57,7 @@ describe('Bulk delete reports', () => {
   ];
 
   const savedUuids = [];
+
   beforeEach(async () => {
     const results = await utils.saveDocs(docs);
     results.forEach(result => {
@@ -65,7 +67,7 @@ describe('Bulk delete reports', () => {
 
   afterEach(utils.afterEach);
 
-  it('reports', async () => {
+  it('should select, deselect and delete only selected reports', async () => {
     await commonElements.goToReportsNative();
     await reports.startSelectModeNative(savedUuids);
     await reports.stopSelectModeNative(savedUuids);
@@ -75,7 +77,7 @@ describe('Bulk delete reports', () => {
     await reports.expandSelectionNative();
     await reports.collapseSelectionNative();
     // deselect
-    await reports.deselectReport().click();
+    await helper.clickElementNative(reports.deselectReport());
     await reports.selectAllNative();
     await reports.deselectAllNative();
     await reports.selectSeveralReportsNative(savedUuids);
