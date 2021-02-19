@@ -526,7 +526,7 @@ module.exports = {
   updateSettings: (updates, ignoreRefresh = false) => {
     const watcher = ignoreRefresh &&
                     Object.keys(updates).length &&
-                    waitForSettingsUpdateLogs();
+                    waitForSettingsUpdateLogs(ignoreRefresh);
 
     return updateSettings(updates).then(() => {
       if (!ignoreRefresh) {
