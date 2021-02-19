@@ -23,8 +23,7 @@ const baseConfig = {
   suites: {
     // e2e:'e2e/**/*.js',
     e2e: [
-      'e2e/api/**/*.js',
-      'e2e/forms/**/*.js',
+      'e2e/api/**/*.js',     
       'e2e/login/**/*.js',
       'e2e/navigation/*.js',
       'e2e/release/**/*.js',
@@ -44,6 +43,7 @@ const baseConfig = {
       'e2e/target-aggregates.spec.js',
       'e2e/contacts/**/*.js',
       'e2e/users/**/*.js',
+      'e2e/forms/**/*.js',
     ],
     // performance: 'performance/**/*.js'
   },
