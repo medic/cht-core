@@ -86,7 +86,10 @@ describe('generate-xform service', () => {
       runTest('simple', 'some error')
         .then(() => done(new Error('expected error to be thrown')))
         .catch(err => {
-          expect(err.message).to.equal(`Error transforming xml. xsltproc returned code "100", and signal "undefined"`);
+          expect(err.message).to.equal(
+            'Error transforming xml. xsltproc returned code "100", and signal "undefined". ' +
+            'xsltproc stderr output:\nsome error'
+          );
           done();
         });
     });

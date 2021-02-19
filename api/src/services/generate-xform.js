@@ -29,9 +29,11 @@ const transform = (formXml, stylesheet) => {
     xsltproc.stdin.end();
     xsltproc.on('close', (code, signal) => {
       if (code !== 0 || signal || stderr.length) {
-        logger.error('xsltproc stderr output: ');
-        logger.error(stderr);
-        return reject(new Error(`Error transforming xml. xsltproc returned code "${code}", and signal "${signal}"`));
+        let errorMsg = `Error transforming xml. xsltproc returned code "${code}", and signal "${signal}"`;
+        if (stderr.length) {
+          errorMsg += '. xsltproc stderr output:\n' + stderr;
+        }
+        return reject(new Error(errorMsg));
       }
       if (!stdout) {
         return reject(new Error(`Error transforming xml. xsltproc returned no error but no output.`));
