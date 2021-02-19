@@ -1,7 +1,7 @@
 const openrosaFormList = require('openrosa-formlist');
 const serverUtils = require('../server-utils');
 const formsService = require('../services/forms');
-const { _generate } = require('../services/generate-xform');
+const { generate } = require('../services/generate-xform');
 
 const XML_RESPONSE_HEADERS = {
   'Content-Type': 'text/xml; charset=utf-8',
@@ -97,7 +97,7 @@ module.exports = {
       .catch(err => serverUtils.error(err, req, res));
   },
   validate: (req, res) => {
-    return _generate(req.body)
+    return generate(req.body)
       .then(form => res.json({ok: true}))
       .catch(err => res.status(400).json({error: err.message}))
   },

@@ -58,7 +58,7 @@ describe('generate-xform service', () => {
       };
       sinon.stub(childProcess, 'spawn').returns(spawned);
       return setup(dirname).then(files => {
-        const generate = service._generate(files.xform);
+        const generate = service.generate(files.xform);
         if (err) {
           spawned.stderr.on.args[0][1](err);
           spawned.on.args[0][1](100);
@@ -124,11 +124,11 @@ describe('generate-xform service', () => {
         'form.html': { data: Buffer.from(currentForm) },
         'model.xml': { data: Buffer.from(currentModel) }
       } });
-      sinon.stub(service, '_generate').resolves({ form: currentForm, model: currentModel });
+      sinon.stub(service, 'generate').resolves({ form: currentForm, model: currentModel });
       sinon.stub(db.medic, 'put');
       return service.update('form:exists').then(() => {
-        expect(service._generate.callCount).to.equal(1);
-        expect(service._generate.args[0][0]).to.equal(formXml);
+        expect(service.generate.callCount).to.equal(1);
+        expect(service.generate.args[0][0]).to.equal(formXml);
         expect(db.medic.put.callCount).to.equal(0);
       });
     });
@@ -140,7 +140,7 @@ describe('generate-xform service', () => {
       sinon.stub(db.medic, 'get').resolves({ _attachments: {
         xml: { data: Buffer.from(formXml) }
       } });
-      sinon.stub(service, '_generate').resolves({ form: newForm, model: newModel });
+      sinon.stub(service, 'generate').resolves({ form: newForm, model: newModel });
       sinon.stub(db.medic, 'put');
       return service.update('form:exists').then(() => {
         expect(db.medic.put.callCount).to.equal(1);
@@ -159,7 +159,7 @@ describe('generate-xform service', () => {
         'form.html': { data: Buffer.from(currentForm) },
         'model.xml': { data: Buffer.from(currentModel) }
       } });
-      sinon.stub(service, '_generate').resolves({ form: newForm, model: newModel });
+      sinon.stub(service, 'generate').resolves({ form: newForm, model: newModel });
       sinon.stub(db.medic, 'put');
       return service.update('form:exists').then(() => {
         expect(db.medic.put.callCount).to.equal(1);
@@ -223,7 +223,7 @@ describe('generate-xform service', () => {
           'model.xml': { data: Buffer.from(currentModel) }
         } }
       } ] });
-      sinon.stub(service, '_generate').resolves({ form: currentForm, model: currentModel });
+      sinon.stub(service, 'generate').resolves({ form: currentForm, model: currentModel });
       sinon.stub(db.medic, 'bulkDocs');
       return service.updateAll().then(() => {
         expect(db.medic.query.callCount).to.equal(1);
@@ -249,7 +249,7 @@ describe('generate-xform service', () => {
           }
         }
       ] });
-      sinon.stub(service, '_generate').resolves({ form: newForm, model: newModel });
+      sinon.stub(service, 'generate').resolves({ form: newForm, model: newModel });
       sinon.stub(db.medic, 'bulkDocs').resolves([ { error: 'some error' } ]);
       service.updateAll()
         .then(() => done(new Error('expected error to be thrown')))
@@ -289,7 +289,7 @@ describe('generate-xform service', () => {
           }
         }
       ] });
-      sinon.stub(service, '_generate')
+      sinon.stub(service, 'generate')
         .onCall(0).resolves({ form: currentForm, model: currentModel })
         .onCall(1).resolves({ form: newForm, model: newModel });
       sinon.stub(db.medic, 'bulkDocs').resolves([ { ok: true } ]);
