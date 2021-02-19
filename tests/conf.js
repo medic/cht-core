@@ -118,7 +118,6 @@ const runAndLog = (msg, func) => {
 };
 
 const prepServices = async () => {
-  let apiReady;
   if (constants.IS_TRAVIS) {
     console.log('On travis, waiting for horti to first boot api');
     // Travis' horti will be installing and then deploying api and sentinel, and those logs are
@@ -127,16 +126,15 @@ const prepServices = async () => {
     // correct logs for testing
     await listenForApi();
     console.log('Horti booted API, rebooting under our logging structure');
-    apiReady = await request.post('http://localhost:31337/all/restart');
+    await request.post('http://localhost:31337/all/restart');
   } else {
     // Locally we just need to start them and can do so straight away
-    apiReady = await request.post('http://localhost:31337/all/start');
+    await request.post('http://localhost:31337/all/start');
   }
 
   await listenForApi();
   await runAndLog('Settings setup', setupSettings);
   await runAndLog('User contact doc setup', utils.setUserContactDoc);
-  return apiReady;
 };
 
 const apiRetry = () => {
@@ -150,8 +148,7 @@ const apiRetry = () => {
 const listenForApi = async () => {
   console.log('Checking API');
   try {
-    const result =  await utils.request({ path: '/api/info' });
-    return result;
+    await utils.request({ path: '/api/info' });
   } catch(err) {
     console.log('API check failed, trying again in 1 second');
     console.log(err.message);
