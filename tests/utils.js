@@ -518,18 +518,20 @@ module.exports = {
   /**
    * Update settings and refresh if required
    *
-   * @param      {Object}   updates  Object containing all updates you wish to
-   *                                 make
-   * @param      {Boolean}  ignoreRefresh  don't bother refreshing
-   * @return     {Promise}  completion promise
+   * @param {Object}         updates  Object containing all updates you wish to
+   *                                  make
+   * @param  {Boolean|String} ignoreReload if false, will wait for reload modal and reload. if truthy, will tail
+   *                                       service logs and resolve when new settings are loaded. By default, watches
+   *                                       api logs, if value equals 'sentinel', will watch sentinel logs instead.
+   * @return {Promise}        completion promise
    */
-  updateSettings: (updates, ignoreRefresh = false) => {
-    const watcher = ignoreRefresh &&
+  updateSettings: (updates, ignoreReload) => {
+    const watcher = ignoreReload &&
                     Object.keys(updates).length &&
-                    waitForSettingsUpdateLogs(ignoreRefresh);
+                    waitForSettingsUpdateLogs(ignoreReload);
 
     return updateSettings(updates).then(() => {
-      if (!ignoreRefresh) {
+      if (!ignoreReload) {
         return refreshToGetNewSettings();
       }
       return watcher && watcher.promise;
@@ -538,8 +540,9 @@ module.exports = {
   /**
    * Revert settings and refresh if required
    *
-   * @param      {Boolean}  ignoreRefresh  don't bother refreshing
-   * @return     {Promise}  completion promise
+   * @param {Boolean|String} ignoreRefresh if false, will wait for reload modal and reload. if true, will tail api logs
+   *                                       and resolve when new settings are loaded.
+   * @return {Promise}       completion promise
    */
   revertSettings: ignoreRefresh => {
     const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
@@ -584,8 +587,9 @@ module.exports = {
   /**
    * Reverts the db's settings and documents
    *
-   * @param      {Array}  except         documents to ignore, see deleteAllDocs
-   * @param      {Boolean}  ignoreRefresh  don't bother refreshing
+   * @param      {Array}    except          documents to ignore, see deleteAllDocs
+   * @param      {Boolean|String}  ignoreRefresh if false, will wait for reload modal and reload. if true, will tail api logs
+   *                                      and resolve when new settings are loaded.
    * @return     {Promise}  promise
    */
   revertDb: revertDb,
