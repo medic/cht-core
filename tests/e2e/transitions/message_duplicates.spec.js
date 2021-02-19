@@ -37,10 +37,9 @@ const getPostOpts = (path, body) => ({
 });
 
 const postMessages = (messages) => {
-  const watchChanges = apiUtils.getApiSmsChanges(messages);
   return Promise
     .all([
-      watchChanges,
+      apiUtils.getApiSmsChanges(messages),
       utils.request(getPostOpts('/api/sms', { messages: messages }))
     ])
     .then(([changes]) => changes.map(change => change.id));
@@ -50,7 +49,7 @@ const getRecipient = doc => doc.tasks[0].messages[0].to;
 
 describe('message duplicates', () => {
   afterAll(() => utils.revertDb());
-  afterEach(() => utils.revertSettings());
+  afterEach(() => utils.revertSettings(true));
 
   it('should mark as duplicate after 5 retries by default', () => {
     const message1 = {
@@ -121,7 +120,7 @@ describe('message duplicates', () => {
 
           const recipient = getRecipient(doc);
           const task = doc.tasks[0];
-          // message1 is duplicated (7x), message2 not duplicated (3x)
+          // message1 is duplicated (7x), message2 not duplicate (3x)
           if (recipient === message1.from) {
             chai.expect(task.messages[0]).to.include({ message: 'Await further instructions' });
             chai.expect(task.state).to.equal('duplicate');
@@ -158,10 +157,6 @@ describe('message duplicates', () => {
       .then(ids => utils.getDocs(ids))
       .then(docs => {
         docs.forEach(doc => {
-          if (doc.tasks.length > 1) {
-            // this test has been flaking on GHA only (no repro locally)
-            console.log(JSON.stringify(doc, null, 2));
-          }
           chai.expect(doc.tasks.length).to.equal(1);
           chai.expect(doc.tasks[0].messages.length).to.equal(1);
 
