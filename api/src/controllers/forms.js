@@ -98,7 +98,7 @@ module.exports = {
   },
   validate: (req, res) => {
     return generate(req.body)
-      .then(form => res.json({ok: true}))
-      .catch(err => res.status(400).json({error: err.message}))
+      .then(() => res.json({ok: true}))
+      .catch(err => res.status(400).json({error: err.message}));
   },
 };
