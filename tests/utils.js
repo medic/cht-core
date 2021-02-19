@@ -505,12 +505,15 @@ module.exports = {
    * @return     {Promise}  completion promise
    */
   updateSettings: (updates, ignoreRefresh = false) => {
-    const watcher = ignoreRefresh && module.exports.waitForLogs('api.e2e.log', /Settings updated/);
+    const watcher = ignoreRefresh &&
+                    Object.keys(updates).length &&
+                    module.exports.waitForLogs('api.e2e.log', /Settings updated/);
+
     return updateSettings(updates).then(() => {
       if (!ignoreRefresh) {
         return refreshToGetNewSettings();
       }
-      return watcher.promise;
+      return watcher && watcher.promise;
     });
   },
   /**
