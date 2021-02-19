@@ -104,7 +104,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config)
+        .updateSettings(config, true)
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)

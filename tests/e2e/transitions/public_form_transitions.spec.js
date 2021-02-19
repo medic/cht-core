@@ -232,9 +232,10 @@ const expectTransitions = (infodoc, ...transitions) => {
 
 const processSMS = (settings) => {
   let ids;
+  const watchChanges = apiUtils.getApiSmsChanges(messages);
   return utils.updateSettings(settings, true)
     .then(() => Promise.all([
-      apiUtils.getApiSmsChanges(messages),
+      watchChanges,
       utils.request(getPostOpts('/api/sms', { messages: messages }))
     ]))
     .then(([ changes ]) => {

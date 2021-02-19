@@ -75,13 +75,12 @@ describe('bulk-docs handler', () => {
       .then(() => utils.createUsers(users));
   });
 
-  afterAll(done =>
+  afterAll(() =>
     utils
       .revertDb()
-      .then(() => utils.deleteUsers(users))
-      .then(done));
+      .then(() => utils.deleteUsers(users)));
 
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
+  afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_bulk_docs',

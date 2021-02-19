@@ -164,13 +164,12 @@ describe('db-doc handler', () => {
       .then(() => utils.saveDocs([...clinics, ...patients]));
   });
 
-  afterAll(done =>
+  afterAll(() =>
     utils
       .revertDb()
-      .then(() => utils.deleteUsers(users))
-      .then(done));
+      .then(() => utils.deleteUsers(users)));
 
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
+  afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
 
   beforeEach(() => {
     offlineRequestOptions = { auth: { username: 'offline', password }, };

@@ -484,7 +484,7 @@ describe('Users API', () => {
         },
       };
     });
-    afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb(['PARENT_PLACE'], [])));
+    afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb(['PARENT_PLACE'], true)));
 
     const expectCorrectUser = (user, extra = {}) => {
       const defaultProps = {

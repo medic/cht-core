@@ -73,14 +73,13 @@ describe('bulk-get handler', () => {
       .then(() => utils.createUsers(users));
   });
 
-  afterAll(done =>
+  afterAll(() =>
     utils
       .revertDb()
       .then(() => utils.deleteUsers(users))
-      .then(done)
   );
 
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
+  afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_bulk_get',

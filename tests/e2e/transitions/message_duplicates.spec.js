@@ -37,9 +37,10 @@ const getPostOpts = (path, body) => ({
 });
 
 const postMessages = (messages) => {
+  const watchChanges = apiUtils.getApiSmsChanges(messages);
   return Promise
     .all([
-      apiUtils.getApiSmsChanges(messages),
+      watchChanges,
       utils.request(getPostOpts('/api/sms', { messages: messages }))
     ])
     .then(([changes]) => changes.map(change => change.id));

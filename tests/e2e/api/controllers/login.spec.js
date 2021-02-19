@@ -85,7 +85,7 @@ describe('login', () => {
       },
     };
   });
-  afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb(['PARENT_PLACE'], [])));
+  afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb(['PARENT_PLACE'], true)));
 
   describe('default login', () => {
     it('should fail with no data', () => {

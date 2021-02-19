@@ -242,12 +242,11 @@ describe('changes handler', () => {
     /^org.couchdb.user/,
   ];
 
-  beforeAll(done => {
+  beforeAll(() => {
     // Bootstrap users
     return utils
       .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users, true))
-      .then(done);
+      .then(() => utils.createUsers(users, true));
   });
 
   afterAll(done =>
@@ -258,8 +257,8 @@ describe('changes handler', () => {
       .then(() => utils.deleteUsers(users, true))
       .then(done));
 
-  beforeEach(done => getCurrentSeq().then(done));
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP).then(done));
+  beforeEach(() => getCurrentSeq());
+  afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
 
   describe('requests', () => {
     it('should allow DB admins to POST to _changes', () => {
