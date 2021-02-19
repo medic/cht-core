@@ -33,7 +33,7 @@ const baseConfig = {
       'e2e/docs-by-replication-key-view.js',
       'e2e/submit-enketo-form.js',
       'e2e/forms/submit-z-score-form.spec.js',
-      'tests/e2e/contact-summary.js',
+      'e2e/contact-summary.js',
       'e2e/forms/submit-photo-upload-form.spec.js',
       'e2e/contacts/add-new-health-center.js',
       'e2e/contacts/add-new-person.js',
@@ -48,6 +48,7 @@ const baseConfig = {
       'e2e/login/purge.spec.js',
       'e2e/bulk-delete.js',
       'e2e/login/db-sync-filter.spec.js',
+      'e2e/sms-gateway.js',
     ],
     // performance: 'performance/**/*.js'
   },

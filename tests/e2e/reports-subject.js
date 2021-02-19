@@ -3,9 +3,11 @@ const commonElements = require('../page-objects/common/common.po.js');
 const reportsTab = require('../page-objects/reports/reports.po');
 const helper = require('../helper');
 const moment = require('moment');
+const sentinelUtils = require('./sentinel/utils');
 
 describe('Reports Summary', () => {
-  const PHONE = '+64271234567';
+  const PHONE_CAROL = '+64271234567';
+  const PHONE_JOHN = '+40788232323';
 
   // contacts
   const DISTRICT = {
@@ -42,11 +44,23 @@ describe('Reports Summary', () => {
     _id: 'carol-contact',
     reported_date: 1,
     type: 'person',
-    phone: PHONE,
+    phone: PHONE_CAROL,
     name: 'Carol Carolina',
     parent: { _id: BOB_PLACE._id, parent: { _id: HEALTH_CENTER._id, parent: { _id: DISTRICT._id } } },
     patient_id: '05946',
     sex: 'f',
+    date_of_birth: 1462333250374
+  };
+
+  const JOHN = {
+    _id: 'john-contact',
+    reported_date: 1,
+    type: 'person',
+    phone: PHONE_JOHN,
+    name: 'Johnny Silverhand',
+    parent: { _id: TAG_PLACE._id, parent: { _id: HEALTH_CENTER._id, parent: { _id: DISTRICT._id } } },
+    patient_id: '05947',
+    sex: 'm',
     date_of_birth: 1462333250374
   };
 
@@ -61,11 +75,22 @@ describe('Reports Summary', () => {
     date_of_birth: 1462333250374
   };
 
+  const ROBERT = {
+    _id: 'robert-patient',
+    reported_date: 1,
+    type: 'person',
+    name: 'Robert Linder',
+    parent: { _id: BOB_PLACE._id, parent: { _id: HEALTH_CENTER._id, parent: { _id: DISTRICT._id } } },
+    patient_id: '654321',
+    sex: 'm',
+    date_of_birth: 1462333250374
+  };
+
   const GEORGE = {
     name: 'George'
   };
 
-  const CONTACTS = [DISTRICT, HEALTH_CENTER, BOB_PLACE, TAG_PLACE, CAROL, MARIA];
+  const CONTACTS = [DISTRICT, HEALTH_CENTER, BOB_PLACE, TAG_PLACE, CAROL, MARIA, JOHN, ROBERT];
   const CONFIG = {
     transitions: {
       accept_patient_reports: {
@@ -235,27 +260,18 @@ describe('Reports Summary', () => {
     return utils.saveDoc(report);
   };
 
-  /**
-   * Wait till report was seen by sentinel
-   * sometimes, sentinel processes the report after the report is set as selected, but before the report-content
-   * controller change feed listener is set up. Result is that the report-content is never updated with the new data
-   * to counter this, we reload the page after we wait for the change for the first time.
-   * @param reportID
-   * @returns {promise.Promise<unknown>}
-   */
-  const waitForSentinel = (reportID) => {
-    return browser
-      .wait(
-        () => {
-          const locator = by.cssContainingText('#reports-content .item-summary .sender .phone', CAROL.phone);
-          return element(locator).isPresent();
-        },
-
-        10000
-      )
-      .catch(() => reportsTab.loadReport(reportID));
+  const waitElementTextEquals = (elementGetter, expectedText) => {
+    return browser.wait(async () => {
+      try {
+        const element = await elementGetter();
+        const text = await helper.getTextFromElementNative(element);
+        return text === expectedText;
+      } catch (err) {
+        // we expect these items to be redrawn, so stale element reference errors are expected
+        return false;
+      }
+    }, 5000);
   };
-
   /**
    * Since the LHS might be refreshed, random StaleElementReferenceErrors were frequent enough,
    * to do something about them.
@@ -291,13 +307,13 @@ describe('Reports Summary', () => {
         _id: 'REF_REF_V1',
         form: 'RR',
         type: 'data_record',
-        from: PHONE,
+        from: PHONE_CAROL,
         fields: {
           patient_id: MARIA.patient_id
         },
         sms_message: {
           message_id: 23,
-          from: PHONE,
+          from: PHONE_CAROL,
           message: `1!RR!${MARIA.patient_id}`,
           form: 'RR',
           locale: 'en'
@@ -306,12 +322,13 @@ describe('Reports Summary', () => {
       };
 
       await saveReport(REPORT);
+      await sentinelUtils.waitForSentinel([REPORT._id]);
       await commonElements.goToReportsNative();
+
       const report = await reportsTab.loadReport(REPORT._id);
-      await waitForSentinel(REPORT._id);
+      // LHS
       expect(await getElementText(reportsTab.subject(report))).toBe(MARIA.name);
       expect(await getElementText(reportsTab.formName(report))).toBe('REF_REF');
-
       //shows subject lineage breadcrumbs
       await testLineageList(['TAG Place', 'Health Center', 'District']);
 
@@ -331,13 +348,13 @@ describe('Reports Summary', () => {
         _id: 'REF_REF_V2',
         form: 'RR',
         type: 'data_record',
-        from: PHONE,
+        from: PHONE_CAROL,
         fields: {
           patient_id: MARIA._id
         },
         sms_message: {
           message_id: 23,
-          from: PHONE,
+          from: PHONE_CAROL,
           message: `1!RR!${MARIA._id}`,
           form: 'RR',
           locale: 'en'
@@ -346,12 +363,13 @@ describe('Reports Summary', () => {
       };
 
       await saveReport(REPORT);
+      await sentinelUtils.waitForSentinel([REPORT._id]);
       await commonElements.goToReportsNative();
+
+      // LHS
       const report = await reportsTab.loadReport(REPORT._id);
-      await waitForSentinel(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe(MARIA.name);
       expect(await getElementText(reportsTab.formName(report))).toBe('REF_REF');
-
       //shows subject lineage breadcrumbs
       await testLineageList(['TAG Place', 'Health Center', 'District']);
 
@@ -370,13 +388,13 @@ describe('Reports Summary', () => {
         _id: 'REF_REF_I',
         form: 'RR',
         type: 'data_record',
-        from: PHONE,
+        from: PHONE_CAROL,
         fields: {
           patient_id: '111111'
         },
         sms_message: {
           message_id: 23,
-          from: PHONE,
+          from: PHONE_CAROL,
           message: `1!RR!${MARIA.patient_id}`,
           form: 'RR',
           locale: 'en'
@@ -385,12 +403,13 @@ describe('Reports Summary', () => {
       };
 
       await saveReport(REPORT);
+      await sentinelUtils.waitForSentinel([REPORT._id]);
       await commonElements.goToReportsNative();
+
+      // LHS
       const report = await reportsTab.loadReport(REPORT._id);
-      await waitForSentinel(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe('Unknown subject');
       expect(await getElementText(reportsTab.formName(report))).toBe('REF_REF');
-
       //shows subject lineage breadcrumbs
       await testLineageList(['Bob Place', 'Health Center', 'District']);
 
@@ -409,13 +428,13 @@ describe('Reports Summary', () => {
         _id: 'NAM_NAM_V',
         form: 'NN',
         type: 'data_record',
-        from: PHONE,
+        from: PHONE_CAROL,
         fields: {
           patient_name: GEORGE.name
         },
         sms_message: {
           message_id: 23,
-          from: PHONE,
+          from: PHONE_CAROL,
           message: `1!NN!${GEORGE.name}`,
           form: 'NN',
           locale: 'en'
@@ -424,12 +443,13 @@ describe('Reports Summary', () => {
       };
 
       await saveReport(REPORT);
+      await sentinelUtils.waitForSentinel(REPORT._id);
       await commonElements.goToReportsNative();
+
+      // LHS
       const report = await reportsTab.loadReport(REPORT._id);
-      await waitForSentinel(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe(GEORGE.name);
       expect(await getElementText(reportsTab.formName(report))).toBe('NAM_NAM');
-
       //shows subject lineage breadcrumbs
       await testLineageList(['Bob Place', 'Health Center', 'District']);
 
@@ -448,7 +468,7 @@ describe('Reports Summary', () => {
         _id: 'NAM_NAM_I',
         form: 'NN',
         type: 'data_record',
-        from: PHONE,
+        from: PHONE_CAROL,
         errors: [
           {
             fields: 'patient_name',
@@ -460,7 +480,7 @@ describe('Reports Summary', () => {
         },
         sms_message: {
           message_id: 23,
-          from: PHONE,
+          from: PHONE_CAROL,
           message: `1!RR!${MARIA._id}`,
           form: 'NN',
           locale: 'en'
@@ -469,12 +489,13 @@ describe('Reports Summary', () => {
       };
 
       await saveReport(REPORT);
+      await sentinelUtils.waitForSentinel([REPORT._id]);
       await commonElements.goToReportsNative();
+
+      // LHS
       const report = await reportsTab.loadReport(REPORT._id);
-      await waitForSentinel(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe('Unknown subject');
       expect(await getElementText(reportsTab.formName(report))).toBe('NAM_NAM');
-
       //shows subject lineage breadcrumbs
       await testLineageList(['Bob Place', 'Health Center', 'District']);
 
@@ -492,13 +513,13 @@ describe('Reports Summary', () => {
         _id: 'PREF_PREF_V',
         form: 'P',
         type: 'data_record',
-        from: PHONE,
+        from: PHONE_CAROL,
         fields: {
           place_id: TAG_PLACE._id
         },
         sms_message: {
           message_id: 23,
-          from: PHONE,
+          from: PHONE_CAROL,
           message: `1!P!${TAG_PLACE._id}`,
           form: 'RR',
           locale: 'en'
@@ -507,13 +528,13 @@ describe('Reports Summary', () => {
       };
 
       await saveReport(REPORT);
+      await sentinelUtils.waitForSentinel([REPORT._id]);
       await commonElements.goToReportsNative();
 
+      // LHS
       const report = await reportsTab.loadReport(REPORT._id);
-      await waitForSentinel(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe(TAG_PLACE.name);
       expect(await getElementText(reportsTab.formName(report))).toBe('PID_PID');
-
       //shows subject lineage breadcrumbs
       await testLineageList(['Health Center', 'District']);
 
@@ -532,13 +553,13 @@ describe('Reports Summary', () => {
         _id: 'PREF_PREF_I',
         form: 'P',
         type: 'data_record',
-        from: PHONE,
+        from: PHONE_CAROL,
         fields: {
           place_id: '12'
         },
         sms_message: {
           message_id: 23,
-          from: PHONE,
+          from: PHONE_CAROL,
           message: `1!P!12`,
           form: 'RR',
           locale: 'en'
@@ -547,13 +568,13 @@ describe('Reports Summary', () => {
       };
 
       await saveReport(REPORT);
+      await sentinelUtils.waitForSentinel([REPORT._id]);
       await commonElements.goToReportsNative();
 
+      // LHS
       const report = await reportsTab.loadReport(REPORT._id);
-      await waitForSentinel(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe('Unknown subject');
       expect(await getElementText(reportsTab.formName(report))).toBe('PID_PID');
-
       //shows subject lineage breadcrumbs
       await testLineageList(['Bob Place', 'Health Center', 'District']);
 
@@ -572,13 +593,13 @@ describe('Reports Summary', () => {
         _id: 'SURVEY_REPORT',
         form: 'S',
         type: 'data_record',
-        from: PHONE,
+        from: PHONE_CAROL,
         fields: {
           survey_subject: 'something'
         },
         sms_message: {
           message_id: 23,
-          from: PHONE,
+          from: PHONE_CAROL,
           message: `1!S!something`,
           form: 'S',
           locale: 'en'
@@ -587,13 +608,13 @@ describe('Reports Summary', () => {
       };
 
       await saveReport(REPORT);
+      await sentinelUtils.waitForSentinel([REPORT._id]);
       await commonElements.goToReportsNative();
 
+      // LHS
       const report = await reportsTab.loadReport(REPORT._id);
-      await waitForSentinel(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe(CAROL.name);
       expect(await getElementText(reportsTab.formName(report))).toBe('SURVEY');
-
       //shows subject lineage breadcrumbs
       await testLineageList(['Bob Place', 'Health Center', 'District']);
 
@@ -629,10 +650,10 @@ describe('Reports Summary', () => {
       await saveReport(REPORT);
       await commonElements.goToReportsNative();
 
+      // LHS
       const report = await reportsTab.loadReport(REPORT._id);
       expect(await getElementText(reportsTab.subject(report))).toBe(BOB_PLACE.name);
       expect(await getElementText(reportsTab.formName(report))).toBe('PID_PID');
-
       //shows subject lineage breadcrumbs
       await testLineageList(['Health Center', 'District']);
 
@@ -683,6 +704,72 @@ describe('Reports Summary', () => {
 
       expect(await getElementText(reportsTab.submitterName())).toMatch('Unknown sender');
       expect(await getElementText(reportsTab.submitterPhone())).toBe('');
+    });
+
+    it('Changes to a loaded or list report should be reflected in the UI', async () => {
+      const REPORT = {
+        _id: 'REF_REF_V3',
+        form: 'RR',
+        type: 'data_record',
+        from: PHONE_CAROL,
+        fields: {
+          patient_id: MARIA.patient_id
+        },
+        contact: {
+          _id: CAROL._id,
+          parent: CAROL.parent,
+        },
+        reported_date: moment().subtract(10, 'minutes').valueOf(),
+      };
+
+      await saveReport(REPORT);
+      await sentinelUtils.waitForSentinel([REPORT._id]);
+      await commonElements.goToReportsNative();
+
+      // LHS
+      let report = await reportsTab.loadReport(REPORT._id);
+      expect(await getElementText(reportsTab.subject(report))).toBe(MARIA.name);
+      expect(await getElementText(reportsTab.formName(report))).toBe('REF_REF');
+      //shows subject lineage breadcrumbs
+      await testLineageList(['TAG Place', 'Health Center', 'District']);
+
+      //RHS
+      expect(await getElementText(reportsTab.subjectName())).toBe(MARIA.name);
+      expect(await getElementText(reportsTab.summaryFormName())).toBe('REF_REF');
+
+      await testLineageSummary(['TAG Place', 'Health Center', 'District']);
+
+      expect(await getElementText(reportsTab.submitterName())).toMatch(`Submitted by ${CAROL.name}`);
+      expect(await getElementText(reportsTab.submitterPhone())).toBe(CAROL.phone);
+
+      // change both patient and submitter
+      const reportDoc = await utils.getDoc(REPORT._id);
+      reportDoc.contact = { _id: JOHN._id, parent: JOHN.parent };
+      reportDoc.fields.patient_id = ROBERT.patient_id;
+      await utils.saveDoc(reportDoc);
+
+      // wait until this is reflected in the UI, without refreshing!
+      const getFreshListitem = async () => {
+        const report = await reportsTab.reportByUUID(REPORT._id);
+        return reportsTab.subject(report);
+      };
+      await waitElementTextEquals(() => getFreshListitem(), ROBERT.name); // LHS updated
+      await waitElementTextEquals(() => reportsTab.submitterPhone(), JOHN.phone); // RHS updated
+
+      report = await reportsTab.reportByUUID(REPORT._id);
+      // LHS
+      expect(await getElementText(reportsTab.subject(report))).toBe(ROBERT.name);
+      //shows subject lineage breadcrumbs
+      await testLineageList(['Bob Place', 'Health Center', 'District']);
+
+      //RHS
+      expect(await getElementText(reportsTab.subjectName())).toBe(ROBERT.name);
+      expect(await getElementText(reportsTab.summaryFormName())).toBe('REF_REF');
+
+      await testLineageSummary(['Bob Place', 'Health Center', 'District']);
+
+      expect(await getElementText(reportsTab.submitterName())).toMatch(`Submitted by ${JOHN.name}`);
+      expect(await getElementText(reportsTab.submitterPhone())).toBe(JOHN.phone);
     });
   });
 });

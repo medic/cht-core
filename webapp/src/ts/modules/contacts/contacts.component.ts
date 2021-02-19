@@ -35,6 +35,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   private contactsActions;
   private servicesActions;
   private listContains;
+  private destroyed;
 
   contactsList;
   loading = false;
@@ -170,6 +171,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   ngOnDestroy() {
+    this.destroyed = true;
     this.subscription.unsubscribe();
 
     this.contactsActions.resetContactsList();
@@ -444,6 +446,12 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   private setLeftActionBar() {
+    if (this.destroyed) {
+      // don't update the actionbar if the component has already been destroyed
+      // this callback can be queued up and persist even after component destruction
+      return;
+    }
+
     this.globalActions.setLeftActionBar({
       hasResults: this.hasContacts,
       userFacilityId: this.usersHomePlace?._id,
