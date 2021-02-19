@@ -79,7 +79,7 @@ module.exports = {
 
   collapseSelectionNative: async () => {
     await helper.clickElementNative(element(by.css(itemSummary)));
-    expect(await helper.waitElementToPresentNative(element(by.css(reportBodyDetails)))).toBeFalsy();
+    expect(await element(by.css(reportBodyDetails)).isPresent()).toBeFalsy();
   },
 
   deleteSelectedReports: (savedUuids) => {
@@ -115,8 +115,7 @@ module.exports = {
 
   deselectAllNative: async () => {
     await helper.clickElementNative(element(by.css('.action-container .deselect-all')));
-    const countElement = element(by.css('#reports-content .selection-count > span'));
-    expect(await helper.waitElementToPresentNative(countElement)).toBeFalsy();
+    expect(await element(by.css('#reports-content .selection-count > span')).isPresent()).toBeFalsy();
     expect(await element.all(by.css(reportBody)).count()).toBe(0);
   },
 
@@ -152,8 +151,8 @@ module.exports = {
 
   selectSeveralReportsNative: async (savedUuids) => {
     const checkCss = 'input[type="checkbox"]';
-    await helper.clickElementNative(reportsByUUID(savedUuids[0]).first().element(by.css(checkCss))).click();
-    await helper.clickElementNative(reportsByUUID(savedUuids[2]).first().element(by.css(checkCss))).click();
+    await helper.clickElementNative(reportsByUUID(savedUuids[0]).first().element(by.css(checkCss)));
+    await helper.clickElementNative(reportsByUUID(savedUuids[2]).first().element(by.css(checkCss)));
     await browser.sleep(1000);
     expect(await element.all(by.css(reportBody)).count()).toBe(2);
   },
@@ -171,8 +170,12 @@ module.exports = {
     await helper.clickElementNative(checkbox);
     await helper.waitElementToBeVisibleNative(element(by.css('#reports-content .selection-count > span:first-child')));
     expect(await element.all(by.css(reportBody)).count()).toBe(1);
+
     const textContent = element(by.css('#reports-content .report-body .item-summary .sender .name'));
-    expect(await helper.getTextFromElementNative(textContent)).toBe('Sharon');
+    await browser.wait(
+      async () => await helper.getTextFromElementNative(textContent) === 'Sharon',
+      5000
+    );
     const report = element(by.css(reportBodyDetails));
     expect(helper.waitElementToPresentNative(report)).toBeFalsy();
   },
