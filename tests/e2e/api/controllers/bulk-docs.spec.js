@@ -796,7 +796,7 @@ describe('bulk-docs handler', () => {
 
     const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => utils.saveDocs(existentDocs))
       .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
       .then(() => {
@@ -945,7 +945,7 @@ describe('bulk-docs handler', () => {
 
     const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => utils.saveDocs(existentDocs))
       .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
       .then(() => {
@@ -1093,7 +1093,7 @@ describe('bulk-docs handler', () => {
 
     const settings = { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] };
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => utils.saveDocs(existentDocs))
       .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
       .then(() => {

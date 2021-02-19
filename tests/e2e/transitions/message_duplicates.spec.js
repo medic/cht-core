@@ -82,7 +82,7 @@ describe('message duplicates', () => {
     ];
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => postMessages(firstMessages))
       .then(ids => utils.getDocs(ids))
       .then(docs => {
@@ -152,7 +152,7 @@ describe('message duplicates', () => {
     ];
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => postMessages(firstMessages))
       .then(ids => utils.getDocs(ids))
       .then(docs => {

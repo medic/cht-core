@@ -730,7 +730,7 @@ describe('routing', () => {
     it('should still route to deprecated apiV0 settings endpoints', () => {
       let settings;
       return utils
-        .updateSettings({}) // this test will update settings that we want successfully reverted afterwards
+        .updateSettings({}, true) // this test will update settings that we want successfully reverted afterwards
         .then(() => utils.getDoc('settings'))
         .then(result => settings = result.settings)
         .then(() => Promise.all([

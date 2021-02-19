@@ -321,7 +321,11 @@ const isUntransitionedDoc = doc => {
 };
 
 describe('transitions', () => {
-  beforeAll(done => utils.saveDocs(contacts).then(done));
+  beforeAll(() => {
+    return utils
+      .saveDocs(contacts)
+      .then(() => sentinelUtils.waitForSentinel());
+  });
   afterAll(done => utils.revertDb().then(done));
   afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
 
@@ -344,7 +348,7 @@ describe('transitions', () => {
     let ids;
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages })),
@@ -663,7 +667,7 @@ describe('transitions', () => {
     let ids;
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
@@ -779,7 +783,7 @@ describe('transitions', () => {
     let ids;
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
@@ -877,7 +881,7 @@ describe('transitions', () => {
     let docId;
 
     return utils
-      .updateSettings(settings, false)
+      .updateSettings(settings, true)
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
@@ -948,7 +952,7 @@ describe('transitions', () => {
     let docId;
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages })),
@@ -1012,7 +1016,7 @@ describe('transitions', () => {
     };
 
     return utils
-      .updateSettings(settings, false)
+      .updateSettings(settings)
       .then(() => utils.saveDocs([place, person]))
       .then(() => sentinelUtils.waitForSentinel([ place._id, person._id ]))
       .then(() => sentinelUtils.getInfoDocs([ place._id, person._id ]))

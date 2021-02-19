@@ -8,7 +8,7 @@ const getDoc = () => {
 };
 
 describe('Settings API', () => {
-  beforeAll(() => utils.updateSettings({}));
+  beforeAll(() => utils.updateSettings({}, true));
   afterAll(done => utils.revertSettings().then(done));
 
   describe('old api', () => {

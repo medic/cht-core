@@ -505,10 +505,12 @@ module.exports = {
    * @return     {Promise}  completion promise
    */
   updateSettings: (updates, ignoreRefresh = false) => {
+    const watcher = !ignoreRefresh && module.exports.waitForLogs('api.e2e.log', /Settings updated/);
     return updateSettings(updates).then(() => {
       if (!ignoreRefresh) {
         return refreshToGetNewSettings();
       }
+      return watcher.promise;
     });
   },
   /**
@@ -517,12 +519,16 @@ module.exports = {
    * @param      {Boolean}  ignoreRefresh  don't bother refreshing
    * @return     {Promise}  completion promise
    */
-  revertSettings: ignoreRefresh =>
-    revertSettings().then(() => {
+  revertSettings: ignoreRefresh => {
+    const watcher = !ignoreRefresh && module.exports.waitForLogs('api.e2e.log', /Settings updated/);
+    return revertSettings().then(() => {
       if (!ignoreRefresh) {
         return refreshToGetNewSettings();
       }
-    }),
+
+      return watcher.promise;
+    });
+  },
 
   seedTestData: (userContactDoc, documents) => {
     return module.exports
