@@ -248,12 +248,18 @@ const setUserContactDoc = () => {
 };
 
 const revertDb = (except, ignoreRefresh) => {
+  const watcher = ignoreRefresh && waitForApiSettingsUpdateLogs();
   return revertSettings().then(needsRefresh => {
     return deleteAll(except).then(() => {
       // only need to refresh if the settings were changed
       if (!ignoreRefresh && needsRefresh) {
+        watcher && watcher.cancel();
         return refreshToGetNewSettings();
       }
+      if (needsRefresh) {
+        return watcher && watcher.promise;
+      }
+      watcher && watcher.cancel();
     }).then(setUserContactDoc);
   });
 };
@@ -353,7 +359,6 @@ const waitForApiSettingsUpdateLogs = () => {
   return module.exports.waitForLogs(
     'api.e2e.log',
     /Settings updated/,
-    /Not updating settings - the existing settings are already up to date/,
   );
 };
 

@@ -189,7 +189,7 @@ describe('db-sync-filter', () => {
   };
 
   const getServerRevs = async (docIds) => {
-    const result = await utils.requestOnMedicDb({ path: '/_all_docs', params: { keys: docIds } });
+    const result = await utils.requestOnMedicDb({ path: '/_all_docs', qs: { keys: JSON.stringify(docIds) } });
     return result.rows;
   };
 
