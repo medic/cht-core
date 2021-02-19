@@ -8,54 +8,53 @@ describe('Family form', () => {
   const contactId = userData.contactId;
   const docs = userData.docs;
 
-  beforeAll(done => {
-    protractor.promise
-      .all(docs.map(utils.saveDoc))
-      .then(() => familyForm.configureForm(contactId, done))
-      .catch(done.fail);
+  beforeAll(async () => {
+    await utils.saveDocs(docs);
+    await familyForm.configureForm(contactId);
   });
 
-  afterEach(done => {
-    utils.resetBrowser();
-    done();
+  afterEach(async () => {
+    await utils.resetBrowser();
   });
 
-  afterAll(utils.afterEach);
+  afterAll(async () => {
+    await utils.afterEach();
+  });
 
-  it('Submit Add Family form', () => {
-    common.goToReports(true);
-    genericForm.selectForm();
-    familyForm.fillPrimaryCaregiver('test');
-    genericForm.nextPage();
-    familyForm.fillPrimaryTel();
-    genericForm.nextPage();
-    familyForm.fillSexAndAge();
-    genericForm.nextPage();
-    familyForm.fillChildren();
-    genericForm.nextPage();
-    familyForm.registerChildrenOption();
-    genericForm.nextPage();
-    familyForm.womenBetween();
-    genericForm.nextPage();
-    familyForm.registerWomenOption();
-    genericForm.nextPage();
-    familyForm.finalSurvey(0, 0, 0, 0);
-    genericForm.submit();
-    familyForm.reportCheck('test Family', 'boreholes', 'true', 'true', 'ucid');
-    genericForm.editForm();
-    familyForm.fillPrimaryCaregiver('modified');
-    genericForm.nextPage(8);
-    familyForm.finalSurvey(1, 1, 1, 1);
-    genericForm.submit();
-    familyForm.reportCheck(
+  it('Submit Add Family form', async () => {
+    await common.goToReportsNative(true);
+    await genericForm.selectFormNative('any');
+    await familyForm.fillPrimaryCaregiver('test');
+    await genericForm.nextPageNative();
+    await familyForm.fillPrimaryTel();
+    await genericForm.nextPageNative();
+    await familyForm.fillSexAndAge();
+    await genericForm.nextPageNative();
+    await familyForm.fillChildren();
+    await genericForm.nextPageNative();
+    await familyForm.registerChildrenOption();
+    await genericForm.nextPageNative();
+    await familyForm.womenBetween();
+    await genericForm.nextPageNative();
+    await familyForm.registerWomenOption();
+    await genericForm.nextPageNative();
+    await familyForm.finalSurvey(0, 0, 0, 0);
+    await genericForm.submitNative();
+    await familyForm.reportCheck('test Family', 'boreholes', 'true', 'true', 'ucid');
+    await genericForm.editFormNative();
+    await familyForm.fillPrimaryCaregiver('modified');
+    await genericForm.nextPageNative(8);
+    await familyForm.finalSurvey(1, 1, 1, 1);
+    await genericForm.submitNative();
+    await familyForm.reportCheck(
       'modified Family',
       'boreholes spring',
       'false',
       'false',
       'ucid condoms'
     );
-    genericForm.reportApprove();
-    genericForm.invalidateReport();
-    genericForm.validateReport();
+    await genericForm.reportApproveNative();
+    await genericForm.invalidateReportNative();
+    await genericForm.validateReportNative();
   });
 });

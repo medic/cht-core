@@ -17,18 +17,26 @@ module.exports = {
     editFormBtn.click();
   },
 
+  editFormNative: async () => {
+    const editFormBtn = element(
+      by.css('[href^="#/reports/edit"]>.fa-pencil')
+    );
+    await helper.waitUntilReadyNative(editFormBtn);
+    await editFormBtn.click();
+  },
+
   goBack: () => {
     element(by.css('button.btn.btn-default.previous-page')).click();
   },
 
-  invalidateReport: () => {
-    const reportInvalidBtn = element(by.css('[ng-include*="verify-invalid"]'));
-    helper.waitUntilReady(reportInvalidBtn);
-    reportInvalidBtn.click();
+  invalidateReportNative: async () => {
+    const reportInvalidBtn = element(by.css('.verify-error'));
+    await helper.waitUntilReadyNative(reportInvalidBtn);
+    await reportInvalidBtn.click();
     const reportInvalidIcon = element(by.css('.detail>.status>.error'));
-    helper.waitUntilReady(reportInvalidIcon);
-    const reportInvalidMessage = element(by.css('.verify-error>span:last-of-type'));
-    expect(reportInvalidMessage.getText()).toEqual('Has errors');
+    await helper.waitUntilReadyNative(reportInvalidIcon);
+    const reportInvalidMessage = element(by.css('.verify-error.active'));
+    expect(await reportInvalidMessage.getText()).toEqual('Has errors');
   },
 
   nextPage: multiple => {
@@ -61,6 +69,12 @@ module.exports = {
     const checkBtn = element(by.css('.fa-check'));
     helper.waitUntilReady(checkBtn);
     checkBtn.click();
+  },
+
+  reportApproveNative: async () => {
+    const reviewButton = element.all(by.css('.actions>.mm-icon-inverse>.fa-check')).get(0);
+    await helper.waitUntilReadyNative(reviewButton);
+    await reviewButton.click();
   },
 
   selectForm: () => {
@@ -111,20 +125,20 @@ module.exports = {
     const submitButton = element(by.css('.btn.submit.btn-primary'));
     await helper.waitElementToBeClickable(submitButton);
     await submitButton.click();
-    await helper.waitElementToBeVisible(element(by.css('div#reports-content')));
+    await helper.waitElementToPresentNative(element(by.css('div#reports-content')));
     const details = element(by.css('div.details'));
     await helper.waitUntilReadyNative(details);
     expect(await details.isPresent()).toBeTruthy();
   },
 
-  validateReport: () => {
-    const reportValidBtn = element(by.css('[ng-include*="verify-valid"]'));
-    helper.waitElementToBeClickable(reportValidBtn);
-    reportValidBtn.click();
+  validateReportNative: async () => {
+    const reportValidBtn = element(by.css('.verify-valid'));
+    await helper.waitElementToBeClickable(reportValidBtn);
+    await reportValidBtn.click();
     const reportValidIcon = element(by.css('.detail>.status>.verified'));
-    helper.waitUntilReady(reportValidIcon);
-    const reportValidMessage = element(by.css('.verify-valid>span:last-of-type'));
-    expect(reportValidMessage.getText()).toEqual('Correct');
+    await helper.waitUntilReadyNative(reportValidIcon);
+    const reportValidMessage = element(by.css('.verify-valid.active'));
+    expect(await reportValidMessage.getText()).toEqual('Correct');
   },
 
   waitForPageToBeReady: () => {
