@@ -551,7 +551,7 @@ describe('outbound shared library', () => {
 
     it('doesnt mess up numbers or dates', () => {
       assert.equal(
-        outbound.__get__('orderedStringify')({blah: new Date(2020, 1, 1)}),
+        outbound.__get__('orderedStringify')({blah: new Date(Date.UTC(2020, 1, 1))}),
         '{"blah":"2020-02-01T00:00:00.000Z"}');
     });
   });

@@ -233,6 +233,7 @@ describe('Monitoring service', () => {
     // empty rows is how couchdb responds to reducing with no rows - this should return 0
     sinon.stub(db.sentinel, 'query').resolves({ rows: [] });
     sinon.stub(db.medicUsersMeta, 'query').resolves({ rows: [] });
+    sinon.stub(db.medicLogs, 'query').resolves({ rows: [] });
     return service.json().then(actual => {
       chai.expect(actual.outbound_push).to.deep.equal({ backlog: 0 });
       chai.expect(actual.feedback).to.deep.equal({ count: 0 });
