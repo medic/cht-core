@@ -61,7 +61,7 @@ describe('Token login', () => {
 
   afterEach(async () => {
     await utils.deleteUsers([user]);
-    await utils.revertDb([], []);
+    await utils.revertDb([], true);
   });
 
   afterAll(async () => {
