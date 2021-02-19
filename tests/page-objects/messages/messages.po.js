@@ -24,7 +24,7 @@ const enterMessageText = async message => {
 
 const searchSelect2 = async (searchText, totalExpectedResults, entrySelector, entryText) => {
   await module.exports.messageRecipientSelect().sendKeys(searchText);
-  await browser.wait(async () => await selectOptions.count() === totalExpectedResults);
+  await browser.wait(async () => await selectOptions.count() === totalExpectedResults, 20000, 'searchSelect2 timedout');
   const elm = element(by.cssContainingText(selectOptions.locator().value + entrySelector , entryText));
   await helper.waitUntilReadyNative(elm);
   return elm;
@@ -46,14 +46,12 @@ const clickLhsEntry = async (entryId, entryName) => {
   const liElement = await module.exports.messageInList(entryId);
   await helper.clickElementNative(liElement);
 
-  return browser.wait(() => {
+  return browser.wait(async () => {
     const el = module.exports.messageDetailsHeader();
-    if (helper.waitUntilReadyNative(el)) {
-      return helper.getTextFromElementNative(el).then(text => {
-        return text === entryName;
-      });
-    }
-  }, 12000);
+    await helper.waitUntilReadyNative(el);
+    const text = await helper.getTextFromElementNative(el);
+    return text === entryName;
+  }, 2000);
 };
 
 const enterCheckAndSelect = async (searchTxt, totalExpectedResults, entrySelector, entryTxt, existingEntryCount=0) => {

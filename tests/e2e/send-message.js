@@ -179,21 +179,13 @@ describe('Send message', () => {
         await messagesPo.openMessageContent(id, name);
         await messagesPo.enterMessageText('Additional Message');
         await messagesPo.sendAdditionalMessage.click();
-        await browser.wait(() => {
-          return messagesPo.allMessages()
-            .count()
-            .then(utils.countOf(2));
-        }, 2000);
-
+        await browser.wait(async () => await messagesPo.allMessages().count() === 2, 2000);
         expect(await messagesPo.allMessages().count()).toBe(2);
         expect(await messagesPo.lastMessageText()).toBe('Additional Message');
       };
 
       it('For raw contacts', async () => {
-        console.log('raw contact doc');
-        console.log(JSON.stringify(messageDoc));
         await utils.saveDoc(messageDoc);
-        await browser.sleep(5000);
         await browser.refresh();
         await addAnAdditionalMessage(RAW_PH);
       });
