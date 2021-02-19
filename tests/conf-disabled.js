@@ -24,14 +24,12 @@ const baseConfig = {
     // e2e:'e2e/**/*.js',
     e2e: [
       'e2e/api/**/*.js',
-      'e2e/contacts/**/*.js',
       'e2e/forms/**/*.js',
       'e2e/login/**/*.js',
       'e2e/navigation/*.js',
       'e2e/release/**/*.js',
       'e2e/sentinel/**/*.js',
       'e2e/transitions/**/*.js',
-      'e2e/users/**/*.js',
       'e2e/bulk-delete.js',
       'e2e/contact-summary.js',
       'e2e/content-security-policy.js',
@@ -44,6 +42,8 @@ const baseConfig = {
       'e2e/sms-gateway.js',
       'e2e/submit-enketo-form.js',
       'e2e/target-aggregates.spec.js',
+      'e2e/contacts/**/*.js',
+      'e2e/users/**/*.js',
     ],
     // performance: 'performance/**/*.js'
   },
