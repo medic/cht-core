@@ -349,6 +349,14 @@ const deprecated = (name, replacement) => {
   }
 };
 
+const waitForApiSettingsUpdateLogs = () => {
+  return module.exports.waitForLogs(
+    'api.e2e.log',
+    /Settings updated/,
+    /Not updating settings - the existing settings are already up to date/,
+  );
+};
+
 module.exports = {
   deprecated,
   db: db,
@@ -507,7 +515,7 @@ module.exports = {
   updateSettings: (updates, ignoreRefresh = false) => {
     const watcher = ignoreRefresh &&
                     Object.keys(updates).length &&
-                    module.exports.waitForLogs('api.e2e.log', /Settings updated/);
+                    waitForApiSettingsUpdateLogs();
 
     return updateSettings(updates).then(() => {
       if (!ignoreRefresh) {
@@ -523,7 +531,7 @@ module.exports = {
    * @return     {Promise}  completion promise
    */
   revertSettings: ignoreRefresh => {
-    const watcher = ignoreRefresh && module.exports.waitForLogs('api.e2e.log', /Settings updated/);
+    const watcher = ignoreRefresh && waitForApiSettingsUpdateLogs();
     return revertSettings().then(() => {
       if (!ignoreRefresh) {
         return refreshToGetNewSettings();
