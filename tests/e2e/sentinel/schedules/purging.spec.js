@@ -389,7 +389,7 @@ describe('server side purge', () => {
     return sentinelUtils.getCurrentSeq()
       .then(result => {
         seq = result;
-        return utils.updateSettings({ purge: purgeSettings });
+        return utils.updateSettings({ purge: purgeSettings }, true);
       })
       .then(() => restartSentinel())
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))
@@ -443,8 +443,8 @@ describe('server side purge', () => {
           'report2', 'report5', 'report6', 'message2', 'message4', 'task4~user2', ...targetIdsToPurge
         ]);
       })
-      .then(() => utils.revertSettings())
-      .then(() => utils.updateSettings({ district_admins_access_unallocated_messages: true }))
+      .then(() => utils.revertSettings(true))
+      .then(() => utils.updateSettings({ district_admins_access_unallocated_messages: true }, true))
       .then(() => Promise.all([
         requestChanges('user1'),
         requestChanges('user2'),
@@ -470,7 +470,7 @@ describe('server side purge', () => {
       .then(() => sentinelUtils.getCurrentSeq())
       .then(result => {
         seq = result;
-        return utils.updateSettings({ purge: purgeSettings });
+        return utils.updateSettings({ purge: purgeSettings }, true);
       })
       .then(() => restartSentinel())
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))
@@ -526,7 +526,7 @@ describe('server side purge', () => {
       .then(result => {
         seq = result;
         purgeSettings.fn = reversePurgeFn.toString();
-        return utils.updateSettings({ purge: purgeSettings });
+        return utils.updateSettings({ purge: purgeSettings }, true);
       })
       .then(() => restartSentinel())
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))

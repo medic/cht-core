@@ -1016,7 +1016,7 @@ describe('transitions', () => {
     };
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs([place, person]))
       .then(() => sentinelUtils.waitForSentinel([ place._id, person._id ]))
       .then(() => sentinelUtils.getInfoDocs([ place._id, person._id ]))

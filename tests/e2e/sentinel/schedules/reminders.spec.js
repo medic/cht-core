@@ -205,7 +205,7 @@ const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentine
 describe('reminders', () => {
   beforeAll(() => {
     return utils
-      .updateSettings({ transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig })
+      .updateSettings({ transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig }, 'sentinel')
       .then(() => utils.saveDocs(contacts));
   });
 

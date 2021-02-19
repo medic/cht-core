@@ -247,7 +247,7 @@ const setUserContactDoc = () => {
 };
 
 const revertDb = (except, ignoreRefresh) => {
-  const watcher = ignoreRefresh && waitForApiSettingsUpdateLogs();
+  const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
   return revertSettings().then(needsRefresh => {
     return deleteAll(except).then(() => {
       // only need to refresh if the settings were changed
@@ -354,7 +354,14 @@ const deprecated = (name, replacement) => {
   }
 };
 
-const waitForApiSettingsUpdateLogs = () => {
+const waitForSettingsUpdateLogs = (type) => {
+  if (type === 'sentinel') {
+    return module.exports.waitForLogs(
+      'sentinel.e2e.log',
+      /Reminder messages allowed between/,
+    );
+  }
+
   return module.exports.waitForLogs(
     'api.e2e.log',
     /Settings updated/,
@@ -519,7 +526,7 @@ module.exports = {
   updateSettings: (updates, ignoreRefresh = false) => {
     const watcher = ignoreRefresh &&
                     Object.keys(updates).length &&
-                    waitForApiSettingsUpdateLogs();
+                    waitForSettingsUpdateLogs();
 
     return updateSettings(updates).then(() => {
       if (!ignoreRefresh) {
@@ -535,7 +542,7 @@ module.exports = {
    * @return     {Promise}  completion promise
    */
   revertSettings: ignoreRefresh => {
-    const watcher = ignoreRefresh && waitForApiSettingsUpdateLogs();
+    const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
     return revertSettings().then((needsRefresh) => {
       if (!ignoreRefresh) {
         return refreshToGetNewSettings();
