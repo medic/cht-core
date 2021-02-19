@@ -86,7 +86,6 @@ const updateSettings = updates => {
           originalSettings[updatedField] = null;
         }
       });
-      return;
     })
     .then(() => {
       return request({
@@ -105,9 +104,9 @@ const revertSettings = () => {
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
     body: originalSettings,
-  }).then(() => {
+  }).then((result) => {
     originalSettings = null;
-    return true;
+    return result.updated;
   });
 };
 
@@ -537,9 +536,14 @@ module.exports = {
    */
   revertSettings: ignoreRefresh => {
     const watcher = ignoreRefresh && waitForApiSettingsUpdateLogs();
-    return revertSettings().then(() => {
+    return revertSettings().then((needsRefresh) => {
       if (!ignoreRefresh) {
         return refreshToGetNewSettings();
+      }
+
+      if (!needsRefresh) {
+        watcher && watcher.cancel();
+        return;
       }
 
       return watcher.promise;
@@ -684,7 +688,7 @@ module.exports = {
       timeout = setTimeout(() => {
         tail.unwatch();
         reject({ message: 'timeout exceeded' });
-      }, 10000);
+      }, 2000);
 
       tail.on('line', data => {
         if (regex.find(r => r.test(data))) {
