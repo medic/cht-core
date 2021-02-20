@@ -44,6 +44,7 @@ const baseConfig = {
       'e2e/sms-gateway.js',
       'e2e/submit-enketo-form.js',
       'e2e/target-aggregates.spec.js',          
+      
     ],
     // performance: 'performance/**/*.js'
   },
