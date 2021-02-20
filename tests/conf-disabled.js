@@ -27,8 +27,8 @@ const baseConfig = {
       'e2e/contacts/**/*.js',
       //'e2e/login/**/*.js',
       'e2e/login/**/db*.js',
-      'e2e/login/**/login*.js',
-      
+      'e2e/login/**/login*.js',     
+      'e2e/login/**/privacy*.js',     
       'e2e/forms/**/*.js',
       'e2e/navigation/*.js',
       'e2e/release/**/*.js',
