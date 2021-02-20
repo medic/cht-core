@@ -41,10 +41,10 @@ const baseConfig = {
       'e2e/registration-by-sms.js',
       'e2e/reports-subject.js',
       'e2e/service-worker.js',
+      'e2e/send-message.js',
       'e2e/sms-gateway.js',
       'e2e/submit-enketo-form.js',
-      'e2e/target-aggregates.spec.js',          
-      
+      'e2e/target-aggregates.spec.js',                
     ],
     // performance: 'performance/**/*.js'
   },
