@@ -31,6 +31,7 @@ const baseConfig = {
       'e2e/release/**/*.js',
       'e2e/sentinel/**/*.js',
       'e2e/transitions/**/*.js',
+      'e2e/users/**/*.js',     
       'e2e/bulk-delete.js',
       'e2e/contact-summary.js',
       'e2e/content-security-policy.js',
@@ -42,8 +43,7 @@ const baseConfig = {
       'e2e/service-worker.js',
       'e2e/sms-gateway.js',
       'e2e/submit-enketo-form.js',
-      'e2e/target-aggregates.spec.js',     
-      'e2e/users/**/*.js',     
+      'e2e/target-aggregates.spec.js',          
     ],
     // performance: 'performance/**/*.js'
   },
