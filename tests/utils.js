@@ -17,8 +17,6 @@ const db = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/$
 const sentinel = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-sentinel`, { auth });
 const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-logs`, { auth });
 
-const controlFlowEnabled = process.env.protractorControlFlow;
-
 let originalSettings;
 let e2eDebug;
 
@@ -49,17 +47,6 @@ const request = (options, { debug } = {}) => {
     // return full response if `resolveWithFullResponse` or if non-2xx status code (so errors can be inspected)
     return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
   };
-
-  if (controlFlowEnabled) {
-    const deferred = protractor.promise.defer();
-    rpn(options)
-      .then((resp) => deferred.fulfill(resp))
-      .catch(err => {
-        err.responseBody = err.response && err.response.body;
-        deferred.reject(err);
-      });
-    return deferred.promise;
-  }
 
   return rpn(options).catch(err => {
     err.responseBody = err.response && err.response.body;
