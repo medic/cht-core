@@ -26,8 +26,7 @@ module.exports = {
 
   openAddUserModal: async () => {
     await browser.get(utils.getAdminBaseUrl() + 'users');
-    await helper.waitElementToBeClickable(getAddUserButton());
-    await getAddUserButton().click();
+    await helper.clickElementNative(getAddUserButton());
   },
 
   getUsersList: () => {
