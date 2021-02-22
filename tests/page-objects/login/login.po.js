@@ -1,4 +1,5 @@
 const helper = require('../../helper');
+const commonElements = require('../../page-objects/common/common.po');
 
 const incorrectCredentialsText =
   'Incorrect user name or password. Please try again.';
@@ -41,10 +42,9 @@ module.exports = {
     await getUsernameField().sendKeys(username);
     await getPasswordField().sendKeys(password);
     await changeLocale(locale);
-    await getLoginButton().click();
-    await browser.waitForAngular();
+    await helper.clickElementNative(getLoginButton());
     if (shouldFail) {
-      expect(await helper.isTextDisplayed(incorrectCredentialsText)).toBe(true);
+      browser.wait(helper.isTextDisplayed(incorrectCredentialsText), 2000);
     }
   },
   returnToLogin: () => element(by.css('.btn[href="/medic/login"]'))

@@ -23,6 +23,7 @@ describe('Create user meta db : ', () => {
     await loginPage.loginNative(auth.username, auth.password);
     await utils.deleteUsers([{ username: userName }], true);
     await utils.revertDb();
+    await commonElements.calmNative();
   });
 
   beforeEach(() => utils.beforeEach());

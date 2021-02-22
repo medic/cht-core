@@ -356,6 +356,10 @@ module.exports = {
     return browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
   },
 
+  waitUntilEitherIsReady: (el1, el2) => {
+    return browser.wait(async () => await EC.visibilityOf(el1) || await EC.visibilityOf(el2),  10000);
+  },
+
   waitUntilTranslated: elm => {
     return browser.wait(() => elm.getText(), 1000);
   },

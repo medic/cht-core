@@ -221,6 +221,7 @@ describe('Purging on login', () => {
     await utils.deleteUsers([restrictedUserName]);
     await utils.revertDb();
     await sentinelUtils.deletePurgeDbs();
+    await commonElements.calmNative();
   });
 
   beforeEach(utils.beforeEach);

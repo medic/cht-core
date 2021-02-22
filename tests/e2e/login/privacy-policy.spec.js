@@ -86,6 +86,7 @@ describe('Privacy policy', () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
     await utils.revertDb();
+    await commonElements.calmNative();
   });
 
   describe('for an online user', () => {
