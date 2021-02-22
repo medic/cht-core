@@ -16,7 +16,7 @@ const getPrivacyPolicyFromOverlay = async () => {
 
 const acceptPrivacyPolicy = async () => {
   const acceptButton = element(by.css('#privacy-policy-wrapper .btn'));
-  await acceptButton.click();
+  await helper.clickElementNative(acceptButton);
   await commonElements.calmNative();
 };
 

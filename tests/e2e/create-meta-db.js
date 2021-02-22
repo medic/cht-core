@@ -5,6 +5,7 @@ const usersPage = require('../page-objects/users/users.po.js');
 const commonElements = require('../page-objects/common/common.po.js');
 const loginPage = require('../page-objects/login/login.po.js');
 const addUserModal = require('../page-objects/users/add-user-modal.po.js');
+const helper = require('../helper');
 
 const userName = 'fulltester' + new Date().getTime();
 const fullName = 'Roger Milla';
@@ -23,6 +24,7 @@ describe('Create user meta db : ', () => {
     await loginPage.loginNative(auth.username, auth.password);
     await utils.deleteUsers([{ username: userName }], true);
     await utils.revertDb();
+    await commonElements.calmNative();
   });
 
   beforeEach(() => utils.beforeEach());
@@ -32,7 +34,10 @@ describe('Create user meta db : ', () => {
     await usersPage.openAddUserModal();
     await addUserModal.fillForm(userName, fullName, password);
     await addUserModal.submit();
-    await browser.waitForAngular();
+
+    await helper.waitForTextDisplayed(userName);
+    await helper.waitForTextDisplayed(fullName);
+
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(userName, password, false);
     await commonElements.calmNative();
