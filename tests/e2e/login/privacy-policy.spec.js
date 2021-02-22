@@ -132,6 +132,7 @@ describe('Privacy policy', () => {
       if (!passed) {
         // I suspect this test is failing because of a conflict.
         const userDoc = await utils.requestOnTestDb('/org.couchdb.user:offline?conflicts=true');
+        console.log('Check if the test failed because of a conflict on this doc:');
         console.log(JSON.stringify(userDoc, null, 2));
       }
       await utils.deleteUsers([offlineUser]);
