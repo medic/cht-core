@@ -4,6 +4,11 @@ An overview of the End-to-End testing of CHT-Core.
 
 ## Stack overview
 
+### Requirements
+Follow the guide [DEVELOPMENT.md](DEVELOPMENT.MD)
+JDK installed for Selenium.
+Docker to run couchdb.
+
 ### Local Run
 
 `grunt e2e` installs and runs chromedriver, starts couchdb in docker, pushes the compiled app to couchdb, starts api, starts sentinel, and then runs protractor tests against your local environment. 
