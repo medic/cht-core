@@ -98,7 +98,7 @@ describe('update_scheduled_reports', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -134,7 +134,7 @@ describe('update_scheduled_reports', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs([doc1, doc2]))
       .then(() => sentinelUtils.waitForSentinel([ doc1._id, doc2._id ]))
       .then(() => sentinelUtils.getInfoDocs([ doc1._id, doc2._id ]))
@@ -198,7 +198,7 @@ describe('update_scheduled_reports', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs([doc1, doc2, doc3, doc4]))
       .then(() => sentinelUtils.waitForSentinel([ doc1._id, doc2._id, doc3._id, doc4._id ]))
       .then(() => sentinelUtils.getInfoDocs([ doc1._id, doc2._id, doc3._id, doc4._id ]))
@@ -280,7 +280,7 @@ describe('update_scheduled_reports', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs([doc1, doc2, doc3, doc4, doc5]))
       .then(() => sentinelUtils.waitForSentinel([ doc1._id, doc2._id, doc3._id, doc4._id, doc5._id ]))
       .then(() => utils.getDocs([ doc1._id, doc2._id, doc3._id, doc4._id, doc5._id ]))

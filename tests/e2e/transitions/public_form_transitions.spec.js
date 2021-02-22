@@ -232,9 +232,10 @@ const expectTransitions = (infodoc, ...transitions) => {
 
 const processSMS = (settings) => {
   let ids;
-  return utils.updateSettings(settings)
+  const watchChanges = apiUtils.getApiSmsChanges(messages);
+  return utils.updateSettings(settings, true)
     .then(() => Promise.all([
-      apiUtils.getApiSmsChanges(messages),
+      watchChanges,
       utils.request(getPostOpts('/api/sms', { messages: messages }))
     ]))
     .then(([ changes ]) => {
@@ -253,7 +254,10 @@ const chw1Lineage = { _id: contacts[3]._id,  parent: contacts[3].parent };
 const chw2Lineage = { _id: contacts[4]._id,  parent: contacts[4].parent };
 
 describe('Transitions public_form', () => {
-  beforeAll(async () => await utils.saveDocs(contacts));
+  beforeAll(async () => {
+    await utils.saveDocs(contacts);
+    await sentinelUtils.waitForSentinel();
+  });
   beforeEach(async () => await utils.saveDocs(patients));
   afterAll(async () => await utils.revertDb());
   afterEach(async () => await utils.revertDb(contacts.map(c => c._id), true));

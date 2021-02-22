@@ -96,14 +96,13 @@ describe('all_docs handler', () => {
       .then(() => utils.createUsers(users));
   });
 
-  afterAll(done =>
+  afterAll(() =>
     utils
       .revertDb()
       .then(() => utils.deleteUsers(users))
-      .then(done)
   );
 
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
+  afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_all_docs',
@@ -672,7 +671,7 @@ describe('all_docs handler', () => {
 
       const settings = { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] };
       return utils
-        .updateSettings(settings)
+        .updateSettings(settings, true)
         .then(() => utils.saveDocs(docs))
         .then(() => Promise.all([
           utils.requestOnMedicDb(Object.assign({ qs: { keys: keys  } }, supervisorRequestOptions)),

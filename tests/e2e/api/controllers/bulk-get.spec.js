@@ -73,14 +73,13 @@ describe('bulk-get handler', () => {
       .then(() => utils.createUsers(users));
   });
 
-  afterAll(done =>
+  afterAll(() =>
     utils
       .revertDb()
       .then(() => utils.deleteUsers(users))
-      .then(done)
   );
 
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
+  afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_bulk_get',
@@ -586,7 +585,7 @@ describe('bulk-get handler', () => {
 
     const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => utils.saveDocs(existentDocs))
       .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
       .then(() => {
@@ -672,7 +671,7 @@ describe('bulk-get handler', () => {
 
     const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => utils.saveDocs(existentDocs))
       .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
       .then(() => {
@@ -758,7 +757,7 @@ describe('bulk-get handler', () => {
 
     const settings = { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] };
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => utils.saveDocs(existentDocs))
       .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
       .then(() => {

@@ -33,7 +33,7 @@ describe('Import Records', () => {
         }
       }
     }
-  }));
+  }, true));
 
   describe('JSON', () => {
     it('parses and stores the passed JSON', () => {
