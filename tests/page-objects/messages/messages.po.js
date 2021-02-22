@@ -80,8 +80,7 @@ module.exports = {
   },
   openSendMessageModal: async ()=> {
     await helper.clickElementNative(module.exports.sendMessage());
-    await helper.waitElementToPresent(module.exports.sendMessageModal(), 5000);
-    await helper.waitElementToBeVisibleNative(module.exports.sendMessageModal(), 5000);
+    await helper.waitUntilReadyNative(module.exports.sendMessageModal());
   },
   getSendMessageButton: ()=> {
     helper.waitUntilReady(sendMessageButton);
