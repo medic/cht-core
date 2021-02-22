@@ -221,6 +221,7 @@ describe('Purging on login', () => {
     await utils.deleteUsers([restrictedUserName]);
     await utils.revertDb();
     await sentinelUtils.deletePurgeDbs();
+    await commonElements.calmNative();
   });
 
   beforeEach(utils.beforeEach);
@@ -263,7 +264,7 @@ describe('Purging on login', () => {
     const purgeDate = result.date;
 
     await utils.resetBrowser();
-    await commonElements.calm();
+    await commonElements.calmNative();
     await browser.waitForAngular();
     result = await getPurgeLog();
 

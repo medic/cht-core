@@ -67,6 +67,7 @@ describe('Token login', () => {
   afterAll(async () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
+    await commonElements.calmNative();
     await utils.revertDb();
   });
 
@@ -81,6 +82,7 @@ describe('Token login', () => {
   it('should redirect the user to the app if already logged in', async () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
+    await commonElements.calmNative();
     await browser.driver.get(getUrl('this is a random string'));
     await waitForLoaderToDisappear();
     await browser.waitForAngular();

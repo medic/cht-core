@@ -12,9 +12,9 @@ describe('Add new health center tests : ', () => {
     await contactPage.addNewDistrict('Auckland');
     await contactPage.addHealthCenter();
 
-    await  helper.waitUntilReadyNative(contactPage.center());
-    expect(await contactPage.center().getText()).toBe('Mavuvu Clinic');
-    await  helper.waitUntilReadyNative(contactPage.name());
-    expect(await contactPage.name().getText()).toBe('Gareth');
+    await helper.waitUntilReadyNative(contactPage.center());
+    expect(await helper.getTextFromElementNative(contactPage.center())).toBe('Mavuvu Clinic');
+    await helper.waitUntilReadyNative(contactPage.name());
+    expect(await helper.getTextFromElementNative(contactPage.name())).toBe('Gareth');
   });
 });

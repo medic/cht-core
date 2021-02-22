@@ -86,6 +86,7 @@ describe('Privacy policy', () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
     await utils.revertDb();
+    await commonElements.calmNative();
   });
 
   describe('for an online user', () => {
@@ -126,7 +127,14 @@ describe('Privacy policy', () => {
   });
 
   describe('for a french offline user', () => {
+    let passed = false;
     afterEach(async () => {
+      if (!passed) {
+        // I suspect this test is failing because of a conflict.
+        const userDoc = await utils.requestOnTestDb('/org.couchdb.user:offline?conflicts=true');
+        console.log('Check if the test failed because of a conflict on this doc:');
+        console.log(JSON.stringify(userDoc, null, 2));
+      }
       await utils.deleteUsers([offlineUser]);
     });
 
@@ -159,6 +167,7 @@ describe('Privacy policy', () => {
       // Privacy policy updated
       expect(await privacyPolicyPage.getPrivacyPolicyFromOverlay()).toEqual(newPolicyText);
       await privacyPolicyPage.acceptPrivacyPolicy();
+      passed = true;
     });
   });
 });

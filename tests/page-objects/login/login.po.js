@@ -34,6 +34,7 @@ module.exports = {
       expect(helper.isTextDisplayed(incorrectCredentialsText)).toBe(true);
     }
   },
+
   loginNative: async (username, password, shouldFail, locale) => {
     await helper.waitUntilReadyNative(await getUsernameField());
     await getUsernameField().clear();
@@ -41,10 +42,9 @@ module.exports = {
     await getUsernameField().sendKeys(username);
     await getPasswordField().sendKeys(password);
     await changeLocale(locale);
-    await getLoginButton().click();
-    await browser.waitForAngular();
+    await helper.clickElementNative(getLoginButton());
     if (shouldFail) {
-      expect(await helper.isTextDisplayed(incorrectCredentialsText)).toBe(true);
+      browser.wait(helper.isTextDisplayed(incorrectCredentialsText), 2000);
     }
   },
   returnToLogin: () => element(by.css('.btn[href="/medic/login"]'))
