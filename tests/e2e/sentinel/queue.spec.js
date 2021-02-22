@@ -96,7 +96,7 @@ describe('Sentinel queue drain', () => {
     let tombstonesIds;
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => utils.getDocs(ids))

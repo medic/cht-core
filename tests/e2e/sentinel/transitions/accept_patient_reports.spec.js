@@ -73,7 +73,7 @@ describe('accept_patient_reports', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -102,7 +102,7 @@ describe('accept_patient_reports', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -173,7 +173,7 @@ describe('accept_patient_reports', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs([doc1, doc2]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
@@ -288,7 +288,7 @@ describe('accept_patient_reports', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs([doc1, doc2]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
@@ -439,7 +439,7 @@ describe('accept_patient_reports', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs(reports))
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
@@ -608,7 +608,7 @@ describe('accept_patient_reports', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs(registrations))
       .then(() => utils.saveDoc(noSilence))
       .then(() => sentinelUtils.waitForSentinel(noSilence._id))

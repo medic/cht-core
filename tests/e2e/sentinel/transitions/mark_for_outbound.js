@@ -104,7 +104,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -154,7 +154,7 @@ describe('mark_for_outbound', () => {
 
       // First round
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -219,7 +219,7 @@ describe('mark_for_outbound', () => {
 
       // First round
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -289,7 +289,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -324,7 +324,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -347,7 +347,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -370,7 +370,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -401,7 +401,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -452,7 +452,7 @@ describe('mark_for_outbound', () => {
       let collect;
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => collect = utils.collectLogs('sentinel.e2e.log', /Mapping error.+_idddddddddddddddd/))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
@@ -485,7 +485,7 @@ describe('mark_for_outbound', () => {
       let collect;
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => collect = utils.collectLogs('sentinel.e2e.log', /Failed to push/, /Response body.+error response/))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
@@ -519,7 +519,7 @@ describe('mark_for_outbound', () => {
       let collect;
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => collect = utils.collectLogs('sentinel.e2e.log', /Failed to push.+ECONNREFUSED/))
         .then(() => sentinelUtils.waitForSentinel([report._id]))

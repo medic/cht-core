@@ -19,7 +19,7 @@ describe('generate_shortcode_on_contacts', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -53,7 +53,7 @@ describe('generate_shortcode_on_contacts', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs([contact, report]))
       .then(() => sentinelUtils.waitForSentinel([contact._id, report._id]))
       .then(() => sentinelUtils.getInfoDocs([contact._id, report._id]))
@@ -83,7 +83,7 @@ describe('generate_shortcode_on_contacts', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -110,7 +110,7 @@ describe('generate_shortcode_on_contacts', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -136,7 +136,7 @@ describe('generate_shortcode_on_contacts', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -161,7 +161,7 @@ describe('generate_shortcode_on_contacts', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -188,7 +188,7 @@ describe('generate_shortcode_on_contacts', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))

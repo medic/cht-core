@@ -19,7 +19,7 @@ describe('update_sent_by', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -69,7 +69,7 @@ describe('update_sent_by', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(contact))
       .then(() => utils.saveDocs([report1, report2, report3, report4]))
       .then(() => sentinelUtils.waitForSentinel([report1._id, report2._id, report3._id, report4._id]))
@@ -112,7 +112,7 @@ describe('update_sent_by', () => {
     ];
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs(contacts))
       .then(() => utils.saveDoc(report))
       .then(() => sentinelUtils.waitForSentinel(report._id))

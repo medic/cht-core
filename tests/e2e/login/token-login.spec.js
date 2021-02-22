@@ -13,7 +13,7 @@ const ERROR = 'Something went wrong when processing your request';
 let user;
 
 const getUrl = token => `${utils.getOrigin()}/medic/login/token/${token}`;
-const setupTokenLoginSettings = async () => {
+const setupTokenLoginSettings = () => {
   // we're configuring app_url here because we're serving api on a port, and in express4 req.hostname strips the port
   // https://expressjs.com/en/guide/migrating-5.html#req.host
   const settings = {
@@ -23,8 +23,7 @@ const setupTokenLoginSettings = async () => {
     },
     app_url: utils.getOrigin()
   };
-  const waitForApiUpdate = await utils.waitForLogs('api.e2e.log', /Settings updated/);
-  return utils.updateSettings(settings, 'api').then(() => waitForApiUpdate.promise);
+  return utils.updateSettings(settings, true);
 };
 
 const createUser = (user) => {
@@ -62,7 +61,7 @@ describe('Token login', () => {
 
   afterEach(async () => {
     await utils.deleteUsers([user]);
-    await utils.revertDb([], []);
+    await utils.revertDb([], true);
   });
 
   afterAll(async () => {

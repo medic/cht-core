@@ -218,7 +218,7 @@ describe('Users API', () => {
         reported_date: new Date().getTime()
       };
       return utils
-        .updateSettings({ transitions: { generate_patient_id_on_people: true }})
+        .updateSettings({ transitions: { generate_patient_id_on_people: true }}, true)
         .then(() => utils.saveDoc(parentPlace))
         .then(() => {
           const opts = {
@@ -484,7 +484,7 @@ describe('Users API', () => {
         },
       };
     });
-    afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb(['PARENT_PLACE'], [])));
+    afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb(['PARENT_PLACE'], true)));
 
     const expectCorrectUser = (user, extra = {}) => {
       const defaultProps = {
@@ -692,7 +692,7 @@ describe('Users API', () => {
       it('should create and update a user correctly w/o token_login', () => {
         const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
         return utils
-          .updateSettings(settings, 'api')
+          .updateSettings(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
           .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(response => {
