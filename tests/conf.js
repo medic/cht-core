@@ -50,6 +50,7 @@ const baseConfig = {
       'e2e/report-date-filter.js',
       'e2e/africas-talking.js',
       'e2e/medic-collect.js',
+      
     ],
     // performance: 'performance/**/*.js'
   },
