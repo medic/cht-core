@@ -65,15 +65,26 @@ const enterCheckAndSelect = async (searchTxt, totalExpectedResults, entrySelecto
 };
 
 module.exports = {
-  messageDetailsHeader: () => element(by.css('#message-header .name')),
+  // LHS
   messageInList: identifier => element(by.css(`#message-list li[test-id="${identifier}"]`)),
-  allMessages: () => element.all(by.css('#message-content li')),
   messageByIndex: index => element(by.css(`#message-list li:nth-child(${index})`)),
+  listMessageHeading: (listElement) => listElement.element(by.css('.heading h4')),
+  listMessageSummary: (listElement) => listElement.element(by.css('.summary p')),
+
+  //RHS
+  messageDetailsHeader: () => element(by.css('#message-header .name')),
+  allMessages: () => element.all(by.css('#message-content li')),
+  messageContentIndex: (index) => element(by.css(`#message-content li:nth-child(${index})`)),
+  messageContentText: (messageContentElement) => messageContentElement.element(by.css('.data p:first-child')),
+  messageContentState: (messageContentElement) => messageContentElement.element(by.css('.data .state')),
+
+
   messageText: text => element(by.css('#send-message textarea')).sendKeys(text),
   sendMessage: () => element(by.css('.general-actions .send-message')),
   sendMessageModal: () => element(by.id('send-message')),
   sendMessageMobalSubmit: () => module.exports.sendMessageModal().element(by.css('a.btn.submit:not(.ng-hide)')),
   messageRecipientSelect: () => element(by.css('#send-message input.select2-search__field')),
+
   exportData: ()=> {
     helper.waitUntilReady(exportButton);
     exportButton.click();
