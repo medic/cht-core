@@ -58,6 +58,10 @@ const baseConfig = {
       '**/content-security-policy.js',
       'e2e/navigation/*.js',
       '**/send-message.js',
+      'e2e/report-date-filter.js',
+      'e2e/africas-talking.js',
+      'e2e/medic-collect.js',
+
     ],
     // performance: 'performance/**/*.js'
   },

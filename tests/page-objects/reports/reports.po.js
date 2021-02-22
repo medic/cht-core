@@ -213,8 +213,9 @@ module.exports = {
       'There should be at least one report in the LHS'
     );
   },
+  // tasks
   taskByIndex: (index) => {
-    return element(by.css(reportBodyDetails)).element(by.css(`.task-list > li:nth-child(${index})`));
+    return element(by.css(reportBodyDetails)).element(by.css(`ul .task-list > li:nth-child(${index})`));
   },
   taskTextByIndex: (index) => {
     return module.exports.taskByIndex(index).element(by.css('ul > li')).getText();
@@ -222,20 +223,36 @@ module.exports = {
   taskRecipientByIndex: (index) => {
     return module.exports.taskByIndex(index).element(by.css('.task-state .recipient'));
   },
+  taskStateByIndex: (index) => {
+    return module.exports.taskByIndex(index).element(by.css('.task-state .state'));
+  },
   taskGatewayStatusByIndex: (index) => {
     return module.exports.taskByIndex(index).element(by.css('.task-state .state.forwarded-to-gateway'));
   },
-  scheduledTaskByIndex: (index) => {
-    return element(by.css(`#reports-content .details .scheduled-tasks > ul > li:nth-child(${index})`));
+
+  scheduledTaskGroupByIndex: (groupIndex) => {
+    return element(by.css(`#reports-content .details .scheduled-tasks > ul > li:nth-child(${groupIndex})`));
   },
-  scheduledTaskMessageByIndex: (index) => {
-    return module.exports.scheduledTaskByIndex(index).element(by.css('.task-list li > ul > li'));
+  scheduledTaskByIndex: (groupIndex, taskIndex=1) => {
+    return module.exports
+      .scheduledTaskGroupByIndex(groupIndex)
+      .element(by.css(`.task-list li:nth-child(${taskIndex})`));
   },
-  scheduledTaskStateByIndex: (index) => {
-    return module.exports.scheduledTaskByIndex(index).element(by.css('.task-list li .task-state .state.scheduled'));
+
+  scheduledTaskMessageByIndex: (groupIndex, taskIndex=1) => {
+    return module.exports
+      .scheduledTaskByIndex(groupIndex, taskIndex)
+      .element(by.css('ul li'));
   },
-  scheduledTaskRecipientByIndex: (index) => {
-    return module.exports.scheduledTaskByIndex(index).element(by.css('.task-list li .task-state .recipient'));
+  scheduledTaskStateByIndex: (groupIndex, taskIndex=1 ) => {
+    return module.exports
+      .scheduledTaskByIndex(groupIndex, taskIndex)
+      .element(by.css(`.task-state .state`));
+  },
+  scheduledTaskRecipientByIndex: (groupIndex, taskIndex=1) => {
+    return module.exports
+      .scheduledTaskByIndex(groupIndex, taskIndex)
+      .element(by.css(`.task-state .recipient`));
   },
   waitForReportToAppearNative: async (numOfReports = 1) => {
     await browser.refresh();

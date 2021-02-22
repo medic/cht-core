@@ -272,9 +272,9 @@ describe('registration transition', () => {
     };
 
     const checkScheduledTask = async (childIndex, title, message) => {
-      expect(await reportsPo.scheduledTaskByIndex(childIndex).element(by.css('h3')).getText()).toContain(title);
+      expect(await reportsPo.scheduledTaskGroupByIndex(childIndex).element(by.css('h3')).getText()).toContain(title);
       expect(await reportsPo.scheduledTaskMessageByIndex(childIndex).getText()).toBe(message);
-      expect(await reportsPo.scheduledTaskStateByIndex(childIndex).isDisplayed()).toBeTruthy();
+      expect(await reportsPo.scheduledTaskStateByIndex(childIndex).getText()).toBe('scheduled');
       expect(await reportsPo.scheduledTaskRecipientByIndex(childIndex).getText()).toBe(' to +64271234567');
     };
 
