@@ -47,7 +47,9 @@ const baseConfig = {
       'e2e/bulk-delete.js',
       'e2e/login/db-sync-filter.spec.js',
       'e2e/sms-gateway.js',
-      '**/report-date-filter.js',
+      'e2e/report-date-filter.js',
+      'e2e/africas-talking.js',
+      'e2e/medic-collect.js',
     ],
     // performance: 'performance/**/*.js'
   },
