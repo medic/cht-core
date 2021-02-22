@@ -1,5 +1,4 @@
 const helper = require('../../helper');
-const commonElements = require('../../page-objects/common/common.po');
 
 const incorrectCredentialsText =
   'Incorrect user name or password. Please try again.';
