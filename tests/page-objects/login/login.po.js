@@ -34,6 +34,7 @@ module.exports = {
       expect(helper.isTextDisplayed(incorrectCredentialsText)).toBe(true);
     }
   },
+
   loginNative: async (username, password, shouldFail, locale) => {
     await helper.waitUntilReadyNative(await getUsernameField());
     await getUsernameField().clear();
