@@ -15,17 +15,17 @@ Docker to run couchdb.
 
 ### Github Actions Run
 
-The build process compiles our application. Then installs horticulturalist to run the app. This puts us closer to production. Executes `grunt ci-e2e`. Which then installs and runs chromedriver. Runs the protractor tests against the installed version. Currently there are 3 jobs that execute in the supported node environments.  
+The build process compiles our application. Then installs horticulturalist to run the app. This puts us closer to production. Executes `grunt ci-e2e`. Which then installs and runs chromedriver. Runs the protractor tests against the installed app version. Currently there are 3 jobs that execute in the supported node environments.  
 
 ## Protractor Tips
 
 ### File Structure
-Tests files should repesent a feature within the application. Using `describe` to identify the feature and `it` detail the invidual functions of the feature. 
+Tests files should represent a feature within the application. Using `describe` to identify the feature and `it` detail the individual functions of the feature. 
 
 EX: `describe('Users can login )`  `it(with valid credentials)`
 
 ### Page Object Model
-We are leveraging the page object model for structure. When identifying elements they should be added to a page object and notwithin a test file. Add functions that do actions to the page within the page object. Keep expects outside of page objects. The tests should be self documenting. 
+We are leveraging the page object model for structure. When identifying elements they should be added to a page object and not within a test file. Add functions that do actions to the page within the page object. Keep expects outside of page objects. The tests should be self documenting. 
 
 ### Adding identifiers
 In some cases adding a unique identifier to an element may be necessary. This could be a piece of data related to the element or a unique name. To do this the app code can be modified to add a `test-` attribute.  
@@ -67,13 +67,13 @@ Documented here are two ways to run individual tests and have your IDE break on 
 1. Click the plus to add a configuration.
 1. Select Protractor
 1. Set the configuration file to the path of `<cht-core-repo>/tests/conf.js`
-1. Set Node Interperter is set to your node install. 
+1. Set Node Interpreter is set to your node install. 
 1. Set Protractor package is set to the `<cht-core-repo>/node_modules/protractor`
 1. Set the Protractor options to `--capabilities.chromeOptions.args=start-maximized --jasmine.DEFAULT_TIMEOUT_INTERVAL=120000`  These are optional.
 1. Select the radio button for Test
 1. Enter the path to the Test file Ex: `<cht-core-repo>/tests/e2e/login/login.specs.js`
-1. Enter the test name. This is a bit of a chore. IntelliJ will automatically add the regex flags for begins(`^`) of line and end of line(`$`). Protractor presents the name for matching as the Describe description followed by the It description. To run the login test for should have a title you would need to put this as your matcher. `Login tests : should have a title`. An alternative would be to select Test File and run the entire file. You can add an `x` infront of `it` to disable the ones you do not need. EX: `xit('should login`)
+1. Enter the test name. This is a bit of a chore. IntelliJ will automatically add the regex flags for begins(`^`) of line and end of line(`$`). Protractor presents the name for matching as the Describe description followed by the It description. To run the login test for should have a title you would need to put this as your matcher. `Login tests : should have a title`. An alternative would be to select Test File and run the entire file. You can add an `x` in front of `it` to disable the ones you do not need. EX: `xit('should login`)
 1. Click ok
 1. Click the run configuration dropdown and select the protractor config. 
 1. In a terminal run `grunt e2e-deploy`   NOTE: This has to happen each time you run. 
-1. Click debug button in webstorm.
+1. Click debug button in IntelliJ.
