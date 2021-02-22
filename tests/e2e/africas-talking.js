@@ -1,6 +1,8 @@
 const utils = require('../utils');
 const constants = require('../constants');
 const commonElements = require('../page-objects/common/common.po.js');
+const messagesElements = require('../page-objects/messages/messages.po');
+const reportsElements = require('../page-objects/reports/reports.po');
 const helper = require('../helper');
 const querystring = require('querystring');
 
@@ -167,26 +169,30 @@ describe('africas talking api', () => {
       await commonElements.goToMessagesNative();
 
       // LHS
-      await helper.waitElementToBeVisibleNative(element(by.css('#message-list li:first-child')));
-      const heading = element(by.css('#message-list li:first-child .heading h4'));
-      const summary = element(by.css('#message-list li:first-child .summary p'));
+      const firstMessage = messagesElements.messageByIndex(1);
+      await helper.waitElementToBeVisibleNative(firstMessage);
+
+      const heading = messagesElements.listMessageHeading(firstMessage);
+      const summary = messagesElements.listMessageSummary(firstMessage);
       expect(await helper.getTextFromElementNative(heading)).toBe('+64271234567');
       expect(await helper.getTextFromElementNative(summary)).toBe('hello');
       await helper.clickElementNative(summary);
 
       // RHS
-      const firstContentMessage = element(by.css('#message-content li.incoming:first-child .data p:first-child'));
-      await helper.waitElementToBeVisibleNative(firstContentMessage);
-      const messageHeader = element(by.css('#message-header .name'));
-      const messageText = element(by.css('#message-content li.incoming:first-child .data p:first-child'));
-      const messageStatus = element(by.css('#message-content li.incoming:first-child .data .state.received'));
+
+      const firstMessageContent = messagesElements.messageContentIndex(1);
+      await helper.waitElementToBeVisibleNative(firstMessageContent);
+
+      const messageHeader = messagesElements.messageDetailsHeader();
+      const messageText = messagesElements.messageContentText(firstMessageContent);
+      const messageStatus = messagesElements.messageContentState(firstMessageContent);
+
       expect(await helper.getTextFromElementNative(messageHeader)).toBe('+64271234567');
       expect(await helper.getTextFromElementNative(messageText)).toBe('hello');
       expect(await helper.getTextFromElementNative(messageStatus)).toBe('received');
 
       // database
-      const firstListMessage = element(by.css('#message-content li.incoming:first-child'));
-      const id = await firstListMessage.getAttribute('data-id');
+      const id = await firstMessageContent.getAttribute('data-id');
       const doc = await utils.getDoc(id);
       expect(doc.sms_message && doc.sms_message.gateway_ref).toBe('a');
     });
@@ -227,21 +233,18 @@ describe('africas talking api', () => {
 
     it('- shows content', async () => {
       await commonElements.goToReportsNative();
-      await helper.waitUntilReadyNative(element(by.css('#reports-list li:first-child')));
-      await helper.clickElementNative(element(by.css('#reports-list li:first-child .heading')));
-      await helper.waitElementToPresentNative(element(by.css('#reports-content .body .item-summary .icon')));
+      const firstReport = reportsElements.firstReport();
+
+      await helper.waitUntilReadyNative(firstReport);
+      const uuid = await firstReport.getAttribute('data-record-id');
+      await reportsElements.loadReport(uuid);
 
       // tasks
-      const sentTaskState = element(by.css('#reports-content .details > ul .task-list .task-state .state'));
-      const deliveredTaskState = element(by.css(
-        '#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state')
-      );
-      const scheduledTaskState = element(by.css(
-        '#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(2) .task-state .state')
-      );
-      const failedTaskState = element(by.css(
-        '#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state')
-      );
+      const sentTaskState = reportsElements.taskStateByIndex(1);
+
+      const deliveredTaskState = reportsElements.scheduledTaskStateByIndex(1, 1);
+      const scheduledTaskState = reportsElements.scheduledTaskStateByIndex(1, 2);
+      const failedTaskState = reportsElements.scheduledTaskStateByIndex(2, 1);
 
       expect(await helper.getTextFromElementNative(sentTaskState)).toBe('sent');
       expect(await helper.getTextFromElementNative(deliveredTaskState)).toBe('delivered');
