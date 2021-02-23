@@ -103,7 +103,7 @@ export class ChangesService {
       .catch((err) => {
         console.error('Error initialising watching for db changes', err);
         console.error('Attempting changes initialisation in ' + (RETRY_MILLIS / 1000) + ' seconds');
-        setTimeout(this.init, RETRY_MILLIS);
+        setTimeout(() => this.init(), RETRY_MILLIS);
       });
   }
 
