@@ -22,6 +22,7 @@ const handleUpdateModalNative = async () => {
 
 module.exports = {
   clickElement: element => {
+    utils.deprecated('clickElement', 'clickElementNative');
     handleUpdateModal();
     return browser
       .wait(
@@ -157,26 +158,14 @@ module.exports = {
     }
   },
 
-  getTextFromElements: elements => {
+  getTextFromElements: async (elements, expectedElements) => {
     const textFromElements = [];
-    return browser
-      .wait(
-        EC.presenceOf(elements),
-        12000,
-        'Element taking too long to appear in the DOM. Giving up!'
-      )
-      .then(() => {
-        elements.each(element => {
-          element.getText()
-            .then(text => {
-              textFromElements.push(text.trim());
-            })
-            .catch(err => {
-              throw err;
-            });
-        });
-        return textFromElements;
-      });
+    await browser.wait(async () => await elements.count() === expectedElements, 2000);
+    await elements.each(async (element) => {
+      const text = (await element.getText()).trim();
+      textFromElements.push(text);
+    });
+    return textFromElements;
   },
 
   elementByText: text => element(by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)),
@@ -217,14 +206,13 @@ module.exports = {
    * element : select element
    * index : index in the dropdown, 1 base.
    */
-  selectDropdownByNumber: (element, index, milliseconds) => {
-    element.findElements(by.tagName('option')).then(options => {
-      options[index].click();
-    }).catch(err => {
-      throw err;
-    });
+  selectDropdownByNumber: async (element, index, milliseconds) => {
+    const options = await element.findElements(by.tagName('option'));
+    if (options[index]) {
+      await options[index].click();
+    }
     if (milliseconds) {
-      browser.sleep(milliseconds);
+      await browser.sleep(milliseconds);
     }
   },
 
@@ -233,52 +221,37 @@ module.exports = {
    * selector : select element
    * item : option(s) in the dropdown.
    */
-  selectDropdownByText: (element, item, milliseconds) => {
-    element.all(by.tagName('option')).then(options => {
-      options.some(option => {
-        option.getText()
-          .then(text => {
-            if (text.indexOf(item) !== -1) {
-              option.click();
-            }
-          })
-          .catch(err => {
-            throw err;
-          });
-      });
-    }).catch(err => {
-      throw err;
-    });
-    if (milliseconds) {
-      browser.sleep(milliseconds);
+  selectDropdownByText: async (element, item) => {
+    const options = await element.all(by.tagName('option'));
+    for (const option of options) {
+      const text = await option.getText();
+      if (text && text.includes(item)) {
+        await option.click();
+      }
     }
   },
 
-  selectDropdownByValue: (element, value, milliseconds) => {
-    element.all(by.css(`option[value="${value}"]`)).then(options => {
-      if (options[0]) {
-        options[0].click();
-      }
-    }).catch(err => {
-      throw err;
-    });
-    if (milliseconds) {
-      browser.sleep(milliseconds);
+  selectDropdownByValue: async (element, value) => {
+    const options = await element.all(by.css(`option[value="${value}"]`));
+    if (options[0]) {
+      await options[0].click();
+      await browser.wait(
+        async () => await element.element(by.css('option:checked')).getAttribute('value') === value,
+        1000
+      );
     }
   },
 
   setBrowserParams: () => {
-    browser.driver
+    return browser.driver
       .manage()
       .window()
       .setSize(browser.params.screenWidth, browser.params.screenHeight);
   },
 
   takeScreenshot: filename => {
-    browser.takeScreenshot().then(png => {
+    return browser.takeScreenshot().then(png => {
       writeScreenShot(png, filename);
-    }).catch(err => {
-      throw err;
     });
   },
 
