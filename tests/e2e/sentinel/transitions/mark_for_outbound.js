@@ -75,12 +75,12 @@ const wipeTasks = () => getTasks()
   });
 
 describe('mark_for_outbound', () => {
-  afterEach(done => Promise.all([utils.revertSettings(), wipeTasks()]).then(done));
-  afterAll(done => utils.revertDb().then(done));
+  afterEach(() => Promise.all([utils.revertSettings(true), wipeTasks()]));
+  afterAll(() => utils.revertDb());
 
   describe('when external server is up', () => {
-    beforeEach(done => startMockApp().then(done));
-    afterEach(done => { stopMockApp(); done(); });
+    beforeEach(() => startMockApp());
+    afterEach(() => void stopMockApp());
 
     it('correctly creates and sends an outbound request immediately', () => {
       const report = makeReport();

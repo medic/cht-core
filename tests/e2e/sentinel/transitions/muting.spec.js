@@ -736,7 +736,7 @@ describe('muting', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(mute))
       .then(() => sentinelUtils.waitForSentinel(mute._id))
       .then(() => utils.saveDoc(person))
@@ -901,7 +901,7 @@ describe('muting', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs(extraContacts))
       .then(() => utils.saveDocs(reports))
       .then(() => utils.saveDoc(mute))
