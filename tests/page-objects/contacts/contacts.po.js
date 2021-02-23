@@ -121,5 +121,8 @@ module.exports = {
     await peopleRow.click();
     await helper.waitUntilReadyNative(deleteContact);
     await deleteContact.click();
-  }
+  },
+
+  getReportsFilters: () => element.all(by.css('.card.reports .table-filter a')),
+  getTasksFilters: () => element.all(by.css('.card.tasks .table-filter a')),
 };

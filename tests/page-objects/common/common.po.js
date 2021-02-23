@@ -235,6 +235,8 @@ module.exports = {
   expectDisplayDate: async () => {
     expect(await displayTime.isPresent()).toBeTruthy();
   },
+
+  getReportsButtonLabel: () => element(by.css('#reports-tab .button-label')),
 };
 
 function openSubmenu(menuName) {

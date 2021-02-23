@@ -385,6 +385,27 @@ module.exports = {
     }
   }),
 
+  /*
+   this is kind of a hack
+   but you can now access the current running spec in beforeEach / afterEach / etc by accessing jasmine.currentSpec
+   the value looks like :
+   type Result {
+    id: 'spec0',
+    description: 'This string is the title of your `it` block',
+    fullName: 'This is the full title derived from nested `describe` and `it`s that you have created',
+    failedExpectations: [], - possibly has contents during `afterEach` / `afterAll`
+    passedExpectations: [], - possibly has contents during `afterEach` / `afterAll`
+    pendingReason: '',
+    testPath: '/path/to/the/spec/file/of/this/test.js'
+   }
+   */
+  currentSpecReporter: {
+    specStarted: result => (jasmine.currentSpec = result),
+    specDone: result => (jasmine.currentSpec = result),
+  },
+
+
+
   requestOnTestDb: (options, debug) => {
     if (typeof options === 'string') {
       options = {
