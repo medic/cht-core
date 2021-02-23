@@ -1,0 +1,6 @@
+version: '3.7'
+
+services:
+  haproxy:
+    ports:
+     - 5984:5984
