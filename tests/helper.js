@@ -158,9 +158,9 @@ module.exports = {
     }
   },
 
-  getTextFromElements: async (elements) => {
+  getTextFromElements: async (elements, expectedElements) => {
     const textFromElements = [];
-    await browser.wait(EC.presenceOf(elements));
+    await browser.wait(async () => await elements.count() === expectedElements, 2000);
     await elements.each(async (element) => {
       const text = (await element.getText()).trim();
       textFromElements.push(text);
@@ -221,7 +221,7 @@ module.exports = {
    * selector : select element
    * item : option(s) in the dropdown.
    */
-  electDropdownByText: async (element, item, milliseconds) => {
+  selectDropdownByText: async (element, item) => {
     const options = await element.all(by.tagName('option'));
     for (const option of options) {
       const text = await option.getText();
@@ -229,18 +229,16 @@ module.exports = {
         await option.click();
       }
     }
-    if (milliseconds) {
-      await browser.sleep(milliseconds);
-    }
   },
 
-  selectDropdownByValue: async (element, value, milliseconds) => {
+  selectDropdownByValue: async (element, value) => {
     const options = await element.all(by.css(`option[value="${value}"]`));
     if (options[0]) {
       await options[0].click();
-    }
-    if (milliseconds) {
-      await browser.sleep(milliseconds);
+      await browser.wait(
+        async () => await element.element(by.css('option:checked')).getAttribute('value') === value,
+        1000
+      );
     }
   },
 

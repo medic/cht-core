@@ -1,6 +1,8 @@
 const utils = require('../../utils');
 const helper = require('../../helper');
 const commonElements = require('../../page-objects/common/common.po.js');
+const userSettingsElements = require('../../page-objects/user-settings/user-settings.po');
+const contactElements = require('../../page-objects/contacts/contacts.po');
 
 describe('Incorrect locale', () => {
 
@@ -22,20 +24,6 @@ describe('Incorrect locale', () => {
     parent: '',
   });
 
-  const editSettingsLink = async () => {
-    await helper.waitUntilReady(element(by.css('.content .configuration')));
-    const link = element.all(by.css('.content .configuration .btn-link')).last();
-    return link.click();
-  };
-
-  const getLanguageField = () => {
-    return element(by.id('language'));
-  };
-
-  const getSubmitButton = () => {
-    return element(by.css('.btn.submit.btn-primary:not(.ng-hide)'));
-  };
-
   beforeEach(async () => {
     await createContact();
     await createLanguage();
@@ -51,29 +39,29 @@ describe('Incorrect locale', () => {
     await commonElements.checkUserSettings();
 
     // open user settings modal
-    await editSettingsLink();
+    await userSettingsElements.openEditSettings();
 
     // change language
-    await helper.selectDropdownByValue(getLanguageField(), 'hil', 2);
-    await helper.clickElementNative(getSubmitButton());
+    await helper.selectDropdownByValue(userSettingsElements.getLanguageField(), 'hil');
+    await helper.clickElementNative(userSettingsElements.getSubmitButton());
 
     // wait for language to load
     await browser.wait(
-      async () => await element(by.css('#reports-tab .button-label')).getText() === 'HilReports',
+      async () => await commonElements.getReportsButtonLabel().getText() === 'HilReports',
       2000
     );
 
     // we have correct language!
-    const text = await element(by.css('#reports-tab .button-label')).getText();
+    const text = await commonElements.getReportsButtonLabel().getText();
     expect(text).toEqual('HilReports');
 
     await commonElements.goToPeople();
-    await helper.clickElementNative(element(by.css('#contacts-list .content')));
+    await contactElements.selectLHSRowByText('hil district');
 
-    const reportsFilter = await helper.getTextFromElements(element.all(by.css('.card.reports .table-filter a')));
+    const reportsFilter = await helper.getTextFromElements(contactElements.getReportsFilters(), 3);
     expect(reportsFilter.sort()).toEqual(['3 luni', '6 luni', 'View all'].sort());
 
-    const tasksFilter = await helper.getTextFromElements(element.all(by.css('.card.tasks .table-filter a')));
+    const tasksFilter = await helper.getTextFromElements(contactElements.getTasksFilters(), 3);
     expect(tasksFilter.sort()).toEqual(['1 saptamana', '2 saptamani', 'View all'].sort());
   });
 });
