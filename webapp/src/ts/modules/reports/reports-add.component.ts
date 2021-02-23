@@ -281,7 +281,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
 
   save() {
     if (this.enketoSaving) {
-      console.debug('Attempted to call reports-add:$scope.save more than once');
+      console.debug('Attempted to call reports-add.component:save more than once');
       return;
     }
 
@@ -293,8 +293,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
     const model = this.selectedReports[0];
-    const reportId = model.doc && model.doc._id;
-    const formInternalId = model.formInternalId;
+    const reportId = model?.doc?._id;
+    const formInternalId = model?.formInternalId;
 
     return this.enketoService
       .save(formInternalId, this.form, this.geoHandle, reportId)
