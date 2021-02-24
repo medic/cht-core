@@ -40,8 +40,9 @@ module.exports = {
   },
 
   addNewDistrict: async (districtName) => {
-    await helper.clickElementNative(newDistrictButton);
-    await helper.clickElementNative(newPersonButton);
+    await helper.waitUntilReadyNative(newDistrictButton);
+    await newDistrictButton.click();
+    await helper.waitUntilReadyNative(newPersonButton);
     await newPersonButton.click();
     await newPersonTextBox.sendKeys('Bede');
     await personNotes.sendKeys('Main CHW');
@@ -49,23 +50,26 @@ module.exports = {
     await helper.scrollElementIntoView(contactSexField);
     await contactSexField.click();
     await genericForm.nextPageNative();
-    await helper.clickElementNative(writeName);
+    await helper.waitElementToBeVisibleNative(writeName);
+    await writeName.click();
     await newPlaceName.sendKeys(districtName);
     return genericForm.submitButton.click();
   },
 
-
   addHealthCenter: async (name = 'Mavuvu Clinic') => {
     const newHealthCenterButton = element(by.css('[href$="/add/health_center"]'));
+    await helper.waitUntilReadyNative(newHealthCenterButton);
     await helper.clickElementNative(newHealthCenterButton);
-    await helper.clickElementNative(newPersonButton);
+    await helper.waitUntilReadyNative(newPersonButton);
+    await newPersonButton.click();
     await newPersonTextBox.sendKeys('Gareth');
     await dateOfBirthField.sendKeys('2000-01-01');
     await helper.scrollElementIntoView(contactSexField);
     await contactSexField.click();
     await genericForm.nextPageNative();
     const writeNameHC = element(by.css('[name="/data/health_center/is_name_generated"][value="false"]'));
-    await helper.clickElementNative(writeNameHC);
+    await helper.waitElementToBeVisibleNative(writeNameHC);
+    await writeNameHC.click();
     await newPlaceName.sendKeys(name);
     await element(by.css('[name="/data/health_center/external_id"]')).sendKeys('1234457');
     await element(by.css('[name="/data/health_center/notes"]')).sendKeys('some notes');
@@ -85,7 +89,8 @@ module.exports = {
     await contactSexField.click();
     await genericForm.nextPageNative();
     const writeNameHC = element(by.css('[name="/data/clinic/is_name_generated"][value="false"]'));
-    await helper.clickElementNative(writeNameHC);
+    await helper.waitElementToBeVisibleNative(writeNameHC);
+    await writeNameHC.click();
     await newPlaceName.sendKeys(name);
     await element(by.css('[name="/data/clinic/external_id"]')).sendKeys('1234457');
     await element(by.css('[name="/data/clinic/notes"]')).sendKeys('some notes');
@@ -114,7 +119,8 @@ module.exports = {
     // this element shows up underneath the actionbar, so the actionbar can intercept the click
     await browser.executeScript(`arguments[0].scrollIntoView({block: "center"});`, peopleRow);
     await peopleRow.click();
-    await helper.clickElementNative(deleteContact);
+    await helper.waitUntilReadyNative(deleteContact);
+    await deleteContact.click();
   },
 
   getReportsFilters: () => element.all(by.css('.card.reports .table-filter a')),
