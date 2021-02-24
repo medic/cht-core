@@ -59,7 +59,7 @@ const updateSelectedConversation = (state, selected) => {
 };
 
 const markSelectedConversationRead = (state) => {
-  if (!state.conversations || !state.selected.messages) {
+  if (!state.conversations || !state.selected?.messages) {
     return state;
   }
 

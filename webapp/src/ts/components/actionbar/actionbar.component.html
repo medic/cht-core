@@ -43,7 +43,7 @@
             <span class="fa fa-check-circle"></span>
             <p>{{'select.mode.start' | translate}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="isAdmin" (click)="actionBar?.left?.exportFn($event)" [ngClass]="{'mm-icon-disabled': !actionBar?.left?.hasResults}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="isAdmin && !actionBar?.left?.exportFn" (click)="actionBar?.left?.exportFn($event)" [ngClass]="{'mm-icon-disabled':  !actionBar?.left?.hasResults}">
             <span class="fa fa-arrow-down"></span>
             <p>{{'Export' | translate}}</p>
           </a>
@@ -53,9 +53,9 @@
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'contacts'">
         <div class="actions dropup" mmAuth [mmAuthAny]="[ isAdmin, actionBar?.left?.childPlaces && 'can_create_places' ]">
           <a *ngIf="actionBar?.left?.childPlaces?.length > 1"
-            mmAuth="can_create_places"
-            class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle"
-            data-toggle="dropdown"
+             mmAuth="can_create_places"
+             class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle"
+             data-toggle="dropdown"
           >
             <span class="fa fa-plus"></span>
             <p>{{'Add place' | translate}}</p>
@@ -67,7 +67,7 @@
           >
             <li *ngFor="let child of actionBar.left.childPlaces; trackBy: trackById">
               <a [routerLink]="actionBar.left.userFacilityId ? ['/', 'contacts', actionBar.left.userFacilityId, 'add', child.id] : ['/', 'contacts', 'add', child.id]"
-                [queryParams]="{ from: 'list' }"
+                 [queryParams]="{ from: 'list' }"
               >
                 <span [innerHTML]="child.icon | resourceIcon"></span>
                 <span class="content">{{ child.create_key | translate }}</span>
@@ -76,10 +76,10 @@
           </ul>
 
           <a *ngIf="actionBar?.left?.childPlaces?.length === 1"
-            mmAuth="can_create_places"
-            class="mm-icon mm-icon-inverse mm-icon-caption"
-            [routerLink]="actionBar.left.userFacilityId ? ['/', 'contacts', actionBar.left.userFacilityId, 'add', actionBar.left.childPlaces[0]?.id] : ['/', 'contacts', 'add', actionBar.left.childPlaces[0]?.id]"
-            [queryParams]="{ from: 'list' }"
+             mmAuth="can_create_places"
+             class="mm-icon mm-icon-inverse mm-icon-caption"
+             [routerLink]="actionBar.left.userFacilityId ? ['/', 'contacts', actionBar.left.userFacilityId, 'add', actionBar.left.childPlaces[0]?.id] : ['/', 'contacts', 'add', actionBar.left.childPlaces[0]?.id]"
+             [queryParams]="{ from: 'list' }"
           >
             <span class="fa-stack">
               <i [innerHTML]="actionBar.left.childPlaces[0].icon | resourceIcon"></i>
@@ -88,10 +88,10 @@
             <p>{{ actionBar.left.childPlaces[0].create_key | translate}}</p>
           </a>
 
-          <a *ngIf="isAdmin"
-            class="mm-icon mm-icon-inverse mm-icon-caption"
-            (click)="actionBar?.left?.exportFn()"
-            [ngClass]="{ 'mm-icon-disabled': !actionBar.left.hasResults }"
+          <a *ngIf="isAdmin && actionBar?.left?.exportFn"
+             class="mm-icon mm-icon-inverse mm-icon-caption"
+             (click)="actionBar?.left?.exportFn()"
+             [ngClass]="{ 'mm-icon-disabled': !actionBar.left.hasResults }"
           >
             <span class="fa fa-arrow-down"></span>
             <p>{{'Export' | translate}}</p>
@@ -101,11 +101,11 @@
 
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'messages'">
         <div class="actions dropup">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" (click)="actionBar?.left?.openSendMessageModal($event)">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" *ngIf="actionBar?.left?.openSendMessageModal" (click)="actionBar?.left?.openSendMessageModal($event)">
             <span class="fa fa-plus"></span>
             <p>{{'Send Message' | translate}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="isAdmin" (click)="actionBar?.left?.exportFn()" [ngClass]="{'mm-icon-disabled': !actionBar?.left?.hasResults}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="isAdmin && actionBar?.left?.exportFn" (click)="actionBar?.left?.exportFn()" [ngClass]="{'mm-icon-disabled': !actionBar?.left?.hasResults}">
             <span class="fa fa-arrow-down"></span>
             <p>{{'Export' | translate}}</p>
           </a>
@@ -130,7 +130,7 @@
               <span class="fa fa-envelope"></span>
               <p>{{'Send Message' | translate}}</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" *ngIf="actionBar?.right?.openSendMessageModal" (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
               <span class="fa fa-envelope"></span>
               <p>{{'Send Message' | translate}}</p>
             </a>
@@ -204,8 +204,8 @@
             </ng-container>
 
             <a *ngIf="group.types?.length === 1"
-              class="mm-icon mm-icon-inverse mm-icon-caption"
-              [routerLink]="['/', 'contacts', selectedContactDoc._id, 'add', group.types[0]?.id]"
+               class="mm-icon mm-icon-inverse mm-icon-caption"
+               [routerLink]="['/', 'contacts', selectedContactDoc._id, 'add', group.types[0]?.id]"
             >
               <span class="fa-stack">
                 <i [innerHTML]="group.types[0]?.icon | resourceIcon"></i>
@@ -216,45 +216,45 @@
           </span>
 
           <a *ngIf="actionBar?.right?.sendTo"
-            mmAuth="can_view_call_action"
-            class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
-            [attr.href]="'tel:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'"
-            [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
+             mmAuth="can_view_call_action"
+             class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
+             [attr.href]="'tel:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'"
+             [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
           >
             <span class="fa fa-phone"></span>
             <p>{{'call' | translate}}</p>
           </a>
           <a *ngIf="actionBar?.right?.sendTo"
-            mmAuth="can_view_message_action"
-            class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
-            [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'"
-            [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
+             mmAuth="can_view_message_action"
+             class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
+             [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'"
+             [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
           >
             <span class="fa fa-envelope"></span>
             <p>{{'Send Message' | translate}}</p>
           </a>
           <a *ngIf="actionBar?.right?.sendTo"
-            mmAuth="can_view_message_action"
-            class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only"
-            [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
-            (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)"
+             mmAuth="can_view_message_action"
+             class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only"
+             [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
+             (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)"
           >
             <span class="fa fa-envelope"></span>
             <p>{{'Send Message' | translate}}</p>
           </a>
 
           <a class="mm-icon mm-icon-inverse mm-icon-caption"
-            [routerLink]="['/', 'contacts', selectedContactDoc._id, 'edit']"
-            [ngClass]="{'mm-icon-disabled': !actionBar?.right?.canEdit}"
+             [routerLink]="['/', 'contacts', selectedContactDoc._id, 'edit']"
+             [ngClass]="{'mm-icon-disabled': !actionBar?.right?.canEdit}"
           >
             <span class="fa fa-pencil"></span>
             <p>{{'Edit' | translate}}</p>
           </a>
 
           <a mmAuth="can_delete_contacts"
-            class="mm-icon mm-icon-inverse mm-icon-caption"
-            (click)="deleteDoc(selectedContactDoc)"
-            [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.canDelete }"
+             class="mm-icon mm-icon-inverse mm-icon-caption"
+             (click)="deleteDoc(selectedContactDoc)"
+             [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.canDelete }"
           >
             <span class="fa fa-trash-o"></span>
             <p>{{'Delete' | translate}}</p>
