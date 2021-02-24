@@ -1,7 +1,9 @@
 const helper = require('../../helper');
 const nameField = element(by.css('#report-form form [name="/data/name"]'));
-const submitButton = element(by.css('#report-form .submit'));
+const submitButton = element(by.css('.enketo .submit'));
 const submittedName = element(by.css('#reports-content .details ul li:first-child p'));
+
+const leftActionBarButtons = () => element.all(by.css('.general-actions .actions.dropup > a'));
 
 module.exports = {
   submittedName,
@@ -16,18 +18,27 @@ module.exports = {
     editFormBtn.click();
   },
 
+  editFormNative: async () => {
+    const editFormBtn = element(
+      by.css('[href^="#/reports/edit"]>.fa-pencil')
+    );
+    await helper.waitUntilReadyNative(editFormBtn);
+    await editFormBtn.click();
+  },
+
   goBack: () => {
     element(by.css('button.btn.btn-default.previous-page')).click();
   },
 
-  invalidateReport: () => {
-    const reportInvalidBtn = element(by.css('[ng-include*="verify-invalid"]'));
-    helper.waitUntilReady(reportInvalidBtn);
-    reportInvalidBtn.click();
+  invalidateReportNative: async () => {
+    const reportInvalidBtn = element(by.css('.verify-error'));
+    await helper.waitUntilReadyNative(reportInvalidBtn);
+    await reportInvalidBtn.click();
     const reportInvalidIcon = element(by.css('.detail>.status>.error'));
-    helper.waitUntilReady(reportInvalidIcon);
-    const reportInvalidMessage = element(by.css('.verify-error>span:last-of-type'));
-    expect(reportInvalidMessage.getText()).toEqual('Has errors');
+    await helper.waitUntilReadyNative(reportInvalidIcon);
+    const reportInvalidMessage = element(by.css('.verify-error.active'));
+    await helper.waitUntilReadyNative(reportInvalidMessage);
+    expect(await reportInvalidMessage.getText()).toEqual('Has errors');
   },
 
   nextPage: multiple => {
@@ -45,6 +56,16 @@ module.exports = {
     }
   },
 
+  nextPageNative: async (numberOfPages = 1) => {
+    const nextButton = element(by.css('button.btn.btn-primary.next-page'));
+
+    for (let i = 0; i < numberOfPages; i++) {
+      await helper.waitUntilReadyNative(nextButton);
+      await helper.waitElementToBeClickable(nextButton);
+      await nextButton.click();
+    }
+  },
+
   reportApprove: () => {
     helper.waitForAngularComplete();
     const checkBtn = element(by.css('.fa-check'));
@@ -52,7 +73,14 @@ module.exports = {
     checkBtn.click();
   },
 
+  reportApproveNative: async () => {
+    const reviewButton = element.all(by.css('.actions>.mm-icon-inverse>.fa-check')).get(0);
+    await helper.waitUntilReadyNative(reviewButton);
+    await reviewButton.click();
+  },
+
   selectForm: () => {
+    utils.deprecated('selectForm', 'selectFormNative');
     const addButton = element(
       by.css('.general-actions>.actions>.dropdown-toggle>.fa-plus')
     );
@@ -68,22 +96,58 @@ module.exports = {
     helper.waitElementToPresent(element(by.css('#report-form')));
   },
 
+  selectFormNative: async (formId, nonAdminUser = false) => {
+    if (!nonAdminUser) { // non-admin may or may not get the "select" mode button, depending on permissions
+      const expectedActionbarButtons = 3;
+      // wait for all actionbar links to appear
+      await browser.wait(async () => await leftActionBarButtons().count() === expectedActionbarButtons, 1000);
+    }
+
+    const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
+    await helper.waitUntilReadyNative(addButton);
+
+    // select form
+    await helper.clickElementNative(addButton);
+    const form = module.exports.formByHref(formId);
+    await helper.clickElementNative(form);
+
+    // waiting for form
+    await helper.waitUntilReadyNative(element(by.css('#report-form #form-title')));
+  },
+
+  formByHref: (href) => {
+    const css = `.action-container .general-actions .dropup.open .dropdown-menu li a[href="#/reports/add/${href}"]`;
+    return element(by.css(css));
+  },
+
   submit: () => {
-    const submitButton = element(by.css('[ng-click="onSubmit()"]'));
+    const submitButton = element(by.css('.btn.submit.btn-primary'));
+    helper.scrollElementIntoView(submitButton);
     helper.waitElementToBeClickable(submitButton);
     submitButton.click();
     helper.waitElementToBeVisible(element(by.css('div#reports-content')));
     expect(element(by.css('div.details')).isPresent()).toBeTruthy();
   },
 
-  validateReport: () => {
-    const reportValidBtn = element(by.css('[ng-include*="verify-valid"]'));
-    helper.waitElementToBeClickable(reportValidBtn);
-    reportValidBtn.click();
+  submitNative: async () => {
+    const submitButton = element(by.css('.btn.submit.btn-primary'));
+    await helper.waitElementToBeClickable(submitButton);
+    await submitButton.click();
+    await helper.waitElementToPresentNative(element(by.css('div#reports-content')));
+    const details = element(by.css('div.details'));
+    await helper.waitUntilReadyNative(details);
+    expect(await details.isPresent()).toBeTruthy();
+  },
+
+  validateReportNative: async () => {
+    const reportValidBtn = element(by.css('.verify-valid'));
+    await helper.waitElementToBeClickable(reportValidBtn);
+    await reportValidBtn.click();
     const reportValidIcon = element(by.css('.detail>.status>.verified'));
-    helper.waitUntilReady(reportValidIcon);
-    const reportValidMessage = element(by.css('.verify-valid>span:last-of-type'));
-    expect(reportValidMessage.getText()).toEqual('Correct');
+    await helper.waitUntilReadyNative(reportValidIcon);
+    const reportValidMessage = element(by.css('.verify-valid.active'));
+    await helper.waitUntilReadyNative(reportValidMessage);
+    expect(await reportValidMessage.getText()).toEqual('Correct');
   },
 
   waitForPageToBeReady: () => {
