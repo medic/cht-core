@@ -80,7 +80,7 @@ describe('mark_for_outbound', () => {
 
   describe('when external server is up', () => {
     beforeEach(() => startMockApp());
-    afterEach(() => void stopMockApp());
+    afterEach(() => stopMockApp());
 
     it('correctly creates and sends an outbound request immediately', () => {
       const report = makeReport();
@@ -426,8 +426,8 @@ describe('mark_for_outbound', () => {
   describe('error logging', () => {
     // Doing this in an e2e test in case our request library changes in the future
 
-    beforeEach(done => startMockApp().then(done));
-    afterEach(done => { stopMockApp(); done(); });
+    beforeEach(() => startMockApp());
+    afterEach(() => stopMockApp());
 
     it('logs an error if mapping errors', () => {
       const report = makeReport();
