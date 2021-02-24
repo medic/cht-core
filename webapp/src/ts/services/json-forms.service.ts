@@ -16,11 +16,11 @@ export class JsonFormsService {
       return Object.keys(settings.forms).map((key) => {
         const form = settings.forms[key];
         return {
-          code: form.meta.code,
-          name: form.meta.label,
-          translation_key: form.meta.translation_key,
-          subject_key: form.meta.subject_key,
-          icon: form.meta.icon
+          code: form.meta?.code,
+          name: form.meta?.label,
+          translation_key: form.meta?.translation_key,
+          subject_key: form.meta?.subject_key,
+          icon: form.meta?.icon
         };
       });
     });
