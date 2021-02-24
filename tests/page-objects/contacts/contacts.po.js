@@ -54,6 +54,7 @@ module.exports = {
     return genericForm.submitButton.click();
   },
 
+
   addHealthCenter: async (name = 'Mavuvu Clinic') => {
     const newHealthCenterButton = element(by.css('[href$="/add/health_center"]'));
     await helper.clickElementNative(newHealthCenterButton);
