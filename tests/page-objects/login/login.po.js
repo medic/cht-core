@@ -44,7 +44,7 @@ module.exports = {
     await changeLocale(locale);
     await helper.clickElementNative(getLoginButton());
     if (shouldFail) {
-      browser.wait(helper.isTextDisplayed(incorrectCredentialsText), 2000);
+      await browser.wait(() => helper.isTextDisplayed(incorrectCredentialsText), 2000);
     }
   },
   returnToLogin: () => element(by.css('.btn[href="/medic/login"]'))

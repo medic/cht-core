@@ -158,9 +158,9 @@ module.exports = {
     // select form
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
     await helper.waitUntilReadyNative(addButton);
-    await helper.clickElement(addButton);
+    await helper.clickElementNative(addButton);
     const form = element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:last-child a'));
-    await helper.clickElement(form);
+    await helper.clickElementNative(form);
 
     return helper.waitUntilReadyNative(element(by.css('[name="/data/my_sex"][value="female"]')));
   },
@@ -169,7 +169,7 @@ module.exports = {
     const submitButton = element(by.css('.btn.submit.btn-primary'));
     await helper.waitElementToBeClickable(submitButton);
     await submitButton.click();
-    await helper.waitElementToBeVisible(element(by.css('div#reports-content')));
+    await helper.waitElementToBeVisibleNative(element(by.css('div#reports-content')));
   },
 
   reset: () => {

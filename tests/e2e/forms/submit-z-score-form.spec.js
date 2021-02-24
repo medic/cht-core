@@ -63,15 +63,15 @@ describe('Submit Z-Score form', () => {
 
     await ZScoreForm.submit();
 
-    expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(1))).toEqual('45.1');
-    expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(2))).toEqual('3');
-    expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(3))).toEqual('female');
-    expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(4))).toEqual('2');
+    expect(await helper.getTextFromElementNative(ZScoreForm.fieldByIndex(1))).toEqual('45.1');
+    expect(await helper.getTextFromElementNative(ZScoreForm.fieldByIndex(2))).toEqual('3');
+    expect(await helper.getTextFromElementNative(ZScoreForm.fieldByIndex(3))).toEqual('female');
+    expect(await helper.getTextFromElementNative(ZScoreForm.fieldByIndex(4))).toEqual('2');
 
-    expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(5))).toEqual('2.0387096774193547');
-    expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(6)))
+    expect(await helper.getTextFromElementNative(ZScoreForm.fieldByIndex(5))).toEqual('2.0387096774193547');
+    expect(await helper.getTextFromElementNative(ZScoreForm.fieldByIndex(6)))
       .toEqual('-0.4708520179372194');
-    expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(7)))
+    expect(await helper.getTextFromElementNative(ZScoreForm.fieldByIndex(7)))
       .toEqual('-2.346895074946466');
   });
 });

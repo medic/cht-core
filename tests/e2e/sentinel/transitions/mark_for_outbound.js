@@ -75,12 +75,12 @@ const wipeTasks = () => getTasks()
   });
 
 describe('mark_for_outbound', () => {
-  afterEach(done => Promise.all([utils.revertSettings(), wipeTasks()]).then(done));
-  afterAll(done => utils.revertDb().then(done));
+  afterEach(() => Promise.all([utils.revertSettings(true), wipeTasks()]));
+  afterAll(() => utils.revertDb());
 
   describe('when external server is up', () => {
-    beforeEach(done => startMockApp().then(done));
-    afterEach(done => { stopMockApp(); done(); });
+    beforeEach(() => startMockApp());
+    afterEach(() => stopMockApp());
 
     it('correctly creates and sends an outbound request immediately', () => {
       const report = makeReport();
@@ -426,8 +426,8 @@ describe('mark_for_outbound', () => {
   describe('error logging', () => {
     // Doing this in an e2e test in case our request library changes in the future
 
-    beforeEach(done => startMockApp().then(done));
-    afterEach(done => { stopMockApp(); done(); });
+    beforeEach(() => startMockApp());
+    afterEach(() => stopMockApp());
 
     it('logs an error if mapping errors', () => {
       const report = makeReport();
