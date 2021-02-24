@@ -11,6 +11,7 @@ const hamburgerMenu = element(by.id('header-dropdown-link'));
 const hamburgerMenuOptions = element.all(by.css('#header-dropdown>li:not(.hidden)'));
 const logoutButton = $('[ng-click=logout]');
 
+
 // Configuration wizard
 const wizardTitle = element(by.css('#guided-setup .modal-header > h2'));
 const defaultCountryCode = element(
