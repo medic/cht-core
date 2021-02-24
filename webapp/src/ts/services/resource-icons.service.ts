@@ -11,7 +11,6 @@ export class ResourceIconsService {
   private readonly DOC_IDS = ['resources', 'branding', 'partners'];
 
   private initResources;
-  private $ = (<any>window).jQuery;
 
   private readonly cache = {
     resources: {
@@ -82,10 +81,10 @@ export class ResourceIconsService {
   }
 
   private updateDom ($elem, doc) {
-    $elem = $elem || this.$(document.body);
+    $elem = $elem || $(document.body);
     const css = this.CSS_CLASS[this.DOC_IDS.indexOf(doc)];
     $elem.find(`.${css}`).each((i, child) => {
-      const $this = this.$(child);
+      const $this = $(child);
       const name = $this.data('title') || $this.attr('title');
       const faPlaceholder = $this.data('faPlaceholder');
       $this.html(this.getHtmlContent(name, doc, faPlaceholder));
@@ -98,7 +97,7 @@ export class ResourceIconsService {
       .then(res => {
         this.cache[docId].doc = res;
         this.cache[docId].htmlContent = {};
-        this.updateDom(this.$(document.body), docId);
+        this.updateDom($(document.body), docId);
       })
       .catch(err => {
         if (err.status !== 404) {

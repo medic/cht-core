@@ -93,7 +93,7 @@ export class HydrateMessagesService {
         });
 
         return rows.map((row) => {
-          return this.buildMessageModel(row.doc, row.key[0], row.value.date, row.report);
+          return this.buildMessageModel(row.doc || {}, row.key[0], row.value.date, row.report);
         });
       });
   }

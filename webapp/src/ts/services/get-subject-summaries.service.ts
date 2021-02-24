@@ -182,6 +182,6 @@ export class GetSubjectSummariesService {
         }
         return summaries;
       })
-      .then(this.validateSubjects);
+      .then(summaries => this.validateSubjects(summaries));
   }
 }

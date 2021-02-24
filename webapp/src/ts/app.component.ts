@@ -1,6 +1,6 @@
 import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
-import { Component, NgZone, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit, HostListener } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
@@ -622,5 +622,11 @@ export class AppComponent implements OnInit {
       window.startupTimes.angularBootstrapped - window.startupTimes.bootstrapped
     );
     this.telemetryService.record('boot_time', window.startupTimes.angularBootstrapped - window.startupTimes.start);
+  }
+
+  @HostListener('window:beforeunload')
+  private stopWatchingChanges() {
+    // avoid Failed to fetch errors being logged when the browser window is reloaded
+    this.changesService.killWatchers();
   }
 }
