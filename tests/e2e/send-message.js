@@ -105,7 +105,7 @@ describe('Send message', () => {
 
   afterEach(async () => {
     await utils.resetBrowser();
-    await utils.afterEach(); 
+    await utils.afterEach();
   });
 
   const smsMsg = key => {
@@ -197,7 +197,7 @@ describe('Send message', () => {
       });
     });
     describe('Can add recipients', () => {
-      it('For raw contacts11111', async () => {
+      it('For raw contacts', async () => {
         await utils.saveDoc(messageDoc);
         await browser.refresh();
         await messagesPo.openMessageContent(RAW_PH);
