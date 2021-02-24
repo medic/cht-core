@@ -3,8 +3,8 @@ const sentinelUtils = require('../utils');
 const uuid = require('uuid');
 
 describe('update_sent_by', () => {
-  afterAll(() => utils.revertDb());
-  afterEach(() => utils.revertDb([], true));
+  afterAll(done => utils.revertDb().then(done));
+  afterEach(done => utils.revertDb([], true).then(done));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
