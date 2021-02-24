@@ -4,6 +4,8 @@ const nameField = element(by.css('#report-form form [name="/data/name"]'));
 const submitButton = element(by.css('.enketo .submit'));
 const submittedName = element(by.css('#reports-content .details ul li:first-child p'));
 
+const leftActionBarButtons = () => element.all(by.css('.general-actions .actions.dropup > a'));
+
 module.exports = {
   submittedName,
   submitButton,
@@ -94,7 +96,13 @@ module.exports = {
     helper.waitElementToPresent(element(by.css('#report-form')));
   },
 
-  selectFormNative: async (formId) => {
+  selectFormNative: async (formId, nonAdminUser = false) => {
+    if (!nonAdminUser) { // non-admin may or may not get the "select" mode button, depending on permissions
+      const expectedActionbarButtons = 3;
+      // wait for all actionbar links to appear
+      await browser.wait(async () => await leftActionBarButtons().count() === expectedActionbarButtons, 1000);
+    }
+
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
     await helper.waitUntilReadyNative(addButton);
 

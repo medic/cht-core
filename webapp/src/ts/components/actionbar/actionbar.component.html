@@ -43,7 +43,7 @@
             <span class="fa fa-check-circle"></span>
             <p>{{'select.mode.start' | translate}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="isAdmin && !actionBar?.left?.exportFn" (click)="actionBar?.left?.exportFn($event)" [ngClass]="{'mm-icon-disabled':  !actionBar?.left?.hasResults}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="isAdmin && actionBar?.left?.exportFn" (click)="actionBar?.left?.exportFn($event)" [ngClass]="{'mm-icon-disabled':  !actionBar?.left?.hasResults}">
             <span class="fa fa-arrow-down"></span>
             <p>{{'Export' | translate}}</p>
           </a>
