@@ -17,7 +17,6 @@ const baseConfig = {
   },
   SELENIUM_PROMISE_MANAGER: false,
   seleniumAddress: 'http://localhost:4444/wd/hub',
-  //Enabling specs as they are working.
   suites: {
     e2e:'e2e/**/*.js',
     // performance: 'performance/**/*.js'
