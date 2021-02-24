@@ -603,6 +603,7 @@ module.exports = {
   revertDb: revertDb,
 
   resetBrowser: () => {
+
     return browser.driver
       .navigate()
       .refresh()
