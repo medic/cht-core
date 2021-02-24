@@ -54,6 +54,7 @@ const unregisterServiceWorkerAndWipeAllCaches = () => browser.executeAsyncScript
 });
 
 describe('Service worker cache', () => {
+  beforeAll( utils.resetBrowser);
   afterEach(utils.afterEach);
 
   it('confirm initial list of cached resources', async () => {
