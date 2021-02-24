@@ -29,8 +29,11 @@ const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.sub
 const displayTime = element(by.css('[ui-sref="display.date-time"]'));
 const messagesList = element(by.id('message-list'));
 
+const leftActionBarButtons = () => element.all(by.css('.general-actions .actions.dropup a'));
+
 module.exports = {
   messagesList,
+
   calm: async () => {
     utils.deprecated('calm', 'calmNative');
     // const bootstrapperSelector = by.css('.bootstrap-layer');
@@ -137,10 +140,16 @@ module.exports = {
     await helper.waitUntilReadyNative(element(by.id('message-list')));
   },
 
-  goToPeople: async () => {
+  goToPeople: async (nonAdminUser = false) => {
     await browser.get(utils.getBaseUrl() + 'contacts/');
     await helper.waitUntilReadyNative(medicLogo);
     await helper.waitUntilReadyNative(element(by.id('contacts-list')));
+    if (nonAdminUser) {
+      return;
+    }
+
+    // wait for all actionbar buttons to appear
+    await browser.wait(async () => await leftActionBarButtons().count() === 2, 1000);
   },
 
   goToReports: refresh => {
