@@ -80,21 +80,6 @@ const baseConfig = {
         });
     });
 
-    beforeEach(() => {
-      return browser
-        .manage()
-        .logs()
-        .get('browser')
-        .then(logs => {
-          const currentSpec = jasmine.currentSpec.fullName;
-          browserLogStream.write(`\n~~~~~~~~~~~ ${currentSpec} BEFORE ~~~~~~~~~~~~~~~~~~~~~\n\n`);
-          logs
-            .map(log => `[${log.level.name_}] ${log.message}\n`)
-            .forEach(log => browserLogStream.write(log));
-          browserLogStream.write('\n~~~~~~~~~~~~~~~~~~~~~\n\n');
-        });
-    });
-
     return login(browser).then(() => runAndLog('User setup', setupUser));
   }
 };
