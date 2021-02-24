@@ -52,7 +52,7 @@ echo
 # # Auth to kubectl
 
 docker exec medic-kube bash -c ". aws-mfa-login $aws_username $aws_passcode;\
-POD=\$(kubectl --kubeconfig=/app/cluster01-kubeconfig.yml -n gamma-dev get pods --selector=app=dev-gamma -o jsonpath='{.items[*].metadata.name}');\
+POD=\$(kubectl --kubeconfig=/app/cluster01-kubeconfig.yml -n gamma-dev get pods --selector=app=$instance_name -o jsonpath='{.items[*].metadata.name}');\
 echo \$POD;\
 kubectl --kubeconfig=/app/cluster01-kubeconfig.yml -n gamma-dev exec \$POD -- bash -c 'cd /boot && \
  ./svc-stop medic-sentinel && \
