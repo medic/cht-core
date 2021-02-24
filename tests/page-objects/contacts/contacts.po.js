@@ -17,6 +17,7 @@ const peopleRows = element.all(by.css('.right-pane .card.children li'));
 const deleteContact = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('fa fa-trash-o'));
 const contactsTab = element(by.css('#contacts-tab'));
 
+const leftActionBarButtons = () => element.all(by.css('.general-actions .actions.dropup a'));
 
 module.exports = {
   contactsList: () => element(by.css('#contacts-list')),
@@ -40,6 +41,7 @@ module.exports = {
   },
 
   addNewDistrict: async (districtName) => {
+    await module.exports.waitForActionbarButtons();
     await helper.waitUntilReadyNative(newDistrictButton);
     await newDistrictButton.click();
     await helper.waitUntilReadyNative(newPersonButton);
@@ -125,4 +127,13 @@ module.exports = {
 
   getReportsFilters: () => element.all(by.css('.card.reports .table-filter a')),
   getTasksFilters: () => element.all(by.css('.card.tasks .table-filter a')),
+
+  waitForActionbarButtons: (nonAdminUser) => {
+    if (nonAdminUser) {
+      // non admin users might not see any links here, depending on config
+      return;
+    }
+    // wait for all actionbar links to appear
+    return browser.wait(async () => await leftActionBarButtons().count() === 2, 1000);
+  }
 };

@@ -97,10 +97,12 @@ module.exports = {
   },
 
   selectFormNative: async (formId, nonAdminUser = false) => {
-    if (!nonAdminUser) {
-      // wait for all actionbar buttons to appear
-      await browser.wait(async () => await leftActionBarButtons().count() === 3, 1000);
+    if (!nonAdminUser) { // non-admin may or may not get the "select" mode button, depending on permissions
+      const expectedActionbarButtons = 3;
+      // wait for all actionbar links to appear
+      await browser.wait(async () => await leftActionBarButtons().count() === expectedActionbarButtons, 1000);
     }
+
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
     await helper.waitUntilReadyNative(addButton);
 
