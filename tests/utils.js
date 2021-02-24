@@ -233,21 +233,23 @@ const setUserContactDoc = () => {
     }));
 };
 
-const revertDb = (except, ignoreRefresh) => {
+const revertDb = async (except, ignoreRefresh) => {
   const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
-  return revertSettings().then(needsRefresh => {
-    return deleteAll(except).then(() => {
-      // only need to refresh if the settings were changed
-      if (!ignoreRefresh && needsRefresh) {
-        watcher && watcher.cancel();
-        return refreshToGetNewSettings();
-      }
-      if (needsRefresh) {
-        return watcher && watcher.promise;
-      }
-      watcher && watcher.cancel();
-    }).then(setUserContactDoc);
-  });
+  const needsRefresh = await revertSettings();
+  await deleteAll(except);
+
+  const hasModal = await element(by.css('#update-available')).isPresent();
+  // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
+  if (!ignoreRefresh && (needsRefresh || hasModal)) {
+    watcher && watcher.cancel();
+    await refreshToGetNewSettings();
+  } else if (needsRefresh) {
+    await watcher && watcher.promise;
+  } else {
+    watcher && watcher.cancel();
+  }
+
+  await setUserContactDoc();
 };
 
 const deleteUsers = async (users, meta = false) => {
@@ -603,7 +605,6 @@ module.exports = {
   revertDb: revertDb,
 
   resetBrowser: () => {
-
     return browser.driver
       .navigate()
       .refresh()
