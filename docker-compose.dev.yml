@@ -1,6 +1,10 @@
 version: '3.7'
 
 services:
+  medic-os:
+    ports:
+     - 8080:80
+     - 8443:443
   haproxy:
     ports:
-     - 5984:5984
+     - 8984:5984
