@@ -17,7 +17,7 @@ const peopleRows = element.all(by.css('.right-pane .card.children li'));
 const deleteContact = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('fa fa-trash-o'));
 const contactsTab = element(by.css('#contacts-tab'));
 
-const leftActionBarButtons = () => element.all(by.css('.general-actions .actions.dropup a'));
+const leftActionBarButtons = () => element.all(by.css('.general-actions .actions.dropup > a'));
 
 module.exports = {
   contactsList: () => element(by.css('#contacts-list')),
