@@ -20,7 +20,7 @@ The build process compiles our application. Then installs horticulturalist to ru
 ## Protractor Tips
 
 ### File Structure
-Tests files should represent a feature within the application. Using `describe` to identify the feature and `it` detail the individual functions of the feature. 
+Test files should represent a feature within the application. Using `describe` to identify the feature and `it` to detail the individual functions of the feature.
 
 EX: `describe('Users can login )`  `it(with valid credentials)`
 
