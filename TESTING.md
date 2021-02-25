@@ -57,7 +57,7 @@ Documented here are two ways to run individual tests and have your IDE break on 
       Note: if you have defined specs or suites that do not include the spec.js. It will not find the test to run.  
       EX: `["${workspaceRoot}/tests/conf.js","--grep=should show the correct privacy policy on login"]`
 1. Click the debug icon on the left tool bar.
-1. Select launch e2e
+1. Select launch e2e.
 
 
 ### IntelliJ Based
