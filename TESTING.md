@@ -50,7 +50,7 @@ Documented here are two ways to run individual tests and have your IDE break on 
 1. Select launch e2e.
 1. This will now run as if you ran the command `grunt e2e-deploy` and start the `scripts/e2e/e2e-servers` script. Then launch protractor to debug the test(s). 
 
-#### Debugging a single test by using grep.
+#### Debugging a single test by using the "grep" feature.
 
 1. Open launch.json
 1. Update the grep argument with the name of your test to the args array.
