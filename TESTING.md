@@ -34,7 +34,7 @@ Ex:  `attr.test-id="{{ msg.key }}" ` Will add a `test-id` attribute with the dat
 
 Then it can be consumed in the test by getting an element by css. EX: ``element(by.css(`#message-list li[test-id="${identifier}"]`)),``
 
-
+Adding a test identifier a good option for cases where a CSS selector would otherwise be fragile such as selecting based on an assumed element structure or selecting on CSS classes intended for visual design that may change.
 
 ## Debugging
 Documented here are two ways to run individual tests and have your IDE break on the specific test.
