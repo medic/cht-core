@@ -709,7 +709,7 @@ module.exports = function(grunt) {
     protractor: {
       'e2e-web-tests': {
         options: {
-          configFile: TRAVIS_TAG || TRAVIS_BRANCH?'tests/conf-travis.js':'tests/conf.js',
+          configFile: 'tests/conf.js',
           args: {
             suite: 'web',
           }
@@ -733,7 +733,7 @@ module.exports = function(grunt) {
         options: {
           configFile: 'tests/conf.js',
           args: {
-            suite: 'e2e'
+            suite: 'web'
           },
           capabilities: {
             chromeOptions: {
@@ -957,15 +957,7 @@ module.exports = function(grunt) {
   ]);
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
-    'protractor:e2e-tests',
-  ]);
-
-  grunt.registerTask('e2e-disabled', 'Deploy app for testing and run e2e tests', [
-    'e2e-deploy',
-    'protractor:e2e-disable-control-flow',
     'protractor:e2e-web-tests',
-    'protractor:e2e-mobile-tests',
-    'exec:clean-test-database',
   ]);
 
   grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [
@@ -1058,7 +1050,7 @@ module.exports = function(grunt) {
     'start-webdriver',
     'exec:e2e-servers',
     'protractor:e2e-web-tests',
-    'protractor:e2e-mobile-tests',
+    //'protractor:e2e-mobile-tests',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
