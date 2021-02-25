@@ -49,8 +49,8 @@ Once all issues have passed acceptance testing and have been merged into `master
 
 # Communicating - Product Manager
 
-- [ ] Create a Google Doc in the [blog posts folder](https://drive.google.com/drive/u/0/folders/0B2PTUNZFwxEvMHRWNTBjY2ZHNHc) with the draft of a blog post promoting the release based on the release notes above. Once it's ready ask Kelly to review it.
-- [ ] Ask Nicole to create release artwork
+- [ ] Ask the Product Designer to create release artwork
+- [ ] Create a DRAFT blog post on medic.org Wordpress site promoting the release using on the release notes and artwork above. Once it's ready ask the Comms Officer to review and publish it.
 - [ ] Announce the release in #products using this template:
 ```
 @channel *We're excited to announce the release of {{version}}*
