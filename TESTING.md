@@ -70,7 +70,7 @@ Documented here are two ways to run individual tests and have your IDE break on 
 1. Set Node Interpreter is set to your node install. 
 1. Set Protractor package is set to the `<cht-core-repo>/node_modules/protractor`
 1. Optionally set the Protractor options to `--capabilities.chromeOptions.args=start-maximized --jasmine.DEFAULT_TIMEOUT_INTERVAL=120000`.
-1. Select the radio button for Test
+1. Select the radio button for Test.
 1. Enter the path to the Test file Ex: `<cht-core-repo>/tests/e2e/login/login.specs.js`
 1. Enter the test name. This is a bit of a chore. IntelliJ will automatically add the regex flags for begins(`^`) of line and end of line(`$`). Protractor presents the name for matching as the Describe description followed by the It description. To run the login test for should have a title you would need to put this as your matcher. `Login tests : should have a title`. An alternative would be to select Test File and run the entire file. You can add an `x` in front of `it` to disable the ones you do not need. EX: `xit('should login`)
 1. Click ok
