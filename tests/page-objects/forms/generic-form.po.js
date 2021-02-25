@@ -38,6 +38,7 @@ module.exports = {
     const reportInvalidIcon = element(by.css('.detail>.status>.error'));
     await helper.waitUntilReadyNative(reportInvalidIcon);
     const reportInvalidMessage = element(by.css('.verify-error.active'));
+    await helper.waitUntilReadyNative(reportInvalidMessage);
     expect(await reportInvalidMessage.getText()).toEqual('Has errors');
   },
 
@@ -146,6 +147,7 @@ module.exports = {
     const reportValidIcon = element(by.css('.detail>.status>.verified'));
     await helper.waitUntilReadyNative(reportValidIcon);
     const reportValidMessage = element(by.css('.verify-valid.active'));
+    await helper.waitUntilReadyNative(reportValidMessage);
     expect(await reportValidMessage.getText()).toEqual('Correct');
   },
 
