@@ -36,10 +36,11 @@ const xml = `<?xml version="1.0"?>
 </h:html>
 `;
 
+const formInternalId = 'concatenate-strings';
 const docs = [
   {
-    _id: 'form:concatenate-strings',
-    internalId: 'concatenate-strings',
+    _id: `form:${formInternalId}`,
+    internalId: formInternalId,
     title: 'Concatenate Strings',
     type: 'form',
     _attachments: {
@@ -63,5 +64,7 @@ module.exports = {
 
   reset: () => {
     return element(by.css('.icon.icon-refresh')).click();
-  }
+  },
+
+  formInternalId: formInternalId,
 };

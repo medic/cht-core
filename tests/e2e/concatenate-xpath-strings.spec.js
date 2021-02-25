@@ -23,11 +23,11 @@ const userContactDoc = {
 // feature allowing for concatenation of strings
 describe('Concatenate xpath strings', () => {
   beforeAll(() => concatenateStrings.configureForm(userContactDoc));
-  afterEach(() => utils.resetBrowser());
+  afterEach(() => utils.afterEach());
 
   it('concatenates strings', async () => {
     await common.goToReportsNative();
-    await genericForm.selectFormNative('concatenate-strings');
+    await genericForm.selectFormNative(concatenateStrings.formInternalId);
     await helper.waitElementToPresentNative(element(by.css('#concat')));
 
     let name = await element(by.name('/concatenate-strings/inputs/full_name')).getAttribute('value');
