@@ -25,7 +25,7 @@ Test files should represent a feature within the application. Using `describe` t
 EX: `describe('Users can login )`  `it(with valid credentials)`
 
 ### Page Object Model
-We are leveraging the page object model for structure. When identifying elements they should be added to a page object and not within a test file. Add functions that do actions to the page within the page object. Keep expects outside of page objects. The tests should be self documenting. 
+We are leveraging the [page object model](https://www.thoughtworks.com/insights/blog/using-page-objects-overcome-protractors-shortcomings) for structure. When identifying elements they should be added to a page object and not within a test file. Add functions that do actions to the page within the page object. Keep expects outside of page objects. The tests should be self documenting. 
 
 ### Adding identifiers
 In some cases adding a unique identifier to an element may be necessary. This could be a piece of data related to the element or a unique name. To do this the app code can be modified to add a `test-` attribute.  
