@@ -6,9 +6,6 @@ services:
     image: medicmobile/medic-os:cht-3.9.0-rc.2
     volumes:
       - medic-data:/srv
-    ports:
-     - 80:80
-     - 443:443
     working_dir: /srv
     depends_on:
       - haproxy
