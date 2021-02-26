@@ -13,6 +13,8 @@ const mockFormsInDb = (...docs) => {
 const res = {
   writeHead: () => {},
   end: () => {},
+  json: () => {},
+  status: () => {},
 };
 
 describe('forms controller', () => {
@@ -146,6 +148,27 @@ describe('forms controller', () => {
         const forms = JSON.parse(end.args[0][0]);
         chai.expect(forms).to.deep.equal(['stock.xml']);
       });
+    });
+  });
+
+  describe('validate', () => {
+    it('returns ok when validations passed', async () => {
+      const req = { body: '<xml></xml>' };
+      const json = sinon.stub(res, 'json');
+      await controller.validate(req, res);
+      chai.expect(json.callCount).to.equal(1);
+      chai.expect(json.args[0][0]).to.deep.equal({ok: true});
+    });
+
+    it('returns error when validations failed', async () => {
+      const req = { body: '<xml a INVALID form<///xml>' };
+      const json = sinon.stub(res, 'json');
+      const status = sinon.stub(res, 'status').returns({ json: json });
+      await controller.validate(req, res);
+      chai.expect(json.callCount).to.equal(1);
+      chai.expect(json.args[0][0].error).to.include('Error transforming xml. xsltproc returned code');
+      chai.expect(status.callCount).to.equal(1);
+      chai.expect(status.args[0][0]).to.equal(400);
     });
   });
 });
