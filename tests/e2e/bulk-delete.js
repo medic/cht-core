@@ -1,4 +1,5 @@
 const utils = require('../utils');
+const helper = require('../helper');
 const commonElements = require('../page-objects/common/common.po.js');
 const reports = require('../page-objects/reports/reports.po');
 
@@ -56,35 +57,30 @@ describe('Bulk delete reports', () => {
   ];
 
   const savedUuids = [];
-  beforeEach(done => {
-    protractor.promise
-      .all(docs.map(utils.saveDoc))
-      .then(results => {
-        results.forEach(result => {
-          savedUuids.push(result.id);
-        });
-        done();
-      })
-      .catch(done.fail);
+
+  beforeEach(async () => {
+    const results = await utils.saveDocs(docs);
+    results.forEach(result => {
+      savedUuids.push(result.id);
+    });
   });
 
   afterEach(utils.afterEach);
 
-  it('reports', () => {
-    commonElements.goToReports();
-    reports.waitForReportToAppear();
-    reports.startSelectMode(savedUuids);
-    reports.stopSelectMode(savedUuids);
+  it('should select, deselect and delete only selected reports', async () => {
+    await commonElements.goToReportsNative();
+    await reports.startSelectModeNative(savedUuids);
+    await reports.stopSelectModeNative(savedUuids);
     // start select mode again
-    reports.startSelectMode(savedUuids);
-    reports.selectReport(savedUuids);
-    reports.expandSelection();
-    reports.collapseSelection();
+    await reports.startSelectModeNative(savedUuids);
+    await reports.selectReportNative(savedUuids);
+    await reports.expandSelectionNative();
+    await reports.collapseSelectionNative();
     // deselect
-    element(by.css('#reports-content .report-body .deselect')).click();
-    reports.selectAll();
-    reports.deselectAll();
-    reports.selectSeveralReports(savedUuids);
-    reports.deleteSelectedReports(savedUuids);
+    await helper.clickElementNative(reports.deselectReport());
+    await reports.selectAllNative();
+    await reports.deselectAllNative();
+    await reports.selectSeveralReportsNative(savedUuids);
+    await reports.deleteSelectedReportsNative(savedUuids);
   });
 });

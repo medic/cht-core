@@ -28,8 +28,9 @@
     padding-bottom: 0;
   }
   .panel-heading {
+    flex-grow: 1;
     padding: 0;
-    .panel-title a {
+    .panel-title {
       cursor: pointer;
       width: 100%;
       display: block;
@@ -43,15 +44,21 @@
         background-color: @separator-color;
       }
     }
-    a:before {
-      content: '\f0d7'; // https://fontawesome.com/v4.7.0/icon/caret-down/
-      color: @top-header-color;
-      font-family: FontAwesome;
-      display: inline-block;
-      transition: all .5s ease;
-    }
-    .collapsed:before {
-      transform: rotate(-90deg);
+
+    .accordion-toggle {
+      display: flex;
+      &:before {
+        color: @top-header-color;
+        font-family: FontAwesome;
+        margin-right: 10px;
+        width: 10px;
+      }
+      &[aria-expanded="false"]:before {
+        content: '\f0da'; // https://fontawesome.com/v4.7.0/icon/caret-right/
+      }
+      &[aria-expanded="true"]:before {
+        content: '\f0d7'; // https://fontawesome.com/v4.7.0/icon/caret-down/
+      }
     }
 
     .count {
@@ -86,6 +93,18 @@
     }
     .value, .count .fa {
       color: @ok-color;
+    }
+  }
+  .panel.collapsible-list {
+    .panel-body {
+      padding: 0;
+    }
+    .list-group {
+      margin: 0;
+      .list-group-item {
+        border-right: none;
+        border-left: none;
+      }
     }
   }
 }

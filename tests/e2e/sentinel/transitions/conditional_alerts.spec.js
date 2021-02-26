@@ -69,7 +69,7 @@ describe('conditional_alerts', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -103,7 +103,7 @@ describe('conditional_alerts', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -141,7 +141,7 @@ describe('conditional_alerts', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -176,7 +176,7 @@ describe('conditional_alerts', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -240,7 +240,7 @@ describe('conditional_alerts', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(form1))
       .then(() => sentinelUtils.waitForSentinel(form1._id))
       .then(() => sentinelUtils.getInfoDoc(form1._id))

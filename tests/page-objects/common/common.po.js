@@ -1,74 +1,100 @@
 const helper = require('../../helper');
 const utils = require('../../utils');
+const { browser, element } = require('protractor');
 
 const medicLogo = element(by.className('logo-full'));
 const genericSubmitButton = element(by.css('.btn.btn-primary'));
 const genericCancelBtn = element(by.css('.modal .btn.cancel'));
 const messagesTab = element(by.id('messages-tab'));
 const analyticsTab = element(by.id('analytics-tab'));
-const hamburgerMenu = element(by.css('.dropdown.options>a'));
-const hamburgerMenuOptions = element.all(by.css('.dropdown.options>ul>li'));
+const hamburgerMenu = element(by.id('header-dropdown-link'));
+const hamburgerMenuOptions = element.all(by.css('#header-dropdown>li:not(.hidden)'));
 const logoutButton = $('[ng-click=logout]');
+
 // Configuration wizard
-const wizardTitle = element(by.css('.modal-header>h2'));
+const wizardTitle = element(by.css('#guided-setup .modal-header > h2'));
 const defaultCountryCode = element(
   by.css('#select2-default-country-code-setup-container')
 );
-const skipSetup = element(by.css('.modal-footer>a:first-of-type'));
-const finishBtn = element(by.css('.modal-footer>a:nth-of-type(2)'));
+const skipSetup = element(by.css('#guided-setup .modal-footer>a:first-of-type'));
+const finishBtn = element(by.css('#guided-setup .modal-footer>a:nth-of-type(2)'));
 // Tour
 const tourBtns = element.all(by.css('.btn.tour-option'));
 // User settings
 const settings = element.all(by.css('.configuration a>span'));
 // Report bug
-const bugDescriptionField = element(by.css('[placeholder="Bug description"]'));
+const bugDescriptionField = element(by.css('.form-control'));
 const modalFooter = element(by.css('.modal-footer'));
 const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.submit'));
+const displayTime = element(by.css('[ui-sref="display.date-time"]'));
+const messagesList = element(by.id('message-list'));
 
 module.exports = {
-  calm: () => {
-    const bootstrapperSelector = by.css('.bootstrap-layer');
-    helper.waitElementToPresent(element(bootstrapperSelector));
-    helper.waitElementToDisappear(bootstrapperSelector);
-    helper.waitUntilReady(messagesTab);
+  messagesList,
+  calm: async () => {
+    utils.deprecated('calm', 'calmNative');
+    // const bootstrapperSelector = by.css('.bootstrap-layer');
+    // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
+    // await helper.waitElementToPresent(element(bootstrapperSelector));
+    // await helper.waitElementToDisappear(bootstrapperSelector);
+    await helper.waitUntilReady(medicLogo);
   },
 
-  checkAbout: () => {
-    openSubmenu('about');
-    expect(genericSubmitButton.getText()).toEqual('Reload');
+  calmNative: async () => {
+    // const bootstrapperSelector = by.css('.bootstrap-layer');
+    // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
+    // await helper.waitElementToPresent(element(bootstrapperSelector));
+    // await helper.waitElementToDisappear(bootstrapperSelector);
+    await helper.waitUntilReadyNative(medicLogo);
   },
 
-  checkConfigurationWizard: () => {
-    openSubmenu('configuration wizard');
-    expect(wizardTitle.getText()).toEqual('Configuration wizard');
-    expect(defaultCountryCode.getText()).toEqual('Canada (+1)');
-    expect(finishBtn.getText()).toEqual('Finish');
-    skipSetup.click();
+  checkAbout: async () => {
+    await openSubmenu('about');
+    expect(await genericSubmitButton.getText()).toEqual('Reload');
   },
 
-  checkGuidedTour: () => {
-    openSubmenu('guided');
-    expect(tourBtns.count()).toEqual(4);
-    genericCancelBtn.click();
+  checkConfigurationWizard: async () => {
+    await openSubmenu('configuration wizard');
+    await helper.waitUntilReadyNative(wizardTitle);
+    await helper.waitUntilTranslated(wizardTitle);
+    const wizardTitleText = await helper.getTextFromElementNative(wizardTitle);
+    console.log('title text', wizardTitleText);
+    expect(wizardTitleText).toEqual('Configuration wizard');
+    expect(await helper.getTextFromElementNative(defaultCountryCode)).toEqual('Canada (+1)');
+    expect(await finishBtn.getText()).toEqual('Finish');
+    await skipSetup.click();
   },
 
-  checkReportBug: () => {
-    openSubmenu('report bug');
-    helper.waitElementToBeVisible(bugDescriptionField);
-    helper.waitElementToBeVisible(modalFooter);
-    expect(genericSubmitButton.getText()).toEqual('Submit');
-    genericCancelBtn.click();
+  checkGuidedTour: async () => {
+    await openSubmenu('guided');
+    expect(await tourBtns.count()).toEqual(4);
+    await helper.clickElementNative(genericCancelBtn);
+  },
+
+  checkReportBug: async () => {
+    await openSubmenu('report bug');
+    await helper.waitElementToBeVisibleNative(bugDescriptionField);
+    await helper.waitElementToBeVisibleNative(modalFooter);
+    expect(await genericSubmitButton.getText()).toEqual('Submit');
+    await genericCancelBtn.click();
   },
 
   sync: () => {
+    utils.deprecated('sync', 'syncNative');
     module.exports.openMenu();
-    openSubmenu('sync');
+    openSubmenu('sync now');
     helper.waitElementToPresent(element(by.css('.sync-status .success')));
   },
 
-  checkUserSettings: () => {
-    openSubmenu('user settings');
-    const optionNames = helper.getTextFromElements(settings);
+  syncNative: async () => {
+    await module.exports.openMenuNative();
+    await openSubmenu(['sync now', 'sync.now']);
+    await helper.waitElementToPresentNative(element(by.css('.sync-status .success')));
+  },
+
+  checkUserSettings: async () => {
+    await openSubmenu('user settings');
+    const optionNames = await helper.getTextFromElementNative(settings);
     expect(optionNames).toEqual(['Update password', 'Edit user profile']);
   },
 
@@ -77,33 +103,48 @@ module.exports = {
     medicLogo.click();
   },
 
-  goToAnalytics: () => {
-    analyticsTab.click();
-    helper.waitForAngularComplete();
+  goToAnalytics: async () => {
+    await analyticsTab.click();
+    await helper.waitUntilReadyNative(medicLogo);
   },
 
-  goToConfiguration: () => {
-    helper.waitForAngularComplete();
-    browser.get(utils.getAdminBaseUrl());
+  goToConfiguration: async () => {
+    await helper.waitUntilReadyNative(medicLogo);
+    await browser.get(utils.getAdminBaseUrl());
   },
 
   goToLoginPage: () => {
+    utils.deprecated('goToLoginPage', 'goToLoginPageNative');
     browser.manage().deleteAllCookies();
     browser.driver.get(utils.getLoginUrl());
   },
 
+  goToLoginPageNative: async () => {
+    await browser.manage().deleteAllCookies();
+    await browser.driver.get(await utils.getLoginUrl());
+  },
+
   goToMessages: () => {
+    utils.deprecated('goToMesssages', 'goToMessagesNative');
     browser.get(utils.getBaseUrl() + 'messages/');
-    helper.waitForAngularComplete();
+    helper.waitUntilReady(medicLogo);
     helper.waitUntilReady(element(by.id('message-list')));
+  },
+
+  goToMessagesNative: async () => {
+    await browser.get(utils.getBaseUrl() + 'messages/');
+    await helper.waitUntilReadyNative(medicLogo);
+    await helper.waitUntilReadyNative(element(by.id('message-list')));
   },
 
   goToPeople: async () => {
     await browser.get(utils.getBaseUrl() + 'contacts/');
-    await helper.waitUntilReady(element(by.id('contacts-list')));
+    await helper.waitUntilReadyNative(medicLogo);
+    await helper.waitUntilReadyNative(element(by.id('contacts-list')));
   },
 
   goToReports: refresh => {
+    utils.deprecated('goToReports', 'goToReportsNative');
     browser.get(utils.getBaseUrl() + 'reports/');
     helper.waitElementToPresent(
       element(
@@ -122,17 +163,43 @@ module.exports = {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
       element(by.css('.reset-filter')).click();
-      helper.waitForAngularComplete();
+      browser.waitForAngular();
     }
   },
 
-  goToTasks: () => {
-    browser.get(utils.getBaseUrl() + 'tasks/');
-    helper.waitUntilReady(element(by.id('tasks-list')));
+  goToReportsNative: async (refresh) => {
+    await browser.get(utils.getBaseUrl() + 'reports/');
+    await helper.waitElementToPresentNative(
+      element(
+        by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
+      )
+    );
+    await helper.waitElementToBeClickable(
+      element(
+        by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
+      )
+    );
+    await helper.waitElementToBeVisibleNative(element(by.id('reports-list')));
+
+    if (refresh) {
+      await browser.refresh();
+      await helper.waitElementToBeVisibleNative(element(by.id('reports-list')));
+    } else {
+      // A trick to trigger a list refresh.
+      // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
+      await helper.clickElementNative(element(by.css('.reset-filter')));
+      await browser.waitForAngular();
+    }
   },
 
-  isAt: list => {
-    helper.waitForAngularComplete();
+  goToTasks: async () => {
+    await browser.get(utils.getBaseUrl() + 'tasks/');
+    await helper.waitUntilReadyNative(medicLogo);
+    await helper.waitUntilReadyNative(element(by.id('tasks-list')));
+  },
+
+  isAt: async (list) => {
+    await helper.waitUntilReadyNative(medicLogo);
     return element(by.id(list)).isPresent();
   },
 
@@ -143,9 +210,21 @@ module.exports = {
   },
 
   openMenu: () => {
+    utils.deprecated('openMenu', 'openMenuNative');
     helper.waitUntilReady(messagesTab);
-    hamburgerMenu.click();
-    helper.waitUntilReady(hamburgerMenuOptions);
+    helper.clickElement(hamburgerMenu);
+    return helper.waitUntilReady(hamburgerMenuOptions.first());
+  },
+
+  openMenuNative: async () => {
+    await helper.waitUntilReadyNative(messagesTab);
+    const menuAlreadyOpen = hamburgerMenuOptions.length &&
+                            hamburgerMenuOptions.first() &&
+                            await helper.isDisplayed(hamburgerMenuOptions.first());
+    if (!menuAlreadyOpen) {
+      await hamburgerMenu.click();
+    }
+    await helper.isDisplayed(hamburgerMenuOptions.first());
   },
 
   confirmDelete: async () => {
@@ -153,10 +232,15 @@ module.exports = {
     await deleteButton.click();
   },
 
+  expectDisplayDate: async () => {
+    expect(await displayTime.isPresent()).toBeTruthy();
+  },
+
   openSubmenu: openSubmenu,
+
+  getReportsButtonLabel: () => element(by.css('#reports-tab .button-label')),
 };
 
 function openSubmenu(menuName) {
-  helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
-  helper.waitForAngularComplete();
+  return helper.findElementByTextAndClickNative(hamburgerMenuOptions, menuName);
 }

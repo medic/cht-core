@@ -17,21 +17,35 @@ const changeLocale = locale => {
   if (!locale) {
     return;
   }
-  element(by.css(`.locale[name="${locale}"]`)).click();
+  return element(by.css(`.locale[name="${locale}"]`)).click();
 };
 
 module.exports = {
-  login: (username, password, shouldFail, locale) => {
-    helper.waitUntilReady(getUsernameField());
-    getUsernameField().clear();
-    getPasswordField().clear();
-    getUsernameField().sendKeys(username);
-    getPasswordField().sendKeys(password);
-    changeLocale(locale);
-    getLoginButton().click();
-    browser.waitForAngular();
+  login: async (username, password, shouldFail, locale) => {
+    await helper.waitUntilReady(getUsernameField());
+    await getUsernameField().clear();
+    await getPasswordField().clear();
+    await getUsernameField().sendKeys(username);
+    await getPasswordField().sendKeys(password);
+    await changeLocale(locale);
+    await getLoginButton().click();
+    await browser.waitForAngular();
     if (shouldFail) {
       expect(helper.isTextDisplayed(incorrectCredentialsText)).toBe(true);
     }
   },
+
+  loginNative: async (username, password, shouldFail, locale) => {
+    await helper.waitUntilReadyNative(await getUsernameField());
+    await getUsernameField().clear();
+    await getPasswordField().clear();
+    await getUsernameField().sendKeys(username);
+    await getPasswordField().sendKeys(password);
+    await changeLocale(locale);
+    await helper.clickElementNative(getLoginButton());
+    if (shouldFail) {
+      await browser.wait(() => helper.isTextDisplayed(incorrectCredentialsText), 2000);
+    }
+  },
+  returnToLogin: () => element(by.css('.btn[href="/medic/login"]'))
 };

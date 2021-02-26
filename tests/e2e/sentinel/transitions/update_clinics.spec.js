@@ -24,7 +24,7 @@ describe('update_clinics', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(contact))
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
@@ -63,7 +63,7 @@ describe('update_clinics', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(contact))
       .then(() => utils.saveDoc(doc1))
       .then(() => sentinelUtils.waitForSentinel(doc1._id))
@@ -110,7 +110,7 @@ describe('update_clinics', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs([doc1, doc2]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
@@ -157,7 +157,7 @@ describe('update_clinics', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs([doc1, doc2, doc3]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id]))
@@ -231,7 +231,7 @@ describe('update_clinics', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs(contacts))
       .then(() => utils.saveDocs([ refidClinic, refidPerson, phonePerson ]))
       .then(() => sentinelUtils.waitForSentinel([refidClinic._id, refidPerson._id, phonePerson._id]))

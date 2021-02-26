@@ -1,0 +1,34 @@
+<multi-dropdown-filter
+  [items]="flattenedFacilities"
+  [itemLabel]="itemLabel.bind(this)"
+  (applyFilter)="applyFilter($event)"
+  labelNoFilter="All facilities"
+  labelFilter="Number of facilities"
+  [disabled]="disabled"
+  (onOpen)="loadFacilities()"
+>
+  <span class="fa fa-hospital-o"></span>
+  <ul id="facility-dropdown-list">
+    <ng-container
+      *ngFor="let facility of displayedFacilities; trackBy: trackByFn"
+      [ngTemplateOutlet]="facilityTemplate"
+      [ngTemplateOutletContext]="{ facility: facility, facilityDepth: 0 }">
+    </ng-container>
+  </ul>
+
+</multi-dropdown-filter>
+
+<ng-template #facilityTemplate let-facility="facility" let-facilityDepth="facilityDepth" let-parent="parent" let-selectedParent="selectedParent">
+  <li role="presentation" [class.selected]="dropdownFilter?.selected.has(facility)" [class.disabled]="selectedParent">
+    <a role="menuitem" tabindex="-1" [attr.data-value]="facility?.doc?._id" class="{{'indent-' + facilityDepth}}" (click)="!selectedParent && toggle(facility)">
+      {{facility.label | async }}
+    </a>
+    <ul class="mm-dropdown-submenu">
+      <ng-container
+        *ngFor="let child of facility?.children; trackBy: trackByFn"
+        [ngTemplateOutlet]="facilityTemplate"
+        [ngTemplateOutletContext]="{ facility: child, parent: facility, selectedParent: dropdownFilter?.selected.has(facility), facilityDepth: facilityDepth + 1 }">
+      </ng-container>
+    </ul>
+  </li>
+</ng-template>

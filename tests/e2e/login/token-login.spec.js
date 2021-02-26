@@ -16,9 +16,14 @@ const getUrl = token => `${utils.getOrigin()}/medic/login/token/${token}`;
 const setupTokenLoginSettings = () => {
   // we're configuring app_url here because we're serving api on a port, and in express4 req.hostname strips the port
   // https://expressjs.com/en/guide/migrating-5.html#req.host
-  const settings = { token_login: {message: 'token_login_sms', enabled: true }, app_url: utils.getOrigin() };
-  const waitForApiUpdate = utils.waitForLogs('api.e2e.log', /Settings updated/);
-  return utils.updateSettings(settings, 'api').then(() => waitForApiUpdate.promise);
+  const settings = {
+    token_login: {
+      message: 'token_login_sms',
+      enabled: true
+    },
+    app_url: utils.getOrigin()
+  };
+  return utils.updateSettings(settings, true);
 };
 
 const createUser = (user) => {
@@ -42,8 +47,8 @@ const expireToken = (user) => {
   });
 };
 
-describe('token login', () => {
-  beforeEach(() => {
+describe('Token login', () => {
+  beforeEach(async () => {
     user = {
       username: 'testusername',
       roles: ['national_admin'],
@@ -51,87 +56,89 @@ describe('token login', () => {
       token_login: true,
       known: true,
     };
-    browser.manage().deleteAllCookies();
+    await browser.manage().deleteAllCookies();
   });
 
-  afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb([], [])));
-
-  afterAll(() => {
-    commonElements.goToLoginPage();
-    loginPage.login(auth.username, auth.password);
-    return utils.revertDb();
+  afterEach(async () => {
+    await utils.deleteUsers([user]);
+    await utils.revertDb([], true);
   });
 
-  const waitForLoaderToDisappear = () => {
+  afterAll(async () => {
+    await commonElements.goToLoginPageNative();
+    await loginPage.loginNative(auth.username, auth.password);
+    await commonElements.calmNative();
+    await utils.revertDb();
+  });
+
+  const waitForLoaderToDisappear = async () => {
     try {
-      helper.waitElementToDisappear(by.css('.loader'));
+      await helper.waitElementToDisappear(by.css('.loader'));
     } catch(err) {
       // element can go stale
     }
   };
 
-  it('should redirect the user to the app if already logged in', () => {
-    commonElements.goToLoginPage();
-    loginPage.login(auth.username, auth.password);
-    browser.driver.get(getUrl('this is a random string'));
-    browser.waitForAngular();
-    helper.waitUntilReady(element(by.id('message-list')));
+  it('should redirect the user to the app if already logged in', async () => {
+    await commonElements.goToLoginPageNative();
+    await loginPage.loginNative(auth.username, auth.password);
+    await commonElements.calmNative();
+    await browser.driver.get(getUrl('this is a random string'));
+    await waitForLoaderToDisappear();
+    await browser.waitForAngular();
+    await helper.waitUntilReadyNative(element(by.id('message-list')));
   });
 
-  it('should display an error when token login is disabled', () => {
-    browser.driver.get(getUrl('this is a random string'));
-    waitForLoaderToDisappear();
-    expect(helper.isTextDisplayed(ERROR)).toBe(true);
-    expect(helper.isTextDisplayed(TOLOGIN)).toBe(true);
-    expect(element(by.css('.btn[href="/medic/login"]')).isDisplayed()).toBe(true);
+  it('should display an error when token login is disabled', async () => {
+    await browser.driver.get(getUrl('this is a random string'));
+    await waitForLoaderToDisappear();
+    expect(await helper.isTextDisplayed(ERROR)).toBe(true);
+    expect(await helper.isTextDisplayed(TOLOGIN)).toBe(true);
+    expect(await loginPage.returnToLogin().isDisplayed()).toBe(true);
   });
 
-  it('should display an error with incorrect url', () => {
-    browser.wait(() => setupTokenLoginSettings().then(() => true));
-    browser.driver.get(`${utils.getOrigin()}/medic/login/token`);
-    waitForLoaderToDisappear();
-    expect(helper.isTextDisplayed(MISSING)).toBe(true);
-    expect(helper.isTextDisplayed(TOLOGIN)).toBe(true);
-    expect(element(by.css('.btn[href="/medic/login"]')).isDisplayed()).toBe(true);
+  it('should display an error with incorrect url', async () => {
+    await setupTokenLoginSettings();
+    await browser.driver.get(`${utils.getOrigin()}/medic/login/token`);
+    await waitForLoaderToDisappear();
+    await helper.waitUntilReadyNative(loginPage.returnToLogin());
+    expect(await helper.isTextDisplayed(MISSING)).toBe(true);
+    expect(await helper.isTextDisplayed(TOLOGIN)).toBe(true);
+    expect(await loginPage.returnToLogin().isDisplayed()).toBe(true);
   });
 
-  it('should display an error when accessing with random strings', () => {
-    browser.wait(() => setupTokenLoginSettings().then(() => true));
-    browser.driver.get(getUrl('this is a random string'));
-    waitForLoaderToDisappear();
-    expect(helper.isTextDisplayed(INVALID)).toBe(true);
-    expect(helper.isTextDisplayed(TOLOGIN)).toBe(true);
-    expect(element(by.css('.btn[href="/medic/login"]')).isDisplayed()).toBe(true);
+  it('should display an error when accessing with random strings', async () => {
+    await setupTokenLoginSettings();
+    await browser.driver.get(getUrl('this is a random string'));
+    await waitForLoaderToDisappear();
+    await helper.waitUntilReadyNative(loginPage.returnToLogin());
+    expect(await helper.isTextDisplayed(INVALID)).toBe(true);
+    expect(await helper.isTextDisplayed(TOLOGIN)).toBe(true);
+    expect(await loginPage.returnToLogin().isDisplayed()).toBe(true);
   });
 
-  it('should display an error when token is expired', () => {
-    browser.wait(() => {
-      return setupTokenLoginSettings()
-        .then(() => createUser(user))
-        .then(response => getUser(response.user.id))
-        .then(user => Promise.all([
-          getTokenUrl(user),
-          expireToken(user),
-        ]))
-        .then(([ url ]) => browser.driver.get(url))
-        .then(() => true);
-    });
-    waitForLoaderToDisappear();
-    expect(helper.isTextDisplayed(EXPIRED)).toBe(true);
-    expect(helper.isTextDisplayed(TOLOGIN)).toBe(true);
-    expect(element(by.css('.btn[href="/medic/login"]')).isDisplayed()).toBe(true);
+  it('should display an error when token is expired', async () => {
+    await setupTokenLoginSettings();
+    const response = await createUser(user);
+    const userDoc = await getUser(response.user.id);
+    const url = await getTokenUrl(userDoc);
+    await expireToken(userDoc);
+    await browser.driver.get(url);
+    await waitForLoaderToDisappear();
+    await helper.waitUntilReadyNative(loginPage.returnToLogin());
+    expect(await helper.isTextDisplayed(EXPIRED)).toBe(true);
+    expect(await helper.isTextDisplayed(TOLOGIN)).toBe(true);
+    expect(await loginPage.returnToLogin().isDisplayed()).toBe(true);
   });
 
-  it('should log the user in when token is correct', () => {
-    browser.wait(() => {
-      return setupTokenLoginSettings()
-        .then(() => createUser(user))
-        .then(response => getUser(response.user.id))
-        .then(user => getTokenUrl(user))
-        .then(url => browser.driver.get(url))
-        .then(() => true);
-    });
-    browser.waitForAngular();
-    helper.waitUntilReady(element(by.id('message-list')));
+  it('should log the user in when token is correct', async () => {
+    await setupTokenLoginSettings();
+    const response = await createUser(user);
+    const userDoc = await getUser(response.user.id);
+    const url = await getTokenUrl(userDoc);
+    await browser.driver.get(url);
+    await browser.waitForAngular();
+    await helper.waitUntilReadyNative(commonElements.messagesList);
+    expect(await commonElements.messagesList.isDisplayed()).toBe(true);
   });
 });

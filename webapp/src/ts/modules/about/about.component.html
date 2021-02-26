@@ -1,0 +1,91 @@
+<div class="row filters"></div>
+
+<div class="inner">
+  <div class="col-sm-12 page about">
+    <div>
+      <h3>{{'reload.app' | translate}}</h3>
+      <a (click)="reload()" class="btn btn-primary">{{'Reload' | translate}}</a>
+    </div>
+
+    <div>
+      <h3 (click)="secretDoor()">{{'about' | translate}}</h3>
+      <dl class="horizontal">
+        <dt>{{'version' | translate}}</dt>
+        <dd>{{version}}</dd>
+        <span *ngIf="androidAppVersion">
+          <dt>{{'android_app.version.title' | translate}}</dt>
+          <dd>{{androidAppVersion}}</dd>
+        </span>
+        <dt>{{'ddoc.version' | translate}}</dt>
+        <dd>{{remoteRev}}</dd>
+        <dt>{{'clientDdoc.version' | translate}}</dt>
+        <dd>{{localRev}}</dd>
+        <dt>{{'url' | translate}}</dt>
+        <dd>{{url}}</dd>
+        <dt>{{'User Name' | translate}}</dt>
+        <dd>{{userCtx.name}}</dd>
+      </dl>
+    </div>
+
+    <div>
+      <h3>{{'debug.db_info.title' | translate}}</h3>
+      <dl class="horizontal">
+        <dt>{{'debug.db_info.name' | translate}}</dt>
+        <dd>{{dbInfo?.db_name}}</dd>
+        <dt>{{'debug.db_info.docs' | translate}}</dt>
+        <dd>{{dbInfo?.doc_count}}</dd>
+        <dt>{{'debug.db_info.seq' | translate}}</dt>
+        <dd>{{dbInfo?.update_seq}}</dd>
+        <dt>{{'replication.last.success.to' | translate}}</dt>
+        <dd *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessTo">
+          {{replicationStatus.lastSuccessTo | simpleDateTime}}
+        </dd>
+        <dd *ngIf="!replicationStatus.disabled && !replicationStatus.lastSuccessTo">
+          {{'replication.last.success.unknown' | translate}}
+        </dd>
+        <dd *ngIf="replicationStatus.disabled">
+          {{'replication.disabled' | translate}}
+        </dd>
+        <dt>{{'replication.last.success.from' | translate}}</dt>
+        <dd *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessFrom">
+          {{replicationStatus.lastSuccessFrom | simpleDateTime}}
+        </dd>
+        <dd *ngIf="!replicationStatus.disabled && !replicationStatus.lastSuccessFrom">
+          {{'replication.last.success.unknown' | translate}}
+        </dd>
+        <dd *ngIf="replicationStatus.disabled">
+          {{'replication.disabled' | translate}}
+        </dd>
+      </dl>
+    </div>
+
+    <div *ngIf="androidDataUsage">
+      <h3>{{'android_app.data_usage.title' | translate}}</h3>
+      <p>{{'android_app.data_usage.description' | translate}}</p>
+      <h4>{{'android_app.data_usage.system.title' | translate}}</h4>
+      <dl class="horizontal">
+        <dt>{{'android_app.data_usage.rx' | translate}}</dt>
+        <dd translate [translateParams]="{ number: androidDataUsage?.system?.rx | number }">number.bytes</dd>
+        <dt>{{'android_app.data_usage.tx' | translate}}</dt>
+        <dd translate [translateParams]="{ number: androidDataUsage?.system?.tx | number }">number.bytes</dd>
+      </dl>
+      <h4>{{'android_app.data_usage.app.title' | translate}}</h4>
+      <dl class="horizontal">
+        <dt>{{'android_app.data_usage.rx' | translate}}</dt>
+        <dd translate [translateParams]="{ number: androidDataUsage?.app?.rx | number }">number.bytes</dd>
+        <dt>{{'android_app.data_usage.tx' | translate}}</dt>
+        <dd translate [translateParams]="{ number: androidDataUsage?.app?.tx | number }">number.bytes</dd>
+      </dl>
+    </div>
+
+    <div *ngIf="partners?.length" class="partners">
+      <h3>{{'partner.supporting' | translate}}</h3>
+      <ul class="list-inline">
+        <li *ngFor="let partner in partners">
+          <span [innerHTML]="partner | partnerImage"></span>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+</div>

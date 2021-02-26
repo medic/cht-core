@@ -37,9 +37,10 @@ const getPostOpts = (path, body) => ({
 });
 
 const postMessages = (messages) => {
+  const watchChanges = apiUtils.getApiSmsChanges(messages);
   return Promise
     .all([
-      apiUtils.getApiSmsChanges(messages),
+      watchChanges,
       utils.request(getPostOpts('/api/sms', { messages: messages }))
     ])
     .then(([changes]) => changes.map(change => change.id));
@@ -48,8 +49,8 @@ const postMessages = (messages) => {
 const getRecipient = doc => doc.tasks[0].messages[0].to;
 
 describe('message duplicates', () => {
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertSettings(true).then(done));
+  afterAll(() => utils.revertDb());
+  afterEach(() => utils.revertSettings(true));
 
   it('should mark as duplicate after 5 retries by default', () => {
     const message1 = {
@@ -82,7 +83,7 @@ describe('message duplicates', () => {
     ];
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => postMessages(firstMessages))
       .then(ids => utils.getDocs(ids))
       .then(docs => {
@@ -120,7 +121,7 @@ describe('message duplicates', () => {
 
           const recipient = getRecipient(doc);
           const task = doc.tasks[0];
-          // message1 is duplicated (7x), message2 not duplicate (3x)
+          // message1 is duplicated (7x), message2 not duplicated (3x)
           if (recipient === message1.from) {
             chai.expect(task.messages[0]).to.include({ message: 'Await further instructions' });
             chai.expect(task.state).to.equal('duplicate');
@@ -152,11 +153,15 @@ describe('message duplicates', () => {
     ];
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => postMessages(firstMessages))
       .then(ids => utils.getDocs(ids))
       .then(docs => {
         docs.forEach(doc => {
+          if (doc.tasks.length > 1) {
+            // this test has been flaking on GHA only (no repro locally)
+            console.log(JSON.stringify(doc, null, 2));
+          }
           chai.expect(doc.tasks.length).to.equal(1);
           chai.expect(doc.tasks[0].messages.length).to.equal(1);
 

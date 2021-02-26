@@ -1,52 +1,50 @@
-module.exports = function(config) {
+// Karma configuration file, see link for more information
+// https://karma-runner.github.io/1.0/config/configuration-file.html
+const path = require('path');
 
-  'use strict';
-
+module.exports = function (config) {
   config.set({
     basePath: '../../',
-    frameworks: ['mocha'],
-    reporters: ['spec'],
+    frameworks: ['mocha', '@angular-devkit/build-angular'],
+    plugins: [
+      require('karma-mocha'),
+      require('karma-chrome-launcher'),
+      require('karma-mocha-reporter'),
+      require('@angular-devkit/build-angular/plugins/karma'),
+      require('karma-coverage-istanbul-reporter'),
+    ],
+    client: {
+      captureConsole: true,
+    },
+    reporters: ['mocha', 'coverage-istanbul'],
+    mochaReporter: {
+      output: 'full',
+      showDiff: true,
+    },
+    logLevel: config.LOG_INFO,
+    port: 9876,
+    colors: true,
     autoWatch: true,
     singleRun: false,
-    colors: true,
-    browserNoActivityTimeout: 60000,
+    restartOnFileChange: false,
+    browsers: ['ChromeHeadless'],
     customLaunchers: {
-      Chrome_Headless: {
-        base: 'Chrome',
-        flags: ['--headless', '--disable-gpu', '--remote-debugging-port=9222']
+      ChromeHeadlessCI: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox'],
       }
     },
-    preprocessors: {
-      'src/templates/**/*.html': ['ng-html2js']
+    files: [],
+    browserConsoleLogOptions: {
+      level: 'log',
+      format: '%b %T: %m',
+      terminal: true,
     },
-    ngHtml2JsPreprocessor: {
-      moduleName: 'templates'
+    coverageIstanbulReporter: {
+      reports: [ 'html', 'lcovonly', 'text-summary' ],
+      dir: path.join(__dirname, 'coverage'),
+      fixWebpackSourcePaths: true,
+      skipFilesWithNoCoverage: true,
     },
-    files: [
-      // used to query html
-      'node_modules/jquery/dist/jquery.js',
-
-      '../node_modules/q/q.js',
-
-      // application code
-      '../build/ddocs/medic/_attachments/js/inbox.js',
-      '../build/ddocs/medic/_attachments/js/templates.js',
-      'src/templates/directives/sender.html',
-
-      // test-specific code
-      '../node_modules/chai/chai.js',
-      '../node_modules/chai-shallow-deep-equal/chai-shallow-deep-equal.js',
-      '../node_modules/sinon/pkg/sinon.js',
-      '../node_modules/angular-mocks/angular-mocks.js',
-      'node_modules/lodash/lodash.js',
-      'node_modules/moment/moment.js',
-      'node_modules/redux/dist/redux.js',
-      'node_modules/ng-redux/umd/ng-redux.js',
-      'node_modules/redux-thunk/dist/redux-thunk.js',
-      'tests/karma/utils.js',
-
-      // test files
-      'tests/karma/unit/**/*.js'
-    ]
   });
 };

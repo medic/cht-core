@@ -37,12 +37,6 @@
   "public_access": false,
   "default_country_code": 1,
   "gateway_number": "+13125551212",
-  "kujua-reporting": [
-    {
-      "code": "VPD",
-      "reporting_freq": "weekly"
-    }
-  ],
   "dhis_data_sets": [
     {
       "id": "VMuFODsyWaO",

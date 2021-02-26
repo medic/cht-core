@@ -36,10 +36,11 @@ const xml = `<?xml version="1.0"?>
 </h:html>
 `;
 
+const formInternalId = 'concatenate-strings';
 const docs = [
   {
-    _id: 'form:concatenate-strings',
-    internalId: 'concatenate-strings',
+    _id: `form:${formInternalId}`,
+    internalId: formInternalId,
     title: 'Concatenate Strings',
     type: 'form',
     _attachments: {
@@ -51,18 +52,19 @@ const docs = [
   }];
 
 module.exports = {
-  configureForm: (userContactDoc, done) => {
-    utils.seedTestData(done, userContactDoc, docs);
+  configureForm: (userContactDoc) => {
+    return utils.seedTestData(userContactDoc, docs);
   },
 
-  submit: () => {
+  submit: async () => {
     const submitButton = element(by.css('[ng-click="onSubmit()"]'));
-    helper.waitElementToBeClickable(submitButton);
-    submitButton.click();
-    helper.waitElementToBeVisible(element(by.css('div#reports-content')));
+    await helper.clickElementNative(submitButton);
+    await helper.waitElementToBeVisibleNative(element(by.css('div#reports-content')));
   },
 
   reset: () => {
-    element(by.css('.icon.icon-refresh')).click();
-  }
+    return element(by.css('.icon.icon-refresh')).click();
+  },
+
+  formInternalId: formInternalId,
 };

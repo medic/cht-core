@@ -1,0 +1,30 @@
+<span *ngIf="lastVisitedDateExtras" class="dropdown mm-dropdown sort-dropdown no-reset" dropdown>
+  <span class="sort-results">
+    <a
+      id="sort-results"
+      title="{{'contacts.results.sort' | translate}}"
+      dropdownToggle
+      (click)="false"
+      aria-controls="sort-results-dropdown"
+    >
+      <i class="fa fa-sort-amount-desc"></i>
+    </a>
+  </span>
+  <span
+    id="sort-results-dropdown"
+    role="menu"
+    *dropdownMenu
+    aria-labelledby="sort-results"
+    class="dropdown-menu mm-dropdown-menu"
+  >
+    <ul>
+      <li role="presentation" class="dropdown-header">{{'contacts.results.sort.title' | translate}}</li>
+      <li role="presentation">
+        <a role="menuitem" tabindex="-1" [class.selected]="sortDirection === 'alpha'" (click)="applySort('alpha')">{{'contacts.results.sort.alpha' | translate}}</a>
+      </li>
+      <li role="presentation">
+        <a role="menuitem" tabindex="-1" [class.selected]="sortDirection === 'last_visited_date'" (click)="applySort('last_visited_date')">{{'contacts.results.sort.date.last.visited' | translate}}</a>
+      </li>
+    </ul>
+  </span>
+</span>

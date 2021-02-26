@@ -1,0 +1,125 @@
+<mm-modal
+  [status]="status"
+  id="guided-setup"
+  [titleKey]="'Easy Setup Wizard'"
+  [submitKey]="'setup.start'"
+  cancel-key="'setup.skip'"
+  (onCancel)="cancel()"
+  (onSubmit)="submit()"
+>
+  <div class="guided-setup">
+    <accordion [closeOthers]="true" [isAnimated]="true">
+      <!-- 1. Modem setup -->
+      <div class="panel panel-default">
+        <accordion-group [isOpen]="true">
+          <div class="panel-heading" role="tab" id="modem-setup-heading" accordion-heading>
+            <h4 class="panel-title">
+              <span class="count">
+                <span class="number">1</span>
+                <i class="fa fa-check"></i>
+              </span>
+              <span>{{'setup.modem.title' | translate}}</span>
+              <span class="value"></span>
+            </h4>
+          </div>
+          <div id="modem-setup-content" class="modem-setup-content panel-collapse">
+            <p>{{'setup.modem.description' | translate}}</p>
+            <label for="default-country-code-setup">{{'Default country code' | translate}}</label>
+            <p>{{'Default country code help' | translate}}</p>
+            <select [(ngModel)]="model.countryCode" id="default-country-code-setup" name="default-country-code">
+            </select>
+            <label for="gateway-number-setup">{{'Gateway number' | translate}}</label>
+            <p>{{'Gateway number help' | translate}}</p>
+            <input [(ngModel)]="model.gatewayNumber" id="gateway-number-setup" name="gateway-number" type="text"/>
+          </div>
+        </accordion-group>
+      </div>
+
+      <!-- 2. Identify care coordinators -->
+      <div class="panel panel-default">
+        <accordion-group>
+          <div class="panel-heading" role="tab" id="primary-contact-heading" accordion-heading>
+            <h4 class="panel-title">
+              <span class="count">
+                <span class="number">2</span>
+                <i class="fa fa-check"></i>
+              </span>
+              <span>{{'setup.contact.title' | translate}}</span>
+              <span class="value"></span>
+            </h4>
+          </div>
+          <div id="primary-contact-content" class="primary-contact-content panel-collapse">
+            <p>{{'setup.contact.description' | translate}}</p>
+            <p class="horizontal-options">
+              <a href="#" class="icon contact-pregnant" data-value="patient">{{'Pregnant patient' | translate}}</a>
+              <a href="#" class="icon contact-chw" data-value="chw">{{'Community health worker' | translate}}</a>
+              <a href="#" class="icon contact-nurse" data-value="nurse">{{'Facility nurse' | translate}}</a>
+            </p>
+            <p>{{'setup.contact.help' | translate}}</p>
+          </div>
+        </accordion-group>
+      </div>
+
+      <!-- 3. Language preference -->
+      <div class="panel panel-default">
+        <accordion-group>
+          <div class="panel-heading" role="tab" id="language-preference-heading" accordion-heading>
+            <h4 class="panel-title">
+              <span class="count">
+                <span class="number">3</span>
+                <i class="fa fa-check"></i>
+              </span>
+              <span>{{'setup.language.title' | translate}}</span>
+              <span class="value"></span>
+            </h4>
+          </div>
+          <div id="language-preference-content" class="language-preference-content panel-collapse">
+            <span>{{'setup.language.outgoing.subtitle' | translate}}</span>
+            <p class="horizontal-options locale-outgoing">
+              <a *ngFor="let language of enabledLocales" href="#" [attr.data-value]="language.code">
+                <span class="rectangle">{{ language.name }}</span>
+              </a>
+            </p>
+            <span>{{'setup.language.subtitle' | translate}}</span>
+            <p class="horizontal-options locale">
+              <a *ngFor="let language of enabledLocales" href="#" [attr.data-value]="language.code">
+                <span class="rectangle">{{ language.name }}</span>
+              </a>
+            </p>
+            <p>{{'setup.language.description' | translate}}</p>
+          </div>
+        </accordion-group>
+      </div>
+
+      <!-- 4. Registration form -->
+      <div class="panel panel-default">
+        <accordion-group>
+          <div class="panel-heading" role="tab" id="registration-form-heading" accordion-heading>
+            <h4 class="panel-title">
+              <span class="count">
+                <span class="number">4</span>
+                <i class="fa fa-check"></i>
+              </span>
+              <span>{{'setup.registration.title' | translate}}</span>
+              <span class="value"></span>
+            </h4>
+          </div>
+          <div id="registration-form-content" class="registration-form-content panel-collapse">
+            <p>{{'setup.registration.description' | translate}}</p>
+            <p class="horizontal-options">
+              <a href="#" data-value="true">
+                <span class="circle"><i class="fa fa-check"></i></span>
+                <span class="description">{{'with.lmp' | translate}}</span>
+              </a>
+              <a href="#" data-value="false">
+                <span class="circle"><i class="fa fa-check"></i></span>
+                <span class="description">{{'without.lmp' | translate}}</span>
+              </a>
+            </p>
+            <p>{{'setup.registration.help' | translate}}</p>
+          </div>
+        </accordion-group>
+      </div>
+    </accordion>
+  </div>
+</mm-modal>

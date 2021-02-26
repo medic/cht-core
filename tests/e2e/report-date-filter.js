@@ -2,6 +2,7 @@ const utils = require('../utils');
 const helper = require('../helper');
 const moment = require('moment');
 const commonElements = require('../page-objects/common/common.po.js');
+const reportsTab = require('../page-objects/reports/reports.po.js');
 
 describe('Filters reports', () => {
   const reports = [
@@ -84,41 +85,24 @@ describe('Filters reports', () => {
   ];
 
   const savedUuids = [];
-  beforeEach(done => {
-    protractor.promise
-      .all(reports.map(utils.saveDoc))
-      .then(results => {
-        results.forEach(result => {
-          savedUuids.push(result.id);
-        });
-        done();
-      })
-      .catch(done.fail);
+  beforeEach(async () => {
+    const results = await utils.saveDocs(reports);
+    results.forEach(result => savedUuids.push(result.id));
   });
 
   afterEach(utils.afterEach);
 
-  it('by date', () => {
-    commonElements.goToReports();
-    helper.waitElementToPresent(element(by.css('#reports-list .unfiltered li:first-child')));
+  it('by date', async () => {
+    await commonElements.goToReportsNative();
+    await helper.waitUntilReadyNative(reportsTab.firstReport());
 
-    let clear = '';
-    for (let i = 0; i < 20; i++) {
-      clear += protractor.Key.BACK_SPACE;
-    }
+    await reportsTab.filterByDate(moment('05/16/2016','MM/DD/YYYY'), moment('05/17/2016','MM/DD/YYYY'));
+    
+    await helper.waitUntilReadyNative(reportsTab.firstReport());
 
-    element(by.css('#date-filter')).click();
-    element(by.css('.daterangepicker [name="daterangepicker_start"]')).click().sendKeys(clear + '05/16/2016');
-    element(by.css('.daterangepicker [name="daterangepicker_end"]'))
-      .click().sendKeys(clear + '05/17/2016' + protractor.Key.ENTER);
-    element(by.css('#freetext')).click(); // blur the datepicker
-
-    helper.waitElementToPresent(element(by.css('#reports-list .loader')));
-    helper.waitElementToPresent(element(by.css('#reports-list .filtered li:first-child')));
-
-    expect(element.all(by.css('#reports-list .filtered li')).count()).toBe(2);
-    expect(element.all(by.css('#reports-list .filtered li[data-record-id="' + savedUuids[1] + '"]')).count()).toBe(1);
-    expect(element.all(by.css('#reports-list .filtered li[data-record-id="' + savedUuids[3] + '"]')).count()).toBe(1);
+    expect(await reportsTab.allReports().count()).toBe(2);
+    expect(await reportsTab.reportsByUUID(savedUuids[1]).count()).toBe(1);
+    expect(await reportsTab.reportsByUUID(savedUuids[3]).count()).toBe(1);
 
   });
 });

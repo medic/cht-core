@@ -1,19 +1,14 @@
 @import (inline) 'reset.css';
-@import 'webapp/node_modules/bootstrap/less/bootstrap';
-@import 'webapp/node_modules/font-awesome/less/font-awesome';
-@import (inline) 'webapp/node_modules/select2/dist/css/select2.css';
-@import (inline)
-  'webapp/node_modules/bootstrap-daterangepicker/daterangepicker.css';
-@import (inline) 'webapp/node_modules/nvd3/build/nv.d3.css';
-@import (inline)
-  'webapp/node_modules/bootstrap-tour/build/css/bootstrap-tour.css';
+@import '../../node_modules/bootstrap/less/bootstrap';
+@import '../../node_modules/font-awesome/less/font-awesome';
+@import (inline) '../../node_modules/select2/dist/css/select2.css';
+@import (inline) '../../node_modules/bootstrap-daterangepicker/daterangepicker.css';
+@import (inline) './bootstrap-tour.css';
 
 @import 'variables';
 @import 'font';
 @import 'mixins';
 @import 'theme';
-@import 'angular';
-@import 'analytics-widgets';
 @import 'targets';
 @import 'material';
 @import 'content-list';
@@ -29,45 +24,45 @@
 
 body {
   overflow-y: hidden;
-  &.messages {
+  .app-root.messages {
     .header .tabs .selected,
     .filters {
       background-color: @messages-color;
     }
   }
-  &.tasks {
+  .app-root.tasks {
     .header .tabs .selected,
     .filters {
       background-color: @tasks-color;
     }
   }
-  &.reports {
+  .app-root.reports {
     .header .tabs .selected,
     .filters {
       background-color: @reports-color;
     }
   }
-  &.analytics {
+  .app-root.analytics {
     .header .tabs .selected,
     .filters {
       background-color: @analytics-color;
     }
   }
-  &.contacts {
+  .app-root.contacts {
     .header .tabs .selected,
     .filters {
       background-color: @contacts-color;
     }
   }
-  &.userSettings {
+  .app-root.user {
     .header .tabs .selected,
     .filters {
       background-color: @admin-color;
     }
   }
-  &.about,
-  &.testing,
-  &.privacyPolicy {
+  .app-root.about,
+  .app-root.testing,
+  .app-root.privacy-policy {
     .header .tabs .selected,
     .filters {
       background-color: @help-color;
@@ -82,8 +77,8 @@ body {
       margin-top: 100px;
     }
   }
-  &.error,
-  &.testing {
+  .app-root.error,
+  .app-root.testing {
     .header .tabs .selected,
     .filters {
       background-color: @error-color;
@@ -365,6 +360,9 @@ body {
     .dropdown-menu {
       padding-top: 0;
     }
+    .mm-dropdown {
+      display: block;
+    }
   }
 
   .dropdown-menu .fa {
@@ -391,6 +389,8 @@ body {
     top: 0;
     left: 0;
     right: 0;
+    display: flex;
+
   }
 
   .freetext-filter {
@@ -526,7 +526,7 @@ body {
       overflow: hidden;
     }
     .message-actions {
-      display: none;
+      display: block;
       text-align: right;
       .btn-link {
         float: left;
@@ -539,9 +539,6 @@ body {
       textarea {
         height: 100px;
         overflow: auto;
-      }
-      .message-actions {
-        display: block;
       }
     }
   }
@@ -661,6 +658,7 @@ body {
 .task-state {
   color: @label-color;
   font-size: @font-small;
+  min-height: 20px;
   .state {
     font-weight: bold;
     &:before {
@@ -1240,7 +1238,7 @@ a.fa:hover {
 .analytics,
 .theme {
   .content {
-    > .inner {
+    .inner {
       /* allow the scrollable content to grow to full width */
       max-width: inherit;
       .page:not(.target-aggregates) {
@@ -1259,6 +1257,11 @@ a.fa:hover {
         margin-left: auto;
         margin-right: auto;
       }
+    }
+  }
+  .filters {
+    .inner {
+      max-width: @content-width;
     }
   }
 }
@@ -1330,13 +1333,14 @@ a.fa:hover {
     }
     .freetext-filter {
       display: none;
-      &.only-filter {
-        display: inline-block;
-        width: auto;
-      }
+    }
+    .show-one-filter .freetext-filter,
+    .show-one-filter .filter {
+      display: inline-block;
+      width: auto;
     }
     .mobile-freetext-filter {
-      display: inline-block;
+      display: block;
       .search-pane {
         padding: 10px;
       }
@@ -1444,7 +1448,7 @@ a.fa:hover {
     left: 100%;
   }
 
-  body.show-content {
+  .app-root.show-content {
     .header {
       display: none;
     }
@@ -1557,13 +1561,13 @@ a.fa:hover {
   .desktop-only {
     display: none;
   }
-  body.about,
-  body.testing {
+  .app-root.about,
+  .app-root.testing {
     .page {
       top: 55px;
     }
   }
-  body.hide-mobile-tab-labels {
+  .hide-mobile-tab-labels {
     .button-label {
       display: none;
     }

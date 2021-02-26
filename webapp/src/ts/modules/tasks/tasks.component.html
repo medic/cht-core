@@ -1,0 +1,52 @@
+<div class="filters">
+  <div class="inner">
+    <mm-navigation></mm-navigation>
+  </div>
+</div>
+
+<div class="inner">
+  <div class="inbox page">
+
+    <div id="tasks-list" class="col-sm-4 inbox-items left-pane">
+      <ul *ngIf="!error && hasTasks">
+        <li *ngFor="let task of tasksList; trackBy: listTrackBy"
+            [attr.data-record-id]="task._id"
+            [class.selected] = "task._id === selectedTask?._id"
+            [class.overdue]="task.overdue"
+            class="content-row"
+        >
+          <a [routerLink]="['/', 'tasks', task._id]">
+            <div *ngIf="task.icon" class="icon" [innerHTML]="task.icon | resourceIcon"></div>
+            <div class="content">
+              <div class="heading">
+                <h4>
+                  <span>{{task.contact?.name || ''}}</span>
+                </h4>
+                <div class="date">
+                  <span [innerHTML]="task.date | taskDueDate"></span>
+                </div>
+              </div>
+
+              <div *ngIf="task.title" class="summary">
+                <p>{{task.title}}</p>
+              </div>
+
+              <div *ngIf="task.priorityLabel" class="warning">{{task.priorityLabel}}</div>
+            </div>
+          </a>
+        </li>
+      </ul>
+
+      <p *ngIf="error" class="alert alert-danger" role="alert">
+        <span>{{'Error fetching tasks' | translate}}</span>
+        <a class="btn btn-link" (click)="refreshTaskList()">{{'Reload' | translate}}</a>
+      </p>
+      <p class="loading-status" *ngIf="!error && !loading && !hasTasks && !tasksDisabled">{{'No tasks found' | translate}}</p>
+      <p class="loading-status" *ngIf="!error && !loading && hasTasks && !tasksDisabled">{{'task.list.complete' | translate}}</p>
+      <p class="loading-status" *ngIf="tasksDisabled">{{'tasks.disabled' | translate}}</p>
+      <div class="loader" *ngIf="loading && !tasksDisabled && !error"></div>
+    </div>
+
+    <router-outlet></router-outlet>
+  </div>
+</div>

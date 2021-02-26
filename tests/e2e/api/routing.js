@@ -67,19 +67,18 @@ const DOCS_TO_KEEP = [
 ];
 
 describe('routing', () => {
-  beforeAll(done => {
+  beforeAll(() => {
     return utils
       .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users))
-      .then(done);
+      .then(() => utils.createUsers(users));
   });
 
-  afterAll(done =>
+  afterAll(() =>
     utils
       .revertDb()
       .then(() => utils.deleteUsers(users))
-      .then(done));
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
+  );
+  afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
 
   describe('unauthenticated routing', () => {
     it('API restricts endpoints which need authorization', () => {
@@ -725,12 +724,12 @@ describe('routing', () => {
   });
 
   describe('legacy endpoints', () => {
-    afterEach(done => utils.revertSettings().then(done));
+    afterEach(() => utils.revertSettings(true));
 
     it('should still route to deprecated apiV0 settings endpoints', () => {
       let settings;
       return utils
-        .updateSettings({}) // this test will update settings that we want successfully reverted afterwards
+        .updateSettings({}, true) // this test will update settings that we want successfully reverted afterwards
         .then(() => utils.getDoc('settings'))
         .then(result => settings = result.settings)
         .then(() => Promise.all([

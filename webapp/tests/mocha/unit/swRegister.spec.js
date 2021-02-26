@@ -40,7 +40,7 @@ describe('Service worker registration (swRegister.js)', () => {
       installing: { state: 'activated' },
     };
     fakeRegisterFunc.resolves(registration);
-    
+
     const callback = sinon.stub();
     swRegister(callback).then(actual => {
       expect(actual).to.be.an('object');
@@ -54,7 +54,7 @@ describe('Service worker registration (swRegister.js)', () => {
 
   it('rejects if service workers not supported', done => {
     delete window.navigator.serviceWorker;
-    
+
     const callback = sinon.stub();
     swRegister(callback).catch(err => {
       expect(callback.called).to.eq(false);
@@ -69,7 +69,7 @@ describe('Service worker registration (swRegister.js)', () => {
       installing: { state: 'redundant' },
     };
     fakeRegisterFunc.resolves(registration);
-    
+
     const callback = sinon.stub();
     swRegister(callback).catch(err => {
       expect(err).to.include({ name: 'Error' });

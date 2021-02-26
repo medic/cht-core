@@ -152,7 +152,7 @@ app.use(
         scriptSrc: [
           `'self'`,
           // Explicitly allow the telemetry script setting startupTimes
-          `'sha256-6i0jYw/zxQO6q9fIxqI++wftTrPWB3yxt4tQqy6By6k='`,
+          `'sha256-B5cfIVb4/wnv2ixHP03bHeMXZDszDL610YG5wdDq/Tc='`,
           // AngularJS and several dependencies require this
           `'unsafe-eval'`
         ],
@@ -190,7 +190,7 @@ app.get('/', function(req, res) {
     // Required for service compatibility during upgrade.
     proxy.web(req, res);
   } else {
-    res.sendFile(path.join(extractedResourceDirectory, 'templates/inbox.html'));
+    res.sendFile(path.join(extractedResourceDirectory, 'index.html')); // Webapp's index - entry point
   }
 });
 

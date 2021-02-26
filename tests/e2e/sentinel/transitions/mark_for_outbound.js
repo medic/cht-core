@@ -75,12 +75,12 @@ const wipeTasks = () => getTasks()
   });
 
 describe('mark_for_outbound', () => {
-  afterEach(done => Promise.all([utils.revertSettings(), wipeTasks()]).then(done));
-  afterAll(done => utils.revertDb().then(done));
+  afterEach(() => Promise.all([utils.revertSettings(true), wipeTasks()]));
+  afterAll(() => utils.revertDb());
 
   describe('when external server is up', () => {
-    beforeEach(done => startMockApp().then(done));
-    afterEach(done => { stopMockApp(); done(); });
+    beforeEach(() => startMockApp());
+    afterEach(() => stopMockApp());
 
     it('correctly creates and sends an outbound request immediately', () => {
       const report = makeReport();
@@ -104,7 +104,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -154,7 +154,7 @@ describe('mark_for_outbound', () => {
 
       // First round
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -219,7 +219,7 @@ describe('mark_for_outbound', () => {
 
       // First round
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -289,7 +289,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -324,7 +324,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -347,7 +347,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -370,7 +370,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -401,7 +401,7 @@ describe('mark_for_outbound', () => {
       };
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
@@ -426,8 +426,8 @@ describe('mark_for_outbound', () => {
   describe('error logging', () => {
     // Doing this in an e2e test in case our request library changes in the future
 
-    beforeEach(done => startMockApp().then(done));
-    afterEach(done => { stopMockApp(); done(); });
+    beforeEach(() => startMockApp());
+    afterEach(() => stopMockApp());
 
     it('logs an error if mapping errors', () => {
       const report = makeReport();
@@ -452,7 +452,7 @@ describe('mark_for_outbound', () => {
       let collect;
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => collect = utils.collectLogs('sentinel.e2e.log', /Mapping error.+_idddddddddddddddd/))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
@@ -485,7 +485,7 @@ describe('mark_for_outbound', () => {
       let collect;
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => collect = utils.collectLogs('sentinel.e2e.log', /Failed to push/, /Response body.+error response/))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
@@ -519,7 +519,7 @@ describe('mark_for_outbound', () => {
       let collect;
 
       return utils
-        .updateSettings(config, true)
+        .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
         .then(() => collect = utils.collectLogs('sentinel.e2e.log', /Failed to push.+ECONNREFUSED/))
         .then(() => sentinelUtils.waitForSentinel([report._id]))

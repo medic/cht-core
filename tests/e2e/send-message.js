@@ -1,6 +1,9 @@
 const utils = require('../utils');
 const helper = require('../helper');
 const common = require('../page-objects/common/common.po');
+const messagesPo = require('../page-objects/messages/messages.po');
+const uuid = require('uuid/v4');
+const _ = require('lodash');
 
 /* eslint-disable no-console */
 describe('Send message', () => {
@@ -53,334 +56,187 @@ describe('Send message', () => {
     parent: { _id: DAVID_AREA._id },
   };
 
+  const messageDoc = {
+    '_id': uuid(),
+    'errors': [],
+    'form': null,
+    'reported_date': new Date().getTime(),
+    'tasks': [
+      {
+        'messages': [
+          {
+            'sent_by': 'admin',
+            'to': '+447765902000',
+            'message': 'Hello raw this is a test SMS',
+            'uuid': uuid()
+          }
+        ],
+        'state_history': [
+          {
+            'state': 'pending',
+            'timestamp': '2021-02-12T17:34:47.734Z'
+          }
+        ],
+        'state': 'pending'
+      }
+    ],
+    'kujua_message': true,
+    'type': 'data_record',
+    'sent_by': 'admin'
+  };
+
+  const aliceMessageDoc = _.cloneDeep(messageDoc);
+  aliceMessageDoc.tasks[0].messages[0] = {
+    'sent_by': 'admin',
+    'to': '+447765902001',
+    'contact': {
+      '_id': 'alice-contact'
+    },
+    'message': 'Hello alice-contact this is a test SMS',
+    'uuid': uuid()
+  };
+
   const CONTACTS = [ALICE, BOB_PLACE, CAROL, JAROL, DAVID, DAVID_AREA];
 
-  beforeAll(done => {
+  beforeEach(async () => {
     DAVID_AREA.contact = { _id: DAVID._id, phone: '+447765902002' };
-    protractor.promise
-      .all(CONTACTS.map(utils.saveDoc))
-      .then(done)
-      .catch(done.fail);
+    await utils.saveDocs(CONTACTS);
   });
 
-  afterEach(done => {
-    utils.resetBrowser();
-    done();
+  afterEach(async () => {
+    await utils.resetBrowser();
+    await utils.afterEach();
   });
-
-  afterAll(done => {
-    utils.afterEach(() => {
-      done();
-    });
-  });
-
-  const messageInList = identifier => {
-    return `#message-list li[data-record-id="${identifier}"]`;
-  };
 
   const smsMsg = key => {
     return `Hello ${key} this is a test SMS`;
   };
 
-  const openSendMessageModal = () => {
-    helper.waitElementToBeClickable(
-      element(by.css('.general-actions .send-message'))
-    );
-    helper.clickElement(element(by.css('.general-actions .send-message')));
-    helper.waitElementToPresent(element(by.id('send-message')), 5000);
-    helper.waitElementToBeVisible(element(by.id('send-message')), 5000);
-  };
-
-  const findSelect2Entry = (selector, expectedValue) => {
-    return element
-      .all(by.css('.select2-results__option' + selector))
-      .filter(item => {
-        return item
-          .getText()
-          .then(text => {
-            return text === expectedValue;
-          })
-          .catch(err => {
-            // item may have been detached from the page, so whatever it's invalid,
-            // we ignore it. Log the error just for kicks.
-            console.log('Caught and ignoring an error trying to getText', err);
-          });
-      });
-  };
-
-  const searchSelect2 = (
-    searchText,
-    totalExpectedResults,
-    entrySelector,
-    entryText
-  ) => {
-    element(by.css('#send-message input.select2-search__field')).sendKeys(
-      searchText
-    );
-
-    browser.wait(() => {
-      return protractor.promise
-        .all([
-          findSelect2Entry(entrySelector, entryText)
-            .count()
-            .then(utils.countOf(1)),
-          element
-            .all(by.css('.select2-results__option.loading-results'))
-            .count()
-            .then(utils.countOf(0)),
-          element
-            .all(by.css('.select2-results__option'))
-            .count()
-            .then(utils.countOf(totalExpectedResults)),
-        ])
-        .then(results => {
-          // My kingdom for results.reduce(&&);
-          return results[0] && results[1] && results[2];
-        });
-    }, 10000);
-
-    return findSelect2Entry(entrySelector, entryText).first();
-  };
-
-  const enterCheckAndSelect = (
-    searchText,
-    totalExpectedResults,
-    entrySelector,
-    entryText,
-    existingEntryCount=0
-  ) => {
-    expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(
-      existingEntryCount
-    );
-
-    const entry = searchSelect2(
-      searchText,
-      totalExpectedResults,
-      entrySelector,
-      entryText
-    );
-    entry.click();
-
-    browser.wait(() => {
-      return element
-        .all(by.css('li.select2-selection__choice'))
-        .count()
-        .then(utils.countOf(existingEntryCount + 1));
-    }, 2000);
-  };
-
-  const sendMessage = () => {
-    element(by.css('#send-message a.btn.submit:not(.ng-hide)')).click();
-
-    browser.wait(() => {
-      return element(by.css('#send-message'))
-        .isDisplayed()
-        .then(isDisplayed => {
-          return !isDisplayed;
-        })
-        .catch(() => {
-          // It's been detached, so it's gone
-          return true;
-        });
-    }, 2000);
-
-    utils.resetBrowser();
-  };
-
-  const clickLhsEntry = (entryId, entryName) => {
-    entryName = entryName || entryId;
-
-    const liIdentifier = messageInList(entryId);
-    helper.waitUntilReady(element(by.css(liIdentifier)));
-    expect(element.all(by.css(liIdentifier)).count()).toBe(1);
-
-    const aIdentifier = `${liIdentifier} a`;
-    helper.waitUntilReady(element(by.css(aIdentifier)));
-    element(by.css(aIdentifier)).click();
-
-    browser.wait(() => {
-      const el = element(by.css('#message-header .name'));
-      if (helper.waitUntilReady(el)) {
-        return helper.getTextFromElement(el).then(text => {
-          return text === entryName;
-        });
-      }
-    }, 12000);
-  };
-
-  const lastMessageIs = message => {
-    const last = element
-      .all(by.css('#message-content li div.data>p>span'))
-      .last();
-    expect(helper.getTextFromElement(last)).toBe(message);
-  };
-
   const contactNameSelector = ' .sender .name';
-  const everyoneAtText = name => {
-    return name + ' - all contacts';
-  };
+  const everyoneAtText = name => `${name} - all  contacts`;
 
   describe('Send message modal', () => {
-    it('can send messages to raw phone numbers', () => {
-      common.goToMessages();
-      expect(element(by.css(messageInList(RAW_PH))).isPresent()).toBeFalsy();
+    it('can send messages to raw phone numbers', async () => {
+      await common.goToMessagesNative();
+      expect(await messagesPo.messageInList(RAW_PH).isPresent()).toBeFalsy();
 
-      openSendMessageModal();
-      enterCheckAndSelect(RAW_PH, 1, '', RAW_PH);
-      element(by.css('#send-message textarea')).sendKeys(smsMsg('raw'));
-      sendMessage();
-      clickLhsEntry(RAW_PH);
+      await messagesPo.openSendMessageModal();
+      await messagesPo.enterCheckAndSelect(RAW_PH, 1, '', RAW_PH);
+      await messagesPo.messageText(smsMsg('raw'));
+      await messagesPo.submitMessage();
+      await messagesPo.clickLhsEntry(RAW_PH);
 
-      expect(element.all(by.css('#message-content li')).count()).toBe(1);
-      lastMessageIs(smsMsg('raw'));
+      expect(await messagesPo.allMessages().count()).toBe(1);
+      expect(await messagesPo.lastMessageText()).toBe(smsMsg('raw'));
     });
 
-    it('can send messages to contacts with phone numbers', () => {
-      common.goToMessages();
+    it('can send messages to contacts with phone numbers', async () => {
+      await common.goToMessagesNative();
 
-      expect(element(by.css(messageInList(ALICE._id))).isPresent()).toBeFalsy();
+      expect(await messagesPo.messageInList(ALICE._id).isPresent()).toBeFalsy();
 
-      openSendMessageModal();
-      enterCheckAndSelect(ALICE.name, 2, contactNameSelector, ALICE.name);
-      element(by.css('#send-message textarea')).sendKeys(smsMsg('contact'));
-      sendMessage();
-      clickLhsEntry(ALICE._id, ALICE.name);
+      await messagesPo.openSendMessageModal();
+      await messagesPo.enterCheckAndSelect(ALICE.name, 2, contactNameSelector, ALICE.name);
+      await messagesPo.messageText(smsMsg('contact'));
+      await messagesPo.submitMessage();
+      await messagesPo.clickLhsEntry(ALICE._id,ALICE.name);
 
-      expect(element.all(by.css('#message-content li')).count()).toBe(1);
-      lastMessageIs(smsMsg('contact'));
+      expect(await messagesPo.allMessages().count()).toBe(1);
+      expect(await messagesPo.lastMessageText()).toBe(smsMsg('contact'));
     });
 
-    it('can send messages to contacts under everyone at with phone numbers', () => {
-      common.goToMessages();
+    it('can send messages to contacts under everyone at with phone numbers', async () => {
+      await common.goToMessagesNative();
 
-      expect(
-        element(by.css(messageInList(CAROL.phone))).isPresent()
-      ).toBeFalsy();
-      expect(
-        element(by.css(messageInList(JAROL.phone))).isPresent()
-      ).toBeFalsy();
-      expect(
-        element(by.css(messageInList(DAVID.phone))).isPresent()
-      ).toBeFalsy();
+      expect(await messagesPo.messageInList(CAROL.phone).isPresent()).toBeFalsy();
+      expect(await messagesPo.messageInList(JAROL.phone).isPresent()).toBeFalsy();
+      expect(await messagesPo.messageInList(DAVID.phone).isPresent()).toBeFalsy();
 
-      openSendMessageModal();
-      enterCheckAndSelect(
+      await messagesPo.openSendMessageModal();
+      await messagesPo.enterCheckAndSelect(
         BOB_PLACE.name,
         2,
         contactNameSelector,
         everyoneAtText(BOB_PLACE.name)
       );
-      element(by.css('#send-message textarea')).sendKeys(smsMsg('everyoneAt'));
-      sendMessage();
+      await messagesPo.messageText(smsMsg('everyoneAt'));
+      await messagesPo.submitMessage();
 
-      expect(element.all(by.css(messageInList(CAROL._id))).count()).toBe(0);
-      expect(element.all(by.css(messageInList(JAROL._id))).count()).toBe(0);
-      expect(element.all(by.css(messageInList(DAVID._id))).count()).toBe(0);
-      clickLhsEntry(DAVID_AREA._id, DAVID_AREA.name);
+      expect(await element.all(messagesPo.messageInList(CAROL._id).locator()).count()).toBe(0);
+      expect(await element.all(messagesPo.messageInList(JAROL._id).locator()).count()).toBe(0);
+      expect(await element.all(messagesPo.messageInList(DAVID._id).locator()).count()).toBe(0);
+      await messagesPo.clickLhsEntry(DAVID_AREA._id, DAVID_AREA.name);
 
-      expect(element.all(by.css('#message-content li')).count()).toBe(1);
-      lastMessageIs(smsMsg('everyoneAt'));
+      expect(await messagesPo.allMessages().count()).toBe(1);
+      expect(await messagesPo.lastMessageText()).toBe(smsMsg('everyoneAt'));
     });
   });
 
   // Requires that 'Send message modal' describe has been run
   describe('Sending from message pane', () => {
-    const openMessageContent = (id, name) => {
-      common.goToMessages();
-      helper.waitUntilReady(element(by.css(messageInList(id))));
-      helper.waitElementToPresent(element(by.css(messageInList(id))), 2000);
-      clickLhsEntry(id, name);
-    };
-    const enterMessageText = message => {
-      element(by.css('#message-footer textarea')).click();
-      helper.waitElementToBeVisible(
-        element(by.css('#message-footer .message-actions .btn-primary'))
-      );
-      browser.wait(
-        element(by.css('#message-footer textarea')).sendKeys(message)
-      );
-    };
     describe('Can send additional messages from message pane', () => {
-      const addAnAdditionalMessage = (id, name) => {
-        openMessageContent(id, name);
-        enterMessageText('Additional Message');
-
-        element(
-          by.css('#message-footer .message-actions .btn-primary')
-        ).click();
-        browser.wait(() => {
-          return element
-            .all(by.css('#message-content li'))
-            .count()
-            .then(utils.countOf(2));
-        }, 2000);
-
-        expect(element.all(by.css('#message-content li')).count()).toBe(2);
-        lastMessageIs('Additional Message');
+      const addAnAdditionalMessage = async (id, name) => {
+        await messagesPo.openMessageContent(id, name);
+        await messagesPo.enterMessageText('Additional Message');
+        await messagesPo.sendAdditionalMessage.click();
+        await browser.wait(async () => await messagesPo.allMessages().count() === 2, 2000);
+        expect(await messagesPo.allMessages().count()).toBe(2);
+        expect(await messagesPo.lastMessageText()).toBe('Additional Message');
       };
 
-      it('For raw contacts', () => {
-        addAnAdditionalMessage(RAW_PH);
+      it('For raw contacts', async () => {
+        await utils.saveDoc(messageDoc);
+        await browser.refresh();
+        await addAnAdditionalMessage(RAW_PH);
       });
-      it('For real contacts', () => {
-        addAnAdditionalMessage(ALICE._id, ALICE.name);
+
+      it('For real contacts', async () => {
+        await utils.saveDoc(aliceMessageDoc);
+        await browser.refresh();
+        await addAnAdditionalMessage(ALICE._id, ALICE.name);
       });
     });
     describe('Can add recipients', () => {
-      it('For raw contacts', () => {
-        openMessageContent(RAW_PH);
-        enterMessageText('A third message');
+      it('For raw contacts', async () => {
+        await utils.saveDoc(messageDoc);
+        await browser.refresh();
+        await messagesPo.openMessageContent(RAW_PH);
+        await messagesPo.enterMessageText('A second message');
 
-        element(by.css('.message-actions .btn.btn-link')).click();
-        helper.waitForAngularComplete();
-        expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
-        expect(
-          element.all(by.css('li.select2-selection__choice')).count()
-        ).toBe(1);
-        expect(
-          element(by.css('#send-message select>option')).getAttribute('value')
-        ).toBe(RAW_PH);
-        enterCheckAndSelect(ANOTHER_RAW_PH, 1, '', ANOTHER_RAW_PH, 1);
-        sendMessage();
-        openMessageContent(RAW_PH);
-        expect(element.all(by.css('#message-content li')).count()).toBe(3);
+        await helper.clickElementNative(messagesPo.addRecipient);
+        await helper.waitUntilReadyNative(messagesPo.sendMessageModal());
+        expect(await messagesPo.sendMessageModal().isDisplayed()).toBeTruthy();
+        expect(await messagesPo.selectChoices.count()).toBe(1);
+        expect(await messagesPo.selectedOption.getAttribute('value')).toBe(RAW_PH);
+        await messagesPo.enterCheckAndSelect(ANOTHER_RAW_PH, 1, '', ANOTHER_RAW_PH, 1);
+        await messagesPo.submitMessage();
+        await messagesPo.openMessageContent(RAW_PH);
+        expect(await  messagesPo.allMessages().count()).toBe(2);
 
-        lastMessageIs('A third message');
-        openMessageContent(ANOTHER_RAW_PH);
-        expect(element.all(by.css('#message-content li')).count()).toBe(1);
-        lastMessageIs('A third message');
+        expect(await messagesPo.lastMessageText()).toBe('A second message');
+        await messagesPo.openMessageContent(ANOTHER_RAW_PH);
+        expect(await  messagesPo.allMessages().count()).toBe(1);
+        expect(await messagesPo.lastMessageText()).toBe('A second message');
       });
-      it('For existing contacts', () => {
-        openMessageContent(ALICE._id, ALICE.name);
-        enterMessageText('A third message');
+      it('For existing contacts', async () => {
+        await utils.saveDoc(aliceMessageDoc);
+        await browser.refresh();
+        await messagesPo.openMessageContent(ALICE._id, ALICE.name);
+        await messagesPo.enterMessageText('A second message');
 
-        element(by.css('.message-actions .btn.btn-link')).click();
-        helper.waitForAngularComplete();
-        expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
-        expect(
-          element.all(by.css('li.select2-selection__choice')).count()
-        ).toBe(1);
-        expect(
-          element(by.css('#send-message select>option')).getAttribute('value')
-        ).toBe(ALICE._id);
-        enterCheckAndSelect(DAVID.name, 2, contactNameSelector, DAVID.name, 1);
-        sendMessage();
-        openMessageContent(ALICE._id, ALICE.name);
-        expect(element.all(by.css('#message-content li')).count()).toBe(3);
-        expect(
-          element
-            .all(by.css('#message-content li div.data>p>span'))
-            .last()
-            .getText()
-        ).toBe('A third message');
-        openMessageContent(DAVID._id, DAVID.name);
-        expect(element.all(by.css('#message-content li')).count()).toBe(1);
-        expect(
-          element
-            .all(by.css('#message-content li div.data>p>span'))
-            .last()
-            .getText()
-        ).toBe('A third message');
+        await helper.clickElementNative(messagesPo.addRecipient);
+        await helper.waitUntilReadyNative(messagesPo.sendMessageModal());
+        expect(await messagesPo.sendMessageModal().isDisplayed()).toBeTruthy();
+        expect(await messagesPo.selectChoices.count()).toBe(1);
+        expect(await messagesPo.selectedOption.getAttribute('value')).toBe(ALICE._id);
+        await messagesPo.enterCheckAndSelect(DAVID.name, 2, contactNameSelector, DAVID.name, 1);
+        await messagesPo.submitMessage();
+        await messagesPo.openMessageContent(ALICE._id, ALICE.name);
+        expect(await  messagesPo.allMessages().count()).toBe(2);
+        expect(await messagesPo.lastMessageText()).toBe('A second message');
+        await messagesPo.openMessageContent(DAVID._id, DAVID.name);
+        expect(await  messagesPo.allMessages().count()).toBe(1);
+        expect(await messagesPo.lastMessageText()).toBe('A second message');
       });
     });
   });

@@ -1,6 +1,7 @@
 const utils = require('../../utils');
 const helper = require('../../helper');
 const common = require('../common/common.po');
+const { element } = require('protractor');
 
 /* eslint-disable max-len */
 const xml = `<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">
@@ -133,65 +134,62 @@ const docs = [
     charts: charts
   }];
 
-const clearAndFill = (el, value) => {
-  return el.clear().then(() => el.sendKeys(value));
+const clearAndFill = async (el, value) => {
+  await el.clear();
+  await el.sendKeys(value);
 };
 
-const clickAndGetValue = el => {
-  el.click();
+const clickAndGetValue = async el => {
+  await el.click();
   return el.getAttribute('value');
 };
 
 module.exports = {
-  configureForm: (userContactDoc, done) => {
-    utils.seedTestData(done, userContactDoc, docs);
+  configureForm: async (userContactDoc) => {
+    await utils.seedTestData(userContactDoc, docs);
   },
 
-  load: () => {
-    common.goToReports();
-    browser.wait(() => {
-      return element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')).isPresent();
-    }, 10000);
+  load: async () => {
+    await common.goToReportsNative();
+    await helper.waitUntilReadyNative(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
 
-    browser.sleep(1000); // let the refresh work here - #3691
+    await browser.sleep(1000); // let the refresh work here - #3691
 
     // select form
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
-    browser.wait(() => {
-      return addButton.isPresent();
-    }, 10000);
-    helper.clickElement(addButton);
-    element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
+    await helper.waitUntilReadyNative(addButton);
+    await helper.clickElementNative(addButton);
+    const form = element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:last-child a'));
+    await helper.clickElementNative(form);
 
-    browser.wait(() => {
-      return element(by.css('[name="/data/my_sex"][value="female"]')).isPresent();
-    }, 10000);
+    return helper.waitUntilReadyNative(element(by.css('[name="/data/my_sex"][value="female"]')));
   },
 
-  submit: () => {
-    const submitButton = element(by.css('[ng-click="onSubmit()"]'));
-    helper.waitElementToBeClickable(submitButton);
-    submitButton.click();
-    helper.waitElementToBeVisible(element(by.css('div#reports-content')));
+  submit: async () => {
+    const submitButton = element(by.css('.btn.submit.btn-primary'));
+    await helper.waitElementToBeClickable(submitButton);
+    await submitButton.click();
+    await helper.waitElementToBeVisibleNative(element(by.css('div#reports-content')));
   },
 
   reset: () => {
     element(by.css('.icon.icon-refresh')).click();
   },
 
-  setHeight: height => clearAndFill(element(by.css(`[name="/data/my_height"]`)), height),
-  setWeight: weight => clearAndFill(element(by.css(`[name="/data/my_weight"]`)), weight),
-  setAge: age => clearAndFill(element(by.css(`[name="/data/my_age"]`)), age),
-  setSex: sex => element(by.css(`[name="/data/my_sex"][value="${sex}"]`)).click(),
+  setHeight: async height => await clearAndFill(element(by.css(`[name="/data/my_height"]`)), height),
+  setWeight: async weight => await clearAndFill(element(by.css(`[name="/data/my_weight"]`)), weight),
+  setAge: async age => await clearAndFill(element(by.css(`[name="/data/my_age"]`)), age),
+  setSex: async sex => await element(by.css(`[name="/data/my_sex"][value="${sex}"]`)).click(),
 
-  setPatient: patient => {
-    module.exports.setSex(patient.sex);
-    module.exports.setAge(patient.age);
-    module.exports.setHeight(patient.height);
-    module.exports.setWeight(patient.weight);
+  setPatient: async patient => {
+    await module.exports.setSex(patient.sex);
+    await module.exports.setAge(patient.age);
+    await module.exports.setHeight(patient.height);
+    await module.exports.setWeight(patient.weight);
   },
 
   getHeightForAge: () => clickAndGetValue(element(by.css('[name="/data/hfa"]'))),
   getWeightForAge: () => clickAndGetValue(element(by.css('[name="/data/wfa"]'))),
   getWeightForHeight: () => clickAndGetValue(element(by.css('[name="/data/wfh"]'))),
+  fieldByIndex: index => element(by.css(`#reports-content .details li:nth-child(${index}) p`)),
 };

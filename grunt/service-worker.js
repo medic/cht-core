@@ -22,18 +22,20 @@ function writeServiceWorkerFile({staticDirectoryPath, apiSrcDirectoryPath, scrip
     directoryIndex: false,
     handleFetch: true,
     staticFileGlobs: [
-      path.join(staticDirectoryPath, '{audio,css,img,js}', '*'),
+      path.join(staticDirectoryPath, '{audio,img}', '*'),
       path.join(staticDirectoryPath, 'manifest.json'),
+      path.join(staticDirectoryPath, '*.js'),
+      path.join(staticDirectoryPath, '*.css'),
 
       // Fonts
-      path.join(staticDirectoryPath, 'fonts', 'fontawesome-webfont.woff2'),
+      path.join(staticDirectoryPath, 'fontawesome-webfont.woff2'),
       path.join(staticDirectoryPath, 'fonts', 'enketo-icons-v2.woff'),
       path.join(staticDirectoryPath, 'fonts', 'NotoSans-Bold.ttf'),
       path.join(staticDirectoryPath, 'fonts', 'NotoSans-Regular.ttf'),
       path.join(apiSrcDirectoryPath, 'public/login', '*.{css,js}'),
     ],
     dynamicUrlToDependencies: {
-      '/': [path.join(staticDirectoryPath, 'templates', 'inbox.html')],
+      '/': [path.join(staticDirectoryPath, 'index.html')], // Webapp's entry point
       '/medic/login': [path.join(apiSrcDirectoryPath, 'templates/login', 'index.html')],
       '/medic/_design/medic/_rewrite/': [path.join(apiSrcDirectoryPath, 'public', 'appcache-upgrade.html')],
     },

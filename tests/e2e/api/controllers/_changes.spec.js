@@ -242,12 +242,11 @@ describe('changes handler', () => {
     /^org.couchdb.user/,
   ];
 
-  beforeAll(done => {
+  beforeAll(() => {
     // Bootstrap users
     return utils
       .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users, true))
-      .then(done);
+      .then(() => utils.createUsers(users, true));
   });
 
   afterAll(done =>
@@ -258,8 +257,8 @@ describe('changes handler', () => {
       .then(() => utils.deleteUsers(users, true))
       .then(done));
 
-  beforeEach(done => getCurrentSeq().then(done));
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP).then(done));
+  beforeEach(() => getCurrentSeq());
+  afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
 
   describe('requests', () => {
     it('should allow DB admins to POST to _changes', () => {
@@ -1013,7 +1012,7 @@ describe('changes handler', () => {
   describe('replication depth', () => {
 
     it('should show contacts to a user only if they are within the configured depth', () =>
-      utils.updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
+      utils.updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]}, true)
         .then(() => utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } }))
         .then(() => utils.saveDoc({
           _id:'should-be-hidden', reported_date: 1, type:'person',
@@ -1118,7 +1117,7 @@ describe('changes handler', () => {
         ];
 
         return utils
-          .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] })
+          .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] }, true)
           .then(() => utils.saveDocs(contacts))
           .then(() => utils.saveDocs(reports))
           .then(() => requestChanges('chw-boss'))
@@ -1164,7 +1163,7 @@ describe('changes handler', () => {
         ];
 
         return utils
-          .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] })
+          .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] }, true)
           .then(() => utils.saveDocs(docs))
           .then(() => requestChanges('chw-boss'))
           .then(changes => {
@@ -1227,7 +1226,7 @@ describe('changes handler', () => {
         ];
 
         return utils
-          .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }] })
+          .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }] }, true)
           .then(() => utils.saveDocs(docs))
           .then(() => requestChanges('chw'))
           .then(changes => {
@@ -1309,7 +1308,7 @@ describe('changes handler', () => {
         };
 
         return utils
-          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]})
+          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]}, true)
           .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
@@ -1399,7 +1398,7 @@ describe('changes handler', () => {
         };
 
         return utils
-          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]})
+          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]}, true)
           .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
@@ -1494,7 +1493,7 @@ describe('changes handler', () => {
         };
 
         return utils
-          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1, report_depth: 0 }]})
+          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1, report_depth: 0 }]}, true)
           .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place

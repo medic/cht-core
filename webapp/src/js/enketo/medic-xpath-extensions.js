@@ -1,8 +1,12 @@
 let zscoreUtil;
-const _ = require('lodash/core');
+
+const isObject = (value) => {
+  const type = typeof value;
+  return value !== null && (type === 'object' || type === 'function');
+};
 
 const getValue = function(resultObject) {
-  if (!_.isObject(resultObject) || !resultObject.t) {
+  if (!isObject(resultObject) || !resultObject.t) {
     return resultObject;
   }
 

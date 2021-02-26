@@ -1,0 +1,23 @@
+<div class="basic-filters left-pane">
+
+  <span *ngIf="analyticsModules?.length > 1" class="filter dropdown mm-dropdown analytics-module">
+    <span id="module" class="mm-button" data-toggle="dropdown">
+      <span class="mm-button-icon">
+        <span class="fa fa-bar-chart-o"></span>
+      </span>
+      <span class="mm-button-dropdown">
+        <span class="fa fa-chevron-down"></span>
+      </span>
+      <ng-container *ngFor="let module of analyticsModules">
+        <span *ngIf="module.id === activeModule?.id" class="mm-button-text"> {{ module.label | translate }} </span>
+      </ng-container>
+    </span>
+
+    <ul role="menu" aria-labelledby="module" class="dropdown-menu mm-dropdown-menu">
+      <li role="presentation" *ngFor="let module of analyticsModules" [attr.data-id]="module.id">
+        <a [routerLink]="module.route" role="menuitem" tabindex="-1">{{ module.label | translate }}</a>
+      </li>
+    </ul>
+  </span>
+
+</div>

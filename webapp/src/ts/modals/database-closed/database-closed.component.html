@@ -1,0 +1,9 @@
+<mm-modal
+  id="database_closed"
+  [titleKey]="'database_closed.title'"
+  [submitKey]="'Reload'"
+  (onCancel)="cancel()"
+  (onSubmit)="submit()"
+>
+  <p>{{'database_closed.description' | translate}}</p>
+</mm-modal>

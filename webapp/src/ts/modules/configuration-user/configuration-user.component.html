@@ -1,0 +1,24 @@
+<div class="filters">
+  <div class="inner"></div>
+</div>
+
+<div class="inner" *ngIf="user">
+  <div class="col-sm-12 page configuration" ui-view="content">
+    <div class="loader" *ngIf="loading"></div>
+    <div *ngIf="!loading">
+      <div *ngIf="!user.token_login">
+        <a (click)="updatePassword()" class="btn btn-link">
+          <i class="fa fa-fw fa-key"></i>
+          <span>{{'password.update' | translate}}</span>
+        </a>
+      </div>
+
+      <div>
+        <a (click)="editSettings()" class="btn btn-link">
+          <i class="fa fa-fw fa-user"></i>
+          <span>{{'Edit User Profile' | translate}}</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -48,14 +48,10 @@ const request = (options, { debug } = {}) => {
     return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
   };
 
-  const deferred = protractor.promise.defer();
-  rpn(options)
-    .then((resp) => deferred.fulfill(resp))
-    .catch(err => {
-      err.responseBody = err.response && err.response.body;
-      deferred.reject(err);
-    });
-  return deferred.promise;
+  return rpn(options).catch(err => {
+    err.responseBody = err.response && err.response.body;
+    throw err;
+  });
 };
 
 // Update both ddocs, to avoid instability in tests.
@@ -78,7 +74,6 @@ const updateSettings = updates => {
           originalSettings[updatedField] = null;
         }
       });
-      return;
     })
     .then(() => {
       return request({
@@ -97,9 +92,9 @@ const revertSettings = () => {
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
     body: originalSettings,
-  }).then(() => {
+  }).then((result) => {
     originalSettings = null;
-    return true;
+    return result.updated;
   });
 };
 
@@ -193,16 +188,12 @@ const refreshToGetNewSettings = () => {
   const dialog = element(by.css('#update-available .submit:not(.disabled)'));
   return browser
     .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
-    .then(() => {
-      dialog.click();
-    })
+    .then(() => dialog.click())
     .catch(() => {
       // sometimes there's a double update which causes the dialog to be redrawn
       // retry with the new dialog
-      return dialog.isPresent().then(function(result) {
-        if (result) {
-          dialog.click();
-        }
+      return dialog.isPresent().then((isPresent) => {
+        return isPresent && dialog.click();
       });
     })
     .then(() => {
@@ -210,9 +201,17 @@ const refreshToGetNewSettings = () => {
         protractor.ExpectedConditions.elementToBeClickable(
           element(by.id('contacts-tab'))
         ),
-        10000
+        10000,
+        'Second refresh to get settings'
       );
     });
+};
+
+const closeReloadModal = () => {
+  const dialog = element(by.css('#update-available .btn.cancel:not(.disabled)'));
+  return browser
+    .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
+    .then(() => dialog.click());
 };
 
 const setUserContactDoc = () => {
@@ -235,16 +234,23 @@ const setUserContactDoc = () => {
     }));
 };
 
+const revertDb = async (except, ignoreRefresh) => {
+  const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
+  const needsRefresh = await revertSettings();
+  await deleteAll(except);
 
-const revertDb = (except, ignoreRefresh) => {
-  return revertSettings().then(needsRefresh => {
-    return deleteAll(except).then(() => {
-      // only need to refresh if the settings were changed
-      if (!ignoreRefresh && needsRefresh) {
-        return refreshToGetNewSettings();
-      }
-    }).then(setUserContactDoc);
-  });
+  const hasModal = await element(by.css('#update-available')).isPresent();
+  // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
+  if (!ignoreRefresh && (needsRefresh || hasModal)) {
+    watcher && watcher.cancel();
+    await refreshToGetNewSettings();
+  } else if (needsRefresh) {
+    await watcher && watcher.promise;
+  } else {
+    watcher && watcher.cancel();
+  }
+
+  await setUserContactDoc();
 };
 
 const deleteUsers = async (users, meta = false) => {
@@ -328,7 +334,32 @@ const getDefaultSettings = () => {
   return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
 };
 
+const deprecated = (name, replacement) => {
+  let msg = `The function ${name} has been deprecated.`;
+  if (replacement) {
+    msg = `${msg} Replace by ${replacement}`;
+  }
+  if (process.env.DEBUG) {
+    console.warn(msg);
+  }
+};
+
+const waitForSettingsUpdateLogs = (type) => {
+  if (type === 'sentinel') {
+    return module.exports.waitForLogs(
+      'sentinel.e2e.log',
+      /Reminder messages allowed between/,
+    );
+  }
+
+  return module.exports.waitForLogs(
+    'api.e2e.log',
+    /Settings updated/,
+  );
+};
+
 module.exports = {
+  deprecated,
   db: db,
   sentinelDb: sentinel,
   medicLogsDb: medicLogs,
@@ -342,7 +373,7 @@ module.exports = {
     captureOnlyFailedSpecs: true,
     reportOnlyFailedSpecs: false,
     showQuickLinks: true,
-    dest: 'tests/results',
+    dest: `tests/results/`,
     filename: 'report.html',
     pathBuilder: function(currentSpec) {
       return currentSpec.fullName
@@ -358,6 +389,27 @@ module.exports = {
       displayDuration: true
     }
   }),
+
+  /*
+   this is kind of a hack
+   but you can now access the current running spec in beforeEach / afterEach / etc by accessing jasmine.currentSpec
+   the value looks like :
+   type Result {
+    id: 'spec0',
+    description: 'This string is the title of your `it` block',
+    fullName: 'This is the full title derived from nested `describe` and `it`s that you have created',
+    failedExpectations: [], - possibly has contents during `afterEach` / `afterAll`
+    passedExpectations: [], - possibly has contents during `afterEach` / `afterAll`
+    pendingReason: '',
+    testPath: '/path/to/the/spec/file/of/this/test.js'
+   }
+   */
+  currentSpecReporter: {
+    specStarted: result => (jasmine.currentSpec = result),
+    specDone: result => (jasmine.currentSpec = result),
+  },
+
+
 
   requestOnTestDb: (options, debug) => {
     if (typeof options === 'string') {
@@ -403,8 +455,8 @@ module.exports = {
     });
   },
 
-  saveDocs: docs =>
-    module.exports
+  saveDocs: docs => {
+    return module.exports
       .requestOnTestDb({
         path: '/_bulk_docs',
         method: 'POST',
@@ -416,7 +468,8 @@ module.exports = {
         } else {
           return results;
         }
-      }),
+      });
+  },
 
   getDoc: id => {
     return module.exports.requestOnTestDb({
@@ -425,7 +478,7 @@ module.exports = {
     });
   },
 
-  getDocs: ids => {
+  getDocs: (ids, fullResponse = false) => {
     return module.exports
       .requestOnTestDb({
         path: `/_all_docs?include_docs=true`,
@@ -433,7 +486,9 @@ module.exports = {
         body: { keys: ids || []},
         headers: { 'content-type': 'application/json' },
       })
-      .then(response => response.rows.map(row => row.doc));
+      .then(response => {
+        return fullResponse ? response : response.rows.map(row => row.doc);
+      });
   },
 
   deleteDoc: id => {
@@ -476,78 +531,79 @@ module.exports = {
   /**
    * Update settings and refresh if required
    *
-   * @param      {Object}   updates  Object containing all updates you wish to
-   *                                 make
-   * @param      {Boolean}  ignoreRefresh  don't bother refreshing
-   * @return     {Promise}  completion promise
+   * @param {Object}         updates  Object containing all updates you wish to
+   *                                  make
+   * @param  {Boolean|String} ignoreReload if false, will wait for reload modal and reload. if truthy, will tail
+   *                                       service logs and resolve when new settings are loaded. By default, watches
+   *                                       api logs, if value equals 'sentinel', will watch sentinel logs instead.
+   * @return {Promise}        completion promise
    */
-  updateSettings: (updates, ignoreRefresh = false) =>
-    updateSettings(updates).then(() => {
-      if (!ignoreRefresh) {
+  updateSettings: (updates, ignoreReload) => {
+    const watcher = ignoreReload &&
+                    Object.keys(updates).length &&
+                    waitForSettingsUpdateLogs(ignoreReload);
+
+    return updateSettings(updates).then(() => {
+      if (!ignoreReload) {
         return refreshToGetNewSettings();
       }
-    }),
-
+      return watcher && watcher.promise;
+    });
+  },
   /**
    * Revert settings and refresh if required
    *
-   * @param      {Boolean}  ignoreRefresh  don't bother refreshing
-   * @return     {Promise}  completion promise
+   * @param {Boolean|String} ignoreRefresh if false, will wait for reload modal and reload. if true, will tail api logs
+   *                                       and resolve when new settings are loaded.
+   * @return {Promise}       completion promise
    */
-  revertSettings: ignoreRefresh =>
-    revertSettings().then(() => {
+  revertSettings: ignoreRefresh => {
+    const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
+    return revertSettings().then((needsRefresh) => {
       if (!ignoreRefresh) {
         return refreshToGetNewSettings();
       }
-    }),
 
-  seedTestData: (done, userContactDoc, documents) => {
-    protractor.promise
-      .all(documents.map(module.exports.saveDoc))
+      if (!needsRefresh) {
+        watcher && watcher.cancel();
+        return;
+      }
+
+      return watcher.promise;
+    });
+  },
+
+  seedTestData: (userContactDoc, documents) => {
+    return module.exports
+      .saveDocs(documents)
       .then(() => module.exports.getDoc(constants.USER_CONTACT_ID))
       .then(existingContactDoc => {
         if (userContactDoc) {
           Object.assign(existingContactDoc, userContactDoc);
           return module.exports.saveDoc(existingContactDoc);
         }
-      })
-      .then(done)
-      .catch(done.fail);
+      });
   },
-
   /**
    * Cleans up DB after each test. Works with the given callback
    * and also returns a promise - pick one!
    */
-  afterEach: done => {
-    return revertDb()
-      .then(() => {
-        if (done) {
-          done();
-        }
-      })
-      .catch(err => {
-        if (done) {
-          done.fail(err);
-        } else {
-          throw err;
-        }
-      });
-  },
+  afterEach: () => revertDb(),
 
   //check for the update modal before
-  beforeEach: () => {
-    if (element(by.css('#update-available')).isPresent()) {
-      $('body').sendKeys(protractor.Key.ENTER);
+  beforeEach: async () => {
+    if (await element(by.css('#update-available')).isPresent()) {
+      await $('body').sendKeys(protractor.Key.ENTER);
     }
   },
 
   /**
    * Reverts the db's settings and documents
    *
-   * @param      {Array}  except         documents to ignore, see deleteAllDocs
-   * @param      {Boolean}  ignoreRefresh  don't bother refreshing
-   * @return     {Promise}  promise
+   * @param  {Array}            except       documents to ignore, see deleteAllDocs
+   * @param  {Boolean|String}  ignoreRefresh if false, will wait for reload modal and reload. if true, will tail api
+   *                                         logs and resolve when new settings are loaded.
+   * @return {Promise}
    */
   revertDb: revertDb,
 
@@ -558,7 +614,7 @@ module.exports = {
       .then(() => {
         return browser.wait(() => {
           return element(by.css('#messages-tab')).isPresent();
-        }, 10000);
+        }, 10000,'Timed out waiting for browser to reset. Looking for element #messages-tab');
       });
   },
 
@@ -656,7 +712,7 @@ module.exports = {
       timeout = setTimeout(() => {
         tail.unwatch();
         reject({ message: 'timeout exceeded' });
-      }, 10000);
+      }, 2000);
 
       tail.on('line', data => {
         if (regex.find(r => r.test(data))) {
@@ -698,11 +754,22 @@ module.exports = {
     });
   },
   refreshToGetNewSettings: refreshToGetNewSettings,
+  closeReloadModal: closeReloadModal,
 
-  closeTour: () => {
-    element.all(by.css('.modal-dialog a.cancel')).each(elm => {
-      elm.click();
-    });
+  closeTour: async () => {
+    const closeButton = element(by.css('#tour-select a.btn.cancel'));
+    try {
+      await browser.wait(protractor.ExpectedConditions.visibilityOf(closeButton),);
+      await browser.wait(protractor.ExpectedConditions.elementToBeClickable(closeButton),1000);
+      await closeButton.click();
+      // wait for the request to the server to execute
+      // is there a way to leverage protractor to achieve this???
+      await browser.sleep(500);
+    } catch (err) {
+      // there might not be a tour, show a warning
+      console.warn('Tour modal has not appeared after 2 seconds');
+    }
+
   },
 
   waitForDocRev: waitForDocRev,

@@ -1,4 +1,5 @@
 const fs = require('fs');
+const utils = require('./utils');
 const EC = protractor.ExpectedConditions;
 
 function writeScreenShot(data, filename) {
@@ -7,19 +8,27 @@ function writeScreenShot(data, filename) {
   stream.end();
 }
 function handleUpdateModal() {
+  utils.deprecated('handleUpdateModal', 'handleUpdateModalNative');
   if (element(by.css('#update-available')).isPresent()) {
     $('body').sendKeys(protractor.Key.ENTER);
   }
 }
 
+const handleUpdateModalNative = async () => {
+  if (await element(by.css('#update-available')).isPresent()) {
+    await $('body').sendKeys(protractor.Key.ENTER);
+  }
+};
+
 module.exports = {
   clickElement: element => {
+    utils.deprecated('clickElement', 'clickElementNative');
     handleUpdateModal();
     return browser
       .wait(
         EC.elementToBeClickable(element),
         12000,
-        'Element taking too long to appear in the DOM'
+        `Element taking too long to appear in the DOM ${element.locator()}`
       )
       .then(() => {
         element.click();
@@ -28,11 +37,26 @@ module.exports = {
         browser.sleep(1000);
         handleUpdateModal();
         return browser
-          .wait(EC.elementToBeClickable(element), 12000)
+          .wait(EC.elementToBeClickable(element), 12000, `element is ${element.locator()}`)
           .then(() => {
             element.click();
           });
       });
+  },
+
+  clickElementNative: async element => {
+    await handleUpdateModalNative();
+    try {
+      const msg = `First attempt to click failed. Element is ${element.locator()}`;
+      await browser.wait(EC.elementToBeClickable(element),12000, msg);
+      await element.click();
+    } catch (err) {
+      await browser.sleep(1000);
+      await handleUpdateModalNative();
+      const secondChangeMsg = `Second attempt to click failed. Element is ${element.locator()}`;
+      await browser.wait(EC.elementToBeClickable(element), 12000, secondChangeMsg);
+      await element.click();
+    }
   },
 
   /**
@@ -41,6 +65,7 @@ module.exports = {
    * expectedText : text that element should include
    */
   findElementByTextAndClick: (elements, expectedText) => {
+    utils.deprecated('findElementByTextAndClick', 'findElementByTextAndClickNative');
     return browser
       .wait(
         EC.presenceOf(elements),
@@ -48,8 +73,8 @@ module.exports = {
         'Element taking too long to appear in the DOM. Giving up!'
       )
       .then(() => {
-        elements.each(element => {
-          element.getText()
+        return elements.each(element => {
+          return element.getText()
             .then(text => {
               if (
                 text
@@ -57,22 +82,41 @@ module.exports = {
                   .trim()
                   .includes(expectedText)
               ) {
-                element.click();
+                return element.click();
               }
-            })
-            .catch(err => {
-              throw err;
             });
         });
       });
   },
 
+  findElementByTextAndClickNative: async (elements, expectedText) => {
+    await browser.wait(
+      EC.presenceOf(elements),
+      12000,
+      'Element taking too long to appear in the DOM. Giving up!'
+    );
+
+    const expectedTexts = Array.isArray(expectedText) ? expectedText : [expectedText];
+
+    await elements.each(async (element) => {
+      const text = await element.getText();
+      const trimmedText = text.toLowerCase().trim();
+      const includesAny = expectedTexts.some(expectedText => trimmedText.includes(expectedText));
+      if (!includesAny) {
+        return;
+      }
+
+      await element.click();
+    });
+  },
+
   getTextFromElement: element => {
+    utils.deprecated('getTextFromElement', 'getTextFromElementNative');
     return browser
       .wait(
         EC.presenceOf(element),
         12000,
-        'Element taking too long to appear in the DOM.Let us retry'
+        `Element taking too long to appear in the DOM.Let us retry ${element.locator()}`
       )
       .then(() => {
         return element.getText().then(val => {
@@ -85,7 +129,7 @@ module.exports = {
           .wait(
             EC.visibilityOf(element),
             12000,
-            'Element taking too long to appear in the DOM. Giving up!'
+            `Element taking too long to appear in the DOM. Giving up! ${element.locator()}`
           )
           .then(() => {
             return element.getText().then(val => {
@@ -95,33 +139,42 @@ module.exports = {
       });
   },
 
-  getTextFromElements: elements => {
-    const textFromElements = [];
-    return browser
-      .wait(
-        EC.presenceOf(elements),
+  getTextFromElementNative: async (element) => {
+    try {
+      await browser.wait(
+        EC.presenceOf(element),
         12000,
-        'Element taking too long to appear in the DOM. Giving up!'
-      )
-      .then(() => {
-        elements.each(element => {
-          element.getText()
-            .then(text => {
-              textFromElements.push(text.trim());
-            })
-            .catch(err => {
-              throw err;
-            });
-        });
-        return textFromElements;
-      });
+        `Element taking too long to appear in the DOM.Let us retry ${element.locator()}`
+      );
+      return element.getText();
+    } catch (error) {
+      await browser.sleep(1000);
+      await browser.wait(
+        EC.visibilityOf(element),
+        12000,
+        `Element taking too long to appear in the DOM. Giving up! ${element.locator()}`
+      );
+      return element.getText();
+    }
   },
 
-  isTextDisplayed: text => {
-    const selectedElement = element(
-      by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)
-    );
-    return selectedElement.isDisplayed();
+  getTextFromElements: async (elements, expectedElements) => {
+    const textFromElements = [];
+    await browser.wait(async () => await elements.count() === expectedElements, 2000);
+    await elements.each(async (element) => {
+      const text = (await element.getText()).trim();
+      textFromElements.push(text);
+    });
+    return textFromElements;
+  },
+
+  elementByText: text => element(by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)),
+
+  isTextDisplayed: text => module.exports.elementByText(text).isDisplayed(),
+
+  waitForTextDisplayed: text => {
+    const selectedElement = module.exports.elementByText(text);
+    return module.exports.waitUntilReadyNative(selectedElement);
   },
 
   logConsoleErrors: spec => {
@@ -153,14 +206,13 @@ module.exports = {
    * element : select element
    * index : index in the dropdown, 1 base.
    */
-  selectDropdownByNumber: (element, index, milliseconds) => {
-    element.findElements(by.tagName('option')).then(options => {
-      options[index].click();
-    }).catch(err => {
-      throw err;
-    });
+  selectDropdownByNumber: async (element, index, milliseconds) => {
+    const options = await element.findElements(by.tagName('option'));
+    if (options[index]) {
+      await options[index].click();
+    }
     if (milliseconds) {
-      browser.sleep(milliseconds);
+      await browser.sleep(milliseconds);
     }
   },
 
@@ -169,81 +221,86 @@ module.exports = {
    * selector : select element
    * item : option(s) in the dropdown.
    */
-  selectDropdownByText: (element, item, milliseconds) => {
-    element.all(by.tagName('option')).then(options => {
-      options.some(option => {
-        option.getText()
-          .then(text => {
-            if (text.indexOf(item) !== -1) {
-              option.click();
-            }
-          })
-          .catch(err => {
-            throw err;
-          });
-      });
-    }).catch(err => {
-      throw err;
-    });
-    if (milliseconds) {
-      browser.sleep(milliseconds);
+  selectDropdownByText: async (element, item) => {
+    const options = await element.all(by.tagName('option'));
+    for (const option of options) {
+      const text = await option.getText();
+      if (text && text.includes(item)) {
+        await option.click();
+      }
     }
   },
 
-  selectDropdownByValue: (element, value, milliseconds) => {
-    element.all(by.css(`option[value="${value}"]`)).then(options => {
-      if (options[0]) {
-        options[0].click();
-      }
-    }).catch(err => {
-      throw err;
-    });
-    if (milliseconds) {
-      browser.sleep(milliseconds);
+  selectDropdownByValue: async (element, value) => {
+    const options = await element.all(by.css(`option[value="${value}"]`));
+    if (options[0]) {
+      await options[0].click();
+      await browser.wait(
+        async () => await element.element(by.css('option:checked')).getAttribute('value') === value,
+        1000
+      );
     }
   },
 
   setBrowserParams: () => {
-    browser.driver
+    return browser.driver
       .manage()
       .window()
       .setSize(browser.params.screenWidth, browser.params.screenHeight);
   },
 
   takeScreenshot: filename => {
-    browser.takeScreenshot().then(png => {
+    return browser.takeScreenshot().then(png => {
       writeScreenShot(png, filename);
-    }).catch(err => {
-      throw err;
     });
   },
 
   waitElementToBeVisible: (elm, timeout) => {
+    utils.deprecated('waitElementToBeVisible', 'waitElementToBeVisibleNative');
     timeout = timeout || 15000;
-    browser.wait(EC.visibilityOf(elm), timeout);
+    return browser.wait(EC.visibilityOf(elm), timeout, `waitElementToBeVisible timed out looking for ${elm.locator()}`);
+  },
+
+  waitElementToBeVisibleNative: async (elm, timeout = 15000) => {
+    await browser.wait(
+      EC.visibilityOf(elm),
+      timeout,
+      `waitElementToBeVisible timed out looking for ${elm.locator()}`
+    );
   },
 
   waitElementToBeClickable: (elm, timeout) => {
     timeout = timeout || 15000;
-    browser.wait(EC.elementToBeClickable(elm), timeout);
+    const msg = `waitElementToBeClickable timed out looking for ${elm.locator()}`;
+    return browser.wait(EC.elementToBeClickable(elm), timeout, msg);
   },
 
   waitElementToDisappear: (locator, timeout) => {
     timeout = timeout || 15000;
-    browser.wait(() => {
-      return element(locator)
-        .isDisplayed()
-        .then(presenceOfElement => !presenceOfElement);
-    }, timeout);
+    return browser.wait(
+      () => {
+        return element(locator)
+          .isDisplayed()
+          .then(presenceOfElement => !presenceOfElement);
+      },
+      timeout,
+      'waitElementToDisappear timed out looking for '  + locator
+    );
   },
 
   waitElementToPresent: (elm, timeout) => {
     timeout = timeout || 10000;
-    browser.wait(() => elm.isPresent(), timeout);
+    return browser.wait(() => elm.isPresent(), timeout);
+  },
+
+  waitElementToPresentNative: async (elm, timeout) => {
+    timeout = timeout || 10000;
+    await browser.wait(() => elm.isPresent(), timeout);
   },
 
   waitForAngularComplete: () => {
     return browser.wait(() => {
+      console.warn('browser.AngularComplete() should be doing this. Start replacing and see if this is required');
       browser.sleep(200);
       return browser.executeScript(
         'return typeof angular === "undefined" ? 0 : ' +
@@ -262,9 +319,23 @@ module.exports = {
 
   waitUntilReady: elm => {
     return (
-      browser.wait(() => elm.isPresent(), 10000) &&
-      browser.wait(() => elm.isDisplayed(), 12000)
+      browser.wait(() => elm.isPresent(), 10000, 'Element not present in 10 seconds' + elm.locator()) &&
+      browser.wait(() => elm.isDisplayed(), 12000, 'Element not displayed in 12 seconds' + elm.locator())
     );
   },
+
+  waitUntilReadyNative: elm => {
+    return browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
+  },
+
+  waitUntilTranslated: elm => {
+    return browser.wait(() => elm.getText(), 1000);
+  },
+
+  isDisplayed: elm => {
+    return elm.isDisplayed();
+  },
+
   handleUpdateModal,
+  handleUpdateModalNative,
 };

@@ -1,6 +1,7 @@
 const utils = require('../../utils');
 const querystring = require('querystring');
 const constants = require('../../constants');
+const _ = require('lodash');
 
 const SKIPPED_BY_SENTINEL = /^_design\/|(-info|____tombstone)$/;
 
@@ -29,7 +30,7 @@ const waitForSeq = (metadataId, docIds) => {
       if (docIds) {
         opts.path = `${opts.path}?${querystring.stringify({ since: seq, filter: '_doc_ids' })}`;
         opts.method = 'POST';
-        opts.body = { doc_ids: Array.isArray(docIds) ? docIds : [ docIds ] };
+        opts.body = { doc_ids: _.castArray(docIds) };
       } else {
         opts.path = `${opts.path}?${querystring.stringify({ since: seq })}`;
       }
@@ -62,11 +63,11 @@ const getInfoDoc = docId => {
 };
 
 const getInfoDocs = (docIds = []) => {
-  docIds = Array.isArray(docIds) ? docIds : [docIds];
+  docIds = _.castArray(docIds);
 
   const opts = {
     path: '/_all_docs?include_docs=true',
-    body: { keys: docIds.map(id => id + '-info') },
+    body: { keys: docIds.map(id => `${id}-info`) },
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

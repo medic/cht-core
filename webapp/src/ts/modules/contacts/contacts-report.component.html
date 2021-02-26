@@ -1,0 +1,17 @@
+<div class="content-pane right-pane">
+  <div class="col-sm-8 item-content empty-selection" *ngIf="loadingForm">
+    <div>
+      <div class="loader"></div>
+    </div>
+  </div>
+
+  <div class="col-sm-8 item-content empty-selection" *ngIf="!loadingForm && contentError">
+    <div>{{ errorTranslationKey | translate}}</div>
+  </div>
+
+  <div class="col-sm-8 item-content material" [hidden]="loadingForm || contentError">
+    <div class="card">
+      <mm-enketo id="contact-report" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()"></mm-enketo>
+    </div>
+  </div>
+</div>

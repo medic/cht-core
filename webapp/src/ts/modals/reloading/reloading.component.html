@@ -1,0 +1,9 @@
+<mm-modal
+  id="update-available"
+  [titleKey]="'version.update.title'"
+  [submitKey]="'Update'"
+  (onCancel)="cancel()"
+  (onSubmit)="submit()"
+>
+  <p>{{'version.update.description' | translate}}</p>
+</mm-modal>

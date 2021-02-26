@@ -10,11 +10,12 @@ const {
   TRAVIS_BRANCH,
   COUCH_URL,
   COUCH_NODE_NAME,
-  UPLOAD_URL,
+  MARKET_URL,
   STAGING_SERVER,
   BUILDS_SERVER,
   TRAVIS_BUILD_NUMBER,
-  WEBDRIVER_VERSION=85
+  CI,
+  WEBDRIVER_VERSION=88
 } = process.env;
 
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
@@ -146,7 +147,7 @@ module.exports = function(grunt) {
         files: [
           {
             src: 'build/ddocs/medic.json',
-            dest: `${UPLOAD_URL}/${STAGING_SERVER}`,
+            dest: `${MARKET_URL}/${STAGING_SERVER}`,
           },
         ],
       },
@@ -154,7 +155,7 @@ module.exports = function(grunt) {
         files: [
           {
             src: 'build/ddocs/medic.json',
-            dest: `${UPLOAD_URL}/${BUILDS_SERVER}`,
+            dest: `${MARKET_URL}/${BUILDS_SERVER}`,
           },
         ],
       }
@@ -163,38 +164,6 @@ module.exports = function(grunt) {
       options: {
         browserifyOptions: {
           debug: true,
-        },
-      },
-      webapp: {
-        src: 'webapp/src/js/app.js',
-        dest: 'build/ddocs/medic/_attachments/js/inbox.js',
-        browserifyOptions: {
-          detectGlobals: false,
-        },
-        options: {
-          transform: ['browserify-ngannotate'],
-          alias: {
-            'enketo-config': './webapp/src/js/enketo/config.json',
-            'widgets': './webapp/src/js/enketo/widgets',
-            './xpath-evaluator-binding': './webapp/src/js/enketo/OpenrosaXpathEvaluatorBinding',
-            'extended-xpath': './webapp/node_modules/openrosa-xpath-evaluator/src/extended-xpath',
-            'openrosa-xpath-extensions': './webapp/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
-            // translator for enketo's internal i18n
-            'translator': './webapp/src/js/enketo/translator',
-            // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream
-            // https://github.com/enketo/enketo-core/issues/454
-            '../../js/dropdown.jquery': './webapp/node_modules/bootstrap/js/dropdown',
-            'angular-translate-interpolation-messageformat': './webapp/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
-            'angular-translate-handler-log': './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
-            'bikram-sambat': './webapp/node_modules/bikram-sambat',
-            'moment': './webapp/node_modules/moment',
-            'lodash/core': './webapp/node_modules/lodash/core',
-            'lodash/intersection': './webapp/node_modules/lodash/intersection',
-            'lodash/uniq': './webapp/node_modules/lodash/uniq',
-            'lodash/uniqBy': './webapp/node_modules/lodash/uniqBy',
-            'lodash/groupBy': './webapp/node_modules/lodash/groupBy',
-            'messageformat': './webapp/node_modules/messageformat/index.js',
-          },
         },
       },
       admin: {
@@ -221,12 +190,6 @@ module.exports = function(grunt) {
       },
       web: {
         files: {
-          // webapp files
-          'build/ddocs/medic/_attachments/js/templates.js': 'build/ddocs/medic/_attachments/js/templates.js',
-          'build/ddocs/medic/_attachments/js/inbox.js': 'build/ddocs/medic/_attachments/js/inbox.js',
-          'build/ddocs/medic/_attachments/js/service-worker.js': 'build/ddocs/medic/_attachments/js/service-worker.js',
-
-          // admin files
           'build/ddocs/medic-db/medic-admin/_attachments/js/main.js': 'build/ddocs/medic-db/medic-admin/_attachments/js/main.js',
           'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js': 'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js'
         },
@@ -248,12 +211,6 @@ module.exports = function(grunt) {
       }
     },
     less: {
-      webapp: {
-        files: {
-          'build/ddocs/medic/_attachments/css/inbox.css':
-            'webapp/src/css/inbox.less',
-        },
-      },
       admin: {
         files: {
           'build/ddocs/medic-db/medic-admin/_attachments/css/main.css':
@@ -267,7 +224,6 @@ module.exports = function(grunt) {
           keepSpecialComments: 0,
         },
         files: {
-          'build/ddocs/medic/_attachments/css/inbox.css': 'build/ddocs/medic/_attachments/css/inbox.css',
           'build/ddocs/medic-db/medic-admin/_attachments/css/main.css': 'build/ddocs/medic-db/medic-admin/_attachments/css/main.css',
         },
       },
@@ -304,18 +260,6 @@ module.exports = function(grunt) {
         src: '**/*',
         dest: 'build/ddocs/',
       },
-      webapp: {
-        expand: true,
-        flatten: true,
-        src: 'webapp/node_modules/font-awesome/fonts/*',
-        dest: 'build/ddocs/medic/_attachments/fonts/',
-      },
-      'inbox-file-attachment': {
-        expand: true,
-        cwd: 'webapp/src/',
-        src: 'templates/inbox.html',
-        dest: 'build/ddocs/medic/_attachments/',
-      },
       'ddoc-attachments': {
         expand: true,
         cwd: 'webapp/src/',
@@ -323,7 +267,6 @@ module.exports = function(grunt) {
           'audio/**/*',
           'fonts/**/*',
           'img/**/*',
-          'templates/inbox.html',
           'ddocs/medic/_attachments/**/*',
         ],
         dest: 'build/ddocs/medic/_attachments/',
@@ -383,13 +326,17 @@ module.exports = function(grunt) {
             'shared-libs/**/*.js',
             'tests/**/*.js',
             'webapp/src/**/*.js',
+            'webapp/src/**/*.ts',
             'webapp/tests/**/*.js',
+            'webapp/tests/**/*.ts',
             'config/**/*.js',
             'scripts/**/*.js',
+            'webapp/src/ts/**/*.component.html',
           ];
           const ignore = [
-            'webapp/src/js/modules/xpath-element-path.js',
-            'api/src/extracted-resources/**/*',
+            'webapp/src/ts/providers/xpath-element-path.provider.ts',
+            'webapp/src/js/bootstrap-tour-standalone.js',
+            'api/extracted-resources/**/*',
             'api/build/**/*',
             '**/node_modules/**',
             'build/**',
@@ -400,7 +347,8 @@ module.exports = function(grunt) {
             .concat(ignore.map(glob => `--ignore-pattern "${glob}"`))
             .concat(paths.map(glob => `"${glob}"`))
             .join(' ');
-        }
+        },
+        stdio: 'inherit', // enable colors!
       },
       'eslint-sw': `${ESLINT_COMMAND} build/ddocs/medic/_attachments/js/service-worker.js`,
       'pack-node-modules': {
@@ -459,7 +407,7 @@ module.exports = function(grunt) {
       },
       'api-dev': {
         cmd:
-          'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "api/src/extracted-resources/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
+          'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "api/extracted-resources/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
       },
       'sentinel-dev': {
         cmd:
@@ -482,12 +430,18 @@ module.exports = function(grunt) {
       'setup-test-database': {
         cmd: [
           `docker run -d -p 4984:5984 -p 4986:5986 --rm --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data couchdb:2`,
-          'sh scripts/e2e/wait_for_couch.sh 4984',
+          'sh scripts/e2e/wait_for_response_code.sh 4984 200 couch',
           `curl 'http://localhost:4984/_cluster_setup' -H 'Content-Type: application/json' --data-binary '{"action":"enable_single_node","username":"admin","password":"pass","bind_address":"0.0.0.0","port":5984,"singlenode":true}'`,
           'COUCH_URL=http://admin:pass@localhost:4984/medic COUCH_NODE_NAME=nonode@nohost grunt secure-couchdb', // yo dawg, I heard you like grunt...
           // Useful for debugging etc, as it allows you to use Fauxton easily
           `curl -X PUT "http://admin:pass@localhost:4984/_node/nonode@nohost/_config/httpd/WWW-Authenticate" -d '"Basic realm=\\"administrator\\""' -H "Content-Type: application/json"`
         ].join('&& ')
+      },
+      'wait_for_api_down': {
+        cmd: [
+          'sh scripts/e2e/wait_for_response_code.sh 4988 000 api',
+        ].join('&& '),
+        exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
       'clean-test-database': {
         cmd: [
@@ -505,12 +459,12 @@ module.exports = function(grunt) {
         cmd: `cd api && npm ci && ${linkSharedLibs('api')}`,
       },
       'npm-ci-shared-libs': {
-        cmd: () => {
+        cmd: (production) => {
           return getSharedLibDirs()
             .map(
               lib =>
                 `echo Installing shared library: ${lib} &&
-                  (cd shared-libs/${lib} && npm ci --production)`
+                  (cd shared-libs/${lib} && npm ci ${production ? '--production' : ''})`
             )
             .join(' && ');
         }
@@ -526,6 +480,10 @@ module.exports = function(grunt) {
           './node_modules/.bin/webdriver-manager update && ' +
           './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
+      },
+      'start-webdriver-ci': {
+        cmd:
+          'scripts/e2e/start_webdriver.sh'
       },
       'check-env-vars':
         'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
@@ -558,23 +516,25 @@ module.exports = function(grunt) {
           'cd config/standard',
           'npm ci',
           'npm run travis'
-        ].join(' && ')
+        ].join(' && '),
+        stdio: 'inherit', // enable colors!
       },
       'test-config-default': {
         cmd: [
           'cd config/default',
           'npm ci',
           'npm run travis'
-        ].join(' && ')
+        ].join(' && '),
+        stdio: 'inherit', // enable colors!
       },
       'shared-lib-unit': {
         cmd: () => {
           const sharedLibs = getSharedLibDirs();
-          return [
-            ...sharedLibs.map(lib => `(cd shared-libs/${lib} && npm ci)`),
-            ...sharedLibs.map(lib => `echo Testing shared library: ${lib} && (cd shared-libs/${lib} && npm test)`),
-          ].join(' && ');
+          return sharedLibs
+            .map(lib => `echo Testing shared library: ${lib} && (cd shared-libs/${lib} && npm test)`)
+            .join(' && ');
         },
+        stdio: 'inherit', // enable colors!
       },
       // To monkey patch a library...
       // 1. copy the file you want to change
@@ -610,17 +570,6 @@ module.exports = function(grunt) {
       },
       audit: { cmd: 'node ./scripts/audit-all.js' },
       'audit-whitelist': { cmd: 'git diff $(cat .auditignore | git hash-object -w --stdin) $(node ./scripts/audit-all.js | git hash-object -w --stdin) --word-diff --exit-code' },
-      'envify': {
-        cmd: () => {
-          if (!TRAVIS_BUILD_NUMBER) {
-            return 'echo "Not building on Travis so not envifying"';
-          }
-          return 'mv build/ddocs/medic/_attachments/js/inbox.js inbox.tmp.js && ' +
-                 'NODE_ENV=production node node_modules/loose-envify/cli.js inbox.tmp.js > build/ddocs/medic/_attachments/js/inbox.js && ' +
-                 'rm inbox.tmp.js && ' +
-                 'echo "Envify complete"';
-        }
-      },
       'build-config': {
         cmd: () => {
           const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
@@ -629,7 +578,49 @@ module.exports = function(grunt) {
           const actions = ['upload-app-settings', 'upload-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-resources', 'upload-custom-translations'];
           return `node ${medicConfPath} --skip-dependency-check --archive --source=${configPath} --destination=${buildPath} ${actions.join(' ')}`;
         }
-      }
+      },
+      'build-webapp': {
+        cmd: () => {
+          const configuration = TRAVIS_BUILD_NUMBER ? 'production' : 'development';
+          return [
+            `cd webapp`,
+            `../node_modules/.bin/ng build --configuration=${configuration} --progress=${TRAVIS_BUILD_NUMBER ? 'false' : 'true'}`,
+            `../node_modules/.bin/ngc`,
+            'cd ../',
+          ].join(' && ');
+        },
+        stdio: 'inherit', // enable colors!
+      },
+      'watch-webapp': {
+        cmd: () => {
+          const configuration = TRAVIS_BUILD_NUMBER ? 'production' : 'development';
+          return `
+            cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true & 
+            cd ../
+          `;
+        },
+        stdio: 'inherit', // enable colors!
+      },
+      'unit-webapp': {
+        cmd: () => {
+          return [
+            'cd webapp',
+            `../node_modules/.bin/ng test webapp --watch=false --progress=${TRAVIS_BUILD_NUMBER ? 'false' : 'true'}`,
+            'cd ../',
+          ].join(' && ');
+        },
+        stdio: 'inherit', // enable colors!
+      },
+      'unit-webapp-continuous': {
+        cmd: () => {
+          return [
+            'cd webapp',
+            '../node_modules/.bin/ng test webapp --watch=true --progress=true',
+            'cd ../',
+          ].join(' && ');
+        },
+        stdio: 'inherit', // enable colors!
+      },
     },
     watch: {
       options: {
@@ -651,7 +642,7 @@ module.exports = function(grunt) {
         ],
       },
       'admin-js': {
-        files: ['admin/src/js/**/*', 'webapp/src/js/**/*', 'shared-libs/*/src/**/*'],
+        files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
         tasks: [
           'browserify:admin',
           'couch-compile:secondary',
@@ -677,41 +668,10 @@ module.exports = function(grunt) {
           'notify:deployed',
         ],
       },
-      'webapp-css': {
-        files: ['webapp/src/css/**/*'],
-        tasks: [
-          'sass',
-          'less:webapp',
-          'generate-service-worker',
-          'couch-compile:primary',
-          'deploy',
-        ],
-      },
       'webapp-js': {
-        files: ['webapp/src/js/**/*', 'shared-libs/*/src/**/*'],
+        // instead of watching the source files, watch the build folder and upload on rebuild
+        files: ['build/ddocs/medic/_attachments/**/*'],
         tasks: [
-          'browserify:webapp',
-          'generate-service-worker',
-          'couch-compile:primary',
-          'deploy',
-        ],
-      },
-      'webapp-templates': {
-        files: [
-          'webapp/src/templates/**/*',
-          '!webapp/src/templates/inbox.html',
-        ],
-        tasks: [
-          'ngtemplates:inboxApp',
-          'generate-service-worker',
-          'couch-compile:primary',
-          'deploy',
-        ],
-      },
-      'inbox-html-template': {
-        files: 'webapp/src/templates/inbox.html',
-        tasks: [
-          'copy:inbox-file-attachment',
           'generate-service-worker',
           'couch-compile:primary',
           'deploy',
@@ -740,16 +700,6 @@ module.exports = function(grunt) {
       },
     },
     karma: {
-      unit: {
-        configFile: './webapp/tests/karma/karma-unit.conf.js',
-        singleRun: true,
-        browsers: ['Chrome_Headless'],
-      },
-      'unit-continuous': {
-        configFile: './webapp/tests/karma/karma-unit.conf.js',
-        singleRun: false,
-        browsers: ['Chrome_Headless'],
-      },
       admin: {
         configFile: './admin/tests/karma-unit.conf.js',
         singleRun: true,
@@ -759,7 +709,7 @@ module.exports = function(grunt) {
     protractor: {
       'e2e-web-tests': {
         options: {
-          configFile: TRAVIS_TAG || TRAVIS_BRANCH?'tests/conf-travis.js':'tests/conf.js',
+          configFile: 'tests/conf.js',
           args: {
             suite: 'web',
           }
@@ -783,10 +733,11 @@ module.exports = function(grunt) {
         options: {
           configFile: 'tests/conf.js',
           args: {
-            capabilities: {
-              chromeOptions: {
-                args: [ 'window-size=1024,768' ]
-              }
+            suite: 'web'
+          },
+          capabilities: {
+            chromeOptions: {
+              args: ['window-size=1024,768']
             }
           }
         }
@@ -827,27 +778,6 @@ module.exports = function(grunt) {
       }
     },
     ngtemplates: {
-      inboxApp: {
-        cwd: 'webapp/src',
-        src: [
-          'templates/modals/**/*.html',
-          'templates/partials/**/*.html',
-          'templates/directives/**/*.html',
-        ],
-        dest: 'build/ddocs/medic/_attachments/js/templates.js',
-        options: {
-          htmlmin: {
-            collapseBooleanAttributes: true,
-            collapseWhitespace: true,
-            removeAttributeQuotes: true,
-            removeComments: true,
-            removeEmptyAttributes: true,
-            removeRedundantAttributes: true,
-            removeScriptTypeAttributes: true,
-            removeStyleLinkTypeAttributes: true,
-          },
-        },
-      },
       adminApp: {
         cwd: 'admin/src',
         src: ['templates/**/*.html', '!templates/index.html'],
@@ -882,10 +812,6 @@ module.exports = function(grunt) {
       },
     },
     'optimize-js': {
-      'build/ddocs/medic/_attachments/js/inbox.js':
-        'build/ddocs/medic/_attachments/js/inbox.js',
-      'build/ddocs/medic/_attachments/js/templates.js':
-        'build/ddocs/medic/_attachments/js/templates.js',
       'build/ddocs/medic-db/medic-admin/_attachments/js/main.js':
         'build/ddocs/medic-db/medic-admin/_attachments/js/main.js',
       'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js':
@@ -905,7 +831,7 @@ module.exports = function(grunt) {
       api: {
         src: [
           'api/src/**/*.js',
-          '!api/src/extracted-resources/**',
+          '!api/extracted-resources/**',
         ],
         options: {
           destination: 'jsdocs/api',
@@ -926,17 +852,6 @@ module.exports = function(grunt) {
           destination: 'jsdocs/shared-libs'
         }
       },
-      webapp: {
-        src: [
-          'webapp/src/js/**/*.js'
-        ],
-        options: {
-          destination: 'jsdocs/webapp',
-          configure: 'node_modules/angular-jsdoc/common/conf.json',
-          template: 'node_modules/angular-jsdoc/angular-template',
-          readme: './README.md'
-        }
-      },
     },
   });
 
@@ -950,13 +865,11 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-js', 'Build the JS resources', [
-    'browserify:webapp',
-    'ngtemplates:inboxApp',
+    'exec:build-webapp',
   ]);
 
   grunt.registerTask('build-css', 'Build the CSS resources', [
     'sass',
-    'less:webapp',
     'postcss',
   ]);
 
@@ -964,7 +877,6 @@ module.exports = function(grunt) {
     'exec:clean-build-dir',
     'copy:ddocs',
     'build-common',
-    'exec:envify',
     'build-node-modules',
     'minify',
     'couch-compile:primary',
@@ -981,7 +893,6 @@ module.exports = function(grunt) {
   grunt.registerTask('build-common', 'Build the static resources', [
     'build-css',
     'build-js',
-    'copy:webapp',
     'exec:set-ddoc-version',
     'exec:set-horticulturalist-metadata',
     'build-admin',
@@ -1022,7 +933,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
     'replace:webdriver-version',
-    'exec:start-webdriver',
+    CI ? 'exec:start-webdriver-ci' : 'exec:start-webdriver',
   ]);
 
   // Test tasks
@@ -1047,8 +958,6 @@ module.exports = function(grunt) {
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
     'protractor:e2e-web-tests',
-    'protractor:e2e-mobile-tests',
-    'exec:clean-test-database',
   ]);
 
   grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [
@@ -1067,8 +976,21 @@ module.exports = function(grunt) {
     'protractor:performance-tests-and-services',
   ]);
 
-  grunt.registerTask('unit-continuous', 'Run karma unit tests in a loop', [
-    'karma:unit-continuous'
+  grunt.registerTask('unit-webapp', 'Run webapp unit test after installing dependencies.', [
+    'install-dependencies',
+    'exec:unit-webapp'
+  ]);
+
+  grunt.registerTask('unit-webapp-no-dependencies', 'Run webapp unit test, without reinstalling dependencies.', [
+    'exec:unit-webapp'
+  ]);
+
+  grunt.registerTask('unit-admin', 'Build and run admin unit tests', [
+    'karma:admin',
+  ]);
+
+  grunt.registerTask('unit-webapp-continuous', 'Run webapp unit test in a loop, without reinstalling dependencies.', [
+    'exec:unit-webapp-continuous'
   ]);
 
   grunt.registerTask('test-api-integration', 'Integration tests for medic-api', [
@@ -1078,9 +1000,10 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('unit', 'Unit tests', [
-    'karma:unit',
-    'karma:admin',
     'env:unit-test',
+    'exec:npm-ci-shared-libs',
+    'unit-webapp-no-dependencies',
+    'unit-admin',
     'exec:shared-lib-unit',
     'mochaTest:unit',
   ]);
@@ -1105,20 +1028,29 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-compile', 'build, lint, unit, integration test', [
     'exec:check-version',
-    'install-dependencies',
     'static-analysis',
+    'install-dependencies',
     'build',
     'mochaTest:api-integration',
     'unit',
     'exec:test-config-default',
-    'exec:test-config-standard'
+    'exec:test-config-standard',
+  ]);
+
+  grunt.registerTask('ci-compile-github', 'build, lint, unit, integration test', [
+    'exec:check-version',
+    'static-analysis',
+    'install-dependencies',
+    'build',
+    'mochaTest:api-integration',
+    'unit',
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'start-webdriver',
     'exec:e2e-servers',
     'protractor:e2e-web-tests',
-    'protractor:e2e-mobile-tests',
+    //'protractor:e2e-mobile-tests',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
@@ -1145,6 +1077,7 @@ module.exports = function(grunt) {
   grunt.registerTask('dev-webapp-no-dependencies', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
     'build-dev',
     'deploy',
+    'exec:watch-webapp',
     'watch',
   ]);
 
@@ -1173,5 +1106,3 @@ module.exports = function(grunt) {
     'jsdoc'
   ]);
 };
-
-

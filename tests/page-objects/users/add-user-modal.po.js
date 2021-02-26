@@ -39,9 +39,12 @@ const getCancelButton = () => {
 };
 
 module.exports = {
-  submit: () => {
-    helper.waitUntilReady(getSubmitButton());
-    getSubmitButton().click();
+  closeButton: () => element(by.css('button.cancel.close')),
+  errorMessageUserName: () => element.all(by.css('span.help-block.ng-binding')),
+  errorMessagePassword: () => element(by.css('#edit-password ~ .help-block')),
+  submit: async () => {
+    await helper.waitUntilReadyNative(getSubmitButton());
+    await getSubmitButton().click();
   },
 
   cancel: () => {
@@ -49,15 +52,15 @@ module.exports = {
     getCancelButton().click();
   },
 
-  fillForm: (username, fullName, password) => {
-    helper.waitUntilReady(getSubmitButton()); // wait for form to load
-    getUsernameField().sendKeys(username);
-    getFullNameField().sendKeys(fullName);
-    getEmailField().sendKeys('bede@mobile.org');
-    getPhoneField().sendKeys('0064212134566');
-    helper.selectDropdownByValue(getLanguageField(), 'en', 2);
-    helper.selectDropdownByValue(getRoleField(), 'string:national_admin');
-    getPasswordField().sendKeys(password);
-    getConfirmPasswordField().sendKeys(password);
+  fillForm: async (username, fullName, password) => {
+    await helper.waitUntilReadyNative(getSubmitButton()); // wait for form to load
+    await getUsernameField().sendKeys(username);
+    await getFullNameField().sendKeys(fullName);
+    await getEmailField().sendKeys('bede@mobile.org');
+    await getPhoneField().sendKeys('0064212134566');
+    await helper.selectDropdownByValue(getLanguageField(), 'en');
+    await helper.selectDropdownByValue(getRoleField(), 'string:national_admin');
+    await getPasswordField().sendKeys(password);
+    await getConfirmPasswordField().sendKeys(password);
   }
 };

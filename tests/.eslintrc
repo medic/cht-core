@@ -1,6 +1,6 @@
 {
   "parserOptions": {
-    "ecmaVersion": 8
+    "ecmaVersion": 9
   },
   "env": {
     "jasmine": true,
@@ -9,11 +9,18 @@
   },
   "plugins": [
     "no-only-tests",
-    "jasmine"
+    "jasmine",
+    "async"
   ],
   "rules": {
+    "async/missing-await-in-async-fn": "error",
     "no-only-tests/no-only-tests": "error",
     "jasmine/no-focused-tests": "error",
-    "no-console": "off"
+    "no-console": "off",
+    "space-before-function-paren": ["error", {
+      "anonymous": "ignore",
+      "named": "ignore",
+      "asyncArrow": "always"
+    }]
   }
 }

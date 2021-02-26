@@ -230,16 +230,39 @@ const expectTransitions = (infodoc, ...transitions) => {
   });
 };
 
+const processSMS = (settings) => {
+  let ids;
+  const watchChanges = apiUtils.getApiSmsChanges(messages);
+  return utils.updateSettings(settings, true)
+    .then(() => Promise.all([
+      watchChanges,
+      utils.request(getPostOpts('/api/sms', { messages: messages }))
+    ]))
+    .then(([ changes ]) => {
+      ids = changes.map(change => change.id);
+    })
+    .then(() => sentinelUtils.waitForSentinel(ids))
+    .then(() => Promise.all([
+      utils.getDocs(ids),
+      sentinelUtils.getInfoDocs(ids),
+      utils.getDoc('person1'),
+      utils.getDoc('person2')
+    ]));
+};
+
 const chw1Lineage = { _id: contacts[3]._id,  parent: contacts[3].parent };
 const chw2Lineage = { _id: contacts[4]._id,  parent: contacts[4].parent };
 
 describe('Transitions public_form', () => {
-  beforeAll(done => utils.saveDocs(contacts).then(done));
-  beforeEach(done => utils.saveDocs(patients).then(done));
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
+  beforeAll(async () => {
+    await utils.saveDocs(contacts);
+    await sentinelUtils.waitForSentinel();
+  });
+  beforeEach(async () => await utils.saveDocs(patients));
+  afterAll(async () => await utils.revertDb());
+  afterEach(async () => await utils.revertDb(contacts.map(c => c._id), true));
 
-  it('when false, reports from unknwon sources should not be accepted', () => {
+  it('when false, reports from unknwon sources should not be accepted', async () => {
     Object.keys(formsConfig).forEach(form => formsConfig[form].public_form = false);
     const settings = Object.assign(
       {},
@@ -248,88 +271,69 @@ describe('Transitions public_form', () => {
       transitionsConfig
     );
 
-    let ids;
+    const [ docs, infos, patient1, patient2 ] = await processSMS(settings);
+    let doc;
+    let info;
 
-    return utils
-      .updateSettings(settings)
-      .then(() => Promise.all([
-        apiUtils.getApiSmsChanges(messages),
-        utils.request(getPostOpts('/api/sms', { messages: messages }))
-      ]))
-      .then(([ changes ]) => {
-        ids = changes.map(change => change.id);
-      })
-      .then(() => sentinelUtils.waitForSentinel(ids))
-      .then(() => Promise.all([
-        utils.getDocs(ids),
-        sentinelUtils.getInfoDocs(ids),
-        utils.getDoc('person1'),
-        utils.getDoc('person2')
-      ]))
-      .then(([ docs, infos, patient1, patient2 ]) => {
-        let doc;
-        let info;
+    // temp_known_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_known_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'update_clinics', 'accept_patient_reports', 'conditional_alerts', 'registration');
+    expect(doc.contact).toEqual(chw1Lineage);
+    expect(doc.tasks.length).toEqual(3);
+    expect(doc.tasks.find(task => task.messages[0].message === 'registration msg')).toBeDefined();
+    expect(doc.tasks.find(task => task.messages[0].message === 'conditional_alerts msg')).toBeDefined();
+    expect(doc.tasks.find(task => task.messages[0].message === 'accept_patient_reports msg')).toBeDefined();
+    expect(doc.scheduled_tasks.length).toEqual(1);
 
-        // temp_known_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_known_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'update_clinics', 'accept_patient_reports', 'conditional_alerts', 'registration');
-        expect(doc.contact).toEqual(chw1Lineage);
-        expect(doc.tasks.length).toEqual(3);
-        expect(doc.tasks.find(task => task.messages[0].message === 'registration msg')).toBeDefined();
-        expect(doc.tasks.find(task => task.messages[0].message === 'conditional_alerts msg')).toBeDefined();
-        expect(doc.tasks.find(task => task.messages[0].message === 'accept_patient_reports msg')).toBeDefined();
-        expect(doc.scheduled_tasks.length).toEqual(1);
+    // temp_unknown_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_unknown_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'update_clinics');
+    expect(doc.contact).not.toBeDefined();
+    expect(doc.errors.length).toEqual(1);
+    expect(doc.tasks.length).toEqual(0);
+    expect(doc.scheduled_tasks).not.toBeDefined();
 
-        // temp_unknown_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_unknown_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'update_clinics');
-        expect(doc.contact).not.toBeDefined();
-        expect(doc.errors.length).toEqual(1);
-        expect(doc.tasks.length).toEqual(0);
-        expect(doc.scheduled_tasks).not.toBeDefined();
+    // death_known_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'death_known_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'update_clinics', 'death_reporting');
+    expect(doc.contact).toEqual(chw2Lineage);
+    expect(patient2.date_of_death).toEqual(doc.reported_date);
 
-        // death_known_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'death_known_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'update_clinics', 'death_reporting');
-        expect(doc.contact).toEqual(chw2Lineage);
-        expect(patient2.date_of_death).toEqual(doc.reported_date);
+    // death_unknown_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'death_unknown_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'update_clinics');
+    expect(doc.contact).not.toBeDefined();
+    expect(doc.tasks.length).toEqual(0);
+    expect(doc.scheduled_tasks).not.toBeDefined();
+    expect(doc.errors.length).toEqual(1);
+    expect(patient1.date_of_death).not.toBeDefined();
 
-        // death_unknown_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'death_unknown_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'update_clinics');
-        expect(doc.contact).not.toBeDefined();
-        expect(doc.tasks.length).toEqual(0);
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(doc.errors.length).toEqual(1);
-        expect(patient1.date_of_death).not.toBeDefined();
+    // mute_known_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute_known_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'update_clinics', 'muting', 'multi_report_alerts');
+    expect(doc.contact).toEqual(chw2Lineage);
+    expect(doc.tasks.length).toEqual(1);
+    expect(doc.tasks[0].messages[0].message).toEqual('multi_report_alerts msg');
+    expect(doc.scheduled_tasks).not.toBeDefined();
+    expect(patient2.muted).toBeDefined();
 
-        // mute_known_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute_known_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'update_clinics', 'muting', 'multi_report_alerts');
-        expect(doc.contact).toEqual(chw2Lineage);
-        expect(doc.tasks.length).toEqual(1);
-        expect(doc.tasks[0].messages[0].message).toEqual('multi_report_alerts msg');
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(patient2.muted).toBeDefined();
-
-        // mute_unknown_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute_unknown_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'update_clinics');
-        expect(doc.contact).not.toBeDefined();
-        expect(doc.errors.length).toEqual(1);
-        expect(doc.tasks.length).toEqual(0);
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(patient1.muted).not.toBeDefined();
-      });
+    // mute_unknown_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute_unknown_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'update_clinics');
+    expect(doc.contact).not.toBeDefined();
+    expect(doc.errors.length).toEqual(1);
+    expect(doc.tasks.length).toEqual(0);
+    expect(doc.scheduled_tasks).not.toBeDefined();
+    expect(patient1.muted).not.toBeDefined();
   });
 
-  it('when true, reports from unknwon sources should be accepted', () => {
+  it('when true, reports from unknwon sources should be accepted', async () => {
     Object.keys(formsConfig).forEach(form => formsConfig[form].public_form = true);
     const settings = Object.assign(
       {},
@@ -338,90 +342,71 @@ describe('Transitions public_form', () => {
       transitionsConfig
     );
 
-    let ids;
+    const [ docs, infos, patient1, patient2 ] = await processSMS(settings);
+    let doc;
+    let info;
 
-    return utils
-      .updateSettings(settings)
-      .then(() => Promise.all([
-        apiUtils.getApiSmsChanges(messages),
-        utils.request(getPostOpts('/api/sms', { messages: messages }))
-      ]))
-      .then(([ changes ]) => {
-        ids = changes.map(change => change.id);
-      })
-      .then(() => sentinelUtils.waitForSentinel(ids))
-      .then(() => Promise.all([
-        utils.getDocs(ids),
-        sentinelUtils.getInfoDocs(ids),
-        utils.getDoc('person1'),
-        utils.getDoc('person2')
-      ]))
-      .then(([ docs, infos, patient1, patient2 ]) => {
-        let doc;
-        let info;
+    // temp_known_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_known_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'update_clinics', 'accept_patient_reports', 'conditional_alerts', 'registration');
+    expect(doc.contact).toEqual(chw1Lineage);
+    expect(doc.tasks.length).toEqual(3);
+    expect(doc.tasks.find(task => task.messages[0].message === 'registration msg')).toBeDefined();
+    expect(doc.tasks.find(task => task.messages[0].message === 'conditional_alerts msg')).toBeDefined();
+    expect(doc.tasks.find(task => task.messages[0].message === 'accept_patient_reports msg')).toBeDefined();
+    expect(doc.scheduled_tasks.length).toEqual(1);
 
-        // temp_known_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_known_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'update_clinics', 'accept_patient_reports', 'conditional_alerts', 'registration');
-        expect(doc.contact).toEqual(chw1Lineage);
-        expect(doc.tasks.length).toEqual(3);
-        expect(doc.tasks.find(task => task.messages[0].message === 'registration msg')).toBeDefined();
-        expect(doc.tasks.find(task => task.messages[0].message === 'conditional_alerts msg')).toBeDefined();
-        expect(doc.tasks.find(task => task.messages[0].message === 'accept_patient_reports msg')).toBeDefined();
-        expect(doc.scheduled_tasks.length).toEqual(1);
+    // temp_unknown_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_unknown_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'accept_patient_reports', 'conditional_alerts', 'registration');
+    expect(doc.contact).not.toBeDefined();
+    expect(doc.errors.length).toEqual(0);
+    expect(doc.tasks.length).toEqual(3);
+    expect(doc.tasks.find(task => task.messages[0].message === 'registration msg')).toBeDefined();
+    expect(doc.tasks.find(task => task.messages[0].message === 'conditional_alerts msg')).toBeDefined();
+    expect(doc.tasks.find(task => task.messages[0].message === 'accept_patient_reports msg')).toBeDefined();
+    expect(doc.scheduled_tasks.length).toEqual(1);
 
-        // temp_unknown_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_unknown_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'accept_patient_reports', 'conditional_alerts', 'registration');
-        expect(doc.contact).not.toBeDefined();
-        expect(doc.errors.length).toEqual(0);
-        expect(doc.tasks.length).toEqual(3);
-        expect(doc.tasks.find(task => task.messages[0].message === 'registration msg')).toBeDefined();
-        expect(doc.tasks.find(task => task.messages[0].message === 'conditional_alerts msg')).toBeDefined();
-        expect(doc.tasks.find(task => task.messages[0].message === 'accept_patient_reports msg')).toBeDefined();
-        expect(doc.scheduled_tasks.length).toEqual(1);
+    // death_known_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'death_known_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'update_clinics', 'death_reporting');
+    expect(doc.contact).toEqual(chw2Lineage);
+    expect(patient2.date_of_death).toEqual(doc.reported_date);
 
-        // death_known_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'death_known_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'update_clinics', 'death_reporting');
-        expect(doc.contact).toEqual(chw2Lineage);
-        expect(patient2.date_of_death).toEqual(doc.reported_date);
+    // death_unknown_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'death_unknown_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'death_reporting');
+    expect(doc.contact).not.toBeDefined();
+    expect(doc.errors.length).toEqual(0);
+    expect(patient1.date_of_death).toEqual(doc.reported_date);
 
-        // death_unknown_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'death_unknown_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'death_reporting');
-        expect(doc.contact).not.toBeDefined();
-        expect(doc.errors.length).toEqual(0);
-        expect(patient1.date_of_death).toEqual(doc.reported_date);
+    // mute_known_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute_known_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'update_clinics', 'muting', 'multi_report_alerts');
+    expect(doc.contact).toEqual(chw2Lineage);
+    expect(doc.tasks.length).toEqual(1);
+    expect(doc.tasks[0].messages[0].message).toEqual('multi_report_alerts msg');
+    expect(doc.scheduled_tasks).not.toBeDefined();
+    expect(patient2.muted).toBeDefined();
 
-        // mute_known_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute_known_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'update_clinics', 'muting', 'multi_report_alerts');
-        expect(doc.contact).toEqual(chw2Lineage);
-        expect(doc.tasks.length).toEqual(1);
-        expect(doc.tasks[0].messages[0].message).toEqual('multi_report_alerts msg');
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(patient2.muted).toBeDefined();
-
-        // mute_unknown_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute_unknown_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'muting', 'multi_report_alerts');
-        expect(doc.contact).not.toBeDefined();
-        expect(doc.errors.length).toEqual(0);
-        expect(doc.tasks.length).toEqual(1);
-        expect(doc.tasks[0].messages[0].message).toEqual('multi_report_alerts msg');
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(patient1.muted).toBeDefined();
-      });
+    // mute_unknown_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute_unknown_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'muting', 'multi_report_alerts');
+    expect(doc.contact).not.toBeDefined();
+    expect(doc.errors.length).toEqual(0);
+    expect(doc.tasks.length).toEqual(1);
+    expect(doc.tasks[0].messages[0].message).toEqual('multi_report_alerts msg');
+    expect(doc.scheduled_tasks).not.toBeDefined();
+    expect(patient1.muted).toBeDefined();
   });
 
-  it('should default to false', () => {
+  it('should default to false', async () => {
     Object.keys(formsConfig).forEach(form => delete formsConfig[form].public_form);
 
     const settings = Object.assign(
@@ -431,84 +416,65 @@ describe('Transitions public_form', () => {
       transitionsConfig
     );
 
-    let ids;
+    const [ docs, infos, patient1, patient2 ] = await processSMS(settings);
+    let doc;
+    let info;
 
-    return utils
-      .updateSettings(settings)
-      .then(() => Promise.all([
-        apiUtils.getApiSmsChanges(messages),
-        utils.request(getPostOpts('/api/sms', { messages: messages }))
-      ]))
-      .then(([ changes ]) => {
-        ids = changes.map(change => change.id);
-      })
-      .then(() => sentinelUtils.waitForSentinel(ids))
-      .then(() => Promise.all([
-        utils.getDocs(ids),
-        sentinelUtils.getInfoDocs(ids),
-        utils.getDoc('person1'),
-        utils.getDoc('person2')
-      ]))
-      .then(([ docs, infos, patient1, patient2 ]) => {
-        let doc;
-        let info;
+    // temp_known_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_known_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'update_clinics', 'accept_patient_reports', 'conditional_alerts', 'registration');
+    expect(doc.contact).toEqual(chw1Lineage);
+    expect(doc.tasks.length).toEqual(3);
+    expect(doc.tasks.find(task => task.messages[0].message === 'registration msg')).toBeDefined();
+    expect(doc.tasks.find(task => task.messages[0].message === 'conditional_alerts msg')).toBeDefined();
+    expect(doc.tasks.find(task => task.messages[0].message === 'accept_patient_reports msg')).toBeDefined();
+    expect(doc.scheduled_tasks.length).toEqual(1);
 
-        // temp_known_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_known_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'update_clinics', 'accept_patient_reports', 'conditional_alerts', 'registration');
-        expect(doc.contact).toEqual(chw1Lineage);
-        expect(doc.tasks.length).toEqual(3);
-        expect(doc.tasks.find(task => task.messages[0].message === 'registration msg')).toBeDefined();
-        expect(doc.tasks.find(task => task.messages[0].message === 'conditional_alerts msg')).toBeDefined();
-        expect(doc.tasks.find(task => task.messages[0].message === 'accept_patient_reports msg')).toBeDefined();
-        expect(doc.scheduled_tasks.length).toEqual(1);
+    // temp_unknown_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_unknown_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'update_clinics');
+    expect(doc.contact).not.toBeDefined();
+    expect(doc.errors.length).toEqual(1);
+    expect(doc.tasks.length).toEqual(0);
+    expect(doc.scheduled_tasks).not.toBeDefined();
 
-        // temp_unknown_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_unknown_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'update_clinics');
-        expect(doc.contact).not.toBeDefined();
-        expect(doc.errors.length).toEqual(1);
-        expect(doc.tasks.length).toEqual(0);
-        expect(doc.scheduled_tasks).not.toBeDefined();
+    // death_known_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'death_known_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'update_clinics', 'death_reporting');
+    expect(doc.contact).toEqual(chw2Lineage);
+    expect(patient2.date_of_death).toEqual(doc.reported_date);
 
-        // death_known_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'death_known_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'update_clinics', 'death_reporting');
-        expect(doc.contact).toEqual(chw2Lineage);
-        expect(patient2.date_of_death).toEqual(doc.reported_date);
+    // death_unknown_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'death_unknown_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'update_clinics');
+    expect(doc.contact).not.toBeDefined();
+    expect(doc.tasks.length).toEqual(0);
+    expect(doc.scheduled_tasks).not.toBeDefined();
+    expect(doc.errors.length).toEqual(1);
+    expect(patient1.date_of_death).not.toBeDefined();
 
-        // death_unknown_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'death_unknown_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'update_clinics');
-        expect(doc.contact).not.toBeDefined();
-        expect(doc.tasks.length).toEqual(0);
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(doc.errors.length).toEqual(1);
-        expect(patient1.date_of_death).not.toBeDefined();
+    // mute_known_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute_known_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'update_clinics', 'muting', 'multi_report_alerts');
+    expect(doc.contact).toEqual(chw2Lineage);
+    expect(doc.tasks.length).toEqual(1);
+    expect(doc.tasks[0].messages[0].message).toEqual('multi_report_alerts msg');
+    expect(doc.scheduled_tasks).not.toBeDefined();
+    expect(patient2.muted).toBeDefined();
 
-        // mute_known_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute_known_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'update_clinics', 'muting', 'multi_report_alerts');
-        expect(doc.contact).toEqual(chw2Lineage);
-        expect(doc.tasks.length).toEqual(1);
-        expect(doc.tasks[0].messages[0].message).toEqual('multi_report_alerts msg');
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(patient2.muted).toBeDefined();
-
-        // mute_unknown_contact
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute_unknown_contact');
-        info = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(info, 'update_clinics');
-        expect(doc.contact).not.toBeDefined();
-        expect(doc.errors.length).toEqual(1);
-        expect(doc.tasks.length).toEqual(0);
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(patient1.muted).not.toBeDefined();
-      });
+    // mute_unknown_contact
+    doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute_unknown_contact');
+    info = infos.find(info => info.doc_id === doc._id);
+    expectTransitions(info, 'update_clinics');
+    expect(doc.contact).not.toBeDefined();
+    expect(doc.errors.length).toEqual(1);
+    expect(doc.tasks.length).toEqual(0);
+    expect(doc.scheduled_tasks).not.toBeDefined();
+    expect(patient1.muted).not.toBeDefined();
   });
 });

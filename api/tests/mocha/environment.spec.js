@@ -5,13 +5,13 @@ const { expect } = require('chai');
 describe('environment', () => {
   describe('getExtractedResourcesPath', () => {
     const testScenario = (env, expected) => environment.__with__(Object.assign(env, {
-      __dirname: '/__dirname',
+      __dirname: '/api/src',
     }))(() => {
       const actual = environment.getExtractedResourcesPath();
       expect(actual).to.eq(expected);
     });
 
-    it('default', () => testScenario({}, '/__dirname/extracted-resources'));
+    it('default', () => testScenario({}, '/api/extracted-resources'));
     it('explicit via env', () => testScenario({ MEDIC_API_RESOURCE_PATH: '/foo' }, '/foo'));
     it('default in production', () => testScenario({ NODE_ENV: 'production' }, '/tmp/extracted-resources'));
     it('explit and production', () => testScenario(

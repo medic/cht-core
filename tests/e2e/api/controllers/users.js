@@ -59,9 +59,7 @@ describe('Users API', () => {
         body: _usersUser
       })
         .then(() => utils.saveDocs(medicData))
-        .then(() => {
-          const deferred = protractor.promise.defer();
-
+        .then(() => new Promise((resolve, reject) => {
           const options = {
             hostname: constants.API_HOST,
             port: constants.API_PORT,
@@ -76,7 +74,7 @@ describe('Users API', () => {
           // Use http service to extract cookie
           const req = http.request(options, res => {
             if (res.statusCode !== 200) {
-              return deferred.reject('Expected 200 from _session authing');
+              return reject('Expected 200 from _session authing');
             }
 
             // Example header:
@@ -84,10 +82,10 @@ describe('Users API', () => {
             try {
               cookie = res.headers['set-cookie'][0].match(/^(AuthSession=[^;]+)/)[0];
             } catch (err) {
-              return deferred.reject(err);
+              return reject(err);
             }
 
-            deferred.fulfill(cookie);
+            resolve(cookie);
           });
 
           req.write(JSON.stringify({
@@ -95,9 +93,7 @@ describe('Users API', () => {
             password: password
           }));
           req.end();
-
-          return deferred.promise;
-        }));
+        })));
 
     afterAll(() =>
       utils.request(`/_users/${getUserId(username)}`)
@@ -222,7 +218,7 @@ describe('Users API', () => {
         reported_date: new Date().getTime()
       };
       return utils
-        .updateSettings({ transitions: { generate_patient_id_on_people: true }})
+        .updateSettings({ transitions: { generate_patient_id_on_people: true }}, true)
         .then(() => utils.saveDoc(parentPlace))
         .then(() => {
           const opts = {
@@ -488,7 +484,7 @@ describe('Users API', () => {
         },
       };
     });
-    afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb(['PARENT_PLACE'], [])));
+    afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb(['PARENT_PLACE'], true)));
 
     const expectCorrectUser = (user, extra = {}) => {
       const defaultProps = {
@@ -696,7 +692,7 @@ describe('Users API', () => {
       it('should create and update a user correctly w/o token_login', () => {
         const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
         return utils
-          .updateSettings(settings, 'api')
+          .updateSettings(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
           .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(response => {

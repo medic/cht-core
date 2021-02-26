@@ -1,0 +1,47 @@
+<div class="row filters"></div>
+
+<div class="inner">
+  <div class="col-sm-12 page testing">
+
+    <div>
+      <h3>{{'testing.title' | translate}}</h3>
+      <p>{{'testing.description' | translate}}</p>
+    </div>
+
+    <div>
+      <h3>{{'debug.mode' | translate}}</h3>
+      <p>{{'debug.mode.description' | translate}}</p>
+      <a *ngIf="!debugEnabled" (click)="enableDebug()" class="btn btn-primary">{{'Enable' | translate}}</a>
+      <a *ngIf="debugEnabled" (click)="disableDebug()" class="btn btn-primary">{{'Disable' | translate}}</a>
+    </div>
+
+    <div>
+      <h3>{{'purge.title' | translate}}</h3>
+      <p>{{'purge.description' | translate}}</p>
+      <a (click)="purge()" class="btn btn-primary">{{'Start' | translate}}</a>
+      <div class="loader inline small" *ngIf="purging"></div>
+    </div>
+
+    <div>
+      <h3>{{'wipe.device.title' | translate}}</h3>
+      <p>{{'wipe.device.description' | translate}}</p>
+      <a (click)="wipe()" class="btn btn-danger">{{'Start' | translate}}</a>
+      <div class="loader inline small" *ngIf="wiping"></div>
+    </div>
+
+    <div>
+      <h3>{{'generate.feedback.title' | translate}}</h3>
+      <p>{{'generate.feedback.description' | translate}}</p>
+      <div class="row">
+        <div class="col-lg-3 col-sm-6">
+          <input type="number" class="form-control" [(ngModel)]="amountFeedbackDocs">
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <a (click)="generateFeedback()" class="btn btn-danger">{{'Start' | translate}}</a>
+          <div class="loader inline small" *ngIf="generatingFeedback"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,5 +1,4 @@
 const utils = require('../../utils');
-const helper = require('../../helper');
 
 const xml = `<?xml version="1.0"?>
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">
@@ -48,14 +47,13 @@ module.exports = {
     utils.seedTestData(done, userContactDoc, docs);
   },
 
-  submit: () => {
-    const submitButton = element(by.css('[ng-click="onSubmit()"]'));
-    helper.waitElementToBeClickable(submitButton);
-    submitButton.click();
-    helper.waitElementToBeVisible(element(by.css('div#reports-content')));
+  configureFormNative: async (userContactDoc) => {
+    await utils.seedTestData(userContactDoc, docs);
   },
 
   reset: () => {
     element(by.css('.icon.icon-refresh')).click();
-  }
+  },
+  imagePreview: () => element(by.css('#photo-upload .file-picker .file-preview img')),
+  imagePathInput: () => element(by.css('#photo-upload input[type=file]')),
 };

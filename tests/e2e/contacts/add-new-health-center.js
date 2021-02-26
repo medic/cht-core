@@ -7,15 +7,14 @@ describe('Add new health center tests : ', () => {
   afterEach(utils.afterEach);
   beforeEach(utils.beforeEach);
 
-  it('should add new health center', () => {
-    commonElements.goToPeople();
-    contactPage.addNewDistrict('Auckland');
-    contactPage.addHealthCenter();
-    const center = element(by.css('.card h2'));
-    helper.waitUntilReady(center);
-    expect(center.getText()).toBe('Mavuvu Clinic');
-    const name = element(by.css('.children h4 span'));
-    helper.waitUntilReady(name);
-    expect(name.getText()).toBe('Gareth');
+  it('should add new health center', async () => {
+    await commonElements.goToPeople();
+    await contactPage.addNewDistrict('Auckland');
+    await contactPage.addHealthCenter();
+
+    await helper.waitUntilReadyNative(contactPage.center());
+    expect(await helper.getTextFromElementNative(contactPage.center())).toBe('Mavuvu Clinic');
+    await helper.waitUntilReadyNative(contactPage.name());
+    expect(await helper.getTextFromElementNative(contactPage.name())).toBe('Gareth');
   });
 });

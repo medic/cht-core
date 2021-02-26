@@ -1,0 +1,10 @@
+<mm-modal
+  danger="true"
+  [titleKey]="'Confirm'"
+  [submitKey]="'yes'"
+  [cancelKey]="'no'"
+  (onCancel)="cancel()"
+  (onSubmit)="submit()"
+>
+  <p>{{'confirm.logout' | translate}}</p>
+</mm-modal>

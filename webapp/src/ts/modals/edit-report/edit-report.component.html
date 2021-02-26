@@ -1,0 +1,18 @@
+<mm-modal
+  [status]="status"
+  id="edit-report"
+  [titleKey]="'Update Facility'"
+  [submitKey]="'Submit'"
+  [submittingKey]="'Submitting'"
+  (onCancel)="cancel()"
+  (onSubmit)="submit()"
+>
+  <form>
+    <fieldset>
+      <div class="control-group">
+        <label>{{'Please select a facility' | translate}}</label>
+        <select name="facility" autocomplete="off"></select>
+      </div>
+    </fieldset>
+  </form>
+</mm-modal>

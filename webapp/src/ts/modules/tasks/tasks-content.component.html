@@ -1,0 +1,55 @@
+<div class="content-pane right-pane">
+
+  <div class="col-sm-8 item-content empty-selection" *ngIf="loadingContent || loadingForm">
+    <div>
+      <div class="loader"></div>
+    </div>
+  </div>
+
+  <div class="col-sm-8 item-content empty-selection" *ngIf="!selectedTask && !loadingContent">
+    <div>{{'No task selected' | translate}}</div>
+  </div>
+
+  <div class="col-sm-8 item-content empty-selection" *ngIf="!loadingContent && !loadingForm && contentError">
+    <div>{{ errorTranslationKey | translate}}</div>
+  </div>
+
+  <div class="col-sm-8 item-content" *ngIf="selectedTask && !form && !loadingContent && !loadingForm && !contentError">
+    <div class="body">
+      <div>
+        <ul>
+          <li>
+            <h2>{{selectedTask.title | translateFrom:selectedTask}}</h2>
+          </li>
+          <li>
+            <label>{{'task.date' | translate}}</label>
+            <p [innerHTML]="selectedTask.date | simpleDate"></p>
+          </li>
+          <li *ngIf="selectedTask.priority">
+            <label>{{'task.priority' |  translate}}</label>
+            <p [ngClass]="{'high-priority': selectedTask.priority === 'high', 'medium-priority': selectedTask.priority === 'medium'}">
+              <span class="priority">
+                <i class="fa fa-exclamation-triangle high-priority-icon"></i>
+                <i class="fa fa-info-circle medium-priority-icon"></i>
+              </span>
+              {{selectedTask.priorityLabel | translateFrom:selectedTask}}
+            </p>
+          </li>
+          <li *ngFor="let field of selectedTask.fields">
+            <label>{{field.label | translateFrom:selectedTask}}</label>
+            <p>{{field.value | translateFrom:selectedTask}}</p>
+          </li>
+          <li class="actions" *ngIf="selectedTask.actions.length">
+            <a class="btn btn-primary" *ngFor="let action of selectedTask.actions" (click)="performAction(action)">{{action.label | translateFrom:selectedTask}}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-8 item-content" [hidden]="!selectedTask || !form || loadingForm || loadingContent || contentError">
+    <div class="body">
+      <mm-enketo id="task-report" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()"></mm-enketo>
+    </div>
+  </div>
+</div>
