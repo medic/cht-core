@@ -50,6 +50,7 @@ export class AboutComponent implements OnInit, OnDestroy {
       this.androidAppVersion = androidAppVersion;
     });
     this.subscription.add(reduxSubscription);
+    this.url = window.location.hostname;
 
     this.userCtx = this.sessionService.userCtx();
     this.resourceIconsService
