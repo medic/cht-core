@@ -440,6 +440,7 @@ export class AppComponent implements OnInit {
       .then((jsonForms) => {
         const jsonFormSummaries = jsonForms.map((jsonForm) => {
           return {
+            id: jsonForm.code,
             code: jsonForm.code,
             title: translateTitle(jsonForm.translation_key, jsonForm.name),
             icon: jsonForm.icon,

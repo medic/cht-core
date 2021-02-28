@@ -243,6 +243,7 @@ describe('AppComponent', () => {
       subject_key: '4566'
     };
     const form2 = {
+      _id: 'form:456',
       internalId: '456',
       name: 'something',
       translation_key: 'form2',
@@ -266,12 +267,14 @@ describe('AppComponent', () => {
     expect(globalActions.setForms.callCount).to.equal(1);
     expect(globalActions.setForms.args[0][0]).to.have.deep.members([
       {
+        id: '123',
         code: '123',
         icon: 'icon',
         subjectKey: '4566',
         title: 'form1'
       },
       {
+        id: 'form:456',
         code: '456',
         icon: 'icon',
         subjectKey: '7899',
@@ -284,6 +287,7 @@ describe('AppComponent', () => {
     expect(xmlFormsService.subscribe.getCall(1).args[2]).to.be.a('Function');
     xmlFormsService.subscribe.getCall(1).args[2](false, [form2]);
     expect(component.nonContactForms).to.have.deep.members([{
+      id: 'form:456',
       code: '456',
       icon: 'icon',
       title: 'form2'
