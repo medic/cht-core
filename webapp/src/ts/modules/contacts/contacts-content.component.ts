@@ -327,6 +327,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
               this.translateService.instant(xForm.translation_key) : this.translateFromService.get(xForm.title);
             const isUnmute = !!(xForm.internalId && this.settings?.muting?.unmute_forms?.includes(xForm.internalId));
             return {
+              id: xForm._id,
               code: xForm.internalId,
               title: title,
               icon: xForm.icon,

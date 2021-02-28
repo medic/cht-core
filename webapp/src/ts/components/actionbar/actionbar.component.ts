@@ -123,10 +123,6 @@ export class ActionbarComponent implements OnInit, OnDestroy {
       .catch(() => {});
   }
 
-  trackByForms(idx, form) {
-    return form.code;
-  }
-
   trackById(idx, item) {
     return item.id;
   }
