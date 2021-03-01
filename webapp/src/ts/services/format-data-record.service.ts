@@ -7,9 +7,7 @@ import { LanguageService } from '@mm-services/language.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 
-
 import * as messages from '@medic/message-utils';
-import * as lineageFactory from '@medic/lineage';
 import * as registrationUtils from '@medic/registration-utils';
 
 @Injectable({
@@ -26,7 +24,6 @@ export class FormatDataRecordService {
   ) {
   }
 
-  private lineage = lineageFactory(Promise, this.dbService.get());
   private readonly patientFields = ['patient_id', 'patient_uuid', 'patient_name'];
   private readonly placeFields = ['place_id'];
 
@@ -44,22 +41,6 @@ export class FormatDataRecordService {
       .query('medic-client/registered_patients', options)
       .then((result) => {
         return result.rows.map(row => row.doc);
-      });
-  }
-
-  private getSubject(shortcode) {
-    const options = { key: ['shortcode', shortcode] };
-    return this.dbService
-      .get()
-      .query('medic-client/contacts_by_reference', options)
-      .then((result) => {
-        if (!result.rows.length) {
-          return;
-        }
-        if (result.rows.length > 1) {
-          console.warn('More than one contact document for shortcode "' + shortcode + '"');
-        }
-        return this.lineage.fetchHydratedDoc(result.rows[0].id);
       });
   }
 
@@ -125,7 +106,7 @@ export class FormatDataRecordService {
         return { filter: `case_id:${id}` };
       }
     } else if (this.placeFields.includes(key)) {
-      const id = doc.place?.id;
+      const id = doc.place?._id;
       if (id) {
         return { url: ['/contacts', id] };
       }
