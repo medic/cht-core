@@ -1,7 +1,20 @@
-# Automated End-to-End Testing
+# Testing
 
-An overview of the End-to-End testing of CHT-Core. 
+An overview of testing within CHT-CORE. Check out the [Gruntfile](Gruntfile.js) for all the tests you can run.
 
+## Unit tests
+
+They live in the `tests` directories of each app. Run them with grunt: `grunt unit-continuous`.
+
+## API integration tests
+
+`grunt api-e2e`
+
+## Integration tests
+
+[Travis](https://travis-ci.org/github/medic/cht-core) runs `grunt ci` every time some new code is pushed to github.
+
+# End to End Testing 
 ## Stack overview
 
 ### Requirements

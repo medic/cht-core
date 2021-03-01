@@ -213,23 +213,8 @@ All text labels in the app are localized. See the [translation documentation](ht
 
 # Tests
 
-Check out the [Gruntfile](Gruntfile.js) for all the tests you can run.
-
-## Unit tests
-
-They live in the `tests` directories of each app. Run them with grunt: `grunt unit-continuous`.
-
-## End to End tests
-
 Refer to [TESTING.md](TESTING.md)
 
-## API integration tests
-
-`grunt api-e2e`
-
-## Integration tests
-
-[Travis](https://travis-ci.org/github/medic/cht-core) runs `grunt ci` every time some new code is pushed to github.
 
 ## Build documentation
 
