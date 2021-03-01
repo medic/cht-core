@@ -212,7 +212,7 @@ describe('due tasks', () => {
       .stub(utils, 'translate')
       .returns('Please visit {{patient_name}} asap');
     const getRegistrations = sinon.stub(utils, 'getRegistrations').resolves([]);
-    const getContactUuid = sinon.stub(utils, 'getContactUuid')
+    sinon.stub(utils, 'getContactUuid')
       .withArgs('123').resolves(patientUuid)
       .withArgs(undefined).resolves(undefined);
     const fetchHydratedDoc = sinon.stub(schedule._lineage, 'fetchHydratedDoc').resolves({ name: 'jim' });

@@ -187,7 +187,7 @@ describe('accept_patient_reports', () => {
       };
       transition._handleReport(doc, config, () => {
         utils.getReportsBySubject.callCount.should.equal(1);
-        utils.getReportsBySubject.args[0].should.deep.equal([{ ids: ['the_place', '698'], registrations: true }])
+        utils.getReportsBySubject.args[0].should.deep.equal([{ ids: ['the_place', '698'], registrations: true }]);
 
         doc.tasks[0].messages[0].message.should.equal(
           'Thank you, woot. The visit for Seneca (698)(reg beta) has been recorded.'
@@ -225,8 +225,8 @@ describe('accept_patient_reports', () => {
       };
       transition._handleReport(doc, config, () => {
         utils.getReportsBySubject.callCount.should.equal(2);
-        utils.getReportsBySubject.args[0].should.deep.equal([{ ids: ['patient', '559'], registrations: true }])
-        utils.getReportsBySubject.args[1].should.deep.equal([{ ids: ['the_place', '698'], registrations: true }])
+        utils.getReportsBySubject.args[0].should.deep.equal([{ ids: ['patient', '559'], registrations: true }]);
+        utils.getReportsBySubject.args[1].should.deep.equal([{ ids: ['the_place', '698'], registrations: true }]);
 
         doc.tasks[0].messages[0].message.should.equal(
           'Archibald (559 alpha) Seneca (698 beta)'
