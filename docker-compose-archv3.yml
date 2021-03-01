@@ -40,6 +40,23 @@ services:
       - medic-net
     depends_on:
       - haproxy
+      - medic-api-helper
+
+  medic-api-helper:
+    container_name: medic-api-helper
+    image: medicmobile/medic-api-helper:3.10.0-010321-test1
+    environment:
+      COUCHDB_SERVICE_NAME: couchdb
+      COUCH_NODE_NAME: "couchdb@127.0.0.1"
+      COUCHDB_USER: ${COUCHDB_USER}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
+      HORTI_BOOTSTRAP_VERSION: 3.10.0
+      NODE_ENV: production
+      HAPROXY_SVC: haproxy
+    networks:
+      - medic-net
+    depends_on:
+      - haproxy
 
   medic-sentinel:
     container_name: medic-sentinel
