@@ -118,7 +118,7 @@ describe('accept_patient_reports', () => {
     });
 
     it('with patient adds reply', done => {
-      const patient = { patient_name: 'Archibald' };
+      const patient = { patient_name: 'Archibald', patient_id: '559', _id: 'patient' };
       const doc = {
         fields: { patient_id: '559' },
         contact: {
@@ -133,7 +133,7 @@ describe('accept_patient_reports', () => {
         },
         patient: patient,
       };
-      sinon.stub(utils, 'getReportsBySubject').resolves([]);
+      sinon.stub(utils, 'getReportsBySubject').resolves([{ _id: 'reg1', regField: 'alpha' }]);
       const config = {
         messages: [
           {
@@ -141,7 +141,8 @@ describe('accept_patient_reports', () => {
             message: [
               {
                 content:
-                  'Thank you, {{contact.name}}. ANC visit for {{patient_name}} ({{patient_id}}) has been recorded.',
+                  'Thank you, {{contact.name}}. ' +
+                  'ANC visit for {{patient_name}} ({{patient_id}})(reg {{regField}}) has been recorded.',
                 locale: 'en',
               },
             ],
@@ -150,8 +151,85 @@ describe('accept_patient_reports', () => {
         ],
       };
       transition._handleReport(doc, config, () => {
+        utils.getReportsBySubject.callCount.should.equal(1);
+        utils.getReportsBySubject.args[0].should.deep.equal([{ ids: ['patient', '559'], registrations: true }]);
+
         doc.tasks[0].messages[0].message.should.equal(
-          'Thank you, woot. ANC visit for Archibald (559) has been recorded.'
+          'Thank you, woot. ANC visit for Archibald (559)(reg alpha) has been recorded.'
+        );
+        done();
+      });
+    });
+
+    it('with place adds reply ', (done) => {
+      const place = { place_name: 'Seneca', place_id: '698', _id: 'the_place' };
+      const doc = {
+        fields: { place_id: '698' },
+        contact: { phone: '+1234', name: 'woot' },
+        place: place,
+      };
+      sinon.stub(utils, 'getReportsBySubject').resolves([{ _id: 'reg1', regField: 'beta' }]);
+      const config = {
+        messages: [
+          {
+            event_type: 'report_accepted',
+            message: [
+              {
+                content:
+                  'Thank you, ' +
+                  '{{contact.name}}. The visit for {{place_name}} ({{place_id}})(reg {{regField}}) has been recorded.',
+                locale: 'en',
+              },
+            ],
+            recipient: 'reporting_unit',
+          },
+        ],
+      };
+      transition._handleReport(doc, config, () => {
+        utils.getReportsBySubject.callCount.should.equal(1);
+        utils.getReportsBySubject.args[0].should.deep.equal([{ ids: ['the_place', '698'], registrations: true }])
+
+        doc.tasks[0].messages[0].message.should.equal(
+          'Thank you, woot. The visit for Seneca (698)(reg beta) has been recorded.'
+        );
+        done();
+      });
+    });
+
+    it('with place and patient adds reply ', (done) => {
+      const place = { place_name: 'Seneca', place_id: '698', _id: 'the_place' };
+      const patient = { patient_name: 'Archibald', patient_id: '559', _id: 'patient' };
+      const doc = {
+        fields: { place_id: '698' },
+        contact: { phone: '+1234', name: 'woot' },
+        place: place,
+        patient: patient,
+      };
+      sinon.stub(utils, 'getReportsBySubject')
+        .onCall(0).resolves([{ _id: 'reg1', regField: 'alpha' }])
+        .onCall(1).resolves([{ _id: 'reg2', pRegField: 'beta' }]);
+
+      const config = {
+        messages: [
+          {
+            event_type: 'report_accepted',
+            message: [
+              {
+                content: '{{patient_name}} ({{patient_id}} {{regField}}) {{place_name}} ({{place_id}} {{pRegField}})',
+                locale: 'en',
+              },
+            ],
+            recipient: 'reporting_unit',
+          },
+        ],
+      };
+      transition._handleReport(doc, config, () => {
+        utils.getReportsBySubject.callCount.should.equal(2);
+        utils.getReportsBySubject.args[0].should.deep.equal([{ ids: ['patient', '559'], registrations: true }])
+        utils.getReportsBySubject.args[1].should.deep.equal([{ ids: ['the_place', '698'], registrations: true }])
+
+        doc.tasks[0].messages[0].message.should.equal(
+          'Archibald (559 alpha) Seneca (698 beta)'
         );
         done();
       });
@@ -169,6 +247,10 @@ describe('accept_patient_reports', () => {
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
+
+        utils.getReportsBySubject.callCount.should.equal(1);
+        utils.getReportsBySubject.args[0].should.deep.equal([{ ids: ['x'], registrations: true }]);
+
         transition._silenceReminders.callCount.should.equal(2);
         transition._silenceReminders.args[0][0]._id.should.equal('b');
         transition._silenceReminders.args[0][1]._id.should.equal('a');
@@ -178,7 +260,66 @@ describe('accept_patient_reports', () => {
       });
     });
 
-    it('adds registration_id property', done => {
+    it('should silence place registrations', (done) => {
+      sinon.stub(transition, '_silenceReminders').callsArgWith(3);
+      const doc = { _id: '1', fields: { place_id: '789' }, place: { place_id: '789' } };
+      const config = { silence_type: 'x', messages: [] };
+      const registrations = [
+        { _id: '1' }, // should not be silenced as it's the doc being processed
+        { _id: '2' }, // should be silenced
+        { _id: '3' }, // should be silenced
+      ];
+      sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
+      transition._handleReport(doc, config, (err, complete) => {
+        complete.should.equal(true);
+
+        utils.getReportsBySubject.callCount.should.equal(1);
+        utils.getReportsBySubject.args[0].should.deep.equal([{ ids: ['789'], registrations: true }]);
+
+        transition._silenceReminders.callCount.should.equal(2);
+        transition._silenceReminders.args[0][0]._id.should.equal('2');
+        transition._silenceReminders.args[0][1]._id.should.equal('1');
+        transition._silenceReminders.args[1][0]._id.should.equal('3');
+        transition._silenceReminders.args[1][1]._id.should.equal('1');
+        done();
+      });
+    });
+
+    it('should silence place and patient registrations', (done) => {
+      sinon.stub(transition, '_silenceReminders').callsArgWith(3);
+      const doc = {
+        _id: 'report',
+        fields: { patient_id: '123', place_id: '456' },
+        place: { _id: 'place_uuid', place_id: '456' },
+        patient: { _id: 'patient_uuid', patient_id: '123' },
+      };
+      const config = { silence_type: 'x', messages: [] };
+      const patientRegistrations = [{ _id: 'report' }, { _id: 'old1' }];
+      const placeRegistrations = [{ _id: 'old2' }, { _id: 'old3' }];
+      sinon
+        .stub(utils, 'getReportsBySubject')
+        .onCall(0).resolves(patientRegistrations)
+        .onCall(1).resolves(placeRegistrations);
+
+      transition._handleReport(doc, config, (err, complete) => {
+        complete.should.equal(true);
+
+        utils.getReportsBySubject.callCount.should.equal(2);
+        utils.getReportsBySubject.args[0].should.deep.equal([{ ids: ['patient_uuid', '123'], registrations: true }]);
+        utils.getReportsBySubject.args[1].should.deep.equal([{ ids: ['place_uuid', '456'], registrations: true }]);
+
+        transition._silenceReminders.callCount.should.equal(3);
+        transition._silenceReminders.args[0][0]._id.should.equal('old1');
+        transition._silenceReminders.args[0][1]._id.should.equal('report');
+        transition._silenceReminders.args[1][0]._id.should.equal('old2');
+        transition._silenceReminders.args[1][1]._id.should.equal('report');
+        transition._silenceReminders.args[2][0]._id.should.equal('old3');
+        transition._silenceReminders.args[2][1]._id.should.equal('report');
+        done();
+      });
+    });
+
+    it('adds registration_id property for patient_id', done => {
       sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
       const doc = { _id: 'z', fields: { patient_id: 'x' }, patient: { patient_id: 'x' } };
       const config = { silence_type: 'x', messages: [] };
@@ -193,19 +334,98 @@ describe('accept_patient_reports', () => {
       });
     });
 
-    it('if there are multiple registrations uses the latest one', done => {
+    it('adds registration_id property for place_id', done => {
       sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
-      const doc = { _id: 'z', fields: { patient_id: 'x' }, patient: { patient_id: 'x' } };
+      const doc = { _id: 'z', fields: { place_id: 'x' }, place: { place_id: 'x' } };
       const config = { silence_type: 'x', messages: [] };
       const registrations = [
         { _id: 'a', reported_date: '2017-02-05T09:23:07.853Z' },
-        { _id: 'c', reported_date: '2018-02-05T09:23:07.853Z' },
-        { _id: 'b', reported_date: '2016-02-05T09:23:07.853Z' },
       ];
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
-        doc.registration_id.should.equal(registrations[1]._id);
+        doc.registration_id.should.equal(registrations[0]._id);
+        done();
+      });
+    });
+
+    it('adds registration_id property for patient_id and place_id', done => {
+      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      const doc = {
+        _id: 'z',
+        fields: { patient_id: 'y', place_id: 'x' },
+        place: { place_id: 'x' },
+        patient: { patient_id: 'y' },
+      };
+      const config = { silence_type: 'x', messages: [] };
+      const patientRegistrations = [{ _id: 'a' }, { _id: 'b' }];
+      const placeRegistrations = [{ _id: 'c' }, { _id: 'd' }];
+      sinon
+        .stub(utils, 'getReportsBySubject')
+        .onCall(0).resolves(patientRegistrations)
+        .onCall(1).resolves(placeRegistrations);
+
+      transition._handleReport(doc, config, (err, complete) => {
+        complete.should.equal(true);
+        doc.registration_id.should.equal(patientRegistrations[0]._id);
+        done();
+      });
+    });
+
+    it('if there are multiple registrations uses the latest one', done => {
+      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      const doc = {
+        _id: 'z',
+        fields: { patient_id: 'x', place_id: 'y' },
+        patient: { patient_id: 'x' },
+        place: { place_id: 'y' },
+      };
+      const config = { silence_type: 'x', messages: [] };
+      const patientRegistrations = [
+        { _id: 'a', reported_date: '2017-02-05T09:23:07.853Z' },
+        { _id: 'c', reported_date: '2018-02-05T09:23:07.853Z' },
+        { _id: 'b', reported_date: '2016-02-05T09:23:07.853Z' },
+      ];
+      const placeRegistrations = [
+        { _id: 'c', reported_date: '2017-01-01T09:23:07.853Z' },
+        { _id: 'd', reported_date: '2015-01-01T09:23:07.853Z' },
+      ];
+      sinon
+        .stub(utils, 'getReportsBySubject')
+        .onCall(0).resolves(patientRegistrations)
+        .onCall(1).resolves(placeRegistrations);
+      transition._handleReport(doc, config, (err, complete) => {
+        complete.should.equal(true);
+        doc.registration_id.should.equal(patientRegistrations[1]._id);
+        done();
+      });
+    });
+
+    it('if there are multiple registrations uses the latest one when latest is a place registration', done => {
+      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      const doc = {
+        _id: 'z',
+        fields: { patient_id: 'x', place_id: 'y' },
+        patient: { patient_id: 'x' },
+        place: { place_id: 'y' },
+      };
+      const config = { silence_type: 'x', messages: [] };
+      const patientRegistrations = [
+        { _id: 'a', reported_date: '2017-02-05T09:23:07.853Z' },
+        { _id: 'c', reported_date: '2018-02-05T09:23:07.853Z' },
+        { _id: 'b', reported_date: '2016-02-05T09:23:07.853Z' },
+      ];
+      const placeRegistrations = [
+        { _id: 'c', reported_date: '2017-01-01T09:23:07.853Z' },
+        { _id: 'd', reported_date: '2019-01-01T09:23:07.853Z' },
+      ];
+      sinon
+        .stub(utils, 'getReportsBySubject')
+        .onCall(0).resolves(patientRegistrations)
+        .onCall(1).resolves(placeRegistrations);
+      transition._handleReport(doc, config, (err, complete) => {
+        complete.should.equal(true);
+        doc.registration_id.should.equal(placeRegistrations[1]._id);
         done();
       });
     });
@@ -719,6 +939,115 @@ describe('accept_patient_reports', () => {
         (!!complete).should.equal(false);
         err.should.deep.equal({ some: 'error' });
         utils.getReportsBySubject.callCount.should.equal(1);
+        done();
+      });
+    });
+
+    it('should pass all registrations (patient and place) when adding report uuid to registration', (done) => {
+      sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok : true, id: 'a', rev: 'r' });
+      sinon.stub(db.medic, 'post').callsArgWith(1, null, { ok : true, id: 'a', rev: 'k' });
+      const doc = {
+        _id: 'z',
+        fields: { patient_id: 'x', place_id: 'y' },
+        patient: { patient_id: 'x' },
+        place: { place_id: 'y' },
+        reported_date: '2018-09-28T19:45:00.000Z',
+      };
+      const config = { silence_type: 'x', silence_for: '2 days', messages: [] };
+      const patientRegistrations = [
+        {
+          _id: 'a',
+          reported_date: '2017-02-05T09:23:07.853Z',
+          scheduled_tasks: [
+            {
+              due: '2018-09-18T18:45:00.000Z',
+              state: 'cleared',
+              messages: [
+                {
+                  uuid: 'k5',
+                },
+              ],
+              type: 'x',
+              group: 1
+            },
+            {
+              due: '2018-10-28T20:45:00.000Z',
+              state: 'scheduled',
+              messages: [
+                {
+                  uuid: 'k',
+                },
+              ],
+              type: 'x',
+              group: 1
+            },
+            {
+              due: '2018-11-28T21:45:00.000Z',
+              state: 'scheduled',
+              messages: [
+                {
+                  uuid: 'j',
+                },
+              ],
+              type: 'x',
+              group: 1
+            },
+          ],
+        },
+      ];
+      const placeRegistrations = [{
+        _id: 'b',
+        reported_date: '2017-02-04T09:23:07.853Z',
+        scheduled_tasks: [
+          {
+            due: '2018-09-17T18:45:00.000Z',
+            state: 'sent',
+            messages: [
+              {
+                uuid: 'p98',
+              },
+            ],
+            type: 'x',
+            group: 1
+          },
+          {
+            due: '2018-10-28T20:45:00.000Z',
+            state: 'scheduled',
+            messages: [
+              {
+                uuid: 'k44',
+              },
+            ],
+            type: 'x',
+            group: 1
+          },
+          {
+            due: '2018-11-28T21:45:00.000Z',
+            state: 'scheduled',
+            messages: [
+              {
+                uuid: 'j99',
+              },
+            ],
+            type: 'x',
+            group: 1
+          },
+        ],
+      }];
+      sinon
+        .stub(utils, 'getReportsBySubject')
+        .onCall(0).resolves(patientRegistrations)
+        .onCall(1).resolves(placeRegistrations);
+
+      transition._handleReport(doc, config, (err, complete) => {
+        complete.should.deep.equal({ ok : true, id: 'a', rev: 'r' });
+        db.medic.put.callCount.should.equal(1);
+        placeRegistrations[0].scheduled_tasks[0].responded_to_by.should.deep.equal([doc._id]);
+        should.not.exist(patientRegistrations[0].scheduled_tasks[0].responded_to_by);
+        should.not.exist(patientRegistrations[0].scheduled_tasks[1].responded_to_by);
+        should.not.exist(patientRegistrations[0].scheduled_tasks[2].responded_to_by);
+        should.not.exist(placeRegistrations[0].scheduled_tasks[1].responded_to_by);
+        should.not.exist(placeRegistrations[0].scheduled_tasks[2].responded_to_by);
         done();
       });
     });

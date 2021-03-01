@@ -152,7 +152,7 @@ const findValidRegistration = (doc, config, registrations) => {
         // If the visit falls within the silence_for range of a reminder that
         // has been cleared, we move to the next registration because we assume
         // that this visit is not responding to the reminder. This happens only when
-        // we are transtioning from one group to another one. Note that existing
+        // we are transitioning from one group to another one. Note that existing
         // functionality will set the cleared_by on the reminders of the task group
         if (silenceStart < visitReportedDate &&
             task.state === 'cleared' &&
@@ -161,7 +161,7 @@ const findValidRegistration = (doc, config, registrations) => {
           break;
         }
 
-        // We loop through until we find a task that has been "deliverd" or "sent" and
+        // We loop through until we find a task that has been "delivered" or "sent" and
         // that is older than the visit reported date
         if (moment(task.due) < visitReportedDate &&
               ['delivered', 'sent'].includes(task.state)) {
