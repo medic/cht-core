@@ -1743,10 +1743,12 @@ describe('registration', () => {
         assignSchedule.args[0].should.deep.equal([
           change.doc,
           'someschedule',
-          [{ _id: 'xyz' }],
-          change.doc.patient,
-          [],
-          undefined,
+          {
+            patient: change.doc.patient,
+            place: undefined,
+            patientRegistrations: [{ _id: 'xyz' }],
+            placeRegistrations: [],
+          },
         ]);
         getRegistrations.callCount.should.equal(1);
         getRegistrations.args[0].should.deep.equal([{ id: '05649' }]);
@@ -1791,10 +1793,12 @@ describe('registration', () => {
         schedules.assignSchedule.args[0].should.deep.equal([
           change.doc,
           'myschedule',
-          [],
-          undefined,
-          [{ _id: 'place_registration' }],
-          change.doc.place,
+          {
+            patient: undefined,
+            patientRegistrations: [],
+            place: change.doc.place,
+            placeRegistrations: [{ _id: 'place_registration' }],
+          },
         ]);
 
         utils.getRegistrations.callCount.should.equal(1);
@@ -1844,10 +1848,12 @@ describe('registration', () => {
         schedules.assignSchedule.args[0].should.deep.equal([
           change.doc,
           'myschedule',
-          [{ _id: 'patient_registration' }],
-          change.doc.patient,
-          [{ _id: 'place_registration' }],
-          change.doc.place,
+          {
+            patient: change.doc.patient,
+            patientRegistrations: [{ _id: 'patient_registration' }],
+            place: change.doc.place,
+            placeRegistrations: [{ _id: 'place_registration' }],
+          },
         ]);
 
         utils.getRegistrations.callCount.should.equal(2);

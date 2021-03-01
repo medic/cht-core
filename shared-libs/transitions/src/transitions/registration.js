@@ -331,14 +331,13 @@ const assignSchedule = (options) => {
     .then(([ patientRegistrations, placeRegistrations ]) => {
       options.params.forEach(scheduleName => {
         const schedule = schedules.getScheduleConfig(scheduleName);
-        schedules.assignSchedule(
-          options.doc,
-          schedule,
+        const context = {
           patientRegistrations,
-          options.doc.patient,
+          patient: options.doc.patient,
           placeRegistrations,
-          options.doc.place
-        );
+          place: options.doc.place
+        };
+        schedules.assignSchedule(options.doc, schedule, context);
       });
     });
 };

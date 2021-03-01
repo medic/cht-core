@@ -70,8 +70,9 @@ module.exports = {
   },
 
   //Take doc and schedule config and setup schedule tasks.
-  assignSchedule: function(doc, schedule, patientRegistrations, patient, placeRegistrations, place) {
+  assignSchedule: (doc, schedule, context={}) => {
     const self = module.exports;
+    const { place, patient, patientRegistrations, placeRegistrations } = context;
     const now = moment(date.getDate());
     const muted = isMuted(patient, place);
     const allowedState = muted ? 'muted' : 'scheduled';
