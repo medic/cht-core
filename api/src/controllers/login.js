@@ -56,15 +56,18 @@ const getHomeUrl = userCtx => {
 
 const getRedirectUrl = (userCtx, requested) => {
   const root = getHomeUrl(userCtx);
+
   if (!requested) {
     return root;
   }
+
   try {
     requested = url.resolve('/', requested);
   } catch (e) {
     // invalid url - return the default
     return root;
   }
+
   const parsed = url.parse(requested);
   return parsed.path + (parsed.hash || '');
 };
