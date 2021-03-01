@@ -82,11 +82,6 @@ const getEnketoForm = doc => {
   return !collect && formsService.getXFormAttachment(doc);
 };
 
-/**
- * @param formXml The XML form string
- * @returns a promise with the XML form transformed following
- *          the stylesheet rules defined (XSL transformations)
- */
 const generate = formXml => {
   return Promise.all([ generateForm(formXml), generateModel(formXml) ])
     .then(([ form, model ]) => ({ form, model }));
@@ -185,6 +180,11 @@ module.exports = {
 
   },
 
+  /**
+   * @param formXml The XML form string
+   * @returns a promise with the XML form transformed following
+   *          the stylesheet rules defined (XSL transformations)
+   */
   generate
 
 };
