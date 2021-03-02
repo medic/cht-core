@@ -384,8 +384,8 @@ module.exports = function(Promise, DB) {
     const hydratedDocs = deepCopy(docs); // a copy of the original docs which we will incrementally hydrate and return
     const knownDocs = [...hydratedDocs]; // an array of all documents which we have fetched
 
-    let patientUuids; // a map of (v,k) pairs with (hydratedDocUuid, patientUuid)
-    let placeUuids; // a map of (v,k) pairs with (hydratedDocUuid, placeUuid)
+    let patientUuids; // a map of (k, v) pairs with (hydratedDocUuid, patientUuid)
+    let placeUuids; // a map of (k, v) pairs with (hydratedDocUuid, placeUuid)
     let subjectDocs;
 
     return fetchSubjectsUuids(hydratedDocs)

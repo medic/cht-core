@@ -41,7 +41,8 @@ const addMessagesToDoc = (doc, config, registrations) => {
     if (messageRelevant(msg, doc)) {
       messages.addMessage(doc, msg, msg.recipient, {
         patient: doc.patient,
-        registrations
+        registrations,
+        place: doc.place,
       });
     }
   });
