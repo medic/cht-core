@@ -251,6 +251,25 @@ const report_with_place = {
     place_id: '54321'
   }
 };
+
+const report_with_place_uuid = {
+  _id: 'report_with_place_uuid',
+  type: 'data_record',
+  form: 'A',
+  contact: {
+    _id: report_contact._id,
+    parent: {
+      _id: report_parent._id,
+      parent: {
+        _id: report_grandparent._id
+      }
+    }
+  },
+  fields: {
+    place_id: report_place._id,
+  }
+};
+
 const report_with_place_and_patient = {
   _id: 'report_with_place_and_patient',
   type: 'data_record',
@@ -491,6 +510,7 @@ const fixtures = [
   report_place,
   report,
   report_with_place,
+  report_with_place_uuid,
   report_with_place_and_patient,
   report2,
   report3,
@@ -725,6 +745,43 @@ describe('Lineage', function() {
 
     it('attaches the full lineage for reports with place_id', function() {
       return lineage.fetchHydratedDoc(report_with_place._id).then(actual => {
+        expect(actual.patient).to.equal(undefined);
+        assert.checkDeepProperties(actual, {
+          form: 'A',
+          place: {
+            name: report_place.name,
+            parent: {
+              name: report_parent.name,
+              contact: {
+                name: report_parentContact.name,
+                phone: report_parentContact.phone,
+              }
+            }
+          },
+          contact: {
+            name: report_contact.name,
+            parent: {
+              name: report_parent.name,
+              contact: {
+                phone: '+123',
+                name: report_parentContact.name,
+              },
+              parent: {
+                name: report_grandparent.name,
+                contact: {
+                  phone: '+456',
+                  name: report_grandparentContact.name,
+                }
+              }
+            }
+          },
+          parent: undefined
+        });
+      });
+    });
+
+    it('attaches the full lineage for reports with place_id containing a uuid', () => {
+      return lineage.fetchHydratedDoc(report_with_place_uuid._id).then(actual => {
         expect(actual.patient).to.equal(undefined);
         assert.checkDeepProperties(actual, {
           form: 'A',
