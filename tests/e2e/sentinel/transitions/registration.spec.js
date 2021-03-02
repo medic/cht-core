@@ -1790,7 +1790,7 @@ describe('registration', () => {
       }]
     };
 
-    const doc1 = {
+    const withPatient1 = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -1807,7 +1807,23 @@ describe('registration', () => {
       }
     };
 
-    const doc2 = {
+    const withClinic1 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+11111111',
+      fields: {
+        place_id: 'the_clinic',
+      },
+      some_date_field: moment().subtract(3, 'week').valueOf(),
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'middle_man',
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+      },
+    };
+
+    const withPatient2 = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -1824,65 +1840,193 @@ describe('registration', () => {
       }
     };
 
+    const withClinic2 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+11111111',
+      fields: {
+        place_id: 'the_clinic',
+      },
+      some_date_field: moment().subtract(2, 'week').valueOf(),
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'middle_man',
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+      },
+    };
+
+    const withClinicAndPatient1 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+11111111',
+      fields: {
+        place_id: 'the_clinic',
+        patient_id: 'patient',
+      },
+      some_date_field: moment().subtract(6, 'week').valueOf(),
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'middle_man',
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+      },
+    };
+
+    const withClinicAndPatient2 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+11111111',
+      fields: {
+        place_id: 'the_clinic',
+        patient_id: 'patient',
+      },
+      some_date_field: moment().subtract(6, 'week').valueOf(),
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'middle_man',
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+      },
+    };
+
+    const expectedMessage2 = (state) => ({
+      type: 'sch1',
+      group: 2,
+      state: state,
+      'messages[0].message': 'message2'
+    });
+    const expectedMessage3 = (state) => ({
+      type: 'sch2',
+      group: 1,
+      state: state,
+      'messages[0].message': 'message3'
+    });
+    const expectedMessage4 = (state) => ({
+      type: 'sch2',
+      group: 1,
+      state: state,
+      'messages[0].message': 'message4'
+    });
+
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => utils.saveDoc(doc1))
-      .then(() => sentinelUtils.waitForSentinel(doc1._id))
-      .then(() => sentinelUtils.getInfoDoc(doc1._id))
-      .then(info => {
-        chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
+      .then(() => utils.saveDocs([withPatient1, withClinic1]))
+      .then(() => sentinelUtils.waitForSentinel([withPatient1._id, withClinic1._id]))
+      .then(() => sentinelUtils.getInfoDocs([withPatient1._id, withClinic1._id]))
+      .then(([infoWithPatient, infoWithClinic]) => {
+        chai.expect(infoWithPatient).to.deep.nested.include({ 'transitions.registration.ok': true });
+        chai.expect(infoWithClinic).to.deep.nested.include({ 'transitions.registration.ok': true });
       })
-      .then(() => utils.getDoc(doc1._id))
-      .then(updated => {
-        chai.expect(updated.scheduled_tasks).to.be.ok;
-        chai.expect(updated.scheduled_tasks.length).to.equal(3);
+      .then(() => utils.getDocs([withPatient1._id, withClinic1._id]))
+      .then(([updWithPatient1, updWithClinic1]) => {
+        chai.expect(updWithPatient1.scheduled_tasks).to.be.ok;
+        chai.expect(updWithPatient1.scheduled_tasks.length).to.equal(3);
 
-        chai.expect(updated.scheduled_tasks[0].type).to.equal('sch1');
-        chai.expect(updated.scheduled_tasks[0].group).to.equal(2);
-        chai.expect(updated.scheduled_tasks[0].state).to.equal('scheduled');
-        chai.expect(updated.scheduled_tasks[0].messages[0].message).to.equal('message2');
+        chai.expect(updWithPatient1.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
+        chai.expect(updWithPatient1.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
+        chai.expect(updWithPatient1.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
 
-        chai.expect(updated.scheduled_tasks[1].type).to.equal('sch2');
-        chai.expect(updated.scheduled_tasks[1].group).to.equal(1);
-        chai.expect(updated.scheduled_tasks[1].state).to.equal('scheduled');
-        chai.expect(updated.scheduled_tasks[1].messages[0].message).to.equal('message3');
+        chai.expect(updWithClinic1.scheduled_tasks).to.be.ok;
+        chai.expect(updWithClinic1.scheduled_tasks.length).to.equal(3);
 
-        chai.expect(updated.scheduled_tasks[2].type).to.equal('sch2');
-        chai.expect(updated.scheduled_tasks[2].group).to.equal(1);
-        chai.expect(updated.scheduled_tasks[2].state).to.equal('scheduled');
-        chai.expect(updated.scheduled_tasks[2].messages[0].message).to.equal('message4');
+        chai.expect(updWithClinic1.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
+        chai.expect(updWithClinic1.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
+        chai.expect(updWithClinic1.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
       })
-      .then(() => utils.saveDoc(doc2))
-      .then(() => sentinelUtils.waitForSentinel(doc2._id))
-      .then(() => sentinelUtils.getInfoDoc(doc2._id))
-      .then(info => {
-        chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
+      .then(() => utils.saveDocs([withPatient2, withClinic2]))
+      .then(() => sentinelUtils.waitForSentinel([withPatient2._id, withClinic2._id]))
+      .then(() => sentinelUtils.getInfoDocs([withPatient2._id, withClinic2._id]))
+      .then(([infoWithPatient, infoWithClinic]) => {
+        chai.expect(infoWithPatient).to.deep.nested.include({ 'transitions.registration.ok': true });
+        chai.expect(infoWithClinic).to.deep.nested.include({ 'transitions.registration.ok': true });
       })
-      .then(() => utils.getDocs([doc1._id, doc2._id ]))
-      .then(updated => {
+      .then(() => utils.getDocs([ withPatient1._id, withPatient2._id, withClinic1._id, withClinic2._id ]))
+      .then(([ updWithPatient1, updWithPatient2, updWithClinic1, updWithClinic2 ]) => {
         //1st doc has cleared schedules
-        chai.expect(updated[0].scheduled_tasks).to.be.ok;
-        chai.expect(updated[0].scheduled_tasks.length).to.equal(3);
-        expect(updated[0].scheduled_tasks.every(task => task.state === 'cleared')).toBe(true);
+        chai.expect(updWithPatient1.scheduled_tasks).to.be.ok;
+        chai.expect(updWithPatient1.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithPatient1.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('cleared'));
+        chai.expect(updWithPatient1.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('cleared'));
+        chai.expect(updWithPatient1.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('cleared'));
 
         //2nd doc has schedules
-        chai.expect(updated[1].scheduled_tasks).to.be.ok;
-        chai.expect(updated[1].scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithPatient2.scheduled_tasks).to.be.ok;
+        chai.expect(updWithPatient2.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithPatient2.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
+        chai.expect(updWithPatient2.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
+        chai.expect(updWithPatient2.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
 
-        chai.expect(updated[1].scheduled_tasks[0].type).to.equal('sch1');
-        chai.expect(updated[1].scheduled_tasks[0].group).to.equal(2);
-        chai.expect(updated[1].scheduled_tasks[0].state).to.equal('scheduled');
-        chai.expect(updated[1].scheduled_tasks[0].messages[0].message).to.equal('message2');
+        //1st doc has cleared schedules
+        chai.expect(updWithClinic1.scheduled_tasks).to.be.ok;
+        chai.expect(updWithClinic1.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithClinic1.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('cleared'));
+        chai.expect(updWithClinic1.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('cleared'));
+        chai.expect(updWithClinic1.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('cleared'));
 
-        chai.expect(updated[1].scheduled_tasks[1].type).to.equal('sch2');
-        chai.expect(updated[1].scheduled_tasks[1].group).to.equal(1);
-        chai.expect(updated[1].scheduled_tasks[1].state).to.equal('scheduled');
-        chai.expect(updated[1].scheduled_tasks[1].messages[0].message).to.equal('message3');
+        //2nd doc has schedules
+        chai.expect(updWithClinic2.scheduled_tasks).to.be.ok;
+        chai.expect(updWithClinic2.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithClinic2.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
+        chai.expect(updWithClinic2.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
+        chai.expect(updWithClinic2.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
+      })
+      .then(() => utils.saveDocs([withClinicAndPatient1]))
+      .then(() => sentinelUtils.waitForSentinel(withClinicAndPatient1._id))
+      .then(() => sentinelUtils.getInfoDoc(withClinicAndPatient1._id))
+      .then((infodoc) => {
+        chai.expect(infodoc).to.deep.nested.include({ 'transitions.registration.ok': true });
+      })
+      .then(() => utils.getDocs([ withPatient2._id, withClinic2._id, withClinicAndPatient1._id]))
+      .then(([ updWithPatient2, updWithClinic2, withClinicAndPatient ]) => {
+        // cleared schedules for the withPatient doc
+        chai.expect(updWithPatient2.scheduled_tasks).to.be.ok;
+        chai.expect(updWithPatient2.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithPatient2.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('cleared'));
+        chai.expect(updWithPatient2.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('cleared'));
+        chai.expect(updWithPatient2.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('cleared'));
 
-        chai.expect(updated[1].scheduled_tasks[2].type).to.equal('sch2');
-        chai.expect(updated[1].scheduled_tasks[2].group).to.equal(1);
-        chai.expect(updated[1].scheduled_tasks[2].state).to.equal('scheduled');
-        chai.expect(updated[1].scheduled_tasks[2].messages[0].message).to.equal('message4');
+        // cleared schedules for the withClinic doc
+        chai.expect(updWithClinic2.scheduled_tasks).to.be.ok;
+        chai.expect(updWithClinic2.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithClinic2.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('cleared'));
+        chai.expect(updWithClinic2.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('cleared'));
+        chai.expect(updWithClinic2.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('cleared'));
+
+        // withPatientAndClinic has schedules
+        chai.expect(withClinicAndPatient.scheduled_tasks).to.be.ok;
+        chai.expect(withClinicAndPatient.scheduled_tasks.length).to.equal(3);
+        chai.expect(withClinicAndPatient.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
+        chai.expect(withClinicAndPatient.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
+        chai.expect(withClinicAndPatient.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
+      })
+      .then(() => utils.saveDocs([withClinicAndPatient2]))
+      .then(() => sentinelUtils.waitForSentinel(withClinicAndPatient2._id))
+      .then(() => sentinelUtils.getInfoDoc(withClinicAndPatient2._id))
+      .then((infodoc) => {
+        chai.expect(infodoc).to.deep.nested.include({ 'transitions.registration.ok': true });
+      })
+      .then(() => utils.getDocs([
+        withClinicAndPatient2._id, // first, so we can use spread for the rest
+        withPatient1._id, withPatient2._id,
+        withClinic1._id, withClinic2._id,
+        withClinicAndPatient1._id,
+      ]))
+      .then(([updWithClinicAndPatient2, ...docsWithClearedTasks ]) => {
+        // withPatientAndClinic has schedules
+        chai.expect(updWithClinicAndPatient2.scheduled_tasks).to.be.ok;
+        chai.expect(updWithClinicAndPatient2.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithClinicAndPatient2.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
+        chai.expect(updWithClinicAndPatient2.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
+        chai.expect(updWithClinicAndPatient2.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
+
+        docsWithClearedTasks.forEach(doc => {
+          chai.expect(doc.scheduled_tasks).to.be.ok;
+          chai.expect(doc.scheduled_tasks.length).to.equal(3);
+          chai.expect(doc.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('cleared'));
+          chai.expect(doc.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('cleared'));
+          chai.expect(doc.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('cleared'));
+        });
       });
   });
 
