@@ -57,7 +57,7 @@ Documented here are two ways to run individual tests and have your IDE break on 
 #### Setting up Vscode for e2e debugging. 
 
 1. This assumes you have gone through the [development](https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md) setup guide. 
-1. Copy the vscode launch.json and tasks.json files from this [location](https://github.com/medic/medic-release-testing/tree/master/ide_config/vscode)
+1. Copy the vscode launch.json and tasks.json files from this [location](https://github.com/medic/medic-release-testing/tree/master/ide_config/vscode).
 1. Paste those files into a directory called .vscode within your cht-core repo. 
 1. Click the debug icon on the left tool bar.
 1. Select launch e2e.
@@ -65,7 +65,7 @@ Documented here are two ways to run individual tests and have your IDE break on 
 
 #### Debugging a single test by using the "grep" feature.
 
-1. Open launch.json
+1. Open launch.json.
 1. Update the grep argument with the name of your test to the args array.
       Note: if you have defined specs or suites that do not include the spec.js. It will not find the test to run.  
       EX: `["${workspaceRoot}/tests/conf.js","--grep=should show the correct privacy policy on login"]`
@@ -75,18 +75,18 @@ Documented here are two ways to run individual tests and have your IDE break on 
 
 ### IntelliJ Based
 
-1. Click the run menu across the top
-1. Click Edit Configurations
+1. Click the run menu across the top.
+1. Click Edit Configurations.
 1. Click the plus to add a configuration.
-1. Select Protractor
-1. Set the configuration file to the path of `<cht-core-repo>/tests/conf.js`
+1. Select Protractor.
+1. Set the configuration file to the path of `<cht-core-repo>/tests/conf.js`.
 1. Set Node Interpreter is set to your node install. 
-1. Set Protractor package is set to the `<cht-core-repo>/node_modules/protractor`
+1. Set Protractor package is set to the `<cht-core-repo>/node_modules/protractor`.
 1. Optionally set the Protractor options to `--capabilities.chromeOptions.args=start-maximized --jasmine.DEFAULT_TIMEOUT_INTERVAL=120000`.
 1. Select the radio button for Test.
-1. Enter the path to the Test file Ex: `<cht-core-repo>/tests/e2e/login/login.specs.js`
+1. Enter the path to the Test file Ex: `<cht-core-repo>/tests/e2e/login/login.specs.js`.
 1. Enter the test name. This is a bit of a chore. IntelliJ will automatically add the regex flags for begins(`^`) of line and end of line(`$`). Protractor presents the name for matching as the Describe description followed by the It description. To run the login test for should have a title you would need to put this as your matcher. `Login tests : should have a title`. An alternative would be to select Test File and run the entire file. You can add an `x` in front of `it` to disable the ones you do not need. EX: `xit('should login`)
-1. Click ok
+1. Click ok.
 1. Click the run configuration dropdown and select the protractor config. 
 1. In a terminal run `grunt e2e-deploy`   NOTE: This has to happen each time you run. 
 1. Click debug button in IntelliJ.
