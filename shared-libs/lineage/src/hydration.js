@@ -4,10 +4,6 @@ const utils = require('./utils');
 
 const deepCopy = obj => JSON.parse(JSON.stringify(obj));
 
-const getPatientId = (doc) => (doc.fields && (doc.fields.patient_id || doc.fields.patient_uuid)) || doc.patient_id;
-const getPlaceId = (doc) => (doc.fields && doc.fields.place_id) || doc.place_id;
-const isReport = (doc) => doc.type === 'data_record';
-
 const selfAndParents = function(self) {
   const parents = [];
   let current = self;
@@ -58,7 +54,7 @@ module.exports = function(Promise, DB) {
 
     // Parent hierarchy starts at the contact for data_records
     let currentParent;
-    if (isReport(doc)) {
+    if (utils.isReport(doc)) {
       currentParent = doc.contact = lineage.shift() || doc.contact;
     } else {
       // It's a contact
@@ -154,12 +150,12 @@ module.exports = function(Promise, DB) {
     const recordToPatientUuidMap = new Map();
 
     records.forEach(record => {
-      if (!isReport(record)) {
+      if (!utils.isReport(record)) {
         return;
       }
 
-      const patientId = getPatientId(record);
-      const placeId = getPlaceId(record);
+      const patientId = utils.getPatientId(record);
+      const placeId = utils.getPlaceId(record);
       recordToPatientUuidMap.set(record._id, patientId);
       recordToPlaceUuidMap.set(record._id, placeId);
 
@@ -189,12 +185,12 @@ module.exports = function(Promise, DB) {
   * @returns {Array} lineages.placeLineage
   */
   const fetchSubjectLineage = (record) => {
-    if (!isReport(record)) {
+    if (!utils.isReport(record)) {
       return Promise.resolve({ patientLineage: [], placeLineage: [] });
     }
 
-    const patientId = getPatientId(record);
-    const placeId = getPlaceId(record);
+    const patientId = utils.getPatientId(record);
+    const placeId = utils.getPlaceId(record);
 
     if (!patientId && !placeId) {
       return Promise.resolve({ patientLineage: [], placeLineage: [] });
@@ -334,7 +330,7 @@ module.exports = function(Promise, DB) {
     const ids = [];
     docs.forEach(function(doc) {
       let parent = doc.parent;
-      if (isReport(doc)) {
+      if (utils.isReport(doc)) {
         const contactId = utils.getId(doc.contact);
         if (!contactId) {
           return;
@@ -352,7 +348,7 @@ module.exports = function(Promise, DB) {
   const collectLeafContactIds = function(partiallyHydratedDocs) {
     const ids = [];
     partiallyHydratedDocs.forEach(function(doc) {
-      const startLineageFrom = isReport(doc) ? doc.contact : doc;
+      const startLineageFrom = utils.isReport(doc) ? doc.contact : doc;
       ids.push(...getContactIds(selfAndParents(startLineageFrom)));
     });
 
@@ -432,10 +428,11 @@ module.exports = function(Promise, DB) {
             });
           };
 
-          const findParentsFor = isReport(doc) ? doc.contact : doc;
+          const isReport = utils.isReport(doc);
+          const findParentsFor = isReport ? doc.contact : doc;
           const lineage = reconstructLineage(findParentsFor, knownDocs);
 
-          if (isReport(doc)) {
+          if (isReport) {
             lineage.unshift(doc);
           }
 
