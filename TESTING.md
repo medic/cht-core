@@ -41,7 +41,7 @@ EX: `describe('Users can login )`  `it(with valid credentials)`
 We are leveraging the [page object model](https://www.thoughtworks.com/insights/blog/using-page-objects-overcome-protractors-shortcomings) for structure. When identifying elements they should be added to a page object and not within a test file. Add functions that perform actions to the page within the page object. Keep expects outside of page objects. The tests should be self-documenting. 
 
 ### Adding identifiers
-In some cases adding a unique identifier to an element may be necessary. This could be a piece of data related to the element or a unique name. To do this the app code can be modified to add a `test-` attribute.  
+In some cases, adding a unique identifier to an element may be necessary. This could be a piece of data related to the element, or a unique name (which can be done by adding a `test-` attribute to the app code).
 
 Ex:  `attr.test-id="{{ msg.key }}" ` Will add a `test-id` attribute with the data from the app. 
 
