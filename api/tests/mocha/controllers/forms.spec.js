@@ -1,7 +1,9 @@
 const chai = require('chai');
 const sinon = require('sinon');
+const rewire = require('rewire');
+
 const db = require('../../../src/db');
-const controller = require('../../../src/controllers/forms');
+const controller = rewire('../../../src/controllers/forms');
 const serverUtils = require('../../../src/server-utils');
 
 const mockFormsInDb = (...docs) => {
@@ -151,24 +153,32 @@ describe('forms controller', () => {
     });
   });
 
-  // describe('validate', () => {
-  //   it('returns ok when validations passed', async () => {
-  //     const req = { body: '<xml></xml>' };
-  //     const json = sinon.stub(res, 'json');
-  //     await controller.validate(req, res);
-  //     chai.expect(json.callCount).to.equal(1);
-  //     chai.expect(json.args[0][0]).to.deep.equal({ok: true});
-  //   });
+  describe('validate', () => {
+    it('returns ok when validations passed', async () => {
+      const req = { body: '<xml></xml>' };
+      const json = sinon.stub(res, 'json');
+      await controller.__with__({
+        'generateXform': { generate: sinon.stub().resolves() }
+      })(async () => {
+        await controller.validate(req, res);
+        chai.expect(json.callCount).to.equal(1);
+        chai.expect(json.args[0][0]).to.deep.equal({ok: true});
+      });
+    });
 
-  //   it('returns error when validations failed', async () => {
-  //     const req = { body: '<xml a INVALID form<///xml>' };
-  //     const json = sinon.stub(res, 'json');
-  //     const status = sinon.stub(res, 'status').returns({ json: json });
-  //     await controller.validate(req, res);
-  //     chai.expect(json.callCount).to.equal(1);
-  //     chai.expect(json.args[0][0].error).to.include('Error transforming xml. xsltproc returned code');
-  //     chai.expect(status.callCount).to.equal(1);
-  //     chai.expect(status.args[0][0]).to.equal(400);
-  //   });
-  // });
+    it('returns error when validations failed', async () => {
+      const req = { body: '<xml a INVALID form<///xml>' };
+      const json = sinon.stub(res, 'json');
+      const status = sinon.stub(res, 'status').returns({ json: json });
+      await controller.__with__({
+        'generateXform': { generate: sinon.stub().rejects(new Error('Error transforming xml')) }
+      })(async () => {
+        await controller.validate(req, res);
+        chai.expect(json.callCount).to.equal(1);
+        chai.expect(json.args[0][0].error).to.include('Error transforming xml');
+        chai.expect(status.callCount).to.equal(1);
+        chai.expect(status.args[0][0]).to.equal(400);
+      });
+    });
+  });
 });
