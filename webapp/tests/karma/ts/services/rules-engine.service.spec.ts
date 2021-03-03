@@ -16,7 +16,6 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { RulesEngineCoreFactoryService, RulesEngineService } from '@mm-services/rules-engine.service';
 import { PipesService } from '@mm-services/pipes.service';
-import { wrapFunctionExpressionsInParens } from '@angular/compiler-cli/src/ngtsc/annotations/src/util';
 
 describe('RulesEngineService', () => {
   let service: RulesEngineService;
