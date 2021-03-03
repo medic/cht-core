@@ -34,7 +34,7 @@ describe('TasksComponent', () => {
     rulesEngineService = {
       isEnabled: sinon.stub().resolves(true),
       fetchTaskDocsForAllContacts: sinon.stub().resolves([]),
-      subscribeToChangesProcessed: sinon.stub(),
+      contactsMarkedAsDirty: sinon.stub(),
     };
 
     tourService = { startIfNeeded: sinon.stub() };
@@ -204,10 +204,10 @@ describe('TasksComponent', () => {
       getComponent();
     });
 
-    expect(rulesEngineService.subscribeToChangesProcessed.callCount).to.equal(1);
+    expect(rulesEngineService.contactsMarkedAsDirty.callCount).to.equal(1);
     expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.equal(1);
 
-    const callback = rulesEngineService.subscribeToChangesProcessed.args[0][0];
+    const callback = rulesEngineService.contactsMarkedAsDirty.args[0][0];
     callback();
     tick(1000); // the refresh tasks call is debounced for 1 second
 

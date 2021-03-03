@@ -79,9 +79,8 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.subscription.add(changesSubscription);
   }
 
-  private subscribeToRulesEngineChanges() {
-    const rulesEngineSubscription = this.rulesEngineService.subscribeToChangesProcessed(() => {
-      // Rules engine emits when it's finished marking contacts as dirty
+  private subscribeToRulesEngine() {
+    const rulesEngineSubscription = this.rulesEngineService.contactsMarkedAsDirty(() => {
       this.debouncedReload.cancel();
       return this.debouncedReload();
     });
@@ -92,7 +91,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.tasksActions.setSelectedTask(null);
     this.subscribeToStore();
     this.subscribeToChanges();
-    this.subscribeToRulesEngineChanges();
+    this.subscribeToRulesEngine();
 
     this.error = false;
     this.hasTasks = false;

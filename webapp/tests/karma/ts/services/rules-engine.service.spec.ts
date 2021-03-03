@@ -349,7 +349,7 @@ describe('RulesEngineService', () => {
       await service.isEnabled();
 
       const callback = sinon.stub();
-      const subscription = service.subscribeToChangesProcessed(callback);
+      const subscription = service.contactsMarkedAsDirty(callback);
 
       const change = changesService.subscribe.args[0][0];
       const doc = { _id: 'doc', type: 'data_record', form: 'theform', fields: { patient_id: '65479' } };

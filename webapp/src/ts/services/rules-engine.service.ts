@@ -397,7 +397,7 @@ export class RulesEngineService implements OnDestroy {
     });
   }
 
-  subscribeToChangesProcessed(callback) {
+  contactsMarkedAsDirty(callback) {
     return this.observable.subscribe(callback);
   }
 }
