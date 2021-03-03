@@ -1,5 +1,8 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
+const chai = require('chai');
+const chaiExclude = require('chai-exclude');
+chai.use(chaiExclude);
 const moment = require('moment');
 const utils = require('../../src/lib/utils');
 const db = require('../../src/db');
@@ -206,16 +209,11 @@ describe('due tasks', () => {
     const due = moment();
     const notDue = moment().add(7, 'days');
     const id = 'xyz';
-    const patientUuid = '123-456-789';
     const expectedPhone = '5556918';
     const translate = sinon
       .stub(utils, 'translate')
       .returns('Please visit {{patient_name}} asap');
     const getRegistrations = sinon.stub(utils, 'getRegistrations').resolves([]);
-    sinon.stub(utils, 'getContactUuid')
-      .withArgs('123').resolves(patientUuid)
-      .withArgs(undefined).resolves(undefined);
-    const fetchHydratedDoc = sinon.stub(schedule._lineage, 'fetchHydratedDoc').resolves({ name: 'jim' });
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
     const minified = {
@@ -246,6 +244,11 @@ describe('due tasks', () => {
     const hydrated = {
       fields: {
         patient_id: '123',
+      },
+      patient: {
+        _id: 'patient',
+        patient_id: '123',
+        name: 'jim',
       },
       contact: {
         _id: 'a',
@@ -295,11 +298,6 @@ describe('due tasks', () => {
       assert.equal(translate.callCount, 1);
       assert.equal(translate.args[0][0], 'visit-1');
       assert.equal(getRegistrations.callCount, 1);
-      assert.equal(utils.getContactUuid.callCount, 2);
-      assert.equal(utils.getContactUuid.args[0][0], '123');
-      assert.equal(utils.getContactUuid.args[1][0], undefined);
-      assert.equal(fetchHydratedDoc.callCount, 1);
-      assert.equal(fetchHydratedDoc.args[0][0], patientUuid);
       assert.equal(setTaskState.callCount, 1);
       const saved = saveDoc.firstCall.args[0];
       assert.equal(saved.scheduled_tasks.length, 2);
@@ -316,14 +314,9 @@ describe('due tasks', () => {
   it('does not generate messages if they are already generated', () => {
     const due = moment();
     const id = 'xyz';
-    const patientUuid = '123-456-789';
     const expectedPhone = '5556918';
     const expectedMessage = 'old message';
     const getRegistrations = sinon.stub(utils, 'getRegistrations').resolves([]);
-    sinon.stub(utils, 'getContactUuid')
-      .withArgs('123').resolves(patientUuid)
-      .withArgs(undefined).resolves(undefined);
-    const fetchHydratedDoc = sinon.stub(schedule._lineage, 'fetchHydratedDoc').resolves({ name: 'jim' });
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
     const minified = {
@@ -368,6 +361,11 @@ describe('due tasks', () => {
           },
         },
       },
+      patient: {
+        _id: '123-456-789',
+        patient_id: '123',
+        name: 'jim',
+      },
       scheduled_tasks: [
         {
           due: due.toISOString(),
@@ -398,11 +396,6 @@ describe('due tasks', () => {
       assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
       assert.equal(getRegistrations.callCount, 1);
-      assert.equal(utils.getContactUuid.callCount, 2);
-      assert.equal(utils.getContactUuid.args[0][0], '123');
-      assert.equal(utils.getContactUuid.args[1][0], undefined);
-      assert.equal(fetchHydratedDoc.callCount, 1);
-      assert.equal(fetchHydratedDoc.args[0][0], patientUuid);
       assert.equal(setTaskState.callCount, 1);
       const saved = saveDoc.firstCall.args[0];
       assert.equal(saved.scheduled_tasks.length, 1);
@@ -421,8 +414,6 @@ describe('due tasks', () => {
 
     sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
     sinon.stub(utils, 'getRegistrations').resolves([{ fields: { patient_id: '12345' } }]);
-    sinon.stub(utils, 'getContactUuid').resolves(null);
-    sinon.stub(schedule._lineage, 'fetchHydratedDoc');
     sinon.stub(utils, 'setTaskState');
 
     const minified = {
@@ -482,15 +473,234 @@ describe('due tasks', () => {
     return schedule.execute().then(() => {
       assert.equal(rpn.get.callCount, 1);
       assert.equal(db.medic.put.callCount, 0);
-
       assert.equal(utils.translate.callCount, 1);
       assert.equal(utils.translate.args[0][0], 'visit-1');
       assert.equal(utils.getRegistrations.callCount, 1);
-      assert.equal(utils.getContactUuid.callCount, 2);
-      assert.equal(utils.getContactUuid.args[0][0], '123');
-      assert.equal(utils.getContactUuid.args[1][0], undefined);
-      assert.equal(schedule._lineage.fetchHydratedDoc.callCount, 0);
       assert.equal(utils.setTaskState.callCount, 0);
+    });
+  });
+
+  it('should generate messages correctly for patient subjects', () => {
+    const due = moment();
+    const phone = '123456789';
+
+    sinon.stub(utils, 'translate').returns('Place {{place.name}} {{place.place_id}} {{fld}} must be visited');
+    sinon.stub(utils, 'getRegistrations').resolves([{ fields: { place_id: '999999', fld: 'lalala' } }]);
+    sinon.stub(utils, 'setTaskState');
+
+    const minified = {
+      _id: 'report_id',
+      type: 'data_record',
+      fields: {
+        place_id: '999999',
+      },
+      contact: {
+        _id: 'a',
+        parent: {
+          _id: 'b',
+        },
+      },
+      scheduled_tasks: [
+        {
+          due: due.toISOString(),
+          state: 'scheduled',
+          message_key: 'visit-1',
+          recipient: 'clinic',
+        }
+      ],
+    };
+    const hydrated = {
+      _id: 'report_id',
+      type: 'data_record',
+      fields: {
+        place_id: '999999',
+      },
+      place: {
+        _id: 'place_uuid',
+        place_id: '999999',
+        name: 'joes place',
+      },
+      contact: {
+        _id: 'a',
+        type: 'person',
+        parent: {
+          _id: 'b',
+          type: 'clinic',
+          contact: {
+            _id: 'c',
+            type: 'person',
+            phone: phone,
+          },
+        },
+      },
+      scheduled_tasks: [
+        {
+          due: due.toISOString(),
+          state: 'scheduled',
+          message_key: 'visit-1',
+          recipient: 'clinic',
+        }
+      ],
+    };
+
+    sinon.stub(rpn, 'get').resolves({ rows: [{ id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }]});
+    sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
+    sinon.stub(db.medic, 'put').resolves();
+
+    return schedule.execute().then(() => {
+      assert.equal(rpn.get.callCount, 1);
+      assert.equal(utils.translate.callCount, 1);
+      assert.equal(utils.translate.args[0][0], 'visit-1');
+      assert.equal(utils.getRegistrations.callCount, 1);
+      assert.deepEqual(utils.getRegistrations.args[0], [{ id: '999999' }]);
+      assert.equal(utils.setTaskState.callCount, 1);
+      assert.equal(db.medic.put.callCount, 1);
+      assert.deepEqualExcludingEvery(db.medic.put.args[0], [
+        {
+          _id: 'report_id',
+          type: 'data_record',
+          fields: {
+            place_id: '999999',
+          },
+          contact: {
+            _id: 'a',
+            parent: {
+              _id: 'b',
+            },
+          },
+          scheduled_tasks: [
+            {
+              due: due.toISOString(),
+              state: 'scheduled',
+              message_key: 'visit-1',
+              recipient: 'clinic',
+              messages: [{
+                message: 'Place joes place 999999 lalala must be visited',
+                to: phone,
+
+              }]
+            }
+          ],
+        }
+      ], ['uuid']);
+    });
+  });
+
+  it('should pass place registrations to message-utils when both place and patient are present', () => {
+    const due = moment();
+    const phone = '123456789';
+
+    sinon.stub(utils, 'translate').returns('Please visit {{patient_name}}, living in {{place.name}} {{fld}} asap');
+    sinon.stub(utils, 'getRegistrations')
+      .onCall(0).resolves([{ fields: { patient_id: '12345' } }])
+      .onCall(1).resolves([{ fields: { place_id: '999999', fld: 'lalala' } }]);
+    sinon.stub(utils, 'setTaskState');
+
+    const minified = {
+      _id: 'report_id',
+      type: 'data_record',
+      fields: {
+        patient_id: '12345',
+        place_id: '999999',
+      },
+      contact: {
+        _id: 'a',
+        parent: {
+          _id: 'b',
+        },
+      },
+      scheduled_tasks: [
+        {
+          due: due.toISOString(),
+          state: 'scheduled',
+          message_key: 'visit-1',
+          recipient: 'clinic',
+        }
+      ],
+    };
+    const hydrated = {
+      _id: 'report_id',
+      type: 'data_record',
+      fields: {
+        patient_id: '12345',
+        place_id: '999999',
+      },
+      patient: {
+        _id: 'patient_uuid',
+        patient_id: '12345',
+        name: 'joe',
+      },
+      place: {
+        _id: 'place_uuid',
+        place_id: '999999',
+        name: 'joes place',
+      },
+      contact: {
+        _id: 'a',
+        type: 'person',
+        parent: {
+          _id: 'b',
+          type: 'clinic',
+          contact: {
+            _id: 'c',
+            type: 'person',
+            phone: phone,
+          },
+        },
+      },
+      scheduled_tasks: [
+        {
+          due: due.toISOString(),
+          state: 'scheduled',
+          message_key: 'visit-1',
+          recipient: 'clinic',
+        }
+      ],
+    };
+
+    sinon.stub(rpn, 'get').resolves({ rows: [
+      { id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified },
+    ]});
+    sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
+    sinon.stub(db.medic, 'put').resolves();
+
+    return schedule.execute().then(() => {
+      assert.equal(rpn.get.callCount, 1);
+      assert.equal(utils.translate.callCount, 1);
+      assert.equal(utils.translate.args[0][0], 'visit-1');
+      assert.equal(utils.getRegistrations.callCount, 2);
+      assert.deepEqual(utils.getRegistrations.args, [ [{ id: '12345' }], [{ id: '999999' }] ]);
+      assert.equal(utils.setTaskState.callCount, 1);
+      assert.equal(db.medic.put.callCount, 1);
+      assert.deepEqualExcludingEvery(db.medic.put.args[0], [
+        {
+          _id: 'report_id',
+          type: 'data_record',
+          fields: {
+            patient_id: '12345',
+            place_id: '999999',
+          },
+          contact: {
+            _id: 'a',
+            parent: {
+              _id: 'b',
+            },
+          },
+          scheduled_tasks: [
+            {
+              due: due.toISOString(),
+              state: 'scheduled',
+              message_key: 'visit-1',
+              recipient: 'clinic',
+              messages: [{
+                message: 'Please visit joe, living in joes place lalala asap',
+                to: phone,
+
+              }]
+            }
+          ],
+        }
+      ], ['uuid']);
     });
   });
 
@@ -500,8 +710,6 @@ describe('due tasks', () => {
 
     sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
     sinon.stub(utils, 'getRegistrations').resolves([{ fields: { patient_id: '12345' } }]);
-    sinon.stub(utils, 'getContactUuid').resolves(null);
-    sinon.stub(schedule._lineage, 'fetchHydratedDoc');
     sinon.stub(utils, 'setTaskState').callsFake((task, state) => task.state = state);
 
     const minified = {
@@ -575,10 +783,6 @@ describe('due tasks', () => {
       assert.equal(utils.translate.callCount, 1);
       assert.equal(utils.translate.args[0][0], 'visit-1');
       assert.equal(utils.getRegistrations.callCount, 1);
-      assert.equal(utils.getContactUuid.callCount, 2);
-      assert.equal(utils.getContactUuid.args[0][0], '123');
-      assert.equal(utils.getContactUuid.args[1][0], undefined);
-      assert.equal(schedule._lineage.fetchHydratedDoc.callCount, 0);
       assert.equal(utils.setTaskState.callCount, 1);
       assert.deepEqual(utils.setTaskState.args[0], [
         {
@@ -609,14 +813,9 @@ describe('due tasks', () => {
     const due = moment();
     const notDue = moment().add(7, 'days');
     const id = 'xyz';
-    const patientUuid = '123-456-789';
     const expectedPhone = '5556918';
     const translate = sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
     const getRegistrations = sinon.stub(utils, 'getRegistrations').resolves([]);
-    sinon.stub(utils, 'getContactUuid')
-      .withArgs('123').resolves(patientUuid)
-      .withArgs(undefined).resolves(undefined);
-    const fetchHydratedDoc = sinon.stub(schedule._lineage, 'fetchHydratedDoc').resolves({ name: 'jim' });
     const setTaskState = sinon.spy(utils, 'setTaskState');
 
     const minified = {
@@ -670,6 +869,11 @@ describe('due tasks', () => {
           },
         },
       },
+      patient: {
+        _id: '123-456-789',
+        patient_id: '123',
+        name: 'jim',
+      },
       scheduled_tasks: [
         {
           due: null,
@@ -720,11 +924,6 @@ describe('due tasks', () => {
       assert.equal(translate.args[0][0], 'visit-1');
       assert.equal(translate.args[1][0], 'visit-1');
       assert.equal(getRegistrations.callCount, 1);
-      assert.equal(utils.getContactUuid.callCount, 2);
-      assert.equal(utils.getContactUuid.args[0][0], '123');
-      assert.equal(utils.getContactUuid.args[1][0], undefined);
-      assert.equal(fetchHydratedDoc.callCount, 1);
-      assert.equal(fetchHydratedDoc.args[0][0], patientUuid);
       assert.equal(setTaskState.callCount, 2);
       const saved = saveDoc.firstCall.args[0];
       assert.equal(saved.scheduled_tasks.length, 3);

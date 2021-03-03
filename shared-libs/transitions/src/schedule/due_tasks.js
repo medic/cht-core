@@ -11,18 +11,6 @@ const messageUtils = require('@medic/message-utils');
 
 const BATCH_SIZE = 1000;
 
-const getContactByShortcode = (shortcode) => {
-  return utils
-    .getContactUuid(shortcode)
-    .then(uuid => {
-      if (!uuid) {
-        return;
-      }
-
-      return lineage.fetchHydratedDoc(uuid);
-    });
-};
-
 const getTemplateContext = (doc) => {
   const patientShortcodeId = doc.fields && doc.fields.patient_id;
   const placeShortcodeId = doc.fields && doc.fields.place_id;
@@ -34,14 +22,13 @@ const getTemplateContext = (doc) => {
     .all([
       patientShortcodeId && utils.getRegistrations({ id: patientShortcodeId }),
       placeShortcodeId && utils.getRegistrations({ id: placeShortcodeId }),
-      getContactByShortcode(patientShortcodeId),
-      getContactByShortcode(placeShortcodeId),
     ])
-    .then(([ patientRegistrations, placeRegistrations, patient, place ]) => ({
+    .then(([ patientRegistrations, placeRegistrations]) => ({
       registrations: patientRegistrations,
       placeRegistrations,
-      patient,
-      place,
+      // the doc is already hydrated
+      patient: doc.patient,
+      place: doc.place,
     }));
 };
 
