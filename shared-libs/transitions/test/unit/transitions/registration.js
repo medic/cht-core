@@ -1714,7 +1714,7 @@ describe('registration', () => {
           reported_date: 53,
           from: '+555123',
           fields: { patient_id: '05649' },
-          patient: { _id: 'patient', patient_id: '05649' }
+          patient: { _id: 'patient', patient_id: '05649', type: 'person' }
         },
       };
       sinon.stub(db.medic, 'post').resolves();
@@ -1734,7 +1734,6 @@ describe('registration', () => {
         .stub(utils, 'getRegistrations')
         .resolves([{ _id: 'xyz' }]);
       sinon.stub(schedules, 'getScheduleConfig').returns('someschedule');
-      sinon.stub(utils, 'getContactUuid').resolves('uuid');
       const assignSchedule = sinon
         .stub(schedules, 'assignSchedule')
         .returns(true);
@@ -1752,8 +1751,6 @@ describe('registration', () => {
         ]);
         getRegistrations.callCount.should.equal(1);
         getRegistrations.args[0].should.deep.equal([{ id: '05649' }]);
-        utils.getContactUuid.callCount.should.equal(1);
-        utils.getContactUuid.args[0].should.deep.equal(['05649']);
       });
     });
 
@@ -1803,9 +1800,6 @@ describe('registration', () => {
 
         utils.getRegistrations.callCount.should.equal(1);
         utils.getRegistrations.args[0].should.deep.equal([{ id: '79999' }]);
-
-        utils.getContactUuid.callCount.should.equal(1);
-        utils.getContactUuid.args[0].should.deep.equal(['79999']);
       });
     });
 
@@ -2709,30 +2703,32 @@ describe('registration', () => {
       sinon.stub(validation, 'validate').callsArg(2);
       doc = { form: 'R', fields: { patient_id: '56987' } };
 
-      sinon.stub(utils, 'getContactUuid').resolves(undefined);
       sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
 
       return transition.onMatch({ doc }).then(result => {
         result.should.equal(true);
-        utils.getContactUuid.callCount.should.equal(1);
-        utils.getContactUuid.args[0].should.deep.equal(['56987']);
         fireConfiguredTriggers.callCount.should.equal(0);
         transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
         transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
       });
     });
 
+    it('should fail if patient exists but its not a person', () => {
+      sinon.stub(validation, 'validate').callsArg(2);
+      doc = {
+        form: 'R',
+        fields: { patient_id: '56987' },
+
+      };
+    });
+
     it('should fail if subject does not exist, with place_id', () => {
       sinon.stub(validation, 'validate').callsArg(2);
       doc = { form: 'R', fields: { place_id: '98754' } };
-
-      sinon.stub(utils, 'getContactUuid').resolves(undefined);
       sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
 
       return transition.onMatch({ doc }).then(result => {
         result.should.equal(true);
-        utils.getContactUuid.callCount.should.equal(1);
-        utils.getContactUuid.args[0].should.deep.equal(['98754']);
         fireConfiguredTriggers.callCount.should.equal(0);
         transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
         transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
@@ -2742,14 +2738,10 @@ describe('registration', () => {
     it('should fail if subject does not exist, with place_id and patient_id', () => {
       sinon.stub(validation, 'validate').callsArg(2);
       doc = { form: 'R', fields: { place_id: 'the_place_id', patient_id: 'the_patient_id' } };
-
-      sinon.stub(utils, 'getContactUuid').resolves(undefined);
       sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
 
       return transition.onMatch({ doc }).then(result => {
         result.should.equal(true);
-        utils.getContactUuid.callCount.should.equal(1);
-        utils.getContactUuid.args[0].should.deep.equal(['the_patient_id']);
         fireConfiguredTriggers.callCount.should.equal(0);
         transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
         transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
@@ -2758,15 +2750,16 @@ describe('registration', () => {
 
     it('should run triggers when subject exists', () => {
       sinon.stub(validation, 'validate').callsArg(2);
-      doc = { form: 'R', fields: { place_id: 'the_place_id', patient_id: 'the_patient_id' } };
+      doc = {
+        form: 'R',
+        fields: { patient_id: 'the_patient_id' },
+        patient: { patient_id: 'the_patient_id', type: 'person', _id: 'some uuid' }
+      };
 
-      sinon.stub(utils, 'getContactUuid').resolves('some uuid');
       sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
 
       return transition.onMatch({ doc }).then(result => {
         result.should.equal(true);
-        utils.getContactUuid.callCount.should.equal(1);
-        utils.getContactUuid.args[0].should.deep.equal(['the_patient_id']);
         fireConfiguredTriggers.callCount.should.equal(1);
         fireConfiguredTriggers.args[0].should.deep.equal([registrationConfig, doc]);
         transitionUtils.addRegistrationNotFoundError.callCount.should.equal(0);

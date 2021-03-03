@@ -262,7 +262,7 @@ describe('functional schedules', () => {
       from: contact.phone,
       contact: contact,
       fields: { patient_id: '98765' },
-      patient: { parent: { contact: { phone: '+5551596' } } }
+      patient: { parent: { contact: { phone: '+5551596' } }, type: 'person' }
     };
 
     return transition.onMatch({ doc: doc }).then(complete => {

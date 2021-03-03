@@ -559,6 +559,20 @@ const addPlace = (options) => {
     });
 };
 
+// todo: should I just validate one subject or both?
+const hasValidSubject = (doc, patientId, placeId) => {
+  // already hydrated
+  if (patientId && !doc.patient && !contactTypesUtils.isPerson(config.getAll(), doc.patient)) {
+    return false;
+  }
+
+  if (placeId && !doc.place && !contactTypesUtils.isPlace(config.getAll(), doc.place)) {
+    return false;
+  }
+
+  return true;
+};
+
 module.exports = {
   name: NAME,
   init: () => {
@@ -671,15 +685,12 @@ module.exports = {
 
         // We're attaching this registration to an existing contact, let's
         // make sure it's valid
-        // todo should we explicitly require all subjects exist?
-        return utils.getContactUuid(patientId || placeId).then(subjectUuid => {
-          if (!subjectUuid) {
-            transitionUtils.addRegistrationNotFoundError(doc, registrationConfig);
-            return true;
-          }
+        if (!hasValidSubject(doc, patientId, placeId)) {
+          transitionUtils.addRegistrationNotFoundError(doc, registrationConfig);
+          return true;
+        }
 
-          return fireConfiguredTriggers(registrationConfig, doc);
-        });
+        return fireConfiguredTriggers(registrationConfig, doc);
       });
   },
 };
