@@ -178,7 +178,7 @@ describe('registration', () => {
       });
   });
 
-  it('should error if invalid or if patient not found', () => {
+  it('should error if invalid or if patient or place not found', () => {
     const settings = {
       transitions: { registration: true },
       registrations: [{
@@ -243,17 +243,33 @@ describe('registration', () => {
       }
     };
 
+    const doc3 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+444999',
+      fields: {
+        place_id: 'non_existent',
+        count: 22
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => utils.saveDocs([ doc1, doc2 ]))
-      .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
-      .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
+      .then(() => utils.saveDocs([ doc1, doc2, doc3 ]))
+      .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id ]))
+      .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id ]))
       .then(infos => {
         infos.forEach(info => {
           chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
-      .then(() => utils.getDocs([doc1._id, doc2._id]))
+      .then(() => utils.getDocs([doc1._id, doc2._id, doc3._id]))
       .then(updated => {
         chai.expect(updated[0].tasks).to.be.ok;
         chai.expect(updated[0].tasks.length).to.equal(1);
@@ -276,6 +292,149 @@ describe('registration', () => {
         chai.expect(updated[1].errors).to.be.ok;
         chai.expect(updated[1].errors.length).to.equal(1);
         chai.expect(updated[1].errors[0].code).to.equal('registration_not_found');
+
+        chai.expect(updated[2].tasks).to.be.ok;
+        chai.expect(updated[2].tasks.length).to.equal(1);
+        chai.expect(updated[2].tasks[0].messages[0]).to.include({
+          message: 'Patient not found',
+          to: '+444999',
+        });
+
+        chai.expect(updated[2].errors).to.be.ok;
+        chai.expect(updated[2].errors.length).to.equal(1);
+        chai.expect(updated[2].errors[0].code).to.equal('registration_not_found');
+      });
+  });
+
+  it('should fail if subject is not of correct type', () => {
+    const settings = {
+      transitions: { registration: true },
+      registrations: [{
+        form: 'FORM-A',
+        events: [],
+        messages: [{
+          recipient: 'reporting_unit',
+          event_type: 'report_accepted',
+          message: [{
+            locale: 'en',
+            content: 'Patient {{patient_name}} ({{patient_id}}) added to {{clinic.name}}'
+          }],
+        }, {
+          event_type: 'registration_not_found',
+          message: [{
+            locale: 'en',
+            content: 'Subject not found or invalid'
+          }],
+        }],
+      }],
+      forms: { 'FORM-A': { }}
+    };
+
+    const doc1 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM-A',
+      from: '+444999',
+      fields: {
+        patient_id: 'the_clinic', // place shortcode
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    const doc2 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM-A',
+      from: '+444999',
+      fields: {
+        place_id: 'patient', // this is a person
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    const doc3 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM-A',
+      from: '+444999',
+      fields: {
+        place_id: 'the_middle_man', // this is a person
+        patient_id: 'the_health_center', // this is a place
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    const doc4 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM-A',
+      from: '+444999',
+      fields: {
+        place_id: 'the_clinic', // this is a place
+        patient_id: 'the_health_center', // this is a place
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    const doc5 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM-A',
+      from: '+444999',
+      fields: {
+        place_id: 'the_middle_man', // this is a person
+        patient_id: 'patient', // this is a person
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    const allDocs = [doc1, doc2, doc3, doc4, doc5];
+    const allIds = allDocs.map(doc => doc._id);
+
+    return utils
+      .updateSettings(settings, 'sentinel')
+      .then(() => utils.saveDocs(allDocs))
+      .then(() => sentinelUtils.waitForSentinel(allIds))
+      .then(() => sentinelUtils.getInfoDocs(allIds))
+      .then(infos => {
+        infos.forEach((info, idx) => {
+          const errorMsg = `failed for doc${idx+1}`;
+          chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true }, errorMsg);
+        });
+      })
+      .then(() => utils.getDocs(allIds))
+      .then(updated => {
+        updated.forEach((doc, idx) => {
+          const errorMsg = `failed for doc${idx+1}`;
+          chai.expect(doc.tasks.length).to.equal(1, errorMsg);
+          chai.expect(doc.tasks[0].messages[0]).to.include(
+            { message: 'Subject not found or invalid', to: '+444999' },
+            errorMsg
+          );
+
+          chai.expect(doc.errors.length).to.equal(1, errorMsg);
+          chai.expect(doc.errors[0].code).to.equal('registration_not_found', errorMsg);
+        });
       });
   });
 
@@ -340,7 +499,7 @@ describe('registration', () => {
       form: 'FORM-A',
       from: '+444999',
       fields: {
-        patient_id: 'person',
+        patient_id: 'another_person',
         patient_name: 'Mike',
       },
       reported_date: moment().valueOf(),
@@ -406,7 +565,7 @@ describe('registration', () => {
         newPatientId = updated[0].patient_id;
 
         chai.expect(updated[1].patient_id).to.equal(undefined);
-        chai.expect(updated[1].fields.patient_id).to.equal('person');
+        chai.expect(updated[1].fields.patient_id).to.equal('another_person');
         chai.expect(updated[1].errors).to.be.ok;
         chai.expect(updated[1].errors.length).to.equal(1);
         chai.expect(updated[1].errors[0].code).to.equal('registration_not_found');

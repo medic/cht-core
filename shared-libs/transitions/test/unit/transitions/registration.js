@@ -9,6 +9,7 @@ const config = require('../../../src/config');
 const transitionUtils = require('../../../src/transitions/utils');
 const acceptPatientReports = require('../../../src/transitions/accept_patient_reports');
 const validation = require('../../../src/lib/validation');
+const contactTypeUtils = require('@medic/contact-types-utils');
 
 let transition = rewire('../../../src/transitions/registration');
 let settings;
@@ -1762,7 +1763,7 @@ describe('registration', () => {
           reported_date: 53,
           from: '+555123',
           fields: { place_id: '79999' },
-          place: { _id: 'place_id', place_id: '79999' },
+          place: { _id: 'place_id', place_id: '79999', type: 'clinic' },
         },
       };
       sinon.stub(db.medic, 'post').resolves();
@@ -1782,8 +1783,8 @@ describe('registration', () => {
       sinon.stub(utils, 'getRegistrations').resolves([{ _id: 'place_registration' }]);
 
       sinon.stub(schedules, 'getScheduleConfig').returns('myschedule');
-      sinon.stub(utils, 'getContactUuid').resolves('uuid');
       sinon.stub(schedules, 'assignSchedule').returns(true);
+      sinon.stub(contactTypeUtils, 'isPlace').returns(true);
 
       return transition.onMatch(change).then(() => {
         schedules.assignSchedule.callCount.should.equal(1);
@@ -1834,8 +1835,10 @@ describe('registration', () => {
         .onCall(1).resolves([{ _id: 'place_registration' }]);
 
       sinon.stub(schedules, 'getScheduleConfig').returns('myschedule');
-      sinon.stub(utils, 'getContactUuid').resolves('uuid');
       sinon.stub(schedules, 'assignSchedule').returns(true);
+
+      sinon.stub(contactTypeUtils, 'isPerson').returns(true);
+      sinon.stub(contactTypeUtils, 'isPlace').returns(true);
 
       return transition.onMatch(change).then(() => {
         schedules.assignSchedule.callCount.should.equal(1);
@@ -2718,8 +2721,23 @@ describe('registration', () => {
       doc = {
         form: 'R',
         fields: { patient_id: '56987' },
-
+        patient: {
+          _id: 'clinic',
+          place_id: '56987',
+          type: 'clinic',
+        }
       };
+      sinon.stub(contactTypeUtils, 'isPerson').returns(false);
+      sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
+
+      return transition.onMatch({ doc }).then(result => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(0);
+        transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
+        transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
+        contactTypeUtils.isPerson.callCount.should.equal(1);
+        contactTypeUtils.isPerson.args[0].should.deep.equal([{}, { _id: 'clinic', place_id: '56987', type: 'clinic' }]);
+      });
     });
 
     it('should fail if subject does not exist, with place_id', () => {
@@ -2735,6 +2753,30 @@ describe('registration', () => {
       });
     });
 
+    it('should fail if place exists but its not a place', () => {
+      sinon.stub(validation, 'validate').callsArg(2);
+      doc = {
+        form: 'R',
+        fields: { place_id: '56987' },
+        place: {
+          _id: 'person',
+          patient_id: '56987',
+          type: 'person',
+        }
+      };
+      sinon.stub(contactTypeUtils, 'isPlace').returns(false);
+      sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
+
+      return transition.onMatch({ doc }).then(result => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(0);
+        transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
+        transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
+        contactTypeUtils.isPlace.callCount.should.equal(1);
+        contactTypeUtils.isPlace.args[0].should.deep.equal([{}, {_id: 'person', patient_id: '56987', type: 'person' }]);
+      });
+    });
+
     it('should fail if subject does not exist, with place_id and patient_id', () => {
       sinon.stub(validation, 'validate').callsArg(2);
       doc = { form: 'R', fields: { place_id: 'the_place_id', patient_id: 'the_patient_id' } };
@@ -2745,6 +2787,109 @@ describe('registration', () => {
         fireConfiguredTriggers.callCount.should.equal(0);
         transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
         transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
+      });
+    });
+
+    it('should fail if place and patient exist, but are switched', () => {
+      sinon.stub(validation, 'validate').callsArg(2);
+      doc = {
+        form: 'R',
+        fields: { place_id: '56987', patient_id: '69874' },
+        place: {
+          _id: 'person',
+          patient_id: '56987',
+          type: 'person',
+        },
+        patient: {
+          _id: 'place',
+          patient_id: '69874',
+          type: 'clinic',
+        },
+      };
+
+      sinon.stub(contactTypeUtils, 'isPerson').returns(false);
+      sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
+
+      return transition.onMatch({ doc }).then(result => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(0);
+        transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
+        transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
+        contactTypeUtils.isPerson.callCount.should.equal(1);
+        contactTypeUtils.isPerson.args[0].should.deep.equal([
+          {},
+          { _id: 'place', patient_id: '69874', type: 'clinic' }
+        ]);
+      });
+    });
+
+    it('should fail if place and patient exist, place is a place but patient is not a person', () => {
+      sinon.stub(validation, 'validate').callsArg(2);
+      doc = {
+        form: 'R',
+        fields: { place_id: '56987', patient_id: '69874' },
+        place: {
+          _id: 'place',
+          place_id: '56987',
+          type: 'some_place',
+        },
+        patient: {
+          _id: 'place',
+          place_id: '69874',
+          type: 'clinic',
+        },
+      };
+
+      sinon.stub(contactTypeUtils, 'isPerson').returns(false);
+      sinon.stub(contactTypeUtils, 'isPlace').returns(true);
+      sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
+
+      return transition.onMatch({ doc }).then(result => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(0);
+        transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
+        transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
+        contactTypeUtils.isPerson.callCount.should.equal(1);
+        contactTypeUtils.isPerson.args[0].should.deep.equal([{}, { _id: 'place', place_id: '69874', type: 'clinic' }]);
+      });
+    });
+
+    it('should fail if place and patient exist, patient is a person but place is not a place', () => {
+      sinon.stub(validation, 'validate').callsArg(2);
+      doc = {
+        form: 'R',
+        fields: { place_id: '56987', patient_id: '69874' },
+        place: {
+          _id: 'person',
+          patient_id: '56987',
+          type: 'person',
+        },
+        patient: {
+          _id: 'patient',
+          patient_id: '69874',
+          type: 'person',
+        },
+      };
+
+      sinon.stub(contactTypeUtils, 'isPerson').returns(true);
+      sinon.stub(contactTypeUtils, 'isPlace').returns(false);
+      sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
+
+      return transition.onMatch({ doc }).then(result => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(0);
+        transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
+        transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
+        contactTypeUtils.isPerson.callCount.should.equal(1);
+        contactTypeUtils.isPerson.args[0].should.deep.equal([
+          {},
+          { _id: 'patient', patient_id: '69874', type: 'person' }
+        ]);
+        contactTypeUtils.isPlace.callCount.should.equal(1);
+        contactTypeUtils.isPlace.args[0].should.deep.equal([
+          {},
+          { _id: 'person', patient_id: '56987', type: 'person' }
+        ]);
       });
     });
 

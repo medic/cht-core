@@ -559,14 +559,13 @@ const addPlace = (options) => {
     });
 };
 
-// todo: should I just validate one subject or both?
 const hasValidSubject = (doc, patientId, placeId) => {
-  // already hydrated
-  if (patientId && !doc.patient && !contactTypesUtils.isPerson(config.getAll(), doc.patient)) {
+  // doc is already hydrated.
+  if (patientId && (!doc.patient || (doc.patient && !contactTypesUtils.isPerson(config.getAll(), doc.patient)))) {
     return false;
   }
 
-  if (placeId && !doc.place && !contactTypesUtils.isPlace(config.getAll(), doc.place)) {
+  if (placeId && (!doc.place || (doc.place && !contactTypesUtils.isPlace(config.getAll(), doc.place)))) {
     return false;
   }
 

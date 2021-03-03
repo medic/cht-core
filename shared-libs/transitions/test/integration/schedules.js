@@ -5,6 +5,7 @@ const utils = require('../../src/lib/utils');
 const transition = require('../../src/transitions/registration');
 const schedules = require('../../src/lib/schedules');
 const config = require('../../src/config');
+const contactTypeUtils = require('@medic/contact-types-utils');
 
 const contact = {
   phone: '+1234',
@@ -328,7 +329,8 @@ describe('functional schedules', () => {
       foo: 'baz',
       fields: { patient_id: '123' },
       patient: {
-        _id: 'uuid'
+        _id: 'uuid',
+        type: 'person',
       }
     };
 
@@ -455,7 +457,7 @@ describe('functional schedules', () => {
       }]
     });
 
-    const patient = { muted: true, parent: { contact: { phone: '+5551596' } } };
+    const patient = { muted: true, parent: { contact: { phone: '+5551596' } }, type: 'person' };
     const doc = {
       reported_date: moment().toISOString(),
       form: 'PATR',
@@ -512,7 +514,7 @@ describe('functional schedules', () => {
       }]
     });
 
-    const patient = { muted: false, parent: { contact: { phone: '+5551596' } } };
+    const patient = { muted: false, parent: { contact: { phone: '+5551596' } }, type: 'person' };
     const doc = {
       reported_date: moment().toISOString(),
       form: 'PATR',
@@ -569,7 +571,7 @@ describe('functional schedules', () => {
       }]
     });
 
-    const place = { muted: true, parent: { contact: { phone: '+5551596' } } };
+    const place = { muted: true, parent: { contact: { phone: '+5551596' } }, type: 'clinic' };
     const doc = {
       reported_date: moment().toISOString(),
       form: 'PATR',
@@ -578,7 +580,7 @@ describe('functional schedules', () => {
       fields: { place_id: '98765' },
       place: place,
     };
-    sinon.stub(utils, 'getContactUuid').resolves('uuid');
+    sinon.stub(contactTypeUtils, 'isPlace').returns(true);
 
     return transition
       .onMatch({ doc: doc })
@@ -627,7 +629,7 @@ describe('functional schedules', () => {
       }]
     });
 
-    const place = { muted: false, parent: { contact: { phone: '+5551596' } } };
+    const place = { muted: false, parent: { contact: { phone: '+5551596' } }, type: 'clinic' };
     const doc = {
       reported_date: moment().toISOString(),
       form: 'PATR',
@@ -636,7 +638,7 @@ describe('functional schedules', () => {
       fields: { place_id: '98765' },
       place: place,
     };
-    sinon.stub(utils, 'getContactUuid').resolves('uuid');
+    sinon.stub(contactTypeUtils, 'isPlace').returns(true);
 
     return transition
       .onMatch({ doc: doc })
