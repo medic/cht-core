@@ -79,10 +79,20 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.subscription.add(changesSubscription);
   }
 
+  private subscribeToRulesEngineChanges() {
+    const rulesEngineSubscription = this.rulesEngineService.subscribeToChangesProcessed(() => {
+      // Rules engine emits when it's finished marking contacts as dirty
+      this.debouncedReload.cancel();
+      return this.debouncedReload();
+    });
+    this.subscription.add(rulesEngineSubscription);
+  }
+
   ngOnInit() {
     this.tasksActions.setSelectedTask(null);
     this.subscribeToStore();
     this.subscribeToChanges();
+    this.subscribeToRulesEngineChanges();
 
     this.error = false;
     this.hasTasks = false;
