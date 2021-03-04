@@ -29,7 +29,7 @@ describe('Reports Filters Component', () => {
   let searchFiltersService;
 
   beforeEach(async(() => {
-    searchFiltersService = { init: sinon.stub() };
+    searchFiltersService = { init: sinon.stub(), destroy: sinon.stub() };
     return TestBed
       .configureTestingModule({
         imports: [
