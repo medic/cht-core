@@ -50,10 +50,12 @@ const contacts = [
   }
 ];
 
+const getIds = docs => docs.map(doc => doc._id);
+
 describe('accept_patient_reports', () => {
-  beforeAll(done => utils.saveDocs(contacts).then(done));
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
+  beforeAll(() => utils.saveDocs(contacts));
+  afterAll(() => utils.revertDb());
+  afterEach(() => utils.revertDb(getIds(contacts), true));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
@@ -142,6 +144,19 @@ describe('accept_patient_reports', () => {
         },
         {
           form: 'FORMPLACE',
+          validations: {
+            list: [
+              {
+                property: 'place_id',
+                rule: 'lenMin(5) && lenMax(10)',
+                message: [{
+                  locale: 'en',
+                  content: 'Place id incorrect'
+                }],
+              },
+            ],
+            join_responses: false
+          },
           messages: [{
             event_type: 'registration_not_found',
             message: [{
@@ -154,7 +169,7 @@ describe('accept_patient_reports', () => {
       forms: { FORM: { }, FORMPLACE: { } },
     };
 
-    const doc1 = {
+    const withUnknownPatient = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -169,7 +184,7 @@ describe('accept_patient_reports', () => {
       },
     };
 
-    const doc2 = {
+    const withInvalidPatientId = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -184,7 +199,7 @@ describe('accept_patient_reports', () => {
       },
     };
 
-    const doc3 = {
+    const withUnknownPlace = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORMPLACE',
@@ -199,55 +214,67 @@ describe('accept_patient_reports', () => {
       },
     };
 
+    const withInvalidPlaceId = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORMPLACE',
+      from: '+phone',
+      fields: {
+        place_id: 'this will not match the validation rule'
+      },
+      reported_date: new Date().getTime(),
+      contact: {
+        _id: 'person',
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      },
+    };
+
+    const docs = [withUnknownPatient, withInvalidPatientId, withUnknownPlace, withInvalidPlaceId];
+    const ids = getIds(docs);
+
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => utils.saveDocs([doc1, doc2, doc3]))
-      .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id]))
-      .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id]))
+      .then(() => utils.saveDocs(docs))
+      .then(() => sentinelUtils.waitForSentinel(ids))
+      .then(() => sentinelUtils.getInfoDocs(ids))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.accept_patient_reports).toBeDefined();
-        expect(infos[0].transitions.accept_patient_reports.ok).toBe(true);
-
-        expect(infos[1].transitions).toBeDefined();
-        expect(infos[1].transitions.accept_patient_reports).toBeDefined();
-        expect(infos[1].transitions.accept_patient_reports.ok).toBe(true);
-
-        expect(infos[2].transitions).toBeDefined();
-        expect(infos[2].transitions.accept_patient_reports).toBeDefined();
-        expect(infos[2].transitions.accept_patient_reports.ok).toBe(true);
+        infos.forEach((info, idx) => {
+          expect(info.transitions.accept_patient_reports.ok).toBe(true, `failed for doc${idx}`);
+        });
       })
-      .then(() => utils.getDocs([doc1._id, doc2._id, doc3._id]))
+      .then(() => utils.getDocs(ids))
       .then(updated => {
-        expect(updated[0].tasks).toBeDefined();
         expect(updated[0].tasks.length).toEqual(1);
         expect(updated[0].tasks[0].messages[0].message).toEqual('Patient not found');
         expect(updated[0].tasks[0].messages[0].to).toEqual('+phone');
         expect(updated[0].tasks[0].state).toEqual('pending');
 
-        expect(updated[0].errors).toBeDefined();
         expect(updated[0].errors.length).toEqual(1);
         expect(updated[0].errors[0].code).toEqual('registration_not_found');
 
-        expect(updated[1].tasks).toBeDefined();
         expect(updated[1].tasks.length).toEqual(1);
         expect(updated[1].tasks[0].messages[0].message).toEqual('Patient id incorrect');
         expect(updated[1].tasks[0].messages[0].to).toEqual('+phone');
         expect(updated[1].tasks[0].state).toEqual('pending');
 
-        expect(updated[1].errors).toBeDefined();
         expect(updated[1].errors.length).toEqual(1);
         expect(updated[1].errors[0].message).toEqual('Patient id incorrect');
 
-        expect(updated[2].tasks).toBeDefined();
         expect(updated[2].tasks.length).toEqual(1);
         expect(updated[2].tasks[0].messages[0].message).toEqual('Place not found');
         expect(updated[2].tasks[0].messages[0].to).toEqual('+phone');
         expect(updated[2].tasks[0].state).toEqual('pending');
 
-        expect(updated[2].errors).toBeDefined();
         expect(updated[2].errors.length).toEqual(1);
         expect(updated[2].errors[0].code).toEqual('registration_not_found');
+
+        expect(updated[3].tasks.length).toEqual(1);
+        expect(updated[3].tasks[0].messages[0].message).toEqual('Place id incorrect');
+        expect(updated[3].tasks[0].messages[0].to).toEqual('+phone');
+        expect(updated[3].tasks[0].state).toEqual('pending');
+
+        expect(updated[3].errors.length).toEqual(1);
+        expect(updated[3].errors[0].message).toEqual('Place id incorrect');
       });
   });
 
@@ -913,7 +940,7 @@ describe('accept_patient_reports', () => {
       content_type: 'xml'
     };
 
-    const silence1 = {
+    const silence1Patient = {
       _id: uuid(),
       type: 'data_record',
       form: 'SILENCE1',
@@ -928,7 +955,7 @@ describe('accept_patient_reports', () => {
       }
     };
 
-    const silence2 = {
+    const silence2Patient2 = {
       _id: uuid(),
       type: 'data_record',
       form: 'SILENCE2',
@@ -940,7 +967,7 @@ describe('accept_patient_reports', () => {
       content_type: 'xml'
     };
 
-    const silenceClinic = {
+    const silence2Clinic = {
       _id: uuid(),
       type: 'data_record',
       form: 'SILENCE2',
@@ -952,7 +979,7 @@ describe('accept_patient_reports', () => {
       content_type: 'xml'
     };
 
-    const silencePatientAndClinic = {
+    const silence0PatientAndClinic = {
       _id: uuid(),
       type: 'data_record',
       form: 'SILENCE0',
@@ -975,8 +1002,8 @@ describe('accept_patient_reports', () => {
         // none of the scheduled tasks should be cleared
         expect(updated.every(doc => !doc.scheduled_tasks.find(task => task.state === 'cleared'))).toBe(true);
       })
-      .then(() => utils.saveDoc(silence1))
-      .then(() => sentinelUtils.waitForSentinel(silence1._id))
+      .then(() => utils.saveDoc(silence1Patient))
+      .then(() => sentinelUtils.waitForSentinel(silence1Patient._id))
       .then(() => utils.getDocs(registrations.map(r => r._id)))
       .then(updated => {
         expect(updated[0].scheduled_tasks.find(task => task.id === 1).state).toEqual('scheduled');
@@ -1004,8 +1031,8 @@ describe('accept_patient_reports', () => {
         expect(updated[4].scheduled_tasks).toEqual(registrations[4].scheduled_tasks); // were not updated
         expect(updated[5].scheduled_tasks).toEqual(registrations[5].scheduled_tasks); // were not updated
       })
-      .then(() => utils.saveDoc(silence2))
-      .then(() => sentinelUtils.waitForSentinel(silence2._id))
+      .then(() => utils.saveDoc(silence2Patient2))
+      .then(() => sentinelUtils.waitForSentinel(silence2Patient2._id))
       .then(() => utils.getDocs(registrations.map(r => r._id)))
       .then(updated => {
         expect(updated[2].scheduled_tasks.find(task => task.id === 1).state).toEqual('scheduled');
@@ -1025,8 +1052,8 @@ describe('accept_patient_reports', () => {
         expect(updated[4].scheduled_tasks).toEqual(registrations[4].scheduled_tasks); // were not updated
         expect(updated[5].scheduled_tasks).toEqual(registrations[5].scheduled_tasks); // were not updated
       })
-      .then(() => utils.saveDoc(silenceClinic))
-      .then(() => sentinelUtils.waitForSentinel(silenceClinic._id))
+      .then(() => utils.saveDoc(silence2Clinic))
+      .then(() => sentinelUtils.waitForSentinel(silence2Clinic._id))
       .then(() => utils.getDocs(registrations.map(r => r._id)))
       .then(updated => {
         expect(updated[4].scheduled_tasks.find(task => task.id === 1).state).toEqual('scheduled');
@@ -1043,8 +1070,8 @@ describe('accept_patient_reports', () => {
         expect(updated[5].scheduled_tasks.find(task => task.id === 2 && task.group === 'b').state).toEqual('cleared');
         expect(updated[5].scheduled_tasks.find(task => task.id === 3 && task.group === 'b').state).toEqual('sent');
       })
-      .then(() => utils.saveDoc(silencePatientAndClinic))
-      .then(() => sentinelUtils.waitForSentinel(silencePatientAndClinic._id))
+      .then(() => utils.saveDoc(silence0PatientAndClinic))
+      .then(() => sentinelUtils.waitForSentinel(silence0PatientAndClinic._id))
       .then(() => utils.getDocs(registrations.map(r => r._id)))
       .then(updated => {
         const getScheduledTasks = (doc) => doc.scheduled_tasks.filter(task => task.state === 'scheduled');

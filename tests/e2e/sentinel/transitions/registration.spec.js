@@ -91,10 +91,12 @@ const getContactsByReference = shortcodes => {
   return utils.requestOnTestDb({ path: '/_design/medic-client/_view/contacts_by_reference', qs });
 };
 
+const getIds = docs => docs.map(doc => doc._id);
+
 describe('registration', () => {
-  beforeAll(done => utils.saveDocs(contacts).then(done));
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
+  beforeAll(() => utils.saveDocs(contacts));
+  afterAll(() => utils.revertDb());
+  afterEach(() => utils.revertDb(getIds(contacts), true));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
@@ -212,7 +214,7 @@ describe('registration', () => {
       forms: { FORM: { }}
     };
 
-    const doc1 = {
+    const noSubjects = { // doesn't patient_id or place_id fields
       _id: uuid(),
       type: 'data_record',
       from: '+444999',
@@ -227,7 +229,7 @@ describe('registration', () => {
       }
     };
 
-    const doc2 = {
+    const noPatient = { // has a patient_id that has no corresponding contact
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -243,7 +245,7 @@ describe('registration', () => {
       }
     };
 
-    const doc3 = {
+    const noPlace = { // has a place_id that has no corresponding contact
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -259,17 +261,20 @@ describe('registration', () => {
       }
     };
 
+    const docs = [ noSubjects, noPatient, noPlace ];
+    const docIds = getIds(docs);
+
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => utils.saveDocs([ doc1, doc2, doc3 ]))
-      .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id ]))
-      .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id ]))
+      .then(() => utils.saveDocs(docs))
+      .then(() => sentinelUtils.waitForSentinel(docIds))
+      .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
           chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
-      .then(() => utils.getDocs([doc1._id, doc2._id, doc3._id]))
+      .then(() => utils.getDocs(docIds))
       .then(updated => {
         chai.expect(updated[0].tasks).to.be.ok;
         chai.expect(updated[0].tasks.length).to.equal(1);
@@ -330,7 +335,7 @@ describe('registration', () => {
       forms: { 'FORM-A': { }}
     };
 
-    const doc1 = {
+    const placeInsteadOfPatient = { // has a patient_id field containing shortcode corresponding to a place
       _id: uuid(),
       type: 'data_record',
       form: 'FORM-A',
@@ -345,7 +350,7 @@ describe('registration', () => {
       }
     };
 
-    const doc2 = {
+    const patientInsteadOfPlace = { // has a place_id field containing shortcode corresponding to a person
       _id: uuid(),
       type: 'data_record',
       form: 'FORM-A',
@@ -360,7 +365,7 @@ describe('registration', () => {
       }
     };
 
-    const doc3 = {
+    const switchedSubjects = { // has a place instead of patient and vice versa
       _id: uuid(),
       type: 'data_record',
       form: 'FORM-A',
@@ -376,7 +381,7 @@ describe('registration', () => {
       }
     };
 
-    const doc4 = {
+    const bothSubjectsPlaces = { // both subjects are places
       _id: uuid(),
       type: 'data_record',
       form: 'FORM-A',
@@ -392,7 +397,7 @@ describe('registration', () => {
       }
     };
 
-    const doc5 = {
+    const bothSubjectsPersons = { // both subjects are persons
       _id: uuid(),
       type: 'data_record',
       form: 'FORM-A',
@@ -408,8 +413,14 @@ describe('registration', () => {
       }
     };
 
-    const allDocs = [doc1, doc2, doc3, doc4, doc5];
-    const allIds = allDocs.map(doc => doc._id);
+    const allDocs = [
+      placeInsteadOfPatient,
+      patientInsteadOfPlace,
+      switchedSubjects,
+      bothSubjectsPlaces,
+      bothSubjectsPersons
+    ];
+    const allIds = getIds(allDocs);
 
     return utils
       .updateSettings(settings, 'sentinel')
@@ -478,7 +489,7 @@ describe('registration', () => {
       forms: { 'FORM-A': { }, 'FORM-B': { }}
     };
 
-    const doc1 = {
+    const justPatientName = { // has just the `patient_name` field, and should create this person
       _id: uuid(),
       type: 'data_record',
       form: 'FORM-A',
@@ -493,7 +504,7 @@ describe('registration', () => {
       }
     };
 
-    const doc2 = {
+    const patientNameAndShortcode = { // has patient_name and patient_id field, error bc. patient is not found.
       _id: uuid(),
       type: 'data_record',
       form: 'FORM-A',
@@ -509,7 +520,7 @@ describe('registration', () => {
       }
     };
 
-    const doc3 = {
+    const customPatientNameAndCustomShortcode = { // has custom fields populated, should create patient with the fields
       _id: uuid(),
       type: 'data_record',
       form: 'FORM-B',
@@ -525,7 +536,7 @@ describe('registration', () => {
       }
     };
 
-    const doc4 = {
+    const patientNameAndCustomShortcode = { // has patient_name and custom shortcode, should create patient
       _id: uuid(),
       type: 'data_record',
       form: 'FORM-B',
@@ -541,19 +552,26 @@ describe('registration', () => {
       }
     };
 
+    const docs = [
+      justPatientName,
+      patientNameAndShortcode,
+      customPatientNameAndCustomShortcode,
+      patientNameAndCustomShortcode
+    ];
+    const docIds = getIds(docs);
     let newPatientId;
 
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => utils.saveDocs([ doc1, doc2, doc3, doc4 ]))
-      .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id, doc4._id]))
-      .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id, doc4._id]))
+      .then(() => utils.saveDocs(docs))
+      .then(() => sentinelUtils.waitForSentinel(docIds))
+      .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
           chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
-      .then(() => utils.getDocs([doc1._id, doc2._id, doc3._id, doc4._id]))
+      .then(() => utils.getDocs(docIds))
       .then(updated => {
         chai.expect(updated[0].patient_id).not.to.equal(undefined);
         chai.expect(updated[0].tasks.length).to.equal(1);
@@ -595,7 +613,7 @@ describe('registration', () => {
           name: 'Minerva',
           type: 'person',
           created_by: 'person',
-          source_id: doc1._id,
+          source_id: justPatientName._id,
         });
 
         chai.expect(patients.rows[1].doc).to.deep.include({
@@ -604,7 +622,7 @@ describe('registration', () => {
           name: 'Venus',
           type: 'person',
           created_by: 'person',
-          source_id: doc3._id,
+          source_id: customPatientNameAndCustomShortcode._id,
         });
       });
   });
@@ -761,19 +779,20 @@ describe('registration', () => {
       contact: { _id: 'supervisor', parent: { _id: 'district_hospital' } }
     };
 
-    const ids = [chwNoParent._id, chwNonExistingParent._id, invalidParent1._id, invalidParent2._id, invalidParent3._id];
+    const docs = [chwNoParent, chwNonExistingParent, invalidParent1, invalidParent2, invalidParent3];
+    const docIds = getIds(docs);
 
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => utils.saveDocs([chwNoParent, chwNonExistingParent, invalidParent1, invalidParent2, invalidParent3]))
-      .then(() => sentinelUtils.waitForSentinel(ids))
-      .then(() => sentinelUtils.getInfoDocs(ids))
+      .then(() => utils.saveDocs(docs))
+      .then(() => sentinelUtils.waitForSentinel(docIds))
+      .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
           chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
-      .then(() => utils.getDocs(ids))
+      .then(() => utils.getDocs(docIds))
       .then(updated => {
         updated.forEach(doc => {
           chai.expect(doc.patient_id).not.to.equal(undefined);
@@ -939,12 +958,13 @@ describe('registration', () => {
       }
     };
 
+    const docs = [createPerson, createChw, createNurse];
     const ids = [createPerson._id, createChw._id, createNurse._id];
     let updatedDocs;
 
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => utils.saveDocs([createPerson, createChw, createNurse]))
+      .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => sentinelUtils.getInfoDocs(ids))
       .then(infos => {
@@ -1028,7 +1048,7 @@ describe('registration', () => {
       forms: { FORM: { }}
     };
 
-    const doc1 = {
+    const withWeeksSinceLMP = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -1044,7 +1064,7 @@ describe('registration', () => {
       }
     };
 
-    const doc2 = {
+    const withLMP = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -1060,17 +1080,20 @@ describe('registration', () => {
       }
     };
 
+    const docs = [withWeeksSinceLMP, withLMP];
+    const docIds = getIds(docs);
+
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => utils.saveDocs([ doc1, doc2 ]))
-      .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
-      .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
+      .then(() => utils.saveDocs(docs))
+      .then(() => sentinelUtils.waitForSentinel(docIds))
+      .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
           chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
-      .then(() => utils.getDocs([doc1._id, doc2._id]))
+      .then(() => utils.getDocs(docIds))
       .then(updated => {
         chai.expect(updated[0].lmp_date).to.be.ok;
         chai.expect(updated[0].lmp_date)
@@ -1102,7 +1125,7 @@ describe('registration', () => {
       forms: { FORM: { }}
     };
 
-    const doc1 = {
+    const withMonthsSinceBirth = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -1118,7 +1141,7 @@ describe('registration', () => {
       }
     };
 
-    const doc2 = {
+    const withWeeksSinceBirth = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -1134,7 +1157,7 @@ describe('registration', () => {
       }
     };
 
-    const doc3 = {
+    const withAgeInYears = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -1150,17 +1173,20 @@ describe('registration', () => {
       }
     };
 
+    const docs = [ withMonthsSinceBirth, withWeeksSinceBirth, withAgeInYears ];
+    const docIds = getIds(docs);
+
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => utils.saveDocs([ doc1, doc2, doc3 ]))
-      .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id]))
-      .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id]))
+      .then(() => utils.saveDocs(docs))
+      .then(() => sentinelUtils.waitForSentinel(docIds))
+      .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
           chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
-      .then(() => utils.getDocs([doc1._id, doc2._id, doc3._id]))
+      .then(() => utils.getDocs(docIds))
       .then(updated => {
         chai.expect(updated[0].birth_date)
           .to.equal(moment().utc(false).startOf('day').subtract(2, 'months').toISOString());
@@ -1649,7 +1675,7 @@ describe('registration', () => {
     };
 
     const docs = [ clinicNoParent, nursingHome, healthCenter ];
-    const ids = docs.map(doc => doc._id);
+    const ids = getIds(docs);
     let updatedDocs;
 
     return utils
@@ -1816,7 +1842,7 @@ describe('registration', () => {
     };
 
     const docs = [createClinic, createPerson];
-    const ids = docs.map(doc => doc._id);
+    const ids = getIds(docs);
     let updatedDocs;
 
     return utils
@@ -1966,6 +1992,8 @@ describe('registration', () => {
       }
     };
 
+    const withPatient2 = Object.assign({}, withPatient1, { _id: uuid() });
+
     const withClinic1 = {
       _id: uuid(),
       type: 'data_record',
@@ -1982,38 +2010,7 @@ describe('registration', () => {
       },
     };
 
-    const withPatient2 = {
-      _id: uuid(),
-      type: 'data_record',
-      form: 'FORM',
-      from: '+444999',
-      fields: {
-        patient_uuid: 'person',
-        patient_id: 'patient',
-      },
-      some_date_field: moment().subtract(2, 'week').valueOf(),
-      reported_date: moment().valueOf(),
-      contact: {
-        _id: 'person',
-        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
-      }
-    };
-
-    const withClinic2 = {
-      _id: uuid(),
-      type: 'data_record',
-      form: 'FORM',
-      from: '+11111111',
-      fields: {
-        place_id: 'the_clinic',
-      },
-      some_date_field: moment().subtract(2, 'week').valueOf(),
-      reported_date: moment().valueOf(),
-      contact: {
-        _id: 'middle_man',
-        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
-      },
-    };
+    const withClinic2 = Object.assign({}, withClinic1, { _id: uuid() });
 
     const withClinicAndPatient1 = {
       _id: uuid(),
@@ -2032,22 +2029,7 @@ describe('registration', () => {
       },
     };
 
-    const withClinicAndPatient2 = {
-      _id: uuid(),
-      type: 'data_record',
-      form: 'FORM',
-      from: '+11111111',
-      fields: {
-        place_id: 'the_clinic',
-        patient_id: 'patient',
-      },
-      some_date_field: moment().subtract(6, 'week').valueOf(),
-      reported_date: moment().valueOf(),
-      contact: {
-        _id: 'middle_man',
-        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
-      },
-    };
+    const withClinicAndPatient2 = Object.assign({}, withClinicAndPatient1, { _id: uuid() });
 
     const expectedMessage2 = (state) => ({
       type: 'sch1',
