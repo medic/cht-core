@@ -878,7 +878,7 @@ describe('muting', () => {
           { group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
         ]
       },
-      { // not a registration
+      { // not a registration for place
         _id: 'no_registration_config_clinic',
         type: 'data_record',
         content_type: 'xml',
@@ -892,7 +892,7 @@ describe('muting', () => {
           { group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
         ]
       },
-      { // not a registration
+      { // not a registration for place
         _id: 'incorrect_content_clinic',
         type: 'data_record',
         form: 'xml_form',
@@ -905,7 +905,7 @@ describe('muting', () => {
           { group: 3, state: 'pending', translation_key: 'beta', recipient: 'clinic' },
         ],
       },
-      { // not a registration
+      { // not a registration for place
         _id: 'sms_without_contact_clinic',
         type: 'data_record',
         form: 'sms_form_2',
@@ -918,7 +918,7 @@ describe('muting', () => {
           { group: 3, state: 'scheduled', translation_key: 'beta', recipient: 'clinic' },
         ]
       },
-      { // valid registration
+      { // valid registration for place
         _id: 'registration_1_clinic',
         type: 'data_record',
         content_type: 'xml',
@@ -934,7 +934,7 @@ describe('muting', () => {
           { group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
         ]
       },
-      { // valid registration
+      { // valid registration for place
         _id: 'registration_3_clinic',
         type: 'data_record',
         form: 'sms_form_2',

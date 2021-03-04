@@ -992,19 +992,21 @@ describe('accept_patient_reports', () => {
       content_type: 'xml'
     };
 
+    const registrationIds = getIds(registrations);
+
     return utils
       .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs(registrations))
       .then(() => utils.saveDoc(noSilence))
       .then(() => sentinelUtils.waitForSentinel(noSilence._id))
-      .then(() => utils.getDocs(registrations.map(r => r._id)))
+      .then(() => utils.getDocs(registrationIds))
       .then(updated => {
         // none of the scheduled tasks should be cleared
         expect(updated.every(doc => !doc.scheduled_tasks.find(task => task.state === 'cleared'))).toBe(true);
       })
       .then(() => utils.saveDoc(silence1Patient))
       .then(() => sentinelUtils.waitForSentinel(silence1Patient._id))
-      .then(() => utils.getDocs(registrations.map(r => r._id)))
+      .then(() => utils.getDocs(registrationIds))
       .then(updated => {
         expect(updated[0].scheduled_tasks.find(task => task.id === 1).state).toEqual('scheduled');
         expect(updated[0].scheduled_tasks.find(task => task.id === 2).state).toEqual('cleared');
@@ -1033,7 +1035,7 @@ describe('accept_patient_reports', () => {
       })
       .then(() => utils.saveDoc(silence2Patient2))
       .then(() => sentinelUtils.waitForSentinel(silence2Patient2._id))
-      .then(() => utils.getDocs(registrations.map(r => r._id)))
+      .then(() => utils.getDocs(registrationIds))
       .then(updated => {
         expect(updated[2].scheduled_tasks.find(task => task.id === 1).state).toEqual('scheduled');
         expect(updated[2].scheduled_tasks.find(task => task.id === 2).state).toEqual('pending');
@@ -1054,7 +1056,7 @@ describe('accept_patient_reports', () => {
       })
       .then(() => utils.saveDoc(silence2Clinic))
       .then(() => sentinelUtils.waitForSentinel(silence2Clinic._id))
-      .then(() => utils.getDocs(registrations.map(r => r._id)))
+      .then(() => utils.getDocs(registrationIds))
       .then(updated => {
         expect(updated[4].scheduled_tasks.find(task => task.id === 1).state).toEqual('scheduled');
         expect(updated[4].scheduled_tasks.find(task => task.id === 2).state).toEqual('pending');
@@ -1072,7 +1074,7 @@ describe('accept_patient_reports', () => {
       })
       .then(() => utils.saveDoc(silence0PatientAndClinic))
       .then(() => sentinelUtils.waitForSentinel(silence0PatientAndClinic._id))
-      .then(() => utils.getDocs(registrations.map(r => r._id)))
+      .then(() => utils.getDocs(registrationIds))
       .then(updated => {
         const getScheduledTasks = (doc) => doc.scheduled_tasks.filter(task => task.state === 'scheduled');
         // this should have cleared everything that is left

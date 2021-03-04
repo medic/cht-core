@@ -254,9 +254,11 @@ describe('pregnancy registration', () => {
     return transition.onMatch({ doc: doc }).then(function(changed) {
       assert.equal(changed, true);
       assert.equal(doc.lmp_date, null);
-      assert.deepEqual(doc.patient_id, 12345);
+      assert.equal(doc.patient_id, 12345);
       assert.equal(doc.tasks, undefined);
       assert.equal(db.medic.post.callCount, 1);
+      assert.equal(utils.getContactUuid.callCount, 1);
+      assert.deepEqual(utils.getContactUuid.args[0], [12345]);
       assert.deepEqual(db.medic.post.args[0], [{
         created_by: 'contact',
         name: 'abc',

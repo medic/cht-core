@@ -57,8 +57,6 @@ export class GetSummariesService {
       }
     }
 
-    console.log(doc, subject);
-
     return subject;
   }
 
