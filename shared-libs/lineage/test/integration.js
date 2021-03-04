@@ -646,7 +646,7 @@ describe('Lineage', function() {
       });
     });
 
-    it('attaches the full lineage for reports with patient_id', function() {
+    it('attaches the full lineage for reports with patient_id', () => {
       return lineage.fetchHydratedDoc(report._id).then(actual => {
         expect(actual.place).to.equal(undefined);
         assert.checkDeepProperties(actual, {
@@ -743,7 +743,7 @@ describe('Lineage', function() {
       });
     });
 
-    it('attaches the full lineage for reports with place_id', function() {
+    it('attaches the full lineage for reports with place_id', () => {
       return lineage.fetchHydratedDoc(report_with_place._id).then(actual => {
         expect(actual.patient).to.equal(undefined);
         assert.checkDeepProperties(actual, {
@@ -817,7 +817,7 @@ describe('Lineage', function() {
       });
     });
 
-    it('attaches the full lineage for reports with place_id and patient_id', function() {
+    it('attaches the full lineage for reports with place_id and patient_id', () => {
       return lineage.fetchHydratedDoc(report_with_place_and_patient._id).then(actual => {
         assert.checkDeepProperties(actual, {
           form: 'A',

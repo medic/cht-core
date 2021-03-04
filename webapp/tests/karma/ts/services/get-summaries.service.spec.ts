@@ -113,7 +113,8 @@ describe('GetSummaries service', () => {
                 patient_name: 'jeff',
                 patient_id: 'f'
               }
-            } },
+            }
+          },
           {
             doc: {
               _id: 'b',
@@ -123,7 +124,32 @@ describe('GetSummaries service', () => {
               sent_by: '+321',
               errors: [ { code: 'sys.missing_fields', fields: [ 'patient_id' ] } ],
               reported_date: 200
-            } },
+            }
+          },
+          {
+            doc: {
+              _id: 'c',
+              _rev: '1',
+              type: 'data_record',
+              form: 'delivery',
+              from: '+123',
+              contact: {
+                _id: 'c',
+                phone: '+456',
+                parent: {
+                  _id: 'd',
+                  parent: {
+                    _id: 'e'
+                  }
+                }
+              },
+              verified: true,
+              reported_date: 100,
+              fields: {
+                place_id: 'd',
+              }
+            }
+          },
         ] });
       return service.get([ 'a', 'b' ]).then(actual => {
         expect(query.callCount).to.equal(0);
@@ -165,7 +191,25 @@ describe('GetSummaries service', () => {
               type: 'unknown'
             },
             case_id: undefined
-          }
+          },
+          {
+            _id: 'c',
+            _rev: '1',
+            from: '+123',
+            phone: '+456',
+            form: 'delivery',
+            read: undefined,
+            valid: true,
+            verified: true,
+            reported_date: 100,
+            contact: 'c',
+            lineage: [ 'd', 'e' ],
+            subject: {
+              value: 'd',
+              type: 'reference'
+            },
+            case_id: undefined
+          },
         ]);
       });
     });

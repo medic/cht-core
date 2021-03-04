@@ -141,8 +141,8 @@ module.exports = function(Promise, DB) {
 
   /*
    * @returns {Object} subjectMaps
-   * @returns {Map} subjectMaps.patientUuids - map with (k, v) pairs of recordUuid and patientUuid
-   * @returns {Map} subjectMaps.placeUuids - map with (k, v) pairs of recordUuid and placeUuid
+   * @returns {Map} subjectMaps.patientUuids - map with [k, v] pairs of [recordUuid, patientUuid]
+   * @returns {Map} subjectMaps.placeUuids - map with [k, v] pairs of [recordUuid, placeUuid]
    */
   const fetchSubjectsUuids = (records) => {
     const shortcodes = [];
@@ -210,7 +210,7 @@ module.exports = function(Promise, DB) {
   };
 
   /*
-  * @returns {Map} map with (k,v) pairs of (shortcode, uuid)
+  * @returns {Map} map with [k, v] pairs of [shortcode, uuid]
   */
   const contactUuidByShortcode = function(shortcodes) {
     const keys = shortcodes
@@ -224,9 +224,7 @@ module.exports = function(Promise, DB) {
           return matchingRow && matchingRow.id;
         };
 
-        const shortcodeToUuidMap = new Map();
-        shortcodes.forEach(shortcode => shortcodeToUuidMap.set(shortcode, findIdWithKey(shortcode) || shortcode));
-        return shortcodeToUuidMap;
+        return new Map(shortcodes.map(shortcode => ([ shortcode, findIdWithKey(shortcode) || shortcode, ])));
       });
   };
 
@@ -384,8 +382,8 @@ module.exports = function(Promise, DB) {
     const hydratedDocs = deepCopy(docs); // a copy of the original docs which we will incrementally hydrate and return
     const knownDocs = [...hydratedDocs]; // an array of all documents which we have fetched
 
-    let patientUuids; // a map of (k, v) pairs with (hydratedDocUuid, patientUuid)
-    let placeUuids; // a map of (k, v) pairs with (hydratedDocUuid, placeUuid)
+    let patientUuids; // a map of [k, v] pairs with [hydratedDocUuid, patientUuid]
+    let placeUuids; // a map of [k, v] pairs with [hydratedDocUuid, placeUuid]
     let subjectDocs;
 
     return fetchSubjectsUuids(hydratedDocs)
