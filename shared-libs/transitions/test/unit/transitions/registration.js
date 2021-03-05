@@ -1731,13 +1731,15 @@ describe('registration', () => {
       };
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(validation, 'validate').callsArgWith(2, null);
-      const getRegistrations = sinon
+      sinon
         .stub(utils, 'getRegistrations')
-        .resolves([{ _id: 'xyz' }]);
+        .withArgs({ id: '05649' }).resolves([{ _id: 'xyz' }])
+        .withArgs({ id: undefined }).resolves([]);
       sinon.stub(schedules, 'getScheduleConfig').returns('someschedule');
       const assignSchedule = sinon
         .stub(schedules, 'assignSchedule')
         .returns(true);
+
       return transition.onMatch(change).then(() => {
         assignSchedule.callCount.should.equal(1);
         assignSchedule.args[0].should.deep.equal([
@@ -1750,8 +1752,8 @@ describe('registration', () => {
             placeRegistrations: [],
           },
         ]);
-        getRegistrations.callCount.should.equal(1);
-        getRegistrations.args[0].should.deep.equal([{ id: '05649' }]);
+        utils.getRegistrations.callCount.should.equal(2);
+        utils.getRegistrations.args[0].should.deep.equal([{ id: '05649' }]);
       });
     });
 
@@ -1780,7 +1782,9 @@ describe('registration', () => {
       };
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(validation, 'validate').callsArgWith(2, null);
-      sinon.stub(utils, 'getRegistrations').resolves([{ _id: 'place_registration' }]);
+      sinon.stub(utils, 'getRegistrations')
+        .withArgs({ id: '79999' }).resolves([{ _id: 'place_registration' }])
+        .withArgs({ id: undefined }).resolves([]);
 
       sinon.stub(schedules, 'getScheduleConfig').returns('myschedule');
       sinon.stub(schedules, 'assignSchedule').returns(true);
@@ -1799,8 +1803,9 @@ describe('registration', () => {
           },
         ]);
 
-        utils.getRegistrations.callCount.should.equal(1);
-        utils.getRegistrations.args[0].should.deep.equal([{ id: '79999' }]);
+        utils.getRegistrations.callCount.should.equal(2);
+        utils.getRegistrations.args[0].should.deep.equal([{ id: undefined }]);
+        utils.getRegistrations.args[1].should.deep.equal([{ id: '79999' }]);
       });
     });
 
@@ -2235,7 +2240,8 @@ describe('registration', () => {
 
       sinon
         .stub(utils, 'getRegistrations')
-        .resolves(testRegistration);
+        .withArgs({ id: '12345' }).resolves(testRegistration)
+        .withArgs({ id: undefined }).resolves([]);
 
       const testConfig = { messages: [testMessage1, testMessage2] };
       const testDoc = {
@@ -2278,8 +2284,9 @@ describe('registration', () => {
           expectedContext,
         ]);
 
-        utils.getRegistrations.callCount.should.equal(1);
+        utils.getRegistrations.callCount.should.equal(2);
         utils.getRegistrations.args[0].should.deep.equal([{ id: '12345' }]);
+        utils.getRegistrations.args[1].should.deep.equal([{ id: undefined }]);
       });
     });
 
@@ -2298,7 +2305,9 @@ describe('registration', () => {
       const placeRegistrations = [{ _id: 'some registration' }];
 
       sinon.stub(messages, 'addMessage');
-      sinon.stub(utils, 'getRegistrations').resolves(placeRegistrations);
+      sinon.stub(utils, 'getRegistrations')
+        .withArgs({ id: undefined }).resolves([])
+        .withArgs({ id: '65498' }).resolves(placeRegistrations);
 
       const testConfig = { messages: [testMessage1, testMessage2] };
       const testDoc = {
@@ -2340,8 +2349,9 @@ describe('registration', () => {
           testPhone,
           expectedContext,
         ]);
-        utils.getRegistrations.callCount.should.equal(1);
-        utils.getRegistrations.args[0].should.deep.equal([{ id: '65498' }]);
+        utils.getRegistrations.callCount.should.equal(2);
+        utils.getRegistrations.args[0].should.deep.equal([{ id: undefined }]);
+        utils.getRegistrations.args[1].should.deep.equal([{ id: '65498' }]);
       });
     });
 
@@ -2432,9 +2442,9 @@ describe('registration', () => {
 
       const addMessage = sinon.stub(messages, 'addMessage');
 
-      sinon
-        .stub(utils, 'getRegistrations')
-        .resolves(testRegistration);
+      sinon.stub(utils, 'getRegistrations')
+        .withArgs({ id: '12345' }).resolves(testRegistration)
+        .withArgs({ id: undefined }).resolves([]);
 
       const testConfig = { messages: [testMessage1, testMessage2] };
       const testDoc = {

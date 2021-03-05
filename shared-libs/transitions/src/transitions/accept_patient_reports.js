@@ -243,11 +243,11 @@ const getRegistrations = (contact) => {
     return [];
   }
   const subjectIds = utils.getSubjectIds(contact);
-  if (!subjectIds || !subjectIds.length) {
-    return [];
+  if (subjectIds && subjectIds.length) {
+    return utils.getReportsBySubject({ ids: subjectIds, registrations: true });
   }
 
-  return utils.getReportsBySubject({ ids: subjectIds, registrations: true });
+  return [];
 };
 
 const handleReport = (doc, config, callback) => {

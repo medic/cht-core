@@ -10,14 +10,23 @@ const messages = require('../lib/messages');
 const messageUtils = require('@medic/message-utils');
 const mutingUtils = require('../lib/muting_utils');
 
-const isMuted = (patient, place) => {
-  if (patient) {
-    return patient.muted || mutingUtils.isMutedInLineage(patient);
-  }
+const isMuted = (contact) => contact.muted || mutingUtils.isMutedInLineage(contact);
 
-  if (place) {
-    return place.muted || mutingUtils.isMutedInLineage(place);
+/**
+ * @param {Object} patient - the report's patient subject
+ * @param {Object} place - the report's place subject
+ * @returns {boolean}
+ * if both patient and place exist, prioritise the patient's muted state over the place's muted state.
+ * If neither exist, the schedule should not be muted.
+ */
+const shouldMuteSchedule = (patient, place) => {
+  if (patient) {
+    return isMuted(patient);
   }
+  if (place) {
+    return isMuted(place);
+  }
+  return false;
 };
 
 module.exports = {
@@ -74,7 +83,7 @@ module.exports = {
     const self = module.exports;
     const { place, patient, patientRegistrations, placeRegistrations } = context;
     const now = moment(date.getDate());
-    const muted = isMuted(patient, place);
+    const muted = shouldMuteSchedule(patient, place);
     const allowedState = muted ? 'muted' : 'scheduled';
     const skipGroups = [];
 

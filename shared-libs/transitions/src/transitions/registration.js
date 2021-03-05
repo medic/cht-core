@@ -24,13 +24,6 @@ const findFirstDefinedValue = (doc, fields) => {
   return definedField && doc.fields[definedField];
 };
 
-const getRegistrations = (subjectId) => {
-  if (!subjectId) {
-    return Promise.resolve([]);
-  }
-  return utils.getRegistrations({ id: subjectId });
-};
-
 const getPatientNameField = (params) => getNameField(params, 'patient');
 const getPlaceNameField = (params) => getNameField(params, 'place');
 
@@ -302,7 +295,10 @@ const addMessages = (config, doc) => {
   }
 
   return Promise
-    .all([getRegistrations(patientId), getRegistrations(placeId)])
+    .all([
+      utils.getRegistrations({ id: patientId }),
+      utils.getRegistrations({ id: placeId }),
+    ])
     .then(([ patientRegistrations, placeRegistrations ]) => {
       const context = {
         patient: doc.patient,
@@ -327,7 +323,10 @@ const assignSchedule = (options) => {
   const placeId = options.doc.fields && options.doc.fields.place_id;
 
   return Promise
-    .all([ getRegistrations(patientId), getRegistrations(placeId) ])
+    .all([
+      utils.getRegistrations({ id: patientId }),
+      utils.getRegistrations({ id: placeId }),
+    ])
     .then(([ patientRegistrations, placeRegistrations ]) => {
       options.params.forEach(scheduleName => {
         const schedule = schedules.getScheduleConfig(scheduleName);

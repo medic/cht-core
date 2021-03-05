@@ -242,7 +242,7 @@ describe('functional schedules', () => {
     });
   });
 
-  it('patients chp is resolved correctly as recipient', () => {
+  it('patients chp is resolved correctly as recipient with hardcoded contact types', () => {
     sinon.stub(config, 'get').returns([{
       form: 'PATR',
       events: [],
@@ -263,8 +263,9 @@ describe('functional schedules', () => {
       from: contact.phone,
       contact: contact,
       fields: { patient_id: '98765' },
-      patient: { parent: { contact: { phone: '+5551596' } }, type: 'person' }
+      patient: { parent: { contact: { phone: '+5551596' } }, contact_type: 'a_person', type: 'contact' },
     };
+    sinon.stub(config, 'getAll').returns({ contact_types: [{ id: 'a_person', person: true }, { id: 'place' }] });
 
     return transition.onMatch({ doc: doc }).then(complete => {
       assert.equal(complete, true);
@@ -275,6 +276,48 @@ describe('functional schedules', () => {
         getMessage(doc, 0),
         '+5551596',
         'Thanks');
+    });
+  });
+
+  it('patients chp is resolved correctly as recipient with configurable contact types', () => {
+    sinon.stub(config, 'get').returns([{
+      form: 'PATR',
+      events: [],
+      validations: [],
+      messages: [{
+        translation_key: 'thanks',
+        recipient: 'patient.parent.contact.phone'
+      }]
+    }]);
+    sinon.stub(schedules, 'getScheduleConfig').returns({});
+    sinon.stub(utils, 'getRegistrations').resolves([]);
+    sinon.stub(utils, 'translate').withArgs('thanks', 'en').returns('Thanks');
+    sinon.stub(config, 'getAll').returns({ contact_types: [{ id: 'patient', person: true }] });
+
+    const doc = {
+      reported_date: moment().toISOString(),
+      form: 'PATR',
+      from: contact.phone,
+      contact: contact,
+      fields: { patient_id: '98765' },
+      patient: {
+        parent: { contact: { phone: '+5551596' } },
+        type: 'contact',
+        contact_type: 'patient',
+        patient_id: '98765'
+      },
+    };
+
+    return transition.onMatch({ doc: doc }).then(complete => {
+      assert.equal(complete, true);
+      assert(doc.tasks);
+      assert.equal(doc.tasks && doc.tasks.length, 1);
+
+      testMessage(
+        getMessage(doc, 0),
+        '+5551596',
+        'Thanks'
+      );
     });
   });
 
@@ -301,7 +344,9 @@ describe('functional schedules', () => {
         }
       ]
     }]);
-    const getRegistrations = sinon.stub(utils, 'getRegistrations').resolves([ { fields: { patient_name: 'barry' } } ]);
+    sinon.stub(utils, 'getRegistrations')
+      .withArgs({ id: '123' }).resolves([ { fields: { patient_name: 'barry' } } ])
+      .withArgs({ id: undefined }).resolves([]);
     sinon.stub(schedules, 'getScheduleConfig').returns({
       name: 'group1',
       start_from: 'reported_date',
@@ -320,7 +365,6 @@ describe('functional schedules', () => {
       ]
     });
 
-    sinon.stub(utils, 'getContactUuid').resolves({_id: 'uuid'});
     const doc = {
       reported_date: moment().toISOString(),
       form: 'PATR',
@@ -330,9 +374,12 @@ describe('functional schedules', () => {
       fields: { patient_id: '123' },
       patient: {
         _id: 'uuid',
-        type: 'person',
+        type: 'contact',
+        contact_type: 'some_patient',
+        patient_id: '123',
       }
     };
+    sinon.stub(config, 'getAll').returns({ contact_types: [{ id: 'some_patient', person: true }, { id: 'place' }] });
 
     return transition.onMatch({ doc: doc }).then(complete => {
       assert.equal(complete, true);
@@ -355,8 +402,12 @@ describe('functional schedules', () => {
         '+1234',
         'Remember to visit barry');
 
-      assert.equal(getRegistrations.callCount, 2);
-      assert.equal(getRegistrations.args[0][0].id, '123');
+      assert.equal(utils.getRegistrations.callCount, 4);
+
+      assert.deepEqual(utils.getRegistrations.args[0], [{ id: '123' }]);
+      assert.deepEqual(utils.getRegistrations.args[1], [{ id: undefined }]);
+      assert.deepEqual(utils.getRegistrations.args[2], [{ id: '123' }]);
+      assert.deepEqual(utils.getRegistrations.args[3], [{ id: undefined }]);
     });
   });
 
@@ -457,7 +508,7 @@ describe('functional schedules', () => {
       }]
     });
 
-    const patient = { muted: true, parent: { contact: { phone: '+5551596' } }, type: 'person' };
+    const patient = { muted: true, parent: { contact: { phone: '+5551596' } }, type: 'contact', contact_type: 'chp' };
     const doc = {
       reported_date: moment().toISOString(),
       form: 'PATR',
@@ -466,7 +517,7 @@ describe('functional schedules', () => {
       fields: { patient_id: '98765' },
       patient: patient
     };
-    sinon.stub(utils, 'getContactUuid').resolves('uuid');
+    sinon.stub(config, 'getAll').returns({ contact_types: [{ id: 'chp', person: true }, { id: 'place' }] });
 
     return transition.onMatch({ doc: doc })
       .then(complete => {
@@ -514,7 +565,13 @@ describe('functional schedules', () => {
       }]
     });
 
-    const patient = { muted: false, parent: { contact: { phone: '+5551596' } }, type: 'person' };
+    const patient = {
+      muted: false,
+      parent: { contact: { phone: '+5551596' } },
+      type: 'contact',
+      contact_type: 'person',
+      patient_id: '98765',
+    };
     const doc = {
       reported_date: moment().toISOString(),
       form: 'PATR',
@@ -523,7 +580,7 @@ describe('functional schedules', () => {
       fields: { patient_id: '98765' },
       patient: patient
     };
-    sinon.stub(utils, 'getContactUuid').resolves('uuid');
+    sinon.stub(config, 'getAll').returns({ contact_types: [{ id: 'person', person: true }, { id: 'place' }] });
 
     return transition.onMatch({ doc: doc })
       .then(complete => {

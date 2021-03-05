@@ -44,17 +44,20 @@ angular.module('services').factory('MessageQueue',
       return summary && summary.value;
     };
 
+    const findIdByKey = (contactsByReference, key) => {
+      const row = contactsByReference.rows.find((row) => row.key[1] === key);
+      return row && row.id;
+    };
+
     const findPatientUuid = (contactsByReference, message) => {
-      const patient = contactsByReference.rows.find((row) => row.key[1] === message.context.patient_id);
-      return patient && patient.id || message.context.patient_uuid;
+      return findIdByKey(contactsByReference, message.context.patient_id) || message.context.patient_uuid;
     };
 
     const findPlaceUuid = (contactsByReference, message) => {
-      const place = contactsByReference.rows.find((row) => row.key[1] === message.context.place_id);
-      return place && place.id || message.context.place_uuid;
+      return findIdByKey(contactsByReference, message.context.place_id) || message.context.place_uuid;
     };
 
-    const findRegistrations = (registrations, message, shortcodeField = 'patient_id') => {
+    const findRegistrations = (registrations, message, shortcodeField) => {
       return registrations
         .filter((row) => row.key === message.context[shortcodeField])
         .map((row) => row.doc);
@@ -108,14 +111,15 @@ angular.module('services').factory('MessageQueue',
     };
 
     const getSubjectsAndRegistrations = (messages, settings) => {
-      const shortcodes = compactUnique(messages.reduce((shortcodes, message) => {
+      let shortcodes = [];
+      messages.forEach(message => {
         if (message.sms) {
           // don't process items which already have generated messages
-          return shortcodes;
+          return;
         }
-
-        return shortcodes.concat(message.context.patient_id, message.context.place_id);
-      }, []));
+        shortcodes.push(message.context.patient_id, message.context.place_id);
+      });
+      shortcodes = compactUnique(shortcodes);
 
       if (!shortcodes.length) {
         return Promise.resolve(messages);
