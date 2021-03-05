@@ -21,6 +21,7 @@ import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { CloudWorksRDTService } from '@mm-services/cloudWorksRDT.service';
 
 const PAGE_SIZE = 50;
 
@@ -64,10 +65,15 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private ngZone:NgZone,
     private scrollLoaderProvider: ScrollLoaderProvider,
     private responsiveService:ResponsiveService,
+    private cloudWorksRDTService:CloudWorksRDTService
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
     this.servicesActions = new ServicesActions(store);
+  }
+
+  createProvisioningRDTest() { // Todo this is test, to be removed
+    this.cloudWorksRDTService.createProvisioningRDTest();
   }
 
   ngOnInit() {
