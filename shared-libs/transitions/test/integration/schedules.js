@@ -263,9 +263,8 @@ describe('functional schedules', () => {
       from: contact.phone,
       contact: contact,
       fields: { patient_id: '98765' },
-      patient: { parent: { contact: { phone: '+5551596' } }, contact_type: 'a_person', type: 'contact' },
+      patient: { parent: { contact: { phone: '+5551596' } }, type: 'person' },
     };
-    sinon.stub(config, 'getAll').returns({ contact_types: [{ id: 'a_person', person: true }, { id: 'place' }] });
 
     return transition.onMatch({ doc: doc }).then(complete => {
       assert.equal(complete, true);
