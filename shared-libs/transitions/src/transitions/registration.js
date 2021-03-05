@@ -5,7 +5,6 @@ const logger = require('../lib/logger');
 const db = require('../db');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const messages = require('../lib/messages');
-const validation = require('../lib/validation');
 const schedules = require('../lib/schedules');
 const acceptPatientReports = require('./accept_patient_reports');
 const moment = require('moment');
@@ -173,11 +172,6 @@ const getRegistrationConfig = (config, formCode) => {
   return config.find(conf => utils.isFormCodeSame(formCode, conf.form));
 };
 
-const validate = (config, doc) => {
-  const validations = config && config.validations && config.validations.list;
-  return new Promise(resolve => validation.validate(doc, validations, resolve));
-};
-
 const triggers = {
   add_patient: (options) => {
     // if we already have a patient id then return
@@ -230,15 +224,9 @@ const triggers = {
       subjectIds.push(caseId);
     }
 
-    return utils.getReportsBySubject({ ids: subjectIds, registrations: true })
-      .then(registrations => new Promise((resolve, reject) => {
-        acceptPatientReports.silenceRegistrations(
-          config,
-          options.doc,
-          registrations,
-          (err, result) => err ? reject(err) : resolve(result)
-        );
-      }));
+    return utils
+      .getReportsBySubject({ ids: subjectIds, registrations: true })
+      .then(registrations => acceptPatientReports.silenceRegistrations(config, options.doc, registrations));
   },
 };
 
@@ -667,7 +655,8 @@ module.exports = {
     const doc = change.doc;
     const registrationConfig = getRegistrationConfig(getConfig(), doc.form);
 
-    return validate(registrationConfig, doc)
+    return transitionUtils
+      .validate(registrationConfig, doc)
       .then(errors => {
         if (errors && errors.length > 0) {
           messages.addErrors(registrationConfig, doc, errors, { patient: doc.patient, place: doc.place });

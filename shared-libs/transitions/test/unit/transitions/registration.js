@@ -2496,7 +2496,7 @@ describe('registration', () => {
         .returns(['uuid', 'patient_id'])
         .withArgs(undefined).returns([]);
       const doc = { patient: { _id: 'uuid', patient_id: 'patient_id' } };
-      sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, null);
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').resolves();
 
       return transition.triggers.clear_schedule({ doc, params: [] }).then(() => {
         utils.getSubjectIds.callCount.should.equal(2);
@@ -2516,7 +2516,7 @@ describe('registration', () => {
         .returns(['uuid', 'place_id'])
         .withArgs(undefined).returns([]);
       const doc = { place: { _id: 'uuid', place_id: 'place_id' } };
-      sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, null);
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').resolves();
 
       return transition.triggers.clear_schedule({ doc, params: [] }).then(() => {
         utils.getSubjectIds.callCount.should.equal(2);
@@ -2539,7 +2539,7 @@ describe('registration', () => {
       sinon.stub(utils, 'getSubjectIds')
         .withArgs(doc.patient).returns(['uuid', 'patient_id'])
         .withArgs(doc.place).returns(['place_uuid', 'place_id']);
-      sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, null);
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').resolves();
 
       return transition.triggers.clear_schedule({ doc, params: [] }).then(() => {
         utils.getSubjectIds.callCount.should.equal(2);
@@ -2559,7 +2559,7 @@ describe('registration', () => {
       const registrations = ['a', 'b', 'c'];
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       sinon.stub(utils, 'getSubjectIds').returns(['uuid', 'patient_id']);
-      sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, null);
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').resolves();
 
       return transition.triggers.clear_schedule({ doc, params }).then(() => {
         acceptPatientReports.silenceRegistrations.callCount.should.equal(1);
@@ -2591,7 +2591,7 @@ describe('registration', () => {
     it('should catch silenceRegistrations errors', () => {
       sinon.stub(utils, 'getReportsBySubject').resolves([]);
       sinon.stub(utils, 'getSubjectIds').returns([]);
-      sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, { some: 'err' });
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').rejects({ some: 'err' });
       return transition.triggers
         .clear_schedule({ doc: {}, params: [] })
         .then(r => r.should.deep.equal('Should have thrown'))
