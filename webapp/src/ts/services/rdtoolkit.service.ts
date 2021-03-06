@@ -6,11 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 })
 export class RDToolkitService {
 
-  tempSessionID; // ToDo remove this.
-
-  constructor() {
-    this.tempSessionID = {};
-  }
+  constructor() { }
 
   enabled() { // ToDo to finalise correct implementation, this is testing.
     try {
@@ -26,15 +22,20 @@ export class RDToolkitService {
   }
 
   provisionRDTest() { // ToDo to finalise correctly, this is testing.
-    const patientId = uuidv4();
-    this.tempSessionID[patientId] = uuidv4();
-
-    console.log('Calling provisionRDTest patientid', patientId);
-    window.medicmobile_android.rdToolkit_provisionRDTest(this.tempSessionID[patientId], 'Pablo', patientId);
+    console.log('Calling provisionRDTest sessionid: cc571ef2-7778-43a0-8bcf-47f7ea42801c');
+    window.medicmobile_android.rdToolkit_provisionRDTest(
+      'cc571ef2-7778-43a0-8bcf-47f7ea42801c',
+      'Pablo',
+      'aa571ef2-7778-43a0-8bcf-47f7ea42801c'
+    );
   }
 
-  captureRDTest(patientId) { // ToDo to finalise correctly, this is testing.
-    console.log('Calling captureRDTest for ', patientId);
-    window.medicmobile_android.rdToolkit_captureRDTest(this.tempSessionID[patientId]);
+  captureRDTest() { // ToDo to finalise correctly, this is testing.
+    try {
+      console.log('Calling provisionRDTest patientid: cc571ef2-7778-43a0-8bcf-47f7ea42801c');
+      window.medicmobile_android.rdToolkit_captureRDTest('cc571ef2-7778-43a0-8bcf-47f7ea42801c');
+    } catch (e) {
+      alert(e);
+    }
   }
 }
