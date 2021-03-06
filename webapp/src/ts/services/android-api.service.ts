@@ -254,6 +254,16 @@ export class AndroidApiService {
     this.geolocationService.permissionRequestResolved();
   }
 
+  rdToolkitProvisionedTestResponse(response) {
+    console.log('rdToolkitProvisionedTestResponse', response);
+    alert(JSON.stringify(response));
+  }
+
+  rdToolkitCapturedTestResponse(response) {
+    console.log('rdToolkitCapturedTestResponse', response);
+    alert(JSON.stringify(response));
+  }
+
   v1 = {
     back: () => this.runInZone('back'),
     logout: () => this.runInZone('logout'),
@@ -262,5 +272,7 @@ export class AndroidApiService {
     simprintsResponse: (...args) => this.runInZone('simprintsResponse', args),
     smsStatusUpdate: (...args) => this.runInZone('smsStatusUpdate', args),
     locationPermissionRequestResolved: () => this.runInZone('locationPermissionRequestResolve'),
+    rdToolkitProvisionedTestResponse: (...args) => this.runInZone('rdToolkitProvisionedTestResponse', args),
+    rdToolkitCapturedTestResponse: (...args) => this.runInZone('rdToolkitCapturedTestResponse', args),
   };
 }
