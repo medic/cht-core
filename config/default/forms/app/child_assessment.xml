@@ -1138,6 +1138,18 @@ Total 5 tabs</value>
           <text id="/child_assessment/group_followup/available:label">
             <value>-</value>
           </text>
+          <text id="/child_assessment/group_followup/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/group_followup/contact/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/group_followup/contact/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/group_followup/contact:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/group_followup/follow_up_improved/no:label">
             <value>-</value>
           </text>
@@ -1163,18 +1175,6 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/group_followup/note_improving:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user/parent/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user/parent:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/group_followup:label">
@@ -1928,6 +1928,18 @@ Total 5 tabs</value>
           <text id="/child_assessment/group_followup/available:label">
             <value>-</value>
           </text>
+          <text id="/child_assessment/group_followup/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/group_followup/contact/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/group_followup/contact/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/group_followup/contact:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/group_followup/follow_up_improved/no:label">
             <value>-</value>
           </text>
@@ -1953,18 +1965,6 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/group_followup/note_improving:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user/parent/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user/parent:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/group_followup:label">
@@ -2716,6 +2716,18 @@ Total 5 tabs</value>
           <text id="/child_assessment/group_followup/available:label">
             <value>yes</value>
           </text>
+          <text id="/child_assessment/group_followup/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/group_followup/contact/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/group_followup/contact/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/group_followup/contact:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/group_followup/follow_up_improved/no:label">
             <value>-</value>
           </text>
@@ -2741,18 +2753,6 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/group_followup/note_improving:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user/parent/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user/parent:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/group_followup:label">
@@ -3504,6 +3504,18 @@ Total 5 tabs</value>
           <text id="/child_assessment/group_followup/available:label">
             <value>-</value>
           </text>
+          <text id="/child_assessment/group_followup/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/group_followup/contact/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/group_followup/contact/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/group_followup/contact:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/group_followup/follow_up_improved/no:label">
             <value>-</value>
           </text>
@@ -3529,18 +3541,6 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/group_followup/note_improving:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user/parent/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user/parent:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/group_followup:label">
@@ -4292,6 +4292,18 @@ Total 5 tabs</value>
           <text id="/child_assessment/group_followup/available:label">
             <value>-</value>
           </text>
+          <text id="/child_assessment/group_followup/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/group_followup/contact/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/group_followup/contact/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/group_followup/contact:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/group_followup/follow_up_improved/no:label">
             <value>-</value>
           </text>
@@ -4317,18 +4329,6 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/group_followup/note_improving:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user/parent/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user/parent:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/group_followup/submitting_user:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/group_followup:label">
@@ -4736,7 +4736,7 @@ Total 5 tabs</value>
         </translation>
       </itext>
       <instance>
-        <child_assessment delimiter="#" id="child_assessment" prefix="J1!child_assessment!" version="2021-03-05_19-55">
+        <child_assessment delimiter="#" id="child_assessment" prefix="J1!child_assessment!" version="2021-03-05_20-24">
           <inputs>
             <meta>
               <location>
@@ -4793,12 +4793,12 @@ Total 5 tabs</value>
           <apt_6_days/>
           <child_treatment_uuid db-doc-ref=" /child_assessment/group_followup "/>
           <group_followup db-doc="true">
-            <submitting_user>
+            <contact>
               <_id/>
               <parent>
                 <_id/>
               </parent>
-            </submitting_user>
+            </contact>
             <type/>
             <form/>
             <patient_id/>
@@ -5106,8 +5106,8 @@ concat( /child_assessment/patient_age_in_years , ' years old')))" nodeset="/chil
       <bind calculate="format-date-time(date-time(floor(decimal-date-time(today())) + 6), &quot;%Y-%m-%d&quot;)" nodeset="/child_assessment/apt_6_days" relevant="selected( /child_assessment/any_danger , 'yes')" type="string"/>
       <bind calculate=" /child_assessment/group_followup " nodeset="/child_assessment/child_treatment_uuid" relevant=" /child_assessment/inputs/source  = 'task'" type="string"/>
       <bind nodeset="/child_assessment/group_followup" relevant=" /child_assessment/inputs/source  = 'task'"/>
-      <bind calculate="../../../inputs/user/contact_id" nodeset="/child_assessment/group_followup/submitting_user/_id" type="string"/>
-      <bind calculate="../../../../inputs/user/parent/_id" nodeset="/child_assessment/group_followup/submitting_user/parent/_id" type="string"/>
+      <bind calculate="../../../inputs/user/contact_id" nodeset="/child_assessment/group_followup/contact/_id" type="string"/>
+      <bind calculate="../../../../inputs/user/parent/_id" nodeset="/child_assessment/group_followup/contact/parent/_id" type="string"/>
       <bind calculate="&quot;data_record&quot;" nodeset="/child_assessment/group_followup/type" type="string"/>
       <bind calculate="&quot;child_treatment&quot;" nodeset="/child_assessment/group_followup/form" type="string"/>
       <bind calculate="../../inputs/contact/_id" nodeset="/child_assessment/group_followup/patient_id" type="string"/>
@@ -5384,8 +5384,8 @@ selected( /child_assessment/group_assessment/g_malnutrition/malnutrition_muac_co
     </group>
     <group appearance="field-list" ref="/child_assessment/group_followup">
       <label ref="jr:itext('/child_assessment/group_followup:label')"/>
-      <group ref="/child_assessment/group_followup/submitting_user">
-        <group ref="/child_assessment/group_followup/submitting_user/parent"/>
+      <group ref="/child_assessment/group_followup/contact">
+        <group ref="/child_assessment/group_followup/contact/parent"/>
       </group>
       <select1 ref="/child_assessment/group_followup/available">
         <label ref="jr:itext('/child_assessment/group_followup/available:label')"/>
