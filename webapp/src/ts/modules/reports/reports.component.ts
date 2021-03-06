@@ -21,7 +21,7 @@ import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
-import { CloudWorksRDTService } from '@mm-services/cloudWorksRDT.service';
+import { RDToolkitService } from '@mm-services/rdtoolkit.service';
 
 const PAGE_SIZE = 50;
 
@@ -65,15 +65,20 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private ngZone:NgZone,
     private scrollLoaderProvider: ScrollLoaderProvider,
     private responsiveService:ResponsiveService,
-    private cloudWorksRDTService:CloudWorksRDTService
+    private rdToolkitService: RDToolkitService
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
     this.servicesActions = new ServicesActions(store);
   }
 
-  createProvisioningRDTest() { // Todo this is test, to be removed
-    this.cloudWorksRDTService.createProvisioningRDTest();
+  provisionRDTest() { // Todo this is test, to be removed
+    this.rdToolkitService.provisionRDTest();
+  }
+
+  testPatientId = ''; // Todo this is test, to be removed
+  captureRDTest() { // Todo this is test, to be removed
+    this.rdToolkitService.captureRDTest(this.testPatientId);
   }
 
   ngOnInit() {
