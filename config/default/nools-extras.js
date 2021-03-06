@@ -55,6 +55,27 @@ function isFormArraySubmittedInWindowExcludingThisReport(reports, formArray, sta
 }
 
 
+function isFormArraySubmittedInWindowAfterThisReport(reports, formArray, start, end, exReport, count) {
+  let found = false;
+  let reportCount = 0;
+  reports.forEach(function (report) {
+    if (formArray.includes(report.form)) {
+      if ( report.reported_date > exReport.reported_date
+            && report.reported_date >= start
+            && report.reported_date <= end
+            && report._id !== exReport._id ) {
+        found = true;
+        if (count) {
+          reportCount++;
+        }
+      }
+    }
+  });
+  if (count) { return reportCount >= count; }
+  else { return found; }
+}
+
+
 function getMostRecentReport(reports, form) {
   let result;
   reports.forEach(function (report) {
@@ -294,6 +315,7 @@ module.exports = {
   getTimeForMidnight,
   isFormArraySubmittedInWindow,
   isFormArraySubmittedInWindowExcludingThisReport,
+  isFormArraySubmittedInWindowAfterThisReport,
   getDateMS,
   getDateISOLocal,
   isDeliveryForm,

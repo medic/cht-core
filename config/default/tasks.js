@@ -7,6 +7,8 @@ const {
   getNewestDeliveryTimestamp,
   isAlive,
   isFormArraySubmittedInWindow,
+  isFormArraySubmittedInWindowExcludingThisReport,
+  isFormArraySubmittedInWindowAfterThisReport,
   getDateISOLocal,
   getTimeForMidnight,
   isDeliveryForm,
@@ -14,8 +16,7 @@ const {
   addDays,
   getRecentANCVisitWithEvent,
   isPregnancyTaskMuted,
-  getField,
-  isFormArraySubmittedInWindowExcludingThisReport
+  getField
 } = extras;
 
 const generateEventForHomeVisit = (week, start, end) => ({
@@ -213,6 +214,46 @@ module.exports = [
     }
   },
 
+  // // MNCH Child assessment 
+  // {
+  //   name: 'child_treatment_follow_up_3day',
+  // },
+
+  // // MNCH Child assessment 
+  // {
+  //   name: 'child_treatment_follow_up_3day',
+  // },
+
+  // MNCH Child assessment child_referral_follow_up_0day
+  {
+    name: 'child_referral_follow_up_0day_TEST',
+    icon: 'icon-followup-general',
+    title: 'Child referral follow up',
+    appliesTo: 'reports',
+    appliesToType: ['child_assessment'],
+    actions: [{type: 'report',form: 'child_assessment'}],
+    appliesIf: function(contact, report) {
+      if( getField(report, 'any_danger') === 'yes' ) {
+        console.log('child_referral_follow_up_0day_TEST task');
+        return true;
+      } else {
+        return false;
+      }
+    },
+    events: [
+      {
+        id: 'child_referral_follow_up_0day_TEST',
+        days: 0, start: 3, end: 3
+      }
+    ],
+    resolvedIf: function(contact, report, event, dueDate) {
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
+      const endTime = addDays(dueDate, event.end + 1).getTime();
+      return isFormArraySubmittedInWindowAfterThisReport(
+        contact.reports, ['child_assessment'], startTime, endTime, report
+      );
+    }
+  },
 
   // MNCH Child assessment child_referral_follow_up_3day
   {
