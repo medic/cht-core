@@ -1,10 +1,13 @@
 import { Injectable } from '@angular/core';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuid } from 'uuid';
+
 
 @Injectable({
   providedIn: 'root',
 })
 export class RDToolkitService {
+  provisionTestResolve;
+  captureTestResolve;
 
   constructor() { }
 
@@ -21,21 +24,37 @@ export class RDToolkitService {
     }
   }
 
-  provisionRDTest() { // ToDo to finalise correctly, this is testing.
-    console.log('Calling provisionRDTest sessionid: cc571ef2-7778-43a0-8bcf-47f7ea42801c');
-    window.medicmobile_android.rdToolkit_provisionRDTest(
-      'cc571ef2-7778-43a0-8bcf-47f7ea42801c',
-      'Pablo',
-      'aa571ef2-7778-43a0-8bcf-47f7ea42801c'
-    );
+  provisionRDTest(patientId, patientName='') {
+    try {
+      window.medicmobile_android.rdToolkit_provisionRDTest(uuid(), patientName, patientId);
+      return new Promise(resolve => this.provisionTestResolve = resolve);
+    } catch (error) {
+      console.error('Error when provisioning RD Test: ', error);
+    }
   }
 
-  captureRDTest() { // ToDo to finalise correctly, this is testing.
+  captureRDTest(sessionId) {
     try {
-      console.log('Calling provisionRDTest patientid: cc571ef2-7778-43a0-8bcf-47f7ea42801c');
-      window.medicmobile_android.rdToolkit_captureRDTest('cc571ef2-7778-43a0-8bcf-47f7ea42801c');
-    } catch (e) {
-      alert(e);
+      window.medicmobile_android.rdToolkit_captureRDTest(sessionId);
+      return new Promise(resolve => this.captureTestResolve = resolve);
+    } catch (error) {
+      console.error('Error when capturing RD Test: ', error);
+    }
+  }
+
+  resolveProvisionedTest(response) {
+    // todo remove warning
+    console.warn('Hey resolveProvisionedTest!!', response);
+    if (response && this.provisionTestResolve) {
+      this.provisionTestResolve(response);
+    }
+  }
+
+  resolveCapturedTest(response) {
+    // todo remove warning
+    console.warn('Hey!! resolveCapturedTest', response);
+    if (response && this.captureTestResolve) {
+      this.captureTestResolve(response);
     }
   }
 }

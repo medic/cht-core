@@ -7,6 +7,7 @@ import { MRDTService } from '@mm-services/mrdt.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { SimprintsService } from '@mm-services/simprints.service';
+import { RDToolkitService } from '@mm-services/rdtoolkit.service';
 
 /**
  * An API to provide integration with the medic-android app.
@@ -27,6 +28,7 @@ export class AndroidApiService {
     private simprintsService:SimprintsService,
     private zone:NgZone,
     private routeSnapshotService:RouteSnapshotService,
+    private rdToolkitService:RDToolkitService
   ) {
   }
 
@@ -257,11 +259,13 @@ export class AndroidApiService {
   rdToolkitProvisionedTestResponse(response) {
     console.log('rdToolkitProvisionedTestResponse', response);
     alert(JSON.stringify(response));
+    this.rdToolkitService.resolveProvisionedTest(response);
   }
 
   rdToolkitCapturedTestResponse(response) {
     console.log('rdToolkitCapturedTestResponse', response);
     alert(JSON.stringify(response));
+    this.rdToolkitService.resolveCapturedTest(response);
   }
 
   v1 = {

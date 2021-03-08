@@ -9,6 +9,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { AndroidApiService } from '@mm-services/android-api.service';
 import { DbService } from '@mm-services/db.service';
 import { EnketoService } from '@mm-services/enketo.service';
+import { RDToolkitService } from '@mm-services/rdtoolkit.service';
 
 @Injectable({
   providedIn: 'root'
@@ -23,6 +24,7 @@ export class IntegrationApiService {
   Settings;
   AndroidApi;
   DB;
+  RDToolkit;
 
   constructor(
     private dbService:DbService,
@@ -35,6 +37,7 @@ export class IntegrationApiService {
     private settingsService:SettingsService,
     // todo simprints
     private androidApiService:AndroidApiService,
+    private rdToolkitService:RDToolkitService
   ) {
     this.DB = dbService;
     this.Language = languageService;
@@ -45,6 +48,7 @@ export class IntegrationApiService {
     this.Settings = settingsService;
     this.AndroidApi = androidApiService;
     this.Translate = translateService;
+    this.RDToolkit = rdToolkitService;
   }
 
   get(service) {
