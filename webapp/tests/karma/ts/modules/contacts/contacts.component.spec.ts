@@ -57,7 +57,8 @@ describe('Contacts component', () => {
     searchService = { search: sinon.stub().resolves([]) };
     settingsService = { get: sinon.stub().resolves([]) };
     sessionService = {
-      isDbAdmin: sinon.stub().returns(false)
+      isDbAdmin: sinon.stub().returns(false),
+      isOnlineOnly: sinon.stub().returns(false),
     };
     tourService = { startIfNeeded: sinon.stub() };
     authService = { has: sinon.stub().resolves(false) };
@@ -104,7 +105,6 @@ describe('Contacts component', () => {
     const mockedSelectors = [
       { selector: Selectors.getContactsList, value: [] },
       { selector: Selectors.getFilters, value: {} },
-      { selector: Selectors.getIsAdmin, value: false },
       { selector: Selectors.contactListContains, value: contactListContains },
       { selector: Selectors.getSelectedContact, value: selectedContact },
     ];
@@ -162,7 +162,7 @@ describe('Contacts component', () => {
   it('should create ContactsComponent', () => {
     expect(component).to.exist;
   });
-  
+
   it('ngOnInit() should load and filter contacts and watch for changes', () => {
     changesService.subscribe.reset();
     const spySubscriptionsAdd = sinon.spy(component.subscription, 'add');
@@ -294,7 +294,7 @@ describe('Contacts component', () => {
     }));
 
     it('Only searches for top-level places as an admin', fakeAsync(() => {
-      store.overrideSelector(Selectors.getIsAdmin, true);
+      sessionService.isOnlineOnly.returns(true);
       userSettingsService.get.resolves({ facility_id: undefined });
       getDataRecordsService.get.resolves({});
       searchResults = [
@@ -483,7 +483,7 @@ describe('Contacts component', () => {
       searchResults = mockResults(49, 50);
       searchService.search.resolves(searchResults.concat(contacts));
       store.overrideSelector(Selectors.getContactsList, searchResults.concat(contacts));
-      
+
       scrollLoaderCallback();
       flush();
       const updatedContacts = component.contactsActions.updateContactsList.args[1][0];

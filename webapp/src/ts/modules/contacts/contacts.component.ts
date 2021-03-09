@@ -36,6 +36,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   private servicesActions;
   private listContains;
   private destroyed;
+  private isOnlineOnly;
 
   contactsList;
   loading = false;
@@ -47,7 +48,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
   moreItems;
   usersHomePlace;
   contactTypes;
-  isAdmin;
   childPlaces;
   allowedChildPlaces = [];
   lastVisitedDateExtras;
@@ -86,16 +86,16 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   ngOnInit() {
+    this.isOnlineOnly = this.sessionService.isOnlineOnly();
+
     this.globalActions.clearFilters(); // clear any global filters first
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getContactsList),
-      this.store.select(Selectors.getIsAdmin),
       this.store.select(Selectors.getFilters),
       this.store.select(Selectors.contactListContains),
       this.store.select(Selectors.getSelectedContact),
-    ).subscribe(([contactsList, isAdmin, filters, listContains, selectedContact]) => {
+    ).subscribe(([contactsList, filters, listContains, selectedContact]) => {
       this.contactsList = contactsList;
-      this.isAdmin = isAdmin;
       this.filters = filters;
       this.listContains = listContains;
       this.selectedContact = selectedContact;
@@ -282,7 +282,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
         .then(filterChildPlaces);
     }
 
-    if (this.isAdmin) {
+    if (this.isOnlineOnly) {
       return this.contactTypesService
         .getChildren()
         .then(filterChildPlaces);

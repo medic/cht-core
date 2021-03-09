@@ -21,6 +21,7 @@ import { ComponentsModule } from '@mm-components/components.module';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { TourService } from '@mm-services/tour.service';
+import { SessionService } from '@mm-services/session.service';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -76,6 +77,7 @@ describe('Reports Component', () => {
           // Needed because of facility filter
           { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves() } },
           { provide: TourService, useValue: tourServiceMock },
+          { provide: SessionService, useValue: { isOnlineOnly: sinon.stub() } },
         ]
       })
       .compileComponents()
