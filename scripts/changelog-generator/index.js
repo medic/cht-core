@@ -16,12 +16,16 @@ const GitHub = require('@octokit/rest');
 const TYPES = [
   { labels: ['Type: Feature'], title: 'Features', issues: [] },
   { labels: ['enhancement', 'Type: Improvement'], title: 'Improvements', issues: [] },
+  { labels: ['Type: Security'], title: 'Security issues', issues: [] },
   { labels: ['Type: Performance'], title: 'Performance fixes', issues: [] },
   { labels: ['bug', 'Type: Bug'], title: 'Bug fixes', issues: [] },
   { labels: ['Type: Technical issue'], title: 'Technical issues', issues: [] },
-  { labels: ['Type: Security'], title: 'Security issues', issues: [] }
 ];
-const PREFIXES_TO_IGNORE = [ 'Type: Internal process', 'Won\'t fix:' ];
+const BREAKING_ISSUES = [];
+const UI_ISSUES = [];
+const BREAKING_CHANGE_LABEL = 'Breaking change';
+const UI_CHANGE_LABEL = 'UI/UX';
+const PREFIXES_TO_IGNORE = [ 'Type: Internal process', 'Won\'t fix:', 'Type: Investigation' ];
 
 const github = new GitHub({
   headers: { 'user-agent': 'changelog-generator' }
@@ -106,8 +110,12 @@ const filterIssues = issues => {
   });
 };
 
+const sortFn = (lhs, rhs) => lhs.data.html_url.localeCompare(rhs.data.html_url);
+
 const sort = issues => {
   const errors = [];
+  const breaking = [];
+  const ui = [];
   issues.forEach(issue => {
     const matchingTypes = TYPES.filter(type => issue.data.labels.find(label => type.labels.includes(label.name)));
     if (!matchingTypes.length) {
@@ -119,6 +127,12 @@ const sort = issues => {
       return;
     }
     matchingTypes[0].issues.push(issue);
+    if (issue.data.labels.some(label => label.name === BREAKING_CHANGE_LABEL)) {
+      breaking.push(issue);
+    }
+    if (issue.data.labels.some(label => label.name === UI_CHANGE_LABEL)) {
+      ui.push(issue);
+    }
   });
 
   if (errors.length) {
@@ -127,10 +141,12 @@ const sort = issues => {
   }
 
   TYPES.forEach(type => {
-    type.issues.sort((lhs, rhs) => lhs.data.html_url.localeCompare(rhs.data.html_url));
+    type.issues.sort(sortFn);
   });
+  BREAKING_ISSUES.sort(sortFn);
+  UI_ISSUES.sort(sortFn);
 
-  return TYPES;
+  return { types: TYPES, breaking, ui };
 };
 
 const getRepo = issue => {
@@ -138,13 +154,36 @@ const getRepo = issue => {
   return parts[parts.length - 1];
 };
 
-const output = groups => {
-  groups.forEach(group => {
+const format = issue => `- [${getRepo(issue)}#${issue.data.number}](${issue.data.html_url}): ${issue.data.title}`;
+
+const output = ({ types, breaking, ui }) => {
+  console.log(`## Upgrade notes`);
+  console.log('');
+
+  console.log(`### Breaking changes`);
+  console.log('');
+  if (breaking.length) {
+    breaking.forEach(issue => console.log(format(issue)));
+  } else {
+    console.log('No breaking changes');
+  }
+  console.log('');
+
+  console.log(`### UI/UX changes`);
+  console.log('');
+  if (ui.length) {
+    ui.forEach(issue => console.log(format(issue)));
+  } else {
+    console.log('No UI/UX changes');
+  }
+  console.log('');
+
+  types.forEach(group => {
     if (group.issues.length) {
       console.log(`### ${group.title}`);
       console.log('');
       group.issues.forEach(issue => {
-        console.log(`- [${getRepo(issue)}#${issue.data.number}](${issue.data.html_url}): ${issue.data.title}`);
+        console.log(format(issue));
       });
       console.log('');
     }
