@@ -32,7 +32,7 @@
             <p>{{'Submit Report' | translate}}</p>
           </a>
           <ul class="dropdown-menu mm-dropdown-menu with-icon" *dropdownMenu>
-            <li *ngFor="let form of nonContactForms; trackBy: trackByForms">
+            <li *ngFor="let form of nonContactForms; trackBy: trackById">
               <a [routerLink]="['/reports', 'add', form.code]">
                 <span [innerHTML]="form.icon | resourceIcon"></span>
                 <span class="content">{{ form.title }}</span>
@@ -175,7 +175,7 @@
               <p>{{'action.report.add' | translate}}</p>
             </a>
             <ul id="relevant-contacts-form" class="dropdown-menu mm-dropdown-menu with-icon" *ngIf="actionBar?.right?.relevantForms && actionBar?.right?.relevantForms?.length">
-              <li *ngFor="let form of actionBar.right.relevantForms; trackBy: trackByForms" [attr.id]="form.id">
+              <li *ngFor="let form of actionBar.right.relevantForms; trackBy: trackById" [attr.id]="form.id">
                 <a (click)="actionBar.right.openContactMutedModal(form)">
                   <span [innerHTML]="form.icon | resourceIcon"></span>
                   <span class="content">{{ form.title }}</span>

@@ -510,12 +510,14 @@ describe('Contacts content component', () => {
       expect(globalActions.updateRightActionBar.args[0][0]).to.deep.equal({
         relevantForms: [
           {
+            id: 'form:test_report_type2',
             code: 2,
             icon: 'b',
             showUnmuteModal: true,
             title: 'Type 2',
           },
           {
+            id: 'form:test_report_type3',
             code: 3,
             icon: 'a',
             showUnmuteModal: true,
