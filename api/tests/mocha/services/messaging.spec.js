@@ -62,6 +62,12 @@ describe('messaging service', () => {
 
   describe('updateMessageTaskStates', () => {
 
+    it('should do nothing when provided list is empty', () => {
+      return service.updateMessageTaskStates([]).then((result) => {
+        chai.expect(result).to.equal(undefined);
+      });
+    });
+
     it('takes a collection of state changes and saves it to docs', () => {
       sinon.stub(db.medic, 'query').resolves({rows: [
         {id: 'testMessageId1'},
@@ -410,7 +416,8 @@ describe('messaging service', () => {
       return service.send('abc').then(() => {
         chai.expect(africasTalking.send.callCount).to.equal(1);
         chai.expect(africasTalking.send.args[0][0]).to.deep.equal([ { id: 'a', to: '+123', content: 'hello' } ]);
-        chai.expect(service.updateMessageTaskStates.callCount).to.equal(0);
+        chai.expect(service.updateMessageTaskStates.callCount).to.equal(1);
+        chai.expect(service.updateMessageTaskStates.args[0]).to.deep.equal([[]]);
       });
     });
 
@@ -490,7 +497,8 @@ describe('messaging service', () => {
       return service._checkDbForMessagesToSend().then(() => {
         chai.expect(africasTalking.send.callCount).to.equal(1);
         chai.expect(africasTalking.send.args[0][0]).to.deep.equal(outgoingMessages);
-        chai.expect(service.updateMessageTaskStates.callCount).to.equal(0);
+        chai.expect(service.updateMessageTaskStates.callCount).to.equal(1);
+        chai.expect(service.updateMessageTaskStates.args[0]).to.deep.equal([[]]);
       });
     });
 

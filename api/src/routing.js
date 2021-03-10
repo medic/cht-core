@@ -32,6 +32,7 @@ const settings = require('./controllers/settings');
 const bulkDocs = require('./controllers/bulk-docs');
 const monitoring = require('./controllers/monitoring');
 const africasTalking = require('./controllers/africas-talking');
+const rapidPro = require('./controllers/rapid-pro');
 const infodoc = require('./controllers/infodoc');
 const authorization = require('./middleware/authorization');
 const hydration = require('./controllers/hydration');
@@ -355,6 +356,8 @@ app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);
 
 app.post('/api/v1/sms/africastalking/incoming-messages', formParser, africasTalking.incomingMessages);
 app.post('/api/v1/sms/africastalking/delivery-reports', formParser, africasTalking.deliveryReports);
+
+app.post('/api/v1/sms/radpidpro/incoming-messages', jsonParser, rapidPro.incomingMessages);
 
 app.get('/api/sms/', (req, res) => res.redirect(301, '/api/sms'));
 app.get('/api/sms', smsGateway.get);
