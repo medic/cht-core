@@ -11,7 +11,7 @@ export class RDToolkitService {
 
   constructor() { }
 
-  enabled() { // ToDo to finalise correct implementation, this is testing.
+  enabled() {
     try {
       return !!(
         window.medicmobile_android
@@ -43,16 +43,12 @@ export class RDToolkitService {
   }
 
   resolveProvisionedTest(response) {
-    // todo remove warning
-    console.warn('Hey resolveProvisionedTest!!', response);
     if (response && this.provisionTestResolve) {
       this.provisionTestResolve(response);
     }
   }
 
   resolveCapturedTest(response) {
-    // todo remove warning
-    console.warn('Hey!! resolveCapturedTest', response);
     if (response && this.captureTestResolve) {
       this.captureTestResolve(response);
     }

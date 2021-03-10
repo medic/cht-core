@@ -5,29 +5,29 @@
   const moment = require('moment');
   require('enketo-core/src/js/plugins');
 
-  const pluginName = 'rdtoolkitprovisioningwidget';
+  const pluginName = 'rdtoolkitprovisionwidget';
 
   /**
    * @constructor
    * @param {Element} element [description]
    * @param {(boolean|{touch: boolean, repeat: boolean})} options options
    */
-  function Rdtoolkitprovisioningwidget(element, options) {
+  function Rdtoolkitprovisionwidget(element, options) {
     this.namespace = pluginName;
     Widget.call(this, element, options);
     this._init();
   }
 
   //copy the prototype functions from the Widget super class
-  Rdtoolkitprovisioningwidget.prototype = Object.create(Widget.prototype);
+  Rdtoolkitprovisionwidget.prototype = Object.create(Widget.prototype);
 
   //ensure the constructor is the new one
-  Rdtoolkitprovisioningwidget.prototype.constructor = Rdtoolkitprovisioningwidget;
+  Rdtoolkitprovisionwidget.prototype.constructor = Rdtoolkitprovisionwidget;
 
-  Rdtoolkitprovisioningwidget.prototype._init = function() {
+  Rdtoolkitprovisionwidget.prototype._init = function() {
     const self = this;
     const $el = $(this.element);
-    const $patientId = $el.find('input[name="/rdtoolkit_provisioning/rdtoolkit_patient_id"]');
+    const $patientId = $el.find('input[name="/rdtoolkit_provision/rdtoolkit_provision_patient_id"]');
 
     const $translate = window.CHTCore.Translate;
     const rdToolkitService = window.CHTCore.RDToolkit;
@@ -42,19 +42,19 @@
           const state = response.state || '';
 
           $(self.element)
-            .find('input[name="/rdtoolkit_provisioning/rdtoolkit_session_id"]')
+            .find('input[name="/rdtoolkit_provision/rdtoolkit_provision_session_id"]')
             .val(sessionId)
             .trigger('change');
           $(self.element)
-            .find('input[name="/rdtoolkit_provisioning/rdtoolkit_state"]')
+            .find('input[name="/rdtoolkit_provision/rdtoolkit_provision_state"]')
             .val(state)
             .trigger('change');
           $(self.element)
-            .find('input[name="/rdtoolkit_provisioning/rdtoolkit_time_started"]')
+            .find('input[name="/rdtoolkit_provision/rdtoolkit_provision_time_started"]')
             .val(timeStarted)
             .trigger('change');
           $(self.element)
-            .find('input[name="/rdtoolkit_provisioning/rdtoolkit_time_resolved"]')
+            .find('input[name="/rdtoolkit_provision/rdtoolkit_provision_time_resolved"]')
             .val(timeResolved)
             .trigger('change');
 
@@ -94,7 +94,7 @@
       .toPromise()
       .then(label => {
         $el
-          .find('.or-appearance-rdtoolkit_patient_id')
+          .find('.or-appearance-rdtoolkit_provision_patient_id')
           .after('<div class="rdtoolkit-preview"></div>')
           .after(`
             <div class="rdtoolkit-actions">
@@ -108,17 +108,17 @@
     return dateTime && moment(dateTime).isValid() ? moment(dateTime).format('LLL'): '';
   }
 
-  Rdtoolkitprovisioningwidget.prototype.destroy = function(element) {};  // eslint-disable-line no-unused-vars
+  Rdtoolkitprovisionwidget.prototype.destroy = function(element) {};  // eslint-disable-line no-unused-vars
 
   $.fn[ pluginName ] = function(options, event) {
     return this.each(function () {
-      const $this = $( this );
+      const $this = $(this);
       let data = $this.data(pluginName);
 
       options = options || {};
 
       if (!data && typeof options === 'object') {
-        $this.data(pluginName, (data = new Rdtoolkitprovisioningwidget(this, options, event)));
+        $this.data(pluginName, (data = new Rdtoolkitprovisionwidget(this, options, event)));
 
       } else if (data && typeof options === 'string') {
         data[options](this);
