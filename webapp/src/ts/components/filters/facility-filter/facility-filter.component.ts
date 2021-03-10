@@ -1,7 +1,6 @@
 import {
   Component,
   EventEmitter,
-  OnDestroy,
   Output,
   ViewChild,
   Input,
@@ -10,11 +9,10 @@ import {
   AfterViewChecked
 } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { combineLatest, Subscription, from } from 'rxjs';
+import { from } from 'rxjs';
 import { flatten as _flatten, sortBy as _sortBy } from 'lodash-es';
 import { TranslateService } from '@ngx-translate/core';
 
-import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import {
   MultiDropdownFilterComponent,
@@ -22,15 +20,15 @@ import {
 } from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
+import { SessionService } from '@mm-services/session.service';
 
 @Component({
   selector: 'mm-facility-filter',
   templateUrl: './facility-filter.component.html'
 })
-export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilter, AfterViewChecked {
-  subscription:Subscription = new Subscription();
+export class FacilityFilterComponent implements OnInit, AbstractFilter, AfterViewChecked {
   private globalActions;
-  isAdmin;
+  private isOnlineOnly;
 
   facilities = [];
   flattenedFacilities = [];
@@ -52,19 +50,13 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
     private placeHierarchyService:PlaceHierarchyService,
     private translateService:TranslateService,
     private ngZone:NgZone,
+    private sessionService:SessionService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
 
   ngOnInit() {
-    const subscription = combineLatest(
-      this.store.select(Selectors.getIsAdmin),
-    ).subscribe(([
-      isAdmin,
-    ]) => {
-      this.isAdmin = isAdmin;
-    });
-    this.subscription.add(subscription);
+    this.isOnlineOnly = this.sessionService.isOnlineOnly();
   }
 
   // this method is called on dropdown open
@@ -162,10 +154,6 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
     this.search.emit();
   }
 
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
-  }
-
   trackByFn(idx, facility) {
     return `${facility.doc?._id}${facility.doc?._rev}`;
   }
@@ -188,7 +176,7 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
       return from([facility.doc.name]);
     }
 
-    return this.translateService.get(this.isAdmin ? 'place.deleted' : 'place.unavailable');
+    return this.translateService.get(this.isOnlineOnly ? 'place.deleted' : 'place.unavailable');
   }
 
   clear() {

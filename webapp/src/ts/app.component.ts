@@ -440,6 +440,7 @@ export class AppComponent implements OnInit {
       .then((jsonForms) => {
         const jsonFormSummaries = jsonForms.map((jsonForm) => {
           return {
+            id: jsonForm.code,
             code: jsonForm.code,
             title: translateTitle(jsonForm.translation_key, jsonForm.name),
             icon: jsonForm.icon,
@@ -455,6 +456,7 @@ export class AppComponent implements OnInit {
             }
             const xFormSummaries = xForms.map(function(xForm) {
               return {
+                id: xForm._id,
                 code: xForm.internalId,
                 title: translateTitle(xForm.translation_key, xForm.title),
                 icon: xForm.icon,
@@ -472,6 +474,7 @@ export class AppComponent implements OnInit {
           }
           this.nonContactForms = xForms
             .map((xForm) => ({
+              id: xForm._id,
               code: xForm.internalId,
               icon: xForm.icon,
               title: translateTitle(xForm.translation_key, xForm.title),

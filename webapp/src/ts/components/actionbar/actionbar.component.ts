@@ -23,7 +23,6 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   selectMode;
   selectedReportsDocs = [];
   actionBar;
-  isAdmin;
   showActionBar;
   loadingContent;
   loadingSubActionBar;
@@ -42,7 +41,6 @@ export class ActionbarComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getActionBar),
       this.store.select(Selectors.getCurrentTab),
       this.store.select(Selectors.getSnapshotData),
-      this.store.select(Selectors.getIsAdmin),
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getLoadingSubActionBar),
       this.store.select(Selectors.getSelectMode),
@@ -53,7 +51,6 @@ export class ActionbarComponent implements OnInit, OnDestroy {
       actionBar,
       currentTab,
       snapshotData,
-      isAdmin,
       loadingContent,
       loadingSubActionBar,
       selectMode,
@@ -65,7 +62,6 @@ export class ActionbarComponent implements OnInit, OnDestroy {
       this.snapshotData = snapshotData;
       this.selectMode = selectMode;
       this.actionBar = actionBar;
-      this.isAdmin = isAdmin;
       this.showActionBar = showActionBar;
       this.loadingContent = loadingContent;
       this.loadingSubActionBar = loadingSubActionBar;
@@ -121,10 +117,6 @@ export class ActionbarComponent implements OnInit, OnDestroy {
     this.modalService
       .show(BulkDeleteConfirmComponent, { initialState: { model: { docs } } })
       .catch(() => {});
-  }
-
-  trackByForms(idx, form) {
-    return form.code;
   }
 
   trackById(idx, item) {

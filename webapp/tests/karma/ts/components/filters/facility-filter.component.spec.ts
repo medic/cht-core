@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { provideMockStore } from '@ngrx/store/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -17,12 +17,13 @@ import {
 } from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { GlobalActions } from '@mm-actions/global';
-import { Selectors } from '@mm-selectors/index';
+import { SessionService } from '@mm-services/session.service';
 
 describe('Facility Filter Component', () => {
   let component:FacilityFilterComponent;
   let fixture:ComponentFixture<FacilityFilterComponent>;
-  let store:MockStore;
+  let sessionService;
+
   let placeHierarchyService;
 
   beforeEach(async(() => {
@@ -30,9 +31,9 @@ describe('Facility Filter Component', () => {
       get: sinon.stub(),
     };
 
-    const mockedSelectors = [
-      { selector: Selectors.getIsAdmin, value: true },
-    ];
+    sessionService = {
+      isOnlineOnly: sinon.stub().returns(true),
+    };
 
     return TestBed
       .configureTestingModule({
@@ -47,7 +48,8 @@ describe('Facility Filter Component', () => {
           MultiDropdownFilterComponent,
         ],
         providers: [
-          provideMockStore({ selectors: mockedSelectors }),
+          provideMockStore(),
+          { provide: SessionService, useValue: sessionService },
           { provide: PlaceHierarchyService, useValue: placeHierarchyService },
         ]
       })
@@ -55,7 +57,6 @@ describe('Facility Filter Component', () => {
       .then(() => {
         fixture = TestBed.createComponent(FacilityFilterComponent);
         component = fixture.componentInstance;
-        store = TestBed.inject(MockStore);
         fixture.detectChanges();
       });
   }));
@@ -256,12 +257,6 @@ describe('Facility Filter Component', () => {
     expect(spySearch.callCount).to.equal(1);
   });
 
-  it('ngOnDestroy() should unsubscribe from observables', () => {
-    const spySubscriptionsUnsubscribe = sinon.spy(component.subscription, 'unsubscribe');
-    component.ngOnDestroy();
-    expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
-  });
-
   it('trackByFn should return unique value', () => {
     const facility = { doc: { _id: 'a', _rev: 'b' } };
     expect(component.trackByFn(0, facility)).to.equal('ab');
@@ -302,9 +297,9 @@ describe('Facility Filter Component', () => {
       });
     }));
 
-    it('should return unavailable for non-admins when name is not set', async(() => {
-      store.overrideSelector(Selectors.getIsAdmin, false);
-      store.refreshState();
+    it('should return unavailable for offline users when name is not set', async(() => {
+      sessionService.isOnlineOnly.returns(false);
+      component.ngOnInit();
       fixture.detectChanges();
       const facility = { doc: { _id: 'fancy' } };
       component.itemLabel(facility).subscribe(value => {

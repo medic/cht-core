@@ -56,7 +56,7 @@ describe('Contacts content component', () => {
     modalService = { show: sinon.stub().resolves() };
     sessionService = {
       isDbAdmin: sinon.stub().returns(false),
-      isAdmin: sinon.stub().returns(false)
+      isOnlineOnly: sinon.stub().returns(false),
     };
     changesService = {
       subscribe: sinon.stub().resolves(of({}))
@@ -333,9 +333,9 @@ describe('Contacts content component', () => {
       expect(contactTypesService.getChildren.callCount).to.equal(0);
     }));
 
-    it('should enable edit and delete in the right action bar when admin user', fakeAsync(() => {
+    it('should enable edit and delete in the right action bar when user is online only', fakeAsync(() => {
       sinon.resetHistory();
-      sessionService.isAdmin.returns(true);
+      sessionService.isOnlineOnly.returns(true);
       store.overrideSelector(Selectors.getSelectedContact, {
         type: { person: true },
         doc: { phone: '11', muted: true },
@@ -360,9 +360,9 @@ describe('Contacts content component', () => {
       expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
     }));
 
-    it('should disable edit when user is not admin and facility is home place ', fakeAsync(() => {
+    it('should disable edit when user is not online only and facility is home place ', fakeAsync(() => {
       sinon.resetHistory();
-      sessionService.isAdmin.returns(false);
+      sessionService.isOnlineOnly.returns(false);
       userSettingsService.get.resolves({ facility_id: 'district-123' });
       store.overrideSelector(Selectors.getSelectedContact, {
         doc: { _id: 'district-123', phone: '123', muted: true },
@@ -383,9 +383,9 @@ describe('Contacts content component', () => {
       expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(false);
     }));
 
-    it('should enable edit when user is not admin and facility is not home place ', fakeAsync(() => {
+    it('should enable edit when user is not online only and facility is not home place ', fakeAsync(() => {
       sinon.resetHistory();
-      sessionService.isAdmin.returns(false);
+      sessionService.isOnlineOnly.returns(false);
       component.userSettings = { facility_id: 'district-9' };
       store.overrideSelector(Selectors.getSelectedContact, {
         doc: { _id: 'district-123', phone: '123', muted: true },
@@ -510,12 +510,14 @@ describe('Contacts content component', () => {
       expect(globalActions.updateRightActionBar.args[0][0]).to.deep.equal({
         relevantForms: [
           {
+            id: 'form:test_report_type2',
             code: 2,
             icon: 'b',
             showUnmuteModal: true,
             title: 'Type 2',
           },
           {
+            id: 'form:test_report_type3',
             code: 3,
             icon: 'a',
             showUnmuteModal: true,

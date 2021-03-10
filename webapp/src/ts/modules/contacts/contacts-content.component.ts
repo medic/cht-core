@@ -19,9 +19,9 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { SessionService } from '@mm-services/session.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
+import { SessionService } from '@mm-services/session.service';
 
 @Component({
   selector: 'contacts-content',
@@ -33,6 +33,8 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   private subscriptionAllContactForms;
   private globalActions;
   private contactsActions;
+
+  private isOnlineOnly;
   loadingContent;
   selectedContact;
   contactsLoadingSummary;
@@ -60,15 +62,17 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     private modalService: ModalService,
     private contactTypesService: ContactTypesService,
     private settingsService: SettingsService,
-    private sessionService: SessionService,
     private userSettingsService: UserSettingsService,
     private responsiveService: ResponsiveService,
+    private sessionService:SessionService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
   }
 
   ngOnInit() {
+    this.isOnlineOnly = this.sessionService.isOnlineOnly();
+
     this.subscribeToStore();
     this.subscribeToRoute();
     this.subscribeToChanges();
@@ -223,7 +227,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       relevantForms: [], // This disables the "New Action" button until forms load
       sendTo: this.selectedContact?.type?.person ? this.selectedContact?.doc : '',
       canDelete: this.canDeleteContact,
-      canEdit: this.sessionService.isAdmin() || this.userSettings?.facility_id !== this.selectedContact?.doc?._id,
+      canEdit: this.isOnlineOnly || this.userSettings?.facility_id !== this.selectedContact?.doc?._id,
       openContactMutedModal:
         this.openContactMutedModal.bind({}, this.router, this.modalService, this.selectedContact._id),
       openSendMessageModal: this.openSendMessageModal.bind({}, this.modalService),
@@ -327,6 +331,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
               this.translateService.instant(xForm.translation_key) : this.translateFromService.get(xForm.title);
             const isUnmute = !!(xForm.internalId && this.settings?.muting?.unmute_forms?.includes(xForm.internalId));
             return {
+              id: xForm._id,
               code: xForm.internalId,
               title: title,
               icon: xForm.icon,

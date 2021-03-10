@@ -21,6 +21,7 @@ import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
 import { MultiDropdownFilterComponent } from
   '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
+import { SessionService } from '@mm-services/session.service';
 
 describe('Reports Filters Component', () => {
   let component: ReportsFiltersComponent;
@@ -28,7 +29,7 @@ describe('Reports Filters Component', () => {
   let searchFiltersService;
 
   beforeEach(async(() => {
-    searchFiltersService = { init: sinon.stub() };
+    searchFiltersService = { init: sinon.stub(), destroy: sinon.stub() };
     return TestBed
       .configureTestingModule({
         imports: [
@@ -53,6 +54,8 @@ describe('Reports Filters Component', () => {
           provideMockStore(),
           { provide: SearchFiltersService, useValue: searchFiltersService },
           { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves([]) } },
+          { provide: SessionService, useValue: { isOnlineOnly: sinon.stub() } },
+
         ]
       })
       .compileComponents()

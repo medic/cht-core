@@ -32,7 +32,7 @@
             <p>{{'Submit Report' | translate}}</p>
           </a>
           <ul class="dropdown-menu mm-dropdown-menu with-icon" *dropdownMenu>
-            <li *ngFor="let form of nonContactForms; trackBy: trackByForms">
+            <li *ngFor="let form of nonContactForms; trackBy: trackById">
               <a [routerLink]="['/reports', 'add', form.code]">
                 <span [innerHTML]="form.icon | resourceIcon"></span>
                 <span class="content">{{ form.title }}</span>
@@ -43,7 +43,12 @@
             <span class="fa fa-check-circle"></span>
             <p>{{'select.mode.start' | translate}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="isAdmin && actionBar?.left?.exportFn" (click)="actionBar?.left?.exportFn($event)" [ngClass]="{'mm-icon-disabled':  !actionBar?.left?.hasResults}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption"
+             mmAuth [mmAuthOnline]="true" [mmAuthAny]="['can_export_all', 'can_export_messages']"
+             *ngIf="actionBar?.left?.exportFn"
+             (click)="actionBar?.left?.exportFn($event)"
+             [ngClass]="{'mm-icon-disabled':  !actionBar?.left?.hasResults}"
+          >
             <span class="fa fa-arrow-down"></span>
             <p>{{'Export' | translate}}</p>
           </a>
@@ -51,7 +56,7 @@
       </div>
 
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'contacts'">
-        <div class="actions dropup" mmAuth [mmAuthAny]="[ isAdmin, actionBar?.left?.childPlaces && 'can_create_places' ]">
+        <div class="actions dropup" mmAuth [mmAuthAny]="[ actionBar?.left?.childPlaces && 'can_create_places' ]">
           <a *ngIf="actionBar?.left?.childPlaces?.length > 1"
              mmAuth="can_create_places"
              class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle"
@@ -88,7 +93,8 @@
             <p>{{ actionBar.left.childPlaces[0].create_key | translate}}</p>
           </a>
 
-          <a *ngIf="isAdmin && actionBar?.left?.exportFn"
+          <a *ngIf="actionBar?.left?.exportFn"
+             mmAuth [mmAuthOnline]="true" [mmAuthAny]="['can_export_all', 'can_export_contacts']"
              class="mm-icon mm-icon-inverse mm-icon-caption"
              (click)="actionBar?.left?.exportFn()"
              [ngClass]="{ 'mm-icon-disabled': !actionBar.left.hasResults }"
@@ -105,7 +111,12 @@
             <span class="fa fa-plus"></span>
             <p>{{'Send Message' | translate}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="isAdmin && actionBar?.left?.exportFn" (click)="actionBar?.left?.exportFn()" [ngClass]="{'mm-icon-disabled': !actionBar?.left?.hasResults}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption"
+             *ngIf="actionBar?.left?.exportFn"
+             mmAuth [mmAuthOnline]="true" [mmAuthAny]="['can_export_all', 'can_export_messages']"
+             (click)="actionBar?.left?.exportFn()"
+             [ngClass]="{'mm-icon-disabled': !actionBar?.left?.hasResults}"
+          >
             <span class="fa fa-arrow-down"></span>
             <p>{{'Export' | translate}}</p>
           </a>
@@ -175,7 +186,7 @@
               <p>{{'action.report.add' | translate}}</p>
             </a>
             <ul id="relevant-contacts-form" class="dropdown-menu mm-dropdown-menu with-icon" *ngIf="actionBar?.right?.relevantForms && actionBar?.right?.relevantForms?.length">
-              <li *ngFor="let form of actionBar.right.relevantForms; trackBy: trackByForms" [attr.id]="form.id">
+              <li *ngFor="let form of actionBar.right.relevantForms; trackBy: trackById" [attr.id]="form.id">
                 <a (click)="actionBar.right.openContactMutedModal(form)">
                   <span [innerHTML]="form.icon | resourceIcon"></span>
                   <span class="content">{{ form.title }}</span>
