@@ -1,5 +1,6 @@
 const _ = require('lodash/core');
 const registrationUtils = require('@medic/registration-utils');
+const contactTypeUtils = require('@medic/contact-types-utils');
 
 /**
  * Hydrates the given contact by uuid and creates a model which
@@ -304,7 +305,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     const setType = function(model, types) {
-      const typeId = model.doc.contact_type || model.doc.type;
+      const typeId = contactTypeUtils.getTypeId(model.doc);
       model.type = types.find(type => type.id === typeId);
     };
 

@@ -1,5 +1,6 @@
 const _ = require('lodash/core');
 const actionTypes = require('./actionTypes');
+const contactTypeUtils = require('@medic/contact-types-utils');
 
 angular.module('inboxServices').factory('ContactsActions',
   function(
@@ -82,7 +83,7 @@ angular.module('inboxServices').factory('ContactsActions',
 
       const getChildTypes = selected => {
         if (!selected.type) {
-          const type = selected.doc.contact_type || selected.doc.type;
+          const type = contactTypeUtils.getTypeId(selected.doc);
           $log.error(`Unknown contact type "${type}" for contact "${selected.doc._id}"`);
           return [];
         }
