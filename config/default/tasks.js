@@ -1,5 +1,5 @@
 const extras = require('./nools-extras');
-
+console.warn('Heeeeey!!');
 const {
   MAX_DAYS_IN_PREGNANCY,
   today,
@@ -232,7 +232,7 @@ module.exports = [
       return getField(report, 't_danger_signs_referral_follow_up') === 'yes' && isAlive(contact);
     },
     resolvedIf: function (contact, report, event, dueDate) {
-      //(refused or migrated) and cleared tasks 
+      //(refused or migrated) and cleared tasks
       if (isPregnancyTaskMuted(contact)) { return true; }
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);//+1 so that source ds_follow_up does not resolve itself;
       const endTime = addDays(dueDate, event.end + 1).getTime();
@@ -334,6 +334,50 @@ module.exports = [
         end: 7,
         dueDate: function (event, contact, report) {
           return getDateISOLocal(getField(report, 't_danger_signs_referral_follow_up_date'));
+        }
+      }
+    ]
+  },
+
+  // RD Toolkit
+  {
+    name: 'task_rdtoolkit_capture',
+    icon: 'icon-healthcare-immunization@2x',
+    title: 'task.rdtoolkit.capture.title',
+    appliesTo: 'reports',
+    appliesToType: ['form:rdtoolkit_provision'],
+    appliesIf: function (contact, report) {
+      console.warn('appliesIf: ', report);
+      return getField(report, 'rdtoolkit_provision_patient_id') && getField(report, 'rdtoolkit_provision_session_id');
+    },
+    resolvedIf: function (contact, report, event, dueDate) {
+      console.warn('resolvedIf: ', report);
+      if (getField(report, 'rdtoolkit_capture_results')) {
+        return true;
+      }
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);
+      const endTime = addDays(dueDate, event.end + 1).getTime();
+      return isFormArraySubmittedInWindow(contact.reports, ['form:rdtoolkit_provision'], startTime, endTime);
+    },
+    actions: [
+      {
+        type: 'report',
+        form: 'form:rdtoolkit_capture',
+        modifyContent: function(content, contact, report) {
+          content.rdtoolkit_capture_patient_id = getField(report, 'rdtoolkit_provision_patient_id');
+          content.rdtoolkit_capture_session_id = getField(report, 'rdtoolkit_provision_session_id');
+          console.warn('tasks modifyContent!: ', content);
+        }
+      }
+    ],
+    events: [
+      {
+        id: 'event_rdtoolkit_capture',
+        start: 3,
+        end: 7,
+        dueDate: function (event, contact, report) {
+          console.warn('tasks due date!: ', getDateISOLocal(getField(report, 'rdtoolkit_provision_time_resolved')));
+          return getDateISOLocal(getField(report, 'rdtoolkit_provision_time_resolved'));
         }
       }
     ]

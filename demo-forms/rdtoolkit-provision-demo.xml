@@ -5,7 +5,7 @@
 
     <model>
       <instance>
-        <rdtoolkit_provision delimiter="#" id="rdtoolkitprovision_demo">
+        <rdtoolkit_provision delimiter="#" id="rdtoolkit_provision">
           <rdtoolkit_provision_patient_id/>
           <rdtoolkit_provision_session_id/>
           <rdtoolkit_provision_state/>

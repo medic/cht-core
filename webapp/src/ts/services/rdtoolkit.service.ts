@@ -26,7 +26,7 @@ export class RDToolkitService {
 
   provisionRDTest(patientId, patientName='') {
     try {
-      window.medicmobile_android.rdToolkit_provisionRDTest(uuid(), patientName, patientId);
+      // window.medicmobile_android.rdToolkit_provisionRDTest(uuid(), patientName, patientId);
       return new Promise(resolve => this.provisionTestResolve = resolve);
     } catch (error) {
       console.error('Error when provisioning RD Test: ', error);
@@ -35,7 +35,7 @@ export class RDToolkitService {
 
   captureRDTest(sessionId) {
     try {
-      window.medicmobile_android.rdToolkit_captureRDTest(sessionId);
+      // window.medicmobile_android.rdToolkit_captureRDTest(sessionId);
       return new Promise(resolve => this.captureTestResolve = resolve);
     } catch (error) {
       console.error('Error when capturing RD Test: ', error);

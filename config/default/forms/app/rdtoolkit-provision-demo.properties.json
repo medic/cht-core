@@ -1,0 +1,8 @@
+{
+  "icon": "icon-healthcare-immunization@2x",
+  "title": "Rapid Diagnostic Toolkit - Provision Test",
+  "context": {
+    "person": true,
+    "place": false
+  }
+}
