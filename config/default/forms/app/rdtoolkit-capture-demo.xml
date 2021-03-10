@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <h:head>
+        <h:title>Rapid Diagnostic Toolkit Demo</h:title>
+
+        <model>
+            <instance>
+                <rdtoolkit_capture delimiter="#" id="rdtoolkit_capture">
+                    <rdtoolkit_capture_patient_id/>
+                    <rdtoolkit_capture_session_id/>
+                    <rdtoolkit_capture_results/>
+                    <rdtoolkit_capture_time_read/>
+                    <meta>
+                        <instanceID/>
+                    </meta>
+                </rdtoolkit_capture>
+            </instance>
+
+            <bind nodeset="/rdtoolkit_capture/rdtoolkit_capture_patient_id" type="string"/>
+            <bind nodeset="/rdtoolkit_capture/rdtoolkit_capture_session_id" type="string"/>
+            <bind nodeset="/rdtoolkit_capture/rdtoolkit_capture_results" type="string"/>
+            <bind nodeset="/rdtoolkit_capture/rdtoolkit_capture_time_read" type="string"/>
+        </model>
+    </h:head>
+
+    <h:body class="pages">
+        <group appearance="field-list rdtoolkit_capture" ref="/rdtoolkit_capture">
+            <label>Capture RD test result</label>
+
+            <input ref="/rdtoolkit_capture/rdtoolkit_capture_patient_id" appearance="rdtoolkit_capture_patient_id">
+                <label>Patient ID</label>
+            </input>
+            <input ref="/rdtoolkit_capture/rdtoolkit_capture_session_id" appearance="rdtoolkit_capture_session_id hidden">
+                <label>Session ID</label>
+            </input>
+            <input ref="/rdtoolkit_capture/rdtoolkit_capture_results" appearance="rdtoolkit_capture_results hidden">
+                <label>Results</label>
+            </input>
+            <input ref="/rdtoolkit_capture/rdtoolkit_capture_time_read" appearance="rdtoolkit_capture_time_read hidden">
+                <label>Taken on</label>
+            </input>
+        </group>
+    </h:body>
+</h:html>

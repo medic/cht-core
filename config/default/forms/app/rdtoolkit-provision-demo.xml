@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Rapid Diagnostic Toolkit Demo</h:title>
+
+    <model>
+      <instance>
+        <rdtoolkit_provision delimiter="#" id="rdtoolkit_provision">
+          <rdtoolkit_provision_patient_id/>
+          <rdtoolkit_provision_session_id/>
+          <rdtoolkit_provision_state/>
+          <rdtoolkit_provision_time_started/>
+          <rdtoolkit_provision_time_resolved/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </rdtoolkit_provision>
+      </instance>
+
+      <bind nodeset="/rdtoolkit_provision/rdtoolkit_provision_patient_id" type="string"/>
+      <bind nodeset="/rdtoolkit_provision/rdtoolkit_provision_session_id" type="string"/>
+      <bind nodeset="/rdtoolkit_provision/rdtoolkit_provision_state" type="string"/>
+      <bind nodeset="/rdtoolkit_provision/rdtoolkit_provision_time_started" type="string"/>
+      <bind nodeset="/rdtoolkit_provision/rdtoolkit_provision_time_resolved" type="string"/>
+    </model>
+  </h:head>
+
+  <h:body class="pages">
+    <group appearance="field-list rdtoolkit_provision" ref="/rdtoolkit_provision">
+      <label>Provision a RD test</label>
+
+      <input ref="/rdtoolkit_provision/rdtoolkit_provision_patient_id" appearance="rdtoolkit_provision_patient_id">
+        <label>Patient ID</label>
+      </input>
+      <input ref="/rdtoolkit_provision/rdtoolkit_provision_session_id" appearance="rdtoolkit_provision_session_id hidden">
+        <label>Session ID</label>
+      </input>
+      <input ref="/rdtoolkit_provision/rdtoolkit_provision_state" appearance="rdtoolkit_provision_state hidden">
+        <label>Status</label>
+      </input>
+      <input ref="/rdtoolkit_provision/rdtoolkit_provision_time_started" appearance="rdtoolkit_provision_time_started hidden">
+        <label>Started on</label>
+      </input>
+      <input ref="/rdtoolkit_provision/rdtoolkit_provision_time_resolved" appearance="rdtoolkit_provision_time_resolved hidden">
+        <label>Results available on</label>
+      </input>
+    </group>
+  </h:body>
+</h:html>
