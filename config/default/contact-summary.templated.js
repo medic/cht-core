@@ -184,7 +184,7 @@ const cards = [
     label: 'contact.profile.pregnancy.past',
     appliesToType: 'report',
     appliesIf: function (report) {
-      if (thisContact.type !== 'person') { return false; }
+      if (thisContact && thisContact.type !== 'person') { return false; }
       if (report.form === 'delivery') { return true; }
       if (report.form === 'pregnancy') {
         //check if early end to pregnancy (miscarriage/abortion)

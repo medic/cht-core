@@ -27,14 +27,20 @@
   Rdtoolkitprovisionwidget.prototype._init = function() {
     const self = this;
     const $el = $(this.element);
-    const $patientId = $el.find('input[name="/rdtoolkit_provision/rdtoolkit_provision_patient_id"]');
+    const $contact = $('.or-appearance-rdtoolkit_provision_contact');
 
     const $translate = window.CHTCore.Translate;
     const rdToolkitService = window.CHTCore.RDToolkit;
 
     $el.on('click', '.btn.rdtoolkit-provision-test', function() {
+      const patientId = $contact.find('select').val();
+
+      if (!patientId) {
+        return;
+      }
+
       rdToolkitService
-        .provisionRDTest($patientId.val())
+        .provisionRDTest(patientId)
         .then((response = {}) => {
           const sessionId = response.sessionId || '';
           const timeStarted = getDate(response.timeStarted);
@@ -94,7 +100,7 @@
       .toPromise()
       .then(label => {
         $el
-          .find('.or-appearance-rdtoolkit_provision_patient_id')
+          .find('.or-appearance-rdtoolkit_provision_contact')
           .after('<div class="rdtoolkit-preview"></div>')
           .after(`
             <div class="rdtoolkit-actions">

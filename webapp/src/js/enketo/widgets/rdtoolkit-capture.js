@@ -27,14 +27,14 @@
   Rdtoolkitcapturewidget.prototype._init = function() {
     const self = this;
     const $el = $(this.element);
-    const $patientId = $el.find('input[name="/rdtoolkit_capture/rdtoolkit_capture_patient_id"]');
+    const $sessionId = $el.find('input[name="/rdtoolkit_capture/rdtoolkit_capture_session_id"]');
 
     const $translate = window.CHTCore.Translate;
     const rdToolkitService = window.CHTCore.RDToolkit;
 
     $el.on('click', '.btn.rdtoolkit-capture-test', function() {
       rdToolkitService
-        .captureRDTest($patientId.val())
+        .captureRDTest($sessionId.val())
         .then((response = {}) => {
           const sessionId = response.sessionId || '';
           const timeRead = getDate(response.timeRead);
@@ -85,7 +85,7 @@
       .toPromise()
       .then(label => {
         $el
-          .find('.or-appearance-rdtoolkit_capture_patient_id')
+          .find('.or-appearance-patient_id')
           .after('<div class="rdtoolkit-preview"></div>')
           .after(`
             <div class="rdtoolkit-actions">
