@@ -89,7 +89,9 @@ const getStateUpdates = (apiToken, messages) => {
   messages.forEach(message => {
     promiseChain = promiseChain.then((statusUpdates) => {
       return getState(apiToken, host, message).then(result => {
-        statusUpdates.push(result);
+        if (result) {
+          statusUpdates.push(result);
+        }
         return statusUpdates;
       });
     });
@@ -197,7 +199,10 @@ module.exports = {
         messages.forEach(message => {
           promiseChain = promiseChain.then((statusUpdates) => {
             return sendMessage(apiToken, host, message).then(result => {
-              statusUpdates.push(result);
+              if (result) {
+                statusUpdates.push(result);
+              }
+
               return statusUpdates;
             });
           });
