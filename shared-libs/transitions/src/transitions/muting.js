@@ -5,6 +5,7 @@ const utils = require('../lib/utils');
 const messages = require('../lib/messages');
 const validation = require('../lib/validation');
 const mutingUtils = require('../lib/muting_utils');
+const contactTypesUtils = require('@medic/contact-types-utils');
 
 const TRANSITION_NAME = 'muting';
 const CONFIG_NAME = 'muting';
@@ -26,11 +27,7 @@ const isUnmuteForm = form => {
 
 const getEventType = muted => muted ? 'mute' : 'unmute';
 
-const isContact = doc => {
-  const contactTypes = config.get('contact_types') || [];
-  const typeId = doc.contact_type || doc.type;
-  return contactTypes.some(type => type.id === typeId);
-};
+const isContact = doc => !!contactTypesUtils.getContactType(config.getAll(), doc);
 
 const isRelevantReport = (doc, info = {}) =>
   Boolean(doc &&
