@@ -8,6 +8,7 @@ describe('XmlForms service', () => {
   let hasAuth;
   let UserContact;
   let getContactType;
+  let getTypeId;
   let contextUtils;
   let error;
 
@@ -33,6 +34,7 @@ describe('XmlForms service', () => {
     hasAuth = sinon.stub();
     UserContact = sinon.stub();
     getContactType = sinon.stub();
+    getTypeId = sinon.stub().callsFake(doc => doc.type === 'contact' ? doc.contact_type : doc.type);
     error = sinon.stub();
     contextUtils = {};
     module($provide => {
@@ -44,7 +46,7 @@ describe('XmlForms service', () => {
       $provide.value('Auth', { has: hasAuth });
       $provide.value('UserContact', UserContact);
       $provide.value('XmlFormsContextUtils', contextUtils);
-      $provide.value('ContactTypes', { get: getContactType });
+      $provide.value('ContactTypes', { get: getContactType, getTypeId: getTypeId });
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('$log', {error: error});
     });

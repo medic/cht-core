@@ -8,6 +8,7 @@ describe('Contacts store', () => {
   let isAdmin;
   let userSettings;
   let getChildren;
+  let getTypeId;
   let contactSummary;
   let settings;
   let hasAuth;
@@ -33,6 +34,7 @@ describe('Contacts store', () => {
     isAdmin = sinon.stub();
     userSettings = sinon.stub();
     getChildren = sinon.stub();
+    getTypeId = sinon.stub().callsFake(doc => doc.type === 'contact' ? doc.contact_type : doc.type);
     contactSummary = sinon.stub();
     settings = sinon.stub();
     hasAuth = sinon.stub();
@@ -58,7 +60,7 @@ describe('Contacts store', () => {
       });
       $provide.value('Session', { isAdmin });
       $provide.value('UserSettings', userSettings);
-      $provide.value('ContactTypes', { getChildren });
+      $provide.value('ContactTypes', { getChildren, getTypeId });
       $provide.value('ContactSummary', contactSummary);
       $provide.value('Settings', settings);
       $provide.value('Auth', { has: hasAuth });

@@ -1,6 +1,5 @@
 const _ = require('lodash/core');
 const registrationUtils = require('@medic/registration-utils');
-const contactTypeUtils = require('@medic/contact-types-utils');
 
 /**
  * Hydrates the given contact by uuid and creates a model which
@@ -128,7 +127,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     const groupChildrenByType = children => {
-      return _.groupBy(children, child => child.doc.contact_type || child.doc.type);
+      return _.groupBy(children, child => ContactTypes.getTypeId(child.doc));
     };
 
     const addPrimaryContact = function(doc, children) {
@@ -305,7 +304,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     const setType = function(model, types) {
-      const typeId = contactTypeUtils.getTypeId(model.doc);
+      const typeId = ContactTypes.getTypeId(model.doc);
       model.type = types.find(type => type.id === typeId);
     };
 

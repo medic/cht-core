@@ -79,7 +79,8 @@ describe('Contacts controller', () => {
     scope.clearSelection = sinon.stub();
     contactTypes = {
       getChildren: sinon.stub(),
-      includes: sinon.stub()
+      includes: sinon.stub(),
+      getTypeId: sinon.stub().callsFake(doc => doc.type === 'contact' ? doc.contact_type : doc.type),
     };
     contactTypes.getChildren.resolves([{
       id: childType,

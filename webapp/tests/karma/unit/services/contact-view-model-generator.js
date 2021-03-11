@@ -65,7 +65,10 @@ describe('ContactViewModelGenerator service', () => {
         { id: 'clinic', parents: [ 'mushroom' ] },
         { id: 'mushroom', name_key: 'label.mushroom' }
       ];
-      ContactTypes = { getAll: sinon.stub().resolves(types) };
+      ContactTypes = {
+        getAll: sinon.stub().resolves(types),
+        getTypeId: sinon.stub().callsFake(doc => doc.type === 'contact' ? doc.contact_type : doc.type),
+      };
       lineageModelGenerator = { contact: sinon.stub() };
       GetDataRecords = sinon.stub();
       Session = { isOnlineOnly: function() {} };
