@@ -62,7 +62,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     });
 
     const getFormInstanceData = function() {
-      const type = ctrl.contact && ContactTypes.getTypeId(ctrl.contact);
+      const type = ContactTypes.getTypeId(ctrl.contact);
       if (!type) {
         return null;
       }
