@@ -39,10 +39,11 @@
           const sessionId = response.sessionId || '';
           const timeRead = getDate(response.timeRead);
           const results = response.results || '';
+          const resultsDescription = getFormattedResult(results);
 
-          setFields($widget, sessionId, results, timeRead);
+          setFields($widget, sessionId, results, timeRead, resultsDescription);
           hideActions($widget);
-          displayPreview($widget, results, timeRead);
+          displayPreview($widget, resultsDescription, timeRead);
         });
     });
   };
@@ -69,7 +70,7 @@
       .hide();
   }
 
-  function displayPreview($widget, results, timeRead) {
+  function displayPreview($widget, resultsDescription, timeRead) {
     // ToDo: add translation support
     $widget
       .find('.rdtoolkit-preview')
@@ -80,7 +81,7 @@
         <br>
         <div>
             <span class="rdt-label">Results: </span>
-            <span class="rdt-value">${results}</span>
+            <span class="rdt-value">${resultsDescription}</span>
         </div>
         <div>
           <span class="rdt-label">Taken on: </span>
@@ -93,7 +94,7 @@
       `);
   }
 
-  function setFields($widget, sessionId, results, timeRead) {
+  function setFields($widget, sessionId, results, timeRead, resultsDescription) {
     // ToDo: set these values in the Enketo way by using: window.CHTCore.Enketo.getCurrentForm()
     $widget
       .find('input[name="/rdtoolkit_capture/rdtoolkit_capture_session_id"]')
@@ -102,6 +103,10 @@
     $widget
       .find('input[name="/rdtoolkit_capture/rdtoolkit_capture_results"]')
       .val(results)
+      .trigger('change');
+    $widget
+      .find('input[name="/rdtoolkit_capture/rdtoolkit_capture_results_description"]')
+      .val(resultsDescription)
       .trigger('change');
     $widget
       .find('input[name="/rdtoolkit_capture/rdtoolkit_capture_time_read"]')
@@ -123,6 +128,30 @@
     return form.model.$.find(fieldName).text();
   }
 
+  function getFormattedResult(results) {
+    if (!results) {
+      return '';
+    }
+
+    let description = '';
+    // ToDo get list from RD toolkit or add translation file.
+    const codes = {
+      mal_pf_neg: 'negative',
+      mal_pv_neg: 'negative',
+      mal_pf_pos: 'positive',
+      mal_pv_pos: 'positive',
+      universal_control_failure: 'invalid - control failed'
+    };
+
+    results.forEach(item => {
+      if (description) {
+        description += ', ';
+      }
+      description += `${item.test}: ${codes[item.result] || item.result}`;
+    });
+
+    return description;
+  }
 
   $.fn[pluginName] = function(options, event) {
     return this.each(function() {

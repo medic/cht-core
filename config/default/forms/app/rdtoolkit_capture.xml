@@ -19,12 +19,14 @@
                         <value>Session ID</value>
                     </text>
                     <text id="/rdtoolkit_capture/rdtoolkit_capture_results:label">
+                        <value>Result codes</value>
+                    </text>
+                    <text id="/rdtoolkit_capture/rdtoolkit_capture_results_description:label">
                         <value>Results</value>
                     </text>
                     <text id="/rdtoolkit_capture/rdtoolkit_capture_time_read:label">
                         <value>Taken on</value>
                     </text>
-
                 </translation>
             </itext>
 
@@ -34,7 +36,8 @@
                     <patient_name/>
                     <patient_id/>
                     <rdtoolkit_capture_session_id tag="hidden"/>
-                    <rdtoolkit_capture_results/>
+                    <rdtoolkit_capture_results tag="hidden"/>
+                    <rdtoolkit_capture_results_description/>
                     <rdtoolkit_capture_time_read/>
                     <meta tag="hidden">
                         <instanceID/>
@@ -47,6 +50,7 @@
             <bind nodeset="/rdtoolkit_capture/patient_id" type="string" readonly="true()"/>
             <bind nodeset="/rdtoolkit_capture/rdtoolkit_capture_session_id" type="string"/>
             <bind nodeset="/rdtoolkit_capture/rdtoolkit_capture_results" type="string"/>
+            <bind nodeset="/rdtoolkit_capture/rdtoolkit_capture_results_description" type="string"/>
             <bind nodeset="/rdtoolkit_capture/rdtoolkit_capture_time_read" type="string"/>
         </model>
     </h:head>
@@ -67,6 +71,9 @@
             </input>
             <input ref="/rdtoolkit_capture/rdtoolkit_capture_results" appearance="rdtoolkit_capture_results hidden">
                 <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_capture_results:label')"/>
+            </input>
+            <input ref="/rdtoolkit_capture/rdtoolkit_capture_results_description" appearance="rdtoolkit_capture_results_description hidden">
+                <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_capture_results_description:label')"/>
             </input>
             <input ref="/rdtoolkit_capture/rdtoolkit_capture_time_read" appearance="rdtoolkit_capture_time_read hidden">
                 <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_capture_time_read:label')"/>
