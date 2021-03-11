@@ -4,6 +4,30 @@
         <h:title>Rapid Diagnostic Toolkit Demo</h:title>
 
         <model>
+            <itext>
+                <translation lang="en">
+                    <text id="/rdtoolkit_capture/patient_uuid:label">
+                        <value>Patient UUID</value>
+                    </text>
+                    <text id="/rdtoolkit_capture/patient_id:label">
+                        <value>Patient ID: <output value="/rdtoolkit_capture/patient_id"/></value>
+                    </text>
+                    <text id="/rdtoolkit_capture/patient_name/value:label">
+                        <value>Patient Name: <output value="/rdtoolkit_capture/patient_name"/></value>
+                    </text>
+                    <text id="/rdtoolkit_capture/rdtoolkit_capture_session_id:label">
+                        <value>Session ID</value>
+                    </text>
+                    <text id="/rdtoolkit_capture/rdtoolkit_capture_results:label">
+                        <value>Results</value>
+                    </text>
+                    <text id="/rdtoolkit_capture/rdtoolkit_capture_time_read:label">
+                        <value>Taken on</value>
+                    </text>
+
+                </translation>
+            </itext>
+
             <instance>
                 <rdtoolkit_capture delimiter="#" id="rdtoolkit_capture">
                     <patient_uuid tag="hidden"/>
@@ -30,22 +54,22 @@
     <h:body class="pages">
         <group appearance="field-list rdtoolkit_capture" ref="/rdtoolkit_capture">
             <input ref="/rdtoolkit_capture/patient_uuid" appearance="patient_uuid hidden">
-                <label>Patient UUID</label>
+                <label ref="jr:itext('/rdtoolkit_capture/patient_uuid:label')"/>
             </input>
             <input ref="/rdtoolkit_capture/patient_name" appearance="patient_name">
-                <label>Patient Name: <output value="/rdtoolkit_capture/patient_name"/></label>
+                <label ref="jr:itext('/rdtoolkit_capture/patient_name/value:label')"/>
             </input>
             <input ref="/rdtoolkit_capture/patient_id" appearance="patient_id">
-                <label>Patient ID: <output value="/rdtoolkit_capture/patient_id"/></label>
+                <label ref="jr:itext('/rdtoolkit_capture/patient_id:label')"/>
             </input>
             <input ref="/rdtoolkit_capture/rdtoolkit_capture_session_id" appearance="rdtoolkit_capture_session_id hidden">
-                <label>Session ID</label>
+                <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_capture_session_id:label')"/>
             </input>
             <input ref="/rdtoolkit_capture/rdtoolkit_capture_results" appearance="rdtoolkit_capture_results hidden">
-                <label>Results</label>
+                <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_capture_results:label')"/>
             </input>
             <input ref="/rdtoolkit_capture/rdtoolkit_capture_time_read" appearance="rdtoolkit_capture_time_read hidden">
-                <label>Taken on</label>
+                <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_capture_time_read:label')"/>
             </input>
         </group>
     </h:body>

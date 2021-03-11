@@ -257,14 +257,10 @@ export class AndroidApiService {
   }
 
   rdToolkitProvisionedTestResponse(response) {
-    console.log('rdToolkitProvisionedTestResponse', response);
-    alert(JSON.stringify(response));
     this.rdToolkitService.resolveProvisionedTest(response);
   }
 
   rdToolkitCapturedTestResponse(response) {
-    console.log('rdToolkitCapturedTestResponse', response);
-    alert(JSON.stringify(response));
     this.rdToolkitService.resolveCapturedTest(response);
   }
 

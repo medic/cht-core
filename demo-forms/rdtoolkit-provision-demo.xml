@@ -9,6 +9,24 @@
           <text id="/rdtoolkit_provision/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
           </text>
+          <text id="/rdtoolkit_provision/patient_name:label">
+            <value>Patient name</value>
+          </text>
+          <text id="/rdtoolkit_provision/patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/rdtoolkit_provision/rdtoolkit_provision_session_id:label">
+            <value>Session ID</value>
+          </text>
+          <text id="/rdtoolkit_provision/rdtoolkit_provision_state:label">
+            <value>Status</value>
+          </text>
+          <text id="/rdtoolkit_provision/rdtoolkit_provision_time_started:label">
+            <value>Started on</value>
+          </text>
+          <text id="/rdtoolkit_provision/rdtoolkit_provision_time_resolved:label">
+            <value>Results available on</value>
+          </text>
         </translation>
       </itext>
 
@@ -24,8 +42,8 @@
           </inputs>
 
           <patient_uuid tag="hidden"/>
-          <patient_name tag="disabled"/>
-          <patient_id tag="disabled"/>
+          <patient_name/>
+          <patient_id/>
           <rdtoolkit_provision_session_id tag="hidden"/>
           <rdtoolkit_provision_state/>
           <rdtoolkit_provision_time_started/>
@@ -60,16 +78,16 @@
         </input>
       </group>
       <input ref="/rdtoolkit_provision/rdtoolkit_provision_session_id" appearance="rdtoolkit_provision_session_id hidden">
-        <label>Session ID</label>
+        <label ref="jr:itext('/rdtoolkit_provision/rdtoolkit_provision_session_id:label')"/>
       </input>
       <input ref="/rdtoolkit_provision/rdtoolkit_provision_state" appearance="rdtoolkit_provision_state hidden">
-        <label>Status</label>
+        <label ref="jr:itext('/rdtoolkit_provision/rdtoolkit_provision_state:label')"/>
       </input>
       <input ref="/rdtoolkit_provision/rdtoolkit_provision_time_started" appearance="rdtoolkit_provision_time_started hidden">
-        <label>Started on</label>
+        <label ref="jr:itext('/rdtoolkit_provision/rdtoolkit_provision_time_started:label')"/>
       </input>
       <input ref="/rdtoolkit_provision/rdtoolkit_provision_time_resolved" appearance="rdtoolkit_provision_time_resolved hidden">
-        <label>Results available on</label>
+        <label ref="jr:itext('/rdtoolkit_provision/rdtoolkit_provision_time_resolved:label')"/>
       </input>
     </group>
   </h:body>
