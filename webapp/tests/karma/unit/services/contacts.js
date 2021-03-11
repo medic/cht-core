@@ -4,6 +4,8 @@ describe('Contacts service', () => {
 
   let service;
   let dbQuery;
+  let contactTypes;
+  let cache;
 
   beforeEach(() => {
     module('inboxApp');
@@ -13,10 +15,16 @@ describe('Contacts service', () => {
       { id: 'health_center' },
       { id: 'clinic' }
     ];
+    contactTypes = {
+      getPlaceTypes: sinon.stub().resolves(placeTypes),
+      getTypeId: sinon.stub(),
+    };
+    cache = sinon.stub().callsFake(options => options.get);
+
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ query: dbQuery }));
-      $provide.value('Cache', options => options.get);
-      $provide.value('ContactTypes', { getPlaceTypes: () => Promise.resolve(placeTypes) });
+      $provide.value('Cache', cache);
+      $provide.value('ContactTypes', contactTypes);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
     inject($injector => {
@@ -44,7 +52,6 @@ describe('Contacts service', () => {
   });
 
   it('returns all clinics when no user district', () => {
-
     const clinicA = {
       _id: '920a7f6a-d01d-5cfe-7c9182fe6551322a',
       _rev: '2-55151d808dacc7f12fdd1513f2eddc75',
@@ -135,6 +142,53 @@ describe('Contacts service', () => {
 
     return service(['clinic']).then(actual => {
       chai.expect(actual).to.deep.equal([ clinicA, clinicB ]);
+    });
+  });
+
+  it('should bust cache by correct type', () => {
+    dbQuery.resolves({ rows: [] });
+
+    return service(['clinic']).then(() => {
+      chai.expect(contactTypes.getPlaceTypes.callCount).to.equal(1);
+      chai.expect(cache.callCount).to.equal(3);
+
+      const forDistrictHospital = cache.args[0][0];
+      const forHealthCenter = cache.args[1][0];
+      const forClinic = cache.args[2][0];
+
+      const doc = { _id: 'someDoc', type: 'something', contact_type: 'otherthing' };
+      contactTypes.getTypeId.withArgs(doc).returns('the correct type');
+
+      chai.expect(forDistrictHospital.invalidate(doc)).to.equal(false);
+      chai.expect(forHealthCenter.invalidate(doc)).to.equal(false);
+      chai.expect(forClinic.invalidate(doc)).to.equal(false);
+
+      chai.expect(contactTypes.getTypeId.callCount).to.equal(3);
+      chai.expect(contactTypes.getTypeId.args).to.deep.equal([[doc], [doc], [doc],]);
+
+      sinon.resetHistory();
+
+      const otherDoc = { _id: 'someDoc', type: 'something', contact_type: 'otherthing' };
+      contactTypes.getTypeId.withArgs(otherDoc).returns('district_hospital');
+
+      chai.expect(forDistrictHospital.invalidate(otherDoc)).to.equal(true);
+      chai.expect(forHealthCenter.invalidate(otherDoc)).to.equal(false);
+      chai.expect(forClinic.invalidate(otherDoc)).to.equal(false);
+
+      chai.expect(contactTypes.getTypeId.callCount).to.equal(3);
+      chai.expect(contactTypes.getTypeId.args).to.deep.equal([[otherDoc], [otherDoc], [otherDoc],]);
+
+      sinon.resetHistory();
+
+      const thirdDoc = { _id: 'someDoc', type: 'something', contact_type: 'otherthing' };
+      contactTypes.getTypeId.withArgs(thirdDoc).returns('clinic');
+
+      chai.expect(forDistrictHospital.invalidate(thirdDoc)).to.equal(false);
+      chai.expect(forHealthCenter.invalidate(thirdDoc)).to.equal(false);
+      chai.expect(forClinic.invalidate(thirdDoc)).to.equal(true);
+
+      chai.expect(contactTypes.getTypeId.callCount).to.equal(3);
+      chai.expect(contactTypes.getTypeId.args).to.deep.equal([[thirdDoc], [thirdDoc], [thirdDoc],]);
     });
   });
 

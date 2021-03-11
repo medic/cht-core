@@ -276,6 +276,21 @@ describe('Contacts controller', () => {
         });
     });
 
+    it('should search for homeplace children of the correct type', () => {
+      searchResults = [ { _id: 'search-result' } ];
+      district.contact_type = 'whatever';
+      contactTypes.getTypeId.returns('some type');
+
+      return createController()
+        .getSetupPromiseForTesting()
+        .then(() => {
+          assert.equal(contactTypes.getTypeId.callCount, 1);
+          assert.deepEqual(contactTypes.getTypeId.args[0], [district]);
+          assert.equal(contactTypes.getChildren.callCount, 1);
+          assert.deepEqual(contactTypes.getChildren.args[0], ['some type']);
+        });
+    });
+
     it('Only displays the home place once', () => {
       searchResults = [
         {
