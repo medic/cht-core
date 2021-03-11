@@ -24,82 +24,42 @@
   //ensure the constructor is the new one
   Rdtoolkitprovisionwidget.prototype.constructor = Rdtoolkitprovisionwidget;
 
+  Rdtoolkitprovisionwidget.prototype.destroy = function(element) {};  // eslint-disable-line no-unused-vars
+
   Rdtoolkitprovisionwidget.prototype._init = function() {
-    const self = this;
-    const $el = $(this.element);
-    const $contact = $('.or-appearance-rdtoolkit_provision_contact');
-
-    const $translate = window.CHTCore.Translate;
+    const $widget = $(this.element);
     const rdToolkitService = window.CHTCore.RDToolkit;
+    displayActions($widget);
 
-    $el.on('click', '.btn.rdtoolkit-provision-test', function() {
-      const patientId = $contact.find('select').val();
+    $widget.on('click', '.btn.rdtoolkit-provision-test', function() {
+      const patientName = getFieldValue('patient_name');
+      const patientId = getFieldValue('patient_id');
 
       if (!patientId) {
         return;
       }
 
       rdToolkitService
-        .provisionRDTest(patientId)
+        .provisionRDTest(patientId, patientName)
         .then((response = {}) => {
           const sessionId = response.sessionId || '';
           const timeStarted = getDate(response.timeStarted);
           const timeResolved = getDate(response.timeResolved);
           const state = response.state || '';
 
-          $(self.element)
-            .find('input[name="/rdtoolkit_provision/rdtoolkit_provision_session_id"]')
-            .val(sessionId)
-            .trigger('change');
-          $(self.element)
-            .find('input[name="/rdtoolkit_provision/rdtoolkit_provision_state"]')
-            .val(state)
-            .trigger('change');
-          $(self.element)
-            .find('input[name="/rdtoolkit_provision/rdtoolkit_provision_time_started"]')
-            .val(timeStarted)
-            .trigger('change');
-          $(self.element)
-            .find('input[name="/rdtoolkit_provision/rdtoolkit_provision_time_resolved"]')
-            .val(timeResolved)
-            .trigger('change');
-
-          $(self.element)
-            .find('.rdtoolkit-actions')
-            .hide();
-
-          $(self.element)
-            .find('.rdtoolkit-preview')
-            .append(`
-              <div>
-                <span class="rdt-label">Provision test information:</span>
-              </div>
-              <br>
-              <div>
-                  <span class="rdt-label">Status: </span>
-                  <span class="rdt-value">${state}</span>
-              </div>
-              <div>
-                <span class="rdt-label">Started on: </span>
-                <span class="rdt-value">${timeStarted}</span>
-              </div>
-              <div>
-                <span class="rdt-label">Results available on: </span>
-                <span class="rdt-value">${timeResolved}</span>
-              </div>
-              <br>
-              <div>
-                <span class="rdt-label">Click submit to save the information.</span>
-              </div>
-            `);
+          setFields($widget, sessionId, state, timeStarted, timeResolved);
+          hideActions($widget);
+          displayPreview($widget, state, timeStarted, timeResolved);
         });
     });
+  };
 
-    $translate
+  function displayActions($widget) {
+    window.CHTCore.Translate
       .get('rdtoolkit.provision')
       .toPromise()
       .then(label => {
-        $el
+        $widget
           .find('.or-appearance-rdtoolkit_provision_contact')
           .after('<div class="rdtoolkit-preview"></div>')
           .after(`
@@ -108,13 +68,75 @@
             </div>
           `);
       });
-  };
+  }
+
+  function hideActions($widget) {
+    $widget
+      .find('.rdtoolkit-actions')
+      .hide();
+  }
+
+  function displayPreview($widget, state, timeStarted, timeResolved) {
+    // ToDo: add translation support
+    $widget
+      .find('.rdtoolkit-preview')
+      .append(`
+        <div>
+          <span class="rdt-label">Provision test information:</span>
+        </div>
+        <br>
+        <div>
+            <span class="rdt-label">Status: </span>
+            <span class="rdt-value">${state}</span>
+        </div>
+        <div>
+          <span class="rdt-label">Started on: </span>
+          <span class="rdt-value">${timeStarted}</span>
+        </div>
+        <div>
+          <span class="rdt-label">Results available on: </span>
+          <span class="rdt-value">${timeResolved}</span>
+        </div>
+        <br>
+        <div>
+          <span class="rdt-label">Click submit to save the information.</span>
+        </div>
+      `);
+  }
+
+  function setFields($widget, sessionId, state, timeStarted, timeResolved) {
+    // ToDo: set these values in the Enketo way by using: window.CHTCore.Enketo.getCurrentForm()
+    $widget
+      .find('input[name="/rdtoolkit_provision/rdtoolkit_provision_session_id"]')
+      .val(sessionId)
+      .trigger('change');
+    $widget
+      .find('input[name="/rdtoolkit_provision/rdtoolkit_provision_state"]')
+      .val(state)
+      .trigger('change');
+    $widget
+      .find('input[name="/rdtoolkit_provision/rdtoolkit_provision_time_started"]')
+      .val(timeStarted)
+      .trigger('change');
+    $widget
+      .find('input[name="/rdtoolkit_provision/rdtoolkit_provision_time_resolved"]')
+      .val(timeResolved)
+      .trigger('change');
+  }
 
   function getDate(dateTime) {
     return dateTime && moment(dateTime).isValid() ? moment(dateTime).format('LLL'): '';
   }
 
-  Rdtoolkitprovisionwidget.prototype.destroy = function(element) {};  // eslint-disable-line no-unused-vars
+  function getFieldValue(fieldName) {
+    const form = window.CHTCore.Enketo.getCurrentForm();
+
+    if (!form) {
+      return;
+    }
+
+    return form.model.$.find(fieldName).text();
+  }
 
   $.fn[ pluginName ] = function(options, event) {
     return this.each(function () {

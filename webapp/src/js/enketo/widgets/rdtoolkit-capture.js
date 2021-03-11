@@ -24,67 +24,35 @@
   //ensure the constructor is the new one
   Rdtoolkitcapturewidget.prototype.constructor = Rdtoolkitcapturewidget;
 
+  Rdtoolkitcapturewidget.prototype.destroy = function(element) {};  // eslint-disable-line no-unused-vars
+
   Rdtoolkitcapturewidget.prototype._init = function() {
-    const self = this;
-    const $el = $(this.element);
-    const $sessionId = $el.find('input[name="/rdtoolkit_capture/rdtoolkit_capture_session_id"]');
-
-    const $translate = window.CHTCore.Translate;
+    const $widget = $(this.element);
     const rdToolkitService = window.CHTCore.RDToolkit;
+    displayActions($widget);
 
-    $el.on('click', '.btn.rdtoolkit-capture-test', function() {
+    $widget.on('click', '.btn.rdtoolkit-capture-test', function() {
+      const sessionId = getFieldValue('rdtoolkit_capture_session_id');
       rdToolkitService
-        .captureRDTest($sessionId.val())
+        .captureRDTest(sessionId)
         .then((response = {}) => {
           const sessionId = response.sessionId || '';
           const timeRead = getDate(response.timeRead);
           const results = response.results || '';
 
-          $(self.element)
-            .find('input[name="/rdtoolkit_capture/rdtoolkit_capture_session_id"]')
-            .val(sessionId)
-            .trigger('change');
-          $(self.element)
-            .find('input[name="/rdtoolkit_capture/rdtoolkit_capture_results"]')
-            .val(results)
-            .trigger('change');
-          $(self.element)
-            .find('input[name="/rdtoolkit_capture/rdtoolkit_capture_time_read"]')
-            .val(timeRead)
-            .trigger('change');
-
-          $(self.element)
-            .find('.rdtoolkit-actions')
-            .hide();
-
-          $(self.element)
-            .find('.rdtoolkit-preview')
-            .append(`
-              <div>
-                <span class="rdt-label">Test result information:</span>
-              </div>
-              <br>
-              <div>
-                  <span class="rdt-label">Results: </span>
-                  <span class="rdt-value">${results}</span>
-              </div>
-              <div>
-                <span class="rdt-label">Taken on: </span>
-                <span class="rdt-value">${timeRead}</span>
-              </div>
-              <br>
-              <div>
-                <span class="rdt-label">Click submit to save the information.</span>
-              </div>
-            `);
+          setFields($widget, sessionId, results, timeRead);
+          hideActions($widget);
+          displayPreview($widget, results, timeRead);
         });
     });
+  };
 
-    $translate
+  function displayActions($widget) {
+    window.CHTCore.Translate
       .get('rdtoolkit.capture')
       .toPromise()
       .then(label => {
-        $el
+        $widget
           .find('.or-appearance-patient_id')
           .after('<div class="rdtoolkit-preview"></div>')
           .after(`
@@ -93,13 +61,68 @@
             </div>
           `);
       });
-  };
+  }
+
+  function hideActions($widget) {
+    $widget
+      .find('.rdtoolkit-actions')
+      .hide();
+  }
+
+  function displayPreview($widget, results, timeRead) {
+    // ToDo: add translation support
+    $widget
+      .find('.rdtoolkit-preview')
+      .append(`
+        <div>
+          <span class="rdt-label">Test result information:</span>
+        </div>
+        <br>
+        <div>
+            <span class="rdt-label">Results: </span>
+            <span class="rdt-value">${results}</span>
+        </div>
+        <div>
+          <span class="rdt-label">Taken on: </span>
+          <span class="rdt-value">${timeRead}</span>
+        </div>
+        <br>
+        <div>
+          <span class="rdt-label">Click submit to save the information.</span>
+        </div>
+      `);
+  }
+
+  function setFields($widget, sessionId, results, timeRead) {
+    // ToDo: set these values in the Enketo way by using: window.CHTCore.Enketo.getCurrentForm()
+    $widget
+      .find('input[name="/rdtoolkit_capture/rdtoolkit_capture_session_id"]')
+      .val(sessionId)
+      .trigger('change');
+    $widget
+      .find('input[name="/rdtoolkit_capture/rdtoolkit_capture_results"]')
+      .val(results)
+      .trigger('change');
+    $widget
+      .find('input[name="/rdtoolkit_capture/rdtoolkit_capture_time_read"]')
+      .val(timeRead)
+      .trigger('change');
+  }
 
   function getDate(dateTime) {
     return dateTime && moment(dateTime).isValid() ? moment(dateTime).format('LLL'): '';
   }
 
-  Rdtoolkitcapturewidget.prototype.destroy = function(element) {};  // eslint-disable-line no-unused-vars
+  function getFieldValue(fieldName) {
+    const form = window.CHTCore.Enketo.getCurrentForm();
+
+    if (!form) {
+      return;
+    }
+
+    return form.model.$.find(fieldName).text();
+  }
+
 
   $.fn[pluginName] = function(options, event) {
     return this.each(function() {
