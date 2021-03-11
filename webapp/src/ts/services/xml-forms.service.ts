@@ -117,7 +117,7 @@ export class XmlFormsService {
     if (!doc) {
       return Promise.resolve(true);
     }
-    const contactType = doc.contact_type || doc.type;
+    const contactType = this.contactTypesService.getTypeId(doc);
     return this.contactTypesService.get(contactType).then(type => {
       if (!type) {
         // not a contact type

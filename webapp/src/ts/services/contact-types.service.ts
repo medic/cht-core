@@ -87,6 +87,10 @@ export class ContactTypesService {
     return contactTypesUtils.getTypeId(contact);
   }
 
+  getTypeById(contactTypes = [], typeId) {
+    return contactTypes?.find(type => type.id === typeId);
+  }
+
   /**
    *  @returns {boolean} returns whether the provided type is a person type
    */
