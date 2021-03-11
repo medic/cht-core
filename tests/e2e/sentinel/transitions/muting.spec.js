@@ -735,26 +735,40 @@ describe('muting', () => {
       phone: '+444999'
     };
 
+    const personWithContactType = {
+      _id: 'person4',
+      name: 'Person',
+      type: 'person',
+      contact_type: 'not a person',
+      parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+      phone: '+444999'
+    };
+
     return utils
       .updateSettings(settings, true)
       .then(() => utils.saveDoc(mute))
       .then(() => sentinelUtils.waitForSentinel(mute._id))
-      .then(() => utils.saveDoc(person))
-      .then(() => sentinelUtils.waitForSentinel(person._id))
-      .then(() => sentinelUtils.getInfoDoc(person._id))
-      .then((info) => {
-        expect(info.transitions).toBeDefined();
-        expect(info.transitions.muting).toBeDefined();
-        expect(info.transitions.muting.ok).toBe(true);
+      .then(() => utils.saveDocs([person, personWithContactType]))
+      .then(() => sentinelUtils.waitForSentinel([person._id, personWithContactType._id]))
+      .then(() => sentinelUtils.getInfoDocs([person._id, personWithContactType._id]))
+      .then(([infoPerson, infoPersonWithContactType]) => {
+        expect(infoPerson.transitions).toBeDefined();
+        expect(infoPerson.transitions.muting).toBeDefined();
+        expect(infoPerson.transitions.muting.ok).toBe(true);
 
-        expect(info.muting_history).toBeDefined();
-        expect(info.muting_history.length).toEqual(1);
-        expect(info.muting_history[0].muted).toEqual(true);
-        expect(info.muting_history[0].report_id).toEqual(mute._id);
+        expect(infoPerson.muting_history).toBeDefined();
+        expect(infoPerson.muting_history.length).toEqual(1);
+        expect(infoPerson.muting_history[0].muted).toEqual(true);
+        expect(infoPerson.muting_history[0].report_id).toEqual(mute._id);
+
+        expect(infoPersonWithContactType.transitions.muting.ok).toBe(true);
+        expect(infoPersonWithContactType.muting_history.length).toEqual(1);
+        expect(infoPersonWithContactType.muting_history[0].report_id).toEqual(mute._id);
       })
-      .then(() => utils.getDoc(person._id))
-      .then(updated => {
-        expect(updated.muted).toBeDefined();
+      .then(() => utils.getDocs([person._id, personWithContactType._id]))
+      .then(([updatedPerson, updatedPersonWithContactType]) => {
+        expect(updatedPerson.muted).toBeDefined();
+        expect(updatedPersonWithContactType.muted).toBeDefined();
       });
   });
 

@@ -2,6 +2,7 @@ const db = require('../db');
 const config = require('../config');
 const logger = require('../lib/logger');
 const transitionUtils = require('./utils');
+const contactTypeUtils = require('@medic/contact-types-utils');
 const NAME = 'update_scheduled_reports';
 
 const getLeafPlaceTypeIds = () => {
@@ -19,7 +20,7 @@ const getLeafPlaceTypeIds = () => {
 const getParentId = contact => {
   const parentType = contact &&
                      contact.parent &&
-                     (contact.parent.contact_type || contact.parent.type);
+                     contactTypeUtils.getTypeId(contact.parent);
   if (parentType) {
     const leafPlaceTypeIds = getLeafPlaceTypeIds();
     if (leafPlaceTypeIds.includes(parentType)) {
