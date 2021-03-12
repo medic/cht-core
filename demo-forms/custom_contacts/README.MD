@@ -6,7 +6,7 @@
 1. Upload the changed  `app_settings.json` file by navigating to the same spot as it step #1, but choose "Upload application code" instead. 
 1. Download the English language file from the "App Management" -> "Display" -> "Languages" -> "English" -> "Download"
 1. Add the translation keys in [en_translations](en_translations.properties)
-1. Upload the translation file from the admin app > Display > Languages page.
+1. Upload the translation file from "App Management" -> "Display" -> "Languages" -> "English" -> "Upload" 
 1. Upload the contact forms using medic-conf `medic-conf <instance> upload-contact-forms`
 1. Now you will have a few custom contact types added to your instance. You can see the custom places at each level of the hierarchy
 and the custom Doctor type. 
