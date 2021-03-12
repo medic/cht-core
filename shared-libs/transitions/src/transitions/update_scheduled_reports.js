@@ -18,9 +18,7 @@ const getLeafPlaceTypeIds = () => {
  * Returns the ID of the parent iff that parent is a leaf type.
  */
 const getParentId = contact => {
-  const parentType = contact &&
-                     contact.parent &&
-                     contactTypeUtils.getTypeId(contact.parent);
+  const parentType = contact && contactTypeUtils.getTypeId(contact.parent);
   if (parentType) {
     const leafPlaceTypeIds = getLeafPlaceTypeIds();
     if (leafPlaceTypeIds.includes(parentType)) {
