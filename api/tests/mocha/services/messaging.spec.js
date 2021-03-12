@@ -1,11 +1,13 @@
 const chai = require('chai');
 const sinon = require('sinon');
+const rewire = require('rewire');
 const taskUtils = require('@medic/task-utils');
 const phoneNumber = require('@medic/phone-number');
 const db = require('../../../src/db');
 const config = require('../../../src/config');
 const africasTalking = require('../../../src/services/africas-talking');
-const service = require('../../../src/services/messaging');
+const rapidPro = require('../../../src/services/rapid-pro');
+const service = rewire('../../../src/services/messaging');
 const records = require('../../../src/services/records');
 
 describe('messaging service', () => {
@@ -459,6 +461,7 @@ describe('messaging service', () => {
   });
 
   describe('checkDbForMessagesToSend', () => {
+    service._checkDbForMessagesToSend = service.__get__('checkDbForMessagesToSend');
 
     it('does nothing if no outgoing message service configured', () => {
       sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'none' });
@@ -488,15 +491,45 @@ describe('messaging service', () => {
       });
     });
 
+    it('does nothing if there are no messages to send with rapidPro', () => {
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'rapid-pro' });
+      sinon.stub(service, 'getOutgoingMessages').resolves([]);
+      sinon.stub(rapidPro, 'send');
+      sinon.stub(africasTalking, 'send');
+      return service._checkDbForMessagesToSend().then(() => {
+        chai.expect(service.getOutgoingMessages.callCount).to.equal(1);
+        chai.expect(rapidPro.send.callCount).to.equal(0);
+        chai.expect(africasTalking.send.callCount).to.equal(0);
+      });
+    });
+
     it('passes the messages to the configured service and ignores failures', () => {
       const outgoingMessages = [ { id: 'a', to: '+123', content: 'hello' } ];
       sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'africas-talking' });
       sinon.stub(service, 'getOutgoingMessages').resolves(outgoingMessages);
       sinon.stub(africasTalking, 'send').resolves([]);
+      sinon.stub(rapidPro, 'send');
       sinon.stub(service, 'updateMessageTaskStates');
       return service._checkDbForMessagesToSend().then(() => {
+        chai.expect(rapidPro.send.callCount).to.equal(1);
         chai.expect(africasTalking.send.callCount).to.equal(1);
         chai.expect(africasTalking.send.args[0][0]).to.deep.equal(outgoingMessages);
+        chai.expect(service.updateMessageTaskStates.callCount).to.equal(1);
+        chai.expect(service.updateMessageTaskStates.args[0]).to.deep.equal([[]]);
+      });
+    });
+
+    it('passes the messages to the configured service and ignores failures with rapidPro', () => {
+      const outgoingMessages = [ { id: 'a', to: '+123', content: 'hello' } ];
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'rapid-pro' });
+      sinon.stub(service, 'getOutgoingMessages').resolves(outgoingMessages);
+      sinon.stub(rapidPro, 'send').resolves([]);
+      sinon.stub(africasTalking, 'send');
+      sinon.stub(service, 'updateMessageTaskStates');
+      return service._checkDbForMessagesToSend().then(() => {
+        chai.expect(africasTalking.send.callCount).to.equal(0);
+        chai.expect(rapidPro.send.callCount).to.equal(1);
+        chai.expect(rapidPro.send.args[0][0]).to.deep.equal(outgoingMessages);
         chai.expect(service.updateMessageTaskStates.callCount).to.equal(1);
         chai.expect(service.updateMessageTaskStates.args[0]).to.deep.equal([[]]);
       });
@@ -529,6 +562,44 @@ describe('messaging service', () => {
       });
     });
 
+  });
+
+  describe('checkDbForMessagesToUpdate', () => {
+    service._checkDbForMessagesToUpdate = service.__get__('checkDbForMessagesToUpdate');
+
+    it('does nothing if no outgoing message service configured', () => {
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'none' });
+      sinon.stub(rapidPro, 'poll');
+      return service._checkDbForMessagesToUpdate().then(() => {
+        chai.expect(config.get.callCount).to.equal(1);
+        chai.expect(rapidPro.poll.callCount).to.equal(0);
+      });
+    });
+
+    it('does nothing with default settings (medic-gateway)', () => {
+      sinon.stub(config, 'get').withArgs('sms').returns();
+      sinon.stub(rapidPro, 'poll');
+      return service._checkDbForMessagesToUpdate().then(() => {
+        chai.expect(config.get.callCount).to.equal(1);
+        chai.expect(rapidPro.poll.callCount).to.equal(0);
+      });
+    });
+
+    it('does nothing if the outgoing message service doesn\'t support polling', () => {
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'africas-talking' });
+      return service._checkDbForMessagesToSend().then(() => {
+        chai.expect(service.getOutgoingMessages.callCount).to.equal(1);
+      });
+    });
+
+    it('calls outgoing message service poll method', () => {
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'rapid-pro' });
+      sinon.stub(rapidPro, 'poll').resolves();
+      return service._checkDbForMessagesToSend().then(() => {
+        chai.expect(service.getOutgoingMessages.callCount).to.equal(1);
+        chai.expect(rapidPro.poll.callCount).to.equal(1);
+      });
+    });
   });
 
   describe('processIncomingMessages', () => {

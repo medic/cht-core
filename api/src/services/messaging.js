@@ -7,7 +7,7 @@ const africasTalking = require('./africas-talking');
 const rapidPro = require('./rapid-pro');
 const records = require('../services/records');
 
-const DB_CHECKING_INTERVAL = 1000 * 10; // Check DB for messages every minute
+const DB_CHECKING_INTERVAL = 1000 * 60; // Check DB for messages every minute
 const SMS_SENDING_SERVICES = {
   'africas-talking': africasTalking,
   'rapid-pro': rapidPro,
@@ -320,15 +320,11 @@ module.exports = {
    */
   isMedicGatewayEnabled: () => {
     return getConfig().outgoing_service === 'medic-gateway';
-  },
-
-  //updateMessageTaskStates: messagingUtils.updateMessageTaskStates,
+  }
 
 };
 
-if (process.env.UNIT_TEST_ENV) {
-  module.exports._checkDbForMessagesToSend = checkDbForMessagesToSend;
-} else {
+if (!process.env.UNIT_TEST_ENV) {
   setInterval(checkDbForMessagesToSend, DB_CHECKING_INTERVAL);
   setInterval(checkDbForMessagesToUpdate, DB_CHECKING_INTERVAL);
 }
