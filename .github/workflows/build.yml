@@ -12,7 +12,7 @@ env:
 
 jobs:
   build:
-    name: Compile the app 
+    name: Compile the app
     runs-on: ubuntu-18.04
 
     steps:
@@ -65,10 +65,10 @@ jobs:
         npm install
         node ./publish.js
       if: ${{ github.event_name != 'pull_request' }}
-  
+
   default-config-tests:
     needs: build
-    name: Default Config Testst
+    name: Default Config Test
     runs-on: ubuntu-18.04
 
     steps:
@@ -79,14 +79,14 @@ jobs:
         node-version: 12.x
     - name: Grunt Install
       run: npm install -g grunt-cli
-    - name: NPM 
+    - name: NPM
       run: npm ci
     - name: Run Tests
       run: node --stack_size=10000 `which grunt` exec:test-config-default
 
   standard-config-tests:
     needs: build
-    name: Standard Config Testst
+    name: Standard Config Test
     runs-on: ubuntu-18.04
 
     steps:
@@ -97,7 +97,7 @@ jobs:
         node-version: 12.x
     - name: Grunt Install
       run: npm install -g grunt-cli
-    - name: NPM 
+    - name: NPM
       run: npm ci
     - name: Run Tests
       run: node --stack_size=10000 `which grunt` exec:test-config-standard
@@ -159,7 +159,7 @@ jobs:
     - name: Curl Couch_url
       run: curl ${COUCH_URL}
     - name: horti setup
-      run: |    
+      run: |
         echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
         COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
     - name: Test it!
@@ -170,9 +170,8 @@ jobs:
     - name: Archive Results
       uses: actions/upload-artifact@v2
       with:
-        name: Results Artifact ${{ matrix.node-version }} with control flow
+        name: Results Artifact ${{ matrix.node-version }}
         path: |
           tests/results
           tests/logs
       if: ${{ failure() }}
-      
