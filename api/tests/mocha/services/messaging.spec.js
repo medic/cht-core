@@ -319,7 +319,10 @@ describe('messaging service', () => {
         }
       ]});
 
-      const bulk = sinon.stub(db.medic, 'bulkDocs').resolves([ { ok: true }, { ok: true } ]);
+      const bulk = sinon.stub(db.medic, 'bulkDocs').resolves([
+        { ok: true, id: 'testDoc' },
+        { ok: true, id: 'testDoc2' },
+      ]);
       const setTaskState = sinon.stub(taskUtils, 'setTaskState');
       setTaskState
         .withArgs(sinon.match({ messages: [{ uuid: 'testMessageId1' }]})).returns(true)   //testDoc
@@ -511,7 +514,7 @@ describe('messaging service', () => {
       sinon.stub(rapidPro, 'send');
       sinon.stub(service, 'updateMessageTaskStates');
       return service._checkDbForMessagesToSend().then(() => {
-        chai.expect(rapidPro.send.callCount).to.equal(1);
+        chai.expect(rapidPro.send.callCount).to.equal(0);
         chai.expect(africasTalking.send.callCount).to.equal(1);
         chai.expect(africasTalking.send.args[0][0]).to.deep.equal(outgoingMessages);
         chai.expect(service.updateMessageTaskStates.callCount).to.equal(1);
@@ -587,16 +590,16 @@ describe('messaging service', () => {
 
     it('does nothing if the outgoing message service doesn\'t support polling', () => {
       sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'africas-talking' });
-      return service._checkDbForMessagesToSend().then(() => {
-        chai.expect(service.getOutgoingMessages.callCount).to.equal(1);
+      sinon.stub(rapidPro, 'poll');
+      return service._checkDbForMessagesToUpdate().then(() => {
+        chai.expect(rapidPro.poll.callCount).to.equal(0);
       });
     });
 
     it('calls outgoing message service poll method', () => {
       sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'rapid-pro' });
       sinon.stub(rapidPro, 'poll').resolves();
-      return service._checkDbForMessagesToSend().then(() => {
-        chai.expect(service.getOutgoingMessages.callCount).to.equal(1);
+      return service._checkDbForMessagesToUpdate().then(() => {
         chai.expect(rapidPro.poll.callCount).to.equal(1);
       });
     });

@@ -193,6 +193,10 @@ const resolveMissingUuids = changes => {
   });
 };
 
+const countStateChanges = (results, stateChangesByDocId) => {
+  return results.reduce((count, result) => count + stateChangesByDocId[result.id].length, 0);
+};
+
 module.exports = {
 
   /**
@@ -290,7 +294,9 @@ module.exports = {
         }
         return db.medic.bulkDocs(updated).then(results => {
           const failures = results.filter(result => !result.ok);
-          successCount += results.length - failures.length;
+          const successes = results.filter(result => result.ok);
+          successCount += countStateChanges(successes, stateChangesByDocId) -
+                          countStateChanges(failures, stateChangesByDocId);
           if (!failures.length) {
             // all successful
             return { saved: successCount };

@@ -10,7 +10,7 @@ const STATUS_MAP = {
   // success
   queued: { success: true, state: 'received-by-gateway', detail: 'Queued' },
   wired: { success: true, state: 'forwarded-by-gateway', detail: 'Wired' },
-  sent: { success: true, state: 'sent', detail: 'Sent' },
+  sent: { success: true, state: 'sent', detail: 'Sent' }, // todo should this be a final state?????
   delivered: { success: true, state: 'delivered', detail: 'Delivered', final: true },
   resent: { success: true, state: 'sent', detail: 'Resent' },
 
@@ -101,7 +101,7 @@ const getStateUpdates = (apiToken, messages) => {
 
 const getState = (apiToken, host, { gateway_ref: gatewayRef, id: messageId }) => {
   if (!gatewayRef) {
-    return;
+    return Promise.resolve();
   }
 
   return request
@@ -126,63 +126,7 @@ const getState = (apiToken, host, { gateway_ref: gatewayRef, id: messageId }) =>
     });
 };
 
-/**
- * polls recursively, increasing the skip every time to jump over messages that were not processed
- * @param skip
- * @returns {Promise}
- */
-const recursivePoll = (skip = 0) => {
-  const messaging = require('./messaging');
-  return poll(skip)
-    .then(({ statusUpdates, more }) => {
-      return messaging
-        .updateMessageTaskStates(statusUpdates)
-        // only increase the skip with the number of messages that were *not updated*
-        // the updated messages could have changed to be in a final state and will not be in this list at all
-        .then(({ saved= 0 }={}) => more && recursivePoll(skip + BATCH_SIZE - saved));
-    })
-    .catch(err => {
-      logger.error('Error while polling message states: %o', err);
-    });
-};
-
-/**
- * @typedef {Object} PollingResult
- * @property {Array} statusUpdates - an array of message status updates
- * @property {boolean} more - whether there are more messages in the list
- */
-
-/**
- * Queries `gateway_messages_by_state` for a batch of messages that are in non-final states.
- * Returns an Array of state change objects for the batch of messages and whether or not there is a next batch.
- * @param skip {number} Number of rows to skip
- * @returns {PollingResult}
- */
-const poll = (skip = 0) => {
-  const nonFinalStates = Object
-    .values(STATUS_MAP)
-    .filter(status => !status.final)
-    .map(status => status.state);
-
-  const viewOptions = { keys: _.uniq(nonFinalStates), limit: BATCH_SIZE, skip };
-
-  return getApiToken().then(apiToken => {
-    return db.medic
-      .query('medic-sms/gateway_messages_by_state', viewOptions)
-      .then(result => {
-        if (!result || !result.rows || !result.rows.length) {
-          return { statusUpdates: [], more: false };
-        }
-
-        const messages = result.rows.map(row => row.value);
-        return getStateUpdates(apiToken, messages)
-          .then(statusUpdates => ({ statusUpdates, more: true }));
-      });
-  });
-};
-
-let polling = false;
-
+let skip = 0;
 module.exports = {
   /**
    * Given an array of messages returns a promise which resolves an array
@@ -215,16 +159,43 @@ module.exports = {
   /**
    * Polls RapidPro `messages` endpoint to check for status updates of every outgoing message that
    * is in a non-final state.
-   * Polling is done in batches of 25, recursively, until the whole list is iterated over.
-   * Will return current polling "instance" if already polling.
-   * @returns {Promise} that resolves when the whole list has been iterated over.
+   * Queries `gateway_messages_by_state` for a batch of messages that are in non-final states, skipping rows that were
+   * already processed.
+   * Increases the global variable skip each time with the number of un-processed rows from the batch.
+   * When there are no more rows to process, sets skip to 0.
    */
   poll: () => {
-    if (polling) {
-      return polling;
-    }
+    const messaging = require('./messaging');
+    const nonFinalStates = Object
+      .values(STATUS_MAP)
+      .filter(status => !status.final)
+      .map(status => status.state);
 
-    polling = recursivePoll().then(() => polling = false);
-    return polling;
+    const viewOptions = { keys: _.uniq(nonFinalStates), limit: BATCH_SIZE, skip };
+
+    return getApiToken()
+      .then(apiToken => {
+        return db.medic
+          .query('medic-sms/gateway_messages_by_state', viewOptions)
+          .then(result => {
+            if (!result || !result.rows || !result.rows.length) {
+              skip = 0; // start from the beginning on the next poll
+              return;
+            }
+
+            const messages = result.rows.map(row => row.value);
+            return getStateUpdates(apiToken, messages)
+              .then(statusUpdates => messaging.updateMessageTaskStates(statusUpdates))
+              .then(({ saved = 0 }={}) => {
+                // only increase the skip with the number of messages that were *not updated*
+                // the updated messages could have changed to be in a final state and will not be in this list at all
+                const numberOfRowsProcessed = result.rows.length - saved;
+                skip += numberOfRowsProcessed;
+              });
+          });
+      })
+      .catch(err => {
+        logger.error('Error while polling message states: %o', err);
+      });
   },
 };
