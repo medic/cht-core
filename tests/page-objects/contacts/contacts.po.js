@@ -179,11 +179,4 @@ module.exports = {
     // wait for all actionbar links to appear
     return browser.wait(async () => await leftActionBarButtons().count() === 2, 1000);
   },
-
-  getContactUuidFromUrl: async () => {
-    const currentUrl = await browser.getCurrentUrl();
-    const re = /contacts\/(.*)$/;
-    const match = currentUrl.match(re);
-    return match && match[1];
-  },
 };
