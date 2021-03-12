@@ -232,8 +232,7 @@ const PAGE_SIZE = 50;
     const getChildren = () => {
       let p;
       if (usersHomePlace) {
-        // backwards compatibility with pre-flexible hierarchy users
-        const homeType = usersHomePlace.contact_type || usersHomePlace.type;
+        const homeType = ContactTypes.getTypeId(usersHomePlace);
         p = ContactTypes.getChildren(homeType);
       } else if (Session.isAdmin()) {
         p = ContactTypes.getChildren();

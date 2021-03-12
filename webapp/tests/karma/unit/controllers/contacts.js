@@ -79,7 +79,8 @@ describe('Contacts controller', () => {
     scope.clearSelection = sinon.stub();
     contactTypes = {
       getChildren: sinon.stub(),
-      includes: sinon.stub()
+      includes: sinon.stub(),
+      getTypeId: sinon.stub().callsFake(doc => doc.type === 'contact' ? doc.contact_type : doc.type),
     };
     contactTypes.getChildren.resolves([{
       id: childType,
@@ -272,6 +273,21 @@ describe('Contacts controller', () => {
             'search-result',
             'second item is search result'
           );
+        });
+    });
+
+    it('should search for homeplace children of the correct type', () => {
+      searchResults = [ { _id: 'search-result' } ];
+      district.contact_type = 'whatever';
+      contactTypes.getTypeId.returns('some type');
+
+      return createController()
+        .getSetupPromiseForTesting()
+        .then(() => {
+          assert.equal(contactTypes.getTypeId.callCount, 1);
+          assert.deepEqual(contactTypes.getTypeId.args[0], [district]);
+          assert.equal(contactTypes.getChildren.callCount, 1);
+          assert.deepEqual(contactTypes.getChildren.args[0], ['some type']);
         });
     });
 

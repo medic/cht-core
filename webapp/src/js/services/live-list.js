@@ -86,7 +86,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
         listItem: function(contact, contactTypes) {
-          const typeId = contact.contact_type || contact.type;
+          const typeId = ContactTypes.getTypeId(contact);
           const type = contactTypes.find(type => type.id === typeId);
           const scope = {};
           scope.id = contact._id;

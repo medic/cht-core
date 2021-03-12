@@ -93,7 +93,7 @@ angular.module('inboxServices').factory('XmlForms',
       if (!doc) {
         return $q.resolve(true);
       }
-      const contactType = doc.contact_type || doc.type;
+      const contactType = ContactTypes.getTypeId(doc);
       return ContactTypes.get(contactType).then(type => {
         if (!type) {
           // not a contact type

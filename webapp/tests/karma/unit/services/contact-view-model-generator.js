@@ -20,6 +20,7 @@ describe('ContactViewModelGenerator service', () => {
   let GetDataRecords;
   let Session;
   let forms;
+  let types;
 
   const childPlaceIcon = 'fa-mushroom';
 
@@ -57,7 +58,7 @@ describe('ContactViewModelGenerator service', () => {
       dbGet = sinon.stub();
       dbQuery = sinon.stub();
       dbAllDocs = sinon.stub();
-      const types = [
+      types = [
         { id: 'family' },
         { id: 'person', sort_by_dob: true, icon: childPlaceIcon, person: true, parents: [ 'family', 'clinic' ] },
         { id: 'chp', person: true, parents: [ 'mushroom' ] },
@@ -65,7 +66,10 @@ describe('ContactViewModelGenerator service', () => {
         { id: 'clinic', parents: [ 'mushroom' ] },
         { id: 'mushroom', name_key: 'label.mushroom' }
       ];
-      ContactTypes = { getAll: sinon.stub().resolves(types) };
+      ContactTypes = {
+        getAll: sinon.stub().resolves(types),
+        getTypeId: sinon.stub().callsFake(doc => doc.type === 'contact' ? doc.contact_type : doc.type),
+      };
       lineageModelGenerator = { contact: sinon.stub() };
       GetDataRecords = sinon.stub();
       Session = { isOnlineOnly: function() {} };
@@ -139,6 +143,49 @@ describe('ContactViewModelGenerator service', () => {
         assert.deepEqual(model.children[0].contacts[0].doc, childContactPerson);
         assert.equal(model.children[1].contacts.length, 1);
         assert.deepEqual(model.children[1].contacts[0].doc, childPlace);
+      });
+    });
+
+    it('sets correct contact types', () => {
+      doc.contact_type = 'whatever';
+      childContactPerson.contact_type = 'something';
+      childPlace.contact_type = 'otherthing';
+
+      ContactTypes.getTypeId
+        .withArgs(doc).returns('correct doc type')
+        .withArgs(childContactPerson).returns('correct childContactPerson type')
+        .withArgs(childPlace).returns('correct childPlace type');
+
+      types.push(
+        { id: 'correct doc type', parents: ['correct parent type'], person: false, },
+        { id: 'correct childContactPerson type', parents: ['correct doc type'], person: true },
+        { id: 'correct childPlace type', parents: ['correct doc type'], person: false },
+      );
+      ContactTypes.getAll.resolves(types);
+
+      return runPlaceTest([childContactPerson, childPlace]).then(model => {
+        assert.deepEqual(model.doc, Object.assign({ muted: false }, doc));
+        assert.deepEqual(model.type, { id: 'correct doc type', parents: ['correct parent type'], person: false });
+        assert.equal(model.children.length, 2);
+        assert.deepEqual(
+          model.children[0].type,
+          { id: 'correct childContactPerson type', parents: ['correct doc type'], person: true },
+        );
+        assert.deepEqual(
+          model.children[0].contacts,
+          [{ isPrimaryContact: true, doc: childContactPerson }]
+        );
+        assert.deepEqual(
+          model.children[1].type,
+          { id: 'correct childPlace type', parents: ['correct doc type'], person: false },
+        );
+        assert.deepEqual(
+          model.children[1].contacts,
+          [{ doc: childPlace }]
+        );
+
+        assert.equal(ContactTypes.getTypeId.callCount, 3);
+        assert.deepEqual(ContactTypes.getTypeId.args, [[doc], [childContactPerson], [childPlace]]);
       });
     });
 

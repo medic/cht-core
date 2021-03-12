@@ -83,7 +83,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
         return row.text;
       }
 
-      const typeId = row.doc.contact_type || row.doc.type;
+      const typeId = ContactTypes.getTypeId(row.doc);
       const type = contactTypes.find(type => type.id === typeId);
 
       let contact;
@@ -133,7 +133,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
             sendMessageExtras: function(results) {
               const messages = [...results];
               results.forEach(result => {
-                if (personTypes.includes(result.doc.contact_type || result.doc.type)) {
+                if (personTypes.includes(ContactTypes.getTypeId(result.doc))) {
                   return;
                 }
                 messages.push({

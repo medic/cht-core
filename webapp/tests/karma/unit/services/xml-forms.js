@@ -8,6 +8,7 @@ describe('XmlForms service', () => {
   let hasAuth;
   let UserContact;
   let getContactType;
+  let getTypeId;
   let contextUtils;
   let error;
 
@@ -33,6 +34,7 @@ describe('XmlForms service', () => {
     hasAuth = sinon.stub();
     UserContact = sinon.stub();
     getContactType = sinon.stub();
+    getTypeId = sinon.stub().callsFake(doc => doc.type === 'contact' ? doc.contact_type : doc.type);
     error = sinon.stub();
     contextUtils = {};
     module($provide => {
@@ -44,7 +46,7 @@ describe('XmlForms service', () => {
       $provide.value('Auth', { has: hasAuth });
       $provide.value('UserContact', UserContact);
       $provide.value('XmlFormsContextUtils', contextUtils);
-      $provide.value('ContactTypes', { get: getContactType });
+      $provide.value('ContactTypes', { get: getContactType, getTypeId: getTypeId });
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('$log', {error: error});
     });
@@ -278,6 +280,90 @@ describe('XmlForms service', () => {
           'five',
           'six',
         ]);
+      });
+    });
+
+    it('filter with correct type', () => {
+      const given = [
+        {
+          id: 'form-0',
+          doc: {
+            internalId: 'zero',
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-1',
+          doc: {
+            internalId: 'one',
+            context: {},
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-2',
+          doc: {
+            internalId: 'two',
+            context: { person: true },
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-3',
+          doc: {
+            internalId: 'three',
+            context: { place: true },
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-4',
+          doc: {
+            internalId: 'four',
+            context: { person: true, place: false },
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-5',
+          doc: {
+            internalId: 'five',
+            context: { person: false, place: true },
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-6',
+          doc: {
+            internalId: 'six',
+            context: { person: true, place: true },
+            _attachments: { xml: { something: true } },
+          },
+        },
+      ];
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      const service = $injector.get('XmlForms');
+      getContactType.resolves({ person: false });
+      getTypeId.returns('the correct type');
+
+      const doc = { type: 'clinic', contact_type: 'not_a_clinic', _id: 'uuid' };
+
+      return service.list({ doc }).then(result => {
+        chai.assert.equal(getTypeId.callCount, 6);
+        chai.assert.deepEqual(getTypeId.args, [[doc], [doc], [doc], [doc], [doc], [doc], ]);
+        chai.assert.equal(getContactType.callCount, 6);
+        chai.assert.deepEqual(getContactType.args, [
+          ['the correct type'],
+          ['the correct type'],
+          ['the correct type'],
+          ['the correct type'],
+          ['the correct type'],
+          ['the correct type'],
+        ]);
+
+        const ids = result.map(form => form.internalId);
+        chai.assert.deepEqual(ids, [ 'zero', 'one', 'three', 'five', 'six', ]);
       });
     });
 

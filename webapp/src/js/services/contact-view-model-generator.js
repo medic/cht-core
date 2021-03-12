@@ -127,7 +127,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     const groupChildrenByType = children => {
-      return _.groupBy(children, child => child.doc.contact_type || child.doc.type);
+      return _.groupBy(children, child => ContactTypes.getTypeId(child.doc));
     };
 
     const addPrimaryContact = function(doc, children) {
@@ -304,7 +304,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     const setType = function(model, types) {
-      const typeId = model.doc.contact_type || model.doc.type;
+      const typeId = ContactTypes.getTypeId(model.doc);
       model.type = types.find(type => type.id === typeId);
     };
 

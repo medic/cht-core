@@ -23,7 +23,7 @@ angular.module('inboxServices').factory('Contacts',
               .catch(callback);
           },
           invalidate: function(doc) {
-            return type.id === (doc.contact_type || doc.type);
+            return type.id === ContactTypes.getTypeId(doc);
           }
         });
       });

@@ -62,7 +62,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     });
 
     const getFormInstanceData = function() {
-      const type = ctrl.contact && (ctrl.contact.contact_type || ctrl.contact.type);
+      const type = ContactTypes.getTypeId(ctrl.contact);
       if (!type) {
         return null;
       }
@@ -85,7 +85,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     const getForm = function(contact) {
       let formId;
       let titleKey;
-      const typeId = contact ? (contact.contact_type || contact.type) : $state.params.type;
+      const typeId = contact ? ContactTypes.getTypeId(contact) : $state.params.type;
       return ContactTypes.get(typeId).then(type => {
         if (!type) {
           $log.error(`Unknown contact type "${typeId}"`);
@@ -146,7 +146,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
 
     const setEnketoContact = function(formInstance) {
       ctrl.enketoContact = {
-        type: ctrl.contact.contact_type || ctrl.contact.type,
+        type: ContactTypes.getTypeId(ctrl.contact),
         formInstance: formInstance,
         docId: ctrl.contactId,
       };
