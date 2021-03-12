@@ -68,7 +68,7 @@ jobs:
 
   default-config-tests:
     needs: build
-    name: Default Config Test
+    name: Default Config Tests
     runs-on: ubuntu-18.04
 
     steps:
@@ -86,7 +86,7 @@ jobs:
 
   standard-config-tests:
     needs: build
-    name: Standard Config Test
+    name: Standard Config Tests
     runs-on: ubuntu-18.04
 
     steps:
