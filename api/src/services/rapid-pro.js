@@ -4,7 +4,6 @@ const secureSettings = require('@medic/settings');
 const logger = require('../logger');
 const config = require('../config');
 const db = require('../db');
-const messagingUtils = require('./messaging-utils');
 
 // https://github.com/rapidpro/rapidpro/blob/28d3215d57c152af0a71798a4ffe9351d10a3e95/temba/msgs/models.py#L57
 const STATUS_MAP = {
@@ -133,9 +132,10 @@ const getState = (apiToken, host, { gateway_ref: gatewayRef, id: messageId }) =>
  * @returns {Promise}
  */
 const recursivePoll = (skip = 0) => {
+  const messaging = require('./messaging');
   return poll(skip)
     .then(({ statusUpdates, more }) => {
-      return messagingUtils
+      return messaging
         .updateMessageTaskStates(statusUpdates)
         // only increase the skip with the number of messages that were *not updated*
         // the updated messages could have changed to be in a final state and will not be in this list at all

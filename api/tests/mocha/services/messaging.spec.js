@@ -64,7 +64,7 @@ describe('messaging service', () => {
 
     it('should do nothing when provided list is empty', () => {
       return service.updateMessageTaskStates([]).then((result) => {
-        chai.expect(result).to.equal(undefined);
+        chai.expect(result).to.deep.equal({ saved: 0 });
       });
     });
 
