@@ -6,7 +6,7 @@ const refreshButton = element(by.css('.fa fa-undo'));
 const newDistrictButton = element(by.css('a[href="#/contacts/add/district_hospital?from=list"]'));
 const newPlaceName = element(by.css('[name="/data/init/custom_place_name"]'));
 const districtHospitalName = element(by.css('[name="/data/district_hospital/name"]'));
-const newPersonTextBox = element(by.css('[name="/data/contact/name"]'));
+const newPrimaryContactName = element(by.css('[name="/data/contact/name"]'));
 const personNotes = element(by.css('[name="/data/contact/notes"]'));
 const newPrimaryContactButton = element(by.css('[name="/data/init/create_new_person"][value="new_person"]'));
 const manualDistrictHospitalName = element(by.css('[name="/data/district_hospital/is_name_generated"][value="false"]'));
@@ -18,6 +18,11 @@ const peopleRows = element.all(by.css('.right-pane .card.children li'));
 const deleteContact = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('fa fa-trash-o'));
 const editContact = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('fa fa-pencil'));
 const contactsTab = element(by.css('#contacts-tab'));
+const newHealthCenterButton = element(by.css('[href$="/add/health_center"]'));
+const newClinicButton = element(by.css('[href$="/add/clinic"]'));
+const newPersonButton = element(by.css('[href$="/add/person"]'));
+const personName = element(by.css('[name="/data/person/name"]'));
+const personSexField = element(by.css('[data-name="/data/person/sex"][value="female"]'));
 
 const leftActionBarButtons = () => element.all(by.css('.general-actions .actions.dropup > a'));
 
@@ -50,7 +55,7 @@ module.exports = {
     await newDistrictButton.click();
     await helper.waitUntilReadyNative(newPrimaryContactButton);
     await newPrimaryContactButton.click();
-    await newPersonTextBox.sendKeys('Bede');
+    await newPrimaryContactName.sendKeys('Bede');
     await personNotes.sendKeys('Main CHW');
     await dateOfBirthField.sendKeys('2000-01-01');
     await helper.scrollElementIntoView(contactSexField);
@@ -74,12 +79,11 @@ module.exports = {
   },
 
   addHealthCenter: async (name = 'Mavuvu Clinic') => {
-    const newHealthCenterButton = element(by.css('[href$="/add/health_center"]'));
     await helper.waitUntilReadyNative(newHealthCenterButton);
     await helper.clickElementNative(newHealthCenterButton);
     await helper.waitUntilReadyNative(newPrimaryContactButton);
     await newPrimaryContactButton.click();
-    await newPersonTextBox.sendKeys('Gareth');
+    await newPrimaryContactName.sendKeys('Gareth');
     await dateOfBirthField.sendKeys('2000-01-01');
     await helper.scrollElementIntoView(contactSexField);
     await contactSexField.click();
@@ -94,13 +98,12 @@ module.exports = {
   },
 
   addClinic: async (name = 'Clinic 1') => {
-    const newClinicButton = element(by.css('[href$="/add/clinic"]'));
     await helper.waitUntilReadyNative(newClinicButton);
     await helper.waitElementToDisappear(by.id('snackbar'));
     await helper.clickElementNative(newClinicButton);
     await helper.waitElementToBeVisibleNative(newPrimaryContactButton);
     await newPrimaryContactButton.click();
-    await newPersonTextBox.sendKeys('Todd');
+    await newPrimaryContactName.sendKeys('Todd');
     await dateOfBirthField.sendKeys('2000-01-01');
     await helper.scrollElementIntoView(contactSexField);
     await contactSexField.click();
@@ -111,6 +114,31 @@ module.exports = {
     await newPlaceName.sendKeys(name);
     await element(by.css('[name="/data/clinic/external_id"]')).sendKeys('1234457');
     await element(by.css('[name="/data/clinic/notes"]')).sendKeys('some notes');
+    await genericForm.submitButton.click();
+  },
+
+  addPerson: async (name, dob = '2000-01-01') => {
+    await helper.clickElementNative(newPersonButton);
+    await helper.waitElementToBeVisibleNative(personName);
+    await personName.sendKeys(name);
+    await dateOfBirthField.sendKeys(dob);
+    await personName.click(); // blur the datepicker field so the sex field is visible
+    await helper.scrollElementIntoView(personSexField);
+    await personSexField.click();
+    await element(by.css('[name="/data/person/notes"]')).sendKeys('some notes');
+    await genericForm.submitButton.click();
+  },
+
+  editPerson: async (name, editedName) => {
+    await module.exports.selectLHSRowByText(name);
+    await helper.clickElementNative(editContact);
+    await genericForm.nextPageNative();
+    await helper.waitUntilReadyNative(personName);
+    await personName.clear();
+    await personName.sendKeys(editedName);
+    await dateOfBirthField.sendKeys('2000-01-01');
+    await personName.click(); // blur the datepicker field so the sex field is visible
+    await helper.scrollElementIntoView(personSexField);
     await genericForm.submitButton.click();
   },
 
@@ -150,5 +178,12 @@ module.exports = {
     }
     // wait for all actionbar links to appear
     return browser.wait(async () => await leftActionBarButtons().count() === 2, 1000);
-  }
+  },
+
+  getContactUuidFromUrl: async () => {
+    const currentUrl = await browser.getCurrentUrl();
+    const re = /contacts\/(.*)$/;
+    const match = currentUrl.match(re);
+    return match && match[1];
+  },
 };
