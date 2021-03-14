@@ -1,7 +1,7 @@
 /**
  * Delete old artefacts from the testing and staging dbs
  */
-const { UPLOAD_URL, BUILDS_SERVER, STAGING_SERVER, TRAVIS_BUILD_NUMBER } = process.env;
+const { UPLOAD_URL, BUILDS_SERVER, STAGING_SERVER } = process.env;
 
 const MAX_BUILDS_TO_DELETE = 50; // don't try and delete too many at once
 const BETAS_TO_KEEP = 5; // keep the most recent 5 beta builds
@@ -63,7 +63,7 @@ const queryReleases = (db, daysToKeep) => {
       endkey: [ 'branch', 'medic', 'medic', getEndDate(daysToKeep) ],
       limit: MAX_BUILDS_TO_DELETE
     })
-    .then(response => getCurrentRevs(db, response))
+    .then(response => getCurrentRevs(db, response));
 };
 
 const getTestingBuilds = db => {
