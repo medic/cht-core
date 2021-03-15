@@ -48,8 +48,8 @@ const getHeaders = token => ({
 const getBroadcastUrl = url => `${url}/api/v2/broadcasts.json`;
 const getMessagesUrl = url => `${url}/api/v2/messages.json`;
 
-const getStatus = (result) => result.status && STATUS_MAP[result.status];
-const getStatusUpdate = (status, messageId, gatewayRef) => ({
+const remoteStatusToLocalStatus = (result) => result.status && STATUS_MAP[result.status];
+const getStateUpdate = (status, messageId, gatewayRef) => ({
   messageId: messageId,
   gatewayRef: gatewayRef,
   state: status.state,
@@ -73,7 +73,7 @@ const sendMessage = (token, host, message) => {
         return; // retry later
       }
 
-      return getStatusUpdate(getStatus(result), message.id, result.id);
+      return getStateUpdate(remoteStatusToLocalStatus(result), message.id, result.id);
     })
     .catch(err => {
       // unknown error - ignore it so the message will be retried again later
@@ -81,13 +81,13 @@ const sendMessage = (token, host, message) => {
     });
 };
 
-const getStateUpdates = (apiToken, messages) => {
+const getRemoteStates = (apiToken, messages) => {
   const host = getHost();
 
   let promiseChain = Promise.resolve([]);
   messages.forEach(message => {
     promiseChain = promiseChain.then((statusUpdates) => {
-      return getState(apiToken, host, message).then(result => {
+      return getRemoteState(apiToken, host, message).then(result => {
         if (result) {
           statusUpdates.push(result);
         }
@@ -99,7 +99,7 @@ const getStateUpdates = (apiToken, messages) => {
   return promiseChain;
 };
 
-const getState = (apiToken, host, { gateway_ref: gatewayRef, id: messageId }) => {
+const getRemoteState = (apiToken, host, { gateway_ref: gatewayRef, id: messageId }) => {
   if (!gatewayRef) {
     return Promise.resolve();
   }
@@ -117,8 +117,8 @@ const getState = (apiToken, host, { gateway_ref: gatewayRef, id: messageId }) =>
         return;
       }
 
-      const status = getStatus(result.results[0]);
-      return getStatusUpdate(status, messageId, gatewayRef);
+      const status = remoteStatusToLocalStatus(result.results[0]);
+      return getStateUpdate(status, messageId, gatewayRef);
     })
     .catch(err => {
       // unknown error - ignore it so the message will be retried again later
@@ -184,7 +184,7 @@ module.exports = {
             }
 
             const messages = result.rows.map(row => row.value);
-            return getStateUpdates(apiToken, messages)
+            return getRemoteStates(apiToken, messages)
               .then(statusUpdates => messaging.updateMessageTaskStates(statusUpdates))
               .then(({ saved = 0 }={}) => {
                 // only increase the skip with the number of messages that were *not updated*
