@@ -15,16 +15,16 @@
           <text id="/rdtoolkit_provision/patient_id:label">
             <value>Patient ID</value>
           </text>
-          <text id="/rdtoolkit_provision/rdtoolkit_provision_session_id:label">
+          <text id="/rdtoolkit_provision/rdtoolkit_session_id:label">
             <value>Session ID</value>
           </text>
-          <text id="/rdtoolkit_provision/rdtoolkit_provision_state:label">
+          <text id="/rdtoolkit_provision/rdtoolkit_state:label">
             <value>Status</value>
           </text>
-          <text id="/rdtoolkit_provision/rdtoolkit_provision_time_started:label">
+          <text id="/rdtoolkit_provision/rdtoolkit_time_started:label">
             <value>Started on</value>
           </text>
-          <text id="/rdtoolkit_provision/rdtoolkit_provision_time_resolved:label">
+          <text id="/rdtoolkit_provision/rdtoolkit_time_resolved:label">
             <value>Results available on</value>
           </text>
         </translation>
@@ -44,10 +44,10 @@
           <patient_uuid tag="hidden"/>
           <patient_name/>
           <patient_id/>
-          <rdtoolkit_provision_session_id tag="hidden"/>
-          <rdtoolkit_provision_state/>
-          <rdtoolkit_provision_time_started/>
-          <rdtoolkit_provision_time_resolved/>
+          <rdtoolkit_session_id tag="hidden"/>
+          <rdtoolkit_state/>
+          <rdtoolkit_time_started/>
+          <rdtoolkit_time_resolved/>
 
           <meta tag="hidden">
             <instanceID/>
@@ -63,31 +63,31 @@
       <bind calculate="../inputs/contact/name" nodeset="/rdtoolkit_provision/patient_name" type="string"/>
       <bind calculate="../inputs/contact/patient_id" nodeset="/rdtoolkit_provision/patient_id" type="string"/>
 
-      <bind nodeset="/rdtoolkit_provision/rdtoolkit_provision_session_id" type="string"/>
-      <bind nodeset="/rdtoolkit_provision/rdtoolkit_provision_state" type="string"/>
-      <bind nodeset="/rdtoolkit_provision/rdtoolkit_provision_time_started" type="string"/>
-      <bind nodeset="/rdtoolkit_provision/rdtoolkit_provision_time_resolved" type="string"/>
+      <bind nodeset="/rdtoolkit_provision/rdtoolkit_session_id" type="string"/>
+      <bind nodeset="/rdtoolkit_provision/rdtoolkit_state" type="string"/>
+      <bind nodeset="/rdtoolkit_provision/rdtoolkit_time_started" type="string"/>
+      <bind nodeset="/rdtoolkit_provision/rdtoolkit_time_resolved" type="string"/>
     </model>
   </h:head>
 
   <h:body class="pages">
     <group appearance="field-list rdtoolkit_provision" ref="/rdtoolkit_provision">
-      <group ref="/rdtoolkit_provision/inputs/contact" appearance="rdtoolkit_provision_contact">
+      <group ref="/rdtoolkit_provision/inputs/contact" appearance="rdtoolkit_contact">
         <input appearance="db-object" ref="/rdtoolkit_provision/inputs/contact/_id">
           <label ref="jr:itext('/rdtoolkit_provision/inputs/contact/_id:label')"/>
         </input>
       </group>
-      <input ref="/rdtoolkit_provision/rdtoolkit_provision_session_id" appearance="rdtoolkit_provision_session_id hidden">
-        <label ref="jr:itext('/rdtoolkit_provision/rdtoolkit_provision_session_id:label')"/>
+      <input ref="/rdtoolkit_provision/rdtoolkit_session_id" appearance="rdtoolkit_session_id hidden">
+        <label ref="jr:itext('/rdtoolkit_provision/rdtoolkit_session_id:label')"/>
       </input>
-      <input ref="/rdtoolkit_provision/rdtoolkit_provision_state" appearance="rdtoolkit_provision_state hidden">
-        <label ref="jr:itext('/rdtoolkit_provision/rdtoolkit_provision_state:label')"/>
+      <input ref="/rdtoolkit_provision/rdtoolkit_state" appearance="rdtoolkit_state hidden">
+        <label ref="jr:itext('/rdtoolkit_provision/rdtoolkit_state:label')"/>
       </input>
-      <input ref="/rdtoolkit_provision/rdtoolkit_provision_time_started" appearance="rdtoolkit_provision_time_started hidden">
-        <label ref="jr:itext('/rdtoolkit_provision/rdtoolkit_provision_time_started:label')"/>
+      <input ref="/rdtoolkit_provision/rdtoolkit_time_started" appearance="rdtoolkit_time_started hidden">
+        <label ref="jr:itext('/rdtoolkit_provision/rdtoolkit_time_started:label')"/>
       </input>
-      <input ref="/rdtoolkit_provision/rdtoolkit_provision_time_resolved" appearance="rdtoolkit_provision_time_resolved hidden">
-        <label ref="jr:itext('/rdtoolkit_provision/rdtoolkit_provision_time_resolved:label')"/>
+      <input ref="/rdtoolkit_provision/rdtoolkit_time_resolved" appearance="rdtoolkit_time_resolved hidden">
+        <label ref="jr:itext('/rdtoolkit_provision/rdtoolkit_time_resolved:label')"/>
       </input>
     </group>
   </h:body>

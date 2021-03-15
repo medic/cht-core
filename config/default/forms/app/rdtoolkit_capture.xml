@@ -15,16 +15,16 @@
                     <text id="/rdtoolkit_capture/patient_name/value:label">
                         <value>Patient Name: <output value="/rdtoolkit_capture/patient_name"/></value>
                     </text>
-                    <text id="/rdtoolkit_capture/rdtoolkit_capture_session_id:label">
+                    <text id="/rdtoolkit_capture/rdtoolkit_session_id:label">
                         <value>Session ID</value>
                     </text>
-                    <text id="/rdtoolkit_capture/rdtoolkit_capture_results:label">
+                    <text id="/rdtoolkit_capture/rdtoolkit_results:label">
                         <value>Result codes</value>
                     </text>
-                    <text id="/rdtoolkit_capture/rdtoolkit_capture_results_description:label">
+                    <text id="/rdtoolkit_capture/rdtoolkit_results_description:label">
                         <value>Results</value>
                     </text>
-                    <text id="/rdtoolkit_capture/rdtoolkit_capture_time_read:label">
+                    <text id="/rdtoolkit_capture/rdtoolkit_time_read:label">
                         <value>Taken on</value>
                     </text>
                 </translation>
@@ -35,10 +35,10 @@
                     <patient_uuid tag="hidden"/>
                     <patient_name/>
                     <patient_id/>
-                    <rdtoolkit_capture_session_id tag="hidden"/>
-                    <rdtoolkit_capture_results tag="hidden"/>
-                    <rdtoolkit_capture_results_description/>
-                    <rdtoolkit_capture_time_read/>
+                    <rdtoolkit_session_id tag="hidden"/>
+                    <rdtoolkit_results tag="hidden"/>
+                    <rdtoolkit_results_description/>
+                    <rdtoolkit_time_read/>
                     <meta tag="hidden">
                         <instanceID/>
                     </meta>
@@ -48,10 +48,10 @@
             <bind nodeset="/rdtoolkit_capture/patient_uuid" type="string"/>
             <bind nodeset="/rdtoolkit_capture/patient_name" type="string" readonly="true()"/>
             <bind nodeset="/rdtoolkit_capture/patient_id" type="string" readonly="true()"/>
-            <bind nodeset="/rdtoolkit_capture/rdtoolkit_capture_session_id" type="string"/>
-            <bind nodeset="/rdtoolkit_capture/rdtoolkit_capture_results" type="string"/>
-            <bind nodeset="/rdtoolkit_capture/rdtoolkit_capture_results_description" type="string"/>
-            <bind nodeset="/rdtoolkit_capture/rdtoolkit_capture_time_read" type="string"/>
+            <bind nodeset="/rdtoolkit_capture/rdtoolkit_session_id" type="string"/>
+            <bind nodeset="/rdtoolkit_capture/rdtoolkit_results" type="string"/>
+            <bind nodeset="/rdtoolkit_capture/rdtoolkit_results_description" type="string"/>
+            <bind nodeset="/rdtoolkit_capture/rdtoolkit_time_read" type="string"/>
         </model>
     </h:head>
 
@@ -66,17 +66,17 @@
             <input ref="/rdtoolkit_capture/patient_id" appearance="patient_id">
                 <label ref="jr:itext('/rdtoolkit_capture/patient_id:label')"/>
             </input>
-            <input ref="/rdtoolkit_capture/rdtoolkit_capture_session_id" appearance="rdtoolkit_capture_session_id hidden">
-                <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_capture_session_id:label')"/>
+            <input ref="/rdtoolkit_capture/rdtoolkit_session_id" appearance="rdtoolkit_session_id hidden">
+                <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_session_id:label')"/>
             </input>
-            <input ref="/rdtoolkit_capture/rdtoolkit_capture_results" appearance="rdtoolkit_capture_results hidden">
-                <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_capture_results:label')"/>
+            <input ref="/rdtoolkit_capture/rdtoolkit_results" appearance="rdtoolkit_results hidden">
+                <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_results:label')"/>
             </input>
-            <input ref="/rdtoolkit_capture/rdtoolkit_capture_results_description" appearance="rdtoolkit_capture_results_description hidden">
-                <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_capture_results_description:label')"/>
+            <input ref="/rdtoolkit_capture/rdtoolkit_results_description" appearance="rdtoolkit_results_description hidden">
+                <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_results_description:label')"/>
             </input>
-            <input ref="/rdtoolkit_capture/rdtoolkit_capture_time_read" appearance="rdtoolkit_capture_time_read hidden">
-                <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_capture_time_read:label')"/>
+            <input ref="/rdtoolkit_capture/rdtoolkit_time_read" appearance="rdtoolkit_time_read hidden">
+                <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_time_read:label')"/>
             </input>
         </group>
     </h:body>

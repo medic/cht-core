@@ -341,26 +341,27 @@ module.exports = [
 
   // RD Toolkit
   {
-    name: 'task_rdtoolkit_capture',
-    icon: 'icon-healthcare-immunization@2x',
+    name: 'rdtoolkit_capture_results',
+    icon: 'icon-follow-up',
     title: 'task.rdtoolkit.capture.title',
     appliesTo: 'reports',
-    appliesToType: ['rdtoolkit_provision'],
-    appliesIf: function (contact, report) {
-      return !!(getField(report, 'patient_id') && getField(report, 'rdtoolkit_provision_session_id'));
+    appliesToType: ['rdtoolkit_provision'], // form
+    appliesIf: (contact, report) => {
+      return !!(getField(report, 'patient_id') && getField(report, 'rdtoolkit_session_id'));
     },
-    resolvedIf: function (contact, report, event, dueDate) {
+    resolvedIf: (contact, report, event, dueDate) => {
       if (!contact.reports && contact.reports.length()) {
         return false;
       }
 
       const captureReport = contact.reports.find(reportDoc => {
-        const captureSessionId = getField(reportDoc, 'rdtoolkit_capture_session_id');
-        const provisionSessionId = getField(report, 'rdtoolkit_provision_session_id');
-        return captureSessionId === provisionSessionId;
+        if (reportDoc.form !== 'rdtoolkit_capture') {
+          return false;
+        }
+        return getField(reportDoc, 'rdtoolkit_session_id') === getField(report, 'rdtoolkit_session_id');
       });
 
-      if (!getField(captureReport, 'rdtoolkit_capture_results')) {
+      if (!captureReport || !getField(captureReport, 'rdtoolkit_results')) {
         return false;
       }
 
@@ -377,13 +378,13 @@ module.exports = [
           content.patient_uuid = getField(report, 'patient_uuid');
           content.patient_name = getField(report, 'patient_name');
           content.patient_id = getField(report, 'patient_id');
-          content.rdtoolkit_capture_session_id = getField(report, 'rdtoolkit_provision_session_id');
+          content.rdtoolkit_session_id = getField(report, 'rdtoolkit_session_id');
         }
       }
     ],
     events: [
       {
-        id: 'event_rdtoolkit_capture',
+        id: 'rdtoolkit_capture_event',
         start: 1,
         end: 2,
         days: 1

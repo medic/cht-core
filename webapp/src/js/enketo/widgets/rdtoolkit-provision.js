@@ -18,10 +18,10 @@
     this._init();
   }
 
-  //copy the prototype functions from the Widget super class
+  // Copy the prototype functions from the Widget super class
   Rdtoolkitprovisionwidget.prototype = Object.create(Widget.prototype);
 
-  //ensure the constructor is the new one
+  // Ensure the constructor is the new one
   Rdtoolkitprovisionwidget.prototype.constructor = Rdtoolkitprovisionwidget;
 
   Rdtoolkitprovisionwidget.prototype.destroy = function(element) {};  // eslint-disable-line no-unused-vars
@@ -32,15 +32,16 @@
     displayActions($widget);
 
     $widget.on('click', '.btn.rdtoolkit-provision-test', function() {
+      const sessionId = getFieldValue('instanceID'); // Using form's instance ID as RD Test ID
       const patientName = getFieldValue('patient_name');
       const patientId = getFieldValue('patient_id');
 
-      if (!patientId) {
+      if (!sessionId || !patientId) {
         return;
       }
 
       rdToolkitService
-        .provisionRDTest(patientId, patientName)
+        .provisionRDTest(sessionId, patientId, patientName)
         .then((response = {}) => {
           const sessionId = response.sessionId || '';
           const timeStarted = getDate(response.timeStarted);
@@ -60,7 +61,7 @@
       .toPromise()
       .then(label => {
         $widget
-          .find('.or-appearance-rdtoolkit_provision_contact')
+          .find('.or-appearance-rdtoolkit_contact')
           .after('<div class="rdtoolkit-preview"></div>')
           .after(`
             <div class="rdtoolkit-actions">
@@ -77,29 +78,36 @@
   }
 
   function displayPreview($widget, state, timeStarted, timeResolved) {
-    // ToDo: add translation support
     $widget
       .find('.rdtoolkit-preview')
       .append(`
         <div>
-          <span class="rdt-label">Provision test information:</span>
+          ${window.CHTCore.Translate.instant('report.rdtoolkit_provision.rdtoolkit_preview_title')}
         </div>
         <br>
         <div>
-            <span class="rdt-label">Status: </span>
-            <span class="rdt-value">${state}</span>
+          <span class="rdt-label">
+            ${window.CHTCore.Translate.instant('report.rdtoolkit_provision.rdtoolkit_preview_status')}
+          </span>
+          <span class="rdt-value">${state}</span>
         </div>
         <div>
-          <span class="rdt-label">Started on: </span>
+          <span class="rdt-label">
+            ${window.CHTCore.Translate.instant('report.rdtoolkit_provision.rdtoolkit_preview_time_started')}
+          </span>
           <span class="rdt-value">${timeStarted}</span>
         </div>
         <div>
-          <span class="rdt-label">Results available on: </span>
+          <span class="rdt-label">
+            ${window.CHTCore.Translate.instant('report.rdtoolkit_provision.rdtoolkit_preview_time_resolved')}
+          </span>
           <span class="rdt-value">${timeResolved}</span>
         </div>
         <br>
         <div>
-          <span class="rdt-label">Click submit to save the information.</span>
+          <span>
+            ${window.CHTCore.Translate.instant('report.rdtoolkit_provision.rdtoolkit_preview_next_action')}
+          </span>
         </div>
       `);
   }
@@ -107,19 +115,19 @@
   function setFields($widget, sessionId, state, timeStarted, timeResolved) {
     // ToDo: set these values in the Enketo way by using: window.CHTCore.Enketo.getCurrentForm()
     $widget
-      .find('input[name="/rdtoolkit_provision/rdtoolkit_provision_session_id"]')
+      .find('input[name="/rdtoolkit_provision/rdtoolkit_session_id"]')
       .val(sessionId)
       .trigger('change');
     $widget
-      .find('input[name="/rdtoolkit_provision/rdtoolkit_provision_state"]')
+      .find('input[name="/rdtoolkit_provision/rdtoolkit_state"]')
       .val(state)
       .trigger('change');
     $widget
-      .find('input[name="/rdtoolkit_provision/rdtoolkit_provision_time_started"]')
+      .find('input[name="/rdtoolkit_provision/rdtoolkit_time_started"]')
       .val(timeStarted)
       .trigger('change');
     $widget
-      .find('input[name="/rdtoolkit_provision/rdtoolkit_provision_time_resolved"]')
+      .find('input[name="/rdtoolkit_provision/rdtoolkit_time_resolved"]')
       .val(timeResolved)
       .trigger('change');
   }

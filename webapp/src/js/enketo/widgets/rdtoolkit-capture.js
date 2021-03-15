@@ -18,10 +18,10 @@
     this._init();
   }
 
-  //copy the prototype functions from the Widget super class
+  // Copy the prototype functions from the Widget super class
   Rdtoolkitcapturewidget.prototype = Object.create(Widget.prototype);
 
-  //ensure the constructor is the new one
+  // Ensure the constructor is the new one
   Rdtoolkitcapturewidget.prototype.constructor = Rdtoolkitcapturewidget;
 
   Rdtoolkitcapturewidget.prototype.destroy = function(element) {};  // eslint-disable-line no-unused-vars
@@ -32,7 +32,7 @@
     displayActions($widget);
 
     $widget.on('click', '.btn.rdtoolkit-capture-test', function() {
-      const sessionId = getFieldValue('rdtoolkit_capture_session_id');
+      const sessionId = getFieldValue('rdtoolkit_session_id');
       rdToolkitService
         .captureRDTest(sessionId)
         .then((response = {}) => {
@@ -71,25 +71,28 @@
   }
 
   function displayPreview($widget, resultsDescription, timeRead) {
-    // ToDo: add translation support
     $widget
       .find('.rdtoolkit-preview')
       .append(`
         <div>
-          <span class="rdt-label">Test result information:</span>
+          ${window.CHTCore.Translate.instant('report.rdtoolkit_capture.rdtoolkit_preview_title')}
         </div>
         <br>
         <div>
-            <span class="rdt-label">Results: </span>
-            <span class="rdt-value">${resultsDescription}</span>
+          <span class="rdt-label">
+            ${window.CHTCore.Translate.instant('report.rdtoolkit_capture.rdtoolkit_preview_results')} 
+          </span>
+          <span class="rdt-value">${resultsDescription}</span>
         </div>
         <div>
-          <span class="rdt-label">Taken on: </span>
+          <span class="rdt-label">
+            ${window.CHTCore.Translate.instant('report.rdtoolkit_capture.rdtoolkit_preview_time_read')} 
+          </span>
           <span class="rdt-value">${timeRead}</span>
         </div>
         <br>
         <div>
-          <span class="rdt-label">Click submit to save the information.</span>
+           ${window.CHTCore.Translate.instant('report.rdtoolkit_capture.rdtoolkit_preview_next_action')} 
         </div>
       `);
   }
@@ -97,19 +100,19 @@
   function setFields($widget, sessionId, results, timeRead, resultsDescription) {
     // ToDo: set these values in the Enketo way by using: window.CHTCore.Enketo.getCurrentForm()
     $widget
-      .find('input[name="/rdtoolkit_capture/rdtoolkit_capture_session_id"]')
+      .find('input[name="/rdtoolkit_capture/rdtoolkit_session_id"]')
       .val(sessionId)
       .trigger('change');
     $widget
-      .find('input[name="/rdtoolkit_capture/rdtoolkit_capture_results"]')
+      .find('input[name="/rdtoolkit_capture/rdtoolkit_results"]')
       .val(results)
       .trigger('change');
     $widget
-      .find('input[name="/rdtoolkit_capture/rdtoolkit_capture_results_description"]')
+      .find('input[name="/rdtoolkit_capture/rdtoolkit_results_description"]')
       .val(resultsDescription)
       .trigger('change');
     $widget
-      .find('input[name="/rdtoolkit_capture/rdtoolkit_capture_time_read"]')
+      .find('input[name="/rdtoolkit_capture/rdtoolkit_time_read"]')
       .val(timeRead)
       .trigger('change');
   }
@@ -134,20 +137,12 @@
     }
 
     let description = '';
-    // ToDo get list from RD toolkit or add translation file.
-    const codes = {
-      mal_pf_neg: 'negative',
-      mal_pv_neg: 'negative',
-      mal_pf_pos: 'positive',
-      mal_pv_pos: 'positive',
-      universal_control_failure: 'invalid - control failed'
-    };
 
     results.forEach(item => {
-      if (description) {
-        description += ', ';
-      }
-      description += `${item.test}: ${codes[item.result] || item.result}`;
+      const test = window.CHTCore.Translate.instant(item.test);
+      const result = window.CHTCore.Translate.instant(item.result);
+
+      description += `${description ? ', ' : ''}${test || item.test}: ${result || item.result}`;
     });
 
     return description;

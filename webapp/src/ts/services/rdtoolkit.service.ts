@@ -1,6 +1,4 @@
 import { Injectable } from '@angular/core';
-import { v4 as uuid } from 'uuid';
-
 
 @Injectable({
   providedIn: 'root',
@@ -24,9 +22,9 @@ export class RDToolkitService {
     }
   }
 
-  provisionRDTest(patientId, patientName='') {
+  provisionRDTest(sessionId, patientId, patientName='') {
     try {
-      window.medicmobile_android.rdToolkit_provisionRDTest(uuid(), patientName, patientId);
+      window.medicmobile_android.rdToolkit_provisionRDTest(sessionId, patientName, patientId);
       return new Promise(resolve => this.provisionTestResolve = resolve);
     } catch (error) {
       console.error('Error when provisioning RD Test: ', error);
