@@ -6,7 +6,7 @@ const { UPLOAD_URL, BUILDS_SERVER, STAGING_SERVER } = process.env;
 const MAX_BUILDS_TO_DELETE = 50; // don't try and delete too many at once
 const BETAS_TO_KEEP = 5; // keep the most recent 5 beta builds
 const DAYS_TO_KEEP_BRANCH = 100; // branch builds are kept for 100 days to allow for AT
-const DAYS_TO_KEEP_TEST = 7; // testing builds are kept for 7 days to allow for CI re-runs
+const DAYS_TO_KEEP_TEST = 7; // testing builds are kept for 7 days to allow for CI to complete
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -56,51 +56,40 @@ const getCurrentRevs = (db, response) => {
   return db.allDocs({ keys: ids });
 };
 
-const queryReleases = (db, daysToKeep) => {
-  return db
-    .query('builds/releases', {
-      startkey: [ 'branch', 'medic', 'medic' ],
-      endkey: [ 'branch', 'medic', 'medic', getEndDate(daysToKeep) ],
-      limit: MAX_BUILDS_TO_DELETE
-    })
+const queryReleases = (db, options) => {
+  return db.query('builds/releases', options)
     .then(response => getCurrentRevs(db, response));
 };
 
-const getTestingBuilds = db => {
-  console.log('Querying for old testing builds...');
-  return queryReleases(db, DAYS_TO_KEEP_TEST);
-};
-
-const getBranchBuilds = db => {
-  console.log('Querying for old branch builds...');
-  return queryReleases(db, DAYS_TO_KEEP_BRANCH);
-};
-
-const getBetaBuilds = db => {
-  console.log('Querying for old beta releases...');
-  return db
-    .query('builds/releases', {
-      startkey: [ 'beta', 'medic', 'medic', 10000 ],
-      endkey: [ 'beta', 'medic', 'medic', 0 ],
-      limit: MAX_BUILDS_TO_DELETE,
-      descending: true,
-      skip: BETAS_TO_KEEP // leave the last n beta releases
-    })
-    .then(response => getCurrentRevs(stagingDb, response));
+const queryReleasesByDate = (db, daysToKeep) => {
+  return queryReleases(db, {
+    startkey: [ 'branch', 'medic', 'medic' ],
+    endkey: [ 'branch', 'medic', 'medic', getEndDate(daysToKeep) ],
+    limit: MAX_BUILDS_TO_DELETE
+  });
 };
 
 const testingBuilds = () => {
-  return getTestingBuilds(testingDb)
+  console.log('Querying for old testing builds...');
+  return queryReleasesByDate(testingDb, DAYS_TO_KEEP_TEST)
     .then(response => remove(testingDb, response));
 };
 
 const branchBuilds = () => {
-  return getBranchBuilds(stagingDb)
+  console.log('Querying for old branch builds...');
+  return queryReleasesByDate(stagingDb, DAYS_TO_KEEP_BRANCH)
     .then(response => remove(stagingDb, response));
 };
 
 const betaBuilds = () => {
-  return getBetaBuilds(stagingDb)
+  console.log('Querying for old beta releases...');
+  return queryReleases(stagingDb, {
+    startkey: [ 'beta', 'medic', 'medic', 10000 ],
+    endkey: [ 'beta', 'medic', 'medic', 0 ],
+    limit: MAX_BUILDS_TO_DELETE,
+    descending: true,
+    skip: BETAS_TO_KEEP // leave the last n beta releases
+  })
     .then(response => remove(stagingDb, response));
 };
 
