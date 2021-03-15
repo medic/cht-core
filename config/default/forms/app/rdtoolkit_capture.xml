@@ -15,6 +15,17 @@
                     <text id="/rdtoolkit_capture/patient_name/value:label">
                         <value>Patient Name: <output value="/rdtoolkit_capture/patient_name"/></value>
                     </text>
+
+                    <text id="/rdtoolkit_capture/rdtoolkit_state:label">
+                        <value>Status</value>
+                    </text>
+                    <text id="/rdtoolkit_capture/rdtoolkit_time_started:label">
+                        <value>Started on</value>
+                    </text>
+                    <text id="/rdtoolkit_capture/rdtoolkit_time_resolved:label">
+                        <value>Results were available on</value>
+                    </text>
+
                     <text id="/rdtoolkit_capture/rdtoolkit_session_id:label">
                         <value>Session ID</value>
                     </text>
@@ -35,10 +46,16 @@
                     <patient_uuid tag="hidden"/>
                     <patient_name/>
                     <patient_id/>
+
+                    <rdtoolkit_state/>
+                    <rdtoolkit_time_started/>
+                    <rdtoolkit_time_resolved tag="hidden"/>
+
                     <rdtoolkit_session_id tag="hidden"/>
                     <rdtoolkit_results tag="hidden"/>
                     <rdtoolkit_results_description/>
                     <rdtoolkit_time_read/>
+
                     <meta tag="hidden">
                         <instanceID/>
                     </meta>
@@ -48,6 +65,11 @@
             <bind nodeset="/rdtoolkit_capture/patient_uuid" type="string"/>
             <bind nodeset="/rdtoolkit_capture/patient_name" type="string" readonly="true()"/>
             <bind nodeset="/rdtoolkit_capture/patient_id" type="string" readonly="true()"/>
+
+            <bind nodeset="/rdtoolkit_capture/rdtoolkit_state" type="string"/>
+            <bind nodeset="/rdtoolkit_capture/rdtoolkit_time_started" type="string"/>
+            <bind nodeset="/rdtoolkit_capture/rdtoolkit_time_resolved" type="string"/>
+
             <bind nodeset="/rdtoolkit_capture/rdtoolkit_session_id" type="string"/>
             <bind nodeset="/rdtoolkit_capture/rdtoolkit_results" type="string"/>
             <bind nodeset="/rdtoolkit_capture/rdtoolkit_results_description" type="string"/>
@@ -66,6 +88,17 @@
             <input ref="/rdtoolkit_capture/patient_id" appearance="patient_id">
                 <label ref="jr:itext('/rdtoolkit_capture/patient_id:label')"/>
             </input>
+
+            <input ref="/rdtoolkit_capture/rdtoolkit_state" appearance="rdtoolkit_state hidden">
+                <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_state:label')"/>
+            </input>
+            <input ref="/rdtoolkit_capture/rdtoolkit_time_started" appearance="rdtoolkit_time_started hidden">
+                <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_time_started:label')"/>
+            </input>
+            <input ref="/rdtoolkit_capture/rdtoolkit_time_resolved" appearance="rdtoolkit_time_resolved hidden">
+                <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_time_resolved:label')"/>
+            </input>
+
             <input ref="/rdtoolkit_capture/rdtoolkit_session_id" appearance="rdtoolkit_session_id hidden">
                 <label ref="jr:itext('/rdtoolkit_capture/rdtoolkit_session_id:label')"/>
             </input>

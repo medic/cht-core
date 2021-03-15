@@ -36,14 +36,19 @@
       rdToolkitService
         .captureRDTest(sessionId)
         .then((response = {}) => {
-          const sessionId = response.sessionId || '';
-          const timeRead = getDate(response.timeRead);
-          const results = response.results || '';
-          const resultsDescription = getFormattedResult(results);
+          const capturedTest = {
+            sessionId: response.sessionId || '',
+            state: response.state || '',
+            timeStarted: getDate(response.timeStarted),
+            timeResolved: getDate(response.timeResolved),
+            timeRead: getDate(response.timeRead),
+            results: response.results,
+            resultsDescription: getFormattedResult(response.results)
+          };
 
-          setFields($widget, sessionId, results, timeRead, resultsDescription);
+          setFields($widget, capturedTest);
           hideActions($widget);
-          displayPreview($widget, resultsDescription, timeRead);
+          displayPreview($widget, capturedTest);
         });
     });
   };
@@ -70,7 +75,7 @@
       .hide();
   }
 
-  function displayPreview($widget, resultsDescription, timeRead) {
+  function displayPreview($widget, capturedTest) {
     $widget
       .find('.rdtoolkit-preview')
       .append(`
@@ -82,13 +87,13 @@
           <span class="rdt-label">
             ${window.CHTCore.Translate.instant('report.rdtoolkit_capture.rdtoolkit_preview_results')} 
           </span>
-          <span class="rdt-value">${resultsDescription}</span>
+          <span class="rdt-value">${capturedTest.resultsDescription}</span>
         </div>
         <div>
           <span class="rdt-label">
             ${window.CHTCore.Translate.instant('report.rdtoolkit_capture.rdtoolkit_preview_time_read')} 
           </span>
-          <span class="rdt-value">${timeRead}</span>
+          <span class="rdt-value">${capturedTest.timeRead}</span>
         </div>
         <br>
         <div>
@@ -97,23 +102,36 @@
       `);
   }
 
-  function setFields($widget, sessionId, results, timeRead, resultsDescription) {
+  function setFields($widget, capturedTest) {
     // ToDo: set these values in the Enketo way by using: window.CHTCore.Enketo.getCurrentForm()
     $widget
       .find('input[name="/rdtoolkit_capture/rdtoolkit_session_id"]')
-      .val(sessionId)
+      .val(capturedTest.sessionId)
       .trigger('change');
     $widget
       .find('input[name="/rdtoolkit_capture/rdtoolkit_results"]')
-      .val(results)
+      .val(capturedTest.results)
       .trigger('change');
     $widget
       .find('input[name="/rdtoolkit_capture/rdtoolkit_results_description"]')
-      .val(resultsDescription)
+      .val(capturedTest.resultsDescription)
       .trigger('change');
     $widget
       .find('input[name="/rdtoolkit_capture/rdtoolkit_time_read"]')
-      .val(timeRead)
+      .val(capturedTest.timeRead)
+      .trigger('change');
+
+    $widget
+      .find('input[name="/rdtoolkit_capture/rdtoolkit_state"]')
+      .val(capturedTest.state)
+      .trigger('change');
+    $widget
+      .find('input[name="/rdtoolkit_capture/rdtoolkit_time_started"]')
+      .val(capturedTest.timeStarted)
+      .trigger('change');
+    $widget
+      .find('input[name="/rdtoolkit_capture/rdtoolkit_time_resolved"]')
+      .val(capturedTest.timeResolved)
       .trigger('change');
   }
 

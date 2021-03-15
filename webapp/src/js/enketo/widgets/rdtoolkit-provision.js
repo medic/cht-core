@@ -89,7 +89,7 @@
           <span class="rdt-label">
             ${window.CHTCore.Translate.instant('report.rdtoolkit_provision.rdtoolkit_preview_status')}
           </span>
-          <span class="rdt-value">${state}</span>
+          <span class="rdt-value">${window.CHTCore.Translate.instant(state) || state}</span>
         </div>
         <div>
           <span class="rdt-label">
