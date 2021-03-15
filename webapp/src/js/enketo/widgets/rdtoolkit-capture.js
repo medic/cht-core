@@ -42,7 +42,7 @@
             timeStarted: getDate(response.timeStarted),
             timeResolved: getDate(response.timeResolved),
             timeRead: getDate(response.timeRead),
-            results: response.results,
+            results: response.results || [],
             resultsDescription: getFormattedResult(response.results)
           };
 
@@ -110,7 +110,7 @@
       .trigger('change');
     $widget
       .find('input[name="/rdtoolkit_capture/rdtoolkit_results"]')
-      .val(capturedTest.results)
+      .val(JSON.stringify(capturedTest.results))
       .trigger('change');
     $widget
       .find('input[name="/rdtoolkit_capture/rdtoolkit_results_description"]')
