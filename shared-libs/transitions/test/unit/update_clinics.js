@@ -150,7 +150,7 @@ describe('update clinic', () => {
       },
     };
 
-    sinon.stub(config, 'get').returns([ { id: 'clinic' } ]);
+    sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'clinic' } ] });
     sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: contact }] });
     lineageStub.returns(Promise.resolve(contact));
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -202,7 +202,7 @@ describe('update clinic', () => {
       name: 'zenith',
       phone: '+12345',
     };
-    sinon.stub(config, 'get').returns([ { id: 'clinic' } ]);
+    sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'clinic' } ] });
     sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: clinic }] });
     lineageStub.resolves(contact);
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -345,6 +345,50 @@ describe('update clinic', () => {
       assert(!changed);
       assert(!doc.contact);
       assert(!doc.errors);
+    });
+  });
+
+  it('should handle contacts of hardcoded type with a contact_type property', () => {
+    const doc = {
+      type: 'data_record',
+      from: '+12345',
+      refid: '1000',
+    };
+
+    const contact = {
+      type: 'clinic',
+      contact_type: 'soemthing',
+      name: 'Clinic',
+      place_id: '1000',
+      contact: {
+        name: 'CCN',
+        phone: '+34567890123',
+      },
+      parent: {
+        type: 'health_center',
+        name: 'Health Center',
+        contact: {
+          name: 'HCCN',
+          phone: '+23456789012',
+        },
+        parent: {
+          type: 'district_hospital',
+          name: 'District',
+          contact: {
+            name: 'DCN',
+            phone: '+12345678901',
+          },
+        },
+      },
+    };
+
+    sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'clinic' } ] });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: contact }] });
+    lineageStub.resolves(contact);
+    return transition.onMatch({ doc: doc }).then(changed => {
+      assert(changed);
+      assert(doc.contact);
+      assert.deepEqual(doc.contact, contact.contact);
     });
   });
 

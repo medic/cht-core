@@ -2,16 +2,11 @@ const transitionUtils = require('./utils');
 const db = require('../db');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const utils = require('../lib/utils');
+const contactTypesUtils = require('@medic/contact-types-utils');
 const NAME = 'update_clinics';
 const FACILITY_NOT_FOUND = 'sys.facility_not_found';
 
 const config = require('../config');
-
-const getContactType = doc => {
-  const typeId = doc.contact_type || doc.type;
-  const contactTypes = config.get('contact_types') || [];
-  return contactTypes.find(type => type.id === typeId);
-};
 
 const getContactByRefid = doc => {
   const params = {
@@ -28,7 +23,7 @@ const getContactByRefid = doc => {
       }
 
       const result = data.rows[0].doc;
-      const contactType = getContactType(result);
+      const contactType = contactTypesUtils.getContactType(config.getAll(), result);
       // not a contact
       if (!contactType) {
         return;
