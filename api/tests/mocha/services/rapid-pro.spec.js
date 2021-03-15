@@ -364,12 +364,14 @@ describe('RapidPro SMS Gateway', () => {
       });
     });
 
-    it('recurrent polling should go over the whole list of items and reset skip', () => {
+    describe('recurrent polling', () => {
+      it('should go over the whole list of items and reset skip', () => {
 
-    });
+      });
 
-    it('should keep updating records until they are in a final state', () => {
+      it('should keep updating records until they are in a final state', () => {
 
+      });
     });
 
     it('should catch errors from remote service', () => {
