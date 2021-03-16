@@ -182,6 +182,7 @@ describe('target-state', () => {
         mockEmission({ _id: 'a', groupBy: '1', pass: true }),
         mockEmission({ _id: 'b', groupBy: '2', pass: false }), // pass should have no effect
         mockEmission({ _id: 'c', groupBy: '1' }),
+        mockEmission({ _id: 'd', groupBy: '1', pass: false }),
       ]);
       expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
         id: 'target',

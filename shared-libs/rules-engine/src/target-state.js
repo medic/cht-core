@@ -138,7 +138,7 @@ module.exports = {
 
       const groups = Object.keys(countEmissionsByGroup);
       return {
-        pass: groups.filter(group => countEmissionsByGroup[group] >= passingThreshold).length,
+        pass: groups.filter(group => countEmissionsByGroup[group] > passingThreshold).length,
         total: groups.length,
       };
     };
