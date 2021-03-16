@@ -15,7 +15,7 @@ EOF
 trap explain_error ERR
 
 echo '[check-app-settings-js-is-committed] Generating app_settings.json...'
-./node_modules/.bin/medic-conf --no-check --local compile-app-settings
+./node_modules/.bin/medic-conf --local compile-app-settings
 
 echo '[check-app-settings-js-is-committed] Check for changes...'
 git diff --exit-code app_settings.json
