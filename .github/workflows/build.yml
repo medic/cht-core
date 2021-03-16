@@ -155,8 +155,8 @@ jobs:
       run: |
         echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
         COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
-    - name: Test it!
-      run: node --stack_size=10000 `which grunt` ci-e2e
+    #- name: Test it!
+      #run: node --stack_size=10000 `which grunt` ci-e2e
     - name: Dump Couch logs
       run: docker logs couch > tests/logs/couch.log 2>&1
       if: ${{ always() }}
@@ -176,6 +176,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Set MARKET_URL var
+      run: |
+        if [[ -z "$MARKET_URL" ]]; then
+        echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
+        echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
+        echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
+        fi
+    - name: Get branch name
+      uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
     - name: Set Travis Vars
       run: |
         echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
