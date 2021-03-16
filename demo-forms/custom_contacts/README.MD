@@ -8,4 +8,4 @@
 1. Add the translation keys in [en_translations](en_translations.properties) to the end of the `messages-en.properties` file you downloaded in the prior step.
 1. Upload the edited `messages-en.properties` translation file from "App Management" -> "Display" -> "Languages" -> "English" -> "Upload" 
 1. Upload the included contact forms with `medic-conf`. Ensure you're in the `cht-core/demo-forms/custom_contacts` directory and call:  `medic-conf <instance> upload-contact-forms`
-1. Now you will have a few custom contact types added to your instance. For example if you choose to "Add place" the option for "New NGO" will now be visible and you can select "Doctor" for the role under this type of place.
+1. Now you will have a few custom contact types added to your instance. For example if you choose to "Add place" the option for "New NGO" will now be visible and you when you select "Add Person" for a facility you will see "New Doctor".
