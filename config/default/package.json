@@ -13,7 +13,7 @@
     "test-targets": "npm run eslint && mocha --reporter progress test/targets/*.spec.js --timeout 10000",
     "test-contact-summary": "npm run eslint && mocha --reporter progress test/contact-summary/*.spec.js --timeout 10000",
     "test-unit": "mocha --recursive --reporter spec test --timeout 20000",
-    "travis": "npm run test-unit"
+    "travis": "./test/check-app-settings-is-committed && npm run test-unit"
   },
   "devDependencies": {
     "chai": "^4.2.0",
@@ -21,7 +21,7 @@
     "chai-like": "^1.1.1",
     "chai-things": "^0.2.0",
     "eslint-plugin-json": "^2.0.1",
-    "medic-conf": "^3.1.0",
+    "medic-conf": "^3.4.1",
     "medic-conf-test-harness": "^0.1.19",
     "mocha": "^5.1.1",
     "sinon": "^7.3.2"
