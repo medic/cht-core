@@ -125,20 +125,26 @@ module.exports = {
         };
       }
 
+      const reducer = (agg, curr) => {
+        if (!agg[curr.groupBy]) {
+          agg[curr.groupBy] = 0;
+        }
+        agg[curr.groupBy]++;
+        return agg;
+      };
+
+      const countEmissionsByGroupAndPass = relevantEmissions
+        .filter(emission => emission.groupBy && emission.pass)
+        .reduce(reducer, {});
+
       const countEmissionsByGroup = relevantEmissions
         .filter(emission => emission.groupBy)
-        .reduce((agg, curr) => {
-          if (!agg[curr.groupBy]) {
-            agg[curr.groupBy] = 0;
-          }
-
-          agg[curr.groupBy]++;
-          return agg;
-        }, {});
+        .reduce(reducer, {});
 
       const groups = Object.keys(countEmissionsByGroup);
+
       return {
-        pass: groups.filter(group => countEmissionsByGroup[group] > passingThreshold).length,
+        pass: groups.filter(group => countEmissionsByGroupAndPass[group] >= passingThreshold).length,
         total: groups.length,
       };
     };
