@@ -58,12 +58,6 @@ jobs:
     - name: Publish for testing
       run: |
         node --stack_size=10000 `which grunt` publish-for-testing
-    - name: Publish
-      run: |
-        cd scripts/travis
-        npm ci
-        node ./publish.js
-      if: ${{ github.event_name != 'pull_request' }}
 
   default-config-tests:
     needs: build
@@ -174,3 +168,17 @@ jobs:
           tests/results
           tests/logs
       if: ${{ failure() }}
+
+  publish:
+    needs: test-e2e
+    name: Publish branch build
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Publish
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          cd scripts/travis
+          npm ci
+          node ./publish.js
