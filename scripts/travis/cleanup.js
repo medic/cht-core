@@ -1,7 +1,7 @@
 /**
  * Delete old artefacts from the testing and staging dbs
  */
-const { UPLOAD_URL, BUILDS_SERVER, STAGING_SERVER } = process.env;
+const { MARKET_URL, BUILDS_SERVER, STAGING_SERVER } = process.env;
 
 const MAX_BUILDS_TO_DELETE = 50; // don't try and delete too many at once
 const BETAS_TO_KEEP = 5; // keep the most recent 5 beta builds
@@ -12,8 +12,8 @@ const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
-const testingDb = new PouchDB(`${UPLOAD_URL}/${BUILDS_SERVER}`);
-const stagingDb = new PouchDB(`${UPLOAD_URL}/${STAGING_SERVER}`);
+const testingDb = new PouchDB(`${MARKET_URL}/${BUILDS_SERVER}`);
+const stagingDb = new PouchDB(`${MARKET_URL}/${STAGING_SERVER}`);
 
 process.on('unhandledRejection', error => {
   console.error('unhandledRejection', error);
