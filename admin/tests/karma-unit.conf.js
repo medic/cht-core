@@ -45,7 +45,8 @@ module.exports = function(config) {
 
       // test files
       'tests/unit/**/*.js',
-
+      // 'tests/unit/controllers/edit-user.js',
+      
       // templates
       'src/**/*.html'
     ]

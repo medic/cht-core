@@ -35,10 +35,10 @@
       <span class="help-block">{{errors.phone}}</span>
     </div>
 
-    <div class="form-group">
+    <!-- <div class="form-group">
       <label for="language" translate>Language</label>
       <select id="language" class="form-control" ng-model="editUserModel.language" ng-options="locale.name for locale in enabledLocales track by locale.code"></select>
-    </div>
+    </div> -->
 
     <div class="form-group required" mm-auth="can_configure" ng-class="{'has-error': errors.role}">
       <label for="role" translate>configuration.role</label>

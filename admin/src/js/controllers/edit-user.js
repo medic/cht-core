@@ -90,7 +90,6 @@ angular
             facilitySelect: $scope.model.facility_id,
             place: $scope.model.facility_id,
             role: getRole($scope.model.roles),
-            language: { code: $scope.model.language },
             // ^ Same with contactSelect vs. contact
             contactSelect: $scope.model.contact_id,
             contact: $scope.model.contact_id,
@@ -282,9 +281,9 @@ angular
         if (key === 'id') {
           return false;
         }
-        if (key === 'language') {
-          return existingModel[key].code !== (model[key] && model[key].code);
-        }
+        // if (key === 'language') {
+        //   return existingModel[key].code !== (model[key] && model[key].code);
+        // }
         if (key === 'password') {
           return model[key] && model[key] !== '';
         }
@@ -309,9 +308,10 @@ angular
         .then(existingModel => {
           const updates = {};
           getUpdatedKeys(model, existingModel).forEach(key => {
-            if (key === 'language') {
-              updates[key] = model[key].code;
-            } else if (key === 'role') {
+            // if (key === 'language') {
+            //   updates[key] = model[key].code;
+            // } else 
+            if (key === 'role') {
               updates.roles = [model[key]];
             } else {
               updates[key] = model[key];
