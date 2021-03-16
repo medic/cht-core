@@ -490,8 +490,8 @@ describe('provider-wireup integration tests', () => {
       expect(targets).to.deep.eq([{
         id: 'uhc',
         value: {
-          pass: 3, // 1, 2 and 5
-          total: 4, // not 4
+          pass: 1, // 1
+          total: 4, // not 2, 4, and 5
         },
       }]);
     });
