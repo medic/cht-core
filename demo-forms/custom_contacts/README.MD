@@ -5,7 +5,7 @@
 1. Edit the `app_settings.json` file and replace the existing `contact_types` JSON with the contents of [contact_types.json](contact_types.json).  Use care to ensure the JSON file is still valid.  If the JSON isn't valid, you will see a red "Upload failed" below the upload button.
 1. Upload the changed  `app_settings.json` file by navigating to the same spot as it step #1, but choose "Upload application code" instead. 
 1. Download the English language file from the "App Management" -> "Display" -> "Languages" -> "English" -> "Download"
-1. Add the translation keys in [en_translations](en_translations.properties)
+1. Add the translation keys in [en_translations](en_translations.properties) to the end of the `messages-en.properties` file you downloaded in the prior step.
 1. Upload the translation file from "App Management" -> "Display" -> "Languages" -> "English" -> "Upload" 
 1. Upload the contact forms using medic-conf `medic-conf <instance> upload-contact-forms`
 1. Now you will have a few custom contact types added to your instance. For example if you choose to "Add place" the option for "New NGO" will now be visible and you can select "Doctor" for the role under this type of place.
