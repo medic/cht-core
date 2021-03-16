@@ -9,7 +9,6 @@ env:
   STAGING_SERVER: _couch/builds
   MARKET_URL: ${{ secrets.MARKET_URL }}
 
-
 jobs:
   build:
     name: Compile the app
@@ -62,7 +61,7 @@ jobs:
     - name: Publish
       run: |
         cd scripts/travis
-        npm install
+        npm ci
         node ./publish.js
       if: ${{ github.event_name != 'pull_request' }}
 
@@ -175,3 +174,16 @@ jobs:
           tests/results
           tests/logs
       if: ${{ failure() }}
+
+  cleanup:
+    needs: test-e2e
+    name: Deleting old published artefacts
+    runs-on: ubuntu-18.04
+
+    steps:
+    - name: Cleanup
+      if: ${{ github.repository_owner == "medic" }} # don't run for external contributors - they don't have credentials
+      run: |
+        cd scripts/travis
+        npm ci
+        node ./cleanup.js
