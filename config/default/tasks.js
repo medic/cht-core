@@ -350,7 +350,7 @@ module.exports = [
       return !!(getField(report, 'patient_id') && getField(report, 'rdtoolkit_session_id'));
     },
     resolvedIf: (contact, report, event, dueDate) => {
-      if (!contact.reports && contact.reports.length()) {
+      if (!contact.reports) {
         return false;
       }
 
