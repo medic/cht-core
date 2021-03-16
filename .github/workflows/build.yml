@@ -182,7 +182,7 @@ jobs:
 
     steps:
     - name: Cleanup
-      if: ${{ github.repository_owner == "medic" }} # don't run for external contributors - they don't have credentials
+      if: ${{ github.repository_owner == 'medic' }} # don't run for external contributors - they don't have credentials
       run: |
         cd scripts/travis
         npm ci
