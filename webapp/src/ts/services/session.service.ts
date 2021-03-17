@@ -23,10 +23,13 @@ export class SessionService {
 
   navigateToLogin() {
     console.warn('User must reauthenticate');
+    const userCtx = this.userCtx();
+    const username = userCtx && userCtx.name;
+    const usernameQueryParam = username ? `username=${username}&` : '';
     this.cookieService.delete(COOKIE_NAME, '/');
     this.userCtxCookieValue = undefined;
     this.document.location.href =
-      `/${this.location.dbName}/login?redirect=${encodeURIComponent(this.document.location.href)}`;
+      `/${this.location.dbName}/login?${usernameQueryParam}redirect=${encodeURIComponent(this.document.location.href)}`;
   }
 
   logout() {
