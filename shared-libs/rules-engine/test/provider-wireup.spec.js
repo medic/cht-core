@@ -467,7 +467,7 @@ describe('provider-wireup integration tests', () => {
       const refreshRulesEmissions = sinon.stub().resolves({
         targetEmissions: [
           hhEmission(1, 'family1', 'patient-1-1', true),
-          hhEmission(2, 'family1', 'patient-1-2', true), // redundant
+          hhEmission(2, 'family1', 'patient-1-2', true),
           hhEmission(3, 'family1', 'patient-1-1', false),
 
           hhEmission(3, 'family2', 'patient-2-1', true),
@@ -475,6 +475,14 @@ describe('provider-wireup integration tests', () => {
 
           hhEmission(4, 'family3', 'patient-3-1'),
           hhEmission(35, 'family4', 'patient-4-1'), // outside filter
+
+          hhEmission(6, 'family6', 'patient-6-1', true),
+          hhEmission(6, 'family6', 'patient-6-1', true),
+
+          hhEmission(6, 'family7', 'patient-7-1', false),
+          hhEmission(6, 'family7', 'patient-7-1', true),
+          hhEmission(7, 'family7', 'patient-7-1', false),
+          hhEmission(7, 'family7', 'patient-7-1', true),
 
           ...[1,2,3,4,5].map(day => hhEmission(day, 'family5', 'patient-5-1', true)),
         ],
@@ -491,8 +499,8 @@ describe('provider-wireup integration tests', () => {
       expect(targets).to.deep.eq([{
         id: 'uhc',
         value: {
-          pass: 2, // 1, 5
-          total: 4, // not 2
+          pass: 3, // 1, 5, and 7
+          total: 6,
         },
       }]);
     });
