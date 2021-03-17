@@ -1,7 +1,10 @@
 const logger = require('../logger');
 const messaging = require('../services/messaging');
 const serverUtils = require('../server-utils');
+const config = require('../config');
 const secureSettings = require('@medic/settings');
+
+const rapidProService = 'rapid-pro';
 
 const getIncomingToken = () => {
   return secureSettings.getCredentials('rapidpro:incoming').then(token => {
@@ -14,6 +17,11 @@ const getIncomingToken = () => {
 };
 
 const validateToken = req => {
+  const smsConfigs = config.get('sms');
+  if (!smsConfigs || smsConfigs.outgoing_service !== rapidProService) {
+    return Promise.reject({ code: 400, message: 'Service not enabled' });
+  }
+
   return getIncomingToken().then(expected => {
     const given = req.headers.authorization;
     if (expected !== given) {

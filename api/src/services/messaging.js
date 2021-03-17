@@ -6,8 +6,11 @@ const config = require('../config');
 const africasTalking = require('./africas-talking');
 const rapidPro = require('./rapid-pro');
 const records = require('../services/records');
+const environment = require('../environment');
 
-const DB_CHECKING_INTERVAL = 1000 * 60; // Check DB for messages every minute
+// Check DB for messages every minute
+// when e2e testing, check every second
+const DB_CHECKING_INTERVAL = environment.isTesting ? 1000 : 1000 * 60;
 const SMS_SENDING_SERVICES = {
   'africas-talking': africasTalking,
   'rapid-pro': rapidPro,
@@ -198,7 +201,7 @@ const countStateChanges = (results, stateChangesByDocId) => {
 };
 
 module.exports = {
-
+  getOutgoingMessageService: getOutgoingMessageService,
   /**
    * Sends pending messages on the doc with the given ID using the
    * configured outgoing message service.
