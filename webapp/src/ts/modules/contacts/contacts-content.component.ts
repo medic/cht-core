@@ -141,15 +141,16 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       });
     this.subscription.add(childrenSubscription);
 
-    const contactDocSubscription = this.store
-      .select(Selectors.getSelectedContactDoc)
-      .subscribe((contactDoc) => {
-        if (!contactDoc) {
-          return;
-        }
-        this.setRightActionBar();
-      });
-    this.subscription.add(contactDocSubscription);
+    const actionBarSubscription = combineLatest(
+      this.store.select(Selectors.getSelectedContactDoc),
+      this.store.select(Selectors.getSelectedContactSummary),
+    ).subscribe(([contactDoc]) => {
+      if (!contactDoc) {
+        return;
+      }
+      this.setRightActionBar();
+    });
+    this.subscription.add(actionBarSubscription);
 
     const contactReportsSubscription = this.store
       .select(Selectors.getSelectedContactReports)
@@ -300,7 +301,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToSelectedContactXmlForms() {
-    if (!this.selectedContact) {
+    if (!this.selectedContact || !this.selectedContact.summary) {
       return;
     }
 
