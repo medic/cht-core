@@ -337,7 +337,7 @@ describe('RapidPro SMS Gateway', () => {
         genReport('received_to_resent', 4),
         genReport('received_to_delivered', 5),
         genReport('received_to_errored', 6),
-        genReport('received_to_failed', 6),
+        genReport('received_to_failed', 7),
       ];
 
       messagesResult = (req, res) => {
@@ -350,7 +350,7 @@ describe('RapidPro SMS Gateway', () => {
       await setOutgoingKey();
       await utils.saveDocs(docs);
 
-      await browser.wait(() => messagesEndpointRequests.length === 7, 2000 );
+      await browser.sleep(1200);
 
       const requests = messagesEndpointRequests.slice(0, 7);
       const requestedBroadcastIds = [];
@@ -362,6 +362,23 @@ describe('RapidPro SMS Gateway', () => {
         expect(headers.authorization).toEqual(`Token ${OUTGOING_KEY}`);
       });
       expect(expectedBroadcastIds).toEqual(requestedBroadcastIds.sort());
+
+      const updatedDocs = await utils.getDocs(docs.map(doc => doc._id));
+      const statusMap = [
+        ['queued', 'received-by-gateway'],
+        ['wired', 'forwarded-by-gateway'],
+        ['sent', 'sent'],
+        ['delivered', 'delivered'],
+        ['resent', 'sent'],
+        ['errored', 'received-by-gateway'],
+        ['failed', 'failed'],
+      ];
+
+      updatedDocs.forEach((updatedDoc) => {
+        const status = updatedDoc._id.replace('received_to_', '');
+        const state = statusMap.find(map => map[0] === status)[1];
+        expect(updatedDoc.tasks[0].state).toBe(state);
+      });
     });
 
     it('should not poll messages for docs that are in pending or scheduled states or lack gateway ref', async () => {
