@@ -264,7 +264,10 @@ describe('RapidPro SMS Gateway', () => {
       await utils.saveDoc(reportWithTasks);
       await browser.wait(() => broadcastsEndpointRequests.length === 4, 1200);
 
-      const bodies = broadcastsEndpointRequests.map(item => item[0]);
+      const bodies = broadcastsEndpointRequests
+        .map(item => item[0])
+        .sort((a, b) => a.text.localeCompare(b.text));
+
       expect(bodies).toEqual([
         { urns: ['tel:phone1'], text: 'message1' },
         { urns: ['tel:phone3'], text: 'message3' },
