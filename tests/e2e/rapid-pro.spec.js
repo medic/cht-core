@@ -352,10 +352,11 @@ describe('RapidPro SMS Gateway', () => {
 
       await browser.sleep(1200);
 
-      const requests = messagesEndpointRequests.slice(0, 7);
+      console.log(JSON.stringify(messagesEndpointRequests, null, 2));
+
       const requestedBroadcastIds = [];
       const expectedBroadcastIds = docs.map(doc => doc.tasks[0].gateway_ref).sort();
-      requests.forEach(([ query, headers ]) => {
+      messagesEndpointRequests.forEach(([ query, headers ]) => {
         expect(query.broadcast).toBeDefined();
         expect(expectedBroadcastIds.includes(query.broadcast)).toBe(true);
         requestedBroadcastIds.push(query.broadcast);
