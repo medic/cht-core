@@ -189,7 +189,7 @@ describe('RapidPro SMS Gateway', () => {
     });
   });
 
-  describe('Webapp originating messages and status updates', () => {
+  describe('Webapp originating messages and state updates', () => {
     let settings;
     let reportWithTasks;
 
@@ -278,7 +278,7 @@ describe('RapidPro SMS Gateway', () => {
       expect(headers[3].authorization).toEqual(`Token ${OUTGOING_KEY}`);
     });
 
-    it('should set correct statuses from broadcast api', async () => {
+    it('should set correct states from broadcast api', async () => {
       await utils.updateSettings(settings, true);
       await setOutgoingKey();
 
@@ -314,7 +314,194 @@ describe('RapidPro SMS Gateway', () => {
       expect(report.scheduled_tasks[2].state).toEqual('failed');
     });
 
-    it('should poll for status updates and consume queue', async () => {
+    it('should update the states correctly from messages api', async () => {
+      const genReport = (id, idx) => ({
+        _id: id,
+        type: 'data_record',
+        form: 'a',
+        reported_date: new Date().getTime(),
+        errors: [],
+        tasks: [{
+          messages: [{ to: `phone${idx}`, message: `message${idx}`, uuid: `uuid${idx}` }],
+          gateway_ref: `gateway_ref_${id}`,
+          state: 'received-by-gateway',
+        }],
+      });
+      const docs = [
+        genReport('received_to_queued', 1),
+        genReport('received_to_wired', 2),
+        genReport('received_to_sent', 3),
+        genReport('received_to_resent', 4),
+        genReport('received_to_delivered', 5),
+        genReport('received_to_errored', 6),
+        genReport('received_to_failed', 6),
+      ];
+
+      messagesResult = (req, res) => {
+        const id = req.query.broadcast.replace('gateway_ref_', '');
+        const nextStatus = id.replace('received_to_', '');
+        res.json({ results: [{ status: nextStatus }] });
+      };
+
+      await utils.updateSettings(settings, true);
+      await setOutgoingKey();
+      await utils.saveDocs(docs);
+
+      await browser.wait(() => messagesEndpointRequests.length === 7, 2000 );
+
+      const requests = messagesEndpointRequests.slice(0, 7);
+      const requestedBroadcastIds = [];
+      const expectedBroadcastIds = docs.map(doc => doc.tasks[0].gateway_ref).sort();
+      requests.forEach(([ query, headers ]) => {
+        expect(query.broadcast).toBeDefined();
+        expect(expectedBroadcastIds.includes(query.broadcast)).toBe(true);
+        requestedBroadcastIds.push(query.broadcast);
+        expect(headers.authorization).toEqual(`Token ${OUTGOING_KEY}`);
+      });
+      expect(expectedBroadcastIds).toEqual(requestedBroadcastIds.sort());
+    });
+
+    it('should not poll messages for docs that are in pending or scheduled states or lack gateway ref', async () => {
+      const docs = [
+        {
+          _id: uuid(),
+          type: 'data_record',
+          form: 'a',
+          reported_date: new Date().getTime(),
+          errors: [],
+          tasks: [{
+            messages: [{ to: `phone`, message: `message`, uuid: `uuid` }],
+            gateway_ref: `gateway_ref`,
+            state: 'queued',
+          }],
+        },
+        {
+          _id: uuid(),
+          type: 'data_record',
+          form: 'a',
+          reported_date: new Date().getTime(),
+          errors: [],
+          tasks: [{
+            messages: [{ to: `phone`, message: `message`, uuid: `uuid` }],
+            gateway_ref: `gateway_ref`,
+            state: 'scheduled',
+          }],
+        },
+        {
+          _id: uuid(),
+          type: 'data_record',
+          form: 'a',
+          reported_date: new Date().getTime(),
+          errors: [],
+          tasks: [{
+            messages: [{ to: `phone`, message: `message`, uuid: `uuid` }],
+            gateway_ref: `gateway_ref`,
+            state: 'muted',
+          }],
+        },
+        {
+          _id: uuid(),
+          type: 'data_record',
+          form: 'a',
+          reported_date: new Date().getTime(),
+          errors: [],
+          tasks: [{
+            messages: [{ to: `phone`, message: `message`, uuid: `uuid` }],
+            gateway_ref: `gateway_ref`,
+            state: 'duplicate',
+          }],
+        },
+        {
+          _id: uuid(),
+          type: 'data_record',
+          form: 'a',
+          reported_date: new Date().getTime(),
+          errors: [],
+          tasks: [{
+            messages: [{ to: `phone`, message: `message`, uuid: `uuid` }],
+            gateway_ref: `gateway_ref`,
+            state: 'cleared',
+          }],
+        },
+        {
+          _id: uuid(),
+          type: 'data_record',
+          form: 'a',
+          reported_date: new Date().getTime(),
+          errors: [],
+          tasks: [{
+            messages: [{ to: `phone`, message: `message`, uuid: `uuid` }],
+            state: 'received-by-gateway',
+          }],
+        },
+      ];
+
+      await utils.updateSettings(settings, true);
+      await setOutgoingKey();
+      await utils.saveDocs(docs);
+
+      await browser.sleep(1200); // wait for timer to trigger
+      expect(messagesEndpointRequests.length).toEqual(0); // no requests made
+    });
+
+    it('should keep updating until record is in final state', async () => {
+      const statusChangeList = [
+        'queued',
+        'wired',
+        'sent',
+        'errored',
+        'resent',
+        'delivered',
+      ];
+
+      const doc = {
+        _id: uuid(),
+        type: 'data_record',
+        form: 'a',
+        reported_date: new Date().getTime(),
+        errors: [],
+        tasks: [{
+          messages: [{ to: `phone`, message: `message`, uuid: `uuid` }],
+          gateway_ref: `gateway_ref`,
+          state: 'received-by-gateway',
+        }],
+      };
+
+      let idx = 0;
+      messagesResult = (req, res) => {
+        const nextStatus = statusChangeList[idx];
+        idx++;
+        res.json({ results: [{ status: nextStatus }] });
+      };
+
+      await utils.updateSettings(settings, true);
+      await setOutgoingKey();
+      await utils.saveDoc(doc);
+
+      await browser.wait(() => messagesEndpointRequests.length === 6, 6 * 1000 );
+      await browser.sleep(1200); // wait for one extra iteration
+
+      expect(messagesEndpointRequests.length).toEqual(6); // no additional requests
+      const updatedDoc = await utils.getDoc(doc._id);
+
+      expect(updatedDoc.tasks[0].state_history.length).toEqual(6);
+      expect(updatedDoc.tasks[0].state).toEqual('delivered');
+      const states = updatedDoc.tasks[0].state_history.map(history => history.state);
+      expect(states).toEqual([
+        'received-by-gateway',
+        'forwarded-by-gateway',
+        'sent',
+        'received-by-gateway',
+        'sent',
+        'delivered',
+      ]);
+
+      messagesEndpointRequests.forEach(([ query ]) => {
+        expect(query.broadcast).toEqual('gateway_ref');
+      });
+    });
+
+    it('should poll for state updates and consume queue', async () => {
       const nonFinalStates = ['received-by-gateway', 'forwarded-by-gateway', 'sent'];
       const finalStates = ['delivered', 'failed'];
 
@@ -360,7 +547,7 @@ describe('RapidPro SMS Gateway', () => {
         const idx = getIdx(task.gateway_ref);
         const expectedState = getFinalStateByIdx(idx);
         expect(task.state).toBe(expectedState, `Doc ${idx}(${doc._id}) has incorrect state`);
-      })
+      });
     });
   });
 });

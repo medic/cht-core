@@ -1,6 +1,7 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 const secureSettings = require('@medic/settings');
+const config = require('../../../src/config');
 const controller = require('../../../src/controllers/rapid-pro');
 const messaging = require('../../../src/services/messaging');
 const serverUtils = require('../../../src/server-utils');
@@ -15,7 +16,9 @@ describe('rapidPro controller', () => {
   afterEach(() => sinon.restore());
 
   describe('incomingMessages', () => {
-    it('returns error when key not configured', () => {
+    it('returns error when rapid pro not configured', () => {
+      sinon.stub(config, 'get').returns({});
+
       const req = {
         body: {},
         headers: { authorization: 'somekey' },
@@ -25,8 +28,27 @@ describe('rapidPro controller', () => {
       return controller.incomingMessages(req, res).then(() => {
         expect(serverUtils.error.callCount).to.equal(1);
         expect(res.json.callCount).to.equal(0);
+        expect(secureSettings.getCredentials.callCount).to.equal(0);
+        expect(config.get.callCount).to.equal(1);
+        expect(config.get.args[0]).to.deep.equal(['sms']);
+      });
+    });
+
+    it('returns error when key not configured', () => {
+      const req = {
+        body: {},
+        headers: { authorization: 'somekey' },
+      };
+      sinon.stub(config, 'get').returns({ outgoing_service: 'rapid-pro' });
+      sinon.stub(secureSettings, 'getCredentials').resolves();
+      sinon.stub(serverUtils, 'error').returns();
+      return controller.incomingMessages(req, res).then(() => {
+        expect(serverUtils.error.callCount).to.equal(1);
+        expect(res.json.callCount).to.equal(0);
         expect(secureSettings.getCredentials.callCount).to.equal(1);
         expect(secureSettings.getCredentials.args[0]).to.deep.equal(['rapidpro:incoming']);
+        expect(config.get.callCount).to.equal(1);
+        expect(config.get.args[0]).to.deep.equal(['sms']);
       });
     });
 
@@ -34,6 +56,7 @@ describe('rapidPro controller', () => {
       const req = {
         body: {},
       };
+      sinon.stub(config, 'get').returns({ outgoing_service: 'rapid-pro' });
       sinon.stub(secureSettings, 'getCredentials').resolves('mykey');
       sinon.stub(serverUtils, 'error').returns();
       return controller.incomingMessages(req, res).then(() => {
@@ -49,6 +72,7 @@ describe('rapidPro controller', () => {
         body: {},
         headers: { authorization: 'somekey' },
       };
+      sinon.stub(config, 'get').returns({ outgoing_service: 'rapid-pro' });
       sinon.stub(secureSettings, 'getCredentials').resolves('mykey');
       sinon.stub(serverUtils, 'error').returns();
       return controller.incomingMessages(req, res).then(() => {
@@ -62,6 +86,7 @@ describe('rapidPro controller', () => {
         headers: { authorization: 'mykey' },
         body: { id: '123', from: '+456', content: 'sms content' },
       };
+      sinon.stub(config, 'get').returns({ outgoing_service: 'rapid-pro' });
       sinon.stub(secureSettings, 'getCredentials').resolves('mykey');
       sinon.stub(messaging, 'processIncomingMessages').resolves({ saved: 1 });
       return controller.incomingMessages(req, res).then(() => {
