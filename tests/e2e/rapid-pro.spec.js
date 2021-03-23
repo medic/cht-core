@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const uuid = require('uuid/v4');
+const _ = require('lodash');
 
 const commonElements = require('../page-objects/common/common.po.js');
 const messagesElements = require('../page-objects/messages/messages.po');
@@ -362,7 +363,9 @@ describe('RapidPro SMS Gateway', () => {
         requestedBroadcastIds.push(query.broadcast);
         expect(headers.authorization).toEqual(`Token ${OUTGOING_KEY}`);
       });
-      expect(expectedBroadcastIds).toEqual(requestedBroadcastIds.sort());
+      // we don't have complete control over which docs are requested in the provided timespan
+      const sortedUniqueRequestedBroadcasts = _.uniq(requestedBroadcastIds.sort());
+      expect(expectedBroadcastIds).toEqual(sortedUniqueRequestedBroadcasts);
 
       const updatedDocs = await utils.getDocs(docs.map(doc => doc._id));
       const statusMap = [
