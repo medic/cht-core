@@ -3,7 +3,7 @@
  */
 const { MARKET_URL, BUILDS_SERVER, STAGING_SERVER } = process.env;
 
-const MAX_BUILDS_TO_DELETE = 50; // don't try and delete too many at once
+const MAX_BUILDS_TO_DELETE = 100; // don't try and delete too many at once
 const BETAS_TO_KEEP = 5; // keep the most recent 5 beta builds
 const DAYS_TO_KEEP_BRANCH = 100; // branch builds are kept for 100 days to allow for AT
 const DAYS_TO_KEEP_TEST = 7; // testing builds are kept for 7 days to allow for CI to complete
