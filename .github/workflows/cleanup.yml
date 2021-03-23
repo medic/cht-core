@@ -1,4 +1,4 @@
-name: Build cht-core and test against node versions
+name: Delete old published artefacts
 
 on:
   schedule:
