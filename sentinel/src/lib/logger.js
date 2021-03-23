@@ -1,7 +1,30 @@
 const { createLogger, format, transports } = require('winston');
 const env = process.env.NODE_ENV || 'development';
 
-const enumerateErrorFormat = format(info => {
+const cleanUpRequestError = (error) => {
+  const requestErrorConstructors = ['RequestError', 'StatusCodeError', 'TransformError'];
+  if (error && requestErrorConstructors.includes(error.constructor.name)) {
+    delete error.options;
+    delete error.request;
+    delete error.response;
+  }
+};
+
+const enumerateErrorFormat = format((info) => {
+  // errors can be passed as "splat" objects, like: logger.error('message: %o', actualError);
+  const symbolProperties = Object.getOwnPropertySymbols(info);
+  if (symbolProperties && symbolProperties.length) {
+    symbolProperties.forEach(property => {
+      const values = info[property];
+      if (!values || !Array.isArray(values)) {
+        return;
+      }
+      values.forEach(value => cleanUpRequestError(value));
+    });
+  }
+  cleanUpRequestError(info);
+  cleanUpRequestError(info.message);
+
   if (info.message instanceof Error) {
     info.message = Object.assign({
       message: info.message.message,

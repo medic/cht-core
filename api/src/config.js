@@ -98,7 +98,7 @@ const loadTranslations = () => {
 const loadViewMaps = () => {
   db.medic.get('_design/medic', function(err, ddoc) {
     if (err) {
-      logger.error('Error loading view maps for medic ddoc', err);
+      logger.error('Error loading view maps for medic ddoc: %o', err);
       return;
     }
     viewMapUtils.loadViewMaps(
