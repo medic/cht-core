@@ -4,6 +4,7 @@ const lineage = require('@medic/lineage')(Promise, db.medic);
 const utils = require('../lib/utils');
 const NAME = 'update_clinics';
 const FACILITY_NOT_FOUND = 'sys.facility_not_found';
+const messages = require('../lib/messages');
 
 const config = require('../config');
 
@@ -109,7 +110,12 @@ module.exports = {
           code: FACILITY_NOT_FOUND,
           message: utils.translate(FACILITY_NOT_FOUND, utils.getLocale(change.doc))
         };
+        const messageContext = {
+          translationKey: FACILITY_NOT_FOUND,
+          message: utils.translate(FACILITY_NOT_FOUND, utils.getLocale(change.doc))
+        };
         utils.addError(change.doc, error);
+        messages.addMessage(change.doc, messageContext);
         return true;
       }
     });
