@@ -106,14 +106,16 @@ module.exports = {
 
       const form = change.doc.form && utils.getForm(change.doc.form);
       if (!form || !form.public_form) {
+        const message = utils.translate(FACILITY_NOT_FOUND, utils.getLocale(change.doc));
         const error = {
           code: FACILITY_NOT_FOUND,
-          message: utils.translate(FACILITY_NOT_FOUND, utils.getLocale(change.doc))
+          message
         };
         const messageContext = {
           translationKey: FACILITY_NOT_FOUND,
-          message: utils.translate(FACILITY_NOT_FOUND, utils.getLocale(change.doc))
+          message
         };
+        
         utils.addError(change.doc, error);
         messages.addMessage(change.doc, messageContext);
         return true;
