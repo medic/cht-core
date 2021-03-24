@@ -17,7 +17,15 @@ const validLinkedDocs = doc => {
   return isContact(doc) && _.isObject(doc.linked_docs) && !_.isArray(doc.linked_docs);
 };
 
+const isReport = (doc) => doc.type === 'data_record';
+const getPatientId = (doc) => (doc.fields && (doc.fields.patient_id || doc.fields.patient_uuid)) || doc.patient_id;
+const getPlaceId = (doc) => (doc.fields && doc.fields.place_id) || doc.place_id;
+
+
 module.exports = {
   getId,
   validLinkedDocs,
+  isReport,
+  getPatientId,
+  getPlaceId,
 };

@@ -1,9 +1,7 @@
 const _ = require('lodash');
-const async = require('async');
 const config = require('../config');
 const messages = require('../lib/messages');
 const moment = require('moment');
-const validation = require('../lib/validation');
 const utils = require('../lib/utils');
 const transitionUtils = require('./utils');
 const date = require('../date');
@@ -89,27 +87,23 @@ const getConfig = function(form) {
   return _.find(fullConfig, { form: form });
 };
 
-const _silenceReminders = (registration, report, config, callback) => {
+const _silenceReminders = (registration, report, config) => {
   const toClear = module.exports._findToClear(
     registration,
     report.reported_date,
     config
   );
   if (!toClear.length) {
-    return callback();
+    return Promise.resolve();
   }
 
   toClear.forEach(task => {
     utils.setTaskState(task, 'cleared');
     task.cleared_by = report._id;
   });
-  return db.medic.post(registration, function(err, response) {
-    if (err) {
-      return callback(err);
-    }
 
+  return db.medic.post(registration).then(response => {
     registration._rev = response.rev;
-    callback();
   });
 };
 
@@ -152,7 +146,7 @@ const findValidRegistration = (doc, config, registrations) => {
         // If the visit falls within the silence_for range of a reminder that
         // has been cleared, we move to the next registration because we assume
         // that this visit is not responding to the reminder. This happens only when
-        // we are transtioning from one group to another one. Note that existing
+        // we are transitioning from one group to another one. Note that existing
         // functionality will set the cleared_by on the reminders of the task group
         if (silenceStart < visitReportedDate &&
             task.state === 'cleared' &&
@@ -161,7 +155,7 @@ const findValidRegistration = (doc, config, registrations) => {
           break;
         }
 
-        // We loop through until we find a task that has been "deliverd" or "sent" and
+        // We loop through until we find a task that has been "delivered" or "sent" and
         // that is older than the visit reported date
         if (moment(task.due) < visitReportedDate &&
               ['delivered', 'sent'].includes(task.state)) {
@@ -179,37 +173,27 @@ const findValidRegistration = (doc, config, registrations) => {
   return false;
 };
 
-const addReportUUIDToRegistration = (doc, config, registrations, callback) => {
+const addReportUUIDToRegistration = (doc, config, registrations) => {
   const validRegistration = registrations.length && findValidRegistration(doc, config, registrations);
   if (validRegistration) {
-    return db.medic.put(validRegistration, callback);
+    return db.medic.put(validRegistration);
   }
-
-  callback(null, true);
+  return Promise.resolve();
 };
 
-const silenceRegistrations = (config, doc, registrations, callback) => {
+const silenceRegistrations = (config, doc, registrations) => {
   if (!config.silence_type) {
-    return callback(null, true);
+    return Promise.resolve();
   }
-  async.forEach(
-    registrations,
-    function(registration, callback) {
-      if (doc._id === registration._id) {
-        // don't silence the registration you're processing
-        return callback();
-      }
-      module.exports._silenceReminders(registration, doc, config, callback);
-    },
-    function(err) {
-      callback(err, true);
+  let promiseChain = Promise.resolve();
+  registrations.forEach(registration => {
+    if (doc._id !== registration._id) {
+      // don't silence the registration you're processing
+      promiseChain = promiseChain.then(() => module.exports._silenceReminders(registration, doc, config));
     }
-  );
-};
+  });
 
-const validate = (config, doc, callback) => {
-  const validations = config.validations && config.validations.list;
-  return validation.validate(doc, validations, callback);
+  return promiseChain;
 };
 
 // NB: this is very similar to a function in the registration transition, except
@@ -225,32 +209,47 @@ const messageRelevant = (msg, doc) => {
   }
 };
 
-const addMessagesToDoc = (doc, config, registrations) => {
+const addMessagesToDoc = (doc, config, registrations, placeRegistrations) => {
   config.messages.forEach(msg => {
     if (messageRelevant(msg, doc)) {
       messages.addMessage(doc, msg, msg.recipient, {
         patient: doc.patient,
         registrations: registrations,
+        place: doc.place,
+        placeRegistrations,
       });
     }
   });
 };
 
-const handleReport = (doc, config, callback) => {
-  utils
-    .getReportsBySubject({ ids: utils.getSubjectIds(doc.patient), registrations: true })
-    .then(registrations => {
-      addMessagesToDoc(doc, config, registrations);
-      addRegistrationToDoc(doc, registrations);
-      module.exports.silenceRegistrations(config, doc, registrations, err => {
-        if (err) {
-          return callback(err);
-        }
+const getRegistrations = (contact) => {
+  if (!contact) {
+    return [];
+  }
+  const subjectIds = utils.getSubjectIds(contact);
+  if (subjectIds && subjectIds.length) {
+    return utils.getReportsBySubject({ ids: subjectIds, registrations: true });
+  }
 
-        addReportUUIDToRegistration(doc, config, registrations, callback);
-      });
-    })
-    .catch(callback);
+  return [];
+};
+
+const handleReport = (doc, config) => {
+  return Promise
+    .all([
+      getRegistrations(doc.patient),
+      getRegistrations(doc.place),
+    ])
+    .then(([patientRegistrations, placeRegistrations]) => {
+      const allRegistrations = [...patientRegistrations, ...placeRegistrations];
+
+      addMessagesToDoc(doc, config, patientRegistrations, placeRegistrations);
+      addRegistrationToDoc(doc, allRegistrations);
+
+      return module.exports
+        .silenceRegistrations(config, doc, allRegistrations)
+        .then(() => addReportUUIDToRegistration(doc, config, allRegistrations));
+    });
 };
 
 module.exports = {
@@ -277,26 +276,21 @@ module.exports = {
       return Promise.resolve();
     }
 
-    return new Promise((resolve, reject) => {
-      validate(config, doc, function(errors) {
+    return transitionUtils
+      .validate(config, doc)
+      .then(errors => {
         if (errors && errors.length > 0) {
           messages.addErrors(config, doc, errors, { patient: doc.patient });
-          return resolve(true);
+          return true;
         }
 
-        if (!doc.patient) {
+        if (!doc.patient && !doc.place) {
           transitionUtils.addRegistrationNotFoundError(doc, config);
-          return resolve(true);
+          return true;
         }
 
-        handleReport(doc, config, (err, changed) => {
-          if (err) {
-            return reject(err);
-          }
-          return resolve(changed);
-        });
+        return handleReport(doc, config).then(() => true);
       });
-    });
   },
   _silenceReminders: _silenceReminders,
   _findToClear: findToClear,

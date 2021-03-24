@@ -47,7 +47,7 @@ describe('accept_case_reports', () => {
   });
 
   describe('onMatch', () => {
-    it('callback empty if form not included', () => {
+    it('return nothing if form not included', () => {
       sinon.stub(config, 'get').returns([{ form: 'x' }, { form: 'z' }]);
       const change = {
         doc: {
