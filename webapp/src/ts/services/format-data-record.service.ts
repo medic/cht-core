@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import * as _ from 'lodash-es';
 
 import { DbService } from '@mm-services/db.service';
@@ -7,9 +7,7 @@ import { LanguageService } from '@mm-services/language.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 
-
 import * as messages from '@medic/message-utils';
-import * as lineageFactory from '@medic/lineage';
 import * as registrationUtils from '@medic/registration-utils';
 
 @Injectable({
@@ -22,15 +20,20 @@ export class FormatDataRecordService {
     private languageService:LanguageService,
     private settingsService:SettingsService,
     private translateLocaleService:TranslateLocaleService,
+    private ngZone:NgZone,
   ) {
   }
 
-  private lineage = lineageFactory(Promise, this.dbService.get());
   private readonly patientFields = ['patient_id', 'patient_uuid', 'patient_name'];
+  private readonly placeFields = ['place_id'];
 
-  private getRegistrations(patientId) {
+  private getRegistrations(shortcode) {
+    if (!shortcode) {
+      return;
+    }
+
     const options = {
-      key: patientId,
+      key: shortcode,
       include_docs: true,
     };
     return this.dbService
@@ -38,22 +41,6 @@ export class FormatDataRecordService {
       .query('medic-client/registered_patients', options)
       .then((result) => {
         return result.rows.map(row => row.doc);
-      });
-  }
-
-  private getPatient(patientId) {
-    const options = { key: ['shortcode', patientId] };
-    return this.dbService
-      .get()
-      .query('medic-client/contacts_by_reference', options)
-      .then((result) => {
-        if (!result.rows.length) {
-          return;
-        }
-        if (result.rows.length > 1) {
-          console.warn('More than one patient person document for shortcode "' + patientId + '"');
-        }
-        return this.lineage.fetchHydratedDoc(result.rows[0].id);
       });
   }
 
@@ -109,15 +96,19 @@ export class FormatDataRecordService {
 
   private getClickTarget(key, doc) {
     if (this.patientFields.includes(key)) {
-      const id = (doc.patient && doc.patient._id) ||
-        (doc.fields && doc.fields.patient_uuid);
+      const id = doc.patient?._id || doc.fields?.patient_uuid;
       if (id) {
         return { url: ['/contacts', id] };
       }
     } else if (key === 'case_id') {
-      const id = doc.case_id || doc.fields.case_id;
+      const id = doc.case_id || doc.fields?.case_id;
       if (id) {
         return { filter: `case_id:${id}` };
+      }
+    } else if (this.placeFields.includes(key)) {
+      const id = doc.place?._id;
+      if (id) {
+        return { url: ['/contacts', id] };
       }
     }
   }
@@ -689,27 +680,39 @@ export class FormatDataRecordService {
   }
 
   format(doc) {
-    const promises = [this.settingsService.get(), this.languageService.get()];
-    const patientId = doc.patient_id || (doc.fields && doc.fields.patient_id);
-    if (doc.scheduled_tasks && patientId) {
-      promises.push(this.getPatient(patientId));
-      promises.push(this.getRegistrations(patientId));
-    }
-    return Promise.all(promises).then((results) => {
-      const settings = results[0];
-      const language = results[1];
-      const context:any = {};
-      if (results.length === 4) {
-        context.patient = results[2];
-        context.registrations = (<[]>results[3]).filter((registration) => {
-          return registrationUtils.isValidRegistration(
-            registration,
-            settings
-          );
-        });
-      }
-      return this.makeDataRecordReadable(doc, settings, language, context);
-    });
+    return this.ngZone.runOutsideAngular(() => this._format(doc));
+  }
+
+  private _format(doc) {
+    const patientId = doc.patient_id || doc.fields?.patient_id;
+    const placeId = doc.place_id || doc.fields?.place_id;
+
+    return Promise
+      .all([
+        this.settingsService.get(),
+        this.languageService.get(),
+        doc.scheduled_tasks && this.getRegistrations(patientId),
+        doc.scheduled_tasks && this.getRegistrations(placeId),
+      ])
+      .then(([ settings, language, patientRegistrations=[], placeRegistrations=[] ]) => {
+        const context:any = {};
+
+        if (patientId) {
+          context.patient = doc.patient;
+          context.registrations = patientRegistrations.filter((registration) => {
+            return registrationUtils.isValidRegistration(registration, settings);
+          });
+        }
+
+        if (placeId) {
+          context.place = doc.place;
+          context.placeRegistrations = placeRegistrations.filter((registration) => {
+            return registrationUtils.isValidRegistration(registration, settings);
+          });
+        }
+
+        return this.makeDataRecordReadable(doc, settings, language, context);
+      });
   }
 }
 

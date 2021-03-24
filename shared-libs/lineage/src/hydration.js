@@ -54,7 +54,7 @@ module.exports = function(Promise, DB) {
 
     // Parent hierarchy starts at the contact for data_records
     let currentParent;
-    if (doc.type === 'data_record') {
+    if (utils.isReport(doc)) {
       currentParent = doc.contact = lineage.shift() || doc.contact;
     } else {
       // It's a contact
@@ -120,7 +120,7 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  const mergeLineagesIntoDoc = function(lineage, contacts, patientLineage) {
+  const mergeLineagesIntoDoc = function(lineage, contacts, patientLineage, placeLineage) {
     const doc = lineage.shift();
     fillParentsInDocs(doc, lineage);
 
@@ -130,49 +130,101 @@ module.exports = function(Promise, DB) {
       doc.patient = patientDoc;
     }
 
+    if (placeLineage && placeLineage.length) {
+      const placeDoc = placeLineage.shift();
+      fillParentsInDocs(placeDoc, placeLineage);
+      doc.place = placeDoc;
+    }
+
     return doc;
   };
 
-  const findPatientId = function(doc) {
-    return (
-      doc.type === 'data_record' &&
-      (
-        (doc.fields && (doc.fields.patient_id || doc.fields.patient_uuid)) ||
-        doc.patient_id
-      )
-    );
-  };
+  /*
+   * @returns {Object} subjectMaps
+   * @returns {Map} subjectMaps.patientUuids - map with [k, v] pairs of [recordUuid, patientUuid]
+   * @returns {Map} subjectMaps.placeUuids - map with [k, v] pairs of [recordUuid, placeUuid]
+   */
+  const fetchSubjectsUuids = (records) => {
+    const shortcodes = [];
+    const recordToPlaceUuidMap = new Map();
+    const recordToPatientUuidMap = new Map();
 
-  const fetchPatientUuids = function(records) {
-    const patientIds = records.map(record => findPatientId(record));
-    if (!patientIds.some(patientId => patientId)) {
-      return Promise.resolve([]);
+    records.forEach(record => {
+      if (!utils.isReport(record)) {
+        return;
+      }
+
+      const patientId = utils.getPatientId(record);
+      const placeId = utils.getPlaceId(record);
+      recordToPatientUuidMap.set(record._id, patientId);
+      recordToPlaceUuidMap.set(record._id, placeId);
+
+      shortcodes.push(patientId, placeId);
+    });
+
+    if (!shortcodes.some(shortcode => shortcode)) {
+      return Promise.resolve({ patientUuids: recordToPatientUuidMap, placeUuids: recordToPlaceUuidMap });
     }
-    return contactUuidByPatientIds(patientIds);
-  };
 
-  const fetchPatientLineage = function(record) {
-    return fetchPatientUuids([record])
-      .then(function([uuid]) {
-        if (!uuid) {
-          return [];
-        }
+    return contactUuidByShortcode(shortcodes).then(shortcodeToUuidMap => {
+      records.forEach(record => {
+        const patientShortcode = recordToPatientUuidMap.get(record._id);
+        recordToPatientUuidMap.set(record._id, shortcodeToUuidMap.get(patientShortcode));
 
-        return fetchLineageById(uuid);
+        const placeShortcode = recordToPlaceUuidMap.get(record._id);
+        recordToPlaceUuidMap.set(record._id, shortcodeToUuidMap.get(placeShortcode));
       });
+
+      return { patientUuids: recordToPatientUuidMap, placeUuids: recordToPlaceUuidMap };
+    });
   };
 
-  const contactUuidByPatientIds = function(patientIds) {
-    const keys = patientIds
-      .filter(patientId => patientId)
-      .map(patientId => [ 'shortcode', patientId ]);
+  /*
+  * @returns {Object} lineages
+  * @returns {Array} lineages.patientLineage
+  * @returns {Array} lineages.placeLineage
+  */
+  const fetchSubjectLineage = (record) => {
+    if (!utils.isReport(record)) {
+      return Promise.resolve({ patientLineage: [], placeLineage: [] });
+    }
+
+    const patientId = utils.getPatientId(record);
+    const placeId = utils.getPlaceId(record);
+
+    if (!patientId && !placeId) {
+      return Promise.resolve({ patientLineage: [], placeLineage: [] });
+    }
+
+    return contactUuidByShortcode([patientId, placeId]).then((shortcodeToUuidMap) => {
+      const patientUuid = shortcodeToUuidMap.get(patientId);
+      const placeUuid = shortcodeToUuidMap.get(placeId);
+
+      return fetchLineageByIds([patientUuid, placeUuid]).then((lineages) => {
+        const patientLineage = lineages.find(lineage => lineage[0]._id === patientUuid) || [];
+        const placeLineage = lineages.find(lineage => lineage[0]._id === placeUuid) || [];
+
+        return { patientLineage, placeLineage };
+      });
+    });
+  };
+
+  /*
+  * @returns {Map} map with [k, v] pairs of [shortcode, uuid]
+  */
+  const contactUuidByShortcode = function(shortcodes) {
+    const keys = shortcodes
+      .filter(shortcode => shortcode)
+      .map(shortcode => [ 'shortcode', shortcode ]);
+
     return DB.query('medic-client/contacts_by_reference', { keys })
       .then(function(results) {
         const findIdWithKey = key => {
           const matchingRow = results.rows.find(row => row.key[1] === key);
           return matchingRow && matchingRow.id;
         };
-        return patientIds.map(patientId => findIdWithKey(patientId) || patientId);
+
+        return new Map(shortcodes.map(shortcode => ([ shortcode, findIdWithKey(shortcode) || shortcode, ])));
       });
   };
 
@@ -217,6 +269,7 @@ module.exports = function(Promise, DB) {
   const fetchHydratedDoc = function(id, options = {}, callback) {
     let lineage;
     let patientLineage;
+    let placeLineage;
     if (typeof options === 'function') {
       callback = options;
       options = {};
@@ -241,15 +294,18 @@ module.exports = function(Promise, DB) {
           }
         }
 
-        return fetchPatientLineage(lineage[0])
-          .then(function(result) {
-            patientLineage = result;
-            return fetchContacts(lineage.concat(patientLineage));
+        return fetchSubjectLineage(lineage[0])
+          .then((lineages = {}) => {
+            patientLineage = lineages.patientLineage;
+            placeLineage = lineages.placeLineage;
+
+            return fetchContacts(lineage.concat(patientLineage, placeLineage));
           })
           .then(function(contacts) {
             fillContactsInDocs(lineage, contacts);
             fillContactsInDocs(patientLineage, contacts);
-            return mergeLineagesIntoDoc(lineage, contacts, patientLineage);
+            fillContactsInDocs(placeLineage, contacts);
+            return mergeLineagesIntoDoc(lineage, contacts, patientLineage, placeLineage);
           });
       })
       .then(function(result) {
@@ -272,7 +328,7 @@ module.exports = function(Promise, DB) {
     const ids = [];
     docs.forEach(function(doc) {
       let parent = doc.parent;
-      if (doc.type === 'data_record') {
+      if (utils.isReport(doc)) {
         const contactId = utils.getId(doc.contact);
         if (!contactId) {
           return;
@@ -290,7 +346,7 @@ module.exports = function(Promise, DB) {
   const collectLeafContactIds = function(partiallyHydratedDocs) {
     const ids = [];
     partiallyHydratedDocs.forEach(function(doc) {
-      const startLineageFrom = doc.type === 'data_record' ? doc.contact : doc;
+      const startLineageFrom = utils.isReport(doc) ? doc.contact : doc;
       ids.push(...getContactIds(selfAndParents(startLineageFrom)));
     });
 
@@ -326,24 +382,27 @@ module.exports = function(Promise, DB) {
     const hydratedDocs = deepCopy(docs); // a copy of the original docs which we will incrementally hydrate and return
     const knownDocs = [...hydratedDocs]; // an array of all documents which we have fetched
 
-    let patientUuids;
-    let patientDocs;
+    let patientUuids; // a map of [k, v] pairs with [hydratedDocUuid, patientUuid]
+    let placeUuids; // a map of [k, v] pairs with [hydratedDocUuid, placeUuid]
+    let subjectDocs;
 
-    return fetchPatientUuids(hydratedDocs)
-      .then(function(uuids) {
-        patientUuids = uuids;
-        return fetchDocs(patientUuids);
+    return fetchSubjectsUuids(hydratedDocs)
+      .then((subjectMaps) => {
+        placeUuids = subjectMaps.placeUuids;
+        patientUuids = subjectMaps.patientUuids;
+
+        return fetchDocs([...placeUuids.values(), ...patientUuids.values()]);
       })
-      .then(function(patients) {
-        patientDocs = patients;
-        knownDocs.push(...patients);
+      .then(subjects => {
+        subjectDocs = subjects;
+        knownDocs.push(...subjects);
 
         const firstRoundIdsToFetch = _.uniq([
           ...collectParentIds(hydratedDocs),
           ...collectLeafContactIds(hydratedDocs),
 
-          ...collectParentIds(patientDocs),
-          ...collectLeafContactIds(patientDocs),
+          ...collectParentIds(subjectDocs),
+          ...collectLeafContactIds(subjectDocs),
         ]);
 
         return fetchDocs(firstRoundIdsToFetch);
@@ -358,7 +417,7 @@ module.exports = function(Promise, DB) {
         knownDocs.push(...secondRoundFetched);
 
         fillContactsInDocs(knownDocs, knownDocs);
-        hydratedDocs.forEach((doc, i) => {
+        hydratedDocs.forEach((doc) => {
           const reconstructLineage = (docWithLineage, parents) => {
             const parentIds = extractParentIds(docWithLineage);
             return parentIds.map(id => {
@@ -367,7 +426,7 @@ module.exports = function(Promise, DB) {
             });
           };
 
-          const isReport = doc.type === 'data_record';
+          const isReport = utils.isReport(doc);
           const findParentsFor = isReport ? doc.contact : doc;
           const lineage = reconstructLineage(findParentsFor, knownDocs);
 
@@ -375,10 +434,13 @@ module.exports = function(Promise, DB) {
             lineage.unshift(doc);
           }
 
-          const patientDoc = getContactById(patientDocs, patientUuids[i]);
+          const patientDoc = getContactById(subjectDocs, patientUuids.get(doc._id));
           const patientLineage = reconstructLineage(patientDoc, knownDocs);
 
-          mergeLineagesIntoDoc(lineage, knownDocs, patientLineage);
+          const placeDoc = getContactById(subjectDocs, placeUuids.get(doc._id));
+          const placeLineage = reconstructLineage(placeDoc, knownDocs);
+
+          mergeLineagesIntoDoc(lineage, knownDocs, patientLineage, placeLineage);
         });
 
         return hydratedDocs;
@@ -416,7 +478,7 @@ module.exports = function(Promise, DB) {
 
   return {
     /**
-     * Given a doc id get a doc and all parents, contact (and parents) and patient (and parents)
+     * Given a doc id get a doc and all parents, contact (and parents) and patient (and parents) and place (and parents)
      * @param {String} id The id of the doc to fetch and hydrate
      * @param {Object} [options] Options for the behavior of the hydration
      * @param {Boolean} [options.throwWhenMissingLineage=false] When true, throw if the doc has nothing to hydrate.
@@ -434,7 +496,7 @@ module.exports = function(Promise, DB) {
     fetchHydratedDocs: docIds => fetchHydratedDocs(docIds),
 
     /**
-     * Given an array of docs bind the parents, contact (and parents) and patient (and parents)
+     * Given an array of docs bind the parents, contact (and parents) and patient (and parents) and place (and parents)
      * @param {Object[]} docs The array of docs to hydrate
      * @returns {Promise}
      */

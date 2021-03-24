@@ -5,6 +5,8 @@ const getServicesState = (state) => state.services || {};
 const getReportsState = (state) => state.reports || {};
 const getMessagesState = (state) => state.messages || {};
 const getContactsState = (state) => state.contacts || {};
+const getSelectedContact = (state) => getContactsState(state).selected;
+
 const getEnketoStatus = state => getGlobalState(state).enketoStatus;
 const getAnalyticsState = (state) => state.analytics || {};
 const getTargetAggregatesState = (state) => state.targetAggregates || {};
@@ -83,17 +85,12 @@ export const Selectors = {
   contactListContains: createSelector(getContactsState, (contactsState) => {
     return (id) => contactsState.contactsById.has(id);
   }),
-  getSelectedContact: createSelector(getContactsState, (contactsState) => contactsState.selected),
-  getSelectedContactDoc: createSelector(
-    getContactsState,
-    (contactsState) => contactsState.selected?.doc
-  ),
-  getSelectedContactChildren: createSelector(
-    getContactsState,
-    (contactsState) => contactsState.selected?.children
-  ),
-  getSelectedContactReports: createSelector(getContactsState, (contactsState) => contactsState.selected?.reports),
-  getSelectedContactTasks: createSelector(getContactsState, (contactsState) => contactsState.selected?.tasks),
+  getSelectedContact: createSelector(getSelectedContact, (selectedContact) => selectedContact),
+  getSelectedContactDoc: createSelector(getSelectedContact, (selectedContact) => selectedContact?.doc),
+  getSelectedContactSummary: createSelector(getSelectedContact, (selectedContact) => selectedContact?.summary),
+  getSelectedContactChildren: createSelector(getSelectedContact, (selectedContact) => selectedContact?.children),
+  getSelectedContactReports: createSelector(getSelectedContact, (selectedContact) => selectedContact?.reports),
+  getSelectedContactTasks: createSelector(getSelectedContact, (selectedContact) => selectedContact?.tasks),
   getLoadingSelectedContactReports: createSelector(
     getContactsState,
     (contactsState) => contactsState.loadingSelectedReports

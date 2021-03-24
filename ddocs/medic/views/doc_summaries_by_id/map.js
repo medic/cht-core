@@ -33,7 +33,9 @@ function(doc) {
     var subject = {};
     var reference = doc.patient_id ||
                     (doc.fields && doc.fields.patient_id) ||
-                    doc.place_id;
+                    doc.place_id ||
+                    (doc.fields && doc.fields.place_id);
+
     var patientName = doc.fields && doc.fields.patient_name;
     if (patientName) {
       subject.name = patientName;
@@ -42,9 +44,6 @@ function(doc) {
     if (reference) {
       subject.value = reference;
       subject.type = 'reference';
-    } else if (doc.fields && doc.fields.place_id) {
-      subject.value = doc.fields.place_id;
-      subject.type = 'id';
     } else if (patientName) {
       subject.value = patientName;
       subject.type = 'name';

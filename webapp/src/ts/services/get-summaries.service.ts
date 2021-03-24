@@ -35,9 +35,11 @@ export class GetSummariesService {
 
   private getSubject(doc) {
     const subject:any = {};
-    const reference = doc.patient_id ||
+    const reference =
+      doc.patient_id ||
       (doc.fields && doc.fields.patient_id) ||
-      doc.place_id;
+      doc.place_id ||
+      (doc.fields && doc.fields.place_id);
     const patientName = doc.fields && doc.fields.patient_name;
     if (patientName) {
       subject.name = patientName;
@@ -46,9 +48,6 @@ export class GetSummariesService {
     if (reference) {
       subject.value = reference;
       subject.type = 'reference';
-    } else if (doc.fields && doc.fields.place_id) {
-      subject.value = doc.fields.place_id;
-      subject.type = 'id';
     } else if (patientName) {
       subject.value = patientName;
       subject.type = 'name';

@@ -3,6 +3,8 @@ const assert = require('chai').assert;
 const schedules = require('../../src/lib/schedules');
 const config = require('../../src/config');
 const sinon = require('sinon');
+const messageUtils = require('@medic/message-utils');
+const utils = require('../../src/lib/utils');
 
 describe('schedules', () => {
   afterEach(() => sinon.restore());
@@ -437,7 +439,7 @@ describe('schedules', () => {
 
     assert.equal(added, false);
     assert(!doc.scheduled_tasks);
-  });  
+  });
 
   it('does not skip a group when starting mid-group and flag start_mid_group is true', () => {
     const doc = {
@@ -471,5 +473,188 @@ describe('schedules', () => {
 
     assert.equal(added, true);
     assert.equal(doc.scheduled_tasks.length, 1);
-  }); 
+  });
+
+  describe('should pass correct context to messageUtils', () => {
+    it('with patient', () => {
+      const schedule = {
+        name: 'for patient',
+        start_from: 'reported_date',
+        messages: [{
+          recipient: 'reporting_unit',
+          group: 1,
+          offset: '1 day',
+          message: [{
+            content: '{{name}} {{age}} {{reg_field}}',
+            locale: 'en',
+          }]
+        }]
+      };
+      const doc = {
+        form: 'x',
+        reported_date: moment().valueOf(),
+      };
+      const patient = { _id: 'patient', name: 'patients name', age: '42' };
+      const patientRegistrations = [{ _id: 'registration_1', reg_field: 'some reg field' }];
+
+      sinon.spy(messageUtils, 'generate');
+      sinon.stub(config, 'getAll').returns({});
+
+      schedules.assignSchedule(doc, schedule, { patient, patientRegistrations });
+
+      assert.equal(messageUtils.generate.callCount, 1);
+      assert.deepEqual(messageUtils.generate.args[0], [
+        {},
+        utils.translate,
+        doc,
+        schedule.messages[0],
+        schedule.messages[0].recipient,
+        {
+          patient,
+          registrations: patientRegistrations,
+          place: undefined,
+          placeRegistrations: undefined,
+        },
+      ]);
+
+      assert.equal(doc.scheduled_tasks.length, 1);
+      assert.equal(doc.scheduled_tasks[0].messages[0].message, 'patients name 42 some reg field');
+    });
+
+    it('with place', () => {
+      const schedule = {
+        name: 'for patient',
+        start_from: 'reported_date',
+        messages: [{
+          recipient: 'reporting_unit',
+          group: 1,
+          offset: '1 day',
+          message: [{
+            content: '{{name}} {{code}} {{municipality}}',
+            locale: 'en',
+          }]
+        }]
+      };
+      const doc = {
+        form: 'x',
+        reported_date: moment().valueOf(),
+      };
+      const place = { _id: 'place', name: 'the place', code: '1984' };
+      const placeRegistrations = [{ _id: 'registration_1', municipality: 'Theraria' }];
+
+      sinon.spy(messageUtils, 'generate');
+      sinon.stub(config, 'getAll').returns({});
+
+      schedules.assignSchedule(doc, schedule, { place, placeRegistrations });
+
+      assert.equal(messageUtils.generate.callCount, 1);
+      assert.deepEqual(messageUtils.generate.args[0], [
+        {},
+        utils.translate,
+        doc,
+        schedule.messages[0],
+        schedule.messages[0].recipient,
+        {
+          patient: undefined,
+          registrations: undefined,
+          place: place,
+          placeRegistrations: placeRegistrations,
+        },
+      ]);
+
+      assert.equal(doc.scheduled_tasks.length, 1);
+      assert.equal(doc.scheduled_tasks[0].messages[0].message, 'the place 1984 Theraria');
+    });
+
+    it('with patient and place', () => {
+      const schedule = {
+        name: 'for patient',
+        start_from: 'reported_date',
+        messages: [{
+          recipient: 'reporting_unit',
+          group: 1,
+          offset: '1 day',
+          message: [{
+            content: '{{age}} {{parent_name}} {{code}} {{municipality}}',
+            locale: 'en',
+          }]
+        }]
+      };
+      const doc = {
+        form: 'x',
+        reported_date: moment().valueOf(),
+      };
+      const patient = { _id: 'patient', age: '32' };
+      const patientRegistrations = [{ _id: 'reg', parent_name: 'hector' }];
+      const place = { _id: 'place', code: '1984' };
+      const placeRegistrations = [{ _id: 'registration_1', municipality: 'Theraria' }];
+
+      sinon.spy(messageUtils, 'generate');
+      sinon.stub(config, 'getAll').returns({});
+
+      schedules.assignSchedule(doc, schedule, { place, placeRegistrations, patient, patientRegistrations });
+
+      assert.equal(messageUtils.generate.callCount, 1);
+      assert.deepEqual(messageUtils.generate.args[0], [
+        {},
+        utils.translate,
+        doc,
+        schedule.messages[0],
+        schedule.messages[0].recipient,
+        {
+          patient: patient,
+          registrations: patientRegistrations,
+          place: place,
+          placeRegistrations: placeRegistrations,
+        },
+      ]);
+
+      assert.equal(doc.scheduled_tasks.length, 1);
+      assert.equal(doc.scheduled_tasks[0].messages[0].message, '32 hector 1984 Theraria');
+    });
+
+    it('with neither patient nor place', () => {
+      const schedule = {
+        name: 'for patient',
+        start_from: 'reported_date',
+        messages: [{
+          recipient: 'reporting_unit',
+          group: 1,
+          offset: '1 day',
+          message: [{
+            content: '{{field}}',
+            locale: 'en',
+          }]
+        }]
+      };
+      const doc = {
+        form: 'x',
+        reported_date: moment().valueOf(),
+        field: 'hello kitty',
+      };
+
+      sinon.spy(messageUtils, 'generate');
+      sinon.stub(config, 'getAll').returns({});
+
+      schedules.assignSchedule(doc, schedule);
+
+      assert.equal(messageUtils.generate.callCount, 1);
+      assert.deepEqual(messageUtils.generate.args[0], [
+        {},
+        utils.translate,
+        doc,
+        schedule.messages[0],
+        schedule.messages[0].recipient,
+        {
+          patient: undefined,
+          registrations: undefined,
+          place: undefined,
+          placeRegistrations: undefined,
+        },
+      ]);
+
+      assert.equal(doc.scheduled_tasks.length, 1);
+      assert.equal(doc.scheduled_tasks[0].messages[0].message, 'hello kitty');
+    });
+  });
 });

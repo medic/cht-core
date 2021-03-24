@@ -29,6 +29,7 @@ describe('Reports Summary', () => {
     reported_date: 1,
     type: 'clinic',
     name: 'Bob Place',
+    place_id: 'bob_place',
     parent: { _id: HEALTH_CENTER._id, parent: { _id: DISTRICT._id } }
   };
 
@@ -37,6 +38,7 @@ describe('Reports Summary', () => {
     reported_date: 1,
     type: 'clinic',
     name: 'TAG Place',
+    place_id: 'tag-place',
     parent: { _id: HEALTH_CENTER._id, parent: { _id: DISTRICT._id } }
   };
 
@@ -508,7 +510,7 @@ describe('Reports Summary', () => {
       expect(await getElementText(reportsTab.submitterPhone())).toBe(CAROL.phone);
     });
 
-    it('Concerning reports using place_id', async () => {
+    it('Concerning reports using place_id with a place_uuid', async () => {
       const REPORT = {
         _id: 'PREF_PREF_V',
         form: 'P',
@@ -521,6 +523,46 @@ describe('Reports Summary', () => {
           message_id: 23,
           from: PHONE_CAROL,
           message: `1!P!${TAG_PLACE._id}`,
+          form: 'RR',
+          locale: 'en'
+        },
+        reported_date: moment().subtract(60, 'minutes').valueOf()
+      };
+
+      await saveReport(REPORT);
+      await sentinelUtils.waitForSentinel([REPORT._id]);
+      await commonElements.goToReportsNative();
+
+      // LHS
+      const report = await reportsTab.loadReport(REPORT._id);
+      expect(await getElementText(reportsTab.subject(report))).toBe(TAG_PLACE.name);
+      expect(await getElementText(reportsTab.formName(report))).toBe('PID_PID');
+      //shows subject lineage breadcrumbs
+      await testLineageList(['Health Center', 'District']);
+
+      //RHS
+      expect(await getElementText(reportsTab.subjectName())).toBe(TAG_PLACE.name);
+      expect(await getElementText(reportsTab.summaryFormName())).toBe('PID_PID');
+
+      await testLineageSummary(['Health Center', 'District']);
+
+      expect(await getElementText(reportsTab.submitterName())).toMatch(`Submitted by ${CAROL.name}`);
+      expect(await getElementText(reportsTab.submitterPhone())).toBe(CAROL.phone);
+    });
+
+    it('Concerning reports using place_id with a shortcode', async () => {
+      const REPORT = {
+        _id: 'PREF_PREF_V',
+        form: 'P',
+        type: 'data_record',
+        from: PHONE_CAROL,
+        fields: {
+          place_id: TAG_PLACE.place_id
+        },
+        sms_message: {
+          message_id: 23,
+          from: PHONE_CAROL,
+          message: `1!P!${TAG_PLACE.place_id}`,
           form: 'RR',
           locale: 'en'
         },

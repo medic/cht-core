@@ -214,6 +214,10 @@ const extendedTemplateContext = function(doc, extras) {
     _.defaults(templateContext, extractTemplateContext(extras.registrations[0]));
   }
 
+  if (extras.placeRegistrations && extras.placeRegistrations.length) {
+    _.defaults(templateContext, extractTemplateContext(extras.placeRegistrations[0]));
+  }
+
   return templateContext;
 };
 
@@ -268,8 +272,8 @@ const truncateMessage = function(parts, max) {
  *        property on the doc.
  * @param {Object} [extraContext={}] An object with additional values to
  *        provide as a context for templating. Properties: `patient` (object),
- *        `registrations` (array), and `templateContext` (object) for any
- *        unstructured context additions.
+ *        `registrations` (array), `place` (object), `placeRegistrations` (array),
+ *        and `templateContext` (object) for any unstructured context additions.
  * @returns {Object} The generated message object.
  */
 exports.generate = function(config, translate, doc, content, recipient, extraContext) {
@@ -306,6 +310,14 @@ exports.generate = function(config, translate, doc, content, recipient, extraCon
                          extraContext.registrations.length;
   if (isMissingPatient) {
     result.error = 'messages.errors.patient.missing';
+  }
+
+  const isMissingPlace = extraContext &&
+                         !extraContext.place &&
+                         extraContext.placeRegistrations &&
+                         extraContext.placeRegistrations.length;
+  if (isMissingPlace) {
+    result.error = 'messages.errors.place.missing';
   }
 
   return [ result ];

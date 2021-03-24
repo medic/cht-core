@@ -174,17 +174,3 @@ jobs:
           tests/results
           tests/logs
       if: ${{ failure() }}
-
-  cleanup:
-    needs: test-e2e
-    name: Deleting old published artefacts
-    runs-on: ubuntu-18.04
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Cleanup
-      if: ${{ github.repository_owner == 'medic' }} # don't run for external contributors - they don't have credentials
-      run: |
-        cd scripts/travis
-        npm ci
-        node ./cleanup.js

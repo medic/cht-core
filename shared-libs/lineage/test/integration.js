@@ -204,6 +204,19 @@ const report_patient = {
   },
   reported_date: '5'
 };
+const report_place = {
+  _id: 'report_place',
+  place_id: '54321',
+  type: 'clinic',
+  name: 'place_name',
+  parent: {
+    _id: report_parent._id,
+    parent: {
+      _id: report_grandparent._id
+    }
+  },
+  reported_date: '5'
+};
 const report = {
   _id: 'report',
   type: 'data_record',
@@ -219,6 +232,60 @@ const report = {
   },
   fields: {
     patient_id: '12345'
+  }
+};
+const report_with_place = {
+  _id: 'report_with_place',
+  type: 'data_record',
+  form: 'A',
+  contact: {
+    _id: report_contact._id,
+    parent: {
+      _id: report_parent._id,
+      parent: {
+        _id: report_grandparent._id
+      }
+    }
+  },
+  fields: {
+    place_id: '54321'
+  }
+};
+
+const report_with_place_uuid = {
+  _id: 'report_with_place_uuid',
+  type: 'data_record',
+  form: 'A',
+  contact: {
+    _id: report_contact._id,
+    parent: {
+      _id: report_parent._id,
+      parent: {
+        _id: report_grandparent._id
+      }
+    }
+  },
+  fields: {
+    place_id: report_place._id,
+  }
+};
+
+const report_with_place_and_patient = {
+  _id: 'report_with_place_and_patient',
+  type: 'data_record',
+  form: 'A',
+  contact: {
+    _id: report_contact._id,
+    parent: {
+      _id: report_parent._id,
+      parent: {
+        _id: report_grandparent._id
+      }
+    }
+  },
+  fields: {
+    place_id: '54321',
+    patient_id: '12345',
   }
 };
 const report2 = {
@@ -271,6 +338,23 @@ const report4 = {
   },
   fields: {
     patient_id: 'something'
+  }
+};
+const report5 = {
+  _id: 'report5',
+  type: 'data_record',
+  form: 'A',
+  contact: {
+    _id: report_contact._id,
+    parent: {
+      _id: report_parent._id,
+      parent: {
+        _id: report_grandparent._id
+      }
+    }
+  },
+  fields: {
+    place_id: 'something'
   }
 };
 const stub_contacts = {
@@ -423,10 +507,15 @@ const fixtures = [
   report_grandparentContact,
   report_contact,
   report_patient,
+  report_place,
   report,
+  report_with_place,
+  report_with_place_uuid,
+  report_with_place_and_patient,
   report2,
   report3,
   report4,
+  report5,
   stub_contacts,
   stub_parents,
   sms_doc,
@@ -557,8 +646,9 @@ describe('Lineage', function() {
       });
     });
 
-    it('attaches the full lineage for reports', function() {
+    it('attaches the full lineage for reports with patient_id', () => {
       return lineage.fetchHydratedDoc(report._id).then(actual => {
+        expect(actual.place).to.equal(undefined);
         assert.checkDeepProperties(actual, {
           form: 'A',
           patient: {
@@ -595,6 +685,7 @@ describe('Lineage', function() {
 
     it('attaches patient lineage when using patient_uuid field', () => {
       return lineage.fetchHydratedDoc(report2._id).then(actual => {
+        expect(actual.place).to.equal(undefined);
         assert.checkDeepProperties(actual, {
           form: 'A',
           patient: {
@@ -624,6 +715,7 @@ describe('Lineage', function() {
 
     it('attaches patient lineage when using patient_id field that contains a uuid', () => {
       return lineage.fetchHydratedDoc(report3._id).then(actual => {
+        expect(actual.place).to.equal(undefined);
         assert.checkDeepProperties(actual, {
           form: 'A',
           patient: {
@@ -651,8 +743,150 @@ describe('Lineage', function() {
       });
     });
 
+    it('attaches the full lineage for reports with place_id', () => {
+      return lineage.fetchHydratedDoc(report_with_place._id).then(actual => {
+        expect(actual.patient).to.equal(undefined);
+        assert.checkDeepProperties(actual, {
+          form: 'A',
+          place: {
+            name: report_place.name,
+            parent: {
+              name: report_parent.name,
+              contact: {
+                name: report_parentContact.name,
+                phone: report_parentContact.phone,
+              }
+            }
+          },
+          contact: {
+            name: report_contact.name,
+            parent: {
+              name: report_parent.name,
+              contact: {
+                phone: '+123',
+                name: report_parentContact.name,
+              },
+              parent: {
+                name: report_grandparent.name,
+                contact: {
+                  phone: '+456',
+                  name: report_grandparentContact.name,
+                }
+              }
+            }
+          },
+          parent: undefined
+        });
+      });
+    });
+
+    it('attaches the full lineage for reports with place_id containing a uuid', () => {
+      return lineage.fetchHydratedDoc(report_with_place_uuid._id).then(actual => {
+        expect(actual.patient).to.equal(undefined);
+        assert.checkDeepProperties(actual, {
+          form: 'A',
+          place: {
+            name: report_place.name,
+            parent: {
+              name: report_parent.name,
+              contact: {
+                name: report_parentContact.name,
+                phone: report_parentContact.phone,
+              }
+            }
+          },
+          contact: {
+            name: report_contact.name,
+            parent: {
+              name: report_parent.name,
+              contact: {
+                phone: '+123',
+                name: report_parentContact.name,
+              },
+              parent: {
+                name: report_grandparent.name,
+                contact: {
+                  phone: '+456',
+                  name: report_grandparentContact.name,
+                }
+              }
+            }
+          },
+          parent: undefined
+        });
+      });
+    });
+
+    it('attaches the full lineage for reports with place_id and patient_id', () => {
+      return lineage.fetchHydratedDoc(report_with_place_and_patient._id).then(actual => {
+        assert.checkDeepProperties(actual, {
+          form: 'A',
+          place: {
+            name: report_place.name,
+            parent: {
+              name: report_parent.name,
+              contact: {
+                name: report_parentContact.name,
+                phone: report_parentContact.phone,
+              }
+            }
+          },
+          patient: {
+            name: report_patient.name,
+            parent: {
+              name: report_parent.name,
+              contact: {
+                name: report_parentContact.name,
+              }
+            }
+          },
+          contact: {
+            name: report_contact.name,
+            parent: {
+              name: report_parent.name,
+              contact: {
+                phone: '+123',
+                name: report_parentContact.name,
+              },
+              parent: {
+                name: report_grandparent.name,
+                contact: {
+                  phone: '+456',
+                  name: report_grandparentContact.name,
+                }
+              }
+            }
+          },
+          parent: undefined
+        });
+      });
+    });
+
     it('should work when patient is not found', () => {
       return lineage.fetchHydratedDoc(report4._id).then(actual => {
+        expect(actual.patient).to.equal(undefined);
+        expect(actual.place).to.equal(undefined);
+        assert.checkDeepProperties(actual, {
+          form: 'A',
+          contact: {
+            name: report_contact.name,
+            parent: {
+              name: report_parent.name,
+              contact: { phone: '+123' },
+              parent: {
+                name: report_grandparent.name,
+                contact: { phone: '+456' }
+              }
+            }
+          },
+          parent: undefined
+        });
+      });
+    });
+
+    it('should work when place is not found', () => {
+      return lineage.fetchHydratedDoc(report5._id).then(actual => {
+        expect(actual.place).to.equal(undefined);
         expect(actual.patient).to.equal(undefined);
         assert.checkDeepProperties(actual, {
           form: 'A',
@@ -771,11 +1005,76 @@ describe('Lineage', function() {
 
   describe('hydrateDocs', function() {
     it('binds contacts and parents', function() {
-      const docs = [ report, place ];
+      const docs = [ report, place, report_with_place, report_with_place_and_patient ];
 
       return lineage.hydrateDocs(docs)
-        .then(([ hydratedReport, hydratedPlace ]) => {
+        .then(([ hydratedReport, hydratedPlace, hydratedReportWithPlace, hydratedReportWithPlaceAndPatient ]) => {
           assert.checkDeepProperties(hydratedReport, {
+            contact: {
+              name: report_contact.name,
+              parent: {
+                name: report_parent.name,
+                contact: { name: report_parentContact.name },
+                parent: {
+                  name: report_grandparent.name,
+                  contact: { name: report_grandparentContact.name }
+                }
+              }
+            },
+            parent: undefined,
+            place: undefined,
+            patient: {
+              _id: report_patient._id,
+              name: report_patient.name,
+              parent: {
+                _id: report_parent._id,
+                name: report_parent.name,
+                contact: {
+                  _id: report_parentContact._id,
+                  name: report_parentContact.name,
+                }
+              }
+            },
+          });
+          assert.checkDeepProperties(hydratedPlace, {
+            contact: { name: place_contact.name },
+            parent: {
+              name: place_parent.name,
+              contact: { name: place_parentContact.name },
+              parent: {
+                name: place_grandparent.name,
+                contact: { name: place_grandparentContact.name }
+              }
+            }
+          });
+          assert.checkDeepProperties(hydratedReportWithPlace, {
+            contact: {
+              name: report_contact.name,
+              parent: {
+                name: report_parent.name,
+                contact: { name: report_parentContact.name },
+                parent: {
+                  name: report_grandparent.name,
+                  contact: { name: report_grandparentContact.name }
+                }
+              }
+            },
+            parent: undefined,
+            patient: undefined,
+            place: {
+              _id: report_place._id,
+              name: report_place.name,
+              parent: {
+                _id: report_parent._id,
+                name: report_parent.name,
+                contact: {
+                  _id: report_parentContact._id,
+                  name: report_parentContact.name,
+                }
+              }
+            },
+          });
+          assert.checkDeepProperties(hydratedReportWithPlaceAndPatient, {
             contact: {
               name: report_contact.name,
               parent: {
@@ -799,28 +1098,29 @@ describe('Lineage', function() {
                   name: report_parentContact.name,
                 }
               }
-            }
-          });
-          assert.checkDeepProperties(hydratedPlace, {
-            contact: { name: place_contact.name },
-            parent: {
-              name: place_parent.name,
-              contact: { name: place_parentContact.name },
+            },
+            place: {
+              _id: report_place._id,
+              name: report_place.name,
               parent: {
-                name: place_grandparent.name,
-                contact: { name: place_grandparentContact.name }
+                _id: report_parent._id,
+                name: report_parent.name,
+                contact: {
+                  _id: report_parentContact._id,
+                  name: report_parentContact.name,
+                }
               }
-            }
+            },
           });
         });
     });
 
     it('ignores db-fetch errors', function() {
-      const docs = [ report, place ];
+      const docs = [ report, place, report_with_place ];
 
       return deleteDocs([place_parent._id, report_parentContact._id])
         .then(() => lineage.hydrateDocs(docs))
-        .then(([ hydratedReport, hydratedPlace ]) => {
+        .then(([ hydratedReport, hydratedPlace, hydratedReportWithPlace ]) => {
           assert.checkDeepProperties(hydratedReport, {
             contact: {
               name: report_contact.name,
@@ -849,18 +1149,37 @@ describe('Lineage', function() {
               }
             }
           });
+          assert.checkDeepProperties(hydratedReportWithPlace, {
+            contact: {
+              name: report_contact.name,
+              parent: {
+                name: report_parent.name,
+                contact: {
+                  _id: report_parentContact._id,
+                  name: undefined
+                },
+                parent: {
+                  name: report_grandparent.name,
+                  contact: { name: report_grandparentContact.name }
+                }
+              }
+            },
+            parent: undefined
+          });
         });
     });
 
     it('minifying the result returns the starting documents', function() {
-      const docs = [ cloneDeep(report), cloneDeep(place) ];
+      const docs = [ cloneDeep(report), cloneDeep(place), cloneDeep(report_with_place) ];
 
       return lineage.hydrateDocs(docs)
-        .then(([ hydratedReport, hydratedPlace ]) => {
+        .then(([ hydratedReport, hydratedPlace, hydratedReportWithPlace ]) => {
           lineage.minify(hydratedReport);
           lineage.minify(hydratedPlace);
+          lineage.minify(hydratedReportWithPlace);
           expect(hydratedReport).excluding('_rev').to.deep.equal(report);
           expect(hydratedPlace).excluding('_rev').to.deep.equal(place);
+          expect(hydratedReportWithPlace).excluding('_rev').to.deep.equal(report_with_place);
         });
     });
 
@@ -1241,8 +1560,9 @@ describe('Lineage', function() {
     });
 
     it('should work with multiple docs', () => {
-      return lineage.fetchHydratedDocs([report_patient._id, 'not_found', place._id, report._id]).then(result => {
-        expect(result.length).to.equal(3);
+      const docIds = [report_patient._id, 'not_found', place._id, report._id, report_with_place._id];
+      return lineage.fetchHydratedDocs(docIds).then(result => {
+        expect(result.length).to.equal(4);
         assert.checkDeepProperties(result[0], {
           _id: 'report_patient',
           patient_id: '12345',
@@ -1299,6 +1619,40 @@ describe('Lineage', function() {
           },
           patient: {
             name: report_patient.name,
+            parent: {
+              name: report_parent.name,
+              contact: {
+                name: report_parentContact.name,
+              },
+              parent: {
+                name: report_grandparent.name,
+                contact: {
+                  name: report_grandparentContact.name
+                }
+              }
+            }
+          }
+        });
+
+        assert.checkDeepProperties(result[3], {
+          _id: 'report_with_place',
+          contact: {
+            name: report_contact.name,
+            parent: {
+              name: report_parent.name,
+              contact: {
+                name: report_parentContact.name,
+              },
+              parent: {
+                name: report_grandparent.name,
+                contact: {
+                  name: report_grandparentContact.name,
+                }
+              }
+            }
+          },
+          place: {
+            name: report_place.name,
             parent: {
               name: report_parent.name,
               contact: {

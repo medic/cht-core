@@ -21,6 +21,7 @@
     "@medic/message-utils": "file:../message-utils",
     "@medic/outbound": "file:../outbound",
     "@medic/phone-number": "file:../phone-number",
+    "@medic/settings": "file:../settings",
     "@medic/registration-utils": "file:../registration-utils",
     "@medic/task-utils": "file:../task-utils",
     "async": "^3.2.0",
@@ -33,6 +34,7 @@
     "mustache": "^4.0.1",
     "object-path": "^0.11.4",
     "request": "^2.88.2",
-    "request-promise-native": "^1.0.9"
+    "request-promise-native": "^1.0.9",
+    "url-join": "^4.0.1"
   }
 }
