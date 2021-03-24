@@ -453,29 +453,38 @@ describe('provider-wireup integration tests', () => {
       };
       await wireup.initialize(provider, settings, {});
 
-      const hhEmission = (day, family, patient) => {
+      const hhEmission = (day, family, patient, pass) => {
         const date = moment(`2000-01-${day}`);
         return {
           _id: `${family}~${date.format('YYYY-MM-DD')}`,
           contact: { _id: patient },
           type: 'uhc',
           groupBy: family,
-          date: date.valueOf()
+          date: date.valueOf(),
+          pass
         };
       };
       const refreshRulesEmissions = sinon.stub().resolves({
         targetEmissions: [
-          hhEmission(1, 'family1', 'patient-1-1'),
-          hhEmission(1, 'family1', 'patient-1-2'), // redundant
-          hhEmission(3, 'family1', 'patient-1-1'),
+          hhEmission(1, 'family1', 'patient-1-1', true),
+          hhEmission(2, 'family1', 'patient-1-2', true),
+          hhEmission(3, 'family1', 'patient-1-1', false),
 
-          hhEmission(3, 'family2', 'patient-2-1'),
-          hhEmission(28, 'family2', 'patient-2-1'),
+          hhEmission(3, 'family2', 'patient-2-1', true),
+          hhEmission(28, 'family2', 'patient-2-1', false),
 
           hhEmission(4, 'family3', 'patient-3-1'),
           hhEmission(35, 'family4', 'patient-4-1'), // outside filter
 
-          ...[1,2,3,4,5].map(day => hhEmission(day, 'family5', 'patient-5-1')),
+          hhEmission(6, 'family6', 'patient-6-1', true),
+          hhEmission(6, 'family6', 'patient-6-1', true),
+
+          hhEmission(6, 'family7', 'patient-7-1', false),
+          hhEmission(6, 'family7', 'patient-7-1', true),
+          hhEmission(7, 'family7', 'patient-7-1', false),
+          hhEmission(7, 'family7', 'patient-7-1', true),
+
+          ...[1,2,3,4,5].map(day => hhEmission(day, 'family5', 'patient-5-1', true)),
         ],
       });
       const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
@@ -490,8 +499,8 @@ describe('provider-wireup integration tests', () => {
       expect(targets).to.deep.eq([{
         id: 'uhc',
         value: {
-          pass: 3, // 1, 2 and 5
-          total: 4, // not 4
+          pass: 3, // 1, 5, and 7
+          total: 6,
         },
       }]);
     });
