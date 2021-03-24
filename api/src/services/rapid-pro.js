@@ -122,7 +122,7 @@ const getRemoteState = (apiToken, host, { gateway_ref: gatewayRef, id: messageId
     })
     .catch(err => {
       // unknown error - ignore it so the message will be retried again later
-      logger.error(`Error thrown trying to retrieve status updates %s`, err);
+      logger.error(`Error thrown trying to retrieve status updates %o`, err);
     });
 };
 
@@ -195,7 +195,7 @@ module.exports = {
           });
       })
       .catch(err => {
-        logger.error('Error while polling message states: %s', err);
+        logger.error('Error while polling message states: %o', err);
       });
   },
 };
