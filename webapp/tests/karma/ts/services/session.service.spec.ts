@@ -61,7 +61,7 @@ describe('Session service', () => {
     Location.dbName = 'DB_NAME';
     $httpBackend.delete.withArgs('/_session').returns(of());
     await service.logout();
-    expect(location.href).to.equal(`/DB_NAME/login?username=${userCtxExpected.name}&redirect=CURRENT_URL`);
+    expect(location.href).to.equal(`/DB_NAME/login?redirect=CURRENT_URL&username=${userCtxExpected.name}`);
     expect(cookieDelete.args[0][0]).to.equal('userCtx');
     expect(consoleWarnMock.callCount).to.equal(1);
     expect(consoleWarnMock.args[0][0]).to.equal('User must reauthenticate');
@@ -107,7 +107,7 @@ describe('Session service', () => {
     $httpBackend.get.withArgs('/_session').returns(of([{ data: { userCtx: { name: 'jimmy' } } }]));
     $httpBackend.delete.withArgs('/_session').returns(of());
     await service.init();
-    expect(location.href).to.equal(`/DB_NAME/login?username=${userCtxExpected.name}&redirect=CURRENT_URL`);
+    expect(location.href).to.equal(`/DB_NAME/login?redirect=CURRENT_URL&username=${userCtxExpected.name}`);
     expect(cookieDelete.args[0][0]).to.equal('userCtx');
     expect(consoleWarnMock.callCount).to.equal(1);
     expect(consoleWarnMock.args[0][0]).to.equal('User must reauthenticate');
