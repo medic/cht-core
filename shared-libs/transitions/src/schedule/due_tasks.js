@@ -11,30 +11,25 @@ const messageUtils = require('@medic/message-utils');
 
 const BATCH_SIZE = 1000;
 
-const getPatient = (patientShortcodeId) => {
-  return utils
-    .getContactUuid(patientShortcodeId)
-    .then(uuid => {
-      if (!uuid) {
-        return;
-      }
-
-      return lineage.fetchHydratedDoc(uuid);
-    });
-};
-
 const getTemplateContext = (doc) => {
   const patientShortcodeId = doc.fields && doc.fields.patient_id;
-  if (!patientShortcodeId) {
+  const placeShortcodeId = doc.fields && doc.fields.place_id;
+  if (!patientShortcodeId && !placeShortcodeId) {
     return Promise.resolve();
   }
 
   return Promise
     .all([
-      utils.getRegistrations({ id: patientShortcodeId }),
-      getPatient(patientShortcodeId)
+      patientShortcodeId && utils.getRegistrations({ id: patientShortcodeId }),
+      placeShortcodeId && utils.getRegistrations({ id: placeShortcodeId }),
     ])
-    .then(([ registrations, patient ]) => ({ registrations, patient }));
+    .then(([ patientRegistrations, placeRegistrations]) => ({
+      registrations: patientRegistrations,
+      placeRegistrations,
+      // the doc is already hydrated
+      patient: doc.patient,
+      place: doc.place,
+    }));
 };
 
 const updateScheduledTasks = (doc, context, dueDates) => {

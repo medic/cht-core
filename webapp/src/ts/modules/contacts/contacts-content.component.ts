@@ -151,6 +151,17 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       });
     this.subscription.add(contactDocSubscription);
 
+    const contactSummarySubscription = this.store
+      .select(Selectors.getSelectedContactSummary)
+      .subscribe((summary) => {
+        if (!summary || !this.selectedContact?.doc) {
+          return;
+        }
+
+        this.subscribeToSelectedContactXmlForms();
+      });
+    this.subscription.add(contactSummarySubscription);
+
     const contactReportsSubscription = this.store
       .select(Selectors.getSelectedContactReports)
       .subscribe((reports) => {
@@ -300,7 +311,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToSelectedContactXmlForms() {
-    if (!this.selectedContact) {
+    if (!this.selectedContact || !this.selectedContact.summary || !this.selectedContact.doc) {
       return;
     }
 
@@ -312,7 +323,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       'SelectedContactReportForms',
       {
         doc: this.selectedContact.doc,
-        contactSummary: this.selectedContact.summary?.context,
+        contactSummary: this.selectedContact.summary.context,
         contactForms: false,
       },
       (error, forms) => {

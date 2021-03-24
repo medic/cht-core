@@ -343,6 +343,25 @@ describe('RulesEngineService', () => {
       expect(changeFeed.filter({ id: 'id' })).to.be.false;
       expect(changeFeed.filter(changeFeedFormat({ _id: 'task', type: 'task' }))).to.be.false;
     });
+
+    it('should emit when contacts were marked as dirty', async () => {
+      service = TestBed.inject(RulesEngineService);
+      await service.isEnabled();
+
+      const callback = sinon.stub();
+      const subscription = service.contactsMarkedAsDirty(callback);
+
+      const change = changesService.subscribe.args[0][0];
+      const doc = { _id: 'doc', type: 'data_record', form: 'theform', fields: { patient_id: '65479' } };
+      await change.callback(changeFeedFormat(doc));
+
+      expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.equal(1);
+      expect(rulesEngineCoreStubs.updateEmissionsFor.args[0]).to.deep.equal(['65479']);
+
+      expect(callback.callCount).to.equal(1);
+
+      subscription.unsubscribe();
+    });
   });
 
   describe('monitorExternalChanges', () => {
