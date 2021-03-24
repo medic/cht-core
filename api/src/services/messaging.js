@@ -80,7 +80,8 @@ const checkDbForMessagesToSend = () => {
     return Promise.resolve();
   }
   logger.debug('Checking for pending outgoing messages');
-  return module.exports.getOutgoingMessages()
+  return module.exports
+    .getOutgoingMessages()
     .then(messages => {
       logger.info(`Sending ${messages.length} messages`);
       if (!messages.length) {

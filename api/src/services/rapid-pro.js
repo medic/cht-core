@@ -30,7 +30,14 @@ const nonFinalStates = Object
   .map(status => status.state);
 
 const getCredentials = () => {
-  const host = getHost();
+  // Supports self-hosted RapidPro instances, but defaults to textit.in
+  const settings = config.get('sms');
+  const url = settings &&
+              settings.rapidPro &&
+              settings.rapidPro.url;
+  const textitUrl = 'https://textit.in';
+  const host =  url || textitUrl;
+
   return secureSettings.getCredentials('rapidpro:outgoing').then(apiToken => {
     if (!apiToken) {
       return Promise.reject('No api key configured. Refer to the RapidPro configuration documentation.');
@@ -39,20 +46,7 @@ const getCredentials = () => {
   });
 };
 
-/**
- * Supports self-hosted RapidPro instances, but defaults to textit.in
- * @returns {string} url
- */
-const getHost = () => {
-  const settings = config.get('sms');
-  const url = settings &&
-              settings.rapidPro &&
-              settings.rapidPro.url;
-  const textitUrl = 'https://textit.in';
-  return url || textitUrl;
-};
-
-const getRequestOptions = ({ host, apiToken }={}) => ({
+const getRequestOptions = ({ apiToken, host }={}) => ({
   baseUrl: host,
   json: true,
   headers: {
@@ -60,6 +54,7 @@ const getRequestOptions = ({ host, apiToken }={}) => ({
     Accept: 'application/json',
   },
 });
+
 const remoteStatusToLocalState = (result) => result.status && STATUS_MAP[result.status];
 
 /**
@@ -81,9 +76,9 @@ const getStateUpdate = (status, messageId, gatewayRef) => ({
 
 /**
  * Creates a broadcast for the provided message in RapidPro.
- * Returns a state update with the resulting broadcast id
+ * Returns a state update, setting the gateway_ref to the returned broadcast id
  * @param {object} credentials
- * @param message
+ * @param {object} message
  * @returns {Promise<stateUpdate>}
  */
 const sendMessage = (credentials, message) => {
@@ -99,22 +94,22 @@ const sendMessage = (credentials, message) => {
     .post(requestOptions)
     .then(result => {
       if (!result) {
-        logger.error(`Empty response received`);
-        return; // retry later
+        logger.error('Empty response received when sending message');
+        return; // sending the message will be retried later
       }
 
       const state = remoteStatusToLocalState(result);
       return getStateUpdate(state, message.id, result.id);
     })
     .catch(err => {
-      // unknown error - ignore it so the message will be retried again later
-      logger.error(`Error thrown trying to send message: %s`, err);
+      // ignore error, sending the message will be retried later
+      logger.error(`Error thrown when trying to send message: %o`, err);
     });
 };
 
 /**
  * Queries RapidPro messages endpoint with the provided broadcast id.
- * Returns state update of first message that is part of the broadcast.
+ * Returns state update of first returned result.
  * @param {Object} credentials - RapidPro API authorization token and host
  * @param {string} gatewayRef - the RapidPro broadcast id
  * @param {string} messageId - message uuid
@@ -175,28 +170,27 @@ module.exports = {
   /**
    * Given an array of messages returns a promise which resolves an array
    * of responses.
-   * @param messages An Array of objects with a `to` String and a `message` String.
-   * @returns A Promise which resolves an Array of state change objects.
+   * @param {Array} messages - Array of objects with a `to` (recipient) and a `message` field.
+   * @returns {Promise<[stateUpdate]>} - array of state update objects.
    */
   send: (messages) => {
     // get the credentials every call so changes can be made without restarting api
-    return getCredentials()
-      .then(credentials => {
-        let promiseChain = Promise.resolve([]);
-        messages.forEach(message => {
-          promiseChain = promiseChain.then((statusUpdates) => {
-            return sendMessage(credentials, message).then(result => {
-              if (result) {
-                statusUpdates.push(result);
-              }
+    return getCredentials().then(credentials => {
+      let promiseChain = Promise.resolve([]);
+      messages.forEach(message => {
+        promiseChain = promiseChain.then((statusUpdates) => {
+          return sendMessage(credentials, message).then(result => {
+            if (result) {
+              statusUpdates.push(result);
+            }
 
-              return statusUpdates;
-            });
+            return statusUpdates;
           });
         });
-
-        return promiseChain;
       });
+
+      return promiseChain;
+    });
   },
 
   /**
