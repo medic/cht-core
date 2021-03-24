@@ -319,7 +319,6 @@ describe('Contacts content component', () => {
 
     it('should not initialise action bar when there is not selected contact', fakeAsync(() => {
       sinon.resetHistory();
-      store.overrideSelector(Selectors.getSelectedContactChildren, undefined);
       store.overrideSelector(Selectors.getSelectedContactDoc, undefined);
       store.refreshState();
       fixture.detectChanges();
@@ -525,6 +524,65 @@ describe('Contacts content component', () => {
           }
         ]
       });
+    }));
+
+    it('should update action bar forms list when contact summary changes', fakeAsync(() => {
+      flush();
+
+      sinon.resetHistory();
+      store.overrideSelector(Selectors.getSelectedContactSummary, {});
+      store.refreshState();
+
+      expect(globalActions.setRightActionBar.callCount).to.equal(0);
+      expect(xmlFormsService.subscribe.callCount).to.equal(1);
+      expect(xmlFormsService.subscribe.args[0][0]).to.equal('SelectedContactReportForms');
+
+      const forms = [
+        { _id: 'form:test_report_type3', title: 'Type 3', internalId: 3, icon: 'a' },
+        { _id: 'form:test_report_type2', title: 'Type 2', internalId: 2, icon: 'b' },
+      ];
+
+      xmlFormsService.subscribe.args[0][2](null, forms);
+
+      expect(globalActions.updateRightActionBar.callCount).to.equal(1);
+      expect(globalActions.updateRightActionBar.args[0][0]).to.deep.equal({
+        relevantForms: [
+          {
+            id: 'form:test_report_type2',
+            code: 2,
+            icon: 'b',
+            showUnmuteModal: undefined,
+            title: 'Type 2',
+          },
+          {
+            id: 'form:test_report_type3',
+            code: 3,
+            icon: 'a',
+            showUnmuteModal: undefined,
+            title: 'Type 3',
+          }
+        ]
+      });
+    }));
+
+    it('should not set relevant report forms when summary is not loaded yet', fakeAsync(() => {
+      sinon.resetHistory();
+      store.overrideSelector(Selectors.getSelectedContact, {
+        doc: { _id: 'district-123', phone: '123', muted: true },
+        type: { person: true },
+        summary: undefined,
+        children: [],
+        tasks: [],
+        reports: []
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      component.ngOnInit();
+      flush();
+
+      expect(xmlFormsService.subscribe.callCount).to.equal(1);
+      expect(xmlFormsService.subscribe.args[0][0]).to.equal('SelectedContactChildrenForms');
     }));
   });
 
