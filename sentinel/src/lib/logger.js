@@ -11,7 +11,7 @@ const cleanUpRequestError = (error) => {
 };
 
 const enumerateErrorFormat = format((info) => {
-  // errors can be passed as "splat" objects, like: logger.error('message: %o', actualError);
+  // errors can be passed as "Symbol('splat')" properties, when doing: logger.error('message: %o', actualError);
   const symbolProperties = Object.getOwnPropertySymbols(info);
   if (symbolProperties && symbolProperties.length) {
     symbolProperties.forEach(property => {
