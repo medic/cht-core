@@ -5,12 +5,16 @@ const logger = require('../logger');
 const config = require('../config');
 const db = require('../db');
 
-// https://github.com/rapidpro/rapidpro/blob/28d3215d57c152af0a71798a4ffe9351d10a3e95/temba/msgs/models.py#L57
+/**
+ * Mapping of RapidPro message/broadcast statuses to CHT-Core message states
+ * Keys represent RapidPro statuses, `state` fields represent CHT-Core states
+ * https://github.com/rapidpro/rapidpro/blob/28d3215d57c152af0a71798a4ffe9351d10a3e95/temba/msgs/models.py#L57
+ */
 const STATUS_MAP = {
   // success
   queued: { success: true, state: 'received-by-gateway', detail: 'Queued' },
   wired: { success: true, state: 'forwarded-by-gateway', detail: 'Wired' },
-  sent: { success: true, state: 'sent', detail: 'Sent' }, // todo should this be a final state?????
+  sent: { success: true, state: 'sent', detail: 'Sent' }, // todo Reviewer: should this be a final state?????
   delivered: { success: true, state: 'delivered', detail: 'Delivered', final: true },
   resent: { success: true, state: 'sent', detail: 'Resent' },
 
@@ -20,35 +24,54 @@ const STATUS_MAP = {
 };
 const BATCH_SIZE = 25;
 
-const getApiToken = () => {
-  return secureSettings
-    .getCredentials('rapidpro:outgoing')
-    .then(apiToken => {
-      if (!apiToken) {
-        return Promise.reject('No api key configured. Refer to the RapidPro configuration documentation.');
-      }
-      return apiToken;
-    });
+const nonFinalStates = Object
+  .values(STATUS_MAP)
+  .filter(status => !status.final)
+  .map(status => status.state);
+
+const getCredentials = () => {
+  const host = getHost();
+  return secureSettings.getCredentials('rapidpro:outgoing').then(apiToken => {
+    if (!apiToken) {
+      return Promise.reject('No api key configured. Refer to the RapidPro configuration documentation.');
+    }
+    return { apiToken, host };
+  });
 };
 
+/**
+ * Supports self-hosted RapidPro instances, but defaults to textit.in
+ * @returns {string} url
+ */
 const getHost = () => {
   const settings = config.get('sms');
   const url = settings &&
-                   settings.rapidPro &&
-                   settings.rapidPro.url;
+              settings.rapidPro &&
+              settings.rapidPro.url;
   const textitUrl = 'https://textit.in';
   return url || textitUrl;
 };
 
-const getHeaders = token => ({
-  Authorization: `Token ${token}`,
-  Accept: 'application/json',
+const getRequestOptions = ({ host, apiToken }={}) => ({
+  baseUrl: host,
+  json: true,
+  headers: {
+    Authorization: `Token ${apiToken}`,
+    Accept: 'application/json',
+  },
 });
+const remoteStatusToLocalState = (result) => result.status && STATUS_MAP[result.status];
 
-const getBroadcastUrl = url => `${url}/api/v2/broadcasts.json`;
-const getMessagesUrl = url => `${url}/api/v2/messages.json`;
-
-const remoteStatusToLocalStatus = (result) => result.status && STATUS_MAP[result.status];
+/**
+ * @typedef {Object} stateUpdate
+ * @property {string} messageId - message uuid
+ * @property {string} gatewayRef - RapidPro broadcast id
+ * @property {string} state - message state
+ * @property {string} details
+ */
+/**
+ * @returns {stateUpdate}
+ */
 const getStateUpdate = (status, messageId, gatewayRef) => ({
   messageId: messageId,
   gatewayRef: gatewayRef,
@@ -56,24 +79,32 @@ const getStateUpdate = (status, messageId, gatewayRef) => ({
   details: status.detail
 });
 
-const sendMessage = (token, host, message) => {
+/**
+ * Creates a broadcast for the provided message in RapidPro.
+ * Returns a state update with the resulting broadcast id
+ * @param {object} credentials
+ * @param message
+ * @returns {Promise<stateUpdate>}
+ */
+const sendMessage = (credentials, message) => {
+  const requestOptions = getRequestOptions(credentials);
+
+  requestOptions.uri = '/api/v2/broadcasts.json';
+  requestOptions.body = {
+    urns: [`tel:${message.to}`],
+    text: message.content,
+  };
+
   return request
-    .post({
-      url: getBroadcastUrl(host),
-      json: true,
-      body: {
-        urns: [`tel:${message.to}`],
-        text: message.content,
-      },
-      headers: getHeaders(token),
-    })
+    .post(requestOptions)
     .then(result => {
       if (!result) {
         logger.error(`Empty response received`);
         return; // retry later
       }
 
-      return getStateUpdate(remoteStatusToLocalStatus(result), message.id, result.id);
+      const state = remoteStatusToLocalState(result);
+      return getStateUpdate(state, message.id, result.id);
     })
     .catch(err => {
       // unknown error - ignore it so the message will be retried again later
@@ -81,49 +112,62 @@ const sendMessage = (token, host, message) => {
     });
 };
 
-const getRemoteStates = (apiToken, messages) => {
-  const host = getHost();
-
-  let promiseChain = Promise.resolve([]);
-  messages.forEach(message => {
-    promiseChain = promiseChain.then((statusUpdates) => {
-      return getRemoteState(apiToken, host, message).then(result => {
-        if (result) {
-          statusUpdates.push(result);
-        }
-        return statusUpdates;
-      });
-    });
-  });
-
-  return promiseChain;
-};
-
-const getRemoteState = (apiToken, host, { gateway_ref: gatewayRef, id: messageId }) => {
+/**
+ * Queries RapidPro messages endpoint with the provided broadcast id.
+ * Returns state update of first message that is part of the broadcast.
+ * @param {Object} credentials - RapidPro API authorization token and host
+ * @param {string} gatewayRef - the RapidPro broadcast id
+ * @param {string} messageId - message uuid
+ * @returns {Promise<void|stateUpdate>}
+ */
+const getRemoteState = (credentials, gatewayRef, messageId) => {
   if (!gatewayRef) {
     return Promise.resolve();
   }
 
+  const requestOptions = getRequestOptions(credentials);
+  requestOptions.uri = '/api/v2/messages.json';
+  requestOptions.qs = { broadcast: gatewayRef };
+
   return request
-    .get({
-      url: getMessagesUrl(host),
-      json: true,
-      qs: { broadcast: gatewayRef },
-      headers: getHeaders(apiToken),
-    })
-    .then(result => {
-      if (!result || !result.results || !result.results.length) {
+    .get(requestOptions)
+    .then(response => {
+      if (!response || !response.results || !response.results.length || !response.results[0]) {
         logger.debug(`Could not get status for message with gateway_ref ${gatewayRef}`);
         return;
       }
 
-      const status = remoteStatusToLocalStatus(result.results[0]);
-      return getStateUpdate(status, messageId, gatewayRef);
+      const state = remoteStatusToLocalState(response.results[0]);
+      return getStateUpdate(state, messageId, gatewayRef);
     })
     .catch(err => {
       // unknown error - ignore it so the message will be retried again later
       logger.error(`Error thrown trying to retrieve status updates %o`, err);
     });
+};
+
+
+/**
+ * Gets the current RapidPro states for a provided list of messages, converts to CHT-Core states
+ * @param {object} credentials
+ * @param {Array} messages - messages to check
+ * @returns {Promise<[stateUpdate]>} list of state updates
+ */
+const getRemoteStates = (credentials, messages) => {
+  let promiseChain = Promise.resolve([]);
+
+  messages.forEach(message => {
+    promiseChain = promiseChain.then((stateUpdates) => {
+      return getRemoteState(credentials, message.gateway_ref, message.id).then(stateUpdate => {
+        if (stateUpdate) {
+          stateUpdates.push(stateUpdate);
+        }
+        return stateUpdates;
+      });
+    });
+  });
+
+  return promiseChain;
 };
 
 let skip = 0;
@@ -136,13 +180,12 @@ module.exports = {
    */
   send: (messages) => {
     // get the credentials every call so changes can be made without restarting api
-    return getApiToken()
-      .then(apiToken => {
-        const host = getHost();
+    return getCredentials()
+      .then(credentials => {
         let promiseChain = Promise.resolve([]);
         messages.forEach(message => {
           promiseChain = promiseChain.then((statusUpdates) => {
-            return sendMessage(apiToken, host, message).then(result => {
+            return sendMessage(credentials, message).then(result => {
               if (result) {
                 statusUpdates.push(result);
               }
@@ -157,24 +200,19 @@ module.exports = {
   },
 
   /**
-   * Polls RapidPro `messages` endpoint to check for status updates of every outgoing message that
-   * is in a non-final state.
-   * Queries `gateway_messages_by_state` for a batch of messages that are in non-final states, skipping rows that were
-   * already processed.
-   * Increases the global variable skip each time with the number of un-processed rows from the batch.
-   * When there are no more rows to process, sets skip to 0.
+   * Polls RapidPro `messages` endpoint to check for state updates of outgoing messages that
+   * are in non-final states.
+   * Queries `gateway_messages_by_state` for a batch of messages that are in non-final states, `skip`ping rows that were
+   * already processed. Increases the global variable `skip` with the number of rows that were not updated
+   * (their states have not changed) from this batch.
+   * When there are no more rows to process, sets `skip` to 0 and will start over the queue on next iteration.
    */
   poll: () => {
     const messaging = require('./messaging');
-    const nonFinalStates = Object
-      .values(STATUS_MAP)
-      .filter(status => !status.final)
-      .map(status => status.state);
-
     const viewOptions = { keys: _.uniq(nonFinalStates), limit: BATCH_SIZE, skip };
 
-    return getApiToken()
-      .then(apiToken => {
+    return getCredentials()
+      .then(credentials => {
         return db.medic
           .query('medic-sms/gateway_messages_by_state', viewOptions)
           .then(result => {
@@ -184,7 +222,7 @@ module.exports = {
             }
 
             const messages = result.rows.map(row => row.value);
-            return getRemoteStates(apiToken, messages)
+            return getRemoteStates(credentials, messages)
               .then(statusUpdates => messaging.updateMessageTaskStates(statusUpdates))
               .then(({ saved = 0 }={}) => {
                 // only increase the skip with the number of messages that were *not updated*

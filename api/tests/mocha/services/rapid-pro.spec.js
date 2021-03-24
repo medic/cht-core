@@ -48,14 +48,16 @@ describe('RapidPro SMS Gateway', () => {
       return service.send(messages).then((result) => {
         expect(request.post.callCount).to.equal(2);
         expect(request.post.args[0]).to.deep.equal([{
-          url: 'https://textit.in/api/v2/broadcasts.json',
+          baseUrl: 'https://textit.in',
+          uri: '/api/v2/broadcasts.json',
           json: true,
           body: { urns: ['tel:phone1'], text: 'message1', },
           headers: { Accept: 'application/json', Authorization: 'Token textitapikey' },
         }]);
 
         expect(request.post.args[1]).to.deep.equal([{
-          url: 'https://textit.in/api/v2/broadcasts.json',
+          baseUrl: 'https://textit.in',
+          uri: '/api/v2/broadcasts.json',
           json: true,
           body: { urns: ['tel:phone2'], text: 'message2', },
           headers: { Accept: 'application/json', Authorization: 'Token textitapikey' },
@@ -81,14 +83,16 @@ describe('RapidPro SMS Gateway', () => {
       return service.send(messages).then((result) => {
         expect(request.post.callCount).to.equal(2);
         expect(request.post.args[0]).to.deep.equal([{
-          url: 'https://self-hosted-rapid-pro.net/api/v2/broadcasts.json',
+          baseUrl: 'https://self-hosted-rapid-pro.net',
+          uri: '/api/v2/broadcasts.json',
           json: true,
           body: { urns: ['tel:phone1'], text: 'message1', },
           headers: { Accept: 'application/json', Authorization: 'Token customRapidPro' },
         }]);
 
         expect(request.post.args[1]).to.deep.equal([{
-          url: 'https://self-hosted-rapid-pro.net/api/v2/broadcasts.json',
+          baseUrl: 'https://self-hosted-rapid-pro.net',
+          uri: '/api/v2/broadcasts.json',
           json: true,
           body: { urns: ['tel:phone2'], text: 'message2', },
           headers: { Accept: 'application/json', Authorization: 'Token customRapidPro' },
@@ -221,7 +225,8 @@ describe('RapidPro SMS Gateway', () => {
       return service.poll().then(() => {
         expect(request.get.callCount).to.equal(25);
         request.get.args.forEach((args, i) => expect(args).to.deep.equal([{
-          url: 'https://textit.in/api/v2/messages.json',
+          baseUrl: 'https://textit.in',
+          uri: '/api/v2/messages.json',
           json: true,
           qs: { broadcast: `broadcast${i}` },
           headers: { Accept: 'application/json', Authorization: 'Token apikey' },
@@ -245,7 +250,8 @@ describe('RapidPro SMS Gateway', () => {
       return service.poll().then(() => {
         expect(request.get.callCount).to.equal(25);
         request.get.args.forEach((args, i) => expect(args).to.deep.equal([{
-          url: 'http://self-hosted.com/api/v2/messages.json',
+          baseUrl: 'http://self-hosted.com',
+          uri: '/api/v2/messages.json',
           json: true,
           qs: { broadcast: `broadcast${i}` },
           headers: { Accept: 'application/json', Authorization: 'Token key' },
@@ -273,14 +279,16 @@ describe('RapidPro SMS Gateway', () => {
         expect(request.get.callCount).to.equal(2);
 
         expect(request.get.args[0]).to.deep.equal([{
-          url: 'https://textit.in/api/v2/messages.json',
+          baseUrl: 'https://textit.in',
+          uri: '/api/v2/messages.json',
           json: true,
           qs: { broadcast: `ref2` },
           headers: { Accept: 'application/json', Authorization: 'Token key' },
         }]);
 
         expect(request.get.args[1]).to.deep.equal([{
-          url: 'https://textit.in/api/v2/messages.json',
+          baseUrl: 'https://textit.in',
+          uri: '/api/v2/messages.json',
           json: true,
           qs: { broadcast: `ref4` },
           headers: { Accept: 'application/json', Authorization: 'Token key' },
@@ -310,21 +318,25 @@ describe('RapidPro SMS Gateway', () => {
         expect(request.get.callCount).to.equal(4);
 
         expect(request.get.args[0][0]).to.deep.include({
-          url: 'https://textit.in/api/v2/messages.json',
+          baseUrl: 'https://textit.in',
+          uri: '/api/v2/messages.json',
           qs: { broadcast: `ref1` },
           headers: { Accept: 'application/json', Authorization: 'Token key' },
         });
         expect(request.get.args[1][0]).to.deep.include({
-          url: 'https://textit.in/api/v2/messages.json',
+          baseUrl: 'https://textit.in',
+          uri: '/api/v2/messages.json',
           qs: { broadcast: `ref2` },
           headers: { Accept: 'application/json', Authorization: 'Token key' },
         });
         expect(request.get.args[2][0]).to.deep.include({
-          url: 'https://textit.in/api/v2/messages.json',
+          baseUrl: 'https://textit.in',
+          uri: '/api/v2/messages.json',
           qs: { broadcast: `ref3` },
         });
         expect(request.get.args[3][0]).to.deep.include({
-          url: 'https://textit.in/api/v2/messages.json',
+          baseUrl: 'https://textit.in',
+          uri: '/api/v2/messages.json',
           qs: { broadcast: `ref4` },
         });
 

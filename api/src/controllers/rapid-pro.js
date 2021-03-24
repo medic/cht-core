@@ -23,6 +23,8 @@ const validateToken = req => {
   }
 
   return getIncomingToken().then(expected => {
+    // todo Reviewer: should we mimic the RapidPro authorization header, and include "Token" prefix?
+    // or use a query key like africas-talking? Consistent with our other APIs or consistent with integration API ?
     const given = req.headers.authorization;
     if (expected !== given) {
       logger.warn(`Attempt to access RapidPro endpoint without the correct incoming token`);
