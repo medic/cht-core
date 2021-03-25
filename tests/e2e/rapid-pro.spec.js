@@ -350,11 +350,14 @@ describe('RapidPro SMS Gateway', () => {
       await setOutgoingKey();
       await utils.saveDocs(docs);
 
-      await browser.wait(() => messagesEndpointRequests.length > 7, 4000);
+      await browser.wait(() => {
+        // wait for all records to be updated
+        const requestedBroadcastIds = messagesEndpointRequests.map(([query]) => query.broadcast);
+        return _.uniq(requestedBroadcastIds).length === 7;
+      }, 4000);
       await browser.sleep(1000); // wait for the docs to actually be updated
 
       console.log(JSON.stringify(messagesEndpointRequests, null, 2));
-
 
       const requestedBroadcastIds = [];
       const expectedBroadcastIds = docs.map(doc => doc.tasks[0].gateway_ref).sort();
