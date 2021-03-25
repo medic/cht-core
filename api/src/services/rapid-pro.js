@@ -204,6 +204,7 @@ module.exports = {
         return db.medic
           .query('medic-sms/gateway_messages_by_state', viewOptions)
           .then(result => {
+            logger.info('polling result: %o', result);
             if (!result || !result.rows || !result.rows.length) {
               skip = 0; // start from the beginning on the next poll call
               return;
