@@ -355,6 +355,7 @@ describe('RapidPro SMS Gateway', () => {
 
       console.log(JSON.stringify(messagesEndpointRequests, null, 2));
 
+
       const requestedBroadcastIds = [];
       const expectedBroadcastIds = docs.map(doc => doc.tasks[0].gateway_ref).sort();
       messagesEndpointRequests.forEach(([ query, headers ]) => {
