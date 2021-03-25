@@ -2,7 +2,7 @@ import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import * as RegistrationUtils from '@medic/registration-utils';
 import * as RulesEngineCore from '@medic/rules-engine';
 import { TranslateService } from '@ngx-translate/core';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { debounce as _debounce, uniq as _uniq } from 'lodash-es';
 
 import { AuthService } from '@mm-services/auth.service';
@@ -53,6 +53,7 @@ export class RulesEngineService implements OnDestroy {
   private initialized;
   private uhcMonthStartDate;
   private debounceActive: DebounceActive = {};
+  private observable = new Subject();
 
   constructor(
     private translateService:TranslateService,
@@ -228,7 +229,10 @@ export class RulesEngineService implements OnDestroy {
 
         return this.rulesEngineCore
           .updateEmissionsFor(subjectIds)
-          .then(telemetryData.passThrough);
+          .then((result) => {
+            this.observable.next(subjectIds);
+            return telemetryData.passThrough(result);
+          });
       }
     });
     this.subscriptions.add(dirtyContactsSubscription);
@@ -391,5 +395,9 @@ export class RulesEngineService implements OnDestroy {
         && replicationResult.docs
         && this.updateEmissionExternalChanges(replicationResult.docs);
     });
+  }
+
+  contactsMarkedAsDirty(callback) {
+    return this.observable.subscribe(callback);
   }
 }

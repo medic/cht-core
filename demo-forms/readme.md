@@ -21,3 +21,8 @@ The forms can be loaded via the [web admin GUI](https://docs.communityhealthtool
 1. Copy the form you want to upload from the `demo-forms` to the `config/default/forms/app` directory. For the `geopoint.xml` form, if you were in the root of this repo, that would be: `cp demo-forms/geopoint.xml config/default/forms/app/`
 1. Change to the default config `cd config/default`
 1. Run `medic-conf` specifying the `upload-app-forms` command along with the specific form you want to upload. This example uses the `geopoint` form.  Note that the trailing `.xml` is not included: `medic-conf --local upload-app-forms -- geopoint`
+
+
+### Custom contact types
+
+See [custom_contacts](custom_contacts/README.MD) for sample forms and config for a few custom contact types. 

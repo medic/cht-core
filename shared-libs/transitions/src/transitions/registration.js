@@ -5,7 +5,6 @@ const logger = require('../lib/logger');
 const db = require('../db');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const messages = require('../lib/messages');
-const validation = require('../lib/validation');
 const schedules = require('../lib/schedules');
 const acceptPatientReports = require('./accept_patient_reports');
 const moment = require('moment');
@@ -22,13 +21,6 @@ const PARENT_INVALID = 'parent_invalid';
 const findFirstDefinedValue = (doc, fields) => {
   const definedField = fields.find(field => doc.fields[field] !== undefined && doc.fields[field] !== null);
   return definedField && doc.fields[definedField];
-};
-
-const getRegistrations = (patientId) => {
-  if (!patientId) {
-    return Promise.resolve([]);
-  }
-  return utils.getRegistrations({ id: patientId });
 };
 
 const getPatientNameField = (params) => getNameField(params, 'patient');
@@ -180,11 +172,6 @@ const getRegistrationConfig = (config, formCode) => {
   return config.find(conf => utils.isFormCodeSame(formCode, conf.form));
 };
 
-const validate = (config, doc) => {
-  const validations = config && config.validations && config.validations.list;
-  return new Promise(resolve => validation.validate(doc, validations, resolve));
-};
-
 const triggers = {
   add_patient: (options) => {
     // if we already have a patient id then return
@@ -227,22 +214,19 @@ const triggers = {
       silence_for: null,
     };
 
-    const subjectIds = utils.getSubjectIds(options.doc.patient);
+    const subjectIds = [
+      ...utils.getSubjectIds(options.doc.patient),
+      ...utils.getSubjectIds(options.doc.place),
+    ];
     const caseId = options.doc.case_id ||
       (options.doc.fields && options.doc.fields.case_id);
     if (caseId) {
       subjectIds.push(caseId);
     }
 
-    return utils.getReportsBySubject({ ids: subjectIds, registrations: true })
-      .then(registrations => new Promise((resolve, reject) => {
-        acceptPatientReports.silenceRegistrations(
-          config,
-          options.doc,
-          registrations,
-          (err, result) => err ? reject(err) : resolve(result)
-        );
-      }));
+    return utils
+      .getReportsBySubject({ ids: subjectIds, registrations: true })
+      .then(registrations => acceptPatientReports.silenceRegistrations(config, options.doc, registrations));
   },
 };
 
@@ -293,41 +277,56 @@ const messageRelevant = (msg, doc) => {
 
 const addMessages = (config, doc) => {
   const patientId = doc.fields && doc.fields.patient_id;
+  const placeId = doc.fields && doc.fields.place_id;
   if (!config.messages || !config.messages.length) {
     return;
   }
 
-  return getRegistrations(patientId).then(registrations => {
-    const context = {
-      patient: doc.patient,
-      place: doc.place,
-      registrations: registrations,
-      templateContext: {
-        next_msg: schedules.getNextTimes(doc, moment(date.getDate())),
-      },
-    };
-    config.messages.forEach(msg => {
-      if (messageRelevant(msg, doc)) {
-        messages.addMessage(doc, msg, msg.recipient, context);
-      }
+  return Promise
+    .all([
+      utils.getRegistrations({ id: patientId }),
+      utils.getRegistrations({ id: placeId }),
+    ])
+    .then(([ patientRegistrations, placeRegistrations ]) => {
+      const context = {
+        patient: doc.patient,
+        place: doc.place,
+        registrations: patientRegistrations,
+        placeRegistrations: placeRegistrations,
+        templateContext: {
+          next_msg: schedules.getNextTimes(doc, moment(date.getDate())),
+        },
+      };
+
+      config.messages.forEach(msg => {
+        if (messageRelevant(msg, doc)) {
+          messages.addMessage(doc, msg, msg.recipient, context);
+        }
+      });
     });
-  });
 };
 
 const assignSchedule = (options) => {
   const patientId = options.doc.fields && options.doc.fields.patient_id;
+  const placeId = options.doc.fields && options.doc.fields.place_id;
 
-  return getRegistrations(patientId).then(registrations => {
-    options.params.forEach(scheduleName => {
-      const schedule = schedules.getScheduleConfig(scheduleName);
-      schedules.assignSchedule(
-        options.doc,
-        schedule,
-        registrations,
-        options.doc.patient
-      );
+  return Promise
+    .all([
+      utils.getRegistrations({ id: patientId }),
+      utils.getRegistrations({ id: placeId }),
+    ])
+    .then(([ patientRegistrations, placeRegistrations ]) => {
+      options.params.forEach(scheduleName => {
+        const schedule = schedules.getScheduleConfig(scheduleName);
+        const context = {
+          patientRegistrations,
+          patient: options.doc.patient,
+          placeRegistrations,
+          place: options.doc.place
+        };
+        schedules.assignSchedule(options.doc, schedule, context);
+      });
     });
-  });
 };
 
 const generateId = (doc, key) => {
@@ -547,6 +546,19 @@ const addPlace = (options) => {
     });
 };
 
+const hasValidSubject = (doc, patientId, placeId) => {
+  // doc is already hydrated.
+  if (patientId && (!doc.patient || (doc.patient && !contactTypesUtils.isPerson(config.getAll(), doc.patient)))) {
+    return false;
+  }
+
+  if (placeId && (!doc.place || (doc.place && !contactTypesUtils.isPlace(config.getAll(), doc.place)))) {
+    return false;
+  }
+
+  return true;
+};
+
 module.exports = {
   name: NAME,
   init: () => {
@@ -643,29 +655,29 @@ module.exports = {
     const doc = change.doc;
     const registrationConfig = getRegistrationConfig(getConfig(), doc.form);
 
-    return validate(registrationConfig, doc)
+    return transitionUtils
+      .validate(registrationConfig, doc)
       .then(errors => {
         if (errors && errors.length > 0) {
-          messages.addErrors(registrationConfig, doc, errors, { patient: doc.patient });
+          messages.addErrors(registrationConfig, doc, errors, { patient: doc.patient, place: doc.place });
           return true;
         }
 
         const patientId = doc.fields && doc.fields.patient_id;
+        const placeId = doc.fields && doc.fields.place_id;
 
-        if (!patientId) {
+        if (!patientId && !placeId) {
           return fireConfiguredTriggers(registrationConfig, doc);
         }
 
         // We're attaching this registration to an existing contact, let's
         // make sure it's valid
-        return utils.getContactUuid(patientId).then(patientContactId => {
-          if (!patientContactId) {
-            transitionUtils.addRegistrationNotFoundError(doc, registrationConfig);
-            return true;
-          }
+        if (!hasValidSubject(doc, patientId, placeId)) {
+          transitionUtils.addRegistrationNotFoundError(doc, registrationConfig);
+          return true;
+        }
 
-          return fireConfiguredTriggers(registrationConfig, doc);
-        });
+        return fireConfiguredTriggers(registrationConfig, doc);
       });
   },
 };

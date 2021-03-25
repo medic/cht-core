@@ -9,7 +9,6 @@ env:
   STAGING_SERVER: _couch/builds
   MARKET_URL: ${{ secrets.MARKET_URL }}
 
-
 jobs:
   build:
     name: Compile the app
@@ -62,7 +61,7 @@ jobs:
     - name: Publish
       run: |
         cd scripts/travis
-        npm install
+        npm ci
         node ./publish.js
       if: ${{ github.event_name != 'pull_request' }}
 

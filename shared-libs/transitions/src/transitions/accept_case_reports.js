@@ -1,6 +1,5 @@
 const config = require('../config');
 const messages = require('../lib/messages');
-const validation = require('../lib/validation');
 const utils = require('../lib/utils');
 const transitionUtils = require('./utils');
 const acceptPatientReports = require('./accept_patient_reports');
@@ -9,15 +8,6 @@ const NAME = 'accept_case_reports';
 const getConfig = form => {
   const fullConfig = config.get('accept_case_reports') || [];
   return fullConfig.find(config => config.form === form);
-};
-
-const validate = (config, doc) => {
-  const validations = config.validations && config.validations.list;
-  return new Promise(resolve => {
-    validation.validate(doc, validations, errors => {
-      resolve(errors);
-    });
-  });
 };
 
 // NB: this is very similar to a function in the registration transition, except
@@ -41,7 +31,8 @@ const addMessagesToDoc = (doc, config, registrations) => {
     if (messageRelevant(msg, doc)) {
       messages.addMessage(doc, msg, msg.recipient, {
         patient: doc.patient,
-        registrations
+        registrations,
+        place: doc.place,
       });
     }
   });
@@ -56,14 +47,7 @@ const getCaseRegistrations = doc => {
 };
 
 const silenceRegistrations = (doc, config, registrations) => {
-  return new Promise((resolve, reject) => {
-    acceptPatientReports.silenceRegistrations(
-      config,
-      doc,
-      registrations,
-      (err, result) => err ? reject(err) : resolve(result)
-    );
-  });
+  return acceptPatientReports.silenceRegistrations(config, doc, registrations);
 };
 
 const updatePlaceUuid = (doc, registrations) => {
@@ -98,7 +82,7 @@ module.exports = {
       return Promise.resolve();
     }
 
-    return validate(config, doc).then(errors => {
+    return transitionUtils.validate(config, doc).then(errors => {
       if (errors && errors.length > 0) {
         messages.addErrors(config, doc, errors);
         return true;

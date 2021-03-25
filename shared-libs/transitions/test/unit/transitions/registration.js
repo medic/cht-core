@@ -9,6 +9,7 @@ const config = require('../../../src/config');
 const transitionUtils = require('../../../src/transitions/utils');
 const acceptPatientReports = require('../../../src/transitions/accept_patient_reports');
 const validation = require('../../../src/lib/validation');
+const contactTypeUtils = require('@medic/contact-types-utils');
 
 let transition = rewire('../../../src/transitions/registration');
 let settings;
@@ -1714,14 +1715,10 @@ describe('registration', () => {
           reported_date: 53,
           from: '+555123',
           fields: { patient_id: '05649' },
+          patient: { _id: 'patient', patient_id: '05649', type: 'person' }
         },
       };
-      sinon
-        .stub(db.medic, 'query')
-        .resolves(2, null, {
-          rows: [{ doc: { parent: { _id: 'papa' } } }],
-        });
-      sinon.stub(db.medic, 'post').resolves(1);
+      sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [
@@ -1734,19 +1731,136 @@ describe('registration', () => {
       };
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(validation, 'validate').callsArgWith(2, null);
-      const getRegistrations = sinon
+      sinon
         .stub(utils, 'getRegistrations')
-        .resolves([{ _id: 'xyz' }]);
+        .withArgs({ id: '05649' }).resolves([{ _id: 'xyz' }])
+        .withArgs({ id: undefined }).resolves([]);
       sinon.stub(schedules, 'getScheduleConfig').returns('someschedule');
-      sinon.stub(utils, 'getContactUuid').resolves('uuid');
       const assignSchedule = sinon
         .stub(schedules, 'assignSchedule')
         .returns(true);
+
       return transition.onMatch(change).then(() => {
         assignSchedule.callCount.should.equal(1);
-        assignSchedule.args[0][1].should.equal('someschedule');
-        assignSchedule.args[0][2][0]._id.should.equal('xyz');
-        getRegistrations.callCount.should.equal(1);
+        assignSchedule.args[0].should.deep.equal([
+          change.doc,
+          'someschedule',
+          {
+            patient: change.doc.patient,
+            place: undefined,
+            patientRegistrations: [{ _id: 'xyz' }],
+            placeRegistrations: [],
+          },
+        ]);
+        utils.getRegistrations.callCount.should.equal(2);
+        utils.getRegistrations.args[0].should.deep.equal([{ id: '05649' }]);
+      });
+    });
+
+    it('should create the named schedule for a place', () => {
+      const change = {
+        doc: {
+          type: 'data_record',
+          form: 'R',
+          reported_date: 53,
+          from: '+555123',
+          fields: { place_id: '79999' },
+          place: { _id: 'place_id', place_id: '79999', type: 'clinic' },
+        },
+      };
+      sinon.stub(db.medic, 'post').resolves();
+
+      const eventConfig = {
+        form: 'R',
+        events: [
+          {
+            name: 'on_create',
+            trigger: 'assign_schedule',
+            params: 'myschedule',
+          },
+        ],
+      };
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(utils, 'getRegistrations')
+        .withArgs({ id: '79999' }).resolves([{ _id: 'place_registration' }])
+        .withArgs({ id: undefined }).resolves([]);
+
+      sinon.stub(schedules, 'getScheduleConfig').returns('myschedule');
+      sinon.stub(schedules, 'assignSchedule').returns(true);
+      sinon.stub(contactTypeUtils, 'isPlace').returns(true);
+
+      return transition.onMatch(change).then(() => {
+        schedules.assignSchedule.callCount.should.equal(1);
+        schedules.assignSchedule.args[0].should.deep.equal([
+          change.doc,
+          'myschedule',
+          {
+            patient: undefined,
+            patientRegistrations: [],
+            place: change.doc.place,
+            placeRegistrations: [{ _id: 'place_registration' }],
+          },
+        ]);
+
+        utils.getRegistrations.callCount.should.equal(2);
+        utils.getRegistrations.args[0].should.deep.equal([{ id: undefined }]);
+        utils.getRegistrations.args[1].should.deep.equal([{ id: '79999' }]);
+      });
+    });
+
+    it('should create the named schedule with place and patient registrations', () => {
+      const change = {
+        doc: {
+          type: 'data_record',
+          form: 'R',
+          reported_date: 53,
+          from: '+555123',
+          fields: { place_id: '89647', patient_id: '26954' },
+          place: { _id: 'place_id', place_id: '89647' },
+          patient: { _id: 'patient_id', place_id: '26954' },
+        },
+      };
+      sinon.stub(db.medic, 'post').resolves();
+
+      const eventConfig = {
+        form: 'R',
+        events: [
+          {
+            name: 'on_create',
+            trigger: 'assign_schedule',
+            params: 'myschedule',
+          },
+        ],
+      };
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(utils, 'getRegistrations')
+        .onCall(0).resolves([{ _id: 'patient_registration' }])
+        .onCall(1).resolves([{ _id: 'place_registration' }]);
+
+      sinon.stub(schedules, 'getScheduleConfig').returns('myschedule');
+      sinon.stub(schedules, 'assignSchedule').returns(true);
+
+      sinon.stub(contactTypeUtils, 'isPerson').returns(true);
+      sinon.stub(contactTypeUtils, 'isPlace').returns(true);
+
+      return transition.onMatch(change).then(() => {
+        schedules.assignSchedule.callCount.should.equal(1);
+        schedules.assignSchedule.args[0].should.deep.equal([
+          change.doc,
+          'myschedule',
+          {
+            patient: change.doc.patient,
+            patientRegistrations: [{ _id: 'patient_registration' }],
+            place: change.doc.place,
+            placeRegistrations: [{ _id: 'place_registration' }],
+          },
+        ]);
+
+        utils.getRegistrations.callCount.should.equal(2);
+        utils.getRegistrations.args[0].should.deep.equal([{ id: '26954' }]);
+        utils.getRegistrations.args[1].should.deep.equal([{ id: '89647' }]);
       });
     });
   });
@@ -2107,7 +2221,7 @@ describe('registration', () => {
       transition.addMessages = transition.__get__('addMessages');
     });
 
-    it('prepops and passes the right information to messages.addMessage', () => {
+    it('pops and passes the right information to messages.addMessage', () => {
       const testPhone = '1234';
       const testMessage1 = {
         message: 'A Test Message 1',
@@ -2126,7 +2240,8 @@ describe('registration', () => {
 
       sinon
         .stub(utils, 'getRegistrations')
-        .resolves(testRegistration);
+        .withArgs({ id: '12345' }).resolves(testRegistration)
+        .withArgs({ id: undefined }).resolves([]);
 
       const testConfig = { messages: [testMessage1, testMessage2] };
       const testDoc = {
@@ -2144,6 +2259,7 @@ describe('registration', () => {
           patient: testPatient,
           place: undefined,
           registrations: testRegistration,
+          placeRegistrations: [],
           templateContext: {
             next_msg: {
               minutes: 0,
@@ -2155,14 +2271,156 @@ describe('registration', () => {
             },
           },
         };
-        addMessage.args[0][0].should.equal(testDoc);
-        addMessage.args[0][1].should.equal(testMessage1);
-        addMessage.args[0][2].should.equal(testPhone);
-        addMessage.args[0][3].should.deep.equal(expectedContext);
-        addMessage.args[1][0].should.equal(testDoc);
-        addMessage.args[1][1].should.equal(testMessage2);
-        addMessage.args[1][2].should.equal(testPhone);
-        addMessage.args[1][3].should.deep.equal(expectedContext);
+        addMessage.args[0].should.deep.equal([
+          testDoc,
+          testMessage1,
+          testPhone,
+          expectedContext,
+        ]);
+        addMessage.args[1].should.deep.equal([
+          testDoc,
+          testMessage2,
+          testPhone,
+          expectedContext,
+        ]);
+
+        utils.getRegistrations.callCount.should.equal(2);
+        utils.getRegistrations.args[0].should.deep.equal([{ id: '12345' }]);
+        utils.getRegistrations.args[1].should.deep.equal([{ id: undefined }]);
+      });
+    });
+
+    it('pops and passes the right information to messages.addMessage with place_id', () => {
+      const testPhone = '1234';
+      const testMessage1 = {
+        message: 'A Test Message 1',
+        recipient: testPhone,
+        event_type: 'report_accepted',
+      };
+      const testMessage2 = {
+        message: 'A Test Message 2',
+        recipient: testPhone,
+        event_type: 'report_accepted',
+      };
+      const placeRegistrations = [{ _id: 'some registration' }];
+
+      sinon.stub(messages, 'addMessage');
+      sinon.stub(utils, 'getRegistrations')
+        .withArgs({ id: undefined }).resolves([])
+        .withArgs({ id: '65498' }).resolves(placeRegistrations);
+
+      const testConfig = { messages: [testMessage1, testMessage2] };
+      const testDoc = {
+        fields: {
+          place_id: '65498',
+        },
+        place: { _id: 'test_place', place_id: '65498' },
+      };
+
+      return transition.addMessages(testConfig, testDoc).then(() => {
+        // Registration will send messages with no event_type
+        messages.addMessage.callCount.should.equal(2);
+
+        const expectedContext = {
+          patient: undefined,
+          place: testDoc.place,
+          registrations: [],
+          placeRegistrations: placeRegistrations,
+          templateContext: {
+            next_msg: {
+              minutes: 0,
+              hours: 0,
+              days: 0,
+              weeks: 0,
+              months: 0,
+              years: 0,
+            },
+          },
+        };
+        messages.addMessage.args[0].should.deep.equal([
+          testDoc,
+          testMessage1,
+          testPhone,
+          expectedContext,
+        ]);
+        messages.addMessage.args[1].should.deep.equal([
+          testDoc,
+          testMessage2,
+          testPhone,
+          expectedContext,
+        ]);
+        utils.getRegistrations.callCount.should.equal(2);
+        utils.getRegistrations.args[0].should.deep.equal([{ id: undefined }]);
+        utils.getRegistrations.args[1].should.deep.equal([{ id: '65498' }]);
+      });
+    });
+
+    it('pops and passes the right information to messages.addMessage with place_id and patient_id', () => {
+      const testPhone = '1234';
+      const testMessage1 = {
+        message: 'A Test Message 1',
+        recipient: testPhone,
+        event_type: 'report_accepted',
+      };
+      const testMessage2 = {
+        message: 'A Test Message 2',
+        recipient: testPhone,
+        event_type: 'report_accepted',
+      };
+      const patientRegistrations = [{ _id: 'some registration' }];
+      const placeRegistrations = [{ _id: 'other registration' }];
+
+      sinon.stub(messages, 'addMessage');
+      sinon.stub(utils, 'getRegistrations')
+        .onCall(0).resolves(patientRegistrations)
+        .onCall(1).resolves(placeRegistrations);
+
+      const testConfig = { messages: [testMessage1, testMessage2] };
+      const testDoc = {
+        fields: {
+          place_id: '999999',
+          patient_id: '111111'
+        },
+        place: { _id: 'test_place', place_id: '999999' },
+        patient: { _id: 'test_patient', place_id: '111111' },
+      };
+
+      return transition.addMessages(testConfig, testDoc).then(() => {
+        // Registration will send messages with no event_type
+        messages.addMessage.callCount.should.equal(2);
+
+        const expectedContext = {
+          patient: testDoc.patient,
+          place: testDoc.place,
+          registrations: patientRegistrations,
+          placeRegistrations: placeRegistrations,
+          templateContext: {
+            next_msg: {
+              minutes: 0,
+              hours: 0,
+              days: 0,
+              weeks: 0,
+              months: 0,
+              years: 0,
+            },
+          },
+        };
+        messages.addMessage.args[0].should.deep.equal([
+          testDoc,
+          testMessage1,
+          testPhone,
+          expectedContext,
+        ]);
+        messages.addMessage.args[1].should.deep.equal([
+          testDoc,
+          testMessage2,
+          testPhone,
+          expectedContext,
+        ]);
+
+        utils.getRegistrations.callCount.should.equal(2);
+        utils.getRegistrations.args[0].should.deep.equal([{ id: '111111' }]);
+        utils.getRegistrations.args[1].should.deep.equal([{ id: '999999' }]);
       });
     });
 
@@ -2184,9 +2442,9 @@ describe('registration', () => {
 
       const addMessage = sinon.stub(messages, 'addMessage');
 
-      sinon
-        .stub(utils, 'getRegistrations')
-        .resolves(testRegistration);
+      sinon.stub(utils, 'getRegistrations')
+        .withArgs({ id: '12345' }).resolves(testRegistration)
+        .withArgs({ id: undefined }).resolves([]);
 
       const testConfig = { messages: [testMessage1, testMessage2] };
       const testDoc = {
@@ -2202,6 +2460,7 @@ describe('registration', () => {
           patient: testPatient,
           place: undefined,
           registrations: testRegistration,
+          placeRegistrations: [],
           templateContext: {
             next_msg: {
               minutes: 0,
@@ -2231,18 +2490,64 @@ describe('registration', () => {
       return transition.triggers.clear_schedule({ doc: {}, params: [] });
     });
 
-    it('should query utils.getReportsBySubject with correct params', () => {
+    it('should query utils.getReportsBySubject with correct params with patient', () => {
       sinon.stub(utils, 'getReportsBySubject').resolves([]);
-      sinon.stub(utils, 'getSubjectIds').returns(['uuid', 'patient_id']);
+      sinon.stub(utils, 'getSubjectIds')
+        .returns(['uuid', 'patient_id'])
+        .withArgs(undefined).returns([]);
       const doc = { patient: { _id: 'uuid', patient_id: 'patient_id' } };
-      sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, null);
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').resolves();
 
       return transition.triggers.clear_schedule({ doc, params: [] }).then(() => {
-        utils.getSubjectIds.callCount.should.equal(1);
+        utils.getSubjectIds.callCount.should.equal(2);
         utils.getSubjectIds.args[0].should.deep.equal([doc.patient]);
+        utils.getSubjectIds.args[1].should.deep.equal([doc.place]);
         utils.getReportsBySubject.callCount.should.equal(1);
         utils.getReportsBySubject.args[0].should.deep.equal([ {
           ids: ['uuid', 'patient_id'],
+          registrations: true
+        } ]);
+      });
+    });
+
+    it('should query utils.getReportsBySubject with correct params with place', () => {
+      sinon.stub(utils, 'getReportsBySubject').resolves([]);
+      sinon.stub(utils, 'getSubjectIds')
+        .returns(['uuid', 'place_id'])
+        .withArgs(undefined).returns([]);
+      const doc = { place: { _id: 'uuid', place_id: 'place_id' } };
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').resolves();
+
+      return transition.triggers.clear_schedule({ doc, params: [] }).then(() => {
+        utils.getSubjectIds.callCount.should.equal(2);
+        utils.getSubjectIds.args[0].should.deep.equal([doc.patient]);
+        utils.getSubjectIds.args[1].should.deep.equal([doc.place]);
+        utils.getReportsBySubject.callCount.should.equal(1);
+        utils.getReportsBySubject.args[0].should.deep.equal([ {
+          ids: ['uuid', 'place_id'],
+          registrations: true
+        } ]);
+      });
+    });
+
+    it('should query utils.getReportsBySubject with correct params with patient and place', () => {
+      const doc = {
+        patient: { _id: 'uuid', patient_id: 'patient_id' },
+        place: { _id: 'place_uuid', place_id: 'place_id' },
+      };
+      sinon.stub(utils, 'getReportsBySubject').resolves([]);
+      sinon.stub(utils, 'getSubjectIds')
+        .withArgs(doc.patient).returns(['uuid', 'patient_id'])
+        .withArgs(doc.place).returns(['place_uuid', 'place_id']);
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').resolves();
+
+      return transition.triggers.clear_schedule({ doc, params: [] }).then(() => {
+        utils.getSubjectIds.callCount.should.equal(2);
+        utils.getSubjectIds.args[0].should.deep.equal([doc.patient]);
+        utils.getSubjectIds.args[1].should.deep.equal([doc.place]);
+        utils.getReportsBySubject.callCount.should.equal(1);
+        utils.getReportsBySubject.args[0].should.deep.equal([ {
+          ids: ['uuid', 'patient_id', 'place_uuid', 'place_id'],
           registrations: true
         } ]);
       });
@@ -2254,7 +2559,7 @@ describe('registration', () => {
       const registrations = ['a', 'b', 'c'];
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       sinon.stub(utils, 'getSubjectIds').returns(['uuid', 'patient_id']);
-      sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, null);
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').resolves();
 
       return transition.triggers.clear_schedule({ doc, params }).then(() => {
         acceptPatientReports.silenceRegistrations.callCount.should.equal(1);
@@ -2278,7 +2583,7 @@ describe('registration', () => {
         .catch((err) => {
           err.should.deep.equal({ some: 'error' });
           utils.getReportsBySubject.callCount.should.equal(1);
-          utils.getSubjectIds.callCount.should.equal(1);
+          utils.getSubjectIds.callCount.should.equal(2);
           acceptPatientReports.silenceRegistrations.callCount.should.equal(0);
         });
     });
@@ -2286,16 +2591,334 @@ describe('registration', () => {
     it('should catch silenceRegistrations errors', () => {
       sinon.stub(utils, 'getReportsBySubject').resolves([]);
       sinon.stub(utils, 'getSubjectIds').returns([]);
-      sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, { some: 'err' });
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').rejects({ some: 'err' });
       return transition.triggers
         .clear_schedule({ doc: {}, params: [] })
         .then(r => r.should.deep.equal('Should have thrown'))
         .catch(err => {
           err.should.deep.equal({ some: 'err' });
           utils.getReportsBySubject.callCount.should.equal(1);
-          utils.getSubjectIds.callCount.should.equal(1);
+          utils.getSubjectIds.callCount.should.equal(2);
           acceptPatientReports.silenceRegistrations.callCount.should.equal(1);
         });
+    });
+  });
+
+  describe('onMatch', () => {
+    let fireConfiguredTriggers;
+    const registrationConfig = {
+      form: 'R',
+      events: [
+        {
+          name: 'on_create',
+          trigger: 'assign_schedule',
+          params: 'myschedule',
+        },
+      ],
+      validations: { list: ['validation!!'] },
+    };
+    let doc;
+
+    beforeEach(() => {
+      transition.__set__('fireConfiguredTriggers', sinon.stub().resolves(true));
+      fireConfiguredTriggers = transition.__get__('fireConfiguredTriggers');
+      sinon.stub(config, 'get').withArgs('registrations').returns([registrationConfig]);
+    });
+
+    it('should adds error if validation fails, with patient subject', () => {
+      sinon.stub(validation, 'validate').callsArgWith(2, ['error']);
+      sinon.stub(messages, 'addErrors');
+
+      doc = {
+        form: 'R',
+        patient: { _id: 'patient' },
+      };
+
+      return transition.onMatch({ doc }).then((result) => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(0);
+        validation.validate.callCount.should.equal(1);
+        validation.validate.args[0].slice(0, 2).should.deep.equal([ doc, ['validation!!'] ]);
+        messages.addErrors.callCount.should.equal(1);
+        messages.addErrors.args[0].should.deep.equal([
+          registrationConfig,
+          doc,
+          ['error'],
+          { patient: doc.patient, place: undefined },
+        ]);
+      });
+    });
+
+    it('should adds error if validation fails, with place subject', () => {
+      sinon.stub(validation, 'validate').callsArgWith(2, ['an error']);
+      sinon.stub(messages, 'addErrors');
+
+      doc = {
+        form: 'R',
+        place: { _id: 'place' },
+      };
+
+      return transition.onMatch({ doc }).then((result) => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(0);
+        validation.validate.callCount.should.equal(1);
+        messages.addErrors.callCount.should.equal(1);
+        messages.addErrors.args[0].should.deep.equal([
+          registrationConfig,
+          doc,
+          ['an error'],
+          { patient: undefined, place: doc.place },
+        ]);
+      });
+    });
+
+    it('should add error if validation fails, with both patient and place subjects', () => {
+      sinon.stub(validation, 'validate').callsArgWith(2, ['some error']);
+      sinon.stub(messages, 'addErrors');
+
+      doc = {
+        form: 'R',
+        patient: { _id: 'patient', patient_id: 'patient_id' },
+        place: { _id: 'place', place_id: 'place_id' },
+        fields: { patient_id: 'patient_id', place_id: 'place_id' }
+      };
+
+      return transition.onMatch({ doc }).then((result) => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(0);
+        validation.validate.callCount.should.equal(1);
+        messages.addErrors.callCount.should.equal(1);
+        messages.addErrors.args[0].should.deep.equal([
+          registrationConfig,
+          doc,
+          ['some error'],
+          { patient: doc.patient, place: doc.place },
+        ]);
+      });
+    });
+
+    it('should run triggers when there is no subject', () => {
+      sinon.stub(validation, 'validate').callsArg(2);
+      sinon.stub(messages, 'addErrors');
+
+      doc = { form: 'R' };
+
+      return transition.onMatch({ doc }).then((result) => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(1);
+        fireConfiguredTriggers.args[0].should.deep.equal([registrationConfig, doc]);
+        validation.validate.callCount.should.equal(1);
+        messages.addErrors.callCount.should.equal(0);
+      });
+    });
+
+    it('should fail if subject does not exist, with patient_id', () => {
+      sinon.stub(validation, 'validate').callsArg(2);
+      doc = { form: 'R', fields: { patient_id: '56987' } };
+
+      sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
+
+      return transition.onMatch({ doc }).then(result => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(0);
+        transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
+        transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
+      });
+    });
+
+    it('should fail if patient exists but its not a person', () => {
+      sinon.stub(validation, 'validate').callsArg(2);
+      doc = {
+        form: 'R',
+        fields: { patient_id: '56987' },
+        patient: {
+          _id: 'clinic',
+          place_id: '56987',
+          type: 'clinic',
+        }
+      };
+      sinon.stub(contactTypeUtils, 'isPerson').returns(false);
+      sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
+
+      return transition.onMatch({ doc }).then(result => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(0);
+        transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
+        transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
+        contactTypeUtils.isPerson.callCount.should.equal(1);
+        contactTypeUtils.isPerson.args[0].should.deep.equal([{}, { _id: 'clinic', place_id: '56987', type: 'clinic' }]);
+      });
+    });
+
+    it('should fail if subject does not exist, with place_id', () => {
+      sinon.stub(validation, 'validate').callsArg(2);
+      doc = { form: 'R', fields: { place_id: '98754' } };
+      sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
+
+      return transition.onMatch({ doc }).then(result => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(0);
+        transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
+        transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
+      });
+    });
+
+    it('should fail if place exists but its not a place', () => {
+      sinon.stub(validation, 'validate').callsArg(2);
+      doc = {
+        form: 'R',
+        fields: { place_id: '56987' },
+        place: {
+          _id: 'person',
+          patient_id: '56987',
+          type: 'person',
+        }
+      };
+      sinon.stub(contactTypeUtils, 'isPlace').returns(false);
+      sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
+
+      return transition.onMatch({ doc }).then(result => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(0);
+        transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
+        transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
+        contactTypeUtils.isPlace.callCount.should.equal(1);
+        contactTypeUtils.isPlace.args[0].should.deep.equal([{}, {_id: 'person', patient_id: '56987', type: 'person' }]);
+      });
+    });
+
+    it('should fail if subject does not exist, with place_id and patient_id', () => {
+      sinon.stub(validation, 'validate').callsArg(2);
+      doc = { form: 'R', fields: { place_id: 'the_place_id', patient_id: 'the_patient_id' } };
+      sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
+
+      return transition.onMatch({ doc }).then(result => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(0);
+        transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
+        transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
+      });
+    });
+
+    it('should fail if place and patient exist, but are switched', () => {
+      sinon.stub(validation, 'validate').callsArg(2);
+      doc = {
+        form: 'R',
+        fields: { place_id: '56987', patient_id: '69874' },
+        place: {
+          _id: 'person',
+          patient_id: '56987',
+          type: 'person',
+        },
+        patient: {
+          _id: 'place',
+          patient_id: '69874',
+          type: 'clinic',
+        },
+      };
+
+      sinon.stub(contactTypeUtils, 'isPerson').returns(false);
+      sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
+
+      return transition.onMatch({ doc }).then(result => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(0);
+        transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
+        transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
+        contactTypeUtils.isPerson.callCount.should.equal(1);
+        contactTypeUtils.isPerson.args[0].should.deep.equal([
+          {},
+          { _id: 'place', patient_id: '69874', type: 'clinic' }
+        ]);
+      });
+    });
+
+    it('should fail if place and patient exist, place is a place but patient is not a person', () => {
+      sinon.stub(validation, 'validate').callsArg(2);
+      doc = {
+        form: 'R',
+        fields: { place_id: '56987', patient_id: '69874' },
+        place: {
+          _id: 'place',
+          place_id: '56987',
+          type: 'some_place',
+        },
+        patient: {
+          _id: 'place',
+          place_id: '69874',
+          type: 'clinic',
+        },
+      };
+
+      sinon.stub(contactTypeUtils, 'isPerson').returns(false);
+      sinon.stub(contactTypeUtils, 'isPlace').returns(true);
+      sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
+
+      return transition.onMatch({ doc }).then(result => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(0);
+        transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
+        transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
+        contactTypeUtils.isPerson.callCount.should.equal(1);
+        contactTypeUtils.isPerson.args[0].should.deep.equal([{}, { _id: 'place', place_id: '69874', type: 'clinic' }]);
+      });
+    });
+
+    it('should fail if place and patient exist, patient is a person but place is not a place', () => {
+      sinon.stub(validation, 'validate').callsArg(2);
+      doc = {
+        form: 'R',
+        fields: { place_id: '56987', patient_id: '69874' },
+        place: {
+          _id: 'person',
+          patient_id: '56987',
+          type: 'person',
+        },
+        patient: {
+          _id: 'patient',
+          patient_id: '69874',
+          type: 'person',
+        },
+      };
+
+      sinon.stub(contactTypeUtils, 'isPerson').returns(true);
+      sinon.stub(contactTypeUtils, 'isPlace').returns(false);
+      sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
+
+      return transition.onMatch({ doc }).then(result => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(0);
+        transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
+        transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
+        contactTypeUtils.isPerson.callCount.should.equal(1);
+        contactTypeUtils.isPerson.args[0].should.deep.equal([
+          {},
+          { _id: 'patient', patient_id: '69874', type: 'person' }
+        ]);
+        contactTypeUtils.isPlace.callCount.should.equal(1);
+        contactTypeUtils.isPlace.args[0].should.deep.equal([
+          {},
+          { _id: 'person', patient_id: '56987', type: 'person' }
+        ]);
+      });
+    });
+
+    it('should run triggers when subject exists', () => {
+      sinon.stub(validation, 'validate').callsArg(2);
+      doc = {
+        form: 'R',
+        fields: { patient_id: 'the_patient_id' },
+        patient: { patient_id: 'the_patient_id', type: 'person', _id: 'some uuid' }
+      };
+
+      sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
+
+      return transition.onMatch({ doc }).then(result => {
+        result.should.equal(true);
+        fireConfiguredTriggers.callCount.should.equal(1);
+        fireConfiguredTriggers.args[0].should.deep.equal([registrationConfig, doc]);
+        transitionUtils.addRegistrationNotFoundError.callCount.should.equal(0);
+      });
     });
   });
 });

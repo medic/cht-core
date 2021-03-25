@@ -5,6 +5,8 @@ const moment = require('moment');
 const transitionUtils = require('../../src/transitions/utils');
 const utils = require('../../src/lib/utils');
 const config = require('../../src/config');
+const contactTypeUtils = require('@medic/contact-types-utils');
+const db = require('../../src/db');
 
 const transition = rewire('../../src/transitions/registration');
 
@@ -209,7 +211,6 @@ describe('pregnancy registration', () => {
 
   it('pregnancies on existing patients succeeds with a valid patient id', () => {
     sinon.stub(utils, 'getRegistrations').resolves([]);
-    sinon.stub(utils, 'getContactUuid').resolves('uuid');
 
     const doc = {
       form: 'ep',
@@ -217,6 +218,11 @@ describe('pregnancy registration', () => {
       fields: {
         patient_id: '12345',
         lmp: 5
+      },
+      patient: {
+        _id: 'uuid',
+        patient_id: '12345',
+        type: 'person'
       }
     };
 
@@ -228,24 +234,40 @@ describe('pregnancy registration', () => {
 
 
   it('zero lmp value only registers patient', () => {
-    sinon.stub(utils, 'getContactUuid').resolves('uuid');
-
+    sinon.stub(utils, 'getContactUuid').resolves(undefined);
     sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
+    sinon.stub(contactTypeUtils, 'isParentOf').returns(true);
+    sinon.stub(db.medic, 'post').resolves();
 
     const doc = {
+      _id: 'doc_id',
       form: 'p',
       type: 'data_record',
+      contact: { _id: 'contact', parent: { _id: 'parent' } },
       fields: {
         patient_name: 'abc',
         lmp: 0
-      }
+      },
+      reported_date: 12345678956
     };
 
     return transition.onMatch({ doc: doc }).then(function(changed) {
       assert.equal(changed, true);
       assert.equal(doc.lmp_date, null);
-      assert(doc.patient_id);
+      assert.equal(doc.patient_id, 12345);
       assert.equal(doc.tasks, undefined);
+      assert.equal(db.medic.post.callCount, 1);
+      assert.equal(utils.getContactUuid.callCount, 1);
+      assert.deepEqual(utils.getContactUuid.args[0], [12345]);
+      assert.deepEqual(db.medic.post.args[0], [{
+        created_by: 'contact',
+        name: 'abc',
+        parent: { _id: 'parent' },
+        patient_id: 12345,
+        type: 'person',
+        source_id: 'doc_id',
+        reported_date: 12345678956,
+      }]);
     });
   });
 

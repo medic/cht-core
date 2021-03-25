@@ -3,7 +3,6 @@ const config = require('../config');
 const transitionUtils = require('./utils');
 const utils = require('../lib/utils');
 const messages = require('../lib/messages');
-const validation = require('../lib/validation');
 const mutingUtils = require('../lib/muting_utils');
 
 const TRANSITION_NAME = 'muting';
@@ -72,19 +71,14 @@ module.exports = {
 
   filter: (doc, info = {}) => isRelevantReport(doc, info) || isRelevantContact(doc, info),
 
-  validate: function(doc) {
+  validate: (doc) => {
     const config = getConfig();
-    const validations = config.validations && config.validations.list;
-
-    return new Promise(resolve => {
-      validation.validate(doc, validations, (errors) => {
-        if (errors && errors.length) {
-          messages.addErrors(config, doc, errors, { patient: doc.patient });
-          return resolve(false);
-        }
-
-        resolve(true);
-      });
+    return transitionUtils.validate(config, doc).then(errors => {
+      if (errors && errors.length) {
+        messages.addErrors(config, doc, errors, { patient: doc.patient });
+        return false;
+      }
+      return true;
     });
   },
 

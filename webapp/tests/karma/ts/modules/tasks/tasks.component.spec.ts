@@ -34,6 +34,7 @@ describe('TasksComponent', () => {
     rulesEngineService = {
       isEnabled: sinon.stub().resolves(true),
       fetchTaskDocsForAllContacts: sinon.stub().resolves([]),
+      contactsMarkedAsDirty: sinon.stub(),
     };
 
     tourService = { startIfNeeded: sinon.stub() };
@@ -196,6 +197,22 @@ describe('TasksComponent', () => {
 
     expect(changesFeed.filter({ id: 'foo', doc: { _id: 'a', type: 'data_record', form: undefined }})).to.be.false;
   });
+
+  it('should react to rulesEngine emissions', fakeAsync(async () => {
+    await new Promise(resolve => {
+      sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
+      getComponent();
+    });
+
+    expect(rulesEngineService.contactsMarkedAsDirty.callCount).to.equal(1);
+    expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.equal(1);
+
+    const callback = rulesEngineService.contactsMarkedAsDirty.args[0][0];
+    callback();
+    tick(1000); // the refresh tasks call is debounced for 1 second
+
+    expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.equal(2);
+  }));
 
   it('should record telemetry on initial load', async () => {
     await new Promise(resolve => {

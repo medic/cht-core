@@ -10,6 +10,25 @@ const messages = require('../lib/messages');
 const messageUtils = require('@medic/message-utils');
 const mutingUtils = require('../lib/muting_utils');
 
+const isMuted = (contact) => contact.muted || mutingUtils.isMutedInLineage(contact);
+
+/**
+ * @param {Object} patient - the report's patient subject
+ * @param {Object} place - the report's place subject
+ * @returns {boolean}
+ * if both patient and place exist, prioritise the patient's muted state over the place's muted state.
+ * If neither exist, the schedule should not be muted.
+ */
+const shouldMuteSchedule = (patient, place) => {
+  if (patient) {
+    return isMuted(patient);
+  }
+  if (place) {
+    return isMuted(place);
+  }
+  return false;
+};
+
 module.exports = {
   // return [hour, minute, timezone]
   getSendTime: function(send_time) {
@@ -58,13 +77,13 @@ module.exports = {
     });
     return ret;
   },
-  /*
-     * Take doc and schedule config and setup schedule tasks.
-     */
-  assignSchedule: function(doc, schedule, registrations, patient) {
+
+  //Take doc and schedule config and setup schedule tasks.
+  assignSchedule: (doc, schedule, context={}) => {
     const self = module.exports;
+    const { place, patient, patientRegistrations, placeRegistrations } = context;
     const now = moment(date.getDate());
-    const muted = patient && (patient.muted || mutingUtils.isMutedInLineage(patient));
+    const muted = shouldMuteSchedule(patient, place);
     const allowedState = muted ? 'muted' : 'scheduled';
     const skipGroups = [];
 
@@ -82,8 +101,7 @@ module.exports = {
       return false;
     }
 
-    // if start_form property is null, we skip schedule creation, but mark
-    // transtition as complete.
+    // if start_form property is null, we skip schedule creation, but mark transition as complete.
     if (docStart === null) {
       return true;
     }
@@ -144,8 +162,10 @@ module.exports = {
               msg,
               msg.recipient,
               {
-                registrations: registrations,
-                patient: patient
+                registrations: patientRegistrations,
+                patient: patient,
+                placeRegistrations: placeRegistrations,
+                place: place,
               });
           }
           const state = messages.isOutgoingAllowed(doc.from) ? allowedState : 'denied';
