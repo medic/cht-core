@@ -16,7 +16,11 @@ const getIncomingToken = () => {
   });
 };
 
-const validateToken = req => {
+const validateRequest = req => {
+  if (!req.body) {
+    return Promise.reject({ code: 400, message: 'Request body is required' });
+  }
+
   const smsConfigs = config.get('sms');
   if (!smsConfigs || smsConfigs.outgoing_service !== rapidProService) {
     return Promise.reject({ code: 400, message: 'Service not enabled' });
@@ -35,11 +39,8 @@ const validateToken = req => {
 
 module.exports = {
   incomingMessages: (req, res) => {
-    return validateToken(req)
+    return validateRequest(req)
       .then(() => {
-        if (!req.body) {
-          return Promise.reject({ code: 400, message: 'Request body is required' });
-        }
         const message = {
           id: req.body.id,
           from: req.body.from,

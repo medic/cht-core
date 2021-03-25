@@ -16,6 +16,22 @@ describe('rapidPro controller', () => {
   afterEach(() => sinon.restore());
 
   describe('incomingMessages', () => {
+    it('should fail early when body is empty', () => {
+      const req = {
+        headers: { authorization: 'somekey' },
+      };
+      sinon.stub(config, 'get');
+      sinon.stub(secureSettings, 'getCredentials');
+      sinon.stub(serverUtils, 'error').returns();
+
+      return controller.incomingMessages(req, res).then(() => {
+        expect(serverUtils.error.callCount).to.equal(1);
+        expect(res.json.callCount).to.equal(0);
+        expect(secureSettings.getCredentials.callCount).to.equal(0);
+        expect(config.get.callCount).to.equal(0);
+      });
+    });
+
     it('returns error when rapid pro not configured', () => {
       sinon.stub(config, 'get').returns({});
 

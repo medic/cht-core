@@ -83,7 +83,6 @@ const getStateUpdate = (status, messageId, gatewayRef) => ({
  */
 const sendMessage = (credentials, message) => {
   const requestOptions = getRequestOptions(credentials);
-
   requestOptions.uri = '/api/v2/broadcasts.json';
   requestOptions.body = {
     urns: [`tel:${message.to}`],
@@ -136,11 +135,10 @@ const getRemoteState = (credentials, gatewayRef, messageId) => {
       return getStateUpdate(state, messageId, gatewayRef);
     })
     .catch(err => {
-      // unknown error - ignore it so the message will be retried again later
+      // ignore error, updating the state will be retried later
       logger.error(`Error thrown trying to retrieve status updates %o`, err);
     });
 };
-
 
 /**
  * Gets the current RapidPro states for a provided list of messages, converts to CHT-Core states
@@ -150,7 +148,6 @@ const getRemoteState = (credentials, gatewayRef, messageId) => {
  */
 const getRemoteStates = (credentials, messages) => {
   let promiseChain = Promise.resolve([]);
-
   messages.forEach(message => {
     promiseChain = promiseChain.then((stateUpdates) => {
       return getRemoteState(credentials, message.gateway_ref, message.id).then(stateUpdate => {
@@ -168,8 +165,8 @@ const getRemoteStates = (credentials, messages) => {
 let skip = 0;
 module.exports = {
   /**
-   * Given an array of messages returns a promise which resolves an array
-   * of responses.
+   * Given an array of messages, returns a promise which resolves with an array of state updates
+   * (which also update messages' gateway_ref properties), for each message that has been successfully relayed.
    * @param {Array} messages - Array of objects with a `to` (recipient) and a `message` field.
    * @returns {Promise<[stateUpdate]>} - array of state update objects.
    */
@@ -195,32 +192,39 @@ module.exports = {
 
   /**
    * Polls RapidPro `messages` endpoint to check for state updates of outgoing messages that
-   * are in non-final states.
-   * Queries `gateway_messages_by_state` for a batch of messages that are in non-final states, `skip`ping rows that were
-   * already processed. Increases the global variable `skip` with the number of rows that were not updated
-   * (their states have not changed) from this batch.
+   * are in non-final states. Queries `medic-sms/gateway_messages_by_state` for a batch of messages that are in
+   * non-final states, `skip`ping rows that were already processed. Increases the global variable `skip` with the
+   * number of rows that were not updated (their states have not changed) from this batch.
    * When there are no more rows to process, sets `skip` to 0 and will start over the queue on next iteration.
    */
   poll: () => {
-    const messaging = require('./messaging');
-    const viewOptions = { keys: _.uniq(nonFinalStates), limit: BATCH_SIZE, skip };
-
     return getCredentials()
       .then(credentials => {
+        const viewOptions = { keys: _.uniq(nonFinalStates), limit: BATCH_SIZE, skip };
         return db.medic
           .query('medic-sms/gateway_messages_by_state', viewOptions)
           .then(result => {
             if (!result || !result.rows || !result.rows.length) {
-              skip = 0; // start from the beginning on the next poll
+              skip = 0; // start from the beginning on the next poll call
               return;
             }
+
+            // avoid circular dependency issues, the messaging service also requires this file
+            // todo reviewer: I tried breaking up messaging, to expose the updateMessageTaskStates in a separate module,
+            // but it didn't turn out quite right. a "proper" refactor would have ended up moving more code around.
+            // Thoughts?
+            const messaging = require('./messaging');
 
             const messages = result.rows.map(row => row.value);
             return getRemoteStates(credentials, messages)
               .then(statusUpdates => messaging.updateMessageTaskStates(statusUpdates))
               .then(({ saved = 0 }={}) => {
-                // only increase the skip with the number of messages that were *not updated*
-                // the updated messages could have changed to be in a final state and will not be in this list at all
+                /*
+                 Only increase the skip with the number of messages that were *not updated*.
+                 The messages that were updated could have changed to be in a final state
+                 and will be excluded on the next query.
+                 and will be excluded on the next query.
+                 */
                 const numberOfRowsProcessed = result.rows.length - saved;
                 skip += numberOfRowsProcessed;
               });
