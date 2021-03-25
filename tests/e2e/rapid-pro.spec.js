@@ -506,7 +506,7 @@ describe('RapidPro SMS Gateway', () => {
       await setOutgoingKey();
       await utils.saveDoc(doc);
 
-      await browser.wait(() => messagesEndpointRequests.length === 6, 6 * 1000 );
+      await browser.wait(() => messagesEndpointRequests.length === 6, 7 * 1000 );
       await browser.sleep(1200); // wait for one extra iteration
 
       expect(messagesEndpointRequests.length).toEqual(6); // no additional requests
