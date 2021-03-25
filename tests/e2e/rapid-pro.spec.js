@@ -62,11 +62,11 @@ const setOutgoingKey = () => {
 };
 
 describe('RapidPro SMS Gateway', () => {
+  beforeAll(() => startMockApp());
   afterAll(() => {
     stopMockApp();
     return utils.revertDb();
   });
-  beforeAll(() => startMockApp());
 
   beforeEach(() => {
     broadcastsEndpointRequests = [];
@@ -288,7 +288,6 @@ describe('RapidPro SMS Gateway', () => {
 
       const statuses = ['queued', '', 'queued', 'sent', 'failed'];
       broadcastsResult = (req, res) => {
-        // https://rapidpro.io/api/v2/broadcasts
         const idx = req.body.text.replace('message', '');
         res.json({
           id: `broadcast${idx}`,
@@ -351,7 +350,7 @@ describe('RapidPro SMS Gateway', () => {
       await setOutgoingKey();
       await utils.saveDocs(docs);
 
-      await browser.sleep(1200);
+      await browser.wait(() => messagesEndpointRequests.length === 12, 3000);
 
       const requestedBroadcastIds = [];
       const expectedBroadcastIds = docs.map(doc => doc.tasks[0].gateway_ref).sort();
