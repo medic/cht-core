@@ -351,6 +351,7 @@ describe('RapidPro SMS Gateway', () => {
       await utils.saveDocs(docs);
 
       await browser.wait(() => messagesEndpointRequests.length > 7, 3000);
+      await browser.sleep(1000); // wait for the docs to actually be updated
 
       console.log(JSON.stringify(messagesEndpointRequests, null, 2));
 
