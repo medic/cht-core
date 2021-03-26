@@ -3,7 +3,6 @@ const sinon = require('sinon');
 const secureSettings = require('@medic/settings');
 const controller = require('../../../src/controllers/rapid-pro');
 const messaging = require('../../../src/services/messaging');
-const rapidPro = require('../../../src/services/rapid-pro');
 const serverUtils = require('../../../src/server-utils');
 
 let res;
