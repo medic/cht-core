@@ -204,6 +204,54 @@ describe('messageUtils', () => {
         }
       };
 
+      const linkedDocWithPlace = {
+        form: 'x',
+        from: fromPhone,
+        fields: {
+          phone: fieldsPhone,
+        },
+        phone: inlinePhone,
+        place: {
+          linked_docs: {
+            tag1: {
+              phone: linkedPhone1,
+            },
+            tag2: 'aaaa'
+          },
+          phone: 'patientPhone',
+          parent: {
+            type: 'clinic',
+            contact: {
+              phone: clinicPhone,
+            },
+            parent: {
+              type: 'health_center',
+              contact: {
+                phone: parentPhone,
+              },
+              linked_docs: {
+                tag4: { phone: linkedPhone4 },
+              }
+            },
+            linked_docs: {
+              tag3: { phone: linkedPhone3 },
+              tagtag: { phone: '' },
+            }
+          },
+        },
+        contact: {
+          phone: 'otherphone',
+          parent: {},
+          linked_docs: {
+            tag1: { phone: 'otherphone' },
+            tag2: { phone: linkedPhone2 },
+            tag3: { phone: 'otherphone' },
+            tag4: { phone: 'otherphone' },
+          }
+        }
+      };
+
+
       it('resolves reporting_unit correctly', () => {
         utils._getRecipient(doc, 'reporting_unit')
           .should.equal(fromPhone);
@@ -289,12 +337,22 @@ describe('messageUtils', () => {
 
       it('should resolve link: correctly based on patient', () => {
         utils._getRecipient(linkedDocWithPatient, 'link:tag1').should.equal(linkedPhone1);
-        // this resolve from contact instead of patient! patient:tag2 is 'aaa'
+        // this resolves from contact instead of patient! patient:tag2 is 'aaa'
         utils._getRecipient(linkedDocWithPatient, 'link:tag2').should.equal(linkedPhone2);
         utils._getRecipient(linkedDocWithPatient, 'link:tag3').should.equal(linkedPhone3);
         utils._getRecipient(linkedDocWithPatient, 'link:tag4').should.equal(linkedPhone4);
         utils._getRecipient(linkedDocWithPatient, 'link:nonexisting').should.equal(fromPhone);
         utils._getRecipient(linkedDocWithPatient, 'link:tagtag').should.equal(fromPhone);
+      });
+
+      it('should resolve link: correctly based on place', () => {
+        utils._getRecipient(linkedDocWithPlace, 'link:tag1').should.equal(linkedPhone1);
+        // this resolves from contact instead of place! place:tag2 is 'aaa'
+        utils._getRecipient(linkedDocWithPlace, 'link:tag2').should.equal(linkedPhone2);
+        utils._getRecipient(linkedDocWithPlace, 'link:tag3').should.equal(linkedPhone3);
+        utils._getRecipient(linkedDocWithPlace, 'link:tag4').should.equal(linkedPhone4);
+        utils._getRecipient(linkedDocWithPlace, 'link:nonexisting').should.equal(fromPhone);
+        utils._getRecipient(linkedDocWithPlace, 'link:tagtag').should.equal(fromPhone);
       });
 
       it('should resolve link: on 1st match', () => {
