@@ -1,10 +1,8 @@
 const logger = require('../logger');
 const messaging = require('../services/messaging');
 const serverUtils = require('../server-utils');
-const config = require('../config');
 const secureSettings = require('@medic/settings');
-
-const rapidProService = 'rapid-pro';
+const rapidPro = require('../services/rapid-pro');
 
 const getIncomingToken = () => {
   return secureSettings.getCredentials('rapidpro:incoming').then(token => {
@@ -21,14 +19,15 @@ const validateRequest = req => {
     return Promise.reject({ code: 400, message: 'Request body is required' });
   }
 
-  const smsConfigs = config.get('sms');
-  if (!smsConfigs || smsConfigs.outgoing_service !== rapidProService) {
+  const outgoingMessageService = messaging.getOutgoingMessageService();
+  if (!outgoingMessageService || outgoingMessageService.name !== rapidPro.name) {
     return Promise.reject({ code: 400, message: 'Service not enabled' });
   }
 
   return getIncomingToken().then(expected => {
     // todo Reviewer: should we mimic the RapidPro authorization header, and include "Token" prefix?
-    // or use a query key like africas-talking? Consistent with our other APIs or consistent with integration API ?
+    // or use a query key like africas-talking?
+    // Consistent with our other APIs or consistent with the api integrating with?
     const given = req.headers.authorization;
     if (expected !== given) {
       logger.warn(`Attempt to access RapidPro endpoint without the correct incoming token`);

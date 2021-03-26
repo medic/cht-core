@@ -31,12 +31,12 @@ const nonFinalStates = Object
 
 const getCredentials = () => {
   // Supports self-hosted RapidPro instances, but defaults to textit.in
-  const settings = config.get('sms');
-  const url = settings &&
-              settings.rapidPro &&
-              settings.rapidPro.url;
+  const smsSettings = config.get('sms');
+  const configuredUrl = smsSettings &&
+                        smsSettings.rapidPro &&
+                        smsSettings.rapidPro.url;
   const textitUrl = 'https://textit.in';
-  const host =  url || textitUrl;
+  const host =  configuredUrl || textitUrl;
 
   return secureSettings.getCredentials('rapidpro:outgoing').then(apiToken => {
     if (!apiToken) {
@@ -64,7 +64,11 @@ const remoteStatusToLocalState = (result) => result.status && STATUS_MAP[result.
  * @property {string} state - message state
  * @property {string} details
  */
+
 /**
+ * @param {{ state:string, detail:string }} status
+ * @param {string} messageId
+ * @param {string} gatewayRef
  * @returns {stateUpdate}
  */
 const getStateUpdate = (status, messageId, gatewayRef) => ({
@@ -77,8 +81,8 @@ const getStateUpdate = (status, messageId, gatewayRef) => ({
 /**
  * Creates a broadcast for the provided message in RapidPro.
  * Returns a state update, setting the gateway_ref to the returned broadcast id
- * @param {object} credentials
- * @param {object} message
+ * @param {{ apiToken:string, host:string }} credentials - RapidPro API authorization token and host
+ * @param {{ to:string, content:string }} message
  * @returns {Promise<stateUpdate>}
  */
 const sendMessage = (credentials, message) => {
@@ -109,7 +113,7 @@ const sendMessage = (credentials, message) => {
 /**
  * Queries RapidPro messages endpoint with the provided broadcast id.
  * Returns state update of first returned result.
- * @param {Object} credentials - RapidPro API authorization token and host
+ * @param {{ apiToken:string, host:string }} credentials - RapidPro API authorization token and host
  * @param {string} gatewayRef - the RapidPro broadcast id
  * @param {string} messageId - message uuid
  * @returns {Promise<void|stateUpdate>}
@@ -136,14 +140,14 @@ const getRemoteState = (credentials, gatewayRef, messageId) => {
     })
     .catch(err => {
       // ignore error, updating the state will be retried later
-      logger.error(`Error thrown trying to retrieve status updates %o`, err);
+      logger.error(`Error thrown trying to retrieve remote status %o`, err);
     });
 };
 
 /**
- * Gets the current RapidPro states for a provided list of messages, converts to CHT-Core states
- * @param {object} credentials
- * @param {Array} messages - messages to check
+ * Gets the current RapidPro statuses for a provided list of messages, converts to CHT-Core states
+ * @param {{ apiToken:string, host:string }} credentials - RapidPro API authorization token and host
+ * @param {Array<{ gateway_ref:string, id:string }>} messages - messages to check
  * @returns {Promise<[stateUpdate]>} list of state updates
  */
 const getRemoteStates = (credentials, messages) => {
@@ -164,10 +168,11 @@ const getRemoteStates = (credentials, messages) => {
 
 let skip = 0;
 module.exports = {
+  name: 'rapid-pro',
   /**
    * Given an array of messages, returns a promise which resolves with an array of state updates
    * (which also update messages' gateway_ref properties), for each message that has been successfully relayed.
-   * @param {Array} messages - Array of objects with a `to` (recipient) and a `message` field.
+   * @param {Array<{ to:string, message:string }>} messages - messages to send
    * @returns {Promise<[stateUpdate]>} - array of state update objects.
    */
   send: (messages) => {
@@ -198,6 +203,7 @@ module.exports = {
    * When there are no more rows to process, sets `skip` to 0 and will start over the queue on next iteration.
    */
   poll: () => {
+    // get the credentials every call so changes can be made without restarting api
     return getCredentials()
       .then(credentials => {
         const viewOptions = { keys: _.uniq(nonFinalStates), limit: BATCH_SIZE, skip };
@@ -219,12 +225,9 @@ module.exports = {
             return getRemoteStates(credentials, messages)
               .then(statusUpdates => messaging.updateMessageTaskStates(statusUpdates))
               .then(({ saved = 0 }={}) => {
-                /*
-                 Only increase the skip with the number of messages that were *not updated*.
-                 The messages that were updated could have changed to be in a final state
-                 and will be excluded on the next query.
-                 and will be excluded on the next query.
-                 */
+                // Only increase the skip with the number of messages that were *not updated*.
+                // The messages that were updated could have changed to be in a final state
+                // and will be excluded on the next query.
                 const numberOfRowsProcessed = result.rows.length - saved;
                 skip += numberOfRowsProcessed;
               });
