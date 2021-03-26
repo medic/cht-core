@@ -6,7 +6,8 @@ angular.module('controllers').controller('FormsXmlCtrl',
     AddAttachment,
     DB,
     FileReader,
-    JsonParse
+    JsonParse,
+    ValidateForm
   ) {
 
     'use strict';
@@ -25,16 +26,18 @@ angular.module('controllers').controller('FormsXmlCtrl',
     };
 
     const uploadFinished = function(err) {
+      $scope.status.uploading = false;
       if (err) {
         $log.error('Upload failed', err);
+        $scope.status.error = true;
+        $scope.status.errorMessage = `Upload failed: ${err.message}`;
+        $scope.status.success = false;
       } else {
         $('#forms-upload-xform').get(0).reset(); // clear the fields
+        $scope.status.error = false;
+        $scope.status.errorMessage = null;
+        $scope.status.success = true;
       }
-      $scope.status = {
-        uploading: false,
-        error: !!err,
-        success: !err,
-      };
     };
 
     $scope.upload = function() {
@@ -45,12 +48,17 @@ angular.module('controllers').controller('FormsXmlCtrl',
       };
 
       const formFiles = $('#forms-upload-xform .form.uploader')[0].files;
-      if (!formFiles || formFiles.length === 0) {
+      const xmlNotFound = !formFiles || formFiles.length === 0;
+      const metaFiles = $('#forms-upload-xform .meta.uploader')[0].files;
+      const jsonNotFound = !metaFiles || metaFiles.length === 0;
+
+      if (xmlNotFound && jsonNotFound) {
+        return uploadFinished(new Error('XML and JSON meta files not found'));
+      }
+      if (xmlNotFound) {
         return uploadFinished(new Error('XML file not found'));
       }
-
-      const metaFiles = $('#forms-upload-xform .meta.uploader')[0].files;
-      if (!metaFiles || metaFiles.length === 0) {
+      if (jsonNotFound) {
         return uploadFinished(new Error('JSON meta file not found'));
       }
 
@@ -92,21 +100,24 @@ angular.module('controllers').controller('FormsXmlCtrl',
             );
           }
 
-          const couchId = 'form:' + formId;
-          return DB().get(couchId, { include_attachments:true })
-            .catch(function(err) {
-              if (err.status === 404) {
-                return { _id: couchId };
-              }
-              throw err;
-            })
-            .then(function(doc) {
-              doc.title = title;
-              Object.assign(doc, meta);
-              doc.type = 'form';
-              doc.internalId = formId;
-              AddAttachment(doc, 'xml', xml, 'application/xml');
-              return doc;
+          return ValidateForm(xml)
+            .then(() => {
+              const couchId = 'form:' + formId;
+              return DB().get(couchId, { include_attachments:true })
+                .catch(err => {
+                  if (err.status === 404) {
+                    return { _id: couchId };
+                  }
+                  throw err;
+                })
+                .then(doc => {
+                  doc.title = title;
+                  Object.assign(doc, meta);
+                  doc.type = 'form';
+                  doc.internalId = formId;
+                  AddAttachment(doc, 'xml', xml, 'application/xml');
+                  return doc;
+                });
             });
         })
         .then(function(doc) {
