@@ -22,9 +22,9 @@ export class RDToolkitService {
     }
   }
 
-  provisionRDTest(sessionId, patientId, patientName='') {
+  provisionRDTest(sessionId, patientId, patientName='', rdtFilter, monitorApiURL) {
     try {
-      window.medicmobile_android.rdToolkit_provisionRDTest(sessionId, patientName, patientId);
+      window.medicmobile_android.rdToolkit_provisionRDTest(sessionId, patientName, patientId, rdtFilter, monitorApiURL);
       return new Promise(resolve => this.provisionTestResolve = resolve);
     } catch (error) {
       console.error('Error when provisioning RD Test: ', error);

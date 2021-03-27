@@ -32,23 +32,27 @@
     displayActions($widget);
 
     $widget.on('click', '.btn.rdtoolkit-provision-test', function() {
-      const sessionId = getFieldValue('instanceID'); // Using form's instance ID as RD Test ID
-      const patientName = getFieldValue('patient_name');
-      const patientId = getFieldValue('patient_id');
+      const form = getForm();
+      // Using form's instance ID as RD Test ID
+      const sessionId = getFieldValue(form, 'instanceID').replace('uuid:', '');
+      const patientName = getFieldValue(form, 'patient_name');
+      const patientId = getFieldValue(form, 'patient_id');
+      const rdtFilter = getFieldValue(form, 'rdtoolkit_filter');
+      const monitorApiURL = getFieldValue(form, 'rdtoolkit_api_url');
 
       if (!sessionId || !patientId) {
         return;
       }
 
       rdToolkitService
-        .provisionRDTest(sessionId, patientId, patientName)
+        .provisionRDTest(sessionId, patientId, patientName, rdtFilter, monitorApiURL)
         .then((response = {}) => {
           const sessionId = response.sessionId || '';
           const timeStarted = getDate(response.timeStarted);
           const timeResolved = getDate(response.timeResolved);
           const state = response.state || '';
 
-          setFields($widget, sessionId, state, timeStarted, timeResolved);
+          updateFields($widget, sessionId, state, timeStarted, timeResolved);
           hideActions($widget);
           displayPreview($widget, state, timeStarted, timeResolved);
         });
@@ -61,7 +65,7 @@
       .toPromise()
       .then(label => {
         $widget
-          .find('.or-appearance-rdtoolkit_contact')
+          .find('.or-appearance-rdtoolkit_action_btn')
           .after('<div class="rdtoolkit-preview"></div>')
           .after(`
             <div class="rdtoolkit-actions">
@@ -112,38 +116,40 @@
       `);
   }
 
-  function setFields($widget, sessionId, state, timeStarted, timeResolved) {
-    // ToDo: set these values in the Enketo way by using: window.CHTCore.Enketo.getCurrentForm()
-    $widget
-      .find('input[name="/rdtoolkit_provision/rdtoolkit_session_id"]')
-      .val(sessionId)
-      .trigger('change');
-    $widget
-      .find('input[name="/rdtoolkit_provision/rdtoolkit_state"]')
-      .val(state)
-      .trigger('change');
-    $widget
-      .find('input[name="/rdtoolkit_provision/rdtoolkit_time_started"]')
-      .val(timeStarted)
-      .trigger('change');
-    $widget
-      .find('input[name="/rdtoolkit_provision/rdtoolkit_time_resolved"]')
-      .val(timeResolved)
-      .trigger('change');
+  function updateFields($widget, sessionId, state, timeStarted, timeResolved) {
+    setFieldValue($widget, 'rdtoolkit_session_id', sessionId);
+    setFieldValue($widget, 'rdtoolkit_state', state);
+    setFieldValue($widget, 'rdtoolkit_time_started', timeStarted);
+    setFieldValue($widget, 'rdtoolkit_time_resolved', timeResolved);
   }
 
   function getDate(dateTime) {
     return dateTime && moment(dateTime).isValid() ? moment(dateTime).format('LLL'): '';
   }
 
-  function getFieldValue(fieldName) {
-    const form = window.CHTCore.Enketo.getCurrentForm();
+  function getForm() {
+    return window.CHTCore.Enketo.getCurrentForm();
+  }
 
-    if (!form) {
+  function getFieldValue(form, fieldName) {
+    if (!form || !fieldName) {
       return;
     }
 
-    return form.model.$.find(fieldName).text();
+    return form.model.$
+      .find(fieldName)
+      .text();
+  }
+
+  function setFieldValue($widget, fieldName, value) {
+    if (!fieldName || value === undefined) {
+      return;
+    }
+
+    $widget
+      .find(`input[name$=${fieldName}]`)
+      .val(value)
+      .trigger('change');
   }
 
   $.fn[ pluginName ] = function(options, event) {

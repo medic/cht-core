@@ -347,7 +347,7 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['rdtoolkit_provision'], // form
     appliesIf: (contact, report) => {
-      return !!(getField(report, 'patient_id') && getField(report, 'rdtoolkit_session_id'));
+      return !!(getField(report, 'data.patient_id') && getField(report, 'data.rdtoolkit_session_id'));
     },
     resolvedIf: (contact, report, event, dueDate) => {
       if (!contact.reports) {
@@ -358,10 +358,10 @@ module.exports = [
         if (reportDoc.form !== 'rdtoolkit_capture') {
           return false;
         }
-        return getField(reportDoc, 'rdtoolkit_session_id') === getField(report, 'rdtoolkit_session_id');
+        return getField(reportDoc, 'data.rdtoolkit_session_id') === getField(report, 'data.rdtoolkit_session_id');
       });
 
-      if (!captureReport || !getField(captureReport, 'rdtoolkit_results')) {
+      if (!captureReport || !getField(captureReport, 'data.rdtoolkit_results')) {
         return false;
       }
 
@@ -376,9 +376,9 @@ module.exports = [
         form: 'rdtoolkit_capture',
         modifyContent: function(content, contact, report) {
           content.patient_uuid = getField(report, 'patient_uuid');
-          content.patient_name = getField(report, 'patient_name');
-          content.patient_id = getField(report, 'patient_id');
-          content.rdtoolkit_session_id = getField(report, 'rdtoolkit_session_id');
+          content._patient_name = getField(report, 'data.patient_name');
+          content._patient_id = getField(report, 'data.patient_id');
+          content._rdtoolkit_session_id = getField(report, 'data.rdtoolkit_session_id');
         }
       }
     ],
