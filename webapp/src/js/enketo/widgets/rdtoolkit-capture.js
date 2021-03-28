@@ -105,7 +105,7 @@
 
   function updateFields($widget, capturedTest) {
     setFieldValue($widget, 'rdtoolkit_session_id', capturedTest.sessionId);
-    setFieldValue($widget, 'rdtoolkit_results', capturedTest.results);
+    setFieldValue($widget, 'rdtoolkit_results', JSON.stringify(capturedTest.results));
     setFieldValue($widget, 'rdtoolkit_results_description', capturedTest.resultsDescription);
     setFieldValue($widget, 'rdtoolkit_time_read', capturedTest.timeRead);
     setFieldValue($widget, 'rdtoolkit_state', capturedTest.state);
