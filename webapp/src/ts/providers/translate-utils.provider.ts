@@ -41,6 +41,8 @@ export class TranslateMessageFormatCompilerProvider extends TranslateCompiler {
   }
 }
 
+// messageformat throws an error when incorrect/incomplete context is passed to the compiled translation.
+// if this occurs, fallback to trying to translate the uncompiled value and log a warning.
 @Injectable()
 export class TranslateParserProvider extends TranslateDefaultParser {
   constructor() {
@@ -48,7 +50,7 @@ export class TranslateParserProvider extends TranslateDefaultParser {
   }
 
   interpolate(expr, params) {
-    if (isObjectLike(expr) && expr.fn && isFunction(expr.fn)) {
+    if (isObjectLike(expr) && isFunction(expr.fn)) {
       try {
         return super.interpolate(expr.fn, params);
       } catch (err) {
