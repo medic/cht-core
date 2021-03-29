@@ -1,6 +1,6 @@
 const utils = require('../../utils');
 const helper = require('../../helper');
-const commonElements = require('../../page-objects/common/common.po.js');
+const commonElements = require('../../page-objects/common/common.po');
 const contactElements = require('../../page-objects/contacts/contacts.po');
 
 describe('MessageFormat', () => {

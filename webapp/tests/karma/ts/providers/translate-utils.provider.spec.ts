@@ -7,8 +7,9 @@ import {
   TranslateParserProvider,
 } from '@mm-providers/translate-utils.provider';
 
-let provider;
 describe('TranslateUtils providers', () => {
+  let provider;
+
   afterEach(() => {
     sinon.restore();
   });
@@ -17,7 +18,9 @@ describe('TranslateUtils providers', () => {
     describe('compile', () => {
       it('should initialize local messageFormat', () => {
         provider = new TranslateMessageFormatCompilerProvider();
+
         const compiled = provider.compile('the {value}', 'fr');
+
         expect(compiled.value).to.equal('the {value}');
         expect(compiled.fn).to.be.a('function');
         expect(compiled.fn({ value: 'thing' })).to.equal('the thing');
@@ -26,12 +29,16 @@ describe('TranslateUtils providers', () => {
       it('should not pass double open curly braces or no curly braces strings to message format', () => {
         const mfCompile = sinon.stub(MessageFormat.prototype, 'compile');
         provider = new TranslateMessageFormatCompilerProvider();
+
         expect(provider.compile('the {{value}}')).to.equal('the {{value}}');
         expect(mfCompile.callCount).to.equal(0);
+
         expect(provider.compile('the value')).to.equal('the value');
         expect(mfCompile.callCount).to.equal(0);
+
         expect(provider.compile('{{a value')).to.equal('{{a value');
         expect(mfCompile.callCount).to.equal(0);
+
         expect(provider.compile('{{some}} other {value}')).to.equal('{{some}} other {value}');
         expect(mfCompile.callCount).to.equal(0);
       });
@@ -66,6 +73,7 @@ describe('TranslateUtils providers', () => {
         const mfCompile = sinon.stub(MessageFormat.prototype, 'compile').throws({ some: 'error' });
         const consoleErrorMock = sinon.stub(console, 'error');
         provider = new TranslateMessageFormatCompilerProvider();
+
         expect(provider.compile('a {thing}')).to.equal('a {thing}');
         expect(mfCompile.callCount).to.equal(1);
         expect(consoleErrorMock.callCount).to.equal(1);
@@ -83,6 +91,7 @@ describe('TranslateUtils providers', () => {
         };
         provider = new TranslateMessageFormatCompilerProvider();
         sinon.stub(provider, 'compile').callsFake((translation) => `${translation} compiled`);
+
         const result = provider.compileTranslations(translations, 'the_lang');
         expect(result).to.deep.equal({
           'a': 'a translation compiled',
@@ -105,6 +114,7 @@ describe('TranslateUtils providers', () => {
     describe('interpolate', () => {
       it('should do "standard" interpolation on values, using params', () => {
         provider = new TranslateParserProvider();
+
         expect(provider.interpolate('string')).to.equal('string');
         expect(provider.interpolate('{{string}}')).to.equal('{{string}}');
         expect(provider.interpolate('{{string}}', { string: 'ana' })).to.equal('ana');
@@ -116,6 +126,7 @@ describe('TranslateUtils providers', () => {
       it('should catch errors with messageformat compiled values', () => {
         provider = new TranslateParserProvider();
         const fn = sinon.stub().throws(new Error('boom'));
+
         expect(provider.interpolate({ fn, value: 'the value' })).to.equal('the value');
         expect(provider.interpolate({ fn, value: 'the value' }, { the: 'param' })).to.equal('the value');
         expect(fn.callCount).to.equal(2);
@@ -128,6 +139,7 @@ describe('TranslateUtils providers', () => {
       it('should return function from messageformat compiled value', () => {
         provider = new TranslateParserProvider();
         const fn = sinon.stub().returns('the compiled interpolated result');
+
         expect(provider.interpolate({ fn, value: 'the value' }))
           .to.equal('the compiled interpolated result');
         expect(provider.interpolate({ fn, value: 'the value' }, { the: 'params' }))
