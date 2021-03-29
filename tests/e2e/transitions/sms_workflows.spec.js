@@ -1006,6 +1006,91 @@ describe('SMS workflows', () => {
       ]);
     });
 
+    it('should correctly map linked contacts by type for place', async () => {
+      const settings = {
+        transitions: {
+          accept_patient_reports: true,
+          update_clinics: true
+        },
+        patient_reports: [
+          {
+            form: 'FORM',
+            messages: [
+              {
+                event_type: 'report_accepted',
+                recipient: 'link:clinic',
+                message: [{ content: 'to clinic' }],
+              },
+              {
+                event_type: 'report_accepted',
+                recipient: 'link:health_center',
+                message: [{ content: 'to health_center' }],
+              },
+              {
+                event_type: 'report_accepted',
+                recipient: 'link:district_hospital',
+                message: [{ content: 'to district' }],
+              },
+            ]
+          }
+        ],
+        forms: { FORM: { } }
+      };
+
+      const reports = [
+        {
+          _id: 'report_clinic',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone7', // chw7
+          fields: {
+            place_id: 'clinic_shortcode', // clinic > health_center > district
+          },
+          reported_date: new Date().getTime(),
+        },
+        {
+          _id: 'health_center_report',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone7', // chw7
+          fields: {
+            place_id: 'health_center_shortcode', // health_center > district
+          },
+          reported_date: new Date().getTime(),
+        },
+        {
+          _id: 'district_report',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone7', // chw7
+          fields: {
+            place_id: 'district_shortcode',
+          },
+          reported_date: new Date().getTime(),
+        },
+      ];
+
+      const [ reportClinic, reportHealthCenter, reportDistrict ] = await processReportsAndSetings(reports, settings);
+
+      expectTasks(reportClinic, [
+        { messages: [{ to: 'phone1', message: 'to clinic' }] },
+        { messages: [{ to: 'phone2', message: 'to health_center' }] },
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
+
+      expectTasks(reportHealthCenter, [
+        { messages: [{ to: 'phone7', message: 'to clinic' }] }, // sender
+        { messages: [{ to: 'phone2', message: 'to health_center' }] },
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
+
+      expectTasks(reportDistrict, [
+        { messages: [{ to: 'phone7', message: 'to clinic' }] }, // sender
+        { messages: [{ to: 'phone7', message: 'to health_center' }] }, // sender
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
+    });
+
     it('should correctly map linked contacts by type for contact', async () => {
       const settings = {
         transitions: {

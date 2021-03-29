@@ -73,6 +73,110 @@ describe('messageUtils', () => {
         complex: { inline: { phone: complexInlinePhone }}
       };
 
+      const docWithPatient = {
+        form: 'x',
+        from: fromPhone,
+        fields: {
+          phone: fieldsPhone,
+          patient_id: 'patient_id',
+        },
+        phone: inlinePhone,
+        contact: {
+          parent: {
+            type: 'clinic',
+            contact: {
+              phone: `not${clinicPhone}`,
+            },
+            parent: {
+              type: 'health_center',
+              contact: {
+                phone: `not${parentPhone}`,
+              },
+              parent: {
+                type: 'district_hospital',
+                contact: {
+                  phone: `not${grandparentPhone}`,
+                },
+              },
+            },
+          },
+        },
+        patient: {
+          type: 'person',
+          parent: {
+            type: 'clinic',
+            contact: {
+              phone: clinicPhone,
+            },
+            parent: {
+              type: 'health_center',
+              contact: {
+                phone: parentPhone,
+              },
+              parent: {
+                type: 'district_hospital',
+                contact: {
+                  phone: grandparentPhone,
+                },
+              },
+            },
+          },
+        },
+        complex: { inline: { phone: complexInlinePhone }}
+      };
+
+      const docWithPlace = {
+        form: 'x',
+        from: fromPhone,
+        fields: {
+          phone: fieldsPhone,
+          place_id: 'place_id',
+        },
+        phone: inlinePhone,
+        contact: {
+          parent: {
+            type: 'clinic',
+            contact: {
+              phone: `not${clinicPhone}`,
+            },
+            parent: {
+              type: 'health_center',
+              contact: {
+                phone: `not${parentPhone}`,
+              },
+              parent: {
+                type: 'district_hospital',
+                contact: {
+                  phone: `not${grandparentPhone}`,
+                },
+              },
+            },
+          },
+        },
+        place: {
+          type: 'some_place',
+          parent: {
+            type: 'clinic',
+            contact: {
+              phone: clinicPhone,
+            },
+            parent: {
+              type: 'health_center',
+              contact: {
+                phone: parentPhone,
+              },
+              parent: {
+                type: 'district_hospital',
+                contact: {
+                  phone: grandparentPhone,
+                },
+              },
+            },
+          },
+        },
+        complex: { inline: { phone: complexInlinePhone }}
+      };
+
       const flexibleDoc = {
         form: 'x',
         from: fromPhone,
@@ -261,14 +365,20 @@ describe('messageUtils', () => {
           .should.equal(clinicPhone);
         utils._getRecipient(flexibleDoc, 'clinic')
           .should.equal(clinicPhone);
+        utils._getRecipient(docWithPatient, 'clinic').should.equal(clinicPhone);
+        utils._getRecipient(docWithPlace, 'clinic').should.equal(clinicPhone);
       });
       it('resolves parent correctly', () => {
         utils._getRecipient(doc, 'parent')
           .should.equal(parentPhone);
+        utils._getRecipient(docWithPatient, 'parent').should.equal(parentPhone);
+        utils._getRecipient(docWithPlace, 'parent').should.equal(parentPhone);
       });
       it('resolves grandparent correctly', () => {
         utils._getRecipient(doc, 'grandparent')
           .should.equal(grandparentPhone);
+        utils._getRecipient(docWithPatient, 'grandparent').should.equal(grandparentPhone);
+        utils._getRecipient(docWithPlace, 'grandparent').should.equal(grandparentPhone);
       });
       it('resolves ancestor: correctly', () => {
         utils._getRecipient(doc, 'ancestor:health_center')
@@ -279,6 +389,10 @@ describe('messageUtils', () => {
           .should.equal(clinicPhone);
         utils._getRecipient(flexibleDoc, 'ancestor:clinic')
           .should.equal(clinicPhone);
+        utils._getRecipient(docWithPatient, 'ancestor:health_center').should.equal(parentPhone);
+        utils._getRecipient(docWithPlace, 'ancestor:health_center').should.equal(parentPhone);
+        utils._getRecipient(docWithPatient, 'ancestor:clinic').should.equal(clinicPhone);
+        utils._getRecipient(docWithPlace, 'ancestor:clinic').should.equal(clinicPhone);
       });
       it('resolves clinic based on patient if given', () => {
         const context = {
@@ -321,6 +435,48 @@ describe('messageUtils', () => {
           .should.equal('111');
       });
 
+      it('resolves health_center based on place if given', () => {
+        const context = {
+          place: {
+            type: 'clinic',
+            parent: {
+              type: 'health_center',
+              contact: {
+                phone: '111'
+              }
+            }
+          },
+          parent: {
+            type: 'health_center',
+            contact: {
+              phone: '222'
+            }
+          }
+        };
+        const contextFlexible = {
+          place: {
+            type: 'contact',
+            contact_type: 'clinic',
+            parent: {
+              type: 'contact',
+              contact_type: 'health_center',
+              contact: {
+                phone: '111'
+              }
+            }
+          },
+          parent: {
+            type: 'contact',
+            contact_type: 'health_center',
+            contact: {
+              phone: '222'
+            }
+          }
+        };
+        utils._getRecipient(context, 'health_center').should.equal('111');
+        utils._getRecipient(contextFlexible, 'health_center').should.equal('111');
+      });
+
       it('should resolve link: correctly', () => {
         utils._getRecipient(linkedDoc, 'link:chw1').should.equal(linkedPhone1);
         utils._getRecipient(linkedDoc, 'link:chw2').should.equal(linkedPhone2);
@@ -333,6 +489,11 @@ describe('messageUtils', () => {
         utils._getRecipient(flexibleDoc, 'link:health_center').should.equal(parentPhone);
         utils._getRecipient(doc, 'link:clinic').should.equal(clinicPhone);
         utils._getRecipient(flexibleDoc, 'link:clinic').should.equal(clinicPhone);
+
+        utils._getRecipient(docWithPatient, 'link:health_center').should.equal(parentPhone);
+        utils._getRecipient(docWithPlace, 'link:health_center').should.equal(parentPhone);
+        utils._getRecipient(docWithPatient, 'link:clinic').should.equal(clinicPhone);
+        utils._getRecipient(docWithPlace, 'link:clinic').should.equal(clinicPhone);
       });
 
       it('should resolve link: correctly based on patient', () => {
