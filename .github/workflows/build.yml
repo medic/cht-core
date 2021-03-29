@@ -190,8 +190,8 @@ jobs:
         echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
         echo "TRAVIS_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
     - name: Publish
-        if: ${{ github.event_name != 'pull_request' }}
-        run: |
-          cd scripts/travis
-          npm ci
-          node ./publish.js
+      if: ${{ github.event_name != 'pull_request' }}
+      run: |
+        cd scripts/travis
+        npm ci
+        node ./publish.js
