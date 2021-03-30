@@ -281,9 +281,6 @@ angular
         if (key === 'id') {
           return false;
         }
-        // if (key === 'language') {
-        //   return existingModel[key].code !== (model[key] && model[key].code);
-        // }
         if (key === 'password') {
           return model[key] && model[key] !== '';
         }
@@ -308,9 +305,6 @@ angular
         .then(existingModel => {
           const updates = {};
           getUpdatedKeys(model, existingModel).forEach(key => {
-            // if (key === 'language') {
-            //   updates[key] = model[key].code;
-            // } else 
             if (key === 'role') {
               updates.roles = [model[key]];
             } else {

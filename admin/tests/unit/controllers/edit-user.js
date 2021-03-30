@@ -169,7 +169,6 @@ describe('EditUserCtrl controller', () => {
           facilitySelect: userToEdit.facility_id,
           place: userToEdit.facility_id,
           role: userToEdit.roles[0],
-          language: { code: userToEdit.language },
           contactSelect: userToEdit.contact_id,
           contact: userToEdit.contact_id,
           tokenLoginEnabled: undefined,
@@ -359,7 +358,6 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.phone = 'phone';
           scope.editUserModel.facilitySelect = 'facility_id';
           scope.editUserModel.contactSelect = 'contact_id';
-          scope.editUserModel.language.code = 'language-code';
           scope.editUserModel.password = 'medic.1234';
           scope.editUserModel.passwordConfirm = 'medic.1234';
           scope.editUserModel.role = 'supervisor';
@@ -378,7 +376,6 @@ describe('EditUserCtrl controller', () => {
           chai.expect(updates.phone).to.equal(scope.editUserModel.phone);
           chai.expect(updates.place).to.equal(scope.editUserModel.facility_id);
           chai.expect(updates.contact).to.equal(scope.editUserModel.contact_id);
-          chai.expect(updates.language).to.equal(scope.editUserModel.language.code);
           chai.expect(updates.roles[0]).to.equal(scope.editUserModel.role);
           chai.expect(updates.password).to.deep.equal(scope.editUserModel.password);
           chai.expect(http.get.callCount).to.equal(1);
@@ -422,7 +419,6 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.phone = 'phone';
           scope.editUserModel.facilitySelect = 'facility_id';
           scope.editUserModel.contactSelect = 'contact_id';
-          scope.editUserModel.language.code = 'language-code';
           scope.editUserModel.password = 'medic.1234';
           scope.editUserModel.passwordConfirm = 'medic.1234';
           scope.editUserModel.role = 'national-manager';
@@ -439,7 +435,6 @@ describe('EditUserCtrl controller', () => {
               email: 'email@email.com',
               phone: 'phone',
               roles: ['national-manager'],
-              language: 'language-code',
               password: 'medic.1234'
             }
           ]);
@@ -460,7 +455,6 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.phone = 'phone';
           scope.editUserModel.facilitySelect = 'new_facility';
           scope.editUserModel.contactSelect = 'new_contact';
-          scope.editUserModel.language.code = 'language-code';
           scope.editUserModel.password = 'medic.1234';
           scope.editUserModel.passwordConfirm = 'medic.1234';
           scope.editUserModel.role = 'supervisor';
@@ -506,7 +500,6 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.phone = 'phone';
           scope.editUserModel.facilitySelect = 'new_facility';
           scope.editUserModel.contactSelect = 'new_contact';
-          scope.editUserModel.language.code = 'language-code';
           scope.editUserModel.password = 'medic.1234';
           scope.editUserModel.passwordConfirm = 'medic.1234';
           scope.editUserModel.role = 'supervisor';
@@ -536,7 +529,6 @@ describe('EditUserCtrl controller', () => {
           chai.expect(updates.fullname).to.equal(scope.editUserModel.fullname);
           chai.expect(updates.email).to.equal(scope.editUserModel.email);
           chai.expect(updates.phone).to.equal(scope.editUserModel.phone);
-          chai.expect(updates.language).to.equal(scope.editUserModel.language.code);
           chai.expect(updates.roles[0]).to.equal(scope.editUserModel.role);
           chai.expect(updates.password).to.deep.equal(scope.editUserModel.password);
         });
