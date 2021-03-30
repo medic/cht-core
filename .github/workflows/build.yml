@@ -148,6 +148,8 @@ jobs:
       run: npm install -g grunt-cli
     - name: Horti Install
       run: npm install -g horticulturalist
+    - name: Medic Conf Install
+      run: npm install -g medic-conf
     - name: Configure Couch
       run: ./scripts/travis/couch-config
     - name: Echo Vars
