@@ -142,7 +142,7 @@ export class ContactViewModelGeneratorService {
   }
 
   private groupChildrenByType(children) {
-    return _groupBy(children, child => child.doc.contact_type || child.doc.type);
+    return _groupBy(children, child => this.contactTypesService.getTypeId(child.doc));
   }
 
   private addPrimaryContact(doc, children) {
@@ -204,7 +204,7 @@ export class ContactViewModelGeneratorService {
       options.endkey = [ contactId, {} ];
     } else {
       // just get person children
-      const childTypes = this.getPersonChildTypes(types, model.type && model.type.id);
+      const childTypes = this.getPersonChildTypes(types, model.type?.id);
       if (!childTypes.length) {
         return Promise.resolve([]);
       }
@@ -222,7 +222,7 @@ export class ContactViewModelGeneratorService {
       .map(typeId => {
         return {
           contacts: groups[typeId],
-          type: types.find(type => type.id === typeId),
+          type: this.contactTypesService.getTypeById(types, typeId),
           deceasedCount: 0
         };
       });
@@ -339,8 +339,8 @@ export class ContactViewModelGeneratorService {
   }
 
   private setType(model, types) {
-    const typeId = model.doc.contact_type || model.doc.type;
-    model.type = types.find(type => type.id === typeId);
+    const typeId = this.contactTypesService.getTypeId(model.doc);
+    model.type = this.contactTypesService.getTypeById(types, typeId);
   }
 
   getContact(id, options?) {

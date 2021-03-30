@@ -58,12 +58,6 @@ jobs:
     - name: Publish for testing
       run: |
         node --stack_size=10000 `which grunt` publish-for-testing
-    - name: Publish
-      run: |
-        cd scripts/travis
-        npm ci
-        node ./publish.js
-      if: ${{ github.event_name != 'pull_request' }}
 
   default-config-tests:
     needs: build
@@ -174,3 +168,30 @@ jobs:
           tests/results
           tests/logs
       if: ${{ failure() }}
+
+  publish:
+    needs: [test-e2e, standard-config-tests, default-config-tests]
+    name: Publish branch build
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set MARKET_URL var
+      run: |
+        if [[ -z "$MARKET_URL" ]]; then
+        echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
+        echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
+        echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
+        fi
+    - name: Get branch name
+      uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
+    - name: Set Travis Vars
+      run: |
+        echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
+        echo "TRAVIS_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+    - name: Publish
+      if: ${{ github.event_name != 'pull_request' }}
+      run: |
+        cd scripts/travis
+        npm ci
+        node ./publish.js

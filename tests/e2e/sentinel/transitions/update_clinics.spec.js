@@ -195,6 +195,13 @@ describe('update_clinics', () => {
         reported_date: new Date().getTime(),
       },
       {
+        _id: 'person_with_contact_type',
+        type: 'person',
+        contact_type: 'some value', // check that `type` is prioritized
+        rc_code: 'sms_person_ct',
+        reported_date: new Date().getTime(),
+      },
+      {
         _id: 'clinic',
         type: 'clinic',
         rc_code: 'sms_clinic',
@@ -216,6 +223,13 @@ describe('update_clinics', () => {
       reported_date: new Date().getTime()
     };
 
+    const refidPersonContactType = {
+      _id: uuid(),
+      type: 'data_record',
+      refid: 'SMS_PERSON_CT', // view indexes with uppercase only
+      reported_date: new Date().getTime()
+    };
+
     const refidClinic = {
       _id: uuid(),
       type: 'data_record',
@@ -230,22 +244,26 @@ describe('update_clinics', () => {
       reported_date: new Date().getTime()
     };
 
+    const docs = [ refidClinic, refidPerson, phonePerson, refidPersonContactType ];
+    const docIds = docs.map(doc => doc._id);
+
     return utils
       .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs(contacts))
-      .then(() => utils.saveDocs([ refidClinic, refidPerson, phonePerson ]))
-      .then(() => sentinelUtils.waitForSentinel([refidClinic._id, refidPerson._id, phonePerson._id]))
-      .then(() => sentinelUtils.getInfoDocs([refidClinic._id, refidPerson._id, phonePerson._id]))
+      .then(() => utils.saveDocs(docs))
+      .then(() => sentinelUtils.waitForSentinel(docIds))
+      .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         expect(infos[0].transitions).toBeDefined();
         expect(infos[0].transitions.update_clinics).toBeDefined();
         expect(infos[0].transitions.update_clinics.ok).toEqual(true);
       })
-      .then(() => utils.getDocs([refidClinic._id, refidPerson._id, phonePerson._id]))
+      .then(() => utils.getDocs(docIds))
       .then(updated => {
         expect(updated[0].contact).toEqual({ _id: 'person' });
         expect(updated[1].contact).toEqual({ _id: 'person' });
         expect(updated[2].contact).toEqual({ _id: 'person2' });
+        expect(updated[3].contact).toEqual({ _id: 'person_with_contact_type' });
       });
   });
 });

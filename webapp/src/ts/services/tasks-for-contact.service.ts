@@ -11,7 +11,7 @@ export class TasksForContactService {
   constructor(
     private contactTypesService:ContactTypesService,
     private rulesEngineService:RulesEngineService
-  ){}
+  ) { }
 
   private getIdsForTasks(model) {
     const contactIds = [];
@@ -28,9 +28,9 @@ export class TasksForContactService {
 
   private areTasksEnabled(type) {
     if (!type) {
-      return false;
+      return Promise.resolve(false);
     }
-    
+
     return this.rulesEngineService
       .isEnabled()
       .then(isRulesEngineEnabled => {
@@ -60,7 +60,7 @@ export class TasksForContactService {
     });
 
     tasks.sort((a, b) => {
-      return a.emission.dueDate < b.emission.dueDate ? -1 : 1;	
+      return a.emission.dueDate < b.emission.dueDate ? -1 : 1;
     });
 
     return tasks;
