@@ -158,7 +158,8 @@ describe('forms controller', () => {
       const req = { body: '<xml></xml>' };
       const json = sinon.stub(res, 'json');
       await controller.__with__({
-        'generateXform': { generate: sinon.stub().resolves() }
+        'generateXform': { generate: sinon.stub().resolves() },
+        'auth': { check: sinon.stub().resolves() },
       })(async () => {
         await controller.validate(req, res);
         chai.expect(json.callCount).to.equal(1);
@@ -171,13 +172,29 @@ describe('forms controller', () => {
       const json = sinon.stub(res, 'json');
       const status = sinon.stub(res, 'status').returns({ json: json });
       await controller.__with__({
-        'generateXform': { generate: sinon.stub().rejects(new Error('Error transforming xml')) }
+        'generateXform': { generate: sinon.stub().rejects(new Error('Error transforming xml')) },
+        'auth': { check: sinon.stub().resolves() },
       })(async () => {
         await controller.validate(req, res);
         chai.expect(json.callCount).to.equal(1);
         chai.expect(json.args[0][0].error).to.include('Error transforming xml');
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(400);
+      });
+    });
+
+    it('returns error when auth failed', async () => {
+      const req = { body: '<xml></xml>' };
+      const json = sinon.stub(res, 'json');
+      const status = sinon.stub(res, 'status').returns({ json: json });
+      await controller.__with__({
+        'generateXform': { generate: sinon.stub().resolves() },
+        'auth': { check: sinon.stub().rejects({ message: 'Not logged in' }) },
+      })(async () => {
+        await controller.validate(req, res);
+        chai.expect(status.callCount).to.equal(1);
+        chai.expect(json.callCount).to.equal(1);
+        chai.expect(json.args[0][0]).to.deep.equal({error: 'Not logged in'});
       });
     });
   });

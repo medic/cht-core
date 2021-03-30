@@ -1,4 +1,5 @@
 const openrosaFormList = require('openrosa-formlist');
+const auth = require('../auth');
 const serverUtils = require('../server-utils');
 const formsService = require('../services/forms');
 const generateXform = require('../services/generate-xform');
@@ -98,7 +99,8 @@ module.exports = {
       .catch(err => serverUtils.error(err, req, res));
   },
   validate: (req, res) => {
-    return generateXform.generate(req.body)
+    return auth.check(req, 'can_configure')
+      .then(() => generateXform.generate(req.body))
       .then(() => res.json({ok: true}))
       .catch(err => {
         logger.error('Error validating XForm - ' + err.message);
