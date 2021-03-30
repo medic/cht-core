@@ -37,6 +37,9 @@ const validateRequest = req => {
 };
 
 module.exports = {
+  // todo Reviewer: should we even have this endpoint?
+  // I added it so it would simplify the webhook call from rapidpro -> cht-core
+  // but the sms-gateway endpoint can still be used just fine.
   incomingMessages: (req, res) => {
     return validateRequest(req)
       .then(() => {
