@@ -150,6 +150,8 @@ jobs:
       run: npm install -g horticulturalist
     - name: Medic Conf Install
       run: npm install -g medic-conf
+    - name: Install pyxform-medic
+      run: sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
     - name: Configure Couch
       run: ./scripts/travis/couch-config
     - name: Echo Vars
