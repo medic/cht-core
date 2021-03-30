@@ -170,7 +170,7 @@ jobs:
       if: ${{ failure() }}
 
   publish:
-    needs: test-e2e
+    needs: [test-e2e, standard-config-tests, default-config-tests]
     name: Publish branch build
     runs-on: ubuntu-18.04
 
