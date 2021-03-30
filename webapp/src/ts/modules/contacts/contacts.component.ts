@@ -223,8 +223,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
   private formatContacts(contacts) {
     return contacts.map(updatedContact => {
       const contact = { ...updatedContact };
-      const typeId = contact.contact_type || contact.type;
-      const type = this.contactTypes.find(type => type.id === typeId);
+      const typeId = this.contactTypesService.getTypeId(contact);
+      const type = this.contactTypesService.getTypeById(this.contactTypes, typeId);
       contact.route = 'contacts';
       contact.icon = type && type.icon;
       contact.heading = contact.name || '';
@@ -276,7 +276,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
     if (this.usersHomePlace) {
       // backwards compatibility with pre-flexible hierarchy users
-      const homeType = this.usersHomePlace.contact_type || this.usersHomePlace.type;
+      const homeType = this.contactTypesService.getTypeId(this.usersHomePlace);
       return this.contactTypesService
         .getChildren(homeType)
         .then(filterChildPlaces);

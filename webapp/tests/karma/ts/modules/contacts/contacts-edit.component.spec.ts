@@ -35,7 +35,10 @@ describe('ContactsEdit component', () => {
   let routeSnapshot;
 
   beforeEach(() => {
-    contactTypesService = { get: sinon.stub().resolves() };
+    contactTypesService = {
+      get: sinon.stub().resolves(),
+      getTypeId: sinon.stub().callsFake(contact => contact?.type === 'contact' ? contact.contact_type : contact?.type),
+    };
     translateHelperService = { get: sinon.stub().resolvesArg(0) };
     dbGet = sinon.stub().resolves();
     router = { navigate: sinon.stub() };
@@ -51,13 +54,13 @@ describe('ContactsEdit component', () => {
       renderContactForm: sinon.stub(),
       unload: sinon.stub(),
     };
-    lineageModelGeneratorService = { contact: sinon.stub().resolves({ doc: {} }) };
+    lineageModelGeneratorService = { contact: sinon.stub().resolves({ doc: { } }) };
     contactSaveService =  { save: sinon.stub() };
 
     sinon.stub(console, 'error');
 
     const mockedSelectors = [
-      { selector: Selectors.getEnketoStatus, value: {  } },
+      { selector: Selectors.getEnketoStatus, value: { } },
       { selector: Selectors.getEnketoSavingStatus, value: false },
       { selector: Selectors.getEnketoEditedStatus, value: false },
       { selector: Selectors.getEnketoError, value: false },
@@ -221,6 +224,7 @@ describe('ContactsEdit component', () => {
 
       expect(contactTypesService.get.callCount).to.equal(1);
       expect(enketoService.renderContactForm.callCount).to.equal(1);
+
       expect(enketoService.renderContactForm.args[0]).to.deep.include.ordered.members([
         '#contact-form',
         { _id: 'random_create', the: 'form' },
@@ -486,6 +490,44 @@ describe('ContactsEdit component', () => {
           docId: 'the_clinic',
           formInstance: undefined,
           type: 'a_clinic_type',
+        });
+        expect(component.contentError).to.equal(false);
+      });
+
+      it('should select correct form for correct type', async () => {
+        routeSnapshot.params = { id: 'the_clinic' };
+        lineageModelGeneratorService.contact.resolves({
+          doc: {
+            _id: 'the_clinic',
+            type: 'clinic',
+            contact_type: 'a_clinic_type',
+          },
+        });
+
+        contactTypesService.getTypeId.returns('the correct type');
+        contactTypesService.get.resolves({
+          edit_form: 'the correct_edit_form',
+          edit_key: 'edit_key',
+        });
+        dbGet.resolves({ _id: 'the correct_edit_form', data: true });
+
+        await createComponent();
+        await fixture.whenStable();
+
+        expect(contactTypesService.get.callCount).to.equal(1);
+        expect(contactTypesService.get.args[0]).to.deep.equal(['the correct type']);
+        expect(dbGet.callCount).to.equal(1);
+        expect(dbGet.args[0]).to.deep.equal(['the correct_edit_form']);
+        expect(enketoService.renderContactForm.callCount).to.equal(1);
+        expect(enketoService.renderContactForm.args[0]).to.deep.include.ordered.members([
+          '#contact-form',
+          { _id: 'the correct_edit_form', data: true },
+          { 'the correct type': { type: 'clinic', contact_type: 'a_clinic_type', _id: 'the_clinic' } },
+        ]);
+        expect(component.enketoContact).to.deep.equal({
+          docId: 'the_clinic',
+          formInstance: undefined,
+          type: 'the correct type',
         });
         expect(component.contentError).to.equal(false);
       });

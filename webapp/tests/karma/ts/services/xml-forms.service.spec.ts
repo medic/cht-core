@@ -20,6 +20,7 @@ describe('XmlForms service', () => {
   let hasAuth;
   let UserContact;
   let getContactType;
+  let getTypeId;
   let contextUtils;
   let pipesService;
   let error;
@@ -49,6 +50,7 @@ describe('XmlForms service', () => {
     hasAuth = sinon.stub();
     UserContact = sinon.stub();
     getContactType = sinon.stub();
+    getTypeId = sinon.stub().callsFake(contact => contact.type === 'contact' ? contact.contact_type : contact.type);
     contextUtils = {};
     error = sinon.stub(console, 'error');
 
@@ -65,7 +67,7 @@ describe('XmlForms service', () => {
         { provide: ChangesService, useValue: { subscribe: Changes } },
         { provide: AuthService, useValue: { has: hasAuth } },
         { provide: XmlFormsContextUtilsService, useValue: contextUtils },
-        { provide: ContactTypesService, useValue: { get: getContactType } },
+        { provide: ContactTypesService, useValue: { get: getContactType, getTypeId } },
         { provide: UserContactService, useValue: { get: UserContact } },
         ParseProvider,
         { provide: PipesService, useValue: pipesService },
@@ -298,6 +300,90 @@ describe('XmlForms service', () => {
           'five',
           'six',
         ]);
+      });
+    });
+
+    it('filter with correct type', () => {
+      const given = [
+        {
+          id: 'form-0',
+          doc: {
+            internalId: 'zero',
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-1',
+          doc: {
+            internalId: 'one',
+            context: {},
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-2',
+          doc: {
+            internalId: 'two',
+            context: { person: true },
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-3',
+          doc: {
+            internalId: 'three',
+            context: { place: true },
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-4',
+          doc: {
+            internalId: 'four',
+            context: { person: true, place: false },
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-5',
+          doc: {
+            internalId: 'five',
+            context: { person: false, place: true },
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-6',
+          doc: {
+            internalId: 'six',
+            context: { person: true, place: true },
+            _attachments: { xml: { something: true } },
+          },
+        },
+      ];
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      const service = getService();
+      getContactType.resolves({ person: false });
+      getTypeId.returns('the correct type');
+
+      const doc = { type: 'clinic', contact_type: 'not_a_clinic', _id: 'uuid' };
+
+      return service.list({ doc }).then(result => {
+        expect(getTypeId.callCount).to.equal(6);
+        expect(getTypeId.args).to.deep.equal([[doc], [doc], [doc], [doc], [doc], [doc], ]);
+        expect(getContactType.callCount).to.equal(6);
+        expect(getContactType.args).to.deep.equal([
+          ['the correct type'],
+          ['the correct type'],
+          ['the correct type'],
+          ['the correct type'],
+          ['the correct type'],
+          ['the correct type'],
+        ]);
+
+        const ids = result.map(form => form.internalId);
+        expect(ids).to.deep.equal([ 'zero', 'one', 'three', 'five', 'six', ]);
       });
     });
 

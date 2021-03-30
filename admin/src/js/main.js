@@ -105,7 +105,6 @@ require('./services/calendar-interval');
 require('./services/changes');
 require('./services/contact-muted');
 require('./services/contact-types');
-require('./services/contact-view-model-generator');
 require('./services/db');
 require('./services/export');
 require('./services/extract-lineage');
