@@ -48,7 +48,7 @@ describe('ContactViewModelGenerator service', () => {
 
   const stubDbQueryChildren = (parentId, docs = []) => {
     docs = docs.map(doc => {
-      return { doc: doc };
+      return { doc: doc, id: doc._id };
     });
     dbQuery.resolves({ rows: docs });
   };
@@ -166,6 +166,15 @@ describe('ContactViewModelGenerator service', () => {
     it('if no child places, child persons get displayed', () => {
       return runPlaceTest([childContactPerson, childPerson]).then(model => {
         assert.equal(model.children[0].contacts.length, 2);
+      });
+    });
+
+    it('should load external primary contact correctly', () => {
+      return runPlaceTest([childPerson]).then(model => {
+        assert.equal(model.children[0].contacts.length, 2);
+        assert.equal(model.children[0].contacts[0].id, childContactPerson._id);
+        assert.equal(model.children[0].contacts[0].isPrimaryContact, true);
+        assert.equal(model.children[0].contacts[1].id, childPerson._id);
       });
     });
 
@@ -362,7 +371,6 @@ describe('ContactViewModelGenerator service', () => {
 
       it('model returns the correct keys', () => {
         return runPersonTest(doc).then(model => {
-          console.log(Object.keys(model.doc));
           expect(Object.keys(model)).to.have.members(
             ['_id', 'doc', 'lineage', 'type', 'isPrimaryContact',]
           );

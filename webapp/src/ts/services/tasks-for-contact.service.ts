@@ -30,7 +30,7 @@ export class TasksForContactService {
     if (!type) {
       return false;
     }
-    
+
     return this.rulesEngineService
       .isEnabled()
       .then(isRulesEngineEnabled => {
@@ -60,7 +60,7 @@ export class TasksForContactService {
     });
 
     tasks.sort((a, b) => {
-      return a.emission.dueDate < b.emission.dueDate ? -1 : 1;	
+      return a.emission.dueDate < b.emission.dueDate ? -1 : 1;
     });
 
     return tasks;

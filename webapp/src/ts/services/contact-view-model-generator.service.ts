@@ -164,7 +164,8 @@ export class ContactViewModelGeneratorService {
       .then(doc => {
         children.push({
           doc: doc,
-          isPrimaryContact: true
+          isPrimaryContact: true,
+          id: doc._id,
         });
         return children;
       })
