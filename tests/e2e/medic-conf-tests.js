@@ -37,8 +37,12 @@ describe('medic-conf supported actions', () => {
   };
   _.forEach(actions,  async (action)  =>{
     it(`should execute  ${action} `, async () => {
-      const result = await runCommand(action);
-      expect(result).to.contain(`INFO ${action} complete.`);
+      try {
+        const result = await runCommand(action);
+        expect(result).to.contain(`INFO ${action} complete.`);
+      } catch (error) {
+        console.log(error.stdout);
+      }
     });
   });
 });
