@@ -40,6 +40,40 @@ angular.module('controllers').controller('FormsXmlCtrl',
       }
     };
 
+    const getXmlTitle = function($xml, xml) {
+      // $xml.find('title') works in Chrome 44, but not in Chrome 60.
+      // It's probably related to XML namespaces, but we should work out why
+      // it doesn't work in newer Chrome and get it working.
+      let title = $xml.find('title').text();
+      if (!title) {
+        const match = xml.match(/<h:title[^>]*>([^<]*)<\/h:title>/);
+        if (match) {
+          title = match[1];
+        }
+      }
+      return title;
+    };
+
+    const getXmlFormId = function($xml, meta) {
+      const dataNode = $xml.find('instance').children().first();
+      if (!dataNode.children('meta').children('instanceID').length) {
+        throw new Error('No <meta><instanceID/></meta> node found for first child of <instance> element.');
+      }
+      const formId = dataNode.attr('id');
+
+      if (!formId) {
+        throw new Error('No ID attribute found for first child of <instance> element.');
+      }
+      if (meta.internalId && meta.internalId !== formId) {
+        throw new Error(
+          'The internalId property in the meta file will be overwritten by the ID attribute on the first child ' +
+          'of <instance> element in the XML. Remove this property from the meta file and try again.'
+        );
+      }
+
+      return formId;
+    };
+
     $scope.upload = function() {
       $scope.status = {
         uploading: true,
@@ -71,34 +105,8 @@ angular.module('controllers').controller('FormsXmlCtrl',
           const meta = results[1];
 
           const $xml = $($.parseXML(xml));
-
-          // TODO $xml.find('title') works in Chrome 44, but not in Chrome 60.
-          // It's probably related to XML namespaces, but we should work out why
-          // it doesn't work in newer Chrome and get it working.
-          let title = $xml.find('title').text();
-          if (!title) {
-            const match = xml.match(/<h:title[^>]*>([^<]*)<\/h:title>/);
-            if (match) {
-              title = match[1];
-            }
-          }
-
-          const dataNode = $xml.find('instance').children().first();
-          if (!dataNode.children('meta').children('instanceID').length) {
-            throw new Error('No <meta><instanceID/></meta> node found for first child of <instance> element.');
-          }
-
-          const formId = dataNode.attr('id');
-          if (!formId) {
-            throw new Error('No ID attribute found for first child of <instance> element.');
-          }
-
-          if (meta.internalId && meta.internalId !== formId) {
-            throw new Error(
-              'The internalId property in the meta file will be overwritten by the ID attribute on the first child ' +
-              'of <instance> element in the XML. Remove this property from the meta file and try again.'
-            );
-          }
+          const title = getXmlTitle($xml, xml);
+          const formId = getXmlFormId($xml, meta);
 
           return ValidateForm(xml)
             .then(() => {
