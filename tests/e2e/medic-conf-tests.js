@@ -12,12 +12,9 @@ const actions = ['compile-app-settings','backup-app-settings','upload-app-settin
 describe('medic-conf supported actions', () => {
   beforeAll( () =>{
     // Change the directory
-    console.log('working directory end: ' + process.cwd());
     try {
       process.chdir('config/default');
-      console.log('working directory test: ' + process.cwd());
     } catch (err) {
-      // Printing error if occurs
       console.error('no need to change directory');
     }
   });
@@ -25,7 +22,6 @@ describe('medic-conf supported actions', () => {
   afterAll(() =>{
     // Change the directory back to cht-core
     process.chdir('../..');
-    console.log('working directory end: ' + process.cwd());
   });
 
   const runCommand = async (action) => {
