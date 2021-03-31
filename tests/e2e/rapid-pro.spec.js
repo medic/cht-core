@@ -78,20 +78,6 @@ describe('RapidPro SMS Gateway', () => {
     const endpoint = '/api/v1/sms/radpidpro/incoming-messages';
     const smsSettings = { outgoing_service: 'rapid-pro' };
 
-    it('should fail when service is not enabled', async () => {
-      try {
-        await utils.request({
-          path: endpoint,
-          method: 'POST',
-          headers: { authorization: INCOMING_KEY },
-          noAuth: true,
-        });
-        assert.fail('should have thrown');
-      } catch (err) {
-        expect(err.responseBody).toEqual({ code: 400, error: 'Service not enabled' });
-      }
-    });
-
     it('should fail with no incoming key configured', async () => {
       await utils.updateSettings({ sms: smsSettings });
 
@@ -99,7 +85,7 @@ describe('RapidPro SMS Gateway', () => {
         await utils.request({
           path: endpoint,
           method: 'POST',
-          headers: { authorization: INCOMING_KEY },
+          headers: { authorization: `Token ${INCOMING_KEY}` },
           noAuth: true,
         });
         throw new Error('should have thrown');
@@ -120,7 +106,7 @@ describe('RapidPro SMS Gateway', () => {
         });
         throw new Error('should have thrown');
       } catch (err) {
-        expect(err.responseBody).toEqual({ code: 403, error: 'Incorrect token: "undefined"' });
+        expect(err.responseBody).toEqual({ code: 403, error: 'Missing authorization token' });
       }
     });
 
@@ -132,12 +118,29 @@ describe('RapidPro SMS Gateway', () => {
         await utils.request({
           path: endpoint,
           method: 'POST',
-          headers: { authorization: 'not the correct key' },
+          headers: { authorization: 'Token not the correct key' },
           noAuth: true,
         });
         throw new Error('should have thrown');
       } catch (err) {
         expect(err.responseBody).toEqual({ code: 403, error: 'Incorrect token: "not the correct key"' });
+      }
+    });
+
+    it('should fail with malformed authentication', async () => {
+      await setIncomingKey();
+      await utils.updateSettings({ sms: smsSettings }, true);
+
+      try {
+        await utils.request({
+          path: endpoint,
+          method: 'POST',
+          headers: { authorization: `Tokens ${INCOMING_KEY}` },
+          noAuth: true,
+        });
+        throw new Error('should have thrown');
+      } catch (err) {
+        expect(err.responseBody).toEqual({ code: 403, error: 'Missing authorization token' });
       }
     });
 
@@ -153,7 +156,7 @@ describe('RapidPro SMS Gateway', () => {
       const messageResult = await utils.request({
         path: endpoint,
         method: 'POST',
-        headers: { authorization: INCOMING_KEY },
+        headers: { authorization: `Token ${INCOMING_KEY}` },
         noAuth: true,
         body: message,
       });
@@ -241,13 +244,6 @@ describe('RapidPro SMS Gateway', () => {
     });
 
     afterEach(() => utils.revertDb([], true));
-
-    it('should not call RapidPro endpoint when service is not set', async () => {
-      await utils.saveDoc(reportWithTasks);
-      await browser.sleep(1200); // interval to check the queue should run every second
-
-      expect(broadcastsEndpointRequests.length).toEqual(0);
-    });
 
     it('should not call RapidPro endpoint when credentials are not set', async () => {
       await utils.updateSettings(settings, true);

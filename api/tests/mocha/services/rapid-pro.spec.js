@@ -20,6 +20,7 @@ describe('RapidPro SMS Gateway', () => {
 
   describe('send', () => {
     it('should throw an error if getting credentials fails', () => {
+      sinon.stub(config, 'get').returns({ rapidPro: { url: 'https://self-hosted-rapid-pro.net' } });
       sinon.stub(secureSettings, 'getCredentials').rejects({ error: 'omg' });
       return service
         .send()
@@ -27,7 +28,8 @@ describe('RapidPro SMS Gateway', () => {
         .catch(err => expect(err).to.deep.equal({ error: 'omg' }));
     });
 
-    it('should thow an error when no credentials are defined', () => {
+    it('should throw an error when no credentials are defined', () => {
+      sinon.stub(config, 'get').returns({ rapidPro: { url: 'https://self-hosted-rapid-pro.net' } });
       sinon.stub(secureSettings, 'getCredentials').resolves();
       return service
         .send()
@@ -35,39 +37,14 @@ describe('RapidPro SMS Gateway', () => {
         .catch(err => expect(err).to.include('No api key configured.'));
     });
 
-    it('should forward messages to textit instance by default', () => {
+    it('should forward an error when no rapidPro url is defined', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('textitapikey');
       sinon.stub(config, 'get').returns({ });
 
-      const messages = [
-        { to: 'phone1', content: 'message1', id: 'one' },
-        { to: 'phone2', content: 'message2', id: 'two' },
-      ];
-      sinon.stub(request, 'post').resolves({ id: 'broadcastId', status: 'queued' });
-
-      return service.send(messages).then((result) => {
-        expect(request.post.callCount).to.equal(2);
-        expect(request.post.args[0]).to.deep.equal([{
-          baseUrl: 'https://textit.in',
-          uri: '/api/v2/broadcasts.json',
-          json: true,
-          body: { urns: ['tel:phone1'], text: 'message1', },
-          headers: { Accept: 'application/json', Authorization: 'Token textitapikey' },
-        }]);
-
-        expect(request.post.args[1]).to.deep.equal([{
-          baseUrl: 'https://textit.in',
-          uri: '/api/v2/broadcasts.json',
-          json: true,
-          body: { urns: ['tel:phone2'], text: 'message2', },
-          headers: { Accept: 'application/json', Authorization: 'Token textitapikey' },
-        }]);
-
-        expect(result).to.deep.equal([
-          { messageId: 'one', gatewayRef: 'broadcastId', state: 'received-by-gateway', details: 'Queued' },
-          { messageId: 'two', gatewayRef: 'broadcastId', state: 'received-by-gateway', details: 'Queued' },
-        ]);
-      });
+      return service
+        .send()
+        .then(() => assert.fail('Should have thrown'))
+        .catch(err => expect(err).to.include('No RapidPro URL configured'));
     });
 
     it('should forward messages to custom RapidPro instance', () => {
@@ -107,7 +84,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should return correct statuses and ids', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('textitapikey');
-      sinon.stub(config, 'get').returns({ });
+      sinon.stub(config, 'get').returns({ rapidPro: { url: 'https://self-hosted-rapid-pro.net' } });
 
       const messages = [
         { to: 'phone1', content: 'message1', id: 'one' },
@@ -145,7 +122,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should catch errors and handle empty results', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('textitapikey');
-      sinon.stub(config, 'get').returns({ });
+      sinon.stub(config, 'get').returns({ rapidPro: { url: 'https://self-hosted-rapid-pro.net' } });
 
       const messages = [
         { to: 'phone1', content: 'message1', id: 'one' },
@@ -180,22 +157,60 @@ describe('RapidPro SMS Gateway', () => {
 
     afterEach(() => {
       service.__set__('skip', 0);
+      service.__set__('polling', false);
     });
 
     it('should catch error if getting credentials fails', () => {
       sinon.stub(secureSettings, 'getCredentials').rejects({ error: 'omg' });
-      return service.poll();
+      sinon.stub(db.medic, 'query');
+      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://host.com' } });
+      return service.poll().then(() => {
+        expect(db.medic.query.callCount).to.equal(0);
+        expect(secureSettings.getCredentials.callCount).to.equal(1);
+      });
     });
 
     it('should catch error when no credentials are defined', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves();
-      return service.poll();
+      sinon.stub(db.medic, 'query');
+      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://host.com' } });
+      return service.poll().then(() => {
+        expect(db.medic.query.callCount).to.equal(0);
+        expect(secureSettings.getCredentials.callCount).to.equal(1);
+      });
+    });
+
+    it('it throws an error when no RapidPro host is not configured', () => {
+      sinon.stub(secureSettings, 'getCredentials');
+      sinon.stub(db.medic, 'query');
+      sinon.stub(config, 'get');
+
+      return service.poll().then(() => {
+        expect(db.medic.query.callCount).to.equal(0);
+        expect(secureSettings.getCredentials.callCount).to.equal(0);
+        expect(config.get.callCount).to.equal(1);
+        expect(config.get.args[0]).to.deep.equal(['sms']);
+      });
+    });
+
+    it('it throws an error when no RapidPro host is not configured', () => {
+      sinon.stub(secureSettings, 'getCredentials');
+      sinon.stub(db.medic, 'query');
+      sinon.stub(config, 'get').returns({ rapidPro: {} });
+
+      return service.poll().then(() => {
+        expect(db.medic.query.callCount).to.equal(0);
+        expect(secureSettings.getCredentials.callCount).to.equal(0);
+        expect(config.get.callCount).to.equal(1);
+        expect(config.get.args[0]).to.deep.equal(['sms']);
+      });
     });
 
     it('should start polling from 0', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('apikey');
       sinon.stub(db.medic, 'query').resolves({ rows: [] });
       sinon.stub(messaging, 'updateMessageTaskStates');
+      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://host.com' } });
 
       return service.poll().then(() => {
         expect(secureSettings.getCredentials.callCount).to.equal(1);
@@ -213,37 +228,16 @@ describe('RapidPro SMS Gateway', () => {
       });
     });
 
-    it('it gets status updates for every view result from textit', () => {
-      sinon.stub(secureSettings, 'getCredentials').resolves('apikey');
-      const messages = Array
-        .from({ length: 25 })
-        .map((_, i) => ({ value: { id: `message${i}`, gateway_ref: `broadcast${i}` } }));
-      sinon.stub(db.medic, 'query').resolves({ rows: messages });
-      sinon.stub(messaging, 'updateMessageTaskStates').resolves();
-      sinon.stub(request, 'get').resolves();
-
-      return service.poll().then(() => {
-        expect(request.get.callCount).to.equal(25);
-        request.get.args.forEach((args, i) => expect(args).to.deep.equal([{
-          baseUrl: 'https://textit.in',
-          uri: '/api/v2/messages.json',
-          json: true,
-          qs: { broadcast: `broadcast${i}` },
-          headers: { Accept: 'application/json', Authorization: 'Token apikey' },
-        }]));
-        expect(messaging.updateMessageTaskStates.callCount).to.equal(1);
-        expect(messaging.updateMessageTaskStates.args[0]).to.deep.equal([[]]);
-      });
-    });
-
-    it('it gets status updates for every result from custom instance', () => {
+    it('it gets status updates for every result', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('key');
       sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://self-hosted.com' } });
 
       const messages = Array
         .from({ length: 25 })
         .map((_, i) => ({ value: { id: `message${i}`, gateway_ref: `broadcast${i}` } }));
-      sinon.stub(db.medic, 'query').resolves({ rows: messages });
+      sinon.stub(db.medic, 'query')
+        .onCall(0).resolves({ rows: messages })
+        .onCall(1).resolves({ rows: [] });
       sinon.stub(messaging, 'updateMessageTaskStates').resolves();
       sinon.stub(request, 'get').resolves();
 
@@ -263,7 +257,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should skip messages that have no gateway_ref', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('key');
-      sinon.stub(config, 'get').returns({ });
+      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://self-hosted.com' } });
 
       const messages = [
         { value: { id: 'message1' } },
@@ -271,7 +265,9 @@ describe('RapidPro SMS Gateway', () => {
         { value: { id: 'message3' } },
         { value: { id: 'message4', gateway_ref: 'ref4' } },
       ];
-      sinon.stub(db.medic, 'query').resolves({ rows: messages });
+      sinon.stub(db.medic, 'query')
+        .onCall(0).resolves({ rows: messages })
+        .onCall(1).resolves({ rows: [] });
       sinon.stub(messaging, 'updateMessageTaskStates').resolves();
       sinon.stub(request, 'get').resolves();
 
@@ -279,7 +275,7 @@ describe('RapidPro SMS Gateway', () => {
         expect(request.get.callCount).to.equal(2);
 
         expect(request.get.args[0]).to.deep.equal([{
-          baseUrl: 'https://textit.in',
+          baseUrl: 'http://self-hosted.com',
           uri: '/api/v2/messages.json',
           json: true,
           qs: { broadcast: `ref2` },
@@ -287,7 +283,7 @@ describe('RapidPro SMS Gateway', () => {
         }]);
 
         expect(request.get.args[1]).to.deep.equal([{
-          baseUrl: 'https://textit.in',
+          baseUrl: 'http://self-hosted.com',
           uri: '/api/v2/messages.json',
           json: true,
           qs: { broadcast: `ref4` },
@@ -298,7 +294,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should update the states correctly', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('key');
-      sinon.stub(config, 'get').returns({});
+      sinon.stub(config, 'get').returns({ rapidPro: { url: 'https://textit.in' } });
 
       const messages = [
         { value: { id: 'message1', gateway_ref: 'ref1' } },
@@ -306,7 +302,9 @@ describe('RapidPro SMS Gateway', () => {
         { value: { id: 'message3', gateway_ref: 'ref3' } },
         { value: { id: 'message4', gateway_ref: 'ref4' } },
       ];
-      sinon.stub(db.medic, 'query').resolves({ rows: messages });
+      sinon.stub(db.medic, 'query')
+        .onCall(0).resolves({ rows: messages })
+        .onCall(1).resolves({ rows: [] });
       sinon.stub(messaging, 'updateMessageTaskStates').resolves();
       sinon.stub(request, 'get')
         .withArgs(sinon.match({ qs: { broadcast: 'ref1' } })).resolves({ results: [{ status: 'wired' }] })
@@ -352,14 +350,16 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should only use 1st result from service', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('key');
-      sinon.stub(config, 'get').returns({});
+      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://textit.in' } });
 
       const messages = [
         { value: { id: 'msg1', gateway_ref: 'broadcast1' } },
         { value: { id: 'msg2', gateway_ref: 'broadcast2' } },
       ];
 
-      sinon.stub(db.medic, 'query').resolves({ rows: messages });
+      sinon.stub(db.medic, 'query')
+        .onCall(0).resolves({ rows: messages })
+        .onCall(1).resolves({ rows: [] });
       sinon.stub(messaging, 'updateMessageTaskStates').resolves();
       sinon.stub(request, 'get')
         .withArgs(sinon.match({ qs: { broadcast: 'broadcast1' } }))
@@ -379,13 +379,31 @@ describe('RapidPro SMS Gateway', () => {
     });
 
     it('should handle the remote service not sending any results', () => {
+      sinon.stub(secureSettings, 'getCredentials').resolves('key');
+      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://textit.in' } });
 
+      const messages = [
+        { value: { id: 'msg1', gateway_ref: 'broadcast1' } },
+        { value: { id: 'msg2', gateway_ref: 'broadcast2' } },
+      ];
+
+      sinon.stub(db.medic, 'query')
+        .onCall(0).resolves({ rows: messages })
+        .onCall(1).resolves({ rows: [] });
+      sinon.stub(messaging, 'updateMessageTaskStates').resolves();
+      sinon.stub(request, 'get').resolves();
+
+      return service.poll().then(() => {
+        expect(request.get.callCount).to.equal(2);
+        expect(messaging.updateMessageTaskStates.callCount).to.equal(1);
+        expect(messaging.updateMessageTaskStates.args[0]).to.deep.equal([[]]);
+      });
     });
 
-    describe('should only increase skip with the number of processed statuses', () => {
+    describe('should only increase skip with the number of processed statuses and keep querying', () => {
       beforeEach(() => {
         sinon.stub(secureSettings, 'getCredentials').resolves('key');
-        sinon.stub(config, 'get').returns({ });
+        sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://textit.in' } });
         sinon.stub(request, 'get').resolves();
       });
 
@@ -393,68 +411,85 @@ describe('RapidPro SMS Gateway', () => {
         sinon.stub(messaging, 'updateMessageTaskStates').resolves({ saved: 0 });
 
         const messages = generateMessages(25);
-        sinon.stub(db.medic, 'query').resolves({ rows: messages });
+        sinon.stub(db.medic, 'query')
+          .onCall(0).resolves({ rows: messages })
+          .onCall(1).resolves({ rows: messages })
+          .onCall(2).resolves({ rows: [] });
 
         expect(service.__get__('skip')).to.equal(0);
-        return service
-          .poll()
-          .then(() => expect(service.__get__('skip')).to.equal(25))
-          .then(() => service.poll())
-          .then(() => expect(service.__get__('skip')).to.equal(50));
+
+        return service.poll().then(() => {
+          expect(db.medic.query.callCount).to.equal(3);
+          expect(db.medic.query.args).to.deep.equal([
+            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 0 }],
+            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 25 }],
+            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 50 }],
+          ]);
+          expect(service.__get__('skip')).to.equal(0);
+        });
       });
 
       it('100% updates', () => {
         sinon.stub(messaging, 'updateMessageTaskStates').resolves({ saved: 25 });
 
         const messages = generateMessages(25);
-        sinon.stub(db.medic, 'query').resolves({ rows: messages });
+        sinon.stub(db.medic, 'query')
+          .onCall(0).resolves({ rows: messages })
+          .onCall(1).resolves({ rows: [] });
 
         expect(service.__get__('skip')).to.equal(0);
-        return service
-          .poll()
-          .then(() => expect(service.__get__('skip')).to.equal(0))
-          .then(() => service.poll())
-          .then(() => {
-            expect(service.__get__('skip')).to.equal(0);
-            service.__set__('skip', 100);
-            return service.poll();
-          })
-          .then(() => expect(service.__get__('skip')).to.equal(100));
+        return service.poll().then(() => {
+          expect(service.__get__('skip')).to.equal(0);
+          expect(db.medic.query.callCount).to.equal(2);
+          expect(db.medic.query.args).to.deep.equal([
+            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 0 }],
+            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 0 }],
+          ]);
+        });
       });
 
       it('some updates out of lower count result set', () => {
-        sinon.stub(messaging, 'updateMessageTaskStates').resolves({ saved: 10 });
-        sinon.stub(db.medic, 'query').resolves({ rows: generateMessages(12) });
+        sinon.stub(messaging, 'updateMessageTaskStates')
+          .onCall(0).resolves({ saved: 10 })
+          .onCall(1).resolves({ saved: 8 })
+          .onCall(2).resolves({ saved: 16 });
+        sinon.stub(db.medic, 'query')
+          .onCall(0).resolves({ rows: generateMessages(12) })
+          .onCall(1).resolves({ rows: generateMessages(16) })
+          .onCall(2).resolves({ rows: generateMessages(23) })
+          .onCall(3).resolves({ rows: [] });
 
         expect(service.__get__('skip')).to.equal(0);
-        return service
-          .poll()
-          .then(() => {
-            expect(service.__get__('skip')).to.equal(2);
-            messaging.updateMessageTaskStates.resolves({ saved: 8 });
-            db.medic.query.resolves({ rows: generateMessages(16) });
-            return service.poll();
-          })
-          .then(() => {
-            expect(service.__get__('skip')).to.equal(10);
-            messaging.updateMessageTaskStates.resolves({ saved: 16 });
-            db.medic.query.resolves({ rows: generateMessages(23) });
-            service.__set__('skip', 100);
-            return service.poll();
-          })
-          .then(() => expect(service.__get__('skip')).to.equal(107));
+
+        return service.poll().then(() => {
+          expect(service.__get__('skip')).to.equal(0);
+          expect(db.medic.query.callCount).to.equal(4);
+          expect(db.medic.query.args).to.deep.equal([
+            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 0 }],
+            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 2 }],
+            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 10 }],
+            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 17 }],
+          ]);
+        });
       });
 
       it('no updates out of lower count result set', () => {
         sinon.stub(messaging, 'updateMessageTaskStates').resolves({ saved: 0 });
-        sinon.stub(db.medic, 'query').resolves({ rows: generateMessages(12) });
+        sinon.stub(db.medic, 'query')
+          .onCall(0).resolves({ rows: generateMessages(12) })
+          .onCall(1).resolves({ rows: generateMessages(12) })
+          .onCall(2).resolves({ rows: [] });
 
         expect(service.__get__('skip')).to.equal(0);
-        return service
-          .poll()
-          .then(() => expect(service.__get__('skip')).to.equal(12))
-          .then(() => service.poll())
-          .then(() => expect(service.__get__('skip')).to.equal(24));
+        return service.poll().then(() => {
+          expect(service.__get__('skip')).to.equal(0);
+          expect(db.medic.query.callCount).to.equal(3);
+          expect(db.medic.query.args).to.deep.equal([
+            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 0 }],
+            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 12 }],
+            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 24 }],
+          ]);
+        });
       });
     });
 
@@ -469,7 +504,7 @@ describe('RapidPro SMS Gateway', () => {
 
       beforeEach(() => {
         sinon.stub(secureSettings, 'getCredentials').resolves('key');
-        sinon.stub(config, 'get').returns({});
+        sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://textit.in' } });
       });
 
       it('should go over the whole list of items', () => {
@@ -491,56 +526,26 @@ describe('RapidPro SMS Gateway', () => {
         sinon.stub(request, 'get').resolves({ results: [{ status: 'delivered' }] });
 
         expect(service.__get__('skip')).to.equal(0);
-        return service
-          .poll()
-          .then(() => {
-            expect(db.medic.query.callCount).to.equal(1);
-            expect(db.medic.query.args[0]).to.deep.equal([
-              'medic-sms/gateway_messages_by_state',
-              { keys: nonFinalStatuses, limit: 25, skip: 0 }
-            ]);
-            expect(messaging.updateMessageTaskStates.callCount).to.equal(1);
-            const expectedStatuses = expectedStatusUpdates(allMessages[0], 'delivered', 'Delivered');
-            expect(messaging.updateMessageTaskStates.args[0]).to.deep.equal([expectedStatuses]);
-            expect(service.__get__('skip')).to.equal(0); // all updated, so none skipped!
-          })
-          .then(() => service.poll())
-          .then(() => {
-            expect(db.medic.query.callCount).to.equal(2);
-            expect(db.medic.query.args[1]).to.deep.equal([
-              'medic-sms/gateway_messages_by_state',
-              { keys: nonFinalStatuses, limit: 25, skip: 0 }
-            ]);
-            expect(messaging.updateMessageTaskStates.callCount).to.equal(2);
-            const expectedStatuses = expectedStatusUpdates(allMessages[1], 'delivered', 'Delivered');
-            expect(messaging.updateMessageTaskStates.args[1]).to.deep.equal([expectedStatuses]);
-            expect(service.__get__('skip')).to.equal(0); // all updated, so none skipped!
-          })
-          .then(() => service.poll())
-          .then(() => {
-            expect(db.medic.query.callCount).to.equal(3);
-            expect(db.medic.query.args[2][1]).to.deep.equal({ keys: nonFinalStatuses, limit: 25, skip: 0 });
-            expect(messaging.updateMessageTaskStates.callCount).to.equal(3);
-            const expectedStatuses = expectedStatusUpdates(allMessages[2], 'delivered', 'Delivered');
-            expect(messaging.updateMessageTaskStates.args[2]).to.deep.equal([expectedStatuses]);
-            expect(service.__get__('skip')).to.equal(0); // all updated, so none skipped!
-          })
-          .then(() => service.poll())
-          .then(() => {
-            expect(db.medic.query.callCount).to.equal(4);
-            expect(db.medic.query.args[3][1]).to.deep.equal({ keys: nonFinalStatuses, limit: 25, skip: 0 });
-            expect(messaging.updateMessageTaskStates.callCount).to.equal(4);
-            const expectedStatuses = expectedStatusUpdates(allMessages[3], 'delivered', 'Delivered');
-            expect(messaging.updateMessageTaskStates.args[3]).to.deep.equal([expectedStatuses]);
-            expect(service.__get__('skip')).to.equal(0); // all updated, so none skipped!
-          })
-          .then(() => service.poll())
-          .then(() => {
-            expect(db.medic.query.callCount).to.equal(5);
-            expect(db.medic.query.args[4][1]).to.deep.equal({ keys: nonFinalStatuses, limit: 25, skip: 0 });
-            expect(messaging.updateMessageTaskStates.callCount).to.equal(4);
-            expect(service.__get__('skip')).to.equal(0); // all updated, so none skipped!
-          });
+        return service.poll().then(() => {
+          expect(service.__get__('skip')).to.equal(0); // all updated, so none skipped!
+
+          expect(db.medic.query.callCount).to.equal(5);
+          expect(db.medic.query.args[0][1]).to.deep.equal({ keys: nonFinalStatuses, limit: 25, skip: 0 });
+          expect(db.medic.query.args[1][1]).to.deep.equal({ keys: nonFinalStatuses, limit: 25, skip: 0 });
+          expect(db.medic.query.args[2][1]).to.deep.equal({ keys: nonFinalStatuses, limit: 25, skip: 0 });
+          expect(db.medic.query.args[3][1]).to.deep.equal({ keys: nonFinalStatuses, limit: 25, skip: 0 });
+          expect(db.medic.query.args[4][1]).to.deep.equal({ keys: nonFinalStatuses, limit: 25, skip: 0 });
+
+          expect(messaging.updateMessageTaskStates.callCount).to.equal(4);
+          let expectedStatuses = expectedStatusUpdates(allMessages[0], 'delivered', 'Delivered');
+          expect(messaging.updateMessageTaskStates.args[0]).to.deep.equal([expectedStatuses]);
+          expectedStatuses = expectedStatusUpdates(allMessages[1], 'delivered', 'Delivered');
+          expect(messaging.updateMessageTaskStates.args[1]).to.deep.equal([expectedStatuses]);
+          expectedStatuses = expectedStatusUpdates(allMessages[2], 'delivered', 'Delivered');
+          expect(messaging.updateMessageTaskStates.args[2]).to.deep.equal([expectedStatuses]);
+          expectedStatuses = expectedStatusUpdates(allMessages[3], 'delivered', 'Delivered');
+          expect(messaging.updateMessageTaskStates.args[3]).to.deep.equal([expectedStatuses]);
+        });
       });
 
       it('should reset skip when the queue is empty', () => {
@@ -553,34 +558,21 @@ describe('RapidPro SMS Gateway', () => {
         sinon.stub(request, 'get').resolves({ results: [{ status: 'queued' }] });
 
         expect(service.__get__('skip')).to.equal(0);
-        return service
-          .poll()
-          .then(() => {
-            expect(db.medic.query.callCount).to.equal(1);
-            expect(db.medic.query.args[0][1]).to.deep.equal({ keys: nonFinalStatuses, limit: 25, skip: 0 });
-            expect(messaging.updateMessageTaskStates.callCount).to.equal(1);
-            expect(service.__get__('skip')).to.equal(25); // none updated, all skipped
-          })
-          .then(() => service.poll())
-          .then(() => {
-            expect(db.medic.query.callCount).to.equal(2);
-            expect(db.medic.query.args[1][1]).to.deep.equal({ keys: nonFinalStatuses, limit: 25, skip: 25 });
-            expect(messaging.updateMessageTaskStates.callCount).to.equal(2);
-            expect(service.__get__('skip')).to.equal(35); // all updated, so none skipped!
-          })
-          .then(() => service.poll())
-          .then(() => {
-            expect(db.medic.query.callCount).to.equal(3);
-            expect(db.medic.query.args[2][1]).to.deep.equal({ keys: nonFinalStatuses, limit: 25, skip: 35 });
-            expect(messaging.updateMessageTaskStates.callCount).to.equal(2);
-            expect(service.__get__('skip')).to.equal(0); // skip reset
-          });
+        return service.poll().then(() => {
+          expect(service.__get__('skip')).to.equal(0); // skip reset
+          expect(db.medic.query.callCount).to.equal(3);
+          expect(db.medic.query.args[0][1]).to.deep.equal({ keys: nonFinalStatuses, limit: 25, skip: 0 });
+          expect(db.medic.query.args[1][1]).to.deep.equal({ keys: nonFinalStatuses, limit: 25, skip: 25 });
+          expect(db.medic.query.args[2][1]).to.deep.equal({ keys: nonFinalStatuses, limit: 25, skip: 35 });
+
+          expect(messaging.updateMessageTaskStates.callCount).to.equal(2);
+        });
       });
     });
 
     it('should catch errors from remote service', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('key');
-      sinon.stub(config, 'get').returns({});
+      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://textit.in' } });
 
       const messages = [
         { value: { id: 'msg1', gateway_ref: 'broadcast1' } },
@@ -588,7 +580,9 @@ describe('RapidPro SMS Gateway', () => {
         { value: { id: 'msg3', gateway_ref: 'broadcast3' } },
       ];
 
-      sinon.stub(db.medic, 'query').resolves({ rows: messages });
+      sinon.stub(db.medic, 'query')
+        .onCall(0).resolves({ rows: messages })
+        .onCall(1).resolves({ rows: [] });
       sinon.stub(messaging, 'updateMessageTaskStates').resolves();
       sinon.stub(request, 'get')
         .onCall(0).resolves({ results: [{ status: 'sent' }] })

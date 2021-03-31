@@ -2,9 +2,11 @@ const logger = require('../logger');
 const messaging = require('../services/messaging');
 const serverUtils = require('../server-utils');
 const secureSettings = require('@medic/settings');
-const rapidPro = require('../services/rapid-pro');
 
-const getIncomingToken = () => {
+// mimic Authorization method of RapidPro outgoing
+const AUTHORIZATION_HEADER_REGEX = /^Token\s+(.*)$/;
+
+const getConfiguredIncomingToken = () => {
   return secureSettings.getCredentials('rapidpro:incoming').then(token => {
     if (!token) {
       logger.warn('No incoming key configured. Refer to the RapidPro configuration documentation.');
@@ -14,32 +16,39 @@ const getIncomingToken = () => {
   });
 };
 
+const getRequestAuthToken = (req) => {
+  if (!req || !req.headers || !req.headers.authorization) {
+    return;
+  }
+
+  const match = req.headers.authorization.match(AUTHORIZATION_HEADER_REGEX);
+  if (!match) {
+    return;
+  }
+
+  return match[1];
+};
+
 const validateRequest = req => {
   if (!req.body) {
     return Promise.reject({ code: 400, message: 'Request body is required' });
   }
 
-  const outgoingMessageService = messaging.getOutgoingMessageService();
-  if (!outgoingMessageService || outgoingMessageService.name !== rapidPro.name) {
-    return Promise.reject({ code: 400, message: 'Service not enabled' });
+  const givenToken = getRequestAuthToken(req);
+  if (!givenToken) {
+    logger.warn(`Attempt to access RapidPro endpoint without the an incoming token`);
+    return Promise.reject({ code: 403, message: `Missing authorization token` });
   }
 
-  return getIncomingToken().then(expected => {
-    // todo Reviewer: should we mimic the RapidPro authorization header, and include "Token" prefix?
-    // or use a query key like africas-talking?
-    // Consistent with our other APIs or consistent with the api integrating with?
-    const given = req.headers.authorization;
-    if (expected !== given) {
+  return getConfiguredIncomingToken().then(expected => {
+    if (expected !== givenToken) {
       logger.warn(`Attempt to access RapidPro endpoint without the correct incoming token`);
-      return Promise.reject({ code: 403, message: `Incorrect token: "${given}"` });
+      return Promise.reject({ code: 403, message: `Incorrect token: "${givenToken}"` });
     }
   });
 };
 
 module.exports = {
-  // todo Reviewer: should we even have this endpoint?
-  // I added it so it would simplify the webhook call from rapidpro -> cht-core
-  // but the sms-gateway endpoint can still be used just fine.
   incomingMessages: (req, res) => {
     return validateRequest(req)
       .then(() => {

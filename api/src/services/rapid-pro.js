@@ -14,7 +14,7 @@ const STATUS_MAP = {
   // success
   queued: { success: true, state: 'received-by-gateway', detail: 'Queued' },
   wired: { success: true, state: 'forwarded-by-gateway', detail: 'Wired' },
-  sent: { success: true, state: 'sent', detail: 'Sent' }, // todo Reviewer: should this be a final state?????
+  sent: { success: true, state: 'sent', detail: 'Sent' },
   delivered: { success: true, state: 'delivered', detail: 'Delivered', final: true },
   resent: { success: true, state: 'sent', detail: 'Resent' },
 
@@ -24,19 +24,21 @@ const STATUS_MAP = {
 };
 const BATCH_SIZE = 25;
 
-const nonFinalStates = Object
+const NON_FINAL_STATES = _.uniq(Object
   .values(STATUS_MAP)
   .filter(status => !status.final)
-  .map(status => status.state);
+  .map(status => status.state));
 
 const getCredentials = () => {
   // Supports self-hosted RapidPro instances, but defaults to textit.in
   const smsSettings = config.get('sms');
-  const configuredUrl = smsSettings &&
-                        smsSettings.rapidPro &&
-                        smsSettings.rapidPro.url;
-  const textitUrl = 'https://textit.in';
-  const host =  configuredUrl || textitUrl;
+  const host = smsSettings &&
+                      smsSettings.rapidPro &&
+                      smsSettings.rapidPro.url;
+
+  if (!host) {
+    return Promise.reject('No RapidPro URL configured. Refer to the RapidPro configuration documentation.');
+  }
 
   return secureSettings.getCredentials('rapidpro:outgoing').then(apiToken => {
     if (!apiToken) {
@@ -167,8 +169,56 @@ const getRemoteStates = (credentials, messages) => {
 };
 
 let skip = 0;
+let polling = false;
+
+/**
+ * Queries `medic-sms/gateway_messages_by_state` for a batch of messages that are in
+ * non-final states, `skip`ping rows that were already processed. Increases the global variable `skip` with the
+ * number of rows that were not updated (their states have not changed) from this batch.
+ * When there are no more rows to process, sets `skip` to 0 and will start over the queue on next iteration.
+ * @returns {Boolean} whether or not to poll again
+ */
+const poll = () => {
+  // get the credentials every call so changes can be made without restarting api
+  return getCredentials()
+    .then(credentials => {
+      const viewOptions = { keys: NON_FINAL_STATES, limit: BATCH_SIZE, skip };
+      return db.medic
+        .query('medic-sms/gateway_messages_by_state', viewOptions)
+        .then(result => {
+          if (!result || !result.rows || !result.rows.length) {
+            skip = 0; // start from the beginning on the next poll call
+            return false;
+          }
+
+          // avoid circular dependency issues, the messaging service also requires this file
+          const messaging = require('./messaging');
+
+          const messages = result.rows.map(row => row.value);
+          return getRemoteStates(credentials, messages)
+            .then(statusUpdates => messaging.updateMessageTaskStates(statusUpdates))
+            .then(({ saved = 0 }={}) => {
+              // Only increase the skip with the number of messages that were *not updated*.
+              // The messages that were updated could have changed to be in a final state
+              // and will be excluded on the next query.
+              const numberOfRowsProcessed = result.rows.length - saved;
+              skip += numberOfRowsProcessed;
+
+              return true;
+            });
+        });
+    })
+    .catch(err => {
+      logger.error('Error while polling message states: %o', err);
+    });
+};
+
+// polls recursively until we reach the end of the queue
+const recursivePoll = () => {
+  return poll().then((continuePolling) => continuePolling && recursivePoll());
+};
+
 module.exports = {
-  name: 'rapid-pro',
   /**
    * Given an array of messages, returns a promise which resolves with an array of state updates
    * (which also update messages' gateway_ref properties), for each message that has been successfully relayed.
@@ -197,44 +247,16 @@ module.exports = {
 
   /**
    * Polls RapidPro `messages` endpoint to check for state updates of outgoing messages that
-   * are in non-final states. Queries `medic-sms/gateway_messages_by_state` for a batch of messages that are in
-   * non-final states, `skip`ping rows that were already processed. Increases the global variable `skip` with the
-   * number of rows that were not updated (their states have not changed) from this batch.
-   * When there are no more rows to process, sets `skip` to 0 and will start over the queue on next iteration.
+   * are in non-final states. Does not start polling if already running.
    */
   poll: () => {
-    // get the credentials every call so changes can be made without restarting api
-    return getCredentials()
-      .then(credentials => {
-        const viewOptions = { keys: _.uniq(nonFinalStates), limit: BATCH_SIZE, skip };
-        return db.medic
-          .query('medic-sms/gateway_messages_by_state', viewOptions)
-          .then(result => {
-            if (!result || !result.rows || !result.rows.length) {
-              skip = 0; // start from the beginning on the next poll call
-              return;
-            }
+    if (polling) {
+      return Promise.resolve();
+    }
 
-            // avoid circular dependency issues, the messaging service also requires this file
-            // todo reviewer: I tried breaking up messaging, to expose the updateMessageTaskStates in a separate module,
-            // but it didn't turn out quite right. a "proper" refactor would have ended up moving more code around.
-            // Thoughts?
-            const messaging = require('./messaging');
-
-            const messages = result.rows.map(row => row.value);
-            return getRemoteStates(credentials, messages)
-              .then(statusUpdates => messaging.updateMessageTaskStates(statusUpdates))
-              .then(({ saved = 0 }={}) => {
-                // Only increase the skip with the number of messages that were *not updated*.
-                // The messages that were updated could have changed to be in a final state
-                // and will be excluded on the next query.
-                const numberOfRowsProcessed = result.rows.length - saved;
-                skip += numberOfRowsProcessed;
-              });
-          });
-      })
-      .catch(err => {
-        logger.error('Error while polling message states: %o', err);
-      });
+    polling = true;
+    return recursivePoll().then(() => {
+      polling = false;
+    });
   },
 };
