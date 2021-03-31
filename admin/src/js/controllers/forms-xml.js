@@ -1,3 +1,5 @@
+const _ = require('lodash/core');
+
 angular.module('controllers').controller('FormsXmlCtrl',
   function (
     $log,
@@ -25,12 +27,22 @@ angular.module('controllers').controller('FormsXmlCtrl',
         .then(res => res.rows.map(row => row.doc));
     };
 
+    const getErrorMessage = err => {
+      if (err.message) {
+        err = err.message;
+      }
+      if (err.startsWith('Invalid XML:')) {
+        return 'Invalid XML';
+      }
+      return _.escape(err);
+    };
+
     const uploadFinished = err => {
       $scope.status.uploading = false;
       if (err) {
         $log.error('Upload failed', err);
         $scope.status.error = true;
-        $scope.status.errorMessage = `Upload failed: ${err.message}`;
+        $scope.status.errorMessage = `Upload failed: ${getErrorMessage(err)}`;
         $scope.status.success = false;
       } else {
         $('#forms-upload-xform').get(0).reset(); // clear the fields
