@@ -45,7 +45,6 @@ module.exports = function(config) {
 
       // test files
       'tests/unit/**/*.js',
-      
       // templates
       'src/**/*.html'
     ]
