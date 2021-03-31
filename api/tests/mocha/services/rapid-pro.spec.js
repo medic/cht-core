@@ -493,7 +493,7 @@ describe('RapidPro SMS Gateway', () => {
       });
     });
 
-    describe('recurrent polling', () => {
+    describe('recursive polling', () => {
       const expectedStatusUpdates = (messages, state, details) =>
         messages.map(message => ({
           messageId: message.value.id,
@@ -598,6 +598,26 @@ describe('RapidPro SMS Gateway', () => {
           { messageId: 'msg3', gatewayRef: 'broadcast3', state: 'delivered', details: 'Delivered' },
         ]]);
       });
+    });
+
+    it('should only start polling when polling not currently running', () => {
+      sinon.stub(secureSettings, 'getCredentials').resolves('apikey');
+      sinon.stub(db.medic, 'query').resolves({ rows: [] });
+      sinon.stub(messaging, 'updateMessageTaskStates');
+      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://host.com' } });
+
+      return Promise
+        .all([ service.poll(), service.poll(), service.poll(), service.poll() ])
+        .then(() => {
+          expect(secureSettings.getCredentials.callCount).to.equal(1);
+          expect(db.medic.query.callCount).to.equal(1);
+          expect(messaging.updateMessageTaskStates.callCount).to.equal(0);
+          return Promise.all([ service.poll(), service.poll(), service.poll(), service.poll() ]);
+        })
+        .then(() => {
+          expect(secureSettings.getCredentials.callCount).to.equal(2);
+          expect(db.medic.query.callCount).to.equal(2);
+        });
     });
   });
 });
