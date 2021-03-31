@@ -28,6 +28,7 @@ describe('medic-conf supported actions', () => {
     const { stdout, stderr } = await exec(`medic-conf --url=http://admin:pass@localhost:${API_PORT} ${action} --force`);
     if (stderr) {
       console.error(`error: ${stderr}`);
+      return;
     }
     return stdout;
   };
