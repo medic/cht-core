@@ -12,15 +12,15 @@ angular.module('inboxServices').factory('ValidateForm',
      * @memberof inboxServices
      * @param {string} xmlForm The XForm string
      * @returns {Promise} if there are no errors
-     * @throws {Error} with the error message if validations fail
+     * @throws {Promise<Error>} with the error message if validations fail
      */
-    return function(xmlForm) {
+    return xmlForm => {
       const config = {
         headers: { 'Content-Type': 'application/xml' }
       };
       return $http
         .post('/api/v1/forms/validate', xmlForm, config)
-        .catch(function (err) {
+        .catch(err => {
           const errorMsg = err.data && err.data.error ? err.data.error : '' + err;
           throw new Error('Error validating form - ' + errorMsg);
         });

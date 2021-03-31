@@ -15,7 +15,7 @@ angular.module('controllers').controller('FormsXmlCtrl',
 
     $scope.status = { uploading: false };
 
-    const getForms = function() {
+    const getForms = () => {
       const options = {
         include_docs: true,
         key: ['form']
@@ -25,7 +25,7 @@ angular.module('controllers').controller('FormsXmlCtrl',
         .then(res => res.rows.map(row => row.doc));
     };
 
-    const uploadFinished = function(err) {
+    const uploadFinished = err => {
       $scope.status.uploading = false;
       if (err) {
         $log.error('Upload failed', err);
@@ -40,7 +40,7 @@ angular.module('controllers').controller('FormsXmlCtrl',
       }
     };
 
-    const getXmlTitle = function($xml, xml) {
+    const getXmlTitle = ($xml, xml) => {
       // $xml.find('title') works in Chrome 44, but not in Chrome 60.
       // It's probably related to XML namespaces, but we should work out why
       // it doesn't work in newer Chrome and get it working.
@@ -54,7 +54,7 @@ angular.module('controllers').controller('FormsXmlCtrl',
       return title;
     };
 
-    const getXmlFormId = function($xml, meta) {
+    const getXmlFormId = ($xml, meta) => {
       const dataNode = $xml.find('instance').children().first();
       if (!dataNode.children('meta').children('instanceID').length) {
         throw new Error('No <meta><instanceID/></meta> node found for first child of <instance> element.');
@@ -74,7 +74,7 @@ angular.module('controllers').controller('FormsXmlCtrl',
       return formId;
     };
 
-    $scope.upload = function() {
+    $scope.upload = () => {
       $scope.status = {
         uploading: true,
         error: false,
@@ -100,7 +100,7 @@ angular.module('controllers').controller('FormsXmlCtrl',
         FileReader.utf8(formFiles[0]),
         FileReader.utf8(metaFiles[0]).then(JsonParse)
       ])
-        .then(function(results) {
+        .then(results => {
           const xml = results[0];
           const meta = results[1];
 
@@ -128,20 +128,16 @@ angular.module('controllers').controller('FormsXmlCtrl',
                 });
             });
         })
-        .then(function(doc) {
-          return DB().put(doc);
-        })
-        .then(function() {
-          uploadFinished();
-        })
+        .then(doc => DB().put(doc))
+        .then(() => uploadFinished())
         .catch(uploadFinished);
     };
 
     getForms()
-      .then(function(forms) {
+      .then(forms => {
         $scope.xForms = forms;
       })
-      .catch(function(err) {
+      .catch(err => {
         $log.error('Error fetching XForms for form config page.', err);
       });
   }
