@@ -10,19 +10,14 @@ export class RDToolkitService {
   constructor() { }
 
   enabled() {
-    try {
-      return !!(
-        window.medicmobile_android
-        && typeof window.medicmobile_android.rdToolkit_provisionRDTest === 'function'
-        && typeof window.medicmobile_android.rdToolkit_captureRDTest === 'function'
-      );
-    } catch (err) {
-      console.error(err);
-      return false;
-    }
+    return !!(
+      window.medicmobile_android
+      && typeof window.medicmobile_android.rdToolkit_provisionRDTest === 'function'
+      && typeof window.medicmobile_android.rdToolkit_captureRDTest === 'function'
+    );
   }
 
-  provisionRDTest(sessionId, patientId, patientName='', rdtFilter, monitorApiURL) {
+  provisionRDTest(sessionId, patientId, patientName, rdtFilter, monitorApiURL) {
     try {
       window.medicmobile_android.rdToolkit_provisionRDTest(sessionId, patientName, patientId, rdtFilter, monitorApiURL);
       return new Promise(resolve => this.provisionTestResolve = resolve);

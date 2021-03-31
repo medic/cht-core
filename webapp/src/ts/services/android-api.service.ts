@@ -257,11 +257,21 @@ export class AndroidApiService {
   }
 
   rdToolkitProvisionedTestResponse(response) {
-    this.rdToolkitService.resolveProvisionedTest(response);
+    try {
+      this.rdToolkitService.resolveProvisionedTest(response);
+    } catch (e) {
+      const message = `RDToolkit - Error processing response from android app, error: "${e.message}", response:`;
+      return console.error(message, response);
+    }
   }
 
   rdToolkitCapturedTestResponse(response) {
-    this.rdToolkitService.resolveCapturedTest(response);
+    try {
+      this.rdToolkitService.resolveCapturedTest(response);
+    } catch (e) {
+      const message = `RDToolkit - Error processing response from android app, error: "${e.message}", response:`;
+      return console.error(message, response);
+    }
   }
 
   v1 = {
