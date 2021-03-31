@@ -198,7 +198,9 @@ const resolveMissingUuids = changes => {
 };
 
 const countStateChanges = (results, stateChangesByDocId) => {
-  return results.reduce((count, result) => count + stateChangesByDocId[result.id].length, 0);
+  let count = 0;
+  results.forEach(result => count += stateChangesByDocId[result.id].length);
+  return count;
 };
 
 module.exports = {
