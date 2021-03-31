@@ -207,15 +207,16 @@ const poll = () => {
               return true;
             });
         });
-    })
-    .catch(err => {
-      logger.error('Error while polling message states: %o', err);
     });
 };
 
 // polls recursively until we reach the end of the queue
 const recursivePoll = () => {
-  return poll().then((continuePolling) => continuePolling && recursivePoll());
+  return poll()
+    .then((continuePolling) => continuePolling && recursivePoll())
+    .catch(err => {
+      logger.error('Error while polling message states: %o', err);
+    });
 };
 
 module.exports = {

@@ -583,6 +583,7 @@ describe('RapidPro SMS Gateway', () => {
       sinon.stub(db.medic, 'query')
         .onCall(0).resolves({ rows: messages })
         .onCall(1).resolves({ rows: [] });
+
       sinon.stub(messaging, 'updateMessageTaskStates').resolves();
       sinon.stub(request, 'get')
         .onCall(0).resolves({ results: [{ status: 'sent' }] })
@@ -591,12 +592,41 @@ describe('RapidPro SMS Gateway', () => {
 
       return service.poll().then(() => {
         expect(request.get.callCount).to.equal(3);
+        expect(db.medic.query.callCount).to.equal(2);
 
         expect(messaging.updateMessageTaskStates.callCount).to.equal(1);
         expect(messaging.updateMessageTaskStates.args[0]).to.deep.equal([[
           { messageId: 'msg1', gatewayRef: 'broadcast1', state: 'sent', details: 'Sent' },
           { messageId: 'msg3', gatewayRef: 'broadcast3', state: 'delivered', details: 'Delivered' },
         ]]);
+      });
+    });
+
+    it('should catch errors from updating messages', () => {
+      sinon.stub(secureSettings, 'getCredentials').resolves('key');
+      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://textit.in' } });
+
+      const messages = [
+        { value: { id: 'msg1', gateway_ref: 'broadcast1' } },
+        { value: { id: 'msg2', gateway_ref: 'broadcast2' } },
+        { value: { id: 'msg3', gateway_ref: 'broadcast3' } },
+      ];
+
+      sinon.stub(db.medic, 'query')
+        .onCall(0).resolves({ rows: messages })
+        .onCall(1).resolves({ rows: [] });
+
+      sinon.stub(messaging, 'updateMessageTaskStates').rejects();
+      sinon.stub(request, 'get')
+        .onCall(0).resolves({ results: [{ status: 'sent' }] })
+        .onCall(1).rejects({ some: 'error' })
+        .onCall(2).resolves({ results: [{ status: 'delivered' }] });
+
+      return service.poll().then(() => {
+        expect(request.get.callCount).to.equal(3);
+        expect(db.medic.query.callCount).to.equal(1);
+
+        expect(messaging.updateMessageTaskStates.callCount).to.equal(1);
       });
     });
 
