@@ -5,9 +5,9 @@ const { API_PORT }=require('../constants');
 const exec = util.promisify(require('child_process').exec);
 
 const actions = ['compile-app-settings','backup-app-settings','upload-app-settings','convert-app-forms',
-  'convert-collect-forms','convert-contact-forms',
-  'backup-all-forms','upload-app-forms','upload-collect-forms','upload-contact-forms',
-  'upload-resources','upload-branding','upload-partners','upload-custom-translations','upload-privacy-policies'];
+  'convert-collect-forms','convert-contact-forms', 'backup-all-forms','upload-app-forms','upload-collect-forms',
+  'upload-contact-forms', 'upload-resources','upload-branding','upload-partners','upload-custom-translations',
+  'upload-privacy-policies', 'delete-all-forms'];
 
 describe('medic-conf supported actions', () => {
   beforeAll( () =>{
