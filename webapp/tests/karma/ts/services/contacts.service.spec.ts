@@ -18,13 +18,16 @@ describe('Contacts Service', () => {
   beforeEach(() => {
     query = sinon.stub();
     dbService = { get: () => ({ query }) };
-    cacheService = { register: (opts) => opts.get };
+    cacheService = { register: sinon.stub().callsFake(options => options.get) };
     const placeTypes = [
       { id: 'district_hospital' },
       { id: 'health_center' },
       { id: 'clinic' }
     ];
-    contactTypesService = { getPlaceTypes: sinon.stub().resolves(placeTypes) };
+    contactTypesService = {
+      getPlaceTypes: sinon.stub().resolves(placeTypes),
+      getTypeId: sinon.stub(),
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -152,6 +155,53 @@ describe('Contacts Service', () => {
 
     return service.get(['clinic']).then(actual => {
       expect(actual).to.deep.equal([ clinicA, clinicB ]);
+    });
+  });
+
+  it('should bust cache by correct type', () => {
+    query.resolves({ rows: [] });
+
+    return service.get(['clinic']).then(() => {
+      expect(contactTypesService.getPlaceTypes.callCount).to.equal(1);
+      expect(cacheService.register.callCount).to.equal(3);
+
+      const forDistrictHospital = cacheService.register.args[0][0];
+      const forHealthCenter = cacheService.register.args[1][0];
+      const forClinic = cacheService.register.args[2][0];
+
+      const doc = { _id: 'someDoc', type: 'something', contact_type: 'otherthing' };
+      contactTypesService.getTypeId.withArgs(doc).returns('the correct type');
+
+      expect(forDistrictHospital.invalidate(doc)).to.equal(false);
+      expect(forHealthCenter.invalidate(doc)).to.equal(false);
+      expect(forClinic.invalidate(doc)).to.equal(false);
+
+      expect(contactTypesService.getTypeId.callCount).to.equal(3);
+      expect(contactTypesService.getTypeId.args).to.deep.equal([[doc], [doc], [doc],]);
+
+      sinon.resetHistory();
+
+      const otherDoc = { _id: 'someDoc', type: 'something', contact_type: 'otherthing' };
+      contactTypesService.getTypeId.withArgs(otherDoc).returns('district_hospital');
+
+      expect(forDistrictHospital.invalidate(otherDoc)).to.equal(true);
+      expect(forHealthCenter.invalidate(otherDoc)).to.equal(false);
+      expect(forClinic.invalidate(otherDoc)).to.equal(false);
+
+      expect(contactTypesService.getTypeId.callCount).to.equal(3);
+      expect(contactTypesService.getTypeId.args).to.deep.equal([[otherDoc], [otherDoc], [otherDoc],]);
+
+      sinon.resetHistory();
+
+      const thirdDoc = { _id: 'someDoc', type: 'something', contact_type: 'otherthing' };
+      contactTypesService.getTypeId.withArgs(thirdDoc).returns('clinic');
+
+      expect(forDistrictHospital.invalidate(thirdDoc)).to.equal(false);
+      expect(forHealthCenter.invalidate(thirdDoc)).to.equal(false);
+      expect(forClinic.invalidate(thirdDoc)).to.equal(true);
+
+      expect(contactTypesService.getTypeId.callCount).to.equal(3);
+      expect(contactTypesService.getTypeId.args).to.deep.equal([[thirdDoc], [thirdDoc], [thirdDoc],]);
     });
   });
 });

@@ -13,7 +13,7 @@ angular.module('services').factory('ImportContacts',
 
     const getPersonType = contact => {
       return ContactTypes.getPersonTypes().then(types => {
-        const provided = contact.contact_type || contact.type;
+        const provided = ContactTypes.getTypeId(contact);
         if (provided) {
           const type = types.find(type => type.id === provided);
           if (type) {
