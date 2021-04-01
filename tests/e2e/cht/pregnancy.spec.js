@@ -78,6 +78,7 @@ const users = [
 
 describe('Pregnancy workflow on cht : ', () => {
 <<<<<<< HEAD
+<<<<<<< HEAD
   let originalTimeout;
   beforeEach(function() {
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
@@ -90,6 +91,8 @@ describe('Pregnancy workflow on cht : ', () => {
 
 =======
 >>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
+=======
+>>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
   beforeAll(async () => {
     await utils.saveDocs([...docs]);
     await utils.createUsers(users);
@@ -98,11 +101,15 @@ describe('Pregnancy workflow on cht : ', () => {
   it('should register a pregnancy', async () => {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     await console.log('do');
 >>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
 =======
 >>>>>>> added elements for contacts page, expecting tasks, expecting on cards, nav to analytircs and asserts
+=======
+    await console.log('do');
+>>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative('user1', password);
     await utils.closeTour();
@@ -112,6 +119,7 @@ describe('Pregnancy workflow on cht : ', () => {
     await helper.clickElementNative(contactsPage.newActions);
     await helper.clickElementNative(contactsPage.formById('pregnancy'));
     await pregnancyFormPo.fillPregnancyForm();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     const activePregnancyCard = await contactsPage.cardElementByHeaderText('Active Pregnancy');
@@ -196,5 +204,8 @@ describe('Pregnancy workflow on cht : ', () => {
 =======
     console.log('stop');
 >>>>>>> added elements for contacts page, expecting tasks, expecting on cards, nav to analytircs and asserts
+=======
+    
+>>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
   });
 });

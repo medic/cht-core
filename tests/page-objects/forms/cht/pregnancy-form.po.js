@@ -55,11 +55,8 @@ const yesLLIN = element(by.css(`${usesLLIN}[value=yes]`));
 const ironFolateName = `${inputBase}safe_pregnancy_practices/iron_folate/iron_folate_daily"]`;
 const yesIronFolate = element(by.css(`${ironFolateName}[value=yes]`));
 
-<<<<<<< HEAD
 const deworming = `${inputBase}safe_pregnancy_practices/deworming/deworming_med"]`;
 const yesDewormed = element(by.css(`${deworming}[value=yes]`));
-=======
->>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
 const hivTestName = `${inputBase}safe_pregnancy_practices/hiv_status/hiv_tested"]`;
 const yesHIVTest = element(by.css(`${hivTestName}[value=yes]`));
 
@@ -71,11 +68,7 @@ module.exports = {
     await helper.clickElementNative(weeksOrMonths);
     await genericForm.nextPageNative();
     await helper.clickElementNative(weeks);
-<<<<<<< HEAD
     await numberOfWeeks.sendKeys('34');
-=======
-    await numberOfWeeks.sendKeys('11');
->>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
     await genericForm.nextPageNative();
     await genericForm.nextPageNative();
     await numberOfVisits.sendKeys('0');
@@ -106,13 +99,10 @@ module.exports = {
     await helper.clickElementNative(yesIronFolate);
     await genericForm.nextPageNative();
     await genericForm.nextPageNative();
-<<<<<<< HEAD
     await helper.clickElementNative(yesDewormed);
     await genericForm.nextPageNative();
     await genericForm.nextPageNative();
     await genericForm.nextPageNative();
-=======
->>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
     await helper.clickElementNative(yesHIVTest);
     await genericForm.nextPageNative();
     await genericForm.submitNative();
