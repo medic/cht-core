@@ -1,3 +1,4 @@
+const { element } = require('protractor');
 const helper = require('../../helper');
 const genericForm = require('../forms/generic-form.po');
 const searchBox = element(by.css('#freetext'));
@@ -17,6 +18,7 @@ const contactSexField = element(by.css('[data-name="/data/contact/sex"][value="f
 const peopleRows = element.all(by.css('.right-pane .card.children li'));
 const deleteContact = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('fa fa-trash-o'));
 const editContact = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('fa fa-pencil'));
+const newActions = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('dropdown-toggle'));
 const contactsTab = element(by.css('#contacts-tab'));
 const newHealthCenterButton = element(by.css('[href$="/add/health_center"]'));
 const newClinicButton = element(by.css('[href$="/add/clinic"]'));
@@ -38,6 +40,8 @@ module.exports = {
   peopleRows,
   contactName,
   editContact,
+  newActions,
+  formById: (id) => element(by.id(`form:${id}`)),
   center: () => element(by.css('.card h2')),
   childrenCards: () => element.all(by.css('.right-pane .card.children')),
   name: () =>  element(by.css('.children h4 span')),
@@ -156,15 +160,18 @@ module.exports = {
     await rows.filter(elem => elem.getText().then(text => text === name)).first().click();
   },
 
-  deleteContactByName: async (contactName) => {
+  selectContactByName: async (contactName) => {
     const peopleRow = await peopleRows
       .filter((row) => row.getText().then(text => text.includes(contactName)))
       .first();
     await helper.waitUntilReadyNative(peopleRow);
     // this element shows up underneath the actionbar, so the actionbar can intercept the click
     await browser.executeScript(`arguments[0].scrollIntoView({block: "center"});`, peopleRow);
-    await peopleRow.click();
-    await helper.waitUntilReadyNative(deleteContact);
+    await helper.clickElementNative(peopleRow);
+  },
+
+  deleteContactByName: async (contactName) => {
+    await module.exports.selectContactByName(contactName);
     await deleteContact.click();
   },
 
