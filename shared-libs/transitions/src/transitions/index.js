@@ -115,7 +115,7 @@ const processDocs = docs => {
       });
     })
     .catch(err => {
-      logger.error('Error when running transitions over docs', err);
+      logger.error('Error when running transitions over docs: %o', err);
       return db.medic.bulkDocs(docs);
     });
 };
