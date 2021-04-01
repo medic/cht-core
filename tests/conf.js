@@ -18,7 +18,8 @@ const baseConfig = {
   SELENIUM_PROMISE_MANAGER: false,
   seleniumAddress: 'http://localhost:4444/wd/hub',
   suites: {
-    web: ['e2e/**/*.js', 'mobile/**/*.js'],
+    web: ['e2e/!(cht)/*.js', 'mobile/**/*.js'],
+    cht: ['e2e/cht/*.spec.js'],
     mobile: [],
     // performance: 'performance/**/*.js'
   },
@@ -108,7 +109,10 @@ const prepServices = async () => {
   }
 
   await listenForApi();
-  await runAndLog('Settings setup', setupSettings);
+  const config = await browser.getProcessedConfig();
+  if (config.suite && config.suite === 'web'){
+    await runAndLog('Settings setup', setupSettings);
+  }
   await runAndLog('User contact doc setup', utils.setUserContactDoc);
 };
 
