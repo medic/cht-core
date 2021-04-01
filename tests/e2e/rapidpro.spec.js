@@ -571,5 +571,57 @@ describe('RapidPro SMS Gateway', () => {
         expect(task.state).toBe(expectedState, `Doc ${idx}(${doc._id}) has incorrect state`);
       });
     });
+
+    it('should handle rate limiting when polling', async () => {
+      const docs = Array.from({ length: 90 }).map((_, idx) => ({
+        _id: uuid(),
+        type: 'data_record',
+        form: 'a',
+        reported_date: new Date().getTime(),
+        errors: [],
+        tasks: [{
+          messages: [{ to: `phone${idx}`, message: `message${idx}`, uuid: `uuid${idx}` }],
+          gateway_ref: `gateway_ref${idx}`,
+          state: 'received-by-gateway',
+        }],
+      }));
+
+      messagesResult = (req, res) => {
+        if (messagesEndpointRequests.length > 10) {
+          res.status(429);
+          return res.end();
+        }
+        res.json({ results: [{ status: 'delivered' }] });
+      };
+
+      await utils.updateSettings(settings, true);
+      await setOutgoingKey();
+      await utils.saveDocs(docs);
+
+      await browser.sleep(4 * 1000);
+      // depending on how many polling iterations (each iteration will try to get state for one message, fail and stop)
+      // we get an additional request per iteration
+      expect(messagesEndpointRequests.length).toBeLessThan(16); // maximum 4 polling iterations
+      let updatedDocs = await utils.getDocs(docs.map(doc => doc._id));
+      let docsWithUpdatedMessages = updatedDocs.filter(doc => doc.tasks[0].state === 'delivered');
+      expect(docsWithUpdatedMessages.length).toEqual(10);
+
+      const requestsAfterFirstPass = messagesEndpointRequests.length;
+
+      messagesResult = (req, res) => {
+        if (messagesEndpointRequests.length > requestsAfterFirstPass + 10) {
+          res.status(429);
+          return res.end();
+        }
+        res.json({ results: [{ status: 'delivered' }] });
+      };
+
+      await browser.sleep(4 * 1000);
+      expect(messagesEndpointRequests.length).toBeLessThan(requestsAfterFirstPass + 15);
+
+      updatedDocs = await utils.getDocs(docs.map(doc => doc._id));
+      docsWithUpdatedMessages = updatedDocs.filter(doc => doc.tasks[0].state === 'delivered');
+      expect(docsWithUpdatedMessages.length).toEqual(20);
+    });
   });
 });

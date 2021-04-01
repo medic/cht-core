@@ -139,10 +139,6 @@ const getRemoteState = (credentials, gatewayRef, messageId) => {
 
       const state = remoteStatusToLocalState(response.results[0]);
       return getStateUpdate(state, messageId, gatewayRef);
-    })
-    .catch(err => {
-      // ignore error, updating the state will be retried later
-      logger.error(`Error thrown trying to retrieve remote status %o`, err);
     });
 };
 
@@ -156,12 +152,25 @@ const getRemoteStates = (credentials, messages) => {
   let promiseChain = Promise.resolve([]);
   messages.forEach(message => {
     promiseChain = promiseChain.then((stateUpdates) => {
-      return getRemoteState(credentials, message.gateway_ref, message.id).then(stateUpdate => {
-        if (stateUpdate) {
-          stateUpdates.push(stateUpdate);
-        }
+      if (throttled) {
+        // don't make more requests if we're throttled
         return stateUpdates;
-      });
+      }
+
+      return getRemoteState(credentials, message.gateway_ref, message.id)
+        .then(stateUpdate => {
+          stateUpdates.push(stateUpdate);
+        })
+        .catch(err => {
+          if (err && err.statusCode === 429) {
+            // rate limited, throw error to halt recursive polling
+            throttled = true;
+          }
+
+          // ignore error, updating the state will be retried later
+          logger.error(`Error thrown trying to retrieve remote status %o`, err);
+        })
+        .then(() => stateUpdates);
     });
   });
 
@@ -170,6 +179,7 @@ const getRemoteStates = (credentials, messages) => {
 
 let skip = 0;
 let polling = false;
+let throttled = false;
 
 /**
  * Queries `medic-sms/gateway_messages_by_state` for a batch of messages that are in
@@ -196,24 +206,30 @@ const poll = () => {
 
           const messages = result.rows.map(row => row.value);
           return getRemoteStates(credentials, messages)
-            .then(statusUpdates => messaging.updateMessageTaskStates(statusUpdates))
-            .then(({ saved = 0 }={}) => {
-              // Only increase the skip with the number of messages that were *not updated*.
-              // The messages that were updated could have changed to be in a final state
-              // and will be excluded on the next query.
-              const numberOfRowsProcessed = result.rows.length - saved;
-              skip += numberOfRowsProcessed;
+            .then(statusUpdates => {
+              const nbrPolledStates = statusUpdates.length;
+              const validStateUpdates = statusUpdates.filter(update => !!update);
 
-              return true;
+              return messaging
+                .updateMessageTaskStates(validStateUpdates)
+                .then(({ saved = 0 }={}) => {
+                  // Only increase the skip with the number of messages that were polled and *not updated*.
+                  // The messages that were updated could have changed to be in a final state
+                  // and will be excluded on the next query.
+                  const numberOfRowsProcessed = nbrPolledStates - saved;
+                  skip += numberOfRowsProcessed;
+
+                  return true;
+                });
             });
         });
     });
 };
 
-// polls recursively until we reach the end of the queue
+// polls recursively until we reach the end of the queue, or out requests are throttled
 const recursivePoll = () => {
   return poll()
-    .then((continuePolling) => continuePolling && recursivePoll())
+    .then((continuePolling) => continuePolling && !throttled && recursivePoll())
     .catch(err => {
       logger.error('Error while polling message states: %o', err);
     });
@@ -255,6 +271,7 @@ module.exports = {
       return Promise.resolve();
     }
 
+    throttled = false;
     polling = true;
     return recursivePoll().then(() => {
       polling = false;

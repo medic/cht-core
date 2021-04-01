@@ -568,6 +568,82 @@ describe('RapidPro SMS Gateway', () => {
           expect(messaging.updateMessageTaskStates.callCount).to.equal(2);
         });
       });
+
+      it('should halt recursive polling on rate limit error', () => {
+        sinon.stub(messaging, 'updateMessageTaskStates').callsFake(list => Promise.resolve({ saved: list.length }));
+        sinon.stub(db.medic, 'query')
+          .onCall(0).resolves({ rows: generateMessages(25) })
+          .onCall(1).resolves({ rows: generateMessages(15) })
+          .onCall(2).resolves({ rows: [] });
+        sinon.stub(request, 'get')
+          .resolves({ results: [{ status: 'delivered' }] })
+          .onCall(10).rejects({ statusCode: 429, error: 'Request was throttled' });
+
+        return service
+          .poll()
+          .then(() => {
+            expect(request.get.callCount).to.equal(11);
+            expect(db.medic.query.callCount).to.equal(1);
+            expect(db.medic.query.args[0][1].skip).to.equal(0);
+
+            expect(messaging.updateMessageTaskStates.callCount).to.equal(1);
+            expect(messaging.updateMessageTaskStates.args[0][0].length).to.equal(10);
+            expect(service.__get__('skip')).to.equal(0); // all updated, so none skipped!
+            expect(service.__get__('throttled')).to.equal(true);
+
+            return service.poll();
+          })
+          .then(() => {
+            // should resume polling
+            expect(request.get.callCount).to.equal(26);
+            expect(db.medic.query.callCount).to.equal(3);
+            expect(db.medic.query.args[1][1].skip).to.equal(0);
+            expect(db.medic.query.args[2][1].skip).to.equal(0);
+
+            expect(messaging.updateMessageTaskStates.callCount).to.equal(2);
+            expect(messaging.updateMessageTaskStates.args[1][0].length).to.equal(15);
+            expect(service.__get__('skip')).to.equal(0); // queue finished
+            expect(service.__get__('throttled')).to.equal(false);
+          });
+      });
+
+      it('should save correct skip when polling is halted because of rate limiting', () => {
+        sinon.stub(messaging, 'updateMessageTaskStates').resolves({ saved: 0 });
+        sinon.stub(db.medic, 'query')
+          .onCall(0).resolves({ rows: generateMessages(25) })
+          .onCall(1).resolves({ rows: generateMessages(15) })
+          .onCall(2).resolves({ rows: [] });
+        sinon.stub(request, 'get')
+          .resolves({ results: [{ status: 'delivered' }] })
+          .onCall(10).rejects({ statusCode: 429, error: 'Request was throttled' });
+
+        return service
+          .poll()
+          .then(() => {
+            expect(request.get.callCount).to.equal(11);
+            expect(db.medic.query.callCount).to.equal(1);
+            expect(db.medic.query.args[0][1].skip).to.equal(0);
+
+            expect(messaging.updateMessageTaskStates.callCount).to.equal(1);
+            expect(messaging.updateMessageTaskStates.args[0][0].length).to.equal(10);
+            expect(service.__get__('skip')).to.equal(10); // none updated, all skipped
+            expect(service.__get__('throttled')).to.equal(true);
+
+            return service.poll();
+          })
+          .then(() => {
+            // should resume polling
+            expect(request.get.callCount).to.equal(26);
+            expect(db.medic.query.callCount).to.equal(3);
+            expect(db.medic.query.args[1][1].skip).to.equal(10); // none updated, all skipped
+            expect(db.medic.query.args[2][1].skip).to.equal(25); // none updated, all skipped
+
+            expect(messaging.updateMessageTaskStates.callCount).to.equal(2);
+            expect(messaging.updateMessageTaskStates.args[1][0].length).to.equal(15);
+            expect(service.__get__('skip')).to.equal(0); // queue finished
+            expect(service.__get__('throttled')).to.equal(false);
+          });
+      });
     });
 
     it('should catch errors from remote service', () => {
