@@ -6,7 +6,7 @@ const phoneNumber = require('@medic/phone-number');
 const db = require('../../../src/db');
 const config = require('../../../src/config');
 const africasTalking = require('../../../src/services/africas-talking');
-const rapidPro = require('../../../src/services/rapid-pro');
+const rapidPro = require('../../../src/services/rapidpro');
 const service = rewire('../../../src/services/messaging');
 const records = require('../../../src/services/records');
 
@@ -495,7 +495,7 @@ describe('messaging service', () => {
     });
 
     it('does nothing if there are no messages to send with rapidPro', () => {
-      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'rapid-pro' });
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'rapidpro' });
       sinon.stub(service, 'getOutgoingMessages').resolves([]);
       sinon.stub(rapidPro, 'send');
       sinon.stub(africasTalking, 'send');
@@ -522,9 +522,9 @@ describe('messaging service', () => {
       });
     });
 
-    it('passes the messages to the configured service and ignores failures with rapidPro', () => {
+    it('passes the messages to the configured service and ignores failures with RapidPro', () => {
       const outgoingMessages = [ { id: 'a', to: '+123', content: 'hello' } ];
-      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'rapid-pro' });
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'rapidpro' });
       sinon.stub(service, 'getOutgoingMessages').resolves(outgoingMessages);
       sinon.stub(rapidPro, 'send').resolves([]);
       sinon.stub(africasTalking, 'send');
@@ -597,7 +597,7 @@ describe('messaging service', () => {
     });
 
     it('calls outgoing message service poll method', () => {
-      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'rapid-pro' });
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'rapidpro' });
       sinon.stub(rapidPro, 'poll').resolves();
       return service._checkDbForMessagesToUpdate().then(() => {
         chai.expect(rapidPro.poll.callCount).to.equal(1);

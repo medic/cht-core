@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 const secureSettings = require('@medic/settings');
-const controller = require('../../../src/controllers/rapid-pro');
+const controller = require('../../../src/controllers/rapidpro');
 const messaging = require('../../../src/services/messaging');
 const serverUtils = require('../../../src/server-utils');
 

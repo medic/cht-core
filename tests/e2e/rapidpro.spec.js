@@ -9,7 +9,7 @@ const helper = require('../helper');
 const constants = require('../constants');
 const utils = require('../utils');
 
-// Mock rapid-pro server
+// Mock rapidpro server
 const mockApp = express();
 mockApp.use(bodyParser.json());
 const broadcastsEndpoint = '/api/v2/broadcasts.json';
@@ -76,7 +76,7 @@ describe('RapidPro SMS Gateway', () => {
 
   describe('Webapp Terminating messages', () => {
     const endpoint = '/api/v1/sms/radpidpro/incoming-messages';
-    const smsSettings = { outgoing_service: 'rapid-pro' };
+    const smsSettings = { outgoing_service: 'rapidpro' };
 
     it('should fail with no incoming key configured', async () => {
       await utils.updateSettings({ sms: smsSettings });
@@ -200,8 +200,8 @@ describe('RapidPro SMS Gateway', () => {
     beforeEach(() => {
       settings = {
         sms: {
-          outgoing_service: 'rapid-pro',
-          rapidPro: { url: `http://localhost:${server.address().port}` },
+          outgoing_service: 'rapidpro',
+          rapidpro: { url: `http://localhost:${server.address().port}` },
         }
       };
       reportWithTasks = {

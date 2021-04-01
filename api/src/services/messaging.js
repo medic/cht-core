@@ -4,7 +4,7 @@ const db = require('../db');
 const logger = require('../logger');
 const config = require('../config');
 const africasTalking = require('./africas-talking');
-const rapidPro = require('./rapid-pro');
+const rapidPro = require('./rapidpro');
 const records = require('../services/records');
 const environment = require('../environment');
 
@@ -13,7 +13,7 @@ const environment = require('../environment');
 const DB_CHECKING_INTERVAL = environment.isTesting ? 1000 : 1000 * 60;
 const SMS_SENDING_SERVICES = {
   'africas-talking': africasTalking,
-  'rapid-pro': rapidPro,
+  'rapidpro': rapidPro,
   // medic-gateway -- ignored because it's a pull not a push service
 };
 const DEFAULT_CONFIG = { outgoing_service: 'medic-gateway' };

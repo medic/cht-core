@@ -7,7 +7,7 @@ const secureSettings = require('@medic/settings');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
 const messaging = require('../../../src/services/messaging');
-const service = rewire('../../../src/services/rapid-pro');
+const service = rewire('../../../src/services/rapidpro');
 
 const generateMessages = (count = 25) => Array
   .from({ length: count })
@@ -20,7 +20,7 @@ describe('RapidPro SMS Gateway', () => {
 
   describe('send', () => {
     it('should throw an error if getting credentials fails', () => {
-      sinon.stub(config, 'get').returns({ rapidPro: { url: 'https://self-hosted-rapid-pro.net' } });
+      sinon.stub(config, 'get').returns({ rapidpro: { url: 'https://self-hosted-rapid-pro.net' } });
       sinon.stub(secureSettings, 'getCredentials').rejects({ error: 'omg' });
       return service
         .send()
@@ -29,7 +29,7 @@ describe('RapidPro SMS Gateway', () => {
     });
 
     it('should throw an error when no credentials are defined', () => {
-      sinon.stub(config, 'get').returns({ rapidPro: { url: 'https://self-hosted-rapid-pro.net' } });
+      sinon.stub(config, 'get').returns({ rapidpro: { url: 'https://self-hosted-rapid-pro.net' } });
       sinon.stub(secureSettings, 'getCredentials').resolves();
       return service
         .send()
@@ -37,7 +37,7 @@ describe('RapidPro SMS Gateway', () => {
         .catch(err => expect(err).to.include('No api key configured.'));
     });
 
-    it('should forward an error when no rapidPro url is defined', () => {
+    it('should forward an error when no RapidPro url is defined', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('textitapikey');
       sinon.stub(config, 'get').returns({ });
 
@@ -49,7 +49,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should forward messages to custom RapidPro instance', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('customRapidPro');
-      sinon.stub(config, 'get').returns({ rapidPro: { url: 'https://self-hosted-rapid-pro.net' } });
+      sinon.stub(config, 'get').returns({ rapidpro: { url: 'https://self-hosted-rapid-pro.net' } });
 
       const messages = [
         { to: 'phone1', content: 'message1', id: 'one' },
@@ -84,7 +84,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should return correct statuses and ids', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('textitapikey');
-      sinon.stub(config, 'get').returns({ rapidPro: { url: 'https://self-hosted-rapid-pro.net' } });
+      sinon.stub(config, 'get').returns({ rapidpro: { url: 'https://self-hosted-rapid-pro.net' } });
 
       const messages = [
         { to: 'phone1', content: 'message1', id: 'one' },
@@ -122,7 +122,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should catch errors and handle empty results', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('textitapikey');
-      sinon.stub(config, 'get').returns({ rapidPro: { url: 'https://self-hosted-rapid-pro.net' } });
+      sinon.stub(config, 'get').returns({ rapidpro: { url: 'https://self-hosted-rapid-pro.net' } });
 
       const messages = [
         { to: 'phone1', content: 'message1', id: 'one' },
@@ -163,7 +163,7 @@ describe('RapidPro SMS Gateway', () => {
     it('should catch error if getting credentials fails', () => {
       sinon.stub(secureSettings, 'getCredentials').rejects({ error: 'omg' });
       sinon.stub(db.medic, 'query');
-      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://host.com' } });
+      sinon.stub(config, 'get').returns({ rapidpro: { url: 'http://host.com' } });
       return service.poll().then(() => {
         expect(db.medic.query.callCount).to.equal(0);
         expect(secureSettings.getCredentials.callCount).to.equal(1);
@@ -173,7 +173,7 @@ describe('RapidPro SMS Gateway', () => {
     it('should catch error when no credentials are defined', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves();
       sinon.stub(db.medic, 'query');
-      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://host.com' } });
+      sinon.stub(config, 'get').returns({ rapidpro: { url: 'http://host.com' } });
       return service.poll().then(() => {
         expect(db.medic.query.callCount).to.equal(0);
         expect(secureSettings.getCredentials.callCount).to.equal(1);
@@ -196,7 +196,7 @@ describe('RapidPro SMS Gateway', () => {
     it('it throws an error when no RapidPro host is not configured', () => {
       sinon.stub(secureSettings, 'getCredentials');
       sinon.stub(db.medic, 'query');
-      sinon.stub(config, 'get').returns({ rapidPro: {} });
+      sinon.stub(config, 'get').returns({ rapidpro: {} });
 
       return service.poll().then(() => {
         expect(db.medic.query.callCount).to.equal(0);
@@ -210,7 +210,7 @@ describe('RapidPro SMS Gateway', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('apikey');
       sinon.stub(db.medic, 'query').resolves({ rows: [] });
       sinon.stub(messaging, 'updateMessageTaskStates');
-      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://host.com' } });
+      sinon.stub(config, 'get').returns({ rapidpro: { url: 'http://host.com' } });
 
       return service.poll().then(() => {
         expect(secureSettings.getCredentials.callCount).to.equal(1);
@@ -230,7 +230,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('it gets status updates for every result', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('key');
-      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://self-hosted.com' } });
+      sinon.stub(config, 'get').returns({ rapidpro: { url: 'http://self-hosted.com' } });
 
       const messages = Array
         .from({ length: 25 })
@@ -257,7 +257,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should skip messages that have no gateway_ref', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('key');
-      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://self-hosted.com' } });
+      sinon.stub(config, 'get').returns({ rapidpro: { url: 'http://self-hosted.com' } });
 
       const messages = [
         { value: { id: 'message1' } },
@@ -294,7 +294,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should update the states correctly', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('key');
-      sinon.stub(config, 'get').returns({ rapidPro: { url: 'https://textit.in' } });
+      sinon.stub(config, 'get').returns({ rapidpro: { url: 'https://textit.in' } });
 
       const messages = [
         { value: { id: 'message1', gateway_ref: 'ref1' } },
@@ -350,7 +350,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should only use 1st result from service', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('key');
-      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://textit.in' } });
+      sinon.stub(config, 'get').returns({ rapidpro: { url: 'http://textit.in' } });
 
       const messages = [
         { value: { id: 'msg1', gateway_ref: 'broadcast1' } },
@@ -380,7 +380,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should handle the remote service not sending any results', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('key');
-      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://textit.in' } });
+      sinon.stub(config, 'get').returns({ rapidpro: { url: 'http://textit.in' } });
 
       const messages = [
         { value: { id: 'msg1', gateway_ref: 'broadcast1' } },
@@ -403,7 +403,7 @@ describe('RapidPro SMS Gateway', () => {
     describe('should only increase skip with the number of processed statuses and keep querying', () => {
       beforeEach(() => {
         sinon.stub(secureSettings, 'getCredentials').resolves('key');
-        sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://textit.in' } });
+        sinon.stub(config, 'get').returns({ rapidpro: { url: 'http://textit.in' } });
         sinon.stub(request, 'get').resolves();
       });
 
@@ -504,7 +504,7 @@ describe('RapidPro SMS Gateway', () => {
 
       beforeEach(() => {
         sinon.stub(secureSettings, 'getCredentials').resolves('key');
-        sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://textit.in' } });
+        sinon.stub(config, 'get').returns({ rapidpro: { url: 'http://textit.in' } });
       });
 
       it('should go over the whole list of items', () => {
@@ -572,7 +572,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should catch errors from remote service', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('key');
-      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://textit.in' } });
+      sinon.stub(config, 'get').returns({ rapidpro: { url: 'http://textit.in' } });
 
       const messages = [
         { value: { id: 'msg1', gateway_ref: 'broadcast1' } },
@@ -604,7 +604,7 @@ describe('RapidPro SMS Gateway', () => {
 
     it('should catch errors from updating messages', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('key');
-      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://textit.in' } });
+      sinon.stub(config, 'get').returns({ rapidpro: { url: 'http://textit.in' } });
 
       const messages = [
         { value: { id: 'msg1', gateway_ref: 'broadcast1' } },
@@ -634,7 +634,7 @@ describe('RapidPro SMS Gateway', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('apikey');
       sinon.stub(db.medic, 'query').resolves({ rows: [] });
       sinon.stub(messaging, 'updateMessageTaskStates');
-      sinon.stub(config, 'get').returns({ rapidPro: { url: 'http://host.com' } });
+      sinon.stub(config, 'get').returns({ rapidpro: { url: 'http://host.com' } });
 
       return Promise
         .all([ service.poll(), service.poll(), service.poll(), service.poll() ])
