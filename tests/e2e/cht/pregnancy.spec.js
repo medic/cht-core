@@ -4,10 +4,13 @@ const loginPage = require('../../page-objects/login/login.po');
 const contactsPage = require('../../page-objects/contacts/contacts.po');
 const helper = require('../../helper');
 const pregnancyFormPo = require('../../page-objects/forms/cht/pregnancy-form.po');
+<<<<<<< HEAD
 const analyticsPo = require('../../page-objects/analytics/analytics.po');
 const pregnancyHomeVisit = require('../../page-objects/forms/cht/pregnancy-home-visit.po'); 
 const moment = require('moment');
 const deliverPo = require('../../page-objects/forms/cht/delivery.po'); 
+=======
+>>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
 
 const password = 'Secret_1';
 const district = {
@@ -76,6 +79,7 @@ const users = [
 ];
 
 describe('Pregnancy workflow on cht : ', () => {
+<<<<<<< HEAD
   let originalTimeout;
   beforeEach(function() {
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
@@ -86,12 +90,18 @@ describe('Pregnancy workflow on cht : ', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
   });
 
+=======
+>>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
   beforeAll(async () => {
     await utils.saveDocs([...docs]);
     await utils.createUsers(users);
   });
 
   it('should register a pregnancy', async () => {
+<<<<<<< HEAD
+=======
+    await console.log('do');
+>>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative('user1', password);
     await utils.closeTour();
@@ -101,6 +111,7 @@ describe('Pregnancy workflow on cht : ', () => {
     await helper.clickElementNative(contactsPage.newActions);
     await helper.clickElementNative(contactsPage.formById('pregnancy'));
     await pregnancyFormPo.fillPregnancyForm();
+<<<<<<< HEAD
     const activePregnancyCard = await contactsPage.cardElementByHeaderText('Active Pregnancy');
     await helper.waitUntilReadyNative(activePregnancyCard);
     let activePregnancyCardValues = await contactsPage.cardChildrenValueArray(activePregnancyCard);
@@ -164,5 +175,8 @@ describe('Pregnancy workflow on cht : ', () => {
     const inFacilityDeliveriesTitle = await inFacilityDeliveries.element(by.css('.title h2')).getText();
     expect(await inFacilityDeliveriesCount).toBe('100% (1 of 1)');
     expect(await inFacilityDeliveriesTitle).toBe('In-facility deliveries');
+=======
+    
+>>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
   });
 });
