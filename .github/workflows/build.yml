@@ -195,3 +195,78 @@ jobs:
         cd scripts/travis
         npm ci
         node ./publish.js
+
+
+  test-cht-default:
+    needs: build
+    name: CHT config release e2e Tests
+    runs-on: ubuntu-18.04
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+    - name: Get Docker Hub username
+      id: get-docker-hub-username
+      run: echo '::set-output name=dockerhub_username::${{ secrets.DOCKERHUB_USERNAME }}'
+    - name: Login to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      if: steps.get-docker-hub-username.outputs.dockerhub_username
+    - name: Set Travis Vars
+      run: |
+        echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
+        echo "TEST_SUITE=integration" >> $GITHUB_ENV
+    - name: Set UPLOARD_URL var
+      run: |
+        if [[ -z "$MARKET_URL" ]]; then
+          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
+          echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
+          echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
+        fi
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Couch Start
+      run: ./scripts/travis/couch-start
+    - name: xsltprox install
+      run: sudo apt-get install xsltproc
+    - name: Create logs directory
+      run: mkdir tests/logs
+    - name: npm CI
+      run: npm ci
+    - name: Grunt Install
+      run: npm install -g grunt-cli
+    - name: Horti Install
+      run: npm install -g horticulturalist
+    - name: Configure Couch
+      run: ./scripts/travis/couch-config
+    - name: Echo Vars
+      run: |
+        echo "HORTI_BUILDS_SERVER=${MARKET_URL}/${BUILDS_SERVER}"
+        echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
+        echo "COUCH_URL=${COUCH_URL}"
+    - name: Curl Couch_url
+      run: curl ${COUCH_URL}
+    - name: horti setup
+      run: |
+        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
+        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
+    - name: Test it!
+      run: node --stack_size=10000 `which grunt` ci-e2e-default
+    - name: Dump Couch logs
+      run: docker logs couch > tests/logs/couch.log 2>&1
+      if: ${{ always() }}
+    - name: Archive Results
+      uses: actions/upload-artifact@v2
+      with:
+        name: Results Artifact ${{ matrix.node-version }}
+        path: |
+          tests/results
+          tests/logs
+      if: ${{ failure() }}

@@ -707,6 +707,14 @@ module.exports = function(grunt) {
       },
     },
     protractor: {
+      'e2e-cht-release-tests': {
+        options: {
+          configFile: 'tests/conf.js',
+          args: {
+            suite: 'cht',
+          }
+        }
+      },
       'e2e-web-tests': {
         options: {
           configFile: 'tests/conf.js',
@@ -1050,6 +1058,13 @@ module.exports = function(grunt) {
     'start-webdriver',
     'exec:e2e-servers',
     'protractor:e2e-web-tests',
+    //'protractor:e2e-mobile-tests',
+  ]);
+
+  grunt.registerTask('ci-e2e-cht', 'Run e2e tests for CI', [
+    'start-webdriver',
+    'exec:e2e-servers',
+    'protractor:e2e-cht-release-tests',
     //'protractor:e2e-mobile-tests',
   ]);
 
