@@ -14,7 +14,6 @@ import {
   MissingTranslationHandler,
   MissingTranslationHandlerParams,
   TranslateCompiler,
-  TranslateParser,
 } from '@ngx-translate/core';
 import { ModalModule, BsModalRef } from 'ngx-bootstrap/modal';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
@@ -43,10 +42,7 @@ import { ParseProvider } from '@mm-providers/parse.provider';
 import { IntegrationApiService } from '@mm-services/integration-api.service';
 import { reducers } from './reducers';
 
-import {
-  TranslateMessageFormatCompilerProvider,
-  TranslateParserProvider,
-} from '@mm-providers/translate-utils.provider';
+import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-messageformat-compiler.provider';
 
 const logger = reducer => {
   // default, no options
@@ -89,10 +85,6 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
         provide: TranslateCompiler,
         useClass: TranslateMessageFormatCompilerProvider,
       },
-      parser: {
-        provide: TranslateParser,
-        useClass: TranslateParserProvider,
-      }
     }),
     ModalModule.forRoot(),
     BrowserAnimationsModule,

@@ -1,8 +1,5 @@
 import { TranslateCompiler } from '@ngx-translate/core';
 import * as MessageFormat from 'messageformat';
-import { TranslateDefaultParser } from '@ngx-translate/core';
-import { isObjectLike, isFunction } from 'lodash-es';
-import { Injectable } from '@angular/core';
 
 export class TranslateMessageFormatCompilerProvider extends TranslateCompiler {
   private messageFormat;
@@ -11,6 +8,18 @@ export class TranslateMessageFormatCompilerProvider extends TranslateCompiler {
   constructor() {
     super();
     this.messageFormat = new MessageFormat([]);
+  }
+
+  private getCompiledMessageFormat(value, lang) {
+    const compiledMessageFormat = this.messageFormat.compile(value, lang);
+    return (params) => {
+      try {
+        return compiledMessageFormat(params);
+      } catch (err) {
+        console.warn('Error while interpolating', value);
+        return value;
+      }
+    };
   }
 
   compile(value, lang) {
@@ -23,10 +32,7 @@ export class TranslateMessageFormatCompilerProvider extends TranslateCompiler {
     }
 
     try {
-      return {
-        fn: this.messageFormat.compile(value, lang),
-        value: value,
-      };
+      return this.getCompiledMessageFormat(value, lang);
     } catch (err) {
       console.error('messageformat compile error', err);
       return value;
@@ -38,31 +44,5 @@ export class TranslateMessageFormatCompilerProvider extends TranslateCompiler {
       translations[key] = this.compile(translations[key], lang);
     });
     return translations;
-  }
-}
-
-// messageformat throws an error when incorrect/incomplete context is passed to the compiled translation.
-// if this occurs, fallback to trying to translate the uncompiled value and log a warning.
-@Injectable()
-export class TranslateParserProvider extends TranslateDefaultParser {
-  constructor() {
-    super();
-  }
-
-  getValue(target, key) {
-    return target?.[key] || super.getValue(target, key);
-  }
-
-  interpolate(expr, params) {
-    if (isObjectLike(expr) && isFunction(expr.fn)) {
-      try {
-        return super.interpolate(expr.fn, params);
-      } catch (err) {
-        console.warn('Error while interpolating', expr.value);
-        return super.interpolate(expr.value, params);
-      }
-    }
-
-    return super.interpolate(expr, params);
   }
 }
