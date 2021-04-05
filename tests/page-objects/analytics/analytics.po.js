@@ -1,4 +1,6 @@
+const { element } = require('protractor');
 const helper = require('../../helper');
+
 
 module.exports = {
   expectModulesToBeAvailable: async (modules) => {
@@ -17,4 +19,7 @@ module.exports = {
       await helper.waitUntilReadyNative(element(by.css('.page .item-content.disabled')));
     }
   },
+  targetById: (id) => {
+    return element(by.css(`div[test-target-id="${id}"]`));
+  }
 };
