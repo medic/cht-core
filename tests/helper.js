@@ -288,6 +288,12 @@ module.exports = {
     );
   },
 
+  waitElementToDisappearNative: async (elm, timeout) => {
+    const locator = elm.locator();
+    timeout = timeout || 15000;
+    await browser.wait(EC.invisibilityOf(elm),timeout, `waitElementToDisappear timed out looking for ${locator}`);
+  },
+
   waitElementToPresent: (elm, timeout) => {
     timeout = timeout || 10000;
     return browser.wait(() => elm.isPresent(), timeout);
