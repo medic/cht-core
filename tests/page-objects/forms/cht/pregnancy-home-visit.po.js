@@ -52,12 +52,17 @@ const noTired =  element(by.css(`${easilyTiredName}[value=no]`));
 const noSwelling =  element(by.css(`${swellingName}[value=no]`));
 const noBreathlessness =  element(by.css(`${breathlessnessName}[value=no]`));
 
+<<<<<<< HEAD
 const usesLLIN = `${inputBase}safe_pregnancy_practices/malaria/llin_use"]`;
+=======
+const usesLLIN = `${inputBase}safe_pregnancy_practices/malaria/uses_llin"]`;
+>>>>>>> added elements for contacts page, expecting tasks, expecting on cards, nav to analytircs and asserts
 const yesLLIN = element(by.css(`${usesLLIN}[value=yes]`));
 
 const ironFolateName = `${inputBase}safe_pregnancy_practices/iron_folate/iron_folate_daily"]`;
 const yesIronFolate = element(by.css(`${ironFolateName}[value=yes]`));
 
+<<<<<<< HEAD
 const deworming = `${inputBase}safe_pregnancy_practices/deworming/deworming_med"]`;
 const yesDeworming = element(by.css(`${deworming}[value=yes]`));
 
@@ -66,21 +71,33 @@ const yesTetanus = element(by.css(`${tetanus}[value=yes]`));
 
 module.exports = {
   fillForm: async () => {
+=======
+
+module.exports = {
+  fillPregnancyForm: async () => {
+>>>>>>> added elements for contacts page, expecting tasks, expecting on cards, nav to analytircs and asserts
     await helper.waitUntilReadyNative(genericForm.formTitle);
     await helper.clickElementNative(yesStartVisit);
     await helper.clickElementNative(yesCorrect);
     await genericForm.nextPageNative();
+<<<<<<< HEAD
     await helper.clickElementNative(yesAdditionalVisits);
     await numberOfAdditionalVisits.sendKeys('1', protractor.Key.TAB);
     await helper.waitUntilReadyNative(dateNotKnown);
     await helper.clickElementNative(dateNotKnown);
+=======
+    await helper.clickElementNative(noAdditionalVisits);
+>>>>>>> added elements for contacts page, expecting tasks, expecting on cards, nav to analytircs and asserts
     await genericForm.nextPageNative();
     await helper.clickElementNative(noNewRisk);
     await helper.clickElementNative(noAdditionalRisk);
     await genericForm.nextPageNative();
     await helper.clickElementNative(noUpcomingAppointments);
     await genericForm.nextPageNative();
+<<<<<<< HEAD
     await genericForm.nextPageNative();
+=======
+>>>>>>> added elements for contacts page, expecting tasks, expecting on cards, nav to analytircs and asserts
     await helper.clickElementNative(noVaginalBleedings);
     await helper.clickElementNative(noFits);
     await helper.clickElementNative(noAbdominalPain);
@@ -97,10 +114,13 @@ module.exports = {
     await genericForm.nextPageNative();
     await helper.clickElementNative(yesIronFolate);
     await genericForm.nextPageNative();
+<<<<<<< HEAD
     await helper.clickElementNative(yesDeworming);
     await genericForm.nextPageNative();
     await genericForm.nextPageNative();
     await helper.clickElementNative(yesTetanus);
+=======
+>>>>>>> added elements for contacts page, expecting tasks, expecting on cards, nav to analytircs and asserts
     await genericForm.nextPageNative();
     await genericForm.submitNative();
   }
