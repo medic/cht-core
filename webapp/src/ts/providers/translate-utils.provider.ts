@@ -49,6 +49,10 @@ export class TranslateParserProvider extends TranslateDefaultParser {
     super();
   }
 
+  getValue(target, key) {
+    return target?.[key] || super.getValue(target, key);
+  }
+
   interpolate(expr, params) {
     if (isObjectLike(expr) && isFunction(expr.fn)) {
       try {

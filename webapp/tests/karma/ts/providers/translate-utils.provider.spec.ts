@@ -1,6 +1,7 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
 import * as MessageFormat from 'messageformat';
+import { cloneDeep } from 'lodash-es';
 
 import {
   TranslateMessageFormatCompilerProvider,
@@ -111,10 +112,12 @@ describe('TranslateUtils providers', () => {
   });
 
   describe('Translate Parser Provider', () => {
+    beforeEach(() => {
+      provider = new TranslateParserProvider();
+    });
+
     describe('interpolate', () => {
       it('should do "standard" interpolation on values, using params', () => {
-        provider = new TranslateParserProvider();
-
         expect(provider.interpolate('string')).to.equal('string');
         expect(provider.interpolate('{{string}}')).to.equal('{{string}}');
         expect(provider.interpolate('{{string}}', { string: 'ana' })).to.equal('ana');
@@ -124,7 +127,6 @@ describe('TranslateUtils providers', () => {
       });
 
       it('should catch errors with messageformat compiled values', () => {
-        provider = new TranslateParserProvider();
         const fn = sinon.stub().throws(new Error('boom'));
 
         expect(provider.interpolate({ fn, value: 'the value' })).to.equal('the value');
@@ -137,7 +139,6 @@ describe('TranslateUtils providers', () => {
       });
 
       it('should return function from messageformat compiled value', () => {
-        provider = new TranslateParserProvider();
         const fn = sinon.stub().returns('the compiled interpolated result');
 
         expect(provider.interpolate({ fn, value: 'the value' }))
@@ -149,6 +150,41 @@ describe('TranslateUtils providers', () => {
           [ undefined ],
           [{ the: 'params' }],
         ]);
+      });
+    });
+
+    describe('getValue', () => {
+      it('should work with undefined / incorrect target and key', () => {
+        expect(provider.getValue(undefined, undefined)).to.equal(undefined);
+        expect(provider.getValue([], undefined)).to.equal(undefined);
+        expect(provider.getValue({}, undefined)).to.equal(undefined);
+        expect(provider.getValue('test', 'test')).to.equal(undefined);
+        expect(provider.getValue('test', [])).to.equal(undefined);
+        expect(provider.getValue([], [])).to.equal(undefined);
+      });
+
+      it('should return exact match first', () => {
+        const translations = {
+          'contact': {
+            fn: () => 'messageformatkey',
+            value: 'contact'
+          },
+          'contact.key': 'contact key',
+          'contact.mark': 'contact mark',
+          'person': {
+            'last': 'last name',
+            'first': 'first name',
+          }
+        };
+        const clonedTranslations = cloneDeep(translations);
+        const contactTranslation = provider.getValue(translations, 'contact');
+        expect(contactTranslation.value).to.equal(clonedTranslations.contact.value);
+        expect(contactTranslation.fn()).to.equal(clonedTranslations.contact.fn());
+        expect(provider.getValue(translations, 'contact.key')).to.equal('contact key');
+        expect(provider.getValue(translations, 'contact.mark')).to.equal('contact mark');
+        expect(provider.getValue(translations, 'person.last')).to.equal('last name'); // this still works
+        expect(provider.getValue(translations, 'person.first')).to.equal('first name'); // this still works
+        expect(clonedTranslations).to.deep.equal(translations);
       });
     });
   });
