@@ -298,7 +298,7 @@ describe('ContactViewModelGenerator service', () => {
         expect(model.children[0].type)
           .to.deep.equal({ id: 'correct childContactPerson type', parents: ['correct doc type'], person: true });
         expect(model.children[0].contacts)
-          .to.deep.equal([{ isPrimaryContact: true, doc: childContactPerson, id: 'mario' }]);
+          .to.deep.equal([{ isPrimaryContact: true, doc: childContactPerson, id: childContactPerson._id }]);
 
         expect(model.children[1].type)
           .to.deep.equal({ id: 'correct childPlace type', parents: ['correct doc type'], person: false });
