@@ -297,11 +297,13 @@ describe('ContactViewModelGenerator service', () => {
         expect(model.children.length).to.equal(2);
         expect(model.children[0].type)
           .to.deep.equal({ id: 'correct childContactPerson type', parents: ['correct doc type'], person: true });
-        expect(model.children[0].contacts).to.deep.equal([{ isPrimaryContact: true, doc: childContactPerson }]);
+        expect(model.children[0].contacts)
+          .to.deep.equal([{ isPrimaryContact: true, doc: childContactPerson, id: 'mario' }]);
 
         expect(model.children[1].type)
           .to.deep.equal({ id: 'correct childPlace type', parents: ['correct doc type'], person: false });
-        expect(model.children[1].contacts).to.deep.equal([{ doc: childPlace }]);
+        expect(model.children[1].contacts)
+          .to.deep.equal([{ doc: childPlace, id: childPlace._id }]);
 
         expect(contactTypesService.getTypeId.callCount).to.deep.equal(3);
         expect(contactTypesService.getTypeId.args).to.deep.equal([[doc], [childContactPerson], [childPlace]]);
