@@ -186,4 +186,17 @@ module.exports = {
     // wait for all actionbar links to appear
     return browser.wait(async () => await leftActionBarButtons().count() === 2, 1000);
   },
+  cardElementByHeaderText: (headerText) => {
+    const cssClass = '.card .action-header';
+    return element(by.cssContainingText(cssClass, headerText));
+  },
+  cardChildrenValueArray: (cardElement) => {
+    return cardElement.element(by.xpath('..')).all(by.css('.cell p')).getText();
+  },
+  taskNames: async () => {
+    const tasks = element(by.css('.card.tasks'));
+    await helper.waitUntilReadyNative(tasks);
+    const taskContent = tasks.all(by.css('.content'));
+    return taskContent.getText();
+  }
 };
