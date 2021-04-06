@@ -239,6 +239,8 @@ module.exports = {
   openSubmenu: openSubmenu,
 
   getReportsButtonLabel: () => element(by.css('#reports-tab .button-label')),
+  getMessagesButtonLabel: () => element(by.css('#messages-tab .button-label')),
+  getTasksButtonLabel: () => element(by.css('#tasks-tab .button-label')),
 };
 
 function openSubmenu(menuName) {
