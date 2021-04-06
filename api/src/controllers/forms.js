@@ -104,7 +104,7 @@ module.exports = {
       .then(() => res.json({ok: true}))
       .catch(err => {
         logger.error('Error validating XForm - ' + err.message);
-        res.status(400).json({error: err.message});
+        res.status(err.code || 400).json({error: err.message});
       });
   },
 };

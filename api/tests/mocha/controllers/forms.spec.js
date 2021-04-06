@@ -189,12 +189,29 @@ describe('forms controller', () => {
       const status = sinon.stub(res, 'status').returns({ json: json });
       await controller.__with__({
         'generateXform': { generate: sinon.stub().resolves() },
-        'auth': { check: sinon.stub().rejects({ message: 'Not logged in' }) },
+        'auth': { check: sinon.stub().rejects({ code: 401, message: 'Not logged in', err: new Error('Error ...') }) },
       })(async () => {
         await controller.validate(req, res);
         chai.expect(status.callCount).to.equal(1);
+        chai.expect(status.args[0][0]).to.equal(401);
         chai.expect(json.callCount).to.equal(1);
         chai.expect(json.args[0][0]).to.deep.equal({error: 'Not logged in'});
+      });
+    });
+
+    it('returns error when auth failed with lack of permission', async () => {
+      const req = { body: '<xml></xml>' };
+      const json = sinon.stub(res, 'json');
+      const status = sinon.stub(res, 'status').returns({ json: json });
+      await controller.__with__({
+        'generateXform': { generate: sinon.stub().resolves() },
+        'auth': { check: sinon.stub().rejects({ code: 403, message: 'Insufficient privileges' }) },
+      })(async () => {
+        await controller.validate(req, res);
+        chai.expect(status.callCount).to.equal(1);
+        chai.expect(status.args[0][0]).to.equal(403);
+        chai.expect(json.callCount).to.equal(1);
+        chai.expect(json.args[0][0]).to.deep.equal({error: 'Insufficient privileges'});
       });
     });
   });
