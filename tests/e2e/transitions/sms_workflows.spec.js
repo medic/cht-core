@@ -11,7 +11,9 @@ const contacts = [
     _id: 'district_hospital',
     name: 'District hospital',
     type: 'district_hospital',
+    place_id: 'district_shortcode',
     contact: { _id: 'chw3' },
+    parent: {},
     linked_docs: {
       some_tag1: 'chw1',
       some_tag2: 'chw2',
@@ -23,6 +25,7 @@ const contacts = [
     _id: 'health_center',
     name: 'Health Center',
     type: 'health_center',
+    place_id: 'health_center_shortcode',
     parent: { _id: 'district_hospital' },
     contact: { _id: 'chw2' },
     linked_docs: {},
@@ -31,6 +34,7 @@ const contacts = [
     _id: 'clinic1',
     name: 'Clinic',
     type: 'clinic',
+    place_id: 'clinic_shortcode',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: { _id: 'chw1' },
     linked_docs: {
@@ -177,7 +181,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const [ patientChw6, patientChw3, patientChw4  ] = await processReportsAndSetings(reports,settings);
+      const [ patientChw6, patientChw3, patientChw4  ] = await processReportsAndSetings(reports, settings);
       expectTasks(patientChw6, [
         // health_center.contact._id === chw2
         { messages: [{ to: 'phone2',  message: 'to parent' }] },
@@ -197,6 +201,71 @@ describe('SMS workflows', () => {
         { messages: [{ to: 'phone3',  message: 'to parent' }] },
         // defaults to sender
         { messages: [{ to: 'phone6', message: 'to grandparent' }] },
+      ]);
+    });
+
+    it('should correctly map parent for place', async () => {
+      const settings = {
+        transitions: {
+          accept_patient_reports: true,
+          update_clinics: true,
+        },
+        patient_reports: [
+          {
+            form: 'FORM',
+            messages: [
+              {
+                event_type: 'report_accepted',
+                recipient: 'parent',
+                message: [{ content: 'to parent' }],
+              },
+              {
+                event_type: 'report_accepted',
+                recipient: 'grandparent',
+                message: [{ content: 'to grandparent' }],
+              }
+            ]
+          }
+        ],
+        forms: { FORM: { } }
+      };
+
+      const reports = [
+        {
+          _id: 'clinic_report',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone4', // chw4 > health_center
+          fields: {
+            place_id: 'clinic_shortcode', // clinic > health_center
+          },
+          reported_date: new Date().getTime(),
+        },
+        {
+          _id: 'health_center_report',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone4', // chw4 > health_center
+          fields: {
+            place_id: 'health_center_shortcode', // health_center > district
+          },
+          reported_date: new Date().getTime(),
+        },
+      ];
+
+      const [ clinicReport, healthCenterReport ] = await processReportsAndSetings(reports, settings);
+      expectTasks(clinicReport, [
+        // district.contact._id === chw3
+        { messages: [{ to: 'phone3',  message: 'to parent' }] },
+        // sender, because clinic.parent.parent.parent is undefined
+        { messages: [{ to: 'phone4', message: 'to grandparent' }] },
+      ]);
+
+      expectTasks(healthCenterReport, [
+        // defaults to sender
+        { messages: [{ to: 'phone4',  message: 'to parent' }] },
+        // defaults to sender
+        { messages: [{ to: 'phone4', message: 'to grandparent' }] },
       ]);
     });
 
@@ -247,8 +316,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-
-      const  [contactChw6, contactChw4, contactChw3  ] = await processReportsAndSetings(reports,settings);
+      const  [contactChw6, contactChw4, contactChw3  ] = await processReportsAndSetings(reports, settings);
       expectTasks(contactChw6, [
         // context.parent = health_center
         // context.parent.parent = district
@@ -340,8 +408,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-
-      const[ patientChw6, patientChw3, patientChw4  ] = await processReportsAndSetings(reports,settings);
+      const[ patientChw6, patientChw3, patientChw4  ] = await processReportsAndSetings(reports, settings);
       expectTasks(patientChw6, [
         // clinic.contact._id === chw2
         { messages: [{ to: 'phone1',  message: 'to clinic' }] },
@@ -365,6 +432,100 @@ describe('SMS workflows', () => {
         { messages: [{ to: 'phone6',  message: 'to clinic' }] },
         // health_center.contact._id === chw2
         { messages: [{ to: 'phone2', message: 'to hc' }] },
+        // district.contact._id === chw3
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
+    });
+
+    it('should correctly map ancestor for place', async () => {
+      const settings = {
+        transitions: {
+          accept_patient_reports: true,
+          update_clinics: true
+        },
+        patient_reports: [
+          {
+            form: 'FORM',
+            messages: [
+              {
+                event_type: 'report_accepted',
+                recipient: 'ancestor:clinic',
+                message: [{ content: 'to clinic' }],
+              },
+              {
+                event_type: 'report_accepted',
+                recipient: 'ancestor:health_center',
+                message: [{ content: 'to hc' }],
+              },
+              {
+                event_type: 'report_accepted',
+                recipient: 'ancestor:district_hospital',
+                message: [{ content: 'to district' }],
+              }
+            ]
+          }
+        ],
+        forms: { FORM: { } }
+      };
+
+      const reports = [
+        {
+          _id: 'clinic_report',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone3', // chw4 > district
+          fields: {
+            place_id: 'clinic_shortcode', // clinic > health_center > district
+          },
+          reported_date: new Date().getTime(),
+        },
+        {
+          _id: 'health_center_report',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone3', // chw3 > district
+          fields: {
+            place_id: 'health_center_shortcode', // health_center > district
+          },
+          reported_date: new Date().getTime(),
+        },
+        {
+          _id: 'district_report',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone3', // chw3 > district
+          fields: {
+            place_id: 'district_shortcode', // no parent
+          },
+          reported_date: new Date().getTime(),
+        },
+      ];
+
+      const[ clinicReport, healthCenterReport, districtReport ] = await processReportsAndSetings(reports, settings);
+
+      expectTasks(clinicReport, [
+        // clinic.contact._id === chw1
+        { messages: [{ to: 'phone1',  message: 'to clinic' }] },
+        // health_center.contact._id === chw2
+        { messages: [{ to: 'phone2', message: 'to hc' }] },
+        // district.contact._id === chw3
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
+
+      expectTasks(healthCenterReport, [
+        // no clinic, defaults to sender
+        { messages: [{ to: 'phone3',  message: 'to clinic' }] },
+        // health_center.contact._id === chw2
+        { messages: [{ to: 'phone2', message: 'to hc' }] },
+        // district.contact._id === chw3
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
+
+      expectTasks(districtReport, [
+        // no clinic, defaults to sender
+        { messages: [{ to: 'phone3',  message: 'to clinic' }] },
+        // no hc, defaults to sender
+        { messages: [{ to: 'phone3', message: 'to hc' }] },
         // district.contact._id === chw3
         { messages: [{ to: 'phone3', message: 'to district' }] },
       ]);
@@ -423,9 +584,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-
-
-      const [ contactChw6, contactChw4, contactChw3  ] = await processReportsAndSetings(reports,settings);
+      const [ contactChw6, contactChw4, contactChw3  ] = await processReportsAndSetings(reports, settings);
       expectTasks(contactChw6, [
         // context.parent = health_center
         { messages: [{ to: 'phone6',  message: 'to clinic' }] }, // to sender
@@ -532,8 +691,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-
-      const [ patientChw5, patientChw3, patientChw4 ] = await processReportsAndSetings(reports,settings);
+      const [ patientChw5, patientChw3, patientChw4 ] = await processReportsAndSetings(reports, settings);
       expectTasks(patientChw5, [
         { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
         { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
@@ -562,6 +720,114 @@ describe('SMS workflows', () => {
         { messages: [{ to: 'phone6', message: 'to missing_tag' }] }, // sender
         { messages: [{ to: 'phone6', message: 'to sibling' }] }, // sender
         { messages: [{ to: 'phone4', message: 'to same_tag' }] },
+      ]);
+    });
+
+    it('should correctly map linked contacts by tag for place', async () => {
+      const settings = {
+        transitions: {
+          accept_patient_reports: true,
+          update_clinics: true
+        },
+        patient_reports: [
+          {
+            form: 'FORM',
+            messages: [
+              {
+                event_type: 'report_accepted',
+                recipient: 'link:some_tag1',
+                message: [{ content: 'to some_tag1' }],
+              },
+              {
+                event_type: 'report_accepted',
+                recipient: 'link:some_tag3',
+                message: [{ content: 'to some_tag3' }],
+              },
+              {
+                event_type: 'report_accepted',
+                recipient: 'link:some_tag4',
+                message: [{ content: 'to some_tag4' }],
+              },
+              {
+                event_type: 'report_accepted',
+                recipient: 'link:missing1',
+                message: [{ content: 'to missing1' }],
+              },
+              {
+                event_type: 'report_accepted',
+                recipient: 'link:missing_tag',
+                message: [{ content: 'to missing_tag' }],
+              },
+              {
+                event_type: 'report_accepted',
+                recipient: 'link:same_tag',
+                message: [{ content: 'to same_tag' }],
+              },
+            ]
+          }
+        ],
+        forms: { FORM: { } }
+      };
+
+      const reports = [
+        {
+          _id: 'report_clinic',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone7',
+          fields: {
+            place_id: 'clinic_shortcode', // clinic > health_center > district
+          },
+          reported_date: new Date().getTime(),
+        },
+        {
+          _id: 'report_health_center',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone7', // chw7
+          fields: {
+            place_id: 'health_center_shortcode', // health_center > district
+          },
+          reported_date: new Date().getTime(),
+        },
+        {
+          _id: 'report_district',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone6', // chw6 > clinic
+          fields: {
+            place_id: 'district_shortcode',  // no parent
+          },
+          reported_date: new Date().getTime(),
+        },
+      ];
+
+      const [ reportClinic, reportHealthCenter, reportDistrict ] = await processReportsAndSetings(reports, settings);
+      expectTasks(reportClinic, [
+        { messages: [{ to: 'phone1', message: 'to some_tag1' }] }, // tag from district
+        { messages: [{ to: 'phone3', message: 'to some_tag3' }] }, // tag from district
+        { messages: [{ to: 'phone4', message: 'to some_tag4' }] }, // tag from district
+        { messages: [{ to: 'phone7', message: 'to missing1' }] }, // sender
+        { messages: [{ to: 'phone7', message: 'to missing_tag' }] }, // sender
+        { messages: [{ to: 'phone1', message: 'to same_tag' }] }, // tag from clinic, not tag from district
+      ]);
+
+      expectTasks(reportHealthCenter, [
+        { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
+        { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
+        { messages: [{ to: 'phone7', message: 'to some_tag4' }] }, // sender
+        { messages: [{ to: 'phone7', message: 'to missing1' }] }, // sender
+        { messages: [{ to: 'phone7', message: 'to missing_tag' }] }, // sender
+        { messages: [{ to: 'phone4', message: 'to same_tag' }] }, // tag from district
+      ]);
+
+      expectTasks(reportDistrict, [
+        { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
+        { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
+        { messages: [{ to: 'phone6', message: 'to some_tag4' }] }, // sender
+        { messages: [{ to: 'phone6', message: 'to missing1' }] }, // sender
+        { messages: [{ to: 'phone6', message: 'to missing_tag' }] }, // sender
+        { messages: [{ to: 'phone4', message: 'to same_tag' }] }, // tag from self
       ]);
     });
 
@@ -630,8 +896,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-
-      const [ contactChw5, contactChw2, contactChw3  ] = await processReportsAndSetings(reports,settings);
+      const [ contactChw5, contactChw2, contactChw3 ] = await processReportsAndSetings(reports, settings);
       expectTasks(contactChw5, [
         { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
         { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
@@ -720,8 +985,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-
-      const [ patientChw5, patientChw3, patientChw4  ] = await processReportsAndSetings(reports,settings);
+      const [ patientChw5, patientChw3, patientChw4 ] = await processReportsAndSetings(reports, settings);
 
       expectTasks(patientChw5, [
         { messages: [{ to: 'phone1', message: 'to clinic' }] },
@@ -738,6 +1002,91 @@ describe('SMS workflows', () => {
       expectTasks(patientChw4, [
         { messages: [{ to: 'phone7', message: 'to clinic' }] }, // sender
         { messages: [{ to: 'phone2', message: 'to health_center' }] },
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
+    });
+
+    it('should correctly map linked contacts by type for place', async () => {
+      const settings = {
+        transitions: {
+          accept_patient_reports: true,
+          update_clinics: true
+        },
+        patient_reports: [
+          {
+            form: 'FORM',
+            messages: [
+              {
+                event_type: 'report_accepted',
+                recipient: 'link:clinic',
+                message: [{ content: 'to clinic' }],
+              },
+              {
+                event_type: 'report_accepted',
+                recipient: 'link:health_center',
+                message: [{ content: 'to health_center' }],
+              },
+              {
+                event_type: 'report_accepted',
+                recipient: 'link:district_hospital',
+                message: [{ content: 'to district' }],
+              },
+            ]
+          }
+        ],
+        forms: { FORM: { } }
+      };
+
+      const reports = [
+        {
+          _id: 'report_clinic',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone7', // chw7
+          fields: {
+            place_id: 'clinic_shortcode', // clinic > health_center > district
+          },
+          reported_date: new Date().getTime(),
+        },
+        {
+          _id: 'health_center_report',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone7', // chw7
+          fields: {
+            place_id: 'health_center_shortcode', // health_center > district
+          },
+          reported_date: new Date().getTime(),
+        },
+        {
+          _id: 'district_report',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone7', // chw7
+          fields: {
+            place_id: 'district_shortcode',
+          },
+          reported_date: new Date().getTime(),
+        },
+      ];
+
+      const [ reportClinic, reportHealthCenter, reportDistrict ] = await processReportsAndSetings(reports, settings);
+
+      expectTasks(reportClinic, [
+        { messages: [{ to: 'phone1', message: 'to clinic' }] },
+        { messages: [{ to: 'phone2', message: 'to health_center' }] },
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
+
+      expectTasks(reportHealthCenter, [
+        { messages: [{ to: 'phone7', message: 'to clinic' }] }, // sender
+        { messages: [{ to: 'phone2', message: 'to health_center' }] },
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
+
+      expectTasks(reportDistrict, [
+        { messages: [{ to: 'phone7', message: 'to clinic' }] }, // sender
+        { messages: [{ to: 'phone7', message: 'to health_center' }] }, // sender
         { messages: [{ to: 'phone3', message: 'to district' }] },
       ]);
     });
@@ -795,8 +1144,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-
-      const [ contactChw5, contactChw2, contactChw3   ] = await processReportsAndSetings(reports,settings);
+      const [ contactChw5, contactChw2, contactChw3 ] = await processReportsAndSetings(reports, settings);
       expectTasks(contactChw5, [
         { messages: [{ to: 'phone1', message: 'to clinic' }] },
         { messages: [{ to: 'phone2', message: 'to health_center' }] },
