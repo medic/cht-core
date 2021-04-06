@@ -183,7 +183,7 @@ describe('forms controller', () => {
       });
     });
 
-    it('returns error when auth failed', async () => {
+    it('returns error when not logged in', async () => {
       const req = { body: '<xml></xml>' };
       const json = sinon.stub(res, 'json');
       const status = sinon.stub(res, 'status').returns({ json: json });
@@ -203,11 +203,16 @@ describe('forms controller', () => {
       const req = { body: '<xml></xml>' };
       const json = sinon.stub(res, 'json');
       const status = sinon.stub(res, 'status').returns({ json: json });
+      const authCheck = sinon.stub();
+      authCheck.withArgs(req, 'can_configure').rejects({ code: 403, message: 'Insufficient privileges' });
+      authCheck.withArgs(sinon.match.any).rejects({ code: 400, message: 'Another error' });
       await controller.__with__({
         'generateXform': { generate: sinon.stub().resolves() },
-        'auth': { check: sinon.stub().rejects({ code: 403, message: 'Insufficient privileges' }) },
+        'auth': { check: authCheck },
       })(async () => {
         await controller.validate(req, res);
+        chai.expect(authCheck.callCount).to.equal(1);
+        chai.expect(authCheck.args[0]).to.deep.equal([req, 'can_configure']);
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(403);
         chai.expect(json.callCount).to.equal(1);
