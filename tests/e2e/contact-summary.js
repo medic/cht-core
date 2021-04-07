@@ -162,8 +162,6 @@ describe('Contact summary info', () => {
     hidden_fields: [],
   };
   const CAROL_HOME_VISIT = {
-    _id: '3fc395f4-42c7-4612-b3e0-b8a27617cfa8',
-    _rev: '1-2bf7167ab45a8c61c815274d953fccc5',
     form: 'home_visit',
     type: 'data_record',
     content_type: 'xml',
@@ -185,8 +183,18 @@ describe('Contact summary info', () => {
 
   const DOCS = [ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT, DAVID_VISIT, CAROL_HOME_VISIT];
 
+  const SETTINGS = {
+    uhc: {
+      visit_count: {
+        month_start_date: 26,
+        visit_count_goal: 2
+      }
+    },
+    contact_summary: SCRIPT
+  };
+
   beforeEach(async () => {
-    await utils.updateSettings({ contact_summary: SCRIPT });
+    await utils.updateSettings(SETTINGS);
     await utils.saveDocs(DOCS);
   });
 
