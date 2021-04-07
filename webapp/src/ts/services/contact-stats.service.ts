@@ -49,7 +49,7 @@ export class ContactStatsService {
     return visits;
   }
 
-  async getVisitStats(contactId, visitCountSettings: VisitCountSettings): VisitStats {
+  async getVisitStats(contactId, visitCountSettings: VisitCountSettings): Promise<VisitStats> {
     if (!visitCountSettings || !contactId) {
       return;
     }
