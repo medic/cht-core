@@ -1,3 +1,4 @@
+const moment = require('moment');
 const utils = require('../utils');
 const helper = require('../helper');
 const contactsPo = require('../page-objects/contacts/contacts.po');
@@ -149,7 +150,7 @@ describe('Contact summary info', () => {
     form: 'V',
     type: 'data_record',
     content_type: 'xml',
-    reported_date: 1462538250374,
+    reported_date: moment().valueOf(),
     patient_id: CAROL.patient_id,
     contact: {
       name: 'Sharon',
@@ -160,28 +161,13 @@ describe('Contact summary info', () => {
     },
     from: '+555',
     hidden_fields: [],
-  };
-  const CAROL_HOME_VISIT = {
-    form: 'V',
-    type: 'data_record',
-    content_type: 'xml',
-    reported_date: 1617804258004,
-    contact: {
-      name: 'Sharon',
-      phone: '+555',
-      type: 'person',
-      _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32',
-      _rev: '1-fb7fbda241dbf6c2239485c655818a69',
-    },
-    from: '',
-    hidden_fields: [],
     fields: {
       visited_contact_uuid: 'carol-contact',
       patient_id: 'carol-contact'
     }
   };
 
-  const DOCS = [ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT, DAVID_VISIT, CAROL_HOME_VISIT];
+  const DOCS = [ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT, DAVID_VISIT];
 
   const SETTINGS = {
     uhc: {
@@ -230,10 +216,10 @@ describe('Contact summary info', () => {
     expect(await contactsPo.cardFieldText('test_sex')).toBe(CAROL.sex);
 
     expect(await contactsPo.cardFieldLabelText('stats_visit_count')).toBe('stats_visit_count');
-    expect(await contactsPo.cardFieldText('stats_visit_count')).toBe(1);
+    expect(await contactsPo.cardFieldText('stats_visit_count')).toBe('1');
 
     expect(await contactsPo.cardFieldLabelText('stats_visit_count_goal')).toBe('stats_visit_count_goal');
-    expect(await contactsPo.cardFieldText('stats_visit_count_goal')).toBe(1);
+    expect(await contactsPo.cardFieldText('stats_visit_count_goal')).toBe('2');
 
     expect(await contactsPo.cardFieldLabelText('alicetag')).toBe('aliceTag');
     expect(await contactsPo.cardFieldText('alicetag')).toBe(`${ALICE.name} ${ALICE.phone}`);
