@@ -162,7 +162,7 @@ describe('Contact summary info', () => {
     hidden_fields: [],
   };
   const CAROL_HOME_VISIT = {
-    form: 'home_visit',
+    form: 'V',
     type: 'data_record',
     content_type: 'xml',
     reported_date: 1617804258004,
