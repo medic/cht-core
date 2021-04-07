@@ -7,7 +7,7 @@ import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import * as moment from 'moment';
 
-describe.only('ContactStats Service', () => {
+describe('ContactStats Service', () => {
   let service: ContactStatsService;
   let clock;
   let localDb;
