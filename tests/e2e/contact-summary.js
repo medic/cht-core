@@ -161,8 +161,29 @@ describe('Contact summary info', () => {
     from: '+555',
     hidden_fields: [],
   };
+  const CAROL_HOME_VISIT = {
+    _id: '3fc395f4-42c7-4612-b3e0-b8a27617cfa8',
+    _rev: '1-2bf7167ab45a8c61c815274d953fccc5',
+    form: 'home_visit',
+    type: 'data_record',
+    content_type: 'xml',
+    reported_date: 1617804258004,
+    contact: {
+      name: 'Sharon',
+      phone: '+555',
+      type: 'person',
+      _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32',
+      _rev: '1-fb7fbda241dbf6c2239485c655818a69',
+    },
+    from: '',
+    hidden_fields: [],
+    fields: {
+      visited_contact_uuid: 'carol-contact',
+      patient_id: 'carol-contact'
+    }
+  };
 
-  const DOCS = [ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT, DAVID_VISIT];
+  const DOCS = [ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT, DAVID_VISIT, CAROL_HOME_VISIT];
 
   beforeEach(async () => {
     await utils.updateSettings({ contact_summary: SCRIPT });
