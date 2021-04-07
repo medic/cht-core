@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import * as moment from 'moment';
 
 import { ContactStatsService } from '@mm-services/contact-stats.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
-import * as moment from 'moment';
 
 describe('ContactStats Service', () => {
   let service: ContactStatsService;
