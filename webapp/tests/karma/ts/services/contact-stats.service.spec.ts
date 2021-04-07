@@ -5,14 +5,17 @@ import { expect } from 'chai';
 import { ContactStatsService } from '@mm-services/contact-stats.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
+import * as moment from 'moment';
 
-describe('ContactStats Service', () => {
+describe.only('ContactStats Service', () => {
   let service: ContactStatsService;
+  let clock;
   let localDb;
   let dbService;
   let sessionService;
 
   beforeEach(() => {
+    clock = sinon.useFakeTimers(moment('2021-04-07 18:18:18').valueOf());
     localDb = { query: sinon.stub() };
     dbService = {
       get: sinon.stub().returns(localDb)
@@ -31,14 +34,15 @@ describe('ContactStats Service', () => {
   });
 
   afterEach(() => {
+    clock.restore();
     sinon.restore();
   });
 
   it('should get visit stats and query with key for online user', async () => {
     const contactId = '2b';
     const range = {
-      start: 1616691600000, // Mar 26 2021 00:00:00
-      end: 1619369999999 // Apr 25 2021 23:59:59
+      start: moment('2021-03-26 00:00:00.000').valueOf(),
+      end: moment('2021-04-25 23:59:59.999').valueOf()
     };
     const visitCountSettings = {
       monthStartDate: 26,
@@ -48,25 +52,25 @@ describe('ContactStats Service', () => {
     localDb.query.onCall(0).returns({ rows: [
       {
         key: '1a',
-        value: 1617729474091
+        value: moment('2021-04-25 12:59:59').valueOf()
       },
       {
         key: '2b',
-        value: 1617729474090
+        value: moment('2021-04-15 22:59:59').valueOf()
       }
     ]});
     // Query - visits to contact
     localDb.query.onCall(1).returns({ rows: [
       {
-        key: 1617729474091,
+        key: moment('2021-04-25 12:59:59').valueOf(),
         value: '1a'
       },
       {
-        key: 1617729474090,
+        key: moment('2021-04-15 22:59:59').valueOf(),
         value: '2b'
       },
       {
-        key: 1618739474090,
+        key: moment('2021-04-17 22:59:59').valueOf(),
         value: '2b'
       }
     ]});
@@ -75,7 +79,7 @@ describe('ContactStats Service', () => {
     const result = await service.getVisitStats(contactId, visitCountSettings);
 
     expect(result).to.deep.equal({
-      lastVisitedDate: 1617729474090,
+      lastVisitedDate: moment('2021-04-15 22:59:59').valueOf(),
       count: 2,
       countGoal: 5
     });
@@ -92,8 +96,8 @@ describe('ContactStats Service', () => {
   it('should get visit stats and not query with key for offline user', async () => {
     const contactId = '2b';
     const range = {
-      start: 1616691600000, // Mar 26 2021 00:00:00
-      end: 1619369999999 // Apr 25 2021 23:59:59
+      start: moment('2021-03-26 00:00:00.000').valueOf(),
+      end: moment('2021-04-25 23:59:59.999').valueOf()
     };
     const visitCountSettings = {
       monthStartDate: 26,
@@ -103,21 +107,21 @@ describe('ContactStats Service', () => {
     localDb.query.onCall(0).returns({ rows: [
       {
         key: '1a',
-        value: 1617729474091
+        value: moment('2021-04-23 20:59:59').valueOf()
       },
       {
         key: '2b',
-        value: 1617729474090
+        value: moment('2021-04-15 22:59:59').valueOf()
       }
     ]});
     // Query - visits to contact
     localDb.query.onCall(1).returns({ rows: [
       {
-        key: 1617729474091,
+        key: moment('2021-04-25 12:59:59').valueOf(),
         value: '1a'
       },
       {
-        key: 1617729474090,
+        key: moment('2021-04-15 22:59:59').valueOf(),
         value: '2b'
       }
     ]});
@@ -126,7 +130,7 @@ describe('ContactStats Service', () => {
     const result = await service.getVisitStats(contactId, visitCountSettings);
 
     expect(result).to.deep.equal({
-      lastVisitedDate: 1617729474090,
+      lastVisitedDate: moment('2021-04-15 22:59:59').valueOf(),
       count: 1,
       countGoal: 5
     });
@@ -143,8 +147,8 @@ describe('ContactStats Service', () => {
   it('should not crash if contact isnt found', async () => {
     const contactId = '3c';
     const range = {
-      start: 1616691600000, // Mar 26 2021 00:00:00
-      end: 1619369999999 // Apr 25 2021 23:59:59
+      start: moment('2021-03-26 00:00:00.000').valueOf(),
+      end: moment('2021-04-25 23:59:59.999').valueOf()
     };
     const visitCountSettings = {
       monthStartDate: 26,
@@ -154,17 +158,17 @@ describe('ContactStats Service', () => {
     localDb.query.onCall(0).returns({ rows: [
       {
         key: '1a',
-        value: 1617729474091
+        value: moment('2021-04-23 20:59:59').valueOf()
       },
       {
         key: '2b',
-        value: 1617729474090
+        value: moment('2021-04-15 22:59:59').valueOf()
       }
     ]});
     // Query - visits to contact
     localDb.query.onCall(1).returns({ rows: [
       {
-        key: 1617729474091,
+        key: moment('2021-04-15 22:59:59').valueOf(),
         value: '1a'
       }
     ]});
