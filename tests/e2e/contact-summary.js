@@ -11,6 +11,8 @@ describe('Contact summary info', () => {
       fields = [
         { label: "test_pid", value: contact.patient_id, width: 3 },
         { label: "test_sex", value: contact.sex, width: 3 },
+        { label: "stats_visit_count", value: stats.visit.count, width: 3 },
+        { label: "stats_visit_count_goal", value: stats.visit.countGoal, width: 3 },
       ];
       Object.keys(contact.linked_docs).forEach(key => {
         const linkedDoc = contact.linked_docs[key];
@@ -197,6 +199,12 @@ describe('Contact summary info', () => {
 
     expect(await contactsPo.cardFieldLabelText('test_sex')).toBe('test_sex');
     expect(await contactsPo.cardFieldText('test_sex')).toBe(CAROL.sex);
+
+    expect(await contactsPo.cardFieldLabelText('stats_visit_count')).toBe('stats_visit_count');
+    expect(await contactsPo.cardFieldText('stats_visit_count')).toBe(1);
+
+    expect(await contactsPo.cardFieldLabelText('stats_visit_count_goal')).toBe('stats_visit_count_goal');
+    expect(await contactsPo.cardFieldText('stats_visit_count_goal')).toBe(1);
 
     expect(await contactsPo.cardFieldLabelText('alicetag')).toBe('aliceTag');
     expect(await contactsPo.cardFieldText('alicetag')).toBe(`${ALICE.name} ${ALICE.phone}`);

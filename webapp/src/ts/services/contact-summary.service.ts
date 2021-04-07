@@ -1,14 +1,10 @@
 import { Injectable, NgZone } from '@angular/core';
-import * as moment from 'moment';
-import { isObject as _isObject, uniq as _uniq } from 'lodash-es';
-import * as CalendarInterval from '@medic/calendar-interval';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { PipesService } from '@mm-services/pipes.service';
 import { FeedbackService } from '@mm-services/feedback.service';
-import { DbService } from '@mm-services/db.service';
-import { SessionService } from '@mm-services/session.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
+import { ContactStatsService } from '@mm-services/contact-stats.service';
 
 /**
  * Service for generating summary information based on a given
@@ -28,23 +24,18 @@ export class ContactSummaryService {
     private pipesService:PipesService,
     private feedbackService:FeedbackService,
     private ngZone:NgZone,
-    private dbService:DbService,
-    private sessionService:SessionService,
-    private uhcSettingsService:UHCSettingsService
+    private uhcSettingsService:UHCSettingsService,
+    private contactStatsService:ContactStatsService
   ) { }
 
-  private async getGeneratorFunction() {
-    if (!this.settings) {
-      this.settings = await this.settingsService.get();
-    }
-
+  private async getGeneratorFunction(settings = {}) {
     if (!this.generatorFunction) {
-      const script = this.settings[this.SETTING_NAME];
+      const script = settings[this.SETTING_NAME];
 
       if (!script) {
         this.generatorFunction = function() {};
       } else {
-        this.generatorFunction = new Function('contact', 'reports', 'lineage', 'targetDoc', 'stats', script);
+        this.generatorFunction = new Function('contact', 'reports', 'lineage', 'stats', 'targetDoc', script);
       }
     }
 
@@ -78,65 +69,30 @@ export class ContactSummaryService {
     return summary;
   }
 
-  private getContactsByLastVisited(contactId) {
-    if (this.sessionService.isOnlineOnly()) {
-      return this.dbService
-        .get()
-        .query(
-          'medic-client/contacts_by_last_visited',
-          { reduce: true, group: true, keys: [contactId] }
-        );
-    }
-    // querying with keys in PouchDB is very unoptimal
-    return this.dbService
-      .get()
-      .query(
-        'medic-client/contacts_by_last_visited',
-        { reduce: true, group: true }
-      );
-  }
-
-  private async getVisitStats(contactId, settings) {
-    const interval = CalendarInterval.getCurrent(settings.monthStartDate);
-    const visitStats = { lastVisitedDate: -1, visitDates: [] };
-
-    const visitsInInterval = await this.dbService
-      .get()
-      .query('medic-client/visits_by_date', { start_key: interval.start, end_key: interval.end });
-
-    visitsInInterval.rows.forEach(row => {
-      if (contactId === row.value) {
-        visitStats.visitDates.push(moment(row.key).startOf('day').valueOf());
-      }
-    });
-
-    const contactsByLastVisited = await this.getContactsByLastVisited(contactId);
-    contactsByLastVisited.rows.forEach(row => {
-      if (contactId === row.key) {
-        visitStats.lastVisitedDate = _isObject(row.value) ? row.value.max : row.value;
-      }
-    });
-
-    return {
-      visit: {
-        lastVisitedDate: visitStats.lastVisitedDate,
-        count: _uniq(visitStats.visitDates).length,
-        countGoal: settings.visitCountGoal
-      }
-    };
-  }
-
   get(contact, reports, lineage, targetDoc?) {
-    return this.ngZone.runOutsideAngular(() => this._get(contact, reports, lineage, targetDoc));
+    return this.ngZone.runOutsideAngular(() => {
+      return this
+        ._get(contact, reports, lineage, targetDoc)
+        .catch(error => {
+          console.error('Error when getting contact summary:', error);
+        });
+    });
   }
 
   private async _get(contact, reports, lineage, targetDoc?) {
-    const generatorFunction = await this.getGeneratorFunction();
-    const stats = await this.getVisitStats(contact._id, this.uhcSettingsService.getVisitCountSettings(this.settings));
+    if (!this.settings) {
+      this.settings = await this.settingsService.get();
+    }
+
+    const generatorFunction = await this.getGeneratorFunction(this.settings);
+    const visitCountSettings = this.uhcSettingsService.getVisitCountSettings(this.settings);
+    const stats = {
+      visit: await this.contactStatsService.getVisitStats(contact._id, visitCountSettings)
+    };
 
     try {
-      const summary = generatorFunction(contact, reports || [], lineage || [], targetDoc, stats);
-      return Promise.resolve(this.applyFilters(summary));
+      const summary = generatorFunction(contact, reports || [], lineage || [], stats, targetDoc);
+      return this.applyFilters(summary);
     } catch (error) {
       console.error('Configuration error in contact-summary function: ' + error);
       this.feedbackService.submit('Configuration error in contact-summary function: ' + error.message, false);
