@@ -57,7 +57,7 @@ Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/cht-co
 
 ## Copyright
 
-Copyright 2013-2018 Medic Mobile, Inc. <hello@medicmobile.org>
+Copyright 2013-2021 Medic Mobile, Inc. <hello@medic.org>
 
 ## License
 
