@@ -177,7 +177,7 @@ Follow the steps below to use an Android device with a development build of your
 
 1. Clone the repo: `git clone https://github.com/medic/nginx-local-ip.git`
 1. `cd` into the new directory: `cd nginx-local-ip`
-1. Assuming your IP is `192.168.0.3`, start `nginx-local-ip` o connect to:
+1. Assuming your IP is `192.168.0.3`, start `nginx-local-ip` to connect to:
     * An API running via `grunt` or `horti`, execute `APP_URL=http://192.168.0.3:5988 docker-compose up` and then access it at [https://192-168-0-3.my.local-ip.co/](https://192-168-0-3.my.local-ip.co/)
     * An API running via `docker`, the ports are remapped, so execute `HTTP=8080 HTTPS=8443 APP_URL=https://192.168.0.3 docker-compose up` and then access it at [https://192-168-0-3.my.local-ip.co:8443/](https://192-168-0-3.my.local-ip.co:8443/)
 
