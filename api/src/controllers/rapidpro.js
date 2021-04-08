@@ -43,7 +43,7 @@ const validateRequest = req => {
   return getConfiguredIncomingToken().then(expected => {
     if (expected !== givenToken) {
       logger.warn(`Attempt to access RapidPro endpoint without the correct incoming token`);
-      return Promise.reject({ code: 403, message: `Incorrect token: "${givenToken}"` });
+      return Promise.reject({ code: 403, message: `Incorrect token` });
     }
   });
 };
@@ -59,7 +59,13 @@ module.exports = {
         };
         return messaging.processIncomingMessages([ message ]);
       })
-      .then(results => res.json(results))
+      .then(({ saved }) => {
+        if (!saved) {
+          return Promise.reject({ code: 400, message: 'Message was not saved' });
+        }
+
+        res.json({ saved });
+      })
       .catch(err => serverUtils.error(err, req, res));
   },
 };

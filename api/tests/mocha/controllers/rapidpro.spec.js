@@ -112,5 +112,20 @@ describe('rapidPro controller', () => {
         expect(res.json.args[0][0]).to.deep.equal({ saved: 1 });
       });
     });
+
+    it('returns error when no messages were saved', () => {
+      const req = {
+        body: { id: '123', from: '+456', content: 'sms content' },
+        headers: { authorization: 'Token somekey' },
+      };
+      sinon.stub(secureSettings, 'getCredentials').resolves('somekey');
+      sinon.stub(messaging, 'processIncomingMessages').resolves({ saved: 0 });
+      sinon.stub(serverUtils, 'error').returns();
+      return controller.incomingMessages(req, res).then(() => {
+        expect(serverUtils.error.callCount).to.equal(1);
+        expect(serverUtils.error.args[0][0]).to.deep.equal({ code: 400, message: 'Message was not saved' });
+        expect(res.json.callCount).to.equal(0);
+      });
+    });
   });
 });

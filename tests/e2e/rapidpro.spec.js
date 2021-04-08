@@ -5,6 +5,7 @@ const _ = require('lodash');
 
 const commonElements = require('../page-objects/common/common.po.js');
 const messagesElements = require('../page-objects/messages/messages.po');
+const reportsElements = require('../page-objects/reports/reports.po');
 const helper = require('../helper');
 const constants = require('../constants');
 const utils = require('../utils');
@@ -123,7 +124,7 @@ describe('RapidPro SMS Gateway', () => {
         });
         throw new Error('should have thrown');
       } catch (err) {
-        expect(err.responseBody).toEqual({ code: 403, error: 'Incorrect token: "not the correct key"' });
+        expect(err.responseBody).toEqual({ code: 403, error: 'Incorrect token' });
       }
     });
 
@@ -141,6 +142,24 @@ describe('RapidPro SMS Gateway', () => {
         throw new Error('should have thrown');
       } catch (err) {
         expect(err.responseBody).toEqual({ code: 403, error: 'Missing authorization token' });
+      }
+    });
+
+    it('should fail when message was not created', async () => {
+      await setIncomingKey();
+      await utils.updateSettings({ sms: smsSettings }, true);
+
+      try {
+        await utils.request({
+          path: endpoint,
+          method: 'POST',
+          headers: { authorization: `Token ${INCOMING_KEY}` },
+          noAuth: true,
+          body: { from: 'phone', content: 'aaaa' },
+        });
+        throw new Error('should have thrown');
+      } catch (err) {
+        expect(err.responseBody).toEqual({ code: 400, error: 'Message was not saved' });
       }
     });
 
@@ -190,6 +209,55 @@ describe('RapidPro SMS Gateway', () => {
       const id = await firstMessageContent.getAttribute('data-id');
       const doc = await utils.getDoc(id);
       expect(doc.sms_message && doc.sms_message.gateway_ref).toEqual('the_gateway_ref');
+    });
+
+    it('should create reports', async () => {
+      const forms = {
+        FORM: {
+          meta: {
+            code: 'FORM',
+            icon: '',
+            translation_key: 'My form',
+          },
+          fields: {
+            some_data: {
+              type: 'string',
+              required: true,
+              position: 0,
+            },
+          },
+          public_form: true,
+        }
+      };
+
+      const message = {
+        id: 'the_gateway_ref',
+        from: 'the_phone',
+        content: 'FORM the data',
+      };
+
+      await setIncomingKey();
+      await utils.updateSettings({ sms: smsSettings, forms }, true);
+
+      const messageResult = await utils.request({
+        path: endpoint,
+        method: 'POST',
+        headers: { authorization: `Token ${INCOMING_KEY}` },
+        noAuth: true,
+        body: message,
+      });
+
+      expect(messageResult).toEqual({ saved: 1 });
+      await utils.resetBrowser();
+      await commonElements.goToReportsNative();
+
+      const firstReport = reportsElements.firstReport();
+      await helper.waitUntilReadyNative(firstReport);
+      const uuid = await firstReport.getAttribute('data-record-id');
+
+      const reportDoc = await utils.getDoc(uuid);
+      expect(reportDoc.form).toEqual('FORM');
+      expect(reportDoc.fields).toEqual({ some_data: 'the data' });
     });
   });
 
