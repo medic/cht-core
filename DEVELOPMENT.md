@@ -193,7 +193,7 @@ Follow the steps below to use an Android device with a development build of your
     * The CHT API running via `docker`, execute `./ngrok http 443`
 1. Access the app using the https address shown (e.g. `https://YOUR-NGROK-NAME.ngrok.io`, replacing `YOUR-NGROK-NAME` with what you signed up with).
 
-**Note:** `ngrok` sometimes fails due to connection throttling which can cause the service worker cache preload to fail.
+**Note:** The service worker cache preload sometimes fails due to connection throttling (thereby causing an `ngrok` failure at startup).
 
 #### pagekite
 
