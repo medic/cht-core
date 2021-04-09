@@ -165,7 +165,7 @@ Navigate your browser to [`http://localhost:5988/medic/login`](http://localhost:
 
 ## Testing locally with devices
 
-Follow the steps below to use an Android device with a development build of your application. This process is relevant when running v3.5.0 or greater of the Core Framework since it relies on service workers, which requires a valid HTTPS certificate. Use `nginx-local-ip`, `ngrok` or `pagekite` to make your developer build accessible from your Android device by giving it a trusted URL.
+Follow the steps below to use an Android device with a development build of your application. This process is relevant when running v3.5.0 or greater of the Core Framework since it relies on service workers, which require a valid HTTPS certificate. Use `nginx-local-ip`, `ngrok` or `pagekite` to make your developer build accessible from your Android device by giving it a trusted URL.
 
 1. Start the api. This can be via docker, grunt, debug, horti, etc.
 2. Follow the instructions below to start `nginx-local-ip`, `ngrok` or `pagekite`
