@@ -103,7 +103,7 @@ const expectTasks = (doc, expectations) => {
     .to.have.deep.members(expectations);
 };
 
-const processReportsAndSetings = async (reports, settings) => {
+const processReportsAndSettings = async (reports, settings) => {
   const ids = reports.map(report => report._id);
   await utils.updateSettings(settings, 'sentinel');
   await utils.saveDocs(reports);
@@ -181,7 +181,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const [ patientChw6, patientChw3, patientChw4  ] = await processReportsAndSetings(reports, settings);
+      const [ patientChw6, patientChw3, patientChw4 ] = await processReportsAndSettings(reports, settings);
       expectTasks(patientChw6, [
         // health_center.contact._id === chw2
         { messages: [{ to: 'phone2',  message: 'to parent' }] },
@@ -253,7 +253,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const [ clinicReport, healthCenterReport ] = await processReportsAndSetings(reports, settings);
+      const [ clinicReport, healthCenterReport ] = await processReportsAndSettings(reports, settings);
       expectTasks(clinicReport, [
         // district.contact._id === chw3
         { messages: [{ to: 'phone3',  message: 'to parent' }] },
@@ -316,7 +316,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const  [contactChw6, contactChw4, contactChw3  ] = await processReportsAndSetings(reports, settings);
+      const  [contactChw6, contactChw4, contactChw3 ] = await processReportsAndSettings(reports, settings);
       expectTasks(contactChw6, [
         // context.parent = health_center
         // context.parent.parent = district
@@ -408,7 +408,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const[ patientChw6, patientChw3, patientChw4  ] = await processReportsAndSetings(reports, settings);
+      const[ patientChw6, patientChw3, patientChw4 ] = await processReportsAndSettings(reports, settings);
       expectTasks(patientChw6, [
         // clinic.contact._id === chw2
         { messages: [{ to: 'phone1',  message: 'to clinic' }] },
@@ -501,7 +501,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const[ clinicReport, healthCenterReport, districtReport ] = await processReportsAndSetings(reports, settings);
+      const[ clinicReport, healthCenterReport, districtReport ] = await processReportsAndSettings(reports, settings);
 
       expectTasks(clinicReport, [
         // clinic.contact._id === chw1
@@ -584,7 +584,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const [ contactChw6, contactChw4, contactChw3  ] = await processReportsAndSetings(reports, settings);
+      const [ contactChw6, contactChw4, contactChw3 ] = await processReportsAndSettings(reports, settings);
       expectTasks(contactChw6, [
         // context.parent = health_center
         { messages: [{ to: 'phone6',  message: 'to clinic' }] }, // to sender
@@ -691,7 +691,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const [ patientChw5, patientChw3, patientChw4 ] = await processReportsAndSetings(reports, settings);
+      const [ patientChw5, patientChw3, patientChw4 ] = await processReportsAndSettings(reports, settings);
       expectTasks(patientChw5, [
         { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
         { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
@@ -802,7 +802,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const [ reportClinic, reportHealthCenter, reportDistrict ] = await processReportsAndSetings(reports, settings);
+      const [ reportClinic, reportHealthCenter, reportDistrict ] = await processReportsAndSettings(reports, settings);
       expectTasks(reportClinic, [
         { messages: [{ to: 'phone1', message: 'to some_tag1' }] }, // tag from district
         { messages: [{ to: 'phone3', message: 'to some_tag3' }] }, // tag from district
@@ -896,7 +896,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const [ contactChw5, contactChw2, contactChw3 ] = await processReportsAndSetings(reports, settings);
+      const [ contactChw5, contactChw2, contactChw3 ] = await processReportsAndSettings(reports, settings);
       expectTasks(contactChw5, [
         { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
         { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
@@ -985,7 +985,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const [ patientChw5, patientChw3, patientChw4 ] = await processReportsAndSetings(reports, settings);
+      const [ patientChw5, patientChw3, patientChw4  ] = await processReportsAndSettings(reports, settings);
 
       expectTasks(patientChw5, [
         { messages: [{ to: 'phone1', message: 'to clinic' }] },
@@ -1070,7 +1070,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const [ reportClinic, reportHealthCenter, reportDistrict ] = await processReportsAndSetings(reports, settings);
+      const [ reportClinic, reportHealthCenter, reportDistrict ] = await processReportsAndSettings(reports, settings);
 
       expectTasks(reportClinic, [
         { messages: [{ to: 'phone1', message: 'to clinic' }] },
@@ -1144,7 +1144,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const [ contactChw5, contactChw2, contactChw3 ] = await processReportsAndSetings(reports, settings);
+      const [ contactChw5, contactChw2, contactChw3 ] = await processReportsAndSettings(reports, settings);
       expectTasks(contactChw5, [
         { messages: [{ to: 'phone1', message: 'to clinic' }] },
         { messages: [{ to: 'phone2', message: 'to health_center' }] },

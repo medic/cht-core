@@ -4,11 +4,16 @@ const db = require('../db');
 const logger = require('../logger');
 const config = require('../config');
 const africasTalking = require('./africas-talking');
+const rapidPro = require('./rapidpro');
 const records = require('../services/records');
+const environment = require('../environment');
 
-const DB_CHECKING_INTERVAL = 1000*60; // Check DB for messages every minute
+// Check DB for messages every minute
+// when e2e testing, check every second
+const DB_CHECKING_INTERVAL = environment.isTesting ? 1000 : 1000 * 60;
 const SMS_SENDING_SERVICES = {
-  'africas-talking': africasTalking
+  'africas-talking': africasTalking,
+  'rapidpro': rapidPro,
   // medic-gateway -- ignored because it's a pull not a push service
 };
 const DEFAULT_CONFIG = { outgoing_service: 'medic-gateway' };
@@ -75,7 +80,8 @@ const checkDbForMessagesToSend = () => {
     return Promise.resolve();
   }
   logger.debug('Checking for pending outgoing messages');
-  return module.exports.getOutgoingMessages()
+  return module.exports
+    .getOutgoingMessages()
     .then(messages => {
       logger.info(`Sending ${messages.length} messages`);
       if (!messages.length) {
@@ -85,6 +91,16 @@ const checkDbForMessagesToSend = () => {
     })
     .catch(err => logger.error('Error sending outgoing messages: %o', err));
 };
+
+const checkDbForMessagesToUpdate = () => {
+  const service = getOutgoingMessageService();
+  if (!service || !service.poll) {
+    return Promise.resolve();
+  }
+
+  return service.poll();
+};
+
 
 const getPendingMessages = doc => {
   const tasks = [].concat(doc.tasks || [], doc.scheduled_tasks || []);
@@ -113,11 +129,9 @@ const sendMessages = (service, messages) => {
   if (!messages.length) {
     return;
   }
-  return service.send(messages).then(statusUpdates => {
-    if (statusUpdates.length) {
-      return module.exports.updateMessageTaskStates(statusUpdates);
-    }
-  });
+  return service
+    .send(messages)
+    .then(statusUpdates => module.exports.updateMessageTaskStates(statusUpdates));
 };
 
 const validateRequiredFields = messages => {
@@ -183,8 +197,14 @@ const resolveMissingUuids = changes => {
   });
 };
 
-module.exports = {
+const countStateChanges = (results, stateChangesByDocId) => {
+  let count = 0;
+  results.forEach(result => count += stateChangesByDocId[result.id].length);
+  return count;
+};
 
+module.exports = {
+  getOutgoingMessageService: getOutgoingMessageService,
   /**
    * Sends pending messages on the doc with the given ID using the
    * configured outgoing message service.
@@ -256,6 +276,10 @@ module.exports = {
    * function will retry up to three times for any updates which fail.
    */
   updateMessageTaskStates: (taskStateChanges, retriesLeft=3, successCount=0) => {
+    if (!taskStateChanges.length) {
+      return Promise.resolve({ saved: 0 });
+    }
+
     return resolveMissingUuids(taskStateChanges)
       .then(() => {
         const keys = taskStateChanges.map(change => change.messageId);
@@ -276,7 +300,9 @@ module.exports = {
         }
         return db.medic.bulkDocs(updated).then(results => {
           const failures = results.filter(result => !result.ok);
-          successCount += results.length - failures.length;
+          const successes = results.filter(result => result.ok);
+          successCount += countStateChanges(successes, stateChangesByDocId) -
+                          countStateChanges(failures, stateChangesByDocId);
           if (!failures.length) {
             // all successful
             return { saved: successCount };
@@ -310,8 +336,7 @@ module.exports = {
 
 };
 
-if (process.env.UNIT_TEST_ENV) {
-  module.exports._checkDbForMessagesToSend = checkDbForMessagesToSend;
-} else {
+if (!process.env.UNIT_TEST_ENV) {
   setInterval(checkDbForMessagesToSend, DB_CHECKING_INTERVAL);
+  setInterval(checkDbForMessagesToUpdate, DB_CHECKING_INTERVAL);
 }
