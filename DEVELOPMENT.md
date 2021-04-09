@@ -183,7 +183,7 @@ Follow the steps below to use an Android device with a development build of your
 
 ### Remote Proxies
 
-`ngrok` and `pagekite` are remote proxies that route local traffic between your client and the CHT via a remote SSL terminator.  While easy and handy, it introduces latency and can sometimes be throttled.  
+`ngrok` and `pagekite` are remote proxies that route local traffic between your client and the CHT via a remote SSL terminator.  While easy and handy, they introduce latency and are sometimes throttled.  
 
 #### ngrok
 
