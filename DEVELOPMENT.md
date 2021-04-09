@@ -178,8 +178,8 @@ Follow the steps below to use an Android device with a development build of your
 1. Clone the repo: `git clone https://github.com/medic/nginx-local-ip.git`
 1. `cd` into the new directory: `cd nginx-local-ip`
 1. Assuming your IP is `192.168.0.3`, start `nginx-local-ip` to connect to:
-    * An API running via `grunt` or `horti`, execute `APP_URL=http://192.168.0.3:5988 docker-compose up` and then access it at [https://192-168-0-3.my.local-ip.co/](https://192-168-0-3.my.local-ip.co/)
-    * An API running via `docker`, the ports are remapped, so execute `HTTP=8080 HTTPS=8443 APP_URL=https://192.168.0.3 docker-compose up` and then access it at [https://192-168-0-3.my.local-ip.co:8443/](https://192-168-0-3.my.local-ip.co:8443/)
+    * The CHT API running via `grunt` or `horti`, execute `APP_URL=http://192.168.0.3:5988 docker-compose up` and then access it at [https://192-168-0-3.my.local-ip.co/](https://192-168-0-3.my.local-ip.co/)
+    * The CHT API running via `docker`, the ports are remapped, so execute `HTTP=8080 HTTPS=8443 APP_URL=https://192.168.0.3 docker-compose up` and then access it at [https://192-168-0-3.my.local-ip.co:8443/](https://192-168-0-3.my.local-ip.co:8443/)
 
 ### Remote Proxies
 
@@ -189,8 +189,8 @@ Follow the steps below to use an Android device with a development build of your
 
 1. Create an [ngrok account](https://ngrok.com/), download & install the binary and link your computer to your ngrok account.
 1. Start `ngrok` to connect to:
-    * An API running via `grunt` or `horti`, execute `./ngrok http 5988`
-    * An API running via `docker`, execute `./ngrok http 443`
+    * The CHT API running via `grunt` or `horti`, execute `./ngrok http 5988`
+    * The CHT API running via `docker`, execute `./ngrok http 443`
 1. Access the app using the https address shown, eg `https://YOUR-NGROK-NAME.ngrok.io`, replacing `YOUR-NGROK-NAME` with what you signed up with.
 
 **Note:** `ngrok` sometimes fails due to connection throttling which can cause the service worker cache preload to fail.
@@ -199,8 +199,8 @@ Follow the steps below to use an Android device with a development build of your
 
 1. Create a [pagekite account](https://pagekite.net/signup/), download and install the python script.
 1. Start pagekite, being sure to replace `YOUR-PAGEKIT-NAME` with the URL you signed up for, to connect to:
-    * An API running via `grunt` or `horti`, execute `python2 pagekite.py 5988 YOUR-PAGEKIT-NAME.pagekite.me`
-    * An API running via `docker`, execute `python2 pagekite.py 443 YOUR-PAGEKIT-NAME.pagekite.me`
+    * The CHT API running via `grunt` or `horti`, execute `python2 pagekite.py 5988 YOUR-PAGEKIT-NAME.pagekite.me`
+    * The CHT API running via `docker`, execute `python2 pagekite.py 443 YOUR-PAGEKIT-NAME.pagekite.me`
 1. Access the app using the https address shown, eg `https://YOUR-PAGEKIT-NAME.pagekite.me`
 
 
