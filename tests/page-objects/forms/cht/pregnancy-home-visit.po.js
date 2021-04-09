@@ -5,19 +5,27 @@ const inputBase = 'input[name="/pregnancy_home_visit/';
 const startVisit = `${inputBase}pregnancy_summary/visit_option"]`;
 const yesStartVisit = element(by.css(`${startVisit}[value=yes]`));
 
-const ageCorrect = `${inputBase}pregnancy_summary/g_age_correct`;
+const ageCorrect = `${inputBase}pregnancy_summary/g_age_correct"]`;
 const yesCorrect = element(by.css(`${ageCorrect}[value=yes]`));
 
-const additionalVisits = `${inputBase}/anc_visits_hf/anc_visits_hf_past/report_other_visits`;
+const additionalVisits = `${inputBase}anc_visits_hf/anc_visits_hf_past/report_other_visits"]`;
+const yesAdditionalVisits = element(by.css(`${additionalVisits}[value=yes]`));
 const noAdditionalVisits = element(by.css(`${additionalVisits}[value=no]`));
 
-const newRisks = `${inputBase}anc_visits_hf/risk_factors/new_risks`;
+const numberOfAdditionalVisits = element(by.css(`${inputBase}anc_visits_hf/anc_visits_hf_past/visited_hf_count"]`));
+
+const dateIfKnown = `${inputBase}anc_visits_hf/anc_visits_hf_past/visited_date_ask_single"]`;
+const dateNotKnown = element(by.css(`${dateIfKnown}[value=no]`));
+
+
+const newRisks = `${inputBase}anc_visits_hf/risk_factors/new_risks"]`;
 const noNewRisk = element(by.css(`${newRisks}[value=none]`));
 
-const additonalRisks = `${inputBase}anc_visits_hf/risk_factors/additional_risk_check`;
-const noAdditionalRisk = element(by.css(`${additonalRisks}[value=no]`));
+const additionalRisks = `${inputBase}anc_visits_hf/risk_factors/additional_risk_check"]`;
+const noAdditionalRisk = element(by.css(`${additionalRisks}[value=no]`));
 
-const upcomingAppointments = `${inputBase}anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known`;
+const upcomingAppointments = 
+  `${inputBase}anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known"]`;
 const noUpcomingAppointments = element(by.css(`${upcomingAppointments}[value=no]`));
 
 const dangerSignsBase = `${inputBase}danger_signs/`;
@@ -44,25 +52,37 @@ const noTired =  element(by.css(`${easilyTiredName}[value=no]`));
 const noSwelling =  element(by.css(`${swellingName}[value=no]`));
 const noBreathlessness =  element(by.css(`${breathlessnessName}[value=no]`));
 
-const usesLLIN = `${inputBase}safe_pregnancy_practices/malaria/uses_llin"]`;
+const usesLLIN = `${inputBase}safe_pregnancy_practices/malaria/llin_use"]`;
 const yesLLIN = element(by.css(`${usesLLIN}[value=yes]`));
 
 const ironFolateName = `${inputBase}safe_pregnancy_practices/iron_folate/iron_folate_daily"]`;
 const yesIronFolate = element(by.css(`${ironFolateName}[value=yes]`));
 
+const deworming = `${inputBase}safe_pregnancy_practices/deworming/deworming_med"]`;
+const yesDeworming = element(by.css(`${deworming}[value=yes]`));
+
+const hivTest = `${inputBase}safe_pregnancy_practices/hiv_status/hiv_tested"]`;
+const yesHivTest = element(by.css(`${hivTest}[value=yes]`));
+
+const tetanus = `${inputBase}safe_pregnancy_practices/tetanus/tt_imm_received"]`;
+const yesTetanus = element(by.css(`${tetanus}[value=yes]`));
 
 module.exports = {
-  fillPregnancyForm: async () => {
+  fillForm: async () => {
     await helper.waitUntilReadyNative(genericForm.formTitle);
     await helper.clickElementNative(yesStartVisit);
     await helper.clickElementNative(yesCorrect);
     await genericForm.nextPageNative();
-    await helper.clickElementNative(noAdditionalVisits);
+    await helper.clickElementNative(yesAdditionalVisits);
+    await numberOfAdditionalVisits.sendKeys('1', protractor.Key.TAB);
+    await helper.waitUntilReadyNative(dateNotKnown);
+    await helper.clickElementNative(dateNotKnown);
     await genericForm.nextPageNative();
     await helper.clickElementNative(noNewRisk);
     await helper.clickElementNative(noAdditionalRisk);
     await genericForm.nextPageNative();
     await helper.clickElementNative(noUpcomingAppointments);
+    await genericForm.nextPageNative();
     await genericForm.nextPageNative();
     await helper.clickElementNative(noVaginalBleedings);
     await helper.clickElementNative(noFits);
@@ -80,6 +100,10 @@ module.exports = {
     await genericForm.nextPageNative();
     await helper.clickElementNative(yesIronFolate);
     await genericForm.nextPageNative();
+    await helper.clickElementNative(yesDeworming);
+    await genericForm.nextPageNative();
+    await genericForm.nextPageNative();
+    await helper.clickElementNative(yesTetanus);
     await genericForm.nextPageNative();
     await genericForm.submitNative();
   }
