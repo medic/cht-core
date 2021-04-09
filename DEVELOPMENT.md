@@ -187,7 +187,7 @@ Follow the steps below to use an Android device with a development build of your
 
 #### ngrok
 
-1. Create an [ngrok account](https://ngrok.com/), download & install the binary and link your computer to your ngrok account.
+1. Create an [ngrok account](https://ngrok.com/), download and install the binary, then link your computer to your ngrok account.
 1. Start `ngrok` to connect to:
     * An API running via `grunt` or `horti`, execute `./ngrok http 5988`
     * An API running via `docker`, execute `./ngrok http 443`
