@@ -201,7 +201,7 @@ Follow the steps below to use an Android device with a development build of your
 1. Start pagekite (be sure to replace `YOUR-PAGEKIT-NAME` with the URL you signed up for) to connect to:
     * An API running via `grunt` or `horti`, execute `python2 pagekite.py 5988 YOUR-PAGEKIT-NAME.pagekite.me`
     * An API running via `docker`, execute `python2 pagekite.py 443 YOUR-PAGEKIT-NAME.pagekite.me`
-1. Access the app using the https address shown, eg `https://YOUR-PAGEKIT-NAME.pagekite.me`
+1. Access the app using the https address shown (e.g. `https://YOUR-PAGEKIT-NAME.pagekite.me`).
 
 
 ## Data
