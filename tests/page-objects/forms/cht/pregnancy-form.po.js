@@ -55,6 +55,8 @@ const yesLLIN = element(by.css(`${usesLLIN}[value=yes]`));
 const ironFolateName = `${inputBase}safe_pregnancy_practices/iron_folate/iron_folate_daily"]`;
 const yesIronFolate = element(by.css(`${ironFolateName}[value=yes]`));
 
+const deworming = `${inputBase}safe_pregnancy_practices/deworming/deworming_med"]`;
+const yesDewormed = element(by.css(`${deworming}[value=yes]`));
 const hivTestName = `${inputBase}safe_pregnancy_practices/hiv_status/hiv_tested"]`;
 const yesHIVTest = element(by.css(`${hivTestName}[value=yes]`));
 
@@ -66,7 +68,7 @@ module.exports = {
     await helper.clickElementNative(weeksOrMonths);
     await genericForm.nextPageNative();
     await helper.clickElementNative(weeks);
-    await numberOfWeeks.sendKeys('11');
+    await numberOfWeeks.sendKeys('34');
     await genericForm.nextPageNative();
     await genericForm.nextPageNative();
     await numberOfVisits.sendKeys('0');
@@ -95,6 +97,10 @@ module.exports = {
     await helper.clickElementNative(yesLLIN);
     await genericForm.nextPageNative();
     await helper.clickElementNative(yesIronFolate);
+    await genericForm.nextPageNative();
+    await genericForm.nextPageNative();
+    await helper.clickElementNative(yesDewormed);
+    await genericForm.nextPageNative();
     await genericForm.nextPageNative();
     await genericForm.nextPageNative();
     await helper.clickElementNative(yesHIVTest);

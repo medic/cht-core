@@ -5,7 +5,9 @@ const contactsPage = require('../../page-objects/contacts/contacts.po');
 const helper = require('../../helper');
 const pregnancyFormPo = require('../../page-objects/forms/cht/pregnancy-form.po');
 const analyticsPo = require('../../page-objects/analytics/analytics.po');
-const { browser } = require('protractor');
+const pregnancyHomeVisit = require('../../page-objects/forms/cht/pregnancy-home-visit.po'); 
+const moment = require('moment');
+const deliverPo = require('../../page-objects/forms/cht/delivery.po'); 
 
 const password = 'Secret_1';
 const district = {
@@ -74,6 +76,16 @@ const users = [
 ];
 
 describe('Pregnancy workflow on cht : ', () => {
+  let originalTimeout;
+  beforeEach(function() {
+    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
+  });
+
+  afterEach(function() {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+  });
+
   beforeAll(async () => {
     await utils.saveDocs([...docs]);
     await utils.createUsers(users);
@@ -91,14 +103,16 @@ describe('Pregnancy workflow on cht : ', () => {
     await pregnancyFormPo.fillPregnancyForm();
     const activePregnancyCard = await contactsPage.cardElementByHeaderText('Active Pregnancy');
     await helper.waitUntilReadyNative(activePregnancyCard);
-    const activePregnancyCardValues = await contactsPage.cardChildrenValueArray(activePregnancyCard);
-    expect(activePregnancyCardValues[0]).toBe('11');
-    //TODO: This needs to be calculated
-    expect(activePregnancyCardValues[1]).toBe('25 Oct, 2021');
+    let activePregnancyCardValues = await contactsPage.cardChildrenValueArray(activePregnancyCard);
+    expect(activePregnancyCardValues[0]).toBe('34');
+    const weeksAgo  = moment().subtract(34 * 7,'d');
+    const AVG_DAYS_IN_PREGNANCY = 280;
+    const edd = moment(weeksAgo).add(AVG_DAYS_IN_PREGNANCY,'d').format('DD MMM, YYYY');
+    expect(activePregnancyCardValues[1]).toBe(edd);
     expect(activePregnancyCardValues[2]).toBe('0 of 8');
     expect(activePregnancyCardValues[3]).toBe('today');
-    const tasks = await contactsPage.taskNames();
-    expect(tasks[0]).toBe('Pregnancy home visit');
+    // const tasks = await contactsPage.taskNames();
+    // expect(await tasks[0]).toBe('Pregnancy home visit');
     await commonElements.goToAnalytics();
     const pregnancyRegistrations = analyticsPo.targetById('pregnancy-registrations-this-month');
     await helper.waitUntilReadyNative(pregnancyRegistrations);
@@ -117,6 +131,38 @@ describe('Pregnancy workflow on cht : ', () => {
     await browser.get(utils.getBaseUrl() + 'contacts/' + pregnancy_woman._id);
     await helper.clickElementNative(contactsPage.newActions);
     await helper.clickElementNative(contactsPage.formById('pregnancy_home_visit'));
-    console.log('stop');
+    await pregnancyHomeVisit.fillForm();
+    await helper.waitUntilReadyNative(activePregnancyCard);
+    activePregnancyCardValues = await contactsPage.cardChildrenValueArray(activePregnancyCard);
+    expect(activePregnancyCardValues[0]).toBe('34');
+    expect(activePregnancyCardValues[1]).toBe(edd);
+    expect(activePregnancyCardValues[2]).toBe('1 of 8');
+    expect(activePregnancyCardValues[3]).toBe('today');
+    await helper.waitElementToDisappearNative(element(by.css('.snackbar-content')));
+    await helper.clickElementNative(contactsPage.newActions);
+    await helper.clickElementNative(contactsPage.formById('delivery'));
+    await deliverPo.fillForm();
+    const pastPregnancyCard = await contactsPage.cardElementByHeaderText('Past pregnancy');
+    await helper.waitUntilReadyNative(pastPregnancyCard);
+    const pastPregnancyCardValues = await contactsPage.cardChildrenValueArray(pastPregnancyCard);
+    const deliveryDate = moment().format('D MMM, YYYY');
+    expect(await pastPregnancyCardValues[0]).toBe(deliveryDate);
+    expect(await pastPregnancyCardValues[1]).toBe('Health facility');
+    expect(await pastPregnancyCardValues[2]).toBe('1');
+    expect(await pastPregnancyCardValues[3]).toBe('1');
+    // const postDeliveryTasks = await contactsPage.taskNames();
+    // expect(await postDeliveryTasks[0]).toBe('Health facility ANC reminder');
+    await commonElements.goToAnalytics();
+    const liveBirths = analyticsPo.targetById('births-this-month');
+    await helper.waitUntilReadyNative(liveBirths);
+    const liveBirthsCount = await liveBirths.element(by.css('.number')).getText();
+    const liveBirthsTitle = await liveBirths.element(by.css('.title h2')).getText();
+    expect(await liveBirthsCount).toBe('2');
+    expect(await liveBirthsTitle).toBe('Live births');
+    const inFacilityDeliveries = analyticsPo.targetById('facility-deliveries');
+    const inFacilityDeliveriesCount = await inFacilityDeliveries.element(by.css('.number')).getText();
+    const inFacilityDeliveriesTitle = await inFacilityDeliveries.element(by.css('.title h2')).getText();
+    expect(await inFacilityDeliveriesCount).toBe('100% (1 of 1)');
+    expect(await inFacilityDeliveriesTitle).toBe('In-facility deliveries');
   });
 });
