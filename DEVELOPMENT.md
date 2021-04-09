@@ -173,7 +173,7 @@ Follow the steps below to use an Android device with a development build of your
 
 ### nginx-local-ip
 
-[`nginx-local-ip`](https://github.com/medic/nginx-local-ip) is a local proxy that keeps all traffic local.  There is no latency and no throttling.  If you don't need to share your local CHT instance, it is the preferred method to add a valid SSL certificate instead of using `ngrok` or `pagekite`.
+[`nginx-local-ip`](https://github.com/medic/nginx-local-ip) is a local proxy that keeps all traffic local, and runs without latency or throttling. If sharing your local CHT instance is not required, it is the preferred method to add a valid SSL certificate (rather than `ngrok` or `pagekite`).
 
 1. Clone the repo: `git clone https://github.com/medic/nginx-local-ip.git`
 1. `cd` into the new directory: `cd nginx-local-ip`
