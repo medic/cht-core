@@ -10,7 +10,7 @@ const yesCorrect = element(by.css(`${ageCorrect}[value=yes]`));
 
 const additionalVisits = `${inputBase}anc_visits_hf/anc_visits_hf_past/report_other_visits"]`;
 const yesAdditionalVisits = element(by.css(`${additionalVisits}[value=yes]`));
-
+const noAdditionalVisits = element(by.css(`${additionalVisits}[value=no]`));
 
 const numberOfAdditionalVisits = element(by.css(`${inputBase}anc_visits_hf/anc_visits_hf_past/visited_hf_count"]`));
 
@@ -63,12 +63,14 @@ const yesIronFolate = element(by.css(`${ironFolateName}[value=yes]`));
 const deworming = `${inputBase}safe_pregnancy_practices/deworming/deworming_med"]`;
 const yesDeworming = element(by.css(`${deworming}[value=yes]`));
 
+const hivTest = `${inputBase}safe_pregnancy_practices/hiv_status/hiv_tested"]`;
+const yesHivTest = element(by.css(`${hivTest}[value=yes]`));
+
 const tetanus = `${inputBase}safe_pregnancy_practices/tetanus/tt_imm_received"]`;
 const yesTetanus = element(by.css(`${tetanus}[value=yes]`));
 
-
 module.exports = {
-  fillPregnancyForm: async () => {
+  fillForm: async () => {
     await helper.waitUntilReadyNative(genericForm.formTitle);
     await helper.clickElementNative(yesStartVisit);
     await helper.clickElementNative(yesCorrect);

@@ -9,7 +9,6 @@ const pregnancyHomeVisit = require('../../page-objects/forms/cht/pregnancy-home-
 const moment = require('moment');
 const deliverPo = require('../../page-objects/forms/cht/delivery.po'); 
 
-
 const password = 'Secret_1';
 const district = {
   _id: 'PARENT_PLACE',
@@ -77,8 +76,6 @@ const users = [
 ];
 
 describe('Pregnancy workflow on cht : ', () => {
-<<<<<<< HEAD
-<<<<<<< HEAD
   let originalTimeout;
   beforeEach(function() {
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
@@ -89,30 +86,12 @@ describe('Pregnancy workflow on cht : ', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
   });
 
-=======
->>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
-=======
->>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
   beforeAll(async () => {
     await utils.saveDocs([...docs]);
     await utils.createUsers(users);
   });
 
   it('should register a pregnancy', async () => {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-    await console.log('do');
->>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
-=======
->>>>>>> added elements for contacts page, expecting tasks, expecting on cards, nav to analytircs and asserts
-=======
-    await console.log('do');
->>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
-=======
->>>>>>> added elements for contacts page, expecting tasks, expecting on cards, nav to analytircs and asserts
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative('user1', password);
     await utils.closeTour();
@@ -122,10 +101,6 @@ describe('Pregnancy workflow on cht : ', () => {
     await helper.clickElementNative(contactsPage.newActions);
     await helper.clickElementNative(contactsPage.formById('pregnancy'));
     await pregnancyFormPo.fillPregnancyForm();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     const activePregnancyCard = await contactsPage.cardElementByHeaderText('Active Pregnancy');
     await helper.waitUntilReadyNative(activePregnancyCard);
     let activePregnancyCardValues = await contactsPage.cardChildrenValueArray(activePregnancyCard);
@@ -136,25 +111,8 @@ describe('Pregnancy workflow on cht : ', () => {
     expect(activePregnancyCardValues[1]).toBe(edd);
     expect(activePregnancyCardValues[2]).toBe('0 of 8');
     expect(activePregnancyCardValues[3]).toBe('today');
-    // const tasks = await contactsPage.taskNames();
-    // expect(await tasks[0]).toBe('Pregnancy home visit');
-=======
-=======
->>>>>>> added elements for contacts page, expecting tasks, expecting on cards, nav to analytircs and asserts
-    const activePregnancyCard = await contactsPage.cardElementByHeaderText('Active Pregnancy');
-    await helper.waitUntilReadyNative(activePregnancyCard);
-    const activePregnancyCardValues = await contactsPage.cardChildrenValueArray(activePregnancyCard);
-    expect(activePregnancyCardValues[0]).toBe('11');
-    //TODO: This needs to be calculated
-    expect(activePregnancyCardValues[1]).toBe('25 Oct, 2021');
-    expect(activePregnancyCardValues[2]).toBe('0 of 8');
-    expect(activePregnancyCardValues[3]).toBe('today');
     const tasks = await contactsPage.taskNames();
     expect(tasks[0]).toBe('Pregnancy home visit');
-<<<<<<< HEAD
->>>>>>> added elements for contacts page, expecting tasks, expecting on cards, nav to analytircs and asserts
-=======
->>>>>>> added elements for contacts page, expecting tasks, expecting on cards, nav to analytircs and asserts
     await commonElements.goToAnalytics();
     const pregnancyRegistrations = analyticsPo.targetById('pregnancy-registrations-this-month');
     await helper.waitUntilReadyNative(pregnancyRegistrations);
@@ -173,8 +131,6 @@ describe('Pregnancy workflow on cht : ', () => {
     await browser.get(utils.getBaseUrl() + 'contacts/' + pregnancy_woman._id);
     await helper.clickElementNative(contactsPage.newActions);
     await helper.clickElementNative(contactsPage.formById('pregnancy_home_visit'));
-<<<<<<< HEAD
-<<<<<<< HEAD
     await pregnancyHomeVisit.fillForm();
     await helper.waitUntilReadyNative(activePregnancyCard);
     activePregnancyCardValues = await contactsPage.cardChildrenValueArray(activePregnancyCard);
@@ -208,17 +164,5 @@ describe('Pregnancy workflow on cht : ', () => {
     const inFacilityDeliveriesTitle = await inFacilityDeliveries.element(by.css('.title h2')).getText();
     expect(await inFacilityDeliveriesCount).toBe('100% (1 of 1)');
     expect(await inFacilityDeliveriesTitle).toBe('In-facility deliveries');
-=======
-    
->>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
-=======
-    console.log('stop');
->>>>>>> added elements for contacts page, expecting tasks, expecting on cards, nav to analytircs and asserts
-=======
-    
->>>>>>> added a cht suite for cht-release tests, added check for suite to not overwrite config if we want default, added pregnancy flow tests including filling form
-=======
-    console.log('stop');
->>>>>>> added elements for contacts page, expecting tasks, expecting on cards, nav to analytircs and asserts
   });
 });
