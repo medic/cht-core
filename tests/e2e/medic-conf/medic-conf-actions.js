@@ -34,9 +34,9 @@ describe('medic-conf supported actions', () => {
 
   // eslint-disable-next-line guard-for-in
   for(const action in actions){
-    it(`should execute  ${action} `, async () => {
-      const result = await runCommand(action);
-      expect(result).to.contain(`INFO ${action} complete.`);
+    it(`should execute  ${actions[action]} `, async () => {
+      const result = await runCommand(actions[action]);
+      expect(result).to.contain(`INFO ${actions[action]} complete.`);
     });
   }
 });
