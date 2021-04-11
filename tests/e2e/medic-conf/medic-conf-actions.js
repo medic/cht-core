@@ -1,7 +1,7 @@
-const _ = require('lodash');
 const {expect} = require('chai');
 const util = require('util');
-const { API_PORT }=require('../../constants');
+const { API_PORT, API_HOST } = require('../../constants');
+const {username, password} = require('../../auth');
 const exec = util.promisify(require('child_process').exec);
 
 const actions = ['compile-app-settings','backup-app-settings','convert-app-forms',
@@ -13,19 +13,14 @@ describe('medic-conf supported actions', () => {
   beforeAll( () =>{
     // Change the directory
     try {
-      process.chdir('config/default');
+      process.chdir(`${__filename}../../config/default`);
     } catch (err) {
       console.error('no need to change directory');
     }
   });
 
-  afterAll(() =>{
-    // Change the directory back to cht-core
-    process.chdir('../..');
-  });
-
   const runCommand = async (action) => {
-    const { stdout, stderr } = await exec(`medic-conf --url=http://admin:pass@localhost:${API_PORT} ${action} --force`);
+    const { stdout, stderr } = await exec(`medic-conf --url=http://${username}:${password}@${API_HOST}:${API_PORT} ${action} --force`);
     if (stderr) {
       console.error(`error: ${stderr}`);
     }
@@ -33,22 +28,15 @@ describe('medic-conf supported actions', () => {
   };
 
   it('should execute  upload-app-settings', async () => {
-    try {
-      const result = await runCommand('upload-app-settings');
-      expect(result).to.contain(`INFO Settings updated successfully`);
-    } catch (error) {
-      console.log(error.stdout);
-    }
+    const result = await runCommand('upload-app-settings');
+    expect(result).to.contain(`INFO Settings updated successfully`);
   });
 
-  _.forEach(actions,  async (action)  =>{
+  // eslint-disable-next-line guard-for-in
+  for(const action in actions){
     it(`should execute  ${action} `, async () => {
-      try {
-        const result = await runCommand(action);
-        expect(result).to.contain(`INFO ${action} complete.`);
-      } catch (error) {
-        console.log(error.stdout);
-      }
+      const result = await runCommand(action);
+      expect(result).to.contain(`INFO ${action} complete.`);
     });
-  });
+  }
 });
