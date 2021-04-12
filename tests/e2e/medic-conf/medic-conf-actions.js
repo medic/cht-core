@@ -13,17 +13,14 @@ describe('medic-conf supported actions', () => {
   beforeAll( () =>{
     // Change the directory
     try {
-      process.chdir(`${__filename}../../config/default`);
+      process.chdir('config/default');
     } catch (err) {
       console.error('no need to change directory');
     }
   });
 
   const runCommand = async (action) => {
-    const { stdout, stderr } = await exec(`medic-conf --url=http://${username}:${password}@${API_HOST}:${API_PORT} ${action} --force`);
-    if (stderr) {
-      console.error(`error: ${stderr}`);
-    }
+    const { stdout } = await exec(`medic-conf --url=http://${username}:${password}@${API_HOST}:${API_PORT} ${action} --force`);
     return stdout;
   };
 
