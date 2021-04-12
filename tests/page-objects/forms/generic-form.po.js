@@ -1,6 +1,5 @@
 const helper = require('../../helper');
 const utils = require('../../utils');
-const reportsPo = require('../reports/reports.po');
 const nameField = element(by.css('#report-form form [name="/data/name"]'));
 const submitButton = element(by.css('.enketo .submit'));
 const submittedName = element(by.css('#reports-content .details ul li:first-child p'));
@@ -140,13 +139,16 @@ module.exports = {
     await helper.waitElementToDisappearNative(submitButton);
   },
 
-  waitForReports: async () => {
+  submitReports: async () => {
+    const submitButton = element(by.css('.btn.submit.btn-primary'));
+    await helper.waitElementToBeClickable(submitButton);
+    await submitButton.click();
     await helper.waitElementToPresentNative(element(by.css('div#reports-content')));
     const details = element(by.css('div.details'));
     await helper.waitUntilReadyNative(details);
-    await helper.waitUntilReadyNative(reportsPo.firstReport());
-    await helper.waitElementToDisappearNative(reportsPo.listLoader());
+    expect(await details.isPresent()).toBeTruthy();
   },
+
   validateReportNative: async () => {
     const reportValidBtn = element(by.css('.verify-valid'));
     await helper.waitElementToBeClickable(reportValidBtn);

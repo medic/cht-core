@@ -37,8 +37,7 @@ describe('Submit Delivery Report', () => {
     expect(await deliveryReport.getDeliveryLocationSummaryText()).toBe('Facility');
     expect(await deliveryReport.getFollowUpMessage()).toBe(noteToCHW);
     //submit
-    await genericForm.submitNative();
-    await genericForm.waitForReports();
+    await genericForm.submitReports();
     expect(await element(by.css('div.details')).isPresent()).toBeTruthy();
   });
 });

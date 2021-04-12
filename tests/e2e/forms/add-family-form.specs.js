@@ -39,14 +39,13 @@ describe('Family form', () => {
     await familyForm.registerWomenOption();
     await genericForm.nextPageNative();
     await familyForm.finalSurvey(0, 0, 0, 0);
-    await genericForm.submitNative();
-    await genericForm.waitForReports();
+    await genericForm.submitReports();
     await familyForm.reportCheck('test Family', 'boreholes', 'true', 'true', 'ucid');
     await genericForm.editFormNative();
     await familyForm.fillPrimaryCaregiver('modified');
     await genericForm.nextPageNative(8);
     await familyForm.finalSurvey(1, 1, 1, 1);
-    await genericForm.submitNative();
+    await genericForm.submitReports();
     await familyForm.reportCheck(
       'modified Family',
       'boreholes spring',
