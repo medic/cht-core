@@ -114,7 +114,9 @@ module.exports = {
     hygeinicToilet,
     planningMethod
   ) => {
+    helper.waitUntilReadyNative(element.all(by.css('.details>ul>li')));
     const savedParameters = element.all(by.css('.details>ul>li'));
+
     // Primary Caregiver
     expect(await savedParameters.get(2).getText()).toEqual(
       'report.any.clinic.name\n' + caregiverName

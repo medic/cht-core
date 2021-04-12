@@ -1,4 +1,3 @@
-const { element } = require('protractor');
 const helper = require('../../helper');
 
 

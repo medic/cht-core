@@ -13,11 +13,6 @@ module.exports = {
   submitButton,
   nameField,
   formTitle,
-  radioButtonByText: async (buttonText) => {
-    const radioButtons = element.all(by.css('input[type=radio] + span'));
-    const radioButton = await radioButtons.filter(elem => elem.getText().then(text => text === buttonText)).first();
-    await helper.clickElementNative(radioButton);
-  },
   editForm: () => {
     helper.waitForAngularComplete();
     const editFormBtn = element.all(
@@ -150,6 +145,7 @@ module.exports = {
     const details = element(by.css('div.details'));
     await helper.waitUntilReadyNative(details);
     await helper.waitUntilReadyNative(reportsPo.firstReport());
+    await helper.waitElementToDisappearNative(reportsPo.listLoader());
   },
   validateReportNative: async () => {
     const reportValidBtn = element(by.css('.verify-valid'));
