@@ -142,12 +142,14 @@ module.exports = {
     await helper.waitElementToBeClickable(submitButton);
     await submitButton.click();
     await helper.waitElementToDisappearNative(submitButton);
-    // await helper.waitElementToPresentNative(element(by.css('div#reports-content')));
-    // const details = element(by.css('div.details'));
-    // await helper.waitUntilReadyNative(details);
-    // expect(await details.isPresent()).toBeTruthy();
   },
 
+  waitForReports: async () => {
+    await helper.waitElementToPresentNative(element(by.css('div#reports-content')));
+    const details = element(by.css('div.details'));
+    await helper.waitUntilReadyNative(details);
+    expect(await details.isPresent()).toBeTruthy();
+  },
   validateReportNative: async () => {
     const reportValidBtn = element(by.css('.verify-valid'));
     await helper.waitElementToBeClickable(reportValidBtn);
