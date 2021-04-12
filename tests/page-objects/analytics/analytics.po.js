@@ -18,7 +18,9 @@ module.exports = {
       await helper.waitUntilReadyNative(element(by.css('.page .item-content.disabled')));
     }
   },
-  targetById: (id) => {
-    return element(by.css(`div[test-target-id="${id}"]`));
-  }
+  targetById: (id) => element(by.css(`div[test-target-id="${id}"]`)),
+  targetNumber: (target) => target.element(by.css('.number')),
+  targetGoal: (target) => target.element(by.css('.goal p')),
+  targetTitle: (target) => target.element(by.css('.title h2')),
+
 };
