@@ -28,8 +28,10 @@ const modalFooter = element(by.css('.modal-footer'));
 const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.submit'));
 const displayTime = element(by.css('[ui-sref="display.date-time"]'));
 const messagesList = element(by.id('message-list'));
+const snackBarContent = element(by.css('.snackbar-content'));
 
 module.exports = {
+  snackBarContent,
   messagesList,
   calm: async () => {
     utils.deprecated('calm', 'calmNative');
