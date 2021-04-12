@@ -1,5 +1,6 @@
 const helper = require('../../helper');
 const utils = require('../../utils');
+const reportsPo = require('../reports/reports.po');
 const nameField = element(by.css('#report-form form [name="/data/name"]'));
 const submitButton = element(by.css('.enketo .submit'));
 const submittedName = element(by.css('#reports-content .details ul li:first-child p'));
@@ -148,7 +149,7 @@ module.exports = {
     await helper.waitElementToPresentNative(element(by.css('div#reports-content')));
     const details = element(by.css('div.details'));
     await helper.waitUntilReadyNative(details);
-    expect(await details.isPresent()).toBeTruthy();
+    await helper.waitUntilReadyNative(reportsPo.firstReport());
   },
   validateReportNative: async () => {
     const reportValidBtn = element(by.css('.verify-valid'));
