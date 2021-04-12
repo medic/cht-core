@@ -136,7 +136,7 @@ describe('Pregnancy workflow on cht : ', () => {
     expect(activePregnancyCardValues[1]).toBe(edd);
     expect(activePregnancyCardValues[2]).toBe('1 of 8');
     expect(activePregnancyCardValues[3]).toBe('today');
-    await helper.waitElementToDisappearNative(commonElements.snackBarContent());
+    await helper.waitElementToDisappearNative(commonElements.snackBarContent);
     await helper.clickElementNative(contactsPage.newActions);
     await helper.clickElementNative(contactsPage.formById('delivery'));
     await deliverPo.fillForm();
