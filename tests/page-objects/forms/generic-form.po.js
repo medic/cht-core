@@ -145,6 +145,7 @@ module.exports = {
     const details = element(by.css('div.details'));
     await helper.waitUntilReadyNative(details);
     await helper.waitUntilReadyNative(reportsPo.firstReport());
+    await helper.waitElementToDisappearNative(reportsPo.listLoader());
   },
   validateReportNative: async () => {
     const reportValidBtn = element(by.css('.verify-valid'));
