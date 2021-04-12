@@ -38,6 +38,7 @@ describe('Submit Delivery Report', () => {
     expect(await deliveryReport.getFollowUpMessage()).toBe(noteToCHW);
     //submit
     await genericForm.submitNative();
+    await genericForm.waitForReports();
     expect(await element(by.css('div.details')).isPresent()).toBeTruthy();
   });
 });
