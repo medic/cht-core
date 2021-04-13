@@ -1,4 +1,5 @@
 const moment = require('moment');
+const auth = require('../auth')();
 const utils = require('../utils');
 const helper = require('../helper');
 const commonElements = require('../page-objects/common/common.po.js');
@@ -223,6 +224,13 @@ describe('Contact summary info', () => {
   });
 
   afterEach(async () => { await utils.afterEach(); });
+
+  afterAll(async () => {
+    await commonElements.goToLoginPageNative();
+    await loginPage.loginNative(auth.username, auth.password);
+    await commonElements.calmNative();
+    await utils.revertDb();
+  });
 
   const selectContact = async term => {
     await helper.waitUntilReadyNative(contactsPo.searchBox);
