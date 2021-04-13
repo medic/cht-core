@@ -114,6 +114,7 @@
     "can_log_out_on_android": [],
     "can_verify_reports": ["national_admin", "district_admin"],
     "can_view_last_visited_date": [],
+    "can_view_uhc_stats": ["national_admin"],
     "can_write_wealth_quintiles": [],
     "can_edit_verification": ["national_admin", "district_admin"],
     "can_view_outgoing_messages": ["national_admin"],

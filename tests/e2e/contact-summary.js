@@ -1,20 +1,37 @@
 const moment = require('moment');
 const utils = require('../utils');
 const helper = require('../helper');
+const commonElements = require('../page-objects/common/common.po.js');
+const loginPage = require('../page-objects/login/login.po.js');
 const contactsPo = require('../page-objects/contacts/contacts.po');
+
 
 describe('Contact summary info', () => {
   const SCRIPT = `
     let cards = [];
     let context = {};
-    let fields = [];
+    let fields = [
+      { 
+        label: "uhc_stats_count", 
+        value: uhcStats.homeVisits ? uhcStats.homeVisits.count : '', 
+        width: 3 
+      },
+      { 
+        label: "uhc_stats_count_goal", 
+        value: uhcStats.homeVisits ? uhcStats.homeVisits.countGoal : '', 
+        width: 3 
+      },
+      { 
+        label: "uhc_stats_last_visited_date", 
+        value: uhcStats.homeVisits ? uhcStats.homeVisits.lastVisitedDate : '', 
+        width: 3 
+      }
+    ];
+    
     if (contact.type === "person") {
-      fields = [
-        { label: "test_pid", value: contact.patient_id, width: 3 },
-        { label: "test_sex", value: contact.sex, width: 3 },
-        { label: "stats_visit_count", value: stats.visit.count, width: 3 },
-        { label: "stats_visit_count_goal", value: stats.visit.countGoal, width: 3 },
-      ];
+      fields.push({ label: "test_pid", value: contact.patient_id, width: 3 });
+      fields.push({ label: "test_sex", value: contact.sex, width: 3 });
+     
       Object.keys(contact.linked_docs).forEach(key => {
         const linkedDoc = contact.linked_docs[key];
         if (!linkedDoc) {
@@ -162,12 +179,23 @@ describe('Contact summary info', () => {
     from: '+555',
     hidden_fields: [],
     fields: {
-      visited_contact_uuid: 'carol-contact',
-      patient_id: 'carol-contact'
+      visited_contact_uuid: BOB_PLACE._id,
+      patient_id: CAROL.patient_id
     }
   };
 
   const DOCS = [ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT, DAVID_VISIT];
+
+  const USER = {
+    username: 'user',
+    password: 'Sup3rSecret!',
+    place: BOB_PLACE._id,
+    contact: {
+      _id: 'fixture:user:offline',
+      name: 'Offline'
+    },
+    roles: ['national_admin']
+  };
 
   const SETTINGS = {
     uhc: {
@@ -176,7 +204,17 @@ describe('Contact summary info', () => {
         visit_count_goal: 2
       }
     },
-    contact_summary: SCRIPT
+    contact_summary: SCRIPT,
+    contact_types: [
+      {
+        id: 'clinic',
+        count_visits: true
+      },
+      {
+        id: 'person',
+        count_visits: false
+      }
+    ]
   };
 
   beforeEach(async () => {
@@ -195,7 +233,7 @@ describe('Contact summary info', () => {
     await helper.waitUntilReadyNative(contactsPo.contactsList());
   };
 
-  it('contact summary', async () => {
+  it('should load contact summary', async () => {
     //disabled.
     await helper.waitUntilReadyNative(contactsPo.contactsTab);
     await helper.clickElementNative(contactsPo.contactsTab);
@@ -215,11 +253,16 @@ describe('Contact summary info', () => {
     expect(await contactsPo.cardFieldLabelText('test_sex')).toBe('test_sex');
     expect(await contactsPo.cardFieldText('test_sex')).toBe(CAROL.sex);
 
-    expect(await contactsPo.cardFieldLabelText('stats_visit_count')).toBe('stats_visit_count');
-    expect(await contactsPo.cardFieldText('stats_visit_count')).toBe('1');
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_count')).toBe('uhc_stats_count');
+    expect(await contactsPo.cardFieldText('uhc_stats_count')).toBe('');
 
-    expect(await contactsPo.cardFieldLabelText('stats_visit_count_goal')).toBe('stats_visit_count_goal');
-    expect(await contactsPo.cardFieldText('stats_visit_count_goal')).toBe('2');
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_count_goal'))
+      .toBe('uhc_stats_count_goal');
+    expect(await contactsPo.cardFieldText('uhc_stats_count_goal')).toBe('');
+
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_last_visited_date'))
+      .toBe('uhc_stats_last_visited_date');
+    expect(await contactsPo.cardFieldText('uhc_stats_last_visited_date')).toBe('');
 
     expect(await contactsPo.cardFieldLabelText('alicetag')).toBe('aliceTag');
     expect(await contactsPo.cardFieldText('alicetag')).toBe(`${ALICE.name} ${ALICE.phone}`);
@@ -246,5 +289,34 @@ describe('Contact summary info', () => {
         element(by.css('.content-pane .meta > div > .card .row p'))
       )
     ).toBe('1');
+  });
+
+  it('should display UHC Stats in contact summary, if contact counts visits and user has permission', async () => {
+    await utils.createUsers([ USER ]);
+    await commonElements.goToLoginPageNative();
+    await loginPage.loginNative(USER.username, USER.password);
+    await utils.closeTour();
+
+    await helper.waitUntilReadyNative(contactsPo.contactsTab);
+    await helper.clickElementNative(contactsPo.contactsTab);
+
+    try {
+      await selectContact('bob');
+    } catch (err) {
+      await browser.refresh();
+      await helper.clickElementNative(contactsPo.contactsTab);
+      await selectContact('bob');
+    }
+
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_count')).toBe('uhc_stats_count');
+    expect(await contactsPo.cardFieldText('uhc_stats_count')).toBe('1');
+
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_count_goal'))
+      .toBe('uhc_stats_count_goal');
+    expect(await contactsPo.cardFieldText('uhc_stats_count_goal')).toBe('2');
+
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_last_visited_date'))
+      .toBe('uhc_stats_last_visited_date');
+    expect(await contactsPo.cardFieldText('uhc_stats_last_visited_date')).toBe(VISIT.reported_date.toString());
   });
 });

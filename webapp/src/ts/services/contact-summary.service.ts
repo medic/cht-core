@@ -4,7 +4,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { PipesService } from '@mm-services/pipes.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
-import { ContactStatsService } from '@mm-services/contact-stats.service';
+import { UHCStatsService } from '@mm-services/uhc-stats.service';
 
 /**
  * Service for generating summary information based on a given
@@ -18,6 +18,7 @@ export class ContactSummaryService {
   private readonly SETTING_NAME = 'contact_summary';
   private generatorFunction;
   private settings;
+  private visitCountSettings;
 
   constructor(
     private settingsService:SettingsService,
@@ -25,17 +26,17 @@ export class ContactSummaryService {
     private feedbackService:FeedbackService,
     private ngZone:NgZone,
     private uhcSettingsService:UHCSettingsService,
-    private contactStatsService:ContactStatsService
+    private uhcStatsService:UHCStatsService
   ) { }
 
-  private async getGeneratorFunction(settings = {}) {
+  private getGeneratorFunction() {
     if (!this.generatorFunction) {
-      const script = settings[this.SETTING_NAME];
+      const script = this.settings[this.SETTING_NAME];
 
       if (!script) {
         this.generatorFunction = function() {};
       } else {
-        this.generatorFunction = new Function('contact', 'reports', 'lineage', 'stats', 'targetDoc', script);
+        this.generatorFunction = new Function('contact', 'reports', 'lineage', 'uhcStats', 'targetDoc', script);
       }
     }
 
@@ -70,13 +71,7 @@ export class ContactSummaryService {
   }
 
   get(contact, reports, lineage, targetDoc?) {
-    return this.ngZone.runOutsideAngular(() => {
-      return this
-        ._get(contact, reports, lineage, targetDoc)
-        .catch(error => {
-          console.error('Error when getting contact summary:', error);
-        });
-    });
+    return this.ngZone.runOutsideAngular(() => this._get(contact, reports, lineage, targetDoc));
   }
 
   private async _get(contact, reports, lineage, targetDoc?) {
@@ -84,14 +79,17 @@ export class ContactSummaryService {
       this.settings = await this.settingsService.get();
     }
 
-    const generatorFunction = await this.getGeneratorFunction(this.settings);
-    const visitCountSettings = this.uhcSettingsService.getVisitCountSettings(this.settings);
-    const stats = {
-      visit: await this.contactStatsService.getVisitStats(contact._id, visitCountSettings)
+    if (!this.visitCountSettings) {
+      this.visitCountSettings = this.uhcSettingsService.getVisitCountSettings(this.settings);
+    }
+
+    const generatorFunction = this.getGeneratorFunction();
+    const uhcStats = {
+      homeVisits: await this.uhcStatsService.getHomeVisitStats(contact, this.visitCountSettings)
     };
 
     try {
-      const summary = generatorFunction(contact, reports || [], lineage || [], stats, targetDoc);
+      const summary = generatorFunction(contact, reports || [], lineage || [], uhcStats, targetDoc);
       return this.applyFilters(summary);
     } catch (error) {
       console.error('Configuration error in contact-summary function: ' + error);

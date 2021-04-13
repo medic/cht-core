@@ -209,6 +209,7 @@
       "chw"
     ],
     "can_view_last_visited_date": [],
+    "can_view_uhc_stats": [],
     "can_view_message_action": [
       "program_officer",
       "chw_supervisor",

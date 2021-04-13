@@ -6,7 +6,7 @@ import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { PipesService } from '@mm-services/pipes.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { FeedbackService } from '@mm-services/feedback.service';
-import { ContactStatsService } from '@mm-services/contact-stats.service';
+import { UHCStatsService } from '@mm-services/uhc-stats.service';
 
 describe('ContactSummary service', () => {
 
@@ -15,13 +15,13 @@ describe('ContactSummary service', () => {
   let service;
   let Settings;
   let feedbackService;
-  let contactStatsService;
+  let uhcStatsService;
 
   beforeEach(() => {
     Settings = sinon.stub();
     feedbackService = { submit: sinon.stub() };
-    contactStatsService = {
-      getVisitStats: sinon.stub()
+    uhcStatsService = {
+      getHomeVisitStats: sinon.stub()
     };
     const pipesTransform = (name, value) => {
       if (name !== 'reversify') {
@@ -35,7 +35,7 @@ describe('ContactSummary service', () => {
         { provide: SettingsService, useValue: { get: Settings } },
         { provide: PipesService, useValue: { transform: pipesTransform } },
         { provide: FeedbackService, useValue: feedbackService },
-        { provide: ContactStatsService, useValue: contactStatsService }
+        { provide: UHCStatsService, useValue: uhcStatsService }
       ]
     });
     service = TestBed.inject(ContactSummaryService);
@@ -123,26 +123,25 @@ describe('ContactSummary service', () => {
     });
   });
 
-  it('does crash when contact summary throws an error', async () => {
+  it('does crash when contact summary throws an error', () => {
     const consoleErrorMock = sinon.stub(console, 'error');
     const script = `return contact.some.field;`;
     const contact = {};
     Settings.resolves({ contact_summary: script });
 
-    await service.get(contact);
-
-    // First error catch
-    expect(consoleErrorMock.callCount).to.equal(2);
-    expect(consoleErrorMock.args[0][0].startsWith('Configuration error in contact-summary')).to.be.true;
-    expect(feedbackService.submit.callCount).to.equal(1);
-    expect(feedbackService.submit.args[0][0])
-      .to.equal('Configuration error in contact-summary function: Cannot read property \'field\' of undefined');
-
-    // Second catch when error bubbled up
-    expect(consoleErrorMock.args[1][0]).to.equal(
-      'Error when getting contact summary:',
-      'Error: Configuration error'
-    );
+    return service
+      .get(contact)
+      .then(() => {
+        throw new Error('Expected error to be thrown');
+      })
+      .catch((err) => {
+        expect(err.message).to.equal('Configuration error');
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0][0].startsWith('Configuration error in contact-summary')).to.be.true;
+        expect(feedbackService.submit.callCount).to.equal(1);
+        expect(feedbackService.submit.args[0][0])
+          .to.equal('Configuration error in contact-summary function: Cannot read property \'field\' of undefined');
+      });
   });
 
   it('should pass targets to the ContactSummary script', () => {
@@ -178,14 +177,14 @@ describe('ContactSummary service', () => {
     const reports = [];
     const script = `
     return { fields: [
-      { label: "Visits count", value: stats.visit.count },
-      { label: "Visit goal", value: stats.visit.countGoal },
-      { label: "Last visited", value: stats.visit.lastVisitedDate }
+      { label: "Visits count", value: uhcStats.homeVisits.count },
+      { label: "Visit goal", value: uhcStats.homeVisits.countGoal },
+      { label: "Last visited", value: uhcStats.homeVisits.lastVisitedDate }
     ] };
     `;
 
     Settings.resolves({ contact_summary: script });
-    contactStatsService.getVisitStats.returns({ count: 5, countGoal: 10, lastVisitedDate: 1617729474090 });
+    uhcStatsService.getHomeVisitStats.returns({ count: 5, countGoal: 10, lastVisitedDate: 1617729474090 });
 
     const contactSummary = await service.get(contact, reports);
 
