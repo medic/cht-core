@@ -256,12 +256,10 @@ describe('Contact summary info', () => {
     expect(await contactsPo.cardFieldLabelText('uhc_stats_count')).toBe('uhc_stats_count');
     expect(await contactsPo.cardFieldText('uhc_stats_count')).toBe('');
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_count_goal'))
-      .toBe('uhc_stats_count_goal');
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_count_goal')).toBe('uhc_stats_count_goal');
     expect(await contactsPo.cardFieldText('uhc_stats_count_goal')).toBe('');
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_last_visited_date'))
-      .toBe('uhc_stats_last_visited_date');
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_last_visited_date')).toBe('uhc_stats_last_visited_date');
     expect(await contactsPo.cardFieldText('uhc_stats_last_visited_date')).toBe('');
 
     expect(await contactsPo.cardFieldLabelText('alicetag')).toBe('aliceTag');
@@ -311,12 +309,10 @@ describe('Contact summary info', () => {
     expect(await contactsPo.cardFieldLabelText('uhc_stats_count')).toBe('uhc_stats_count');
     expect(await contactsPo.cardFieldText('uhc_stats_count')).toBe('1');
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_count_goal'))
-      .toBe('uhc_stats_count_goal');
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_count_goal')).toBe('uhc_stats_count_goal');
     expect(await contactsPo.cardFieldText('uhc_stats_count_goal')).toBe('2');
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_last_visited_date'))
-      .toBe('uhc_stats_last_visited_date');
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_last_visited_date')).toBe('uhc_stats_last_visited_date');
     expect(await contactsPo.cardFieldText('uhc_stats_last_visited_date')).toBe(VISIT.reported_date.toString());
   });
 });
