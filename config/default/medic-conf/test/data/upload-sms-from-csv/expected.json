@@ -1,0 +1,14 @@
+[
+  {
+    "messages": [
+      {
+        "from": "+1234567890",
+        "content": "hello there"
+      },
+      {
+        "from": "+987654321",
+        "content": "goodnight, dear prince"
+      }
+    ]
+  }
+]

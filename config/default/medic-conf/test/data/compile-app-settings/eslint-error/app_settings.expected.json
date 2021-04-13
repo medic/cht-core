@@ -1,0 +1,22 @@
+{
+  "contact_summary": "",
+  "tasks": {
+    "rules": "",
+    "schedules": {
+      "test": true
+    },
+    "targets": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "active-pregnancies",
+          "type": "count",
+          "goal": -1,
+          "translation_key": "targets.active_pregnancies.title",
+          "subtitle_translation_key": "targets.all_time.subtitle",
+          "icon": "pregnancy-1"
+        }
+      ]
+    }
+  }
+}

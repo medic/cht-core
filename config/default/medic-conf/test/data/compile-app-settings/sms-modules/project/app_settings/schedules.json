@@ -1,0 +1,36 @@
+[
+  {
+    "name": "Registration Followup ANC",
+    "translation_key": "schedule.registration_anc",
+    "summary": "",
+    "description": "",
+    "start_from": "reported_date",
+    "messages": [
+      {
+        "translation_key": "messages.schedule.registration.followup_anc",
+        "group": 1,
+        "offset": "7 days",
+        "send_day": "",
+        "send_time": "",
+        "recipient": "clinic"
+      }
+    ]
+  },
+  {
+    "name": "Registration Followup ANC PNC",
+    "translation_key": "schedule.registration_anc_pnc",
+    "summary": "",
+    "description": "",
+    "start_from": "reported_date",
+    "messages": [
+      {
+        "translation_key": "messages.schedule.registration.followup_anc_pnc",
+        "group": 1,
+        "offset": "7 days",
+        "send_day": "",
+        "send_time": "",
+        "recipient": "clinic"
+      }
+    ]
+  }
+]

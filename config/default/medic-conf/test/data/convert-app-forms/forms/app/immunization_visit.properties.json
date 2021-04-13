@@ -1,0 +1,8 @@
+{
+   "icon": "immunization",
+   "context": {
+       "person": true,
+       "place": false,
+       "expression": "((user && user.parent) && ((user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent && user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1))) && (!contact || (contact.type === 'person' && (!contact.date_of_birth || ageInYears(contact) <= 5)))"
+   }
+}

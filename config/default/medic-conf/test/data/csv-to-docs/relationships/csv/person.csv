@@ -1,0 +1,5 @@
+external_id:excluded,name,age:int,location:_id OF place WHERE ext-id=COL_VAL
+person-1,alice,40,place-1
+person-2,bobbo,35,place-1
+person-3,carla,30,place-2
+person-4,david,25,place-2

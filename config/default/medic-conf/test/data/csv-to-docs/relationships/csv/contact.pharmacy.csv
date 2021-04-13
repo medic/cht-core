@@ -1,0 +1,2 @@
+external_id:excluded,contact_type,name,location:_id OF district WHERE external_id=COL_VAL,contact:_id OF contact WHERE external_id=COL_VAL
+pharmacy-1,pharmacy,drugstore,district-1,pharmacist-1

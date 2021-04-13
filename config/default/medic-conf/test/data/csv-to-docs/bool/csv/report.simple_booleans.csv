@@ -1,0 +1,9 @@
+row_count,bool_1:bool
+one,false
+two,False
+three,FALSE
+four,0
+five,true
+six,True
+seven,TRUE
+eight,1

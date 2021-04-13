@@ -1,0 +1,10 @@
+{
+  "contact_summary": "",
+  "tasks": {
+    "rules": "var x = 1;console.log(x);",
+    "targets": {
+      "enabled": true,
+      "items": []
+    }
+  }
+}

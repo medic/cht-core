@@ -1,0 +1,61 @@
+{
+  "locale": "sw",
+  "locales": [
+    {
+      "code": "sw",
+      "name": "Kiswahili (Swahili)"
+    }
+  ],
+  "kujua-reporting": [
+    {
+      "code": "SS",
+      "reporting_freq": "monthly"
+    },
+    {
+      "code": "99",
+      "reporting_freq": "weekly"
+    }
+  ],
+  "forms": {
+    "IMM": {
+      "fields": [
+        "patient_id",
+        "visit_confirmed"
+      ]
+    }
+  },
+  "transitions": {
+    "default_responses": true
+  },
+  "something": {
+    "really": {
+      "really": {
+        "deep": {
+          "still-here": true,
+          "filterme": {
+            "one": true,
+            "three": 3,
+            "five": [
+              5,
+              5,
+              5,
+              5,
+              5
+            ]
+          },
+          "replacemycontents": {
+            "complex": {
+              "object": true
+            }
+          }
+        }
+      }
+    }
+  },
+  "contact_summary": "",
+  "tasks": {
+    "rules": "",
+    "schedules": {},
+    "targets": {}
+  }
+}

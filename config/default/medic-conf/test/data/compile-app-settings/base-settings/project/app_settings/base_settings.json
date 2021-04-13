@@ -1,0 +1,27 @@
+{
+  "locale": "en",
+  "locales": [
+    {
+      "code": "en",
+      "name": "English"
+    },
+    {
+      "code": "es",
+      "name": "Español (Spanish)"
+    }
+  ],
+  "kujua-reporting": [
+    {
+      "code": "SS",
+      "reporting_freq": "monthly"
+    }
+  ],
+  "forms": {
+    "IMM": {
+      "fields": [ "patient_id", "visit_confirmed" ]
+    },
+    "C": {
+      "fields": [ "weeks_since_birth", "patient_name" ]
+    }
+  }
+}

@@ -1,0 +1,6 @@
+build
+test
+scripts
+.idea
+.github
+/.eslintrc

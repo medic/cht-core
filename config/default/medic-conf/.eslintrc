@@ -1,0 +1,34 @@
+{
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:node/recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 8
+  },
+  "rules": {
+    "eqeqeq": "error",
+    "no-bitwise": "error",
+    "no-buffer-constructor": "error",
+    "no-caller": "error",
+    "no-console": "error",
+    "semi": [
+      "error",
+      "always"
+    ],
+    "quotes": [
+      "error",
+      "single",
+      {
+        "allowTemplateLiterals": true
+      }
+    ],
+    "no-process-exit": "warn",
+    "node/no-missing-require": "off",
+    "node/no-extraneous-require": "warn"
+  }
+}

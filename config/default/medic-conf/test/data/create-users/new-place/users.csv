@@ -1,0 +1,3 @@
+username,password,roles,name,phone,contact.c_prop,place.c_prop,place.type,place.name,place.parent
+alice,Secret_1,district-admin,Alice Example,+123456789,c_val_a,p_val_a,health_center,alice area,abc-123
+bob,Secret_2,district-admin,Bob Demo,+987654321,c_val_b,p_val_b,health_center,bob area,def-456

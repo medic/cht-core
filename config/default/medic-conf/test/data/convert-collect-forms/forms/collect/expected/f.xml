@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Danger Sign</h:title>
+    <model>
+      <itext>
+        <translation lang="Bahasa Indonesia (Indonesian)">
+          <text id="/f/id:label">
+            <value>Pasien ID</value>
+          </text>
+          <text id="/f/n:label">
+            <value>Notes</value>
+          </text>
+          <text id="/f/review:label">
+            <value>Submitting danger sign report for ID <output value=" /f/id "/>, with the following notes: <output value=" /f/n "/></value></text>
+        </translation>
+        <translation default="true()" lang="English">
+          <text id="/f/id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/f/n:label">
+            <value>Notes</value>
+          </text>
+          <text id="/f/review:label">
+            <value>Submitting danger sign report for ID <output value=" /f/id "/>, with the following notes: <output value=" /f/n "/></value></text>
+        </translation>
+        <translation lang="हिन्दी (Hindi)">
+          <text id="/f/id:label">
+            <value>मरीज का ID</value>
+          </text>
+          <text id="/f/n:label">
+            <value>Notes</value>
+          </text>
+          <text id="/f/review:label">
+            <value>Submitting danger sign report for ID <output value=" /f/id "/>, with the following notes: <output value=" /f/n "/></value></text>
+        </translation>
+      </itext>
+      <instance>
+        <f delimiter="#" id="f" prefix="J1!f!" version="2017-08-12_06-44">
+          <id/>
+          <n/>
+          <review/>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </f>
+      </instance>
+      <bind nodeset="/f/id" required="true()" type="string"/>
+      <bind nodeset="/f/n" type="string"/>
+      <bind nodeset="/f/review" readonly="true()" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/f/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <input appearance="numbers" ref="/f/id">
+      <label ref="jr:itext('/f/id:label')"/>
+    </input>
+    <input ref="/f/n">
+      <label ref="jr:itext('/f/n:label')"/>
+    </input>
+    <input ref="/f/review">
+      <label ref="jr:itext('/f/review:label')"/>
+    </input>
+  </h:body>
+</h:html>

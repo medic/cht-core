@@ -1,0 +1,37 @@
+{
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "root": true,
+  "parserOptions": {
+    "ecmaVersion": 5
+  },
+  "extends": "eslint:recommended",
+  "rules": {
+    "eqeqeq": "error",
+    "no-bitwise": "error",
+    "no-console": "off",
+    "no-debugger": "off",
+    "no-buffer-constructor": "error",
+    "no-caller": "error",
+    "semi": [
+      "error",
+      "always"
+    ],
+    "quotes": [
+      "error",
+      "single",
+      {
+        "allowTemplateLiterals": true,
+        "avoidEscape": true
+      }
+    ]
+  },
+  "globals": {
+    "contact": true,
+    "reports": true,
+    "lineage": true,
+    "targetDoc": true
+  }
+}

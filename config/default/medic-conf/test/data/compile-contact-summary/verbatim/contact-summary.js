@@ -1,0 +1,1 @@
+contact.x = 'a string';

@@ -1,0 +1,12 @@
+{
+  "type": "person",
+  "name": "kelly",
+  "is_pilot": {
+    "rbf": {
+      "place": false 
+    }
+  },
+  "weird_property":"purple",
+  "another_property":"magenta",
+  "_id": "7ac33d1f-10d8-5198-b39d-9d61595292f6"
+}

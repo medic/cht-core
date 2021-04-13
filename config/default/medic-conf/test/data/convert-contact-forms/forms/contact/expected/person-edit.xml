@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Edit Person</h:title>
+    <model>
+      <instance>
+        <data delimiter="#" id="person" prefix="J1!person!" version="2016-04-06">
+          <person>
+            <type>person</type>
+            <parent/>
+            <name/>
+            <date_of_birth/>
+            <date_of_birth_method/>
+            <sex/>
+            <notes/>
+            <phone/>
+            <alternate_phone/>
+          </person>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind nodeset="/data/person/type" type="string"/>
+      <bind nodeset="/data/person/parent" type="string"/>
+      <bind nodeset="/data/person/name" required="true()" type="string"/>
+      <bind nodeset="/data/person/date_of_birth" type="date"/>
+      <bind nodeset="/data/person/date_of_birth_method" type="select1"/>
+      <bind nodeset="/data/person/sex" type="select1"/>
+      <bind nodeset="/data/person/notes" type="string"/>
+      <bind nodeset="/data/person/phone" type="tel"/>
+      <bind nodeset="/data/person/alternate_phone" type="tel"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <group ref="/data/person">
+      <input appearance="hidden" ref="/data/person/type">
+        <label>Person Type</label>
+        <hint>mandatory</hint>
+      </input>
+      <input appearance="db-object bind-id-only hidden" ref="/data/person/parent">
+        <label>Parent</label>
+      </input>
+      <input ref="/data/person/name">
+        <label>Names</label>
+      </input>
+      <input ref="/data/person/date_of_birth">
+        <label>Date of Birth</label>
+      </input>
+      <select1 appearance="hidden" ref="/data/person/date_of_birth_method">
+        <label>Method to select date of birth</label>
+        <item>
+          <label>Date unknown</label>
+          <value>approx</value>
+        </item>
+      </select1>
+      <select1 appearance="horizontal" ref="/data/person/sex">
+        <label>Gender</label>
+        <item>
+          <label>Female</label>
+          <value>female</value>
+        </item>
+        <item>
+          <label>Male</label>
+          <value>male</value>
+        </item>
+      </select1>
+      <input ref="/data/person/notes">
+        <label>Notes (optional)</label>
+      </input>
+      <input appearance="numbers" ref="/data/person/phone">
+        <label>Primary Mobile Number</label>
+      </input>
+      <input appearance="numbers" ref="/data/person/alternate_phone">
+        <label>Secondary Mobile Number</label>
+      </input>
+    </group>
+  </h:body>
+</h:html>

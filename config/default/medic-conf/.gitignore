@@ -1,0 +1,8 @@
+/build/
+/node_modules/
+express-pouchdb.log
+upload-docs.*.log.json
+/.vscode/
+/.idea/
+/.settings/
+*.swp

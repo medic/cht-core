@@ -1,0 +1,10 @@
+{
+  "contact_summary": "",
+  "tasks": {
+    "rules": "",
+    "schedules": {
+      "test": true
+    },
+    "targets": {}
+  }
+}

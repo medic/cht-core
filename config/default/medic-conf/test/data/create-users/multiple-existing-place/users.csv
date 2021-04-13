@@ -1,0 +1,5 @@
+username,password,roles,contact,place
+todd,Secret_1,district-admin,contact_uuid_1,place_uuid_1
+jack,Secret_1,district-admin:supervisor,contact_uuid_2,place_uuid_2
+jill,Secret_1,role1:role2:role3,contact_uuid_3,place_uuid_3
+john,Secret_1,role2:role3,contact_uuid_4,place_uuid_4

@@ -1,0 +1,1311 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>New Clinic</h:title>
+    <model>
+      <itext>
+        <translation lang="en">
+          <text id="/data/clinic/external_id:label">
+            <value>External ID</value>
+          </text>
+          <text id="/data/clinic/is_name_generated/false:label">
+            <value>No, I want to name it manually</value>
+          </text>
+          <text id="/data/clinic/is_name_generated/true:label">
+            <value>Yes</value>
+          </text>
+          <text id="/data/clinic/is_name_generated:label">
+            <value>Would you like to name the place after the primary contact: &quot;<output value=" /data/init/generated_name_translation "/>&quot;?</value>
+          </text>
+          <text id="/data/clinic/name:label">
+            <value>Name</value>
+          </text>
+          <text id="/data/clinic/notes:label">
+            <value>Notes</value>
+          </text>
+          <text id="/data/clinic/use_cases/anc:label">
+            <value>Antenatal care</value>
+          </text>
+          <text id="/data/clinic/use_cases/imm:label">
+            <value>Immunizations</value>
+          </text>
+          <text id="/data/clinic/use_cases/pnc:label">
+            <value>Postnatal care</value>
+          </text>
+          <text id="/data/clinic/use_cases:hint">
+            <value>Select all needed for this <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/clinic/use_cases:label">
+            <value>Health programs</value>
+          </text>
+          <text id="/data/clinic/vaccines/bcg:label">
+            <value>BCG</value>
+          </text>
+          <text id="/data/clinic/vaccines/cholera:label">
+            <value>Cholera</value>
+          </text>
+          <text id="/data/clinic/vaccines/flu:label">
+            <value>Influenza</value>
+          </text>
+          <text id="/data/clinic/vaccines/hep_a:label">
+            <value>Hepatitis A</value>
+          </text>
+          <text id="/data/clinic/vaccines/hpv:label">
+            <value>HPV (Human Papillomavirus)</value>
+          </text>
+          <text id="/data/clinic/vaccines/jap_enc:label">
+            <value>Japanese Encephalitis</value>
+          </text>
+          <text id="/data/clinic/vaccines/meningococcal:label">
+            <value>Meningococcal</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmr:label">
+            <value>MMR (Measles, Mumps, Rubella)</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmrv:label">
+            <value>MMRV (Measles, Mumps, Rubella, Varicella)</value>
+          </text>
+          <text id="/data/clinic/vaccines/penta:label">
+            <value>Pentavalent</value>
+          </text>
+          <text id="/data/clinic/vaccines/pneumococcal:label">
+            <value>Pneumococcal Pneumonia</value>
+          </text>
+          <text id="/data/clinic/vaccines/polio:label">
+            <value>Polio</value>
+          </text>
+          <text id="/data/clinic/vaccines/rotavirus:label">
+            <value>Rotavirus</value>
+          </text>
+          <text id="/data/clinic/vaccines/typhoid:label">
+            <value>Typhoid</value>
+          </text>
+          <text id="/data/clinic/vaccines/vitamin_a:label">
+            <value>Vitamin A</value>
+          </text>
+          <text id="/data/clinic/vaccines/yellow_fever:label">
+            <value>Yellow Fever</value>
+          </text>
+          <text id="/data/clinic/vaccines:hint">
+            <value>Select all needed for this <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/clinic/vaccines:label">
+            <value>Select vaccines</value>
+          </text>
+          <text id="/data/clinic:hint">
+            <value>mandatory</value>
+          </text>
+          <text id="/data/clinic:label">
+            <value>New <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/contact/external_id:label">
+            <value>External ID</value>
+          </text>
+          <text id="/data/contact/name:label">
+            <value>Names</value>
+          </text>
+          <text id="/data/contact/notes:label">
+            <value>Notes</value>
+          </text>
+          <text id="/data/contact/phone:label">
+            <value>Phone Number</value>
+          </text>
+          <text id="/data/contact/phone_alternate:label">
+            <value>Alternate Phone Number</value>
+          </text>
+          <text id="/data/contact/role/chw:label">
+            <value>CHW</value>
+          </text>
+          <text id="/data/contact/role/chw_supervisor:label">
+            <value>CHW Supervisor</value>
+          </text>
+          <text id="/data/contact/role/manager:label">
+            <value>Facility Manager</value>
+          </text>
+          <text id="/data/contact/role/nurse:label">
+            <value>Nurse</value>
+          </text>
+          <text id="/data/contact/role/other:label">
+            <value>Other</value>
+          </text>
+          <text id="/data/contact/role/patient:label">
+            <value>Patient</value>
+          </text>
+          <text id="/data/contact/role:label">
+            <value>Role</value>
+          </text>
+          <text id="/data/contact/role_other:hint">
+            <value>Specify other</value>
+          </text>
+          <text id="/data/contact:label">
+            <value>New Person</value>
+          </text>
+          <text id="/data/init/create_new_person/new_person:label">
+            <value>Create a new person</value>
+          </text>
+          <text id="/data/init/create_new_person/none:label">
+            <value>Skip this step</value>
+          </text>
+          <text id="/data/init/create_new_person/old_person:label">
+            <value>Select an existing person</value>
+          </text>
+          <text id="/data/init/create_new_person:label">
+            <value>------------ UPDATED LABEL TO TEST THAT THE XML ISN'T OVERWRITTEN --------------</value>
+          </text>
+          <text id="/data/init/custom_place_name:hint">
+            <value>Enter the name of this place</value>
+          </text>
+          <text id="/data/init/custom_place_name:label">
+            <value><output value=" /data/init/custom_place_name_label "/></value>
+          </text>
+          <text id="/data/init/custom_place_name_label_translator/name:label">
+            <value>Name</value>
+          </text>
+          <text id="/data/init/generated_name/clinic:label">
+            <value><output value=" /data/init/contact_name "/>'s Area</value>
+          </text>
+          <text id="/data/init/generated_name/district_hospital:label">
+            <value><output value=" /data/init/contact_name "/>'s District</value>
+          </text>
+          <text id="/data/init/generated_name/health_center:label">
+            <value><output value=" /data/init/contact_name "/>'s Health Center</value>
+          </text>
+          <text id="/data/init/place_type/clinic:label">
+            <value>Area</value>
+          </text>
+          <text id="/data/init/place_type/district_hospital:label">
+            <value>District</value>
+          </text>
+          <text id="/data/init/place_type/health_center:label">
+            <value>Health Center</value>
+          </text>
+          <text id="/data/init/select_person:hint">
+            <value>Select the Primary Contact</value>
+          </text>
+          <text id="/data/init:label">
+            <value>New <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/inputs/user/contact_id:label">
+            <value>Contact ID of the logged in user</value>
+          </text>
+          <text id="/data/inputs/user/facility_id:label">
+            <value>Place ID of the logged in user</value>
+          </text>
+          <text id="/data/inputs/user/name:label">
+            <value>Name of the logged in user</value>
+          </text>
+        </translation>
+        <translation lang="hi">
+          <text id="/data/clinic/external_id:label">
+            <value>बाहरी ID</value>
+          </text>
+          <text id="/data/clinic/is_name_generated/false:label">
+            <value>नहीं, मैं इसे मैन्युअल रूप से नाम देना चाहता हूं</value>
+          </text>
+          <text id="/data/clinic/is_name_generated/true:label">
+            <value>हाँ</value>
+          </text>
+          <text id="/data/clinic/is_name_generated:label">
+            <value>क्या आप इस स्थान को प्राथमिक कॉंटॅक्ट का नाम देना चाहेंगे?: <output value=" /data/init/generated_name_translation "/></value>
+          </text>
+          <text id="/data/clinic/name:label">
+            <value>नाम</value>
+          </text>
+          <text id="/data/clinic/notes:label">
+            <value>नोट्स</value>
+          </text>
+          <text id="/data/clinic/use_cases/anc:label">
+            <value>गर्भावस्था की देखभाल</value>
+          </text>
+          <text id="/data/clinic/use_cases/imm:label">
+            <value>टीकाकरण</value>
+          </text>
+          <text id="/data/clinic/use_cases/pnc:label">
+            <value>गर्भावस्था के बाद की देखभाल</value>
+          </text>
+          <text id="/data/clinic/use_cases:hint">
+            <value>इस <output value=" /data/init/place_type_translation "/> के लिए आवश्यक सभी का चयन करें</value>
+          </text>
+          <text id="/data/clinic/use_cases:label">
+            <value>स्वास्थ्य कार्यक्रम</value>
+          </text>
+          <text id="/data/clinic/vaccines/bcg:label">
+            <value>BCG</value>
+          </text>
+          <text id="/data/clinic/vaccines/cholera:label">
+            <value>Cholera</value>
+          </text>
+          <text id="/data/clinic/vaccines/flu:label">
+            <value>Influenza</value>
+          </text>
+          <text id="/data/clinic/vaccines/hep_a:label">
+            <value>Hepatitis A</value>
+          </text>
+          <text id="/data/clinic/vaccines/hpv:label">
+            <value>HPV (Human Papillomavirus)</value>
+          </text>
+          <text id="/data/clinic/vaccines/jap_enc:label">
+            <value>Japanese Encephalitis</value>
+          </text>
+          <text id="/data/clinic/vaccines/meningococcal:label">
+            <value>Meningococcal</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmr:label">
+            <value>MMR (Measles, Mumps, Rubella)</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmrv:label">
+            <value>MMRV (Measles, Mumps, Rubella, Varicella)</value>
+          </text>
+          <text id="/data/clinic/vaccines/penta:label">
+            <value>Pentavalent</value>
+          </text>
+          <text id="/data/clinic/vaccines/pneumococcal:label">
+            <value>Pneumococcal Pneumonia</value>
+          </text>
+          <text id="/data/clinic/vaccines/polio:label">
+            <value>Polio</value>
+          </text>
+          <text id="/data/clinic/vaccines/rotavirus:label">
+            <value>Rotavirus</value>
+          </text>
+          <text id="/data/clinic/vaccines/typhoid:label">
+            <value>Typhoid</value>
+          </text>
+          <text id="/data/clinic/vaccines/vitamin_a:label">
+            <value>Vitamin A</value>
+          </text>
+          <text id="/data/clinic/vaccines/yellow_fever:label">
+            <value>Yellow Fever</value>
+          </text>
+          <text id="/data/clinic/vaccines:hint">
+            <value>इस <output value=" /data/init/place_type_translation "/> के लिए आवश्यक सभी का चयन करें</value>
+          </text>
+          <text id="/data/clinic/vaccines:label">
+            <value>टीकाकरण चुनें</value>
+          </text>
+          <text id="/data/clinic:hint">
+            <value>ज़रूरी</value>
+          </text>
+          <text id="/data/clinic:label">
+            <value>नया <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/contact/external_id:label">
+            <value>बाहरी ID</value>
+          </text>
+          <text id="/data/contact/meta:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/name:label">
+            <value>नाम</value>
+          </text>
+          <text id="/data/contact/notes:label">
+            <value>नोट्स</value>
+          </text>
+          <text id="/data/contact/phone:label">
+            <value>फोन नंबर</value>
+          </text>
+          <text id="/data/contact/phone_alternate:label">
+            <value>अन्य फोन नंबर</value>
+          </text>
+          <text id="/data/contact/role/chw:label">
+            <value>सामुदायिक स्वास्थ्य कर्मी</value>
+          </text>
+          <text id="/data/contact/role/chw_supervisor:label">
+            <value>सामुदायिक स्वास्थ्य कर्मी के मैनेजर</value>
+          </text>
+          <text id="/data/contact/role/manager:label">
+            <value>स्वास्थ्य केंद्र के मैनजर</value>
+          </text>
+          <text id="/data/contact/role/nurse:label">
+            <value>नर्स</value>
+          </text>
+          <text id="/data/contact/role/other:label">
+            <value>अन्य</value>
+          </text>
+          <text id="/data/contact/role/patient:label">
+            <value>मरीज़</value>
+          </text>
+          <text id="/data/contact/role:label">
+            <value>भूमिका</value>
+          </text>
+          <text id="/data/contact/role_other:hint">
+            <value>अन्य का उल्‍लेख करें</value>
+          </text>
+          <text id="/data/contact:label">
+            <value>नया व्यक्ति</value>
+          </text>
+          <text id="/data/init/create_new_person/new_person:label">
+            <value>एक नया व्यक्ति बनाएं</value>
+          </text>
+          <text id="/data/init/create_new_person/none:label">
+            <value>इस स्टेप को छोड़ दें</value>
+          </text>
+          <text id="/data/init/create_new_person/old_person:label">
+            <value>मौजूदा व्यक्ति चुनें</value>
+          </text>
+          <text id="/data/init/create_new_person:label">
+            <value>प्राथमिक कॉंटॅक्ट चुनें</value>
+          </text>
+          <text id="/data/init/custom_place_name:hint">
+            <value>इस स्थान का नाम दर्ज करें</value>
+          </text>
+          <text id="/data/init/custom_place_name:label">
+            <value><output value=" /data/init/custom_place_name_label "/></value>
+          </text>
+          <text id="/data/init/custom_place_name_label_translator/name:label">
+            <value>नाम</value>
+          </text>
+          <text id="/data/init/generated_name/clinic:label">
+            <value><output value=" /data/init/contact_name "/> का क्षेत्र</value>
+          </text>
+          <text id="/data/init/generated_name/district_hospital:label">
+            <value><output value=" /data/init/contact_name "/> का ज़िला</value>
+          </text>
+          <text id="/data/init/generated_name/health_center:label">
+            <value><output value=" /data/init/contact_name "/> का स्वास्थ्य केंद्र</value>
+          </text>
+          <text id="/data/init/place_type/clinic:label">
+            <value>क्षेत्र</value>
+          </text>
+          <text id="/data/init/place_type/district_hospital:label">
+            <value>ज़िला</value>
+          </text>
+          <text id="/data/init/place_type/health_center:label">
+            <value>स्वास्थ्य केंद्र</value>
+          </text>
+          <text id="/data/init/select_person:hint">
+            <value>प्राथमिक कॉंटॅक्ट चुनें</value>
+          </text>
+          <text id="/data/init:label">
+            <value>नया <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/inputs/user/contact_id:label">
+            <value>Contact ID of the logged in user</value>
+          </text>
+          <text id="/data/inputs/user/facility_id:label">
+            <value>लॉग इन यूज़र के स्थान का ID</value>
+          </text>
+          <text id="/data/inputs/user/name:label">
+            <value>लॉग इन यूज़र का नाम</value>
+          </text>
+        </translation>
+        <translation lang="id">
+          <text id="/data/clinic/external_id:label">
+            <value>Eksternal ID</value>
+          </text>
+          <text id="/data/clinic/is_name_generated/false:label">
+            <value>Tidak, saya ingin nama itu secara manual</value>
+          </text>
+          <text id="/data/clinic/is_name_generated/true:label">
+            <value>Iya</value>
+          </text>
+          <text id="/data/clinic/is_name_generated:label">
+            <value>Apakah Anda ingin nama tempat setelah kontak utama: &quot;<output value=" /data/init/generated_name_translation "/>&quot;?</value>
+          </text>
+          <text id="/data/clinic/name:label">
+            <value>Nama</value>
+          </text>
+          <text id="/data/clinic/notes:label">
+            <value>Catatan</value>
+          </text>
+          <text id="/data/clinic/use_cases/anc:label">
+            <value>Perawatan Antenatal</value>
+          </text>
+          <text id="/data/clinic/use_cases/imm:label">
+            <value>Imunisasi</value>
+          </text>
+          <text id="/data/clinic/use_cases/pnc:label">
+            <value>Perawatan Setelah Melahirkan</value>
+          </text>
+          <text id="/data/clinic/use_cases:hint">
+            <value>Pilih semua yang diperlukan untuk ini <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/clinic/use_cases:label">
+            <value>Program Kesehatan</value>
+          </text>
+          <text id="/data/clinic/vaccines/bcg:label">
+            <value>BCG</value>
+          </text>
+          <text id="/data/clinic/vaccines/cholera:label">
+            <value>Kolera</value>
+          </text>
+          <text id="/data/clinic/vaccines/flu:label">
+            <value>Influenza</value>
+          </text>
+          <text id="/data/clinic/vaccines/hep_a:label">
+            <value>Hepatitis A</value>
+          </text>
+          <text id="/data/clinic/vaccines/hpv:label">
+            <value>HPV (Human Papillomavirus)</value>
+          </text>
+          <text id="/data/clinic/vaccines/jap_enc:label">
+            <value>Japanese Encephalitis</value>
+          </text>
+          <text id="/data/clinic/vaccines/meningococcal:label">
+            <value>Meningococcal</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmr:label">
+            <value>MMR (Measles, Mumps, Rubella)</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmrv:label">
+            <value>MMRV (Measles, Mumps, Rubella, Varicella)</value>
+          </text>
+          <text id="/data/clinic/vaccines/penta:label">
+            <value>Pentavalent</value>
+          </text>
+          <text id="/data/clinic/vaccines/pneumococcal:label">
+            <value>Pneumococcal Pneumonia</value>
+          </text>
+          <text id="/data/clinic/vaccines/polio:label">
+            <value>Polio</value>
+          </text>
+          <text id="/data/clinic/vaccines/rotavirus:label">
+            <value>Rotavirus</value>
+          </text>
+          <text id="/data/clinic/vaccines/typhoid:label">
+            <value>Typhoid</value>
+          </text>
+          <text id="/data/clinic/vaccines/vitamin_a:label">
+            <value>Vitamin A</value>
+          </text>
+          <text id="/data/clinic/vaccines/yellow_fever:label">
+            <value>Yellow Fever</value>
+          </text>
+          <text id="/data/clinic/vaccines:hint">
+            <value>Pilih semua yang diperlukan untuk ini <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/clinic/vaccines:label">
+            <value>Pilih Jenis Vaksin</value>
+          </text>
+          <text id="/data/clinic:hint">
+            <value>diperlukan</value>
+          </text>
+          <text id="/data/clinic:label">
+            <value>Baru <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/contact/external_id:label">
+            <value>Eksternal ID</value>
+          </text>
+          <text id="/data/contact/meta:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/name:label">
+            <value>Nama</value>
+          </text>
+          <text id="/data/contact/notes:label">
+            <value>Catatan</value>
+          </text>
+          <text id="/data/contact/phone:label">
+            <value>Nomor Telepon</value>
+          </text>
+          <text id="/data/contact/phone_alternate:label">
+            <value>Nomor Telepon Alternatif</value>
+          </text>
+          <text id="/data/contact/role/chw:label">
+            <value>Kader</value>
+          </text>
+          <text id="/data/contact/role/chw_supervisor:label">
+            <value>Kader Pengawas</value>
+          </text>
+          <text id="/data/contact/role/manager:label">
+            <value>Manajer Fasilitas</value>
+          </text>
+          <text id="/data/contact/role/nurse:label">
+            <value>Perawat</value>
+          </text>
+          <text id="/data/contact/role/other:label">
+            <value>Lain</value>
+          </text>
+          <text id="/data/contact/role/patient:label">
+            <value>Pasien</value>
+          </text>
+          <text id="/data/contact/role:label">
+            <value>Peran</value>
+          </text>
+          <text id="/data/contact/role_other:hint">
+            <value>Tentukan lainnya</value>
+          </text>
+          <text id="/data/contact:label">
+            <value>Orang Baru</value>
+          </text>
+          <text id="/data/init/create_new_person/new_person:label">
+            <value>Buat orang baru</value>
+          </text>
+          <text id="/data/init/create_new_person/none:label">
+            <value>Lewati langkah ini</value>
+          </text>
+          <text id="/data/init/create_new_person/old_person:label">
+            <value>Pilih orang yang ada</value>
+          </text>
+          <text id="/data/init/create_new_person:label">
+            <value>Ditetapkan Sebagai Kontak Utama</value>
+          </text>
+          <text id="/data/init/custom_place_name:hint">
+            <value>Masukkan nama tempat ini</value>
+          </text>
+          <text id="/data/init/custom_place_name:label">
+            <value><output value=" /data/init/custom_place_name_label "/></value>
+          </text>
+          <text id="/data/init/custom_place_name_label_translator/name:label">
+            <value>Nama</value>
+          </text>
+          <text id="/data/init/generated_name/clinic:label">
+            <value>Daerah <output value=" /data/init/contact_name "/></value>
+          </text>
+          <text id="/data/init/generated_name/district_hospital:label">
+            <value>Kabupaten <output value=" /data/init/contact_name "/></value>
+          </text>
+          <text id="/data/init/generated_name/health_center:label">
+            <value>Fasilitas Kesehatan <output value=" /data/init/contact_name "/></value>
+          </text>
+          <text id="/data/init/place_type/clinic:label">
+            <value>Daerah</value>
+          </text>
+          <text id="/data/init/place_type/district_hospital:label">
+            <value>Kabupaten</value>
+          </text>
+          <text id="/data/init/place_type/health_center:label">
+            <value>Fasilitas Kesehatan</value>
+          </text>
+          <text id="/data/init/select_person:hint">
+            <value>Pilih Kontak Utama</value>
+          </text>
+          <text id="/data/init:label">
+            <value>Baru <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/inputs/user/contact_id:label">
+            <value>Contact ID of the logged in user</value>
+          </text>
+          <text id="/data/inputs/user/facility_id:label">
+            <value>ID Tempat dari login user</value>
+          </text>
+          <text id="/data/inputs/user/name:label">
+            <value>Nama dari login user</value>
+          </text>
+        </translation>
+        <translation lang="ne">
+          <text id="/data/clinic/external_id:label">
+            <value>बाहिरि ID</value>
+          </text>
+          <text id="/data/clinic/is_name_generated/false:label">
+            <value>होइन, म आफैँ नाम दिन चाहन्छु</value>
+          </text>
+          <text id="/data/clinic/is_name_generated/true:label">
+            <value>हो</value>
+          </text>
+          <text id="/data/clinic/is_name_generated:label">
+            <value>के तपाइ यस स्थानकाे प्राथमिक सम्पर्क नाम दिन चाहानु हुन्छ?:<output value=" /data/init/generated_name_translation "/></value>
+          </text>
+          <text id="/data/clinic/name:label">
+            <value>नाम</value>
+          </text>
+          <text id="/data/clinic/notes:label">
+            <value>टिप्पणि</value>
+          </text>
+          <text id="/data/clinic/use_cases/anc:label">
+            <value>पूर्व प्रसुती स्याहार</value>
+          </text>
+          <text id="/data/clinic/use_cases/imm:label">
+            <value>खोप</value>
+          </text>
+          <text id="/data/clinic/use_cases/pnc:label">
+            <value>प्रसुती पश्चातको स्याहार</value>
+          </text>
+          <text id="/data/clinic/use_cases:hint">
+            <value>यस <output value=" /data/init/place_type_translation "/> का लागि आवश्यक सब छान्नुहोस्</value>
+          </text>
+          <text id="/data/clinic/use_cases:label">
+            <value>स्वास्थ्य कार्यक्रम</value>
+          </text>
+          <text id="/data/clinic/vaccines/bcg:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/cholera:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/flu:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/hep_a:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/hpv:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/jap_enc:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/meningococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmr:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmrv:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/penta:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/pneumococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/polio:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/rotavirus:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/typhoid:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/vitamin_a:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/yellow_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines:hint">
+            <value>यस <output value=" /data/init/place_type_translation "/> का लागि आवश्यक सब छान्नुहोस्</value>
+          </text>
+          <text id="/data/clinic/vaccines:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic:hint">
+            <value>जरुरी</value>
+          </text>
+          <text id="/data/clinic:label">
+            <value>नया <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/contact/external_id:label">
+            <value>बाहिरि ID</value>
+          </text>
+          <text id="/data/contact/meta:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/name:label">
+            <value>नाम</value>
+          </text>
+          <text id="/data/contact/notes:label">
+            <value>टिप्पणि</value>
+          </text>
+          <text id="/data/contact/phone:label">
+            <value>फाेन नम्बर</value>
+          </text>
+          <text id="/data/contact/phone_alternate:label">
+            <value>बैकल्पिक फाेन नम्बर</value>
+          </text>
+          <text id="/data/contact/role/chw:label">
+            <value>महिला स्वास्थ्य स्वयम् सेविका</value>
+          </text>
+          <text id="/data/contact/role/chw_supervisor:label">
+            <value>महिला स्वास्थ्य स्वयम् सेविकाको सुपरभाइजर</value>
+          </text>
+          <text id="/data/contact/role/manager:label">
+            <value>स्वास्थ्य सस्था प्रमुख</value>
+          </text>
+          <text id="/data/contact/role/nurse:label">
+            <value>नर्स</value>
+          </text>
+          <text id="/data/contact/role/other:label">
+            <value>अन्य</value>
+          </text>
+          <text id="/data/contact/role/patient:label">
+            <value>बिरामी</value>
+          </text>
+          <text id="/data/contact/role:label">
+            <value>भुमिका</value>
+          </text>
+          <text id="/data/contact/role_other:hint">
+            <value>अन्य उल्लेख गर्नुहोस्</value>
+          </text>
+          <text id="/data/contact:label">
+            <value>नया व्यक्ति</value>
+          </text>
+          <text id="/data/init/create_new_person/new_person:label">
+            <value>एक नया व्यक्ति बनाउनुस</value>
+          </text>
+          <text id="/data/init/create_new_person/none:label">
+            <value>एख</value>
+          </text>
+          <text id="/data/init/create_new_person/old_person:label">
+            <value>व्यक्ति छान्नुहोस्</value>
+          </text>
+          <text id="/data/init/create_new_person:label">
+            <value>प्राथमिक सम्पर्क व्यक्ति</value>
+          </text>
+          <text id="/data/init/custom_place_name:hint">
+            <value>यस स्थानको नाम लेख्नुहोस्</value>
+          </text>
+          <text id="/data/init/custom_place_name:label">
+            <value><output value=" /data/init/custom_place_name_label "/></value>
+          </text>
+          <text id="/data/init/custom_place_name_label_translator/name:label">
+            <value>नाम</value>
+          </text>
+          <text id="/data/init/generated_name/clinic:label">
+            <value><output value=" /data/init/contact_name "/>को क्षेत्र</value>
+          </text>
+          <text id="/data/init/generated_name/district_hospital:label">
+            <value><output value=" /data/init/contact_name "/>को जिल्ला</value>
+          </text>
+          <text id="/data/init/generated_name/health_center:label">
+            <value><output value=" /data/init/contact_name "/>को स्वास्थ्य केन्द्र</value>
+          </text>
+          <text id="/data/init/place_type/clinic:label">
+            <value>क्षेत्र</value>
+          </text>
+          <text id="/data/init/place_type/district_hospital:label">
+            <value>जिल्ला</value>
+          </text>
+          <text id="/data/init/place_type/health_center:label">
+            <value>स्वास्थ्य केन्द्र</value>
+          </text>
+          <text id="/data/init/select_person:hint">
+            <value>प्राथमिक सम्पर्क व्यक्ति छान्नुहोस्</value>
+          </text>
+          <text id="/data/init:label">
+            <value>नया <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/inputs/user/contact_id:label">
+            <value>लग इन गरेको प्रयोगकर्ताको सम्पर्क ID</value>
+          </text>
+          <text id="/data/inputs/user/facility_id:label">
+            <value>लग इन गरेको प्रयोगकर्ताको स्थानको ID</value>
+          </text>
+          <text id="/data/inputs/user/name:label">
+            <value>लग इन गरेको प्रयोगकर्ताको नाम</value>
+          </text>
+        </translation>
+        <translation lang="sw">
+          <text id="/data/clinic/external_id:label">
+            <value>Namba ya nje</value>
+          </text>
+          <text id="/data/clinic/is_name_generated/false:label">
+            <value>Hapana, ningependa kuijaza mwenyewe</value>
+          </text>
+          <text id="/data/clinic/is_name_generated/true:label">
+            <value>Ndio</value>
+          </text>
+          <text id="/data/clinic/is_name_generated:label">
+            <value>Je, Ungependa kuita eneo hii kama mwasilishi mkuu wa eneo hii? &quot;<output value=" /data/init/generated_name_translation "/>&quot;?</value>
+          </text>
+          <text id="/data/clinic/name:label">
+            <value>Jina</value>
+          </text>
+          <text id="/data/clinic/notes:label">
+            <value>Maelezo</value>
+          </text>
+          <text id="/data/clinic/use_cases/anc:label">
+            <value>Huduma ya kabla ya kuzaa</value>
+          </text>
+          <text id="/data/clinic/use_cases/imm:label">
+            <value>Chanjo</value>
+          </text>
+          <text id="/data/clinic/use_cases/pnc:label">
+            <value>Huduma ya baada ya kuzaa</value>
+          </text>
+          <text id="/data/clinic/use_cases:hint">
+            <value>Chagua zote zinazohitajika kwa hii <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/clinic/use_cases:label">
+            <value>Huduma za afya</value>
+          </text>
+          <text id="/data/clinic/vaccines/bcg:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/cholera:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/flu:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/hep_a:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/hpv:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/jap_enc:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/meningococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmr:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmrv:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/penta:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/pneumococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/polio:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/rotavirus:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/typhoid:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/vitamin_a:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/yellow_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines:hint">
+            <value>Chagua zote zinazohitajika kwa hii <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/clinic/vaccines:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic:hint">
+            <value>lazima</value>
+          </text>
+          <text id="/data/clinic:label">
+            <value>Mpya <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/contact/external_id:label">
+            <value>Kitambulisho cha nje</value>
+          </text>
+          <text id="/data/contact/meta:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/name:label">
+            <value>Jina</value>
+          </text>
+          <text id="/data/contact/notes:label">
+            <value>Maelezo</value>
+          </text>
+          <text id="/data/contact/phone:label">
+            <value>Namba ya Simi</value>
+          </text>
+          <text id="/data/contact/phone_alternate:label">
+            <value>Namba Ya</value>
+          </text>
+          <text id="/data/contact/role/chw:label">
+            <value>Mhudumu wa afya</value>
+          </text>
+          <text id="/data/contact/role/chw_supervisor:label">
+            <value>Mkuu wa wahudumu wa afya</value>
+          </text>
+          <text id="/data/contact/role/manager:label">
+            <value>Meneja wa Kituo cha afya</value>
+          </text>
+          <text id="/data/contact/role/nurse:label">
+            <value>Muuguzi</value>
+          </text>
+          <text id="/data/contact/role/other:label">
+            <value>Nyingine</value>
+          </text>
+          <text id="/data/contact/role/patient:label">
+            <value>Mgonjwa</value>
+          </text>
+          <text id="/data/contact/role:label">
+            <value>Namba ya simu Nyingine</value>
+          </text>
+          <text id="/data/contact/role_other:hint">
+            <value>Fafanua vingine</value>
+          </text>
+          <text id="/data/contact:label">
+            <value>Mtu Mpya</value>
+          </text>
+          <text id="/data/init/create_new_person/new_person:label">
+            <value>Ongeza mtumizi mpya</value>
+          </text>
+          <text id="/data/init/create_new_person/none:label">
+            <value>Ruka hatua ii</value>
+          </text>
+          <text id="/data/init/create_new_person/old_person:label">
+            <value>Chagua mtumizi aliyesajlishwa apo awali</value>
+          </text>
+          <text id="/data/init/create_new_person:label">
+            <value>Weka mwasiliwa mkuu</value>
+          </text>
+          <text id="/data/init/custom_place_name:hint">
+            <value>Jaza jina la eneo hii</value>
+          </text>
+          <text id="/data/init/custom_place_name:label">
+            <value><output value=" /data/init/custom_place_name_label "/></value>
+          </text>
+          <text id="/data/init/custom_place_name_label_translator/name:label">
+            <value>Jina</value>
+          </text>
+          <text id="/data/init/generated_name/clinic:label">
+            <value>Eneo ya  <output value=" /data/init/contact_name "/></value>
+          </text>
+          <text id="/data/init/generated_name/district_hospital:label">
+            <value>WIlaya ya  <output value=" /data/init/contact_name "/></value>
+          </text>
+          <text id="/data/init/generated_name/health_center:label">
+            <value>Kituo cha afya cha  <output value=" /data/init/contact_name "/></value>
+          </text>
+          <text id="/data/init/place_type/clinic:label">
+            <value>Eneo</value>
+          </text>
+          <text id="/data/init/place_type/district_hospital:label">
+            <value>Wilaya</value>
+          </text>
+          <text id="/data/init/place_type/health_center:label">
+            <value>Kituo cha afya</value>
+          </text>
+          <text id="/data/init/select_person:hint">
+            <value>Chagua Mwasiliwa mkuu</value>
+          </text>
+          <text id="/data/init:label">
+            <value>Mpya <output value=" /data/init/place_type_translation "/></value>
+          </text>
+          <text id="/data/inputs/user/contact_id:label">
+            <value>Namba ya Usajilisho ya mtumiaji wa huduma hii</value>
+          </text>
+          <text id="/data/inputs/user/facility_id:label">
+            <value>Kitambulisho cha mahali cha mtumizi wa huduma hii</value>
+          </text>
+          <text id="/data/inputs/user/name:label">
+            <value>Jina la mtumizi wa huduma hii</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <data delimiter="#" id="contact:clinic:create" prefix="J1!contact:clinic:create!" version="2019-09-10_18-18">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <user>
+              <contact_id/>
+              <facility_id/>
+              <name/>
+            </user>
+          </inputs>
+          <clinic>
+            <parent>PARENT</parent>
+            <type/>
+            <is_name_generated>true</is_name_generated>
+            <name/>
+            <external_id/>
+            <use_cases/>
+            <vaccines/>
+            <notes/>
+            <contact/>
+            <geolocation/>
+            <meta tag="hidden">
+              <created_by/>
+              <created_by_person_uuid/>
+              <created_by_place_uuid/>
+            </meta>
+          </clinic>
+          <init>
+            <create_new_person/>
+            <select_person/>
+            <name/>
+            <contact_name/>
+            <custom_place_name_label_translator/>
+            <custom_place_name_label/>
+            <custom_place_name/>
+            <place_type>clinic</place_type>
+            <place_type_translation/>
+            <generated_name>clinic</generated_name>
+            <generated_name_translation/>
+          </init>
+          <contact>
+            <parent/>
+            <type>person</type>
+            <name/>
+            <phone/>
+            <phone_alternate/>
+            <role/>
+            <role_other/>
+            <external_id/>
+            <notes/>
+            <meta tag="hidden">
+              <created_by/>
+              <created_by_person_uuid/>
+              <created_by_place_uuid/>
+            </meta>
+          </contact>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind nodeset="/data/inputs" relevant="false()"/>
+      <bind nodeset="/data/inputs/user/contact_id" type="string"/>
+      <bind nodeset="/data/inputs/user/facility_id" type="string"/>
+      <bind nodeset="/data/inputs/user/name" type="string"/>
+      <bind nodeset="/data/init/create_new_person" required="true()" type="select1"/>
+      <bind nodeset="/data/init/select_person" relevant="selected( /data/init/create_new_person ,'old_person')" required="true()" type="db:person"/>
+      <bind calculate="." nodeset="/data/init/name" type="string"/>
+      <bind calculate="coalesce(../name, ../../contact/name)" nodeset="/data/init/contact_name" type="string"/>
+      <bind calculate="&quot;name&quot;" nodeset="/data/init/custom_place_name_label_translator" relevant="selected( /data/init/create_new_person ,'none')" type="select1"/>
+      <bind calculate="jr:choice-name( /data/init/custom_place_name_label_translator ,' /data/init/custom_place_name_label_translator ')" nodeset="/data/init/custom_place_name_label" type="string"/>
+      <bind nodeset="/data/init/custom_place_name" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/clinic/is_name_generated , 'false')" required="true()" type="string"/>
+      <bind nodeset="/data/init/place_type" type="select1"/>
+      <bind calculate="jr:choice-name( /data/init/place_type ,' /data/init/place_type ')" nodeset="/data/init/place_type_translation" type="string"/>
+      <bind nodeset="/data/init/generated_name" type="select1"/>
+      <bind calculate="jr:choice-name( /data/init/generated_name ,' /data/init/generated_name ')" nodeset="/data/init/generated_name_translation" type="string"/>
+      <bind nodeset="/data/contact" relevant="selected( /data/init/create_new_person ,'new_person')"/>
+      <bind calculate="." nodeset="/data/contact/parent" type="string"/>
+      <bind calculate="." nodeset="/data/contact/type" type="string"/>
+      <bind nodeset="/data/contact/name" required="true()" type="string"/>
+      <bind nodeset="/data/contact/phone" type="tel"/>
+      <bind nodeset="/data/contact/phone_alternate" type="tel"/>
+      <bind nodeset="/data/contact/role" type="select1"/>
+      <bind nodeset="/data/contact/role_other" relevant="selected(  /data/contact/role ,'other')" required="true()" type="string"/>
+      <bind nodeset="/data/contact/external_id" type="string"/>
+      <bind nodeset="/data/contact/notes" type="string"/>
+      <bind calculate="../../../inputs/user/name" nodeset="/data/contact/meta/created_by" type="string"/>
+      <bind calculate="../../../inputs/user/contact_id" nodeset="/data/contact/meta/created_by_person_uuid" type="string"/>
+      <bind calculate="../../../inputs/user/facility_id" nodeset="/data/contact/meta/created_by_place_uuid" type="string"/>
+      <bind calculate="." nodeset="/data/clinic/parent" type="string"/>
+      <bind calculate="." nodeset="/data/clinic/type" type="string"/>
+      <bind nodeset="/data/clinic/is_name_generated" relevant="not(selected( /data/init/create_new_person ,'none'))" required="true()" type="select1"/>
+      <bind calculate="if(  /data/clinic/is_name_generated  = 'true',  /data/init/generated_name_translation ,  /data/init/custom_place_name )" nodeset="/data/clinic/name" required="true()" type="string"/>
+      <bind nodeset="/data/clinic/external_id" type="string"/>
+      <bind nodeset="/data/clinic/use_cases" relevant="../type = 'district_hospital'" type="select"/>
+      <bind nodeset="/data/clinic/vaccines" relevant="../type = 'district_hospital' and selected( /data/clinic/use_cases ,'imm')" type="select"/>
+      <bind nodeset="/data/clinic/notes" type="string"/>
+      <bind calculate="if(selected( /data/init/create_new_person ,'none'), &quot;&quot;, coalesce( /data/init/select_person ,&quot;NEW&quot;))" nodeset="/data/clinic/contact" type="string"/>
+      <bind calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))" nodeset="/data/clinic/geolocation" type="string"/>
+      <bind calculate="../../../inputs/user/name" nodeset="/data/clinic/meta/created_by" type="string"/>
+      <bind calculate="../../../inputs/user/contact_id" nodeset="/data/clinic/meta/created_by_person_uuid" type="string"/>
+      <bind calculate="../../../inputs/user/facility_id" nodeset="/data/clinic/meta/created_by_place_uuid" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group ref="/data/inputs">
+      <group ref="/data/inputs/user">
+        <input ref="/data/inputs/user/contact_id">
+          <label ref="jr:itext('/data/inputs/user/contact_id:label')"/>
+        </input>
+        <input ref="/data/inputs/user/facility_id">
+          <label ref="jr:itext('/data/inputs/user/facility_id:label')"/>
+        </input>
+        <input ref="/data/inputs/user/name">
+          <label ref="jr:itext('/data/inputs/user/name:label')"/>
+        </input>
+      </group>
+    </group>
+    <group appearance="field-list" ref="/data/init">
+      <label ref="jr:itext('/data/init:label')"/>
+      <select1 appearance="horizontal-compact" ref="/data/init/create_new_person">
+        <label ref="jr:itext('/data/init/create_new_person:label')"/>
+        <item>
+          <label ref="jr:itext('/data/init/create_new_person/new_person:label')"/>
+          <value>new_person</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/init/create_new_person/old_person:label')"/>
+          <value>old_person</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/init/create_new_person/none:label')"/>
+          <value>none</value>
+        </item>
+      </select1>
+      <input appearance="db-object" ref="/data/init/select_person"/>
+      <select1 appearance="hidden" ref="/data/init/custom_place_name_label_translator">
+        <item>
+          <label ref="jr:itext('/data/init/custom_place_name_label_translator/name:label')"/>
+          <value>name</value>
+        </item>
+      </select1>
+      <select1 appearance="hidden" ref="/data/init/place_type">
+        <item>
+          <label ref="jr:itext('/data/init/place_type/district_hospital:label')"/>
+          <value>district_hospital</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/init/place_type/health_center:label')"/>
+          <value>health_center</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/init/place_type/clinic:label')"/>
+          <value>clinic</value>
+        </item>
+      </select1>
+      <select1 appearance="hidden" ref="/data/init/generated_name">
+        <item>
+          <label ref="jr:itext('/data/init/generated_name/district_hospital:label')"/>
+          <value>district_hospital</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/init/generated_name/health_center:label')"/>
+          <value>health_center</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/init/generated_name/clinic:label')"/>
+          <value>clinic</value>
+        </item>
+      </select1>
+      <group appearance="field-list" ref="/data/contact">
+        <label ref="jr:itext('/data/contact:label')"/>
+        <input ref="/data/contact/name">
+          <label ref="jr:itext('/data/contact/name:label')"/>
+        </input>
+        <input ref="/data/contact/phone">
+          <label ref="jr:itext('/data/contact/phone:label')"/>
+        </input>
+        <input ref="/data/contact/phone_alternate">
+          <label ref="jr:itext('/data/contact/phone_alternate:label')"/>
+        </input>
+        <select1 ref="/data/contact/role">
+          <label ref="jr:itext('/data/contact/role:label')"/>
+          <item>
+            <label ref="jr:itext('/data/contact/role/chw:label')"/>
+            <value>chw</value>
+          </item>
+          <item>
+            <label ref="jr:itext('/data/contact/role/chw_supervisor:label')"/>
+            <value>chw_supervisor</value>
+          </item>
+          <item>
+            <label ref="jr:itext('/data/contact/role/nurse:label')"/>
+            <value>nurse</value>
+          </item>
+          <item>
+            <label ref="jr:itext('/data/contact/role/manager:label')"/>
+            <value>manager</value>
+          </item>
+          <item>
+            <label ref="jr:itext('/data/contact/role/patient:label')"/>
+            <value>patient</value>
+          </item>
+          <item>
+            <label ref="jr:itext('/data/contact/role/other:label')"/>
+            <value>other</value>
+          </item>
+        </select1>
+        <input ref="/data/contact/role_other"/>
+        <input ref="/data/contact/external_id">
+          <label ref="jr:itext('/data/contact/external_id:label')"/>
+        </input>
+        <input appearance="multiline" ref="/data/contact/notes">
+          <label ref="jr:itext('/data/contact/notes:label')"/>
+        </input>
+        <group appearance="hidden" ref="/data/contact/meta"/>
+        </group>
+      </group>
+    <group appearance="field-list" ref="/data/clinic">
+      <label ref="jr:itext('/data/clinic:label')"/>
+      <select1 appearance="horizontal-compact" ref="/data/clinic/is_name_generated">
+        <label ref="jr:itext('/data/clinic/is_name_generated:label')"/>
+        <item>
+          <label ref="jr:itext('/data/clinic/is_name_generated/true:label')"/>
+          <value>true</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/is_name_generated/false:label')"/>
+          <value>false</value>
+        </item>
+      </select1>
+      <input ref="/data/init/custom_place_name">
+        <label ref="jr:itext('/data/init/custom_place_name:label')"/>
+        <hint ref="jr:itext('/data/init/custom_place_name:hint')"/>
+      </input>
+      <input ref="/data/clinic/external_id">
+        <label ref="jr:itext('/data/clinic/external_id:label')"/>
+      </input>
+      <select ref="/data/clinic/use_cases">
+        <label ref="jr:itext('/data/clinic/use_cases:label')"/>
+        <hint ref="jr:itext('/data/clinic/use_cases:hint')"/>
+        <item>
+          <label ref="jr:itext('/data/clinic/use_cases/anc:label')"/>
+          <value>anc</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/use_cases/pnc:label')"/>
+          <value>pnc</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/use_cases/imm:label')"/>
+          <value>imm</value>
+        </item>
+      </select>
+      <select ref="/data/clinic/vaccines">
+        <label ref="jr:itext('/data/clinic/vaccines:label')"/>
+        <hint ref="jr:itext('/data/clinic/vaccines:hint')"/>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/bcg:label')"/>
+          <value>bcg</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/cholera:label')"/>
+          <value>cholera</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/hep_a:label')"/>
+          <value>hep_a</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/hpv:label')"/>
+          <value>hpv</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/flu:label')"/>
+          <value>flu</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/jap_enc:label')"/>
+          <value>jap_enc</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/meningococcal:label')"/>
+          <value>meningococcal</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/mmr:label')"/>
+          <value>mmr</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/mmrv:label')"/>
+          <value>mmrv</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/polio:label')"/>
+          <value>polio</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/penta:label')"/>
+          <value>penta</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/pneumococcal:label')"/>
+          <value>pneumococcal</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/rotavirus:label')"/>
+          <value>rotavirus</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/typhoid:label')"/>
+          <value>typhoid</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/vitamin_a:label')"/>
+          <value>vitamin_a</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/yellow_fever:label')"/>
+          <value>yellow_fever</value>
+        </item>
+      </select>
+      <input appearance="multiline" ref="/data/clinic/notes">
+        <label ref="jr:itext('/data/clinic/notes:label')"/>
+      </input>
+      <group appearance="hidden" ref="/data/clinic/meta"/>
+    </group>
+  </h:body>
+</h:html>

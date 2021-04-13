@@ -1,0 +1,33 @@
+{
+  "inherit": "../parent",
+  "replace": {
+    "locale": "sw",
+    "locales": [
+      {
+        "code": "sw",
+        "name": "Kiswahili (Swahili)"
+      }
+    ],
+    "something.really.really.deep.replacemycontents": {
+      "complex": {
+        "object": true
+      }
+    }
+  },
+  "merge": {
+    "kujua-reporting": [
+      {
+        "code": "99",
+        "reporting_freq": "weekly"
+      }
+    ]
+  },
+  "delete": [
+    "transitions.update_clinics",
+    "something.really.really.deep.byebye"
+  ],
+  "filter": {
+    "forms": [ "IMM" ],
+    "something.really.really.deep.filterme": [ "one", "three", "five" ]
+  }
+}

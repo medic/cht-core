@@ -1,0 +1,34 @@
+name: Build Medic-Conf and test against node versions
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build for Node version ${{ matrix.node-version }}
+    runs-on: ubuntu-18.04
+
+    strategy:
+      matrix:
+        node-version: [8.x, 10.x, 12.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Setting up python 2.X
+      uses: actions/setup-python@v2
+      with:
+        python-version: '2.x' 
+        architecture: 'x64' 
+    - name: Installing wheel package for pip # This makes the warning about legacy installing go away. 
+      uses: BSFishy/pip-action@v1
+      with:
+        packages: wheel
+    - name: Installing pyxform # Install pyxform dependency. 
+      uses: BSFishy/pip-action@v1
+      with:
+        packages: git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
+    - name: npm ci and test
+      run: npm ci && npm test

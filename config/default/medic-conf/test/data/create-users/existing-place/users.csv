@@ -1,0 +1,2 @@
+username,password,roles,name,phone,contact.c_prop,place
+todd,Secret_1,district-admin,Alice Example,+123456789,c_val_a,place_uuid_here

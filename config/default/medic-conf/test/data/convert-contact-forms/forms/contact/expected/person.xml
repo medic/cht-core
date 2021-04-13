@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Add Person</h:title>
+    <model>
+      <instance>
+        <data delimiter="#" id="person" prefix="J1!person!" version="2017-08-16 00:00:00">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <user>
+              <facility_id/>
+            </user>
+          </inputs>
+          <person>
+            <type>person</type>
+            <parent>PARENT</parent>
+            <name/>
+            <external_id/>
+            <nationality/>
+            <nationality_other/>
+            <contact_telephone_number/>
+            <date_of_birth/>
+            <sex/>
+            <geolocation/>
+          </person>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind nodeset="/data/inputs" relevant="0"/>
+      <bind nodeset="/data/inputs/user/facility_id" type="string"/>
+      <bind nodeset="/data/person/type" type="string"/>
+      <bind nodeset="/data/person/parent" type="string"/>
+      <bind nodeset="/data/person/name" required="true()" type="string"/>
+      <bind nodeset="/data/person/external_id" required="false()" type="string"/>
+      <bind nodeset="/data/person/nationality" required="true()" type="select1"/>
+      <bind nodeset="/data/person/nationality_other" relevant="selected( /data/person/nationality , 'other')" type="string"/>
+      <bind nodeset="/data/person/contact_telephone_number" type="string"/>
+      <bind nodeset="/data/person/date_of_birth" required="true()" type="date"/>
+      <bind nodeset="/data/person/sex" required="true()" type="select1"/>
+      <bind calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))" nodeset="/data/person/geolocation" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <group ref="/data/inputs">
+      <group ref="/data/inputs/user">
+        <label>User</label>
+        <input ref="/data/inputs/user/facility_id">
+          <label>Facility ID for the parent user</label>
+        </input>
+      </group>
+    </group>
+    <group ref="/data/person">
+      <label>Person</label>
+      <input appearance="hidden" ref="/data/person/type">
+        <label>Person Type</label>
+        <hint>mandatory</hint>
+      </input>
+      <input appearance="hidden" ref="/data/person/parent">
+        <label>Parent</label>
+        <hint>mandatory</hint>
+      </input>
+      <input ref="/data/person/name">
+        <label>Names</label>
+      </input>
+      <input ref="/data/person/external_id">
+        <label>New Client's Unique Code</label>
+      </input>
+      <select1 appearance="minimal" ref="/data/person/nationality">
+        <label>Nationality</label>
+        <item>
+          <label>Kenyan</label>
+          <value>kenyan</value>
+        </item>
+        <item>
+          <label>Ugandan</label>
+          <value>ugandan</value>
+        </item>
+        <item>
+          <label>Rwandese</label>
+          <value>rwandese</value>
+        </item>
+        <item>
+          <label>Tanzanian</label>
+          <value>tanzanian</value>
+        </item>
+        <item>
+          <label>Burundian</label>
+          <value>burundian</value>
+        </item>
+        <item>
+          <label>Congolese</label>
+          <value>congolese</value>
+        </item>
+        <item>
+          <label>Other</label>
+          <value>other</value>
+        </item>
+      </select1>
+      <input ref="/data/person/nationality_other">
+        <label>Specify other</label>
+      </input>
+      <input ref="/data/person/contact_telephone_number">
+        <label>Contact Telephone Number</label>
+      </input>
+      <input ref="/data/person/date_of_birth">
+        <label>Date of Birth</label>
+      </input>
+      <select1 appearance="horizontal-compact" ref="/data/person/sex">
+        <label>Sex</label>
+        <item>
+          <label>Male</label>
+          <value>male</value>
+        </item>
+        <item>
+          <label>Female</label>
+          <value>female</value>
+        </item>
+      </select1>
+    </group>
+  </h:body>
+</h:html>
