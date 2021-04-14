@@ -102,6 +102,7 @@
     "request": "^2.88.2",
     "request-promise-native": "^1.0.8",
     "rewire": "^5.0.0",
+    "rosie": "^2.1.0",
     "semver": "^7.3.2",
     "sinon": "^8.1.1",
     "sw-precache": "^5.2.1",
