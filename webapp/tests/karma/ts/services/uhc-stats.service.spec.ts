@@ -119,7 +119,7 @@ describe('UHCStats Service', () => {
     ]);
   });
 
-  it('should not query visits if last visit date isnt found', async () => {
+  it('should not query visits if contact hasnt been visited yet', async () => {
     const contact = { _id: '3c' };
     const visitCountSettings = {
       monthStartDate: 26,
@@ -129,12 +129,17 @@ describe('UHCStats Service', () => {
     contactTypesService.get.returns({ count_visits: true });
     sessionService.isDbAdmin.returns(false);
     // Query - last visited date
-    localDb.query.onCall(0).returns({ rows: [] });
+    localDb.query.onCall(0).returns({ rows: [
+      {
+        key: '2b',
+        value: { count: 1, max: 0, min: 0 }
+      }
+    ] });
 
     const result = await service.getHomeVisitStats(contact, visitCountSettings);
 
     expect(result).to.deep.equal({
-      lastVisitedDate: undefined,
+      lastVisitedDate: 0,
       count: 0,
       countGoal: 4
     });
