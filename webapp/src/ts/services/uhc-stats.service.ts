@@ -12,7 +12,8 @@ import { AuthService } from '@mm-services/auth.service';
   providedIn: 'root'
 })
 export class UHCStatsService {
-  hasHomeVisitPermission;
+  private readonly permission = 'can_view_uhc_stats';
+  private canViewUHCStats;
 
   constructor(
     private dbService: DbService,
@@ -39,23 +40,32 @@ export class UHCStatsService {
         { start_key: [ contactId, dateRange.start ], end_key: [ contactId, dateRange.end ] }
       );
 
-    return records?.rows?.map(row => {
+    const visits = records?.rows?.map(row => {
       return moment(row.key[1])
         .startOf('day')
         .valueOf();
     });
+
+    return _uniq(visits);
   }
 
-  private async canViewHomeVisitStats() {
-    if (this.hasHomeVisitPermission !== undefined) {
-      return this.hasHomeVisitPermission;
+  private async canUserViewUHCStats() {
+    if (this.canViewUHCStats !== undefined) {
+      return this.canViewUHCStats;
     }
 
-    const permission = 'can_view_uhc_stats';
     // Disable UHC for DB admins.
-    this.hasHomeVisitPermission = this.sessionService.isDbAdmin() ? false : await this.authService.has(permission);
+    this.canViewUHCStats = this.sessionService.isDbAdmin() ? false : await this.authService.has(this.permission);
 
-    return this.hasHomeVisitPermission;
+    return this.canViewUHCStats;
+  }
+
+  getUHCInterval(visitCountSettings: VisitCountSettings): DateRange {
+    if (!visitCountSettings) {
+      return;
+    }
+
+    return CalendarInterval.getCurrent(visitCountSettings.monthStartDate);
   }
 
   async getHomeVisitStats(contact, visitCountSettings: VisitCountSettings): Promise<VisitStats> {
@@ -63,7 +73,7 @@ export class UHCStatsService {
       return;
     }
 
-    const canView = await this.canViewHomeVisitStats();
+    const canView = await this.canUserViewUHCStats();
 
     if (!canView) {
       return;
@@ -77,12 +87,12 @@ export class UHCStatsService {
     }
 
     const lastVisitedDate = await this.getLastVisitedDate(contact._id);
-    const dateRange = CalendarInterval.getCurrent(visitCountSettings.monthStartDate);
+    const dateRange = this.getUHCInterval(visitCountSettings);
     const visits = lastVisitedDate >= dateRange?.start ? await this.getVisitsInDateRange(dateRange, contact._id) : [];
 
     return {
       lastVisitedDate: lastVisitedDate,
-      count: _uniq(visits).length,
+      count: visits.length,
       countGoal: visitCountSettings.visitCountGoal
     };
   }

@@ -85,7 +85,8 @@ export class ContactSummaryService {
 
     const generatorFunction = this.getGeneratorFunction();
     const uhcStats = {
-      homeVisits: await this.uhcStatsService.getHomeVisitStats(contact, this.visitCountSettings)
+      homeVisits: await this.uhcStatsService.getHomeVisitStats(contact, this.visitCountSettings),
+      uhcInterval: this.uhcStatsService.getUHCInterval(this.visitCountSettings)
     };
 
     try {

@@ -46,6 +46,26 @@ describe('UHCStats Service', () => {
     sinon.restore();
   });
 
+  it('should return UHC Interval', () => {
+    const visitCountSettings = {
+      monthStartDate: 26,
+      visitCountGoal: 5
+    };
+
+    const result = service.getUHCInterval(visitCountSettings);
+
+    expect(result).to.deep.equal({
+      start: moment('2021-03-26 00:00:00.000').valueOf(),
+      end: moment('2021-04-25 23:59:59.999').valueOf()
+    });
+  });
+
+  it('should not return UHC Interval if setting arent provided', () => {
+    const result = service.getUHCInterval(null);
+
+    expect(result).to.be.undefined;
+  });
+
   it('should get home visit stats', async () => {
     const contact = { _id: '2b' };
     const range = {

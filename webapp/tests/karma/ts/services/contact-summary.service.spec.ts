@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import * as moment from 'moment';
 
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { PipesService } from '@mm-services/pipes.service';
@@ -21,7 +22,8 @@ describe('ContactSummary service', () => {
     Settings = sinon.stub();
     feedbackService = { submit: sinon.stub() };
     uhcStatsService = {
-      getHomeVisitStats: sinon.stub()
+      getHomeVisitStats: sinon.stub(),
+      getUHCInterval: sinon.stub()
     };
     const pipesTransform = (name, value) => {
       if (name !== 'reversify') {
@@ -179,12 +181,22 @@ describe('ContactSummary service', () => {
     return { fields: [
       { label: "Visits count", value: uhcStats.homeVisits.count },
       { label: "Visit goal", value: uhcStats.homeVisits.countGoal },
-      { label: "Last visited", value: uhcStats.homeVisits.lastVisitedDate }
+      { label: "Last visited", value: uhcStats.homeVisits.lastVisitedDate },
+      { label: "UHC interval start date", value: uhcStats.uhcInterval.start },
+      { label: "UHC interval end date", value: uhcStats.uhcInterval.end }
     ] };
     `;
 
     Settings.resolves({ contact_summary: script });
-    uhcStatsService.getHomeVisitStats.returns({ count: 5, countGoal: 10, lastVisitedDate: 1617729474090 });
+    uhcStatsService.getHomeVisitStats.returns({
+      count: 5,
+      countGoal: 10,
+      lastVisitedDate: moment('2021-04-07 13:30:59.999').valueOf()
+    });
+    uhcStatsService.getUHCInterval.returns({
+      start: moment('2021-03-26 00:00:00.000').valueOf(),
+      end: moment('2021-04-25 23:59:59.999').valueOf()
+    });
 
     const contactSummary = await service.get(contact, reports);
 
@@ -193,7 +205,9 @@ describe('ContactSummary service', () => {
       fields: [
         { label: 'Visits count', value: 5 },
         { label: 'Visit goal', value: 10 },
-        { label: 'Last visited', value: 1617729474090 }
+        { label: 'Last visited', value: moment('2021-04-07 13:30:59.999').valueOf() },
+        { label: 'UHC interval start date', value: moment('2021-03-26 00:00:00.000').valueOf() },
+        { label: 'UHC interval end date', value: moment('2021-04-25 23:59:59.999').valueOf() }
       ]
     });
   });

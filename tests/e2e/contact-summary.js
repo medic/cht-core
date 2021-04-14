@@ -26,6 +26,16 @@ describe('Contact summary info', () => {
         label: "uhc_stats_last_visited_date", 
         value: uhcStats.homeVisits ? uhcStats.homeVisits.lastVisitedDate : '', 
         width: 3 
+      },
+      { 
+        label: "uhc_stats_interval_start", 
+        value: uhcStats.uhcInterval ? uhcStats.uhcInterval.start : '', 
+        width: 3 
+      },
+      { 
+        label: "uhc_stats_interval_end", 
+        value: uhcStats.uhcInterval ? uhcStats.uhcInterval.end : '', 
+        width: 3 
       }
     ];
     
@@ -168,7 +178,7 @@ describe('Contact summary info', () => {
     form: 'V',
     type: 'data_record',
     content_type: 'xml',
-    reported_date: moment().valueOf(),
+    reported_date: moment().set('date', 5).valueOf(),
     patient_id: CAROL.patient_id,
     contact: {
       name: 'Sharon',
@@ -201,7 +211,7 @@ describe('Contact summary info', () => {
   const SETTINGS = {
     uhc: {
       visit_count: {
-        month_start_date: 26,
+        month_start_date: 1,
         visit_count_goal: 2
       }
     },
@@ -219,7 +229,6 @@ describe('Contact summary info', () => {
   };
 
   beforeEach(async () => {
-    await utils.updateSettings(SETTINGS);
     await utils.saveDocs(DOCS);
   });
 
@@ -228,30 +237,16 @@ describe('Contact summary info', () => {
   afterAll(async () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
-    await commonElements.calmNative();
+    await utils.deleteUsers([ USER ]);
     await utils.revertDb();
+    await commonElements.calmNative();
   });
 
-  const selectContact = async term => {
-    await helper.waitUntilReadyNative(contactsPo.searchBox);
-    await contactsPo.searchBox.sendKeys(term);
-    await helper.clickElementNative(contactsPo.searchButton);
-    await helper.waitUntilReadyNative(contactsPo.contactContent());
-    await helper.clickElementNative(contactsPo.contactContent());
-    await helper.waitUntilReadyNative(contactsPo.contactsList());
-  };
-
   it('should load contact summary', async () => {
-    //disabled.
-    await helper.waitUntilReadyNative(contactsPo.contactsTab);
-    await helper.clickElementNative(contactsPo.contactsTab);
-    try {
-      await selectContact('carol');
-    } catch (err) {
-      await browser.refresh();
-      await helper.clickElementNative(contactsPo.contactsTab);
-      await selectContact('carol');
-    }
+    await utils.updateSettings(SETTINGS);
+    await commonElements.goToPeople();
+    await contactsPo.selectLHSRowByText(CAROL.name);
+
     // assert the summary card has the right fields
 
     await helper.waitUntilReadyNative(contactsPo.cardFieldLabel('test_pid'));
@@ -269,6 +264,14 @@ describe('Contact summary info', () => {
 
     expect(await contactsPo.cardFieldLabelText('uhc_stats_last_visited_date')).toBe('uhc_stats_last_visited_date');
     expect(await contactsPo.cardFieldText('uhc_stats_last_visited_date')).toBe('');
+
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_start')).toBe('uhc_stats_interval_start');
+    const startDate = moment().startOf('month').valueOf().toString();
+    expect(await contactsPo.cardFieldText('uhc_stats_interval_start')).toBe(startDate);
+
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_end')).toBe('uhc_stats_interval_end');
+    const endDate = moment().endOf('month').valueOf().toString();
+    expect(await contactsPo.cardFieldText('uhc_stats_interval_end')).toBe(endDate);
 
     expect(await contactsPo.cardFieldLabelText('alicetag')).toBe('aliceTag');
     expect(await contactsPo.cardFieldText('alicetag')).toBe(`${ALICE.name} ${ALICE.phone}`);
@@ -298,21 +301,18 @@ describe('Contact summary info', () => {
   });
 
   it('should display UHC Stats in contact summary, if contact counts visits and user has permission', async () => {
+    const originalSettings = await utils.getSettings();
+    const permissions = originalSettings.permissions;
+    permissions.can_view_uhc_stats = USER.roles;
+    await utils.updateSettings({ ...SETTINGS, permissions });
+
     await utils.createUsers([ USER ]);
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(USER.username, USER.password);
     await utils.closeTour();
 
-    await helper.waitUntilReadyNative(contactsPo.contactsTab);
-    await helper.clickElementNative(contactsPo.contactsTab);
-
-    try {
-      await selectContact('bob');
-    } catch (err) {
-      await browser.refresh();
-      await helper.clickElementNative(contactsPo.contactsTab);
-      await selectContact('bob');
-    }
+    await commonElements.goToPeople();
+    await contactsPo.selectLHSRowByText(BOB_PLACE.name);
 
     expect(await contactsPo.cardFieldLabelText('uhc_stats_count')).toBe('uhc_stats_count');
     expect(await contactsPo.cardFieldText('uhc_stats_count')).toBe('1');
@@ -322,5 +322,13 @@ describe('Contact summary info', () => {
 
     expect(await contactsPo.cardFieldLabelText('uhc_stats_last_visited_date')).toBe('uhc_stats_last_visited_date');
     expect(await contactsPo.cardFieldText('uhc_stats_last_visited_date')).toBe(VISIT.reported_date.toString());
+
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_start')).toBe('uhc_stats_interval_start');
+    const startDate = moment().startOf('month').valueOf().toString();
+    expect(await contactsPo.cardFieldText('uhc_stats_interval_start')).toBe(startDate);
+
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_end')).toBe('uhc_stats_interval_end');
+    const endDate = moment().endOf('month').valueOf().toString();
+    expect(await contactsPo.cardFieldText('uhc_stats_interval_end')).toBe(endDate);
   });
 });
