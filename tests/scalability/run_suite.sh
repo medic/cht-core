@@ -20,8 +20,8 @@ node -p "const fs = require('fs');var path = './config.json';var config = JSON.s
 echo "npm install for jmeter suite"
 npm install
 echo "jmeter install"
-wget https://apache.claz.org//jmeter/binaries/apache-jmeter-5.4.1.tgz && 
-mkdir ./jmeter && tar -xf apache-jmeter-5.3.tgz -C ./jmeter --strip-components=1
+wget https://apache.claz.org//jmeter/binaries/apache-jmeter-5.4.1.tgz -O ./apache-jmeter.tgz && 
+mkdir ./jmeter && tar -xf apache-jmeter.tgz -C ./jmeter --strip-components=1
 echo "Installing Plugins" && 
 wget  https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/1.4/jmeter-plugins-manager-1.4.jar -O ./jmeter/lib/ext/jmeter-plugins-manager-1.4.jar &&
 wget 'http://search.maven.org/remotecontent?filepath=kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar' -O ./jmeter/lib/cmdrunner-2.2.jar &&
