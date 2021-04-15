@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set TAG_NAME var
-        run: echo "::set-env name=TAG_NAME::${GITHUB_REF#refs/tags/}"
+        run: echo "TAG_NAME=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v2
       - name: Configure AWS Credentials

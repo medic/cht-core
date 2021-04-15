@@ -18,7 +18,7 @@
       <i class="fa fa-arrow-up"></i>
       <span translate>upload</span>
     </a>
-    <div class="error" ng-show="status.error" translate>Upload failed</div>
+    <div class="error" ng-show="status.error" translate>{{status.errorMessage}}</div>
     <div class="loader" ng-show="status.uploading"></div>
   </div>
 </form>

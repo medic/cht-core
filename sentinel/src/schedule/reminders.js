@@ -266,7 +266,7 @@ const sendReminders = (reminder, scheduledDate, startDocId) => {
         .then(results => {
           const errors = results.filter(result => result.error);
           if (errors.length) {
-            logger.error('Errors saving reminders', errors);
+            logger.error('Errors saving reminders: %o', errors);
             throw new Error('Errors saving reminders');
           }
         })

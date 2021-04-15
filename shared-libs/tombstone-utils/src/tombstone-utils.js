@@ -108,7 +108,7 @@ module.exports = {
         return doc.type !== TOMBSTONE_TYPE && saveTombstone(DB, doc, change, logger);
       })
       .catch(function(err) {
-        logger.error('Tombstone: could not process doc id:' + change.id + ' seq:' + change.seq, err);
+        logger.error(`Tombstone: could not process doc id: ${change.id} seq: ${change.seq}: %o`, err);
         throw err;
       });
   },

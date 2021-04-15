@@ -85,6 +85,10 @@ const self = {
    * @returns {Boolean} True if dirty
    */
   isDirty: contactId => {
+    if (!contactId) {
+      return false;
+    }
+
     if (!state.contactState[contactId]) {
       return true;
     }

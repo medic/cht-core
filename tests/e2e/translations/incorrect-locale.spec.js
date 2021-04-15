@@ -31,6 +31,7 @@ describe('Incorrect locale', () => {
 
   afterEach(async () => {
     await browser.manage().addCookie({ name: 'locale', value: 'en' });
+    await utils.resetBrowser();
     await utils.afterEach();
   });
 

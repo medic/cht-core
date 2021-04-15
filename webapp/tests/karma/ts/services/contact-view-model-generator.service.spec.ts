@@ -50,7 +50,7 @@ describe('ContactViewModelGenerator service', () => {
 
   const stubDbQueryChildren = (parentId, docs = []) => {
     docs = docs.map(doc => {
-      return { doc: doc };
+      return { doc: doc, id: doc._id };
     });
     dbQuery.resolves({ rows: docs });
   };
@@ -177,6 +177,15 @@ describe('ContactViewModelGenerator service', () => {
       });
     });
 
+    it('should load external primary contact correctly', () => {
+      return runPlaceTest([childPerson]).then(model => {
+        assert.equal(model.children[0].contacts.length, 2);
+        assert.equal(model.children[0].contacts[0].id, childContactPerson._id);
+        assert.equal(model.children[0].contacts[0].isPrimaryContact, true);
+        assert.equal(model.children[0].contacts[1].id, childPerson._id);
+      });
+    });
+
     it('if no child persons, child places get displayed', () => {
       delete doc.contact;
       return runPlaceTest([childPlace]).then(model => {
@@ -288,11 +297,13 @@ describe('ContactViewModelGenerator service', () => {
         expect(model.children.length).to.equal(2);
         expect(model.children[0].type)
           .to.deep.equal({ id: 'correct childContactPerson type', parents: ['correct doc type'], person: true });
-        expect(model.children[0].contacts).to.deep.equal([{ isPrimaryContact: true, doc: childContactPerson }]);
+        expect(model.children[0].contacts)
+          .to.deep.equal([{ isPrimaryContact: true, doc: childContactPerson, id: childContactPerson._id }]);
 
         expect(model.children[1].type)
           .to.deep.equal({ id: 'correct childPlace type', parents: ['correct doc type'], person: false });
-        expect(model.children[1].contacts).to.deep.equal([{ doc: childPlace }]);
+        expect(model.children[1].contacts)
+          .to.deep.equal([{ doc: childPlace, id: childPlace._id }]);
 
         expect(contactTypesService.getTypeId.callCount).to.deep.equal(3);
         expect(contactTypesService.getTypeId.args).to.deep.equal([[doc], [childContactPerson], [childPlace]]);
@@ -404,7 +415,6 @@ describe('ContactViewModelGenerator service', () => {
 
       it('model returns the correct keys', () => {
         return runPersonTest(doc).then(model => {
-          console.log(Object.keys(model.doc));
           expect(Object.keys(model)).to.have.members(
             ['_id', 'doc', 'lineage', 'type', 'isPrimaryContact',]
           );

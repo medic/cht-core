@@ -55,6 +55,14 @@ describe('rules-state-store', () => {
     expect(isDirty).to.be.false;
   });
 
+  it('does not load undefined contact', async () => {
+    const state = mockState({ 'a': { calculatedAt: Date.now(), expireAt: Date.now() + 1000 } });
+    await rulesStateStore.load(state, {});
+
+    const isDirty = rulesStateStore.isDirty(undefined);
+    expect(isDirty).to.be.false;
+  });
+
   it('fresh contact but dirty hash', async () => {
     const state = mockState({ 'a': { calculatedAt: Date.now(), expireAt: Date.now() + 1000 } });
     state.rulesConfigHash = 'hash';
