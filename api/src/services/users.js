@@ -34,8 +34,7 @@ const RESTRICTED_SETTINGS_EDITABLE_FIELDS = [
   'fullname',
   'email',
   'phone',
-  //TO BE REMOVED
-  // 'language',
+  'language',
   'known',
 ];
 
@@ -307,8 +306,7 @@ const mapUsers = (users, settings, facilities) => {
         phone: setting.phone,
         place: getDoc(user.doc.facility_id, facilities),
         type: getType(user.doc),
-        //TO BE REMOVED
-        // language: { code: setting.language },
+        language: { code: setting.language },
         contact: getDoc(setting.contact_id, facilities),
         external_id: setting.external_id,
         known: user.doc.known
@@ -352,10 +350,9 @@ const getSettingsUpdates = (username, data) => {
   if (data.contact) {
     settings.contact_id = getDocID(data.contact);
   }
-  //TO BE REMOVED
-  // if (data.language && data.language.code) {
-  //   settings.language = data.language.code;
-  // }
+  if (data.language && data.language.code) {
+    settings.language = data.language.code;
+  }
 
   return settings;
 };
