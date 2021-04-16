@@ -43,10 +43,10 @@ export class SetLanguageService {
     (<any>$.fn).datepicker.defaults.language = calendarLanguage;
   }
 
-  set(code, setLanguageCookie?) {
+  async set(code, setLanguageCookie?) {
     moment.locale([ code, 'en' ]);
     this.setDatepickerLanguage(code);
-    this.translateService.use(code);
+    await this.translateService.use(code).toPromise();
 
     if (setLanguageCookie !== false) {
       this.setLanguageCookieService.set(code);
