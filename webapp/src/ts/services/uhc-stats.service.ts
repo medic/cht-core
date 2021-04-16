@@ -60,7 +60,7 @@ export class UHCStatsService {
     return this.canViewUHCStats;
   }
 
-  getUHCInterval(visitCountSettings: VisitCountSettings): DateRange {
+  getUHCInterval(visitCountSettings: VisitCountSettings): DateRange | undefined {
     if (!visitCountSettings) {
       return;
     }
@@ -68,7 +68,7 @@ export class UHCStatsService {
     return CalendarInterval.getCurrent(visitCountSettings.monthStartDate);
   }
 
-  async getHomeVisitStats(contact, visitCountSettings: VisitCountSettings): Promise<VisitStats> {
+  async getHomeVisitStats(contact, visitCountSettings: VisitCountSettings): Promise<VisitStats | undefined> {
     if (!visitCountSettings || !contact) {
       return;
     }
