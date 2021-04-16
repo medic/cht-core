@@ -119,6 +119,67 @@ describe('UHCStats Service', () => {
     ]);
   });
 
+  it('should not count visits from the same day', async () => {
+    const contact = { _id: '2b' };
+    const range = {
+      start: moment('2021-03-26 00:00:00.000').valueOf(),
+      end: moment('2021-04-25 23:59:59.999').valueOf()
+    };
+    const visitCountSettings = {
+      monthStartDate: 26,
+      visitCountGoal: 5
+    };
+    authService.has.returns(true);
+    contactTypesService.get.returns({ count_visits: true });
+    sessionService.isDbAdmin.returns(false);
+    // Query - last visited date
+    localDb.query.onCall(0).returns({ rows: [
+      {
+        key: '2b',
+        value: moment('2021-04-15 22:59:59').valueOf()
+      }
+    ]});
+    // Query - visits to contact
+    localDb.query.onCall(1).returns({ rows: [
+      {
+        key: [ '2b', moment('2021-04-15 09:20:00').valueOf() ],
+        value: null
+      },
+      {
+        key: [ '2b', moment('2021-04-15 15:00:00').valueOf() ],
+        value: null
+      },
+      {
+        key: [ '2b', moment('2021-04-17 00:00:01').valueOf() ],
+        value: null
+      },
+      {
+        key: [ '2b', moment('2021-04-17 23:59:59').valueOf() ],
+        value: null
+      }
+    ]});
+
+    const result = await service.getHomeVisitStats(contact, visitCountSettings);
+
+    expect(result).to.deep.equal({
+      lastVisitedDate: moment('2021-04-15 22:59:59').valueOf(),
+      count: 2,
+      countGoal: 5
+    });
+    expect(authService.has.callCount).to.equal(1);
+    expect(contactTypesService.get.callCount).to.equal(1);
+    expect(sessionService.isDbAdmin.callCount).to.equal(1);
+    expect(localDb.query.callCount).to.equal(2);
+    expect(localDb.query.args[0]).to.have.deep.members([
+      'medic-client/contacts_by_last_visited',
+      { group: true, reduce: true, key: '2b' }
+    ]);
+    expect(localDb.query.args[1]).to.have.deep.members([
+      'medic-client/visits_by_date',
+      { start_key: [ contact._id, range.start ], end_key: [ contact._id, range.end ] }
+    ]);
+  });
+
   it('should not query visits if contact hasnt been visited yet', async () => {
     const contact = { _id: '3c' };
     const visitCountSettings = {
