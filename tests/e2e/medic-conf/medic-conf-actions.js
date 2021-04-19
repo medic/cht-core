@@ -10,7 +10,7 @@ const actions = ['compile-app-settings','backup-app-settings','convert-app-forms
   'upload-privacy-policies'];
 
 describe('medic-conf supported actions', () => {
-  beforeAll( () =>{
+  beforeAll( () => {
     // Change the directory
     try {
       process.chdir('config/default');
