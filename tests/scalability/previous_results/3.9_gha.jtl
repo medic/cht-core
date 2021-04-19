@@ -1,0 +1,11 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,bytes,Latency
+1618597047295,252329,sync,0,OK,Thread Group 1-1,text,true,29,0
+1618597047384,252503,sync,0,OK,Thread Group 1-2,text,true,29,0
+1618597047582,252305,sync,0,OK,Thread Group 1-4,text,true,29,0
+1618597048079,253459,sync,0,OK,Thread Group 1-9,text,true,29,0
+1618597047681,255443,sync,0,OK,Thread Group 1-5,text,true,29,0
+1618597047781,255345,sync,0,OK,Thread Group 1-6,text,true,29,0
+1618597048182,254947,sync,0,OK,Thread Group 1-10,text,true,29,0
+1618597047482,255651,sync,0,OK,Thread Group 1-3,text,true,29,0
+1618597047980,255153,sync,0,OK,Thread Group 1-8,text,true,29,0
+1618597047881,255255,sync,0,OK,Thread Group 1-7,text,true,29,0
