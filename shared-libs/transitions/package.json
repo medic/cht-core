@@ -8,8 +8,8 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "chai": "^4.2.0",
-    "chai-exclude": "^2.0.2",
+    "chai": "^4.3.4",
+    "chai-exclude": "^2.0.3",
     "jsverify": "^0.8.4",
     "mocha": "^7.2.0",
     "sinon": "^8.1.1"
@@ -27,12 +27,12 @@
     "async": "^3.2.0",
     "bikram-sambat": "^1.6.0",
     "bikram-sambat-bootstrap": "^1.5.0",
-    "google-libphonenumber": "^3.2.10",
+    "google-libphonenumber": "^3.2.19",
     "gsm": "^0.1.4",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "moment": "^2.26.0",
-    "mustache": "^4.0.1",
-    "object-path": "^0.11.4",
+    "mustache": "^4.2.0",
+    "object-path": "^0.11.5",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9",
     "url-join": "^4.0.1"

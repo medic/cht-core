@@ -20,19 +20,19 @@
   "dependencies": {
     "@medic/calendar-interval": "file:../calendar-interval",
     "@medic/registration-utils": "file:../registration-utils",
-    "lodash": "^4.17.15",
-    "md5": "^2.2.1",
+    "lodash": "^4.17.21",
+    "md5": "^2.3.0",
     "medic-nootils": "^4.0.1",
     "nools": "^0.4.4"
   },
   "devDependencies": {
     "@medic/memdown": "file:../memdown",
-    "chai": "^4.2.0",
-    "chai-exclude": "^2.0.2",
+    "chai": "^4.3.4",
+    "chai-exclude": "^2.0.3",
     "mocha": "^7.2.0",
     "moment": "^2.26.0",
-    "pouchdb": "^7.2.1",
-    "pouchdb-adapter-memory": "^7.2.1",
+    "pouchdb": "^7.2.2",
+    "pouchdb-adapter-memory": "^7.2.2",
     "sinon": "^8.1.1"
   }
 }
