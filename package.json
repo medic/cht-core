@@ -86,7 +86,7 @@
     "karma-mocha-reporter": "^2.2.5",
     "karma-ng-html2js-preprocessor": "^1.0.0",
     "karma-spec-reporter": "0.0.32",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.19",
     "loose-envify": "^1.4.0",
     "medic-conf": "^3.2.1",
     "mocha": "^7.2.0",

@@ -23,6 +23,6 @@
   },
   "dependencies": {
     "@medic/contact-types-utils": "file:../contact-types-utils",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.19"
   }
 }
