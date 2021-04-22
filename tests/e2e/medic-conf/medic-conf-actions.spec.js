@@ -6,7 +6,7 @@ const util = require('util');
 const { API_PORT, API_HOST } = require('../../constants');
 const {username, password} = require('../../auth')();
 const exec = util.promisify(require('child_process').exec);
-const Excel = require('exceljs');
+const Excel = require('exceljs/dist/es5');
 const url = `http://${username}:${password}@${API_HOST}:${API_PORT}`;
 
 const actions = ['compile-app-settings','backup-app-settings','convert-app-forms',
