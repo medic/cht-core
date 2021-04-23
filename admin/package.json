@@ -37,6 +37,6 @@
   "devDependencies": {},
   "resolutions": {
     "**/jquery": "3.2.x",
-    "**/pouchdb-browser": "^7.2.1"
+    "**/pouchdb-browser": "^7.2.2"
   }
 }
