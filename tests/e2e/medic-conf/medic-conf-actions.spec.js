@@ -1,7 +1,4 @@
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-chai.use(chaiAsPromised);
-const expect = chai.expect;
+const {expect} = require('chai');
 const util = require('util');
 const { API_PORT, API_HOST } = require('../../constants');
 const {username, password} = require('../../auth')();
@@ -32,7 +29,7 @@ describe('Medic-conf actions tests', () => {
     const result = await runCommand('upload-app-settings');
     expect(result).to.contain(`INFO Settings updated successfully`);
   });
-	
+
   // eslint-disable-next-line guard-for-in
   for(const action in actions){
     it(`should execute  ${actions[action]} `, async () => {
