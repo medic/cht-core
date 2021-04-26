@@ -29,9 +29,11 @@ const transform = (formXml, stylesheet) => {
     xsltproc.stdin.end();
     xsltproc.on('close', (code, signal) => {
       if (code !== 0 || signal || stderr.length) {
-        logger.error('xsltproc stderr output: ');
-        logger.error(stderr);
-        return reject(new Error(`Error transforming xml. xsltproc returned code "${code}", and signal "${signal}"`));
+        let errorMsg = `Error transforming xml. xsltproc returned code "${code}", and signal "${signal}"`;
+        if (stderr.length) {
+          errorMsg += '. xsltproc stderr output:\n' + stderr;
+        }
+        return reject(new Error(errorMsg));
       }
       if (!stdout) {
         return reject(new Error(`Error transforming xml. xsltproc returned no error but no output.`));
@@ -114,7 +116,7 @@ const updateAttachments = (accumulator, doc) => {
       return results;
     }
     logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
-    return module.exports._generate(form.data.toString()).then(result => {
+    return module.exports.generate(form.data.toString()).then(result => {
       results.push(result);
       return results;
     });
@@ -178,6 +180,11 @@ module.exports = {
 
   },
 
-  _generate: generate
+  /**
+   * @param formXml The XML form string
+   * @returns a promise with the XML form transformed following
+   *          the stylesheet rules defined (XSL transformations)
+   */
+  generate
 
 };

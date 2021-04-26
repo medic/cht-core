@@ -155,7 +155,7 @@ const sendPayload = (payload, config) => {
             .then(result => {
               // No that's not a spelling mistake, this API is sometimes French!
               if (result.statut !== 200) {
-                logger.error('Non-200 status from Muso auth', result);
+                logger.error('Non-200 status from Muso auth: %o', result);
                 throw new OutboundError(`Got ${result.statut} when requesting auth`);
               }
 

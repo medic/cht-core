@@ -165,31 +165,43 @@ Navigate your browser to [`http://localhost:5988/medic/login`](http://localhost:
 
 ## Testing locally with devices
 
-Follow the steps below to use an Android device with a development build of your application. This process is relevant when running v3.5.0 or greater of the Core Framework since it relies on service workers, which requires a valid HTTPS certificate. Use `ngrok` or `pagekite` to make your developer build accessible from your Android device by giving it a trusted URL.
+Follow the steps below to use an Android device with a development build of your application. This process is relevant when running v3.5.0 or greater of the Core Framework since it relies on service workers, which require a valid HTTPS certificate. Use `nginx-local-ip`, `ngrok` or `pagekite` to make your developer build accessible from your Android device by giving it a trusted URL.
 
 1. Start the api. This can be via docker, grunt, debug, horti, etc.
-2. Follow the instructions below to start ngrok or pagekite
+2. Follow the instructions below to start `nginx-local-ip`, `ngrok` or `pagekite`
 3. This will output a generated URL which you can enter into our [android app](https://github.com/medic/medic-android) or browser and connect to your local dev environment.
 
-### ngrok
+### nginx-local-ip
 
-1. Create a ngrok account at https://ngrok.com/
-1. Follow instructions on downloading and linking your computer to your ngrok account.
-1. Start ngrok
-    * To connect to an API running via `grunt` or `horti`, execute `./ngrok http 5988`
-    * To connect to an API running via `Docker`, execute `./ngrok http 443`
-1. Access the app using the https address shown, eg https://YOUR-NGROK-NAME.ngrok.io, replacing `YOUR-NGROK-NAME` with what you signed up with.
+[`nginx-local-ip`](https://github.com/medic/nginx-local-ip) is a local proxy that keeps all traffic local, and runs without latency or throttling. If sharing your local CHT instance is not required, it is the preferred method to add a valid SSL certificate (rather than `ngrok` or `pagekite`).
 
-**Note:** ngrok sometimes fails due to connection throttling which can cause the service worker cache preload to fail.
+1. Clone the repo: `git clone https://github.com/medic/nginx-local-ip.git`
+1. `cd` into the new directory: `cd nginx-local-ip`
+1. Assuming your IP is `192.168.0.3`, start `nginx-local-ip` to connect to:
+    * The CHT API running via `grunt` or `horti`, execute `APP_URL=http://192.168.0.3:5988 docker-compose up` and then access it at [https://192-168-0-3.my.local-ip.co/](https://192-168-0-3.my.local-ip.co/)
+    * The CHT API running via `docker`, the ports are remapped, so execute `HTTP=8080 HTTPS=8443 APP_URL=https://192.168.0.3 docker-compose up` and then access it at [https://192-168-0-3.my.local-ip.co:8443/](https://192-168-0-3.my.local-ip.co:8443/)
 
-### pagekite
+### Remote Proxies
 
-1. Create a pagekite account at https://pagekite.net/signup/
-1. Follow instructions on downloading the python script for pagekite
-1. Start pagekite (be sure to replace `YOUR-PAGEKIT-NAME` with the URL you signed up for:
-    * To connect to an API running via `grunt` or `horti`, execute `python2 pagekite.py 5988 YOUR-PAGEKIT-NAME.pagekite.me`
-    * To connect to an API running via `Docker`, execute `python2 pagekite.py 443 YOUR-PAGEKIT-NAME.pagekite.me`
-1. Access the app using the https address shown, eg https://YOUR-PAGEKIT-NAME.pagekite.me
+`ngrok` and `pagekite` are remote proxies that route local traffic between your client and the CHT via a remote SSL terminator. While easy and handy, they introduce latency and are sometimes throttled.  
+
+#### ngrok
+
+1. Create an [ngrok account](https://ngrok.com/), download and install the binary, then link your computer to your ngrok account.
+1. Start `ngrok` to connect to:
+    * The CHT API running via `grunt` or `horti`, execute `./ngrok http 5988`
+    * The CHT API running via `docker`, execute `./ngrok http 443`
+1. Access the app using the https address shown (e.g. `https://YOUR-NGROK-NAME.ngrok.io`, replacing `YOUR-NGROK-NAME` with what you signed up with).
+
+**Note:** The service worker cache preload sometimes fails due to connection throttling (thereby causing an `ngrok` failure at startup).
+
+#### pagekite
+
+1. Create a [pagekite account](https://pagekite.net/signup/), download and install the python script.
+1. Start pagekite (be sure to replace `YOUR-PAGEKIT-NAME` with the URL you signed up for) to connect to:
+    * The CHT API running via `grunt` or `horti`, execute `python2 pagekite.py 5988 YOUR-PAGEKIT-NAME.pagekite.me`
+    * The CHT API running via `docker`, execute `python2 pagekite.py 443 YOUR-PAGEKIT-NAME.pagekite.me`
+1. Access the app using the https address shown (e.g. `https://YOUR-PAGEKIT-NAME.pagekite.me`).
 
 
 ## Data

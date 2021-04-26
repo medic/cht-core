@@ -505,7 +505,8 @@ describe('patient registration', () => {
         assert.equal(changed, true);
         assert.equal(doc.errors.length, 1);
         assert.equal(doc.errors[0].code, 'no_provided_patient_id');
-        assert.equal(utils.getRegistrations.callCount, 0);
+        assert.equal(utils.getRegistrations.callCount, 2);
+        assert.deepEqual(utils.getRegistrations.args, [[{ id: undefined }], [{ id: undefined }]]);
         assert.equal(utils.getContactUuid.callCount, 1);
         assert.equal(transitionUtils.getUniqueId.callCount, 0);
 
@@ -560,7 +561,8 @@ describe('patient registration', () => {
         assert.equal(changed, true);
         assert.equal(doc.errors.length, 1);
         assert.equal(doc.errors[0].code, 'provided_patient_id_not_unique');
-        assert.equal(utils.getRegistrations.callCount, 0);
+        assert.equal(utils.getRegistrations.callCount, 2);
+        assert.deepEqual(utils.getRegistrations.args, [[{ id: undefined }], [{ id: undefined }]]);
         assert.equal(utils.getContactUuid.callCount, 1);
         assert.equal(transitionUtils.getUniqueId.callCount, 0);
 
@@ -617,7 +619,8 @@ describe('patient registration', () => {
       return transition.onMatch({ doc }).then(changed => {
         assert.equal(changed, true);
         assert.equal(doc.errors, undefined);
-        assert.equal(utils.getRegistrations.callCount, 0);
+        assert.equal(utils.getRegistrations.callCount, 2);
+        assert.deepEqual(utils.getRegistrations.args, [[{ id: undefined }], [{ id: undefined }]]);
         assert.equal(utils.getContactUuid.callCount, 1);
         assert.equal(transitionUtils.getUniqueId.callCount, 0);
 

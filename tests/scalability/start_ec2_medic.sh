@@ -33,7 +33,7 @@ fi
 
 url=https://$PublicDnsName
 
-echo "::set-env name=MEDIC_URL::$url"
+echo "MEDIC_URL=$url" >> $GITHUB_ENV
 
 echo Begin Checking $url/api/info is up
 version=$(curl -s $url/api/info -k  | jq .version -r)

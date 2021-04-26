@@ -2,6 +2,7 @@ const db = require('../db');
 const messages = require('../lib/messages');
 const utils = require('../lib/utils');
 const idGenerator = require('../lib/ids').generator(db);
+const validation = require('../lib/validation');
 
 const findFirstMatchingMessage = (config, eventType) => {
   if (!config.messages || !config.messages.length) {
@@ -67,7 +68,7 @@ module.exports = {
     return !!(doc.transitions && doc.transitions[transition]);
   },
 
-  getDeprecationMessage(name, deprecatedIn, extraInfo) {
+  getDeprecationMessage: (name, deprecatedIn, extraInfo) => {
     if (!name) {
       return;
     }
@@ -83,5 +84,10 @@ module.exports = {
     }
 
     return message;
-  }
+  },
+
+  validate: (config, doc) => {
+    const validations = config && config.validations && config.validations.list;
+    return new Promise(resolve => validation.validate(doc, validations, resolve));
+  },
 };

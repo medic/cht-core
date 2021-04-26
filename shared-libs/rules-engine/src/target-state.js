@@ -125,20 +125,28 @@ module.exports = {
         };
       }
 
-      const countEmissionsByGroup = relevantEmissions
-        .filter(emission => emission.groupBy)
-        .reduce((agg, curr) => {
-          if (!agg[curr.groupBy]) {
-            agg[curr.groupBy] = 0;
-          }
+      const countPassedEmissionsByGroup = {};
+      const countEmissionsByGroup = {};
 
-          agg[curr.groupBy]++;
-          return agg;
-        }, {});
+      relevantEmissions.forEach(emission => {
+        const groupBy = emission.groupBy;
+        if (!groupBy) {
+          return;
+        }
+        if (!countPassedEmissionsByGroup[groupBy]) {
+          countPassedEmissionsByGroup[groupBy] = 0;
+          countEmissionsByGroup[groupBy] = 0;
+        }
+        countEmissionsByGroup[groupBy]++;
+        if (emission.pass) {
+          countPassedEmissionsByGroup[groupBy]++;
+        }
+      });
 
       const groups = Object.keys(countEmissionsByGroup);
+
       return {
-        pass: groups.filter(group => countEmissionsByGroup[group] >= passingThreshold).length,
+        pass: groups.filter(group => countPassedEmissionsByGroup[group] >= passingThreshold).length,
         total: groups.length,
       };
     };

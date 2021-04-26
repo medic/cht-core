@@ -18,6 +18,7 @@ const sentinel = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_P
 const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-logs`, { auth });
 
 let originalSettings;
+const originalTranslations = {};
 let e2eDebug;
 
 // First Object is passed to http.request, second is for specific options / flags
@@ -82,6 +83,21 @@ const updateSettings = updates => {
         body: updates,
       });
     });
+};
+
+const revertTranslations = async () => {
+  const updatedTranslations = Object.keys(originalTranslations);
+  if (!updatedTranslations.length) {
+    return Promise.resolve();
+  }
+
+  const docs = await module.exports.getDocs(updatedTranslations.map(code => `messages-${code}`));
+  docs.forEach(doc => {
+    doc.generic = Object.assign(doc.generic, originalTranslations[doc.code]);
+    delete originalTranslations[doc.code];
+  });
+
+  await module.exports.saveDocs(docs);
 };
 
 const revertSettings = () => {
@@ -238,6 +254,7 @@ const revertDb = async (except, ignoreRefresh) => {
   const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
   const needsRefresh = await revertSettings();
   await deleteAll(except);
+  await revertTranslations();
 
   const hasModal = await element(by.css('#update-available')).isPresent();
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
@@ -777,6 +794,16 @@ module.exports = {
   getDefaultSettings: getDefaultSettings,
 
   addTranslations: (languageCode, translations = {}) => {
+    const builtinTranslations = [
+      'bm',
+      'en',
+      'es',
+      'fr',
+      'hi',
+      'id',
+      'ne',
+      'sw'
+    ];
     const getTranslationsDoc = code => {
       return db.get(`messages-${code}`).catch(err => {
         if (err.status === 404) {
@@ -793,6 +820,10 @@ module.exports = {
     };
 
     return getTranslationsDoc(languageCode).then(translationsDoc => {
+      if (builtinTranslations.includes(languageCode)) {
+        originalTranslations[languageCode] = _.clone(translationsDoc.generic);
+      }
+
       Object.assign(translationsDoc.generic, translations);
       return db.put(translationsDoc);
     });

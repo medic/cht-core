@@ -119,8 +119,8 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
       return row.text;
     }
 
-    const typeId = row.doc.contact_type || row.doc.type;
-    const type = contactTypes.find(type => type.id === typeId) || {};
+    const typeId = this.contactTypesService.getTypeId(row.doc);
+    const type = this.contactTypesService.getTypeById(contactTypes, typeId) || {};
     let contact;
 
     if (row.everyoneAt) {
@@ -162,7 +162,7 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
       sendMessageExtras: (results) => {
         const messages = [ ...results ];
         results.forEach(result => {
-          if (personTypes.includes(result.doc.contact_type || result.doc.type)) {
+          if (personTypes.includes(this.contactTypesService.getTypeId(result.doc))) {
             return;
           }
           messages.push({

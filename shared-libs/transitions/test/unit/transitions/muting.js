@@ -10,6 +10,7 @@ describe('Muting transition', () => {
   afterEach(() => sinon.restore());
   beforeEach(() => {
     sinon.stub(config, 'get');
+    sinon.stub(config, 'getAll').returns({ });
     sinon.stub(transitionUtils, 'hasRun');
 
     sinon.stub(mutingUtils, 'isMutedInLineage');
@@ -45,7 +46,7 @@ describe('Muting transition', () => {
   describe('filter', () => {
     it('should return false for invalid docs', () => {
       config.get.withArgs('muting').returns({ mute_forms: ['formA', 'formB'], unmute_forms: ['formC', 'formD'] });
-      config.get.withArgs('contact_types').returns([]);
+      config.getAll.returns({ contact_types: [] });
       transitionUtils.hasRun.returns(false);
 
       chai.expect(transition.filter()).to.equal(false);
@@ -80,12 +81,18 @@ describe('Muting transition', () => {
     });
 
     it('should return false for invalid contacts', () => {
-      config.get.withArgs('contact_types').returns([{ id: 'person' }, { id: 'clinic' } ]);
+      config.getAll.returns({ contact_types: [{ id: 'person' }, { id: 'clinic' } ] });
       mutingUtils.isMutedInLineage.returns(false);
-      chai.expect(transition.filter({ muted: false }, {})).to.equal(false);
-      chai.expect(transition.filter({ muted: false, type: 'something' }, {})).to.equal(false);
+      chai.expect(transition.filter({ muted: false }, {})).to.equal(false); // not a contact
+      chai.expect(transition.filter({ muted: false, type: 'something' }, {})).to.equal(false); // not a contact
       chai.expect(transition.filter({ muted: false, type: 'person'}, { initial_replication_date: 1})).to.equal(false);
       chai.expect(transition.filter({ muted: false, type: 'clinic'}, { initial_replication_date: 2})).to.equal(false);
+      chai.expect(
+        transition.filter({ muted: false, type: 'thing', contact_type: 'other thing'}, { initial_replication_date: 2})
+      ).to.equal(false); // not a contact, doesn't even call isMutedInLineage
+      chai.expect(
+        transition.filter({ muted: false, type: 'contact', contact_type: 'other thing'}, { initial_replication_date: 2})
+      ).to.equal(false); // not a valid contact type,  doesn't even call isMutedInLineage
       chai.expect(mutingUtils.isMutedInLineage.callCount).to.equal(2);
       chai.expect(mutingUtils.isMutedInLineage.args).to.deep.equal([
         [{ muted: false, type: 'person' }, 1],
@@ -94,8 +101,9 @@ describe('Muting transition', () => {
     });
 
     it('should return true for valid contacts', () => {
-      config.get.withArgs('contact_types')
-        .returns([{ id: 'person' }, { id: 'clinic' }, { id: 'health_center' }, { id: 'district_hospital' } ]);
+      config.getAll.returns({
+        contact_types: [{ id: 'person' }, { id: 'clinic' }, { id: 'health_center' }, { id: 'district_hospital' } ]
+      });
       mutingUtils.isMutedInLineage.returns(true);
       chai.expect(transition.filter({ muted: false, type: 'person' }, {initial_replication_date: 1}))
         .to.equal(true);
@@ -105,12 +113,16 @@ describe('Muting transition', () => {
         .to.equal(true);
       chai.expect(transition.filter({ muted: false, type: 'health_center' }, {initial_replication_date: 4}))
         .to.equal(true);
-      chai.expect(mutingUtils.isMutedInLineage.callCount).to.equal(4);
+      chai.expect(transition.filter({ muted: false, type: 'clinic', contact_type: 'm' }, {initial_replication_date: 7}))
+        .to.equal(true);
+
+      chai.expect(mutingUtils.isMutedInLineage.callCount).to.equal(5);
       chai.expect(mutingUtils.isMutedInLineage.args).to.deep.equal([
         [{ muted: false, type: 'person' }, 1],
         [{ muted: false, type: 'clinic' }, 2],
         [{ muted: false, type: 'district_hospital' }, 3],
-        [{ muted: false, type: 'health_center' }, 4]
+        [{ muted: false, type: 'health_center' }, 4],
+        [{ muted: false, type: 'clinic', contact_type: 'm' }, 7]
       ]);
     });
 

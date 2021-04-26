@@ -91,10 +91,12 @@ const getContactsByReference = shortcodes => {
   return utils.requestOnTestDb({ path: '/_design/medic-client/_view/contacts_by_reference', qs });
 };
 
+const getIds = docs => docs.map(doc => doc._id);
+
 describe('registration', () => {
-  beforeAll(done => utils.saveDocs(contacts).then(done));
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
+  beforeAll(() => utils.saveDocs(contacts));
+  afterAll(() => utils.revertDb());
+  afterEach(() => utils.revertDb(getIds(contacts), true));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
@@ -178,7 +180,7 @@ describe('registration', () => {
       });
   });
 
-  it('should error if invalid or if patient not found', () => {
+  it('should error if invalid or if patient or place not found', () => {
     const settings = {
       transitions: { registration: true },
       registrations: [{
@@ -212,7 +214,7 @@ describe('registration', () => {
       forms: { FORM: { }}
     };
 
-    const doc1 = {
+    const noSubjects = { // doesn't patient_id or place_id fields
       _id: uuid(),
       type: 'data_record',
       from: '+444999',
@@ -227,7 +229,7 @@ describe('registration', () => {
       }
     };
 
-    const doc2 = {
+    const noPatient = { // has a patient_id that has no corresponding contact
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -243,17 +245,36 @@ describe('registration', () => {
       }
     };
 
+    const noPlace = { // has a place_id that has no corresponding contact
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+444999',
+      fields: {
+        place_id: 'non_existent',
+        count: 22
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    const docs = [ noSubjects, noPatient, noPlace ];
+    const docIds = getIds(docs);
+
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => utils.saveDocs([ doc1, doc2 ]))
-      .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
-      .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
+      .then(() => utils.saveDocs(docs))
+      .then(() => sentinelUtils.waitForSentinel(docIds))
+      .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
           chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
-      .then(() => utils.getDocs([doc1._id, doc2._id]))
+      .then(() => utils.getDocs(docIds))
       .then(updated => {
         chai.expect(updated[0].tasks).to.be.ok;
         chai.expect(updated[0].tasks.length).to.equal(1);
@@ -276,6 +297,155 @@ describe('registration', () => {
         chai.expect(updated[1].errors).to.be.ok;
         chai.expect(updated[1].errors.length).to.equal(1);
         chai.expect(updated[1].errors[0].code).to.equal('registration_not_found');
+
+        chai.expect(updated[2].tasks).to.be.ok;
+        chai.expect(updated[2].tasks.length).to.equal(1);
+        chai.expect(updated[2].tasks[0].messages[0]).to.include({
+          message: 'Patient not found',
+          to: '+444999',
+        });
+
+        chai.expect(updated[2].errors).to.be.ok;
+        chai.expect(updated[2].errors.length).to.equal(1);
+        chai.expect(updated[2].errors[0].code).to.equal('registration_not_found');
+      });
+  });
+
+  it('should fail if subject is not of correct type', () => {
+    const settings = {
+      transitions: { registration: true },
+      registrations: [{
+        form: 'FORM-A',
+        events: [],
+        messages: [{
+          recipient: 'reporting_unit',
+          event_type: 'report_accepted',
+          message: [{
+            locale: 'en',
+            content: 'Patient {{patient_name}} ({{patient_id}}) added to {{clinic.name}}'
+          }],
+        }, {
+          event_type: 'registration_not_found',
+          message: [{
+            locale: 'en',
+            content: 'Subject not found or invalid'
+          }],
+        }],
+      }],
+      forms: { 'FORM-A': { }}
+    };
+
+    const placeInsteadOfPatient = { // has a patient_id field containing shortcode corresponding to a place
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM-A',
+      from: '+444999',
+      fields: {
+        patient_id: 'the_clinic', // place shortcode
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    const patientInsteadOfPlace = { // has a place_id field containing shortcode corresponding to a person
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM-A',
+      from: '+444999',
+      fields: {
+        place_id: 'patient', // this is a person
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    const switchedSubjects = { // has a place instead of patient and vice versa
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM-A',
+      from: '+444999',
+      fields: {
+        place_id: 'the_middle_man', // this is a person
+        patient_id: 'the_health_center', // this is a place
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    const bothSubjectsPlaces = { // both subjects are places
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM-A',
+      from: '+444999',
+      fields: {
+        place_id: 'the_clinic', // this is a place
+        patient_id: 'the_health_center', // this is a place
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    const bothSubjectsPersons = { // both subjects are persons
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM-A',
+      from: '+444999',
+      fields: {
+        place_id: 'the_middle_man', // this is a person
+        patient_id: 'patient', // this is a person
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    const allDocs = [
+      placeInsteadOfPatient,
+      patientInsteadOfPlace,
+      switchedSubjects,
+      bothSubjectsPlaces,
+      bothSubjectsPersons
+    ];
+    const allIds = getIds(allDocs);
+
+    return utils
+      .updateSettings(settings, 'sentinel')
+      .then(() => utils.saveDocs(allDocs))
+      .then(() => sentinelUtils.waitForSentinel(allIds))
+      .then(() => sentinelUtils.getInfoDocs(allIds))
+      .then(infos => {
+        infos.forEach((info, idx) => {
+          const errorMsg = `failed for doc${idx+1}`;
+          chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true }, errorMsg);
+        });
+      })
+      .then(() => utils.getDocs(allIds))
+      .then(updated => {
+        updated.forEach((doc, idx) => {
+          const errorMsg = `failed for doc${idx+1}`;
+          chai.expect(doc.tasks.length).to.equal(1, errorMsg);
+          chai.expect(doc.tasks[0].messages[0]).to.include(
+            { message: 'Subject not found or invalid', to: '+444999' },
+            errorMsg
+          );
+
+          chai.expect(doc.errors.length).to.equal(1, errorMsg);
+          chai.expect(doc.errors[0].code).to.equal('registration_not_found', errorMsg);
+        });
       });
   });
 
@@ -319,7 +489,7 @@ describe('registration', () => {
       forms: { 'FORM-A': { }, 'FORM-B': { }}
     };
 
-    const doc1 = {
+    const justPatientName = { // has just the `patient_name` field, and should create this person
       _id: uuid(),
       type: 'data_record',
       form: 'FORM-A',
@@ -334,13 +504,13 @@ describe('registration', () => {
       }
     };
 
-    const doc2 = {
+    const patientNameAndShortcode = { // has patient_name and patient_id field, error bc. patient is not found.
       _id: uuid(),
       type: 'data_record',
       form: 'FORM-A',
       from: '+444999',
       fields: {
-        patient_id: 'person',
+        patient_id: 'another_person',
         patient_name: 'Mike',
       },
       reported_date: moment().valueOf(),
@@ -350,7 +520,7 @@ describe('registration', () => {
       }
     };
 
-    const doc3 = {
+    const customPatientNameAndCustomShortcode = { // has custom fields populated, should create patient with the fields
       _id: uuid(),
       type: 'data_record',
       form: 'FORM-B',
@@ -366,7 +536,7 @@ describe('registration', () => {
       }
     };
 
-    const doc4 = {
+    const patientNameAndCustomShortcode = { // has patient_name and custom shortcode, should create patient
       _id: uuid(),
       type: 'data_record',
       form: 'FORM-B',
@@ -382,19 +552,26 @@ describe('registration', () => {
       }
     };
 
+    const docs = [
+      justPatientName,
+      patientNameAndShortcode,
+      customPatientNameAndCustomShortcode,
+      patientNameAndCustomShortcode
+    ];
+    const docIds = getIds(docs);
     let newPatientId;
 
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => utils.saveDocs([ doc1, doc2, doc3, doc4 ]))
-      .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id, doc4._id]))
-      .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id, doc4._id]))
+      .then(() => utils.saveDocs(docs))
+      .then(() => sentinelUtils.waitForSentinel(docIds))
+      .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
           chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
-      .then(() => utils.getDocs([doc1._id, doc2._id, doc3._id, doc4._id]))
+      .then(() => utils.getDocs(docIds))
       .then(updated => {
         chai.expect(updated[0].patient_id).not.to.equal(undefined);
         chai.expect(updated[0].tasks.length).to.equal(1);
@@ -406,7 +583,7 @@ describe('registration', () => {
         newPatientId = updated[0].patient_id;
 
         chai.expect(updated[1].patient_id).to.equal(undefined);
-        chai.expect(updated[1].fields.patient_id).to.equal('person');
+        chai.expect(updated[1].fields.patient_id).to.equal('another_person');
         chai.expect(updated[1].errors).to.be.ok;
         chai.expect(updated[1].errors.length).to.equal(1);
         chai.expect(updated[1].errors[0].code).to.equal('registration_not_found');
@@ -436,7 +613,7 @@ describe('registration', () => {
           name: 'Minerva',
           type: 'person',
           created_by: 'person',
-          source_id: doc1._id,
+          source_id: justPatientName._id,
         });
 
         chai.expect(patients.rows[1].doc).to.deep.include({
@@ -445,7 +622,7 @@ describe('registration', () => {
           name: 'Venus',
           type: 'person',
           created_by: 'person',
-          source_id: doc3._id,
+          source_id: customPatientNameAndCustomShortcode._id,
         });
       });
   });
@@ -602,19 +779,20 @@ describe('registration', () => {
       contact: { _id: 'supervisor', parent: { _id: 'district_hospital' } }
     };
 
-    const ids = [chwNoParent._id, chwNonExistingParent._id, invalidParent1._id, invalidParent2._id, invalidParent3._id];
+    const docs = [chwNoParent, chwNonExistingParent, invalidParent1, invalidParent2, invalidParent3];
+    const docIds = getIds(docs);
 
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => utils.saveDocs([chwNoParent, chwNonExistingParent, invalidParent1, invalidParent2, invalidParent3]))
-      .then(() => sentinelUtils.waitForSentinel(ids))
-      .then(() => sentinelUtils.getInfoDocs(ids))
+      .then(() => utils.saveDocs(docs))
+      .then(() => sentinelUtils.waitForSentinel(docIds))
+      .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
           chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
-      .then(() => utils.getDocs(ids))
+      .then(() => utils.getDocs(docIds))
       .then(updated => {
         updated.forEach(doc => {
           chai.expect(doc.patient_id).not.to.equal(undefined);
@@ -780,12 +958,13 @@ describe('registration', () => {
       }
     };
 
+    const docs = [createPerson, createChw, createNurse];
     const ids = [createPerson._id, createChw._id, createNurse._id];
     let updatedDocs;
 
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => utils.saveDocs([createPerson, createChw, createNurse]))
+      .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => sentinelUtils.getInfoDocs(ids))
       .then(infos => {
@@ -869,7 +1048,7 @@ describe('registration', () => {
       forms: { FORM: { }}
     };
 
-    const doc1 = {
+    const withWeeksSinceLMP = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -885,7 +1064,7 @@ describe('registration', () => {
       }
     };
 
-    const doc2 = {
+    const withLMP = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -901,17 +1080,20 @@ describe('registration', () => {
       }
     };
 
+    const docs = [withWeeksSinceLMP, withLMP];
+    const docIds = getIds(docs);
+
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => utils.saveDocs([ doc1, doc2 ]))
-      .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
-      .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
+      .then(() => utils.saveDocs(docs))
+      .then(() => sentinelUtils.waitForSentinel(docIds))
+      .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
           chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
-      .then(() => utils.getDocs([doc1._id, doc2._id]))
+      .then(() => utils.getDocs(docIds))
       .then(updated => {
         chai.expect(updated[0].lmp_date).to.be.ok;
         chai.expect(updated[0].lmp_date)
@@ -943,7 +1125,7 @@ describe('registration', () => {
       forms: { FORM: { }}
     };
 
-    const doc1 = {
+    const withMonthsSinceBirth = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -959,7 +1141,7 @@ describe('registration', () => {
       }
     };
 
-    const doc2 = {
+    const withWeeksSinceBirth = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -975,7 +1157,7 @@ describe('registration', () => {
       }
     };
 
-    const doc3 = {
+    const withAgeInYears = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -991,17 +1173,20 @@ describe('registration', () => {
       }
     };
 
+    const docs = [ withMonthsSinceBirth, withWeeksSinceBirth, withAgeInYears ];
+    const docIds = getIds(docs);
+
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => utils.saveDocs([ doc1, doc2, doc3 ]))
-      .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id]))
-      .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id]))
+      .then(() => utils.saveDocs(docs))
+      .then(() => sentinelUtils.waitForSentinel(docIds))
+      .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
         infos.forEach(info => {
           chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
       })
-      .then(() => utils.getDocs([doc1._id, doc2._id, doc3._id]))
+      .then(() => utils.getDocs(docIds))
       .then(updated => {
         chai.expect(updated[0].birth_date)
           .to.equal(moment().utc(false).startOf('day').subtract(2, 'months').toISOString());
@@ -1490,7 +1675,7 @@ describe('registration', () => {
     };
 
     const docs = [ clinicNoParent, nursingHome, healthCenter ];
-    const ids = docs.map(doc => doc._id);
+    const ids = getIds(docs);
     let updatedDocs;
 
     return utils
@@ -1657,7 +1842,7 @@ describe('registration', () => {
     };
 
     const docs = [createClinic, createPerson];
-    const ids = docs.map(doc => doc._id);
+    const ids = getIds(docs);
     let updatedDocs;
 
     return utils
@@ -1790,7 +1975,7 @@ describe('registration', () => {
       }]
     };
 
-    const doc1 = {
+    const withPatient1 = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
@@ -1807,82 +1992,182 @@ describe('registration', () => {
       }
     };
 
-    const doc2 = {
+    const withPatient2 = Object.assign({}, withPatient1, { _id: uuid() });
+
+    const withClinic1 = {
       _id: uuid(),
       type: 'data_record',
       form: 'FORM',
-      from: '+444999',
+      from: '+11111111',
       fields: {
-        patient_uuid: 'person',
-        patient_id: 'patient',
+        place_id: 'the_clinic',
       },
-      some_date_field: moment().subtract(2, 'week').valueOf(),
+      some_date_field: moment().subtract(3, 'week').valueOf(),
       reported_date: moment().valueOf(),
       contact: {
-        _id: 'person',
-        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
-      }
+        _id: 'middle_man',
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+      },
     };
+
+    const withClinic2 = Object.assign({}, withClinic1, { _id: uuid() });
+
+    const withClinicAndPatient1 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+11111111',
+      fields: {
+        place_id: 'the_clinic',
+        patient_id: 'patient',
+      },
+      some_date_field: moment().subtract(6, 'week').valueOf(),
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'middle_man',
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+      },
+    };
+
+    const withClinicAndPatient2 = Object.assign({}, withClinicAndPatient1, { _id: uuid() });
+
+    const expectedMessage2 = (state) => ({
+      type: 'sch1',
+      group: 2,
+      state: state,
+      'messages[0].message': 'message2'
+    });
+    const expectedMessage3 = (state) => ({
+      type: 'sch2',
+      group: 1,
+      state: state,
+      'messages[0].message': 'message3'
+    });
+    const expectedMessage4 = (state) => ({
+      type: 'sch2',
+      group: 1,
+      state: state,
+      'messages[0].message': 'message4'
+    });
 
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => utils.saveDoc(doc1))
-      .then(() => sentinelUtils.waitForSentinel(doc1._id))
-      .then(() => sentinelUtils.getInfoDoc(doc1._id))
-      .then(info => {
-        chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
+      .then(() => utils.saveDocs([withPatient1, withClinic1]))
+      .then(() => sentinelUtils.waitForSentinel([withPatient1._id, withClinic1._id]))
+      .then(() => sentinelUtils.getInfoDocs([withPatient1._id, withClinic1._id]))
+      .then(([infoWithPatient, infoWithClinic]) => {
+        chai.expect(infoWithPatient).to.deep.nested.include({ 'transitions.registration.ok': true });
+        chai.expect(infoWithClinic).to.deep.nested.include({ 'transitions.registration.ok': true });
       })
-      .then(() => utils.getDoc(doc1._id))
-      .then(updated => {
-        chai.expect(updated.scheduled_tasks).to.be.ok;
-        chai.expect(updated.scheduled_tasks.length).to.equal(3);
+      .then(() => utils.getDocs([withPatient1._id, withClinic1._id]))
+      .then(([updWithPatient1, updWithClinic1]) => {
+        chai.expect(updWithPatient1.scheduled_tasks).to.be.ok;
+        chai.expect(updWithPatient1.scheduled_tasks.length).to.equal(3);
 
-        chai.expect(updated.scheduled_tasks[0].type).to.equal('sch1');
-        chai.expect(updated.scheduled_tasks[0].group).to.equal(2);
-        chai.expect(updated.scheduled_tasks[0].state).to.equal('scheduled');
-        chai.expect(updated.scheduled_tasks[0].messages[0].message).to.equal('message2');
+        chai.expect(updWithPatient1.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
+        chai.expect(updWithPatient1.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
+        chai.expect(updWithPatient1.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
 
-        chai.expect(updated.scheduled_tasks[1].type).to.equal('sch2');
-        chai.expect(updated.scheduled_tasks[1].group).to.equal(1);
-        chai.expect(updated.scheduled_tasks[1].state).to.equal('scheduled');
-        chai.expect(updated.scheduled_tasks[1].messages[0].message).to.equal('message3');
+        chai.expect(updWithClinic1.scheduled_tasks).to.be.ok;
+        chai.expect(updWithClinic1.scheduled_tasks.length).to.equal(3);
 
-        chai.expect(updated.scheduled_tasks[2].type).to.equal('sch2');
-        chai.expect(updated.scheduled_tasks[2].group).to.equal(1);
-        chai.expect(updated.scheduled_tasks[2].state).to.equal('scheduled');
-        chai.expect(updated.scheduled_tasks[2].messages[0].message).to.equal('message4');
+        chai.expect(updWithClinic1.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
+        chai.expect(updWithClinic1.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
+        chai.expect(updWithClinic1.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
       })
-      .then(() => utils.saveDoc(doc2))
-      .then(() => sentinelUtils.waitForSentinel(doc2._id))
-      .then(() => sentinelUtils.getInfoDoc(doc2._id))
-      .then(info => {
-        chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
+      .then(() => utils.saveDocs([withPatient2, withClinic2]))
+      .then(() => sentinelUtils.waitForSentinel([withPatient2._id, withClinic2._id]))
+      .then(() => sentinelUtils.getInfoDocs([withPatient2._id, withClinic2._id]))
+      .then(([infoWithPatient, infoWithClinic]) => {
+        chai.expect(infoWithPatient).to.deep.nested.include({ 'transitions.registration.ok': true });
+        chai.expect(infoWithClinic).to.deep.nested.include({ 'transitions.registration.ok': true });
       })
-      .then(() => utils.getDocs([doc1._id, doc2._id ]))
-      .then(updated => {
+      .then(() => utils.getDocs([ withPatient1._id, withPatient2._id, withClinic1._id, withClinic2._id ]))
+      .then(([ updWithPatient1, updWithPatient2, updWithClinic1, updWithClinic2 ]) => {
         //1st doc has cleared schedules
-        chai.expect(updated[0].scheduled_tasks).to.be.ok;
-        chai.expect(updated[0].scheduled_tasks.length).to.equal(3);
-        expect(updated[0].scheduled_tasks.every(task => task.state === 'cleared')).toBe(true);
+        chai.expect(updWithPatient1.scheduled_tasks).to.be.ok;
+        chai.expect(updWithPatient1.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithPatient1.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('cleared'));
+        chai.expect(updWithPatient1.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('cleared'));
+        chai.expect(updWithPatient1.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('cleared'));
 
         //2nd doc has schedules
-        chai.expect(updated[1].scheduled_tasks).to.be.ok;
-        chai.expect(updated[1].scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithPatient2.scheduled_tasks).to.be.ok;
+        chai.expect(updWithPatient2.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithPatient2.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
+        chai.expect(updWithPatient2.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
+        chai.expect(updWithPatient2.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
 
-        chai.expect(updated[1].scheduled_tasks[0].type).to.equal('sch1');
-        chai.expect(updated[1].scheduled_tasks[0].group).to.equal(2);
-        chai.expect(updated[1].scheduled_tasks[0].state).to.equal('scheduled');
-        chai.expect(updated[1].scheduled_tasks[0].messages[0].message).to.equal('message2');
+        //1st doc has cleared schedules
+        chai.expect(updWithClinic1.scheduled_tasks).to.be.ok;
+        chai.expect(updWithClinic1.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithClinic1.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('cleared'));
+        chai.expect(updWithClinic1.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('cleared'));
+        chai.expect(updWithClinic1.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('cleared'));
 
-        chai.expect(updated[1].scheduled_tasks[1].type).to.equal('sch2');
-        chai.expect(updated[1].scheduled_tasks[1].group).to.equal(1);
-        chai.expect(updated[1].scheduled_tasks[1].state).to.equal('scheduled');
-        chai.expect(updated[1].scheduled_tasks[1].messages[0].message).to.equal('message3');
+        //2nd doc has schedules
+        chai.expect(updWithClinic2.scheduled_tasks).to.be.ok;
+        chai.expect(updWithClinic2.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithClinic2.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
+        chai.expect(updWithClinic2.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
+        chai.expect(updWithClinic2.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
+      })
+      .then(() => utils.saveDocs([withClinicAndPatient1]))
+      .then(() => sentinelUtils.waitForSentinel(withClinicAndPatient1._id))
+      .then(() => sentinelUtils.getInfoDoc(withClinicAndPatient1._id))
+      .then((infodoc) => {
+        chai.expect(infodoc).to.deep.nested.include({ 'transitions.registration.ok': true });
+      })
+      .then(() => utils.getDocs([ withPatient2._id, withClinic2._id, withClinicAndPatient1._id]))
+      .then(([ updWithPatient2, updWithClinic2, withClinicAndPatient ]) => {
+        // cleared schedules for the withPatient doc
+        chai.expect(updWithPatient2.scheduled_tasks).to.be.ok;
+        chai.expect(updWithPatient2.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithPatient2.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('cleared'));
+        chai.expect(updWithPatient2.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('cleared'));
+        chai.expect(updWithPatient2.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('cleared'));
 
-        chai.expect(updated[1].scheduled_tasks[2].type).to.equal('sch2');
-        chai.expect(updated[1].scheduled_tasks[2].group).to.equal(1);
-        chai.expect(updated[1].scheduled_tasks[2].state).to.equal('scheduled');
-        chai.expect(updated[1].scheduled_tasks[2].messages[0].message).to.equal('message4');
+        // cleared schedules for the withClinic doc
+        chai.expect(updWithClinic2.scheduled_tasks).to.be.ok;
+        chai.expect(updWithClinic2.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithClinic2.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('cleared'));
+        chai.expect(updWithClinic2.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('cleared'));
+        chai.expect(updWithClinic2.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('cleared'));
+
+        // withPatientAndClinic has schedules
+        chai.expect(withClinicAndPatient.scheduled_tasks).to.be.ok;
+        chai.expect(withClinicAndPatient.scheduled_tasks.length).to.equal(3);
+        chai.expect(withClinicAndPatient.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
+        chai.expect(withClinicAndPatient.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
+        chai.expect(withClinicAndPatient.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
+      })
+      .then(() => utils.saveDocs([withClinicAndPatient2]))
+      .then(() => sentinelUtils.waitForSentinel(withClinicAndPatient2._id))
+      .then(() => sentinelUtils.getInfoDoc(withClinicAndPatient2._id))
+      .then((infodoc) => {
+        chai.expect(infodoc).to.deep.nested.include({ 'transitions.registration.ok': true });
+      })
+      .then(() => utils.getDocs([
+        withClinicAndPatient2._id, // first, so we can use spread for the rest
+        withPatient1._id, withPatient2._id,
+        withClinic1._id, withClinic2._id,
+        withClinicAndPatient1._id,
+      ]))
+      .then(([updWithClinicAndPatient2, ...docsWithClearedTasks ]) => {
+        // withPatientAndClinic has schedules
+        chai.expect(updWithClinicAndPatient2.scheduled_tasks).to.be.ok;
+        chai.expect(updWithClinicAndPatient2.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithClinicAndPatient2.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
+        chai.expect(updWithClinicAndPatient2.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
+        chai.expect(updWithClinicAndPatient2.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
+
+        docsWithClearedTasks.forEach(doc => {
+          chai.expect(doc.scheduled_tasks).to.be.ok;
+          chai.expect(doc.scheduled_tasks.length).to.equal(3);
+          chai.expect(doc.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('cleared'));
+          chai.expect(doc.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('cleared'));
+          chai.expect(doc.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('cleared'));
+        });
       });
   });
 

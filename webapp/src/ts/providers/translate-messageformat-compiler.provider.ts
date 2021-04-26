@@ -10,17 +10,29 @@ export class TranslateMessageFormatCompilerProvider extends TranslateCompiler {
     this.messageFormat = new MessageFormat([]);
   }
 
+  private getCompiledMessageFormat(value, lang) {
+    const compiledMessageFormat = this.messageFormat.compile(value, lang);
+    return (params) => {
+      try {
+        return compiledMessageFormat(params);
+      } catch (err) {
+        console.warn('Error while interpolating', value);
+        return value;
+      }
+    };
+  }
+
   compile(value, lang) {
-    // message-format uses single curly braces for defining parameters( like `His name is {NAME}` )
+    // messageformat uses single curly braces for defining parameters( like `His name is {NAME}` )
     // passing a string that contains open double curly braces to message-format produces an error
-    // if the message has either double curly braces or no curly braces at all, bypass message-format entirely
+    // if the message has either double curly braces or no curly braces at all, bypass messageformat entirely
     const hasDoubleOrNoCurlyBraces = this.doubleOrNoneCurlyBraces.test(value);
     if (hasDoubleOrNoCurlyBraces) {
       return value;
     }
 
     try {
-      return this.messageFormat.compile(value, lang);
+      return this.getCompiledMessageFormat(value, lang);
     } catch (err) {
       console.error('messageformat compile error', err);
       return value;

@@ -166,7 +166,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private getFormInstanceData() {
-    const type = this.contact?.contact_type || this.contact?.type;
+    const type = this.contactTypesService.getTypeId(this.contact);
     if (!type) {
       return null;
     }
@@ -187,7 +187,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private getForm(contact) {
     let formId;
     let titleKey;
-    const typeId = contact?.contact_type || contact?.type || this.routeSnapshot.params?.type;
+    const typeId = this.contactTypesService.getTypeId(contact) || this.routeSnapshot.params?.type;
     return this.contactTypesService
       .get(typeId)
       .then(type => {
@@ -222,7 +222,6 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
                 .then((title) => this.globalActions.setTitle(title));
             }
           });
-
         return formId;
       });
   }
@@ -262,7 +261,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private setEnketoContact(formInstance) {
     this.enketoContact = {
-      type: this.contact?.contact_type || this.contact?.type,
+      type: this.contactTypesService.getTypeId(this.contact),
       formInstance: formInstance,
       docId: this.contactId,
     };

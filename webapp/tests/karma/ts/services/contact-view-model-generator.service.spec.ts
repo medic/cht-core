@@ -25,6 +25,8 @@ describe('ContactViewModelGenerator service', () => {
   let search;
   let getDataRecords;
   let forms;
+  let contactTypesService;
+  let types;
 
   const childPlaceIcon = 'fa-mushroom';
 
@@ -48,7 +50,7 @@ describe('ContactViewModelGenerator service', () => {
 
   const stubDbQueryChildren = (parentId, docs = []) => {
     docs = docs.map(doc => {
-      return { doc: doc };
+      return { doc: doc, id: doc._id };
     });
     dbQuery.resolves({ rows: docs });
   };
@@ -66,7 +68,7 @@ describe('ContactViewModelGenerator service', () => {
     dbGet = sinon.stub();
     dbQuery = sinon.stub();
     getDataRecords = sinon.stub();
-    const types = [
+    types = [
       { id: 'family' },
       { id: 'person', sort_by_dob: true, icon: childPlaceIcon, person: true, parents: [ 'family', 'clinic' ] },
       { id: 'chp', person: true, parents: [ 'mushroom' ] },
@@ -99,11 +101,17 @@ describe('ContactViewModelGenerator service', () => {
     };
     forms = [];
 
+    contactTypesService = {
+      getAll: sinon.stub().resolves(types),
+      getTypeId: sinon.stub().callsFake(contact => contact.type === 'contact' ? contact.contact_type : contact.type),
+      getTypeById: sinon.stub().callsFake((types, id) => types.find(type => type.id === id)),
+    };
+
     TestBed.configureTestingModule({
       providers: [
         { provide: TranslateService, useValue: { instant: sinon.stub().returnsArg(0) } },
         { provide: SearchService, useValue: { search } },
-        { provide: ContactTypesService, useValue: { getAll: sinon.stub().resolves(types) } },
+        { provide: ContactTypesService, useValue: contactTypesService },
         { provide: LineageModelGeneratorService, useValue: lineageModelGenerator },
         { provide: GetDataRecordsService, useValue: { get: getDataRecords } },
         { provide: DbService, useValue: { get: () => ({ query: dbQuery, get: dbGet }) } },
@@ -166,6 +174,15 @@ describe('ContactViewModelGenerator service', () => {
     it('if no child places, child persons get displayed', () => {
       return runPlaceTest([childContactPerson, childPerson]).then(model => {
         assert.equal(model.children[0].contacts.length, 2);
+      });
+    });
+
+    it('should load external primary contact correctly', () => {
+      return runPlaceTest([childPerson]).then(model => {
+        assert.equal(model.children[0].contacts.length, 2);
+        assert.equal(model.children[0].contacts[0].id, childContactPerson._id);
+        assert.equal(model.children[0].contacts[0].isPrimaryContact, true);
+        assert.equal(model.children[0].contacts[1].id, childPerson._id);
       });
     });
 
@@ -254,6 +271,42 @@ describe('ContactViewModelGenerator service', () => {
         assert.deepEqual(model.children[0].contacts[1].doc, deceasedChildPerson);
         assert.equal(model.children[0].contacts[1].deceased, true);
         assert.equal(model.children[0].deceasedCount, 1);
+      });
+    });
+
+    it('sets correct contact types', () => {
+      doc.contact_type = 'whatever';
+      childContactPerson.contact_type = 'something';
+      childPlace.contact_type = 'otherthing';
+
+      contactTypesService.getTypeId
+        .withArgs(doc).returns('correct doc type')
+        .withArgs(childContactPerson).returns('correct childContactPerson type')
+        .withArgs(childPlace).returns('correct childPlace type');
+
+      types.push(
+        { id: 'correct doc type', parents: ['correct parent type'], person: false, },
+        { id: 'correct childContactPerson type', parents: ['correct doc type'], person: true },
+        { id: 'correct childPlace type', parents: ['correct doc type'], person: false },
+      );
+      contactTypesService.getAll.resolves(types);
+
+      return runPlaceTest([childContactPerson, childPlace]).then(model => {
+        expect(model.doc).to.deep.equal({ ...doc, muted: false });
+        expect(model.type).to.deep.equal({ id: 'correct doc type', parents: ['correct parent type'], person: false });
+        expect(model.children.length).to.equal(2);
+        expect(model.children[0].type)
+          .to.deep.equal({ id: 'correct childContactPerson type', parents: ['correct doc type'], person: true });
+        expect(model.children[0].contacts)
+          .to.deep.equal([{ isPrimaryContact: true, doc: childContactPerson, id: childContactPerson._id }]);
+
+        expect(model.children[1].type)
+          .to.deep.equal({ id: 'correct childPlace type', parents: ['correct doc type'], person: false });
+        expect(model.children[1].contacts)
+          .to.deep.equal([{ doc: childPlace, id: childPlace._id }]);
+
+        expect(contactTypesService.getTypeId.callCount).to.deep.equal(3);
+        expect(contactTypesService.getTypeId.args).to.deep.equal([[doc], [childContactPerson], [childPlace]]);
       });
     });
 
@@ -362,7 +415,6 @@ describe('ContactViewModelGenerator service', () => {
 
       it('model returns the correct keys', () => {
         return runPersonTest(doc).then(model => {
-          console.log(Object.keys(model.doc));
           expect(Object.keys(model)).to.have.members(
             ['_id', 'doc', 'lineage', 'type', 'isPrimaryContact',]
           );

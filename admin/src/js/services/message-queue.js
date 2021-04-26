@@ -44,22 +44,23 @@ angular.module('services').factory('MessageQueue',
       return summary && summary.value;
     };
 
-    const findPatientUuid = function(contactsByReference, message) {
-      const patient = contactsByReference.rows.find(function(row) {
-        return row.key[1] === message.context.patient_id;
-      });
-
-      return patient && patient.id || message.context.patient_uuid;
+    const findIdByKey = (contactsByReference, key) => {
+      const row = contactsByReference.rows.find((row) => row.key[1] === key);
+      return row && row.id;
     };
 
-    const findRegistrations = function(registrations, message) {
+    const findPatientUuid = (contactsByReference, message) => {
+      return findIdByKey(contactsByReference, message.context.patient_id) || message.context.patient_uuid;
+    };
+
+    const findPlaceUuid = (contactsByReference, message) => {
+      return findIdByKey(contactsByReference, message.context.place_id) || message.context.place_uuid;
+    };
+
+    const findRegistrations = (registrations, message, shortcodeField) => {
       return registrations
-        .filter(function(row) {
-          return row.key === message.context.patient_id;
-        })
-        .map(function(row) {
-          return row.doc;
-        });
+        .filter((row) => row.key === message.context[shortcodeField])
+        .map((row) => row.doc);
     };
 
     const findContactById = function(hydratedContacts, contactId) {
@@ -109,32 +110,36 @@ angular.module('services').factory('MessageQueue',
         });
     };
 
-    const getPatientsAndRegistrations = function(messages, settings) {
-      const patientIds = compactUnique(messages.map(function(message) {
-        // don't process items which already have generated messages
-        return !message.sms && message.context.patient_id;
-      }));
+    const getSubjectsAndRegistrations = (messages, settings) => {
+      let shortcodes = [];
+      messages.forEach(message => {
+        if (message.sms) {
+          // don't process items which already have generated messages
+          return;
+        }
+        shortcodes.push(message.context.patient_id, message.context.place_id);
+      });
+      shortcodes = compactUnique(shortcodes);
 
-      if (!patientIds.length) {
+      if (!shortcodes.length) {
         return Promise.resolve(messages);
       }
 
-      const referenceKeys = patientIds.map(function(patientId) {
-        return [ 'shortcode', patientId ];
-      });
+      const referenceKeys = shortcodes.map((shortcode) => [ 'shortcode', shortcode ]);
 
       return $q
         .all([
           DB({ remote: true }).query('medic-client/contacts_by_reference', { keys: referenceKeys }),
-          DB({ remote: true }).query('medic-client/registered_patients', { keys: patientIds, include_docs: true })
+          DB({ remote: true }).query('medic-client/registered_patients', { keys: shortcodes, include_docs: true }),
         ])
-        .then(function(results) {
-          const contactsByReference = results[0];
-          const registrations = getValidRegistrations(results[1], settings);
+        .then(([contactsByReference, registrations]) => {
+          registrations = getValidRegistrations(registrations, settings);
 
-          messages.forEach(function(message) {
+          messages.forEach((message) => {
             message.context.patient_uuid = findPatientUuid(contactsByReference, message);
-            message.context.registrations = findRegistrations(registrations, message);
+            message.context.place_uuid = findPlaceUuid(contactsByReference, message);
+            message.context.registrations = findRegistrations(registrations, message, 'patient_id');
+            message.context.placeRegistrations = findRegistrations(registrations, message, 'place_id');
           });
 
           return messages;
@@ -145,7 +150,11 @@ angular.module('services').factory('MessageQueue',
       let contactIds = [];
       messages.forEach(function(message) {
         if (!message.sms) {
-          contactIds.push(message.context.patient_uuid, message.doc.contact && message.doc.contact._id);
+          contactIds.push(
+            message.context.patient_uuid,
+            message.doc.contact && message.doc.contact._id,
+            message.context.place_uuid
+          );
         }
       });
       contactIds = compactUnique(contactIds);
@@ -164,8 +173,9 @@ angular.module('services').factory('MessageQueue',
             };
           });
 
-          messages.forEach(function(message) {
+          messages.forEach((message) => {
             message.context.patient = findContactById(hydratedDocs, message.context.patient_uuid);
+            message.context.place = findContactById(hydratedDocs, message.context.place_uuid);
             message.doc.contact = findContactById(hydratedDocs, message.doc.contact && message.doc.contact._id);
           });
 
@@ -305,32 +315,29 @@ angular.module('services').factory('MessageQueue',
             DB({ remote: true }).query('medic-admin/message_queue', params.list),
             DB({ remote: true }).query('medic-admin/message_queue', params.count)
           ])
-          .then(function(results) {
-            const settings = results[0];
-            const messages = results[1].rows.map(function(row) {
+          .then(([settings, messagesList, messagesCount]) => {
+            const messages = messagesList.rows.map((row) => {
               const extras = {
                 doc: row.doc,
                 context: {
                   patient_id: row.doc.patient_id || (row.doc.fields && row.doc.fields.patient_id),
-                  patient_uuid: row.doc.patient_uuid || (row.doc.fields && row.doc.fields.patient_uuid)
+                  patient_uuid: row.doc.patient_uuid || (row.doc.fields && row.doc.fields.patient_uuid),
+                  place_id: row.doc.place_id || (row.doc.fields && row.doc.fields.place_id),
                 }
               };
               return Object.assign(extras, row.value);
             });
 
-            return getPatientsAndRegistrations(messages, settings)
+            return getSubjectsAndRegistrations(messages, settings)
               .then(hydrateContacts)
-              .then(function(messages) {
-                return generateScheduledMessages(messages, settings);
-              })
+              .then((messages) => generateScheduledMessages(messages, settings))
               .then(getRecipients)
-              .then(function(messages) {
+              .then((messages) => {
                 return {
                   messages: formatMessages(messages),
-                  total: results[2].rows.length ? results[2].rows[0].value : 0
+                  total: messagesCount.rows.length ? messagesCount.rows[0].value : 0
                 };
               });
-
           });
       }
     };

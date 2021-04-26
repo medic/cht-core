@@ -40,6 +40,7 @@ const contacts = [
     name: 'clinic1',
     type: 'contact',
     contact_type: 'clinic',
+    place_id: 'the_clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw1',
@@ -52,6 +53,7 @@ const contacts = [
     name: 'clinic2',
     type: 'contact',
     contact_type: 'clinic',
+    place_id: 'the_clinic2',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw2',
@@ -244,7 +246,7 @@ const reports = [
       },
       {
         due: null,
-        timestamp: twoDaysAgo,
+        timestamp: moment(twoDaysAgo).valueOf(),
         message_key: 'messages.two',
         recipient: 'clinic',
         state_history: [],
@@ -254,6 +256,41 @@ const reports = [
         due: null,
         timestamp: moment(threeDaysAgo).valueOf(),
         message_key: 'messages.one',
+        recipient: 'ancestor:health_center',
+        state_history: [],
+        state: 'scheduled',
+      },
+    ],
+  },
+  {
+    _id: 'report6',
+    type: 'data_record',
+    contact: {
+      _id: 'chw1',
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
+    fields: { place_id: 'the_clinic', value: 33 },
+    reported_date: moment(threeDaysAgo).valueOf(),
+    scheduled_tasks: [
+      {
+        due: null,
+        message_key: 'messages.clinic',
+        recipient: 'clinic',
+        state_history: [],
+        state: 'scheduled',
+      },
+      {
+        due: null,
+        timestamp: moment(twoDaysAgo).valueOf(),
+        message_key: 'messages.clinic',
+        recipient: 'clinic',
+        state_history: [],
+        state: 'scheduled',
+      },
+      {
+        due: null,
+        timestamp: moment(threeDaysAgo).valueOf(),
+        message_key: 'messages.clinic',
         recipient: 'ancestor:health_center',
         state_history: [],
         state: 'scheduled',
@@ -273,6 +310,8 @@ const translations = {
     'ONE. Reported by {{contact.name}}. Patient {{patient_name}} ({{patient_id}}). Value {{fields.value}}',
   'messages.two':
     'TWO. Reported by {{contact.name}}. Patient {{patient_name}} ({{patient_id}}). Value {{fields.value}}',
+  'messages.clinic':
+    'CLINIC. Reported by {{contact.name}}. Place {{place.name}} ({{place.place_id}}). Value {{fields.value}}'
 };
 
 const ids = reports.map(report => report._id);
@@ -295,7 +334,7 @@ describe('Due Tasks', () => {
       // we can't reliably *know* when the scheduler has finished processing the docs,
       // so I'm just waiting for the revs to change
       .then(() => utils.waitForDocRev([
-        { id: 'report3', rev: 2 }, { id: 'report4', rev: 2 }, { id: 'report5', rev: 2 }
+        { id: 'report3', rev: 2 }, { id: 'report4', rev: 2 }, { id: 'report5', rev: 2 }, { id: 'report6', rev: 2 }
       ]))
       .then(() => utils.getDocs(ids))
       .then(updatedReports => {
@@ -371,6 +410,22 @@ describe('Due Tasks', () => {
           'scheduled_tasks[2].messages[0].to': '555666', // health_center
         });
 
+        // report 6 should have been edited
+        chai.expect(updatedReports[5]).to.deep.nested.include({
+          _id: 'report6',
+          'scheduled_tasks[0].state': 'pending',
+          'scheduled_tasks[1].state': 'pending',
+          'scheduled_tasks[2].state': 'pending',
+
+          'scheduled_tasks[0].messages[0].message': 'CLINIC. Reported by Chw1. Place clinic1 (the_clinic). Value 33',
+          'scheduled_tasks[0].messages[0].to': '111222', // clinic
+
+          'scheduled_tasks[1].messages[0].message': 'CLINIC. Reported by Chw1. Place clinic1 (the_clinic). Value 33',
+          'scheduled_tasks[1].messages[0].to': '111222', // clinic
+
+          'scheduled_tasks[2].messages[0].message': 'CLINIC. Reported by Chw1. Place clinic1 (the_clinic). Value 33',
+          'scheduled_tasks[2].messages[0].to': '555666', // health_center
+        });
       });
   });
 });

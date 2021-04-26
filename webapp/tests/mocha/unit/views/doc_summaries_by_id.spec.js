@@ -288,7 +288,7 @@ describe('doc_summaries_by_id view', () => {
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
         subject: {
-          type: 'id',
+          type: 'reference',
           value: '09f62048-ac69-4066-bf8b-bcaf534ef8b1'
         },
         case_id: undefined
