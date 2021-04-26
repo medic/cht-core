@@ -11,6 +11,8 @@ const helper = require('../../helper');
 require('../../page-objects/forms/cht/pregnancy-form-factory.po');
 const Factory = require('rosie').Factory;
 const genericFormPo = require('../../page-objects/forms/generic-form.po');
+require('/home/newt/dev/cht-core/tests/factories/reports/cht/pregnancy.js');
+const { element } = require('protractor');
 
 const password = 'Secret_1';
 const district = {
@@ -78,6 +80,95 @@ const users = [
   },
 ];
 
+const getVisibleQuestions = async () => {
+  const answers = await element.all(by.css('.current input:not([disabled],.ignore,[style])'));
+  const results = [];
+
+  for(let i = 0; i < answers.length; i++){
+    let name = await answers[i].getAttribute('data-name');
+    let cssAttribute = 'data-name';
+    if(!name) {
+      name = await answers[i].getAttribute('name');
+      cssAttribute = 'name';
+    }
+    const type = await answers[i].getAttribute('type');
+    if (results.filter(e => e.name === name && e.type === type).length === 0) {
+      results.push({ 
+        name: name,
+        type: type,
+        css: `input[${cssAttribute}="${name}"]`
+      });
+    }
+  }
+  return results;
+};
+
+const getPaths = (obj, prevKey, r = []) => {
+  var results = r;
+  Object.keys(obj).forEach((key,val) => {
+    var resultKey = '';
+    if(prevKey){
+      resultKey = `${prevKey}/${key}`;
+    } else {
+      resultKey = key;
+    }
+
+    if(key === 'inputs'){
+      return;
+    }
+    if(typeof obj[key] !== 'object'){
+      results.push({path: resultKey, value: obj[key]});
+    }else {
+      getPaths(obj[key], resultKey, results);
+    }
+  });
+  return results;
+};
+
+const answerer = async () => {
+  let answers = await getVisibleQuestions();
+  console.log('test');
+  const factoryReport = Factory.build('pregnancy');
+  const pathKeys = getPaths(factoryReport.fields);
+  const answeredQuestions = [];
+  answers.forEach(async (answer) => {
+    if (answeredQuestions.includes(answer.name)){
+      //already answered this question
+      return;
+    }
+    const answerVal = pathKeys.find(x => '/pregnancy/' + x.path === answer.name);
+    if(!answerVal){
+      console.log(answerVal);
+      console.log('undef value');
+      return;
+    }
+    switch(answer.type) {
+    case 'checkbox': {
+      const checks = answerVal.value.split();
+      checks.forEach((check) => {
+        helper.clickElementNative(element(by.css(`${answer.css}[value=${check}]`)));
+      });
+      break;
+    }
+    case 'radio':
+      await helper.clickElementNative(element(by.css(`${answer.css}[value=${answerVal.value}]`)));
+      break;
+    default:
+      element(by.css(answer.css)).sendKeys(answerVal.value);
+    }
+    answeredQuestions.push(answer.name);
+    // Need to see if there are any new answers since selecting a previous option.
+    answers = await getVisibleQuestions();
+  });
+
+  if(await helper.isDisplayed(element(by.css('button.btn.btn-primary.next-page')))) {
+    await genericFormPo.nextPageNative();
+    await answerer();
+  } else {
+    await genericFormPo.submitNative();
+  }
+};
+
 describe('Pregnancy workflow on cht : ', () => {
   let originalTimeout;
   beforeEach(function() {
@@ -103,11 +194,10 @@ describe('Pregnancy workflow on cht : ', () => {
     await contactsPage.selectContactByName(pregnancy_woman.name);
     await helper.clickElementNative(contactsPage.newActions);
     await helper.clickElementNative(contactsPage.formById('pregnancy'));
-    const pregForm = Factory.build('pregnancy-form');
-    await genericFormPo.fillForm(pregForm);
-    console.log('test');
-
-
+    await helper.waitUntilReadyNative(genericFormPo.formTitle);
+    await answerer();
+  
+    console.log('');
 
 
 
