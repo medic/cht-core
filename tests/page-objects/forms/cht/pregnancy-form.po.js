@@ -21,9 +21,9 @@ const prevMiscarriageName = `${inputBase}risk_factors/risk_factors_history/previ
 const noPrevMiscarriage = element(by.css(`${prevMiscarriageName}[value=no]`));
 
 const secondaryConditionName = `${inputBase}risk_factors/risk_factors_present/secondary_condition"]`;
-const noneOfTheAboveConditions =  element(by.css(`${secondaryConditionName}[value=none]`));
+const noneOfTheAboveConditions = element(by.css(`${secondaryConditionName}[value=none]`));
 const additionalRiskName = `${inputBase}risk_factors/risk_factors_present/additional_risk_check"]`;
-const noAdditionalRisk =  element(by.css(`${additionalRiskName}[value=no]`));
+const noAdditionalRisk = element(by.css(`${additionalRiskName}[value=no]`));
 
 const dangerSignsBase = `${inputBase}danger_signs/`;
 const vaginalBleedingName = `${dangerSignsBase}vaginal_bleeding"]`;
@@ -37,17 +37,17 @@ const breakingWaterName = `${dangerSignsBase}breaking_water"]`;
 const easilyTiredName = `${dangerSignsBase}easily_tired"]`;
 const swellingName = `${dangerSignsBase}face_hand_swelling"]`;
 const breathlessnessName = `${dangerSignsBase}breathlessness"]`;
-const noVaginalBleedings =  element(by.css(`${vaginalBleedingName}[value=no]`));
-const noFits =  element(by.css(`${fitsName}[value=no]`));
-const noAbdominalPain =  element(by.css(`${abdominalName}[value=no]`));
-const noHeadache =  element(by.css(`${headacheName}[value=no]`));
-const noPale =  element(by.css(`${paleName}[value=no]`));
-const noFever =  element(by.css(`${feverName}[value=no]`));
-const noFetalMovements =  element(by.css(`${fetalMovementsName}[value=no]`));
-const noBreakingWater =  element(by.css(`${breakingWaterName}[value=no]`));
-const noTired =  element(by.css(`${easilyTiredName}[value=no]`));
-const noSwelling =  element(by.css(`${swellingName}[value=no]`));
-const noBreathlessness =  element(by.css(`${breathlessnessName}[value=no]`));
+const noVaginalBleedings = element(by.css(`${vaginalBleedingName}[value=no]`));
+const noFits = element(by.css(`${fitsName}[value=no]`));
+const noAbdominalPain = element(by.css(`${abdominalName}[value=no]`));
+const noHeadache = element(by.css(`${headacheName}[value=no]`));
+const noPale = element(by.css(`${paleName}[value=no]`));
+const noFever = element(by.css(`${feverName}[value=no]`));
+const noFetalMovements = element(by.css(`${fetalMovementsName}[value=no]`));
+const noBreakingWater = element(by.css(`${breakingWaterName}[value=no]`));
+const noTired = element(by.css(`${easilyTiredName}[value=no]`));
+const noSwelling = element(by.css(`${swellingName}[value=no]`));
+const noBreathlessness = element(by.css(`${breathlessnessName}[value=no]`));
 
 const usesLLIN = `${inputBase}safe_pregnancy_practices/malaria/uses_llin"]`;
 const yesLLIN = element(by.css(`${usesLLIN}[value=yes]`));
