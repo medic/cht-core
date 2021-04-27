@@ -233,7 +233,7 @@ const defaultFields = {
   }
 };
 
-Factory.define('pregnancy')
+Factory.define('basePregnancy')
   .sequence('_id',uuid.v4)
   .attr('form', 'pregnancy')
   .attr('type', 'data_record')
@@ -286,7 +286,6 @@ Factory.define('pregnancy')
     'data',
     'meta'
   ])
-  .attr('fields', defaultFields)
   .attr('geolocation_log', [
     {
       'timestamp': 1618841239430,
@@ -310,3 +309,6 @@ Factory.define('pregnancy')
     'heading': null,
     'speed': null
   });
+
+
+Factory.define('pregnancy').extend('basePregnancy').attr('fields', defaultFields);
