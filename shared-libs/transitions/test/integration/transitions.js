@@ -546,7 +546,8 @@ describe('functional transitions', () => {
         assert.equal(savedDocs[1].id, 'has default response');
         assert.equal(savedDocs[1]._id.length, 36);
         assert.equal(savedDocs[1].tasks.length, 2);
-        assert.equal(savedDocs[1].tasks[0].messages[0].message, 'SMS received');
+        assert.equal(savedDocs[1].tasks[0].messages[0].message, 'sys.facility_not_found');
+        assert.equal(savedDocs[1].tasks[1].messages[0].message, 'SMS received');
         assert.equal(savedDocs[1].errors.length, 1);
         assert.equal(savedDocs[1].errors[0].code, 'sys.facility_not_found');
         assert.deepEqualExcluding(savedDocs[1], originalDocs[1], ['_id', 'tasks', 'errors']);
