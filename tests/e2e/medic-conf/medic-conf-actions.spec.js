@@ -19,6 +19,10 @@ describe('Medic-conf actions tests', () => {
       console.error('no need to change directory');
     }
   });
+  afterAll(() =>{
+    // Change the directory back to cht-core
+    process.chdir('../..');
+  });
 
   const runCommand = async (action) => {
     const { stdout } = await exec(`medic-conf --url=${url} ${action} --force`);
