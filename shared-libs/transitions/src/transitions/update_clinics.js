@@ -112,7 +112,9 @@ module.exports = {
         };
         
         utils.addError(change.doc, error);
-        messages.addMessage(change.doc, messageContext);
+        if (form && !form.public_form) {
+          messages.addMessage(change.doc, messageContext);
+        }
         return true;
       }
     });

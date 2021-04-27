@@ -314,6 +314,45 @@ describe('update clinic', () => {
     });
   });
 
+  it('should send a message when when form is not public', () => {
+    const doc = {
+      from: '123',
+      type: 'data_record',
+      form: 'someForm'
+    };
+
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
+    sinon.stub(config, 'get').withArgs('forms').returns({ 'someForm': {} });
+    sinon.stub(utils, 'translate').returns('facility not found');
+
+    return transition.onMatch({ doc }).then(changed => {
+      assert(changed);
+      assert(!doc.contact);
+      assert.equal(doc.tasks.length, 1);
+      assert.equal(doc.tasks[0].messages[0].to, '123');
+      assert.equal(doc.tasks[0].messages[0].message, 'facility not found');
+    });
+  });
+
+  it('should not send a message when form is not found', () => {
+    const doc = {
+      from: '123',
+      type: 'data_record',
+      form: 'someForm'
+    };
+
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
+    sinon.stub(config, 'get').withArgs('forms').returns({ 'other': {} });
+
+    return transition.onMatch({ doc }).then(changed => {
+      assert(changed);
+      assert(!doc.contact);
+      assert.equal(doc.errors.length, 1);
+      assert.equal(doc.errors[0].code, 'sys.facility_not_found');
+      assert.notExists(doc.tasks);
+    });
+  });
+
   it('should not add sys.facility_not_found when xml', () => {
     const doc = {
       from: '123',
