@@ -9,9 +9,6 @@ const getPaths = (obj, prevKey, r = []) => {
     evalObj = obj[0];
   }
   Object.keys(evalObj).forEach((key) => {
-    if(key === 'baby_repeat'){
-      console.log('baby!');
-    }
     let resultKey = '';
     if(prevKey){
       resultKey = `${prevKey}/${key}`;
