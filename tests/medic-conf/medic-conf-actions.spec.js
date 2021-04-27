@@ -1,7 +1,7 @@
 const {expect} = require('chai');
 const util = require('util');
-const { API_PORT, API_HOST } = require('../../constants');
-const {username, password} = require('../../auth')();
+const { API_PORT, API_HOST } = require('../constants');
+const {username, password} = require('../auth')();
 const exec = util.promisify(require('child_process').exec);
 const url = `http://${username}:${password}@${API_HOST}:${API_PORT}`;
 
