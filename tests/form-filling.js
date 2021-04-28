@@ -64,41 +64,57 @@ const getVisibleAnswers = async () => {
   return results;
 };
 
-const fillForm = async (reportFields,reportName) => {
-  let answers = await getVisibleAnswers();
-  const pathKeys = getPaths(reportFields);
-  answers.forEach(async (answer) => {
-    if (answeredQuestions.includes(answer.name)){
-      //already answered this question
-      return;
-    }
+const checkbox = (answer,answerVal) => {
+  const checks = answerVal.value.split();
+  checks.forEach(async (check) => {
+    await helper.clickElementNative(element(by.css(`${answer.css}[value=${check}]`)));
+  });
+};
+
+const radio = async (answer, answerVal) => {
+  await helper.clickElementNative(element(by.css(`${answer.css}[value="${answerVal.value}"]`)));
+};
+
+const date = async (answer, answerVal) => {
+  const css = `${answer.css} + div input`;
+  await element(by.css(css)).sendKeys(answerVal.value);
+};
+
+const defaultAction = async (answer, answerVal) => {
+  await element(by.css(answer.css)).sendKeys(answerVal.value);
+};
+
+const answerActions = {checkbox ,radio, date, defaultAction};
+
+const answerQuestions = async (answers, pathKeys,reportName) => {
+  answers.forEach((answer) => {
     const answerVal = pathKeys.find(key => `/${reportName}/${key.path}` === answer.name);
-    if(!answerVal){
+    if (answeredQuestions.includes(answer.name) || !answerVal){
+      //already answered this question or there is no corresponding value in the report.
       return;
     }
-    switch(answer.type) {
-    case 'checkbox': {
-      const checks = answerVal.value.split();
-      checks.forEach((check) => {
-        helper.clickElementNative(element(by.css(`${answer.css}[value=${check}]`)));
-      });
-      break;
-    }
-    case 'radio':
-      await helper.clickElementNative(element(by.css(`${answer.css}[value="${answerVal.value}"]`)));
-      break;
-    case 'date': {
-      const css = `${answer.css} + div input`;
-      element(by.css(css)).sendKeys(answerVal.value);
-      break;
-    }
-    default:
-      element(by.css(answer.css)).sendKeys(answerVal.value);
+
+    if(Object.keys(answerActions).includes(answer.type)){
+      answerActions[answer.type](answer, answerVal);
+    } else {
+      answerActions.defaultAction(answer, answerVal);
     }
     answeredQuestions.push(answer.name);
-    // Need to see if there are any new answers since selecting a previous option.
-    answers = await getVisibleAnswers();
   });
+  // Need to see if there are any new answers since selecting a previous answer.
+  const possibleNewQuestions = await getVisibleAnswers();
+  if(possibleNewQuestions.some(x => !answeredQuestions.includes(x.name))) {
+    answerQuestions(possibleNewQuestions, pathKeys,reportName);
+  }
+  return;
+};
+
+
+
+const fillForm = async (reportFields,reportName) => {
+  const pathKeys = getPaths(reportFields);
+  const answers = await getVisibleAnswers();
+  answerQuestions(answers, pathKeys, reportName);
 
   if(await helper.isDisplayed(element(by.css('button.btn.btn-primary.next-page')))) {
     await genericFormPo.nextPageNative();
