@@ -214,10 +214,7 @@ const defaultFields = {
   }
 };
 
-
-
-
-Factory.define('pregnancyVisit')
+Factory.define('basePregnancyVisit')
   .sequence('_id',uuid.v4)
   .attr('form', 'pregnancy_home_visit')
   .attr('type', 'data_record')
@@ -289,3 +286,6 @@ Factory.define('pregnancyVisit')
     'heading': null,
     'speed': null
   });
+
+
+Factory.define('pregnancyVisit').extend('basePregnancyVisit').attr('fields',defaultFields);
