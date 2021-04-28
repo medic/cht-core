@@ -34,11 +34,10 @@ describe('Medic-conf actions tests', () => {
     expect(result).to.contain(`INFO Settings updated successfully`);
   });
 
-  // eslint-disable-next-line guard-for-in
-  for(const action in actions){
-    it(`should execute  ${actions[action]} `, async () => {
-      const result = await runCommand(actions[action]);
-      expect(result).to.contain(`INFO ${actions[action]} complete.`);
+  for(const action of actions) {
+    it(`should execute ${action}`, async () => {
+      const result = await runCommand(action);
+      expect(result).to.contain(`INFO ${action} complete.`);
     });
   }
 });
