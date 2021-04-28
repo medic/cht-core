@@ -25,7 +25,7 @@ describe('Medic-conf actions tests', () => {
   });
 
   const runCommand = async (action) => {
-    const { stdout } = await exec(`medic-conf --url=${url} ${action} --force`);
+    const { stdout } = await exec(`medic-conf --url=${url} ${action} --force`, { cwd: 'config/default' });
     return stdout;
   };
 
