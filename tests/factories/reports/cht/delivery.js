@@ -71,7 +71,7 @@ const defaultFields = {
     'babies_delivered_num': '1',
     'babies_alive_num': '1',
     'babies_deceased_num': '0',
-    'delivery_date': moment().format('YYYY-MM-DD,'),
+    'delivery_date': moment().format('YYYY-MM-DD'),
     'delivery_place': 'health_facility',
     'delivery_mode': 'vaginal'
   },
