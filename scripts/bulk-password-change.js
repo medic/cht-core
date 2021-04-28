@@ -8,7 +8,7 @@ const argv = minimist(process.argv.slice(2), {
   }
 });
 
-if(argv.h || !argv.newPassword || !argv.url, !argv.user, !argv.password) {
+if(argv.h || !argv.newPassword || !argv.url || !argv.user || !argv.password) {
   console.log(`Set all user passwords to the provided password.
 
 Usage:
