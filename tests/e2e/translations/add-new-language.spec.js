@@ -12,10 +12,17 @@ describe('Adding new language', () => {
     await utils.afterEach();
   });
 
-  it('should add a new language',async () => {
+  it('should show in enabled language list',async () => {
     await languagesPage.goToLanguagesTab();
     await languagesPage.openAddLanguageModal;
     await languagesPage.addNewLanguage('afr', 'Afrikaans');
     expect(await languagesPage.languageDisplayed('afr', 'Afrikaans')).toBeTrue();
+  });
+
+  it('should be set as Default language ',async () => {
+    await languagesPage.setDefaultLanguage('Afrikans');
+    await languagesPage.setOutgoingMessageLanguage('Africans');
+    await languagesPage.isLanguageSelected('#locale', 'afr');
+    await languagesPage.isLanguageSelected('#locale-outgoing', 'afr');
   });
 });

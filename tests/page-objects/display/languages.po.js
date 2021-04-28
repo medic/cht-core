@@ -1,6 +1,8 @@
+const { browser }=require('protractor');
 const helper = require('../../helper');
 const utils = require('../../utils');
 
+const submitButton = element(by.css('button.btn.btn-primary.ng-scope'));
 const addLanguageButton = element(by.css('button.btn.btn-primary'));
 const addLanguageModal = element(by.css('body.ng-scope.modal-open'));
 const languageCodeInput = element(by.model('language.code'));
@@ -29,11 +31,34 @@ const languageDisplayed = async (code, name) =>{
     .element(by.css('a.ng-binding.collapsed'))));
   return languageName === name;
 };
+const defaultLanguageDropdown=element(by.css('#locale'));
+const setDefaultLanguage = async (language) => {
+  await helper.selectDropdownByText(defaultLanguageDropdown, language);
+  await helper.clickElementNative(submitButton);
+  await helper.waitElementToBeClickable(submitButton);
+};
+
+const outgoingLanguageDropdown=element(by.css('#locale-outgoing'));
+const setOutgoingMessageLanguage = async (language) => {
+  await helper.selectDropdownByText(outgoingLanguageDropdown, language);
+  await helper.clickElementNative(submitButton);
+  await helper.waitElementToBeClickable(submitButton);
+};
+
+const isLanguageSelected = async (selector, code) => {
+  await helper.clickElementNative(element(by.css(selector)));
+  const option = await element(by.css(`option[value="string:${code}"]`));
+  expect(option.getAttribute('selected')).toBe('selected');
+  browser.actions().sendKeys(protractor.Key.ESCAPE).perform();
+};
 
 module.exports = {
   goToLanguagesTab,
   openAddLanguageModal,
   addNewLanguage,
-  languageDisplayed
+  languageDisplayed,
+  setDefaultLanguage,
+  setOutgoingMessageLanguage,
+  isLanguageSelected
 };
 
