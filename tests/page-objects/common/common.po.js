@@ -28,6 +28,10 @@ const modalFooter = element(by.css('.modal-footer'));
 const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.submit'));
 const displayTime = element(by.css('[ui-sref="display.date-time"]'));
 const messagesList = element(by.id('message-list'));
+const languagePreferenceHeading = element(by.css('#language-preference-heading'));
+const messagesLanguage = element(by.css('p.horizontal-options.locale-outgoing a.selected'));
+const defaultLanguage= element(by.css('p.horizontal-options.locale a.selected'));
+
 
 module.exports = {
   messagesList,
@@ -63,6 +67,19 @@ module.exports = {
     expect(await helper.getTextFromElementNative(defaultCountryCode)).toEqual('Canada (+1)');
     expect(await finishBtn.getText()).toEqual('Finish');
     await skipSetup.click();
+  },
+
+  getDefaultLanguages: async () => {
+    await openSubmenu('configuration wizard');
+    await helper.waitUntilReadyNative(wizardTitle);
+    await helper.waitUntilTranslated(wizardTitle);
+    const wizardTitleText = await helper.getTextFromElementNative(wizardTitle);
+    console.log('title text', wizardTitleText);
+    expect(wizardTitleText).toEqual('Configuration wizard');
+    await helper.clickElementNative(languagePreferenceHeading);
+    const messageLang = helper.getTextFromElement(defaultLanguage);
+    const defaultLang = helper.getTextFromElement(messagesLanguage);
+    return [defaultLang, messageLang];
   },
 
   checkGuidedTour: async () => {

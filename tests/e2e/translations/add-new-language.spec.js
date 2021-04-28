@@ -1,5 +1,6 @@
 const utils = require('../../utils');
 const languagesPage = require('../../page-objects/display/languages.po');
+const commonPo=require('../../page-objects/common/common.po');
 
 describe('Adding new language', () => {
 
@@ -8,7 +9,7 @@ describe('Adding new language', () => {
   });
 
   afterEach(async () => {
-    await browser.manage().addCookie({ name: 'locale', value: 'en' });
+    //await browser.manage().addCookie({ name: 'locale', value: 'en' });
     await utils.afterEach();
   });
 
@@ -25,4 +26,11 @@ describe('Adding new language', () => {
     await languagesPage.isLanguageSelected('#locale', 'afr');
     await languagesPage.isLanguageSelected('#locale-outgoing', 'afr');
   });
+
+  it('should reflect in config wizard', async () => {
+    const {defaultLanguage, messageLanguage} = await commonPo.getDefaultLanguages();
+    expect(defaultLanguage).toBe('Afrikaans');
+    expect(messageLanguage).toBe('Afrikaans');
+  });
+
 });
