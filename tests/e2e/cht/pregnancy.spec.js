@@ -33,7 +33,7 @@ describe('Pregnancy workflow on cht : ', () => {
   let originalTimeout;
   beforeEach(function() {
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000000;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
   });
 
   afterEach(function() {

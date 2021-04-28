@@ -116,7 +116,7 @@ const fillForm = async (reportFields,reportName) => {
   const answers = await getVisibleAnswers();
   answerQuestions(answers, pathKeys, reportName);
 
-  if(await helper.isDisplayed(element(by.css('button.btn.btn-primary.next-page')))) {
+  if(await helper.isDisplayed(genericFormPo.nextButton)) {
     await genericFormPo.nextPageNative();
     await fillForm(reportFields,reportName);
   } else {
