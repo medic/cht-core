@@ -29,31 +29,43 @@ const getPaths = (obj, prevKey, r = []) => {
 };
 
 
-const getVisibleQuestions = async () => {
-  const answers = await element.all(by.css('.current input:not([disabled],.ignore)'));
-  const results = [];
-
-  for(let i = 0; i < answers.length; i++){
-    let name = await answers[i].getAttribute('data-name');
-    let cssAttribute = 'data-name';
-    if(!name) {
-      name = await answers[i].getAttribute('name');
-      cssAttribute = 'name';
-    }
-    const type = await answers[i].getAttribute('type');
-    if (results.filter(e => e.name === name && e.type === type).length === 0) {
-      results.push({ 
-        name: name,
-        type: type,
-        css: `input[${cssAttribute}="${name}"]`
-      });
-    }
+const getAttributeAndName = async (element) => {
+  let name = await element.getAttribute('data-name');
+  let cssAttribute = 'data-name';
+  if(!name) {
+    name = await element.getAttribute('name');
+    cssAttribute = 'name';
   }
+  return [cssAttribute, name];
+};
+
+const removeDupes = (results) => {
+  const deDuped = [];
+  results.forEach((result) => {
+    if (!deDuped.some(deDupe => result.name === deDupe.name && result.type === deDupe.type)){
+      deDuped.push(result);
+    } 
+  });
+  return deDuped;
+};
+
+const getVisibleAnswers = async () => {
+  const answers = await element.all(by.css('.current input:not([disabled],.ignore)'));
+  const visibleAnswers = await answers.map(async (answer) => {
+    const [cssAttribute, name] = await getAttributeAndName(answer);
+    const type = await answer.getAttribute('type');
+    return { 
+      name: name,
+      type: type,
+      css: `input[${cssAttribute}="${name}"]`
+    };
+  });
+  const results = removeDupes(await Promise.all(visibleAnswers));
   return results;
 };
 
 const fillForm = async (reportFields,reportName) => {
-  let answers = await getVisibleQuestions();
+  let answers = await getVisibleAnswers();
   const pathKeys = getPaths(reportFields);
   answers.forEach(async (answer) => {
     if (answeredQuestions.includes(answer.name)){
@@ -85,7 +97,7 @@ const fillForm = async (reportFields,reportName) => {
     }
     answeredQuestions.push(answer.name);
     // Need to see if there are any new answers since selecting a previous option.
-    answers = await getVisibleQuestions();
+    answers = await getVisibleAnswers();
   });
 
   if(await helper.isDisplayed(element(by.css('button.btn.btn-primary.next-page')))) {
