@@ -1,0 +1,42 @@
+{
+  "_id": "041587f5-33ab-4ac7-9774-4e40e9724231",
+  "_rev": "2-477524a03bfee2e97af7ff7330c1fd3d",
+  "type": "person",
+  "name": "Kabaka",
+  "short_name": "",
+  "date_of_birth": "1998-01-14",
+  "date_of_birth_method": "approx",
+  "ephemeral_dob": {
+    "age_label": "",
+    "age_years": "23",
+    "age_months": "3",
+    "dob_method": "approx",
+    "ephemeral_months": "1",
+    "ephemeral_years": "1998",
+    "dob_approx": "1998-01-14",
+    "dob_raw": "1998-01-14",
+    "dob_iso": "1998-01-14"
+  },
+  "phone": "",
+  "phone_alternate": "",
+  "sex": "male",
+  "role": "patient",
+  "external_id": "",
+  "notes": "",
+  "meta": {
+    "created_by": "medic",
+    "created_by_person_uuid": "",
+    "created_by_place_uuid": ""
+  },
+  "reported_date": 1618365538462,
+  "parent": {
+    "_id": "697c495f-4312-46f1-9e66-ed2b5c77bb84",
+    "parent": {
+      "_id": "f21a49f6-8dba-4d55-810d-0bce16228193",
+      "parent": {
+        "_id": "2c999244-7c37-4b9a-859b-cd02244c5fdd"
+      }
+    }
+  },
+  "patient_id": "90578"
+}
