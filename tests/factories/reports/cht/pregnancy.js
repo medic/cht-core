@@ -290,8 +290,8 @@ Factory.define('basePregnancy')
     {
       'timestamp': 1618841239430,
       'recording': {
-        'latitude': 39.9432946,
-        'longitude': -82.9788323,
+        'latitude':  0.999151,
+        'longitude': 35.150476,
         'altitude': null,
         'accuracy': 1518,
         'altitudeAccuracy': null,
@@ -301,8 +301,8 @@ Factory.define('basePregnancy')
     }
   ])
   .attr('geolocation',  {
-    'latitude': 39.9432946,
-    'longitude': -82.9788323,
+    'latitude':  0.999151,
+    'longitude': 35.150476,
     'altitude': null,
     'accuracy': 1518,
     'altitudeAccuracy': null,
