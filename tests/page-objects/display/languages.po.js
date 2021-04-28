@@ -2,8 +2,8 @@ const { browser }=require('protractor');
 const helper = require('../../helper');
 const utils = require('../../utils');
 
-const submitButton = element(by.css('button.btn.btn-primary.ng-scope'));
-const addLanguageButton = element(by.css('button.btn.btn-primary'));
+const submitButton = element(by.css('div.form-actions button.btn.btn-primary.ng-scope'));
+const addLanguageButton = element(by.css('i.fa.fa-plus'));
 const addLanguageModal = element(by.css('body.ng-scope.modal-open'));
 const languageCodeInput = element(by.model('language.code'));
 const languageNameInput  = element(by.model('language.name'));
