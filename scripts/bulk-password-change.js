@@ -49,7 +49,7 @@ const execute = async () => {
   }
   
   users.forEach(async (user) => {
-    const postOptions = { ...options };
+    const postOptions = Object.assign({}, options);
     postOptions.body = {
       'password': newPassword
     };
