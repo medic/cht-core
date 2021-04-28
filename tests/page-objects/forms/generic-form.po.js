@@ -5,6 +5,7 @@ const nameField = element(by.css('#report-form form [name="/data/name"]'));
 const submitButton = element(by.css('.enketo .submit'));
 const submittedName = element(by.css('#reports-content .details ul li:first-child p'));
 const formTitle = element(by.id('form-title'));
+const nextButton = element(by.css('button.btn.btn-primary.next-page'));
 
 const leftActionBarButtons = () => element.all(by.css('.general-actions .actions.dropup > a'));
 
@@ -86,6 +87,7 @@ module.exports = {
       await nextButton.click();
     }
   },
+  nextButton,
 
   reportApprove: () => {
     helper.waitForAngularComplete();
