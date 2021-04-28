@@ -1,5 +1,6 @@
 const Factory = require('rosie').Factory;
 const uuid = require('uuid');
+const moment = require('moment');
 
 const defaultFields = {
   'inputs': {
@@ -70,7 +71,7 @@ const defaultFields = {
     'babies_delivered_num': '1',
     'babies_alive_num': '1',
     'babies_deceased_num': '0',
-    'delivery_date': '2021-04-27',
+    'delivery_date': moment().format('YYYY-MM-DD,'),
     'delivery_place': 'health_facility',
     'delivery_mode': 'vaginal'
   },
@@ -192,7 +193,7 @@ const defaultFields = {
   }
 };
 
-Factory.define('delivery')
+Factory.define('baseDelivery')
   .sequence('_id',uuid.v4)
   .attr('form', 'delivery')
   .attr('type', 'data_record')
@@ -200,7 +201,6 @@ Factory.define('delivery')
   .attr('reported_date', Date.now())
   .attr('contact', 'TODO')
   .attr('from', '')
-  .attr('fields', defaultFields)
   .attr('hidden_fields',[
     'household_id',
     'area_id',
@@ -254,3 +254,7 @@ Factory.define('delivery')
     'heading': null,
     'speed': null
   });
+
+
+
+Factory.define('delivery').extend('baseDelivery').attr('fields', defaultFields);
