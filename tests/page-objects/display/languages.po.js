@@ -20,6 +20,8 @@ const openAddLanguageModal = async () => {
 };
 
 const addNewLanguage = async (code, name) =>{
+  await helper.clickElementNative(addLanguageButton);
+  await helper.waitElementToBeVisibleNative(addLanguageModal);
   await languageCodeInput.sendKeys(code);
   await languageNameInput.sendKeys(name);
   await languageSubmitButton.click();

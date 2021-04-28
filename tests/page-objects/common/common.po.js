@@ -77,8 +77,8 @@ module.exports = {
     console.log('title text', wizardTitleText);
     expect(wizardTitleText).toEqual('Configuration wizard');
     await helper.clickElementNative(languagePreferenceHeading);
-    const messageLang = helper.getTextFromElement(defaultLanguage);
-    const defaultLang = helper.getTextFromElement(messagesLanguage);
+    const messageLang = await helper.getTextFromElement(defaultLanguage);
+    const defaultLang = await helper.getTextFromElement(messagesLanguage);
     return [defaultLang, messageLang];
   },
 
