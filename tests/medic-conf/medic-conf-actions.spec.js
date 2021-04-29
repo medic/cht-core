@@ -3,10 +3,10 @@ const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const url = require('../utils').getInstanceUrl();
 
-const actions = ['compile-app-settings','backup-app-settings','convert-app-forms',
-  'convert-collect-forms','convert-contact-forms', 'backup-all-forms','upload-app-forms','upload-collect-forms',
-  'upload-contact-forms', 'upload-resources','upload-branding','upload-partners','upload-custom-translations',
-  'upload-privacy-policies'];
+//Not all actions tested here due to missing forms and config
+//[convert-collect-forms , upload-collect-form, upload-branding, upload-partners, upload-privacy-policies]
+const actions = ['compile-app-settings','backup-app-settings','convert-app-forms','convert-contact-forms',
+  'backup-all-forms','upload-app-forms','upload-contact-forms', 'upload-resources','upload-custom-translations'];
 
 describe('Medic-conf actions tests', () => {
   const runCommand = async (action) => {
