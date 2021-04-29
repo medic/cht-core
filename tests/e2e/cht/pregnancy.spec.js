@@ -7,26 +7,25 @@ const analyticsPo = require('../../page-objects/analytics/analytics.po');
 const moment = require('moment');
 const Factory = require('rosie').Factory;
 const formFiller = require('../../form-filling').fillForm;
-require('../../factories/reports/cht/pregnancy.js');
-require('../../factories/reports/cht/pregnancy-visit');
-require('../../factories/reports/cht/delivery');
-require('../../factories/users/cht/offline');
-require('../../factories/contacts/cht/district-hospital');
-require('../../factories/contacts/cht/clinic');
-require('../../factories/contacts/cht/woman');
+require('../../factories/cht/reports/pregnancy.js');
+require('../../factories/cht/reports/pregnancy-visit');
+require('../../factories/cht/reports/delivery');
+require('../../factories/cht/contacts/cht_hierarchy');
+const dateFormat = 'D MMM, YYYY';
+
 const genericFormPo = require('../../page-objects/forms/generic-form.po');
 
-const password = 'Secret_1';
-const district = Factory.build('cht_district_hospital');
+const district = Factory.build('districtHospital');
 const pregnancyWoman =  Factory.build('woman');
 const clinic = Factory.build('clinic');
-const offlineUser = Factory.build('offlineUser');
+const health_center = Factory.build('healthCenter');
+const offlineUser = Factory.build('user');
 const docs = [
   clinic,
   pregnancyWoman,
-  district
+  district,
+  health_center
 ];
-
 
 
 describe('Pregnancy workflow on cht : ', () => {
@@ -63,7 +62,7 @@ describe('Pregnancy workflow on cht : ', () => {
     let [weeksPregnant, deliveryDate, ancVisit, lastVisit] = cardValues;
     const weeksAgo  = moment().subtract(34 * 7,'d');
     const AVG_DAYS_IN_PREGNANCY = 280;
-    const edd = moment(weeksAgo).add(AVG_DAYS_IN_PREGNANCY,'d').format('D MMM, YYYY');
+    const edd = moment(weeksAgo).add(AVG_DAYS_IN_PREGNANCY,'d').format(dateFormat);
     expect(weeksPregnant).toBe('34');
     expect(deliveryDate).toBe(edd);
     expect(ancVisit).toBe('1 of 8');
@@ -107,7 +106,7 @@ describe('Pregnancy workflow on cht : ', () => {
       placeOfDelivery, 
       babiesDelivered, 
       ancVisits ] = await contactsPage.cardChildrenValueArray(pastPregnancyCard);
-    const expectDeliveryDate = moment().format('D MMM, YYYY');
+    const expectDeliveryDate = moment().format(dateFormat);
     expect(await dateDelivered).toBe(expectDeliveryDate);
     expect(await placeOfDelivery).toBe('Health facility');
     expect(await babiesDelivered).toBe('1');
