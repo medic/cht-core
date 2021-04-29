@@ -116,7 +116,7 @@ describe('Pregnancy workflow on cht : ', () => {
     const liveBirths = analyticsPo.targetById('births-this-month');
     await helper.waitUntilReadyNative(liveBirths);
     const liveBirthsCount = await analyticsPo.targetNumber(liveBirths).getText();
-    const liveBirthsTitle = await  analyticsPo.targetTitle(liveBirths).getText();
+    const liveBirthsTitle = await analyticsPo.targetTitle(liveBirths).getText();
     expect(await liveBirthsCount).toBe('2');
     expect(await liveBirthsTitle).toBe('Live births');
     const inFacilityDeliveries = analyticsPo.targetById('facility-deliveries');
