@@ -8,6 +8,9 @@ const addLanguageModal = element(by.css('body.ng-scope.modal-open'));
 const languageCodeInput = element(by.model('language.code'));
 const languageNameInput  = element(by.model('language.name'));
 const languageSubmitButton  = element(by.css('a.btn.submit.ng-scope.ng-binding.btn-primary'));
+const applicationLink = element(by.css('i.fa.fa-fw.fa-home'));
+const medicLogo = element(by.className('logo-full'));
+
 const goToLanguagesTab = async () => {
   await browser.get(utils.getAdminBaseUrl() + 'display/languages');
   await utils.resetBrowserNative(addLanguageButton);
@@ -29,8 +32,8 @@ const addNewLanguage = async (code, name) =>{
 };
 
 const languageDisplayed = async (code, name) =>{
-  const languageName = await helper.getTextFromElementNative(element(by.css(`#locale-${code}`)
-    .element(by.css('a.ng-binding.collapsed'))));
+  const languageName = await helper.getTextFromElementNative(
+    element(by.css(`#div#locale-${code} h4.panel-title a.collapsed.ng-binding`)));
   return languageName === name;
 };
 const defaultLanguageDropdown=element(by.css('#locale'));
@@ -50,8 +53,13 @@ const setOutgoingMessageLanguage = async (language) => {
 const isLanguageSelected = async (selector, code) => {
   await helper.clickElementNative(element(by.css(selector)));
   const option = await element(by.css(`option[value="string:${code}"]`));
-  expect(option.getAttribute('selected')).toBe('selected');
+  expect(option.getAttribute('selected')).toBe('true');
   browser.actions().sendKeys(protractor.Key.ESCAPE).perform();
+};
+
+const goToApplication = async () => {
+  await helper.clickElement(applicationLink);
+  await helper.waitUntilReady(medicLogo);
 };
 
 module.exports = {
@@ -61,6 +69,7 @@ module.exports = {
   languageDisplayed,
   setDefaultLanguage,
   setOutgoingMessageLanguage,
-  isLanguageSelected
+  isLanguageSelected,
+  goToApplication
 };
 
