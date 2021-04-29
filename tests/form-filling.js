@@ -1,33 +1,7 @@
 const helper = require('./helper');
 const genericFormPo = require('./page-objects/forms/generic-form.po');
 const answeredQuestions = [];
-
-const getPaths = (obj, prevKey, r = []) => {
-  const results = r;
-  let evalObj = obj;
-  if (Array.isArray(obj)) {
-    evalObj = obj[0];
-  }
-  Object.keys(evalObj).forEach((key) => {
-    let resultKey = '';
-    if(prevKey){
-      resultKey = `${prevKey}/${key}`;
-    } else {
-      resultKey = key;
-    }
-
-    if(key === 'inputs'){
-      return;
-    }
-    if(typeof evalObj[key] !== 'object'){
-      results.push({path: resultKey, value: evalObj[key]});
-    }else {
-      getPaths(evalObj[key], resultKey, results);
-    }
-  });
-  return results;
-};
-
+const flatten = require('flat');
 
 const getAttributeAndName = async (element) => {
   let name = await element.getAttribute('data-name');
@@ -54,30 +28,44 @@ const getVisibleAnswers = async () => {
 };
 
 const checkbox = (answer,answerVal) => {
-  const checks = answerVal.value.split();
+  const checks = answerVal.split();
   checks.forEach(async (check) => {
     await helper.clickElementNative(element(by.css(`${answer.css}[value=${check}]`)));
   });
 };
 
 const radio = async (answer, answerVal) => {
-  await helper.clickElementNative(element(by.css(`${answer.css}[value="${answerVal.value}"]`)));
+  await helper.clickElementNative(element(by.css(`${answer.css}[value="${answerVal}"]`)));
 };
 
 const date = async (answer, answerVal) => {
   const css = `${answer.css} + div input`;
-  await element(by.css(css)).sendKeys(answerVal.value);
+  await element(by.css(css)).sendKeys(answerVal);
 };
 
 const defaultAction = async (answer, answerVal) => {
-  await element(by.css(answer.css)).sendKeys(answerVal.value);
+  await element(by.css(answer.css)).sendKeys(answerVal);
 };
 
 const answerActions = {checkbox ,radio, date};
 
+const repeats = (pathKeys) => {
+  const newKeys = pathKeys;
+  const removedIndexes = {};
+  Object.keys(newKeys).forEach((key)=>{
+    const repeatNum = key.match(/(\.\d\.)/g);
+    if(repeatNum){
+      const stripped = key.replace(repeatNum[0],'.');
+      removedIndexes[stripped] = newKeys[key];
+    }
+  });
+  return Object.assign(newKeys, removedIndexes);
+};
+
 const answerQuestions = async (answers, pathKeys,reportName) => {
   answers.forEach((answer) => {
-    const answerVal = pathKeys.find(key => `/${reportName}/${key.path}` === answer.name);
+    const answerKey = answer.name.replace(`/${reportName}/`,'').replace(/\//g,'.');
+    const answerVal = pathKeys[answerKey];
     if (answeredQuestions.includes(answer.name) || !answerVal){
       //already answered this question or there is no corresponding value in the report.
       return;
@@ -95,10 +83,9 @@ const answerQuestions = async (answers, pathKeys,reportName) => {
   return;
 };
 
-
-
 const fillForm = async (reportFields,reportName) => {
-  const pathKeys = getPaths(reportFields);
+  const flatObj = flatten(reportFields);
+  const pathKeys = repeats(flatObj);
   const answers = await getVisibleAnswers();
   answerQuestions(answers, pathKeys, reportName);
 
