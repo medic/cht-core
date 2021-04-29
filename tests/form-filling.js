@@ -84,7 +84,7 @@ const defaultAction = async (answer, answerVal) => {
   await element(by.css(answer.css)).sendKeys(answerVal.value);
 };
 
-const answerActions = {checkbox ,radio, date, defaultAction};
+const answerActions = {checkbox ,radio, date};
 
 const answerQuestions = async (answers, pathKeys,reportName) => {
   answers.forEach((answer) => {
@@ -94,11 +94,8 @@ const answerQuestions = async (answers, pathKeys,reportName) => {
       return;
     }
 
-    if(Object.keys(answerActions).includes(answer.type)){
-      answerActions[answer.type](answer, answerVal);
-    } else {
-      answerActions.defaultAction(answer, answerVal);
-    }
+    const actionToExecute = answerActions[answer.type] || defaultAction;
+    actionToExecute(answer, answerVal);
     answeredQuestions.push(answer.name);
   });
   // Need to see if there are any new answers since selecting a previous answer.
