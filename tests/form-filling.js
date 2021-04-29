@@ -39,16 +39,6 @@ const getAttributeAndName = async (element) => {
   return [cssAttribute, name];
 };
 
-const removeDupes = (results) => {
-  const deDuped = [];
-  results.forEach((result) => {
-    if (!deDuped.some(deDupe => result.name === deDupe.name && result.type === deDupe.type)){
-      deDuped.push(result);
-    } 
-  });
-  return deDuped;
-};
-
 const getVisibleAnswers = async () => {
   const answers = await element.all(by.css('.current input:not([disabled],.ignore)'));
   const visibleAnswers = await answers.map(async (answer) => {
@@ -60,8 +50,7 @@ const getVisibleAnswers = async () => {
       css: `input[${cssAttribute}="${name}"]`
     };
   });
-  const results = removeDupes(await Promise.all(visibleAnswers));
-  return results;
+  return await Promise.all(visibleAnswers);
 };
 
 const checkbox = (answer,answerVal) => {
