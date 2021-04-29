@@ -1,4 +1,5 @@
 const Factory = require('rosie').Factory;
+const uuid = require('uuid');
 
 const parent = {
   _id: 'clinic1',
@@ -20,8 +21,8 @@ const ephemeral_dob = {
 };
 
 
-Factory.define('woman')
-  .attr('_id', 'test_woman')
+Factory.define('person')
+  .sequence('_id',uuid.v4)
   .attr('parent', parent)
   .attr('type', 'person')
   .attr('name', 'Mary Smith')
@@ -33,6 +34,6 @@ Factory.define('woman')
   .attr('phone', '')
   .attr('phone_alternate', '')
   .attr('patient_id', 'test_woman_1')
-  .attr('reported_date', Date.now());
+  .attr('reported_date', () => new Date());
 
 

@@ -1,4 +1,5 @@
 const Factory = require('rosie').Factory;
+const uuid = require('uuid');
 
 const parent = { 
   _id: 'hc1',
@@ -7,8 +8,8 @@ const parent = {
   } 
 };
 
-Factory.define('clinic')
-  .attr('_id','clinic1')
+Factory.define('chtClinic')
+  .sequence('_id',uuid.v4)
   .attr('parent', parent)
   .attr('type', 'clinic')
   .attr('is_name_generated', 'true')
@@ -16,4 +17,4 @@ Factory.define('clinic')
   .attr('external_id', '')
   .attr('notes', '')
   .attr('place_id', '19770')
-  .attr('reported_date', Date.now());
+  .attr('reported_date', () => new Date());
