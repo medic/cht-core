@@ -26,11 +26,10 @@ jobs:
       if: steps.get-docker-hub-username.outputs.dockerhub_username
     - name: Set MARKET_URL var
       run: |
-        if [[ -z "$MARKET_URL" ]]; then
           echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
           echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
           echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
-        fi
+      if: env.MARKET_URL
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
     - name: Set Travis Vars
@@ -178,11 +177,10 @@ jobs:
     - uses: actions/checkout@v2
     - name: Set MARKET_URL var
       run: |
-        if [[ -z "$MARKET_URL" ]]; then
-        echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
-        echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
-        echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
-        fi
+          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
+          echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
+          echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
+      if: env.MARKET_URL
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
     - name: Set Travis Vars
@@ -222,11 +220,10 @@ jobs:
         echo "TEST_SUITE=integration" >> $GITHUB_ENV
     - name: Set UPLOARD_URL var
       run: |
-        if [[ -z "$MARKET_URL" ]]; then
           echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
           echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
           echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
-        fi
+      if: env.MARKET_URL
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
@@ -270,3 +267,4 @@ jobs:
           tests/results
           tests/logs
       if: ${{ failure() }}
+      
