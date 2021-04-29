@@ -18,12 +18,12 @@ const genericFormPo = require('../../page-objects/forms/generic-form.po');
 
 const password = 'Secret_1';
 const district = Factory.build('cht_district_hospital');
-const pregnancy_woman =  Factory.build('woman');
+const pregnancyWoman =  Factory.build('woman');
 const clinic = Factory.build('clinic');
 const offlineUser = Factory.build('offlineUser');
 const docs = [
   clinic,
-  pregnancy_woman,
+  pregnancyWoman,
   district
 ];
 
@@ -33,7 +33,7 @@ describe('Pregnancy workflow on cht : ', () => {
   let originalTimeout;
   beforeEach(function() {
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 2 * 60 * 1000;
   });
 
   afterEach(function() {
@@ -41,17 +41,17 @@ describe('Pregnancy workflow on cht : ', () => {
   });
 
   beforeAll(async () => {
-    await utils.saveDocs([...docs]);
+    await utils.saveDocs(docs);
     await utils.createUsers([offlineUser]);
   });
 
   it('should register a pregnancy', async () => {
     await commonElements.goToLoginPageNative();
-    await loginPage.loginNative('user1', password);
+    await loginPage.loginNative(offlineUser.username, offlineUser.password);
     await utils.closeTour();
     await commonElements.goToPeople();
     await contactsPage.selectLHSRowByText(clinic.name);
-    await contactsPage.selectContactByName(pregnancy_woman.name);
+    await contactsPage.selectContactByName(pregnancyWoman.name);
     await helper.clickElementNative(contactsPage.newActions);
     await helper.clickElementNative(contactsPage.formById('pregnancy'));
     await helper.waitUntilReadyNative(genericFormPo.formTitle);
@@ -59,14 +59,15 @@ describe('Pregnancy workflow on cht : ', () => {
     await formFiller(pregnancyReport.fields, 'pregnancy');
     const activePregnancyCard = await contactsPage.cardElementByHeaderText('Active Pregnancy');
     await helper.waitUntilReadyNative(activePregnancyCard);
-    let activePregnancyCardValues = await contactsPage.cardChildrenValueArray(activePregnancyCard);
-    expect(await activePregnancyCardValues[0]).toBe('34');
+    const cardValues = await contactsPage.cardChildrenValueArray(activePregnancyCard);
+    let [weeksPregnant, deliveryDate, ancVisit, lastVisit] = cardValues;
     const weeksAgo  = moment().subtract(34 * 7,'d');
     const AVG_DAYS_IN_PREGNANCY = 280;
     const edd = moment(weeksAgo).add(AVG_DAYS_IN_PREGNANCY,'d').format('D MMM, YYYY');
-    expect(await activePregnancyCardValues[1]).toBe(edd);
-    expect(await activePregnancyCardValues[2]).toBe('1 of 8');
-    expect(await activePregnancyCardValues[3]).toBe('today');
+    expect(weeksPregnant).toBe('34');
+    expect(deliveryDate).toBe(edd);
+    expect(ancVisit).toBe('1 of 8');
+    expect(lastVisit).toBe('today');
     await commonElements.goToAnalytics();
     const pregnancyRegistrations = analyticsPo.targetById('pregnancy-registrations-this-month');
     await helper.waitUntilReadyNative(pregnancyRegistrations);
@@ -82,18 +83,18 @@ describe('Pregnancy workflow on cht : ', () => {
     const activeCount = await  analyticsPo.targetNumber(activePregnancies).getText();
     expect(activeTitle).toBe('Active pregnancies');
     expect(activeCount).toBe('1');
-    await browser.get(utils.getBaseUrl() + 'contacts/' + pregnancy_woman._id);
+    await browser.get(utils.getBaseUrl() + 'contacts/' + pregnancyWoman._id);
     await helper.clickElementNative(contactsPage.newActions);
     await helper.clickElementNative(contactsPage.formById('pregnancy_home_visit'));
     await helper.waitUntilReadyNative(genericFormPo.formTitle);
     const pregnancyVisitReport = Factory.build('pregnancyVisit');
     await formFiller(pregnancyVisitReport.fields,'pregnancy_home_visit');
     await helper.waitUntilReadyNative(activePregnancyCard);
-    activePregnancyCardValues = await contactsPage.cardChildrenValueArray(activePregnancyCard);
-    expect(activePregnancyCardValues[0]).toBe('34');
-    expect(activePregnancyCardValues[1]).toBe(edd);
-    expect(activePregnancyCardValues[2]).toBe('1 of 8');
-    expect(activePregnancyCardValues[3]).toBe('today');
+    [weeksPregnant, deliveryDate, ancVisit, lastVisit] = await contactsPage.cardChildrenValueArray(activePregnancyCard);
+    expect(weeksPregnant).toBe('34');
+    expect(deliveryDate).toBe(edd);
+    expect(ancVisit).toBe('1 of 8');
+    expect(lastVisit).toBe('today');
     await helper.waitElementToDisappearNative(commonElements.snackBarContent);
     await helper.clickElementNative(contactsPage.newActions);
     await helper.clickElementNative(contactsPage.formById('delivery'));
@@ -102,12 +103,15 @@ describe('Pregnancy workflow on cht : ', () => {
     await formFiller(deliveryReport.fields,'delivery');
     const pastPregnancyCard = await contactsPage.cardElementByHeaderText('Past pregnancy');
     await helper.waitUntilReadyNative(pastPregnancyCard); 
-    const pastPregnancyCardValues = await contactsPage.cardChildrenValueArray(pastPregnancyCard);
-    const deliveryDate = moment().format('D MMM, YYYY');
-    expect(await pastPregnancyCardValues[0]).toBe(deliveryDate);
-    expect(await pastPregnancyCardValues[1]).toBe('Health facility');
-    expect(await pastPregnancyCardValues[2]).toBe('1');
-    expect(await pastPregnancyCardValues[3]).toBe('1');
+    const [ dateDelivered, 
+      placeOfDelivery, 
+      babiesDelivered, 
+      ancVisits ] = await contactsPage.cardChildrenValueArray(pastPregnancyCard);
+    const expectDeliveryDate = moment().format('D MMM, YYYY');
+    expect(await dateDelivered).toBe(expectDeliveryDate);
+    expect(await placeOfDelivery).toBe('Health facility');
+    expect(await babiesDelivered).toBe('1');
+    expect(await ancVisits).toBe('1');
     await commonElements.goToAnalytics();
     const liveBirths = analyticsPo.targetById('births-this-month');
     await helper.waitUntilReadyNative(liveBirths);
