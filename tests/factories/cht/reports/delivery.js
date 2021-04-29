@@ -198,7 +198,7 @@ Factory.define('baseDelivery')
   .attr('form', 'delivery')
   .attr('type', 'data_record')
   .attr('content_type', 'xml')
-  .attr('reported_date', Date.now())
+  .attr('reported_date', () => new Date())
   .attr('contact', 'TODO')
   .attr('from', '')
   .attr('hidden_fields',[
