@@ -34,7 +34,6 @@ try {
 
 const user = argv.user;
 const password = argv.password;
-const newPassword = argv.newPassword;
 
 const options = {
   uri: url.href,
@@ -55,7 +54,7 @@ const execute = async () => {
   users.forEach(async (user) => {
     const postOptions = Object.assign({}, options);
     postOptions.body = {
-      'password': newPassword
+      'password': 'Secret_1'
     };
     postOptions.uri = `${options.uri}/${user.username}`;
     try {
