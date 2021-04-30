@@ -1,25 +1,17 @@
-const utils = require('../../utils');
 const languagesPage = require('../../page-objects/display/languages.po');
 const commonPo=require('../../page-objects/common/common.po');
 
 describe('Adding new language', () => {
 
-  beforeAll(async () => {
-    await utils.resetBrowserNative();
-  });
-
-  afterEach(async () => {
-    //await browser.manage().addCookie({ name: 'locale', value: 'en' });
-    await utils.afterEach();
-  });
-
-  it('should show in enabled language list',async () => {
-    await languagesPage.goToLanguagesTab();
+  it('should show in enabled language list', async () => {
+    await languagesPage.goToLanguagesTab();    
     await languagesPage.addNewLanguage('afr', 'Afrikaans');
-    expect(await languagesPage.languageDisplayed('afr', 'Afrikaans')).toBeTrue();
+    const languageName = await languagesPage.languageDisplayed('afr');
+    expect(languageName).toBe('Afrikaans');
   });
 
   it('should be set as Default language ',async () => {
+    await languagesPage.goToLanguagesTab();
     await languagesPage.setDefaultLanguage('Afrikaans');
     await languagesPage.setOutgoingMessageLanguage('Afrikaans');
     await languagesPage.isLanguageSelected('#locale', 'afr');
@@ -27,9 +19,9 @@ describe('Adding new language', () => {
   });
 
   it('should reflect in config wizard', async () => {
-    const {defaultLanguage, messageLanguage} = await commonPo.getDefaultLanguages();
-    expect(defaultLanguage).toBe('Afrikaans');
-    expect(messageLanguage).toBe('Afrikaans');
+    languagesPage.goToApplication();
+    const defaultLanguages= await commonPo.getDefaultLanguages();
+    expect(defaultLanguages).toBe('Afrikaans, Afrikaans');
   });
 
 });

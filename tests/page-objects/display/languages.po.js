@@ -1,4 +1,3 @@
-const { browser }=require('protractor');
 const helper = require('../../helper');
 const utils = require('../../utils');
 
@@ -9,9 +8,9 @@ const languageCodeInput = element(by.model('language.code'));
 const languageNameInput  = element(by.model('language.name'));
 const languageSubmitButton  = element(by.css('a.btn.submit.ng-scope.ng-binding.btn-primary'));
 const applicationLink = element(by.css('i.fa.fa-fw.fa-home'));
-const medicLogo = element(by.className('logo-full'));
 
 const goToLanguagesTab = async () => {
+  await browser.sleep(3000);
   await browser.get(utils.getAdminBaseUrl() + 'display/languages');
   await utils.resetBrowserNative(addLanguageButton);
   await helper.waitElementToBeVisibleNative(addLanguageButton);
@@ -28,13 +27,12 @@ const addNewLanguage = async (code, name) =>{
   await languageCodeInput.sendKeys(code);
   await languageNameInput.sendKeys(name);
   await languageSubmitButton.click();
-  await helper.waitElementToBeVisibleNative(addLanguageButton);
 };
 
-const languageDisplayed = async (code, name) =>{
-  const languageName = await helper.getTextFromElementNative(
-    element(by.css(`#div#locale-${code} h4.panel-title a.collapsed.ng-binding`)));
-  return languageName === name;
+const languageDisplayed = async (code) =>{
+  const languageDiv = element(by.css(`#locale-${code}`));
+  const languageName = await helper.getTextFromElementNative(languageDiv); 
+  return languageName;
 };
 const defaultLanguageDropdown=element(by.css('#locale'));
 const setDefaultLanguage = async (language) => {
@@ -58,8 +56,7 @@ const isLanguageSelected = async (selector, code) => {
 };
 
 const goToApplication = async () => {
-  await helper.clickElement(applicationLink);
-  await helper.waitUntilReady(medicLogo);
+  await helper.clickElementNative(applicationLink);
 };
 
 module.exports = {

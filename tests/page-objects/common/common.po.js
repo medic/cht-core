@@ -29,8 +29,9 @@ const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.sub
 const displayTime = element(by.css('[ui-sref="display.date-time"]'));
 const messagesList = element(by.id('message-list'));
 const languagePreferenceHeading = element(by.css('#language-preference-heading'));
-const messagesLanguage = element(by.css('p.horizontal-options.locale-outgoing a.selected'));
-const defaultLanguage= element(by.css('p.horizontal-options.locale a.selected'));
+const selectedPreferenceHeading = element(by.css('#language-preference-heading > h4:nth-child(1) > span:nth-child(3)'));
+const messagesLanguage = element(by.css('.locale a.selected span.rectangle'));
+const defaultLanguage=  element(by.css('.locale-outgoing a.selected span.rectangle'));
 
 
 module.exports = {
@@ -70,6 +71,7 @@ module.exports = {
   },
 
   getDefaultLanguages: async () => {
+    await module.exports.openMenuNative();
     await openSubmenu('configuration wizard');
     await helper.waitUntilReadyNative(wizardTitle);
     await helper.waitUntilTranslated(wizardTitle);
@@ -77,9 +79,11 @@ module.exports = {
     console.log('title text', wizardTitleText);
     expect(wizardTitleText).toEqual('Configuration wizard');
     await helper.clickElementNative(languagePreferenceHeading);
-    const messageLang = await helper.getTextFromElement(defaultLanguage);
-    const defaultLang = await helper.getTextFromElement(messagesLanguage);
-    return [defaultLang, messageLang];
+    const headingText = await helper.getTextFromElementNative(selectedPreferenceHeading);
+    const messageLang = await messagesLanguage.getAttribute('innerText').then(text =>text);
+    const defaultLang = await defaultLanguage.getAttribute('innerText').then(text =>text);
+    expect (headingText).toBe(`${messageLang}, ${defaultLang}`);
+    return  headingText;
   },
 
   checkGuidedTour: async () => {
