@@ -8,16 +8,15 @@ const argv = minimist(process.argv.slice(2), {
   }
 });
 
-if(argv.h || !argv.newPassword || !argv.url || !argv.user || !argv.password) {
-  console.log(`Set all user passwords to the provided password.
+if(argv.h|| !argv.url || !argv.user || !argv.password) {
+  console.log(`Set all user passwords to Secret_1.
 
 Usage:
       node bulk-password-change.js -h | --help
-      node bulk-password-change.js --newPassword Secret_1 --url https://localhost --user medic --password adminPass
+      node bulk-password-change.js --url https://localhost --user medic --password adminPass
 
 Options:
     -h --help     Show this screen.
-    --newPassword The password to set for all users
     --url         The url for the instance being changed
     --user        The admin user this operation is run as
     --password    The password for the admin user 
@@ -26,7 +25,13 @@ Options:
   process.exit(0);
 }
 
-const url = new URL('/api/v1/users', argv.url);
+let url;
+try {
+  url = new URL('/api/v1/users', argv.url);
+} catch(e) {
+  console.log('Error while creating url', e.message);
+}
+
 const user = argv.user;
 const password = argv.password;
 const newPassword = argv.newPassword;
@@ -61,4 +66,4 @@ const execute = async () => {
   });
 };
 
-execute().then(() => console.log('Bulk Update complete'));
+execute();
