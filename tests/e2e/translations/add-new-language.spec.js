@@ -1,7 +1,6 @@
 const languagesPage = require('../../page-objects/display/languages.po');
 const commonPo=require('../../page-objects/common/common.po');
 const utils = require('../../utils');
-//const commonPo = require('../../page-objects/common/common.po');
 const helper = require('../../helper');
 const userSettingsElements = require('../../page-objects/user-settings/user-settings.po');
 
@@ -9,8 +8,8 @@ describe('Adding new language', () => {
   const addTranslations = async () => {
     await utils.addTranslations('afr',{
       'No messages found':'Geen boodskappe gevind nie',
-      'No people found':'Geen mense gevind nie',
-      'No reports found':'Geen verslae gevind nie',
+      'No contacts found':'Geen mense gevind nie',
+      'reports.none':'Geen verslae gevind nie',
       'Analytics': 'Analytiks'
     }); 
     await utils.resetBrowserNative();
@@ -24,7 +23,6 @@ describe('Adding new language', () => {
   });
 
   it('should be set as Default language ',async () => {
-    await languagesPage.goToLanguagesTab();
     await languagesPage.setDefaultLanguage('Afrikaans');
     await languagesPage.setOutgoingMessageLanguage('Afrikaans');
     await languagesPage.isLanguageSelected('#locale', 'afr');
@@ -37,8 +35,7 @@ describe('Adding new language', () => {
     expect(defaultLanguages).toBe('Afrikaans, Afrikaans');
   });
 
-  it('should add new translations', async () => {
-    await utils.resetBrowserNative();
+  it('should add new translations', async () => {    
     await addTranslations();
     await commonPo.openMenuNative();
     await commonPo.checkUserSettings();
@@ -53,11 +50,11 @@ describe('Adding new language', () => {
 
     //check fro translations
     expect(await helper.getTextFromElementNative(commonPo.messagesList)).toBe('Geen boodskappe gevind nie');
+    await utils.resetBrowserNative();
     await commonPo.goToReportsNative();
     expect(await helper.getTextFromElementNative(commonPo.reportsList)).toBe('Geen verslae gevind nie');
     await commonPo.goToPeople();
     expect(await helper.getTextFromElementNative(commonPo.contactsList)).toBe('Geen mense gevind nie');
     expect(await helper.getTextFromElementNative(commonPo.analyticsTab)).toBe('Analytiks');
   });
-
 });
