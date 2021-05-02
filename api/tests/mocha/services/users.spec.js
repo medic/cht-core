@@ -75,6 +75,12 @@ describe('Users service', () => {
       chai.expect(settings.fullname).to.equal('John');
     });
 
+    it('does not reassign language', () => {
+      const data = { language: 'sw' };
+      const settings = service.__get__('getSettingsUpdates')('john', data);
+      chai.expect(settings).to.not.have.property('language');
+    });
+
     it('supports external_id field', () => {
       const data = {
         fullname: 'John',
