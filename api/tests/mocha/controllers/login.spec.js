@@ -384,12 +384,13 @@ describe('login controller', () => {
       sinon.stub(res, 'status').returns(res);
       sinon.stub(res, 'send').returns(res);
       sinon.stub(res, 'cookie');
-      sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
+      sinon.stub(auth, 'getUserSettings').resolves({});
       const userCtx = { name: 'user_name', roles: [ 'project-stuff' ] };
       sinon.stub(auth, 'getUserCtx')
         .onCall(0).rejects({ code: 401 })
         .onCall(1).resolves(userCtx);
       req.params = { token: 'a', userId: 'b' };
+      req.body = { locale: 'es' };
       return controller.tokenPost(req, res).then(() => {
         chai.expect(auth.getUserCtx.callCount).to.equal(2);
         chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
@@ -425,12 +426,13 @@ describe('login controller', () => {
       sinon.stub(res, 'status').returns(res);
       sinon.stub(res, 'cookie');
       sinon.stub(res, 'send');
-      sinon.stub(auth, 'getUserSettings').resolves({ language: 'hi' });
+      sinon.stub(auth, 'getUserSettings').resolves({});
       const userCtx = { name: 'user_name', roles: [ 'roles' ] };
       sinon.stub(auth, 'getUserCtx')
         .onCall(0).rejects({ code: 401 })
         .onCall(1).resolves(userCtx);
       req.params = { token: 'a', userId: 'b' };
+      req.body = { locale: 'hi' };
       return controller.tokenPost(req, res).then(() => {
         chai.expect(tokenLogin.getUserByToken.callCount).to.equal(1);
         chai.expect(tokenLogin.resetPassword.callCount).to.equal(1);
@@ -524,7 +526,7 @@ describe('login controller', () => {
     });
 
     it('logs in successfully', () => {
-      req.body = { user: 'sharon', password: 'p4ss' };
+      req.body = { user: 'sharon', password: 'p4ss', locale: 'es' };
       const postResponse = {
         statusCode: 200,
         headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
@@ -536,7 +538,7 @@ describe('login controller', () => {
       const clearCookie = sinon.stub(res, 'clearCookie').returns(res);
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
-      sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
+      sinon.stub(auth, 'getUserSettings').resolves({});
       return controller.post(req, res).then(() => {
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0][0].url).to.equal('http://test.com:1234/_session');
@@ -578,16 +580,12 @@ describe('login controller', () => {
       sinon.stub(auth, 'hasAllPermissions').returns(false);
       sinon.stub(auth, 'getUserSettings').resolves({ });
       sinon.stub(config, 'get').returns('fr');
-      const update = sinon.stub(users, 'updateUser').resolves();
       return controller.post(req, res).then(() => {
         chai.expect(cookie.callCount).to.equal(3);
         chai.expect(cookie.args[0][0]).to.equal('AuthSession');
         chai.expect(cookie.args[1][0]).to.equal('userCtx');
         chai.expect(cookie.args[2][0]).to.equal('locale');
         chai.expect(cookie.args[2][1]).to.equal('fr');
-        chai.expect(update.callCount).to.equal(1);
-        chai.expect(update.args[0][0]).to.equal('sharon');
-        chai.expect(update.args[0][1].language).to.equal('fr');
       });
     });
 
@@ -699,8 +697,8 @@ describe('login controller', () => {
         chai.expect(auth.isDbAdmin.args[0]).to.deep.equal([userCtx]);
         chai.expect(users.createAdmin.callCount).to.equal(1);
         chai.expect(users.createAdmin.args[0]).to.deep.equal([userCtx]);
-        chai.expect(auth.getUserSettings.callCount).to.equal(2);
-        chai.expect(auth.getUserSettings.args).to.deep.equal([[userCtx], [userCtx]]);
+        chai.expect(auth.getUserSettings.callCount).to.equal(1);
+        chai.expect(auth.getUserSettings.args).to.deep.equal([[userCtx]]);
         chai.expect(res.status.callCount).to.equal(1);
         chai.expect(res.status.args[0][0]).to.equal(302);
         chai.expect(res.send.args[0][0]).to.equal('/admin/');
