@@ -462,7 +462,7 @@ describe('transitions', () => {
 
         //new_child_unknown
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'new_child_unknown');
-        chai.expect(doc.tasks.length).to.equal(0);
+        chai.expect(doc.tasks.length).to.equal(1);
         chai.expect(doc.errors.length).to.equal(1);
         chai.expect(doc.errors[0].code).to.equal('sys.facility_not_found');
         chai.expect(doc.scheduled_tasks).to.equal(undefined);
