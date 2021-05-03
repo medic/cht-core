@@ -1,7 +1,5 @@
 const commonElements = require('../../page-objects/common/common.po.js');
 const loginPage = require('../../page-objects/login/login.po.js');
-const utils = require('../../utils');
-
 
 describe('Login and logout tests', () => {
 
@@ -16,9 +14,17 @@ describe('Login and logout tests', () => {
     { code: 'sw', name: 'Kiswahili (Swahili)' }
   ];
 
-  beforeEach(async () => await utils.beforeEach());
+  const frTranslations ={
+    user: `Nom d'utilisateur`,
+    pass: 'Mot de passe',
+    error: `Nom d'utilisateur ou mot de passe incorrect. Veuillez réessayer`
+  };
 
-  afterEach(async () => await utils.afterEach());
+  const esTranslations = {
+    user: 'Nombre de usuario',
+    pass: 'Contraseña',
+    error: 'Nombre de usuario o contraseña incorrecto. Favor intentar de nuevo.'
+  };   
 
   it('should show a warning before log out', async () => {
     const warning = await commonElements.logout();
@@ -29,5 +35,12 @@ describe('Login and logout tests', () => {
     await commonElements.goToLoginPageNative();
     const locales = await loginPage.getAllLocales(); 
     expect(locales).toEqual(defaultLocales);  
+  });
+
+  it('should change locale on login page', async () => {
+
+    //French and Spanish translations
+    expect(await loginPage.changeLanguage('fr')).toEqual(frTranslations);
+    expect(await loginPage.changeLanguage('es')).toEqual(esTranslations);
   });
 });
