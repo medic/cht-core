@@ -650,7 +650,7 @@ module.exports = {
     `http://${constants.API_HOST}:${constants.API_PORT}`,
 
   getBaseUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/#/`,
+    `http://${constants.API_HOST}:${constants.API_PORT}/`,
 
   getAdminBaseUrl: () =>
     `http://${constants.API_HOST}:${constants.API_PORT}/admin/#/`,
