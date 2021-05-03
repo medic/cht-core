@@ -80,7 +80,6 @@ const answerQuestions = async (answers, pathKeys,reportName) => {
   if(possibleNewQuestions.some(x => !answeredQuestions.includes(x.name))) {
     answerQuestions(possibleNewQuestions, pathKeys,reportName);
   }
-  return;
 };
 
 const fillForm = async (reportFields,reportName) => {
