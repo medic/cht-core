@@ -407,7 +407,7 @@ describe('multi_report_alerts', () => {
       })
       .then(() => utils.getDoc(doc_unknown._id))
       .then(updated => {
-        expect(updated.tasks).not.toBeDefined();
+        expect(updated.tasks.length).toEqual(1);
       })
       .then(() => utils.saveDoc(doc_unknown2))
       .then(() => sentinelUtils.waitForSentinel(doc_unknown2._id))
@@ -419,7 +419,7 @@ describe('multi_report_alerts', () => {
       })
       .then(() => utils.getDoc(doc_unknown2._id))
       .then(updated => {
-        expect(updated.tasks).not.toBeDefined();
+        expect(updated.tasks.length).toEqual(1);
       })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))

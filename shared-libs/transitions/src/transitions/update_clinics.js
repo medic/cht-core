@@ -5,7 +5,6 @@ const utils = require('../lib/utils');
 const contactTypesUtils = require('@medic/contact-types-utils');
 const NAME = 'update_clinics';
 const FACILITY_NOT_FOUND = 'sys.facility_not_found';
-const messages = require('../lib/messages');
 
 const config = require('../config');
 
@@ -101,20 +100,17 @@ module.exports = {
 
       const form = change.doc.form && utils.getForm(change.doc.form);
       if (!form || !form.public_form) {
+        if (form && !form.public_form) {
+          transitionUtils.addRejectionMessage(change.doc, {}, FACILITY_NOT_FOUND);
+          return true;
+        }
+
         const message = utils.translate(FACILITY_NOT_FOUND, utils.getLocale(change.doc));
         const error = {
           code: FACILITY_NOT_FOUND,
           message
-        };
-        const messageContext = {
-          translationKey: FACILITY_NOT_FOUND,
-          message
-        };
-        
+        }; 
         utils.addError(change.doc, error);
-        if (form && !form.public_form) {
-          messages.addMessage(change.doc, messageContext);
-        }
         return true;
       }
     });

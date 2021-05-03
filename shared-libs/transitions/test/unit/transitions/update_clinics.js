@@ -308,9 +308,12 @@ describe('update clinic', () => {
       assert(changed);
       assert(!doc.contact);
       assert.equal(doc.errors.length, 1);
-      assert.deepEqual(doc.errors[0], { code: 'sys.facility_not_found', message: 'translated' });
+      assert.deepEqual(doc.errors[0], {
+        code: 'sys.facility_not_found',
+        message: 'messages.generic.sys.facility_not_found'
+      });
       assert.equal(utils.translate.callCount, 1);
-      assert.deepEqual(utils.translate.args[0], ['sys.facility_not_found', 'locale']);
+      assert.deepEqual(utils.translate.args[0], ['messages.generic.sys.facility_not_found', 'en']);
     });
   });
 

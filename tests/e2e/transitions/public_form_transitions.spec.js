@@ -292,7 +292,7 @@ describe('Transitions public_form', () => {
     expectTransitions(info, 'update_clinics');
     expect(doc.contact).not.toBeDefined();
     expect(doc.errors.length).toEqual(1);
-    expect(doc.tasks.length).toEqual(0);
+    expect(doc.tasks.length).toEqual(1);
     expect(doc.scheduled_tasks).not.toBeDefined();
 
     // death_known_contact
@@ -307,7 +307,7 @@ describe('Transitions public_form', () => {
     info = infos.find(info => info.doc_id === doc._id);
     expectTransitions(info, 'update_clinics');
     expect(doc.contact).not.toBeDefined();
-    expect(doc.tasks.length).toEqual(0);
+    expect(doc.tasks.length).toEqual(1);
     expect(doc.scheduled_tasks).not.toBeDefined();
     expect(doc.errors.length).toEqual(1);
     expect(patient1.date_of_death).not.toBeDefined();
@@ -328,7 +328,7 @@ describe('Transitions public_form', () => {
     expectTransitions(info, 'update_clinics');
     expect(doc.contact).not.toBeDefined();
     expect(doc.errors.length).toEqual(1);
-    expect(doc.tasks.length).toEqual(0);
+    expect(doc.tasks.length).toEqual(1);
     expect(doc.scheduled_tasks).not.toBeDefined();
     expect(patient1.muted).not.toBeDefined();
   });
@@ -437,7 +437,7 @@ describe('Transitions public_form', () => {
     expectTransitions(info, 'update_clinics');
     expect(doc.contact).not.toBeDefined();
     expect(doc.errors.length).toEqual(1);
-    expect(doc.tasks.length).toEqual(0);
+    expect(doc.tasks.length).toEqual(1);
     expect(doc.scheduled_tasks).not.toBeDefined();
 
     // death_known_contact
@@ -452,7 +452,7 @@ describe('Transitions public_form', () => {
     info = infos.find(info => info.doc_id === doc._id);
     expectTransitions(info, 'update_clinics');
     expect(doc.contact).not.toBeDefined();
-    expect(doc.tasks.length).toEqual(0);
+    expect(doc.tasks.length).toEqual(1);
     expect(doc.scheduled_tasks).not.toBeDefined();
     expect(doc.errors.length).toEqual(1);
     expect(patient1.date_of_death).not.toBeDefined();
@@ -473,7 +473,7 @@ describe('Transitions public_form', () => {
     expectTransitions(info, 'update_clinics');
     expect(doc.contact).not.toBeDefined();
     expect(doc.errors.length).toEqual(1);
-    expect(doc.tasks.length).toEqual(0);
+    expect(doc.tasks.length).toEqual(1);
     expect(doc.scheduled_tasks).not.toBeDefined();
     expect(patient1.muted).not.toBeDefined();
   });
