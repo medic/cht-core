@@ -21,16 +21,22 @@ const changeLocale = locale => {
   return element(by.css(`.locale[name="${locale}"]`)).click();
 };
 
-const getLabelForUser = () => {
-  return element(by.css('#form > label:nth-child(2)'));
-};
-const getLabelForPassword = () => {
-  return element(by.css('#form > label:nth-child(4)'));
-};
+const labelForUser =  element(by.css('#form > label[for="user"]'));
+
+const labelForPassword = element(by.css('#form > label[for="password"]'));
 
 const errorMessageField = element(by.css('p.error.incorrect'));
 
 const getselectedLanguage = () => element(by.css('.locale.selected'));
+const getLanguage = async (selector) => {
+  const lang = await element.all(by.css(selector)).map(loc => {
+    return {
+      code: loc.getAttribute('name'),
+      name: loc.getText(),       
+    };
+  });
+  return lang;
+};
 
 module.exports = {
   login: async (username, password, shouldFail, locale) => {
@@ -61,37 +67,19 @@ module.exports = {
   },
   returnToLogin: () => element(by.css('.btn[href="/medic/login"]')),
   
-  getAllLocales: async () => {
-    const locales = await element.all(by.css('.locale')).map(loc => {
-      return {
-        code: loc.getAttribute('name'),
-        name: loc.getText(),       
-      };
-    });
-    return locales;
-  },
+  getAllLocales: async () => await getLanguage('.locale'),
   
-  getLabelForPassword,
-  labelForUser: async () => await helper.getTextFromElementNative(getLabelForUser),
-  labelForPassword: async () => await helper.getTextFromElementNative(getLabelForPassword),
-  getselectedLanguage: async () => {
-    const lang = await element(by.css('.locale.selected')).map(loc => {
-      return {
-        code: loc.getAttribute('name'),
-        name: loc.getText(),       
-      };
-    });
-    return lang;
-  },
+  labelForUser: async () => await helper.getTextFromElementNative(labelForUser),
+  labelForPassword: async () => await helper.getTextFromElementNative(labelForPassword),
+  getselectedLanguage: async () => await getLanguage('.locale.selected'),
 
   changeLanguage: async (code) => {
     await changeLocale(code);
     await getLoginButton().click();
-    await browser.sleep(10000);
     await helper.waitUntilReadyNative(getselectedLanguage());
     return {
-      user: await helper.getTextFromElementNative(getLabelForUser()),
-      pass: await helper.getTextFromElementNative(getLabelForPassword()),
+      user: await helper.getTextFromElementNative(labelForUser),
+      pass: await helper.getTextFromElementNative(labelForPassword),
       error:await helper.getTextFromElementNative(errorMessageField)
     };
   },

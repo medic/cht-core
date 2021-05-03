@@ -38,7 +38,6 @@ describe('Login and logout tests', () => {
   });
 
   it('should change locale on login page', async () => {
-
     //French and Spanish translations
     expect(await loginPage.changeLanguage('fr')).toEqual(frTranslations);
     expect(await loginPage.changeLanguage('es')).toEqual(esTranslations);
