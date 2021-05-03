@@ -215,6 +215,7 @@ module.exports = {
     await helper.waitUntilReadyNative(modal);
     const warning = await helper.getTextFromElementNative(modlaBody);
     await helper.clickElementNative(yesButton);
+    await helper.waitUntilReadyNative(element(by.css('form#form')));
     return warning;
 
   },

@@ -47,5 +47,15 @@ module.exports = {
       await browser.wait(() => helper.isTextDisplayed(incorrectCredentialsText), 2000);
     }
   },
-  returnToLogin: () => element(by.css('.btn[href="/medic/login"]'))
+  returnToLogin: () => element(by.css('.btn[href="/medic/login"]')),
+  
+  getAllLocales: async () => {
+    const locales = await element.all(by.css('.locale')).map(loc => {
+      return {
+        code: loc.getAttribute('name'),
+        name: loc.getText(),       
+      };
+    });
+    return locales;
+  }
 };
