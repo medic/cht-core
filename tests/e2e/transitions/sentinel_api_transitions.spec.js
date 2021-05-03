@@ -419,7 +419,7 @@ describe('transitions', () => {
 
         //unformatted
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'unformatted');
-        chai.expect(doc.tasks.length).to.equal(2);
+        chai.expect(doc.tasks.length).to.equal(1);
         chai.expect(doc.tasks[0].messages[0].message.startsWith('SMS message received')).to.equal(true);
         chai.expect(doc.tasks[0].messages[0].to).to.equal('+501234656887');
         chai.expect(doc.errors.length).to.equal(1);
