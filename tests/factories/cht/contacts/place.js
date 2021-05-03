@@ -13,23 +13,35 @@ Factory.define('place')
   .attr('reported_date', () => new Date());
 
 
-const generateHierarchy = (types = ['district_hospital', 'health_center', 'clinic']) => {
+const generatePlaces = (types = ['district_hospital', 'health_center', 'clinic']) => {
   const places = [];
-
   types.forEach((type, index) => {
+    places.push(Factory.build('place', {
+      name: `${type.replace('_', ' ')}${index}`,
+      type: type,
+    }));
+  });
+  return places;
+};
+
+const linkPlaces = (places) => {
+  const linkedPlaces = Object.assign(places);
+  linkedPlaces.forEach((place, index) => {
     const parent = places[index - 1] ? {
       _id: places[index - 1]._id,
       parent: {
         _id: places[index - 1].parent._id || ''
       }
     } : '';
-    places.push(Factory.build('place', {
-      name: `${type.replace('_', ' ')}${index}`,
-      type: type,
-      parent: parent
-    }));
+    place.parent = parent;
   });
-  return places;
+  return linkedPlaces;
+};
+
+const generateHierarchy = (types) => {
+  const places = generatePlaces(types);
+  const linkedPlaces = linkPlaces(places);
+  return linkedPlaces;
 };
 
 
