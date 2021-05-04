@@ -198,6 +198,19 @@ app.get('/', function(req, res) {
   }
 });
 
+app.get([
+  '/reports*',
+  '/messages*',
+  '/contacts*',
+  '/analytics*',
+  '/tasks*',
+  '/about',
+  '/user',
+  '/privacy-policy'
+], function(req, res) {
+  res.sendFile(path.join(extractedResourceDirectory, 'index.html')); // Webapp's index - entry point
+});
+
 app.get('/dbinfo', (req, res) => {
   req.url = '/';
   proxy.web(req, res);
