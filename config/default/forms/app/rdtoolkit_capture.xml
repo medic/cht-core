@@ -11,6 +11,9 @@
           <text id="/rdtoolkit_capture/data/patient_name:label">
             <value>Patient name</value>
           </text>
+          <text id="/rdtoolkit_capture/data/rdtoolkit_image:label">
+            <value>Image</value>
+          </text>
           <text id="/rdtoolkit_capture/data/rdtoolkit_results_description:label">
             <value>Results</value>
           </text>
@@ -49,6 +52,9 @@
           <text id="/rdtoolkit_capture/data/patient_name:label">
             <value>-</value>
           </text>
+          <text id="/rdtoolkit_capture/data/rdtoolkit_image:label">
+            <value>-</value>
+          </text>
           <text id="/rdtoolkit_capture/data/rdtoolkit_results:label">
             <value>-</value>
           </text>
@@ -82,7 +88,7 @@
         </translation>
       </itext>
       <instance>
-        <rdtoolkit_capture id="rdtoolkit_capture" prefix="J1!rdtoolkit_capture!" delimiter="#" version="2021-03-27 04:28:22">
+        <rdtoolkit_capture id="rdtoolkit_capture" prefix="J1!rdtoolkit_capture!" delimiter="#" version="2021-05-03 00:35:31">
           <patient_uuid tag="hidden"/>
           <_patient_id tag="hidden"/>
           <_patient_name tag="hidden"/>
@@ -97,6 +103,7 @@
             <rdtoolkit_results tag="hidden"/>
             <rdtoolkit_results_description/>
             <rdtoolkit_time_read/>
+            <rdtoolkit_image/>
           </data>
           <meta tag="hidden">
             <instanceID/>
@@ -108,15 +115,16 @@
       <bind nodeset="/rdtoolkit_capture/_patient_id" type="string"/>
       <bind nodeset="/rdtoolkit_capture/_patient_name" type="string"/>
       <bind nodeset="/rdtoolkit_capture/_rdtoolkit_session_id" type="string"/>
-      <bind nodeset="/rdtoolkit_capture/data/patient_name" type="string" calculate=" /rdtoolkit_capture/_patient_name " readonly="true()"/>
-      <bind nodeset="/rdtoolkit_capture/data/patient_id" type="string" calculate=" /rdtoolkit_capture/_patient_id " readonly="true()" required="true()"/>
-      <bind nodeset="/rdtoolkit_capture/data/rdtoolkit_session_id" type="string" calculate=" /rdtoolkit_capture/_rdtoolkit_session_id " required="true()"/>
+      <bind nodeset="/rdtoolkit_capture/data/patient_name" type="string" readonly="true()" calculate=" /rdtoolkit_capture/_patient_name "/>
+      <bind nodeset="/rdtoolkit_capture/data/patient_id" type="string" readonly="true()" required="true()" calculate=" /rdtoolkit_capture/_patient_id "/>
+      <bind nodeset="/rdtoolkit_capture/data/rdtoolkit_session_id" type="string" required="true()" calculate=" /rdtoolkit_capture/_rdtoolkit_session_id "/>
       <bind nodeset="/rdtoolkit_capture/data/rdtoolkit_state" type="string"/>
       <bind nodeset="/rdtoolkit_capture/data/rdtoolkit_time_started" type="string"/>
       <bind nodeset="/rdtoolkit_capture/data/rdtoolkit_time_resolved" type="string"/>
       <bind nodeset="/rdtoolkit_capture/data/rdtoolkit_results" type="string"/>
       <bind nodeset="/rdtoolkit_capture/data/rdtoolkit_results_description" type="string"/>
       <bind nodeset="/rdtoolkit_capture/data/rdtoolkit_time_read" type="string"/>
+      <bind nodeset="/rdtoolkit_capture/data/rdtoolkit_image" type="string"/>
       <bind nodeset="/rdtoolkit_capture/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
@@ -146,6 +154,9 @@
       </input>
       <input appearance="hidden" ref="/rdtoolkit_capture/data/rdtoolkit_time_read">
         <label ref="jr:itext('/rdtoolkit_capture/data/rdtoolkit_time_read:label')"/>
+      </input>
+      <input appearance="hidden" ref="/rdtoolkit_capture/data/rdtoolkit_image">
+        <label ref="jr:itext('/rdtoolkit_capture/data/rdtoolkit_image:label')"/>
       </input>
     </group>
   </h:body>

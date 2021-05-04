@@ -44,7 +44,8 @@
             timeResolved: getDate(response.timeResolved),
             timeRead: getDate(response.timeRead),
             results: response.results || [],
-            resultsDescription: getFormattedResult(response.results)
+            resultsDescription: getFormattedResult(response.results),
+            image: response.croppedImage
           };
 
           updateFields($widget, capturedTest);
@@ -96,6 +97,12 @@
           </span>
           <span class="rdt-value">${capturedTest.timeRead}</span>
         </div>
+        <div>
+          <span class="rdt-label">
+            ${window.CHTCore.Translate.instant('report.rdtoolkit_capture.rdtoolkit_preview_image')} 
+          </span>
+          <img src="data:image/png;base64,${capturedTest.image}">
+        </div>
         <br>
         <div>
            ${window.CHTCore.Translate.instant('report.rdtoolkit_capture.rdtoolkit_preview_next_action')} 
@@ -111,6 +118,7 @@
     setFieldValue($widget, 'rdtoolkit_state', capturedTest.state);
     setFieldValue($widget, 'rdtoolkit_time_started', capturedTest.timeStarted);
     setFieldValue($widget, 'rdtoolkit_time_resolved', capturedTest.timeResolved);
+    setFieldValue($widget, 'rdtoolkit_image', capturedTest.image);
   }
 
   function getDate(dateTime) {
