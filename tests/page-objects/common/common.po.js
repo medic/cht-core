@@ -9,7 +9,12 @@ const messagesTab = element(by.id('messages-tab'));
 const analyticsTab = element(by.id('analytics-tab'));
 const hamburgerMenu = element(by.id('header-dropdown-link'));
 const hamburgerMenuOptions = element.all(by.css('#header-dropdown>li:not(.hidden)'));
-const logoutButton = $('[ng-click=logout]');
+const logoutButton = $('.fa-power-off');
+
+//Log out warning modal
+const modal = element(by.css('div.modal-dialog'));
+const modlaBody = element(by.css('div.modal-body'));
+const yesButton = element(by.css('a.btn.submit.btn-danger'));
 
 // Configuration wizard
 const wizardTitle = element(by.css('#guided-setup .modal-header > h2'));
@@ -230,10 +235,16 @@ module.exports = {
     return element(by.id(list)).isPresent();
   },
 
-  logout: () => {
-    hamburgerMenu.click();
-    helper.waitElementToBeVisible(logoutButton);
-    logoutButton.click();
+  logout: async () => {
+    await helper.clickElementNative(hamburgerMenu);
+    await helper.waitElementToBeVisibleNative(logoutButton);
+    await helper.clickElementNative(logoutButton);
+    await helper.waitUntilReadyNative(modal);
+    const warning = await helper.getTextFromElementNative(modlaBody);
+    await helper.clickElementNative(yesButton);
+    await helper.waitUntilReadyNative(element(by.css('form#form')));
+    return warning;
+
   },
 
   openMenu: () => {
