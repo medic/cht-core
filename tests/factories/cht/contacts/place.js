@@ -14,13 +14,12 @@ Factory.define('place')
 
 
 const generatePlaces = (types = ['district_hospital', 'health_center', 'clinic']) => {
-  const places = types.map((type, index) => {
+  return types.map((type, index) => {
     return Factory.build('place', {
       name: `${type.replace('_', ' ')}${index}`,
       type: type,
     });
   });
-  return places;
 };
 
 const linkPlaces = (places) => {
