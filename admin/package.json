@@ -19,16 +19,16 @@
     "bikram-sambat-bootstrap": "^1.4.2",
     "bootstrap": "^3.4.1",
     "font-awesome": "^4.7.0",
-    "google-libphonenumber": "^3.2.10",
+    "google-libphonenumber": "^3.2.19",
     "gsm": "^0.1.4",
-    "jquery": "^3.5.1",
-    "lodash": "^4.17.15",
+    "jquery": "^3.6.0",
+    "lodash": "^4.17.19",
     "messageformat": "^2.3.0",
     "moment": "^2.26.0",
-    "mustache": "^4.0.1",
-    "ng-redux": "^4.4.1",
-    "object-path": "^0.11.4",
-    "pouchdb-browser": "^7.2.1",
+    "mustache": "^4.2.0",
+    "ng-redux": "^4.4.3",
+    "object-path": "^0.11.5",
+    "pouchdb-browser": "^7.2.2",
     "properties": "^1.2.1",
     "redux": "^4.0.5",
     "select2": "^4.0.11",
@@ -37,6 +37,6 @@
   "devDependencies": {},
   "resolutions": {
     "**/jquery": "3.2.x",
-    "**/pouchdb-browser": "^7.2.1"
+    "**/pouchdb-browser": "^7.2.2"
   }
 }
