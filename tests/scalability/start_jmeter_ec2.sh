@@ -5,7 +5,7 @@ echo $MEDIC_URL
 echo $GITHUB_RUN_ID
 
 sed -i '2s~^~'MEDIC_URL=$MEDIC_URL'\n~' run_suite.sh
-sed -i '2s~^~'S3_PATH=s3://medic-e2e/scalability/$TAG_NAME-$GITHUB_RUN_ID'\n~' run_suite.sh
+sed -i '2s~^~'S3_PATH=s3://medic-e2e/scalability/suiteWork-$GITHUB_RUN_ID'\n~' run_suite.sh
 sed -i '2s~^~'TAG_NAME=$TAG_NAME'\n~' run_suite.sh
 cat run_suite.sh
 # base64 encode our script and set as value for UserDAta in launch-specification

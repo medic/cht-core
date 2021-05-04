@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo Cloning cht-core to /cht-core
-git clone --single-branch --branch $TAG_NAME https://github.com/medic/cht-core.git;
+git clone --single-branch --branch script_config https://github.com/medic/cht-core.git;
 
 cd cht-core/tests/scalability
 export NODE_TLS_REJECT_UNAUTHORIZED=0 
@@ -15,8 +15,8 @@ echo installing node
 curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
-echo "Changing config to match url arg"
-node -p "const fs = require('fs');var path = './config.json';var config = JSON.stringify({...require(path), url: '$MEDIC_URL/medic'}, null, 2);fs.writeFileSync(path,config,{encoding:'utf8',flag:'w'});" 
+# echo "Changing config to match url arg"
+# node -p "const fs = require('fs');var path = './config.json';var config = JSON.stringify({...require(path), url: '$MEDIC_URL/medic'}, null, 2);fs.writeFileSync(path,config,{encoding:'utf8',flag:'w'});" 
 echo "npm install for jmeter suite"
 npm install
 echo "jmeter install"
@@ -28,7 +28,7 @@ wget 'http://search.maven.org/remotecontent?filepath=kg/apc/cmdrunner/2.2/cmdrun
 java -cp jmeter/lib/ext/jmeter-plugins-manager-1.4.jar org.jmeterplugins.repository.PluginManagerCMDInstaller &&
 ./jmeter/bin/PluginsManagerCMD.sh install jpgc-mergeresults &&
 echo "jmeter do it!"
-./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -l ./report/cli_run.jtl -e -o ./report
+./jmeter/bin/jmeter -n  -t sync.jmx -Jnumber_of_threads=100 -Jworking_dir=./ -Jnode_binary=$(which node) -l ./report/cli_run.jtl -e -o ./report
 mv ./jmeter.log ./report/jmeter.log
 echo "Installing AWS CLI"
 sudo apt-get install unzip -y 
