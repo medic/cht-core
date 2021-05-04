@@ -38,7 +38,7 @@ const user = argv.user;
 const password = argv.password;
 
 const options = {
-  uri: `${url.href}`,
+  uri: url.href,
   json: true,
   headers: {
     'Authorization': 'Basic ' + Buffer.from(`${user}:${password}`).toString('base64')
