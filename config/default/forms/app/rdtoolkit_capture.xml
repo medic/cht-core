@@ -103,7 +103,7 @@
             <rdtoolkit_results tag="hidden"/>
             <rdtoolkit_results_description/>
             <rdtoolkit_time_read/>
-            <rdtoolkit_image/>
+            <rdtoolkit_image type="binary"/>
           </data>
           <meta tag="hidden">
             <instanceID/>
