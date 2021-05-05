@@ -11,12 +11,17 @@ describe('Adding new language', () => {
       'No contacts found':'Geen mense gevind nie',
       'reports.none':'Geen verslae gevind nie',
       'Analytics': 'Analytiks'
-    }); 
+    });
     await utils.resetBrowserNative();
   };
 
+  afterAll(async () => {
+    await utils.afterEach();
+    await browser.manage().addCookie({ name: 'locale', value: 'en' });
+  });
+
   it('should show in enabled language list', async () => {
-    await languagesPage.goToLanguagesTab();    
+    await languagesPage.goToLanguagesTab();
     await languagesPage.addNewLanguage('afr', 'Afrikaans');
     const languageName = await languagesPage.languageDisplayed('afr');
     expect(languageName).toBe('Afrikaans');
@@ -35,7 +40,7 @@ describe('Adding new language', () => {
     expect(defaultLanguages).toBe('Afrikaans, Afrikaans');
   });
 
-  it('should add new translations', async () => {    
+  it('should add new translations', async () => {
     await addTranslations();
     await commonPo.openMenuNative();
     await commonPo.checkUserSettings();
