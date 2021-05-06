@@ -38,6 +38,7 @@ import { DatabaseConnectionMonitorService } from '@mm-services/database-connecti
 import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { TransitionsService } from '@mm-services/transitions.service';
 
 describe('AppComponent', () => {
   let getComponent;
@@ -72,6 +73,7 @@ describe('AppComponent', () => {
   let databaseConnectionMonitorService;
   let translateLocaleService;
   let telemetryService;
+  let transitionsService;
   // End Services
 
   let globalActions;
@@ -126,6 +128,7 @@ describe('AppComponent', () => {
       subscribe: sinon.stub()
     };
     translateLocaleService = { reloadLang: sinon.stub() };
+    transitionsService = { init: sinon.stub() };
 
     globalActions = {
       updateReplicationStatus: sinon.stub(GlobalActions.prototype, 'updateReplicationStatus'),
@@ -181,6 +184,7 @@ describe('AppComponent', () => {
         { provide: DatabaseConnectionMonitorService, useValue: databaseConnectionMonitorService },
         { provide: TranslateLocaleService, useValue: translateLocaleService },
         { provide: TelemetryService, useValue: telemetryService },
+        { provide: TransitionsService, useValue: transitionsService },
       ]
     });
 

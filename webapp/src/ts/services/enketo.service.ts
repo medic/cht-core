@@ -23,6 +23,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
+import { TransitionsService } from '@mm-services/transitions.service';
 
 @Injectable({
   providedIn: 'root'
@@ -47,6 +48,7 @@ export class EnketoService {
     private xmlFormsService:XmlFormsService,
     private zScoreService:ZScoreService,
     private translateService:TranslateService,
+    private transitionsService:TransitionsService,
     private ngZone:NgZone,
   ) {
     this.inited = this.init();
@@ -686,6 +688,7 @@ export class EnketoService {
       ])
       .then(([doc, formXml]) => this.xmlToDocs(doc, formXml, form.getDataStr({ irrelevant: false })))
       .then((docs) => this.saveGeo(geoHandle, docs))
+      .then((docs) => this.transitionsService.applyTransitions(docs))
       .then((docs) => this.saveDocs(docs))
       .then((docs) => {
         this.servicesActions.setLastChangedDoc(docs[0]);

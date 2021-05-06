@@ -1,6 +1,7 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const uuid = require('uuid');
+const _ = require('lodash');
 
 const contacts = [
   {
@@ -61,6 +62,22 @@ const extraContacts = [
     reported_date: new Date().getTime()
   }
 ];
+
+const notToday = 36 * 24 * 60 * 60 * 1000;
+
+const expectSameState = (original, updated) => {
+  expect(original.scheduled_tasks.length).toBe(updated.scheduled_tasks.length, `length not equal ${original._id}`);
+  original.scheduled_tasks.forEach((task, i) => {
+    expect(task.state).toBe(updated.scheduled_tasks[i].state, `state not equal ${original._id}, task ${i}`);
+  });
+};
+
+const expectStates = (updated, ...states) => {
+  expect(updated.scheduled_tasks.length).toBe(states.length);
+  updated.scheduled_tasks.forEach((task, i) => {
+    expect(task.state).toBe(states[i], `state not equal ${updated._id}, task ${i}`);
+  });
+};
 
 describe('muting', () => {
   beforeEach(done => utils.saveDocs(contacts).then(done));
@@ -786,8 +803,6 @@ describe('muting', () => {
       forms: { sms_form_1: { }, sms_form_2: { } }
     };
 
-    const notToday = 36 * 24 * 60 * 60 * 1000;
-
     const reports = [
       { // not a registration
         _id: 'no_registration_config',
@@ -1005,20 +1020,6 @@ describe('muting', () => {
       reported_date: new Date().getTime()
     };
 
-    const expectSameState = (original, updated) => {
-      expect(original.scheduled_tasks.length).toBe(updated.scheduled_tasks.length, `length not equal ${original._id}`);
-      original.scheduled_tasks.forEach((task, i) => {
-        expect(task.state).toBe(updated.scheduled_tasks[i].state, `state not equal ${original._id}, task ${i}`);
-      });
-    };
-
-    const expectStates = (updated, ...states) => {
-      expect(updated.scheduled_tasks.length).toBe(states.length);
-      updated.scheduled_tasks.forEach((task, i) => {
-        expect(task.state).toBe(states[i], `state not equal ${updated._id}, task ${i}`);
-      });
-    };
-
     const nonRegistrationIds = [
       'no_registration_config', 'incorrect_content', 'sms_without_contact', 'registration_4',
       'no_registration_config_clinic', 'incorrect_content_clinic',
@@ -1067,5 +1068,548 @@ describe('muting', () => {
         expectStates(updated[3], 'scheduled', 'muted'/*due date in the past*/, 'something_else');
         expectStates(updated[4], 'something_else', 'scheduled', 'muted'/*due date in the past*/);
       });
+  });
+
+  describe('offline muting', () => {
+    it('should add infodoc muting history for contacts muted offline and silence registrations', () => {
+      const contact = {
+        _id: uuid(),
+        type: 'person',
+        name: 'jane',
+        muted: 12345,
+        patient_id: 'the_person',
+        muting_history: {
+          last_update: 'offline',
+          online: { muted: false },
+          offline: [
+            { muted: true, report_id: 'report1', date: 1 },
+            { muted: false, report_id: 'report2', date: 2 },
+            { muted: true, report_id: 'report3', date: 12345 },
+          ],
+        },
+        reported_date: 1,
+      };
+
+      const settings = {
+        transitions: { muting: true },
+        muting: {
+          mute_forms: ['mute'],
+          unmute_forms: ['unmute']
+        },
+        registrations: [{ form: 'xml_form' }, { form: 'sms_form_1' }, { form: 'sms_form_2' }],
+        forms: { sms_form_1: { }, sms_form_2: { } }
+      };
+
+      const inTheFuture = new Date().getTime() + notToday;
+      const now = new Date().toISOString();
+
+      const reports = [
+        {
+          _id: uuid(),
+          type: 'data_record',
+          content_type: 'xml',
+          form: 'xml_form',
+          fields: {
+            patient_id: contact.patient_id,
+          },
+          scheduled_tasks: [
+            { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: inTheFuture },
+            { group: 2, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: inTheFuture },
+          ]
+        },
+        {
+          _id: uuid(),
+          type: 'data_record',
+          content_type: 'xml',
+          form: 'xml_form',
+          fields: {
+            patient_uuid: contact._id,
+          },
+          scheduled_tasks: [
+            { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: inTheFuture },
+            { group: 2, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: inTheFuture },
+          ]
+        },
+      ];
+
+      const reportIds = reports.map(r => r._id);
+
+      return utils
+        .updateSettings(settings, 'sentinel')
+        .then(() => utils.saveDocs(reports))
+        .then(() => utils.saveDoc(contact))
+        .then(() => sentinelUtils.waitForSentinel(contact._id))
+        .then(() => Promise.all([
+          utils.getDoc(contact._id),
+          sentinelUtils.getInfoDoc(contact._id),
+        ]))
+        .then(([updatedContact, infodoc]) => {
+          expect(updatedContact.muted).toBeGreaterThan(now);
+          expect(updatedContact.muting_history.last_update).toBe('online');
+          expect(updatedContact.muting_history.online.muted).toBe(true);
+
+          expect(infodoc.transitions.muting.ok).toBe(true);
+          expect(infodoc.muting_history).toEqual([
+            { muted: true, date: updatedContact.muted, report_id: 'report3' },
+          ]);
+        })
+        .then(() => utils.getDocs(reportIds))
+        .then(updatedReports => {
+          expectStates(updatedReports[0], 'muted', 'muted');
+          expectStates(updatedReports[1], 'muted', 'muted');
+        });
+    });
+
+    it('should add infodoc muting history for contacts unmuted offline and schedule registrations', () => {
+      const contact = {
+        _id: uuid(),
+        type: 'person',
+        name: 'jane',
+        patient_id: 'the_person',
+        muting_history: {
+          last_update: 'offline',
+          online: { muted: true },
+          offline: [
+            { muted: false, report_id: 'report1', date: 1 },
+            { muted: true, report_id: 'report2', date: 2 },
+            { muted: false, report_id: 'report3', date: 12345 },
+          ],
+        },
+        reported_date: 1,
+      };
+
+      const settings = {
+        transitions: { muting: true },
+        muting: {
+          mute_forms: ['mute'],
+          unmute_forms: ['unmute']
+        },
+        registrations: [{ form: 'xml_form' }, { form: 'sms_form_1' }, { form: 'sms_form_2' }],
+        forms: { sms_form_1: { }, sms_form_2: { } }
+      };
+
+      const inTheFuture = new Date().getTime() + notToday;
+      const inThePast = new Date().getTime() - notToday;
+
+      const reports = [
+        {
+          _id: uuid(),
+          type: 'data_record',
+          content_type: 'xml',
+          form: 'xml_form',
+          fields: {
+            patient_id: contact.patient_id,
+          },
+          scheduled_tasks: [
+            { group: 1, state: 'muted', translation_key: 'beta', recipient: 'clinic', due: inTheFuture },
+            { group: 2, state: 'muted', translation_key: 'beta', recipient: 'clinic', due: inThePast },
+          ]
+        },
+        {
+          _id: uuid(),
+          type: 'data_record',
+          content_type: 'xml',
+          form: 'xml_form',
+          fields: {
+            patient_uuid: contact._id,
+          },
+          scheduled_tasks: [
+            { group: 1, state: 'muted', translation_key: 'beta', recipient: 'clinic', due: inTheFuture },
+            { group: 2, state: 'muted', translation_key: 'beta', recipient: 'clinic', due: inThePast },
+          ]
+        },
+      ];
+
+      const reportIds = reports.map(r => r._id);
+
+      return utils
+        .updateSettings(settings, 'sentinel')
+        .then(() => utils.saveDocs(reports))
+        .then(() => utils.saveDoc(contact))
+        .then(() => sentinelUtils.waitForSentinel(contact._id))
+        .then(() => utils.getDoc(contact._id))
+        .then(updatedContact => {
+          expect(updatedContact.muted).toBeUndefined();
+          expect(updatedContact.muting_history.last_update).toBe('online');
+          expect(updatedContact.muting_history.online.muted).toBe(false);
+        })
+        .then(() => sentinelUtils.getInfoDoc(contact._id))
+        .then(infodoc => {
+          expect(infodoc.transitions.muting.ok).toBe(true);
+        })
+        .then(() => utils.getDocs(reportIds))
+        .then(updatedReports => {
+          expectStates(updatedReports[0], 'scheduled', 'muted');
+          expectStates(updatedReports[1], 'scheduled', 'muted');
+        });
+    });
+
+    it('should replay offline muting history when descendents have offline muting histories', () => {
+      /*
+       Timeline:
+       - clinic exists
+       - person exists
+       - before sync:
+       - person is muted
+       - clinic is muted
+       - new person is added under clinic <- they are muted offline
+       - new person is unmuted (which also unmutes person and clinic)
+       - person is muted again
+       - sync
+       */
+
+      const settings = {
+        transitions: { muting: true },
+        muting: {
+          mute_forms: ['mute'],
+          unmute_forms: ['unmute']
+        },
+      };
+
+      const clinic = {
+        _id: 'new_clinic',
+        name: 'new_clinic',
+        type: 'clinic',
+        place_id: 'the_new_clinic',
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
+        contact: {
+          _id: 'new_person',
+          parent:  { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+        },
+        reported_date: new Date().getTime(),
+        muting_history: {
+          online: { muted: false },
+          offline: [
+            { report_id: 'mutes_clinic', muted: true, date: 1000 },
+            { report_id: 'unmutes_new_person', muted: false, date: 2000 },
+          ],
+          last_update: 'offline',
+        },
+      };
+
+      const person = {
+        _id: 'new_person',
+        type: 'person',
+        name: 'new_person',
+        patient_id: 'the_new_person',
+        parent:  { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+        reported_date: new Date().getTime(),
+        muted: 3000,
+        muting_history: {
+          offline: [
+            { report_id: 'mutes_person', muted: true, date: 500 },
+            { report_id: 'mutes_clinic', muted: true, date: 1000 },
+            { report_id: 'unmutes_new_person', muted: false, date: 2000 },
+            { report_id: 'mutes_person_again', muted: true, date: 3000 }
+          ],
+          last_update: 'offline',
+        }
+      };
+
+      const newPerson = {
+        _id: 'newnew_person',
+        type: 'person',
+        name: 'newnew_person',
+        patient_id: 'the_newnew_person',
+        parent:  { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+        reported_date: new Date().getTime(),
+        muting_history: {
+          offline: [
+            { report_id: 'mutes_clinic', muted: true, date: 1000 },
+            { report_id: 'unmutes_new_person', muted: false, date: 2000 },
+          ],
+          last_update: 'offline',
+        }
+      };
+
+      const reports = [
+        {
+          _id: 'mutes_person',
+          content_type: 'xml',
+          type: 'data_record',
+          form: 'mute',
+          fields: {
+            patient_id: 'the_new_person',
+          },
+          reported_date: 500,
+          offline_transitions: {
+            muting: true
+          },
+        },
+        {
+          _id: 'mutes_clinic',
+          type: 'data_record',
+          content_type: 'xml',
+          form: 'mute',
+          fields: {
+            place_id: 'the_new_clinic',
+          },
+          reported_date: 1000,
+          offline_transitions: {
+            muting: true
+          },
+        },
+        {
+          _id: 'unmutes_new_person',
+          type: 'data_record',
+          content_type: 'xml',
+          form: 'unmute',
+          fields: {
+            patient_id: 'the_newnew_person',
+          },
+          reported_date: 2000,
+          offline_transitions: {
+            muting: true
+          },
+        },
+        {
+          _id: 'mutes_person_again',
+          content_type: 'xml',
+          type: 'data_record',
+          form: 'mute',
+          fields: {
+            patient_id: 'the_new_person',
+          },
+          reported_date: 3000,
+          offline_transitions: {
+            muting: true
+          },
+        },
+      ];
+
+      const reportIds = reports.map(r => r._id);
+      const docs = _.shuffle([clinic, person, newPerson, ...reports]);
+
+      return utils
+        .updateSettings(settings, 'sentinel')
+        .then(() => utils.saveDocs(docs))
+        .then(() => sentinelUtils.waitForSentinel(reportIds))
+        .then(() => Promise.all([
+          utils.getDocs([clinic._id, person._id, newPerson._id]),
+          sentinelUtils.getInfoDocs([clinic._id, person._id, newPerson._id])
+        ]))
+        .then(([ updatedContacts, infoDocs ]) => {
+          const [ updatedClinic, updatedPerson, updatedNewPerson ] = updatedContacts;
+          const [ clinicInfo, personInfo, newPersonInfo ] = infoDocs;
+          const findMutingHistoryForReport = (history, reportId) => history.find(item => item.report_id === reportId);
+
+          expect(updatedClinic.muted).toBeUndefined();
+          expect(updatedClinic.muting_history.online.muted).toBe(false);
+          expect(updatedClinic.muting_history.last_update).toBe('online');
+          expect(findMutingHistoryForReport(clinicInfo.muting_history, 'mutes_clinic').muted).toBe(true);
+          expect(findMutingHistoryForReport(clinicInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
+
+          expect(updatedPerson.muted).toBeDefined();
+          expect(updatedPerson.muting_history.online.muted).toBe(true);
+          expect(updatedPerson.muting_history.last_update).toBe('online');
+          expect(findMutingHistoryForReport(personInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
+          expect(findMutingHistoryForReport(personInfo.muting_history, 'mutes_person_again').muted).toBe(true);
+
+          expect(updatedNewPerson.muted).toBeUndefined();
+          expect(updatedNewPerson.muting_history.online.muted).toBe(false);
+          expect(updatedNewPerson.muting_history.last_update).toBe('online');
+          expect(findMutingHistoryForReport(newPersonInfo.muting_history, 'mutes_clinic').muted).toBe(true);
+          expect(findMutingHistoryForReport(newPersonInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
+        })
+        // muting won't run again if the replayed docs get updated!
+        .then(() => utils.getDoc('mutes_clinic'))
+        .then(updatedReport => utils.saveDoc(updatedReport))
+        .then(() => sentinelUtils.waitForSentinel('mutes_clinic'))
+        .then(() => utils.getDocs([clinic._id, person._id, newPerson._id]))
+        .then(([ updatedClinic, updatedPerson, updatedNewPerson ]) => {
+          // nothing changed
+          expect(updatedClinic.muted).toBeUndefined();
+          expect(updatedPerson.muted).toBeDefined();
+          expect(updatedNewPerson.muted).toBeUndefined();
+        });
+    });
+
+    it('should replay already processed reports when replaying offline muting history', () => {
+      // when a report from a contact's muting history is synced muuuch later
+      /*
+       Timeline:
+       - clinic exists
+       - person exists
+       - before sync:
+       - person is muted
+       - clinic is muted
+       - new person is added under clinic <- they are muted offline
+       - new person is unmuted (which also unmutes person and clinic)
+       - person is muted again
+       - everything is synced except the mute clinic, which is synced later
+       */
+
+      const settings = {
+        transitions: { muting: true },
+        muting: {
+          mute_forms: ['mute'],
+          unmute_forms: ['unmute']
+        },
+      };
+
+      const clinic = {
+        _id: 'new_clinic',
+        name: 'new_clinic',
+        type: 'clinic',
+        place_id: 'the_new_clinic',
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
+        contact: {
+          _id: 'new_person',
+          parent:  { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+        },
+        reported_date: new Date().getTime(),
+        muting_history: {
+          online: { muted: false },
+          offline: [
+            { report_id: 'mutes_clinic', muted: true, date: 1000 },
+            { report_id: 'unmutes_new_person', muted: false, date: 2000 },
+          ],
+          last_update: 'offline',
+        },
+      };
+
+      const person = {
+        _id: 'new_person',
+        type: 'person',
+        name: 'new_person',
+        patient_id: 'the_new_person',
+        parent:  { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+        reported_date: new Date().getTime(),
+        muted: 3000,
+        muting_history: {
+          offline: [
+            { report_id: 'mutes_person', muted: true, date: 500 },
+            { report_id: 'mutes_clinic', muted: true, date: 1000 },
+            { report_id: 'unmutes_new_person', muted: false, date: 2000 },
+            { report_id: 'mutes_person_again', muted: true, date: 3000 }
+          ],
+          last_update: 'offline',
+        }
+      };
+
+      const newPerson = {
+        _id: 'newnew_person',
+        type: 'person',
+        name: 'newnew_person',
+        patient_id: 'the_newnew_person',
+        parent:  { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+        reported_date: new Date().getTime(),
+        muting_history: {
+          offline: [
+            { report_id: 'mutes_clinic', muted: true, date: 1000 },
+            { report_id: 'unmutes_new_person', muted: false, date: 2000 },
+          ],
+          last_update: 'offline',
+        }
+      };
+
+      const reports = [
+        {
+          _id: 'mutes_person',
+          content_type: 'xml',
+          type: 'data_record',
+          form: 'mute',
+          fields: {
+            patient_id: 'the_new_person',
+          },
+          reported_date: 500,
+          offline_transitions: {
+            muting: true
+          },
+        },
+        {
+          _id: 'unmutes_new_person',
+          type: 'data_record',
+          content_type: 'xml',
+          form: 'unmute',
+          fields: {
+            patient_id: 'the_newnew_person',
+          },
+          reported_date: 2000,
+          offline_transitions: {
+            muting: true
+          },
+        },
+        {
+          _id: 'mutes_person_again',
+          content_type: 'xml',
+          type: 'data_record',
+          form: 'mute',
+          fields: {
+            patient_id: 'the_new_person',
+          },
+          reported_date: 3000,
+          offline_transitions: {
+            muting: true
+          },
+        },
+      ];
+
+      const mutesClinic = {
+        _id: 'mutes_clinic',
+        type: 'data_record',
+        content_type: 'xml',
+        form: 'mute',
+        fields: {
+          place_id: 'the_new_clinic',
+        },
+        reported_date: 1000,
+        offline_transitions: {
+          muting: true
+        },
+      };
+
+      const reportIds = reports.map(r => r._id);
+      const docs = _.shuffle([clinic, person, newPerson, ...reports]);
+
+      return utils
+        .updateSettings(settings, 'sentinel')
+        .then(() => utils.saveDocs(docs))
+        .then(() => sentinelUtils.waitForSentinel(reportIds))
+        .then(() => Promise.all([
+          utils.getDocs([clinic._id, person._id, newPerson._id]),
+          sentinelUtils.getInfoDocs([clinic._id, person._id, newPerson._id])
+        ]))
+        .then(([ updatedContacts, infoDocs ]) => {
+          const [ updatedClinic, updatedPerson, updatedNewPerson ] = updatedContacts;
+          const [ clinicInfo, personInfo, newPersonInfo ] = infoDocs;
+          const findMutingHistoryForReport = (history, reportId) => history.find(item => item.report_id === reportId);
+
+          expect(updatedClinic.muted).toBeUndefined();
+          expect(updatedClinic.muting_history.online.muted).toBe(false);
+          expect(updatedClinic.muting_history.last_update).toBe('online');
+          expect(findMutingHistoryForReport(clinicInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
+
+          expect(updatedPerson.muted).toBeDefined();
+          expect(updatedPerson.muting_history.online.muted).toBe(true);
+          expect(updatedPerson.muting_history.last_update).toBe('online');
+          expect(findMutingHistoryForReport(personInfo.muting_history, 'mutes_person_again').muted).toBe(true);
+
+          expect(updatedNewPerson.muted).toBeUndefined();
+          expect(updatedNewPerson.muting_history.online.muted).toBe(false);
+          expect(updatedNewPerson.muting_history.last_update).toBe('online');
+          expect(findMutingHistoryForReport(newPersonInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
+        })
+        // push a doc from the offline muting history
+        .then(() => utils.saveDoc(mutesClinic))
+        .then(() => sentinelUtils.waitForSentinel(mutesClinic._id))
+        .then(() => utils.getDocs([clinic._id, person._id, newPerson._id]))
+        .then(([ updatedClinic, updatedPerson, updatedNewPerson ]) => {
+          // nothing changed
+          expect(updatedClinic.muted).toBeUndefined();
+          expect(updatedPerson.muted).toBeDefined();
+          expect(updatedNewPerson.muted).toBeUndefined();
+        })
+        // update the report again
+        .then(() => utils.getDoc(mutesClinic._id))
+        .then(report => utils.saveDoc(report))
+        .then(() => utils.getDocs([clinic._id, person._id, newPerson._id]))
+        .then(([ updatedClinic, updatedPerson, updatedNewPerson ]) => {
+          // nothing changed
+          expect(updatedClinic.muted).toBeUndefined();
+          expect(updatedPerson.muted).toBeDefined();
+          expect(updatedNewPerson.muted).toBeUndefined();
+        });
+    });
   });
 });
