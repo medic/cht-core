@@ -179,7 +179,7 @@ describe('update_clinics', () => {
         expect(updated[1].contact).not.toBeDefined();
         expect(updated[1].errors.length).toEqual(1);
         expect(updated[1].errors[0].code).toEqual('sys.facility_not_found');
-        expect(updated[1].tasks.length).toEqual(0);
+        expect(updated[1].tasks).not.toBeDefined();
 
         expect(updated[2].contact).not.toBeDefined();
         expect(updated[2].errors).not.toBeDefined();
