@@ -15,8 +15,7 @@ const place = require('../../factories/cht/contacts/place');
 const dateFormat = 'D MMM, YYYY';
 
 const genericFormPo = require('../../page-objects/forms/generic-form.po');
-
-
+const chtPregnancy = require('../../page-objects/forms/cht/pregnancy').pages;
 const places = place.generateHierarchy();
 const healthCenter = places.find((place) => place.type === 'health_center');
 const clinic = places.find((place) => place.type === 'clinic');
@@ -62,7 +61,7 @@ describe('Pregnancy workflow on cht : ', () => {
     await helper.clickElementNative(contactsPage.newActions);
     await helper.clickElementNative(contactsPage.formById('pregnancy'));
     await helper.waitUntilReadyNative(genericFormPo.formTitle);
-    await formFiller(pregnancyReport.fields, 'pregnancy');
+    await formFiller(pregnancyReport.fields, 'pregnancy', chtPregnancy);
     const activePregnancyCard = await contactsPage.cardElementByHeaderText('Active Pregnancy');
     await helper.waitUntilReadyNative(activePregnancyCard);
     const cardValues = await contactsPage.cardChildrenValueArray(activePregnancyCard);
