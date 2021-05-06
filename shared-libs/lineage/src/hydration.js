@@ -384,7 +384,6 @@ module.exports = function(Promise, DB) {
 
     let patientUuids; // a map of [k, v] pairs with [hydratedDocUuid, patientUuid]
     let placeUuids; // a map of [k, v] pairs with [hydratedDocUuid, placeUuid]
-    let subjectDocs;
 
     return fetchSubjectsUuids(hydratedDocs)
       .then((subjectMaps) => {
@@ -394,15 +393,14 @@ module.exports = function(Promise, DB) {
         return fetchDocs([...placeUuids.values(), ...patientUuids.values()]);
       })
       .then(subjects => {
-        subjectDocs = subjects;
         knownDocs.push(...subjects);
 
         const firstRoundIdsToFetch = _.uniq([
           ...collectParentIds(hydratedDocs),
           ...collectLeafContactIds(hydratedDocs),
 
-          ...collectParentIds(subjectDocs),
-          ...collectLeafContactIds(subjectDocs),
+          ...collectParentIds(subjects),
+          ...collectLeafContactIds(subjects),
         ]);
 
         return fetchDocs(firstRoundIdsToFetch);
@@ -434,10 +432,10 @@ module.exports = function(Promise, DB) {
             lineage.unshift(doc);
           }
 
-          const patientDoc = getContactById(subjectDocs, patientUuids.get(doc._id));
+          const patientDoc = getContactById(knownDocs, patientUuids.get(doc._id));
           const patientLineage = reconstructLineage(patientDoc, knownDocs);
 
-          const placeDoc = getContactById(subjectDocs, placeUuids.get(doc._id));
+          const placeDoc = getContactById(knownDocs, placeUuids.get(doc._id));
           const placeLineage = reconstructLineage(placeDoc, knownDocs);
 
           mergeLineagesIntoDoc(lineage, knownDocs, patientLineage, placeLineage);

@@ -195,7 +195,7 @@ describe('update_notifications', () => {
         on_form: 'on',
       });
 
-      sinon.stub(mutingUtils, 'getContact').rejects({ message: 'contact_not_found' });
+      sinon.stub(mutingUtils, 'getContact').returns();
 
       const change = {
         doc: doc,
@@ -296,7 +296,7 @@ describe('update_notifications', () => {
         off_form: 'off',
       });
 
-      sinon.stub(mutingUtils, 'getContact').resolves({ muted: false, name: 'Agatha' });
+      sinon.stub(mutingUtils, 'getContact').returns({ muted: false, name: 'Agatha' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves(true);
 
       const change = {
@@ -380,7 +380,7 @@ describe('update_notifications', () => {
         on_form: 'on'
       });
 
-      sinon.stub(mutingUtils, 'getContact').resolves({ muted: true, name: 'Agatha' });
+      sinon.stub(mutingUtils, 'getContact').returns({ muted: true, name: 'Agatha' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves();
 
       const change = {
@@ -426,7 +426,7 @@ describe('update_notifications', () => {
         off_form: 'off'
       });
 
-      sinon.stub(mutingUtils, 'getContact').resolves({ muted: true, name: 'Agatha' });
+      sinon.stub(mutingUtils, 'getContact').returns({ muted: true, name: 'Agatha' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves();
 
       return transition.onMatch({ doc }).then(changed => {
@@ -466,7 +466,7 @@ describe('update_notifications', () => {
         on_form: 'on'
       });
 
-      sinon.stub(mutingUtils, 'getContact').resolves({ name: 'Agatha' });
+      sinon.stub(mutingUtils, 'getContact').returns({ name: 'Agatha' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves();
 
       return transition.onMatch({ doc }).then(changed => {
@@ -499,7 +499,7 @@ describe('update_notifications', () => {
         }
       };
 
-      sinon.stub(mutingUtils, 'getContact').resolves({ name: 'Agatha' });
+      sinon.stub(mutingUtils, 'getContact').returns({ name: 'Agatha' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves(true);
 
       return transition.onMatch({ doc, id: 'id' }).then(changed => {
@@ -533,7 +533,7 @@ describe('update_notifications', () => {
         }
       };
 
-      sinon.stub(mutingUtils, 'getContact').resolves({ name: 'Agatha', muted: 123456 });
+      sinon.stub(mutingUtils, 'getContact').returns({ name: 'Agatha', muted: 123456 });
       sinon.stub(mutingUtils, 'updateMuteState').resolves(true);
 
       return transition.onMatch({ doc, id: 'changeid' }).then(changed => {

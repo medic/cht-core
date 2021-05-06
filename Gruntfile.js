@@ -340,7 +340,7 @@ module.exports = function(grunt) {
             'api/build/**/*',
             '**/node_modules/**',
             'build/**',
-            'shared-libs/transitions/src/lib/pupil/**',
+            '**/pupil/**',
           ];
 
           return [ESLINT_COMMAND]

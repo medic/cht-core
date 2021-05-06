@@ -152,11 +152,11 @@ describe('muting', () => {
         validations: {
           list: [
             {
-              property: 'patient_id',
+              property: 'somefield',
               rule: 'lenMin(5) && lenMax(10)',
               message: [{
                 locale: 'en',
-                content: 'Patient id incorrect'
+                content: 'somefield id incorrect'
               }],
             },
           ],
@@ -172,7 +172,7 @@ describe('muting', () => {
       form: 'mute',
       from: '+444999',
       fields: {
-        patient_id: 'unknown'
+        patient_id: 'unknown',
       },
       reported_date: new Date().getTime(),
       contact: {
@@ -187,7 +187,8 @@ describe('muting', () => {
       form: 'mute',
       from: '+444999',
       fields: {
-        patient_id: 'this will not pass validation'
+        patient_id: '99999',
+        somefield: 'this will not pass validation'
       },
       reported_date: new Date().getTime(),
       contact: {
@@ -224,13 +225,13 @@ describe('muting', () => {
 
         expect(updated[1].tasks).toBeDefined();
         expect(updated[1].tasks.length).toEqual(1);
-        expect(updated[1].tasks[0].messages[0].message).toEqual('Patient id incorrect');
+        expect(updated[1].tasks[0].messages[0].message).toEqual('somefield id incorrect');
         expect(updated[1].tasks[0].messages[0].to).toEqual('+444999');
         expect(updated[1].tasks[0].state).toEqual('pending');
 
         expect(updated[1].errors).toBeDefined();
         expect(updated[1].errors.length).toEqual(1);
-        expect(updated[1].errors[0].message).toEqual('Patient id incorrect');
+        expect(updated[1].errors[0].message).toEqual('somefield id incorrect');
       });
   });
 

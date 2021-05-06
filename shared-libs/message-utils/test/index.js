@@ -1231,4 +1231,99 @@ describe('messageUtils', () => {
       expect(utils.hasError([{ error: 'something' }])).to.equal('something');
     });
   });
+
+  describe('getMessage', () => {
+    it('should return with no config', () => {
+      expect(utils.getMessage(undefined)).to.equal('');
+    });
+
+    it('should return translation when using translationKey', () => {
+      const config = {
+        translationKey: 'some_key',
+        message: [{ locale: 'en', content: 'aaa' }],
+      };
+      const translate = sinon.stub().returnsArg(0);
+      expect(utils.getMessage(config, translate, 'en', console)).to.equal('some_key');
+      expect(translate.callCount).to.equal(1);
+      expect(translate.args[0]).to.deep.equal(['some_key', 'en']);
+    });
+
+    it('should return translation when using translation_key', () => {
+      const config = {
+        translation_key: 'other_key',
+        message: [{ locale: 'en', content: 'aaa' }],
+      };
+      const translate = sinon.stub().returnsArg(0);
+      expect(utils.getMessage(config, translate, 'en', console)).to.equal('other_key');
+      expect(translate.callCount).to.equal(1);
+      expect(translate.args[0]).to.deep.equal(['other_key', 'en']);
+    });
+
+    it('should return message', () => {
+      const config = { message: 'the message' };
+      expect(utils.getMessage(config)).to.equal('the message');
+    });
+
+    it('should return messages', () => {
+      const config = { messages: 'the messages' };
+      expect(utils.getMessage(config)).to.equal('the messages');
+    });
+
+    it('should return empty when no messages', () => {
+      const config = { messages: [] };
+      expect(utils.getMessage(config)).to.equal('');
+    });
+
+    it('should return message for requested locale', () => {
+      const config = {
+        messages: [
+          { locale: 'en', content: 'the en' },
+          { locale: 'fr', content: 'the fr' },
+          { locale: 'nl', content: 'the nl' },
+        ]
+      };
+      const translate = sinon.stub().returnsArg(0);
+      expect(utils.getMessage(config, translate, 'fr')).to.equal('the fr');
+      expect(translate.callCount).to.equal(0);
+    });
+
+    it('should return message for fallback to en when no locale is passed', () => {
+      const config = {
+        messages: [
+          { locale: 'en', content: 'the en' },
+          { locale: 'fr', content: 'the fr' },
+          { locale: 'nl', content: 'the nl' },
+        ]
+      };
+      const translate = sinon.stub().returnsArg(0);
+      expect(utils.getMessage(config, translate)).to.equal('the en');
+      expect(translate.callCount).to.equal(0);
+    });
+
+    it('should return message for fallback to first in array when no locale is passed', () => {
+      const config = {
+        message: [
+          { locale: 'nl', content: 'the nl' },
+          { locale: 'en', content: 'the en' },
+          { locale: 'fr', content: 'the fr' },
+        ]
+      };
+      const translate = sinon.stub().returnsArg(0);
+      expect(utils.getMessage(config, translate, 'zf')).to.equal('the nl');
+      expect(translate.callCount).to.equal(0);
+    });
+
+    it('should work when messages are misconfigured', () => {
+      const config = {
+        messages: [
+          { locale: 'nl', contents: 'the nl' },
+          { locale: 'en', not_content: 'the en' },
+          { locale: 'fr', the_content: 'the fr' },
+        ]
+      };
+      const translate = sinon.stub().returnsArg(0);
+      expect(utils.getMessage(config, translate, 'zf')).to.equal('');
+      expect(translate.callCount).to.equal(0);
+    });
+  });
 });

@@ -2,7 +2,11 @@ const db = require('../db');
 const messages = require('../lib/messages');
 const utils = require('../lib/utils');
 const idGenerator = require('../lib/ids').generator(db);
-const validation = require('../lib/validation');
+const config = require('../config');
+const validation = require('@medic/validation');
+const logger = require('../lib/logger');
+
+validation.init({ db, translate: utils.translate, settings: config.getAll(), logger });
 
 const findFirstMatchingMessage = (config, eventType) => {
   if (!config.messages || !config.messages.length) {
@@ -88,6 +92,6 @@ module.exports = {
 
   validate: (config, doc) => {
     const validations = config && config.validations && config.validations.list;
-    return new Promise(resolve => validation.validate(doc, validations, resolve));
+    return validation.validate(doc, validations);
   },
 };

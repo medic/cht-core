@@ -1477,6 +1477,132 @@ describe('Lineage', function() {
         ]);
       });
     });
+
+    it('should re-use docs from provided list', () => {
+      const docs = [
+        {
+          _id: 'new_report',
+          type: 'data_record',
+          contact: { _id: place_contact._id },
+          fields: { patient_uuid: 'new_patient' },
+        },
+        {
+          _id: 'new_patient',
+          name: 'new patient',
+          parent: {
+            _id: 'new_place',
+            parent: {
+              _id: place_parent._id,
+              parent: {
+                _id: place_grandparent._id
+              }
+            },
+          },
+        },
+        {
+          _id: 'new_place',
+          name: 'new place',
+          parent: {
+            _id: place_parent._id,
+            parent: {
+              _id: place_grandparent._id
+            }
+          },
+        },
+      ];
+
+      return lineage.hydrateDocs(docs).then(actual => {
+        expect(actual).excludingEvery(['_rev', 'reported_date']).to.deep.equal([
+          {
+            _id: 'new_report',
+            type: 'data_record',
+            contact: {
+              _id: place_contact._id,
+              phone: place_contact.phone,
+              type: place_contact.type,
+            },
+            fields: { patient_uuid: 'new_patient' },
+            patient: {
+              _id: 'new_patient',
+              name: 'new patient',
+              parent:  {
+                _id: 'new_place',
+                name: 'new place',
+                parent: {
+                  _id: place_parent._id,
+                  name: place_parent.name,
+                  contact: {
+                    _id: place_parentContact._id,
+                    name: place_parentContact.name,
+                    phone: place_parentContact.phone,
+                    type: place_parentContact.type
+                  },
+                  parent: {
+                    _id: place_grandparent._id,
+                    name: place_grandparent.name,
+                    contact: {
+                      _id: place_grandparentContact._id,
+                      name: place_grandparentContact.name,
+                      phone: place_grandparentContact.phone,
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            _id: 'new_patient',
+            name: 'new patient',
+            parent: {
+              _id: 'new_place',
+              name: 'new place',
+              parent: {
+                _id: place_parent._id,
+                name: place_parent.name,
+                contact: {
+                  _id: place_parentContact._id,
+                  name: place_parentContact.name,
+                  phone: place_parentContact.phone,
+                  type: place_parentContact.type
+                },
+                parent: {
+                  _id: place_grandparent._id,
+                  name: place_grandparent.name,
+                  contact: {
+                    _id: place_grandparentContact._id,
+                    name: place_grandparentContact.name,
+                    phone: place_grandparentContact.phone,
+                  }
+                }
+              }
+            }
+          },
+          {
+            _id: 'new_place',
+            name: 'new place',
+            parent: {
+              _id: place_parent._id,
+              name: place_parent.name,
+              contact: {
+                _id: place_parentContact._id,
+                name: place_parentContact.name,
+                phone: place_parentContact.phone,
+                type: place_parentContact.type
+              },
+              parent: {
+                _id: place_grandparent._id,
+                name: place_grandparent.name,
+                contact: {
+                  _id: place_grandparentContact._id,
+                  name: place_grandparentContact.name,
+                  phone: place_grandparentContact.phone,
+                }
+              }
+            }
+          }
+        ]);
+      });
+    });
   });
 
   describe('fetchHydratedDocs', () => {

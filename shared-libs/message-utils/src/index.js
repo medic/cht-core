@@ -345,24 +345,49 @@ exports.generate = function(config, translate, doc, content, recipient, extraCon
 exports.template = function(config, translate, doc, content, extraContext) {
   extraContext = extraContext || {};
   const locale = getLocale(config, doc);
-  let template;
-  if (content.translationKey) {
-    template = translate(content.translationKey, locale);
-  } else if (_.isArray(content.message)) {
-    const message = _.find(content.message, { locale: locale }) ||
-                  content.message[0];
-    if (message) {
-      template = message.content && message.content.trim();
-    }
-  } else {
-    // depecated - already generated message
-    template = content.message;
-  }
+  const template = exports.getMessage(content, translate, locale);
+
   if (!template) {
     return '';
   }
+
   const context = extendedTemplateContext(doc, extraContext);
   return render(config, template, context, locale);
+};
+
+/*
+ * Take message configuration and return message content. The configuration
+ * should have either a `messages` property with an array of messages, or
+ * a `translation_key` property with a string.
+ * Use locale if found otherwise defaults to 'en'.
+ */
+exports.getMessage = function(configuration, translate, locale, logger) {
+  if (!configuration) {
+    return '';
+  }
+  // use the translation key if provided
+  if (configuration.translation_key) {
+    return translate(configuration.translation_key, locale);
+  }
+
+  // use the translation key if provided
+  if (configuration.translationKey) {
+    return translate(configuration.translationKey, locale);
+  }
+
+  // otherwise, use the configured messages (deprecated)
+  const messages = configuration.messages || configuration.message;
+  if (!_.isArray(messages)) {
+    logger && logger.warn('Message property should be an array. Please check your configuration.');
+    return messages || '';
+  }
+  if (!messages.length) {
+    logger && logger.warn('Message property array was empty. Please check your configuration.');
+    return '';
+  }
+  // default to first item in messages array in case locale match fails
+  const message = _.find(messages, { locale: locale || 'en' }) || messages[0];
+  return (message.content && message.content.trim()) || '';
 };
 
 /**
@@ -372,6 +397,8 @@ exports.template = function(config, translate, doc, content, extraContext) {
 exports.hasError = function(messages) {
   return messages && messages[0] && messages[0].error;
 };
+
+exports.getLocale = getLocale;
 
 exports._getRecipient = getRecipient;
 exports._extendedTemplateContext = extendedTemplateContext;

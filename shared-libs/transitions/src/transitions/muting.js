@@ -95,7 +95,13 @@ module.exports = {
     }
 
     const muteState = isMuteForm(change.doc.form);
-    let targetContact;
+    const contact = mutingUtils.getContact(change.doc);
+
+    if (!contact) {
+      module.exports._addErr('contact_not_found', change.doc);
+      module.exports._addMsg('contact_not_found', change.doc);
+      return Promise.resolve(true);
+    }
 
     return module.exports
       .validate(change.doc)
@@ -104,32 +110,18 @@ module.exports = {
           return;
         }
 
-        return mutingUtils
-          .getContact(change.doc)
-          .then(contact => {
-            targetContact = contact;
-
-            if (Boolean(contact.muted) === muteState) {
-              // don't update registrations if contact already has desired state
-              module.exports._addMsg(contact.muted ? 'already_muted' : 'already_unmuted', change.doc);
-              return;
-            }
-
-            return mutingUtils.updateMuteState(contact, muteState, change.id);
-          });
-      })
-      .then(changed => changed && module.exports._addMsg(getEventType(muteState), change.doc, targetContact))
-      .catch(err => {
-        if (err && err.message === 'contact_not_found') {
-          module.exports._addErr('contact_not_found', change.doc);
-          module.exports._addMsg('contact_not_found', change.doc);
+        if (Boolean(contact.muted) === muteState) {
+          // don't update registrations if contact already has desired state
+          module.exports._addMsg(contact.muted ? 'already_muted' : 'already_unmuted', change.doc);
           return;
         }
 
-        throw(err);
+        return mutingUtils.updateMuteState(contact, muteState, change.id);
       })
+      .then(changed => changed && module.exports._addMsg(getEventType(muteState), change.doc, contact))
       .then(() => true);
   },
+
   _addMsg: function(eventType, doc, contact) {
     const msgConfig = _.find(getConfig().messages, { event_type: eventType });
     if (msgConfig) {

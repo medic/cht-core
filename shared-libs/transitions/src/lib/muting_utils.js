@@ -8,33 +8,7 @@ infodoc.initLib(db.medic, db.sentinel);
 
 const BATCH_SIZE = 50;
 
-const getContact = doc => {
-  const contactId = doc.fields &&
-                    (
-                      doc.fields.patient_id ||
-                      doc.fields.place_id ||
-                      doc.fields.patient_uuid
-                    );
-
-  if (!contactId) {
-    return Promise.reject(new Error('contact_not_found'));
-  }
-
-  return db.medic
-    .allDocs({ key: contactId })
-    .then(result => {
-      if (!result.rows.length) {
-        return db.medic.query('medic-client/contacts_by_reference', { key: [ 'shortcode', contactId ] });
-      }
-      return result;
-    })
-    .then(result => {
-      if (!result.rows.length) {
-        throw(new Error('contact_not_found'));
-      }
-      return lineage.fetchHydratedDoc(result.rows[0].id);
-    });
-};
+const getContact = doc => doc.patient || doc.place;
 
 const getDescendants = (contactId) => {
   return db.medic
