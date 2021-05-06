@@ -7,17 +7,20 @@ import { ValidationService } from '@mm-services/validation.service';
 import { DbService } from '@mm-services/db.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TranslateLocaleService } from '@mm-services//translate-locale.service';
+import { LanguageService} from '@mm-services/language.service';
 
 describe('Validation Service', () => {
   let service:ValidationService;
   let dbService;
   let settingsService;
   let translateLocaleService;
+  let languageService;
 
   beforeEach(() => {
     dbService = { get: sinon.stub() };
     settingsService = { get: sinon.stub() };
     translateLocaleService = { instant: sinon.stub() };
+    languageService = { get: sinon.stub() };
     sinon.stub(validation, 'init');
     sinon.stub(validation, 'validate');
 
@@ -26,6 +29,7 @@ describe('Validation Service', () => {
         { provide: SettingsService, useValue: settingsService },
         { provide: DbService, useValue: dbService },
         { provide: TranslateLocaleService, useValue: translateLocaleService },
+        { provide: LanguageService, useValue: languageService },
       ]
     });
     service = TestBed.inject(ValidationService);
@@ -60,6 +64,8 @@ describe('Validation Service', () => {
   describe('validate', () => {
     it('should init if not inited', async () => {
       settingsService.get.resolves({ the: 'settings' });
+      languageService.get.resolves('en');
+
       validation.validate.resolves([{ code: 'error', message: 'the error' }]);
 
       const config = {
@@ -81,6 +87,7 @@ describe('Validation Service', () => {
       expect(translateLocaleService.instant.callCount).to.equal(1);
       expect(translateLocaleService.instant.args[0]).to.deep.equal([ 'key', {}, 'locale', true ]);
       expect(validation.validate.callCount).to.equal(1);
+      expect(validation.validate.args[0][0]).to.deep.equal({ locale: 'en' });
 
       expect(result).to.deep.equal([{ code: 'error', message: 'the error' }]);
     });
@@ -88,6 +95,7 @@ describe('Validation Service', () => {
     it('should pass correct data to validate', async () => {
       settingsService.get.resolves({ the: 'settings' });
       validation.validate.resolves([]);
+      languageService.get.resolves('es');
 
       const doc = { _id: 'report', type: 'data_record' };
       const config = {
@@ -105,12 +113,44 @@ describe('Validation Service', () => {
       expect(result).to.deep.equal([]);
       expect(validation.validate.callCount).to.equal(1);
       expect(validation.validate.args[0]).to.deep.equal([
-        { _id: 'report', type: 'data_record' },
+        { _id: 'report', type: 'data_record', locale: 'es' },
         [
           { property: 'type', rule: 'equals("data_record")' },
           { property: '_id', rule: 'required' },
         ],
       ]);
+      expect(languageService.get.callCount).to.equal(1);
+      expect(doc).to.deep.equal({ _id: 'report', type: 'data_record' }); // not mutated
+    });
+
+    it('should pass correct data to validate when doc has locale', async () => {
+      settingsService.get.resolves({ the: 'settings' });
+      validation.validate.resolves([]);
+
+      const doc = { _id: 'report', type: 'data_record', locale: 'nl' };
+      const config = {
+        validations:
+          {
+            list: [
+              { property: 'type', rule: 'equals("data_record")' },
+              { property: '_id', rule: 'required' },
+            ]
+          }
+      };
+
+      const result = await service.validate(doc, config);
+
+      expect(result).to.deep.equal([]);
+      expect(validation.validate.callCount).to.equal(1);
+      expect(validation.validate.args[0]).to.deep.equal([
+        { _id: 'report', type: 'data_record', locale: 'nl' },
+        [
+          { property: 'type', rule: 'equals("data_record")' },
+          { property: '_id', rule: 'required' },
+        ],
+      ]);
+      expect(languageService.get.callCount).to.equal(0);
+      expect(doc).to.deep.equal({ _id: 'report', type: 'data_record', locale: 'nl' }); // not mutated
     });
 
     it('should translate error messages with provided context', async () => {
