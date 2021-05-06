@@ -311,4 +311,4 @@ Factory.define('basePregnancy')
   });
 
 
-Factory.define('pregnancy').extend('basePregnancy').attr('fields', defaultFields);
+module.exports = new Factory().extend('basePregnancy').attr('fields', defaultFields);

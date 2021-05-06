@@ -21,8 +21,7 @@ const ephemeral_dob = {
 };
 
 
-Factory.define('person')
-  .sequence('_id',uuid.v4)
+module.exports = new Factory().sequence('_id', uuid.v4)
   .attr('parent', parent)
   .attr('type', 'person')
   .attr('name', 'Mary Smith')
@@ -35,5 +34,3 @@ Factory.define('person')
   .attr('phone_alternate', '')
   .attr('patient_id', 'test_woman_1')
   .attr('reported_date', () => new Date());
-
-
