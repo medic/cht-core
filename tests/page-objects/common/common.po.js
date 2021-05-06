@@ -74,7 +74,6 @@ module.exports = {
     await helper.waitUntilReadyNative(wizardTitle);
     await helper.waitUntilTranslated(wizardTitle);
     const wizardTitleText = await helper.getTextFromElementNative(wizardTitle);
-    console.log('title text', wizardTitleText);
     expect(wizardTitleText).toEqual('Configuration wizard');
     expect(await helper.getTextFromElementNative(defaultCountryCode)).toEqual('Canada (+1)');
     expect(await finishBtn.getText()).toEqual('Finish');
@@ -88,13 +87,12 @@ module.exports = {
     await helper.waitUntilTranslated(wizardTitle);
     const wizardTitleText = await helper.getTextFromElementNative(wizardTitle);
     console.log('title text', wizardTitleText);
-    expect(wizardTitleText).toEqual('Configuration wizard');
     await helper.clickElementNative(languagePreferenceHeading);
     const headingText = await helper.getTextFromElementNative(selectedPreferenceHeading);
-    const messageLang = await messagesLanguage.getAttribute('innerText').then(text =>text);
-    const defaultLang = await defaultLanguage.getAttribute('innerText').then(text =>text);
+    const messageLang = await messagesLanguage.getAttribute('innerText');
+    const defaultLang = await defaultLanguage.getAttribute('innerText');
     expect (headingText).toBe(`${messageLang}, ${defaultLang}`);
-    return  headingText;
+    return  [headingText, messageLang, defaultLang];
   },
 
   checkGuidedTour: async () => {

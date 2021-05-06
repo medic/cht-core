@@ -30,14 +30,16 @@ describe('Adding new language', () => {
   it('should be set as Default language ',async () => {
     await languagesPage.setDefaultLanguage('Afrikaans');
     await languagesPage.setOutgoingMessageLanguage('Afrikaans');
-    await languagesPage.isLanguageSelected('#locale', 'afr');
-    await languagesPage.isLanguageSelected('#locale-outgoing', 'afr');
+    expect(await languagesPage.isLanguageSelected('#locale', 'afr')).toBe('true');
+    expect(await languagesPage.isLanguageSelected('#locale-outgoing', 'afr')).toBe('true');
   });
 
   it('should reflect in config wizard', async () => {
     languagesPage.goToApplication();
-    const defaultLanguages= await commonPo.getDefaultLanguages();
-    expect(defaultLanguages).toBe('Afrikaans, Afrikaans');
+    const [heading, messageLanguage, appLanguage]= await commonPo.getDefaultLanguages();
+    expect(heading).toBe('Afrikaans, Afrikaans');
+    expect(messageLanguage).toBe('Afrikaans');
+    expect(appLanguage).toBe('Afrikaans');
   });
 
   it('should add new translations', async () => {

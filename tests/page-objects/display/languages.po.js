@@ -31,7 +31,7 @@ const addNewLanguage = async (code, name) =>{
 
 const languageDisplayed = async (code) =>{
   const languageDiv = element(by.css(`#locale-${code}`));
-  const languageName = await helper.getTextFromElementNative(languageDiv); 
+  const languageName = await helper.getTextFromElementNative(languageDiv);
   return languageName;
 };
 const defaultLanguageDropdown=element(by.css('#locale'));
@@ -51,8 +51,8 @@ const setOutgoingMessageLanguage = async (language) => {
 const isLanguageSelected = async (selector, code) => {
   await helper.clickElementNative(element(by.css(selector)));
   const option = await element(by.css(`option[value="string:${code}"]`));
-  expect(option.getAttribute('selected')).toBe('true');
   browser.actions().sendKeys(protractor.Key.ESCAPE).perform();
+  return option.getAttribute('selected');
 };
 
 const goToApplication = async () => {
