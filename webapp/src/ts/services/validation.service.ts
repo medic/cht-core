@@ -5,6 +5,7 @@ import * as messages from '@medic/message-utils';
 import { DbService } from '@mm-services/db.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
+import { LanguageService } from '@mm-services/language.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,7 @@ export class ValidationService {
     private dbService:DbService,
     private settingsService:SettingsService,
     private translateLocaleService:TranslateLocaleService,
+    private languageService:LanguageService,
   ) {
   }
   private inited;
@@ -41,6 +43,9 @@ export class ValidationService {
     if (!validations || !validations.length) {
       return Promise.resolve();
     }
+
+    doc = { ...doc }; // don't mutate the original
+    doc.locale = doc.locale || await this.languageService.get();
 
     const errors = await validation.validate(doc, validations);
     if (!errors || !errors.length) {
