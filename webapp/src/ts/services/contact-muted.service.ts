@@ -8,28 +8,31 @@ export class ContactMutedService {
 
   constructor() { }
 
-  getMuted(doc, lineage?) {
+  getMutedParent(doc, lineage?) {
     if (!doc) {
       return false;
     }
 
     if (doc.muted) {
-      return doc.muted;
+      return doc;
     }
 
     if (lineage) {
-      const mutedParent = _find(lineage, (parent) => parent && parent.muted);
-      return !!mutedParent && mutedParent.muted;
+      return _find(lineage, (parent) => parent && parent.muted);
     }
 
     let parent = doc.parent;
     while (parent) {
       if (parent.muted) {
-        return parent.muted;
+        return parent;
       }
       parent = parent.parent;
     }
 
     return false;
+  }
+
+  getMuted(doc, lineage?) {
+    return this.getMutedParent(doc, lineage)?.muted || false;
   }
 }

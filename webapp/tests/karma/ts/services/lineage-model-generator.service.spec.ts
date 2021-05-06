@@ -336,4 +336,165 @@ describe('LineageModelGenerator service', () => {
     });
 
   });
+
+  describe('docs', () => {
+    it('should hydrate provided docs', () => {
+      const docs = [
+        {
+          _id: 'report1',
+          type: 'data_record',
+          contact: { _id: 'contact2', parent: { _id: 'parent2' } },
+          fields: { patient_id: 'patient_id1' },
+        },
+        {
+          _id: 'contact1',
+          type: 'clinic',
+          contact: { _id: 'contact3', parent: { _id: 'parent3' } },
+          parent: { _id: 'parent3' },
+        }
+      ];
+
+      dbQuery
+        .withArgs('medic-client/contacts_by_reference')
+        .resolves({ rows: [{ id: 'patient1', key: ['shortcode', 'patient_id1'] }] });
+      dbAllDocs
+        .withArgs(sinon.match({ keys: ['patient1'] }))
+        .resolves({
+          rows: [
+            { id: 'patient1', doc: { _id: 'patient1', name: 'patient', parent: { _id: 'parent1' } } },
+          ],
+        });
+      dbAllDocs
+        .withArgs(sinon.match({ keys: ['contact2', 'parent2', 'parent3', 'contact3', 'parent1'] }))
+        .resolves({
+          rows: [
+            { id: 'contact2', doc: { _id: 'contact2', name: 'contact 2', parent: { _id: 'parent2' } } },
+            { id: 'parent2', doc: { _id: 'parent2', name: 'parent 2' } },
+            { id: 'parent3', doc: { _id: 'parent3', name: 'parent 3' } },
+            { id: 'contact3', doc: { _id: 'contact3', name: 'contact 3', parent: { _id: 'parent3' } } },
+            { id: 'parent1', doc: { _id: 'parent1', name: 'parent 1' } },
+          ],
+        });
+
+      return service.docs(docs).then((result) => {
+        expect(result).to.deep.equal([
+          {
+            _id: 'report1',
+            type: 'data_record',
+            contact: {
+              _id: 'contact2',
+              name: 'contact 2',
+              parent: {
+                _id: 'parent2',
+                name: 'parent 2'
+              },
+            },
+            fields: { patient_id: 'patient_id1' },
+            patient: {
+              _id: 'patient1',
+              name: 'patient',
+              parent: {
+                _id: 'parent1',
+                name: 'parent 1',
+              },
+            },
+          },
+          {
+            _id: 'contact1',
+            type: 'clinic',
+            contact: {
+              _id: 'contact3',
+              name: 'contact 3',
+              parent: {
+                _id: 'parent3',
+              },
+            },
+            parent: {
+              _id: 'parent3',
+              name: 'parent 3'
+            },
+          },
+        ]);
+
+        expect(dbQuery.callCount).to.equal(1);
+        expect(dbAllDocs.callCount).to.equal(2);
+      });
+    });
+
+    it('should hydrate docs and reuse docs provided in list', () => {
+      const docs = [
+        {
+          _id: 'new_report',
+          type: 'data_record',
+          contact: { _id: 'old_contact' },
+          fields: { patient_uuid: 'new_patient' },
+        },
+        {
+          _id: 'new_patient',
+          name: 'new patient',
+          parent: { _id: 'new_place', parent: { _id: 'old_place' } },
+        },
+        {
+          _id: 'new_place',
+          name: 'new place',
+          parent: { _id: 'old_place' },
+        },
+      ];
+
+      dbQuery.withArgs('medic-client/contacts_by_reference').resolves({ rows: [] });
+      dbAllDocs.withArgs(sinon.match({ keys: ['new_patient'] })).resolves({ rows: [] });
+      dbAllDocs
+        .withArgs(sinon.match({ keys: ['old_contact', 'new_place', 'old_place'] }))
+        .resolves({
+          rows: [
+            { key: 'new_place', error: 'not_found' },
+            { key: 'old_place', doc: { _id: 'old_place', name: 'old place' } },
+            { id: 'old_contact', doc: { _id: 'old_contact', name: 'old contact' } },
+          ],
+        });
+
+      return service.docs(docs).then(result => {
+        expect(result).to.deep.equal([
+          {
+            _id: 'new_report',
+            type: 'data_record',
+            contact: { _id: 'old_contact', name: 'old contact' },
+            fields: { patient_uuid: 'new_patient' },
+            patient: {
+              _id: 'new_patient',
+              name: 'new patient',
+              parent:  {
+                _id: 'new_place',
+                name: 'new place',
+                parent: {
+                  _id: 'old_place',
+                  name: 'old place'
+                }
+              }
+            }
+          },
+          {
+            _id: 'new_patient',
+            name: 'new patient',
+            parent: {
+              _id: 'new_place',
+              name: 'new place',
+              parent: {
+                _id: 'old_place',
+                name: 'old place'
+              }
+            }
+          },
+          {
+            _id: 'new_place',
+            name: 'new place',
+            parent: {
+              _id: 'old_place',
+              name: 'old place'
+            }
+          }
+        ]);
+      });
+    });
+  });
 });

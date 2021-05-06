@@ -5,6 +5,7 @@ const utils = require('../lib/utils');
 const messages = require('../lib/messages');
 const mutingUtils = require('../lib/muting_utils');
 const contactTypesUtils = require('@medic/contact-types-utils');
+const transitionsIndex = require('./index');
 
 const TRANSITION_NAME = 'muting';
 const CONFIG_NAME = 'muting';
@@ -36,6 +37,18 @@ const isRelevantReport = (doc, info = {}) =>
           !transitionUtils.hasRun(info, TRANSITION_NAME) &&
           utils.isValidSubmission(doc));
 
+const isNewContactWithMutedParent = (doc, infoDoc = {}) => {
+  return Boolean(
+    !doc.muted &&
+    // If initial_replication_date is 'unknown' .getTime() will return NaN, which is an
+    // acceptable value to pass to isMutedInLineage (it will mean that it won't match because
+    // there is no possible mute date that is "after" NaN)
+    mutingUtils.isMutedInLineage(doc, new Date(infoDoc.initial_replication_date).getTime()) &&
+    !infoDoc.muting_history &&
+    !mutingUtils.isMutedOffline(doc)
+  );
+};
+
 //
 // When *new* contacts are added that have muted parents, they and their schedules should be muted.
 //
@@ -43,15 +56,122 @@ const isRelevantReport = (doc, info = {}) =>
 //  - They were initially replicated *after* a mute that has happened in their parent lineage
 //  - And we haven't performed any kind of mute on them before
 //
-const isRelevantContact = (doc, infoDoc = {}) =>
-  Boolean(doc &&
-          isContact(doc) &&
-          !doc.muted &&
-          // If initial_replication_date is 'unknown' .getTime() will return NaN, which is an
-          // acceptable value to pass to isMutedInLineage (it will mean that it won't match because
-          // there is no possible mute date that is "after" NaN)
-          mutingUtils.isMutedInLineage(doc, new Date(infoDoc.initial_replication_date).getTime()) &&
-          !infoDoc.muting_history);
+const isRelevantContact = (doc, infoDoc = {}) => {
+  return Boolean(
+    doc &&
+    isContact(doc) &&
+    (isNewContactWithMutedParent(doc, infoDoc) || mutingUtils.isMutedOffline(doc))
+  );
+};
+
+const processContact = (change) => {
+  let muted;
+  if (isNewContactWithMutedParent(change.doc, change.info)) {
+    muted = new Date();
+  } else {
+    muted = change.doc.muted ? new Date() : false;
+  }
+
+  return mutingUtils
+    .updateRegistrations(utils.getSubjectIds(change.doc), muted)
+    .then(() => mutingUtils.updateMutingHistory(
+      change.doc,
+      new Date(change.info.initial_replication_date).getTime(),
+      muted
+    ))
+    .then(() => {
+      mutingUtils.updateContact(change.doc, muted);
+      return true;
+    });
+};
+
+/**
+ * Given a list of report ids to process
+ * - hydrates the docs
+ * - excludes irrelevant reports
+ * - reads infodocs
+ * - (re)runs muting transition over every report, in sequence, even if it had already ran
+ * - reports should be processed in the same order we have received them
+ * The purpose of this action is to reconcile offline muting events that have already been processed offline, but due
+ * to characteristics of CouchDB + PouchDB sync + changes watching, there is no guarantee that we process these
+ * changes in their chronological order naturally.
+ * The reportIds parameter is a list of reports that have been processed offline _after_ the currently processed report,
+ * for every contact that this report has updated.
+ * This resolves most "conflicts" but does not guarantee a consistent muting state for every case.
+ *
+ * @param {Array<string>} reportIds - an ordered list of report uuids to be processed
+ * @return {Promise}
+ */
+const replayOfflineMutingEvents = (reportIds = []) => {
+  if (!reportIds.length) {
+    return Promise.resolve();
+  }
+
+  return mutingUtils.lineage
+    .fetchHydratedDocs(reportIds)
+    .then(hydratedReports => {
+      hydratedReports = hydratedReports.filter(doc => isRelevantReport(doc, {}));
+
+      const changes = hydratedReports.map(report => ({ id: report._id }));
+      return mutingUtils.infodoc.bulkGet(changes).then(infoDocs => {
+        let promiseChain = Promise.resolve();
+        reportIds.forEach(reportId => {
+          const hydratedReport = hydratedReports.find(report => report._id === reportId);
+          if (!hydratedReport) {
+            return;
+          }
+          promiseChain = promiseChain.then(() => runTransition(hydratedReport, infoDocs));
+        });
+        return promiseChain;
+      });
+    });
+};
+
+/**
+ * Runs muting transition over provided report
+ * @param {Object} hydratedReport
+ * @param {Array<Object>} infoDocs
+ * @return {Promise}
+ */
+const runTransition = (hydratedReport, infoDocs = []) => {
+  const change = {
+    id: hydratedReport._id,
+    doc: hydratedReport,
+    info: infoDocs.find(infoDoc => infoDoc.doc_id === hydratedReport._id),
+  };
+
+  const transitionContext = {
+    change,
+    transition: module.exports,
+    key: TRANSITION_NAME,
+    force: true,
+  };
+  return new Promise((resolve, reject) => {
+    transitionsIndex.applyTransition(transitionContext, (err, result) => {
+      const transitionContext = { change, results: [result] };
+      transitionsIndex.finalize(transitionContext, (err) => err ? reject(err) : resolve());
+    });
+  });
+};
+
+const wasProcessedOffline = (change) => {
+  return change.doc &&
+         change.doc.offline_transitions &&
+         change.doc.offline_transitions[TRANSITION_NAME];
+};
+
+const processMutingEvent = (contact, change, muteState) => {
+  const processedOffline = wasProcessedOffline(change);
+  return mutingUtils
+    .updateMuteState(contact, muteState, change.id, processedOffline)
+    .then(reportIds => {
+      module.exports._addMsg(getEventType(muteState), change.doc, contact);
+
+      if (processedOffline) {
+        return replayOfflineMutingEvents(reportIds);
+      }
+    });
+};
 
 module.exports = {
   name: TRANSITION_NAME,
@@ -72,7 +192,7 @@ module.exports = {
     const config = getConfig();
     return transitionUtils.validate(config, doc).then(errors => {
       if (errors && errors.length) {
-        messages.addErrors(config, doc, errors, { patient: doc.patient });
+        messages.addErrors(config, doc, errors, { patient: doc.patient, place: doc.place });
         return false;
       }
       return true;
@@ -81,17 +201,7 @@ module.exports = {
 
   onMatch: change => {
     if (change.doc.type !== 'data_record') {
-      // process new contacts
-      const muted = new Date();
-      mutingUtils.updateContact(change.doc, muted);
-      return mutingUtils
-        .updateRegistrations(utils.getSubjectIds(change.doc), muted)
-        .then(() => mutingUtils.updateMutingHistory(
-          change.doc,
-          new Date(change.info.initial_replication_date).getTime(),
-          muted
-        ))
-        .then(() => true);
+      return processContact(change);
     }
 
     const muteState = isMuteForm(change.doc.form);
@@ -110,18 +220,17 @@ module.exports = {
           return;
         }
 
-        if (Boolean(contact.muted) === muteState) {
+        if (Boolean(contact.muted) === muteState && !wasProcessedOffline(change)) {
           // don't update registrations if contact already has desired state
+          // but do process muting events that have been handled offline
           module.exports._addMsg(contact.muted ? 'already_muted' : 'already_unmuted', change.doc);
           return;
         }
 
-        return mutingUtils.updateMuteState(contact, muteState, change.id);
+        return processMutingEvent(contact, change, muteState);
       })
-      .then(changed => changed && module.exports._addMsg(getEventType(muteState), change.doc, contact))
       .then(() => true);
   },
-
   _addMsg: function(eventType, doc, contact) {
     const msgConfig = _.find(getConfig().messages, { event_type: eventType });
     if (msgConfig) {

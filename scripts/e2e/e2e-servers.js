@@ -25,6 +25,11 @@ const writeToStream = (stream, data) => {
 const processes = {};
 
 const startServer = (serviceName, append) => new Promise((resolve, reject) => {
+  if (processes[serviceName]) {
+    console.warn(serviceName, 'is already running');
+    return resolve();
+  }
+
   try {
     const logStream = fs.createWriteStream(`tests/logs/${serviceName}.e2e.log`, { flags: append ? 'a' : 'w' });
 

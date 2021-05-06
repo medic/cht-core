@@ -22,6 +22,7 @@ import { ZScoreService } from '@mm-services/z-score.service';
 import { EnketoService } from '@mm-services/enketo.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
+import { TransitionsService } from '@mm-services/transitions.service';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -107,6 +108,7 @@ describe('Enketo service', () => {
   let EnketoPrepopulationData;
   let Search;
   let LineageModelGenerator;
+  let transitionsService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -138,6 +140,7 @@ describe('Enketo service', () => {
       calc: { update: () => {} },
       output: { update: () => {} },
     });
+    transitionsService = { applyTransitions: sinon.stub().resolvesArg(0) };
 
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
 
@@ -171,6 +174,7 @@ describe('Enketo service', () => {
           }
         },
         { provide: ZScoreService, useValue: { getScoreUtil: sinon.stub().resolves(sinon.stub())} },
+        { provide: TransitionsService, useValue: transitionsService },
       ],
     });
 
@@ -1239,6 +1243,125 @@ describe('Enketo service', () => {
         expect(AddAttachment.args[1][3]).to.equal('mytype');
 
         expect(AddAttachment.args[2][1]).to.equal('content');
+      });
+    });
+
+    it('should pass docs to transitions and save results', () => {
+      form.validate.resolves(true);
+      const content =
+        `<data xmlns:jr="http://openrosa.org/javarosa">
+            <name>Sally</name>
+            <lmp>10</lmp>           
+            <repeat_doc db-doc="true" jr:template="">
+              <type>repeater</type>
+              <some_property>some_value_1</some_property>             
+            </repeat_doc>
+            <repeat_doc db-doc="true">
+              <type>repeater</type>
+              <some_property>some_value_2</some_property>             
+            </repeat_doc>
+            <repeat_doc db-doc="true">
+              <type>repeater</type>
+              <some_property>some_value_3</some_property>              
+            </repeat_doc>
+          </data>`;
+      form.getDataStr.returns(content);
+
+      dbBulkDocs.callsFake(docs => Promise.resolve(docs.map(doc => ({ ok: true, id: doc._id, rev: '1' }))));
+      dbGetAttachment.resolves('<form/>');
+      UserContact.resolves({ _id: '123', phone: '555' });
+      const geoHandle = sinon.stub().resolves({ geo: 'data' });
+      transitionsService.applyTransitions.callsFake((docs) => {
+        const clones = _.cloneDeep(docs); // cloning for clearer assertions, as the main array gets mutated
+        clones.forEach(clone => clone.transitioned = true);
+        clones.push({ _id: 'new doc', type: 'existent doc updated by the transition' });
+        return Promise.resolve(clones);
+      });
+
+      return service.save('V', form, geoHandle).then(actual => {
+        expect(form.validate.callCount).to.equal(1);
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(transitionsService.applyTransitions.callCount).to.equal(1);
+        expect(UserContact.callCount).to.equal(1);
+
+        expect(transitionsService.applyTransitions.args[0][0].length).to.equal(4);
+        expect(transitionsService.applyTransitions.args[0][0])
+          .excludingEvery(['_id', 'reported_date', 'timestamp'])
+          .to.deep.equal([
+            {
+              contact: {},
+              content_type: 'xml',
+              fields: { name: 'Sally', lmp: '10' },
+              hidden_fields: [],
+              form: 'V',
+              from: '555',
+              geolocation: { geo: 'data' },
+              geolocation_log: [{ recording: { geo: 'data' } }],
+              type: 'data_record',
+            },
+            {
+              geolocation: { geo: 'data' },
+              geolocation_log: [{ recording: { geo: 'data' } }],
+              type: 'repeater',
+              some_property: 'some_value_1',
+            },
+            {
+              geolocation: { geo: 'data' },
+              geolocation_log: [{ recording: { geo: 'data' } }],
+              type: 'repeater',
+              some_property: 'some_value_2',
+            },
+            {
+              geolocation: { geo: 'data' },
+              geolocation_log: [{ recording: { geo: 'data' } }],
+              type: 'repeater',
+              some_property: 'some_value_3',
+            },
+          ]);
+
+        expect(actual.length).to.equal(5);
+        expect(actual)
+          .excludingEvery(['_id', 'reported_date', 'timestamp', '_rev'])
+          .to.deep.equal([
+            {
+              contact: {},
+              content_type: 'xml',
+              fields: { name: 'Sally', lmp: '10' },
+              hidden_fields: [],
+              form: 'V',
+              from: '555',
+              geolocation: { geo: 'data' },
+              geolocation_log: [{ recording: { geo: 'data' } }],
+              type: 'data_record',
+              transitioned: true,
+            },
+            {
+              geolocation: { geo: 'data' },
+              geolocation_log: [{ recording: { geo: 'data' } }],
+              type: 'repeater',
+              some_property: 'some_value_1',
+              transitioned: true,
+            },
+            {
+              geolocation: { geo: 'data' },
+              geolocation_log: [{ recording: { geo: 'data' } }],
+              type: 'repeater',
+              some_property: 'some_value_2',
+              transitioned: true,
+            },
+            {
+              geolocation: { geo: 'data' },
+              geolocation_log: [{ recording: { geo: 'data' } }],
+              type: 'repeater',
+              some_property: 'some_value_3',
+              transitioned: true,
+            },
+            {
+            // docs that transitions push don't have geodata, this is intentional!
+              type: 'existent doc updated by the transition',
+            },
+          ]);
       });
     });
   });

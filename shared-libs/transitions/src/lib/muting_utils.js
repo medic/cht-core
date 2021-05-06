@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const db = require('../db');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const utils = require('./utils');
@@ -7,6 +8,10 @@ const infodoc = require('@medic/infodoc');
 infodoc.initLib(db.medic, db.sentinel);
 
 const BATCH_SIZE = 50;
+const OFFLINE = 'offline';
+const ONLINE = 'online';
+
+const isMutedOffline = (doc) => !!doc.muting_history && doc.muting_history.last_update === OFFLINE;
 
 const getDescendants = (contactId) => {
   return db.medic
@@ -32,6 +37,14 @@ const updateContact = (contact, muted) => {
     contact.muted = muted;
   } else {
     delete contact.muted;
+  }
+
+  if (contact.muting_history) {
+    contact.muting_history.online = {
+      muted: !!muted,
+      date: muted || new Date().getTime(),
+    };
+    contact.muting_history.last_update = ONLINE;
   }
 
   return contact;
@@ -79,21 +92,28 @@ const updateMutingHistories = (contacts, muted, reportId) => {
 
   return infodoc
     .bulkGet(contacts.map(contact => ({ id: contact._id, doc: contact})))
-    .then(infoDocs => infoDocs.map(info => addMutingHistory(info, muted, reportId)))
+    .then(infoDocs => infoDocs.map((info) => addMutingHistory(info, muted, reportId)))
     .then(infoDocs => infodoc.bulkUpdate(infoDocs));
 };
 
+const getLastMutingEventReportId = mutingHistory => {
+  return mutingHistory &&
+         mutingHistory[mutingHistory.length - 1] &&
+         mutingHistory[mutingHistory.length - 1].report_id;
+};
+
 const updateMutingHistory = (contact, initialReplicationDatetime, muted) => {
+  if (contact.muting_history && contact.muting_history.last_update === 'offline') {
+    const reportId = contact.muting_history.offline && getLastMutingEventReportId(contact.muting_history.offline);
+    return updateMutingHistories([contact], muted, reportId);
+  }
+
   const mutedParentId = isMutedInLineage(contact, initialReplicationDatetime);
 
   return infodoc
     .get({ id: mutedParentId })
     .then(infoDoc => {
-      const reportId = infoDoc &&
-                       infoDoc.muting_history &&
-                       infoDoc.muting_history[infoDoc.muting_history.length - 1] &&
-                       infoDoc.muting_history[infoDoc.muting_history.length - 1].report_id;
-
+      const reportId = infoDoc && getLastMutingEventReportId(infoDoc.muting_history);
       return updateMutingHistories([contact], muted, reportId);
     });
 };
@@ -109,19 +129,29 @@ const addMutingHistory = (info, muted, reportId) => {
   return info;
 };
 
-const updateMuteState = (contact, muted, reportId) => {
+/**
+ *
+ * @param {Object} contact - the hydrated contact document
+ * @param {Boolean} muted - whether the contact should be muted or unmuted
+ * @param {string} reportId - muting report uuid
+ * @param {Boolean} replayOfflineMuting - whether or not offline muting needs to be replayed after processing the
+ * current event
+ * @return {Promise<Array>} - a sorted list of report ids, representing muting events that need to be replayed
+ */
+const updateMuteState = (contact, muted, reportId, replayOfflineMuting = false) => {
   muted = muted && moment();
 
-  let rootContactId;
-  if (muted) {
-    rootContactId = contact._id;
-  } else {
+  let rootContactId = contact._id;
+  if (!muted) {
     let parent = contact;
+    // get topmost muted ancestor
     while (parent) {
       rootContactId = parent.muted ? parent._id : rootContactId;
       parent = parent.parent;
     }
   }
+
+  const offlineMutingReplayQueue = [];
 
   return getDescendants(rootContactId).then(contactIds => {
     const batches = [];
@@ -133,13 +163,65 @@ const updateMuteState = (contact, muted, reportId) => {
       .reduce((promise, batch) => {
         return promise
           .then(() => getContactsAndSubjectIds(batch, muted))
-          .then(result => Promise.all([
-            updateContacts(result.contacts, muted),
-            updateRegistrations(result.subjectIds, muted),
-            updateMutingHistories(result.contacts, muted, reportId)
-          ]));
-      }, Promise.resolve());
+          .then(result => {
+            if (replayOfflineMuting) {
+              offlineMutingReplayQueue.push(...getOfflineMutingEventsToReplay(result.contacts, reportId));
+            }
+
+            return Promise.all([
+              updateContacts(result.contacts, muted),
+              updateRegistrations(result.subjectIds, muted),
+              updateMutingHistories(result.contacts, muted, reportId),
+            ]);
+          });
+      }, Promise.resolve())
+      .then(() => getSortedReplayQueue(offlineMutingReplayQueue));
   });
+};
+
+/**
+ * Sorts muting events by date (these dates might be unreliable because they're generated offline) and returns list
+ * of sorted report uuids.
+ * @param mutingEvents
+ * @return {Array<string>}
+ */
+const getSortedReplayQueue = (mutingEvents) => {
+  const compareDates = (event1, event2) => String(event1.date).localeCompare(String(event2.date));
+  const sortedReportIds = mutingEvents.sort(compareDates).map(event => event.report_id);
+  // _uniq guarantees sorted results, first occurrence is selected which is what we want!
+  return _.uniq(sortedReportIds);
+};
+
+/**
+ * Given a list of contacts and a muting report currently being processed, searches for this report in the
+ * every contacts' muting history, and compiles a list of every other muting event that followed the current event
+ * in the contact's muting history.
+ * @param {Array<Object>} contacts - a list of contact docs
+ * @param {string} reportId - the report's uuid string
+ * @return {Array<Object>}
+ */
+const getOfflineMutingEventsToReplay = (contacts, reportId) => {
+  const offlineMutingEvents = [];
+  contacts.forEach(contact => {
+    if (!contact.muting_history || !contact.muting_history.offline || !contact.muting_history.offline.length) {
+      return;
+    }
+    let found = false;
+    // we reliably know that nothing shuffles this history, so every event that follows this report needs to be replayed
+    contact.muting_history.offline.forEach(mutingHistory => {
+      if (!mutingHistory.report_id || !mutingHistory.date) {
+        return;
+      }
+
+      if (found) {
+        offlineMutingEvents.push({ report_id: mutingHistory.report_id, date: mutingHistory.date });
+      } else if (mutingHistory.report_id === reportId) {
+        found = true;
+      }
+    });
+  });
+
+  return offlineMutingEvents;
 };
 
 const isMutedInLineage = (doc, beforeMillis) => {
@@ -169,15 +251,18 @@ const muteUnsentMessages = doc => {
 };
 
 module.exports = {
-  updateMuteState: updateMuteState,
-  updateContact: updateContact,
-  updateRegistrations: updateRegistrations,
-  isMutedInLineage: isMutedInLineage,
-  unmuteMessages: unmuteMessages,
-  muteUnsentMessages: muteUnsentMessages,
-  updateMutingHistory: updateMutingHistory,
+  updateMuteState,
+  updateContact,
+  updateRegistrations,
+  isMutedInLineage,
+  unmuteMessages,
+  muteUnsentMessages,
+  updateMutingHistory,
+  isMutedOffline,
   _getContactsAndSubjectIds: getContactsAndSubjectIds,
   _updateContacts: updateContacts,
   _updateMuteHistories: updateMutingHistories,
-  _lineage: lineage
+  lineage,
+  db,
+  infodoc,
 };

@@ -40,6 +40,7 @@ import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-clo
 import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-matcher.provider';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { TransitionsService } from '@mm-services/transitions.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -117,6 +118,7 @@ export class AppComponent implements OnInit {
     private databaseConnectionMonitorService: DatabaseConnectionMonitorService,
     private translateLocaleService:TranslateLocaleService,
     private telemetryService:TelemetryService,
+    private transitionsService:TransitionsService,
     private ngZone:NgZone,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -259,6 +261,7 @@ export class AppComponent implements OnInit {
       .init()
       .then(() => this.checkPrivacyPolicy())
       .then(() => this.initRulesEngine())
+      .then(() => this.initTransitions())
       .then(() => this.initForms())
       .then(() => this.initUnreadCount())
       .then(() => this.checkDateService.check())
@@ -276,6 +279,12 @@ export class AppComponent implements OnInit {
     this.requestPersistentStorage();
     this.startWealthQuintiles();
     this.enableTooltips();
+  }
+
+  private initTransitions() {
+    if (!this.sessionService.isOnlineOnly()) {
+      return this.transitionsService.init();
+    }
   }
 
   private setupAndroidVersion() {
@@ -426,9 +435,9 @@ export class AppComponent implements OnInit {
 
   private initForms() {
     /**
-    * Translates using the key if truthy using the old style label
-    * array as a fallback.
-    */
+     * Translates using the key if truthy using the old style label
+     * array as a fallback.
+     */
     const translateTitle = (key, label) => {
       return key ? this.translateService.instant(key) : this.translateFromService.get(label);
     };

@@ -488,10 +488,16 @@ module.exports = {
       });
   },
 
-  getDoc: id => {
+  getDoc: (id, rev) => {
+    const params = { };
+    if (rev) {
+      params.rev = rev;
+    }
+
     return module.exports.requestOnTestDb({
       path: `/${id}`,
       method: 'GET',
+      params,
     });
   },
 
