@@ -8,7 +8,7 @@ const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter'
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
 const fs = require('fs');
 const path = require('path');
-const Tail = require('tail').Tail;
+const Tail = require('better-tail');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -702,10 +702,9 @@ module.exports = {
     tail.on('error', err => {
       errors.push(err);
     });
-    tail.watch();
 
     return function() {
-      tail.unwatch();
+      tail.unfollow();
 
       if (errors.length) {
         return Promise.reject({message: 'CollectLogs errored', errors: errors});
@@ -723,23 +722,23 @@ module.exports = {
    * @returns {Object} that contains the promise to resolve when logs lines are matched and a cancel function
    */
   waitForLogs: (logFilename, ...regex) => {
-    const tail = new Tail(`./tests/logs/${logFilename}`);
+    const tail = new Tail(`./tests/logs/${logFilename}`, { follow: true });
     let timeout;
     const promise = new Promise((resolve, reject) => {
       timeout = setTimeout(() => {
-        tail.unwatch();
+        tail.unfollow();
         reject({ message: 'timeout exceeded' });
-      }, 2000);
+      }, 5000);
 
       tail.on('line', data => {
         if (regex.find(r => r.test(data))) {
-          tail.unwatch();
-          clearTimeout(timeout);
           resolve();
+          tail.unfollow();
+          clearTimeout(timeout);
         }
       });
       tail.on('error', err => {
-        tail.unwatch();
+        tail.unfollow();
         clearTimeout(timeout);
         reject(err);
       });
@@ -748,7 +747,7 @@ module.exports = {
     return {
       promise,
       cancel: () => {
-        tail.unwatch();
+        tail.unfollow();
         clearTimeout(timeout);
       },
     };
