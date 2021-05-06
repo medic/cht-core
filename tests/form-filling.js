@@ -66,10 +66,9 @@ const fillForm = async (reportFields, reportName, allFormPages) => {
     await answerQuestions(allFormPages[i], pathKeys, reportName);
     if (await helper.isDisplayed(genericFormPo.nextButton)) {
       await genericFormPo.nextPageNative();
-    } else {
-      await genericFormPo.submitNative();
     }
   }
+  await genericFormPo.submitNative();
 };
 
 module.exports = {
