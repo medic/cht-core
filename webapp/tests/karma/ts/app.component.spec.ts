@@ -321,13 +321,24 @@ describe('AppComponent', () => {
     expect(startupModalsService.showStartupModals.callCount).to.equal(1);
   });
 
-  it('should start the UpdateReadDocsCount recurring process when user is online', async () => {
+  it('should start the UpdateReadDocsCount recurring process for online users', async () => {
     sessionService.isOnlineOnly.returns(true);
 
     await getComponent();
     await component.setupPromise;
 
     expect(recurringProcessManagerService.startUpdateReadDocsCount.callCount).to.equal(1);
+    expect(transitionsService.init.callCount).to.equal(0);
+  });
+
+  it('should start the TransitionsService for offline users', async () => {
+    sessionService.isOnlineOnly.returns(false);
+
+    await getComponent();
+    await component.setupPromise;
+
+    expect(recurringProcessManagerService.startUpdateReadDocsCount.callCount).to.equal(0);
+    expect(transitionsService.init.callCount).to.equal(1);
   });
 
   it('should set app title', async () => {
