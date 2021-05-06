@@ -216,15 +216,15 @@ describe('mutingUtils', () => {
       ];
 
       db.medic.query.resolves({ rows: [
-          { id: 'my-place', value: null },
-          { id: 'my-place2', value: null },
-          { id: 'my-place3', value: null },
-          { id: 'my-place4', value: null },
-          { id: 'contact1', value: 'patient1' },
-          { id: 'contact2', value: 'patient2' },
-          { id: 'contact3', value: 'patient3' },
-          { id: 'contact4', value: 'patient4' },
-        ]});
+        { id: 'my-place', value: null },
+        { id: 'my-place2', value: null },
+        { id: 'my-place3', value: null },
+        { id: 'my-place4', value: null },
+        { id: 'contact1', value: 'patient1' },
+        { id: 'contact2', value: 'patient2' },
+        { id: 'contact3', value: 'patient3' },
+        { id: 'contact4', value: 'patient4' },
+      ]});
 
       db.medic.allDocs.resolves({ rows: contacts.map(doc => ({ id: doc._id, doc: doc }))});
       utils.getReportsBySubject.resolves([]);
@@ -292,15 +292,15 @@ describe('mutingUtils', () => {
       ];
 
       db.medic.query.resolves({ rows: [
-          { id: 'my-place', value: null },
-          { id: 'my-place2', value: null },
-          { id: 'my-place3', value: null },
-          { id: 'my-place4', value: null },
-          { id: 'contact1', value: 'patient1' },
-          { id: 'contact2', value: 'patient2' },
-          { id: 'contact3', value: 'patient3' },
-          { id: 'contact4', value: 'patient4' },
-        ]});
+        { id: 'my-place', value: null },
+        { id: 'my-place2', value: null },
+        { id: 'my-place3', value: null },
+        { id: 'my-place4', value: null },
+        { id: 'contact1', value: 'patient1' },
+        { id: 'contact2', value: 'patient2' },
+        { id: 'contact3', value: 'patient3' },
+        { id: 'contact4', value: 'patient4' },
+      ]});
 
       db.medic.allDocs.resolves({ rows: contacts.map(doc => ({ id: doc._id, doc: doc }))});
       utils.getReportsBySubject.resolves([]);
@@ -375,12 +375,12 @@ describe('mutingUtils', () => {
       ];
 
       db.medic.query.resolves({ rows: [
-          { id: 'p2', value: null },
-          { id: 'p1', value: null },
-          { id: 'my-place', value: null },
-          { id: 'contact1', value: 'patient1' },
-          { id: 'contact2', value: 'patient2' }
-        ]});
+        { id: 'p2', value: null },
+        { id: 'p1', value: null },
+        { id: 'my-place', value: null },
+        { id: 'contact1', value: 'patient1' },
+        { id: 'contact2', value: 'patient2' }
+      ]});
 
       db.medic.allDocs.resolves({ rows: contacts.map(doc => ({ id: doc._id, doc: doc }))});
       utils.getReportsBySubject.resolves([]);
@@ -1107,22 +1107,22 @@ describe('mutingUtils', () => {
       db.medic.allDocs
         .onCall(0)
         .resolves({ rows: [
-            { doc: { _id: 'a' }},
-            { doc: { _id: 'b' }},
-            { doc: { _id: 'c' }}
-          ]})
+          { doc: { _id: 'a' }},
+          { doc: { _id: 'b' }},
+          { doc: { _id: 'c' }}
+        ]})
         .onCall(1)
         .resolves({ rows: [
-            { doc: { _id: 'd' }},
-            { doc: { _id: 'e' }},
-            { doc: { _id: 'f' }}
-          ]})
+          { doc: { _id: 'd' }},
+          { doc: { _id: 'e' }},
+          { doc: { _id: 'f' }}
+        ]})
         .onCall(2)
         .resolves({ rows: [
-            { doc: { _id: 'g' }},
-            { doc: { _id: 'h' }},
-            { doc: { _id: 'i' }}
-          ]});
+          { doc: { _id: 'g' }},
+          { doc: { _id: 'h' }},
+          { doc: { _id: 'i' }}
+        ]});
       db.medic.bulkDocs.resolves();
       utils.getReportsBySubject
         .onCall(0)
@@ -1237,16 +1237,16 @@ describe('mutingUtils', () => {
       db.medic.allDocs
         .onCall(0)
         .resolves({ rows: [
-            { doc: { _id: 'a' }},
-            { doc: { _id: 'b' }},
-            { doc: { _id: 'c' }}
-          ]})
+          { doc: { _id: 'a' }},
+          { doc: { _id: 'b' }},
+          { doc: { _id: 'c' }}
+        ]})
         .onCall(1)
         .resolves({ rows: [
-            { doc: { _id: 'd' }},
-            { doc: { _id: 'e' }},
-            { doc: { _id: 'f' }}
-          ]})
+          { doc: { _id: 'd' }},
+          { doc: { _id: 'e' }},
+          { doc: { _id: 'f' }}
+        ]})
         .onCall(2).rejects({ some: 'error' });
 
       db.medic.bulkDocs.resolves();
@@ -1290,16 +1290,16 @@ describe('mutingUtils', () => {
       db.medic.allDocs
         .onCall(0)
         .resolves({ rows: [
-            { doc: { _id: 'a' }},
-            { doc: { _id: 'b' }},
-            { doc: { _id: 'c' }}
-          ]})
+          { doc: { _id: 'a' }},
+          { doc: { _id: 'b' }},
+          { doc: { _id: 'c' }}
+        ]})
         .onCall(1)
         .resolves({ rows: [
-            { doc: { _id: 'd' }},
-            { doc: { _id: 'e' }},
-            { doc: { _id: 'f' }}
-          ]});
+          { doc: { _id: 'd' }},
+          { doc: { _id: 'e' }},
+          { doc: { _id: 'f' }}
+        ]});
 
       db.medic.bulkDocs
         .onCall(0).resolves()
@@ -1344,16 +1344,16 @@ describe('mutingUtils', () => {
       db.medic.allDocs
         .onCall(0)
         .resolves({ rows: [
-            { doc: { _id: 'a' }},
-            { doc: { _id: 'b' }},
-            { doc: { _id: 'c' }}
-          ]})
+          { doc: { _id: 'a' }},
+          { doc: { _id: 'b' }},
+          { doc: { _id: 'c' }}
+        ]})
         .onCall(1)
         .resolves({ rows: [
-            { doc: { _id: 'd' }},
-            { doc: { _id: 'e' }},
-            { doc: { _id: 'f' }}
-          ]});
+          { doc: { _id: 'd' }},
+          { doc: { _id: 'e' }},
+          { doc: { _id: 'f' }}
+        ]});
 
       db.medic.bulkDocs.resolves();
       utils.getReportsBySubject
@@ -1396,16 +1396,16 @@ describe('mutingUtils', () => {
       db.medic.allDocs
         .onCall(0)
         .resolves({ rows: [
-            { doc: { _id: 'a' }},
-            { doc: { _id: 'b' }},
-            { doc: { _id: 'c' }}
-          ]})
+          { doc: { _id: 'a' }},
+          { doc: { _id: 'b' }},
+          { doc: { _id: 'c' }}
+        ]})
         .onCall(1)
         .resolves({ rows: [
-            { doc: { _id: 'd' }},
-            { doc: { _id: 'e' }},
-            { doc: { _id: 'f' }}
-          ]});
+          { doc: { _id: 'd' }},
+          { doc: { _id: 'e' }},
+          { doc: { _id: 'f' }}
+        ]});
 
       db.medic.bulkDocs.resolves();
       utils.getReportsBySubject
@@ -1447,11 +1447,11 @@ describe('mutingUtils', () => {
     it('should return all contacts and subjectIds', () => {
       const ids = ['1', '2', '3', '4'];
       db.medic.allDocs.resolves({ rows: [
-          { doc: { _id: '1', place_id: 'place_1' } },
-          { doc: { _id: '2', patient_id: 'patient_2' } },
-          { doc: { _id: '3' } },
-          { doc: { _id: '4', patient_id: 'patient_4' } }
-        ]});
+        { doc: { _id: '1', place_id: 'place_1' } },
+        { doc: { _id: '2', patient_id: 'patient_2' } },
+        { doc: { _id: '3' } },
+        { doc: { _id: '4', patient_id: 'patient_4' } }
+      ]});
 
       return mutingUtils._getContactsAndSubjectIds(ids, new Date()).then(result => {
         chai.expect(result.contacts).to.deep.equal([
@@ -1482,13 +1482,13 @@ describe('mutingUtils', () => {
     it('should only return contacts and subjects with different muted state', () => {
       const ids = ['1', '2', '3', '4', '5', '6'];
       db.medic.allDocs.resolves({ rows: [
-          { doc: { _id: '1', place_id: 'place_1' } },
-          { doc: { _id: '2', patient_id: 'patient_2', muted: true } },
-          { doc: { _id: '3', muted: null } },
-          { doc: { _id: '4', patient_id: 'patient_4', muted: 0 } },
-          { key: '5', error: 'not_found' },
-          { doc: { _id: '6', patient_id: 'patient_6', muted: 123 } }
-        ]});
+        { doc: { _id: '1', place_id: 'place_1' } },
+        { doc: { _id: '2', patient_id: 'patient_2', muted: true } },
+        { doc: { _id: '3', muted: null } },
+        { doc: { _id: '4', patient_id: 'patient_4', muted: 0 } },
+        { key: '5', error: 'not_found' },
+        { doc: { _id: '6', patient_id: 'patient_6', muted: 123 } }
+      ]});
 
       return mutingUtils._getContactsAndSubjectIds(ids, new Date()).then(result => {
         chai.expect(result.contacts).to.deep.equal([
@@ -1503,14 +1503,14 @@ describe('mutingUtils', () => {
     it('should only return contacts and subjects with different muted state', () => {
       const ids = ['1', '2', '3', '4', '5', '6', '7'];
       db.medic.allDocs.resolves({ rows: [
-          { doc: { _id: '1', place_id: 'place_1', muted: 1234 } },
-          { doc: { _id: '2', patient_id: 'patient_2', muted: false } },
-          { doc: { _id: '3', muted: null } },
-          { doc: { _id: '4', patient_id: 'patient_4', muted: 0 } },
-          { key: '5', error: 'not_found' },
-          { doc: { _id: '6', patient_id: 'patient_6' } },
-          { doc: { _id: '7', patient_id: 'patient_7', muted: true } },
-        ]});
+        { doc: { _id: '1', place_id: 'place_1', muted: 1234 } },
+        { doc: { _id: '2', patient_id: 'patient_2', muted: false } },
+        { doc: { _id: '3', muted: null } },
+        { doc: { _id: '4', patient_id: 'patient_4', muted: 0 } },
+        { key: '5', error: 'not_found' },
+        { doc: { _id: '6', patient_id: 'patient_6' } },
+        { doc: { _id: '7', patient_id: 'patient_7', muted: true } },
+      ]});
 
       return mutingUtils._getContactsAndSubjectIds(ids, false).then(result => {
         chai.expect(result.contacts).to.deep.equal([
