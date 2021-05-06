@@ -20,160 +20,24 @@ describe('mutingUtils', () => {
   afterEach(() => sinon.restore());
 
   describe('getContact', () => {
-    it('should query allDocs with patient_id field', () => {
-      const contact = { _id: 'my-contact-id', some: 'data' };
-      const doc = { fields: { patient_id: contact._id } };
-
-      db.medic.allDocs.resolves({ rows: [{ id: contact._id }] });
-      mutingUtils._lineage.fetchHydratedDoc.resolves(contact);
-
-      return mutingUtils.getContact(doc).then(result => {
-        chai.expect(db.medic.allDocs.callCount).to.equal(1);
-        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{ key: contact._id }]);
-        chai.expect(db.medic.query.callCount).to.equal(0);
-        chai.expect(result).to.deep.equal(contact);
-        chai.expect(mutingUtils._lineage.fetchHydratedDoc.callCount).to.equal(1);
-        chai.expect(mutingUtils._lineage.fetchHydratedDoc.args[0]).to.deep.equal([contact._id]);
-      });
+    it('should return patient when defined', () => {
+      chai.expect(mutingUtils.getContact({ patient: { _id: 'thing' } })).to.deep.equal({ _id: 'thing' });
     });
 
-    it('should query allDocs with place_id field', () => {
-      const contact = { _id: 'my-contact-id', some: 'data' };
-      const doc = { fields: { place_id: contact._id } };
-      db.medic.allDocs.resolves({ rows: [{ id: contact._id }] });
-      mutingUtils._lineage.fetchHydratedDoc.resolves(contact);
-
-      return mutingUtils.getContact(doc).then(result => {
-        chai.expect(db.medic.allDocs.callCount).to.equal(1);
-        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{ key: contact._id }]);
-        chai.expect(db.medic.query.callCount).to.equal(0);
-        chai.expect(result).to.deep.equal(contact);
-        chai.expect(mutingUtils._lineage.fetchHydratedDoc.callCount).to.equal(1);
-        chai.expect(mutingUtils._lineage.fetchHydratedDoc.args[0]).to.deep.equal([contact._id]);
-      });
+    it('should should return place when defined', () => {
+      chai.expect(mutingUtils.getContact({ place: { _id: 'the_place' } })).to.deep.equal({ _id: 'the_place' });
     });
 
-    it('should query allDocs with patient_uuid field', () => {
-      const contact = { _id: 'my-contact-id', some: 'data' };
-      const doc = { fields: { patient_uuid: contact._id } };
-      db.medic.allDocs.resolves({ rows: [{ id: contact._id }] });
-      mutingUtils._lineage.fetchHydratedDoc.resolves(contact);
-
-      return mutingUtils.getContact(doc).then(result => {
-        chai.expect(db.medic.allDocs.callCount).to.equal(1);
-        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{ key: contact._id }]);
-        chai.expect(db.medic.query.callCount).to.equal(0);
-        chai.expect(result).to.deep.equal(contact);
-        chai.expect(mutingUtils._lineage.fetchHydratedDoc.callCount).to.equal(1);
-        chai.expect(mutingUtils._lineage.fetchHydratedDoc.args[0]).to.deep.equal([contact._id]);
-      });
+    it('should prioritize patient over place', () => {
+      const doc = {
+        place: { _id: 'the place', data: 1 },
+        patient: { _id: 'the patient', data: 2 },
+      };
+      chai.expect(mutingUtils.getContact(doc)).to.deep.equal({_id: 'the patient', data: 2 });
     });
 
-    it('should search by reference when not ID field', () => {
-      const contact = { _id: 'my-contact-id', some: 'data', patient_id: 'patient_id' };
-      const doc = { fields: { patient_id: contact.patient_id } };
-      db.medic.allDocs.resolves({ rows: [] });
-      db.medic.query.resolves({ rows: [{ id: contact._id }] });
-      mutingUtils._lineage.fetchHydratedDoc.resolves(contact);
-
-      return mutingUtils.getContact(doc).then(result => {
-        chai.expect(db.medic.allDocs.callCount).to.equal(1);
-        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{ key: contact.patient_id }]);
-        chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0])
-          .to.deep.equal(['medic-client/contacts_by_reference', { key: ['shortcode', contact.patient_id] }]);
-        chai.expect(result).to.deep.equal(contact);
-        chai.expect(mutingUtils._lineage.fetchHydratedDoc.callCount).to.equal(1);
-        chai.expect(mutingUtils._lineage.fetchHydratedDoc.args[0]).to.deep.equal([contact._id]);
-      });
-    });
-
-    it('should throw allDocs errors', () => {
-      db.medic.allDocs.rejects({ some: 'error' });
-
-      return mutingUtils
-        .getContact({ fields: { patient_id: 'aaa' } })
-        .then(() => chai.expect(true).to.equal('Should have thrown'))
-        .catch(err => {
-          chai.expect(err).to.deep.equal({ some: 'error' });
-          chai.expect(db.medic.allDocs.callCount).to.equal(1);
-        });
-    });
-
-    it('should throw query errors', () => {
-      db.medic.allDocs.resolves({ rows: [] });
-      db.medic.query.rejects({ some: 'error' });
-
-      return mutingUtils
-        .getContact({ fields: { patient_id: 'aaa' } })
-        .then(() => chai.expect(true).to.equal('Should have thrown'))
-        .catch(err => {
-          chai.expect(err).to.deep.equal({ some: 'error' });
-          chai.expect(db.medic.allDocs.callCount).to.equal(1);
-          chai.expect(db.medic.query.callCount).to.equal(1);
-        });
-    });
-
-    it('should throw lineage errors', () => {
-      db.medic.allDocs.resolves({ rows: [{ id: 'a' }] });
-      mutingUtils._lineage.fetchHydratedDoc.rejects({ some: 'error' });
-
-      return mutingUtils
-        .getContact({ fields: { patient_id: 'aaa' } })
-        .then(() => chai.expect(true).to.equal('Should have thrown'))
-        .catch(err => {
-          chai.expect(err).to.deep.equal({ some: 'error' });
-          chai.expect(db.medic.allDocs.callCount).to.equal(1);
-          chai.expect(db.medic.query.callCount).to.equal(0);
-        });
-    });
-
-    it('should throw when no contact is found', () => {
-      db.medic.allDocs.resolves({ rows: [] });
-      db.medic.query.resolves({ rows: [] });
-
-      return mutingUtils
-        .getContact({ fields: { patient_id: 'aaa' } })
-        .then(() => chai.expect(true).to.equal('Should have thrown'))
-        .catch(err => {
-          chai.expect(err.message).to.equal('contact_not_found');
-          chai.expect(db.medic.allDocs.callCount).to.equal(1);
-          chai.expect(db.medic.query.callCount).to.equal(1);
-          chai.expect(mutingUtils._lineage.fetchHydratedDoc.callCount).to.equal(0);
-        });
-    });
-
-    it('should fetch the first query result', () => {
-      db.medic.allDocs.resolves({ rows: [] });
-      db.medic.query.resolves({ rows: [{ id: 'a' }, { id: 'b' }, { id: 'c' }] });
-      mutingUtils._lineage.fetchHydratedDoc.resolves({ _id: 'a' });
-
-      return mutingUtils.getContact({ fields: { patient_id: 'a' } }).then(result => {
-        chai.expect(result).to.deep.equal({ _id: 'a' });
-        chai.expect(mutingUtils._lineage.fetchHydratedDoc.args[0]).to.deep.equal(['a']);
-      });
-    });
-
-    it('should throw when doc has no fields property', () => {
-      return mutingUtils.getContact({})
-        .then(() => chai.expect(true).to.equal('Should have thrown'))
-        .catch(err => {
-          chai.expect(err.message).to.equal('contact_not_found');
-          chai.expect(db.medic.allDocs.callCount).to.equal(0);
-          chai.expect(db.medic.query.callCount).to.equal(0);
-          chai.expect(mutingUtils._lineage.fetchHydratedDoc.callCount).to.equal(0);
-        });
-    });
-
-    it('should throw when doc has no id field', () => {
-      return mutingUtils.getContact({ fields: {} })
-        .then(() => chai.expect(true).to.equal('Should have thrown'))
-        .catch(err => {
-          chai.expect(err.message).to.equal('contact_not_found');
-          chai.expect(db.medic.allDocs.callCount).to.equal(0);
-          chai.expect(db.medic.query.callCount).to.equal(0);
-          chai.expect(mutingUtils._lineage.fetchHydratedDoc.callCount).to.equal(0);
-        });
+    it('should return undefined when neither place nor patient is defined', () => {
+      chai.expect(mutingUtils.getContact({})).to.equal(undefined);
     });
   });
 

@@ -404,7 +404,7 @@ describe('schedules', () => {
       doc.scheduled_tasks[0].messages[0].message,
       moment(doc.fields.some_date).locale('sw').format('dddd, Do MMMM YYYY')
     );
-    assert.equal(config.getAll.callCount, 1);
+    assert.equal(config.getAll.callCount, 2);
   });
 
   it('skips a group when starting mid-group by default', () => {

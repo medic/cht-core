@@ -15,6 +15,7 @@ node_modules_backup
 /.env
 coverage/
 dist
+!**/pupil/dist
 /ddocs/compiled.json
 /packages
 /static

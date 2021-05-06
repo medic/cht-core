@@ -1,7 +1,6 @@
 const config = require('../../src/config');
 const sinon = require('sinon');
-const assert = require('chai').assert;    
-const utils = require('../../src/lib/utils');
+const assert = require('chai').assert;
 const transition = require('../../src/transitions/accept_patient_reports');
 
 describe('functional validations', () => {
@@ -39,8 +38,7 @@ describe('functional validations', () => {
   });
 
   it('validations use translation_key', () => {
-    sinon.stub(utils, 'translate')
-      .withArgs('error.patient.id', 'en').returns('bad id {{patient_id}}');
+    sinon.stub(config, 'getTranslations').returns({ en: { 'error.patient.id': 'bad id {{patient_id}}' } });
 
     const doc = {
       patient_id: 'xxxx',
