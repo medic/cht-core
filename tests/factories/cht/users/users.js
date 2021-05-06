@@ -12,8 +12,8 @@ const contact = {
   name: 'OfflineUser'
 };
 
-Factory.define('offlineUser')
-  .attr('username', 'user1')
+
+module.exports = new Factory().attr('username', 'user1')
   .attr('password', 'Secret_1')
   .attr('contact', contact)
   .attr('place', place)

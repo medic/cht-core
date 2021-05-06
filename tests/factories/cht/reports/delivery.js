@@ -257,4 +257,4 @@ Factory.define('baseDelivery')
 
 
 
-Factory.define('delivery').extend('baseDelivery').attr('fields', defaultFields);
+module.exports = new Factory().extend('baseDelivery').attr('fields', defaultFields);

@@ -1,21 +1,23 @@
 const Factory = require('rosie').Factory;
 const uuid = require('uuid');
 
-Factory.define('place')
-  .sequence('_id', uuid.v4)
-  .attr('parent', '')
-  .attr('type', '')
-  .attr('is_name_generated', 'true')
-  .attr('name', 'A Place 1')
-  .attr('external_id', '')
-  .attr('notes', '')
-  .attr('place_id', uuid.v4)
-  .attr('reported_date', () => new Date());
+const place = () => {
+  return new Factory()
+    .sequence('_id', uuid.v4)
+    .attr('parent', '')
+    .attr('type', '')
+    .attr('is_name_generated', 'true')
+    .attr('name', 'A Place 1')
+    .attr('external_id', '')
+    .attr('notes', '')
+    .attr('place_id', uuid.v4)
+    .attr('reported_date', () => new Date());
+};
 
 
 const generatePlaces = (types = ['district_hospital', 'health_center', 'clinic']) => {
   return types.map((type, index) => {
-    return Factory.build('place', {
+    return place().build({
       name: `${type.replace('_', ' ')}${index}`,
       type: type,
     });
@@ -44,5 +46,6 @@ const generateHierarchy = (types) => {
 
 
 module.exports = {
-  generateHierarchy
+  generateHierarchy,
+  place
 };

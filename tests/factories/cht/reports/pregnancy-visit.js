@@ -288,4 +288,4 @@ Factory.define('basePregnancyVisit')
   });
 
 
-Factory.define('pregnancyVisit').extend('basePregnancyVisit').attr('fields',defaultFields);
+module.exports = new Factory().extend('basePregnancyVisit').attr('fields',defaultFields);
