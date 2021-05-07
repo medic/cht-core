@@ -11,7 +11,7 @@ const actions = ['compile-app-settings','backup-app-settings','convert-app-forms
 describe('Medic-conf actions tests', () => {
   const runCommand = async (action) => {
     try {
-      const { stdout } = await exec(`medic-conf --url=${url} ${action}s --force`, { cwd: 'config/default' });
+      const { stdout } = await exec(`medic-conf --url=${url} ${action} --force`, { cwd: 'config/default' });
       return stdout;
     } catch (err) {
       return err.stdout;
