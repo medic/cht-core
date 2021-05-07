@@ -5,7 +5,7 @@ const utils = require('../lib/utils');
 const messages = require('../lib/messages');
 const mutingUtils = require('../lib/muting_utils');
 const contactTypesUtils = require('@medic/contact-types-utils');
-const transitionsIndex = require('./index');
+const transitions = require('./index');
 
 const TRANSITION_NAME = 'muting';
 const CONFIG_NAME = 'muting';
@@ -45,7 +45,7 @@ const isNewContactWithMutedParent = (doc, infoDoc = {}) => {
     // there is no possible mute date that is "after" NaN)
     mutingUtils.isMutedInLineage(doc, new Date(infoDoc.initial_replication_date).getTime()) &&
     !infoDoc.muting_history &&
-    !mutingUtils.isMutedOffline(doc)
+    !mutingUtils.isLastUpdatedOffline(doc) // contacts that are updated offline are treated separately
   );
 };
 
@@ -60,7 +60,7 @@ const isRelevantContact = (doc, infoDoc = {}) => {
   return Boolean(
     doc &&
     isContact(doc) &&
-    (isNewContactWithMutedParent(doc, infoDoc) || mutingUtils.isMutedOffline(doc))
+    (isNewContactWithMutedParent(doc, infoDoc) || mutingUtils.isLastUpdatedOffline(doc))
   );
 };
 
@@ -95,8 +95,8 @@ const processContact = (change) => {
  * The purpose of this action is to reconcile offline muting events that have already been processed offline, but due
  * to characteristics of CouchDB + PouchDB sync + changes watching, there is no guarantee that we process these
  * changes in their chronological order naturally.
- * The reportIds parameter is a list of reports that have been processed offline _after_ the currently processed report,
- * for every contact that this report has updated.
+ * The reportIds parameter is a list of reports that have been created offline _after_ the currently processed report,
+ * have have affected one contact that this report has updated.
  * This resolves most "conflicts" but does not guarantee a consistent muting state for every case.
  *
  * @param {Array<string>} reportIds - an ordered list of report uuids to be processed
@@ -147,9 +147,9 @@ const runTransition = (hydratedReport, infoDocs = []) => {
     force: true,
   };
   return new Promise((resolve, reject) => {
-    transitionsIndex.applyTransition(transitionContext, (err, result) => {
+    transitions.applyTransition(transitionContext, (err, result) => {
       const transitionContext = { change, results: [result] };
-      transitionsIndex.finalize(transitionContext, (err) => err ? reject(err) : resolve());
+      transitions.finalize(transitionContext, (err) => err ? reject(err) : resolve());
     });
   });
 };

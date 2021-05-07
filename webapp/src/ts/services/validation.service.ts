@@ -45,6 +45,7 @@ export class ValidationService {
     }
 
     doc = { ...doc }; // don't mutate the original
+    // ensure that the error messages are intelligible to the user, but don't overwrite locale if set
     doc.locale = doc.locale || await this.languageService.get();
 
     const errors = await validation.validate(doc, validations);

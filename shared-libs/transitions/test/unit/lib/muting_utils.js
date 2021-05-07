@@ -2266,10 +2266,10 @@ describe('mutingUtils', () => {
     });
   });
 
-  describe('isMutedOffline', () => {
+  describe('isLastUpdatedOffline', () => {
     it('should return false when contact was not last muted offline', () => {
-      chai.expect(mutingUtils.isMutedOffline({})).to.equal(false);
-      chai.expect(mutingUtils.isMutedOffline({ muted: true })).to.equal(false);
+      chai.expect(mutingUtils.isLastUpdatedOffline({})).to.equal(false);
+      chai.expect(mutingUtils.isLastUpdatedOffline({ muted: true })).to.equal(false);
 
       const docWithMutingHistory = {
         muted: true,
@@ -2278,14 +2278,14 @@ describe('mutingUtils', () => {
           online: { muted: false },
         }
       };
-      chai.expect(mutingUtils.isMutedOffline(docWithMutingHistory)).to.equal(false);
+      chai.expect(mutingUtils.isLastUpdatedOffline(docWithMutingHistory)).to.equal(false);
 
       docWithMutingHistory.muting_history.last_update = 'online';
-      chai.expect(mutingUtils.isMutedOffline(docWithMutingHistory)).to.equal(false);
+      chai.expect(mutingUtils.isLastUpdatedOffline(docWithMutingHistory)).to.equal(false);
     });
 
     it('should return true when contact was last muted offline', () => {
-      chai.expect(mutingUtils.isMutedOffline({ muting_history: { last_update: 'offline' } })).to.equal(true);
+      chai.expect(mutingUtils.isLastUpdatedOffline({ muting_history: { last_update: 'offline' } })).to.equal(true);
       const docWithMutingHistory = {
         muted: true,
         muting_history: {
@@ -2294,7 +2294,7 @@ describe('mutingUtils', () => {
           last_update: 'offline',
         },
       };
-      chai.expect(mutingUtils.isMutedOffline(docWithMutingHistory)).to.equal(true);
+      chai.expect(mutingUtils.isLastUpdatedOffline(docWithMutingHistory)).to.equal(true);
     });
   });
 
