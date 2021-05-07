@@ -9,7 +9,7 @@ import { SessionService } from '@mm-services/session.service';
   providedIn: 'root'
 })
 /**
- * TelemetryService: Records, aggregates, and submits telemetry data
+ * TelemetryService: Records, aggregates, and submits telemetry data.
  */
 export class TelemetryService {
   // Intentionally scoped to the whole browser (for this domain). We can then tell if multiple users use the same device
@@ -54,7 +54,16 @@ export class TelemetryService {
     return uniqueDeviceId;
   }
 
-  private getLastAggregatedDate() {
+  /**
+   * Returns the time in milliseconds (since Unix epoch) when the first telemetry
+   * record was created within the day that is going to be aggregated.
+   *
+   * The date is stored locally once computed by this method, either because is
+   * the first time is called or because the aggregation was performed last time
+   * a record was created, therefore `reset(db)' deleted it, and next time this
+   * method is called the date need to be fetched from the system again.
+   */
+  private getFirstAggregatedDate() {
     let date = parseInt(window.localStorage.getItem(this.LAST_AGGREGATED_DATE_KEY));
 
     if (!date) {
@@ -73,14 +82,26 @@ export class TelemetryService {
     });
   }
 
-  private submitIfNeeded(db) {
-    const monthStart = moment().startOf('month');
-    const dbDate = moment(this.getLastAggregatedDate());
+  // moment when the aggregation starts (the beginning of the current day)
+  private aggregateStartsAt() {
+    return moment().startOf('day');
+    //return moment().startOf('minute');
+  }
 
-    if (dbDate.isBefore(monthStart)) {
-      return this
-        .aggregate(db)
-        .then(() => this.reset(db));
+  // if there is telemetry data to aggregate and is before the current date,
+  // aggregation is performed and the data destroyed
+  private submitIfNeeded(db) {
+    const startOf = this.aggregateStartsAt();
+    const dbDate = moment(this.getFirstAggregatedDate());
+
+    if (dbDate.isBefore(startOf)) {
+      return db.info()
+        .then(info => {
+          if (info.doc_count > 0) {
+            return this.aggregate(db)
+              .then(() => this.reset(db));
+          }
+        });
     }
   }
 
@@ -97,6 +118,9 @@ export class TelemetryService {
       'telemetry',
       metadata.year,
       metadata.month,
+      metadata.day,
+      //metadata.hour,
+      //metadata.minute,
       metadata.user,
       metadata.deviceId,
     ].join('-');
@@ -109,7 +133,7 @@ export class TelemetryService {
         this.dbService.get().query('medic-client/doc_by_type', { key: ['form'], include_docs: true })
       ])
       .then(([ddoc, formResults]) => {
-        const date = moment(this.getLastAggregatedDate());
+        const date = moment(this.getFirstAggregatedDate());
         const version = (ddoc.deploy_info && ddoc.deploy_info.version) || 'unknown';
         const forms = formResults.rows.reduce((keyToVersion, row) => {
           keyToVersion[row.doc.internalId] = row.doc._rev;
@@ -120,6 +144,9 @@ export class TelemetryService {
         return {
           year: date.year(),
           month: date.month() + 1,
+          day: date.date(),
+          //hour: date.hour(),
+          //minute: date.minute(),
           user: this.sessionService.userCtx().name,
           deviceId: this.getUniqueDeviceId(),
           versions: {
@@ -225,7 +252,7 @@ export class TelemetryService {
    *   metric_b:  { sum: -16, min: -4, max: -4, count: 4, sumsqr: 64 }
    * }
    *
-   * See: https://wiki.apache.org/couchdb/Built-In_Reduce_Functions#A_stats
+   * See: https://docs.couchdb.org/en/stable/ddocs/ddocs.html#_stats
    *
    * This single month aggregate document is of type 'telemetry', and is
    * stored in the user's meta DB (which replicates up to the main server)
@@ -255,14 +282,14 @@ export class TelemetryService {
     let db;
     this.queue = this.queue
       .then(() => db = this.getDb())
-      .then(() => this.storeIt(db, key, value))
       .then(() => this.submitIfNeeded(db))
+      .then(() => db = this.getDb())  // db is fetched again in case submitIfNeeded dropped the old reference
+      .then(() => this.storeIt(db, key, value))
       .catch(err => console.error('Error in telemetry service', err))
       .finally(() => {
         if (!db || db._destroyed || db._closed) {
           return;
         }
-
         try {
           db.close();
         } catch (err) {
