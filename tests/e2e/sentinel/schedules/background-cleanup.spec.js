@@ -32,7 +32,7 @@ describe('Background cleanup', () => {
         path: '/_bulk_docs',
         method: 'POST',
         body: {docs: userReadDocs}
-      }, true))
+      }))
       // Delete while stopped
       .then(() => utils.stopSentinel())
       .then(() => utils.deleteDoc(docToDelete._id))

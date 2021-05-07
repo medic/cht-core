@@ -95,7 +95,7 @@ module.exports = {
     }
 
     const muteState = isMuteForm(change.doc.form);
-    const contact = mutingUtils.getContact(change.doc);
+    const contact = change.doc.patient || change.doc.place;
 
     if (!contact) {
       module.exports._addErr('contact_not_found', change.doc);
