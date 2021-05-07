@@ -17,7 +17,6 @@ describe('Muting transition', () => {
     sinon.stub(mutingUtils, 'updateContact');
     sinon.stub(mutingUtils, 'updateRegistrations');
     sinon.stub(mutingUtils, 'updateMuteState');
-    sinon.stub(mutingUtils, 'getContact');
     sinon.stub(mutingUtils, 'updateMutingHistory');
 
     sinon.stub(utils, 'getSubjectIds');
@@ -254,26 +253,20 @@ describe('Muting transition', () => {
       it('should load the contact', () => {
         const contact = { _id: 'contact', patient_id: 'patient' };
         const doc = { _id: 'report', type: 'data_record', patient_id: 'patient', patient: contact };
-        mutingUtils.getContact.returns(contact);
         config.get.returns(mutingConfig);
 
         return transition.onMatch({ doc }).then(result => {
           chai.expect(result).to.equal(true);
-          chai.expect(mutingUtils.getContact.callCount).to.equal(1);
-          chai.expect(mutingUtils.getContact.args[0]).to.deep.equal([ doc ]);
           chai.expect(mutingUtils.updateMuteState.callCount).to.equal(0);
         });
       });
 
       it('should add an error when contact is not found', () => {
         const doc = { _id: 'report', type: 'data_record' };
-        mutingUtils.getContact.returns();
         config.get.returns(mutingConfig);
 
         return transition.onMatch({ doc }).then(result => {
           chai.expect(result).to.equal(true);
-          chai.expect(mutingUtils.getContact.callCount).to.equal(1);
-          chai.expect(mutingUtils.getContact.args[0]).to.deep.equal([ doc ]);
           chai.expect(doc.errors.length).to.equal(1);
           chai.expect(doc.errors[0].message).to.equal('Contact was not found');
           chai.expect(mutingUtils.updateMuteState.callCount).to.equal(0);
@@ -283,13 +276,10 @@ describe('Muting transition', () => {
       it('should add message if contact is already unmuted', () => {
         const contact = { _id: 'contact' };
         const doc = { _id: 'report', type: 'data_record', form: 'unmute', place: contact };
-        mutingUtils.getContact.returns(contact);
         config.get.returns(mutingConfig);
 
         return transition.onMatch({ doc }).then(result => {
           chai.expect(result).to.equal(true);
-          chai.expect(mutingUtils.getContact.callCount).to.equal(1);
-          chai.expect(mutingUtils.getContact.args[0]).to.deep.equal([ doc ]);
           chai.expect(mutingUtils.updateMuteState.callCount).to.equal(0);
           chai.expect(doc.tasks.length).to.equal(1);
           chai.expect(doc.tasks[0].messages[0].message).to.equal('Contact already unmuted');
@@ -299,13 +289,10 @@ describe('Muting transition', () => {
       it('should add message if contact is already muted', () => {
         const contact = { _id: 'contact', muted: 12345 };
         const doc = { _id: 'report', type: 'data_record', form: 'mute', patient: contact };
-        mutingUtils.getContact.returns(contact);
         config.get.returns(mutingConfig);
 
         return transition.onMatch({ doc }).then(result => {
           chai.expect(result).to.equal(true);
-          chai.expect(mutingUtils.getContact.callCount).to.equal(1);
-          chai.expect(mutingUtils.getContact.args[0]).to.deep.equal([ doc ]);
           chai.expect(mutingUtils.updateMuteState.callCount).to.equal(0);
           chai.expect(doc.tasks.length).to.equal(1);
           chai.expect(doc.tasks[0].messages[0].message).to.equal('Contact already muted');
@@ -316,14 +303,11 @@ describe('Muting transition', () => {
         const contact = { _id: 'contact' };
         const doc = { _id: 'report', type: 'data_record', form: 'mute', place: contact };
 
-        mutingUtils.getContact.returns(contact);
         config.get.returns(mutingConfig);
         mutingUtils.updateMuteState.resolves(true);
 
         return transition.onMatch({ id: 'report_id', doc }).then(result => {
           chai.expect(result).to.equal(true);
-          chai.expect(mutingUtils.getContact.callCount).to.equal(1);
-          chai.expect(mutingUtils.getContact.args[0]).to.deep.equal([ doc ]);
           chai.expect(mutingUtils.updateMuteState.callCount).to.equal(1);
           chai.expect(mutingUtils.updateMuteState.args[0]).to.deep.equal([ contact, true, 'report_id' ]);
           chai.expect(doc.tasks.length).to.equal(1);
@@ -333,16 +317,13 @@ describe('Muting transition', () => {
 
       it('should add message when unmuting', () => {
         const contact = { _id: 'contact', muted: 1234 };
-        const doc = { _id: 'report', type: 'data_record', form: 'unmute', place: contact };
+        const doc = { _id: 'report', type: 'data_record', form: 'unmute', patient: contact };
 
-        mutingUtils.getContact.returns(contact);
         config.get.returns(mutingConfig);
         mutingUtils.updateMuteState.resolves(true);
 
         return transition.onMatch({ id: 'report_id', doc }).then(result => {
           chai.expect(result).to.equal(true);
-          chai.expect(mutingUtils.getContact.callCount).to.equal(1);
-          chai.expect(mutingUtils.getContact.args[0]).to.deep.equal([ doc ]);
           chai.expect(mutingUtils.updateMuteState.callCount).to.equal(1);
           chai.expect(mutingUtils.updateMuteState.args[0]).to.deep.equal([ contact, false, 'report_id' ]);
           chai.expect(doc.tasks.length).to.equal(1);
@@ -354,7 +335,6 @@ describe('Muting transition', () => {
         const contact = { _id: 'contact', muted: 1234 };
         const doc = { _id: 'report', type: 'data_record', form: 'unmute', patient: contact };
 
-        mutingUtils.getContact.returns(contact);
         config.get.returns(mutingConfig);
         mutingUtils.updateMuteState.rejects({ some: 'error' });
 
@@ -363,8 +343,6 @@ describe('Muting transition', () => {
           .then(() => chai.expect(true).to.equal('should have thrown'))
           .catch(err => {
             chai.expect(err).to.deep.equal({ some: 'error' });
-            chai.expect(mutingUtils.getContact.callCount).to.equal(1);
-            chai.expect(mutingUtils.getContact.args[0]).to.deep.equal([ doc ]);
             chai.expect(mutingUtils.updateMuteState.callCount).to.equal(1);
             chai.expect(mutingUtils.updateMuteState.args[0]).to.deep.equal([ contact, false, 'report_id' ]);
             chai.expect(doc.tasks).to.equal(undefined);
@@ -382,7 +360,6 @@ describe('Muting transition', () => {
         contact: { phone: 'x' },
         patient: { _id: 'patient' },
       };
-      mutingUtils.getContact.returns(doc.patient);
 
       config.get.returns({
         mute_forms: [],
@@ -414,7 +391,6 @@ describe('Muting transition', () => {
           chai.expect(doc.tasks.length).to.equal(1);
           chai.expect(doc.tasks[0].messages[0].message).to.equal('patient id needs 5 numbers.');
           chai.expect(doc.tasks[0].messages[0].to).to.equal('x');
-          chai.expect(mutingUtils.getContact.callCount).to.equal(1);
           chai.expect(mutingUtils.updateMuteState.callCount).to.equal(0);
         });
     });
@@ -425,8 +401,8 @@ describe('Muting transition', () => {
         form: 'mute',
         fields: { patient_id: '12345' },
         contact: { phone: 'x' },
+        patient: { _id: 'contact' }
       };
-      const contact = { _id: 'contact' };
 
       config.get.returns({
         mute_forms: ['mute'],
@@ -457,7 +433,6 @@ describe('Muting transition', () => {
           }
         ]
       });
-      mutingUtils.getContact.returns(contact);
       mutingUtils.updateMuteState.resolves(true);
 
       return transition
@@ -465,7 +440,6 @@ describe('Muting transition', () => {
         .then(result => {
           chai.expect(result).to.equal(true);
           chai.expect(doc.errors).to.equal(undefined);
-          chai.expect(mutingUtils.getContact.callCount).to.equal(1);
           chai.expect(mutingUtils.updateMuteState.callCount).to.equal(1);
           chai.expect(doc.tasks.length).to.equal(1);
           chai.expect(doc.tasks[0].messages[0].to).to.equal('x');

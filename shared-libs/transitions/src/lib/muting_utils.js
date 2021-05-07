@@ -8,8 +8,6 @@ infodoc.initLib(db.medic, db.sentinel);
 
 const BATCH_SIZE = 50;
 
-const getContact = doc => doc.patient || doc.place;
-
 const getDescendants = (contactId) => {
   return db.medic
     .query('medic/contacts_by_depth', { key: [contactId] })
@@ -173,7 +171,6 @@ const muteUnsentMessages = doc => {
 module.exports = {
   updateMuteState: updateMuteState,
   updateContact: updateContact,
-  getContact: getContact,
   updateRegistrations: updateRegistrations,
   isMutedInLineage: isMutedInLineage,
   unmuteMessages: unmuteMessages,

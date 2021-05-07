@@ -153,9 +153,9 @@ describe('update_notifications', () => {
           form: 'off',
           type: 'data_record',
           fields: { patient_id: 'x' },
+          patient: { _id: 'id', patient_id: 'x' },
         },
       };
-      sinon.stub(mutingUtils, 'getContact').resolves({ _id: 'id', patient_id: 'x' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves(true);
 
       return transition.onMatch(change).then(changed => {
@@ -195,8 +195,6 @@ describe('update_notifications', () => {
         on_form: 'on',
       });
 
-      sinon.stub(mutingUtils, 'getContact').returns();
-
       const change = {
         doc: doc,
         form: 'on',
@@ -208,8 +206,6 @@ describe('update_notifications', () => {
         assert.equal(doc.tasks.length, 1);
         assert.equal(doc.tasks[0].messages[0].message, 'not found x');
         assert.equal(doc.tasks[0].messages[0].to, 'x');
-        assert.equal(mutingUtils.getContact.callCount, 1);
-        assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
       });
     });
 
@@ -217,8 +213,9 @@ describe('update_notifications', () => {
       const doc = {
         form: 'on',
         type: 'data_record',
-        fields: { patient_id: 'x' },
+        fields: { place_id: 'x' },
         contact: { phone: 'x' },
+        place: { _id: 'place' },
       };
 
       sinon.stub(transition, 'getConfig').returns({
@@ -277,6 +274,7 @@ describe('update_notifications', () => {
           phone: '+1234',
           name: 'woot',
         },
+        patient: { muted: false, name: 'Agatha' },
       };
 
       sinon.stub(transition, 'getConfig').returns({
@@ -296,7 +294,6 @@ describe('update_notifications', () => {
         off_form: 'off',
       });
 
-      sinon.stub(mutingUtils, 'getContact').returns({ muted: false, name: 'Agatha' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves(true);
 
       const change = {
@@ -312,8 +309,6 @@ describe('update_notifications', () => {
           doc.tasks[0].messages[0].message,
           'Thank you woot, no further notifications regarding Agatha will be sent until you submit START 123.'
         );
-        assert.equal(mutingUtils.getContact.callCount, 1);
-        assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 1);
         assert.deepEqual(mutingUtils.updateMuteState.args[0], [{ muted: false, name: 'Agatha' }, true, 'report_id']);
       });
@@ -328,6 +323,7 @@ describe('update_notifications', () => {
           phone: '+1234',
           name: 'woot',
         },
+        patient: { muted: false, name: 'Agatha' },
       };
 
       sinon.stub(transition, 'getConfig').returns({
@@ -338,7 +334,6 @@ describe('update_notifications', () => {
         off_form: 'off'
       });
 
-      sinon.stub(mutingUtils, 'getContact').resolves({ muted: false, name: 'Agatha' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves(true);
       const translate = sinon.stub(utils, 'translate').returns('translated value');
 
@@ -365,7 +360,8 @@ describe('update_notifications', () => {
         contact: {
           phone: '+1234',
           name: 'woot'
-        }
+        },
+        patient: { muted: true, name: 'Agatha' },
       };
 
       sinon.stub(transition, 'getConfig').returns({
@@ -380,7 +376,6 @@ describe('update_notifications', () => {
         on_form: 'on'
       });
 
-      sinon.stub(mutingUtils, 'getContact').returns({ muted: true, name: 'Agatha' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves();
 
       const change = {
@@ -396,8 +391,6 @@ describe('update_notifications', () => {
           doc.tasks[0].messages[0].message,
           'Thank you woot, notifications for Agatha 123 have been reactivated.'
         );
-        assert.equal(mutingUtils.getContact.callCount, 1);
-        assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 1);
         assert.deepEqual(mutingUtils.updateMuteState.args[0], [{ muted: true, name: 'Agatha' }, false, 'report_id']);
       });
@@ -411,7 +404,8 @@ describe('update_notifications', () => {
         contact: {
           phone: '+1234',
           name: 'woot'
-        }
+        },
+        patient: { muted: true, name: 'Agatha' },
       };
 
       sinon.stub(transition, 'getConfig').returns({
@@ -426,7 +420,6 @@ describe('update_notifications', () => {
         off_form: 'off'
       });
 
-      sinon.stub(mutingUtils, 'getContact').returns({ muted: true, name: 'Agatha' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves();
 
       return transition.onMatch({ doc }).then(changed => {
@@ -437,8 +430,6 @@ describe('update_notifications', () => {
           doc.tasks[0].messages[0].message,
           'Thank you woot, no further notifications regarding Agatha will be sent until you submit START 123.'
         );
-        assert.equal(mutingUtils.getContact.callCount, 1);
-        assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 0);
       });
     });
@@ -451,7 +442,8 @@ describe('update_notifications', () => {
         contact: {
           phone: '+1234',
           name: 'woot'
-        }
+        },
+        patient: { name: 'Agatha' },
       };
 
       sinon.stub(transition, 'getConfig').returns({
@@ -466,7 +458,6 @@ describe('update_notifications', () => {
         on_form: 'on'
       });
 
-      sinon.stub(mutingUtils, 'getContact').returns({ name: 'Agatha' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves();
 
       return transition.onMatch({ doc }).then(changed => {
@@ -477,8 +468,6 @@ describe('update_notifications', () => {
           doc.tasks[0].messages[0].message,
           'Thank you woot, notifications for Agatha 123 have been reactivated.'
         );
-        assert.equal(mutingUtils.getContact.callCount, 1);
-        assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 0);
       });
     });
@@ -492,22 +481,20 @@ describe('update_notifications', () => {
       const doc = {
         form: 'off',
         type: 'data_record',
-        fields: { patient_id: '123' },
+        fields: { place_id: '123' },
         contact: {
           phone: '+1234',
           name: 'woot'
-        }
+        },
+        place: { name: 'Agatha' },
       };
 
-      sinon.stub(mutingUtils, 'getContact').returns({ name: 'Agatha' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves(true);
 
       return transition.onMatch({ doc, id: 'id' }).then(changed => {
         assert.equal(changed, true);
         assert.equal(doc.errors.length, 1);
         assert.equal(doc.tasks, undefined);
-        assert.equal(mutingUtils.getContact.callCount, 1);
-        assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 1);
         assert.deepEqual(mutingUtils.updateMuteState.args[0], [{ name: 'Agatha' }, true, 'id']);
         assert.equal(
@@ -526,22 +513,20 @@ describe('update_notifications', () => {
       const doc = {
         form: 'on',
         type: 'data_record',
-        fields: { patient_id: '123' },
+        fields: { place_id: '123' },
         contact: {
           phone: '+1234',
           name: 'woot'
-        }
+        },
+        place: { name: 'Agatha', muted: 123456 },
       };
 
-      sinon.stub(mutingUtils, 'getContact').returns({ name: 'Agatha', muted: 123456 });
       sinon.stub(mutingUtils, 'updateMuteState').resolves(true);
 
       return transition.onMatch({ doc, id: 'changeid' }).then(changed => {
         assert.equal(changed, true);
         assert.equal(doc.errors.length, 1);
         assert.equal(doc.tasks, undefined);
-        assert.equal(mutingUtils.getContact.callCount, 1);
-        assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 1);
         assert.deepEqual(mutingUtils.updateMuteState.args[0], [{ name: 'Agatha', muted: 123456 }, false, 'changeid']);
         assert.equal(

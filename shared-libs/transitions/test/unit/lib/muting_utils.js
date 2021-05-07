@@ -19,28 +19,6 @@ describe('mutingUtils', () => {
   });
   afterEach(() => sinon.restore());
 
-  describe('getContact', () => {
-    it('should return patient when defined', () => {
-      chai.expect(mutingUtils.getContact({ patient: { _id: 'thing' } })).to.deep.equal({ _id: 'thing' });
-    });
-
-    it('should should return place when defined', () => {
-      chai.expect(mutingUtils.getContact({ place: { _id: 'the_place' } })).to.deep.equal({ _id: 'the_place' });
-    });
-
-    it('should prioritize patient over place', () => {
-      const doc = {
-        place: { _id: 'the place', data: 1 },
-        patient: { _id: 'the patient', data: 2 },
-      };
-      chai.expect(mutingUtils.getContact(doc)).to.deep.equal({_id: 'the patient', data: 2 });
-    });
-
-    it('should return undefined when neither place nor patient is defined', () => {
-      chai.expect(mutingUtils.getContact({})).to.equal(undefined);
-    });
-  });
-
   describe('updateRegistrations', () => {
     it('should do nothing if no patientIds are supplied', () => {
       return mutingUtils.updateRegistrations([], true).then(() => {

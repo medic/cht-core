@@ -86,7 +86,7 @@ module.exports = {
       return Promise.resolve();
     }
 
-    const contact = mutingUtils.getContact(doc);
+    const contact = doc.patient || doc.place;
 
     return transitionUtils.validate(config, doc).then(errors => {
       if (errors && errors.length > 0) {

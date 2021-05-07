@@ -365,14 +365,10 @@ exports.getMessage = function(configuration, translate, locale, logger) {
   if (!configuration) {
     return '';
   }
+  const translationKey = configuration.translation_key || configuration.translationKey;
   // use the translation key if provided
-  if (configuration.translation_key) {
-    return translate(configuration.translation_key, locale);
-  }
-
-  // use the translation key if provided
-  if (configuration.translationKey) {
-    return translate(configuration.translationKey, locale);
+  if (translationKey) {
+    return translate(translationKey, locale);
   }
 
   // otherwise, use the configured messages (deprecated)
@@ -391,7 +387,7 @@ exports.getMessage = function(configuration, translate, locale, logger) {
 };
 
 /**
- * @param {Object[]} The messages of the doc.
+ * @param {Array} messages - The messages of the doc.
  * @returns {Boolean} True if the message has errors.
  */
 exports.hasError = function(messages) {
