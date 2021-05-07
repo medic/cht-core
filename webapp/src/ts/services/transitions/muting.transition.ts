@@ -123,7 +123,9 @@ export class MutingTransition implements TransitionInterface {
     // store a reference of every hydrated parent contact. we will keep this main copy updated with the currently
     // correct muting state, instead of updating every copy from the ancestors inline lineage for every event.
     while (parent) {
-      context.hydratedDocs[parent._id] = parent;
+      if (parent._id) {
+        context.hydratedDocs[parent._id] = parent;
+      }
       parent = parent.parent;
     }
   }
@@ -283,10 +285,10 @@ export class MutingTransition implements TransitionInterface {
 
     context.contacts.forEach(contact => {
       const hydratedContact = context.hydratedDocs[contact._id];
-      // we compile a lineage array for the contact from the current context hydratedDocs (which are updated on every
-      // contact process and are up to date)
+      // compile a lineage array using the current context's hydratedDocs (these are updated when we
+      // process contacts and should up to date)
       const lineage = this.buildLineageFromContext(hydratedContact, context);
-      // we use the lineage param, which takes precedence over inlined lineage
+      // use the lineage param, which takes precedence over inlined object lineage
       const mutedParent = this.contactMutedService.getMutedParent(hydratedContact, lineage);
       if (mutedParent) {
         // store reportId if the parent was last muted offline
