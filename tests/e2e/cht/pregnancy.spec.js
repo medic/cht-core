@@ -6,9 +6,9 @@ const helper = require('../../helper');
 const analyticsPo = require('../../page-objects/analytics/analytics.po');
 const moment = require('moment');
 const formFiller = require('../../form-filling').fillForm;
-const pregnancyReport = require('../../factories/cht/reports/pregnancy.js').build();
-const pregnancyVisitReport = require('../../factories/cht/reports/pregnancy-visit').build();
-const deliveryReport = require('../../factories/cht/reports/delivery').build();
+const pregnancyReport = require('../../factories/cht/reports/pregnancy.js');
+const pregnancyVisitReport = require('../../factories/cht/reports/pregnancy-visit');
+const deliveryReport = require('../../factories/cht/reports/delivery');
 const userFactory = require('../../factories/cht/users/users');
 const personFactory = require('../../factories/cht/contacts/person');
 const place = require('../../factories/cht/contacts/place');
@@ -61,7 +61,7 @@ describe('Pregnancy workflow on cht : ', () => {
     await helper.clickElementNative(contactsPage.newActions);
     await helper.clickElementNative(contactsPage.formById('pregnancy'));
     await helper.waitUntilReadyNative(genericFormPo.formTitle);
-    await formFiller(pregnancyReport.fields, 'pregnancy', chtPregnancy);
+    await formFiller(pregnancyReport.build().fields, 'pregnancy', chtPregnancy);
     const activePregnancyCard = await contactsPage.cardElementByHeaderText('Active Pregnancy');
     await helper.waitUntilReadyNative(activePregnancyCard);
     const cardValues = await contactsPage.cardChildrenValueArray(activePregnancyCard);
@@ -92,7 +92,7 @@ describe('Pregnancy workflow on cht : ', () => {
     await helper.clickElementNative(contactsPage.newActions);
     await helper.clickElementNative(contactsPage.formById('pregnancy_home_visit'));
     await helper.waitUntilReadyNative(genericFormPo.formTitle);
-    await formFiller(pregnancyVisitReport.fields, 'pregnancy_home_visit');
+    await formFiller(pregnancyVisitReport.build().fields, 'pregnancy_home_visit');
     await helper.waitUntilReadyNative(activePregnancyCard);
     [weeksPregnant, deliveryDate, ancVisit, lastVisit] = await contactsPage.cardChildrenValueArray(activePregnancyCard);
     expect(weeksPregnant).toBe('34');
@@ -103,7 +103,7 @@ describe('Pregnancy workflow on cht : ', () => {
     await helper.clickElementNative(contactsPage.newActions);
     await helper.clickElementNative(contactsPage.formById('delivery'));
     await helper.waitUntilReadyNative(genericFormPo.formTitle);
-    await formFiller(deliveryReport.fields, 'delivery');
+    await formFiller(deliveryReport.build().fields, 'delivery');
     const pastPregnancyCard = await contactsPage.cardElementByHeaderText('Past pregnancy');
     await helper.waitUntilReadyNative(pastPregnancyCard);
     const [dateDelivered,
