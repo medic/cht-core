@@ -41,9 +41,6 @@ export class MutingTransition implements TransitionInterface {
 
   init(settings) {
     this.loadSettings(settings);
-    if (!this.transitionConfig.offline_muting) {
-      return false;
-    }
 
     const mutingForms = this.getMutingForms();
     if (!mutingForms || !Array.isArray(mutingForms) || !mutingForms.length) {
@@ -65,9 +62,9 @@ export class MutingTransition implements TransitionInterface {
 
   /**
    * Returns whether a document is a muting or unmuting report that should be processed.
-   * We only process new reports. The muting transition should not run when existing reports are edited.
-   * @param {Object} doc
-   * @returns {Boolean}
+   * We only process new reports. The muting transition should not run when reports are edited.
+   * @param {Doc} doc - the doc to check
+   * @returns {Boolean} - whether this is a new muting or unmuting report
    * @private
    */
   private isRelevantReport(doc) {
@@ -86,8 +83,8 @@ export class MutingTransition implements TransitionInterface {
   /**
    * Returns whether a document is a new contact.
    * The muting transition should not run on when existing contacts are edited.
-   * @param {Object} doc
-   * @returns {Boolean}
+   * @param {Object} doc - doc to check
+   * @returns {Boolean} - whether the doc is a new contact type document
    * @private
    */
   private isRelevantContact(doc) {
@@ -95,15 +92,14 @@ export class MutingTransition implements TransitionInterface {
   }
 
   /**
-   * Returns whether any of the docs from the batch should be processed
-   * @param docs
-   * @return {Boolean}
+   * @param {Array<Doc>} docs - docs to be saved
+   * @return {Boolean} - whether any of the docs from the batch should be processed
    */
   filter(docs) {
     return !!docs.filter(doc => this.isRelevantReport(doc) || this.isRelevantContact(doc)).length;
   }
 
-  private async hydrateDocs(context) {
+  private async hydrateDocs(context:MutingContext) {
     const docs = [
       ...context.reports,
       ...context.contacts,
@@ -111,42 +107,59 @@ export class MutingTransition implements TransitionInterface {
     const hydratedDocs = await this.lineageModelGeneratorService.docs(docs);
 
     for (const doc of hydratedDocs) {
-      context.hydratedDocs[doc._id] = doc;
-      let parent = doc.parent;
-      while (parent) {
-        context.hydratedDocs[parent._id] = parent;
-        parent = parent.parent;
-      }
+      this.storeHydratedDoc(doc, context);
+      this.storeHydratedDoc(doc.patient, context);
+      this.storeHydratedDoc(doc.place, context);
     }
   }
 
-  private async filterInvalidReports(context) {
+  private storeHydratedDoc(doc, context) {
+    if (!doc) {
+      return;
+    }
+
+    context.hydratedDocs[doc._id] = doc;
+    let parent = doc.parent;
+    // store a reference of every hydrated parent contact. we will keep this main copy updated with the currently
+    // correct muting state, instead of updating every copy from the ancestors inline lineage for every event.
+    while (parent) {
+      context.hydratedDocs[parent._id] = parent;
+      parent = parent.parent;
+    }
+  }
+
+  /**
+   * Iterates over muting reports, and validates each one. If a report has validation errors,
+   * they will be stored on the copy to be saved and the report will not be processed further.
+   * @param {MutingContext} context - current muting context
+   * @private
+   */
+  private async filterInvalidReports(context:MutingContext) {
     for (const [idx, report] of context.reports.entries()) {
       const hydratedReport = context.hydratedDocs[report._id];
-      const valid = await this.isValid(report, hydratedReport);
-      if (!valid) {
+      const errors = await this.validate(report, hydratedReport);
+      if (errors?.length) {
+        report.errors = errors;
         context.reports.splice(idx, 1);
         delete context.hydratedDocs[report._id];
       }
     }
   }
 
-  private async isValid(report, hydratedReport) {
-    const context = {
+  /**
+   * Provides correct message context for validation and returns validation results.
+   * @param {Doc} report - the original report doc
+   * @param {Doc} hydratedReport - the hydrated version of report
+   * @returns {Array[Object]}
+   * @private
+   */
+  private validate(report, hydratedReport) {
+    const errorMessageContext = {
       patient: hydratedReport.patient,
       place: hydratedReport.place,
     };
 
-    const errors = await this.validationService.validate(hydratedReport, this.transitionConfig, context);
-    if (errors && errors.length) {
-      report.errors = errors;
-    }
-
-    return !errors || !errors.length;
-  }
-
-  private getSubject(report) {
-    return report.patient || report.place;
+    return this.validationService.validate(hydratedReport, this.transitionConfig, errorMessageContext);
   }
 
   private async processReports(context) {
@@ -158,7 +171,7 @@ export class MutingTransition implements TransitionInterface {
 
   private processReport(report, hydratedReport, context) {
     const mutedState = this.isMuteForm(report.form);
-    const subject = this.getSubject(hydratedReport);
+    const subject = hydratedReport.patient || hydratedReport.place;
     if (!subject || !!this.contactMutedService.getMuted(subject) === mutedState) {
       // no subject or already in the correct state
       return Promise.resolve();
@@ -170,6 +183,19 @@ export class MutingTransition implements TransitionInterface {
     return this.updatedMuteState(subject, mutedState, report, context);
   }
 
+  private getKnownDoc(docId, context) {
+    return context.docs.find(doc => doc._id === docId);
+  }
+
+  /**
+   * Gets the topmost contact to be updated and updates it and all its descendents to have a correct muting state.
+   * Pushes newly read docs to the context docs list, to be returned to be saved after execution.
+   * @param {Doc} contact - the target of the muting event
+   * @param {Boolean} muted - true when muting, false when unmuting
+   * @param {Doc} report - the muting/unmuting report
+   * @param {MutingContext} context - current muting context
+   * @private
+   */
   private async updatedMuteState(contact, muted, report, context) {
     // when muting, mute the contact itself + all descendents
     let rootContactId = contact._id;
@@ -184,7 +210,8 @@ export class MutingTransition implements TransitionInterface {
 
     const contactsToProcess = await this.getContactsToProcess(contact, rootContactId, context);
     contactsToProcess.forEach(contactToProcess => {
-      const knownContact = context.docs.find(doc => doc._id === contactToProcess._id);
+      const knownContact = this.getKnownDoc(contactToProcess._id, context);
+      // if we've already loaded a contact, assume the copy we already have is the latest and up to date
       if (knownContact) {
         contactToProcess = knownContact;
       } else {
@@ -195,13 +222,14 @@ export class MutingTransition implements TransitionInterface {
     });
   }
 
-  private getRootContact(rootContactId, context) {
-    const knownContact = context.docs.find(doc => doc._id === rootContactId);
-    if (knownContact) {
-      return Promise.resolve(knownContact);
+  private getDoc(docId, context) {
+    const knownDoc = this.getKnownDoc(docId, context);
+    if (knownDoc) {
+      // if we've already loaded a doc, assume the copy we already have is the latest and up to date
+      return Promise.resolve(knownDoc);
     }
 
-    return this.dbService.get().get(rootContactId);
+    return this.dbService.get().get(docId);
   }
 
   private async getDescendents(rootContactId) {
@@ -212,26 +240,42 @@ export class MutingTransition implements TransitionInterface {
     return results.rows.map(row => row.doc);
   }
 
+  /**
+   * @param {Doc} contact - the current contact being processed
+   * @param {string} rootContactId - the topmost contact to be updated
+   * @param {MutingContext} context - current context
+   * @returns {Promise<Array[Doc]>} - a list of all contacts to be processed, including the current and root contacts
+   * @private
+   */
   private async getContactsToProcess(contact, rootContactId, context) {
-    const descendents = await this.getDescendents(rootContactId);
-    const rootContact = await this.getRootContact(rootContactId, context);
+    const contactsToProcess = await this.getDescendents(rootContactId);
 
-    descendents.push(rootContact);
-    const isContactADescendent = descendents.find(descendent => descendent._id === contact._id);
-    if (!isContactADescendent) {
-      descendents.push(contact);
+    const rootContact = await this.getDoc(rootContactId, context);
+    contactsToProcess.push(rootContact);
+
+    const found = contactsToProcess.find(descendent => descendent._id === contact._id);
+    if (!found) {
+      contactsToProcess.push(contact);
     }
 
-    return descendents;
+    return contactsToProcess;
   }
 
   private getLastMutingEvent(contact) {
-    return this.lastUpdatedOffline(contact) && contact.muting_history.offline?.slice(-1)[0] || {};
+    return this.lastUpdatedOffline(contact) &&
+      contact.muting_history.offline?.slice(-1)[0] ||
+      {};
   }
+
   private lastUpdatedOffline(contact) {
     return contact.muting_history?.last_update === this.OFFLINE;
   }
 
+  /**
+   * Mutes every new contact that has a muted ancestor.
+   * @param {MutingContext} context - current muting context
+   * @private
+   */
   private processContacts(context) {
     if (!context.contacts.length) {
       return;
@@ -239,10 +283,10 @@ export class MutingTransition implements TransitionInterface {
 
     context.contacts.forEach(contact => {
       const hydratedContact = context.hydratedDocs[contact._id];
-      // we compile a lineage array for the contact from the context's hydratedDocs (which are updated on every
+      // we compile a lineage array for the contact from the current context hydratedDocs (which are updated on every
       // contact process and are up to date)
-      const lineage = this.buildLineageFromHydratedDocs(hydratedContact, context);
-      // we use the lineage array param, which takes precedence over inlined lineage on the contact object
+      const lineage = this.buildLineageFromContext(hydratedContact, context);
+      // we use the lineage param, which takes precedence over inlined lineage
       const mutedParent = this.contactMutedService.getMutedParent(hydratedContact, lineage);
       if (mutedParent) {
         // store reportId if the parent was last muted offline
@@ -256,7 +300,7 @@ export class MutingTransition implements TransitionInterface {
     });
   }
 
-  private buildLineageFromHydratedDocs(contact, context) {
+  private buildLineageFromContext(contact, context) {
     let parent = contact.parent;
     const lineage = [];
     while (parent && parent._id) {
@@ -271,6 +315,16 @@ export class MutingTransition implements TransitionInterface {
     return keys.every(key => eventA[key] === eventB[key]);
   }
 
+  /**
+   * Updates a contact to set muted state and update muting history.
+   * Doesn't duplicate muting histories
+   * Consolidates muted state in context hydratedDocs
+   * @param {Doc} contact - contact doc to be updated
+   * @param {Boolean} muted - true when muting, false when unmuting
+   * @param {string} reportId - the muting report
+   * @param {MutingContext} context - current muting context
+   * @private
+   */
   private processContact(contact, muted, reportId, context) {
     if (!contact.muting_history) {
       // store "online" state when first processing this doc offline
@@ -309,8 +363,12 @@ export class MutingTransition implements TransitionInterface {
     }
   }
 
+  /**
+   * @param {Array<Doc>} docs - docs to run the transition over
+   * @returns {Promise<Array<Doc>>} - updated docs (may include additional docs)
+   */
   async run(docs) {
-    const context = {
+    const context:MutingContext = {
       docs,
       reports: [],
       contacts: [],
@@ -351,3 +409,21 @@ export class MutingTransition implements TransitionInterface {
   }
 }
 
+
+interface MutingContext {
+  docs:Array<Doc>;
+  reports:Array<Doc>;
+  contacts:Array<Doc>;
+  hydratedDocs:HydratedDocs;
+  mutedTimestamp:string;
+}
+
+interface HydratedDocs {
+  [uuid:string]:Doc;
+}
+
+interface Doc {
+  _id:string;
+  type:string;
+  [other:string]:unknown;
+}

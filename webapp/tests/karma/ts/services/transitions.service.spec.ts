@@ -37,7 +37,7 @@ describe('Transitions Service', () => {
     const settings = {
       transitions: {
         update_clinics: true,
-        muting: true,
+        muting: { offline: true },
       },
     };
     settingsService.get.resolves(settings);
@@ -71,7 +71,7 @@ describe('Transitions Service', () => {
     ]);
   });
 
-  it('should now load transitions when settings are missing', async () => {
+  it('should not load transitions when settings are missing', async () => {
     settingsService.get.resolves();
 
     await service.init();
@@ -103,8 +103,24 @@ describe('Transitions Service', () => {
     expect(mutingTransition.run.callCount).to.equal(0);
   });
 
+  it('should not load non-offline transitions', async () => {
+    settingsService.get.resolves({ transitions: { muting: { disable: false, offline: false } } });
+
+    await service.init();
+
+    expect(settingsService.get.callCount).to.equal(1);
+    expect(mutingTransition.init.callCount).to.equal(0);
+
+    const docs = [{ _id: 'a' }, { _id: 'b' }];
+    const results = await service.applyTransitions(docs);
+    expect(results).to.deep.equal([{ _id: 'a' }, { _id: 'b' }]);
+
+    expect(mutingTransition.filter.callCount).to.equal(0);
+    expect(mutingTransition.run.callCount).to.equal(0);
+  });
+
   it('should not load disabled transitions', async () => {
-    settingsService.get.resolves({ transitions: { muting: { disable: true } } });
+    settingsService.get.resolves({ transitions: { muting: { disable: true, offline: true } } });
 
     await service.init();
 
@@ -142,13 +158,15 @@ describe('Transitions Service', () => {
   });
 
   it('should not run transitions that fail initialization', async () => {
-    settingsService.get.resolves({ transitions: { muting: { disable: false } } });
+    settingsService.get.resolves({ transitions: { muting: { disable: false, offline: true } } });
     mutingTransition.init.returns(false);
 
     await service.init();
 
     expect(mutingTransition.init.callCount).to.equal(1);
-    expect(mutingTransition.init.args[0]).to.deep.equal([{ transitions: { muting: { disable: false } } }]);
+    expect(mutingTransition.init.args[0]).to.deep.equal([
+      { transitions: { muting: { disable: false, offline: true } } }
+    ]);
 
     expect(await service.applyTransitions([{ _id: 'a' }])).to.deep.equal([{ _id: 'a' }]);
     expect(mutingTransition.filter.callCount).to.equal(0);
@@ -156,14 +174,16 @@ describe('Transitions Service', () => {
   });
 
   it('should not run transitions when filtering returns false', async () => {
-    settingsService.get.resolves({ transitions: { muting: { disable: false } } });
+    settingsService.get.resolves({ transitions: { muting: { disable: false, offline: true } } });
     mutingTransition.init.returns(true);
     mutingTransition.filter.returns(false);
 
     await service.init();
 
     expect(mutingTransition.init.callCount).to.equal(1);
-    expect(mutingTransition.init.args[0]).to.deep.equal([{ transitions: { muting: { disable: false } } }]);
+    expect(mutingTransition.init.args[0]).to.deep.equal([
+      { transitions: { muting: { disable: false, offline: true } } }
+    ]);
 
     expect(await service.applyTransitions([{ _id: 'a' }])).to.deep.equal([{ _id: 'a' }]);
     expect(mutingTransition.filter.callCount).to.equal(1);
@@ -186,7 +206,7 @@ describe('Transitions Service', () => {
     });
 
     it('should catch transition loading errors', async () => {
-      settingsService.get.resolves({ transitions: { muting: true } });
+      settingsService.get.resolves({ transitions: { muting: { offline: true } } });
       mutingTransition.init.throws();
 
       await service.init();
@@ -199,7 +219,7 @@ describe('Transitions Service', () => {
     });
 
     it('should not run partial transitions', async () => {
-      settingsService.get.resolves({ transitions: { muting: true } });
+      settingsService.get.resolves({ transitions: { muting: { offline: true } } });
       mutingTransition.init.returns(true);
       mutingTransition.filter.returns(true);
       mutingTransition.run.callsFake((docs) => {

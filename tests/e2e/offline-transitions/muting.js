@@ -104,11 +104,10 @@ describe('Muting', () => {
   };
 
   const settings = {
-    transitions: { muting: true },
+    transitions: { muting: { offline: true } },
     muting: {
       mute_forms: ['mute_person', 'mute_clinic'],
       unmute_forms: ['unmute_person', 'unmute_clinic'],
-      offline_muting: true,
     },
   };
 
@@ -290,7 +289,7 @@ describe('Muting', () => {
 
     it('should not process muting offline if not enabled', async () => {
       const settingsWithDisabled = _.cloneDeep(settings);
-      settingsWithDisabled.muting.offline_muting = false;
+      settingsWithDisabled.transitions.muting.offline = false;
 
       await utils.stopSentinel();
       await updateSettings(settingsWithDisabled);

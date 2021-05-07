@@ -55,22 +55,10 @@ describe('Muting Transition', () => {
       expect(transition.init({ not_muting: 'yes' })).to.equal(false);
     });
 
-    it('should return false when transition not enabled', () => {
-      const settings = {
-        muting: {
-          mute_forms: ['mute'],
-          unmute_forms: ['unmute'],
-          offline_muting: false,
-        }
-      };
-      expect(transition.init(settings)).to.equal(false);
-    });
-
     it('should return false with incomplete config', () => {
       const settings = {
         muting: {
           unmute_forms: ['unmute'],
-          offline_muting: true,
         }
       };
       expect(transition.init(settings)).to.equal(false);
@@ -81,7 +69,6 @@ describe('Muting Transition', () => {
         muting: {
           mute_forms: ['mute'],
           unmute_forms: ['unmute'],
-          offline_muting: true,
         }
       };
       expect(transition.init(settings)).to.equal(true);
@@ -94,7 +81,6 @@ describe('Muting Transition', () => {
         muting: {
           mute_forms: ['mute'],
           unmute_forms: ['unmute'],
-          offline_muting: true,
         }
       };
 
@@ -160,7 +146,6 @@ describe('Muting Transition', () => {
         muting: {
           mute_forms: ['mute'],
           unmute_forms: ['unmute'],
-          offline_muting: true,
         }
       };
 
@@ -506,7 +491,7 @@ describe('Muting Transition', () => {
           }
         }];
 
-        lineageModelGenerator.docs.resolves([{
+        const hydratedDocs = [{
           _id: 'report',
           type: 'data_record',
           form: 'mute',
@@ -524,7 +509,9 @@ describe('Muting Transition', () => {
             },
             place_id: 'place_id',
           },
-        }]);
+        }];
+
+        lineageModelGenerator.docs.resolves(hydratedDocs);
 
         dbService.query.withArgs('medic-client/contacts_by_place').resolves({
           rows: [
@@ -593,17 +580,7 @@ describe('Muting Transition', () => {
         expect(dbService.get.callCount).to.equal(1);
         expect(dbService.get.args[0]).to.deep.equal(['place']);
         expect(contactMutedService.getMuted.callCount).to.equal(1);
-        expect(contactMutedService.getMuted.args[0]).to.deep.equal([{
-          _id: 'place',
-          name: 'place name',
-          type: 'health_center',
-          contact: { _id: 'chw', name: 'chw' },
-          parent: {
-            _id: 'parent',
-            name: 'parent',
-          },
-          place_id: 'place_id',
-        }]);
+        expect(contactMutedService.getMuted.args[0]).to.deep.equal([hydratedDocs[0].place]);
 
         const mutingDate = new Date(now).toISOString();
 
