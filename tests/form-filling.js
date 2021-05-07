@@ -23,7 +23,7 @@ const date = async (answer, answerVal) => {
 const defaultAction = async (answer, answerVal) => {
   const elm = element(by.css(answer.css));
   await helper.waitUntilReadyNative(elm);
-  await elm.sendKeys(answerVal);
+  await elm.sendKeys(answerVal,protractor.Key.TAB);
 };
 
 const answerActions = { checkbox, radio, date };
@@ -42,8 +42,7 @@ const repeats = (pathKeys) => {
 };
 
 const answerQuestions = async (questions, pathKeys, reportName) => {
-  for (let i = 0; i < questions.length; i++) {
-    const question = questions[i];
+  for (const question of questions) {
     const regex = new RegExp(`input\\[(data-name|name)="\\/${reportName}\\/`, 'g');
     const answerPath = question.css.replace(regex, '').replace('"]', '').replace(/\//g, '.');
     const answerVal = pathKeys[answerPath];
@@ -62,8 +61,8 @@ const fillForm = async (reportFields, reportName, allFormPages) => {
   const flatObj = flatten(reportFields);
   const pathKeys = repeats(flatObj);
   // const answers = await getVisibleAnswers();
-  for (let i = 0; i < allFormPages.length; i++) {
-    await answerQuestions(allFormPages[i], pathKeys, reportName);
+  for (const formPage of allFormPages) {
+    await answerQuestions(formPage, pathKeys, reportName);
     if (await helper.isDisplayed(genericFormPo.nextButton)) {
       await genericFormPo.nextPageNative();
     }
