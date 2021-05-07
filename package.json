@@ -41,7 +41,6 @@
     "angular-jsdoc": "^1.5.1",
     "angular-mocks": "^1.7.9",
     "autoprefixer": "^9.8.0",
-    "better-tail": "^0.2.0",
     "browserify-ngannotate": "^2.0.0",
     "bundlesize": "^0.18.0",
     "chai": "^4.2.0",
@@ -106,6 +105,7 @@
     "semver": "^7.3.2",
     "sinon": "^8.1.1",
     "sw-precache": "^5.2.1",
+    "tail": "^2.0.3",
     "time-grunt": "^2.0.0",
     "typescript": "^3.9.7",
     "webpack-bundle-analyzer": "^4.4.0"
