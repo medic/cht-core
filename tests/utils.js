@@ -646,6 +646,9 @@ module.exports = {
       constants.COUCH_PORT
     }/${constants.DB_NAME}`,
 
+  getInstanceUrl: () =>
+    `http://${auth.username}:${auth.password}@${constants.API_HOST}:${constants.API_PORT}`,
+
   getOrigin: () =>
     `http://${constants.API_HOST}:${constants.API_PORT}`,
 
