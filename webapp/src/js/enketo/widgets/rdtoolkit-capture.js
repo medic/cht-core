@@ -34,7 +34,7 @@
       window.CHTCore.Translate
         .get('rdtoolkit.disabled')
         .toPromise()
-        .then(label => $widget.append(`<p>${label}</p>`));
+        .then(label => $widget.append(`<label>${label}</label>`));
       return;
     }
 
