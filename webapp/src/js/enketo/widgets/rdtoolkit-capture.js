@@ -1,7 +1,7 @@
 {
   'use strict';
   const Widget = require('enketo-core/src/js/Widget');
-  const $ = require( 'jquery' );
+  const $ = require('jquery');
   const moment = require('moment');
   require('enketo-core/src/js/plugins');
 
@@ -29,31 +29,43 @@
   Rdtoolkitcapturewidget.prototype._init = function() {
     const $widget = $(this.element);
     const rdToolkitService = window.CHTCore.RDToolkit;
+
+    if (!rdToolkitService.enabled()) {
+      window.CHTCore.Translate
+        .get('rdtoolkit.disabled')
+        .toPromise()
+        .then(label => $widget.append(`<p>${label}</p>`));
+      return;
+    }
+
     displayActions($widget);
 
-    $widget.on('click', '.btn.rdtoolkit-capture-test', function() {
-      const form = getForm();
-      const sessionId = getFieldValue(form, 'rdtoolkit_session_id');
-      rdToolkitService
-        .captureRDTest(sessionId)
-        .then((response = {}) => {
-          const capturedTest = {
-            sessionId: response.sessionId || '',
-            state: response.state || '',
-            timeStarted: getDate(response.timeStarted),
-            timeResolved: getDate(response.timeResolved),
-            timeRead: getDate(response.timeRead),
-            results: response.results || [],
-            resultsDescription: getFormattedResult(response.results),
-            image: response.croppedImage
-          };
-
-          updateFields($widget, capturedTest);
-          hideActions($widget);
-          displayPreview($widget, capturedTest);
-        });
-    });
+    $widget.on('click', '.btn.rdtoolkit-capture-test', () => captureRDTestResult($widget, rdToolkitService));
   };
+
+  function captureRDTestResult($widget, rdToolkitService) {
+    const form = getForm();
+    const sessionId = getFieldValue(form, 'rdtoolkit_session_id');
+
+    rdToolkitService
+      .captureRDTest(sessionId)
+      .then((response = {}) => {
+        const capturedTest = {
+          sessionId: response.sessionId || '',
+          state: response.state || '',
+          timeStarted: getDate(response.timeStarted),
+          timeResolved: getDate(response.timeResolved),
+          timeRead: getDate(response.timeRead),
+          results: response.results || [],
+          resultsDescription: getFormattedResult(response.results),
+          image: response.croppedImage
+        };
+
+        updateFields($widget, capturedTest);
+        hideActions($widget);
+        displayPreview($widget, capturedTest);
+      });
+  }
 
   function displayActions($widget) {
     window.CHTCore.Translate

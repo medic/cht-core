@@ -337,59 +337,6 @@ module.exports = [
         }
       }
     ]
-  },
-
-  // RD Toolkit
-  {
-    name: 'rdtoolkit_capture_results',
-    icon: 'icon-follow-up',
-    title: 'task.rdtoolkit.capture.title',
-    appliesTo: 'reports',
-    appliesToType: ['rdtoolkit_provision'], // form
-    appliesIf: (contact, report) => {
-      return !!(getField(report, 'data.patient_id') && getField(report, 'data.rdtoolkit_session_id'));
-    },
-    resolvedIf: (contact, report, event, dueDate) => {
-      if (!contact.reports) {
-        return false;
-      }
-
-      const captureReport = contact.reports.find(reportDoc => {
-        if (reportDoc.form !== 'rdtoolkit_capture') {
-          return false;
-        }
-        return getField(reportDoc, 'data.rdtoolkit_session_id') === getField(report, 'data.rdtoolkit_session_id');
-      });
-
-      if (!captureReport || !getField(captureReport, 'data.rdtoolkit_results')) {
-        return false;
-      }
-
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);
-      const endTime = addDays(dueDate, event.end + 1).getTime();
-
-      return isFormArraySubmittedInWindow(contact.reports, ['rdtoolkit_capture'], startTime, endTime);
-    },
-    actions: [
-      {
-        type: 'report',
-        form: 'rdtoolkit_capture',
-        modifyContent: function(content, contact, report) {
-          content.patient_uuid = getField(report, 'patient_uuid');
-          content._patient_name = getField(report, 'data.patient_name');
-          content._patient_id = getField(report, 'data.patient_id');
-          content._rdtoolkit_session_id = getField(report, 'data.rdtoolkit_session_id');
-        }
-      }
-    ],
-    events: [
-      {
-        id: 'rdtoolkit_capture_event',
-        start: 1,
-        end: 2,
-        days: 1
-      }
-    ]
   }
 ];
 

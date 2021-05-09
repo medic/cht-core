@@ -29,35 +29,47 @@
   Rdtoolkitprovisionwidget.prototype._init = function() {
     const $widget = $(this.element);
     const rdToolkitService = window.CHTCore.RDToolkit;
+
+    if (!rdToolkitService.enabled()) {
+      window.CHTCore.Translate
+        .get('rdtoolkit.disabled')
+        .toPromise()
+        .then(label => $widget.append(`<p>${label}</p>`));
+      return;
+    }
+
     displayActions($widget);
 
-    $widget.on('click', '.btn.rdtoolkit-provision-test', function() {
-      const form = getForm();
-      // Using form's instance ID as RD Test ID
-      const sessionId = getFieldValue(form, 'instanceID').replace('uuid:', '');
-      const patientName = getFieldValue(form, 'patient_name');
-      const patientId = getFieldValue(form, 'patient_id');
-      const rdtFilter = getFieldValue(form, 'rdtoolkit_filter');
-      const monitorApiURL = getFieldValue(form, 'rdtoolkit_api_url');
-
-      if (!sessionId || !patientId) {
-        return;
-      }
-
-      rdToolkitService
-        .provisionRDTest(sessionId, patientId, patientName, rdtFilter, monitorApiURL)
-        .then((response = {}) => {
-          const sessionId = response.sessionId || '';
-          const timeStarted = getDate(response.timeStarted);
-          const timeResolved = getDate(response.timeResolved);
-          const state = response.state || '';
-
-          updateFields($widget, sessionId, state, timeStarted, timeResolved);
-          hideActions($widget);
-          displayPreview($widget, state, timeStarted, timeResolved);
-        });
-    });
+    $widget.on('click', '.btn.rdtoolkit-provision-test', () => provisionRDTest($widget, rdToolkitService));
   };
+
+  function provisionRDTest($widget, rdToolkitService) {
+    const form = getForm();
+    // Using form's instance ID as RD Test ID
+    const sessionId = getFieldValue(form, 'instanceID').replace('uuid:', '');
+    const patientId = getFieldValue(form, 'patient_id');
+
+    if (!sessionId || !patientId) {
+      return;
+    }
+
+    const patientName = getFieldValue(form, 'patient_name');
+    const rdtFilter = getFieldValue(form, 'rdtoolkit_filter');
+    const monitorApiURL = getFieldValue(form, 'rdtoolkit_api_url');
+
+    rdToolkitService
+      .provisionRDTest(sessionId, patientId, patientName, rdtFilter, monitorApiURL)
+      .then((response = {}) => {
+        const sessionId = response.sessionId || '';
+        const timeStarted = getDate(response.timeStarted);
+        const timeResolved = getDate(response.timeResolved);
+        const state = response.state || '';
+
+        updateFields($widget, sessionId, state, timeStarted, timeResolved);
+        hideActions($widget);
+        displayPreview($widget, state, timeStarted, timeResolved);
+      });
+  }
 
   function displayActions($widget) {
     window.CHTCore.Translate
@@ -91,9 +103,9 @@
         <br>
         <div>
           <span class="rdt-label">
-            ${window.CHTCore.Translate.instant('report.rdtoolkit_provision.rdtoolkit_preview_status')}
+            ${window.CHTCore.Translate.instant('report.rdtoolkit_provision.rdtoolkit_preview_state')}
           </span>
-          <span class="rdt-value">${window.CHTCore.Translate.instant(state) || state}</span>
+          <span class="rdt-value">${window.CHTCore.Translate.instant(state)}</span>
         </div>
         <div>
           <span class="rdt-label">
