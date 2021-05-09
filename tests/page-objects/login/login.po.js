@@ -1,3 +1,4 @@
+const { browser } = require('protractor');
 const helper = require('../../helper');
 
 const incorrectCredentialsText =
@@ -18,6 +19,23 @@ const changeLocale = locale => {
     return;
   }
   return element(by.css(`.locale[name="${locale}"]`)).click();
+};
+
+const labelForUser =  element(by.css('#form > label[for="user"]'));
+
+const labelForPassword = element(by.css('#form > label[for="password"]'));
+
+const errorMessageField = element(by.css('p.error.incorrect'));
+
+const getselectedLanguage = () => element(by.css('.locale.selected'));
+const getLanguage = async (selector) => {
+  const lang = await element.all(by.css(selector)).map(loc => {
+    return {
+      code: loc.getAttribute('name'),
+      name: loc.getText(),       
+    };
+  });
+  return lang;
 };
 
 module.exports = {
@@ -47,5 +65,22 @@ module.exports = {
       await browser.wait(() => helper.isTextDisplayed(incorrectCredentialsText), 2000);
     }
   },
-  returnToLogin: () => element(by.css('.btn[href="/medic/login"]'))
+  returnToLogin: () => element(by.css('.btn[href="/medic/login"]')),
+  
+  getAllLocales: async () => await getLanguage('.locale'),
+  
+  labelForUser: async () => await helper.getTextFromElementNative(labelForUser),
+  labelForPassword: async () => await helper.getTextFromElementNative(labelForPassword),
+  getselectedLanguage: async () => await getLanguage('.locale.selected'),
+
+  changeLanguage: async (code) => {
+    await changeLocale(code);
+    await getLoginButton().click();
+    await helper.waitUntilReadyNative(getselectedLanguage());
+    return {
+      user: await helper.getTextFromElementNative(labelForUser),
+      pass: await helper.getTextFromElementNative(labelForPassword),
+      error:await helper.getTextFromElementNative(errorMessageField)
+    };
+  },
 };

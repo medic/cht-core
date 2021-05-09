@@ -59,3 +59,5 @@ module.exports.getExtractedResourcesPath = () => {
 
   return path.resolve(destination);
 };
+
+module.exports.isTesting = module.exports.db === 'medic-test';

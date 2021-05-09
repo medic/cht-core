@@ -32,6 +32,7 @@ const settings = require('./controllers/settings');
 const bulkDocs = require('./controllers/bulk-docs');
 const monitoring = require('./controllers/monitoring');
 const africasTalking = require('./controllers/africas-talking');
+const rapidPro = require('./controllers/rapidpro');
 const infodoc = require('./controllers/infodoc');
 const authorization = require('./middleware/authorization');
 const hydration = require('./controllers/hydration');
@@ -82,6 +83,9 @@ app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
 
 // requires content-type application/x-www-form-urlencoded header
 const formParser = bodyParser.urlencoded({ limit: '32mb', extended: false });
+
+// requires content-type text/plain or application/xml header
+const textParser = bodyParser.text({limit: '32mb', type: [ 'text/plain', 'application/xml' ]});
 
 app.set('strict routing', true);
 app.set('trust proxy', true);
@@ -356,6 +360,8 @@ app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);
 app.post('/api/v1/sms/africastalking/incoming-messages', formParser, africasTalking.incomingMessages);
 app.post('/api/v1/sms/africastalking/delivery-reports', formParser, africasTalking.deliveryReports);
 
+app.post('/api/v1/sms/radpidpro/incoming-messages', jsonParser, rapidPro.incomingMessages);
+
 app.get('/api/sms/', (req, res) => res.redirect(301, '/api/sms'));
 app.get('/api/sms', smsGateway.get);
 
@@ -373,6 +379,7 @@ app.get('/api/v1/forms/', (req, res) => {
 });
 app.get('/api/v1/forms', forms.list);
 app.get('/api/v1/forms/:form', forms.get);
+app.post('/api/v1/forms/validate', textParser, forms.validate);
 
 app.get('/api/v1/users', users.get);
 app.postJson('/api/v1/users', users.create);

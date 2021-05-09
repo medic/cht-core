@@ -41,6 +41,7 @@ describe('login controller', () => {
     sinon.stub(environment, 'protocol').get(() => 'http');
     sinon.stub(environment, 'host').get(() => 'test.com');
     sinon.stub(environment, 'port').get(() => 1234);
+    sinon.stub(environment, 'isTesting').get(() => false);
 
     sinon.stub(auth, 'isOnlineOnly').returns(false);
   });

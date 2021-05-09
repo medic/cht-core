@@ -48,7 +48,7 @@ const getHomeUrl = userCtx => {
   // For Test DB, always redirect to the application, the tests rely on the UI elements of application page
   if (auth.isOnlineOnly(userCtx) &&
       auth.hasAllPermissions(userCtx, 'can_configure') &&
-      environment.db !== 'medic-test') {
+      !environment.isTesting) {
     return '/admin/';
   }
   return '/';

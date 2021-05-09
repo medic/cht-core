@@ -137,6 +137,7 @@ require('./services/translation-null-interpolation');
 require('./services/update-settings');
 require('./services/update-user');
 require('./services/user');
+require('./services/validate-form');
 require('./actions');
 require('./selectors');
 require('./reducers');
