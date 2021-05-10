@@ -17,13 +17,13 @@ const radio = async (answer, answerVal) => {
 const date = async (answer, answerVal) => {
   const elm = element(by.css(`${answer.css} + div input`));
   await helper.waitUntilReadyNative(elm);
-  await elm.sendKeys(answerVal);
+  await elm.sendKeys(answerVal,protractor.Key.TAB);
 };
 
 const defaultAction = async (answer, answerVal) => {
   const elm = element(by.css(answer.css));
   await helper.waitUntilReadyNative(elm);
-  await elm.sendKeys(answerVal,protractor.Key.TAB);
+  await elm.sendKeys(answerVal);
 };
 
 const answerActions = { checkbox, radio, date };
@@ -48,7 +48,7 @@ const answerQuestions = async (questions, pathKeys, reportName) => {
     const answerVal = pathKeys[answerPath];
     if (answeredQuestions.includes(question.css) || !answerVal) {
       //already answered this question or there is no corresponding value in the report.
-      return;
+      continue;
     }
 
     const actionToExecute = answerActions[question.type] || defaultAction;
