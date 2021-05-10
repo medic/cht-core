@@ -75,6 +75,26 @@ describe('Muting Transition', () => {
     });
   });
 
+  describe('isUnmuteForm', () => {
+    it('should return false when no configuration', () => {
+      expect(transition.isUnmuteForm('aaa')).to.equal(false);
+    });
+
+    it('should return false when argument is not a unmute form', () => {
+      transition.init({ muting: { unmute_forms: ['a', 'b'] } });
+      expect(transition.isUnmuteForm('form')).to.equal(false);
+      expect(transition.isUnmuteForm('c')).to.equal(false);
+      expect(transition.isUnmuteForm('')).to.equal(false);
+    });
+
+    it('should return true when argument is a unmute form', () => {
+      transition.init({ muting: { unmute_forms: ['unmute1', 'unmute2'] } });
+      expect(transition.isUnmuteForm('unmute1')).to.equal(true);
+      expect(transition.isUnmuteForm('unmute2')).to.equal(true);
+    });
+
+  });
+
   describe('filter', () => {
     beforeEach(async () => {
       const settings = {
@@ -84,7 +104,7 @@ describe('Muting Transition', () => {
         }
       };
 
-      await transition.init(settings);
+      transition.init(settings);
     });
     it('should return false when there are no relevant docs', async () => {
       const editMutingReport = [ { _id: 'existent_report', _rev: '1', type: 'data_record', form: 'mute' }, ];
