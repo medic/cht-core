@@ -77,8 +77,16 @@ const page4 = [
     css: 'input[data-name="/delivery/babys_condition/baby_repeat/baby_details/birth_weight_know"]'
   },
   {
+    type: 'text',
+    css: 'input[name="/delivery/babys_condition/baby_repeat/baby_details/birth_weight"]'
+  },  
+  {
     type: 'radio',
     css: 'input[data-name="/delivery/babys_condition/baby_repeat/baby_details/birth_length_know"]'
+  },
+  {
+    type: 'text',
+    css: 'input[name="/delivery/babys_condition/baby_repeat/baby_details/birth_length"]'
   },
   {
     type: 'radio',
