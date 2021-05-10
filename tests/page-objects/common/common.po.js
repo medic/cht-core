@@ -33,8 +33,6 @@ const modalFooter = element(by.css('.modal-footer'));
 const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.submit'));
 const displayTime = element(by.css('[ui-sref="display.date-time"]'));
 const messagesList = element(by.id('message-list'));
-const contactsList = element(by.id('contacts-list'));
-const reportsList = element(by.id('reports-list'));
 const languagePreferenceHeading = element(by.css('#language-preference-heading'));
 const selectedPreferenceHeading = element(by.css('#language-preference-heading > h4:nth-child(1) > span:nth-child(3)'));
 const messagesLanguage = element(by.css('.locale a.selected span.rectangle'));
@@ -43,8 +41,6 @@ const defaultLanguage=  element(by.css('.locale-outgoing a.selected span.rectang
 
 module.exports = {
   messagesList,
-  contactsList,
-  reportsList,
   messagesTab,
   analyticsTab,
   calm: async () => {

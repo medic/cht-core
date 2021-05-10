@@ -35,14 +35,14 @@ const languageDisplayed = async (code) =>{
   const languageName = await helper.getTextFromElementNative(languageDiv);
   return languageName;
 };
-const defaultLanguageDropdown=element(by.css('#locale'));
+const defaultLanguageDropdown = element(by.css('#locale'));
 const setDefaultLanguage = async (language) => {
   await helper.selectDropdownByText(defaultLanguageDropdown, language);
   await helper.clickElementNative(submitButton);
   return helper.waitElementToBeClickable(submitButton);
 };
 
-const outgoingLanguageDropdown=element(by.css('#locale-outgoing'));
+const outgoingLanguageDropdown = element(by.css('#locale-outgoing'));
 const setOutgoingMessageLanguage = async (language) => {
   await helper.selectDropdownByText(outgoingLanguageDropdown, language);
   await helper.clickElementNative(submitButton);
