@@ -8,9 +8,10 @@ const languageCodeInput = element(by.model('language.code'));
 const languageNameInput  = element(by.model('language.name'));
 const languageSubmitButton  = element(by.css('a.btn.submit.ng-scope.ng-binding.btn-primary'));
 const applicationLink = element(by.css('i.fa.fa-fw.fa-home'));
+const defaultLocaleOption = element(by.css('#locale'));
+const outgoingLocaleOption = element(by.css('#locale-outgoing'));
 
 const goToLanguagesTab = async () => {
-  await browser.sleep(3000);
   await browser.get(utils.getAdminBaseUrl() + 'display/languages');
   await utils.resetBrowserNative(addLanguageButton);
   await helper.waitElementToBeVisibleNative(addLanguageButton);
@@ -38,7 +39,7 @@ const defaultLanguageDropdown=element(by.css('#locale'));
 const setDefaultLanguage = async (language) => {
   await helper.selectDropdownByText(defaultLanguageDropdown, language);
   await helper.clickElementNative(submitButton);
-  await helper.waitElementToBeClickable(submitButton);
+  return helper.waitElementToBeClickable(submitButton);
 };
 
 const outgoingLanguageDropdown=element(by.css('#locale-outgoing'));
@@ -48,10 +49,9 @@ const setOutgoingMessageLanguage = async (language) => {
   await helper.waitElementToBeClickable(submitButton);
 };
 
-const isLanguageSelected = async (selector, code) => {
-  await helper.clickElementNative(element(by.css(selector)));
+const isLanguageSelected = async (element, code) => {
+  await helper.clickElementNative(element);
   const option = await element(by.css(`option[value="string:${code}"]`));
-  browser.actions().sendKeys(protractor.Key.ESCAPE).perform();
   return option.getAttribute('selected');
 };
 
@@ -60,6 +60,8 @@ const goToApplication = async () => {
 };
 
 module.exports = {
+  defaultLocaleDiv: defaultLocaleOption,
+  outgoingLocaleDiv: outgoingLocaleOption,
   goToLanguagesTab,
   openAddLanguageModal,
   addNewLanguage,

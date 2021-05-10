@@ -1,5 +1,5 @@
 const languagesPage = require('../../page-objects/display/languages.po');
-const commonPo=require('../../page-objects/common/common.po');
+const commonPo = require('../../page-objects/common/common.po');
 const utils = require('../../utils');
 const helper = require('../../helper');
 const userSettingsElements = require('../../page-objects/user-settings/user-settings.po');
@@ -30,12 +30,12 @@ describe('Adding new language', () => {
   it('should be set as Default language ',async () => {
     await languagesPage.setDefaultLanguage('Afrikaans');
     await languagesPage.setOutgoingMessageLanguage('Afrikaans');
-    expect(await languagesPage.isLanguageSelected('#locale', 'afr')).toBe('true');
-    expect(await languagesPage.isLanguageSelected('#locale-outgoing', 'afr')).toBe('true');
+    expect(await languagesPage.isLanguageSelected(languagesPage.defaultLocaleOption, 'afr')).toBe('true');
+    expect(await languagesPage.isLanguageSelected(languagesPage.outgoingLocaleOption, 'afr')).toBe('true');
   });
 
   it('should reflect in config wizard', async () => {
-    languagesPage.goToApplication();
+    await languagesPage.goToApplication();
     const [heading, messageLanguage, appLanguage]= await commonPo.getDefaultLanguages();
     expect(heading).toBe('Afrikaans, Afrikaans');
     expect(messageLanguage).toBe('Afrikaans');

@@ -85,13 +85,10 @@ module.exports = {
     await openSubmenu('configuration wizard');
     await helper.waitUntilReadyNative(wizardTitle);
     await helper.waitUntilTranslated(wizardTitle);
-    const wizardTitleText = await helper.getTextFromElementNative(wizardTitle);
-    console.log('title text', wizardTitleText);
     await helper.clickElementNative(languagePreferenceHeading);
     const headingText = await helper.getTextFromElementNative(selectedPreferenceHeading);
     const messageLang = await messagesLanguage.getAttribute('innerText');
     const defaultLang = await defaultLanguage.getAttribute('innerText');
-    expect (headingText).toBe(`${messageLang}, ${defaultLang}`);
     return  [headingText, messageLang, defaultLang];
   },
 
