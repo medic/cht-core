@@ -32,11 +32,11 @@ export class MutingTransition implements TransitionInterface {
   }
 
   private getMutingForms() {
-    return this.transitionConfig[this.MUTE_PROPERTY];
+    return this.transitionConfig?.[this.MUTE_PROPERTY] || [];
   }
 
   private getUnmutingForms() {
-    return this.transitionConfig[this.UNMUTE_PROPERTY];
+    return this.transitionConfig?.[this.UNMUTE_PROPERTY] || [];
   }
 
   init(settings) {
@@ -56,7 +56,7 @@ export class MutingTransition implements TransitionInterface {
     return this.getMutingForms().includes(form);
   }
 
-  private isUnmuteForm(form) {
+  isUnmuteForm(form) {
     return this.getUnmutingForms().includes(form);
   }
 

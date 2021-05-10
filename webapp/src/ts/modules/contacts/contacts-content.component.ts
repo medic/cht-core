@@ -22,6 +22,8 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { SessionService } from '@mm-services/session.service';
+import { MutingTransition } from '@mm-services/transitions/muting.transition';
+import { ContactMutedService } from '@mm-services/contact-muted.service';
 
 @Component({
   selector: 'contacts-content',
@@ -65,6 +67,8 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     private userSettingsService: UserSettingsService,
     private responsiveService: ResponsiveService,
     private sessionService:SessionService,
+    private mutingTransition:MutingTransition,
+    private contactMutedService:ContactMutedService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -233,6 +237,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     await this.setChildTypesBySelectedContact();
     await this.setUserSettings();
     await this.setSettings();
+    this.initMutingTransition();
 
     this.globalActions.setRightActionBar({
       relevantForms: [], // This disables the "New Action" button until forms load
@@ -266,6 +271,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       .get()
       .then(settings => this.settings = settings)
       .catch(error => console.error('Error fetching settings', error));
+  }
+
+  private initMutingTransition() {
+    this.mutingTransition.init(this.settings);
   }
 
   private async setChildTypesBySelectedContact() {
@@ -340,13 +349,17 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
           .map(xForm => {
             const title = xForm.translation_key ?
               this.translateService.instant(xForm.translation_key) : this.translateFromService.get(xForm.title);
-            const isUnmute = !!(xForm.internalId && this.settings?.muting?.unmute_forms?.includes(xForm.internalId));
+
+            const isUnmuteForm = !!xForm.internalId && this.mutingTransition.isUnmuteForm(xForm.internalId);
+            const isMuted = this.contactMutedService.getMuted(this.selectedContact.doc);
+            const showUnmuteModal = isMuted && !isUnmuteForm;
+
             return {
               id: xForm._id,
               code: xForm.internalId,
               title: title,
               icon: xForm.icon,
-              showUnmuteModal: this.selectedContact.doc?.muted && !isUnmute
+              showUnmuteModal: showUnmuteModal,
             };
           })
           .sort((a, b) => a.title?.localeCompare(b.title));
