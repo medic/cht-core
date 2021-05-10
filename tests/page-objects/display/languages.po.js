@@ -49,8 +49,8 @@ const setOutgoingMessageLanguage = async (language) => {
   await helper.waitElementToBeClickable(submitButton);
 };
 
-const isLanguageSelected = async (element, code) => {
-  await helper.clickElementNative(element);
+const isLanguageSelected = async (el, code) => {
+  await helper.clickElementNative(el);
   const option = await element(by.css(`option[value="string:${code}"]`));
   return option.getAttribute('selected');
 };
