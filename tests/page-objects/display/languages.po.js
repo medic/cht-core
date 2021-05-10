@@ -60,8 +60,8 @@ const goToApplication = async () => {
 };
 
 module.exports = {
-  defaultLocaleDiv: defaultLocaleOption,
-  outgoingLocaleDiv: outgoingLocaleOption,
+  defaultLocaleOption,
+  outgoingLocaleOption,
   goToLanguagesTab,
   openAddLanguageModal,
   addNewLanguage,
