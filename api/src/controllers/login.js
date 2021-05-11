@@ -171,13 +171,12 @@ const setCookies = (req, res, sessionRes) => {
       setUserCtxCookie(res, userCtx);
       // Delete login=force cookie
       res.clearCookie('login');
-      return auth
-        .getUserSettings(userCtx)
-        .catch(err => {
-          if (err.status === 404 && auth.isDbAdmin(userCtx)) {
+
+      return Promise.resolve()
+        .then(() => {
+          if (auth.isDbAdmin(userCtx)) {
             return users.createAdmin(userCtx);
-          }
-          throw err;
+          }      
         })
         .then(() => {
           const selectedLocale = req.body.locale

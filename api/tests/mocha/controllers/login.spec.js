@@ -686,9 +686,7 @@ describe('login controller', () => {
       auth.isOnlineOnly.returns(true);
       sinon.stub(auth, 'isDbAdmin').returns(true);
       sinon.stub(auth, 'hasAllPermissions').returns(true);
-      sinon.stub(auth, 'getUserSettings')
-        .onCall(0).rejects({ status: 404 })
-        .onCall(1).resolves({ });
+      sinon.stub(auth, 'getUserSettings');
       return controller.post(req, res).then(() => {
         chai.expect(request.post.callCount).to.equal(1);
         chai.expect(auth.getUserCtx.callCount).to.equal(1);
@@ -697,8 +695,7 @@ describe('login controller', () => {
         chai.expect(auth.isDbAdmin.args[0]).to.deep.equal([userCtx]);
         chai.expect(users.createAdmin.callCount).to.equal(1);
         chai.expect(users.createAdmin.args[0]).to.deep.equal([userCtx]);
-        chai.expect(auth.getUserSettings.callCount).to.equal(1);
-        chai.expect(auth.getUserSettings.args).to.deep.equal([[userCtx]]);
+        chai.expect(auth.getUserSettings.callCount).to.equal(0);
         chai.expect(res.status.callCount).to.equal(1);
         chai.expect(res.status.args[0][0]).to.equal(302);
         chai.expect(res.send.args[0][0]).to.equal('/admin/');

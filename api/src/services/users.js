@@ -516,12 +516,16 @@ module.exports = {
 
   /*
   * Take the userCtx of an admin user and create the _user doc and user-settings doc
+  * if they do not already exist.
   */
   createAdmin: userCtx => {
-    const data = { username: userCtx.name, roles: ['admin'] };
-    return validateNewUsername(userCtx.name)
-      .then(() => createUser(data, {}))
-      .then(() => createUserSettings(data, {}));
+    return validateUser(createID(userCtx.name))
+      .catch(() => {
+        const data = { username: userCtx.name, roles: ['admin'] };
+        return validateNewUsername(userCtx.name)
+          .then(() => createUser(data, {}))
+          .then(() => createUserSettings(data, {}));
+      });
   },
 
   /**

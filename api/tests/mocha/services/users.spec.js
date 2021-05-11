@@ -1347,7 +1347,7 @@ describe('Users service', () => {
           chai.expect(err).to.deep.include({ code: 400 });
           chai.expect(db.medic.get.callCount).to.equal(1);
           chai.expect(db.medic.get.args[0]).to.deep.equal(['org.couchdb.user:my_user']);
-          chai.expect(db.users.get.callCount).to.equal(1);
+          chai.expect(db.users.get.callCount).to.equal(2);
           chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:my_user']);
         });
     });
