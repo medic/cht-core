@@ -91,6 +91,16 @@ const transitionsConfig = {
       }],
     }]
   }],
+  update_clinics: [ {
+    form: 'TEMP',
+    messages: [
+      {
+        event_type: 'sys.facility_not_found',
+        recipient: 'reporting_unit',
+        translation_key: 'sys.facility_not_found',
+      }
+    ],
+  }],
   alerts: [{
     form: 'TEMP',
     condition: 'doc.reported_date',

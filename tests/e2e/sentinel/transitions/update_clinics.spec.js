@@ -128,7 +128,17 @@ describe('update_clinics', () => {
   it('should add facility_not_found', () => {
     const settings = {
       transitions: { update_clinics: true },
-      forms: { 'A': { public_form: false } }
+      forms: { 'A': { public_form: false } },
+      update_clinics: [ {
+        form: 'A',
+        messages: [
+          {
+            event_type: 'sys.facility_not_found',
+            recipient: 'reporting_unit',
+            translation_key: 'sys.facility_not_found',
+          }
+        ],
+      }]
     };
 
     const doc1 = {

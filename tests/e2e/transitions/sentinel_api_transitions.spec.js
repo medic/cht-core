@@ -340,7 +340,17 @@ describe('transitions', () => {
         registration: true,
         update_clinics: true
       },
-      forms: formsConfig
+      forms: formsConfig,
+      update_clinics: [ {
+        form: 'CHILD',
+        messages: [
+          {
+            event_type: 'sys.facility_not_found',
+            recipient: 'reporting_unit',
+            translation_key: 'sys.facility_not_found',
+          }
+        ],
+      }]
     };
     Object.assign(settings, transitionsConfig);
 

@@ -347,7 +347,7 @@ describe('multi_report_alerts', () => {
       }],
       forms: { FORM: { } },
       update_clinics: [ {
-        form: 'A',
+        form: 'FORM',
         messages: [
           {
             event_type: 'sys.facility_not_found',
