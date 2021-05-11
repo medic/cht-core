@@ -300,7 +300,18 @@ describe('update clinic', () => {
     };
 
     sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
-    sinon.stub(config, 'get').withArgs('forms').returns({ 'someForm': {} });
+    const stubbedConfig = sinon.stub(config, 'get');
+    stubbedConfig.returns([ {
+      form: 'someForm',
+      messages: [
+        {
+          event_type: 'sys.facility_not_found',
+          recipient: 'reporting_unit',
+          translation_key: 'sys.facility_not_found',
+        }
+      ],
+    }]);
+    stubbedConfig.withArgs('forms').returns({ 'someForm': {} });
     sinon.stub(utils, 'translate').returns('translated');
     sinon.stub(utils, 'getLocale').returns('locale');
 
@@ -310,10 +321,10 @@ describe('update clinic', () => {
       assert.equal(doc.errors.length, 1);
       assert.deepEqual(doc.errors[0], {
         code: 'sys.facility_not_found',
-        message: 'messages.generic.sys.facility_not_found'
+        message: 'translated'
       });
-      assert.equal(utils.translate.callCount, 1);
-      assert.deepEqual(utils.translate.args[0], ['messages.generic.sys.facility_not_found', 'en']);
+      assert.equal(utils.translate.callCount, 2); // called by messages.addMessage and messages.getMessage
+      assert.deepEqual(utils.translate.args[0], ['sys.facility_not_found', 'locale']);
     });
   });
 
@@ -325,8 +336,19 @@ describe('update clinic', () => {
     };
 
     sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
-    sinon.stub(config, 'get').withArgs('forms').returns({ 'someForm': {} });
     sinon.stub(utils, 'translate').returns('facility not found');
+    const stubbedConfig = sinon.stub(config, 'get');
+    stubbedConfig.returns([ {
+      form: 'someForm',
+      messages: [
+        {
+          event_type: 'sys.facility_not_found',
+          recipient: 'reporting_unit',
+          translation_key: 'sys.facility_not_found',
+        }
+      ],
+    }]);
+    stubbedConfig.withArgs('forms').returns({ 'someForm': {} });
 
     return transition.onMatch({ doc }).then(changed => {
       assert(changed);

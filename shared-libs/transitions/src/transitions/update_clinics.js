@@ -8,6 +8,10 @@ const FACILITY_NOT_FOUND = 'sys.facility_not_found';
 
 const config = require('../config');
 
+const getConfig = () => config.get(NAME) || [];
+
+const getConfiguredForm = (form) => form && getConfig().find(item => item && item.form === form);
+
 const getContactByRefid = doc => {
   const params = {
     key: ['external', doc.refid],
@@ -100,8 +104,9 @@ module.exports = {
 
       const form = change.doc.form && utils.getForm(change.doc.form);
       if (!form || !form.public_form) {
-        if (form && !form.public_form) {
-          transitionUtils.addRejectionMessage(change.doc, {}, FACILITY_NOT_FOUND);
+        if (form) {
+          const formConfig = getConfiguredForm(change.doc.form);
+          transitionUtils.addRejectionMessage(change.doc, formConfig, FACILITY_NOT_FOUND);
           return true;
         }
 
@@ -109,7 +114,7 @@ module.exports = {
         const error = {
           code: FACILITY_NOT_FOUND,
           message
-        }; 
+        };
         utils.addError(change.doc, error);
         return true;
       }
