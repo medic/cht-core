@@ -133,10 +133,8 @@ export class AppComponent implements OnInit {
   private loadTranslations() {
     this.translationsLoaded = this.languageService
       .get()
-      .then((language) => {
-        this.setLanguageService.set(language, false);
-        this.globalActions.setTranslationsLoaded();
-      })
+      .then((language) => this.setLanguageService.set(language, false))
+      .then(() => this.globalActions.setTranslationsLoaded())
       .catch(err => {
         console.error('Error loading language', err);
       });

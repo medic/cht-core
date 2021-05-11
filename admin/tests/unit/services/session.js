@@ -48,6 +48,8 @@ describe('Session service', function() {
   });
 
   it('logs out', function(done) {
+    const expected = { name: 'adam' };
+    ipCookie.returns(expected);
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
     $httpBackend
@@ -55,7 +57,7 @@ describe('Session service', function() {
       .respond(200);
     service.logout();
     $httpBackend.flush();
-    chai.expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
+    chai.expect(location.href).to.equal(`/DB_NAME/login?redirect=CURRENT_URL&username=${expected.name}`);
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
     done();
   });
@@ -98,7 +100,8 @@ describe('Session service', function() {
   });
 
   it('logs out if remote userCtx inconsistent', function(done) {
-    ipCookie.returns({ name: 'bryan' });
+    const expected = { name: 'adam' };
+    ipCookie.returns(expected);
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
     $httpBackend
@@ -109,7 +112,7 @@ describe('Session service', function() {
       .respond(200);
     service.init();
     $httpBackend.flush();
-    chai.expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
+    chai.expect(location.href).to.equal(`/DB_NAME/login?redirect=CURRENT_URL&username=${expected.name}`);
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
     done();
   });

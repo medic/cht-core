@@ -1,5 +1,5 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideMockStore } from '@ngrx/store/testing';
+import { async, ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -18,6 +18,7 @@ import { Selectors } from '@mm-selectors/index';
 describe('Form Type Filter Component', () => {
   let component:FormTypeFilterComponent;
   let fixture:ComponentFixture<FormTypeFilterComponent>;
+  let store;
 
   beforeEach(async(() => {
     const mockedSelectors = [
@@ -46,6 +47,7 @@ describe('Form Type Filter Component', () => {
         fixture = TestBed.createComponent(FormTypeFilterComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
+        store = TestBed.inject(MockStore);
       });
   }));
 
@@ -94,4 +96,47 @@ describe('Form Type Filter Component', () => {
     expect(dropdownFilterClearSpy.callCount).to.equal(1);
     expect(dropdownFilterClearSpy.args[0]).to.deep.equal([false]);
   });
+
+  it('should sort forms by title', fakeAsync(() => {
+    const forms = [
+      {
+        _id: 'id-A',
+        code: 'code-A',
+        title: 'Form A'
+      },
+      {
+        _id: 'id-C',
+        code: 'code-C',
+        title: 'Form C'
+      },
+      {
+        _id: 'id-B',
+        code: 'code-B',
+        title: 'Form B'
+      }
+    ];
+    store.overrideSelector(Selectors.getForms, forms);
+    store.refreshState();
+
+    component.ngOnInit();
+    flush();
+
+    expect(component.forms).to.have.deep.members([
+      {
+        _id: 'id-A',
+        code: 'code-A',
+        title: 'Form A'
+      },
+      {
+        _id: 'id-B',
+        code: 'code-B',
+        title: 'Form B'
+      },
+      {
+        _id: 'id-C',
+        code: 'code-C',
+        title: 'Form C'
+      }
+    ]);
+  }));
 });
