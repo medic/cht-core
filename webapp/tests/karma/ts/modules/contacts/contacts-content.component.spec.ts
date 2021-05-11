@@ -45,6 +45,7 @@ describe('Contacts content component', () => {
   let responsiveService;
   let contactMutedService;
   let mutingTransition;
+  let settings;
 
   beforeEach(async(() => {
     changesService = { subscribe: sinon.stub().resolves(of({})) };
@@ -54,7 +55,8 @@ describe('Contacts content component', () => {
       isRelevantReport: sinon.stub(),
       isDeleted: sinon.stub(),
     };
-    settingsService = { get: sinon.stub().resolves([]) };
+    settings = {};
+    settingsService = { get: sinon.stub().resolves(settings) };
     xmlFormsService = { subscribe: sinon.stub() };
     translateFromService = { get: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub().resolves() };
@@ -82,10 +84,7 @@ describe('Contacts content component', () => {
       setRightActionBar: sinon.spy(GlobalActions.prototype, 'setRightActionBar'),
       updateRightActionBar: sinon.spy(GlobalActions.prototype, 'updateRightActionBar')
     };
-    mutingTransition = {
-      init: sinon.stub(),
-      isUnmuteForm: sinon.stub(),
-    };
+    mutingTransition = { isUnmuteForm: sinon.stub() };
     contactMutedService = { getMuted: sinon.stub() };
 
     selectedContact = {
@@ -539,6 +538,11 @@ describe('Contacts content component', () => {
           }
         ]
       });
+      expect(mutingTransition.isUnmuteForm.callCount).to.equal(2);
+      expect(mutingTransition.isUnmuteForm.args).to.have.deep.members([
+        [2, settings],
+        [3, settings],
+      ]);
     }));
 
     it('should set relevant report forms based on the selected contact when not muted', fakeAsync(() => {

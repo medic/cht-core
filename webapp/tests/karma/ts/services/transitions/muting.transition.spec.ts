@@ -78,19 +78,37 @@ describe('Muting Transition', () => {
   describe('isUnmuteForm', () => {
     it('should return false when no configuration', () => {
       expect(transition.isUnmuteForm('aaa')).to.equal(false);
+      expect(transition.isUnmuteForm(undefined)).to.equal(false);
     });
 
-    it('should return false when argument is not a unmute form', () => {
+    it('should return false when argument is not a unmute form with inited config', () => {
       transition.init({ muting: { unmute_forms: ['a', 'b'] } });
       expect(transition.isUnmuteForm('form')).to.equal(false);
       expect(transition.isUnmuteForm('c')).to.equal(false);
       expect(transition.isUnmuteForm('')).to.equal(false);
     });
 
-    it('should return true when argument is a unmute form', () => {
+    it('should return false when argument is not a unmute form with inlined config', () => {
+      const settings = { muting: { unmute_forms: ['a', 'b'] } };
+      expect(transition.isUnmuteForm('form', settings)).to.equal(false);
+      expect(transition.isUnmuteForm('c', settings)).to.equal(false);
+      expect(transition.isUnmuteForm('', settings)).to.equal(false);
+    });
+
+    it('should return true when argument is a unmute form with inited config', () => {
       transition.init({ muting: { unmute_forms: ['unmute1', 'unmute2'] } });
       expect(transition.isUnmuteForm('unmute1')).to.equal(true);
       expect(transition.isUnmuteForm('unmute2')).to.equal(true);
+    });
+
+    it('should return true when argument is a unmute form with inlined config', () => {
+      const settings = { muting: { unmute_forms: ['unmute1', 'unmute2'] } };
+      expect(transition.isUnmuteForm('unmute1', settings)).to.equal(true);
+      expect(transition.isUnmuteForm('unmute2', settings)).to.equal(true);
+
+      transition.init({});
+      expect(transition.isUnmuteForm('unmute1', settings)).to.equal(true);
+      expect(transition.isUnmuteForm('unmute2', settings)).to.equal(true);
     });
 
   });
@@ -159,6 +177,15 @@ describe('Muting Transition', () => {
     });
   });
 
+  it('run should do nothing when not inited', async () => {
+    const docs = [{ _id: 'new_report', type: 'data_record', form: 'unmute' }];
+
+    const updatedDocs = await transition.run(docs);
+    expect(updatedDocs).to.deep.equal([{ _id: 'new_report', type: 'data_record', form: 'unmute' }]);
+
+    expect(lineageModelGenerator.docs.callCount).to.equal(0);
+  });
+
   describe('run', () => {
     let settings;
     beforeEach(async () => {
@@ -169,7 +196,17 @@ describe('Muting Transition', () => {
         }
       };
 
-      await transition.init(settings);
+      transition.init(settings);
+    });
+
+    it('should do nothing when inited with invalid config', async () => {
+      transition.init({ muting: { unmute_forms: ['unmute'] } });
+      const docs = [{ _id: 'new_report', type: 'data_record', form: 'unmute' }];
+
+      const updatedDocs = await transition.run(docs);
+      expect(updatedDocs).to.deep.equal([{ _id: 'new_report', type: 'data_record', form: 'unmute' }]);
+
+      expect(lineageModelGenerator.docs.callCount).to.equal(0);
     });
 
     describe('new reports', () => {

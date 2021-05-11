@@ -22,42 +22,47 @@ export class MutingTransition implements TransitionInterface {
   readonly name = 'muting';
 
   private transitionConfig;
+  private inited;
   private readonly CONFIG_NAME = 'muting';
   private readonly MUTE_PROPERTY = 'mute_forms';
   private readonly UNMUTE_PROPERTY = 'unmute_forms';
   private readonly OFFLINE = 'offline';
 
-  private loadSettings(settings = {}) {
-    this.transitionConfig = settings[this.CONFIG_NAME] || {};
+  private getConfig(settings = {}) {
+    return settings[this.CONFIG_NAME] || {};
   }
 
   private getMutingForms() {
     return this.transitionConfig?.[this.MUTE_PROPERTY] || [];
   }
 
-  private getUnmutingForms() {
-    return this.transitionConfig?.[this.UNMUTE_PROPERTY] || [];
+  getUnmutingForms(settings?) {
+    const config = settings ? this.getConfig(settings) : this.transitionConfig;
+    return config?.[this.UNMUTE_PROPERTY] || [];
   }
 
   init(settings) {
-    this.loadSettings(settings);
+    this.transitionConfig = this.getConfig(settings);
 
     const mutingForms = this.getMutingForms();
     if (!mutingForms || !Array.isArray(mutingForms) || !mutingForms.length) {
       console.warn(
         `Configuration error. Config must define have a '${this.CONFIG_NAME}.${this.MUTE_PROPERTY}' array defined.`
       );
-      return false;
+      this.inited = false;
+    } else {
+      this.inited = true;
     }
-    return true;
+
+    return this.inited;
   }
 
   private isMuteForm(form) {
-    return this.getMutingForms().includes(form);
+    return !!form && this.getMutingForms().includes(form);
   }
 
-  isUnmuteForm(form) {
-    return this.getUnmutingForms().includes(form);
+  isUnmuteForm(form, settings?) {
+    return !!form && this.getUnmutingForms(settings).includes(form);
   }
 
   /**
@@ -370,6 +375,10 @@ export class MutingTransition implements TransitionInterface {
    * @returns {Promise<Array<Doc>>} - updated docs (may include additional docs)
    */
   async run(docs) {
+    if (!this.inited) {
+      return Promise.resolve(docs);
+    }
+
     const context:MutingContext = {
       docs,
       reports: [],

@@ -237,7 +237,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     await this.setChildTypesBySelectedContact();
     await this.setUserSettings();
     await this.setSettings();
-    this.initMutingTransition();
 
     this.globalActions.setRightActionBar({
       relevantForms: [], // This disables the "New Action" button until forms load
@@ -271,10 +270,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       .get()
       .then(settings => this.settings = settings)
       .catch(error => console.error('Error fetching settings', error));
-  }
-
-  private initMutingTransition() {
-    this.mutingTransition.init(this.settings);
   }
 
   private async setChildTypesBySelectedContact() {
@@ -350,7 +345,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
             const title = xForm.translation_key ?
               this.translateService.instant(xForm.translation_key) : this.translateFromService.get(xForm.title);
 
-            const isUnmuteForm = !!xForm.internalId && this.mutingTransition.isUnmuteForm(xForm.internalId);
+            const isUnmuteForm = this.mutingTransition.isUnmuteForm(xForm.internalId, this.settings);
             const isMuted = this.contactMutedService.getMuted(this.selectedContact.doc);
             const showUnmuteModal = isMuted && !isUnmuteForm;
 
