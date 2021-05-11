@@ -100,6 +100,24 @@ const transitionsConfig = {
         translation_key: 'sys.facility_not_found',
       }
     ],
+  }, {
+    form: 'DEATH',
+    messages: [
+      {
+        event_type: 'sys.facility_not_found',
+        recipient: 'reporting_unit',
+        translation_key: 'sys.facility_not_found',
+      }
+    ],
+  }, {
+    form: 'MUTE',
+    messages: [
+      {
+        event_type: 'sys.facility_not_found',
+        recipient: 'reporting_unit',
+        translation_key: 'sys.facility_not_found',
+      }
+    ],
   }],
   alerts: [{
     form: 'TEMP',

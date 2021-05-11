@@ -495,15 +495,13 @@ describe('transitions', () => {
         chai.expect(doc.contact).to.be.an('object');
         chai.expect(doc.contact._id).to.equal('chw1');
 
-        chai.expect(messages.messages.length).to.equal(9);
+        chai.expect(messages.messages.length).to.equal(10);
         // Extra task added to send message whne sys.facility_not_found error thrown
         chai.expect(docs.reduce((sum, doc) => sum + doc.tasks.length, 0)).to.equal(10);
         docs.forEach(doc => {
           doc.tasks.forEach(task => {
             task.messages.forEach(message => {
-              if (message.message) {
-                chai.expect(messages.messages.find(m => m.id === message.uuid)).to.be.ok;
-              }
+              chai.expect(messages.messages.find(m => m.id === message.uuid)).to.be.ok;
             });
           });
         });

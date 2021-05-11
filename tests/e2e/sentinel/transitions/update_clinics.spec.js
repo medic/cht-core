@@ -184,8 +184,8 @@ describe('update_clinics', () => {
         expect(updated[0].contact).not.toBeDefined();
         expect(updated[0].errors.length).toEqual(1);
         expect(updated[0].tasks.length).toEqual(1);
-        expect(updated[0].tasks[0].messages[0].to).toEqual(12345);
-        expect(updated[0].tasks[0].messages[0].message).toEqual('sys.facility_not_found');
+        expect(updated[0].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[0].tasks[0].messages[0].message).toEqual('Facility not found.');
         expect(updated[0].errors[0].code).toEqual('sys.facility_not_found');
 
         expect(updated[1].contact).not.toBeDefined();
