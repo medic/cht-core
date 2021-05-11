@@ -3,6 +3,8 @@ const commonPo = require('../../page-objects/common/common.po');
 const utils = require('../../utils');
 const helper = require('../../helper');
 const userSettingsElements = require('../../page-objects/user-settings/user-settings.po');
+const contactsPage = require('../../page-objects/contacts/contacts.po');
+const reportsPage = require('../../page-objects/reports/reports.po');
 
 describe('Adding new language', () => {
   const addTranslations = async () => {
@@ -59,9 +61,9 @@ describe('Adding new language', () => {
     expect(await helper.getTextFromElementNative(commonPo.messagesList)).toBe('Geen boodskappe gevind nie');
     await utils.resetBrowserNative();
     await commonPo.goToReportsNative();
-    expect(await helper.getTextFromElementNative(commonPo.reportsList)).toBe('Geen verslae gevind nie');
+    expect(await helper.getTextFromElementNative(reportsPage.list())).toBe('Geen verslae gevind nie');
     await commonPo.goToPeople();
-    expect(await helper.getTextFromElementNative(commonPo.contactsList)).toBe('Geen mense gevind nie');
+    expect(await helper.getTextFromElementNative(contactsPage.contactsList)).toBe('Geen mense gevind nie');
     expect(await helper.getTextFromElementNative(commonPo.analyticsTab)).toBe('Analytiks');
   });
 });
