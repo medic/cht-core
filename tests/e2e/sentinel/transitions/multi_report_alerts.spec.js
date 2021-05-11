@@ -345,7 +345,17 @@ describe('multi_report_alerts', () => {
         time_window_in_days: 1,
         forms: ['FORM']
       }],
-      forms: { FORM: { } }
+      forms: { FORM: { } },
+      update_clinics: [ {
+        form: 'A',
+        messages: [
+          {
+            event_type: 'sys.facility_not_found',
+            recipient: 'reporting_unit',
+            translation_key: 'sys.facility_not_found',
+          }
+        ],
+      }]
     };
 
     const contacts = [{
