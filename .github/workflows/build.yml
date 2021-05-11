@@ -270,10 +270,3 @@ jobs:
           tests/results
           tests/logs
       if: ${{ failure() }}
-<<<<<<< HEAD
-
-
-      
-=======
-      
->>>>>>> set market url with if step, newline
