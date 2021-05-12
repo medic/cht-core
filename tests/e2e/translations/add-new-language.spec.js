@@ -6,7 +6,7 @@ const userSettingsElements = require('../../page-objects/user-settings/user-sett
 const contactsPage = require('../../page-objects/contacts/contacts.po');
 const reportsPage = require('../../page-objects/reports/reports.po');
 
-fdescribe('Adding new language', () => {
+describe('Adding new language', () => {
   const addTranslations = async () => {
     await utils.addTranslations('afr',{
       'No messages found':'Geen boodskappe gevind nie',
