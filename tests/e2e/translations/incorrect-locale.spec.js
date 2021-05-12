@@ -4,8 +4,7 @@ const commonElements = require('../../page-objects/common/common.po.js');
 const userSettingsElements = require('../../page-objects/user-settings/user-settings.po');
 const contactElements = require('../../page-objects/contacts/contacts.po');
 
-// eslint-disable-next-line jasmine/no-focused-tests
-fdescribe('Incorrect locale', () => {
+describe('Incorrect locale', () => {
 
   const createLanguage = () =>  utils.addTranslations('hil', {
     'n.month': '{MONTHS, plural, =1{1 luna} other{# luni}}',

@@ -19,7 +19,6 @@ describe('Adding new language', () => {
 
   afterAll(async () => {
     await utils.afterEach();
-    await browser.manage().addCookie({ name: 'locale', value: 'en' });
   });
 
   it('should show in enabled language list', async () => {
