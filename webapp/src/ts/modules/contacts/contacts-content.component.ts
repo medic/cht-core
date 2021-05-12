@@ -398,7 +398,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
     modalService
       .show(ContactsMutedComponent)
-      .then(() => this.router.navigate(['/contacts', selectedContactId, 'report', form.code]))
+      .then(() => router.navigate(['/contacts', selectedContactId, 'report', form.code]))
       .catch(() => {});
   }
 
