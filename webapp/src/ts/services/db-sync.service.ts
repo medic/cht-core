@@ -1,4 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Inject, Injectable, NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { SessionService } from '@mm-services/session.service';
@@ -275,7 +275,6 @@ export class DBSyncService {
   }
 }
 
-@Injectable()
 class DbSyncTelemetry {
   private readonly telemetryKeyword = 'replication';
   private readonly offlineErrorMessage = 'Failed to fetch';
