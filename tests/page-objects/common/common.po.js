@@ -85,7 +85,7 @@ module.exports = {
     const headingText = await helper.getTextFromElementNative(selectedPreferenceHeading);
     const messageLang = await messagesLanguage.getAttribute('innerText');
     const defaultLang = await defaultLanguage.getAttribute('innerText');
-    await utils.resetBrowserNative();
+    await browser.actions().sendKeys(protractor.Key.ESCAPE).perform();
     return  [headingText, messageLang, defaultLang];
   },
 
