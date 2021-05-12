@@ -180,11 +180,11 @@ describe('DBSync service', () => {
         expect(telemetryService.record.callCount).to.equal(6);
         expect(telemetryService.record.args).to.have.deep.members([
           ['replication:medic:from:success', 1000],
-          ['replication:medic:from:last-replicated-date', 400],
+          ['replication:medic:from:ms-since-last-replicated-date', 400],
           ['replication:medic:from:docs', 45],
 
           ['replication:medic:to:success', 1500],
-          ['replication:medic:to:last-replicated-date', 400],
+          ['replication:medic:to:ms-since-last-replicated-date', 400],
           ['replication:medic:to:docs', 63],
         ]);
       });
@@ -371,12 +371,12 @@ describe('DBSync service', () => {
           expect(telemetryService.record.callCount).to.equal(7);
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:medic:from:failure', 2000],
-            ['replication:medic:from:last-replicated-date', 800],
+            ['replication:medic:from:ms-since-last-replicated-date', 800],
             ['replication:medic:from:docs', 22],
             ['replication:medic:from:failure:reason:offline:server'],
 
             ['replication:medic:to:success', 3000],
-            ['replication:medic:to:last-replicated-date', 800],
+            ['replication:medic:to:ms-since-last-replicated-date', 800],
             ['replication:medic:to:docs', 32],
           ]);
         });
@@ -413,12 +413,12 @@ describe('DBSync service', () => {
           expect(telemetryService.record.callCount).to.equal(7);
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:medic:from:failure', 500],
-            ['replication:medic:from:last-replicated-date', 700],
+            ['replication:medic:from:ms-since-last-replicated-date', 700],
             ['replication:medic:from:docs', 12],
             ['replication:medic:from:failure:reason:offline:client'],
 
             ['replication:medic:to:success', 1000],
-            ['replication:medic:to:last-replicated-date', 700],
+            ['replication:medic:to:ms-since-last-replicated-date', 700],
             ['replication:medic:to:docs', 67],
           ]);
         });
@@ -454,12 +454,12 @@ describe('DBSync service', () => {
           expect(telemetryService.record.callCount).to.equal(7);
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:medic:from:failure', 500],
-            ['replication:medic:from:last-replicated-date', 700],
+            ['replication:medic:from:ms-since-last-replicated-date', 700],
             ['replication:medic:from:docs', 12],
             ['replication:medic:from:failure:reason:error'],
 
             ['replication:medic:to:success', 1000],
-            ['replication:medic:to:last-replicated-date', 700],
+            ['replication:medic:to:ms-since-last-replicated-date', 700],
             ['replication:medic:to:docs', 67],
           ]);
         });
@@ -495,11 +495,11 @@ describe('DBSync service', () => {
           expect(telemetryService.record.callCount).to.equal(7);
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:medic:from:success', 3000],
-            ['replication:medic:from:last-replicated-date', 800],
+            ['replication:medic:from:ms-since-last-replicated-date', 800],
             ['replication:medic:from:docs', 32],
 
             ['replication:medic:to:failure', 2000],
-            ['replication:medic:to:last-replicated-date', 800],
+            ['replication:medic:to:ms-since-last-replicated-date', 800],
             ['replication:medic:to:docs', 22],
             ['replication:medic:to:failure:reason:offline:server'],
           ]);
@@ -537,11 +537,11 @@ describe('DBSync service', () => {
           expect(telemetryService.record.callCount).to.equal(7);
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:medic:from:success', 8000],
-            ['replication:medic:from:last-replicated-date', 100],
+            ['replication:medic:from:ms-since-last-replicated-date', 100],
             ['replication:medic:from:docs', 500],
 
             ['replication:medic:to:failure', 1000],
-            ['replication:medic:to:last-replicated-date', 100],
+            ['replication:medic:to:ms-since-last-replicated-date', 100],
             ['replication:medic:to:docs', 12],
             ['replication:medic:to:failure:reason:offline:client'],
           ]);
@@ -575,11 +575,11 @@ describe('DBSync service', () => {
           expect(telemetryService.record.callCount).to.equal(7);
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:medic:from:success', 700],
-            ['replication:medic:from:last-replicated-date', 100],
+            ['replication:medic:from:ms-since-last-replicated-date', 100],
             ['replication:medic:from:docs', 400],
 
             ['replication:medic:to:failure', 700],
-            ['replication:medic:to:last-replicated-date', 100],
+            ['replication:medic:to:ms-since-last-replicated-date', 100],
             ['replication:medic:to:docs', 6],
             ['replication:medic:to:failure:reason:error'],
           ]);
@@ -618,12 +618,12 @@ describe('DBSync service', () => {
           expect(telemetryService.record.callCount).to.equal(8);
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:medic:to:failure', 100],
-            ['replication:medic:to:last-replicated-date', 100],
+            ['replication:medic:to:ms-since-last-replicated-date', 100],
             ['replication:medic:to:docs', 6],
             ['replication:medic:to:failure:reason:error'],
 
             ['replication:medic:from:failure', 200],
-            ['replication:medic:from:last-replicated-date', 100],
+            ['replication:medic:from:ms-since-last-replicated-date', 100],
             ['replication:medic:from:docs', 12],
             ['replication:medic:from:failure:reason:error'],
           ]);
@@ -830,7 +830,7 @@ describe('DBSync service', () => {
         ]);
       });
 
-      it('should record telemetry when failed', async () => {
+      it('should record telemetry when failed because "server" was offline', async () => {
         let syncResolve;
         syncResult = new Promise(resolve => syncResolve = resolve);
 
@@ -839,14 +839,40 @@ describe('DBSync service', () => {
         await Promise.resolve();
         await Promise.resolve();
 
-        sync.events['error']({ message: 'Failed to fetch', result: { docs_read: 10 } });
+        sync.events['error']({ message: 'Failed to fetch', result: { docs_read: 0 } });
         syncResolve();
 
         await syncCall;
 
         expect(telemetryService.record.args).to.have.deep.members([
-          ['replication:meta:sync:success', 1000],
-          ['replication:meta:sync:docs', 100],
+          ['replication:meta:sync:failure', 1000],
+          ['replication:meta:sync:docs', 0],
+          ['replication:meta:sync:failure:reason:offline:server'],
+
+          ['replication:medic:to:success', 0],
+          ['replication:medic:from:success', 0],
+        ]);
+      });
+
+      it('should record telemetry when failed because "client" was offline', async () => {
+        let syncResolve;
+        syncResult = new Promise(resolve => syncResolve = resolve);
+        service.setOnlineStatus(false);
+
+        const syncCall = service.sync(true);
+        clock.tick(1312321);
+        await Promise.resolve();
+        await Promise.resolve();
+
+        sync.events['error']({ message: 'Failed to fetch', result: { docs_read: 13 } });
+        syncResolve();
+
+        await syncCall;
+
+        expect(telemetryService.record.args).to.have.deep.members([
+          ['replication:meta:sync:failure', 1312321],
+          ['replication:meta:sync:docs', 13],
+          ['replication:meta:sync:failure:reason:offline:client'],
 
           ['replication:medic:to:success', 0],
           ['replication:medic:from:success', 0],

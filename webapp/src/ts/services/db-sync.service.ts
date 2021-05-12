@@ -76,7 +76,7 @@ export class DBSyncService {
     }
   ];
   private inProgressSync;
-  private knownOnlineState = true; // assume the user is online
+  private knownOnlineState = window.navigator.onLine;
   private syncIsRecent = false; // true when a replication has succeeded within one interval
   private readonly intervalPromises = {
     sync: undefined,
@@ -324,7 +324,7 @@ class DbSyncTelemetry {
   }
 
   private getLastReplicatedKey() {
-    return `${this.key}:last-replicated-date`;
+    return `${this.key}:ms-since-last-replicated-date`;
   }
 
   private async record(key) {
@@ -337,9 +337,9 @@ class DbSyncTelemetry {
 
   private recordInfo(info?) {
     if (info) {
-      const nbrDocs =
-        info.docs_read || // result of .replicate contains info for just one direction
-        (info.push?.docs_read + info.pull?.docs_read); // result of .sync contains info for push and pull
+      const nbrDocs = info.push ?
+        (info.push?.docs_read + info.pull?.docs_read) : // result of .sync contains info for push and pull
+        info.docs_read; // result of .replicate contains info for just one direction
       return this.telemetryService.record(this.getDocsKey(), nbrDocs);
     }
   }
