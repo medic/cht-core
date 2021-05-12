@@ -276,8 +276,7 @@ describe('TelemetryService', () => {
       expect(pouchDb.post.callCount).to.equal(4);       // 4th call
       expect(dbInstance.put.callCount).to.equal(2);     // Telemetry IS recorded again
       aggregatedDoc = dbInstance.put.args[1][0];
-      expect(aggregatedDoc._id).to.match(/telemetry-2018-11-12-greg/);  // Today is 2018-11-19 but aggregation
-                                                                        // is from 2018-11-12
+      expect(aggregatedDoc._id).to.match(/telemetry-2018-11-12-greg/);  // It's Nov 19 but aggregation is from Nov 12
 
       // A new record is added ...
       clock = sinon.useFakeTimers(moment(NOW).add(2, 'hours').valueOf()); // ... 2 hours later ...
