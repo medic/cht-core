@@ -61,7 +61,8 @@ export class SearchService {
     });
 
     const getVisitsInInterval = () => {
-      return this.dbService.get()
+      return this.dbService
+        .get()
         .query('medic-client/visits_by_date', { start_key: interval.start, end_key: interval.end })
         .then((result) => {
           result.rows.forEach((row) => {
@@ -108,7 +109,7 @@ export class SearchService {
     return getVisitsInInterval()
       .then(getLastVisited)
       .then(() => {
-        return Object.keys(visitStats).map((key) => {
+        return Object.keys(visitStats)?.map((key) => {
           return {
             key: key,
             value: {
