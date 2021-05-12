@@ -8,6 +8,7 @@ import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
 import { DbService } from '@mm-services/db.service';
 import { AuthService } from '@mm-services/auth.service';
 import { CheckDateService } from '@mm-services/check-date.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
@@ -51,6 +52,7 @@ export class DBSyncService {
     private dbSyncRetryService:DbSyncRetryService,
     private ngZone:NgZone,
     private checkDateService:CheckDateService,
+    private telemetryService:TelemetryService,
   ) {}
 
   private readonly DIRECTIONS = [
@@ -86,7 +88,14 @@ export class DBSyncService {
     return !this.sessionService.isOnlineOnly();
   }
 
-  private replicate (direction, { batchSize=100 }={}) {
+  private replicate(direction, { batchSize=100 }={}) {
+    const telemetryEntry = new DbSyncTelemetry(
+      this.telemetryService,
+      'medic',
+      direction.name,
+      this.getLastReplicationDate(),
+    );
+
     const remote = this.dbService.get({ remote: true });
     const options = Object.assign({}, direction.options, { batch_size: batchSize });
     return this.dbService.get()
@@ -101,13 +110,15 @@ export class DBSyncService {
         if (direction.onDenied) {
           direction.onDenied(err);
         }
+        telemetryEntry.recordDenied();
       })
       .on('error', (err) => {
         console.error(`Error replicating ${direction.name} remote server`, err);
+        telemetryEntry.recordFailure(err, this.knownOnlineState);
       })
       .then(info => {
         console.debug(`Replication ${direction.name} successful`, info);
-        return;
+        telemetryEntry.recordSuccess(info);
       })
       .catch(err => {
         if (err.code === 413 && direction.name === 'to' && batchSize > 1) {
@@ -136,6 +147,9 @@ export class DBSyncService {
   }
   private getLastReplicatedSeq() {
     return window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY);
+  }
+  private getLastReplicationDate() {
+    return window.localStorage.getItem(LAST_REPLICATED_DATE_KEY);
   }
 
   private syncMedic(force?) {
@@ -181,13 +195,19 @@ export class DBSyncService {
   }
 
   private syncMeta() {
+    const telemetryEntry = new DbSyncTelemetry(this.telemetryService, 'meta', 'sync');
     const remote = this.dbService.get({ meta: true, remote: true });
     const local = this.dbService.get({ meta: true });
     let currentSeq;
     return local
       .info()
       .then(info => currentSeq = info.update_seq)
-      .then(() => local.sync(remote))
+      .then(() => {
+        return local
+          .sync(remote)
+          .on('complete', (info) => telemetryEntry.recordSuccess(info))
+          .on('error', (err) => telemetryEntry.recordFailure(err, this.knownOnlineState));
+      })
       .then(() => this.ngZone.runOutsideAngular(() => purger.writePurgeMetaCheckpoint(local, currentSeq)));
   }
 
@@ -252,5 +272,96 @@ export class DBSyncService {
 
     this.resetSyncInterval();
     return this.syncMedic(force);
+  }
+}
+
+@Injectable()
+class DbSyncTelemetry {
+  private readonly telemetryKeyword = 'replication';
+  private readonly offlineErrorMessage = 'Failed to fetch';
+  private readonly database;
+  private readonly direction;
+  private readonly start;
+  private readonly lastReplicated;
+  private readonly key;
+  private end;
+
+  constructor(
+    public telemetryService:TelemetryService,
+    database,
+    direction,
+    lastReplicated?,
+  ) {
+    this.database = database;
+    this.direction = direction;
+    this.start = Date.now();
+    this.lastReplicated = lastReplicated;
+    this.key = `${this.telemetryKeyword}:${this.database}:${this.direction}`;
+  }
+
+  private getSuccessKey() {
+    return `${this.key}:success`;
+  }
+
+  private getFailureKey() {
+    return `${this.key}:failure`;
+  }
+
+  private getDocsKey() {
+    return `${this.key}:docs`;
+  }
+
+  private getErrorKey() {
+    return `${this.getFailureKey()}:reason:error`;
+  }
+
+  private getDeniedKey() {
+    return `${this.key}:denied`;
+  }
+
+  private getOfflineKey(service) {
+    return `${this.getFailureKey()}:reason:offline:${service}`;
+  }
+
+  private getLastReplicatedKey() {
+    return `${this.key}:last-replicated-date`;
+  }
+
+  private async record(key) {
+    this.end = Date.now();
+    await this.telemetryService.record(key, this.end - this.start);
+    if (this.lastReplicated) {
+      await this.telemetryService.record(this.getLastReplicatedKey(), this.start - this.lastReplicated);
+    }
+  }
+
+  private recordInfo(info?) {
+    if (info) {
+      const nbrDocs =
+        info.docs_read || // result of .replicate contains info for just one direction
+        (info.push?.docs_read + info.pull?.docs_read); // result of .sync contains info for push and pull
+      return this.telemetryService.record(this.getDocsKey(), nbrDocs);
+    }
+  }
+
+  async recordSuccess(info?) {
+    await this.record(this.getSuccessKey());
+    await this.recordInfo(info);
+  }
+
+  async recordFailure(error, knownOnlineState) {
+    await this.record(this.getFailureKey());
+    await this.recordInfo(error?.result);
+
+    if (error.message === this.offlineErrorMessage) {
+      const offlineService = knownOnlineState ? 'server' : 'client';
+      await this.telemetryService.record(this.getOfflineKey(offlineService));
+    } else {
+      await this.telemetryService.record(this.getErrorKey());
+    }
+  }
+
+  async recordDenied() {
+    await this.telemetryService.record(this.getDeniedKey());
   }
 }
