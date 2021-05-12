@@ -17,6 +17,12 @@ const launchAPI = async () => {
 
   const serverUtils = require('./server-utils');
   const apiPort = process.env.API_PORT || 5988;
+  const config = require('./config');
+
+  logger.info('Loading configuration…');
+  await config.load();
+  logger.info('Configuration loaded successfully');
+  await config.listen();
 
   // Define error-handling middleware last.
   // http://expressjs.com/guide/error-handling.html

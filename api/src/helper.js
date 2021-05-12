@@ -3,7 +3,6 @@ const logger = require('./logger');
 const environment = require('./environment');
 const serverChecks = require('@medic/server-checks');
 
-const config = require('./config');
 const migrations = require('./migrations');
 const ddocExtraction = require('./ddoc-extraction');
 const generateXform = require('./services/generate-xform');
@@ -33,11 +32,6 @@ const runAPIHelper = async () => {
     logger.info('Extracting initial documents…');
     await uploadDefaultDocs.run();
     logger.info('Extracting initial documents completed successfully');
-
-    logger.info('Loading configuration…');
-    await config.load();
-    logger.info('Configuration loaded successfully');
-    await config.listen();
 
     logger.info('Merging translations…');
     await translations.run();
