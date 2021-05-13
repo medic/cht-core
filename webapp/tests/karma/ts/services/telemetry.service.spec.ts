@@ -175,7 +175,7 @@ describe('TelemetryService', () => {
 
       expect(dbInstance.put.callCount).to.equal(1);
       const aggregatedDoc = dbInstance.put.args[0][0];
-      expect(aggregatedDoc._id).to.match(/telemetry-2018-11-5-greg/);
+      expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-5-greg-[\w-]+$/);
       expect(aggregatedDoc.metrics).to.deep.equal({
         foo: {sum:2876, min:581, max:2295, count:2, sumsqr:5604586},
         bar: {sum:93, min:43, max:50, count:2, sumsqr:4349},
@@ -236,8 +236,8 @@ describe('TelemetryService', () => {
       expect(dbInstance.put.callCount).to.equal(1);   // Now telemetry has been recorded
 
       const aggregatedDoc = dbInstance.put.args[0][0];
-      expect(aggregatedDoc._id).to.match(/telemetry-2018-11-10-greg/);  // Now is 2018-11-11 but aggregation
-      expect(pouchDb.destroy.callCount).to.equal(1);                    // is from from previous day
+      expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-10-greg-[\w-]+$/); // Now is 2018-11-11 but aggregation
+      expect(pouchDb.destroy.callCount).to.equal(1);                            // is from from previous day
 
       expect(consoleErrorSpy.callCount).to.equal(0);  // no errors
     });
@@ -265,8 +265,8 @@ describe('TelemetryService', () => {
       expect(dbInstance.put.callCount).to.equal(1);     // Now telemetry IS recorded
 
       let aggregatedDoc = dbInstance.put.args[0][0];
-      expect(aggregatedDoc._id).to.match(/telemetry-2018-11-10-greg/);  // Today is 2018-11-12 but aggregation
-      expect(pouchDb.destroy.callCount).to.equal(1);                    // is from from 2 days ago (not Yesterday)
+      expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-10-greg-[\w-]+$/); // Today 2018-11-12 but aggregation is
+      expect(pouchDb.destroy.callCount).to.equal(1);                            // from from 2 days ago (not Yesterday)
 
       storageGetItemStub.withArgs('medic-greg-telemetry-date').returns(sameDay());  // same day now is 2 days ahead
 
@@ -276,7 +276,7 @@ describe('TelemetryService', () => {
       expect(pouchDb.post.callCount).to.equal(4);       // 4th call
       expect(dbInstance.put.callCount).to.equal(2);     // Telemetry IS recorded again
       aggregatedDoc = dbInstance.put.args[1][0];
-      expect(aggregatedDoc._id).to.match(/telemetry-2018-11-12-greg/);  // It's Nov 19 but aggregation is from Nov 12
+      expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-12-greg-[\w-]+$/); // Now is Nov 19 but agg. is from Nov 12
 
       // A new record is added ...
       clock = sinon.useFakeTimers(moment(NOW).add(2, 'hours').valueOf()); // ... 2 hours later ...
@@ -304,7 +304,7 @@ describe('TelemetryService', () => {
       expect(consoleErrorSpy.callCount).to.equal(0);
       expect(storageSetItemStub.callCount).to.equal(3);
       expect(storageSetItemStub.args[0][0]).to.equal('medic-greg-telemetry-db');
-      expect(storageSetItemStub.args[0][1]).to.match(/^medic-user-greg-telemetry-/)
+      expect(storageSetItemStub.args[0][1]).to.match(/^medic-user-greg-telemetry-[\w-]+$/);
       expect(storageSetItemStub.args[1][0]).to.equal('medic-greg-telemetry-date');
       expect(storageSetItemStub.args[1][1]).to.equal(NOW.toString());
     });
@@ -343,7 +343,7 @@ describe('TelemetryService', () => {
 
       expect(consoleErrorSpy.callCount).to.equal(0);
       expect(dbInstance.put.callCount).to.equal(2);
-      expect(dbInstance.put.args[1][0]._id).to.match(/conflicted/);
+      expect(dbInstance.put.args[1][0]._id).to.match(/^telemetry-2018-11-5-greg-[\w-]+-conflicted-[\w-]+$/);
       expect(dbInstance.put.args[1][0].metadata.conflicted).to.equal(true);
       expect(pouchDb.destroy.callCount).to.equal(1);
       expect(pouchDb.close.callCount).to.equal(0);
