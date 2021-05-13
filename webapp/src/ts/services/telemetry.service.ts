@@ -55,8 +55,7 @@ export class TelemetryService {
   }
 
   /**
-   * Returns the time in milliseconds (since Unix epoch) when the first telemetry
-   * record was created within the day that is going to be aggregated.
+   * Returns the time in milliseconds (since Unix epoch) when the first telemetry record was created
    *
    * The date is stored locally once computed by this method, either because is
    * the first time is called or because the aggregation was performed last time
