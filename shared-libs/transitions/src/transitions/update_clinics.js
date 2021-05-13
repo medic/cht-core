@@ -10,7 +10,7 @@ const config = require('../config');
 
 const getConfig = () => config.get(NAME) || [];
 
-const getConfiguredForm = (form) => form && getConfig().find(item => item && item.form === form);
+const getConfiguredForm = (form) => getConfig().find(item => item && item.form === form);
 
 const getContactByRefid = doc => {
   const params = {
@@ -105,7 +105,7 @@ module.exports = {
       const form = change.doc.form && utils.getForm(change.doc.form);
       if (!form || !form.public_form) {
         if (form) {
-          const formConfig = getConfiguredForm(change.doc.form);
+          const formConfig = getConfiguredForm(change.doc.form) || {};
           transitionUtils.addRejectionMessage(change.doc, formConfig, FACILITY_NOT_FOUND);
           return true;
         }

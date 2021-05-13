@@ -325,10 +325,14 @@ describe('update clinic', () => {
       });
       assert.equal(utils.translate.callCount, 2); // called by messages.addMessage and messages.getMessage
       assert.deepEqual(utils.translate.args[0], ['sys.facility_not_found', 'locale']);
+      assert.deepEqual(utils.translate.args[1], ['sys.facility_not_found', 'en']); // defaults to en locale
+      assert.equal(doc.tasks.length, 1);
+      assert.equal(doc.tasks[0].messages[0].to, '123');
+      assert.equal(doc.tasks[0].messages[0].message, 'translated');
     });
   });
 
-  it('should send a message when when form is not public', () => {
+  it('should send a message when form is not public', () => {
     const doc = {
       from: '123',
       type: 'data_record',
@@ -344,11 +348,12 @@ describe('update clinic', () => {
         {
           event_type: 'sys.facility_not_found',
           recipient: 'reporting_unit',
-          translation_key: 'sys.facility_not_found',
+          translation_key: 'sys.facility_not_found_key',
         }
       ],
     }]);
     stubbedConfig.withArgs('forms').returns({ 'someForm': {} });
+    sinon.stub(utils, 'getLocale').returns('locale');
 
     return transition.onMatch({ doc }).then(changed => {
       assert(changed);
@@ -356,6 +361,33 @@ describe('update clinic', () => {
       assert.equal(doc.tasks.length, 1);
       assert.equal(doc.tasks[0].messages[0].to, '123');
       assert.equal(doc.tasks[0].messages[0].message, 'facility not found');
+      assert.equal(utils.translate.callCount, 2);
+      assert.deepEqual(utils.translate.args[0], ['sys.facility_not_found_key', 'locale']);
+      assert.deepEqual(utils.translate.args[1], ['sys.facility_not_found_key', 'en']);
+    });
+  });
+
+  it('should handle a non-public form with no config', () => {
+    const doc = {
+      from: '123',
+      type: 'data_record',
+      form: 'someForm'
+    };
+
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
+    sinon.stub(config, 'get').withArgs('forms').returns({ 'someForm': {} });
+    sinon.stub(utils, 'translate').returns('facility not found');
+
+    return transition.onMatch({ doc }).then(changed => {
+      assert(changed);
+      assert(!doc.contact);
+      assert.equal(doc.errors.length, 1);
+      assert.equal(doc.errors[0].code, 'sys.facility_not_found');
+      assert.equal(doc.tasks.length, 1);
+      assert.equal(doc.tasks[0].messages[0].to, '123');
+      assert.equal(doc.tasks[0].messages[0].message, 'facility not found');
+      assert.equal(utils.translate.callCount, 1);
+      assert.deepEqual(utils.translate.args[0], ['messages.generic.sys.facility_not_found', 'en']);
     });
   });
 
