@@ -57,10 +57,7 @@ export class TelemetryService {
   /**
    * Returns the time in milliseconds (since Unix epoch) when the first telemetry record was created
    *
-   * The date is stored locally once computed by this method, either because is
-   * the first time is called or because the aggregation was performed last time
-   * a record was created, therefore `reset(db)' deleted it, and next time this
-   * method is called the date need to be fetched from the system again.
+   * This date is computed and stored when we call this method for the first time and after every aggregation.
    */
   private getFirstAggregatedDate() {
     let date = parseInt(window.localStorage.getItem(this.LAST_AGGREGATED_DATE_KEY));
