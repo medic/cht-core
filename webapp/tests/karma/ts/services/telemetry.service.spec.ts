@@ -304,7 +304,7 @@ describe('TelemetryService', () => {
       expect(consoleErrorSpy.callCount).to.equal(0);
       expect(storageSetItemStub.callCount).to.equal(3);
       expect(storageSetItemStub.args[0][0]).to.equal('medic-greg-telemetry-db');
-      expect(storageSetItemStub.args[0][1]).to.match(/medic-user-greg-telemetry-/); // ends with a UUID
+      expect(storageSetItemStub.args[0][1]).to.match(/^medic-user-greg-telemetry-/)
       expect(storageSetItemStub.args[1][0]).to.equal('medic-greg-telemetry-date');
       expect(storageSetItemStub.args[1][1]).to.equal(NOW.toString());
     });
