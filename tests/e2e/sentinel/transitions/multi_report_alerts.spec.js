@@ -465,7 +465,7 @@ describe('multi_report_alerts', () => {
       });
   });
 
-  it('non public_forms from unknown senders should not be counted evewhen update_clinics not defined', () => {
+  it('non public_forms from unknown senders should not be counted even when update_clinics is not defined', () => {
     const settings = {
       transitions: { multi_report_alerts: true, update_clinics: true },
       multi_report_alerts: [{
@@ -531,7 +531,7 @@ describe('multi_report_alerts', () => {
       type: 'data_record',
       form: 'FORM2',
       from: '+251 11 551 2133',
-      reported_date: new Date().getTime() - 5000
+      reported_date: new Date().getTime() - 4000
     };
 
     return utils
