@@ -66,11 +66,11 @@ module.exports = {
   },
 
   checkConfigurationWizard: async () => {
-    await openSubmenu(['configuration wizard','easy setup wizard ']);
+    await openSubmenu('wizard');
     await helper.waitUntilReadyNative(wizardTitle);
     await helper.waitUntilTranslated(wizardTitle);
     const wizardTitleText = await helper.getTextFromElementNative(wizardTitle);
-    expect(wizardTitleText).toEqual('Configuration wizard');
+    expect(wizardTitleText.toLowerCase()).toContain('wizard');
     expect(await helper.getTextFromElementNative(defaultCountryCode)).toEqual('Canada (+1)');
     expect(await finishBtn.getText()).toEqual('Finish');
     await skipSetup.click();
@@ -119,7 +119,8 @@ module.exports = {
   checkUserSettings: async () => {
     await openSubmenu(['user settings', 'edit.user.settings']);
     const optionNames = await helper.getTextFromElementNative(settings);
-    expect(optionNames).toEqual(['Update password', 'Edit user profile']);
+    expect(optionNames[0]).toContain('password');
+    expect(optionNames[1].toLowerCase()).toEqual('edit user profile');
   },
 
   goHome: () => {
