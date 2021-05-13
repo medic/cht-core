@@ -84,8 +84,7 @@ export class TelemetryService {
     //return moment().startOf('minute');
   }
 
-  // if there is telemetry data to aggregate and is before the current date,
-  // aggregation is performed and the data destroyed
+  // if there is telemetry data from previous days, aggregation is performed and the data destroyed
   private submitIfNeeded(db) {
     const startOf = this.aggregateStartsAt();
     const dbDate = moment(this.getFirstAggregatedDate());
