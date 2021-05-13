@@ -2,7 +2,7 @@
   'use strict';
   const Widget = require('enketo-core/src/js/Widget');
   const $ = require('jquery');
-  const moment = require('moment');
+  const utils = require('../widget-utils');
   require('enketo-core/src/js/plugins');
 
   const pluginName = 'rdtoolkitcapturewidget';
@@ -44,8 +44,9 @@
   };
 
   function captureRDTestResult($widget, rdToolkitService) {
-    const form = getForm();
-    const sessionId = getFieldValue(form, 'rdtoolkit_session_id');
+    const dateFormat = 'LLL';
+    const form = utils.getForm();
+    const sessionId = utils.getFieldValue(form, 'rdtoolkit_session_id');
 
     rdToolkitService
       .captureRDTest(sessionId)
@@ -53,9 +54,9 @@
         const capturedTest = {
           sessionId: response.sessionId || '',
           state: response.state || '',
-          timeStarted: getDate(response.timeStarted),
-          timeResolved: getDate(response.timeResolved),
-          timeRead: getDate(response.timeRead),
+          timeStarted: utils.formatDate(response.timeStarted, dateFormat),
+          timeResolved: utils.formatDate(response.timeResolved, dateFormat),
+          timeRead: utils.formatDate(response.timeRead, dateFormat),
           results: response.results || [],
           resultsDescription: getFormattedResult(response.results),
           image: response.croppedImage
@@ -73,7 +74,7 @@
       .toPromise()
       .then(label => {
         $widget
-          .find('.or-appearance-rdtoolkit_action_btn')
+          .find('.or-appearance-rdtoolkit-action-btn')
           .after('<div class="rdtoolkit-preview"></div>')
           .after(`
             <div class="rdtoolkit-actions">
@@ -90,65 +91,49 @@
   }
 
   function displayPreview($widget, capturedTest) {
+    const imageTag = `<img src="data:image/png;base64,${capturedTest.image}">`;
+
     $widget
       .find('.rdtoolkit-preview')
       .append(`
         <div>
-          ${window.CHTCore.Translate.instant('report.rdtoolkit_capture.rdtoolkit_preview_title')}
+          ${window.CHTCore.Translate.instant('report.rdtoolkit-capture.preview.title')}
         </div>
         <br>
         <div>
           <span class="rdt-label">
-            ${window.CHTCore.Translate.instant('report.rdtoolkit_capture.rdtoolkit_preview_results')} 
+            ${window.CHTCore.Translate.instant('report.rdtoolkit-capture.preview.results')} 
           </span>
           <span class="rdt-value">${capturedTest.resultsDescription}</span>
         </div>
         <div>
           <span class="rdt-label">
-            ${window.CHTCore.Translate.instant('report.rdtoolkit_capture.rdtoolkit_preview_time_read')} 
+            ${window.CHTCore.Translate.instant('report.rdtoolkit-capture.preview.time_read')} 
           </span>
           <span class="rdt-value">${capturedTest.timeRead}</span>
         </div>
         <div>
           <span class="rdt-label">
-            ${window.CHTCore.Translate.instant('report.rdtoolkit_capture.rdtoolkit_preview_image')} 
+            ${window.CHTCore.Translate.instant('report.rdtoolkit-capture.preview.image')} 
           </span>
-          <img src="data:image/png;base64,${capturedTest.image}">
+          ${capturedTest.image ? imageTag : ''}
         </div>
         <br>
         <div>
-           ${window.CHTCore.Translate.instant('report.rdtoolkit_capture.rdtoolkit_preview_next_action')} 
+           ${window.CHTCore.Translate.instant('report.rdtoolkit-capture.preview.next_action')} 
         </div>
       `);
   }
 
   function updateFields($widget, capturedTest) {
-    setFieldValue($widget, 'rdtoolkit_session_id', capturedTest.sessionId);
-    setFieldValue($widget, 'rdtoolkit_results', JSON.stringify(capturedTest.results));
-    setFieldValue($widget, 'rdtoolkit_results_description', capturedTest.resultsDescription);
-    setFieldValue($widget, 'rdtoolkit_time_read', capturedTest.timeRead);
-    setFieldValue($widget, 'rdtoolkit_state', capturedTest.state);
-    setFieldValue($widget, 'rdtoolkit_time_started', capturedTest.timeStarted);
-    setFieldValue($widget, 'rdtoolkit_time_resolved', capturedTest.timeResolved);
-    setFieldValue($widget, 'rdtoolkit_image', capturedTest.image);
-  }
-
-  function getDate(dateTime) {
-    return dateTime && moment(dateTime).isValid() ? moment(dateTime).format('LLL'): '';
-  }
-
-  function getForm() {
-    return window.CHTCore.Enketo.getCurrentForm();
-  }
-
-  function getFieldValue(form, fieldName) {
-    if (!form || !fieldName) {
-      return;
-    }
-
-    return form.model.$
-      .find(fieldName)
-      .text();
+    utils.setFieldValue($widget, 'rdtoolkit_session_id', capturedTest.sessionId);
+    utils.setFieldValue($widget, 'rdtoolkit_results', JSON.stringify(capturedTest.results));
+    utils.setFieldValue($widget, 'rdtoolkit_results_description', capturedTest.resultsDescription);
+    utils.setFieldValue($widget, 'rdtoolkit_time_read', capturedTest.timeRead);
+    utils.setFieldValue($widget, 'rdtoolkit_state', capturedTest.state);
+    utils.setFieldValue($widget, 'rdtoolkit_time_started', capturedTest.timeStarted);
+    utils.setFieldValue($widget, 'rdtoolkit_time_resolved', capturedTest.timeResolved);
+    utils.setFieldValue($widget, 'rdtoolkit_image', capturedTest.image);
   }
 
   function getFormattedResult(results) {
@@ -156,48 +141,21 @@
       return '';
     }
 
-    let description = '';
-
-    results.forEach(item => {
+    const formattedResults = results.map(item => {
       const test = window.CHTCore.Translate.instant(item.test);
       const result = window.CHTCore.Translate.instant(item.result);
 
-      description += `${description ? ', ' : ''}${test || item.test}: ${result || item.result}`;
+      return `${test}: ${result}`;
     });
 
-    return description;
+    return formattedResults.join(', ');
   }
 
-  function setFieldValue($widget, fieldName, value) {
-    if (!fieldName || value === undefined) {
-      return;
-    }
-
-    $widget
-      .find(`input[name$=${fieldName}]`)
-      .val(value)
-      .trigger('change');
-  }
-
-  $.fn[pluginName] = function(options, event) {
-    return this.each(function() {
-      const $this = $(this);
-      let data = $this.data(pluginName);
-
-      options = options || {};
-
-      if (!data && typeof options === 'object') {
-        $this.data(pluginName, (data = new Rdtoolkitcapturewidget(this, options, event)));
-
-      } else if (data && typeof options === 'string') {
-        data[options](this);
-      }
-    });
-  };
+  $.fn[pluginName] = utils.getBindFunction(pluginName, Rdtoolkitcapturewidget);
 
   module.exports = {
     'name': pluginName,
-    'selector': '.or-appearance-rdtoolkit_capture',
+    'selector': '.or-appearance-rdtoolkit-capture',
   };
 
 }
