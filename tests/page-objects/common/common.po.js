@@ -66,7 +66,7 @@ module.exports = {
   },
 
   checkConfigurationWizard: async () => {
-    await openSubmenu('configuration wizard');
+    await openSubmenu(['configuration wizard','easy setup wizard ']);
     await helper.waitUntilReadyNative(wizardTitle);
     await helper.waitUntilTranslated(wizardTitle);
     const wizardTitleText = await helper.getTextFromElementNative(wizardTitle);
@@ -78,7 +78,7 @@ module.exports = {
 
   getDefaultLanguages: async () => {
     await module.exports.openMenuNative();
-    await openSubmenu('configuration wizard');
+    await openSubmenu(['configuration wizard','easy setup wizard ']);
     await helper.waitUntilReadyNative(wizardTitle);
     await helper.waitUntilTranslated(wizardTitle);
     await helper.clickElementNative(languagePreferenceHeading);
@@ -90,7 +90,7 @@ module.exports = {
   },
 
   checkGuidedTour: async () => {
-    await openSubmenu('guided');
+    await openSubmenu('guided tour');
     expect(await tourBtns.count()).toEqual(4);
     await helper.clickElementNative(genericCancelBtn);
   },
@@ -117,7 +117,7 @@ module.exports = {
   },
 
   checkUserSettings: async () => {
-    await openSubmenu('user settings');
+    await openSubmenu(['user settings', 'edit.user.settings']);
     const optionNames = await helper.getTextFromElementNative(settings);
     expect(optionNames).toEqual(['Update password', 'Edit user profile']);
   },
