@@ -606,6 +606,12 @@ module.exports = {
    * and also returns a promise - pick one!
    */
   afterEach: () => revertDb(),
+  
+  afterEachMocha: async (except) => {
+    await deleteAll(except);
+    await revertTranslations();
+    await setUserContactDoc();
+  },
 
   //check for the update modal before
   beforeEach: async () => {

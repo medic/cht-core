@@ -777,9 +777,10 @@ module.exports = function(grunt) {
         ],
       },
       'e2e-non-ui': {
-        src: 'tests/e2e/api/**/*.js',
+        src: 'tests/non-ui/**/*.js',
         options: {
-          timeout: 10000,
+          timeout: 60000,
+          reporter: 'mochawesome'
         },
       }
     },
@@ -967,7 +968,10 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('e2e-api', 'Deploy app for testing and run browserless e2e tests', [
-    'e2e-deploy',
+    'exec:clean-test-database',
+    'exec:setup-test-database',
+    'couch-push:test',
+    'exec:e2e-servers',
     'mochaTest:e2e-non-ui',
   ]);
   grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [
@@ -1061,6 +1065,10 @@ module.exports = function(grunt) {
     'exec:e2e-servers',
     'protractor:e2e-web-tests',
     //'protractor:e2e-mobile-tests',
+  ]);
+  grunt.registerTask('ci-e2e-non-ui', 'Run non-ui e2e tests for CI', [
+    'exec:e2e-servers',
+    'mochaTest:e2e-non-ui',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
