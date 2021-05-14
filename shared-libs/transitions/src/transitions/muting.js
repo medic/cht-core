@@ -45,7 +45,7 @@ const isNewContactWithMutedParent = (doc, infoDoc = {}) => {
     // there is no possible mute date that is "after" NaN)
     mutingUtils.isMutedInLineage(doc, new Date(infoDoc.initial_replication_date).getTime()) &&
     !infoDoc.muting_history &&
-    !mutingUtils.isLastUpdatedOffline(doc) // contacts that are updated offline are treated separately
+    !mutingUtils.isLastUpdatedByClient(doc) // contacts that are updated client-side are treated separately
   );
 };
 
@@ -60,7 +60,7 @@ const isRelevantContact = (doc, infoDoc = {}) => {
   return Boolean(
     doc &&
     isContact(doc) &&
-    (isNewContactWithMutedParent(doc, infoDoc) || mutingUtils.isLastUpdatedOffline(doc))
+    (isNewContactWithMutedParent(doc, infoDoc) || mutingUtils.isLastUpdatedByClient(doc))
   );
 };
 
@@ -92,17 +92,17 @@ const processContact = (change) => {
  * - reads infodocs
  * - (re)runs muting transition over every report, in sequence, even if it had already ran
  * - reports should be processed in the same order we have received them
- * The purpose of this action is to reconcile offline muting events that have already been processed offline, but due
+ * The purpose of this action is to reconcile client-side muting events that have already been processed, but due
  * to characteristics of CouchDB + PouchDB sync + changes watching, there is no guarantee that we process these
  * changes in their chronological order naturally.
- * The reportIds parameter is a list of reports that have been created offline _after_ the currently processed report,
- * have have affected one contact that this report has updated.
+ * The reportIds parameter is a list of reports that have been created client-side after the currently processed report,
+ * and have changed at least one contact that the currently processed report has changed.
  * This resolves most "conflicts" but does not guarantee a consistent muting state for every case.
  *
  * @param {Array<string>} reportIds - an ordered list of report uuids to be processed
  * @return {Promise}
  */
-const replayOfflineMutingEvents = (reportIds = []) => {
+const replayClientMutingEvents = (reportIds = []) => {
   if (!reportIds.length) {
     return Promise.resolve();
   }
@@ -117,10 +117,9 @@ const replayOfflineMutingEvents = (reportIds = []) => {
         let promiseChain = Promise.resolve();
         reportIds.forEach(reportId => {
           const hydratedReport = hydratedReports.find(report => report._id === reportId);
-          if (!hydratedReport) {
-            return;
+          if (hydratedReport) {
+            promiseChain = promiseChain.then(() => runTransition(hydratedReport, infoDocs));
           }
-          promiseChain = promiseChain.then(() => runTransition(hydratedReport, infoDocs));
         });
         return promiseChain;
       });
@@ -154,21 +153,21 @@ const runTransition = (hydratedReport, infoDocs = []) => {
   });
 };
 
-const wasProcessedOffline = (change) => {
+const wasProcessedClientSide = (change) => {
   return change.doc &&
-         change.doc.offline_transitions &&
-         change.doc.offline_transitions[TRANSITION_NAME];
+         change.doc.client_transitions &&
+         change.doc.client_transitions[TRANSITION_NAME];
 };
 
 const processMutingEvent = (contact, change, muteState) => {
-  const processedOffline = wasProcessedOffline(change);
+  const processedClientSide = wasProcessedClientSide(change);
   return mutingUtils
-    .updateMuteState(contact, muteState, change.id, processedOffline)
+    .updateMuteState(contact, muteState, change.id, processedClientSide)
     .then(reportIds => {
       module.exports._addMsg(getEventType(muteState), change.doc, contact);
 
-      if (processedOffline) {
-        return replayOfflineMutingEvents(reportIds);
+      if (processedClientSide) {
+        return replayClientMutingEvents(reportIds);
       }
     });
 };
@@ -220,9 +219,9 @@ module.exports = {
           return;
         }
 
-        if (Boolean(contact.muted) === muteState && !wasProcessedOffline(change)) {
+        if (Boolean(contact.muted) === muteState && !wasProcessedClientSide(change)) {
           // don't update registrations if contact already has desired state
-          // but do process muting events that have been handled offline
+          // but do process muting events that have been handled on the client
           module.exports._addMsg(contact.muted ? 'already_muted' : 'already_unmuted', change.doc);
           return;
         }

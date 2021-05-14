@@ -126,28 +126,28 @@ describe('Muting transition', () => {
       ]);
     });
 
-    it('should return true for contacts muted offline', () => {
+    it('should return true for contacts muted client-side', () => {
       config.getAll.returns({
         contact_types: [{ id: 'person' }, { id: 'clinic' }, { id: 'health_center' }, { id: 'district_hospital' } ]
       });
-      const contactMutedOffline = {
+      const contactMutedByClient = {
         type: 'person',
         muted: true,
         muting_history: {
-          last_update: 'offline',
+          last_update: 'client',
         },
       };
-      const contactMutedOnline = {
+      const contactMutedByServer = {
         type: 'person',
         muted: true,
         muting_history: {
-          online: { muted: true, date: 20 },
-          offline: [{ muted: true, date: 10 }],
-          last_update: 'online',
+          server: { muted: true, date: 20 },
+          client: [{ muted: true, date: 10 }],
+          last_update: 'server',
         },
       };
-      chai.expect(transition.filter(contactMutedOffline )).to.equal(true);
-      chai.expect(transition.filter(contactMutedOnline )).to.equal(false);
+      chai.expect(transition.filter(contactMutedByClient )).to.equal(true);
+      chai.expect(transition.filter(contactMutedByServer )).to.equal(false);
     });
 
     it('should return false for previously muted contacts', () => {
@@ -235,7 +235,7 @@ describe('Muting transition', () => {
       });
     });
 
-    describe('contacts muted offline', () => {
+    describe('contacts muted by client', () => {
       let clock;
 
       beforeEach(() => {
@@ -251,13 +251,13 @@ describe('Muting transition', () => {
           type: 'person',
           muted: true,
           muting_history: {
-            online: { muted: false },
-            offline: [
+            server: { muted: false },
+            client: [
               { muted: true, date: 100, report_id: 'report1' },
               { muted: false, date: 200, report_id: 'report2' },
               { muted: true, date: 300, report_id: 'report3' },
             ],
-            last_update: 'offline',
+            last_update: 'client',
           }
         };
 
@@ -285,13 +285,13 @@ describe('Muting transition', () => {
           _id: 'patient',
           type: 'person',
           muting_history: {
-            online: { muted: true },
-            offline: [
+            server: { muted: true },
+            client: [
               { muted: true, date: 100, report_id: 'report1' },
               { muted: false, date: 200, report_id: 'report2' },
               { muted: true, date: 300, report_id: 'report3' },
             ],
-            last_update: 'offline',
+            last_update: 'client',
           }
         };
 
@@ -319,7 +319,7 @@ describe('Muting transition', () => {
           type: 'person',
           patient_id: 'patient',
           muting_history: {
-            last_update: 'offline',
+            last_update: 'client',
           }
         };
         mutingUtils.updateRegistrations.rejects({ some: 'error' });
@@ -347,7 +347,7 @@ describe('Muting transition', () => {
           type: 'person',
           patient_id: 'patient',
           muting_history: {
-            last_update: 'offline',
+            last_update: 'client',
           }
         };
         const info = { initial_replication_date: 'unknown' };
@@ -465,7 +465,7 @@ describe('Muting transition', () => {
         });
       });
 
-      it('should perform action if contact was updated offline by this report, even when in the correct state', () => {
+      it('should perform action if contact was updated client-side by this report, when in the correct state', () => {
         const contact = {
           _id: 'contact',
           muted: 12345,
@@ -475,7 +475,7 @@ describe('Muting transition', () => {
           type: 'data_record',
           form: 'mute',
           patient: contact,
-          offline_transitions: { muting: true },
+          client_transitions: { muting: true },
         };
 
         config.get.returns(mutingConfig);
@@ -541,13 +541,13 @@ describe('Muting transition', () => {
           });
       });
 
-      it('should skip processing offline muting queue when report not processed offline', () => {
+      it('should skip processing client-side muting queue when report not processed client-side', () => {
         const doc = {
           _id: 'report',
           type: 'data_record',
           form: 'mute',
           patient: { _id: 'patient', name: 'mary' },
-          offline_transitions: {
+          client_transitions: {
             notMuting: true,
             alsoNotMuting: true,
           },
@@ -568,13 +568,13 @@ describe('Muting transition', () => {
           });
       });
 
-      it('should do nothing when offline muting queue is empty', () => {
+      it('should do nothing when client-side muting queue is empty', () => {
         const doc = {
           _id: 'report',
           type: 'data_record',
           form: 'mute',
           patient: { _id: 'patient', name: 'mary' },
-          offline_transitions: {
+          client_transitions: {
             notMuting: true,
             alsoNotMuting: true,
             muting: true,
@@ -596,13 +596,13 @@ describe('Muting transition', () => {
           });
       });
 
-      it('should process offline muting queue when report was processed offline', () => {
+      it('should process client-side muting queue when report was processed by client', () => {
         const doc = {
           _id: 'report',
           type: 'data_record',
           form: 'mute',
           patient: { _id: 'patient', name: 'mary' },
-          offline_transitions: {
+          client_transitions: {
             notMuting: true,
             alsoNotMuting: true,
             muting: true,
@@ -679,7 +679,7 @@ describe('Muting transition', () => {
           type: 'data_record',
           form: 'mute',
           patient: { _id: 'patient', name: 'mary' },
-          offline_transitions: {
+          client_transitions: {
             notMuting: true,
             alsoNotMuting: true,
             muting: true,
@@ -712,7 +712,7 @@ describe('Muting transition', () => {
           type: 'data_record',
           form: 'mute',
           patient: { _id: 'patient', name: 'mary' },
-          offline_transitions: {
+          client_transitions: {
             notMuting: true,
             alsoNotMuting: true,
             muting: true,

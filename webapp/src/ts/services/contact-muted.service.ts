@@ -8,7 +8,7 @@ export class ContactMutedService {
 
   constructor() { }
 
-  getMutedParent(doc, lineage?) {
+  getMutedDoc(doc, lineage?) {
     if (!doc) {
       return false;
     }
@@ -18,7 +18,7 @@ export class ContactMutedService {
     }
 
     if (lineage) {
-      return _find(lineage, (parent) => parent && parent.muted) || false;
+      return _find(lineage, (parent) => parent?.muted);
     }
 
     let parent = doc.parent;
@@ -33,6 +33,6 @@ export class ContactMutedService {
   }
 
   getMuted(doc, lineage?) {
-    return this.getMutedParent(doc, lineage)?.muted || false;
+    return this.getMutedDoc(doc, lineage)?.muted || false;
   }
 }

@@ -1070,8 +1070,8 @@ describe('muting', () => {
       });
   });
 
-  describe('offline muting', () => {
-    it('should add infodoc muting history for contacts muted offline and silence registrations', () => {
+  describe('client-side muting', () => {
+    it('should add infodoc muting history for contacts muted on client and silence registrations', () => {
       const contact = {
         _id: uuid(),
         type: 'person',
@@ -1079,9 +1079,9 @@ describe('muting', () => {
         muted: 12345,
         patient_id: 'the_person',
         muting_history: {
-          last_update: 'offline',
-          online: { muted: false },
-          offline: [
+          last_update: 'client',
+          server: { muted: false },
+          client: [
             { muted: true, report_id: 'report1', date: 1 },
             { muted: false, report_id: 'report2', date: 2 },
             { muted: true, report_id: 'report3', date: 12345 },
@@ -1145,8 +1145,8 @@ describe('muting', () => {
         ]))
         .then(([updatedContact, infodoc]) => {
           expect(updatedContact.muted).toBeGreaterThan(now);
-          expect(updatedContact.muting_history.last_update).toBe('online');
-          expect(updatedContact.muting_history.online.muted).toBe(true);
+          expect(updatedContact.muting_history.last_update).toBe('server');
+          expect(updatedContact.muting_history.server.muted).toBe(true);
 
           expect(infodoc.transitions.muting.ok).toBe(true);
           expect(infodoc.muting_history).toEqual([
@@ -1160,16 +1160,16 @@ describe('muting', () => {
         });
     });
 
-    it('should add infodoc muting history for contacts unmuted offline and schedule registrations', () => {
+    it('should add infodoc muting history for contacts unmuted client-side and schedule registrations', () => {
       const contact = {
         _id: uuid(),
         type: 'person',
         name: 'jane',
         patient_id: 'the_person',
         muting_history: {
-          last_update: 'offline',
-          online: { muted: true },
-          offline: [
+          last_update: 'client',
+          server: { muted: true },
+          client: [
             { muted: false, report_id: 'report1', date: 1 },
             { muted: true, report_id: 'report2', date: 2 },
             { muted: false, report_id: 'report3', date: 12345 },
@@ -1230,8 +1230,8 @@ describe('muting', () => {
         .then(() => utils.getDoc(contact._id))
         .then(updatedContact => {
           expect(updatedContact.muted).toBeUndefined();
-          expect(updatedContact.muting_history.last_update).toBe('online');
-          expect(updatedContact.muting_history.online.muted).toBe(false);
+          expect(updatedContact.muting_history.last_update).toBe('server');
+          expect(updatedContact.muting_history.server.muted).toBe(false);
         })
         .then(() => sentinelUtils.getInfoDoc(contact._id))
         .then(infodoc => {
@@ -1244,7 +1244,7 @@ describe('muting', () => {
         });
     });
 
-    it('should replay offline muting history when descendents have offline muting histories', () => {
+    it('should replay client muting history when descendents have client muting histories', () => {
       /*
        Timeline:
        - clinic exists
@@ -1252,7 +1252,7 @@ describe('muting', () => {
        - before sync:
        - person is muted
        - clinic is muted
-       - new person is added under clinic <- they are muted offline
+       - new person is added under clinic <- they are muted client-side
        - new person is unmuted (which also unmutes person and clinic)
        - person is muted again
        - sync
@@ -1278,12 +1278,12 @@ describe('muting', () => {
         },
         reported_date: new Date().getTime(),
         muting_history: {
-          online: { muted: false },
-          offline: [
+          server: { muted: false },
+          client: [
             { report_id: 'mutes_clinic', muted: true, date: 1000 },
             { report_id: 'unmutes_new_person', muted: false, date: 2000 },
           ],
-          last_update: 'offline',
+          last_update: 'client',
         },
       };
 
@@ -1296,13 +1296,13 @@ describe('muting', () => {
         reported_date: new Date().getTime(),
         muted: 3000,
         muting_history: {
-          offline: [
+          client: [
             { report_id: 'mutes_person', muted: true, date: 500 },
             { report_id: 'mutes_clinic', muted: true, date: 1000 },
             { report_id: 'unmutes_new_person', muted: false, date: 2000 },
             { report_id: 'mutes_person_again', muted: true, date: 3000 }
           ],
-          last_update: 'offline',
+          last_update: 'client',
         }
       };
 
@@ -1314,11 +1314,11 @@ describe('muting', () => {
         parent:  { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
         reported_date: new Date().getTime(),
         muting_history: {
-          offline: [
+          client: [
             { report_id: 'mutes_clinic', muted: true, date: 1000 },
             { report_id: 'unmutes_new_person', muted: false, date: 2000 },
           ],
-          last_update: 'offline',
+          last_update: 'client',
         }
       };
 
@@ -1332,7 +1332,7 @@ describe('muting', () => {
             patient_id: 'the_new_person',
           },
           reported_date: 500,
-          offline_transitions: {
+          client_transitions: {
             muting: true
           },
         },
@@ -1345,7 +1345,7 @@ describe('muting', () => {
             place_id: 'the_new_clinic',
           },
           reported_date: 1000,
-          offline_transitions: {
+          client_transitions: {
             muting: true
           },
         },
@@ -1358,7 +1358,7 @@ describe('muting', () => {
             patient_id: 'the_newnew_person',
           },
           reported_date: 2000,
-          offline_transitions: {
+          client_transitions: {
             muting: true
           },
         },
@@ -1371,7 +1371,7 @@ describe('muting', () => {
             patient_id: 'the_new_person',
           },
           reported_date: 3000,
-          offline_transitions: {
+          client_transitions: {
             muting: true
           },
         },
@@ -1394,20 +1394,20 @@ describe('muting', () => {
           const findMutingHistoryForReport = (history, reportId) => history.find(item => item.report_id === reportId);
 
           expect(updatedClinic.muted).toBeUndefined();
-          expect(updatedClinic.muting_history.online.muted).toBe(false);
-          expect(updatedClinic.muting_history.last_update).toBe('online');
+          expect(updatedClinic.muting_history.server.muted).toBe(false);
+          expect(updatedClinic.muting_history.last_update).toBe('server');
           expect(findMutingHistoryForReport(clinicInfo.muting_history, 'mutes_clinic').muted).toBe(true);
           expect(findMutingHistoryForReport(clinicInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
 
           expect(updatedPerson.muted).toBeDefined();
-          expect(updatedPerson.muting_history.online.muted).toBe(true);
-          expect(updatedPerson.muting_history.last_update).toBe('online');
+          expect(updatedPerson.muting_history.server.muted).toBe(true);
+          expect(updatedPerson.muting_history.last_update).toBe('server');
           expect(findMutingHistoryForReport(personInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
           expect(findMutingHistoryForReport(personInfo.muting_history, 'mutes_person_again').muted).toBe(true);
 
           expect(updatedNewPerson.muted).toBeUndefined();
-          expect(updatedNewPerson.muting_history.online.muted).toBe(false);
-          expect(updatedNewPerson.muting_history.last_update).toBe('online');
+          expect(updatedNewPerson.muting_history.server.muted).toBe(false);
+          expect(updatedNewPerson.muting_history.last_update).toBe('server');
           expect(findMutingHistoryForReport(newPersonInfo.muting_history, 'mutes_clinic').muted).toBe(true);
           expect(findMutingHistoryForReport(newPersonInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
         })
@@ -1424,7 +1424,7 @@ describe('muting', () => {
         });
     });
 
-    it('should replay already processed reports when replaying offline muting history', () => {
+    it('should replay already processed reports when replaying client-side muting history', () => {
       // when a report from a contact's muting history is synced muuuch later
       /*
        Timeline:
@@ -1433,7 +1433,7 @@ describe('muting', () => {
        - before sync:
        - person is muted
        - clinic is muted
-       - new person is added under clinic <- they are muted offline
+       - new person is added under clinic <- they are muted client-side
        - new person is unmuted (which also unmutes person and clinic)
        - person is muted again
        - everything is synced except the mute clinic, which is synced later
@@ -1459,12 +1459,12 @@ describe('muting', () => {
         },
         reported_date: new Date().getTime(),
         muting_history: {
-          online: { muted: false },
-          offline: [
+          server: { muted: false },
+          client: [
             { report_id: 'mutes_clinic', muted: true, date: 1000 },
             { report_id: 'unmutes_new_person', muted: false, date: 2000 },
           ],
-          last_update: 'offline',
+          last_update: 'client',
         },
       };
 
@@ -1477,13 +1477,13 @@ describe('muting', () => {
         reported_date: new Date().getTime(),
         muted: 3000,
         muting_history: {
-          offline: [
+          client: [
             { report_id: 'mutes_person', muted: true, date: 500 },
             { report_id: 'mutes_clinic', muted: true, date: 1000 },
             { report_id: 'unmutes_new_person', muted: false, date: 2000 },
             { report_id: 'mutes_person_again', muted: true, date: 3000 }
           ],
-          last_update: 'offline',
+          last_update: 'client',
         }
       };
 
@@ -1495,11 +1495,11 @@ describe('muting', () => {
         parent:  { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
         reported_date: new Date().getTime(),
         muting_history: {
-          offline: [
+          client: [
             { report_id: 'mutes_clinic', muted: true, date: 1000 },
             { report_id: 'unmutes_new_person', muted: false, date: 2000 },
           ],
-          last_update: 'offline',
+          last_update: 'client',
         }
       };
 
@@ -1513,7 +1513,7 @@ describe('muting', () => {
             patient_id: 'the_new_person',
           },
           reported_date: 500,
-          offline_transitions: {
+          client_transitions: {
             muting: true
           },
         },
@@ -1526,7 +1526,7 @@ describe('muting', () => {
             patient_id: 'the_newnew_person',
           },
           reported_date: 2000,
-          offline_transitions: {
+          client_transitions: {
             muting: true
           },
         },
@@ -1539,7 +1539,7 @@ describe('muting', () => {
             patient_id: 'the_new_person',
           },
           reported_date: 3000,
-          offline_transitions: {
+          client_transitions: {
             muting: true
           },
         },
@@ -1554,7 +1554,7 @@ describe('muting', () => {
           place_id: 'the_new_clinic',
         },
         reported_date: 1000,
-        offline_transitions: {
+        client_transitions: {
           muting: true
         },
       };
@@ -1576,21 +1576,21 @@ describe('muting', () => {
           const findMutingHistoryForReport = (history, reportId) => history.find(item => item.report_id === reportId);
 
           expect(updatedClinic.muted).toBeUndefined();
-          expect(updatedClinic.muting_history.online.muted).toBe(false);
-          expect(updatedClinic.muting_history.last_update).toBe('online');
+          expect(updatedClinic.muting_history.server.muted).toBe(false);
+          expect(updatedClinic.muting_history.last_update).toBe('server');
           expect(findMutingHistoryForReport(clinicInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
 
           expect(updatedPerson.muted).toBeDefined();
-          expect(updatedPerson.muting_history.online.muted).toBe(true);
-          expect(updatedPerson.muting_history.last_update).toBe('online');
+          expect(updatedPerson.muting_history.server.muted).toBe(true);
+          expect(updatedPerson.muting_history.last_update).toBe('server');
           expect(findMutingHistoryForReport(personInfo.muting_history, 'mutes_person_again').muted).toBe(true);
 
           expect(updatedNewPerson.muted).toBeUndefined();
-          expect(updatedNewPerson.muting_history.online.muted).toBe(false);
-          expect(updatedNewPerson.muting_history.last_update).toBe('online');
+          expect(updatedNewPerson.muting_history.server.muted).toBe(false);
+          expect(updatedNewPerson.muting_history.last_update).toBe('server');
           expect(findMutingHistoryForReport(newPersonInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
         })
-        // push a doc from the offline muting history
+        // push a doc from the client-sude muting history
         .then(() => utils.saveDoc(mutesClinic))
         .then(() => sentinelUtils.waitForSentinel(mutesClinic._id))
         .then(() => utils.getDocs([clinic._id, person._id, newPerson._id]))

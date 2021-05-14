@@ -58,7 +58,7 @@ export class TransitionsService {
   private isEnabled(transitionName) {
     const transitionsConfig = this.settings.transitions || {};
     const transitionConfig = transitionsConfig[transitionName];
-    if (transitionConfig && !transitionConfig.disable && transitionConfig.offline) {
+    if (transitionConfig && !transitionConfig.disable && transitionConfig.client) {
       return true;
     }
   }

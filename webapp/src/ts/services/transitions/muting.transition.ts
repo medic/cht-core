@@ -4,29 +4,32 @@ import { DbService } from '@mm-services/db.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { TransitionInterface } from '@mm-services/transitions/transition';
+import { Transition } from '@mm-services/transitions/transition';
 import { ValidationService } from '@mm-services/validation.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class MutingTransition implements TransitionInterface {
+export class MutingTransition extends Transition {
   constructor(
     private dbService:DbService,
     private lineageModelGeneratorService:LineageModelGeneratorService,
     private contactMutedService:ContactMutedService,
     private contactTypesService:ContactTypesService,
     private validationService:ValidationService,
-  ) { }
+  ) {
+    super();
+  }
 
   readonly name = 'muting';
 
   private transitionConfig;
   private inited;
-  private readonly CONFIG_NAME = 'muting';
+  private readonly CONFIG_NAME = this.name;
   private readonly MUTE_PROPERTY = 'mute_forms';
   private readonly UNMUTE_PROPERTY = 'unmute_forms';
-  private readonly OFFLINE = 'offline';
+  private readonly CLIENT = 'client';
+  private readonly SERVER = 'server';
 
   private getConfig(settings = {}) {
     return settings[this.CONFIG_NAME] || {};
@@ -184,8 +187,7 @@ export class MutingTransition implements TransitionInterface {
       return Promise.resolve();
     }
 
-    report.offline_transitions = report.offline_transitions || {};
-    report.offline_transitions.muting = true;
+    this.addTransitionLog(report);
 
     return this.updatedMuteState(subject, mutedState, report, context);
   }
@@ -269,13 +271,13 @@ export class MutingTransition implements TransitionInterface {
   }
 
   private getLastMutingEvent(contact) {
-    return this.lastUpdatedOffline(contact) &&
-      contact.muting_history.offline?.slice(-1)[0] ||
+    return this.lastUpdatedByClient(contact) &&
+      contact.muting_history[this.CLIENT]?.slice(-1)[0] ||
       {};
   }
 
-  private lastUpdatedOffline(contact) {
-    return contact.muting_history?.last_update === this.OFFLINE;
+  private lastUpdatedByClient(contact) {
+    return contact.muting_history?.last_update === this.CLIENT;
   }
 
   /**
@@ -294,11 +296,11 @@ export class MutingTransition implements TransitionInterface {
       // process contacts and should up to date)
       const lineage = this.buildLineageFromContext(hydratedContact, context);
       // use the lineage param, which takes precedence over inlined object lineage
-      const mutedParent = this.contactMutedService.getMutedParent(hydratedContact, lineage);
+      const mutedParent = this.contactMutedService.getMutedDoc(hydratedContact, lineage);
       if (mutedParent) {
-        // store reportId if the parent was last muted offline
-        // if the parent was last muted online, we don't have access to this information
-        const reportId = this.lastUpdatedOffline(mutedParent) ?
+        // store reportId if the parent was last muted client-side
+        // if the parent was last muted server-side, we don't have access to this information
+        const reportId = this.lastUpdatedByClient(mutedParent) ?
           this.getLastMutingEvent(mutedParent).report_id :
           undefined;
 
@@ -334,13 +336,13 @@ export class MutingTransition implements TransitionInterface {
    */
   private processContact(contact, muted, reportId, context) {
     if (!contact.muting_history) {
-      // store "online" state when first processing this doc offline
+      // store "server" state when first processing this doc client-side
       contact.muting_history = {
-        online: {
+        [this.SERVER]: {
           muted: !!contact.muted,
           date: contact.muted,
         },
-        offline: [],
+        [this.CLIENT]: [],
       };
     }
 
@@ -349,7 +351,7 @@ export class MutingTransition implements TransitionInterface {
     } else {
       delete contact.muted;
     }
-    contact.muting_history.last_update = this.OFFLINE;
+    contact.muting_history.last_update = this.CLIENT;
 
     const mutingEvent = {
       muted: muted,
@@ -362,7 +364,7 @@ export class MutingTransition implements TransitionInterface {
       return;
     }
 
-    contact.muting_history.offline.push(mutingEvent);
+    contact.muting_history[this.CLIENT].push(mutingEvent);
     // consolidate muted state in hydratedDocs
     if (context.hydratedDocs[contact._id]) {
       context.hydratedDocs[contact._id].muted = contact.muted;
