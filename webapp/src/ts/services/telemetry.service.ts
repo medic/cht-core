@@ -81,7 +81,6 @@ export class TelemetryService {
   // moment when the aggregation starts (the beginning of the current day)
   private aggregateStartsAt() {
     return moment().startOf('day');
-    //return moment().startOf('minute');
   }
 
   // if there is telemetry data from previous days, aggregation is performed and the data destroyed
@@ -90,13 +89,9 @@ export class TelemetryService {
     const dbDate = moment(this.getFirstAggregatedDate());
 
     if (dbDate.isBefore(startOf)) {
-      return db.info()
-        .then(info => {
-          if (info.doc_count > 0) {
-            return this.aggregate(db)
-              .then(() => this.reset(db));
-          }
-        });
+      return this
+        .aggregate(db)
+        .then(() => this.reset(db));
     }
   }
 
@@ -114,8 +109,6 @@ export class TelemetryService {
       metadata.year,
       metadata.month,
       metadata.day,
-      //metadata.hour,
-      //metadata.minute,
       metadata.user,
       metadata.deviceId,
     ].join('-');
@@ -140,8 +133,6 @@ export class TelemetryService {
           year: date.year(),
           month: date.month() + 1,
           day: date.date(),
-          //hour: date.hour(),
-          //minute: date.minute(),
           user: this.sessionService.userCtx().name,
           deviceId: this.getUniqueDeviceId(),
           versions: {

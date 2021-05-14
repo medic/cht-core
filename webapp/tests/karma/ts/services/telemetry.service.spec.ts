@@ -76,7 +76,6 @@ describe('TelemetryService', () => {
     dbService = { get: () => dbInstance };
     consoleErrorSpy = sinon.spy(console, 'error');
     pouchDb = {
-      info: sinon.stub().resolves({doc_count: 10}),
       post: sinon.stub().resolves(),
       close: sinon.stub(),
       destroy: sinon.stub().callsFake(() => {
