@@ -1,15 +1,36 @@
+const { element } = require('protractor');
 const helper = require('../../helper');
 const utils = require('../../utils');
 const nameField = element(by.css('#report-form form [name="/data/name"]'));
 const submitButton = element(by.css('.enketo .submit'));
 const submittedName = element(by.css('#reports-content .details ul li:first-child p'));
+const formTitle = element(by.id('form-title'));
+const nextButton = element(by.css('button.btn.btn-primary.next-page'));
 
 const leftActionBarButtons = () => element.all(by.css('.general-actions .actions.dropup > a'));
 
+const fillForm = async (formFields) => {
+  for (const [fieldName] of Object.entries(formFields)) {
+    const field = formFields[fieldName];
+    const elm = element(by.css(field.css));
+    if (field.textField) {
+      await elm.sendKeys(field.value);
+    } else {
+      const radioButton = element(by.css(`${field.css}[value=${field.value}]`));
+      await helper.clickElementNative(radioButton);
+    }
+    if (field.endOfPage){
+      await module.exports.nextPageNative();
+    }
+  }
+};
+
 module.exports = {
+  fillForm,
   submittedName,
   submitButton,
   nameField,
+  formTitle,
   editForm: () => {
     helper.waitForAngularComplete();
     const editFormBtn = element.all(
@@ -66,6 +87,7 @@ module.exports = {
       await nextButton.click();
     }
   },
+  nextButton,
 
   reportApprove: () => {
     helper.waitForAngularComplete();
@@ -131,6 +153,13 @@ module.exports = {
   },
 
   submitNative: async () => {
+    const submitButton = element(by.css('.btn.submit.btn-primary'));
+    await helper.waitElementToBeClickable(submitButton);
+    await submitButton.click();
+    await helper.waitElementToDisappearNative(submitButton);
+  },
+
+  submitReports: async () => {
     const submitButton = element(by.css('.btn.submit.btn-primary'));
     await helper.waitElementToBeClickable(submitButton);
     await submitButton.click();
