@@ -72,8 +72,9 @@ module.exports = {
     const wizardTitleText = await helper.getTextFromElementNative(wizardTitle);
     expect(wizardTitleText.toLowerCase()).toContain('wizard');
     expect(await helper.getTextFromElementNative(defaultCountryCode)).toEqual('Canada (+1)');
-    await helper.waitUntilReadyNative(finishBtn);
-    expect(await helper.getTextFromElementNative(finishBtn)).toEqual('Finish');
+    const texts = ['setup.start','Finish'];
+    const displayed = await helper.getTextFromElementNative(finishBtn);
+    expect(texts).toContain(displayed);
     await skipSetup.click();
   },
 
