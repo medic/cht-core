@@ -505,7 +505,7 @@ describe('mutingUtils', () => {
           _id: 'p2',
           muted: 123,
           muting_history: {
-            offline: [
+            client: [
               { date: 100, report_id: reportId },
               { date: 200, report_id: 'other_report' },
             ],
@@ -516,7 +516,7 @@ describe('mutingUtils', () => {
           muted: 456,
           muting_history: {
             muting_history: {
-              offline: [
+              client: [
                 { date: 100, report_id: reportId },
                 { date: 200, report_id: 'other_report' },
               ],
@@ -596,7 +596,7 @@ describe('mutingUtils', () => {
           _id: 'p2',
           muted: 123,
           muting_history: {
-            offline: [
+            client: [
               { date: '100', report_id: reportId },
               { date: '300', report_id: 'other_report1' },
             ],
@@ -606,7 +606,7 @@ describe('mutingUtils', () => {
           _id: 'p1',
           muted: 456,
           muting_history: {
-            offline: [
+            client: [
               { date: '100', report_id: reportId },
               { date: '200', report_id: 'other_report2' },
             ],
@@ -663,7 +663,7 @@ describe('mutingUtils', () => {
       });
     });
 
-    it('should return empty array when no offline muting happened', () => {
+    it('should return empty array when no client muting happened', () => {
       const reportId = 'reportid';
       const hydratedPlace = {
         _id: 'my-place',
@@ -734,7 +734,7 @@ describe('mutingUtils', () => {
       });
     });
 
-    it('should return empty array when report was not processed offline for any contact', () => {
+    it('should return empty array when report was not processed client for any contact', () => {
       const reportId = 'reportid';
       const hydratedPlace = {
         _id: 'my-place',
@@ -756,7 +756,7 @@ describe('mutingUtils', () => {
           _id: 'p2',
           muted: 123,
           muting_history: {
-            offline: [
+            client: [
               { report_id: 'a', date: 1 },
               { report_id: 'b', date: 2 },
               { report_id: 'c', date: 3 },
@@ -767,7 +767,7 @@ describe('mutingUtils', () => {
           _id: 'p1',
           muted: 456,
           muting_history: {
-            offline: [
+            client: [
               { report_id: 'aa', date: 1 },
               { report_id: 'bb', date: 2 },
               { report_id: 'cc', date: 3 },
@@ -778,7 +778,7 @@ describe('mutingUtils', () => {
           _id: 'my-place',
           muted: true,
           muting_history: {
-            offline: [
+            client: [
               { report_id: 'aaa', date: 1 },
               { report_id: 'bbb', date: 2 },
               { report_id: 'ccc', date: 3 },
@@ -823,7 +823,7 @@ describe('mutingUtils', () => {
           _id: 'p2',
           muted: 123,
           muting_history: {
-            offline: [
+            client: [
               { report_id: 'a', date: 1 },
               { report_id: reportId, date: 1 },
               { report_id: 'b' },
@@ -836,7 +836,7 @@ describe('mutingUtils', () => {
           _id: 'p1',
           muted: 456,
           muting_history: {
-            offline: [
+            client: [
               { report_id: reportId, date: 1 },
               { report_id: 'aa' },
               { report_id: 'bb', date: 2 },
@@ -848,7 +848,7 @@ describe('mutingUtils', () => {
           _id: 'my-place',
           muted: true,
           muting_history: {
-            offline: [
+            client: [
               { report_id: 'aaa', date: 1 },
               { report_id: 'bbb', date: 2 },
               { report_id: 'ccc', date: 3 },
@@ -893,7 +893,7 @@ describe('mutingUtils', () => {
           _id: 'p2',
           muted: 123,
           muting_history: {
-            offline: [
+            client: [
               { report_id: 'a', date: 1 },
               { report_id: reportId, date: 1 },
               { report_id: 'b', date: 1 },
@@ -906,7 +906,7 @@ describe('mutingUtils', () => {
           _id: 'p1',
           muted: 456,
           muting_history: {
-            offline: [
+            client: [
               { report_id: reportId, date: 1 },
               { report_id: 'b', date: 4 },
               { report_id: 'c', date: 5 },
@@ -918,7 +918,7 @@ describe('mutingUtils', () => {
           _id: 'my-place',
           muted: true,
           muting_history: {
-            offline: [
+            client: [
               { report_id: 'a', date: 1 },
               { report_id: 'b', date: 2 },
               { report_id: reportId, date: 3 },
@@ -964,7 +964,7 @@ describe('mutingUtils', () => {
           _id: 'p2',
           muted: 123,
           muting_history: {
-            offline: [
+            client: [
               { report_id: 'a', date: 1 },
               { report_id: reportId, date: 1 },
               { report_id: 'a', date: 100 },
@@ -977,7 +977,7 @@ describe('mutingUtils', () => {
           _id: 'p1',
           muted: 456,
           muting_history: {
-            offline: [
+            client: [
               { report_id: reportId, date: 1 },
               { report_id: 'aa', date: 183 },
               { report_id: 'bb', date: 265 },
@@ -989,7 +989,7 @@ describe('mutingUtils', () => {
           _id: 'my-place',
           muted: true,
           muting_history: {
-            offline: [
+            client: [
               { report_id: 'aaa', date: 10 },
               { report_id: 'bbb', date: 200 },
               { report_id: reportId, date: 350 },
@@ -1603,86 +1603,86 @@ describe('mutingUtils', () => {
       const mutedContact = {
         muted: 2000,
         muting_history: {
-          online: {
+          server: {
             muted: false,
             date: 1000,
           },
-          offline: [{
+          client: [{
             muted: true,
             date: 2000,
           }],
-          last_update: 'offline',
+          last_update: 'client',
         }
       };
 
       const unmutedContact = {
         muting_history: {
-          online: {
+          server: {
             muted: false,
             date: 1000,
           },
-          offline: [{
+          client: [{
             muted: false,
             date: 2000,
           }],
-          last_update: 'offline',
+          last_update: 'client',
         },
       };
 
       chai.expect(mutingUtils.updateContact(_.cloneDeep(mutedContact), timestamp)).to.deep.equal({
         muted: timestamp,
         muting_history: {
-          online: {
+          server: {
             muted: true,
             date: timestamp,
           },
-          offline: [{
+          client: [{
             muted: true,
             date: 2000,
           }],
-          last_update: 'online',
+          last_update: 'server',
         },
       });
       chai.expect(mutingUtils.updateContact(_.cloneDeep(mutedContact))).to.deep.equal({
         muting_history: {
-          online: {
+          server: {
             muted: false,
             date: timestamp,
           },
-          offline: [{
+          client: [{
             muted: true,
             date: 2000,
           }],
-          last_update: 'online',
+          last_update: 'server',
         },
       });
 
       chai.expect(mutingUtils.updateContact(_.cloneDeep(unmutedContact), timestamp)).to.deep.equal({
         muted: timestamp,
         muting_history: {
-          online: {
+          server: {
             muted: true,
             date: timestamp,
           },
-          offline: [{
+          client: [{
             muted: false,
             date: 2000,
           }],
-          last_update: 'online',
+          last_update: 'server',
         },
       });
 
       chai.expect(mutingUtils.updateContact(_.cloneDeep(unmutedContact))).to.deep.equal({
         muting_history: {
-          online: {
+          server: {
             muted: false,
             date: timestamp,
           },
-          offline: [{
+          client: [{
             muted: false,
             date: 2000,
           }],
-          last_update: 'online',
+          last_update: 'server',
         },
       });
     });
@@ -1777,12 +1777,12 @@ describe('mutingUtils', () => {
     });
     afterEach(() => clock.restore());
 
-    it('should take reportId from offline muting history, if the contact was last updated offline', () => {
+    it('should take reportId from client muting history, if the contact was last updated by client', () => {
       const contact = {
         _id: 'contact',
         muting_history: {
-          last_update: 'offline',
-          offline: [
+          last_update: 'client',
+          client: [
             { muted: false, report_id: '1' },
             { muted: false, report_id: '2' },
             { muted: true, report_id: '3' },
@@ -1936,7 +1936,7 @@ describe('mutingUtils', () => {
       });
     });
 
-    it('should add new entry in muting history with current state with offline muting history', () => {
+    it('should add new entry in muting history with current state with client muting history', () => {
       const info = {
         _id: 'contact-info',
         doc_id: 'contact',
@@ -1979,9 +1979,9 @@ describe('mutingUtils', () => {
           }
         },
         muting_history: {
-          last_update: 'online',
-          offline: [
-            { muted: false, report_id: 'offline_report' },
+          last_update: 'server',
+          client: [
+            { muted: false, report_id: 'client_report' },
           ]
         },
       };
@@ -2266,35 +2266,35 @@ describe('mutingUtils', () => {
     });
   });
 
-  describe('isLastUpdatedOffline', () => {
-    it('should return false when contact was not last muted offline', () => {
-      chai.expect(mutingUtils.isLastUpdatedOffline({})).to.equal(false);
-      chai.expect(mutingUtils.isLastUpdatedOffline({ muted: true })).to.equal(false);
+  describe('isLastUpdatedByClient', () => {
+    it('should return false when contact was not last muted by client', () => {
+      chai.expect(mutingUtils.isLastUpdatedByClient({})).to.equal(false);
+      chai.expect(mutingUtils.isLastUpdatedByClient({ muted: true })).to.equal(false);
 
       const docWithMutingHistory = {
         muted: true,
         muting_history: {
-          offline: [{ muted: true }],
-          online: { muted: false },
+          client: [{ muted: true }],
+          server: { muted: false },
         }
       };
-      chai.expect(mutingUtils.isLastUpdatedOffline(docWithMutingHistory)).to.equal(false);
+      chai.expect(mutingUtils.isLastUpdatedByClient(docWithMutingHistory)).to.equal(false);
 
-      docWithMutingHistory.muting_history.last_update = 'online';
-      chai.expect(mutingUtils.isLastUpdatedOffline(docWithMutingHistory)).to.equal(false);
+      docWithMutingHistory.muting_history.last_update = 'server';
+      chai.expect(mutingUtils.isLastUpdatedByClient(docWithMutingHistory)).to.equal(false);
     });
 
-    it('should return true when contact was last muted offline', () => {
-      chai.expect(mutingUtils.isLastUpdatedOffline({ muting_history: { last_update: 'offline' } })).to.equal(true);
+    it('should return true when contact was last muted yb client', () => {
+      chai.expect(mutingUtils.isLastUpdatedByClient({ muting_history: { last_update: 'client' } })).to.equal(true);
       const docWithMutingHistory = {
         muted: true,
         muting_history: {
-          offline: [{ muted: true }],
-          online: { muted: false },
-          last_update: 'offline',
+          client: [{ muted: true }],
+          server: { muted: false },
+          last_update: 'client',
         },
       };
-      chai.expect(mutingUtils.isLastUpdatedOffline(docWithMutingHistory)).to.equal(true);
+      chai.expect(mutingUtils.isLastUpdatedByClient(docWithMutingHistory)).to.equal(true);
     });
   });
 

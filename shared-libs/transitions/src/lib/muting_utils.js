@@ -8,10 +8,10 @@ const infodoc = require('@medic/infodoc');
 infodoc.initLib(db.medic, db.sentinel);
 
 const BATCH_SIZE = 50;
-const OFFLINE = 'offline';
-const ONLINE = 'online';
+const CLIENT = 'client';
+const SERVER = 'server';
 
-const isLastUpdatedOffline = (doc) => !!doc.muting_history && doc.muting_history.last_update === OFFLINE;
+const isLastUpdatedByClient = (doc) => !!doc.muting_history && doc.muting_history.last_update === CLIENT;
 
 const getDescendants = (contactId) => {
   return db.medic
@@ -40,11 +40,11 @@ const updateContact = (contact, muted) => {
   }
 
   if (contact.muting_history) {
-    contact.muting_history.online = {
+    contact.muting_history[SERVER] = {
       muted: !!muted,
       date: muted || new Date().getTime(),
     };
-    contact.muting_history.last_update = ONLINE;
+    contact.muting_history.last_update = SERVER;
   }
 
   return contact;
@@ -103,9 +103,9 @@ const getLastMutingEventReportId = mutingHistory => {
 };
 
 const updateMutingHistory = (contact, initialReplicationDatetime, muted) => {
-  if (isLastUpdatedOffline(contact)) {
-    // when the contact was last updated offline, pick the last muting event report uuid to store in infodoc history
-    const reportId = contact.muting_history.offline && getLastMutingEventReportId(contact.muting_history.offline);
+  if (isLastUpdatedByClient(contact)) {
+    // when last updated on the client, pick the last client-side muting event report uuid to store in infodoc history
+    const reportId = contact.muting_history[CLIENT] && getLastMutingEventReportId(contact.muting_history[CLIENT]);
     return updateMutingHistories([contact], muted, reportId);
   }
 
@@ -135,11 +135,11 @@ const addMutingHistory = (info, muted, reportId) => {
  * @param {Object} contact - the hydrated contact document
  * @param {Boolean} muted - whether the contact should be muted or unmuted
  * @param {string} reportId - muting report uuid
- * @param {Boolean} replayOfflineMuting - whether or not offline muting needs to be replayed after processing the
+ * @param {Boolean} replayClientMuting - whether or not client-side muting needs to be replayed after processing the
  * current event
  * @return {Promise<Array>} - a sorted list of report ids, representing muting events that need to be replayed
  */
-const updateMuteState = (contact, muted, reportId, replayOfflineMuting = false) => {
+const updateMuteState = (contact, muted, reportId, replayClientMuting = false) => {
   muted = muted && moment();
 
   let rootContactId = contact._id;
@@ -152,7 +152,7 @@ const updateMuteState = (contact, muted, reportId, replayOfflineMuting = false) 
     }
   }
 
-  const offlineMutingEventQueue = [];
+  const clientMutingEventQueue = [];
 
   return getDescendants(rootContactId).then(contactIds => {
     const batches = [];
@@ -165,8 +165,8 @@ const updateMuteState = (contact, muted, reportId, replayOfflineMuting = false) 
         return promise
           .then(() => getContactsAndSubjectIds(batch, muted))
           .then(result => {
-            if (replayOfflineMuting) {
-              offlineMutingEventQueue.push(...getOfflineMutingEventsToReplay(result.contacts, reportId));
+            if (replayClientMuting) {
+              clientMutingEventQueue.push(...getClientMutingEventsToReplay(result.contacts, reportId));
             }
 
             return Promise.all([
@@ -176,7 +176,7 @@ const updateMuteState = (contact, muted, reportId, replayOfflineMuting = false) 
             ]);
           });
       }, Promise.resolve())
-      .then(() => getSortedEventQueue(offlineMutingEventQueue));
+      .then(() => getSortedEventQueue(clientMutingEventQueue));
   });
 };
 
@@ -194,7 +194,7 @@ const getSortedEventQueue = (mutingEvents) => {
 };
 
 /**
- * Given a list of contacts and a muting report uuid, searches for this uuid in every contacts' offline muting history,
+ * Given a list of contacts and a muting report uuid, searches for this uuid in every contacts' client muting history,
  * and compiles a list of every muting event that followed the matched event in the contact's muting history.
  * We reliably know that nothing shuffles the muting_history, so every event that follows the matched event needs to be
  * replayed.
@@ -202,28 +202,28 @@ const getSortedEventQueue = (mutingEvents) => {
  * @param {string} reportId - the report's uuid
  * @return {Array<Object>}
  */
-const getOfflineMutingEventsToReplay = (contacts, reportId) => {
-  const offlineMutingEvents = [];
+const getClientMutingEventsToReplay = (contacts, reportId) => {
+  const clientMutingEvents = [];
   contacts.forEach(contact => {
-    if (!contact.muting_history || !contact.muting_history.offline || !contact.muting_history.offline.length) {
+    if (!contact.muting_history || !contact.muting_history[CLIENT] || !contact.muting_history[CLIENT].length) {
       return;
     }
 
     let found = false;
-    contact.muting_history.offline.forEach(mutingEvent => {
+    contact.muting_history[CLIENT].forEach(mutingEvent => {
       if (!mutingEvent.report_id || !mutingEvent.date) {
         return;
       }
 
       if (found) {
-        offlineMutingEvents.push(mutingEvent);
+        clientMutingEvents.push(mutingEvent);
       } else if (mutingEvent.report_id === reportId) {
         found = true;
       }
     });
   });
 
-  return offlineMutingEvents;
+  return clientMutingEvents;
 };
 
 const isMutedInLineage = (doc, beforeMillis) => {
@@ -260,7 +260,7 @@ module.exports = {
   unmuteMessages,
   muteUnsentMessages,
   updateMutingHistory,
-  isLastUpdatedOffline,
+  isLastUpdatedByClient,
   _getContactsAndSubjectIds: getContactsAndSubjectIds,
   _updateContacts: updateContacts,
   _updateMuteHistories: updateMutingHistories,
