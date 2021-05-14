@@ -595,7 +595,7 @@ module.exports = function(grunt) {
         cmd: () => {
           const configuration = TRAVIS_BUILD_NUMBER ? 'production' : 'development';
           return `
-            cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true & 
+            cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true &
             cd ../
           `;
         },
@@ -775,6 +775,12 @@ module.exports = function(grunt) {
         src: [
           'sentinel/tests/**/*.js'
         ],
+      },
+      'e2e-non-ui': {
+        src: 'tests/e2e/api/**/*.js',
+        options: {
+          timeout: 10000,
+        },
       }
     },
     ngtemplates: {
@@ -960,6 +966,10 @@ module.exports = function(grunt) {
     'protractor:e2e-web-tests',
   ]);
 
+  grunt.registerTask('e2e-api', 'Deploy app for testing and run browserless e2e tests', [
+    'e2e-deploy',
+    'mochaTest:e2e-non-ui',
+  ]);
   grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [
     'e2e-deploy',
     'protractor:e2e-tests-debug',
