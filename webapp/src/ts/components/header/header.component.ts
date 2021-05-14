@@ -112,6 +112,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   replicate() {
     this.dbSyncService.sync(true);
-    this.telemetryService.record('replication:user-action');
+    this.telemetryService.record('replication:user-initiated');
   }
 }
