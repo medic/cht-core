@@ -175,13 +175,3 @@ const setupUser = () => {
     .then(() => utils.refreshToGetNewSettings())
     .then(() => utils.closeTour());
 };
-
-module.exports = {
-  prepServices,
-  killSentinel: async () => {
-    console.log('killing sentintel...');
-    return await request.post('http://localhost:31337/die');
-  }
-
-
-};
