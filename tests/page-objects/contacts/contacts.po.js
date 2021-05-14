@@ -10,7 +10,7 @@ const newPrimaryContactName = element(by.css('[name="/data/contact/name"]'));
 const personNotes = element(by.css('[name="/data/contact/notes"]'));
 const newPrimaryContactButton = element(by.css('[name="/data/init/create_new_person"][value="new_person"]'));
 const manualDistrictHospitalName = element(by.css('[name="/data/district_hospital/is_name_generated"][value="false"]'));
-const contactName = element(by.css('contacts-content .body.meta .heading-content'));
+const contactName = element(by.css('contacts-content .body.meta .heading-content h2'));
 const rows = element.all(by.css('#contacts-list .content-row'));
 const dateOfBirthField = element(by.css('[placeholder="yyyy-mm-dd"]'));
 const contactSexField = element(by.css('[data-name="/data/contact/sex"][value="female"]'));

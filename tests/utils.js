@@ -634,6 +634,16 @@ module.exports = {
         }, 10000,'Timed out waiting for browser to reset. Looking for element #messages-tab');
       });
   },
+  resetBrowserNative: (element =$('#messages-tab'), time=10000) => {
+    return browser.driver
+      .navigate()
+      .refresh()
+      .then(() => {
+        return browser.wait(() => {
+          return element.isPresent();
+        }, time,'Timed out waiting for browser to reset. Looking for element #messages-tab');
+      });
+  },
 
   countOf: count => {
     return c => {

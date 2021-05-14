@@ -1,11 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import * as moment from 'moment';
 
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { PipesService } from '@mm-services/pipes.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { FeedbackService } from '@mm-services/feedback.service';
+import { UHCStatsService } from '@mm-services/uhc-stats.service';
 
 describe('ContactSummary service', () => {
 
@@ -14,10 +16,15 @@ describe('ContactSummary service', () => {
   let service;
   let Settings;
   let feedbackService;
+  let uhcStatsService;
 
   beforeEach(() => {
     Settings = sinon.stub();
     feedbackService = { submit: sinon.stub() };
+    uhcStatsService = {
+      getHomeVisitStats: sinon.stub(),
+      getUHCInterval: sinon.stub()
+    };
     const pipesTransform = (name, value) => {
       if (name !== 'reversify') {
         throw new Error('unknown filter');
@@ -29,7 +36,8 @@ describe('ContactSummary service', () => {
       providers: [
         { provide: SettingsService, useValue: { get: Settings } },
         { provide: PipesService, useValue: { transform: pipesTransform } },
-        { provide: FeedbackService, useValue: feedbackService }
+        { provide: FeedbackService, useValue: feedbackService },
+        { provide: UHCStatsService, useValue: uhcStatsService }
       ]
     });
     service = TestBed.inject(ContactSummaryService);
@@ -155,14 +163,52 @@ describe('ContactSummary service', () => {
     const lineage = [{ name: 'parent' }, { name: 'grandparent' }];
     const targetDoc = { date_updated: 'yesterday', targets: [{ id: 'target', type: 'count' }] };
 
-    return service.get(contact, reports, lineage, targetDoc).then(contactSummmary => {
-      expect(contactSummmary).to.deep.equal({
+    return service.get(contact, reports, lineage, targetDoc).then(contactSummary => {
+      expect(contactSummary).to.deep.equal({
         fields: ['boa', 'parent'],
         cards: [
           { fields: 'data' },
           { fields: 'yesterday' },
         ]
       });
+    });
+  });
+
+  it('should pass stats to the ContactSummary script', async () => {
+    const contact = { _id: 1 };
+    const reports = [];
+    const script = `
+    return { fields: [
+      { label: "Visits count", value: uhcStats.homeVisits.count },
+      { label: "Visit goal", value: uhcStats.homeVisits.countGoal },
+      { label: "Last visited", value: uhcStats.homeVisits.lastVisitedDate },
+      { label: "UHC interval start date", value: uhcStats.uhcInterval.start },
+      { label: "UHC interval end date", value: uhcStats.uhcInterval.end }
+    ] };
+    `;
+
+    Settings.resolves({ contact_summary: script });
+    uhcStatsService.getHomeVisitStats.returns({
+      count: 5,
+      countGoal: 10,
+      lastVisitedDate: moment('2021-04-07 13:30:59.999').valueOf()
+    });
+    uhcStatsService.getUHCInterval.returns({
+      start: moment('2021-03-26 00:00:00.000').valueOf(),
+      end: moment('2021-04-25 23:59:59.999').valueOf()
+    });
+
+    const contactSummary = await service.get(contact, reports);
+
+    expect(contactSummary).to.deep.equal({
+      cards: [],
+      fields: [
+        { label: 'Visits count', value: 5 },
+        { label: 'Visit goal', value: 10 },
+        { label: 'Last visited', value: moment('2021-04-07 13:30:59.999').valueOf() },
+        { label: 'UHC interval start date', value: moment('2021-03-26 00:00:00.000').valueOf() },
+        { label: 'UHC interval end date', value: moment('2021-04-25 23:59:59.999').valueOf() }
+      ]
     });
   });
 });
