@@ -1,4 +1,5 @@
 const utils = require('../../../tests/utils');
+const conf = require('../../../tests/conf');
 const auth = require('../../../tests/auth')();
 const request = require('request');
 const constants = require('../../../tests/constants');
