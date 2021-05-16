@@ -1,5 +1,5 @@
 const utils = require('../../../tests/utils');
-const config = require('../../../tests/conf');
+const config = require('../config');
 const auth = require('../../../tests/auth')();
 const request = require('request');
 const constants = require('../../../tests/constants');
