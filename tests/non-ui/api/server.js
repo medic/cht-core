@@ -7,8 +7,8 @@ const _ = require('lodash');
 const {expect} = require('chai');
 
 describe('server', () => {
-  before(() => config.startServices());
-  after(() => request.post('http://localhost:31337/die'));
+  before(async () => await config.startServices());
+  after(async () => await config.stopServices());
 
   describe('JSON-only endpoints', () => {
     it('should require application/json Content-Type header', () => {
