@@ -181,5 +181,9 @@ const setupUser = () => {
 };
 
 module.exports = {
-  prepServices,
+  startServices :async () => {
+    await request.post('http://localhost:31337/all/restart');
+    await listenForApi();
+    await runAndLog('User contact doc setup', utils.setUserContactDoc);
+  }
 };
