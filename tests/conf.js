@@ -179,3 +179,7 @@ const setupUser = () => {
     .then(() => utils.refreshToGetNewSettings())
     .then(() => utils.closeTour());
 };
+
+module.exports = {
+  prepServices,
+};

@@ -1,4 +1,5 @@
 const utils = require('../../../tests/utils');
+const conf = require('../../../tests/conf');
 const auth = require('../../../tests/auth')();
 const request = require('request');
 const constants = require('../../../tests/constants');
@@ -6,7 +7,7 @@ const _ = require('lodash');
 const {expect} = require('chai');
 
 describe('server', () => {
-
+  after(() => conf.prepServices);
   after(() => request.post('http://localhost:31337/die'));
 
   describe('JSON-only endpoints', () => {
