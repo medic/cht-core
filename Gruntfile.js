@@ -787,7 +787,7 @@ module.exports = function(grunt) {
       'e2e-non-ui': {
         src: 'tests/non-ui/**/*.js',
         options: {
-          timeout: 60000
+          timeout: 135000 //api taking longer to start up
         },
       }
     },
