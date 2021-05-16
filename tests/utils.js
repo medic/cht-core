@@ -607,6 +607,12 @@ module.exports = {
    */
   afterEach: () => revertDb(),
 
+  //for mocha tests
+  afterEachMocha: async () => {
+    await deleteAll();
+    await setUserContactDoc();
+  },
+
   //check for the update modal before
   beforeEach: async () => {
     if (await element(by.css('#update-available')).isPresent()) {
