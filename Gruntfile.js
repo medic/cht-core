@@ -595,7 +595,7 @@ module.exports = function(grunt) {
         cmd: () => {
           const configuration = TRAVIS_BUILD_NUMBER ? 'production' : 'development';
           return `
-            cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true & 
+            cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true &
             cd ../
           `;
         },
@@ -783,6 +783,12 @@ module.exports = function(grunt) {
         src: [
           'sentinel/tests/**/*.js'
         ],
+      },
+      'e2e-non-ui': {
+        src: 'tests/non-ui/**/*.js',
+        options: {
+          timeout: 60000
+        },
       }
     },
     ngtemplates: {
@@ -968,6 +974,14 @@ module.exports = function(grunt) {
     'protractor:e2e-web-tests',
   ]);
 
+  grunt.registerTask('e2e-non-ui', 'Testing e2e non ui tests', [
+    'exec:clean-test-database',
+    'exec:setup-test-database',
+    'couch-push:test',
+    'exec:e2e-servers',
+    'mochaTest:e2e-non-ui'
+  ]);
+
   grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [
     'e2e-deploy',
     'protractor:e2e-tests-debug',
@@ -1059,6 +1073,10 @@ module.exports = function(grunt) {
     'exec:e2e-servers',
     'protractor:e2e-web-tests',
     //'protractor:e2e-mobile-tests',
+  ]);
+  grunt.registerTask('ci-e2e-non-ui', 'Run e2e tests for CI', [
+    'exec:e2e-servers',
+    'mochaTest:e2e-non-ui',
   ]);
 
   grunt.registerTask('ci-e2e-cht', 'Run e2e tests for CI', [
