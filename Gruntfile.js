@@ -787,7 +787,8 @@ module.exports = function(grunt) {
       'e2e-non-ui': {
         src: 'tests/non-ui/**/*.js',
         options: {
-          timeout: 60000
+          timeout: 60000,
+          require: 'tests/non-ui/hooks.js'
         },
       }
     },
