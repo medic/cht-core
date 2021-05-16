@@ -7,7 +7,6 @@ const _ = require('lodash');
 const {expect} = require('chai');
 
 describe('server', () => {
-  after(() => conf.prepServices);
   after(() => request.post('http://localhost:31337/die'));
 
   describe('JSON-only endpoints', () => {
