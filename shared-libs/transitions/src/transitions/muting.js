@@ -74,7 +74,7 @@ const getMutedDate = (change) => {
 const processContact = (change) => {
   const muted = getMutedDate(change);
 
-  const initialReplicationTs = new Date(change.info.initial_replication_date).getTime();
+  const initialReplicationTs = new Date(change.info && change.info.initial_replication_date).getTime();
   return mutingUtils
     .updateRegistrations(utils.getSubjectIds(change.doc), muted)
     .then(() => mutingUtils.updateMutingHistory(change.doc, initialReplicationTs, muted))
