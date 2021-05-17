@@ -1,5 +1,4 @@
 const utils = require('../../../tests/utils');
-const config = require('../config');
 const auth = require('../../../tests/auth')();
 const request = require('request');
 const constants = require('../../../tests/constants');
@@ -7,11 +6,6 @@ const _ = require('lodash');
 const {expect} = require('chai');
 
 describe('server', () => {
-  before(async () => {
-    setTimeout(async () =>  await config.prepServices(), 135 * 1000, 'API took too long to start up');
-  });
-  after(async () =>  await config.stopServices());
-
   describe('JSON-only endpoints', () => {
     it('should require application/json Content-Type header', () => {
       const opts = {

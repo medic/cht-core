@@ -788,6 +788,7 @@ module.exports = function(grunt) {
         src: 'tests/non-ui/**/*.js',
         options: {
           timeout: 135000, //api taking longer to start up
+          require:'tests/non-ui/hooks.js',
           reporter: 'mochawesome',
           reporterOptions:{
             reportDir:'tests/results/mochawesome'
