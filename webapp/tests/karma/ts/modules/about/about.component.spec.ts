@@ -120,6 +120,12 @@ describe('About Component', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
+  it('handles missing partners resource - #7100', async(async () => {
+    resourceIconsService.getDocResources.rejects({ status: 404 });
+    component.ngOnInit();
+    await fixture.whenStable();
+  }));
+
   describe('secretDoor()', () => {
     let clock;
     let setTimeoutStub;
