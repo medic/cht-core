@@ -250,7 +250,7 @@ const setUserContactDoc = () => {
     }));
 };
 
-const revertDb = async (except, ignoreRefresh) => {
+const revertDb = async (except = [], ignoreRefresh) => {
   const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
   const needsRefresh = await revertSettings();
   await deleteAll(except);
