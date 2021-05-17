@@ -71,10 +71,21 @@ const setUpMocks = () => {
     .resolves({ processed_seq: '50-xyz' });
   const medicQuery = sinon.stub(db.medic, 'query');
   medicQuery.withArgs('medic-admin/message_queue')
-    .resolves({ rows: [
+    .resolves({ rows: [] })
+    .onCall(0).resolves({ rows: [
       { key: [ 'scheduled' ], value: 15 },
       { key: [ 'due' ], value: 3 },
+      { key: [ 'failed' ], value: 20 },
+      { key: [ 'delivered' ], value: 10 },
     ] });
+  medicQuery
+    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['due'])}))
+    .resolves({ rows: [{ key: undefined, value: 20 }] })
+    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['delivered'])}))
+    .resolves({ rows: [{ key: undefined, value: 15 }] })
+    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['failed'])}))
+    .resolves({ rows: [{ key: undefined, value: 5 }] });
+
   medicQuery.withArgs('medic-conflicts/conflicts')
     .resolves({ rows: [ { value: 40 } ] });
   sinon.stub(db.sentinel, 'query')
@@ -141,7 +152,18 @@ describe('Monitoring service', () => {
           state: {
             due: 3,
             scheduled: 15,
-            muted: 0
+            muted: 0,
+            failed: 20,
+            delivered: 10,
+          }
+        },
+        outgoing_7_days: {
+          state: {
+            due: 20,
+            scheduled: 0,
+            muted: 0,
+            failed: 5,
+            delivered: 15,
           }
         }
       });
@@ -205,9 +227,20 @@ describe('Monitoring service', () => {
           state: {
             due: -1,
             scheduled: -1,
-            muted: -1
+            muted: -1,
+            failed: -1,
+            delivered: -1,
           }
-        }
+        },
+        outgoing_7_days: {
+          state: {
+            due: -1,
+            scheduled: -1,
+            muted: -1,
+            failed: -1,
+            delivered: -1,
+          },
+        },
       });
       chai.expect(actual.sentinel).to.deep.equal({ backlog: -1 });
       chai.expect(actual.outbound_push).to.deep.equal({ backlog: -1 });

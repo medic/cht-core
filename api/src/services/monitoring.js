@@ -1,4 +1,5 @@
 const request = require('request-promise-native');
+const moment = require('moment');
 
 const db = require('../db');
 const environment = require('../environment');
@@ -146,14 +147,12 @@ const getFeedbackCount = () => {
     });
 };
 
+const STATUS_KEYS = ['due', 'scheduled', 'muted', 'failed', 'delivered'];
+
 const getOutgoingMessageStatusCounts = () => {
   return db.medic.query('medic-admin/message_queue', { reduce: true, group_level: 1 })
     .then(counts => {
-      const result = {
-        due: 0,
-        scheduled: 0,
-        muted: 0
-      };
+      const result = Object.fromEntries(STATUS_KEYS.map(key => ([key, 0])));
       counts.rows.forEach(row => {
         result[row.key[0]] = row.value;
       });
@@ -161,11 +160,39 @@ const getOutgoingMessageStatusCounts = () => {
     })
     .catch(err => {
       logger.error('Error fetching outgoing message status count: %o', err);
-      return {
-        due: -1,
-        scheduled: -1,
-        muted: -1
-      };
+      return Object.fromEntries(STATUS_KEYS.map(key => ([key, -1])));
+    });
+};
+
+const getWeeklyOutgoingMessageStatusCounter = () => {
+  const startDate = moment().startOf('day').subtract(7, 'days').valueOf();
+  const endDate = moment().valueOf();
+
+  const options = STATUS_KEYS.map(key => ({
+    start_key: [key, startDate],
+    end_key: [key, endDate],
+    reduce: true,
+  }));
+
+  const query = (options) => db.medic
+    .query('medic-admin/message_queue', options)
+    .catch(err => {
+      logger.error(`Error fetching outgoing message status counts ${options.start_key}: %o`, err);
+      return { rows: [{ value: -1 }] };
+    });
+
+  return Promise
+    .all(options.map(options => query(options)))
+    .then(counts => {
+      const result = Object.fromEntries(STATUS_KEYS.map(key => ([key, 0])));
+      counts.forEach((count, idx) => {
+        const row = count && count.rows && count.rows[0];
+        if (row) {
+          result[STATUS_KEYS[idx]] = row.value;
+        }
+      });
+
+      return result;
     });
 };
 
@@ -188,6 +215,7 @@ const json = () => {
       getSentinelBacklog(),
       getOutboundPushQueueLength(),
       getOutgoingMessageStatusCounts(),
+      getWeeklyOutgoingMessageStatusCounter(),
       getFeedbackCount(),
       getConflictCount(),
       getReplicationLimitLog()
@@ -199,6 +227,7 @@ const json = () => {
       sentinelBacklog,
       outboundPushBacklog,
       outgoingMessageStatus,
+      weeklyOutgoingMessageStatus,
       feedbackCount,
       conflictCount,
       replicationLimitLogs
@@ -220,7 +249,10 @@ const json = () => {
         messaging: {
           outgoing: {
             state: outgoingMessageStatus
-          }
+          },
+          outgoing_7_days: {
+            state: weeklyOutgoingMessageStatus,
+          },
         },
         outbound_push: {
           backlog: outboundPushBacklog
