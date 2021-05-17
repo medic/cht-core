@@ -120,7 +120,7 @@ describe('Transitions Service', () => {
   });
 
   it('should not load disabled transitions', async () => {
-    settingsService.get.resolves({ transitions: { muting: { disable: true, client: true } } });
+    settingsService.get.resolves({ transitions: { muting: { disable: true } } });
 
     await service.init();
 
@@ -158,14 +158,14 @@ describe('Transitions Service', () => {
   });
 
   it('should not run transitions that fail initialization', async () => {
-    settingsService.get.resolves({ transitions: { muting: { disable: false, client: true } } });
+    settingsService.get.resolves({ transitions: { muting: { disable: false } } });
     mutingTransition.init.returns(false);
 
     await service.init();
 
     expect(mutingTransition.init.callCount).to.equal(1);
     expect(mutingTransition.init.args[0]).to.deep.equal([
-      { transitions: { muting: { disable: false, client: true } } }
+      { transitions: { muting: { disable: false } } }
     ]);
 
     expect(await service.applyTransitions([{ _id: 'a' }])).to.deep.equal([{ _id: 'a' }]);
@@ -174,7 +174,7 @@ describe('Transitions Service', () => {
   });
 
   it('should not run transitions when filtering returns false', async () => {
-    settingsService.get.resolves({ transitions: { muting: { disable: false, client: true } } });
+    settingsService.get.resolves({ transitions: { muting: { disable: false } } });
     mutingTransition.init.returns(true);
     mutingTransition.filter.returns(false);
 
@@ -182,7 +182,7 @@ describe('Transitions Service', () => {
 
     expect(mutingTransition.init.callCount).to.equal(1);
     expect(mutingTransition.init.args[0]).to.deep.equal([
-      { transitions: { muting: { disable: false, client: true } } }
+      { transitions: { muting: { disable: false } } }
     ]);
 
     expect(await service.applyTransitions([{ _id: 'a' }])).to.deep.equal([{ _id: 'a' }]);
@@ -219,7 +219,7 @@ describe('Transitions Service', () => {
     });
 
     it('should not run partial transitions', async () => {
-      settingsService.get.resolves({ transitions: { muting: { client: true } } });
+      settingsService.get.resolves({ transitions: { muting: true } });
       mutingTransition.init.returns(true);
       mutingTransition.filter.returns(true);
       mutingTransition.run.callsFake((docs) => {
