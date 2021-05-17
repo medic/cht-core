@@ -116,7 +116,8 @@ const revertSettings = () => {
 
 const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
 
-const deleteAll = (except = []) => {
+const deleteAll = (except) => {
+  except = Array.isArray(except) ? except : [];
   // Generate a list of functions to filter documents over
   const ignorables = except.concat(
     doc => PERMANENT_TYPES.includes(doc.type),
