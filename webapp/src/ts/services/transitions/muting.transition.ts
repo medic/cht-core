@@ -77,7 +77,7 @@ export class MutingTransition extends Transition {
    */
   private isRelevantReport(doc) {
     // exclude docs that are not reports and existent reports.
-    if (!doc || doc._rev || doc.type !== 'data_record' || !doc.form) {
+    if (doc._rev || doc.type !== 'data_record' || !doc.form) {
       return false;
     }
 
@@ -104,7 +104,7 @@ export class MutingTransition extends Transition {
    * @return {Boolean} - whether any of the docs from the batch should be processed
    */
   filter(docs) {
-    return !!docs.filter(doc => this.isRelevantReport(doc) || this.isRelevantContact(doc)).length;
+    return !!docs.filter(doc => doc && (this.isRelevantReport(doc) || this.isRelevantContact(doc))).length;
   }
 
   private async hydrateDocs(context:MutingContext) {
@@ -115,13 +115,13 @@ export class MutingTransition extends Transition {
     const hydratedDocs = await this.lineageModelGeneratorService.docs(docs);
 
     for (const doc of hydratedDocs) {
-      this.storeHydratedDoc(doc, context);
-      this.storeHydratedDoc(doc.patient, context);
-      this.storeHydratedDoc(doc.place, context);
+      this.cacheHydratedDoc(doc, context);
+      this.cacheHydratedDoc(doc.patient, context);
+      this.cacheHydratedDoc(doc.place, context);
     }
   }
 
-  private storeHydratedDoc(doc, context) {
+  private cacheHydratedDoc(doc, context) {
     if (!doc) {
       return;
     }
@@ -393,6 +393,10 @@ export class MutingTransition extends Transition {
     let hasUnmutingReport;
 
     for (const doc of docs) {
+      if (!doc) {
+        continue;
+      }
+
       if (this.isRelevantContact(doc)) {
         context.contacts.push(doc);
         continue;

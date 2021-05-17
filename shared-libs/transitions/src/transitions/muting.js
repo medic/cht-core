@@ -64,21 +64,20 @@ const isRelevantContact = (doc, infoDoc = {}) => {
   );
 };
 
-const processContact = (change) => {
-  let muted;
-  if (isNewContactWithMutedParent(change.doc, change.info)) {
-    muted = new Date();
-  } else {
-    muted = change.doc.muted ? new Date() : false;
+const getMutedDate = (change) => {
+  if (isNewContactWithMutedParent(change.doc, change.info) || change.doc.muted) {
+    return new Date();
   }
+  return false;
+};
 
+const processContact = (change) => {
+  const muted = getMutedDate(change);
+
+  const initialReplicationTs = new Date(change.info.initial_replication_date).getTime();
   return mutingUtils
     .updateRegistrations(utils.getSubjectIds(change.doc), muted)
-    .then(() => mutingUtils.updateMutingHistory(
-      change.doc,
-      new Date(change.info.initial_replication_date).getTime(),
-      muted
-    ))
+    .then(() => mutingUtils.updateMutingHistory(change.doc, initialReplicationTs, muted))
     .then(() => {
       mutingUtils.updateContact(change.doc, muted);
       return true;

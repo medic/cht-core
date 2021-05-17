@@ -175,9 +175,7 @@ export class ContactSaveService {
 
   save(form, docId, type) {
     return this.ngZone.runOutsideAngular(() => {
-      return Promise
-        .resolve()
-        .then(() => docId ? this.dbService.get().get(docId) : null)
+      return (docId ? this.dbService.get().get(docId) : Promise.resolve())
         .then(original => {
           const submitted = this.enketoTranslationService.contactRecordToJs(form.getDataStr({ irrelevant: false }));
           return this.prepareSubmittedDocsForSave(original, submitted, type);
