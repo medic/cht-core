@@ -341,6 +341,7 @@ class DbSyncTelemetry {
         info.docs_read; // result of .replicate contains info for just one direction
       return this.telemetryService.record(this.getDocsKey(), nbrDocs);
     }
+    return Promise.resolve();
   }
 
   async recordSuccess(info?) {
