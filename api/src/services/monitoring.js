@@ -196,6 +196,10 @@ const getWeeklyOutgoingMessageStatusCounter = () => {
     });
 };
 
+const getLastMessagesOutgoingStateCounter = () => {
+
+};
+
 const getReplicationLimitLog = () => {
   return db.medicLogs
     .query('logs/replication_limit')
@@ -248,10 +252,8 @@ const json = () => {
         },
         messaging: {
           outgoing: {
-            state: outgoingMessageStatus
-          },
-          outgoing_7_days: {
-            state: weeklyOutgoingMessageStatus,
+            total: outgoingMessageStatus,
+            seven_days: weeklyOutgoingMessageStatus,
           },
         },
         outbound_push: {

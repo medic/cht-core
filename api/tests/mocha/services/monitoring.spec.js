@@ -149,23 +149,21 @@ describe('Monitoring service', () => {
       });
       chai.expect(actual.messaging).to.deep.equal({
         outgoing: {
-          state: {
+          total: {
             due: 3,
             scheduled: 15,
             muted: 0,
             failed: 20,
             delivered: 10,
-          }
-        },
-        outgoing_7_days: {
-          state: {
+          },
+          seven_days: {
             due: 20,
             scheduled: 0,
             muted: 0,
             failed: 5,
             delivered: 15,
           }
-        }
+        },
       });
       chai.expect(actual.sentinel).to.deep.equal({ backlog: 24 });
       chai.expect(actual.outbound_push).to.deep.equal({ backlog: 3 });
@@ -224,22 +222,20 @@ describe('Monitoring service', () => {
       });
       chai.expect(actual.messaging).to.deep.equal({
         outgoing: {
-          state: {
-            due: -1,
-            scheduled: -1,
-            muted: -1,
-            failed: -1,
-            delivered: -1,
-          }
-        },
-        outgoing_7_days: {
-          state: {
+          total: {
             due: -1,
             scheduled: -1,
             muted: -1,
             failed: -1,
             delivered: -1,
           },
+          seven_days: {
+            due: -1,
+            scheduled: -1,
+            muted: -1,
+            failed: -1,
+            delivered: -1,
+          }
         },
       });
       chai.expect(actual.sentinel).to.deep.equal({ backlog: -1 });
