@@ -35,8 +35,22 @@ const isDeniedByAlphas = (from, denyWithAlphas) => {
   return denyWithAlphas === true && from.match(/[a-z]/i);
 };
 
+const findExistentTask = (doc, newTask) => {
+  if (!newTask.messages[0]) {
+    return;
+  }
+
+  return doc.tasks.find(task => {
+    return task &&
+           task.messages &&
+           task.messages[0] &&
+           task.messages[0].to === newTask.messages[0].to &&
+           task.messages[0].message === newTask.messages[0].message;
+  });
+};
+
 module.exports = {
-  addMessage: (doc, messageConfig, recipient = 'reporting_unit', context = {}) => {
+  addMessage: (doc, messageConfig, recipient = 'reporting_unit', context = {}, unique = false) => {
     doc.tasks = doc.tasks || [];
     const content = {
       translationKey: messageConfig.translation_key,
@@ -52,6 +66,14 @@ module.exports = {
         context
       );
       const task = { messages: generated };
+
+      if (unique) {
+        const found = findExistentTask(doc, task);
+        if (found) {
+          return found;
+        }
+      }
+
       utils.setTaskState(task, messageStatus(doc.from, generated[0]));
       doc.tasks.push(task);
       return task;
