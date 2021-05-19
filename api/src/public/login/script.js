@@ -12,9 +12,10 @@ const setTokenState = className => {
 const request = function(method, url, payload, callback) {
   const xmlhttp = new XMLHttpRequest();
   const payloadString = JSON.stringify(payload);
+  const redirectURL = payload.redirect || '/';
   xmlhttp.onreadystatechange = function() {
     if (xmlhttp.readyState === XMLHttpRequest.DONE) {
-      callback(xmlhttp, payload.redirect);
+      callback(xmlhttp, redirectURL);
     }
   };
   xmlhttp.open(method, url, true);
