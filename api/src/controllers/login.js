@@ -313,7 +313,8 @@ module.exports = {
           return;
         }
         return setCookies(req, res, sessionRes)
-          .then(redirectUrl => res.status(302).send(redirectUrl))
+          .then(redirectUrl => 
+            res.redirect(req.body.redirect))
           .catch(err => {
             if (err.status === 401) {
               return res.status(err.status).json({ error: err.error });

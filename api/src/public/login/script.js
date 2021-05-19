@@ -11,14 +11,15 @@ const setTokenState = className => {
 
 const request = function(method, url, payload, callback) {
   const xmlhttp = new XMLHttpRequest();
+  const payloadString = JSON.stringify(payload);
   xmlhttp.onreadystatechange = function() {
     if (xmlhttp.readyState === XMLHttpRequest.DONE) {
-      callback(xmlhttp);
+      callback(xmlhttp, payload.redirect);
     }
   };
   xmlhttp.open(method, url, true);
   xmlhttp.setRequestHeader('Content-Type', 'application/json');
-  xmlhttp.send(payload);
+  xmlhttp.send(payloadString);
 };
 
 const submit = function(e) {
@@ -29,16 +30,16 @@ const submit = function(e) {
   }
   setState('loading');
   const url = document.getElementById('form').action;
-  const payload = JSON.stringify({
+  const payload = {
     user: getUsername(),
     password: document.getElementById('password').value,
     redirect: getRedirectUrl(),
     locale: selectedLocale
-  });
-  request('POST', url, payload, function(xmlhttp) {
-    if (xmlhttp.status === 302) {
+  };
+  request('POST', url, payload, function(xmlhttp,redirectURL) {
+    if (xmlhttp.status === 200) {
       // success - redirect to app
-      window.location = xmlhttp.response;
+      window.location = redirectURL;
     } else if (xmlhttp.status === 401) {
       // bad user/pass provided
       setState('loginincorrect');
