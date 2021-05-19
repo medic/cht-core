@@ -1671,7 +1671,7 @@ describe('muting', () => {
           expect(mutesPersonInfo.transitions.muting.last_rev.startsWith('1-')).toBe(true); // this is not replayed
           expect(unmutesNewPersonInfo.transitions.muting.last_rev.startsWith('2-')).toBe(true); // replayed once
           expect(mutesPersonAgainInfo.transitions.muting.last_rev.startsWith('2-')).toBe(true); // replayed once
-        })
+        });
     });
   });
 });
