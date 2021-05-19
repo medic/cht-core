@@ -8,6 +8,7 @@ import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
 import { DBSyncService } from '@mm-services/db-sync.service';
 import { DbService } from '@mm-services/db.service';
 import { AuthService } from '@mm-services/auth.service';
+import { CheckDateService } from '@mm-services/check-date.service';
 
 describe('DBSync service', () => {
   let service:DBSyncService;
@@ -25,6 +26,7 @@ describe('DBSync service', () => {
   let getItem;
   let dbSyncRetry;
   let rulesEngine;
+  let checkDateService;
 
   let localMedicDb;
   let localMetaDb;
@@ -94,6 +96,7 @@ describe('DBSync service', () => {
 
     getItem = sinon.stub(window.localStorage, 'getItem');
     sinon.stub(window.localStorage, 'setItem');
+    checkDateService = { check: sinon.stub().resolves() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -102,6 +105,7 @@ describe('DBSync service', () => {
         { provide: AuthService, useValue: { has: hasAuth } },
         { provide: DbSyncRetryService, useValue: { retryForbiddenFailure: dbSyncRetry } },
         { provide: RulesEngineService, useValue: rulesEngine },
+        { provide: CheckDateService, useValue: checkDateService },
       ]
     });
 
@@ -119,6 +123,7 @@ describe('DBSync service', () => {
       return service.sync().then(() => {
         expect(to.callCount).to.equal(0);
         expect(from.callCount).to.equal(0);
+        expect(checkDateService.check.callCount).to.equal(0);
       });
     });
 
@@ -134,6 +139,8 @@ describe('DBSync service', () => {
         expect(from.args[0][1]).to.not.have.keys('filter', 'checkpoint');
         expect(to.callCount).to.equal(1);
         expect(to.args[0][1]).to.have.keys('filter', 'checkpoint', 'batch_size');
+        expect(checkDateService.check.callCount).to.equal(1);
+        expect(checkDateService.check.args[0]).to.deep.equal([]);
       });
     });
 
@@ -155,6 +162,7 @@ describe('DBSync service', () => {
       service.setOnlineStatus(false);
       return service.sync().then(() => {
         expect(from.callCount).to.equal(0);
+        expect(checkDateService.check.callCount).to.equal(0);
       });
     });
 
@@ -175,6 +183,7 @@ describe('DBSync service', () => {
       service.setOnlineStatus(false);
       return service.sync(true).then(() => {
         expect(from.callCount).to.equal(1);
+        expect(checkDateService.check.callCount).to.equal(1);
       });
     });
 
