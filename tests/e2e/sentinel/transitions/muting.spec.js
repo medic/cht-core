@@ -1443,7 +1443,36 @@ describe('muting', () => {
         transitions: { muting: true },
         muting: {
           mute_forms: ['mute'],
-          unmute_forms: ['unmute']
+          unmute_forms: ['unmute'],
+          messages: [{
+            event_type: 'mute',
+            recipient: '12345',
+            message: [{
+              locale: 'en',
+              content: 'Contact muted'
+            }],
+          }, {
+            event_type: 'unmute',
+            recipient: '12345',
+            message: [{
+              locale: 'en',
+              content: 'Contact unmuted'
+            }],
+          }, {
+            event_type: 'already_muted',
+            recipient: '12345',
+            message: [{
+              locale: 'en',
+              content: 'Contact already muted'
+            }],
+          }, {
+            event_type: 'already_unmuted',
+            recipient: '12345',
+            message: [{
+              locale: 'en',
+              content: 'Contact already unmuted'
+            }],
+          }]
         },
       };
 
@@ -1461,8 +1490,8 @@ describe('muting', () => {
         muting_history: {
           server: { muted: false },
           client: [
-            { report_id: 'mutes_clinic', muted: true, date: 1000 },
-            { report_id: 'unmutes_new_person', muted: false, date: 2000 },
+            { report_id: 'mutes_clinic_replay', muted: true, date: 1000 },
+            { report_id: 'unmutes_new_person_replay', muted: false, date: 2000 },
           ],
           last_update: 'client',
         },
@@ -1478,10 +1507,10 @@ describe('muting', () => {
         muted: 3000,
         muting_history: {
           client: [
-            { report_id: 'mutes_person', muted: true, date: 500 },
-            { report_id: 'mutes_clinic', muted: true, date: 1000 },
-            { report_id: 'unmutes_new_person', muted: false, date: 2000 },
-            { report_id: 'mutes_person_again', muted: true, date: 3000 }
+            { report_id: 'mutes_person_replay', muted: true, date: 500 },
+            { report_id: 'mutes_clinic_replay', muted: true, date: 1000 },
+            { report_id: 'unmutes_new_person_replay', muted: false, date: 2000 },
+            { report_id: 'mutes_person_again_replay', muted: true, date: 3000 }
           ],
           last_update: 'client',
         }
@@ -1496,8 +1525,8 @@ describe('muting', () => {
         reported_date: new Date().getTime(),
         muting_history: {
           client: [
-            { report_id: 'mutes_clinic', muted: true, date: 1000 },
-            { report_id: 'unmutes_new_person', muted: false, date: 2000 },
+            { report_id: 'mutes_clinic_replay', muted: true, date: 1000 },
+            { report_id: 'unmutes_new_person_replay', muted: false, date: 2000 },
           ],
           last_update: 'client',
         }
@@ -1505,7 +1534,7 @@ describe('muting', () => {
 
       const reports = [
         {
-          _id: 'mutes_person',
+          _id: 'mutes_person_replay',
           content_type: 'xml',
           type: 'data_record',
           form: 'mute',
@@ -1518,7 +1547,7 @@ describe('muting', () => {
           },
         },
         {
-          _id: 'unmutes_new_person',
+          _id: 'unmutes_new_person_replay',
           type: 'data_record',
           content_type: 'xml',
           form: 'unmute',
@@ -1531,7 +1560,7 @@ describe('muting', () => {
           },
         },
         {
-          _id: 'mutes_person_again',
+          _id: 'mutes_person_again_replay',
           content_type: 'xml',
           type: 'data_record',
           form: 'mute',
@@ -1546,7 +1575,7 @@ describe('muting', () => {
       ];
 
       const mutesClinic = {
-        _id: 'mutes_clinic',
+        _id: 'mutes_clinic_replay',
         type: 'data_record',
         content_type: 'xml',
         form: 'mute',
@@ -1568,9 +1597,10 @@ describe('muting', () => {
         .then(() => sentinelUtils.waitForSentinel(reportIds))
         .then(() => Promise.all([
           utils.getDocs([clinic._id, person._id, newPerson._id]),
-          sentinelUtils.getInfoDocs([clinic._id, person._id, newPerson._id])
+          sentinelUtils.getInfoDocs([clinic._id, person._id, newPerson._id]),
+          utils.getDocs(reportIds),
         ]))
-        .then(([ updatedContacts, infoDocs ]) => {
+        .then(([ updatedContacts, infoDocs, updatedReports ]) => {
           const [ updatedClinic, updatedPerson, updatedNewPerson ] = updatedContacts;
           const [ clinicInfo, personInfo, newPersonInfo ] = infoDocs;
           const findMutingHistoryForReport = (history, reportId) => history.find(item => item.report_id === reportId);
@@ -1578,27 +1608,53 @@ describe('muting', () => {
           expect(updatedClinic.muted).toBeUndefined();
           expect(updatedClinic.muting_history.server.muted).toBe(false);
           expect(updatedClinic.muting_history.last_update).toBe('server');
-          expect(findMutingHistoryForReport(clinicInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
+          expect(findMutingHistoryForReport(clinicInfo.muting_history, 'unmutes_new_person_replay').muted).toBe(false);
 
           expect(updatedPerson.muted).toBeDefined();
           expect(updatedPerson.muting_history.server.muted).toBe(true);
           expect(updatedPerson.muting_history.last_update).toBe('server');
-          expect(findMutingHistoryForReport(personInfo.muting_history, 'mutes_person_again').muted).toBe(true);
+          expect(findMutingHistoryForReport(personInfo.muting_history, 'mutes_person_again_replay').muted).toBe(true);
 
           expect(updatedNewPerson.muted).toBeUndefined();
           expect(updatedNewPerson.muting_history.server.muted).toBe(false);
           expect(updatedNewPerson.muting_history.last_update).toBe('server');
-          expect(findMutingHistoryForReport(newPersonInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
+          expect(
+            findMutingHistoryForReport(newPersonInfo.muting_history, 'unmutes_new_person_replay').muted
+          ).toBe(false);
+
+          // tasks are added to reports
+          const [updatedMutesPerson, updatedUnmutesNewPerson, updatedMutesPersonAgain] = updatedReports;
+          expect(updatedMutesPerson.tasks.length).toBe(1);
+          expect(updatedMutesPerson.tasks[0].messages[0].message).toBe('Contact muted');
+
+          expect(updatedUnmutesNewPerson.tasks.length).toBe(1);
+          expect(updatedUnmutesNewPerson.tasks[0].messages[0].message).toBe('Contact unmuted');
+
+          expect(updatedMutesPersonAgain.tasks.length).toBe(1);
+          expect(updatedMutesPersonAgain.tasks[0].messages[0].message).toBe('Contact muted');
+
         })
-        // push a doc from the client-sude muting history
+        // push a doc from the client-side muting history
         .then(() => utils.saveDoc(mutesClinic))
         .then(() => sentinelUtils.waitForSentinel(mutesClinic._id))
-        .then(() => utils.getDocs([clinic._id, person._id, newPerson._id]))
-        .then(([ updatedClinic, updatedPerson, updatedNewPerson ]) => {
+        .then(() => utils.getDocs([clinic._id, person._id, newPerson._id, ...reportIds]))
+        .then(([ updatedClinic, updatedPerson, updatedNewPerson, ...updatedReports ]) => {
           // nothing changed
           expect(updatedClinic.muted).toBeUndefined();
           expect(updatedPerson.muted).toBeDefined();
           expect(updatedNewPerson.muted).toBeUndefined();
+
+          // tasks are not duplicated on replayed reports
+          const [updatedMutesPerson, updatedUnmutesNewPerson, updatedMutesPersonAgain] = updatedReports;
+          expect(updatedMutesPerson.tasks.length).toBe(1);
+          expect(updatedUnmutesNewPerson.tasks.length).toBe(1);
+          expect(updatedMutesPersonAgain.tasks.length).toBe(1);
+        })
+        .then(() => sentinelUtils.getInfoDocs(reportIds))
+        .then(([mutesPersonInfo, unmutesNewPersonInfo, mutesPersonAgainInfo]) => {
+          expect(mutesPersonInfo.transitions.muting.last_rev.startsWith('1-')).toBe(true); // this is not replayed
+          expect(unmutesNewPersonInfo.transitions.muting.last_rev.startsWith('2-')).toBe(true); // replayed
+          expect(mutesPersonAgainInfo.transitions.muting.last_rev.startsWith('2-')).toBe(true); // replayed
         })
         // update the report again
         .then(() => utils.getDoc(mutesClinic._id))
@@ -1609,7 +1665,13 @@ describe('muting', () => {
           expect(updatedClinic.muted).toBeUndefined();
           expect(updatedPerson.muted).toBeDefined();
           expect(updatedNewPerson.muted).toBeUndefined();
-        });
+        })
+        .then(() => sentinelUtils.getInfoDocs(reportIds))
+        .then(([mutesPersonInfo, unmutesNewPersonInfo, mutesPersonAgainInfo]) => {
+          expect(mutesPersonInfo.transitions.muting.last_rev.startsWith('1-')).toBe(true); // this is not replayed
+          expect(unmutesNewPersonInfo.transitions.muting.last_rev.startsWith('2-')).toBe(true); // replayed once
+          expect(mutesPersonAgainInfo.transitions.muting.last_rev.startsWith('2-')).toBe(true); // replayed once
+        })
     });
   });
 });

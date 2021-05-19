@@ -158,12 +158,12 @@ const wasProcessedClientSide = (change) => {
          change.doc.client_transitions[TRANSITION_NAME];
 };
 
-const processMutingEvent = (contact, change, muteState) => {
+const processMutingEvent = (contact, change, muteState, hasRun) => {
   const processedClientSide = wasProcessedClientSide(change);
   return mutingUtils
     .updateMuteState(contact, muteState, change.id, processedClientSide)
     .then(reportIds => {
-      module.exports._addMsg(getEventType(muteState), change.doc, contact);
+      module.exports._addMsg(getEventType(muteState), change.doc, hasRun);
 
       if (processedClientSide) {
         return replayClientMutingEvents(reportIds);
@@ -204,10 +204,11 @@ module.exports = {
 
     const muteState = isMuteForm(change.doc.form);
     const contact = change.doc.patient || change.doc.place;
+    const hasRun = transitionUtils.hasRun(change.info, TRANSITION_NAME);
 
     if (!contact) {
       module.exports._addErr('contact_not_found', change.doc);
-      module.exports._addMsg('contact_not_found', change.doc);
+      module.exports._addMsg('contact_not_found', change.doc, hasRun);
       return Promise.resolve(true);
     }
 
@@ -221,21 +222,22 @@ module.exports = {
         if (Boolean(contact.muted) === muteState && !wasProcessedClientSide(change)) {
           // don't update registrations if contact already has desired state
           // but do process muting events that have been handled on the client
-          module.exports._addMsg(contact.muted ? 'already_muted' : 'already_unmuted', change.doc);
+          module.exports._addMsg(contact.muted ? 'already_muted' : 'already_unmuted', change.doc, hasRun);
           return;
         }
 
-        return processMutingEvent(contact, change, muteState);
+        return processMutingEvent(contact, change, muteState, hasRun);
       })
       .then(() => true);
   },
-  _addMsg: function(eventType, doc, contact) {
+  _addMsg: (eventType, doc, forceUniqueMessages) => {
     const msgConfig = _.find(getConfig().messages, { event_type: eventType });
     if (msgConfig) {
-      messages.addMessage(doc, msgConfig, msgConfig.recipient, { patient: contact });
+      const context = { patient: doc.patient, place: doc.place };
+      messages.addMessage(doc, msgConfig, msgConfig.recipient, context, forceUniqueMessages);
     }
   },
-  _addErr: function(eventType, doc) {
+  _addErr: (eventType, doc) => {
     const locale = utils.getLocale(doc);
     const evConf = _.find(getConfig().messages, { event_type: eventType });
 

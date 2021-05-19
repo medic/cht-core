@@ -506,6 +506,51 @@ describe('Muting transition', () => {
         });
       });
 
+      it('should not duplicate existent message when transition already ran', () => {
+        const contact = { _id: 'contact' };
+        const doc = {
+          _id: 'report',
+          type: 'data_record',
+          form: 'mute',
+          place: contact,
+          tasks: [{ messages: [{ to: 'reporting_unit', message: 'Muting successful' }] }],
+        };
+        transitionUtils.hasRun.returns(true);
+        config.get.returns(mutingConfig);
+        mutingUtils.updateMuteState.resolves([]);
+
+        return transition.onMatch({ id: 'report_id', doc }).then(result => {
+          chai.expect(result).to.equal(true);
+          chai.expect(mutingUtils.updateMuteState.callCount).to.equal(1);
+          chai.expect(mutingUtils.updateMuteState.args[0]).to.deep.equal([ contact, true, 'report_id', undefined ]);
+          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks[0].messages[0].message).to.equal('Muting successful');
+        });
+      });
+
+      it('should duplicate existent message when transition did not already run', () => {
+        const contact = { _id: 'contact' };
+        const doc = {
+          _id: 'report',
+          type: 'data_record',
+          form: 'mute',
+          place: contact,
+          tasks: [{ messages: [{ to: 'reporting_unit', message: 'Muting successful' }] }],
+        };
+        transitionUtils.hasRun.returns(false);
+        config.get.returns(mutingConfig);
+        mutingUtils.updateMuteState.resolves([]);
+
+        return transition.onMatch({ id: 'report_id', doc }).then(result => {
+          chai.expect(result).to.equal(true);
+          chai.expect(mutingUtils.updateMuteState.callCount).to.equal(1);
+          chai.expect(mutingUtils.updateMuteState.args[0]).to.deep.equal([ contact, true, 'report_id', undefined ]);
+          chai.expect(doc.tasks.length).to.equal(2);
+          chai.expect(doc.tasks[0].messages[0].message).to.equal('Muting successful');
+          chai.expect(doc.tasks[1].messages[0].message).to.equal('Muting successful');
+        });
+      });
+
       it('should add message when unmuting', () => {
         const contact = { _id: 'contact', muted: 1234 };
         const doc = { _id: 'report', type: 'data_record', form: 'unmute', patient: contact };
