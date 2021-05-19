@@ -27,14 +27,15 @@ wget  https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/1.4/jmeter-pl
 wget 'http://search.maven.org/remotecontent?filepath=kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar' -O ./jmeter/lib/cmdrunner-2.2.jar &&
 java -cp jmeter/lib/ext/jmeter-plugins-manager-1.4.jar org.jmeterplugins.repository.PluginManagerCMDInstaller &&
 ./jmeter/bin/PluginsManagerCMD.sh install jpgc-mergeresults &&
-echo "jmeter do it!"
-./jmeter/bin/jmeter -n  -t sync.jmx -Jnumber_of_threads=100 -Jworking_dir=./ -Jnode_binary=$(which node) -l ./report/cli_run.jtl -e -o ./report
-mv ./jmeter.log ./report/jmeter.log
-echo "Installing AWS CLI"
-sudo apt-get install unzip -y 
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-sudo ./aws/install
-echo "Uploading logs and screenshots to ${S3_PATH}..."
-/usr/local/bin/aws s3 cp ./report "$S3_PATH" --recursive
-echo "FINISHED! "
+echo "JMETER installed"
+# echo "jmeter do it!"
+# ./jmeter/bin/jmeter -n  -t sync.jmx -Jnumber_of_threads=100 -Jworking_dir=./ -Jnode_binary=$(which node) -l ./report/cli_run.jtl -e -o ./report
+# mv ./jmeter.log ./report/jmeter.log
+# echo "Installing AWS CLI"
+# sudo apt-get install unzip -y 
+# curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+# unzip awscliv2.zip
+# sudo ./aws/install
+# echo "Uploading logs and screenshots to ${S3_PATH}..."
+# /usr/local/bin/aws s3 cp ./report "$S3_PATH" --recursive
+# echo "FINISHED! "
