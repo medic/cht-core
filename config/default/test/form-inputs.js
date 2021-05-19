@@ -305,7 +305,6 @@ module.exports = {
       ['yes'],
       ['yes'],
       ['yes'],
-      ['yes'],
       []
     ],
     lmpUnknown: [
