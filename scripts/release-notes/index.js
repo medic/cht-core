@@ -111,7 +111,7 @@ const groupIssues = issues => {
   return {
     warnings: WARNINGS.map(warning => group(warning, issues)),
     types: TYPES.map(type => group(type, issues))
-  }
+  };
 };
 
 const format = issue => `- [#${issue.number}](${issue.html_url}): ${issue.title}\n`;
