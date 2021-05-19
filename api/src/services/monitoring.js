@@ -164,7 +164,7 @@ const getOutgoingMessageStatusCounts = () => {
     });
 };
 
-const getWeeklyOutgoingMessageStatusCounter = () => {
+const getWeeklyOutgoingMessageStatusCounts = () => {
   const startDate = moment().startOf('day').subtract(7, 'days').valueOf();
   const endDate = moment().valueOf();
 
@@ -177,7 +177,7 @@ const getWeeklyOutgoingMessageStatusCounter = () => {
   const query = (options) => db.medic
     .query('medic-admin/message_queue', options)
     .catch(err => {
-      logger.error(`Error fetching outgoing message status counts ${options.start_key}: %o`, err);
+      logger.error(`Error fetching weekly outgoing message status counts ${options.start_key}: %o`, err);
       return { rows: [{ value: -1 }] };
     });
 
@@ -196,6 +196,46 @@ const getWeeklyOutgoingMessageStatusCounter = () => {
     });
 };
 
+const getLastHundredStatusCountsPerGroup = ({group, statuses}) => {
+  const options = {
+    descending: true,
+    start_key: [group, moment().valueOf()],
+    endkey: [group, 0],
+    limit: 100,
+  };
+
+  return db.medic
+    .query('medic-sms/messages_by_last_updated_state', options)
+    .then(results => {
+      const counts = Object.fromEntries(statuses.map(key => ([key, 0])));
+      results.rows.forEach(row => {
+        const status = row.key[2];
+        counts[status] = counts[status] || 0;
+        counts[status]++;
+      });
+
+      return counts;
+    })
+    .catch(err => {
+      logger.error(`Error fetching last 100 final status messages: %o`, err);
+      return Object.fromEntries(statuses.map(key => ([key, -1])));
+    });
+};
+
+const getLastHundretStatusUpdatesCounts = () => {
+  const groups = [
+    { group: 'pending', statuses: ['pending', 'forwarded-to-gateway', 'received-by-gateway', 'forwarded-by-gateway'] },
+    { group: 'final', statuses: ['sent', 'delivered', 'failed'] },
+    { group: 'muted', statuses: ['denied', 'cleared', 'muted', 'duplicate'] },
+  ];
+
+  return Promise
+    .all(groups.map(group => getLastHundredStatusCountsPerGroup(group)))
+    .then(([pending, final, muted]) => {
+      return { pending, final, muted };
+    });
+};
+
 const getReplicationLimitLog = () => {
   return db.medicLogs
     .query('logs/replication_limit')
@@ -206,7 +246,7 @@ const getReplicationLimitLog = () => {
     });
 };
 
-const json = () => {
+const v1 = () => {
   return Promise
     .all([
       getAppVersion(),
@@ -215,7 +255,6 @@ const json = () => {
       getSentinelBacklog(),
       getOutboundPushQueueLength(),
       getOutgoingMessageStatusCounts(),
-      getWeeklyOutgoingMessageStatusCounter(),
       getFeedbackCount(),
       getConflictCount(),
       getReplicationLimitLog()
@@ -227,7 +266,6 @@ const json = () => {
       sentinelBacklog,
       outboundPushBacklog,
       outgoingMessageStatus,
-      weeklyOutgoingMessageStatus,
       feedbackCount,
       conflictCount,
       replicationLimitLogs
@@ -248,9 +286,8 @@ const json = () => {
         },
         messaging: {
           outgoing: {
-            total: outgoingMessageStatus,
-            seven_days: weeklyOutgoingMessageStatus,
-          },
+            state: outgoingMessageStatus
+          }
         },
         outbound_push: {
           backlog: outboundPushBacklog
@@ -268,6 +305,25 @@ const json = () => {
     });
 };
 
+const v2 = () => {
+  return Promise
+    .all([
+      v1(),
+      getWeeklyOutgoingMessageStatusCounts(),
+      getLastHundretStatusUpdatesCounts(),
+    ])
+    .then(([v1, weeklyOutgoingMessageStatus, lastHundredCounts]) => {
+      v1.messaging.outgoing = {
+        total: v1.messaging.outgoing.state,
+        seven_days: weeklyOutgoingMessageStatus,
+        last_hundred: lastHundredCounts,
+      };
+
+      return v1;
+    });
+};
+
 module.exports = {
-  json
+  v1,
+  v2,
 };

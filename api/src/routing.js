@@ -337,7 +337,8 @@ app.get('/api/deploy-info', (req, res) => {
   res.json(environment.getDeployInfo());
 });
 
-app.get('/api/v1/monitoring', monitoring.get);
+app.get('/api/v1/monitoring', monitoring.getV1);
+app.get('/api/v2/monitoring', monitoring.getV2);
 
 app.get('/api/auth/:path', function(req, res) {
   auth.checkUrl(req)
