@@ -1,24 +1,18 @@
 const { expect } = require('chai');
 const TestRunner = require('medic-conf-test-harness');
-const path = require('path');
 const moment = require('moment');
-const sinon = require('sinon');
 const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios } = require('../form-inputs');
-const harness = new TestRunner({
-  xformFolderPath: path.join(__dirname, '../../forms/app'),
-});
-let clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
+const harness = new TestRunner();
+
 describe('Tests for active pregnancy condition card', () => {
   before(async () => { return await harness.start(); });
   after(async () => { return await harness.stop(); });
   beforeEach(async () => {
     await harness.clear();
-    clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
     return await harness.setNow('2000-01-01');
   });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if (clock) { clock.restore(); }
   });
 
   it('pregnancy registration with risk factors, danger signs, past and future visits', async () => {
@@ -29,7 +23,7 @@ describe('Tests for active pregnancy condition card', () => {
     expect(result.errors).to.be.empty;
 
     // Verify condition card
-    const contactSummary = harness.getContactSummary();
+    const contactSummary = await harness.getContactSummary();
     expect(contactSummary.cards).to.have.property('length', 1);
     const activePregnancyCard = contactSummary.cards[0];
     expect(activePregnancyCard).to.have.property('label', 'contact.profile.pregnancy.active');
@@ -98,7 +92,7 @@ describe('Tests for active pregnancy condition card', () => {
     expect(result.errors).to.be.empty;
 
     // Verify condition card
-    const contactSummary = harness.getContactSummary();
+    const contactSummary = await harness.getContactSummary();
     expect(contactSummary.cards).to.have.property('length', 1);
     const activePregnancyCard = contactSummary.cards[0];
     expect(activePregnancyCard).to.have.property('label', 'contact.profile.pregnancy.active');
@@ -142,15 +136,13 @@ describe('Tests for active pregnancy condition card', () => {
     // Verify that the form successfully got submitted
     expect(result.errors).to.be.empty;
 
-    await harness.flush(3 * 7);//After 2 weeks
-    clock = sinon.useFakeTimers(moment('2000-01-01').add(3, 'weeks').toDate());
+    await harness.flush(3 * 7); //After 2 weeks
 
-    await harness.loadForm('pregnancy_home_visit');
-    const homeVisitResult = await harness.fillForm(...pregnancyHomeVisitScenarios.riskDangerUpdateEDD);
+    const homeVisitResult = await harness.fillForm('pregnancy_home_visit', ...pregnancyHomeVisitScenarios.riskDangerUpdateEDD);
     expect(homeVisitResult.errors).to.be.empty;
 
     // Verify condition card
-    const contactSummary = harness.getContactSummary();
+    const contactSummary = await harness.getContactSummary();
     expect(contactSummary.cards).to.have.property('length', 1);
     const activePregnancyCard = contactSummary.cards[0];
     expect(activePregnancyCard).to.have.property('label', 'contact.profile.pregnancy.active');
@@ -211,12 +203,12 @@ describe('Tests for active pregnancy condition card', () => {
     expect(result.errors).to.be.empty;
 
     await harness.flush(3 * 7);//After 3 weeks
-    clock = sinon.useFakeTimers(moment('2000-01-01').add(3, 'weeks').toDate());
+    
     const homeVisitResult = await harness.fillForm('pregnancy_home_visit', ...pregnancyHomeVisitScenarios.clearAll);
     expect(homeVisitResult.errors).to.be.empty;
 
     // Verify condition card
-    const contactSummary = harness.getContactSummary();
+    const contactSummary = await harness.getContactSummary();
     expect(contactSummary.cards).to.have.property('length', 1);
     const activePregnancyCard = contactSummary.cards[0];
     expect(activePregnancyCard).to.have.property('label', 'contact.profile.pregnancy.active');

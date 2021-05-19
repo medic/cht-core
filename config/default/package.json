@@ -22,7 +22,7 @@
     "chai-things": "^0.2.0",
     "eslint-plugin-json": "^2.0.1",
     "medic-conf": "^3.1.0",
-    "medic-conf-test-harness": "^0.1.19",
+    "medic-conf-test-harness": "^2.0.0-beta.1",
     "mocha": "^5.1.1",
     "sinon": "^7.3.2"
   },
