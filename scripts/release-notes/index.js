@@ -83,13 +83,13 @@ const validateIssues = issues => {
 };
 
 const getIssues = async (milestoneId) => {
-  const response = await octokit.rest.issues.listForRepo({
+  const issues = await octokit.paginate(octokit.rest.issues.listForRepo, {
     owner: OWNER,
     repo: REPO_NAME,
     milestone: milestoneId,
     per_page: 100
   });
-  return validateIssues(response.data);
+  return validateIssues(issues);
 };
 
 const filterIssues = issues => {
