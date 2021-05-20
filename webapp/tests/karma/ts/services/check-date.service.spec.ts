@@ -121,8 +121,8 @@ describe('CheckDateService', () => {
     expect(telemetryService.record.args[0]).to.deep.equal(['client-date-offset', 5 * 60 * 60 * 1000]);
   });
 
-  describe('should keep re-checking on every try until one response from the server is received', () => {
-    it('when clock is off', async () => {
+  describe('re-checking on every try until one response from the server is received', () => {
+    it('should keep re-checking, record telemetry and never check again when clock is off', async () => {
       clock = sinon.useFakeTimers(1606230000000);
 
       const check1 = service.check(true);
@@ -176,7 +176,7 @@ describe('CheckDateService', () => {
       expect(telemetryService.record.callCount).to.equal(1);
     });
 
-    it('when clock is on', async () => {
+    it('should keep re-checking, not record telemetry and never check again when clock is on', async () => {
       clock = sinon.useFakeTimers(1606230000000);
 
       const check1 = service.check(true);
