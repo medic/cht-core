@@ -48,13 +48,13 @@
     const form = utils.getForm();
     // Using form's instance ID as RD Test ID
     const sessionId = utils.getFieldValue(form, 'instanceID').replace('uuid:', '');
-    const patientId = utils.getFieldValue(form, 'patient_id');
+    const patientId = utils.getFieldValue(form, '__patient_id');
 
     if (!sessionId || !patientId) {
       return;
     }
 
-    const patientName = utils.getFieldValue(form, 'patient_name');
+    const patientName = utils.getFieldValue(form, '__patient_name');
     const rdtFilter = utils.getFieldValue(form, 'rdtoolkit_filter');
     const monitorApiURL = utils.getFieldValue(form, 'rdtoolkit_api_url');
 
