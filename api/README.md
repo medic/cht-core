@@ -15,7 +15,7 @@ Get node deps with `npm ci`.
 Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 
 ```
-export COUCH_URL='http://myAdminUser:myAdminPass@localhost:5984/medic'
+export COUCH_URL='http://myadminuser:myadminpass@localhost:5984/medic'
 ```
 
 If you are using CouchDB2.0 you need to also provide your node name. e.g.
@@ -72,7 +72,7 @@ See [`migrations.js`](https://github.com/medic/cht-core/tree/master/api/src/migr
 Importantly, the record of which migrations have been run is stored in the `migrations` array of an arbitrarily named document in CouchDB with the `.type` of `meta`. Because of this it can be a hard document to find, but you can get it using `curl`, and pretty print it with `jq`:
 
 ```
-curl 'http://myAdminUser:myAdminPass@localhost:5984/medic/_design/medic-client/_view/doc_by_type?key=\["meta"\]&include_docs=true' | jq .rows[].doc
+curl 'http://myadminuser:myadminpass@localhost:5984/medic/_design/medic-client/_view/doc_by_type?key=\["meta"\]&include_docs=true' | jq .rows[].doc
 ```
 
 So, if you want to re-run a migration, delete its entry in the `migrations` list and re-run api.
