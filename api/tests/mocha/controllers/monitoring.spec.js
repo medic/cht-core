@@ -20,7 +20,7 @@ describe('Monitoring controller', () => {
     });
 
     it('returns successfully', () => {
-      sinon.stub(service, 'v1').resolves({ version: { app: '1.2.3' } });
+      sinon.stub(service, 'jsonV1').resolves({ version: { app: '1.2.3' } });
       return controller.getV1(req, res).then(() => {
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(res.json.args[0][0]).to.deep.equal({
@@ -32,7 +32,7 @@ describe('Monitoring controller', () => {
     });
 
     it('handles promise rejection gracefully', () => {
-      sinon.stub(service, 'v1').rejects(new Error('something missing'));
+      sinon.stub(service, 'jsonV1').rejects(new Error('something missing'));
       sinon.stub(serverUtils, 'error').returns();
       return controller.getV1(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
@@ -50,9 +50,9 @@ describe('Monitoring controller', () => {
     });
 
     it('returns successfully', () => {
-      sinon.stub(service, 'v2').resolves({ version: { app: '4.5.6' } });
+      sinon.stub(service, 'jsonV2').resolves({ version: { app: '4.5.6' } });
       return controller.getV2(req, res).then(() => {
-        chai.expect(service.v2.callCount).to.equal(1);
+        chai.expect(service.jsonV2.callCount).to.equal(1);
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(res.json.args[0][0]).to.deep.equal({
           version: {
@@ -63,10 +63,10 @@ describe('Monitoring controller', () => {
     });
 
     it('handles promise rejection gracefully', () => {
-      sinon.stub(service, 'v2').rejects(new Error('something missing'));
+      sinon.stub(service, 'jsonV2').rejects(new Error('something missing'));
       sinon.stub(serverUtils, 'error').returns();
       return controller.getV2(req, res).then(() => {
-        chai.expect(service.v2.callCount).to.equal(1);
+        chai.expect(service.jsonV2.callCount).to.equal(1);
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(res.json.callCount).to.equal(0);
       });

@@ -68,7 +68,7 @@ const setUpMocks = () => {
     .withArgs(sinon.match({ url: `${environment.couchUrl}/_changes` })).resolves({ pending: 24 });
   sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` }))
     .resolves(dbInfos);
-  sinon.stub(db.sentinel, 'get').withArgs('_local/sentinel-meta-data')
+  sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq')
     .resolves({ processed_seq: '50-xyz' });
   const medicQuery = sinon.stub(db.medic, 'query');
   medicQuery.withArgs('medic-admin/message_queue')
@@ -143,7 +143,7 @@ describe('Monitoring service', () => {
   it('v1 returns successfully', () => {
     setUpMocks();
 
-    return service.v1().then(actual => {
+    return service.jsonV1().then(actual => {
       chai.expect(request.post.callCount).to.equal(1);
       chai.expect(actual.version).to.deep.equal({
         app: '5.3.2',
@@ -212,7 +212,7 @@ describe('Monitoring service', () => {
       cleared: 30,
     });
 
-    return service.v2().then(actual => {
+    return service.jsonV2().then(actual => {
       chai.expect(request.post.callCount).to.equal(1);
       chai.expect(actual.version).to.deep.equal({
         app: '5.3.2',
@@ -299,13 +299,13 @@ describe('Monitoring service', () => {
     sinon.stub(db.medic, 'get').withArgs('_design/medic').rejects();
     sinon.stub(request, 'get').withArgs(sinon.match({ url: environment.serverUrl })).rejects();
     sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` })).rejects();
-    sinon.stub(db.sentinel, 'get').withArgs('_local/sentinel-meta-data').rejects();
+    sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq').rejects();
     sinon.stub(db.medic, 'query').rejects();
     sinon.stub(db.sentinel, 'query').rejects();
     sinon.stub(db.medicUsersMeta, 'query').rejects();
     sinon.stub(db.medicLogs, 'query').rejects();
 
-    return service.v1().then(actual => {
+    return service.jsonV1().then(actual => {
       chai.expect(actual.version).to.deep.equal({
         app: '',
         node: process.version,
@@ -363,13 +363,13 @@ describe('Monitoring service', () => {
     sinon.stub(db.medic, 'get').withArgs('_design/medic').rejects();
     sinon.stub(request, 'get').withArgs(sinon.match({ url: environment.serverUrl })).rejects();
     sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` })).rejects();
-    sinon.stub(db.sentinel, 'get').withArgs('_local/sentinel-meta-data').rejects();
+    sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq').rejects();
     sinon.stub(db.medic, 'query').rejects();
     sinon.stub(db.sentinel, 'query').rejects();
     sinon.stub(db.medicUsersMeta, 'query').rejects();
     sinon.stub(db.medicLogs, 'query').rejects();
 
-    return service.v2().then(actual => {
+    return service.jsonV2().then(actual => {
       chai.expect(actual.version).to.deep.equal({
         app: '',
         node: process.version,
@@ -456,7 +456,7 @@ describe('Monitoring service', () => {
       .resolves({ version: 'v3.3.3' });
     sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` }))
       .resolves(dbInfos);
-    sinon.stub(db.sentinel, 'get').withArgs('_local/sentinel-meta-data')
+    sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq')
       .resolves({ processed_seq: '50-xyz' });
     sinon.stub(db.medic, 'query')
       .resolves({ rows: [
@@ -467,7 +467,7 @@ describe('Monitoring service', () => {
     sinon.stub(db.sentinel, 'query').resolves({ rows: [] });
     sinon.stub(db.medicUsersMeta, 'query').resolves({ rows: [] });
     sinon.stub(db.medicLogs, 'query').resolves({ rows: [] });
-    return service.v1().then(actual => {
+    return service.jsonV1().then(actual => {
       chai.expect(actual.outbound_push).to.deep.equal({ backlog: 0 });
       chai.expect(actual.feedback).to.deep.equal({ count: 0 });
     });

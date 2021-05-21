@@ -3,12 +3,12 @@ const serverUtils = require('../server-utils');
 
 module.exports = {
   getV1: (req, res) => {
-    return service.v1()
+    return service.jsonV1()
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
   },
   getV2: (req, res) => {
-    return service.v2()
+    return service.jsonV2()
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
   },

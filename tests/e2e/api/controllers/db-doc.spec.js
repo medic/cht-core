@@ -1,7 +1,5 @@
 const _ = require('lodash');
 const chai = require('chai');
-const chaiExclude = require('chai-exclude');
-chai.use(chaiExclude);
 const utils = require('../../../utils');
 const sUtils = require('../../sentinel/utils');
 const constants = require('../../../constants');

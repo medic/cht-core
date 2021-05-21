@@ -35,8 +35,8 @@ const getAppVersion = () => {
 };
 
 const getSentinelProcessedSeq = () => {
-  return db.sentinel.get('_local/sentinel-meta-data')
-    .then(metadata => metadata.processed_seq)
+  return db.sentinel.get('_local/transitions-seq')
+    .then(metadata => metadata.value)
     .catch(err => {
       if (err.status === 404) {
         // sentinel has not processed anything yet
@@ -148,11 +148,17 @@ const getFeedbackCount = () => {
 };
 
 const STATUS_KEYS = ['due', 'scheduled', 'muted', 'failed', 'delivered'];
+const fromEntries = (keys, value) => {
+  // "shim" of Object.fromEntries
+  const result = {};
+  keys.forEach(key => result[key] = value);
+  return result;
+};
 
 const getOutgoingMessageStatusCounts = () => {
   return db.medic.query('medic-admin/message_queue', { reduce: true, group_level: 1 })
     .then(counts => {
-      const result = Object.fromEntries(STATUS_KEYS.map(key => ([key, 0])));
+      const result = fromEntries(STATUS_KEYS, 0);
       counts.rows.forEach(row => {
         result[row.key[0]] = row.value;
       });
@@ -160,7 +166,7 @@ const getOutgoingMessageStatusCounts = () => {
     })
     .catch(err => {
       logger.error('Error fetching outgoing message status count: %o', err);
-      return Object.fromEntries(STATUS_KEYS.map(key => ([key, -1])));
+      return fromEntries(STATUS_KEYS, -1);
     });
 };
 
@@ -184,7 +190,7 @@ const getWeeklyOutgoingMessageStatusCounts = () => {
   return Promise
     .all(options.map(options => query(options)))
     .then(counts => {
-      const result = Object.fromEntries(STATUS_KEYS.map(key => ([key, 0])));
+      const result = fromEntries(STATUS_KEYS, 0);
       counts.forEach((count, idx) => {
         const row = count && count.rows && count.rows[0];
         if (row) {
@@ -207,7 +213,7 @@ const getLastHundredStatusCountsPerGroup = ({group, statuses}) => {
   return db.medic
     .query('medic-sms/messages_by_last_updated_state', options)
     .then(results => {
-      const counts = Object.fromEntries(statuses.map(key => ([key, 0])));
+      const counts = fromEntries(statuses, 0);
       results.rows.forEach(row => {
         const status = row.key[2];
         counts[status] = counts[status] || 0;
@@ -218,7 +224,7 @@ const getLastHundredStatusCountsPerGroup = ({group, statuses}) => {
     })
     .catch(err => {
       logger.error(`Error fetching last 100 final status messages: %o`, err);
-      return Object.fromEntries(statuses.map(key => ([key, -1])));
+      return fromEntries(statuses, -1);
     });
 };
 
@@ -246,7 +252,7 @@ const getReplicationLimitLog = () => {
     });
 };
 
-const v1 = () => {
+const jsonV1 = () => {
   return Promise
     .all([
       getAppVersion(),
@@ -305,25 +311,25 @@ const v1 = () => {
     });
 };
 
-const v2 = () => {
+const jsonV2 = () => {
   return Promise
     .all([
-      v1(),
+      jsonV1(),
       getWeeklyOutgoingMessageStatusCounts(),
       getLastHundretStatusUpdatesCounts(),
     ])
-    .then(([v1, weeklyOutgoingMessageStatus, lastHundredCounts]) => {
-      v1.messaging.outgoing = {
-        total: v1.messaging.outgoing.state,
+    .then(([jsonV1, weeklyOutgoingMessageStatus, lastHundredCounts]) => {
+      jsonV1.messaging.outgoing = {
+        total: jsonV1.messaging.outgoing.state,
         seven_days: weeklyOutgoingMessageStatus,
         last_hundred: lastHundredCounts,
       };
 
-      return v1;
+      return jsonV1;
     });
 };
 
 module.exports = {
-  v1,
-  v2,
+  jsonV1,
+  jsonV2,
 };
