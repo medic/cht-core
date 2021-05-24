@@ -1,6 +1,8 @@
 const rpn = require('request-promise-native');
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 const minimist = require('minimist');
+const fs = require('fs');
+const defaultPassword = 'Secret_1';
 
 const argv = minimist(process.argv.slice(2), {
   alias: {
@@ -19,13 +21,15 @@ Options:
     -h --help     Show this screen.
     --url         The url for the instance being changed
     --user        The admin user this operation is run as
-    --password    The password for the admin user 
+    --password    The password for the admin user
+    --generateJSON Generates a json file with user and password. 
 
 `);
   process.exit(0);
 }
 
 const baseURL = argv.url;
+const generate = argv.generateJSON;
 
 let url;
 try {
@@ -45,10 +49,25 @@ const options = {
   }
 };
 
+const storeJson = (users) => {
+  const userPass = users.rows.map((user) => { return { name: user.doc.name, pass: defaultPassword } });
+  const jsonString = JSON.stringify({
+    url: `${baseURL}/medic`,
+    users: userPass
+  });
+  fs.writeFile('./config.json', jsonString, err => {
+    if (err) {
+      console.log('Error writing file', err);
+    } else {
+      console.log('Successfully wrote file');
+    }
+  });
+};
+
 const execute = async () => {
   let users = [];
   try {
-    const getOptions = Object.assign({ qs: { include_docs: true, startkey:  '"org.couchdb.user"' } }, options);
+    const getOptions = Object.assign({ qs: { include_docs: true, startkey: '"org.couchdb.user"' } }, options);
     users = await rpn.get(getOptions);
   } catch (e) {
     console.log('An error while getting the list of users - ', e.message);
@@ -61,7 +80,7 @@ const execute = async () => {
       name: user.doc.name,
       roles: user.doc.roles,
       type: user.doc.type,
-      password: 'Secret_1'
+      password: defaultPassword
     };
     postOptions.uri = new URL(`_users/${user.id}`, baseURL).href;
     try {
@@ -70,6 +89,10 @@ const execute = async () => {
       console.log('An error while updating the password - ', e.message);
     }
   });
+  if (generate) {
+    console.log('users');
+    storeJson(users);
+  }
 };
 
 execute();
