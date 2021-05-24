@@ -46,7 +46,7 @@
   function captureRDTestResult($widget, rdToolkitService) {
     const dateFormat = 'LLL';
     const form = utils.getForm();
-    const sessionId = utils.getFieldValue(form, 'rdtoolkit_session_id');
+    const sessionId = utils.getFieldValue(form, 'rdtoolkit-capture > rdtoolkit_session_id');
 
     rdToolkitService
       .captureRDTest(sessionId)
@@ -126,14 +126,18 @@
   }
 
   function updateFields($widget, capturedTest) {
-    utils.setFieldValue($widget, 'rdtoolkit_session_id', capturedTest.sessionId);
-    utils.setFieldValue($widget, 'rdtoolkit_results', JSON.stringify(capturedTest.results));
-    utils.setFieldValue($widget, 'rdtoolkit_results_description', capturedTest.resultsDescription);
-    utils.setFieldValue($widget, 'rdtoolkit_time_read', capturedTest.timeRead);
-    utils.setFieldValue($widget, 'rdtoolkit_state', capturedTest.state);
-    utils.setFieldValue($widget, 'rdtoolkit_time_started', capturedTest.timeStarted);
-    utils.setFieldValue($widget, 'rdtoolkit_time_resolved', capturedTest.timeResolved);
-    utils.setFieldValue($widget, 'rdtoolkit_image', capturedTest.image);
+    const root = '/rdtoolkit-capture/data';
+    utils.setFieldValue($widget, `input[name="${root}/rdtoolkit_time_read"]`, capturedTest.timeRead);
+    utils.setFieldValue($widget, `input[name="${root}/rdtoolkit_state"]`, capturedTest.state);
+    utils.setFieldValue($widget, `input[name="${root}/rdtoolkit_time_started"]`, capturedTest.timeStarted);
+    utils.setFieldValue($widget, `input[name="${root}/rdtoolkit_time_resolved"]`, capturedTest.timeResolved);
+    utils.setFieldValue($widget, `input[name="${root}/rdtoolkit_image"]`, capturedTest.image);
+    utils.setFieldValue($widget, `input[name="${root}/rdtoolkit_results"]`, JSON.stringify(capturedTest.results));
+    utils.setFieldValue(
+      $widget,
+      `input[name="${root}/rdtoolkit_results_description"]`,
+      capturedTest.resultsDescription
+    );
   }
 
   function getFormattedResult(results) {

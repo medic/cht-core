@@ -1,6 +1,11 @@
 const moment = require('moment');
 
-
+/**
+ * Returns the binding function that will create the widget's instance.
+ * @param widgetName { string }
+ * @param widgetClass { Class } Used to create a widget's instance.
+ * @returns { function(*=, *=): * }
+ */
 const getBindFunction = (widgetName, widgetClass) => {
   return function (options, event) {
     return this.each(function () {
@@ -19,31 +24,63 @@ const getBindFunction = (widgetName, widgetClass) => {
   };
 };
 
+/**
+ * Returns the current Enketo form.
+ * @returns { Object }
+ */
 const getForm = () => {
   return window.CHTCore.Enketo.getCurrentForm();
 };
 
-const setFieldValue = ($widget, fieldName, value) => {
-  if (!fieldName || value === undefined) {
+/**
+ * Set the value to a field matching the selector provided.
+ * @param $widget { Object } Jquery object reference of element in DOM
+ * @param fieldSelector { string } Selector to match field in the HTML.
+ * @param value { any }
+ */
+const setFieldValue = ($widget, fieldSelector, value) => {
+  if (!fieldSelector || value === undefined) {
     return;
   }
 
   $widget
-    .find(`input[name$=${fieldName}]`)
+    .find(fieldSelector)
     .val(value)
     .trigger('change');
 };
 
-const getFieldValue = (form, fieldName) => {
-  if (!form || !fieldName) {
+/**
+ * Get the value of a field matching the selector for the Enketo form (XML like).
+ * Example:
+ *
+ * <instance>
+ *   <data>
+ *     <myField></myField>
+ *   </data>
+ * </instance>
+ *
+ * fieldSelector is: "instance > data > myField"
+ *
+ * @param form { Object } Enketo form object reference.
+ * @param fieldSelector { string } Selector to match field in the XML.
+ * @returns {*}
+ */
+const getFieldValue = (form, fieldSelector) => {
+  if (!form || !fieldSelector) {
     return;
   }
 
   return form.model.$
-    .find(fieldName)
+    .find(fieldSelector)
     .text();
 };
 
+/**
+ * Format date to string
+ * @param dateTime { Date }
+ * @param format { string }
+ * @returns { string }
+ */
 const formatDate = (dateTime, format) => {
   return dateTime && format && moment(dateTime).isValid() ? moment(dateTime).format(format): '';
 };
