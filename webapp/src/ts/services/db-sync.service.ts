@@ -7,6 +7,7 @@ import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
 import { DbService } from '@mm-services/db.service';
 import { AuthService } from '@mm-services/auth.service';
+import { CheckDateService } from '@mm-services/check-date.service';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
@@ -49,6 +50,7 @@ export class DBSyncService {
     private rulesEngineService:RulesEngineService,
     private dbSyncRetryService:DbSyncRetryService,
     private ngZone:NgZone,
+    private checkDateService:CheckDateService,
   ) {}
 
   private readonly DIRECTIONS = [
@@ -140,6 +142,8 @@ export class DBSyncService {
     if (!this.knownOnlineState && !force) {
       return Promise.resolve();
     }
+
+    this.checkDateService.check();
 
     if (!this.inProgressSync) {
       this.inProgressSync = Promise
