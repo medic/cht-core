@@ -15,13 +15,26 @@ module.exports = {
       });
   },
   get: (req, res) => {
-    let interval = 7; // default to 7 days
-    if (req.query.interval) {
-      interval = req.query.interval;
-    } 
-    return connectedUserLogService
-      .get(interval)
-      .then(logs => res.json(logs))
+    return auth
+      .getUserCtx(req)
+      .then((userCtx) => {
+        if (!auth.isDbAdmin(userCtx)) {
+          throw {
+            code: 401,
+            message: 'User is not an admin'
+          };
+        }
+
+        let interval = 7; // default to 7 days
+        if (req.query && req.query.interval) {
+          interval = req.query.interval;
+        } 
+        return connectedUserLogService
+          .get(interval);
+      })
+      .then((logs) => {
+        return res.json(logs);
+      })
       .catch(err => {
         serverUtils.error(err, req, res, true);
       });

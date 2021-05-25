@@ -6,7 +6,7 @@ const TIME_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
 const saveLog = (log) => {
   if (!log || !log.user) {
-    const error = new Error('Error when saving log: Log Information missing.');
+    const error = new Error('Error when saving log: Log Information missing');
     return Promise.reject(error);
   }
   const id = LOG_TYPE + log.user;
@@ -36,11 +36,9 @@ const getLogs = (interval) => {
   const earliestTimestamp = moment().subtract(interval, 'days').valueOf();
   return db.medicLogs
     .allDocs(options)
-    .then((result) => result.rows.map(row => {
-      if(row.doc.timestamp > earliestTimestamp) {
-        return row.doc;
-      }
-    }));
+    .then((result) => result.rows
+      .filter(row => row.doc.timestamp > earliestTimestamp)
+      .map(row => row.doc));
 };
 
 module.exports = {
