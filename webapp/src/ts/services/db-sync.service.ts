@@ -277,7 +277,8 @@ export class DBSyncService {
 
 class DbSyncTelemetry {
   private readonly telemetryKeyword = 'replication';
-  private readonly offlineErrorMessage = 'Failed to fetch';
+  private readonly failedToFetch = 'Failed to fetch';
+  private readonly failedToParse = 'Unexpected token';
   private readonly database;
   private readonly direction;
   private readonly start;
@@ -344,6 +345,15 @@ class DbSyncTelemetry {
     return Promise.resolve();
   }
 
+  private isOfflineError(error) {
+    if (!error || typeof error.message !== 'string') {
+      return false;
+    }
+
+    return error.message.startsWith(this.failedToFetch) ||
+      error.message.startsWith(this.failedToParse);
+  }
+
   async recordSuccess(info?) {
     await this.record(this.getSuccessKey());
     await this.recordInfo(info);
@@ -353,7 +363,7 @@ class DbSyncTelemetry {
     await this.record(this.getFailureKey());
     await this.recordInfo(error?.result);
 
-    if (error.message === this.offlineErrorMessage) {
+    if (this.isOfflineError(error)) {
       const offlineService = knownOnlineState ? 'server' : 'client';
       await this.telemetryService.record(this.getOfflineKey(offlineService));
     } else {

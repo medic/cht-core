@@ -382,6 +382,47 @@ describe('DBSync service', () => {
         });
       });
 
+      it('when from fails and maybe server is offline and returns 502 and HTML', async () => {
+        isOnlineOnly.returns(false);
+        hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-date').returns(200);
+        clock.tick(1000);
+
+        let fromReject;
+        let toResolve;
+        replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
+        replicationResultTo = new Promise(resolve => toResolve = resolve);
+
+        const syncResult = service.sync();
+        await Promise.resolve();
+
+        clock.tick(2000);
+        const error = { message: 'Unexpected token S in JSON at position 0', result: { docs_read: 22 } };
+        fromReject(error);
+        from.events['error'](error);
+        await Promise.resolve();
+
+        clock.tick(1000);
+        toResolve({ docs_read: 32 });
+
+        return syncResult.then(() => {
+          expect(from.callCount).to.equal(1);
+          expect(to.callCount).to.equal(1);
+
+          expect(telemetryService.record.callCount).to.equal(7);
+          expect(telemetryService.record.args).to.have.deep.members([
+            ['replication:medic:from:failure', 2000],
+            ['replication:medic:from:ms-since-last-replicated-date', 800],
+            ['replication:medic:from:docs', 22],
+            ['replication:medic:from:failure:reason:offline:server'],
+
+            ['replication:medic:to:success', 3000],
+            ['replication:medic:to:ms-since-last-replicated-date', 800],
+            ['replication:medic:to:docs', 32],
+          ]);
+        });
+      });
+
       it('when from fails and client is offline', async () => {
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
