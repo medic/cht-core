@@ -386,7 +386,7 @@ describe('update clinic', () => {
       assert.equal(doc.tasks.length, 1);
       assert.equal(doc.tasks[0].messages[0].to, '123');
       assert.equal(doc.tasks[0].messages[0].message, 'facility not found');
-      assert.equal(utils.translate.callCount, 1);
+      assert.equal(utils.translate.callCount, 2);
       assert.deepEqual(utils.translate.args[0], ['messages.generic.sys.facility_not_found', 'en']);
     });
   });
