@@ -94,3 +94,40 @@ From here we get the ddocs update sequences. Stage the branch which is associate
 Once the medic script completes we begin setting up for jmeter. The `start_jmeter_ec2.sh` script launches a new ec2 instance with the `user-data` script at `cht-core/tests/scalability/run_suite.sh`. 
 
 The script clones cht-core and navigates to the scalability dir. Then installs java, nodejs, jmeter, and its plugins. Executes the scalability suite which is defined in the `cht-core/tests/scalability/sync.jmx`, and finally it uploads the results to an s3 bucket. 
+
+
+
+## Running in tests in Distributed mode.
+
+JMETER allows you to run the same test plan on multiple machines to generate additional load when 1 machine cannot execute enough. One main CAVEAT is that the orchestrator does not send any date to the worker nodes. You need to split the config.json and pass it to each node.
+
+### Triggering through GitHub Actions. 
+
+1. Generate data and user accounts. 
+    1. When using a clone, reset all the user passwords using `scripts/bulk-password-change.js` with the `--generateJSON` option. 
+2. Split the config.json into equal parts based on the number of runners using  `tests/scalability/ec2_management/split_config.js`
+3. Upload the config files to S3 using `tests/scalability/ec2_management/upload_s3.js`
+4. Trigger the manual scalability distributed flow. 
+5. The tests run.... 
+
+
+## Manually Setting up 
+
+JMETER allows you to run the same test plan on multiple machines to generate additional load when 1 machine cannot execute enough. One main CAVEAT is that the orchestrator does not send any date to the worker nodes. You need to split the config.json and pass it to each node.
+
+
+1. Generate data and user accounts. 
+    1. When using a clone, reset all the user passwords using `scripts/bulk-password-change.js` with the `--generateJSON` option. 
+1. Split the config.json into equal parts based on the number of runners using  `tests/scalability/ec2_management/split_config.js`
+1. Spin up at least 2 EC2 instances. 
+1. Copy and run the run_suite.sh to each. This install all required softwares
+1. Copy the config files to the worker nodes
+1. Get the public ip addresses of each worker.
+1. Generate an [RMI key](https://jmeter.apache.org/usermanual/remote-test.html#setup_ssl) on the orchestrator.
+1. Copy the key to the worker nodes and place it in the scalability folder.
+1. Launch jmeter-server on the worker nodes in the scalability directory. The executable is located  `cht-core/tests/scalability/jmeter/bin/jmeter-server`
+1. From the orchestrator run your jmeter command. The -r argument takes a comma separated list of worker node ip addresses. 
+
+This will trigger 700 users to replicate ramping up another user every 5 seconds. 
+
+EX: `./jmeter/bin/jmeter -n  -t sync.jmx -Gnumber_of_threads=700 -Gramp_up_period=5 -Gworking_dir=/home/ubuntu/cht-core/tests/scalability/ -Gnode_binary=/usr/bin/node -l ./report_remote/cli_run.jtl -e -o ./report_remote -R 3.8.93.43,3.11.81.213`
