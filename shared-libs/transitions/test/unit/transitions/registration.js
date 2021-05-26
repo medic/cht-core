@@ -277,7 +277,6 @@ describe('registration', () => {
         doc.errors.should.deep.equal([
           {
             message: 'messages.generic.no_provided_patient_id',
-            translationKey: 'messages.generic.no_provided_patient_id',
             code: 'no_provided_patient_id',
           },
         ]);
@@ -328,7 +327,6 @@ describe('registration', () => {
         doc.errors.should.deep.equal([
           {
             message: 'messages.generic.provided_patient_id_not_unique',
-            translationKey: 'messages.generic.provided_patient_id_not_unique',
             code: 'provided_patient_id_not_unique',
           },
         ]);
@@ -828,7 +826,6 @@ describe('registration', () => {
         change.doc.errors.length.should.equal(1);
         change.doc.errors[0].should.deep.equal({
           message: 'Selected parent non-existent-contact does not exists.',
-          translationKey: 'Selected parent non-existent-contact does not exists.',
           code: 'parent_not_found',
         });
         change.doc.tasks.length.should.equal(1);
@@ -921,7 +918,6 @@ describe('registration', () => {
         change.doc.errors.length.should.equal(1);
         change.doc.errors[0].should.deep.equal({
           message: 'Cannot create patient under parent Georges Place(georges_place) of type area_type_1.',
-          translationKey: 'Cannot create patient under parent Georges Place(georges_place) of type area_type_1.',
           code: 'parent_invalid',
         });
         change.doc.tasks.length.should.equal(1);
@@ -1454,7 +1450,6 @@ describe('registration', () => {
         change.doc.errors[0].should.deep.equal({
           code: 'parent_not_found',
           message: 'Cannot create clinic with name New Orleans: parent not found.',
-          translationKey: 'Cannot create clinic with name New Orleans: parent not found.',
         });
         change.doc.tasks.length.should.equal(1);
         change.doc.tasks[0].messages[0].should.include({
@@ -1510,7 +1505,6 @@ describe('registration', () => {
         change.doc.errors[0].should.deep.equal({
           code: 'parent_field_not_provided',
           message: 'Cannot create clinic with name New Orleans: parent field not provided.',
-          translationKey: 'Cannot create clinic with name New Orleans: parent field not provided.',
         });
         change.doc.tasks.length.should.equal(1);
         change.doc.tasks[0].messages[0].should.include({
@@ -1566,7 +1560,6 @@ describe('registration', () => {
         change.doc.errors[0].should.deep.equal({
           code: 'parent_field_not_provided',
           message: 'Cannot create clinic with name New Orleans: parent field not provided.',
-          translationKey: 'Cannot create clinic with name New Orleans: parent field not provided.',
         });
         change.doc.tasks.length.should.equal(1);
         change.doc.tasks[0].messages[0].should.include({
@@ -1645,8 +1638,6 @@ describe('registration', () => {
         change.doc.errors[0].should.deep.equal({
           code: 'parent_invalid',
           message: 'Cannot create area with name New Orleans under parent Other health center of type health_center',
-          translationKey:
-          'Cannot create area with name New Orleans under parent Other health center of type health_center',
         });
         change.doc.tasks.length.should.equal(1);
         change.doc.tasks[0].messages[0].should.include({
