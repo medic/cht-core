@@ -13,6 +13,14 @@
 # your URL for CHT:
 # https://10-0-2-4.my.local-ip.co
 
+if ! command -v docker&> /dev/null
+then
+  echo ""
+  echo "Docker is not installed or could not be found.  Please check your installation."
+  echo ""
+  exit
+fi
+
 if [ "$( docker container inspect -f '{{.State.Status}}' 'medic-os' )" == "running" ]; then
   docker exec -it medic-os bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem"
   docker exec -it medic-os bash -c "curl -s -o chain.pem http://local-ip.co/cert/chain.pem"
