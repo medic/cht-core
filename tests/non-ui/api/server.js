@@ -4,16 +4,15 @@ const request = require('request');
 const constants = require('../../../tests/constants');
 const _ = require('lodash');
 const {expect} = require('chai');
-const config = require('../config');
 
 describe('server', () => {
-  before(async () => {
-    await config.prepServices();
-  });
+  // before(async () => {
+  //   await config.prepServices();
+  // });
 
-  after(async () => {
-    await config.stopServices();
-  });
+  // after(async () => {
+  //   await config.stopServices();
+  // });
 
   describe('JSON-only endpoints', () => {
     it('should require application/json Content-Type header', () => {
