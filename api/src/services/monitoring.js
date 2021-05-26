@@ -12,6 +12,14 @@ const DBS_TO_MONITOR = {
   'users': '_users'
 };
 
+const MESSAGE_QUEUE_STATUS_KEYS = ['due', 'scheduled', 'muted', 'failed', 'delivered'];
+const fromEntries = (keys, value) => {
+  // "shim" of Object.fromEntries
+  const result = {};
+  keys.forEach(key => result[key] = value);
+  return result;
+};
+
 const getSequenceNumber = seq => {
   if (seq) {
     const parts = seq.split('-');
@@ -26,7 +34,8 @@ const getSequenceNumber = seq => {
 };
 
 const getAppVersion = () => {
-  return db.medic.get('_design/medic')
+  return db.medic
+    .get('_design/medic')
     .then(ddoc => (ddoc.deploy_info && ddoc.deploy_info.version) || ddoc.version)
     .catch(err => {
       logger.error('Error fetching app version: %o', err);
@@ -35,7 +44,8 @@ const getAppVersion = () => {
 };
 
 const getSentinelProcessedSeq = () => {
-  return db.sentinel.get('_local/transitions-seq')
+  return db.sentinel
+    .get('_local/transitions-seq')
     .then(metadata => metadata.value)
     .catch(err => {
       if (err.status === 404) {
@@ -147,18 +157,10 @@ const getFeedbackCount = () => {
     });
 };
 
-const STATUS_KEYS = ['due', 'scheduled', 'muted', 'failed', 'delivered'];
-const fromEntries = (keys, value) => {
-  // "shim" of Object.fromEntries
-  const result = {};
-  keys.forEach(key => result[key] = value);
-  return result;
-};
-
 const getOutgoingMessageStatusCounts = () => {
   return db.medic.query('medic-admin/message_queue', { reduce: true, group_level: 1 })
     .then(counts => {
-      const result = fromEntries(STATUS_KEYS, 0);
+      const result = fromEntries(MESSAGE_QUEUE_STATUS_KEYS, 0);
       counts.rows.forEach(row => {
         result[row.key[0]] = row.value;
       });
@@ -166,7 +168,7 @@ const getOutgoingMessageStatusCounts = () => {
     })
     .catch(err => {
       logger.error('Error fetching outgoing message status count: %o', err);
-      return fromEntries(STATUS_KEYS, -1);
+      return fromEntries(MESSAGE_QUEUE_STATUS_KEYS, -1);
     });
 };
 
@@ -174,7 +176,7 @@ const getWeeklyOutgoingMessageStatusCounts = () => {
   const startDate = moment().startOf('day').subtract(7, 'days').valueOf();
   const endDate = moment().valueOf();
 
-  const options = STATUS_KEYS.map(key => ({
+  const optionsList = MESSAGE_QUEUE_STATUS_KEYS.map(key => ({
     start_key: [key, startDate],
     end_key: [key, endDate],
     reduce: true,
@@ -188,13 +190,13 @@ const getWeeklyOutgoingMessageStatusCounts = () => {
     });
 
   return Promise
-    .all(options.map(options => query(options)))
+    .all(optionsList.map(options => query(options)))
     .then(counts => {
-      const result = fromEntries(STATUS_KEYS, 0);
+      const result = fromEntries(MESSAGE_QUEUE_STATUS_KEYS, 0);
       counts.forEach((count, idx) => {
         const row = count && count.rows && count.rows[0];
         if (row) {
-          result[STATUS_KEYS[idx]] = row.value;
+          result[MESSAGE_QUEUE_STATUS_KEYS[idx]] = row.value;
         }
       });
 
@@ -228,7 +230,7 @@ const getLastHundredStatusCountsPerGroup = ({group, statuses}) => {
     });
 };
 
-const getLastHundretStatusUpdatesCounts = () => {
+const getLastHundredStatusUpdatesCounts = () => {
   const groups = [
     { group: 'pending', statuses: ['pending', 'forwarded-to-gateway', 'received-by-gateway', 'forwarded-by-gateway'] },
     { group: 'final', statuses: ['sent', 'delivered', 'failed'] },
@@ -316,7 +318,7 @@ const jsonV2 = () => {
     .all([
       jsonV1(),
       getWeeklyOutgoingMessageStatusCounts(),
-      getLastHundretStatusUpdatesCounts(),
+      getLastHundredStatusUpdatesCounts(),
     ])
     .then(([jsonV1, weeklyOutgoingMessageStatus, lastHundredCounts]) => {
       jsonV1.messaging.outgoing = {

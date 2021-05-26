@@ -99,9 +99,11 @@ const setUpMocks = () => {
 
 const generateRows = (statusCounters) => {
   const rows = [];
-  Object.entries(statusCounters).forEach(([status, counter]) => {
-    rows.push(...Array.from({ length: counter }).map(() => ({ key: ['group', 100, status] })));
-  });
+  Object
+    .entries(statusCounters)
+    .forEach(([status, counter]) => {
+      rows.push(...Array.from({ length: counter }).map(() => ({ key: ['group', 100, status] })));
+    });
   return _.shuffle(rows);
 };
 
