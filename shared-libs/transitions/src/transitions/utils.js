@@ -36,6 +36,7 @@ module.exports = {
     // on the screen when you view the error. We need both
     messages.addError(doc, {
       message: errorMessage,
+      translationKey: errorMessage,
       code: errorKey
     }, context);
   },
