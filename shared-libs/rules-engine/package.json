@@ -30,7 +30,7 @@
     "chai": "^4.3.4",
     "chai-exclude": "^2.0.3",
     "mocha": "^7.2.0",
-    "moment": "^2.26.0",
+    "moment": "^2.29.1",
     "pouchdb": "^7.2.2",
     "pouchdb-adapter-memory": "^7.2.2",
     "sinon": "^8.1.1"

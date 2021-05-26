@@ -24,7 +24,7 @@
     "jquery": "^3.6.0",
     "lodash": "^4.17.19",
     "messageformat": "^2.3.0",
-    "moment": "^2.26.0",
+    "moment": "^2.29.1",
     "mustache": "^4.2.0",
     "ng-redux": "^4.4.3",
     "object-path": "^0.11.5",

@@ -16,7 +16,7 @@
     "gsm": "^0.1.4",
     "later": "^1.2.0",
     "lodash": "^4.17.19",
-    "moment": "^2.26.0",
+    "moment": "^2.29.1",
     "mustache": "^4.2.0",
     "object-path": "^0.11.5",
     "pouchdb-adapter-http": "^7.2.2",
