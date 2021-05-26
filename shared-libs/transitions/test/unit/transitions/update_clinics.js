@@ -321,7 +321,8 @@ describe('update clinic', () => {
       assert.equal(doc.errors.length, 1);
       assert.deepEqual(doc.errors[0], {
         code: 'sys.facility_not_found',
-        message: 'translated'
+        message: 'translated',
+        translationKey: 'translated'
       });
       assert.equal(utils.translate.callCount, 2); // called by messages.addMessage and messages.getMessage
       assert.deepEqual(utils.translate.args[0], ['sys.facility_not_found', 'locale']);
@@ -361,7 +362,7 @@ describe('update clinic', () => {
       assert.equal(doc.tasks.length, 1);
       assert.equal(doc.tasks[0].messages[0].to, '123');
       assert.equal(doc.tasks[0].messages[0].message, 'facility not found');
-      assert.equal(utils.translate.callCount, 2);
+      assert.equal(utils.translate.callCount, 3);
       assert.deepEqual(utils.translate.args[0], ['sys.facility_not_found_key', 'locale']);
       assert.deepEqual(utils.translate.args[1], ['sys.facility_not_found_key', 'en']);
     });
@@ -386,7 +387,7 @@ describe('update clinic', () => {
       assert.equal(doc.tasks.length, 1);
       assert.equal(doc.tasks[0].messages[0].to, '123');
       assert.equal(doc.tasks[0].messages[0].message, 'facility not found');
-      assert.equal(utils.translate.callCount, 1);
+      assert.equal(utils.translate.callCount, 2);
       assert.deepEqual(utils.translate.args[0], ['messages.generic.sys.facility_not_found', 'en']);
     });
   });
