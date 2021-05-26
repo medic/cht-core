@@ -788,11 +788,11 @@ module.exports = function(grunt) {
         src: 'tests/non-ui/**/*.js',
         options: {
           timeout: 135000, //api taking longer to start up
-          // require:'tests/non-ui/hooks.js',
-          // reporter: 'mochawesome',
-          // reporterOptions:{
-          //   reportDir:'tests/results/mochawesome'
-          // }
+          require:'tests/non-ui/hooks.js',
+          reporter: 'mochawesome',
+          reporterOptions:{
+            reportDir:'tests/results/mochawesome'
+          }
         },
       }
     },
@@ -1076,7 +1076,6 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'start-webdriver',
     'exec:e2e-servers',
-    'mochaTest:e2e-non-ui',
     'protractor:e2e-web-tests',
     //'protractor:e2e-mobile-tests',
   ]);
