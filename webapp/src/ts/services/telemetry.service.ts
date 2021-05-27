@@ -55,9 +55,10 @@ export class TelemetryService {
   }
 
   /**
-   * Returns the time in milliseconds (since Unix epoch) when the first telemetry record was created.
+   * Returns a Moment object when the first telemetry record was created.
    *
-   * This date is computed and stored when we call this method for the first time and after every aggregation.
+   * This date is computed and stored in milliseconds (since Unix epoch)
+   * when we call this method for the first time and after every aggregation.
    */
   private getFirstAggregatedDate() {
     let date = parseInt(window.localStorage.getItem(this.FIRST_AGGREGATED_DATE_KEY));
@@ -67,7 +68,7 @@ export class TelemetryService {
       window.localStorage.setItem(this.FIRST_AGGREGATED_DATE_KEY, date.toString());
     }
 
-    return date;
+    return moment(date);
   }
 
   private storeIt(db, key, value) {
@@ -86,7 +87,7 @@ export class TelemetryService {
   // if there is telemetry data from previous days, aggregation is performed and the data destroyed
   private submitIfNeeded(db) {
     const startOf = this.aggregateStartsAt();
-    const dbDate = moment(this.getFirstAggregatedDate());
+    const dbDate = this.getFirstAggregatedDate();
 
     if (dbDate.isBefore(startOf)) {
       return this
@@ -121,7 +122,7 @@ export class TelemetryService {
         this.dbService.get().query('medic-client/doc_by_type', { key: ['form'], include_docs: true })
       ])
       .then(([ddoc, formResults]) => {
-        const date = moment(this.getFirstAggregatedDate());
+        const date = this.getFirstAggregatedDate();
         const version = (ddoc.deploy_info && ddoc.deploy_info.version) || 'unknown';
         const forms = formResults.rows.reduce((keyToVersion, row) => {
           keyToVersion[row.doc.internalId] = row.doc._rev;
