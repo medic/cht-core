@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
+import { uniq as _uniq } from 'lodash-es';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
@@ -454,6 +455,8 @@ export class EnketoService {
         ._couchId;
     };
 
+    //const getClosestId =
+
     // Chrome 30 doesn't support $xml.outerHTML: #3880
     const getOuterHTML = (xml) => {
       if (xml.outerHTML) {
@@ -479,7 +482,16 @@ export class EnketoService {
       .find('[db-doc-ref]')
       .each((idx, element) => {
         const $ref = $(element);
-        const refId = getId($ref.attr('db-doc-ref'));
+        const reference = $ref.attr('db-doc-ref');
+        let path = reference;
+        if (reference.startsWith('./')) {
+          element.id = uuid();
+          path = `//${element.nodeName}[@id="${element.id}"]/ancestor::${reference.replace(/^\.\//, '')}`;
+          console.log(path);
+          console.log($record);
+        }
+
+        const refId = getId(path);
         $ref.text(refId);
       });
 
@@ -535,6 +547,7 @@ export class EnketoService {
       .get(doc.form)
       .then((form) => this.getFormAttachment(form))
       .then((form) => {
+        console.log('form xml', form);
         doc.fields = this.enketoTranslationService.reportRecordToJs(record, form);
         return docsToStore;
       });

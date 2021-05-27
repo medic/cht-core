@@ -129,6 +129,7 @@ export class EnketoTranslationService {
   }
 
   reportRecordToJs(record, formXml?) {
+    console.log('lalalalla', formXml);
     const root = $.parseXML(record).firstChild;
     if (!formXml) {
       return this.nodesToJs(root.childNodes);
@@ -139,6 +140,7 @@ export class EnketoTranslationService {
         return $(element).attr('nodeset');
       })
       .get();
+    console.log(repeatPaths);
     return this.nodesToJs(root.childNodes, repeatPaths, '/' + root.nodeName);
   }
 
