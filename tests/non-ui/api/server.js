@@ -10,11 +10,6 @@ describe('server', () => {
   before(async () => {
     await config.prepServices();
   });
-
-  // after(async () => {
-  //   await config.stopServices();
-  // });
-
   describe('JSON-only endpoints', () => {
     it('should require application/json Content-Type header', () => {
       const opts = {
