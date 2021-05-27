@@ -144,7 +144,7 @@ describe('TelemetryService', () => {
       expect(telemetryDb.post.args[0][0].date_recorded).to.be.above(0);
       expect(storageGetItemStub.callCount).to.equal(3);
       expect(storageGetItemStub.args[0]).to.deep.equal(['medic-greg-telemetry-db']);
-      expect(storageGetItemStub.args[1]).to.deep.equal(["medic-greg-telemetry-date"]);
+      expect(storageGetItemStub.args[1]).to.deep.equal(['medic-greg-telemetry-date']);
       expect(storageGetItemStub.args[2]).to.deep.equal(['medic-greg-telemetry-db']);
       expect(telemetryDb.close.callCount).to.equal(1);
     });
