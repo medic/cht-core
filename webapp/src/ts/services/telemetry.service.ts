@@ -15,7 +15,7 @@ export class TelemetryService {
   // Intentionally scoped to the whole browser (for this domain). We can then tell if multiple users use the same device
   private readonly DEVICE_ID_KEY = 'medic-telemetry-device-id';
   private DB_ID_KEY;
-  private LAST_AGGREGATED_DATE_KEY;
+  private FIRST_AGGREGATED_DATE_KEY;
 
   private queue = Promise.resolve();
 
@@ -27,7 +27,7 @@ export class TelemetryService {
     // Intentionally scoped to the specific user, as they may perform a
     // different role (online vs. offline being being the most obvious) with different performance implications
     this.DB_ID_KEY = ['medic', this.sessionService.userCtx().name, 'telemetry-db'].join('-');
-    this.LAST_AGGREGATED_DATE_KEY = ['medic', this.sessionService.userCtx().name, 'telemetry-date'].join('-');
+    this.FIRST_AGGREGATED_DATE_KEY = ['medic', this.sessionService.userCtx().name, 'telemetry-date'].join('-');
   }
 
   private getDb() {
@@ -55,16 +55,16 @@ export class TelemetryService {
   }
 
   /**
-   * Returns the time in milliseconds (since Unix epoch) when the first telemetry record was created
+   * Returns the time in milliseconds (since Unix epoch) when the first telemetry record was created.
    *
    * This date is computed and stored when we call this method for the first time and after every aggregation.
    */
   private getFirstAggregatedDate() {
-    let date = parseInt(window.localStorage.getItem(this.LAST_AGGREGATED_DATE_KEY));
+    let date = parseInt(window.localStorage.getItem(this.FIRST_AGGREGATED_DATE_KEY));
 
     if (!date) {
       date = Date.now();
-      window.localStorage.setItem(this.LAST_AGGREGATED_DATE_KEY, date.toString());
+      window.localStorage.setItem(this.FIRST_AGGREGATED_DATE_KEY, date.toString());
     }
 
     return date;
@@ -217,7 +217,7 @@ export class TelemetryService {
 
   private reset(db) {
     window.localStorage.removeItem(this.DB_ID_KEY);
-    window.localStorage.removeItem(this.LAST_AGGREGATED_DATE_KEY);
+    window.localStorage.removeItem(this.FIRST_AGGREGATED_DATE_KEY);
 
     return db.destroy();
   }
