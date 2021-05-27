@@ -244,23 +244,32 @@ describe('TelemetryService', () => {
 
       await service.record('test', 10);
 
-      expect(telemetryDb.post.callCount).to.equal(1);
+      expect(telemetryDb.post.callCount).to.equal(1);     // Telemetry entry has been recorded
       expect(telemetryDb.post.args[0][0]).to.deep.include({ key: 'test', value: 10 });
-      expect(metaDb.put.callCount).to.equal(0);     // NO telemetry aggregation has been recorded yet
+      expect(telemetryDb.query.called).to.be.false;       // NO telemetry aggregation has
+      expect(metaDb.put.callCount).to.equal(0);           // been recorded yet
 
       clock = sinon.useFakeTimers(moment(NOW).add(1, 'minutes').valueOf()); // 1 min later ...
       await service.record('test', 5);
 
       expect(telemetryDb.post.callCount).to.equal(2);     // second call
       expect(telemetryDb.post.args[1][0]).to.deep.include({ key: 'test', value: 5 });
-      expect(metaDb.put.callCount).to.equal(0);   // still NO aggregation has been recorded (same day)
+      expect(telemetryDb.query.called).to.be.false;       // still NO aggregation has
+      expect(metaDb.put.callCount).to.equal(0);           // been recorded (same day)
 
+      let postCalledAfterQuery = false;
+      telemetryDb.post.callsFake(async () => postCalledAfterQuery = telemetryDb.query.called);
       clock = sinon.useFakeTimers(moment(NOW).add(1, 'days').valueOf()); // 1 day later ...
       await service.record('test', 2);
 
       expect(telemetryDb.post.callCount).to.equal(3);     // third call
       expect(telemetryDb.post.args[2][0]).to.deep.include({ key: 'test', value: 2 });
-      expect(metaDb.put.callCount).to.equal(1);           // Now telemetry has been recorded
+      expect(telemetryDb.query.callCount).to.equal(1);    // Now aggregation HAS been performed
+      expect(metaDb.put.callCount).to.equal(1);           // and the stats recorded
+
+      // The telemetry record has been recorded after aggregation to not being included in the stats,
+      // because the record belong to the current date, not the day aggregated (yesterday)
+      expect(postCalledAfterQuery).to.be.true;
 
       const aggregatedDoc = metaDb.put.args[0][0];
       expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-10-greg-[\w-]+$/);     // Now is 2018-11-11 but aggregation
