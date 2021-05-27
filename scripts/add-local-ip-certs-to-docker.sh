@@ -9,7 +9,7 @@
 # After running this, you get a valid certificate with the format
 # of https://YOUR-IP-HERE.my.local-ip.co
 #
-# For example, if your localhost IP is 10.0.2.4, you you use this as
+# For example, if your localhost IP is 10.0.2.4, you would use this as
 # your URL for CHT:
 # https://10-0-2-4.my.local-ip.co
 
