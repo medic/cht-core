@@ -31,25 +31,49 @@ describe('TelemetryService', () => {
   };
 
   function defineWindow() {
-    Object.defineProperty(window.navigator, 'userAgent',
-      { value: 'Agent Smith', configurable: true });
-    Object.defineProperty(window.navigator, 'hardwareConcurrency',
-      { value: 4, configurable: true });
-    Object.defineProperty(window.screen, 'availWidth',
-      { value: 768, configurable: true });
-    Object.defineProperty(window.screen, 'availHeight',
-      { value: 1024, configurable: true });
+    Object.defineProperty(
+      window.navigator,
+      'userAgent',
+      { value: 'Agent Smith', configurable: true }
+    );
+    Object.defineProperty(
+      window.navigator,
+      'hardwareConcurrency',
+      { value: 4, configurable: true }
+    );
+    Object.defineProperty(
+      window.screen,
+      'availWidth',
+      { value: 768, configurable: true }
+    );
+    Object.defineProperty(
+      window.screen,
+      'availHeight',
+      { value: 1024, configurable: true }
+    );
   }
 
   function restoreWindow() {
-    Object.defineProperty(window.navigator, 'userAgent',
-      { value: windowNavigatorOriginal.userAgent, configurable: true });
-    Object.defineProperty(window.navigator, 'hardwareConcurrency',
-      { value: windowNavigatorOriginal.hardwareConcurrency, configurable: true });
-    Object.defineProperty(window.screen, 'availWidth',
-      { value: windowScreenOriginal.availWidth, configurable: true });
-    Object.defineProperty(window.screen, 'availHeight',
-      { value: windowScreenOriginal.availHeight, configurable: true });
+    Object.defineProperty(
+      window.navigator,
+      'userAgent',
+      { value: windowNavigatorOriginal.userAgent, configurable: true }
+    );
+    Object.defineProperty(
+      window.navigator,
+      'hardwareConcurrency',
+      { value: windowNavigatorOriginal.hardwareConcurrency, configurable: true }
+    );
+    Object.defineProperty(
+      window.screen,
+      'availWidth',
+      { value: windowScreenOriginal.availWidth, configurable: true }
+    );
+    Object.defineProperty(
+      window.screen,
+      'availHeight',
+      { value: windowScreenOriginal.availHeight, configurable: true }
+    );
   }
 
   function subtractDays(numDays) {
