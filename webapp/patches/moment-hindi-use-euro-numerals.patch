@@ -1,41 +1,48 @@
-*** /home/diana/projects/medic/webapp/node_modules/moment/locale/hi.js	1985-10-26 10:15:00.000000000 +0200
---- ./hi.js	2020-06-02 20:53:31.173865742 +0300
+*** node_modules/moment/locale/hi.js	Sat Oct 26 15:15:00 1985
+--- patches/hi.js	Fri May 21 16:56:36 2021
 ***************
 *** 11,41 ****
   
       //! moment.js locale configuration
   
--     var symbolMap = {
--             '1': '१',
--             '2': '२',
--             '3': '३',
--             '4': '४',
--             '5': '५',
--             '6': '६',
--             '7': '७',
--             '8': '८',
--             '9': '९',
--             '0': '०',
--         },
--         numberMap = {
--             '१': '1',
--             '२': '2',
--             '३': '3',
--             '४': '4',
--             '५': '5',
--             '६': '6',
--             '७': '7',
--             '८': '8',
--             '९': '9',
--             '०': '0',
--         };
-- 
-      var hi = moment.defineLocale('hi', {
-          months: 'जनवरी_फ़रवरी_मार्च_अप्रैल_मई_जून_जुलाई_अगस्त_सितम्बर_अक्टूबर_नवम्बर_दिसम्बर'.split(
-              '_'
---- 11,16 ----
+!     var symbolMap = {
+!             1: '१',
+!             2: '२',
+!             3: '३',
+!             4: '४',
+!             5: '५',
+!             6: '६',
+!             7: '७',
+!             8: '८',
+!             9: '९',
+!             0: '०',
+!         },
+!         numberMap = {
+!             '१': '1',
+!             '२': '2',
+!             '३': '3',
+!             '४': '4',
+!             '५': '5',
+!             '६': '6',
+!             '७': '7',
+!             '८': '8',
+!             '९': '9',
+!             '०': '0',
+!         },
+!         monthsParse = [
+              /^जन/i,
+              /^फ़र|फर/i,
+              /^मार्च/i,
+--- 11,17 ----
+  
+      //! moment.js locale configuration
+  
+!     var monthsParse = [
+              /^जन/i,
+              /^फ़र|फर/i,
+              /^मार्च/i,
 ***************
-*** 80,93 ****
+*** 125,138 ****
               yy: '%d वर्ष',
           },
           preparse: function (string) {
@@ -50,7 +57,7 @@
           },
           // Hindi notation for meridiems are quite fuzzy in practice. While there exists
           // a rigid notion of a 'Pahar' it is not used as rigidly in modern Hindi.
---- 55,64 ----
+--- 101,110 ----
               yy: '%d वर्ष',
           },
           preparse: function (string) {
