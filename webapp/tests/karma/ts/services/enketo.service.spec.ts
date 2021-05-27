@@ -1102,6 +1102,8 @@ describe('Enketo service', () => {
 
         const actualReport = actual[0];
 
+        console.log(JSON.stringify(actualReport, null, 2));
+
         expect(actualReport._id).to.match(/(\w+-)\w+/);
         expect(actualReport.fields.name).to.equal('Sally');
         expect(actualReport.fields.lmp).to.equal('10');
@@ -1121,6 +1123,138 @@ describe('Enketo service', () => {
         }
 
         expect(_.uniq(_.map(actual, '_id')).length).to.equal(4);
+      });
+    });
+
+    it('db-doc-ref with repeats', () => {
+      form.validate.resolves(true);
+      const content =
+        `<data xmlns:jr="http://openrosa.org/javarosa">
+            <name>Sally</name>
+            <lmp>10</lmp>
+            <secret_code_name tag="hidden">S4L</secret_code_name>
+            <repeat_section>
+              <extra>data</extra>
+              <repeat_doc db-doc="true">
+                <type>repeater</type>
+                <some_property>some_value_1</some_property>
+                <my_parent db-doc-ref="/data"/>
+              </repeat_doc>
+              <repeat_doc_ref db-doc-ref="data/repeat_section[0]/repeat_doc">
+                value value
+              </repeat_doc_ref>             
+            </repeat_section>
+            <repeat_section>
+              <extra>data</extra>
+              <repeat_doc db-doc="true">
+                <type>repeater</type>
+                <some_property>some_value_2</some_property>
+                <my_parent db-doc-ref="/data"/>
+              </repeat_doc>
+              <repeat_doc_ref db-doc-ref="data/repeat_section[1]/repeat_doc">
+                value value
+              </repeat_doc_ref> 
+            </repeat_section>
+            <repeat_section>
+              <extra>data</extra>
+              <repeat_doc db-doc="true">
+                <type>repeater</type>
+                <some_property>some_value_3</some_property>
+                <my_parent db-doc-ref="/data"/>
+              </repeat_doc>
+              <repeat_doc_ref db-doc-ref="data/repeat_section[2]/repeat_doc">
+                value value
+              </repeat_doc_ref>         
+            </repeat_section>
+          </data>`;
+      form.getDataStr.returns(content);
+
+      dbBulkDocs.resolves([
+        { ok: true, id: '6', rev: '1-abc' },
+        { ok: true, id: '7', rev: '1-def' },
+        { ok: true, id: '8', rev: '1-ghi' },
+        { ok: true, id: '9', rev: '1-ghi' }
+      ]);
+      dbGetAttachment.resolves(`<form/>`);
+      FileReader.utf8.resolves(`
+        <data>
+          <repeat nodeset="/data/repeat_section"></repeat>
+        </data>
+      `);
+      UserContact.resolves({ _id: '123', phone: '555' });
+      return service.save('V', form).then(actual => {
+        expect(form.validate.callCount).to.equal(1);
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(UserContact.callCount).to.equal(1);
+
+        console.log(JSON.stringify(actual, null, 2));
+      });
+    });
+
+    it('db-doc-ref with repeats local', () => {
+      form.validate.resolves(true);
+      const content =
+        `<data xmlns:jr="http://openrosa.org/javarosa">
+            <name>Sally</name>
+            <lmp>10</lmp>
+            <secret_code_name tag="hidden">S4L</secret_code_name>
+            <repeat_section>
+              <extra>data</extra>
+              <repeat_doc db-doc="true">
+                <type>repeater</type>
+                <some_property>some_value_1</some_property>
+                <my_parent db-doc-ref="/data"/>
+              </repeat_doc>
+              <repeat_doc_ref db-doc-ref="./repeat_section/repeat_doc">
+                value value
+              </repeat_doc_ref>             
+            </repeat_section>
+            <repeat_section>
+              <extra>data</extra>
+              <repeat_doc db-doc="true">
+                <type>repeater</type>
+                <some_property>some_value_2</some_property>
+                <my_parent db-doc-ref="/data"/>
+              </repeat_doc>
+              <repeat_doc_ref db-doc-ref="./repeat_section/repeat_doc">
+                value value
+              </repeat_doc_ref> 
+            </repeat_section>
+            <repeat_section>
+              <extra>data</extra>
+              <repeat_doc db-doc="true">
+                <type>repeater</type>
+                <some_property>some_value_3</some_property>
+                <my_parent db-doc-ref="/data"/>
+              </repeat_doc>
+              <repeat_doc_ref db-doc-ref="./repeat_section/repeat_doc">
+                value value
+              </repeat_doc_ref>         
+            </repeat_section>
+          </data>`;
+      form.getDataStr.returns(content);
+
+      dbBulkDocs.resolves([
+        { ok: true, id: '6', rev: '1-abc' },
+        { ok: true, id: '7', rev: '1-def' },
+        { ok: true, id: '8', rev: '1-ghi' },
+        { ok: true, id: '9', rev: '1-ghi' }
+      ]);
+      dbGetAttachment.resolves(`<form/>`);
+      FileReader.utf8.resolves(`
+        <data>
+          <repeat nodeset="/data/repeat_section"></repeat>
+        </data>
+      `);
+      UserContact.resolves({ _id: '123', phone: '555' });
+      return service.save('V', form).then(actual => {
+        expect(form.validate.callCount).to.equal(1);
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(UserContact.callCount).to.equal(1);
+
+        console.log(JSON.stringify(actual, null, 2));
       });
     });
 
