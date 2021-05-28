@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const TestRunner = require('medic-conf-test-harness');
 const { newbornBaby } = require('../contacts');
 const harness = new TestRunner({
-  inputs: { subject: newbornBaby }
+  subject: newbornBaby,
 });
 let clock;
 

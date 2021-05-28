@@ -9,7 +9,7 @@ const TestRunner = require('medic-conf-test-harness');
 const { pncDangerSignFollowUpScenarios } = require('../form-inputs');
 const { newbornBaby } = require('../contacts');
 const harness = new TestRunner({
-  inputs: { subject: newbornBaby }
+  subject: newbornBaby,
 });
 const now = '2000-05-01';
 
