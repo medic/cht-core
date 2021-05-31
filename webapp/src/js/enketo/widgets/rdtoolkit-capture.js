@@ -46,7 +46,8 @@
   function captureRDTestResult($widget, rdToolkitService) {
     const dateFormat = 'LLL';
     const form = utils.getForm();
-    const sessionId = utils.getFieldValue(form, 'rdtoolkit-capture > rdtoolkit_session_id');
+    const formTagName = form.model.rootElement.tagName;
+    const sessionId = utils.getFieldValue(form, `${formTagName} > rdtoolkit_session_id`);
 
     rdToolkitService
       .captureRDTest(sessionId)
@@ -62,7 +63,7 @@
           image: response.croppedImage
         };
 
-        updateFields($widget, capturedTest);
+        updateFields($widget, formTagName, capturedTest);
         hideActions($widget);
         displayPreview($widget, capturedTest);
       });
@@ -70,7 +71,7 @@
 
   function displayActions($widget) {
     window.CHTCore.Translate
-      .get('rdtoolkit.capture')
+      .get('rdtoolkit-capture.title')
       .toPromise()
       .then(label => {
         $widget
@@ -97,45 +98,52 @@
       .find('.rdtoolkit-preview')
       .append(`
         <div>
-          ${window.CHTCore.Translate.instant('report.rdtoolkit-capture.preview.title')}
+          ${window.CHTCore.Translate.instant('rdtoolkit-capture.preview.title')}
         </div>
         <br>
         <div>
           <span class="rdt-label">
-            ${window.CHTCore.Translate.instant('report.rdtoolkit-capture.preview.results')} 
+            ${window.CHTCore.Translate.instant('rdtoolkit-capture.preview.results')} 
           </span>
           <span class="rdt-value">${capturedTest.resultsDescription}</span>
         </div>
         <div>
           <span class="rdt-label">
-            ${window.CHTCore.Translate.instant('report.rdtoolkit-capture.preview.time_read')} 
+            ${window.CHTCore.Translate.instant('rdtoolkit-capture.preview.time_read')} 
           </span>
           <span class="rdt-value">${capturedTest.timeRead}</span>
         </div>
         <div>
           <span class="rdt-label">
-            ${window.CHTCore.Translate.instant('report.rdtoolkit-capture.preview.image')} 
+            ${window.CHTCore.Translate.instant('rdtoolkit-capture.preview.image')} 
           </span>
           ${capturedTest.image ? imageTag : ''}
         </div>
         <br>
         <div>
-           ${window.CHTCore.Translate.instant('report.rdtoolkit-capture.preview.next_action')} 
+           ${window.CHTCore.Translate.instant('rdtoolkit-capture.preview.next_action')} 
         </div>
       `);
   }
 
-  function updateFields($widget, capturedTest) {
-    const root = '/rdtoolkit-capture/data';
-    utils.setFieldValue($widget, `input[name="${root}/rdtoolkit_time_read"]`, capturedTest.timeRead);
-    utils.setFieldValue($widget, `input[name="${root}/rdtoolkit_state"]`, capturedTest.state);
-    utils.setFieldValue($widget, `input[name="${root}/rdtoolkit_time_started"]`, capturedTest.timeStarted);
-    utils.setFieldValue($widget, `input[name="${root}/rdtoolkit_time_resolved"]`, capturedTest.timeResolved);
-    utils.setFieldValue($widget, `input[name="${root}/rdtoolkit_image"]`, capturedTest.image);
-    utils.setFieldValue($widget, `input[name="${root}/rdtoolkit_results"]`, JSON.stringify(capturedTest.results));
+  function updateFields($widget, formTagName, capturedTest) {
+    utils.setFieldValue($widget, `input[name="/${formTagName}/data/rdtoolkit_time_read"]`, capturedTest.timeRead);
+    utils.setFieldValue($widget, `input[name="/${formTagName}/data/rdtoolkit_state"]`, capturedTest.state);
+    utils.setFieldValue($widget, `input[name="/${formTagName}/data/rdtoolkit_time_started"]`, capturedTest.timeStarted);
+    utils.setFieldValue($widget, `input[name="/${formTagName}/data/rdtoolkit_image"]`, capturedTest.image);
     utils.setFieldValue(
       $widget,
-      `input[name="${root}/rdtoolkit_results_description"]`,
+      `input[name="/${formTagName}/data/rdtoolkit_time_resolved"]`,
+      capturedTest.timeResolved
+    );
+    utils.setFieldValue(
+      $widget,
+      `input[name="/${formTagName}/data/rdtoolkit_results"]`,
+      JSON.stringify(capturedTest.results)
+    );
+    utils.setFieldValue(
+      $widget,
+      `input[name="/${formTagName}/data/rdtoolkit_results_description"]`,
       capturedTest.resultsDescription
     );
   }
