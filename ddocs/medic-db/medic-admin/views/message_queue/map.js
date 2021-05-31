@@ -1,15 +1,34 @@
 function (doc) {
   var mutedStatuses = ['muted', 'cleared', 'denied', 'duplicate'];
   var scheduledStatus = 'scheduled';
+  var successStatuses = ['delivered', 'sent'];
+  var failureStatuses = ['failed'];
+
+  var _emitValue = function(keys, value) {
+    keys.forEach(function(key) {
+      if (key && key[0]) {
+        emit(key, value);
+      }
+    })
+  }
 
   var _emit = function(tasks) {
     tasks.forEach(function(task) {
       var due = new Date(task.due || task.timestamp || doc.reported_date).getTime();
-      var key = ['due', due];
+      var dueMutedKey = ['due', due];
+      var deliveredFailureKey = [undefined, due];
+      var keys = [dueMutedKey, deliveredFailureKey];
+
       if (task.state === scheduledStatus) {
-        key[0] = 'scheduled';
+        dueMutedKey[0] = 'scheduled';
       } else if (mutedStatuses.indexOf(task.state) > -1) {
-        key[0] = 'muted';
+        dueMutedKey[0] = 'muted';
+      }
+      if (successStatuses.indexOf(task.state) > -1) {
+        deliveredFailureKey[0] = 'delivered';
+      }
+      if (failureStatuses.indexOf(task.state) > -1) {
+        deliveredFailureKey[0] = 'failed';
       }
 
       var taskData = {
@@ -32,7 +51,7 @@ function (doc) {
               due: due
             };
 
-            emit(key, value);
+            _emitValue(keys, value);
           }
         });
       } else {
@@ -47,7 +66,7 @@ function (doc) {
           due: due
         };
 
-        emit(key, value);
+        _emitValue(keys, value);
       }
 
     });

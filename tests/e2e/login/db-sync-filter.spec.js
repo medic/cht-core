@@ -3,8 +3,6 @@ const commonElements = require('../../page-objects/common/common.po.js');
 const utils = require('../../utils');
 const loginPage = require('../../page-objects/login/login.po.js');
 const chai = require('chai');
-const chaiExclude = require('chai-exclude');
-chai.use(chaiExclude);
 const uuid = require('uuid/v4');
 
 /* global window */
