@@ -179,6 +179,16 @@ const getReplicationLimitLog = () => {
     });
 };
 
+const getConnectedUserLogs = () => {
+  return db.medicLogs
+    .query('logs/connected_users')
+    .then(result => getResultCount(result))
+    .catch(err => {
+      logger.error('Error fetching replication limit logs: %o', err);
+      return -1;
+    });
+};
+
 const json = () => {
   return Promise
     .all([
@@ -190,7 +200,8 @@ const json = () => {
       getOutgoingMessageStatusCounts(),
       getFeedbackCount(),
       getConflictCount(),
-      getReplicationLimitLog()
+      getReplicationLimitLog(),
+      getConnectedUserLogs()
     ])
     .then(([
       appVersion,
@@ -201,7 +212,8 @@ const json = () => {
       outgoingMessageStatus,
       feedbackCount,
       conflictCount,
-      replicationLimitLogs
+      replicationLimitLogs,
+      connectedUserLogs
     ]) => {
       return {
         version: {
@@ -233,6 +245,9 @@ const json = () => {
         },
         replication_limit: {
           count: replicationLimitLogs
+        },
+        connected_users: {
+          count: connectedUserLogs
         }
       };
     });

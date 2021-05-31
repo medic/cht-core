@@ -11,8 +11,8 @@ describe('Connected Users Log service', () => {
 
   describe('saveLog()', () => {
     it('should save a log', () => {
-      const getStub = sinon.stub(db.medicLogs, 'get').returns(Promise.reject({ status: 404 }));
-      const putStub = sinon.stub(db.medicLogs, 'put').returns(Promise.resolve());
+      const getStub = sinon.stub(db.medicLogs, 'get').rejects({ status: 404 });
+      const putStub = sinon.stub(db.medicLogs, 'put').resolves();
       const expectedDoc = {
         _id: 'connected-user-' + 'userXYZ',
         user: 'userXYZ',
@@ -69,7 +69,7 @@ describe('Connected Users Log service', () => {
           }
         },
       ];
-      const getStub = sinon.stub(db.medicLogs, 'allDocs').returns(Promise.resolve( { rows: records } ));
+      const getStub = sinon.stub(db.medicLogs, 'allDocs').resolves({ rows: records });
       return connectedUserLogService
         .get(5)
         .then((result) => {

@@ -41,7 +41,7 @@ const createUserDb = require('./controllers/create-user-db');
 const purgedDocsController = require('./controllers/purged-docs');
 const couchConfigController = require('./controllers/couch-config');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
-const connectedUserLogController = require('./controllers/connected-user-log');
+const connectedUserLog = require('./middleware/connected-user-log').log;
 const staticResources = /\/(templates|static)\//;
 // CouchDB is very relaxed in matching routes
 const routePrefix = '/+' + environment.db + '/+';
@@ -199,8 +199,7 @@ app.get('/', function(req, res) {
   }
 });
 
-app.get('/dbinfo', (req, res) => {
-  connectedUserLogController.log(req);
+app.get('/dbinfo', connectedUserLog, (req, res) => {
   req.url = '/';
   proxy.web(req, res);
 });
@@ -269,8 +268,7 @@ ONLINE_ONLY_ENDPOINTS.forEach(url =>
 );
 
 // allow anyone to access their session
-app.all('/_session', function(req, res) {
-  connectedUserLogController.log(req);
+app.all('/_session', connectedUserLog, function(req, res) {
   const given = cookie.get(req, 'userCtx');
   if (given) {
     // update the expiry date on the cookie to keep it fresh
@@ -452,8 +450,6 @@ app.get('/purging/changes', authorization.onlineUserPassThrough, purgedDocsContr
 app.get('/purging/checkpoint', authorization.onlineUserPassThrough, purgedDocsController.checkpoint);
 
 app.get('/api/v1/users-doc-count', replicationLimitLogController.get);
-
-app.get('/api/v1/connected-users', connectedUserLogController.get);
 
 // authorization middleware to proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`
