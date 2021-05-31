@@ -4,12 +4,9 @@ const request = require('request');
 const constants = require('../../../tests/constants');
 const _ = require('lodash');
 const {expect} = require('chai');
-const config = require('../config');
 
 describe('server', () => {
-  before(async () => {
-    await config.prepServices();
-  });
+  before(utils.prepServices());
   describe('JSON-only endpoints', () => {
     it('should require application/json Content-Type header', () => {
       const opts = {
@@ -27,7 +24,7 @@ describe('server', () => {
   });
 
   describe('response compression', () => {
-    after(async () => await utils.afterEachMocha());
+    after(utils.setupUser());
 
     const requestWrapper = (options) => {
       _.defaults(options, {
