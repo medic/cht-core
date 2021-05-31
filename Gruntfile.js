@@ -787,7 +787,11 @@ module.exports = function(grunt) {
       'e2e-non-ui': {
         src: 'tests/non-ui/**/*.js',
         options: {
-          timeout: 135000
+          timeout: 135000,
+          'reporter': 'mochawesome',
+          'reporterOptions': {
+            'reportDir':'tests/non-ui/results'
+          }
         }
       }
     },
