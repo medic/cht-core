@@ -47,7 +47,9 @@ module.exports = {
         name: 'medic',
         scope: {
           Utils: nootilsInstance,
-          user: settings.contact,
+          user: settings.contact, // Deprecated since 3.12.x
+          userContactDoc: settings.contact,
+          userSettingsDoc: settings.user,
         },
       });
     } catch (err) {
