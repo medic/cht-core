@@ -1204,7 +1204,7 @@ describe('Enketo service', () => {
       });
     });
 
-    it('db-doc-ref with repeats local', () => {
+    it('db-doc-ref with repeats and local references', () => {
       form.validate.resolves(true);
       const content =
         `<data xmlns:jr="http://openrosa.org/javarosa">
@@ -1280,6 +1280,69 @@ describe('Enketo service', () => {
           'fields.repeat_section[1].repeat_doc_ref': actual[2]._id,
           'fields.repeat_section[2].extra': 'data3',
           'fields.repeat_section[2].repeat_doc_ref': actual[3]._id,
+        });
+      });
+    });
+
+    it('db-doc-ref with repeats with refs outside of repeat', () => {
+      form.validate.resolves(true);
+      const content =
+        `<data xmlns:jr="http://openrosa.org/javarosa">
+            <name>Sally</name>
+            <lmp>10</lmp>
+            <secret_code_name tag="hidden">S4L</secret_code_name>
+            <separate_doc db-doc="true">
+                <type>separat5e</type>
+                <some_property>some_value_1</some_property>
+                <my_parent db-doc-ref="/data"/>
+            </separate_doc>
+              
+            <repeat_section>
+              <extra>data1</extra>             
+              <repeat_doc_ref db-doc-ref="data/separate_doc"/>             
+            </repeat_section>
+            <repeat_section>
+              <extra>data2</extra>             
+              <repeat_doc_ref db-doc-ref="data/separate_doc"/>             
+            </repeat_section>
+            <repeat_section>
+              <extra>data3</extra>             
+              <repeat_doc_ref db-doc-ref="data/separate_doc"/>             
+            </repeat_section>
+          </data>`;
+      form.getDataStr.returns(content);
+
+      dbBulkDocs.resolves([
+        { ok: true, id: '6', rev: '1-abc' },
+        { ok: true, id: '7', rev: '1-def' },
+      ]);
+      dbGetAttachment.resolves(`<form/>`);
+      FileReader.utf8.resolves(`
+        <data>
+          <repeat nodeset="/data/repeat_section"></repeat>
+        </data>
+      `);
+      UserContact.resolves({ _id: '123', phone: '555' });
+      return service.save('V', form).then(actual => {
+        expect(form.validate.callCount).to.equal(1);
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(UserContact.callCount).to.equal(1);
+
+        expect(actual.length).to.equal(2);
+        const doc = actual[0];
+
+        expect(doc).to.deep.nested.include({
+          form: 'V',
+          'fields.name': 'Sally',
+          'fields.lmp': '10',
+          'fields.secret_code_name': 'S4L',
+          'fields.repeat_section[0].extra': 'data1',
+          'fields.repeat_section[0].repeat_doc_ref': actual[1]._id,
+          'fields.repeat_section[1].extra': 'data2',
+          'fields.repeat_section[1].repeat_doc_ref': actual[1]._id,
+          'fields.repeat_section[2].extra': 'data3',
+          'fields.repeat_section[2].repeat_doc_ref': actual[1]._id,
         });
       });
     });
