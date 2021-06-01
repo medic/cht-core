@@ -1102,8 +1102,6 @@ describe('Enketo service', () => {
 
         const actualReport = actual[0];
 
-        console.log(JSON.stringify(actualReport, null, 2));
-
         expect(actualReport._id).to.match(/(\w+-)\w+/);
         expect(actualReport.fields.name).to.equal('Sally');
         expect(actualReport.fields.lmp).to.equal('10');
@@ -1134,35 +1132,35 @@ describe('Enketo service', () => {
             <lmp>10</lmp>
             <secret_code_name tag="hidden">S4L</secret_code_name>
             <repeat_section>
-              <extra>data</extra>
+              <extra>data1</extra>
               <repeat_doc db-doc="true">
                 <type>repeater</type>
                 <some_property>some_value_1</some_property>
                 <my_parent db-doc-ref="/data"/>
               </repeat_doc>
-              <repeat_doc_ref db-doc-ref="data/repeat_section[0]/repeat_doc">
+              <repeat_doc_ref db-doc-ref="/data/repeat_section/repeat_doc">
                 value value
               </repeat_doc_ref>             
             </repeat_section>
             <repeat_section>
-              <extra>data</extra>
+              <extra>data2</extra>
               <repeat_doc db-doc="true">
                 <type>repeater</type>
                 <some_property>some_value_2</some_property>
                 <my_parent db-doc-ref="/data"/>
               </repeat_doc>
-              <repeat_doc_ref db-doc-ref="data/repeat_section[1]/repeat_doc">
+              <repeat_doc_ref db-doc-ref="/data/repeat_section/repeat_doc">
                 value value
               </repeat_doc_ref> 
             </repeat_section>
             <repeat_section>
-              <extra>data</extra>
+              <extra>data3</extra>
               <repeat_doc db-doc="true">
                 <type>repeater</type>
                 <some_property>some_value_3</some_property>
                 <my_parent db-doc-ref="/data"/>
               </repeat_doc>
-              <repeat_doc_ref db-doc-ref="data/repeat_section[2]/repeat_doc">
+              <repeat_doc_ref db-doc-ref="/data/repeat_section/repeat_doc">
                 value value
               </repeat_doc_ref>         
             </repeat_section>
@@ -1188,7 +1186,21 @@ describe('Enketo service', () => {
         expect(dbBulkDocs.callCount).to.equal(1);
         expect(UserContact.callCount).to.equal(1);
 
-        console.log(JSON.stringify(actual, null, 2));
+        expect(actual.length).to.equal(4);
+        const doc = actual[0];
+
+        expect(doc).to.deep.nested.include({
+          form: 'V',
+          'fields.name': 'Sally',
+          'fields.lmp': '10',
+          'fields.secret_code_name': 'S4L',
+          'fields.repeat_section[0].extra': 'data1',
+          'fields.repeat_section[0].repeat_doc_ref': actual[1]._id,
+          'fields.repeat_section[1].extra': 'data2',
+          'fields.repeat_section[1].repeat_doc_ref': actual[2]._id,
+          'fields.repeat_section[2].extra': 'data3',
+          'fields.repeat_section[2].repeat_doc_ref': actual[3]._id,
+        });
       });
     });
 
@@ -1200,35 +1212,35 @@ describe('Enketo service', () => {
             <lmp>10</lmp>
             <secret_code_name tag="hidden">S4L</secret_code_name>
             <repeat_section>
-              <extra>data</extra>
+              <extra>data1</extra>
               <repeat_doc db-doc="true">
                 <type>repeater</type>
                 <some_property>some_value_1</some_property>
                 <my_parent db-doc-ref="/data"/>
               </repeat_doc>
-              <repeat_doc_ref db-doc-ref="./repeat_section/repeat_doc">
+              <repeat_doc_ref db-doc-ref="./repeat_doc">
                 value value
               </repeat_doc_ref>             
             </repeat_section>
             <repeat_section>
-              <extra>data</extra>
+              <extra>data2</extra>
               <repeat_doc db-doc="true">
                 <type>repeater</type>
                 <some_property>some_value_2</some_property>
                 <my_parent db-doc-ref="/data"/>
               </repeat_doc>
-              <repeat_doc_ref db-doc-ref="./repeat_section/repeat_doc">
+              <repeat_doc_ref db-doc-ref="./repeat_doc">
                 value value
               </repeat_doc_ref> 
             </repeat_section>
             <repeat_section>
-              <extra>data</extra>
+              <extra>data3</extra>
               <repeat_doc db-doc="true">
                 <type>repeater</type>
                 <some_property>some_value_3</some_property>
                 <my_parent db-doc-ref="/data"/>
               </repeat_doc>
-              <repeat_doc_ref db-doc-ref="./repeat_section/repeat_doc">
+              <repeat_doc_ref db-doc-ref="./repeat_doc">
                 value value
               </repeat_doc_ref>         
             </repeat_section>
@@ -1254,7 +1266,21 @@ describe('Enketo service', () => {
         expect(dbBulkDocs.callCount).to.equal(1);
         expect(UserContact.callCount).to.equal(1);
 
-        console.log(JSON.stringify(actual, null, 2));
+        expect(actual.length).to.equal(4);
+        const doc = actual[0];
+
+        expect(doc).to.deep.nested.include({
+          form: 'V',
+          'fields.name': 'Sally',
+          'fields.lmp': '10',
+          'fields.secret_code_name': 'S4L',
+          'fields.repeat_section[0].extra': 'data1',
+          'fields.repeat_section[0].repeat_doc_ref': actual[1]._id,
+          'fields.repeat_section[1].extra': 'data2',
+          'fields.repeat_section[1].repeat_doc_ref': actual[2]._id,
+          'fields.repeat_section[2].extra': 'data3',
+          'fields.repeat_section[2].repeat_doc_ref': actual[3]._id,
+        });
       });
     });
 

@@ -128,19 +128,21 @@ export class EnketoTranslationService {
     return fields;
   }
 
-  reportRecordToJs(record, formXml?) {
-    console.log('lalalalla', formXml);
-    const root = $.parseXML(record).firstChild;
-    if (!formXml) {
-      return this.nodesToJs(root.childNodes);
-    }
-    const repeatPaths = $(formXml)
+  getRepeatPaths(formXml) {
+    return $(formXml)
       .find('repeat[nodeset]')
       .map((idx, element) => {
         return $(element).attr('nodeset');
       })
       .get();
-    console.log(repeatPaths);
+  }
+
+  reportRecordToJs(record, formXml?) {
+    const root = $.parseXML(record).firstChild;
+    if (!formXml) {
+      return this.nodesToJs(root.childNodes);
+    }
+    const repeatPaths = this.getRepeatPaths(formXml);
     return this.nodesToJs(root.childNodes, repeatPaths, '/' + root.nodeName);
   }
 

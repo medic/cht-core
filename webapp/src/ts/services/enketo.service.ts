@@ -434,7 +434,7 @@ export class EnketoService {
     return this.renderForm(selector, formDoc, instanceData, editedListener, valuechangeListener);
   }
 
-  private xmlToDocs(doc, record) {
+  private xmlToDocs(doc, formXml, record) {
     const mapOrAssignId = (e, id?) => {
       if (!id) {
         const $id = $(e).children('_id');
@@ -455,8 +455,6 @@ export class EnketoService {
         ._couchId;
     };
 
-    //const getClosestId =
-
     // Chrome 30 doesn't support $xml.outerHTML: #3880
     const getOuterHTML = (xml) => {
       if (xml.outerHTML) {
@@ -467,6 +465,7 @@ export class EnketoService {
 
     const recordDoc = $.parseXML(record);
     const $record = $($(recordDoc).children()[0]);
+    const repeatPaths = this.enketoTranslationService.getRepeatPaths(formXml);
     mapOrAssignId($record[0], doc._id || uuid());
 
     $record
@@ -484,11 +483,16 @@ export class EnketoService {
         const $ref = $(element);
         const reference = $ref.attr('db-doc-ref');
         let path = reference;
-        if (reference.startsWith('./')) {
+
+        const relativeReference = reference.startsWith('./');
+        const repeatReference = repeatPaths?.find(repeatPath => reference.startsWith(repeatPath));
+        if (repeatReference || relativeReference) {
           element.id = uuid();
-          path = `//${element.nodeName}[@id="${element.id}"]/ancestor::${reference.replace(/^\.\//, '')}`;
-          console.log(path);
-          console.log($record);
+          const ancestor = $ref.parent().get(0).tagName;
+          const regex = repeatReference ? new RegExp(`^${repeatReference}/`) : /^\.\//;
+          const sibling = reference.replace(regex, '');
+
+          path = `//${element.nodeName}[@id="${element.id}"]/ancestor::${ancestor}/${sibling}`;
         }
 
         const refId = getId(path);
@@ -543,14 +547,14 @@ export class EnketoService {
 
     docsToStore.unshift(doc);
 
+    doc.fields = this.enketoTranslationService.reportRecordToJs(record, formXml);
+    return docsToStore;
+  }
+
+  private getFormXml(form) {
     return this.xmlFormsService
-      .get(doc.form)
-      .then((form) => this.getFormAttachment(form))
-      .then((form) => {
-        console.log('form xml', form);
-        doc.fields = this.enketoTranslationService.reportRecordToJs(record, form);
-        return docsToStore;
-      });
+      .get(form)
+      .then(formDoc => this.getFormAttachment(formDoc));
   }
 
   private saveDocs(docs) {
@@ -658,7 +662,9 @@ export class EnketoService {
 
     return promise
       .then((doc) => {
-        return this.xmlToDocs(doc, form.getDataStr({ irrelevant: false }));
+        return this
+          .getFormXml(doc.form)
+          .then(formXml => this.xmlToDocs(doc, formXml, form.getDataStr({ irrelevant: false })));
       })
       .then((docs) => this.saveGeo(geoHandle, docs))
       .then((docs) => this.saveDocs(docs))
