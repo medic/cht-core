@@ -434,6 +434,10 @@ export class EnketoService {
   }
 
   private xmlToDocs(doc, formXml, record) {
+    const recordDoc = $.parseXML(record);
+    const $record = $($(recordDoc).children()[0]);
+    const repeatPaths = this.enketoTranslationService.getRepeatPaths(formXml);
+
     const mapOrAssignId = (e, id?) => {
       if (!id) {
         const $id = $(e).children('_id');
@@ -447,11 +451,29 @@ export class EnketoService {
       e._couchId = id;
     };
 
+    mapOrAssignId($record[0], doc._id || uuid());
+
     const getId = (xpath) => {
-      return recordDoc
+      const element = recordDoc
         .evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null)
-        .iterateNext()
-        ._couchId;
+        .iterateNext();
+      return element?._couchId;
+    };
+
+    const getDbDocRefRepeatAncestorPath = (element, $element, reference) => {
+      const relativeReference = reference.startsWith('./');
+      const repeatReference = repeatPaths?.find(repeatPath => reference.startsWith(repeatPath));
+
+      if (!relativeReference && !repeatReference) {
+        return;
+      }
+
+      // assign a unique uuid for xpath context, since the element can be inside a repeat
+      element.id = uuid();
+      const ancestor = $element.parent().get(0).tagName;
+      reference = reference.replace(repeatReference ? `${repeatReference}/` : './', '');
+
+      return `//${element.nodeName}[@id="${element.id}"]/ancestor::${ancestor}/${reference}`;
     };
 
     // Chrome 30 doesn't support $xml.outerHTML: #3880
@@ -461,11 +483,6 @@ export class EnketoService {
       }
       return $('<temproot>').append($(xml).clone()).html();
     };
-
-    const recordDoc = $.parseXML(record);
-    const $record = $($(recordDoc).children()[0]);
-    const repeatPaths = this.enketoTranslationService.getRepeatPaths(formXml);
-    mapOrAssignId($record[0], doc._id || uuid());
 
     $record
       .find('[db-doc]')
@@ -481,20 +498,9 @@ export class EnketoService {
       .each((idx, element) => {
         const $ref = $(element);
         const reference = $ref.attr('db-doc-ref');
-        let path = reference;
+        const path = getDbDocRefRepeatAncestorPath(element, $ref, reference);
 
-        const relativeReference = reference.startsWith('./');
-        const repeatReference = repeatPaths?.find(repeatPath => reference.startsWith(repeatPath));
-        if (repeatReference || relativeReference) {
-          element.id = uuid();
-          const ancestor = $ref.parent().get(0).tagName;
-          const regex = repeatReference ? new RegExp(`^${repeatReference}/`) : /^\.\//;
-          const sibling = reference.replace(regex, '');
-
-          path = `//${element.nodeName}[@id="${element.id}"]/ancestor::${ancestor}/${sibling}`;
-        }
-
-        const refId = getId(path);
+        const refId = path && getId(path) || getId(reference);
         $ref.text(refId);
       });
 
