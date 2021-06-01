@@ -3,7 +3,6 @@ import { v4 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
-import { uniq as _uniq } from 'lodash-es';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
