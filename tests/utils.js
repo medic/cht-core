@@ -891,6 +891,8 @@ module.exports = {
 
     await listenForApi();
     await runAndLog('User contact doc setup', setUserContactDoc);
-  }
+  },
+
+  stopServices: async () => await request.post('http://localhost:31337/die')
 
 };
