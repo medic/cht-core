@@ -123,7 +123,7 @@ module.exports = {
 
   expandSelectionNative: async () => {
     await helper.clickElementNative(element(by.css(itemSummary)));
-    await helper.waitElementToBeVisible(element(by.css(reportBodyDetails)));
+    await helper.waitElementToBeVisibleNative(element(by.css(reportBodyDetails)));
   },
 
   selectAll: () => {
