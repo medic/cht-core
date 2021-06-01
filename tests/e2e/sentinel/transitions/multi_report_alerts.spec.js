@@ -345,7 +345,17 @@ describe('multi_report_alerts', () => {
         time_window_in_days: 1,
         forms: ['FORM']
       }],
-      forms: { FORM: { } }
+      forms: { FORM: { } },
+      update_clinics: [ {
+        form: 'FORM',
+        messages: [
+          {
+            event_type: 'sys.facility_not_found',
+            recipient: 'reporting_unit',
+            translation_key: 'sys.facility_not_found',
+          }
+        ],
+      }]
     };
 
     const contacts = [{
@@ -407,7 +417,7 @@ describe('multi_report_alerts', () => {
       })
       .then(() => utils.getDoc(doc_unknown._id))
       .then(updated => {
-        expect(updated.tasks).not.toBeDefined();
+        expect(updated.tasks.length).toEqual(1);
       })
       .then(() => utils.saveDoc(doc_unknown2))
       .then(() => sentinelUtils.waitForSentinel(doc_unknown2._id))
@@ -419,7 +429,7 @@ describe('multi_report_alerts', () => {
       })
       .then(() => utils.getDoc(doc_unknown2._id))
       .then(updated => {
-        expect(updated.tasks).not.toBeDefined();
+        expect(updated.tasks.length).toEqual(1);
       })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
@@ -452,6 +462,144 @@ describe('multi_report_alerts', () => {
         expect(updated.tasks[1].messages[0].message).toEqual('multi_report_message');
         expect(updated.tasks[1].messages[0].to).toEqual('+251 11 551 1222');
         expect(updated.tasks[1].state).toEqual('pending');
+      });
+  });
+
+  it('non public_forms from unknown senders should not be counted even when update_clinics is not defined', () => {
+    const settings = {
+      transitions: { multi_report_alerts: true, update_clinics: true },
+      multi_report_alerts: [{
+        name: 'test',
+        is_report_counted: 'function(r, l) { return true }',
+        num_reports_threshold: 2,
+        message: 'multi_report_message',
+        recipients: ['new_report.from'],
+        time_window_in_days: 1,
+        forms: ['FORM', 'FORM2']
+      }],
+      forms: { FORM: { }, FORM2: {} }
+    };
+
+    const contacts = [{
+      _id: 'chw',
+      phone: '+251 11 551 1222',
+      type: 'person',
+      parent: { _id: 'district' },
+      reported_date: new Date().getTime() - 10000
+    }, {
+      _id: 'chw2',
+      phone: '+251 11 551 2133',
+      type: 'person',
+      parent: { _id: 'district' },
+      reported_date: new Date().getTime() - 9000
+    }];
+
+    const doc_unknown = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+256 41 9767538',
+      reported_date: new Date().getTime() - 8000
+    };
+
+    const doc_unknown2 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+256 41 9767539',
+      reported_date: new Date().getTime() - 7000
+    };
+
+    const doc = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+251 11 551 1222',
+      reported_date: new Date().getTime() - 6000
+    };
+
+    const doc2 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+251 11 551 2133',
+      reported_date: new Date().getTime() - 5000
+    };
+
+    const doc3 = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM2',
+      from: '+251 11 551 2133',
+      reported_date: new Date().getTime() - 4000
+    };
+
+    return utils
+      .updateSettings(settings, 'sentinel')
+      .then(() => utils.saveDocs(contacts))
+      .then(() => utils.saveDoc(doc_unknown))
+      .then(() => sentinelUtils.waitForSentinel(doc_unknown._id))
+      .then(() => sentinelUtils.getInfoDoc(doc_unknown._id))
+      .then(info => {
+        expect(info.transitions).toBeDefined();
+        expect(info.transitions.update_clinics).toBeDefined();
+        expect(info.transitions.multi_report_alerts).not.toBeDefined();
+      })
+      .then(() => utils.getDoc(doc_unknown._id))
+      .then(updated => {
+        expect(updated.tasks.length).toEqual(1);
+      })
+      .then(() => utils.saveDoc(doc_unknown2))
+      .then(() => sentinelUtils.waitForSentinel(doc_unknown2._id))
+      .then(() => sentinelUtils.getInfoDoc(doc_unknown2._id))
+      .then(info => {
+        expect(info.transitions).toBeDefined();
+        expect(info.transitions.update_clinics).toBeDefined();
+        expect(info.transitions.multi_report_alerts).not.toBeDefined();
+      })
+      .then(() => utils.getDoc(doc_unknown2._id))
+      .then(updated => {
+        expect(updated.tasks.length).toEqual(1);
+      })
+      .then(() => utils.saveDoc(doc))
+      .then(() => sentinelUtils.waitForSentinel(doc._id))
+      .then(() => sentinelUtils.getInfoDoc(doc._id))
+      .then(info => {
+        expect(info.transitions.update_clinics.ok).toEqual(true);
+        expect(info.transitions.multi_report_alerts).not.toBeDefined();
+      })
+      .then(() => utils.getDoc(doc._id))
+      .then(updated => {
+        expect(updated.tasks).not.toBeDefined();
+      })
+      .then(() => utils.saveDoc(doc2))
+      .then(() => sentinelUtils.waitForSentinel(doc2._id))
+      .then(() => sentinelUtils.getInfoDoc(doc2._id))
+      .then(info => {
+        expect(info.transitions).toBeDefined();
+        expect(info.transitions.multi_report_alerts).toBeDefined();
+        expect(info.transitions.multi_report_alerts.ok).toBe(true);
+      })
+      .then(() => utils.getDoc(doc2._id))
+      .then(updated => {
+        expect(updated.tasks).toBeDefined();
+        expect(updated.tasks.length).toEqual(2);
+
+        expect(updated.tasks[0].messages[0].message).toEqual('multi_report_message');
+        expect(updated.tasks[0].messages[0].to).toEqual('+251 11 551 2133');
+        expect(updated.tasks[0].state).toEqual('pending');
+
+        expect(updated.tasks[1].messages[0].message).toEqual('multi_report_message');
+        expect(updated.tasks[1].messages[0].to).toEqual('+251 11 551 1222');
+        expect(updated.tasks[1].state).toEqual('pending');
+      })
+      .then(() => utils.saveDoc(doc3))
+      .then(() => sentinelUtils.waitForSentinel(doc3._id))
+      .then(() => sentinelUtils.getInfoDoc(doc3._id))
+      .then(info => {
+        expect(info.transitions).toBeDefined();
+        expect(info.transitions.multi_report_alerts).toBeDefined();
+        expect(info.transitions.multi_report_alerts.ok).toBe(true);
       });
   });
 });
