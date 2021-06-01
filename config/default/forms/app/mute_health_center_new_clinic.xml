@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Create new clinic under health center and mute health center</h:title>
+    <model>
+      <instance>
+        <mute_health_center_new_clinic delimiter="#" id="mute_health_center_new_clinic" prefix="J1!mute_health_center_new_clinic!" version="2016-12-21">
+          <inputs>
+            <source>user</source>
+            <source_id/>
+            <contact>
+              <_id/>
+              <name/>
+              <parent>
+                <_id/>
+                <parent>
+                  <_id/>
+                </parent>
+              </parent>
+            </contact>
+          </inputs>
+
+          <place_id/>
+          <place_name/>
+          <meta>
+            <instanceID/>
+          </meta>
+
+          <!-- the new clinic -->
+          <new_clinic db-doc="true">
+            <name tag="hidden"/>
+            <parent tag="hidden">
+              <_id/>
+              <parent tag="hidden">
+                <_id/>
+              </parent>
+            </parent>
+            <type tag="hidden"/>
+            <created_by_doc db-doc-ref="/mute_health_center_new_clinic" tag="hidden"/>
+          </new_clinic>
+
+          <!--  the mute clinic report -->
+          <mute_health_center db-doc="true" tag="hidden">
+            <form/>
+            <type/>
+            <content_type/>
+            <fields>
+              <place_id/>
+            </fields>
+            <created_by_doc db-doc-ref="/mute_health_center_new_clinic"/>
+          </mute_health_center>
+          <mute_health_center_doc db-doc-ref=" /mute_health_center_new_clinic/mute_health_center "/>
+
+
+        </mute_health_center_new_clinic>
+      </instance>
+      <bind nodeset="/mute_health_center_new_clinic/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/mute_health_center_new_clinic/inputs/source" type="string"/>
+      <bind nodeset="/mute_health_center_new_clinic/inputs/source_id" type="string"/>
+      <bind nodeset="/mute_health_center_new_clinic/inputs/contact/_id" type="db:health_center" required="true()"/>
+      <bind nodeset="/mute_health_center_new_clinic/inputs/contact/name" type="string"/>
+      <bind calculate="/mute_health_center_new_clinic/inputs/contact/_id" nodeset="/mute_health_center_new_clinic/place_id" type="string"/>
+      <bind calculate="/mute_health_center_new_clinic/inputs/contact/name" nodeset="/mute_health_center_new_clinic/place_name" type="string"/>
+
+      <bind nodeset="/mute_health_center_new_clinic/new_clinic/name" type="string" required="true()"/>
+      <bind nodeset="/mute_health_center_new_clinic/new_clinic/type" calculate="'clinic'" type="string"></bind>
+      <bind nodeset="/mute_health_center_new_clinic/new_clinic/parent/_id" calculate="/mute_health_center_new_clinic/inputs/contact/_id" type="string"></bind>
+      <bind nodeset="/mute_health_center_new_clinic/new_clinic/parent/parent/_id" calculate="/mute_health_center_new_clinic/inputs/contact/parent/_id" type="string"></bind>
+
+      <bind nodeset="/mute_health_center_new_clinic/mute_health_center/fields/place_id" calculate="/mute_health_center_new_clinic/inputs/contact/_id" type="string"></bind>
+      <bind nodeset="/mute_health_center_new_clinic/mute_health_center/form" calculate="'mute_health_center'" type="string"></bind>
+      <bind nodeset="/mute_health_center_new_clinic/mute_health_center/type" calculate="'data_record'" type="string"></bind>
+      <bind nodeset="/mute_health_center_new_clinic/mute_health_center/content_type" calculate="'xml'" type="string"></bind>
+
+      <bind calculate="concat('uuid:', uuid())" nodeset="/mute_health_center_new_clinic/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/mute_health_center_new_clinic/inputs">
+      <label>Health center</label>
+      <input appearance="hidden" ref="/mute_health_center_new_clinic/inputs/source">
+        <label>Source</label>
+      </input>
+      <input appearance="hidden" ref="/mute_health_center_new_clinic/inputs/source_id">
+        <label>Source ID</label>
+      </input>
+      <group ref="/mute_health_center_new_clinic/inputs/contact">
+        <input appearance="db-object" ref="/mute_health_center_new_clinic/inputs/contact/_id">
+          <label>What is the name of the Health center?</label>
+          <hint>Select a place from list</hint>
+        </input>
+        <input appearance="hidden" ref="/mute_health_center_new_clinic/inputs/contact/name">
+          <label>Name</label>
+        </input>
+
+        <input ref="/mute_health_center_new_clinic/new_clinic/name">
+          <label>New clinic's name</label>
+        </input>
+      </group>
+    </group>
+  </h:body>
+</h:html>

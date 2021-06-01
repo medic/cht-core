@@ -1100,15 +1100,19 @@
         </delivery>
       </instance>
       <instance id="contact-summary"/>
-      <instance id="yes_no">
+      <instance id="translate_woman_start_label">
         <root>
           <item>
-            <itextId>static_instance-yes_no-0</itextId>
-            <name>yes</name>
+            <itextId>static_instance-translate_woman_start_label-0</itextId>
+            <name>woman-start</name>
           </item>
+        </root>
+      </instance>
+      <instance id="translate_woman_label">
+        <root>
           <item>
-            <itextId>static_instance-yes_no-1</itextId>
-            <name>no</name>
+            <itextId>static_instance-translate_woman_label-0</itextId>
+            <name>woman</name>
           </item>
         </root>
       </instance>
@@ -1124,18 +1128,18 @@
           </item>
         </root>
       </instance>
-      <instance id="conductors">
+      <instance id="places">
         <root>
           <item>
-            <itextId>static_instance-conductors-0</itextId>
-            <name>skilled</name>
+            <itextId>static_instance-places-0</itextId>
+            <name>health_facility</name>
           </item>
           <item>
-            <itextId>static_instance-conductors-1</itextId>
-            <name>traditional</name>
+            <itextId>static_instance-places-1</itextId>
+            <name>home</name>
           </item>
           <item>
-            <itextId>static_instance-conductors-2</itextId>
+            <itextId>static_instance-places-2</itextId>
             <name>other</name>
           </item>
         </root>
@@ -1153,34 +1157,6 @@
           <item>
             <itextId>static_instance-life_conditions_woman-2</itextId>
             <name>deceased</name>
-          </item>
-        </root>
-      </instance>
-      <instance id="life_conditions_baby">
-        <root>
-          <item>
-            <itextId>static_instance-life_conditions_baby-0</itextId>
-            <name>alive_well</name>
-          </item>
-          <item>
-            <itextId>static_instance-life_conditions_baby-1</itextId>
-            <name>alive_unwell</name>
-          </item>
-        </root>
-      </instance>
-      <instance id="places">
-        <root>
-          <item>
-            <itextId>static_instance-places-0</itextId>
-            <name>health_facility</name>
-          </item>
-          <item>
-            <itextId>static_instance-places-1</itextId>
-            <name>home</name>
-          </item>
-          <item>
-            <itextId>static_instance-places-2</itextId>
-            <name>other</name>
           </item>
         </root>
       </instance>
@@ -1208,64 +1184,28 @@
         <root>
           <item>
             <itextId>static_instance-babies_alive-0</itextId>
-            <name>0</name>
             <count>0</count>
+            <name>0</name>
           </item>
           <item>
             <itextId>static_instance-babies_alive-1</itextId>
-            <name>1</name>
             <count>1</count>
+            <name>1</name>
           </item>
           <item>
             <itextId>static_instance-babies_alive-2</itextId>
-            <name>2</name>
             <count>2</count>
+            <name>2</name>
           </item>
           <item>
             <itextId>static_instance-babies_alive-3</itextId>
-            <name>3</name>
             <count>3</count>
+            <name>3</name>
           </item>
           <item>
             <itextId>static_instance-babies_alive-4</itextId>
-            <name>other</name>
             <count>4</count>
-          </item>
-        </root>
-      </instance>
-      <instance id="male_female">
-        <root>
-          <item>
-            <itextId>static_instance-male_female-0</itextId>
-            <name>male</name>
-          </item>
-          <item>
-            <itextId>static_instance-male_female-1</itextId>
-            <name>female</name>
-          </item>
-        </root>
-      </instance>
-      <instance id="knows_weight">
-        <root>
-          <item>
-            <itextId>static_instance-knows_weight-0</itextId>
-            <name>no</name>
-          </item>
-          <item>
-            <itextId>static_instance-knows_weight-1</itextId>
-            <name>yes</name>
-          </item>
-        </root>
-      </instance>
-      <instance id="knows_length">
-        <root>
-          <item>
-            <itextId>static_instance-knows_length-0</itextId>
-            <name>no</name>
-          </item>
-          <item>
-            <itextId>static_instance-knows_length-1</itextId>
-            <name>yes</name>
+            <name>other</name>
           </item>
         </root>
       </instance>
@@ -1289,48 +1229,108 @@
           </item>
         </root>
       </instance>
+      <instance id="knows_length">
+        <root>
+          <item>
+            <itextId>static_instance-knows_length-0</itextId>
+            <name>no</name>
+          </item>
+          <item>
+            <itextId>static_instance-knows_length-1</itextId>
+            <name>yes</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="conductors">
+        <root>
+          <item>
+            <itextId>static_instance-conductors-0</itextId>
+            <name>skilled</name>
+          </item>
+          <item>
+            <itextId>static_instance-conductors-1</itextId>
+            <name>traditional</name>
+          </item>
+          <item>
+            <itextId>static_instance-conductors-2</itextId>
+            <name>other</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="knows_weight">
+        <root>
+          <item>
+            <itextId>static_instance-knows_weight-0</itextId>
+            <name>no</name>
+          </item>
+          <item>
+            <itextId>static_instance-knows_weight-1</itextId>
+            <name>yes</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="male_female">
+        <root>
+          <item>
+            <itextId>static_instance-male_female-0</itextId>
+            <name>male</name>
+          </item>
+          <item>
+            <itextId>static_instance-male_female-1</itextId>
+            <name>female</name>
+          </item>
+        </root>
+      </instance>
       <instance id="pnc_visits">
         <root>
           <item>
             <itextId>static_instance-pnc_visits-0</itextId>
-            <name>within_24_hrs</name>
             <count>0</count>
+            <name>within_24_hrs</name>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-1</itextId>
-            <name>3_days</name>
             <count>3</count>
+            <name>3_days</name>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-2</itextId>
-            <name>7_days</name>
             <count>7</count>
+            <name>7_days</name>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-3</itextId>
-            <name>6_weeks</name>
             <count>42</count>
+            <name>6_weeks</name>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-4</itextId>
-            <name>none</name>
             <count>0</count>
+            <name>none</name>
           </item>
         </root>
       </instance>
-      <instance id="translate_woman_label">
+      <instance id="life_conditions_baby">
         <root>
           <item>
-            <itextId>static_instance-translate_woman_label-0</itextId>
-            <name>woman</name>
+            <itextId>static_instance-life_conditions_baby-0</itextId>
+            <name>alive_well</name>
+          </item>
+          <item>
+            <itextId>static_instance-life_conditions_baby-1</itextId>
+            <name>alive_unwell</name>
           </item>
         </root>
       </instance>
-      <instance id="translate_woman_start_label">
+      <instance id="yes_no">
         <root>
           <item>
-            <itextId>static_instance-translate_woman_start_label-0</itextId>
-            <name>woman-start</name>
+            <itextId>static_instance-yes_no-0</itextId>
+            <name>yes</name>
+          </item>
+          <item>
+            <itextId>static_instance-yes_no-1</itextId>
+            <name>no</name>
           </item>
         </root>
       </instance>

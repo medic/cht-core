@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Create new person under clinic and unmute person</h:title>
+    <model>
+      <instance>
+        <new_person_unmute_person delimiter="#" id="new_person_unmute_person" prefix="J1!new_person_unmute_person!" version="2016-12-21">
+          <inputs>
+            <source>user</source>
+            <source_id/>
+            <contact>
+              <_id/>
+              <name/>
+              <parent>
+                <_id/>
+                <parent>
+                  <_id/>
+                </parent>
+              </parent>
+            </contact>
+          </inputs>
+
+          <place_id/>
+          <place_name/>
+          <meta>
+            <instanceID/>
+          </meta>
+
+          <!-- the new clinic -->
+          <new_person db-doc="true">
+            <name tag="hidden"/>
+            <sex tag="hidden"/>
+            <date_of_birth tag="hidden"/>
+            <parent tag="hidden">
+              <_id/>
+              <parent tag="hidden">
+                <_id/>
+                <parent tag="hidden">
+                  <_id/>
+                </parent>
+              </parent>
+            </parent>
+            <type tag="hidden"/>
+            <created_by_doc db-doc-ref="/new_person_unmute_person" tag="hidden"/>
+          </new_person>
+
+          <!--  the mute clinic report -->
+          <unmute_clinic db-doc="true" tag="hidden">
+            <form/>
+            <type/>
+            <content_type/>
+            <fields>
+              <place_id/>
+            </fields>
+            <created_by_doc db-doc-ref="/new_person_unmute_person"/>
+          </unmute_clinic>
+
+
+        </new_person_unmute_person>
+      </instance>
+      <bind nodeset="/new_person_unmute_person/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/new_person_unmute_person/inputs/source" type="string"/>
+      <bind nodeset="/new_person_unmute_person/inputs/source_id" type="string"/>
+      <bind nodeset="/new_person_unmute_person/inputs/contact/_id" type="db:clinic" required="true()"/>
+      <bind nodeset="/new_person_unmute_person/inputs/contact/name" type="string"/>
+      <bind calculate="/new_person_unmute_person/inputs/contact/_id" nodeset="/new_person_unmute_person/place_id" type="string"/>
+      <bind calculate="/new_person_unmute_person/inputs/contact/name" nodeset="/new_person_unmute_person/place_name" type="string"/>
+
+      <bind nodeset="/new_person_unmute_person/new_person/name" type="string" required="true()"/>
+      <bind nodeset="/new_person_unmute_person/new_person/type" calculate="'person'" type="string"></bind>
+      <bind nodeset="/new_person_unmute_person/new_person/parent/_id" calculate="/new_person_unmute_person/inputs/contact/_id" type="string"></bind>
+      <bind nodeset="/new_person_unmute_person/new_person/parent/parent/_id" calculate="/new_person_unmute_person/inputs/contact/parent/_id" type="string"></bind>
+      <bind nodeset="/new_person_unmute_person/new_person/parent/parent/parent/_id" calculate="/new_person_unmute_person/inputs/contact/parent/parent/_id" type="string"></bind>
+
+      <bind nodeset="/new_person_unmute_person/unmute_clinic/form" calculate="'unmute_clinic'" type="string"></bind>
+      <bind nodeset="/new_person_unmute_person/unmute_clinic/fields/place_id" calculate="/new_person_unmute_person/inputs/contact/_id" type="string"></bind>
+      <bind nodeset="/new_person_unmute_person/unmute_clinic/type" calculate="'data_record'" type="string"></bind>
+      <bind nodeset="/new_person_unmute_person/unmute_clinic/content_type" calculate="'xml'" type="string"></bind>
+
+      <bind calculate="concat('uuid:', uuid())" nodeset="/new_person_unmute_person/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/new_person_unmute_person/inputs">
+      <label>Health center</label>
+      <input appearance="hidden" ref="/new_person_unmute_person/inputs/source">
+        <label>Source</label>
+      </input>
+      <input appearance="hidden" ref="/new_person_unmute_person/inputs/source_id">
+        <label>Source ID</label>
+      </input>
+      <group ref="/new_person_unmute_person/inputs/contact">
+        <input appearance="db-object" ref="/new_person_unmute_person/inputs/contact/_id">
+          <label>What is the name of the Clinic?</label>
+          <hint>Select a place from list</hint>
+        </input>
+        <input appearance="hidden" ref="/new_person_unmute_person/inputs/contact/name">
+          <label>Name</label>
+        </input>
+
+        <input ref="/new_person_unmute_person/new_person/name">
+          <label>New person's name</label>
+        </input>
+      </group>
+    </group>
+  </h:body>
+</h:html>

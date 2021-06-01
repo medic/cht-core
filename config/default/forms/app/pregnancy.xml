@@ -668,7 +668,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2020-05-15 08:58:39">
+        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2020-05-15 09:21:28">
           <inputs>
             <meta>
               <location>
@@ -1242,7 +1242,7 @@ if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 40*7) &gt; floor(decimal-dat
     <group appearance="field-list" ref="/pregnancy/inputs">
       <group ref="/pregnancy/inputs/user">
         <label ref="jr:itext('/pregnancy/inputs/user:label')"/>
-        <input appearance="select-contact type-person type-clinic" ref="/pregnancy/inputs/user/contact_id">
+        <input appearance="select-contact type-person" ref="/pregnancy/inputs/user/contact_id">
           <label ref="jr:itext('/pregnancy/inputs/user/contact_id:label')"/>
         </input>
         <group ref="/pregnancy/inputs/user/parent"/>
