@@ -454,26 +454,30 @@ export class EnketoService {
     mapOrAssignId($record[0], doc._id || uuid());
 
     const getId = (xpath) => {
-      const element = recordDoc
-        .evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null)
-        .iterateNext();
-      return element?._couchId;
+      const xPathResult = recordDoc.evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null);
+      let node = xPathResult.iterateNext();
+      while (node) {
+        if (node._couchId) {
+          return node._couchId;
+        }
+        node = xPathResult.iterateNext();
+      }
     };
 
-    const getDbDocRefRepeatAncestorPath = (element, $element, reference) => {
-      const relativeReference = reference.startsWith('./');
-      const repeatReference = repeatPaths?.find(repeatPath => reference.startsWith(repeatPath));
+    const getClosestPath = (element, $element, path) => {
+      const relativeReference = path.startsWith('./');
+      const repeatReference = repeatPaths?.find(repeatPath => path.startsWith(repeatPath));
 
       if (!relativeReference && !repeatReference) {
         return;
       }
 
-      // assign a unique uuid for xpath context, since the element can be inside a repeat
-      element.id = uuid();
-      const ancestor = $element.parent().get(0).tagName;
-      reference = reference.replace(repeatReference ? `${repeatReference}/` : './', '');
+      // assign a unique id for xpath context, since the element can be inside a repeat
+      element.id = element.id || uuid();
+      const uniqueElementSelector = `${element.nodeName}[@id="${element.id}"]`;
+      const localPath = path.replace(repeatReference ? `${repeatReference}/` : './', '');
 
-      return `//${element.nodeName}[@id="${element.id}"]/ancestor::${ancestor}/${reference}`;
+      return `//${uniqueElementSelector}/ancestor-or-self::*/descendant-or-self::${localPath}`;
     };
 
     // Chrome 30 doesn't support $xml.outerHTML: #3880
@@ -496,12 +500,12 @@ export class EnketoService {
     $record
       .find('[db-doc-ref]')
       .each((idx, element) => {
-        const $ref = $(element);
-        const reference = $ref.attr('db-doc-ref');
-        const path = getDbDocRefRepeatAncestorPath(element, $ref, reference);
+        const $element = $(element);
+        const reference = $element.attr('db-doc-ref');
+        const path = getClosestPath(element, $element, reference);
 
         const refId = path && getId(path) || getId(reference);
-        $ref.text(refId);
+        $element.text(refId);
       });
 
     const docsToStore = $record
