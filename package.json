@@ -91,7 +91,6 @@
     "loose-envify": "^1.4.0",
     "medic-conf": "^3.2.1",
     "mocha": "^7.2.0",
-    "mochawesome": "^6.2.2",
     "moment": "^2.29.1",
     "moment-locales-webpack-plugin": "^1.2.0",
     "node-sass": "^4.14.1",
