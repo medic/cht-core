@@ -10,6 +10,8 @@ node_modules_backup
 /config.js
 /tests/results
 /tests/logs/
+/tests/integration/results
+/tests/integration/logs
 *.sublime-project
 *.sublime-workspace
 /.env
@@ -31,3 +33,4 @@ config/*/json_docs/*
 config/*/upload-docs.*
 config/*/users.csv
 /**/*/.snapshots/local.json
+

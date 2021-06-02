@@ -172,7 +172,7 @@ jobs:
       if: ${{ failure() }}
 
   test-e2e-integration:
-    needs: build
+    needs: [build, test-e2e]
     name: e2e non ui Tests for Node version ${{ matrix.node-version }}
     runs-on: ubuntu-18.04
 

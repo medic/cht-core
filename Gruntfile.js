@@ -788,10 +788,8 @@ module.exports = function(grunt) {
         src: 'tests/integration/**/*.js',
         options: {
           timeout: 135000,
-          // 'reporter': 'mochawesome',
-          // 'reporterOptions': {
-          //   'reportDir':'tests/integration/results'
-          // }
+          reporter: 'spec',
+          aptureFile: 'tests/integration/results/results.txt'
         }
       }
     },
