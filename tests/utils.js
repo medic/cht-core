@@ -883,16 +883,16 @@ module.exports = {
       // correct logs for testing
       await listenForApi();
       console.log('Horti booted API, rebooting under our logging structure');
-      await request.post('http://localhost:31337/all/restart');
+      await rpn.post('http://localhost:31337/all/restart');
     } else {
       // Locally we just need to start them and can do so straight away
-      await request.post('http://localhost:31337/all/start');
+      await rpn.post('http://localhost:31337/all/start');
     }
 
     await listenForApi();
     await runAndLog('User contact doc setup', setUserContactDoc);
   },
 
-  stopServices: async () => await request.post('http://localhost:31337/die')
+  stopServices: async () => await rpn.post('http://localhost:31337/die')
 
 };
