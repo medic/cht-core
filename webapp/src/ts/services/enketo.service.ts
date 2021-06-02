@@ -663,14 +663,14 @@ export class EnketoService {
   }
 
   private _save(formInternalId, form, geoHandle, docId?) {
-    const promise = docId ? this.update(docId) : this.create(formInternalId);
+    const getDocPromise = docId ? this.update(docId) : this.create(formInternalId);
 
-    return promise
-      .then((doc) => {
-        return this
-          .getFormXml(doc.form)
-          .then(formXml => this.xmlToDocs(doc, formXml, form.getDataStr({ irrelevant: false })));
-      })
+    return Promise
+      .all([
+        getDocPromise,
+        this.getFormXml(formInternalId),
+      ])
+      .then(([doc, formXml]) => this.xmlToDocs(doc, formXml, form.getDataStr({ irrelevant: false })))
       .then((docs) => this.saveGeo(geoHandle, docs))
       .then((docs) => this.saveDocs(docs))
       .then((docs) => {
