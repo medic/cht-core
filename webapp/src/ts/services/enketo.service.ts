@@ -465,6 +465,7 @@ export class EnketoService {
     };
 
     const getClosestPath = (element, $element, path) => {
+      path = path.trim();
       const relativeReference = path.startsWith('./');
       const repeatReference = repeatPaths?.find(repeatPath => path.startsWith(repeatPath));
 
