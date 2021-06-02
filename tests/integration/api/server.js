@@ -5,10 +5,10 @@ const constants = require('../../constants');
 const _ = require('lodash');
 const {expect} = require('chai');
 
-describe('server', () => {
-  
-  before(utils.prepServices());
-  after(utils.stopServices());
+describe('server', async () => {
+
+  before(await utils.prepServices());
+  after(await utils.stopServices());
 
   describe('JSON-only endpoints', () => {
     it('should require application/json Content-Type header', () => {
