@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -119,6 +119,22 @@ describe('About Component', () => {
 
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
+
+  it('handles missing partners resource - #7100', async(async () => {
+    resourceIconsService.getDocResources.rejects({ status: 404 });
+    component.ngOnInit();
+    await fixture.whenStable();
+    // no error thrown
+  }));
+
+  it('logs non 404 errors when getting partners resource - #7100', fakeAsync(() => {
+    const consoleErrorMock = sinon.stub(console, 'error');
+    resourceIconsService.getDocResources.rejects({ status: 403 });
+    component.ngOnInit();
+    flush();
+    expect(consoleErrorMock.callCount).to.equal(1);
+    expect(consoleErrorMock.args[0][0]).to.equal('Error fetching "partners" doc');
+  }));
 
   describe('secretDoor()', () => {
     let clock;

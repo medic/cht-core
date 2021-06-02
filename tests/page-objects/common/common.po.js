@@ -33,13 +33,14 @@ const modalFooter = element(by.css('.modal-footer'));
 const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.submit'));
 const displayTime = element(by.css('[ui-sref="display.date-time"]'));
 const messagesList = element(by.id('message-list'));
+const snackBarContent = element(by.css('.snackbar-content'));
 const languagePreferenceHeading = element(by.css('#language-preference-heading'));
 const selectedPreferenceHeading = element(by.css('#language-preference-heading > h4:nth-child(1) > span:nth-child(3)'));
 const messagesLanguage = element(by.css('.locale a.selected span.rectangle'));
 const defaultLanguage=  element(by.css('.locale-outgoing a.selected span.rectangle'));
 
-
 module.exports = {
+  snackBarContent,
   messagesList,
   messagesTab,
   analyticsTab,

@@ -1,4 +1,5 @@
 const request = require('request-promise-native');
+const moment = require('moment');
 
 const db = require('../db');
 const environment = require('../environment');
@@ -9,6 +10,14 @@ const DBS_TO_MONITOR = {
   'sentinel': environment.db + '-sentinel',
   'usersmeta': environment.db + '-users-meta',
   'users': '_users'
+};
+
+const MESSAGE_QUEUE_STATUS_KEYS = ['due', 'scheduled', 'muted', 'failed', 'delivered'];
+const fromEntries = (keys, value) => {
+  // "shim" of Object.fromEntries
+  const result = {};
+  keys.forEach(key => result[key] = value);
+  return result;
 };
 
 const getSequenceNumber = seq => {
@@ -25,7 +34,8 @@ const getSequenceNumber = seq => {
 };
 
 const getAppVersion = () => {
-  return db.medic.get('_design/medic')
+  return db.medic
+    .get('_design/medic')
     .then(ddoc => (ddoc.deploy_info && ddoc.deploy_info.version) || ddoc.version)
     .catch(err => {
       logger.error('Error fetching app version: %o', err);
@@ -34,8 +44,9 @@ const getAppVersion = () => {
 };
 
 const getSentinelProcessedSeq = () => {
-  return db.sentinel.get('_local/sentinel-meta-data')
-    .then(metadata => metadata.processed_seq)
+  return db.sentinel
+    .get('_local/transitions-seq')
+    .then(metadata => metadata.value)
     .catch(err => {
       if (err.status === 404) {
         // sentinel has not processed anything yet
@@ -149,11 +160,7 @@ const getFeedbackCount = () => {
 const getOutgoingMessageStatusCounts = () => {
   return db.medic.query('medic-admin/message_queue', { reduce: true, group_level: 1 })
     .then(counts => {
-      const result = {
-        due: 0,
-        scheduled: 0,
-        muted: 0
-      };
+      const result = fromEntries(MESSAGE_QUEUE_STATUS_KEYS, 0);
       counts.rows.forEach(row => {
         result[row.key[0]] = row.value;
       });
@@ -161,11 +168,79 @@ const getOutgoingMessageStatusCounts = () => {
     })
     .catch(err => {
       logger.error('Error fetching outgoing message status count: %o', err);
-      return {
-        due: -1,
-        scheduled: -1,
-        muted: -1
-      };
+      return fromEntries(MESSAGE_QUEUE_STATUS_KEYS, -1);
+    });
+};
+
+const getWeeklyOutgoingMessageStatusCounts = () => {
+  const startDate = moment().startOf('day').subtract(7, 'days').valueOf();
+  const endDate = moment().valueOf();
+
+  const optionsList = MESSAGE_QUEUE_STATUS_KEYS.map(key => ({
+    start_key: [key, startDate],
+    end_key: [key, endDate],
+    reduce: true,
+  }));
+
+  const query = (options) => db.medic
+    .query('medic-admin/message_queue', options)
+    .catch(err => {
+      logger.error(`Error fetching weekly outgoing message status counts ${options.start_key}: %o`, err);
+      return { rows: [{ value: -1 }] };
+    });
+
+  return Promise
+    .all(optionsList.map(options => query(options)))
+    .then(counts => {
+      const result = fromEntries(MESSAGE_QUEUE_STATUS_KEYS, 0);
+      counts.forEach((count, idx) => {
+        const row = count && count.rows && count.rows[0];
+        if (row) {
+          result[MESSAGE_QUEUE_STATUS_KEYS[idx]] = row.value;
+        }
+      });
+
+      return result;
+    });
+};
+
+const getLastHundredStatusCountsPerGroup = ({group, statuses}) => {
+  const options = {
+    descending: true,
+    start_key: [group, moment().valueOf()],
+    endkey: [group, 0],
+    limit: 100,
+  };
+
+  return db.medic
+    .query('medic-sms/messages_by_last_updated_state', options)
+    .then(results => {
+      const counts = fromEntries(statuses, 0);
+      results.rows.forEach(row => {
+        const status = row.key[2];
+        counts[status] = counts[status] || 0;
+        counts[status]++;
+      });
+
+      return counts;
+    })
+    .catch(err => {
+      logger.error(`Error fetching last 100 final status messages: %o`, err);
+      return fromEntries(statuses, -1);
+    });
+};
+
+const getLastHundredStatusUpdatesCounts = () => {
+  const groups = [
+    { group: 'pending', statuses: ['pending', 'forwarded-to-gateway', 'received-by-gateway', 'forwarded-by-gateway'] },
+    { group: 'final', statuses: ['sent', 'delivered', 'failed'] },
+    { group: 'muted', statuses: ['denied', 'cleared', 'muted', 'duplicate'] },
+  ];
+
+  return Promise
+    .all(groups.map(group => getLastHundredStatusCountsPerGroup(group)))
+    .then(([pending, final, muted]) => {
+      return { pending, final, muted };
     });
 };
 
@@ -179,7 +254,7 @@ const getReplicationLimitLog = () => {
     });
 };
 
-const json = () => {
+const jsonV1 = () => {
   return Promise
     .all([
       getAppVersion(),
@@ -238,6 +313,25 @@ const json = () => {
     });
 };
 
+const jsonV2 = () => {
+  return Promise
+    .all([
+      jsonV1(),
+      getWeeklyOutgoingMessageStatusCounts(),
+      getLastHundredStatusUpdatesCounts(),
+    ])
+    .then(([jsonV1, weeklyOutgoingMessageStatus, lastHundredCounts]) => {
+      jsonV1.messaging.outgoing = {
+        total: jsonV1.messaging.outgoing.state,
+        seven_days: weeklyOutgoingMessageStatus,
+        last_hundred: lastHundredCounts,
+      };
+
+      return jsonV1;
+    });
+};
+
 module.exports = {
-  json
+  jsonV1,
+  jsonV2,
 };

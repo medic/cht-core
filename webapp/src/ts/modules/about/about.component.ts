@@ -55,7 +55,12 @@ export class AboutComponent implements OnInit, OnDestroy {
     this.userCtx = this.sessionService.userCtx();
     this.resourceIconsService
       .getDocResources('partners')
-      .then(partners => this.partners = partners);
+      .then(partners => this.partners = partners)
+      .catch((err) => {
+        if (err.status !== 404) { // partners doc is not compulsary
+          console.error('Error fetching "partners" doc', err);
+        }
+      });
 
     this.versionService
       .getLocal()

@@ -100,7 +100,7 @@ describe('self_report transition', () => {
         chai.expect(lineage.fetchHydratedDoc.callCount).to.equal(0);
         chai.expect(doc).to.have.all.keys('from', 'errors', 'form', 'tasks');
         chai.expect(doc.errors).to.deep.equal([
-          { message: 'messages.generic.sender_not_found', code: 'sender_not_found' }
+          { message: 'Sender not found', code: 'sender_not_found' }
         ]);
         chai.expect(doc.tasks.length).to.equal(1);
         chai.expect(doc.tasks[0].messages[0]).to.include({

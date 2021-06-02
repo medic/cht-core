@@ -18,6 +18,8 @@ describe('Adding new language', () => {
   };
 
   afterAll(async () => {
+    await browser.manage().addCookie({ name: 'locale', value: 'en' });
+    await utils.resetBrowser();
     await utils.afterEach();
   });
 

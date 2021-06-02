@@ -15,9 +15,6 @@ const getPhoneField = () => {
 const getEmailField = () => {
   return element(by.id('email'));
 };
-const getLanguageField = () => {
-  return element(by.id('language'));
-};
 
 const getRoleField = () => {
   return element(by.id('role'));
@@ -58,7 +55,6 @@ module.exports = {
     await getFullNameField().sendKeys(fullName);
     await getEmailField().sendKeys('bede@mobile.org');
     await getPhoneField().sendKeys('0064212134566');
-    await helper.selectDropdownByValue(getLanguageField(), 'en');
     await helper.selectDropdownByValue(getRoleField(), 'string:national_admin');
     await getPasswordField().sendKeys(password);
     await getConfirmPasswordField().sendKeys(password);

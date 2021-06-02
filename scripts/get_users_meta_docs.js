@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const inquirer = require('inquirer');
 const PouchDB = require('pouchdb-core');
 const fs = require('fs');
@@ -86,7 +88,7 @@ const actionQuestions = [{
           }
           docs.forEach(doc => console.log(JSON.stringify(doc, null, 2) + ','));
         } else if (i === 0) {
-          console.log('\x1b[31m%s\x1b[0m', `There are no documents of type ${type}`);
+          console.error('\x1b[31m%s\x1b[0m', `There are no documents of type ${type}`);
           break;
         } else {
           console.log('{}]');
@@ -100,7 +102,7 @@ const actionQuestions = [{
       let docIndex = 0;
 
       if (docs.length === 0) {
-        console.log('\x1b[31m%s\x1b[0m', `There are no documents of type ${type}`);
+        console.error('\x1b[31m%s\x1b[0m', `There are no documents of type ${type}`);
       } else {
         console.log(JSON.stringify(docs[docIndex], null, 2));
 
@@ -125,7 +127,7 @@ const actionQuestions = [{
 
             console.log(JSON.stringify(docs[docIndex], null, 2));
             if (printMessage) {
-              console.log('\x1b[31m%s\x1b[0m', `No next document. This is the last one.`);
+              console.error('\x1b[31m%s\x1b[0m', `No next document. This is the last one.`);
             }
           } else if (response.action === 'save_current') {
             const filePath = path.join(path.resolve(__dirname), docs[docIndex]._id + '.json');
@@ -154,6 +156,6 @@ const actionQuestions = [{
       }
     }
   } catch(err) {
-    console.log(err);
+    console.error(err);
   }
 })();

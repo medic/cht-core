@@ -8,7 +8,10 @@
   </div>
 
   <div class="targets" *ngIf="!targetsDisabled && !loading">
-    <div class="target" *ngFor="let target of targets" [ngClass]="{ 'has-goal': target.goal >= 0, 'goal-met': (target.value?.pass >= target.goal) || (target.value?.percent >= target.goal) }">
+    <div class="target" 
+      *ngFor="let target of targets" 
+      [ngClass]="{ 'has-goal': target.goal >= 0, 'goal-met': (target.value?.pass >= target.goal) || (target.value?.percent >= target.goal) }"
+      attr.test-target-id="{{ target.id }}">
       <div class="heading">
         <div class="icon" [innerHTML]="target.icon | resourceIcon"></div>
         <div class="title">
