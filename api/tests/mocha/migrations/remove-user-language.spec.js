@@ -68,15 +68,15 @@ describe('remove-user-language migration', () => {
     userQuery.onFirstCall().resolves({ rows: [ userLang0, userNoLang0, userLang1, userNoLang1 ] });
     userQuery.onSecondCall().resolves({ rows: [ userLang3 ] });
     userQuery.onThirdCall().resolves({ });
-    bulkDocs.returns(Promise.resolve());
+    bulkDocs.resolves();
 
     return migration.run().then(() => {
       chai.expect(userQuery.callCount).to.equal(3);
-      chai.expect(userQuery.calledWithExactly(docByType, expectedOptions)).to.be.true;
+      chai.expect(userQuery.args[0]).to.deep.equal([docByType, expectedOptions]);
       expectedOptions.skip = 100;
-      chai.expect(userQuery.calledWithExactly(docByType, expectedOptions)).to.be.true;
+      chai.expect(userQuery.args[1]).to.deep.equal([docByType, expectedOptions]);
       expectedOptions.skip = 200;
-      chai.expect(userQuery.calledWithExactly(docByType, expectedOptions)).to.be.true;
+      chai.expect(userQuery.args[2]).to.deep.equal([docByType, expectedOptions]);
       chai.expect(bulkDocs.callCount).to.equal(2);
       chai.expect(bulkDocs.calledWithExactly([ { _id: 'org.couchdb.user:lang0' }, { _id: 'org.couchdb.user:lang1' } ]))
         .to.be.true;
@@ -110,7 +110,7 @@ describe('remove-user-language migration', () => {
 
   it('should throw an error if one occurs when querying', () => {
     const message = 'Some Error';
-    userQuery.returns(Promise.reject(message));
+    userQuery.rejects(message);
 
     return migration.run()
       .catch((error) => {
