@@ -531,7 +531,6 @@ module.exports = {
             .then(() => createUserSettings(data, {}));
         }
         return Promise.reject(err);
-        }
       });
   },
 
