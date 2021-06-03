@@ -49,7 +49,7 @@ module.exports = function (config) {
 
   // allow to require xml files as strings
   config.buildWebpack.webpackConfig.module.rules.push({
-    test: /\.xml$/i,
+    test: /enketo-xml\/.*\.xml$/i,
     use: 'raw-loader',
   });
 };
