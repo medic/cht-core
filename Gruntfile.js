@@ -934,7 +934,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
-    'replace:webdriver-version',
     CI ? 'exec:start-webdriver-ci' : 'exec:start-webdriver',
   ]);
 
