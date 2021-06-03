@@ -1,0 +1,22 @@
+<data>
+  <name>Sally</name>
+  <lmp>10</lmp>
+  <secret_code_name tag="hidden">S4L</secret_code_name>
+  <doc1 db-doc="true">
+    <type>thing_1</type>
+    <some_property_1>some_value_1</some_property_1>
+    <my_self_1 db-doc-ref="/data/doc1"/>
+    <my_parent_1 db-doc-ref="/data"/>
+    <my_sibling_1 db-doc-ref="/data/doc2"/>
+  </doc1>
+  <doc2 db-doc="true">
+    <type>thing_2</type>
+    <some_property_2>some_value_2</some_property_2>
+    <my_self_2 db-doc-ref="/data/doc2"/>
+    <my_parent_2 db-doc-ref="/data"/>
+    <my_sibling_2 db-doc-ref="/data/doc1"/>
+  </doc2>
+  <my_self_0 db-doc-ref="/data"/>
+  <my_child_01 db-doc-ref="/data/doc1"/>
+  <my_child_02 db-doc-ref="/data/doc2"/>
+</data>

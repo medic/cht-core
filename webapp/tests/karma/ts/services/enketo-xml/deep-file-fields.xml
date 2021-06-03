@@ -1,0 +1,11 @@
+<my-root-element>
+  <name>Mary</name>
+  <age>10</age>
+  <gender>f</gender>
+  <my_file type="file">some image name.png</my_file>
+  <sub_element>
+    <sub_sub_element>
+      <other_file type="file">some other name.png</other_file>
+    </sub_sub_element>
+  </sub_element>
+</my-root-element>

@@ -33,58 +33,10 @@ describe('Enketo service', () => {
     };
   };
 
-  const VISIT_MODEL = `
-    <model>
-      <instance>
-        <data id="V" version="2015-06-05">
-          <patient_id tag="id"/>
-          <name tag="name"/>
-          <inputs>
-            <patient_id tag="n"/>
-            <user>
-              <_id tag="ui"/>
-              <facility_id tag="ufi"/>
-            </user>
-          </inputs>
-        </data>
-      </instance>
-      <itext>
-        <translation lang="eng">
-          <text id="patient_id:label">
-            <value>Patient ID</value>
-          </text>
-        </translation>
-      </itext>
-      <bind nodeset="/data/patient_id" type="medicPatientSelect" required="true()" />
-      <bind nodeset="/data/name" type="string" required="true()" />
-    </model>`;
+  const loadXML = (name) => require(`./enketo-xml/${name}.xml`).default;
 
-  const VISIT_MODEL_WITH_CONTACT_SUMMARY = `
-    <model>
-      <instance>
-        <data id="V" version="2015-06-05">
-          <patient_id tag="id"/>
-          <name tag="name"/>
-          <inputs>
-            <patient_id tag="n"/>
-            <user>
-              <_id tag="ui"/>
-              <facility_id tag="ufi"/>
-            </user>
-          </inputs>
-        </data>
-      </instance>
-      <instance id="contact-summary" />
-      <itext>
-        <translation lang="eng">
-          <text id="patient_id:label">
-            <value>Patient ID</value>
-          </text>
-        </translation>
-      </itext>
-      <bind nodeset="/data/patient_id" type="medicPatientSelect" required="true()" />
-      <bind nodeset="/data/name" type="string" required="true()" />
-    </model>`;
+  const VISIT_MODEL = loadXML('visit');
+  const VISIT_MODEL_WITH_CONTACT_SUMMARY = loadXML('visit-contact-summary');
 
   let service;
   let setLastChangedDoc;
@@ -513,7 +465,7 @@ describe('Enketo service', () => {
 
     it('creates report', () => {
       form.validate.resolves(true);
-      const content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
+      const content = loadXML('sally-lmp');
       form.getDataStr.returns(content);
       dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
       dbGetAttachment.resolves('<form/>');
@@ -540,7 +492,7 @@ describe('Enketo service', () => {
         expect(AddAttachment.callCount).to.equal(1);
         expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
         expect(AddAttachment.args[0][1]).to.equal('content');
-        expect(AddAttachment.args[0][2]).to.equal(content);
+        expect(AddAttachment.args[0][2]).to.equal(content.replace(/\n$/, ''));
         expect(AddAttachment.args[0][3]).to.equal('application/xml');
       });
     });
@@ -548,7 +500,7 @@ describe('Enketo service', () => {
     describe('Geolocation recording', () => {
       it('saves geolocation data into a new report', () => {
         form.validate.resolves(true);
-        const content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
+        const content = loadXML('sally-lmp');
         form.getDataStr.returns(content);
         dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
         dbGetAttachment.resolves('<form/>');
@@ -588,14 +540,14 @@ describe('Enketo service', () => {
           expect(AddAttachment.callCount).to.equal(1);
           expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
           expect(AddAttachment.args[0][1]).to.equal('content');
-          expect(AddAttachment.args[0][2]).to.equal(content);
+          expect(AddAttachment.args[0][2]).to.equal(content.replace(/\n$/, ''));
           expect(AddAttachment.args[0][3]).to.equal('application/xml');
         });
       });
 
       it('saves a geolocation error into a new report', () => {
         form.validate.resolves(true);
-        const content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
+        const content = loadXML('sally-lmp');
         form.getDataStr.returns(content);
         dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
         dbGetAttachment.resolves('<form/>');
@@ -630,14 +582,14 @@ describe('Enketo service', () => {
           expect(AddAttachment.callCount).to.equal(1);
           expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
           expect(AddAttachment.args[0][1]).to.equal('content');
-          expect(AddAttachment.args[0][2]).to.equal(content);
+          expect(AddAttachment.args[0][2]).to.equal(content.replace(/\n$/, ''));
           expect(AddAttachment.args[0][3]).to.equal('application/xml');
         });
       });
 
-      it('overwrites exising geolocation info on edit with new info and appends to the log', () => {
+      it('overwrites existing geolocation info on edit with new info and appends to the log', () => {
         form.validate.resolves(true);
-        const content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
+        const content = loadXML('sally-lmp');
         form.getDataStr.returns(content);
         const originalGeoData = {
           latitude: 1,
@@ -699,7 +651,7 @@ describe('Enketo service', () => {
           expect(AddAttachment.callCount).to.equal(1);
           expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
           expect(AddAttachment.args[0][1]).to.equal('content');
-          expect(AddAttachment.args[0][2]).to.equal(content);
+          expect(AddAttachment.args[0][2]).to.equal(content.replace(/\n$/, ''));
           expect(AddAttachment.args[0][3]).to.equal('application/xml');
           expect(setLastChangedDoc.callCount).to.equal(1);
           expect(setLastChangedDoc.args[0]).to.deep.equal([actual]);
@@ -709,7 +661,7 @@ describe('Enketo service', () => {
 
     it('creates report with erroring geolocation', () => {
       form.validate.resolves(true);
-      const content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
+      const content = loadXML('sally-lmp');
       form.getDataStr.returns(content);
       dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
       dbGetAttachment.resolves('<form/>');
@@ -741,19 +693,14 @@ describe('Enketo service', () => {
         expect(AddAttachment.callCount).to.equal(1);
         expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
         expect(AddAttachment.args[0][1]).to.equal('content');
-        expect(AddAttachment.args[0][2]).to.equal(content);
+        expect(AddAttachment.args[0][2]).to.equal(content.replace(/\n$/, ''));
         expect(AddAttachment.args[0][3]).to.equal('application/xml');
       });
     });
 
     it('creates report with hidden fields', () => {
       form.validate.resolves(true);
-      const content =
-        `<doc>
-          <name>Sally</name>
-          <lmp>10</lmp>
-          <secret_code_name tag="hidden">S4L</secret_code_name>
-        </doc>`;
+      const content = loadXML('hidden-field');
       form.getDataStr.returns(content);
       dbBulkDocs.resolves([ { ok: true, id: '(generated-in-service)', rev: '1-abc' } ]);
       dbGetAttachment.resolves('<form/>');
@@ -782,7 +729,7 @@ describe('Enketo service', () => {
 
     it('updates report', () => {
       form.validate.resolves(true);
-      const content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
+      const content = loadXML('sally-lmp');
       form.getDataStr.returns(content);
       dbGet.resolves({
         _id: '6',
@@ -815,7 +762,7 @@ describe('Enketo service', () => {
         expect(AddAttachment.callCount).to.equal(1);
         expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
         expect(AddAttachment.args[0][1]).to.equal('content');
-        expect(AddAttachment.args[0][2]).to.equal(content);
+        expect(AddAttachment.args[0][2]).to.equal(content.replace(/\n$/, ''));
         expect(AddAttachment.args[0][3]).to.equal('application/xml');
         expect(setLastChangedDoc.callCount).to.equal(1);
         expect(setLastChangedDoc.args[0]).to.deep.equal([actual]);
@@ -827,20 +774,7 @@ describe('Enketo service', () => {
       const startTime = Date.now() - 1;
 
       form.validate.resolves(true);
-      const content =
-        `<data>
-            <name>Sally</name>
-            <lmp>10</lmp>
-            <secret_code_name tag="hidden">S4L</secret_code_name>
-            <doc1 db-doc="true">
-              <type>thing_1</type>
-              <some_property_1>some_value_1</some_property_1>
-            </doc1>
-            <doc2 db-doc="true">
-              <type>thing_2</type>
-              <some_property_2>some_value_2</some_property_2>
-            </doc2>
-          </data>`;
+      const content = loadXML('extra-docs');
       form.getDataStr.returns(content);
       dbBulkDocs.callsFake(docs => {
         return Promise.resolve(docs.map(doc => {
@@ -900,20 +834,7 @@ describe('Enketo service', () => {
       const startTime = Date.now() - 1;
 
       form.validate.resolves(true);
-      const content =
-        `<data>
-            <name>Sally</name>
-            <lmp>10</lmp>
-            <secret_code_name tag="hidden">S4L</secret_code_name>
-            <doc1 db-doc="true">
-              <type>thing_1</type>
-              <some_property_1>some_value_1</some_property_1>
-            </doc1>
-            <doc2 db-doc="true">
-              <type>thing_2</type>
-              <some_property_2>some_value_2</some_property_2>
-            </doc2>
-          </data>`;
+      const content = loadXML('extra-docs');
       form.getDataStr.returns(content);
       dbBulkDocs.resolves([
         { ok: true, id: '6', rev: '1-abc' },
@@ -979,29 +900,7 @@ describe('Enketo service', () => {
 
     it('creates extra docs with references', () => {
       form.validate.resolves(true);
-      const content =
-        `<data>
-            <name>Sally</name>
-            <lmp>10</lmp>
-            <secret_code_name tag="hidden">S4L</secret_code_name>
-            <doc1 db-doc="true">
-              <type>thing_1</type>
-              <some_property_1>some_value_1</some_property_1>
-              <my_self_1 db-doc-ref="/data/doc1"/>
-              <my_parent_1 db-doc-ref="/data"/>
-              <my_sibling_1 db-doc-ref="/data/doc2"/>
-            </doc1>
-            <doc2 db-doc="true">
-              <type>thing_2</type>
-              <some_property_2>some_value_2</some_property_2>
-              <my_self_2 db-doc-ref="/data/doc2"/>
-              <my_parent_2 db-doc-ref="/data"/>
-              <my_sibling_2 db-doc-ref="/data/doc1"/>
-            </doc2>
-            <my_self_0 db-doc-ref="/data"/>
-            <my_child_01 db-doc-ref="/data/doc1"/>
-            <my_child_02 db-doc-ref="/data/doc2"/>
-          </data>`;
+      const content = loadXML('extra-docs-with-references');
       form.getDataStr.returns(content);
       dbBulkDocs.resolves([
         { ok: true, id: '6', rev: '1-abc' },
@@ -1061,27 +960,7 @@ describe('Enketo service', () => {
 
     it('creates extra docs with repeats', () => {
       form.validate.resolves(true);
-      const content =
-        `<data xmlns:jr="http://openrosa.org/javarosa">
-            <name>Sally</name>
-            <lmp>10</lmp>
-            <secret_code_name tag="hidden">S4L</secret_code_name>
-            <repeat_doc db-doc="true" jr:template="">
-              <type>repeater</type>
-              <some_property>some_value_1</some_property>
-              <my_parent db-doc-ref="/data"/>
-            </repeat_doc>
-            <repeat_doc db-doc="true">
-              <type>repeater</type>
-              <some_property>some_value_2</some_property>
-              <my_parent db-doc-ref="/data"/>
-            </repeat_doc>
-            <repeat_doc db-doc="true">
-              <type>repeater</type>
-              <some_property>some_value_3</some_property>
-              <my_parent db-doc-ref="/data"/>
-            </repeat_doc>
-          </data>`;
+      const content = loadXML('extra-docs-with-repeat');
       form.getDataStr.returns(content);
       dbBulkDocs.resolves([
         { ok: true, id: '6', rev: '1-abc' },
@@ -1126,45 +1005,7 @@ describe('Enketo service', () => {
 
     it('db-doc-ref with repeats', () => {
       form.validate.resolves(true);
-      const content =
-        `<data xmlns:jr="http://openrosa.org/javarosa">
-            <name>Sally</name>
-            <lmp>10</lmp>
-            <secret_code_name tag="hidden">S4L</secret_code_name>
-            <repeat_section>
-              <extra>data1</extra>
-              <repeat_doc db-doc="true">
-                <type>repeater</type>
-                <some_property>some_value_1</some_property>
-                <my_parent db-doc-ref="/data"/>
-              </repeat_doc>
-              <repeat_doc_ref db-doc-ref="/data/repeat_section/repeat_doc">
-                value value
-              </repeat_doc_ref>             
-            </repeat_section>
-            <repeat_section>
-              <extra>data2</extra>
-              <repeat_doc db-doc="true">
-                <type>repeater</type>
-                <some_property>some_value_2</some_property>
-                <my_parent db-doc-ref="/data"/>
-              </repeat_doc>
-              <repeat_doc_ref db-doc-ref="/data/repeat_section/repeat_doc">
-                value value
-              </repeat_doc_ref> 
-            </repeat_section>
-            <repeat_section>
-              <extra>data3</extra>
-              <repeat_doc db-doc="true">
-                <type>repeater</type>
-                <some_property>some_value_3</some_property>
-                <my_parent db-doc-ref="/data"/>
-              </repeat_doc>
-              <repeat_doc_ref db-doc-ref="/data/repeat_section/repeat_doc">
-                value value
-              </repeat_doc_ref>         
-            </repeat_section>
-          </data>`;
+      const content = loadXML('db-doc-ref-in-repeat');
       form.getDataStr.returns(content);
 
       dbBulkDocs.resolves([
@@ -1206,75 +1047,7 @@ describe('Enketo service', () => {
 
     it('db-doc-ref with deep repeats', () => {
       form.validate.resolves(true);
-      const content =
-        `<data xmlns:jr="http://openrosa.org/javarosa">
-            <name>Sally</name>
-            <lmp>10</lmp>
-            <secret_code_name tag="hidden">S4L</secret_code_name>
-            <repeat_section>
-              <extra>data1</extra>
-              <other>
-                <deep>
-                  <structure>
-                    <repeat_doc db-doc="true">
-                      <type>repeater</type>
-                      <some_property>some_value_1</some_property>
-                      <my_parent db-doc-ref="/data"/>
-                    </repeat_doc>
-                  </structure>
-                </deep>
-              </other>             
-              <some>
-                <deep>
-                  <structure>
-                    <repeat_doc_ref db-doc-ref="/data/repeat_section/other/deep/structure/repeat_doc"/>                 
-                  </structure>
-                </deep>
-              </some>                          
-            </repeat_section>
-            <repeat_section>
-              <extra>data2</extra>
-              <other>
-                <deep>
-                  <structure>
-                    <repeat_doc db-doc="true">
-                      <type>repeater</type>
-                      <some_property>some_value_1</some_property>
-                      <my_parent db-doc-ref="/data"/>
-                    </repeat_doc>
-                  </structure>
-                </deep>
-              </other>             
-              <some>
-                <deep>
-                  <structure>
-                    <repeat_doc_ref db-doc-ref="/data/repeat_section/other/deep/structure/repeat_doc"/>                 
-                  </structure>
-                </deep>
-              </some>                          
-            </repeat_section>
-            <repeat_section>
-              <extra>data3</extra>
-              <other>
-                <deep>
-                  <structure>
-                    <repeat_doc db-doc="true">
-                      <type>repeater</type>
-                      <some_property>some_value_1</some_property>
-                      <my_parent db-doc-ref="/data"/>
-                    </repeat_doc>
-                  </structure>
-                </deep>
-              </other>             
-              <some>
-                <deep>
-                  <structure>
-                    <repeat_doc_ref db-doc-ref="/data/repeat_section/other/deep/structure/repeat_doc"/>                 
-                  </structure>
-                </deep>
-              </some>                          
-            </repeat_section>
-          </data>`;
+      const content = loadXML('db-doc-ref-in-deep-repeat');
       form.getDataStr.returns(content);
 
       dbBulkDocs.resolves([
@@ -1316,87 +1089,7 @@ describe('Enketo service', () => {
 
     it('db-doc-ref with deep repeats and non-db-doc repeats', () => {
       form.validate.resolves(true);
-      const content =
-        `<data xmlns:jr="http://openrosa.org/javarosa">
-            <name>Sally</name>
-            <lmp>10</lmp>
-            <secret_code_name tag="hidden">S4L</secret_code_name>
-            <repeat_section>
-              <extra>data1</extra>              
-              <other>
-                <deep>
-                  <structure>
-                    <repeat_doc>
-                      <type>repeater</type>
-                      <some_property>some_value_1</some_property>                     
-                    </repeat_doc>
-                    <repeat_doc db-doc="true">
-                      <type>repeater</type>
-                      <some_property>some_value_1</some_property>
-                      <my_parent db-doc-ref="/data"/>
-                    </repeat_doc>
-                  </structure>
-                </deep>
-              </other>             
-              <some>
-                <deep>
-                  <structure>
-                    <repeat_doc_ref db-doc-ref="/data/repeat_section/other/deep/structure/repeat_doc"/>                 
-                  </structure>
-                </deep>
-              </some>                          
-            </repeat_section>
-            <repeat_section>
-              <extra>data2</extra>
-              <other>
-                <deep>
-                  <structure>
-                    <repeat_doc>
-                      <type>repeater</type>
-                      <some_property>some_value_1</some_property>                     
-                    </repeat_doc>
-                    <repeat_doc db-doc="true">
-                      <type>repeater</type>
-                      <some_property>some_value_1</some_property>
-                      <my_parent db-doc-ref="/data"/>
-                    </repeat_doc>
-                  </structure>
-                </deep>
-              </other>             
-              <some>
-                <deep>
-                  <structure>
-                    <repeat_doc_ref db-doc-ref="/data/repeat_section/other/deep/structure/repeat_doc"/>                 
-                  </structure>
-                </deep>
-              </some>                          
-            </repeat_section>
-            <repeat_section>
-              <extra>data3</extra>
-              <other>
-                <deep>
-                  <structure>
-                    <repeat_doc>
-                      <type>repeater</type>
-                      <some_property>some_value_1</some_property>                     
-                    </repeat_doc>
-                    <repeat_doc db-doc="true">
-                      <type>repeater</type>
-                      <some_property>some_value_1</some_property>
-                      <my_parent db-doc-ref="/data"/>
-                    </repeat_doc>
-                  </structure>
-                </deep>
-              </other>             
-              <some>
-                <deep>
-                  <structure>
-                    <repeat_doc_ref db-doc-ref="/data/repeat_section/other/deep/structure/repeat_doc"/>                 
-                  </structure>
-                </deep>
-              </some>                          
-            </repeat_section>
-          </data>`;
+      const content = loadXML('db-doc-ref-in-deep-repeats-extra-repeats');
       form.getDataStr.returns(content);
 
       dbBulkDocs.resolves([
@@ -1438,45 +1131,7 @@ describe('Enketo service', () => {
 
     it('db-doc-ref with repeats and local references', () => {
       form.validate.resolves(true);
-      const content =
-        `<data xmlns:jr="http://openrosa.org/javarosa">
-            <name>Sally</name>
-            <lmp>10</lmp>
-            <secret_code_name tag="hidden">S4L</secret_code_name>
-            <repeat_section>
-              <extra>data1</extra>
-              <repeat_doc db-doc="true">
-                <type>repeater</type>
-                <some_property>some_value_1</some_property>
-                <my_parent db-doc-ref="/data"/>
-              </repeat_doc>
-              <repeat_doc_ref db-doc-ref="./repeat_doc">
-                value value
-              </repeat_doc_ref>             
-            </repeat_section>
-            <repeat_section>
-              <extra>data2</extra>
-              <repeat_doc db-doc="true">
-                <type>repeater</type>
-                <some_property>some_value_2</some_property>
-                <my_parent db-doc-ref="/data"/>
-              </repeat_doc>
-              <repeat_doc_ref db-doc-ref="./repeat_doc">
-                value value
-              </repeat_doc_ref> 
-            </repeat_section>
-            <repeat_section>
-              <extra>data3</extra>
-              <repeat_doc db-doc="true">
-                <type>repeater</type>
-                <some_property>some_value_3</some_property>
-                <my_parent db-doc-ref="/data"/>
-              </repeat_doc>
-              <repeat_doc_ref db-doc-ref="./repeat_doc">
-                value value
-              </repeat_doc_ref>         
-            </repeat_section>
-          </data>`;
+      const content = loadXML('db-doc-ref-in-repeats-with-local-references');
       form.getDataStr.returns(content);
 
       dbBulkDocs.resolves([
@@ -1518,87 +1173,7 @@ describe('Enketo service', () => {
 
     it('db-doc-ref with deep repeats and local references', () => {
       form.validate.resolves(true);
-      const content =
-        `<data xmlns:jr="http://openrosa.org/javarosa">
-            <name>Sally</name>
-            <lmp>10</lmp>
-            <secret_code_name tag="hidden">S4L</secret_code_name>
-            <repeat_section>
-              <extra>data1</extra>
-              <other>
-                <deep>
-                  <structure>
-                    <repeat_doc>
-                      <type>repeater</type>
-                      <some_property>some_value_1</some_property>                     
-                    </repeat_doc>
-                    <repeat_doc db-doc="true">
-                      <type>repeater</type>
-                      <some_property>some_value_1</some_property>
-                      <my_parent db-doc-ref="/data"/>
-                    </repeat_doc>
-                  </structure>
-                </deep>
-              </other>             
-              <some>
-                <deep>
-                  <structure>
-                    <repeat_doc_ref db-doc-ref="./repeat_doc"/>                                     
-                  </structure>
-                </deep>
-              </some>                          
-            </repeat_section>
-            <repeat_section>
-              <extra>data2</extra>
-              <other>
-                <deep>
-                  <structure>
-                    <repeat_doc>
-                      <type>repeater</type>
-                      <some_property>some_value_1</some_property>                     
-                    </repeat_doc>
-                    <repeat_doc db-doc="true">
-                      <type>repeater</type>
-                      <some_property>some_value_1</some_property>
-                      <my_parent db-doc-ref="/data"/>
-                    </repeat_doc>
-                  </structure>
-                </deep>
-              </other>             
-              <some>
-                <deep>
-                  <structure>
-                    <repeat_doc_ref db-doc-ref="./repeat_doc"/>                 
-                  </structure>
-                </deep>
-              </some>                          
-            </repeat_section>
-            <repeat_section>
-              <extra>data3</extra>
-              <other>
-                <deep>
-                  <structure>
-                    <repeat_doc>
-                      <type>repeater</type>
-                      <some_property>some_value_1</some_property>                     
-                    </repeat_doc>
-                    <repeat_doc db-doc="true">
-                      <type>repeater</type>
-                      <some_property>some_value_1</some_property>
-                      <my_parent db-doc-ref="/data"/>
-                    </repeat_doc>
-                  </structure>
-                </deep>
-              </other>             
-              <some>
-                <deep>
-                  <structure>
-                    <repeat_doc_ref db-doc-ref="./repeat_doc"/>                 
-                  </structure>
-                </deep>
-              </some>                          
-            </repeat_section>
-          </data>`;
+      const content = loadXML('db-doc-ref-in-deep-repeats-with-local-references');
       form.getDataStr.returns(content);
 
       dbBulkDocs.resolves([
@@ -1640,30 +1215,7 @@ describe('Enketo service', () => {
 
     it('db-doc-ref with repeats with refs outside of repeat', () => {
       form.validate.resolves(true);
-      const content =
-        `<data xmlns:jr="http://openrosa.org/javarosa">
-            <name>Sally</name>
-            <lmp>10</lmp>
-            <secret_code_name tag="hidden">S4L</secret_code_name>
-            <separate_doc db-doc="true">
-                <type>separat5e</type>
-                <some_property>some_value_1</some_property>
-                <my_parent db-doc-ref="/data"/>
-            </separate_doc>
-              
-            <repeat_section>
-              <extra>data1</extra>             
-              <repeat_doc_ref db-doc-ref="data/separate_doc"/>             
-            </repeat_section>
-            <repeat_section>
-              <extra>data2</extra>             
-              <repeat_doc_ref db-doc-ref="data/separate_doc"/>             
-            </repeat_section>
-            <repeat_section>
-              <extra>data3</extra>             
-              <repeat_doc_ref db-doc-ref="data/separate_doc"/>             
-            </repeat_section>
-          </data>`;
+      const content = loadXML('db-doc-ref-outside-of-repeat');
       form.getDataStr.returns(content);
 
       dbBulkDocs.resolves([
@@ -1713,14 +1265,7 @@ describe('Enketo service', () => {
         .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
 
       form.validate.resolves(true);
-      const content = `
-        <my-form>
-          <name>Mary</name>
-          <age>10</age>
-          <gender>f</gender>
-          <my_file type="file">some image name.png</my_file>
-        </my-form>
-      `;
+      const content = loadXML('file-field');
 
       form.getDataStr.returns(content);
       dbGetAttachment.resolves('<form/>');
@@ -1739,13 +1284,7 @@ describe('Enketo service', () => {
 
     it('removes binary data from content', () => {
       form.validate.resolves(true);
-      const content =
-        `<my-form>
-  <name>Mary</name>
-  <age>10</age>
-  <gender>f</gender>
-  <my_file type="binary">some image data</my_file>
-</my-form>`;
+      const content = loadXML('binary-field');
 
       const expected =
         `<my-form>
@@ -1785,19 +1324,7 @@ describe('Enketo service', () => {
         .withArgs('input[type=file][name="/my-root-element/sub_element/sub_sub_element/other_file"]')
         .returns([{ files: [{ type: 'mytype', foo: 'baz' }] }]);
       form.validate.resolves(true);
-      const content = `
-        <my-root-element>
-          <name>Mary</name>
-          <age>10</age>
-          <gender>f</gender>
-          <my_file type="file">some image name.png</my_file>
-          <sub_element>
-            <sub_sub_element>
-              <other_file type="file">some other name.png</other_file>
-            </sub_sub_element>
-          </sub_element>
-        </my-root-element>
-      `;
+      const content = loadXML('deep-file-fields');
 
       form.getDataStr.returns(content);
       dbGetAttachment.resolves('<form/>');

@@ -1,0 +1,80 @@
+<data xmlns:jr="http://openrosa.org/javarosa">
+  <name>Sally</name>
+  <lmp>10</lmp>
+  <secret_code_name tag="hidden">S4L</secret_code_name>
+  <repeat_section>
+    <extra>data1</extra>
+    <other>
+      <deep>
+        <structure>
+          <repeat_doc>
+            <type>repeater</type>
+            <some_property>some_value_1</some_property>
+          </repeat_doc>
+          <repeat_doc db-doc="true">
+            <type>repeater</type>
+            <some_property>some_value_1</some_property>
+            <my_parent db-doc-ref="/data"/>
+          </repeat_doc>
+        </structure>
+      </deep>
+    </other>
+    <some>
+      <deep>
+        <structure>
+          <repeat_doc_ref db-doc-ref="/data/repeat_section/other/deep/structure/repeat_doc"/>
+        </structure>
+      </deep>
+    </some>
+  </repeat_section>
+  <repeat_section>
+    <extra>data2</extra>
+    <other>
+      <deep>
+        <structure>
+          <repeat_doc>
+            <type>repeater</type>
+            <some_property>some_value_1</some_property>
+          </repeat_doc>
+          <repeat_doc db-doc="true">
+            <type>repeater</type>
+            <some_property>some_value_1</some_property>
+            <my_parent db-doc-ref="/data"/>
+          </repeat_doc>
+        </structure>
+      </deep>
+    </other>
+    <some>
+      <deep>
+        <structure>
+          <repeat_doc_ref db-doc-ref="/data/repeat_section/other/deep/structure/repeat_doc"/>
+        </structure>
+      </deep>
+    </some>
+  </repeat_section>
+  <repeat_section>
+    <extra>data3</extra>
+    <other>
+      <deep>
+        <structure>
+          <repeat_doc>
+            <type>repeater</type>
+            <some_property>some_value_1</some_property>
+          </repeat_doc>
+          <repeat_doc db-doc="true">
+            <type>repeater</type>
+            <some_property>some_value_1</some_property>
+            <my_parent db-doc-ref="/data"/>
+          </repeat_doc>
+        </structure>
+      </deep>
+    </other>
+    <some>
+      <deep>
+        <structure>
+          <repeat_doc_ref db-doc-ref="/data/repeat_section/other/deep/structure/repeat_doc"/>
+        </structure>
+      </deep>
+    </some>
+  </repeat_section>
+</data>
