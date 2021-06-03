@@ -6,19 +6,21 @@
 
 const _ = require('lodash');
 
+/**
+ * API definition, see initApi() for initialisation.
+ * @type {{v1: undefined}}
+ */
+const API = { v1: undefined };
 
-const buildApi = (dataSet, deprecatedDataSet) => {
+const initApi = (dataSet, deprecatedDataSet) => {
   const generatedGets = generateGetFunctions(dataSet, deprecatedDataSet);
 
   const v1 = {
     // Add here explicit functions.
   };
 
-  return {
-    v1: Object.assign({}, v1, generatedGets)
-  };
+  API.v1 = Object.assign({}, v1, generatedGets);
 };
-
 
 const generateGetFunctions = (dataSet, deprecatedDataSet) => {
   const gets = {};
@@ -61,6 +63,11 @@ const formatFunctionName = (action, subject) => {
   return _.camelCase(`${action} ${subject}`);
 };
 
+const getApi = () => {
+  return Object.assign({}, API);
+};
+
 module.exports = {
-  buildApi
+  initApi,
+  getApi
 };

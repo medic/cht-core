@@ -400,4 +400,8 @@ export class RulesEngineService implements OnDestroy {
   contactsMarkedAsDirty(callback) {
     return this.observable.subscribe(callback);
   }
+
+  getChtScriptApi() {
+    return this.rulesEngineCore.getChtScriptApi();
+  }
 }

@@ -44,22 +44,26 @@ module.exports = {
     try {
       const settingsDoc = { tasks: { schedules: settings.taskSchedules } };
       const nootilsInstance = nootils(settingsDoc);
+
+      chtScriptApi.initApi(
+        {
+          user: settings.contact,
+          userContactDoc: settings.contact,
+          userSettingsDoc: settings.user,
+          utils: nootilsInstance,
+        },
+        { user: { replacement: 'userContactDoc' } }
+      );
+
       flow = nools.compile(settings.rules, {
         name: 'medic',
         scope: {
           Utils: nootilsInstance,
           user: settings.contact, // Deprecated since 3.12.x
-          cht: chtScriptApi.buildApi(
-            {
-              user: settings.contact,
-              userContactDoc: settings.contact,
-              userSettingsDoc: settings.user,
-              utils: nootilsInstance,
-            },
-            { user: { replacement: 'userContactDoc' } }
-          )
+          cht: chtScriptApi.getApi()
         },
       });
+
     } catch (err) {
       shutdown();
       throw err;
