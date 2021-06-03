@@ -60,7 +60,8 @@ module.exports = {
         scope: {
           Utils: nootilsInstance,
           user: settings.contact, // Deprecated since 3.12.x
-          cht: chtScriptApi.getApi()
+          cht_test: chtScriptApi.getApi(),
+          cht: settings.chtScriptApi
         },
       });
 

@@ -19,6 +19,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { DbService } from '@mm-services/db.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
 import { FeedbackService } from '@mm-services/feedback.service';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 interface DebounceActive {
   [key: string]: {
@@ -71,6 +72,7 @@ export class RulesEngineService implements OnDestroy {
     private rulesEngineCoreFactoryService:RulesEngineCoreFactoryService,
     private calendarIntervalService:CalendarIntervalService,
     private ngZone:NgZone,
+    private chtScriptApiService:CHTScriptApiService
   ) {
     this.initialized = this.initialize();
     this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
@@ -100,7 +102,8 @@ export class RulesEngineService implements OnDestroy {
           .all([
             this.settingsService.get(),
             this.userContactService.get(),
-            this.userSettingsService.get()
+            this.userSettingsService.get(),
+            this.chtScriptApiService.updateApiDataSet()
           ])
           .then(([settingsDoc, userContactDoc, userSettingsDoc]) => {
             const rulesSettings = this.getRulesSettings(
@@ -199,7 +202,7 @@ export class RulesEngineService implements OnDestroy {
     debounceInfo.active = false;
   }
 
-  private getRulesSettings(settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets) {
+  private async getRulesSettings(settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets) {
     const settingsTasks = settingsDoc && settingsDoc.tasks || {};
     const filterTargetByContext = (target) => target.context ?
       !!this.parseProvider.parse(target.context)({ user: userContactDoc }) : true;
@@ -214,6 +217,7 @@ export class RulesEngineService implements OnDestroy {
       contact: userContactDoc,
       user: userSettingsDoc,
       monthStartDate: this.uhcSettingsService.getMonthStartDate(settingsDoc),
+      chtScriptApi: this.chtScriptApiService.getV1Api()
     };
   }
 
@@ -249,7 +253,9 @@ export class RulesEngineService implements OnDestroy {
     const rulesUpdateSubscription = this.changesService.subscribe({
       key: 'rules-config-update',
       filter: change => change.id === 'settings' || userLineage.includes(change.id),
-      callback: change => {
+      callback: async (change) => {
+        await this.chtScriptApiService.updateApiDataSet();
+
         if (change.id !== 'settings') {
           return this.userContactService
             .get()
@@ -399,9 +405,5 @@ export class RulesEngineService implements OnDestroy {
 
   contactsMarkedAsDirty(callback) {
     return this.observable.subscribe(callback);
-  }
-
-  getChtScriptApi() {
-    return this.rulesEngineCore.getChtScriptApi();
   }
 }

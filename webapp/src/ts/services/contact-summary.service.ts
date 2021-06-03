@@ -5,7 +5,7 @@ import { PipesService } from '@mm-services/pipes.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { UHCStatsService } from '@mm-services/uhc-stats.service';
-import { RulesEngineService } from '@mm-services/rules-engine.service';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 /**
  * Service for generating summary information based on a given
@@ -28,7 +28,7 @@ export class ContactSummaryService {
     private ngZone:NgZone,
     private uhcSettingsService:UHCSettingsService,
     private uhcStatsService:UHCStatsService,
-    private rulesEngineService:RulesEngineService
+    private chtScriptApiService:CHTScriptApiService
   ) { }
 
   private getGeneratorFunction() {
@@ -99,7 +99,7 @@ export class ContactSummaryService {
       uhcInterval: this.uhcStatsService.getUHCInterval(this.visitCountSettings)
     };
 
-    const chtScriptApi = this.rulesEngineService.getChtScriptApi();
+    const chtScriptApi = this.chtScriptApiService.getV1Api();
 
     try {
       const summary = generatorFunction(contact, reports || [], lineage || [], uhcStats, chtScriptApi, targetDoc);

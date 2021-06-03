@@ -40,6 +40,7 @@ import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-clo
 import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-matcher.provider';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -118,6 +119,7 @@ export class AppComponent implements OnInit {
     private translateLocaleService:TranslateLocaleService,
     private telemetryService:TelemetryService,
     private ngZone:NgZone,
+    private chtScriptApiService: CHTScriptApiService
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -259,6 +261,7 @@ export class AppComponent implements OnInit {
       .init()
       .then(() => this.checkPrivacyPolicy())
       .then(() => this.initRulesEngine())
+      .then(() => this.chtScriptApiService.init())
       .then(() => this.initForms())
       .then(() => this.initUnreadCount())
       .then(() => this.checkDateService.check(true))
