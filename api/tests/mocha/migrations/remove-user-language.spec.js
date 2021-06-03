@@ -116,7 +116,7 @@ describe('remove-user-language migration', () => {
       .catch((error) => {
         chai.expect(userQuery.callCount).to.equal(1);
         chai.expect(userQuery.calledWithExactly(docByType, expectedOptions)).to.be.true;
-        chai.expect(error).to.equal(message);
+        chai.expect(error.name).to.equal(message);
       });
   });
 
