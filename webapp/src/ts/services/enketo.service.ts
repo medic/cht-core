@@ -464,21 +464,30 @@ export class EnketoService {
       }
     };
 
-    const getClosestPath = (element, $element, path) => {
-      path = path.trim();
-      const relativeReference = path.startsWith('./');
+    const getRelativePath = (path) => {
       const repeatReference = repeatPaths?.find(repeatPath => path.startsWith(repeatPath));
+      if (repeatReference) {
+        return path.replace(`${repeatReference}/`, '');
+      }
 
-      if (!relativeReference && !repeatReference) {
+      if (path.startsWith('./')) {
+        return path.replace('./', '');
+      }
+    };
+
+    const getClosestPath = (element, $element, path) => {
+      const relativePath = getRelativePath(path.trim());
+      if (!relativePath) {
         return;
       }
 
       // assign a unique id for xpath context, since the element can be inside a repeat
-      element.id = element.id || uuid();
+      if (!element.id) {
+        element.id = uuid();
+      }
       const uniqueElementSelector = `${element.nodeName}[@id="${element.id}"]`;
-      const localPath = path.replace(repeatReference ? `${repeatReference}/` : './', '');
 
-      return `//${uniqueElementSelector}/ancestor-or-self::*/descendant-or-self::${localPath}`;
+      return `//${uniqueElementSelector}/ancestor-or-self::*/descendant-or-self::${relativePath}`;
     };
 
     // Chrome 30 doesn't support $xml.outerHTML: #3880
