@@ -6,31 +6,32 @@ const removeLanguage = (docs) => {
   return db.medic.bulkDocs(docs);
 };
 
-const needsUpdate = (row) => Object.prototype.hasOwnProperty.call(row.doc, 'language');
+const needsUpdate = (row) => row.doc && Object.prototype.hasOwnProperty.call(row.doc, 'language');
 
-const fixUsers = function(skipSize) {
+const removeLanguageFromUserSettings = (skipSize) => {
   const options = {
     include_docs: true,
     limit: BATCH_SIZE,
     skip: skipSize,
     key: [ 'user-settings' ]
   };
-  return db.medic.query('medic-client/doc_by_type', options)
+  return db.medic
+    .query('medic-client/doc_by_type', options)
     .then(result => {
       if (!result.rows || !result.rows.length) {
-        return Promise.resolve();
+        return false;
       }
-      const rowsWithLanguage = result.rows.filter(needsUpdate).map(row => row.doc);
-      if (!rowsWithLanguage.length) {
-        return fixUsers(skipSize + BATCH_SIZE);
+      const docsWithLanguage = result.rows.filter(needsUpdate).map(row => row.doc);
+      if (!docsWithLanguage.length) {
+        return true;
       }
-      return removeLanguage(rowsWithLanguage)
-        .then(() => fixUsers(skipSize + BATCH_SIZE));
-    });
+      return removeLanguage(docsWithLanguage).then(() => true);
+    })
+    .then((moreRows) => moreRows && removeLanguageFromUserSettings(skipSize + BATCH_SIZE));
 };
 
 module.exports = {
   name: 'remove-user-language',
   created: new Date(2021, 6, 1, 0, 0, 0, 0),
-  run: () => fixUsers(0)
+  run: () => removeLanguageFromUserSettings(0)
 };
