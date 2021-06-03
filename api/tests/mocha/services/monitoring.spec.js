@@ -151,6 +151,7 @@ describe('Monitoring service', () => {
       chai.expect(actual.conflict).to.deep.equal({ count: 40 });
       chai.expect(actual.date.current).to.equal(0);
       chai.expect(actual.replication_limit.count).to.equal(1);
+      chai.expect(actual.connected_users.count).to.equal(1);
     });
   });
 
@@ -213,6 +214,7 @@ describe('Monitoring service', () => {
       chai.expect(actual.outbound_push).to.deep.equal({ backlog: -1 });
       chai.expect(actual.feedback).to.deep.equal({ count: -1 });
       chai.expect(actual.replication_limit).to.deep.equal({ count: -1 });
+      chai.expect(actual.connected_users).to.deep.equal({ count: -1 });
     });
   });
 

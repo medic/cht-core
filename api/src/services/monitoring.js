@@ -1,4 +1,5 @@
 const request = require('request-promise-native');
+const moment = require('moment');
 
 const db = require('../db');
 const environment = require('../environment');
@@ -179,17 +180,20 @@ const getReplicationLimitLog = () => {
     });
 };
 
-const getConnectedUserLogs = () => {
+const getConnectedUserLogs = (daysAgo) => {
+  const earliestTimestamp = moment().subtract(daysAgo, 'days').valueOf();
   return db.medicLogs
-    .query('logs/connected_users')
-    .then(result => getResultCount(result))
+    .query(`logs/connected_users?startkey=${earliestTimestamp}`)
+    .then(result => {
+      return getResultCount(result);
+    })
     .catch(err => {
       logger.error('Error fetching replication limit logs: %o', err);
       return -1;
     });
 };
 
-const json = () => {
+const json = (daysAgo) => {
   return Promise
     .all([
       getAppVersion(),
@@ -201,7 +205,7 @@ const json = () => {
       getFeedbackCount(),
       getConflictCount(),
       getReplicationLimitLog(),
-      getConnectedUserLogs()
+      getConnectedUserLogs(daysAgo)
     ])
     .then(([
       appVersion,
