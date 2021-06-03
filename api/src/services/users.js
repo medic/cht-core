@@ -523,11 +523,15 @@ module.exports = {
   */
   createAdmin: userCtx => {
     return validateUser(createID(userCtx.name))
-      .catch(() => {
-        const data = { username: userCtx.name, roles: ['admin'] };
-        return validateNewUsername(userCtx.name)
-          .then(() => createUser(data, {}))
-          .then(() => createUserSettings(data, {}));
+      .catch(err => {
+        if(err.status && err.status === 404) {
+          const data = { username: userCtx.name, roles: ['admin'] };
+          return validateNewUsername(userCtx.name)
+            .then(() => createUser(data, {}))
+            .then(() => createUserSettings(data, {}));
+        } else {
+          return Promise.reject(err);
+        }
       });
   },
 

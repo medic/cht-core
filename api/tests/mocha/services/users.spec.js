@@ -1418,6 +1418,21 @@ describe('Users service', () => {
         });
     });
 
+    it('should throw if validating user fails for something other than a 404', () => {
+      sinon.stub(db.users, 'get').rejects({ status: 500 });
+
+      sinon.stub(db.users, 'put');
+      sinon.stub(db.medic, 'put');
+      return service
+        .createAdmin({ name: 'agatha' })
+        .then(() => chai.expect().to.equal('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ status: 500 });
+          chai.expect(db.users.put.callCount).to.equal(0);
+          chai.expect(db.medic.put.callCount).to.equal(0);
+        });
+    });
+
     it('should return new user-settings when successfull', () => {
       sinon.stub(db.medic, 'get').rejects({ status: 404 });
       sinon.stub(db.users, 'get').rejects({ status: 404 });
