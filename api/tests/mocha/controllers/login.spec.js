@@ -580,7 +580,7 @@ describe('login controller', () => {
       sinon.stub(auth, 'hasAllPermissions').returns(false);
       sinon.stub(auth, 'getUserSettings').resolves({ });
       sinon.stub(config, 'get').returns('fr');
-      const update = sinon.stub(users, 'updateUser')
+      const update = sinon.stub(users, 'updateUser');
       return controller.post(req, res).then(() => {
         chai.expect(cookie.callCount).to.equal(3);
         chai.expect(cookie.args[0][0]).to.equal('AuthSession');
