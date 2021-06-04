@@ -29,8 +29,7 @@ describe('Connected Users Log middleware', () => {
         .then(() => {
           chai.expect(auth.getUserCtx.callCount).to.equal(1);
           chai.expect(connectedUserLogService.save.callCount).to.equal(1);
-          chai.expect(connectedUserLogService.save.args[0][0]).to.have.keys(['user', 'timestamp']);
-          chai.expect(connectedUserLogService.save.args[0][0].user).to.equal('admin');
+          chai.expect(connectedUserLogService.save.args[0][0]).to.equal('admin');
           chai.expect(next.callCount).to.equal(1);
         });
     });

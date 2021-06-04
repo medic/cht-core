@@ -9,10 +9,10 @@ describe('Connected Users Log service', () => {
   });
   describe('saveLog()', () => {
     it('should save a log', () => {
-      sinon.stub(db.medicLogs, 'get').returns(Promise.reject({ status: 404 }));
+      sinon.stub(db.medicLogs, 'get').rejects({ status: 404 });
       const putStub = sinon.stub(db.medicLogs, 'put').resolves();
       const expectedDoc = {
-        _id: 'connected-user-' + 'userXYZ',
+        _id: 'connected-user-userXYZ',
         user: 'userXYZ',
         timestamp: 100
       };

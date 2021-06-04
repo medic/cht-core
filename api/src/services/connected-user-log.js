@@ -3,14 +3,17 @@ const db = require('../db');
 const LOG_TYPE = 'connected-user-';
 const UPDATE_TIME_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
-const saveLog = (log) => {
-  if (!log || !log.user) {
+const saveLog = (user) => {
+  if (!user) {
     const error = new Error('Error when saving log: Log Information missing');
     return Promise.reject(error);
   }
   
-  const logKey = (suffix = '') => LOG_TYPE + suffix;
-  const id = logKey(log.user);
+  const id = LOG_TYPE + user;
+  const log = {
+    user,
+    timestamp: new Date().getTime()
+  };
 
   return db.medicLogs
     .get(id)

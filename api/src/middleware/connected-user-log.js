@@ -1,17 +1,13 @@
 const auth = require('../auth');
 const connectedUserLogService = require('../services/connected-user-log');
+const logger = require('../logger');
 
 module.exports = {
   log: (req, res, next) => {
     return auth
       .getUserCtx(req)
-      .then((userCtx) => {
-        const log = {
-          user: userCtx.name,
-          timestamp: new Date().getTime()
-        };
-        connectedUserLogService.save(log);
-      })
+      .then(({ name }) => connectedUserLogService.save(name))
+      .catch(err => logger.error('Error recording user connection: %o', err))
       .then(next);
   }
 };

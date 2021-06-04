@@ -180,20 +180,18 @@ const getReplicationLimitLog = () => {
     });
 };
 
-const getConnectedUserLogs = (daysAgo) => {
-  const earliestTimestamp = moment().subtract(daysAgo, 'days').valueOf();
+const getConnectedUserLogs = (connectedUserInterval) => {
+  const earliestTimestamp = moment().subtract(connectedUserInterval, 'days').valueOf();
   return db.medicLogs
-    .query(`logs/connected_users?startkey=${earliestTimestamp}`)
-    .then(result => {
-      return getResultCount(result);
-    })
+    .query('logs/connected_users', { startkey: earliestTimestamp, reduce: true })
+    .then(result => getResultCount(result))
     .catch(err => {
-      logger.error('Error fetching replication limit logs: %o', err);
+      logger.error('Error fetching connected users logs: %o', err);
       return -1;
     });
 };
 
-const json = (daysAgo) => {
+const json = (connectedUserInterval) => {
   return Promise
     .all([
       getAppVersion(),
@@ -205,7 +203,7 @@ const json = (daysAgo) => {
       getFeedbackCount(),
       getConflictCount(),
       getReplicationLimitLog(),
-      getConnectedUserLogs(daysAgo)
+      getConnectedUserLogs(connectedUserInterval)
     ])
     .then(([
       appVersion,
