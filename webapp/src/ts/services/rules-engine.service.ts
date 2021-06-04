@@ -102,8 +102,7 @@ export class RulesEngineService implements OnDestroy {
           .all([
             this.settingsService.get(),
             this.userContactService.get(),
-            this.userSettingsService.get(),
-            this.chtScriptApiService.updateApiDataSet()
+            this.userSettingsService.get()
           ])
           .then(([settingsDoc, userContactDoc, userSettingsDoc]) => {
             const rulesSettings = this.getRulesSettings(
@@ -202,7 +201,7 @@ export class RulesEngineService implements OnDestroy {
     debounceInfo.active = false;
   }
 
-  private async getRulesSettings(settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets) {
+  private getRulesSettings(settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets) {
     const settingsTasks = settingsDoc && settingsDoc.tasks || {};
     const filterTargetByContext = (target) => target.context ?
       !!this.parseProvider.parse(target.context)({ user: userContactDoc }) : true;
@@ -253,9 +252,7 @@ export class RulesEngineService implements OnDestroy {
     const rulesUpdateSubscription = this.changesService.subscribe({
       key: 'rules-config-update',
       filter: change => change.id === 'settings' || userLineage.includes(change.id),
-      callback: async (change) => {
-        await this.chtScriptApiService.updateApiDataSet();
-
+      callback: change => {
         if (change.id !== 'settings') {
           return this.userContactService
             .get()

@@ -8,7 +8,6 @@
 const nools = require('nools');
 const nootils = require('medic-nootils');
 const registrationUtils = require('@medic/registration-utils');
-const chtScriptApi = require('./cht-script-api');
 
 let flow;
 
@@ -44,27 +43,14 @@ module.exports = {
     try {
       const settingsDoc = { tasks: { schedules: settings.taskSchedules } };
       const nootilsInstance = nootils(settingsDoc);
-
-      chtScriptApi.initApi(
-        {
-          user: settings.contact,
-          userContactDoc: settings.contact,
-          userSettingsDoc: settings.user,
-          utils: nootilsInstance,
-        },
-        { user: { replacement: 'userContactDoc' } }
-      );
-
       flow = nools.compile(settings.rules, {
         name: 'medic',
         scope: {
           Utils: nootilsInstance,
-          user: settings.contact, // Deprecated since 3.12.x
-          cht_test: chtScriptApi.getApi(),
-          cht: settings.chtScriptApi
+          user: settings.contact,
+          cht: settings.chtScriptApi,
         },
       });
-
     } catch (err) {
       shutdown();
       throw err;

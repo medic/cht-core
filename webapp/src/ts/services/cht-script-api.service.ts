@@ -1,17 +1,14 @@
 import { Injectable } from '@angular/core';
 
-import { UserContactService } from './user-contact.service';
 import { UserSettingsService } from './user-settings.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CHTScriptApiService {
-  private userContactDoc;
   private userSettingsDoc;
 
   constructor(
-    private userContactService: UserContactService,
     private userSettingsService: UserSettingsService
   ) { }
 
@@ -19,35 +16,26 @@ export class CHTScriptApiService {
     return this.getUserDocs();
   }
 
-  updateApiDataSet() {
-    return this.getUserDocs();
-  }
-
   private getUserDocs() {
-    return Promise
-      .all([
-        this.userContactService.get(),
-        this.userSettingsService.get()
-      ])
-      .then(([userContactDoc, userSettingsDoc]) => {
-        this.userContactDoc = userContactDoc;
+    return this.userSettingsService
+      .get()
+      .then(userSettingsDoc => {
         this.userSettingsDoc = userSettingsDoc;
       });
   }
 
-  private getUserContactDoc() {
-    return this.userContactDoc;
-  }
+  private hasRole(role) {
+    if (!this.userSettingsDoc?.roles?.length) {
+      return false;
+    }
 
-  private getUserSettingsDoc() {
-    return this.userSettingsDoc;
+    return this.userSettingsDoc.roles.includes(role);
   }
 
   getV1Api() {
     return {
       v1: {
-        getUserContactDoc: () => this.getUserContactDoc(),
-        getUserSettingsDoc: () => this.getUserSettingsDoc()
+        hasRole: (role) => this.hasRole(role)
       }
     };
   }
