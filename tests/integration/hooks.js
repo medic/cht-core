@@ -12,7 +12,3 @@ exports.mochaHooks = {
     await utils.stopServices();
   }
 };
-
-(async () => {
-  await utils.prepServices();
-})();
