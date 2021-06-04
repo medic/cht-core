@@ -788,7 +788,7 @@ module.exports = function(grunt) {
         src: 'tests/integration/**/*.js',
         options: {
           timeout: 135000,
-          require: 'tests/integration/hooks.js',
+          //require: 'tests/integration/hooks.js',
           reporter: 'spec',
           aptureFile: 'tests/integration/results/results.txt'
         }
