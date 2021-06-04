@@ -2,9 +2,7 @@ const utils = require('../../utils');
 const sentinelUtils = require('../sentinel/utils');
 
 const chai = require('chai');
-const chaiExclude = require('chai-exclude');
 const commonPo = require('../../page-objects/common/common.po');
-chai.use(chaiExclude);
 
 const contacts = [
   {

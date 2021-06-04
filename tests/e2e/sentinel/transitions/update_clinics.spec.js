@@ -128,7 +128,17 @@ describe('update_clinics', () => {
   it('should add facility_not_found', () => {
     const settings = {
       transitions: { update_clinics: true },
-      forms: { 'A': { public_form: false } }
+      forms: { 'A': { public_form: false } },
+      update_clinics: [ {
+        form: 'A',
+        messages: [
+          {
+            event_type: 'sys.facility_not_found',
+            recipient: 'reporting_unit',
+            translation_key: 'sys.facility_not_found',
+          }
+        ],
+      }]
     };
 
     const doc1 = {
@@ -173,11 +183,15 @@ describe('update_clinics', () => {
       .then(updated => {
         expect(updated[0].contact).not.toBeDefined();
         expect(updated[0].errors.length).toEqual(1);
+        expect(updated[0].tasks.length).toEqual(1);
+        expect(updated[0].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[0].tasks[0].messages[0].message).toEqual('Facility not found.');
         expect(updated[0].errors[0].code).toEqual('sys.facility_not_found');
 
         expect(updated[1].contact).not.toBeDefined();
         expect(updated[1].errors.length).toEqual(1);
         expect(updated[1].errors[0].code).toEqual('sys.facility_not_found');
+        expect(updated[1].tasks).not.toBeDefined();
 
         expect(updated[2].contact).not.toBeDefined();
         expect(updated[2].errors).not.toBeDefined();

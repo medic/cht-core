@@ -1,6 +1,4 @@
 const chai = require('chai');
-const chaiExclude = require('chai-exclude');
-chai.use(chaiExclude);
 const utils = require('../../../utils');
 const _ = require('lodash');
 
