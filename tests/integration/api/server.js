@@ -6,6 +6,8 @@ const _ = require('lodash');
 const {expect} = require('chai');
 
 describe('server',  () => {
+  before(async () => await utils.prepServices());
+
   after(async () => await utils.stopServices());
 
   describe('JSON-only endpoints', () => {
