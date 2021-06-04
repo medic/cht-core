@@ -25,8 +25,8 @@ module.exports = {
       errorMessage = messages.getMessage(config, utils.getLocale(doc));
       message = config;
     } else {
-      errorMessage = `messages.generic.${errorKey}`;
-      message = { translation_key: errorMessage };
+      message = { translation_key: `messages.generic.${errorKey}` };
+      errorMessage = messages.getMessage(message, utils.getLocale(doc));
     }
     const recipient = config && config.recipient || 'from';
     // A "message" ends up being a doc.task, which is something that is sent to

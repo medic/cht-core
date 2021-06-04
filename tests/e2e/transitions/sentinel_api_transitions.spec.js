@@ -340,7 +340,17 @@ describe('transitions', () => {
         registration: true,
         update_clinics: true
       },
-      forms: formsConfig
+      forms: formsConfig,
+      update_clinics: [ {
+        form: 'CHILD',
+        messages: [
+          {
+            event_type: 'sys.facility_not_found',
+            recipient: 'reporting_unit',
+            translation_key: 'sys.facility_not_found',
+          }
+        ],
+      }]
     };
     Object.assign(settings, transitionsConfig);
 
@@ -462,7 +472,7 @@ describe('transitions', () => {
 
         //new_child_unknown
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'new_child_unknown');
-        chai.expect(doc.tasks.length).to.equal(0);
+        chai.expect(doc.tasks.length).to.equal(1);
         chai.expect(doc.errors.length).to.equal(1);
         chai.expect(doc.errors[0].code).to.equal('sys.facility_not_found');
         chai.expect(doc.scheduled_tasks).to.equal(undefined);
@@ -485,8 +495,9 @@ describe('transitions', () => {
         chai.expect(doc.contact).to.be.an('object');
         chai.expect(doc.contact._id).to.equal('chw1');
 
-        chai.expect(messages.messages.length).to.equal(9);
-        chai.expect(messages.messages.length).to.equal(docs.reduce((sum, doc) => sum + doc.tasks.length, 0));
+        chai.expect(messages.messages.length).to.equal(10);
+        // Extra task added to send message whne sys.facility_not_found error thrown
+        chai.expect(docs.reduce((sum, doc) => sum + doc.tasks.length, 0)).to.equal(10);
         docs.forEach(doc => {
           doc.tasks.forEach(task => {
             task.messages.forEach(message => {

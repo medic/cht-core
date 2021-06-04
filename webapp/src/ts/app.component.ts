@@ -261,7 +261,7 @@ export class AppComponent implements OnInit {
       .then(() => this.initRulesEngine())
       .then(() => this.initForms())
       .then(() => this.initUnreadCount())
-      .then(() => this.checkDateService.check())
+      .then(() => this.checkDateService.check(true))
       .then(() => this.startRecurringProcesses());
 
     this.globalActions.setIsAdmin(this.sessionService.isAdmin());
