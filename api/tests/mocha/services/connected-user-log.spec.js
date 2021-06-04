@@ -3,10 +3,18 @@ const sinon = require('sinon');
 const connectedUserLogService = require('../../../src/services/connected-user-log');
 const db = require('../../../src/db');
 
+let clock;
+
 describe('Connected Users Log service', () => {
+  beforeEach(() => {
+    clock = sinon.useFakeTimers();
+  });
+
   afterEach(() => {
     sinon.restore();
+    clock.restore();
   });
+
   describe('saveLog()', () => {
     it('should save a log', () => {
       sinon.stub(db.medicLogs, 'get').rejects({ status: 404 });
@@ -14,11 +22,11 @@ describe('Connected Users Log service', () => {
       const expectedDoc = {
         _id: 'connected-user-userXYZ',
         user: 'userXYZ',
-        timestamp: 100
+        timestamp: 0
       };
 
       return connectedUserLogService
-        .save({user: 'userXYZ', timestamp: 100})
+        .save('userXYZ')
         .then(() => {
           chai.expect(putStub.args[0][0]).to.deep.include(expectedDoc);
         });
