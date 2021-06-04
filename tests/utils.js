@@ -634,6 +634,7 @@ module.exports = {
   //for mocha tests
   setupUser: async () => {
     await deleteAll();
+    await revertTranslations();
     await setUserContactDoc();
   },
 

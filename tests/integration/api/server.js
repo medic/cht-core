@@ -5,10 +5,8 @@ const constants = require('../../constants');
 const _ = require('lodash');
 const {expect} = require('chai');
 
-describe('server', async () => {
-
-  before(await utils.prepServices());
-  after(await utils.stopServices());
+describe('server',  () => {
+  after(async () => await utils.stopServices());
 
   describe('JSON-only endpoints', () => {
     it('should require application/json Content-Type header', () => {
@@ -27,7 +25,7 @@ describe('server', async () => {
   });
 
   describe('response compression', () => {
-    after(utils.setupUser());
+    after(async () => await utils.setupUser());
 
     const requestWrapper = (options) => {
       _.defaults(options, {
@@ -165,32 +163,24 @@ describe('server', async () => {
         });
     });
 
-    it('does not compress uncompressible CouchDB doc attachments (image/png)', () => {
+    it('does not compress uncompressible CouchDB doc attachments (image/png)', async () => {
       const png = '<contact><_id>689960f3-edc2-429b-92f7-96799b3db7d5</_id><patient_id>40599</patient_id>' +
                   '<name>Person 1.1.2.1</name><date_of_birth /><sex /><parent><contact><phone />' +
                   '<name>Person 1.1.2.1</name></contact></parent></contact>';
-      return utils
-        .getDoc('sample_doc2')
-        .then(doc => {
-          const options = {
-            uri: '/sample_doc2/attach?rev=' + doc._rev,
-            body: png,
-            headers: { 'Content-Type': 'image/png' },
-            method: 'PUT'
-          };
-
-          return requestWrapper(options);
-        })
-        .then(({body}) => {
-          const options = { uri: '/sample_doc2/attach?rev=' + body.rev};
-
-          return requestWrapper(options);
-        })
-        .then(({res, body}) => {
-          expect(res.headers['content-type']).to.equal('image/png');
-          expect(res.headers['content-encoding']).to.be.undefined;
-          expect(body).to.equal(png);
-        });
+      const doc=await utils
+        .getDoc('sample_doc2');
+      const options={
+        uri: '/sample_doc2/attach?rev='+doc._rev,
+        body: png,
+        headers: { 'Content-Type': 'image/png' },
+        method: 'PUT'
+      };
+      const { body }=await requestWrapper(options);
+      const options_2={ uri: '/sample_doc2/attach?rev='+body.rev };
+      const { res, body: body_1 }=await requestWrapper(options_2);
+      expect(res.headers[ 'content-type' ]).to.equal('image/png');
+      expect(res.headers[ 'content-encoding' ]).to.be.undefined;
+      expect(body_1).to.equal(png);
     });
   });
 });
