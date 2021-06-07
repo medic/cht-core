@@ -133,7 +133,7 @@ describe('self_report', () => {
           form: 'the_form',
         });
         chai.expect(updated.errors).to.deep.equal([{
-          message: 'messages.generic.sender_not_found',
+          message: 'Sender not found',
           code: 'sender_not_found',
         }]);
         chai.expect(updated.tasks.length).to.equal(1);
