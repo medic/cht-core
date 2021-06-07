@@ -37,7 +37,7 @@ describe('Transitions Service', () => {
     const settings = {
       transitions: {
         update_clinics: true,
-        muting: { client: true },
+        muting: { client_side: true },
       },
     };
     settingsService.get.resolves(settings);
@@ -104,7 +104,7 @@ describe('Transitions Service', () => {
   });
 
   it('should not load non-client transitions', async () => {
-    settingsService.get.resolves({ transitions: { muting: { disable: false, client: false } } });
+    settingsService.get.resolves({ transitions: { muting: { disable: false, client_side: false } } });
 
     await service.init();
 
@@ -206,7 +206,7 @@ describe('Transitions Service', () => {
     });
 
     it('should catch transition loading errors', async () => {
-      settingsService.get.resolves({ transitions: { muting: { client: true } } });
+      settingsService.get.resolves({ transitions: { muting: { client_side: true } } });
       mutingTransition.init.throws();
 
       await service.init();

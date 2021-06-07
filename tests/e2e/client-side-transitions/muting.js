@@ -289,7 +289,7 @@ describe('Muting', () => {
 
     it('should not process muting client-side if not enabled', async () => {
       const settingsWithDisabled = _.cloneDeep(settings);
-      settingsWithDisabled.transitions.muting = { client: false };
+      settingsWithDisabled.transitions.muting = { client_side: false };
 
       await utils.stopSentinel();
       await updateSettings(settingsWithDisabled);
