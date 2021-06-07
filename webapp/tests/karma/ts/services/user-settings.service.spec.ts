@@ -137,4 +137,22 @@ describe('UserSettings service', () => {
         expect(err.message).to.equal('nope');
       });
   });
+
+  describe('getUserDocId()', () => {
+    it('should return document id', () => {
+      userCtx.returns({ name: 'jack' });
+
+      const result = service.getUserDocId();
+
+      expect(result).to.equal('org.couchdb.user:jack');
+    });
+
+    it('should return undefined if user ctx is missing', () => {
+      userCtx.returns();
+
+      const result = service.getUserDocId();
+
+      expect(result).to.be.undefined;
+    });
+  });
 });

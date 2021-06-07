@@ -8,15 +8,15 @@ import { PipesService } from '@mm-services/pipes.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { UHCStatsService } from '@mm-services/uhc-stats.service';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 describe('ContactSummary service', () => {
-
-  'use strict';
-
   let service;
   let Settings;
   let feedbackService;
   let uhcStatsService;
+  let chtScriptApiService;
+  let chtScriptApi;
 
   beforeEach(() => {
     Settings = sinon.stub();
@@ -25,6 +25,16 @@ describe('ContactSummary service', () => {
       getHomeVisitStats: sinon.stub(),
       getUHCInterval: sinon.stub()
     };
+    chtScriptApi = {
+      v1: {
+        hasRole: () => {},
+        hasPermission: () => {}
+      }
+    };
+    chtScriptApiService = {
+      getV1Api: sinon.stub().returns(chtScriptApi)
+    };
+
     const pipesTransform = (name, value) => {
       if (name !== 'reversify') {
         throw new Error('unknown filter');
@@ -37,7 +47,8 @@ describe('ContactSummary service', () => {
         { provide: SettingsService, useValue: { get: Settings } },
         { provide: PipesService, useValue: { transform: pipesTransform } },
         { provide: FeedbackService, useValue: feedbackService },
-        { provide: UHCStatsService, useValue: uhcStatsService }
+        { provide: UHCStatsService, useValue: uhcStatsService },
+        { provide: CHTScriptApiService, useValue: chtScriptApiService }
       ]
     });
     service = TestBed.inject(ContactSummaryService);

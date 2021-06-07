@@ -35,7 +35,7 @@ export class UserSettingsService {
     });
   }
 
-  getUserDocId() {
+  getUserDocId(): string {
     const userCtx = this.sessionService.userCtx();
     if (userCtx) {
       return 'org.couchdb.user:' + userCtx.name;

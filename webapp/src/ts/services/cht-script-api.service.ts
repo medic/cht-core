@@ -12,7 +12,7 @@ import { SessionService } from '@mm-services/session.service';
 export class CHTScriptApiService implements OnDestroy {
   private userSettingsDoc;
   private settings;
-  private subscriptions: Subscription = new Subscription();
+  subscriptions: Subscription = new Subscription();
 
   constructor(
     private userSettingsService: UserSettingsService,
@@ -67,7 +67,7 @@ export class CHTScriptApiService implements OnDestroy {
     this.subscriptions.add(settingsSubscription);
   }
 
-  private hasRole(role) {
+  private hasRole(role: string): boolean {
     if (!this.userSettingsDoc?.roles?.length) {
       return false;
     }
@@ -75,7 +75,7 @@ export class CHTScriptApiService implements OnDestroy {
     return this.userSettingsDoc.roles.includes(role);
   }
 
-  private hasPermission(permission) {
+  private hasPermission(permission: string): boolean {
     if (!this.userSettingsDoc?.roles?.length) {
       return false;
     }
@@ -94,7 +94,7 @@ export class CHTScriptApiService implements OnDestroy {
     return this.userSettingsDoc.roles.some(role => roles.includes(role));
   }
 
-  getV1Api() {
+  getV1Api(): ChtApi {
     return {
       v1: {
         hasRole: (role) => this.hasRole(role),
@@ -102,4 +102,13 @@ export class CHTScriptApiService implements OnDestroy {
       }
     };
   }
+}
+
+interface ChtV1Api {
+  hasRole(string): boolean;
+  hasPermission(string): boolean;
+}
+
+interface ChtApi {
+  v1: ChtV1Api;
 }

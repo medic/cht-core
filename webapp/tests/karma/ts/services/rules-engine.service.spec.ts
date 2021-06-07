@@ -16,6 +16,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { RulesEngineCoreFactoryService, RulesEngineService } from '@mm-services/rules-engine.service';
 import { PipesService } from '@mm-services/pipes.service';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 describe('RulesEngineService', () => {
   let service: RulesEngineService;
@@ -30,6 +31,7 @@ describe('RulesEngineService', () => {
   let translateFromService;
   let rulesEngineCoreStubs;
   let pipesService;
+  let chtScriptApiService;
   let clock;
 
   let fetchTasksFor;
@@ -72,6 +74,12 @@ describe('RulesEngineService', () => {
     type: 'user-settings',
     roles: [],
   };
+  const chtScriptApi = {
+    v1: {
+      hasPermission: () => {},
+      hasRole: () => {}
+    }
+  };
   const expectedRulesConfig = {
     rules: 'rules',
     taskSchedules: ['schedules'],
@@ -81,6 +89,7 @@ describe('RulesEngineService', () => {
     contact: userContactDoc,
     user: userSettingsDoc,
     monthStartDate: 1,
+    chtScriptApi
   };
 
   beforeEach(() => {
@@ -97,6 +106,7 @@ describe('RulesEngineService', () => {
       pipesMap: new Map(),
       getPipeNameVsIsPureMap: PipesService.prototype.getPipeNameVsIsPureMap
     };
+    chtScriptApiService = { getV1Api: sinon.stub().returns(chtScriptApi) };
 
     fetchTasksResult = () => Promise.resolve();
     fetchTasksFor = sinon.stub();
@@ -152,7 +162,8 @@ describe('RulesEngineService', () => {
         { provide: ChangesService, useValue: changesService },
         { provide: TranslateFromService, useValue: translateFromService },
         { provide: RulesEngineCoreFactoryService, useValue: rulesEngineCoreFactory },
-        { provide: PipesService, useValue: pipesService }
+        { provide: PipesService, useValue: pipesService },
+        { provide: CHTScriptApiService, useValue: chtScriptApiService }
       ]
     });
   });
