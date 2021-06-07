@@ -6,7 +6,9 @@ module.exports = {
   log: (req, res, next) => {
     return auth
       .getUserCtx(req)
-      .then(({ name }) => connectedUserLogService.save(name))
+      .then(({ name }) => {
+        connectedUserLogService.save(name);
+      })
       .catch(err => logger.error('Error recording user connection: %o', err))
       .then(next);
   }
