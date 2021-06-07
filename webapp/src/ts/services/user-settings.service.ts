@@ -16,7 +16,7 @@ export class UserSettingsService {
   ) {
     this.cache = this.cacheService.register({
       get: callback => {
-        const docId = this.userDocId();
+        const docId = this.getUserDocId();
         this.dbService.get()
           .get(docId)
           .catch(() => {
@@ -29,13 +29,13 @@ export class UserSettingsService {
           .catch(callback);
       },
       invalidate: change => {
-        const docId = this.userDocId();
+        const docId = this.getUserDocId();
         return change.id === docId;
       }
     });
   }
 
-  private userDocId() {
+  getUserDocId() {
     const userCtx = this.sessionService.userCtx();
     if (userCtx) {
       return 'org.couchdb.user:' + userCtx.name;
@@ -43,7 +43,7 @@ export class UserSettingsService {
   }
 
   get(): Promise<Object> {
-    const docId = this.userDocId();
+    const docId = this.getUserDocId();
     if (!docId) {
       return Promise.reject(new Error('UserCtx not found'));
     }

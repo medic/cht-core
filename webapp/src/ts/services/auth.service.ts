@@ -108,6 +108,7 @@ export class AuthService {
   private logAuthFailure(reason, permissions?, roles?) {
     console.debug(`Auth failed: ${reason}. User roles: ${roles}. Wanted permissions: ${permissions}`);
   }
+
   private getRoles () {
     const userCtx = this.session.userCtx();
     if (!userCtx) {
@@ -149,9 +150,11 @@ export class AuthService {
   private isRequired (permission) {
     return permission.indexOf('!') !== 0;
   }
+
   private getRequired (permissions) {
     return permissions.filter(this.isRequired);
   }
+
   private getDisallowed (permissions) {
     const disallowed = permissions.filter(permission => !this.isRequired(permission));
     return disallowed.map(permission => permission.substring(1));
