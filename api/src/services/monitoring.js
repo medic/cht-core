@@ -329,10 +329,10 @@ const jsonV1 = (connectedUserInterval) => {
     });
 };
 
-const jsonV2 = () => {
+const jsonV2 = (connectedUserInterval) => {
   return Promise
     .all([
-      jsonV1(),
+      jsonV1(connectedUserInterval),
       getWeeklyOutgoingMessageStatusCounts(),
       getLastHundredStatusUpdatesCounts(),
     ])
