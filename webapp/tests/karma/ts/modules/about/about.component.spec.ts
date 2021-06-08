@@ -1,4 +1,4 @@
-import { async, ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, flush, discardPeriodicTasks, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -45,7 +45,7 @@ describe('About Component', () => {
       getDeviceInfo: sinon.stub(),
       getDataUsage: sinon.stub()
     };
-    window.medicmobile_android = medicAndroid;
+    window.medicmobile_android = undefined;
 
     return TestBed
       .configureTestingModule({
@@ -82,7 +82,7 @@ describe('About Component', () => {
     expect(component).to.exist;
   });
 
-  it('ngOnInit() should subscribe to store', async () => {
+  it('ngOnInit() should subscribe to store', () => {
     const spySubscriptionsAdd = sinon.spy(component.subscription, 'add');
 
     component.ngOnInit();
@@ -90,17 +90,15 @@ describe('About Component', () => {
     expect(spySubscriptionsAdd.callCount).to.equal(1);
   });
 
-  it('should initialize data when it is not an android device', async(async () => {
+  it('should initialize data when it is not an android device', fakeAsync(() => {
     dbInfo.resolves({ some: 'info' });
     sessionService.userCtx.returns('session info');
     versionService.getLocal.resolves({ version: '3.5.0', rev: '12' });
     versionService.getRemoteRev.resolves('15');
-    window.medicmobile_android = undefined;
 
     component.ngOnInit();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    await fixture.whenRenderingDone();
+    flush();
+    discardPeriodicTasks();
 
     expect(component.dbInfo).to.deep.equal({ some: 'info' });
     expect(component.userCtx).to.equal('session info');
@@ -111,31 +109,28 @@ describe('About Component', () => {
     expect(component.androidDeviceInfo).to.be.undefined;
   }));
 
-  it('should initialize data when the device is android', async(async () => {
+  it('should initialize data when the device is android', fakeAsync(() => {
     dbInfo.resolves({ some: 'info' });
     sessionService.userCtx.returns('session info');
     versionService.getLocal.resolves({ version: '3.5.0', rev: '12' });
     versionService.getRemoteRev.resolves('15');
-    medicAndroid.getDataUsage.returns({
+    medicAndroid.getDataUsage.returns(JSON.stringify({
       system: { rx: 124, tx: 345 },
       app: { rx: 124, tx: 345 }
-    });
-    medicAndroid.getDeviceInfo.returns({
+    }));
+    medicAndroid.getDeviceInfo.returns(JSON.stringify({
       app: {
         version: 'SNAPSHOT-xwalk',
         packageName: 'org.medicmobile.webapp.mobile',
         versionCode: 201
       },
-      software: {
-        androidVersion: '9',
-        osApiLevel: 28
-      }
-    });
+      software: { androidVersion: '9', osApiLevel: 28 }
+    }));
+    window.medicmobile_android = medicAndroid;
 
     component.ngOnInit();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    await fixture.whenRenderingDone();
+    flush();
+    discardPeriodicTasks();
 
     expect(component.dbInfo).to.deep.equal({ some: 'info' });
     expect(component.userCtx).to.equal('session info');
@@ -152,21 +147,18 @@ describe('About Component', () => {
         packageName: 'org.medicmobile.webapp.mobile',
         versionCode: 201
       },
-      software: {
-        androidVersion: '9',
-        osApiLevel: 28
-      }
+      software: { androidVersion: '9', osApiLevel: 28 }
     });
   }));
 
-  it ('should display partner logo if it exists', async(async () => {
+  it ('should display partner logo if it exists', fakeAsync(() => {
     resourceIconsService.getDocResources.resolves(['Medic Mobile']);
     versionService.getLocal.resolves({ version: '3.5.0', rev: '12' });
     versionService.getRemoteRev.resolves('15');
 
     component.ngOnInit();
-    fixture.detectChanges();
-    await fixture.whenStable();
+    flush();
+    discardPeriodicTasks();
 
     expect(component.partners[0]).to.equal('Medic Mobile');
   }));
@@ -189,16 +181,18 @@ describe('About Component', () => {
   it('should log non 404 errors when getting partners resource - #7100', fakeAsync(() => {
     const consoleErrorMock = sinon.stub(console, 'error');
     resourceIconsService.getDocResources.rejects({ status: 403 });
+
     component.ngOnInit();
     flush();
+
     expect(consoleErrorMock.callCount).to.equal(1);
     expect(consoleErrorMock.args[0][0]).to.equal('Error fetching "partners" doc');
   }));
 
   describe('secretDoor()', () => {
-    let clock;
     let setTimeoutStub;
     let clearTimeoutStub;
+    let clock;
 
     beforeEach(() => {
       clock = sinon.useFakeTimers();
