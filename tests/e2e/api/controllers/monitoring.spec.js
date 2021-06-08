@@ -87,7 +87,7 @@ describe('monitoring', () => {
           count: 0,
         },
         connected_users: {
-          count: 0,
+          count: 1,
         },
       });
     });
