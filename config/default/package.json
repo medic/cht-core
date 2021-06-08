@@ -6,12 +6,12 @@
     "test": "test"
   },
   "scripts": {
-    "eslint": "node ../../node_modules/eslint/bin/eslint.js *.json test/**/*.js",
+    "eslint": "npx eslint *.json test/**/*.js",
     "test": "npm run eslint && npm run test-unit",
-    "test-forms": "npm run eslint && mocha --reporter spec test/forms/**/*.spec.js --timeout 10000",
-    "test-tasks": "npm run eslint && mocha --reporter progress test/tasks/*.spec.js --timeout 10000",
-    "test-targets": "npm run eslint && mocha --reporter progress test/targets/*.spec.js --timeout 10000",
-    "test-contact-summary": "npm run eslint && mocha --reporter progress test/contact-summary/*.spec.js --timeout 10000",
+    "test-forms": "npm run eslint && TZ=Africa/Nairobi mocha --reporter spec test/forms/**/*.spec.js --timeout 10000",
+    "test-tasks": "npm run eslint && TZ=Africa/Nairobi mocha --reporter progress test/tasks/*.spec.js --timeout 10000",
+    "test-targets": "npm run eslint && TZ=Africa/Nairobi mocha --reporter progress test/targets/*.spec.js --timeout 10000",
+    "test-contact-summary": "npm run eslint && TZ=Africa/Nairobi mocha --reporter progress test/contact-summary/*.spec.js --timeout 10000",
     "test-unit": "TZ=Africa/Nairobi mocha --recursive --reporter spec test --timeout 20000",
     "travis": "npm run test-unit"
   },
