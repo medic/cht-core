@@ -1,5 +1,6 @@
 const helper = require('../../helper');
 
+
 module.exports = {
   expectModulesToBeAvailable: async (modules) => {
     await helper.waitUntilReadyNative(element(by.css('.mm-navigation-menu')));
@@ -17,4 +18,9 @@ module.exports = {
       await helper.waitUntilReadyNative(element(by.css('.page .item-content.disabled')));
     }
   },
+  targetById: (id) => element(by.css(`div[test-target-id="${id}"]`)),
+  targetNumber: (target) => target.element(by.css('.number')),
+  targetGoal: (target) => target.element(by.css('.goal p')),
+  targetTitle: (target) => target.element(by.css('.title h2')),
+
 };

@@ -46,7 +46,7 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
     ).subscribe(([
       forms,
     ]) => {
-      this.forms = _sortBy(forms, 'name');
+      this.forms = _sortBy(forms, 'title');
     });
     this.subscription.add(subscription);
   }

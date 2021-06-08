@@ -4,7 +4,7 @@ module.exports = {
   configurationSection: () => element(by.css('.content .configuration')),
 
   openEditSettings: async () => {
-    await helper.waitUntilReady(module.exports.configurationSection());
+    await helper.waitUntilReadyNative(module.exports.configurationSection());
     const link = module.exports.configurationSection().all(by.css('.btn-link')).last();
     return link.click();
   },

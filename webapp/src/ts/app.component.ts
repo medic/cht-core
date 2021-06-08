@@ -133,10 +133,8 @@ export class AppComponent implements OnInit {
   private loadTranslations() {
     this.translationsLoaded = this.languageService
       .get()
-      .then((language) => {
-        this.setLanguageService.set(language, false);
-        this.globalActions.setTranslationsLoaded();
-      })
+      .then((language) => this.setLanguageService.set(language, false))
+      .then(() => this.globalActions.setTranslationsLoaded())
       .catch(err => {
         console.error('Error loading language', err);
       });
@@ -263,7 +261,7 @@ export class AppComponent implements OnInit {
       .then(() => this.initRulesEngine())
       .then(() => this.initForms())
       .then(() => this.initUnreadCount())
-      .then(() => this.checkDateService.check())
+      .then(() => this.checkDateService.check(true))
       .then(() => this.startRecurringProcesses());
 
     this.globalActions.setIsAdmin(this.sessionService.isAdmin());

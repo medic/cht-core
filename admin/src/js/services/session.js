@@ -28,9 +28,17 @@ const _ = require('lodash/core');
 
       const navigateToLogin = function() {
         $log.warn('User must reauthenticate');
+        const params = new URLSearchParams();
+        params.append('redirect', $window.location.href);
+
+        const userCtx = getUserCtx();
+        const username = userCtx && userCtx.name;
+        if (username) {
+          params.append('username', username);
+        }
         ipCookie.remove(COOKIE_NAME, { path: '/' });
         userCtxCookieValue = undefined;
-        $window.location.href = `/${Location.dbName}/login?redirect=${encodeURIComponent($window.location.href)}`;
+        $window.location.href = `/${Location.dbName}/login?${params.toString()}`;
       };
 
       const logout = function() {

@@ -15,7 +15,6 @@ const {
   BUILDS_SERVER,
   TRAVIS_BUILD_NUMBER,
   CI,
-  WEBDRIVER_VERSION=88
 } = process.env;
 
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
@@ -88,16 +87,6 @@ module.exports = function(grunt) {
             to: `"_id": "medic:medic:test-${TRAVIS_BUILD_NUMBER}"`,
           },
         ],
-      },
-      'webdriver-version': {
-        src: ['node_modules/protractor/node_modules/webdriver-manager/built/config.json'],
-        overwrite: true,
-        replacements: [
-          {
-            from: /"maxChromedriver": ".*",/g,
-            to: `"maxChromedriver": "${WEBDRIVER_VERSION}",`,
-          },
-        ]
       },
     },
     'couch-compile': {
@@ -477,8 +466,8 @@ module.exports = function(grunt) {
       'start-webdriver': {
         cmd:
           'mkdir -p tests/logs && ' +
-          './node_modules/.bin/webdriver-manager update && ' +
-          './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
+          './node_modules/.bin/webdriver-manager update --versions.chrome 90.0.4430.24 && ' +
+          './node_modules/.bin/webdriver-manager start --versions.chrome 90.0.4430.24 > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
       },
       'start-webdriver-ci': {
@@ -497,6 +486,7 @@ module.exports = function(grunt) {
             'enketo-core',
             'font-awesome',
             'moment',
+            'pouchdb-browser',
           ];
           return modulesToPatch.map(module => {
             const backupPath = 'webapp/node_modules_backup/' + module;
@@ -564,6 +554,10 @@ module.exports = function(grunt) {
 
             // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
             'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
+
+            // patch pouchdb to catch unhandled rejections
+            // https://github.com/medic/cht-core/issues/6626
+            'patch webapp/node_modules/pouchdb-browser/lib/index.js < webapp/patches/pouchdb-unhandled-rejection.patch',
           ];
           return patches.join(' && ');
         },
@@ -707,6 +701,14 @@ module.exports = function(grunt) {
       },
     },
     protractor: {
+      'e2e-cht-release-tests': {
+        options: {
+          configFile: 'tests/conf.js',
+          args: {
+            suite: 'cht',
+          }
+        }
+      },
       'e2e-web-tests': {
         options: {
           configFile: 'tests/conf.js',
@@ -932,7 +934,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
-    'replace:webdriver-version',
     CI ? 'exec:start-webdriver-ci' : 'exec:start-webdriver',
   ]);
 
@@ -1051,6 +1052,12 @@ module.exports = function(grunt) {
     'exec:e2e-servers',
     'protractor:e2e-web-tests',
     //'protractor:e2e-mobile-tests',
+  ]);
+
+  grunt.registerTask('ci-e2e-cht', 'Run e2e tests for CI', [
+    'start-webdriver',
+    'exec:e2e-servers',
+    'protractor:e2e-cht-release-tests'
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [

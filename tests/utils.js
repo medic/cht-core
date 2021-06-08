@@ -116,7 +116,8 @@ const revertSettings = () => {
 
 const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
 
-const deleteAll = (except = []) => {
+const deleteAll = (except) => {
+  except = Array.isArray(except) ? except : [];
   // Generate a list of functions to filter documents over
   const ignorables = except.concat(
     doc => PERMANENT_TYPES.includes(doc.type),
@@ -632,6 +633,16 @@ module.exports = {
         return browser.wait(() => {
           return element(by.css('#messages-tab')).isPresent();
         }, 10000,'Timed out waiting for browser to reset. Looking for element #messages-tab');
+      });
+  },
+  resetBrowserNative: (element =$('#messages-tab'), time=10000) => {
+    return browser.driver
+      .navigate()
+      .refresh()
+      .then(() => {
+        return browser.wait(() => {
+          return element.isPresent();
+        }, time,'Timed out waiting for browser to reset. Looking for element #messages-tab');
       });
   },
 

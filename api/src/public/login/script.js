@@ -30,7 +30,7 @@ const submit = function(e) {
   setState('loading');
   const url = document.getElementById('form').action;
   const payload = JSON.stringify({
-    user: document.getElementById('user').value.toLowerCase().trim(),
+    user: getUsername(),
     password: document.getElementById('password').value,
     redirect: getRedirectUrl(),
     locale: selectedLocale
@@ -152,9 +152,17 @@ const parseTranslations = function() {
   return JSON.parse(decodeURIComponent(raw));
 };
 
+const getUsername = function() {
+  return document.getElementById('user').value.toLowerCase().trim();
+};
+
 const getRedirectUrl = function() {
   const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get('redirect');
+  const usernameQueryParam = urlParams.get('username');
+  const usernameEntered = getUsername();
+  if (usernameQueryParam === usernameEntered) {
+    return urlParams.get('redirect');
+  }
 };
 
 const getUserCtx = function() {

@@ -8,7 +8,7 @@ const districtName = uuid.v4();
 const healtchCenterName = uuid.v4();
 
 describe('Creating contacts with standard config', () => {
-  beforeAll(() => utils.saveDocs(expectedDocs));
+  beforeAll(async () => await utils.saveDocs(expectedDocs));
   afterAll(() => utils.revertDb());
 
   const expectedDocs = [

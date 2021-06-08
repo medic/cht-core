@@ -21,7 +21,7 @@ manages scheduled tasks like message schedules.
 Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 
 ```bash
-export COUCH_URL='http://myAdminUser:myAdminPass@localhost:5984/medic'
+export COUCH_URL='http://myadminuser:myadminpass@localhost:5984/medic'
 ```
 
 Throughout this document we will be referring to `ddoc`. Here we mean the

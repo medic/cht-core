@@ -61,8 +61,10 @@ export class EditUserSettingsComponent extends EditUserAbstract implements OnIni
           })
           .then(() => {
             if (updates.language) {
-              this.setLanguageService.set(updates.language);
+              return this.setLanguageService.set(updates.language);
             }
+          })
+          .then(() => {
             this.setFinished();
             this.close();
           })

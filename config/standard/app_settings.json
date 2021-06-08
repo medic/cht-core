@@ -227,7 +227,8 @@
     ],
     "can_export_all": [
       "national_admin"
-    ]
+    ],
+    "can_view_uhc_stats": []
   },
   "setup_complete": true,
   "outgoing_phone_replace": {

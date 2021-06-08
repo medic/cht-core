@@ -51,9 +51,9 @@ For more information check out our [contributor guidelines](CONTRIBUTING.md).
 
 ## Build Status
 
-Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/cht-core).
+Builds brought to you courtesy of GitHub Actions.
 
-[![Build Status](https://travis-ci.org/medic/cht-core.png?branch=master)](https://travis-ci.org/medic/cht-core/branches)
+![Build Status](https://github.com/medic/cht-core/actions/workflows/build.yml/badge.svg)
 
 ## Copyright
 

@@ -3,6 +3,8 @@ import { Injectable, NgZone } from '@angular/core';
 import { SettingsService } from '@mm-services/settings.service';
 import { PipesService } from '@mm-services/pipes.service';
 import { FeedbackService } from '@mm-services/feedback.service';
+import { UHCSettingsService } from '@mm-services/uhc-settings.service';
+import { UHCStatsService } from '@mm-services/uhc-stats.service';
 
 /**
  * Service for generating summary information based on a given
@@ -15,29 +17,29 @@ import { FeedbackService } from '@mm-services/feedback.service';
 export class ContactSummaryService {
   private readonly SETTING_NAME = 'contact_summary';
   private generatorFunction;
+  private settings;
+  private visitCountSettings;
 
   constructor(
     private settingsService:SettingsService,
     private pipesService:PipesService,
     private feedbackService:FeedbackService,
     private ngZone:NgZone,
-  ) {
-  }
+    private uhcSettingsService:UHCSettingsService,
+    private uhcStatsService:UHCStatsService
+  ) { }
 
   private getGeneratorFunction() {
     if (!this.generatorFunction) {
-      this.generatorFunction = this.settingsService
-        .get()
-        .then((settings) => {
-          return settings[this.SETTING_NAME];
-        })
-        .then((script) => {
-          if (!script) {
-            return function() {};
-          }
-          return new Function('contact', 'reports', 'lineage', 'targetDoc', script);
-        });
+      const script = this.settings[this.SETTING_NAME];
+
+      if (!script) {
+        this.generatorFunction = function() {};
+      } else {
+        this.generatorFunction = new Function('contact', 'reports', 'lineage', 'uhcStats', 'targetDoc', script);
+      }
     }
+
     return this.generatorFunction;
   }
 
@@ -72,18 +74,28 @@ export class ContactSummaryService {
     return this.ngZone.runOutsideAngular(() => this._get(contact, reports, lineage, targetDoc));
   }
 
-  private _get(contact, reports, lineage, targetDoc?) {
-    return this
-      .getGeneratorFunction()
-      .then((fn) => {
-        try {
-          return fn(contact, reports || [], lineage || [], targetDoc);
-        } catch (error) {
-          console.error('Configuration error in contact-summary function: ' + error);
-          this.feedbackService.submit('Configuration error in contact-summary function: ' + error.message, false);
-          throw new Error('Configuration error');
-        }
-      })
-      .then(summary => this.applyFilters(summary));
+  private async _get(contact, reports, lineage, targetDoc?) {
+    if (!this.settings) {
+      this.settings = await this.settingsService.get();
+    }
+
+    if (!this.visitCountSettings) {
+      this.visitCountSettings = this.uhcSettingsService.getVisitCountSettings(this.settings);
+    }
+
+    const generatorFunction = this.getGeneratorFunction();
+    const uhcStats = {
+      homeVisits: await this.uhcStatsService.getHomeVisitStats(contact, this.visitCountSettings),
+      uhcInterval: this.uhcStatsService.getUHCInterval(this.visitCountSettings)
+    };
+
+    try {
+      const summary = generatorFunction(contact, reports || [], lineage || [], uhcStats, targetDoc);
+      return this.applyFilters(summary);
+    } catch (error) {
+      console.error('Configuration error in contact-summary function: ' + error);
+      this.feedbackService.submit('Configuration error in contact-summary function: ' + error.message, false);
+      throw new Error('Configuration error');
+    }
   }
 }

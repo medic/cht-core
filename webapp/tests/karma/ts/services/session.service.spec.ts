@@ -55,11 +55,13 @@ describe('Session service', () => {
 
   it('logs out', async () => {
     const consoleWarnMock = sinon.stub(console, 'warn');
+    const userCtxExpected = { name: 'bryan' };
+    cookieGet.returns(JSON.stringify(userCtxExpected));
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
     $httpBackend.delete.withArgs('/_session').returns(of());
     await service.logout();
-    expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
+    expect(location.href).to.equal(`/DB_NAME/login?redirect=CURRENT_URL&username=${userCtxExpected.name}`);
     expect(cookieDelete.args[0][0]).to.equal('userCtx');
     expect(consoleWarnMock.callCount).to.equal(1);
     expect(consoleWarnMock.args[0][0]).to.equal('User must reauthenticate');
@@ -98,13 +100,14 @@ describe('Session service', () => {
 
   it('logs out if remote userCtx inconsistent', async () => {
     const consoleWarnMock = sinon.stub(console, 'warn');
-    cookieGet.returns(JSON.stringify({ name: 'bryan' }));
+    const userCtxExpected = { name: 'bryan' };
+    cookieGet.returns(JSON.stringify(userCtxExpected));
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
     $httpBackend.get.withArgs('/_session').returns(of([{ data: { userCtx: { name: 'jimmy' } } }]));
     $httpBackend.delete.withArgs('/_session').returns(of());
     await service.init();
-    expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
+    expect(location.href).to.equal(`/DB_NAME/login?redirect=CURRENT_URL&username=${userCtxExpected.name}`);
     expect(cookieDelete.args[0][0]).to.equal('userCtx');
     expect(consoleWarnMock.callCount).to.equal(1);
     expect(consoleWarnMock.args[0][0]).to.equal('User must reauthenticate');

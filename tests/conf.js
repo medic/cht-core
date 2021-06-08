@@ -8,6 +8,8 @@ const browserLogStream = fs.createWriteStream(
 );
 
 const chai = require('chai');
+chai.use(require('chai-exclude'));
+chai.use(require('chai-shallow-deep-equal'));
 // so the .to.have.members will display the array members when assertions fail instead of [ Array(6) ]
 chai.config.truncateThreshold = 0;
 
@@ -18,7 +20,15 @@ const baseConfig = {
   SELENIUM_PROMISE_MANAGER: false,
   seleniumAddress: 'http://localhost:4444/wd/hub',
   suites: {
-    web: ['e2e/**/*.js', 'mobile/**/*.js', 'medic-conf/**/*.js'],
+    web: [
+      'e2e/!(cht)/**/*.js',
+      'e2e/*.js',
+      'mobile/**/*.js',
+      'medic-conf/**/*.js'
+    ],
+    cht: [
+      'e2e/cht/*.spec.js'
+    ],
     mobile: [],
     // performance: 'performance/**/*.js'
   },
@@ -108,7 +118,10 @@ const prepServices = async () => {
   }
 
   await listenForApi();
-  await runAndLog('Settings setup', setupSettings);
+  const config = await browser.getProcessedConfig();
+  if (config.suite && config.suite === 'web'){
+    await runAndLog('Settings setup', setupSettings);
+  }
   await runAndLog('User contact doc setup', utils.setUserContactDoc);
 };
 

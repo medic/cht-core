@@ -35,6 +35,7 @@ const africasTalking = require('./controllers/africas-talking');
 const rapidPro = require('./controllers/rapidpro');
 const infodoc = require('./controllers/infodoc');
 const authorization = require('./middleware/authorization');
+const deprecation = require('./middleware/deprecation');
 const hydration = require('./controllers/hydration');
 const contactsByPhone = require('./controllers/contacts-by-phone');
 const createUserDb = require('./controllers/create-user-db');
@@ -337,7 +338,8 @@ app.get('/api/deploy-info', (req, res) => {
   res.json(environment.getDeployInfo());
 });
 
-app.get('/api/v1/monitoring', monitoring.get);
+app.get('/api/v1/monitoring', deprecation.deprecate('/api/v2/monitoring'), monitoring.getV1);
+app.get('/api/v2/monitoring', monitoring.getV2);
 
 app.get('/api/auth/:path', function(req, res) {
   auth.checkUrl(req)

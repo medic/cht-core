@@ -8,6 +8,8 @@ import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
 import { DBSyncService } from '@mm-services/db-sync.service';
 import { DbService } from '@mm-services/db.service';
 import { AuthService } from '@mm-services/auth.service';
+import { CheckDateService } from '@mm-services/check-date.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 describe('DBSync service', () => {
   let service:DBSyncService;
@@ -21,10 +23,13 @@ describe('DBSync service', () => {
   let hasAuth;
   let recursiveOnTo;
   let recursiveOnFrom;
-  let replicationResult;
+  let replicationResultTo;
+  let replicationResultFrom;
   let getItem;
   let dbSyncRetry;
   let rulesEngine;
+  let checkDateService;
+  let telemetryService;
 
   let localMedicDb;
   let localMetaDb;
@@ -37,13 +42,15 @@ describe('DBSync service', () => {
   beforeEach(() => {
     clock = sinon.useFakeTimers();
 
-    replicationResult = () => Promise.resolve();
+    replicationResultTo = Promise.resolve();
+    replicationResultFrom = Promise.resolve();
+
     to = sinon.stub();
     to.events = {};
     recursiveOnTo = sinon.stub();
     recursiveOnTo.callsFake((event, fn) => {
       to.events[event] = fn;
-      const promise = replicationResult();
+      const promise = replicationResultTo;
       promise.on = recursiveOnTo;
       return promise;
     });
@@ -53,7 +60,7 @@ describe('DBSync service', () => {
     recursiveOnFrom = sinon.stub();
     recursiveOnFrom.callsFake((event, fn) => {
       from.events[event] = fn;
-      const promise = replicationResult();
+      const promise = replicationResultFrom;
       promise.on = recursiveOnFrom;
       return promise;
     });
@@ -62,10 +69,10 @@ describe('DBSync service', () => {
     userCtx = sinon.stub();
     sync = sinon.stub();
     sync.events = {};
-    syncResult = () => Promise.resolve();
+    syncResult = Promise.resolve();
     recursiveOnSync = sinon.stub().callsFake((event, fn) => {
       sync.events[event] = fn;
-      const promise = syncResult();
+      const promise = syncResult;
       promise.on = recursiveOnSync;
       return promise;
     });
@@ -73,6 +80,7 @@ describe('DBSync service', () => {
     hasAuth = sinon.stub();
     dbSyncRetry = sinon.stub();
     rulesEngine = { monitorExternalChanges: sinon.stub() };
+    telemetryService = { record: sinon.stub().resolves() };
 
     localMedicDb = {
       replicate: { to: to, from: from },
@@ -94,6 +102,7 @@ describe('DBSync service', () => {
 
     getItem = sinon.stub(window.localStorage, 'getItem');
     sinon.stub(window.localStorage, 'setItem');
+    checkDateService = { check: sinon.stub().resolves() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -102,6 +111,8 @@ describe('DBSync service', () => {
         { provide: AuthService, useValue: { has: hasAuth } },
         { provide: DbSyncRetryService, useValue: { retryForbiddenFailure: dbSyncRetry } },
         { provide: RulesEngineService, useValue: rulesEngine },
+        { provide: TelemetryService, useValue: telemetryService },
+        { provide: CheckDateService, useValue: checkDateService },
       ]
     });
 
@@ -119,6 +130,7 @@ describe('DBSync service', () => {
       return service.sync().then(() => {
         expect(to.callCount).to.equal(0);
         expect(from.callCount).to.equal(0);
+        expect(checkDateService.check.callCount).to.equal(0);
       });
     });
 
@@ -134,6 +146,47 @@ describe('DBSync service', () => {
         expect(from.args[0][1]).to.not.have.keys('filter', 'checkpoint');
         expect(to.callCount).to.equal(1);
         expect(to.args[0][1]).to.have.keys('filter', 'checkpoint', 'batch_size');
+        expect(checkDateService.check.callCount).to.equal(1);
+        expect(checkDateService.check.args[0]).to.deep.equal([]);
+      });
+    });
+
+    it('should record telemetry for bi-directional replication', async () => {
+      isOnlineOnly.returns(false);
+      hasAuth.resolves(true);
+      getItem.withArgs('medic-last-replicated-date').returns(100);
+      clock.tick(500);
+
+
+      let fromResolve;
+      let toResolve;
+      replicationResultFrom = new Promise(resolve => fromResolve = resolve);
+      replicationResultTo = new Promise(resolve => toResolve = resolve);
+
+      const syncResult = service.sync();
+      await Promise.resolve();
+
+      clock.tick(1000);
+      fromResolve({ docs_read: 45 });
+      await Promise.resolve();
+
+      clock.tick(500);
+      toResolve({ docs_read: 63 });
+
+      return syncResult.then(() => {
+        expect(from.callCount).to.equal(1);
+        expect(to.callCount).to.equal(1);
+
+        expect(telemetryService.record.callCount).to.equal(6);
+        expect(telemetryService.record.args).to.have.deep.members([
+          ['replication:medic:from:success', 1000],
+          ['replication:medic:from:ms-since-last-replicated-date', 400],
+          ['replication:medic:from:docs', 45],
+
+          ['replication:medic:to:success', 1500],
+          ['replication:medic:to:ms-since-last-replicated-date', 400],
+          ['replication:medic:to:docs', 63],
+        ]);
       });
     });
 
@@ -155,6 +208,7 @@ describe('DBSync service', () => {
       service.setOnlineStatus(false);
       return service.sync().then(() => {
         expect(from.callCount).to.equal(0);
+        expect(checkDateService.check.callCount).to.equal(0);
       });
     });
 
@@ -175,6 +229,7 @@ describe('DBSync service', () => {
       service.setOnlineStatus(false);
       return service.sync(true).then(() => {
         expect(from.callCount).to.equal(1);
+        expect(checkDateService.check.callCount).to.equal(1);
       });
     });
 
@@ -183,7 +238,7 @@ describe('DBSync service', () => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
-      replicationResult = () => Promise.reject('error');
+      replicationResultTo = replicationResultFrom = Promise.reject('error');
       const onUpdate = sinon.stub();
       service.subscribe(onUpdate);
       localMedicDb.info.resolves({ update_seq: 100 });
@@ -204,7 +259,7 @@ describe('DBSync service', () => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
-      replicationResult = () => Promise.reject('error');
+      replicationResultTo = replicationResultFrom = Promise.reject('error');
       const onUpdate = sinon.stub();
       service.subscribe(onUpdate);
 
@@ -222,7 +277,7 @@ describe('DBSync service', () => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
-      replicationResult = () => Promise.resolve({ some: 'info' });
+      replicationResultFrom = Promise.resolve({ some: 'info' });
       const onUpdate = sinon.stub();
       service.subscribe(onUpdate);
 
@@ -282,6 +337,338 @@ describe('DBSync service', () => {
         expect(onUpdate.callCount).to.eq(2);
         expect(onUpdate.args[0][0]).to.deep.eq({ state: 'inProgress' });
         expect(onUpdate.args[1][0]).to.deep.eq({ to: 'success', from: 'success' });
+      });
+    });
+
+    describe('telemetry when replication fails', () => {
+      it('when from fails and maybe server is offline', async () => {
+        isOnlineOnly.returns(false);
+        hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-date').returns(200);
+        clock.tick(1000);
+
+        let fromReject;
+        let toResolve;
+        replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
+        replicationResultTo = new Promise(resolve => toResolve = resolve);
+
+        const syncResult = service.sync();
+        await Promise.resolve();
+
+        clock.tick(2000);
+        const error = { message: 'Failed to fetch', result: { docs_read: 22 } };
+        fromReject(error);
+        from.events['error'](error);
+        await Promise.resolve();
+
+        clock.tick(1000);
+        toResolve({ docs_read: 32 });
+
+        return syncResult.then(() => {
+          expect(from.callCount).to.equal(1);
+          expect(to.callCount).to.equal(1);
+
+          expect(telemetryService.record.callCount).to.equal(7);
+          expect(telemetryService.record.args).to.have.deep.members([
+            ['replication:medic:from:failure', 2000],
+            ['replication:medic:from:ms-since-last-replicated-date', 800],
+            ['replication:medic:from:docs', 22],
+            ['replication:medic:from:failure:reason:offline:server'],
+
+            ['replication:medic:to:success', 3000],
+            ['replication:medic:to:ms-since-last-replicated-date', 800],
+            ['replication:medic:to:docs', 32],
+          ]);
+        });
+      });
+
+      it('when from fails and maybe server is offline and returns 502 and HTML', async () => {
+        isOnlineOnly.returns(false);
+        hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-date').returns(200);
+        clock.tick(1000);
+
+        let fromReject;
+        let toResolve;
+        replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
+        replicationResultTo = new Promise(resolve => toResolve = resolve);
+
+        const syncResult = service.sync();
+        await Promise.resolve();
+
+        clock.tick(2000);
+        const error = { message: 'Unexpected token S in JSON at position 0', result: { docs_read: 22 } };
+        fromReject(error);
+        from.events['error'](error);
+        await Promise.resolve();
+
+        clock.tick(1000);
+        toResolve({ docs_read: 32 });
+
+        return syncResult.then(() => {
+          expect(from.callCount).to.equal(1);
+          expect(to.callCount).to.equal(1);
+
+          expect(telemetryService.record.callCount).to.equal(7);
+          expect(telemetryService.record.args).to.have.deep.members([
+            ['replication:medic:from:failure', 2000],
+            ['replication:medic:from:ms-since-last-replicated-date', 800],
+            ['replication:medic:from:docs', 22],
+            ['replication:medic:from:failure:reason:offline:server'],
+
+            ['replication:medic:to:success', 3000],
+            ['replication:medic:to:ms-since-last-replicated-date', 800],
+            ['replication:medic:to:docs', 32],
+          ]);
+        });
+      });
+
+      it('when from fails and client is offline', async () => {
+        isOnlineOnly.returns(false);
+        hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-date').returns(300);
+        clock.tick(1000);
+        service.setOnlineStatus(false);
+
+        let fromReject;
+        let toResolve;
+        replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
+        replicationResultTo = new Promise(resolve => toResolve = resolve);
+
+        const syncResult = service.sync(true);
+        await Promise.resolve();
+
+        clock.tick(500);
+        const error = { message: 'Failed to fetch', result: { docs_read: 12 } };
+        fromReject(error);
+        from.events['error'](error);
+        await Promise.resolve();
+
+        clock.tick(500);
+        toResolve({ docs_read: 67 });
+
+        return syncResult.then(() => {
+          expect(from.callCount).to.equal(1);
+          expect(to.callCount).to.equal(1);
+
+          expect(telemetryService.record.callCount).to.equal(7);
+          expect(telemetryService.record.args).to.have.deep.members([
+            ['replication:medic:from:failure', 500],
+            ['replication:medic:from:ms-since-last-replicated-date', 700],
+            ['replication:medic:from:docs', 12],
+            ['replication:medic:from:failure:reason:offline:client'],
+
+            ['replication:medic:to:success', 1000],
+            ['replication:medic:to:ms-since-last-replicated-date', 700],
+            ['replication:medic:to:docs', 67],
+          ]);
+        });
+      });
+
+      it('when from fails from another error', async () => {
+        isOnlineOnly.returns(false);
+        hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-date').returns(300);
+        clock.tick(1000);
+
+        let fromReject;
+        let toResolve;
+        replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
+        replicationResultTo = new Promise(resolve => toResolve = resolve);
+
+        const syncResult = service.sync();
+        await Promise.resolve();
+
+        clock.tick(500);
+        const error = { message: 'BOOM', result: { docs_read: 12 } };
+        fromReject(error);
+        from.events['error'](error);
+        await Promise.resolve();
+
+        clock.tick(500);
+        toResolve({ docs_read: 67 });
+
+        return syncResult.then(() => {
+          expect(from.callCount).to.equal(1);
+          expect(to.callCount).to.equal(1);
+
+          expect(telemetryService.record.callCount).to.equal(7);
+          expect(telemetryService.record.args).to.have.deep.members([
+            ['replication:medic:from:failure', 500],
+            ['replication:medic:from:ms-since-last-replicated-date', 700],
+            ['replication:medic:from:docs', 12],
+            ['replication:medic:from:failure:reason:error'],
+
+            ['replication:medic:to:success', 1000],
+            ['replication:medic:to:ms-since-last-replicated-date', 700],
+            ['replication:medic:to:docs', 67],
+          ]);
+        });
+      });
+
+      it('when to fails and maybe server is offline', async () => {
+        isOnlineOnly.returns(false);
+        hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-date').returns(200);
+        clock.tick(1000);
+
+        let fromResolve;
+        let toReject;
+        replicationResultFrom = new Promise(resolve => fromResolve = resolve);
+        replicationResultTo = new Promise((resolve, reject) => toReject = reject);
+
+        const syncResult = service.sync();
+        await Promise.resolve();
+
+        clock.tick(2000);
+        const error = { message: 'Failed to fetch', result: { docs_read: 22 } };
+        toReject(error);
+        to.events['error'](error);
+        await Promise.resolve();
+
+        clock.tick(1000);
+        fromResolve({ docs_read: 32 });
+
+        return syncResult.then(() => {
+          expect(from.callCount).to.equal(1);
+          expect(to.callCount).to.equal(1);
+
+          expect(telemetryService.record.callCount).to.equal(7);
+          expect(telemetryService.record.args).to.have.deep.members([
+            ['replication:medic:from:success', 3000],
+            ['replication:medic:from:ms-since-last-replicated-date', 800],
+            ['replication:medic:from:docs', 32],
+
+            ['replication:medic:to:failure', 2000],
+            ['replication:medic:to:ms-since-last-replicated-date', 800],
+            ['replication:medic:to:docs', 22],
+            ['replication:medic:to:failure:reason:offline:server'],
+          ]);
+        });
+      });
+
+      it('when to fails and client is offline', async () => {
+        isOnlineOnly.returns(false);
+        hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-date').returns(200);
+        service.setOnlineStatus(false);
+        clock.tick(300);
+
+        let fromResolve;
+        let toReject;
+        replicationResultFrom = new Promise(resolve => fromResolve = resolve);
+        replicationResultTo = new Promise((resolve, reject) => toReject = reject);
+
+        const syncResult = service.sync(true);
+        await Promise.resolve();
+
+        clock.tick(1000);
+        const error = { message: 'Failed to fetch', result: { docs_read: 12 } };
+        toReject(error);
+        to.events['error'](error);
+        await Promise.resolve();
+
+        clock.tick(7000);
+        fromResolve({ docs_read: 500 });
+
+        return syncResult.then(() => {
+          expect(from.callCount).to.equal(1);
+          expect(to.callCount).to.equal(1);
+
+          expect(telemetryService.record.callCount).to.equal(7);
+          expect(telemetryService.record.args).to.have.deep.members([
+            ['replication:medic:from:success', 8000],
+            ['replication:medic:from:ms-since-last-replicated-date', 100],
+            ['replication:medic:from:docs', 500],
+
+            ['replication:medic:to:failure', 1000],
+            ['replication:medic:to:ms-since-last-replicated-date', 100],
+            ['replication:medic:to:docs', 12],
+            ['replication:medic:to:failure:reason:offline:client'],
+          ]);
+        });
+      });
+
+      it('when to fails from other error', async () => {
+        isOnlineOnly.returns(false);
+        hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-date').returns(200);
+        clock.tick(300);
+
+        let fromResolve;
+        let toReject;
+        replicationResultFrom = new Promise(resolve => fromResolve = resolve);
+        replicationResultTo = new Promise((resolve, reject) => toReject = reject);
+
+        const syncResult = service.sync(true);
+        await Promise.resolve();
+
+        clock.tick(700);
+        const error = { message: 'Not failed to fetch', result: { docs_read: 6 } };
+        toReject(error);
+        to.events['error'](error);
+        fromResolve({ docs_read: 400 });
+
+        return syncResult.then(() => {
+          expect(from.callCount).to.equal(1);
+          expect(to.callCount).to.equal(1);
+
+          expect(telemetryService.record.callCount).to.equal(7);
+          expect(telemetryService.record.args).to.have.deep.members([
+            ['replication:medic:from:success', 700],
+            ['replication:medic:from:ms-since-last-replicated-date', 100],
+            ['replication:medic:from:docs', 400],
+
+            ['replication:medic:to:failure', 700],
+            ['replication:medic:to:ms-since-last-replicated-date', 100],
+            ['replication:medic:to:docs', 6],
+            ['replication:medic:to:failure:reason:error'],
+          ]);
+        });
+      });
+
+      it('when both fail', async () => {
+        isOnlineOnly.returns(false);
+        hasAuth.resolves(true);
+        getItem.withArgs('medic-last-replicated-date').returns(200);
+        clock.tick(300);
+
+        let fromReject;
+        let toReject;
+        replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
+        replicationResultTo = new Promise((resolve, reject) => toReject = reject);
+
+        const syncResult = service.sync(true);
+        await Promise.resolve();
+
+        clock.tick(100);
+        const errorTo = { message: 'Not failed to fetch', result: { docs_read: 6 } };
+        toReject(errorTo);
+        to.events['error'](errorTo);
+        await Promise.resolve();
+
+        clock.tick(100);
+        const errorFrom = { message: 'Not failed to fetch', result: { docs_read: 12 } };
+        fromReject(errorFrom);
+        from.events['error'](errorFrom);
+
+        return syncResult.then(() => {
+          expect(from.callCount).to.equal(1);
+          expect(to.callCount).to.equal(1);
+
+          expect(telemetryService.record.callCount).to.equal(8);
+          expect(telemetryService.record.args).to.have.deep.members([
+            ['replication:medic:to:failure', 100],
+            ['replication:medic:to:ms-since-last-replicated-date', 100],
+            ['replication:medic:to:docs', 6],
+            ['replication:medic:to:failure:reason:error'],
+
+            ['replication:medic:from:failure', 200],
+            ['replication:medic:from:ms-since-last-replicated-date', 100],
+            ['replication:medic:from:docs', 12],
+            ['replication:medic:from:failure:reason:error'],
+          ]);
+        });
       });
     });
 
@@ -377,6 +764,8 @@ describe('DBSync service', () => {
         expect(dbSyncRetry.callCount).to.equal(0);
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0]).to.equal('Denied replicating from remote server');
+        expect(telemetryService.record.args).to.include.deep.members([['replication:medic:from:denied']]);
+        expect(telemetryService.record.args).to.not.include.deep.members([['replication:medic:to:denied']]);
       });
     });
 
@@ -392,6 +781,8 @@ describe('DBSync service', () => {
         expect(from.callCount).to.equal(1);
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0]).to.equal('Denied replicating to remote server');
+        expect(telemetryService.record.args).to.not.include.deep.members([['replication:medic:from:denied']]);
+        expect(telemetryService.record.args).to.include.deep.members([['replication:medic:to:denied']]);
       });
     });
   });
@@ -455,6 +846,78 @@ describe('DBSync service', () => {
           expect(localMetaDb.put.callCount).to.equal(1);
           expect(localMetaDb.put.args[0]).to.deep.equal([{ _id: '_local/purgelog', synced_seq: 100, purged_seq: 10 }]);
         });
+      });
+
+      it('should record telemetry when successful', async () => {
+        let syncResolve;
+        syncResult = new Promise(resolve => syncResolve = resolve);
+
+        const syncCall = service.sync();
+        clock.tick(1000);
+        await Promise.resolve();
+        await Promise.resolve();
+
+        sync.events['complete']({ pull: { docs_read: 100 }, push: { docs_read: 32 } });
+        syncResolve();
+
+        await syncCall;
+
+        expect(telemetryService.record.args).to.have.deep.members([
+          ['replication:meta:sync:success', 1000],
+          ['replication:meta:sync:docs', 132],
+
+          ['replication:medic:to:success', 0],
+          ['replication:medic:from:success', 0],
+        ]);
+      });
+
+      it('should record telemetry when failed because "server" was offline', async () => {
+        let syncResolve;
+        syncResult = new Promise(resolve => syncResolve = resolve);
+
+        const syncCall = service.sync();
+        clock.tick(1000);
+        await Promise.resolve();
+        await Promise.resolve();
+
+        sync.events['error']({ message: 'Failed to fetch', result: { docs_read: 0 } });
+        syncResolve();
+
+        await syncCall;
+
+        expect(telemetryService.record.args).to.have.deep.members([
+          ['replication:meta:sync:failure', 1000],
+          ['replication:meta:sync:docs', 0],
+          ['replication:meta:sync:failure:reason:offline:server'],
+
+          ['replication:medic:to:success', 0],
+          ['replication:medic:from:success', 0],
+        ]);
+      });
+
+      it('should record telemetry when failed because "client" was offline', async () => {
+        let syncResolve;
+        syncResult = new Promise(resolve => syncResolve = resolve);
+        service.setOnlineStatus(false);
+
+        const syncCall = service.sync(true);
+        clock.tick(1312321);
+        await Promise.resolve();
+        await Promise.resolve();
+
+        sync.events['error']({ message: 'Failed to fetch', result: { docs_read: 13 } });
+        syncResolve();
+
+        await syncCall;
+
+        expect(telemetryService.record.args).to.have.deep.members([
+          ['replication:meta:sync:failure', 1312321],
+          ['replication:meta:sync:docs', 13],
+          ['replication:meta:sync:failure:reason:offline:client'],
+
+          ['replication:medic:to:success', 0],
+          ['replication:medic:from:success', 0],
+        ]);
       });
     });
   });

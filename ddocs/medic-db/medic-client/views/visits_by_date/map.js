@@ -8,5 +8,6 @@ function(doc) {
 
     // Is a visit report about a family
     emit(visited_date, doc.fields.visited_contact_uuid);
+    emit([doc.fields.visited_contact_uuid, visited_date]);
   }
 }
