@@ -22,11 +22,12 @@ describe('About Component', () => {
   let versionService;
   let dbInfo;
   let router;
+  let medicAndroid;
+  const originalMedicAndroid = window.medicmobile_android;
 
   beforeEach(async(() => {
     const mockedSelectors = [
       { selector: Selectors.getReplicationStatus, value: {} },
-      { selector: Selectors.getAndroidAppVersion, value: '' },
     ];
 
     versionService = {
@@ -39,6 +40,12 @@ describe('About Component', () => {
     resourceIconsService = { getDocResources: sinon.stub().resolves() };
     sessionService = { userCtx: sinon.stub().returns('userctx') };
     router = { navigate: sinon.stub() };
+
+    medicAndroid = {
+      getDeviceInfo: sinon.stub(),
+      getDataUsage: sinon.stub()
+    };
+    window.medicmobile_android = medicAndroid;
 
     return TestBed
       .configureTestingModule({
@@ -68,13 +75,14 @@ describe('About Component', () => {
 
   afterEach(() => {
     sinon.restore();
+    window.medicmobile_android = originalMedicAndroid;
   });
 
   it('should create About component', () => {
     expect(component).to.exist;
   });
 
-  it('ngOnInit() should subscribe to redux, get versions, ', async () => {
+  it('ngOnInit() should subscribe to store', async () => {
     const spySubscriptionsAdd = sinon.spy(component.subscription, 'add');
 
     component.ngOnInit();
@@ -82,11 +90,12 @@ describe('About Component', () => {
     expect(spySubscriptionsAdd.callCount).to.equal(1);
   });
 
-  it('should initializes data', async(async () => {
+  it('should initialize data when it is not an android device', async(async () => {
     dbInfo.resolves({ some: 'info' });
     sessionService.userCtx.returns('session info');
     versionService.getLocal.resolves({ version: '3.5.0', rev: '12' });
     versionService.getRemoteRev.resolves('15');
+    window.medicmobile_android = undefined;
 
     component.ngOnInit();
     fixture.detectChanges();
@@ -98,6 +107,56 @@ describe('About Component', () => {
     expect(component.version).to.equal('3.5.0');
     expect(component.localRev).to.equal('12');
     expect(component.remoteRev).to.equal('15');
+    expect(component.androidDataUsage).to.be.undefined;
+    expect(component.androidDeviceInfo).to.be.undefined;
+  }));
+
+  it('should initialize data when the device is android', async(async () => {
+    dbInfo.resolves({ some: 'info' });
+    sessionService.userCtx.returns('session info');
+    versionService.getLocal.resolves({ version: '3.5.0', rev: '12' });
+    versionService.getRemoteRev.resolves('15');
+    medicAndroid.getDataUsage.returns({
+      system: { rx: 124, tx: 345 },
+      app: { rx: 124, tx: 345 }
+    });
+    medicAndroid.getDeviceInfo.returns({
+      app: {
+        version: 'SNAPSHOT-xwalk',
+        packageName: 'org.medicmobile.webapp.mobile',
+        versionCode: 201
+      },
+      software: {
+        androidVersion: '9',
+        osApiLevel: 28
+      }
+    });
+
+    component.ngOnInit();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await fixture.whenRenderingDone();
+
+    expect(component.dbInfo).to.deep.equal({ some: 'info' });
+    expect(component.userCtx).to.equal('session info');
+    expect(component.version).to.equal('3.5.0');
+    expect(component.localRev).to.equal('12');
+    expect(component.remoteRev).to.equal('15');
+    expect(component.androidDataUsage).to.deep.equal({
+      system: { rx: 124, tx: 345 },
+      app: { rx: 124, tx: 345 }
+    });
+    expect(component.androidDeviceInfo).to.deep.equal({
+      app: {
+        version: 'SNAPSHOT-xwalk',
+        packageName: 'org.medicmobile.webapp.mobile',
+        versionCode: 201
+      },
+      software: {
+        androidVersion: '9',
+        osApiLevel: 28
+      }
+    });
   }));
 
   it ('should display partner logo if it exists', async(async () => {
@@ -120,14 +179,14 @@ describe('About Component', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
-  it('handles missing partners resource - #7100', async(async () => {
+  it('should handle missing partners resource - #7100', async(async () => {
     resourceIconsService.getDocResources.rejects({ status: 404 });
     component.ngOnInit();
     await fixture.whenStable();
     // no error thrown
   }));
 
-  it('logs non 404 errors when getting partners resource - #7100', fakeAsync(() => {
+  it('should log non 404 errors when getting partners resource - #7100', fakeAsync(() => {
     const consoleErrorMock = sinon.stub(console, 'error');
     resourceIconsService.getDocResources.rejects({ status: 403 });
     component.ngOnInit();

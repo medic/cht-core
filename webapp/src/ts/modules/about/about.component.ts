@@ -19,10 +19,9 @@ export class AboutComponent implements OnInit, OnDestroy {
 
   userCtx;
   replicationStatus;
-  androidAppVersion;
-  androidDeviceInfo
   partners;
   androidDataUsage;
+  androidDeviceInfo;
   version;
   localRev;
   remoteRev;
