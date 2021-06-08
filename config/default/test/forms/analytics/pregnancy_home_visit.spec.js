@@ -1,14 +1,8 @@
 const { expect } = require('chai');
 const TestRunner = require('medic-conf-test-harness');
-const path = require('path');
-const moment = require('moment');
-const sinon = require('sinon');
 const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios } = require('../../form-inputs');
-const harness = new TestRunner({
-  xformFolderPath: path.join(__dirname, '../../../forms/app'),
-});
+const harness = new TestRunner();
 
-let clock;
 describe('Pregnancy home visit form analytic field tests', () => {
   before(async () => { return await harness.start(); });
   after(async () => { return await harness.stop(); });
@@ -20,7 +14,6 @@ describe('Pregnancy home visit form analytic field tests', () => {
     });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if(clock) {clock.restore();}
   });
 
   it('pregnancy home visit, risks', async () => {
@@ -29,11 +22,11 @@ describe('Pregnancy home visit form analytic field tests', () => {
     const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.safe10Weeks);
     expect(pregnancy.errors).to.be.empty;
 
-    clock = sinon.useFakeTimers(moment('1999-10-17').toDate());
-    const taskForHomeVisit = await harness.getTasks({ now: '1999-10-17', title: 'task.anc.pregnancy_home_visit.title' });
+    await harness.setNow('1999-10-17');
+    const taskForHomeVisit = await harness.getTasks({ title: 'task.anc.pregnancy_home_visit.title' });
     expect(taskForHomeVisit.length).to.equal(1);
 
-    await harness.loadForm(taskForHomeVisit[0].actions[0].form);
+    await harness.loadAction(taskForHomeVisit[0]);
     const followupFormResult = await harness.fillForm(...pregnancyHomeVisitScenarios.riskDangerMultipleVisits);
 
     expect(followupFormResult.errors).to.be.empty;
@@ -85,9 +78,9 @@ describe('Pregnancy home visit form analytic field tests', () => {
         __patient_uuid: 'patient_id',
         __patient_id: 'patient_id',
         __household_uuid: 'patient_parent_id',
-        __source: 'action',
-        __source_id: '',
-        __pregnancy_uuid: '1'
+        __source: 'task',
+        __source_id: pregnancy.report._id,
+        __pregnancy_uuid: pregnancy.report._id,
       }
     });
   });
@@ -95,18 +88,16 @@ describe('Pregnancy home visit form analytic field tests', () => {
   it('early end to pregnancy (miscarriage)', async () => {
     await harness.setNow('2000-01-01');
 
-    clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
     // Load the pregnancy form and fill in
-    let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
-    expect(result.errors).to.be.empty;
+    const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
+    expect(pregnancy.errors).to.be.empty;
 
-    harness.setNow('2000-01-03');
-    clock = sinon.useFakeTimers(moment('2000-01-03').toDate());
+    await harness.flush(2);
     //Load the delivery form and fill in
-    result = await harness.fillForm('pregnancy_home_visit', ...pregnancyHomeVisitScenarios.miscarriage);
-    expect(result.errors).to.be.empty;
+    const pregnancyVisit = await harness.fillForm('pregnancy_home_visit', ...pregnancyHomeVisitScenarios.miscarriage);
+    expect(pregnancyVisit.errors).to.be.empty;
 
-    expect(result.report.fields.data).to.deep.include({
+    expect(pregnancyVisit.report.fields.data).to.deep.include({
       __activity_to_report: 'miscarriage',
       __gestational_age_correct: '',
       __miscarriage_date: '2000-01-02',
@@ -154,7 +145,7 @@ describe('Pregnancy home visit form analytic field tests', () => {
         __household_uuid: 'patient_parent_id',
         __source: 'action',
         __source_id: '',
-        __pregnancy_uuid: '1'
+        __pregnancy_uuid: pregnancy.report._id,
       }
     });
 
@@ -163,18 +154,16 @@ describe('Pregnancy home visit form analytic field tests', () => {
   it('early end to pregnancy (abortion)', async () => {
     await harness.setNow('2000-01-01');
 
-    clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
     // Load the pregnancy form and fill in
-    let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
-    expect(result.errors).to.be.empty;
+    const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
+    expect(pregnancy.errors).to.be.empty;
 
-    harness.setNow('2000-01-03');
-    clock = sinon.useFakeTimers(moment('2000-01-03').toDate());
+    await harness.setNow('2000-01-03');
     //Load the delivery form and fill in
-    result = await harness.fillForm('pregnancy_home_visit', ...pregnancyHomeVisitScenarios.abortion);
-    expect(result.errors).to.be.empty;
+    const pregnancyVisit = await harness.fillForm('pregnancy_home_visit', ...pregnancyHomeVisitScenarios.abortion);
+    expect(pregnancyVisit.errors).to.be.empty;
 
-    expect(result.report.fields.data).to.deep.include({
+    expect(pregnancyVisit.report.fields.data).to.deep.include({
       __activity_to_report: 'abortion',
       __gestational_age_correct: '',
       __miscarriage_date: '',
@@ -222,7 +211,7 @@ describe('Pregnancy home visit form analytic field tests', () => {
         __household_uuid: 'patient_parent_id',
         __source: 'action',
         __source_id: '',
-        __pregnancy_uuid: '1'
+        __pregnancy_uuid: pregnancy.report._id,
       }
     });
 

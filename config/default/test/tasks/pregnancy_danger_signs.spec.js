@@ -2,17 +2,11 @@ const chai = require('chai');
 const expect = chai.expect;
 chai.use(require('chai-like'));
 chai.use(require('chai-things'));
-const path = require('path');
-const moment = require('moment');
-const sinon = require('sinon');
-let clock;
 //const { Forms } = require('../../nools-extras');
 const TestRunner = require('medic-conf-test-harness');
 
 const { pregnancyRegistrationScenarios, pregnancyDangerSignScenarios, pregnancyHomeVisitScenarios } = require('../form-inputs');
-const harness = new TestRunner({
-  xformFolderPath: path.join(__dirname, '../../forms/app'),
-});
+const harness = new TestRunner();
 
 const now = '2000-01-01';
 
@@ -27,7 +21,6 @@ describe('Pregnancy danger sign tests', () => {
   });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if (clock) {clock.restore();}
   });
 
   it('danger sign follow up from pregnancy registration', async () => {
@@ -36,46 +29,43 @@ describe('Pregnancy danger sign tests', () => {
 
     // Confirm a task appears immediately
     await harness.flush(1);
-    const tasksAfterRegistration = await harness.getTasks();
-    expect(tasksAfterRegistration).to.have.property('length', 1); //also follow up
-    expect(tasksAfterRegistration).to.be.an('array').that.contains.something.like({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
+    const tasksAfterRegistration = await harness.getTasks({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
+    expect(tasksAfterRegistration).to.have.property('length', 1);
 
     // Complete the task and confirm the task disappears 
     await harness.flush(1);
-    await harness.loadAction(tasksAfterRegistration[0].actions[0]);
+    await harness.loadAction(tasksAfterRegistration[0]);
     const followupFormResult = await harness.fillForm(...pregnancyDangerSignScenarios.followUp.cured);
     expect(followupFormResult.errors).to.be.empty;
     const tasksAfterDangerSignsFollowUp = await harness.getTasks();
-    expect(tasksAfterDangerSignsFollowUp).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
+    expect(tasksAfterDangerSignsFollowUp).to.have.property('length', 0);
 
   });
   it('danger sign follow up from pregnancy home visit', async () => {
     const actionFormResult = await harness.fillForm(...pregnancyRegistrationScenarios.safe);
     expect(actionFormResult.errors).to.be.empty;
 
-    clock = sinon.useFakeTimers(moment('2000-01-23').toDate());
-    const taskForHomeVisit = await harness.getTasks({ now: '2000-01-23', title: 'task.anc.pregnancy_home_visit.title' });
-    //expect(taskForHomeVisit.length).to.be.greaterThan(0);
+    await harness.setNow('2000-01-23');
+    const taskForHomeVisit = await harness.getTasks({ title: 'task.anc.pregnancy_home_visit.title' });
     expect(taskForHomeVisit.length).to.be.equal(1);
 
     await harness.flush(1);
-    await harness.loadForm(taskForHomeVisit[0].actions[0].form);
+    await harness.loadAction(taskForHomeVisit[0]);
     let followupFormResult = await harness.fillForm(...pregnancyHomeVisitScenarios.danger);
 
     expect(followupFormResult.errors).to.be.empty;
     // Confirm a task appears immediately
-    const tasksAfterRegistration = await harness.getTasks();
-    expect(tasksAfterRegistration).to.have.property('length', 1); //also follow up
-    expect(tasksAfterRegistration).to.be.an('array').that.contains.something.like({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
+    const tasksAfterRegistration = await harness.getTasks({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
+    expect(tasksAfterRegistration).to.have.property('length', 1);
 
     // Complete the task and confirm the task disappears 
 
     await harness.flush(1);
-    await harness.loadAction(tasksAfterRegistration[0].actions[0]);
+    await harness.loadAction(tasksAfterRegistration[0]);
     followupFormResult = await harness.fillForm(...pregnancyDangerSignScenarios.followUp.cured);
     expect(followupFormResult.errors).to.be.empty;
     const tasksAfterDangerSignsFollowUp = await harness.getTasks();
-    expect(tasksAfterDangerSignsFollowUp).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
+    expect(tasksAfterDangerSignsFollowUp).to.have.property('length', 0);
   });
 
   it('danger sign follow up from pregnancy danger sign', async () => {
@@ -87,18 +77,17 @@ describe('Pregnancy danger sign tests', () => {
 
     expect(followupFormResult.errors).to.be.empty;
     // Confirm a task appears immediately
-    const tasksAfterDangerSignReport = await harness.getTasks();
+    const tasksAfterDangerSignReport = await harness.getTasks({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
     expect(tasksAfterDangerSignReport).to.have.property('length', 1);
-    expect(tasksAfterDangerSignReport).to.be.an('array').that.contains.something.like({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
 
     // Complete the task and confirm the task disappears 
 
     await harness.flush(1);
-    await harness.loadAction(tasksAfterDangerSignReport[0].actions[0]);
+    await harness.loadAction(tasksAfterDangerSignReport[0]);
     followupFormResult = await harness.fillForm(...pregnancyDangerSignScenarios.followUp.cured);
     expect(followupFormResult.errors).to.be.empty;
-    const tasksAfterDangerSignsFollowUp = await harness.getTasks();
-    expect(tasksAfterDangerSignsFollowUp).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
+    const tasksAfterDangerSignsFollowUp = await harness.getTasks({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
+    expect(tasksAfterDangerSignsFollowUp).to.be.empty;
   });
 
   it('danger sign follow up from pregnancy danger sign follow up', async () => {
@@ -111,25 +100,24 @@ describe('Pregnancy danger sign tests', () => {
     expect(followupFormResult.errors).to.be.empty;
     // Confirm a task appears immediately
     //await harness.flush(1);
-    const tasksAfterDangerSignReport = await harness.getTasks();
+    const tasksAfterDangerSignReport = await harness.getTasks({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
     expect(tasksAfterDangerSignReport).to.have.property('length', 1);
-    expect(tasksAfterDangerSignReport).to.be.an('array').that.contains.something.like({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
 
     await harness.flush(1);
     // Complete the task and confirm the task disappears 
 
-    await harness.loadAction(tasksAfterDangerSignReport[0].actions[0]);
+    await harness.loadAction(tasksAfterDangerSignReport[0]);
     followupFormResult = await harness.fillForm(...pregnancyDangerSignScenarios.followUp.danger);
-    const tasksAfterDangerSignFollowUp = await harness.getTasks();
 
+    const tasksAfterDangerSignFollowUp = await harness.getTasks({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
     expect(tasksAfterDangerSignFollowUp).to.have.property('length', 1);
-    expect(tasksAfterDangerSignFollowUp).to.be.an('array').that.contains.something.like({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
+    
     await harness.flush(1);
-    await harness.loadAction(tasksAfterDangerSignReport[0].actions[0]);
+    await harness.loadAction(tasksAfterDangerSignReport[0]);
     followupFormResult = await harness.fillForm(...pregnancyDangerSignScenarios.followUp.cured);
     expect(followupFormResult.errors).to.be.empty;
     const tasksAfterDangerSignsFollowUp = await harness.getTasks();
-    expect(tasksAfterDangerSignsFollowUp).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
+    expect(tasksAfterDangerSignsFollowUp).to.have.property('length', 0);
 
   });
 
@@ -139,9 +127,8 @@ describe('Pregnancy danger sign tests', () => {
 
     // Confirm a task appears immediately
     //await harness.flush(1);
-    const tasksAfterRegistration = await harness.getTasks();
-    expect(tasksAfterRegistration).to.have.property('length', 1); //also follow up
-    expect(tasksAfterRegistration).to.be.an('array').that.contains.something.like({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
+    const tasksAfterRegistration = await harness.getTasks({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
+    expect(tasksAfterRegistration).to.have.property('length', 1);
 
 
     // Clear task and confirm the task disappears 

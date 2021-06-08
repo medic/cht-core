@@ -3,13 +3,13 @@ const expect = chai.expect;
 const moment = require('moment');
 const sinon = require('sinon');
 const extras = require('../../nools-extras');
-let clock = sinon.useFakeTimers(new Date());
+
 describe('Date related tests', () => {
   beforeEach(() => {
-    clock = sinon.useFakeTimers(new Date());
+    sinon.useFakeTimers(new Date());
   });
   afterEach(() => {
-    clock.restore();
+    sinon.restore();
   });
 
   it('today is correct', () => {
