@@ -79,13 +79,12 @@
       .toPromise()
       .then(label => {
         $widget
-          .find('.or-appearance-rdtoolkit-action-btn')
-          .after('<div class="rdtoolkit-preview"></div>')
-          .after(`
+          .append(`
             <div class="rdtoolkit-actions">
               <a class="btn btn-primary rdtoolkit-provision-test">${label}</a>
             </div>
-          `);
+          `)
+          .append('<div class="rdtoolkit-preview"></div>');
       });
   }
 
