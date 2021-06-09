@@ -32,7 +32,7 @@ const baseConfig = {
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
-      args: ['--window-size=1024,768','--headless','--disable-gpu'],
+      args: ['--window-size=1024,768', '--headless', '--disable-gpu'],
       prefs: {
         intl: { accept_languages: 'en-US' },
       },
@@ -64,10 +64,10 @@ const baseConfig = {
     await browser.driver.wait(utils. prepServices(), 135 * 1000, 'API took too long to start up');
 
     afterEach(() => {
-      utils.saveBrowserLogs();
+      return utils.saveBrowserLogs();
     });
 
-    return utils.login(browser, 60).then(() => utils.runAndLog('User setup', utils.setupUser));
+    return utils.protractorLogin(browser).then(() => utils.runAndLogApiStartupMessage('User setup', utils.setupUser));
   }
 };
 
