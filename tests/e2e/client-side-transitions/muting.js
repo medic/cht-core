@@ -378,7 +378,8 @@ describe('Muting', () => {
       expect(updatedPatient1.muted).to.be.undefined;
       expect(updatedPatient1.muting_history).to.deep.equal({
         last_update: 'server_side',
-        server_side: { muted: false, date: updatedPatient1.muting_history.server_side.date /* can't guess this date */ },
+        /* can't guess this date */
+        server_side: { muted: false, date: updatedPatient1.muting_history.server_side.date },
         client_side: [
           { muted: true, date: clientMutingDate, report_id: mutingReport._id },
           { muted: false, date: unmutingDate, report_id: unmutingReport._id },
@@ -445,7 +446,8 @@ describe('Muting', () => {
       expect(updatedPatient1.muted).to.be.undefined;
       expect(updatedPatient1.muting_history).to.deep.equal({
         last_update: 'server_side',
-        server_side: { muted: false, date: updatedPatient1.muting_history.server_side.date /* can't guess this date */ },
+        /* can't guess this date */
+        server_side: { muted: false, date: updatedPatient1.muting_history.server_side.date },
         client_side: [
           { muted: true, date: clientMutingDate, report_id: mutingReport._id },
           { muted: false, date: unmutingDate, report_id: unmutingReport._id },
@@ -673,7 +675,8 @@ describe('Muting', () => {
       expect(updatedPatient1.muted).to.be.undefined;
       expect(updatedPatient1.muting_history).to.deep.equal({
         last_update: 'server_side',
-        server_side: { muted: false, date: updatedPatient1.muting_history.server_side.date /* can't guess this date */ },
+        /* can't guess this date */
+        server_side: { muted: false, date: updatedPatient1.muting_history.server_side.date },
         client_side: [
           { muted: true, date: clientMutingDate, report_id: mutingReport._id },
           { muted: false, date: patient1UnmutingDate, report_id: unmutingReport._id },
@@ -791,7 +794,8 @@ describe('Muting', () => {
       expect(updatedPatient1.muted).to.be.undefined;
       expect(updatedPatient1.muting_history).to.deep.equal({
         last_update: 'server_side',
-        server_side: { muted: false, date: updatedPatient1.muting_history.server_side.date /* can't guess this date */ },
+        /* can't guess this date */
+        server_side: { muted: false, date: updatedPatient1.muting_history.server_side.date },
         client_side: [
           { muted: true, date: clientMutingDate, report_id: mutingReport._id },
           { muted: false, date: patient1unmutingDate, report_id: unmutingReport._id },
@@ -801,7 +805,8 @@ describe('Muting', () => {
       expect(updatedPatient3.muted).to.be.undefined;
       expect(updatedPatient3.muting_history).to.deep.equal({
         last_update: 'server_side',
-        server_side: { muted: false, date: updatedPatient3.muting_history.server_side.date /* can't guess this date */ },
+        /* can't guess this date */
+        server_side: { muted: false, date: updatedPatient3.muting_history.server_side.date },
         client_side: [
           { muted: true, date: clientMutingDate, report_id: mutingReport._id },
           { muted: false, date: patient3unmutingDate, report_id: unmutingReport._id },
