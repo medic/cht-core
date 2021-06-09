@@ -16,6 +16,9 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 const db = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`, { auth });
 const sentinel = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-sentinel`, { auth });
 const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-logs`, { auth });
+const browserLogStream = fs.createWriteStream(
+  __dirname + '/../tests/logs/browser.console.log'
+);
 
 let originalSettings;
 const originalTranslations = {};
@@ -374,6 +377,48 @@ const waitForSettingsUpdateLogs = (type) => {
     'api.e2e.log',
     /Settings updated/,
   );
+};
+
+const apiRetry = () => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(listenForApi());
+    }, 1000);
+  });
+};
+
+const listenForApi = async () => {
+  console.log('Checking API');
+  try {
+    await request({ path: '/api/info' });
+  } catch(err) {
+    console.log('API check failed, trying again in 1 second');
+    console.log(err.message);
+    await apiRetry();
+  }
+};
+
+const runAndLog = (msg, func) => {
+  console.log(`API startup: ${msg}`);
+  return func();
+};
+
+const setupSettings = () => {
+  const defaultAppSettings = getDefaultSettings();
+  defaultAppSettings.transitions = {};
+
+  return request({
+    path: '/api/v1/settings?replace=1',
+    method: 'PUT',
+    body: defaultAppSettings
+  });
+};
+
+const getLoginUrl = () => {
+  const redirectUrl = encodeURIComponent(
+    `/${constants.DB_NAME}/_design/${constants.MAIN_DDOC_NAME}/_rewrite/#/messages`
+  );
+  return `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login?redirect=${redirectUrl}`;
 };
 
 module.exports = {
@@ -845,4 +890,69 @@ module.exports = {
 
   getSettings: () => module.exports.getDoc('settings').then(settings => settings.settings),
 
+  prepServices: async () => {
+    if (constants.IS_TRAVIS) {
+      console.log('On travis, waiting for horti to first boot api');
+      // Travis' horti will be installing and then deploying api and sentinel, and those logs are
+      // getting pushed into horti.log Once horti has bootstrapped we want to restart everything so
+      // that the service processes get restarted with their logs separated and pointing to the
+      // correct logs for testing
+      await listenForApi();
+      console.log('Horti booted API, rebooting under our logging structure');
+      await rpn.post('http://localhost:31337/all/restart');
+    } else {
+      // Locally we just need to start them and can do so straight away
+      await rpn.post('http://localhost:31337/all/start');
+    }
+
+    await listenForApi();
+    const config = await browser.getProcessedConfig();
+    if (config.suite && config.suite === 'web'){
+      await runAndLog('Settings setup', setupSettings);
+    }
+    await runAndLog('User contact doc setup', setUserContactDoc);
+  },
+
+  login: async (browser, timeout = 20) => {
+    await browser.driver.get(getLoginUrl());
+    await browser.driver.findElement(by.name('user')).sendKeys(auth.username);
+    await browser.driver.findElement(by.name('password')).sendKeys(auth.password);
+    await browser.driver.findElement(by.id('login')).click();
+    // Login takes some time, so wait until it's done.
+    const bootstrappedCheck = () =>
+      element(by.css('.app-root.bootstrapped')).isPresent();
+    return browser.driver.wait(
+      bootstrappedCheck,
+      timeout * 1000,
+      'Login should be complete within 20 seconds'
+    );
+  },
+
+  setupUser: () => {
+    return module.exports.getDoc('org.couchdb.user:' + auth.username)
+      .then(doc => {
+        doc.contact_id = constants.USER_CONTACT_ID;
+        doc.language = 'en';
+        return module.exports.saveDoc(doc);
+      })
+      .then(() => module.exports.refreshToGetNewSettings())
+      .then(() => module.exports.closeTour());
+  },
+
+  saveBrowserLogs: () => {
+    return browser
+      .manage()
+      .logs()
+      .get('browser')
+      .then(logs => {
+        const currentSpec = jasmine.currentSpec.fullName;
+        browserLogStream.write(`\n~~~~~~~~~~~ ${currentSpec} ~~~~~~~~~~~~~~~~~~~~~\n\n`);
+        logs
+          .map(log => `[${log.level.name_}] ${log.message}\n`)
+          .forEach(log => browserLogStream.write(log));
+        browserLogStream.write('\n~~~~~~~~~~~~~~~~~~~~~\n\n');
+      });
+  },
+
+  runAndLog,
 };
