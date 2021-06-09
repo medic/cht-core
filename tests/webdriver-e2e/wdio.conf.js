@@ -163,8 +163,8 @@ exports.config = {
    * @param {Object} config wdio configuration object
    * @param {Array.<Object>} capabilities list of capabilities details
    */
-  onPrepare: function (config, capabilities) {
-  },
+  // onPrepare: function (config, capabilities) {
+  // },
   /**
    * Gets executed before a worker process is spawned and can be used to initialise specific service
    * for that worker as well as modify runtime environments in an async fashion.
@@ -192,7 +192,7 @@ exports.config = {
    * @param {Array.<String>} specs    List of spec file paths that are to be run
    * @param {Object}     browser    instance of created browser/device session
    */
-  before: async function (capabilities, specs) {
+  before: async function () {
     await browser.url('/');
   },
   /**
@@ -281,4 +281,4 @@ exports.config = {
   */
   //onReload: function(oldSessionId, newSessionId) {
   //}
-}
+};
