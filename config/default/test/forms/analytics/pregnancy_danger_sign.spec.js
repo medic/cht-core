@@ -1,13 +1,8 @@
 const { expect } = require('chai');
 const TestRunner = require('medic-conf-test-harness');
-const path = require('path');
-const moment = require('moment');
-const sinon = require('sinon');
 const { pregnancyRegistrationScenarios, pregnancyDangerSignScenarios } = require('../../form-inputs');
-const harness = new TestRunner({
-  xformFolderPath: path.join(__dirname, '../../../forms/app'),
-});
-let clock;
+const harness = new TestRunner();
+
 const now = '2000-01-01';
 describe('Pregnancy danger sign form analytic field tests', () => {
   before(async () => { return await harness.start(); });
@@ -15,19 +10,16 @@ describe('Pregnancy danger sign form analytic field tests', () => {
   beforeEach(async () => {
     await harness.clear();
     await harness.setNow(now);
-    clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
     return await harness.loadForm('pregnancy');
   });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if (clock) {clock.restore();}
   });
 
   it('danger sign follow up from pregnancy danger sign', async () => {
     const actionFormResult = await harness.fillForm(...pregnancyRegistrationScenarios.safe);
     expect(actionFormResult.errors).to.be.empty;
-    harness.setNow('2000-01-30');
-    clock = sinon.useFakeTimers(moment('2000-01-30').toDate());
+    await harness.setNow('2000-01-30');
     await harness.loadForm('pregnancy_danger_sign');
     const dangerSignForm = await harness.fillForm(...pregnancyDangerSignScenarios.danger);
     expect(dangerSignForm.report.fields.data).to.deep.include({
@@ -49,14 +41,14 @@ describe('Pregnancy danger sign form analytic field tests', () => {
         __household_uuid: 'patient_parent_id',
         __source: 'action',
         __source_id: '',
-        __pregnancy_uuid: '1'
+        __pregnancy_uuid: actionFormResult.report._id
       }
     });
     expect(dangerSignForm.errors).to.be.empty;
     const tasksAfterDangerSignReport = await harness.getTasks({ title: 'task.anc.pregnancy_danger_sign_followup.title' });
 
     await harness.flush(1);
-    await harness.loadAction(tasksAfterDangerSignReport[0].actions[0]);
+    await harness.loadAction(tasksAfterDangerSignReport[0]);
     const dangerSignFollowupFormResult = await harness.fillForm(...pregnancyDangerSignScenarios.followUp.cured);
     expect(dangerSignFollowupFormResult.errors).to.be.empty;
     expect(dangerSignFollowupFormResult.report.fields.data).to.deep.include({
@@ -79,8 +71,8 @@ describe('Pregnancy danger sign form analytic field tests', () => {
         __patient_id: 'patient_id',
         __household_uuid: 'patient_parent_id',
         __source: 'task',
-        __source_id: '2',
-        __pregnancy_uuid: '1'
+        __source_id: dangerSignForm.report._id,
+        __pregnancy_uuid: actionFormResult.report._id
       }
     });
   });

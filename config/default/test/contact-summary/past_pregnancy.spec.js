@@ -1,14 +1,8 @@
 const { expect } = require('chai');
 const TestRunner = require('medic-conf-test-harness');
 const moment = require('moment');
-const sinon = require('sinon');
-const path = require('path');
 const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios, deliveryReportScenarios } = require('../form-inputs');
-const harness = new TestRunner({
-  xformFolderPath: path.join(__dirname, '../../forms/app'),
-});
-
-let clock;
+const harness = new TestRunner();
 
 describe('Tests for past pregnancy condition card', () => {
   before(async () => { return await harness.start(); });
@@ -16,26 +10,23 @@ describe('Tests for past pregnancy condition card', () => {
   beforeEach(async () => { return await harness.clear(); });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if (clock) {clock.restore();}
   });
 
   it('pregnancy registration with risk factors, one child healthy delivery', async () => {
     await harness.setNow('2000-01-01');
 
-    clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
     // Load the pregnancy form and fill in
     let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
     expect(result.errors).to.be.empty;
 
-    harness.setNow('2000-04-30');
-    clock = sinon.useFakeTimers(moment('2000-04-30').toDate());
+    await harness.setNow('2000-04-30');
     //Load the delivery form and fill in
     result = await harness.fillForm('delivery', ...deliveryReportScenarios.oneChildHealthyFacility);
     expect(result.errors).to.be.empty;
 
 
     // Verify condition card
-    const contactSummary = harness.getContactSummary();
+    const contactSummary = await harness.getContactSummary();
     expect(contactSummary.cards).to.have.property('length', 1);
     const pastPregnancyCard = contactSummary.cards[0];
     expect(pastPregnancyCard).to.have.property('label', 'contact.profile.pregnancy.past');
@@ -74,21 +65,18 @@ describe('Tests for past pregnancy condition card', () => {
 
   it('delivery with 2 children, both alive and healthy', async () => {
     await harness.setNow('2000-01-01');
-
-    clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
     // Load the pregnancy form and fill in
     let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
     expect(result.errors).to.be.empty;
 
-    harness.setNow('2000-04-30');
-    clock = sinon.useFakeTimers(moment('2000-04-30').toDate());
+    await harness.setNow('2000-04-30');
     //Load the delivery form and fill in
     result = await harness.fillForm('delivery', ...deliveryReportScenarios.twoChildrenHealthy);
     expect(result.errors).to.be.empty;
 
 
     // Verify condition card
-    const contactSummary = harness.getContactSummary();
+    const contactSummary = await harness.getContactSummary();
     expect(contactSummary.cards).to.have.property('length', 1);
     const pastPregnancyCard = contactSummary.cards[0];
     expect(pastPregnancyCard).to.have.property('label', 'contact.profile.pregnancy.past');
@@ -127,21 +115,18 @@ describe('Tests for past pregnancy condition card', () => {
 
   it('delivery with 3 children: 1 alive and healthy, 1 deceased, 1 stillbirth', async () => {
     await harness.setNow('2000-01-01');
-
-    clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
     // Load the pregnancy form and fill in
     let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
     expect(result.errors).to.be.empty;
 
-    harness.setNow('2000-04-30');
-    clock = sinon.useFakeTimers(moment('2000-04-30').toDate());
+    await harness.setNow('2000-04-30');
     //Load the delivery form and fill in
     result = await harness.fillForm('delivery', ...deliveryReportScenarios.oneChildHealthyOneDeceasedOneStillbirth);
     expect(result.errors).to.be.empty;
 
 
     // Verify condition card
-    const contactSummary = harness.getContactSummary();
+    const contactSummary = await harness.getContactSummary();
     //fails with error: TypeError: babyDeaths.forEach is not a function
     //because the repeat group is expected to be an array
     expect(contactSummary.cards).to.have.property('length', 1);
@@ -234,20 +219,18 @@ describe('Tests for past pregnancy condition card', () => {
   it('pregnancy registration with early end to pregnancy (miscarriage)', async () => {
     await harness.setNow('2000-01-01');
 
-    clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
     // Load the pregnancy form and fill in
     let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
     expect(result.errors).to.be.empty;
 
-    harness.setNow('2000-01-03');
-    clock = sinon.useFakeTimers(moment('2000-01-03').toDate());
+    await harness.setNow('2000-01-03');
     //Load the delivery form and fill in
     result = await harness.fillForm('pregnancy_home_visit', ...pregnancyHomeVisitScenarios.miscarriage);
     expect(result.errors).to.be.empty;
 
 
     // Verify condition card
-    const contactSummary = harness.getContactSummary();
+    const contactSummary = await harness.getContactSummary();
     expect(contactSummary.cards).to.have.property('length', 1);
     const pastPregnancyCard = contactSummary.cards[0];
     expect(pastPregnancyCard).to.have.property('label', 'contact.profile.pregnancy.past');
@@ -288,20 +271,18 @@ describe('Tests for past pregnancy condition card', () => {
   it('pregnancy registration with early end to pregnancy (abortion)', async () => {
     await harness.setNow('2000-01-01');
 
-    clock = sinon.useFakeTimers(moment('2000-01-01').toDate());
     // Load the pregnancy form and fill in
     let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
     expect(result.errors).to.be.empty;
 
-    harness.setNow('2000-01-03');
-    clock = sinon.useFakeTimers(moment('2000-01-03').toDate());
+    await harness.setNow('2000-01-03');
     //Load the delivery form and fill in
     result = await harness.fillForm('pregnancy_home_visit', ...pregnancyHomeVisitScenarios.abortion);
     expect(result.errors).to.be.empty;
 
 
     // Verify condition card
-    const contactSummary = harness.getContactSummary();
+    const contactSummary = await harness.getContactSummary();
     expect(contactSummary.cards).to.have.property('length', 1);
     const pastPregnancyCard = contactSummary.cards[0];
     expect(pastPregnancyCard).to.have.property('label', 'contact.profile.pregnancy.past');

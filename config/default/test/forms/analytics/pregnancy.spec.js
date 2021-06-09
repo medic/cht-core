@@ -1,10 +1,8 @@
 const { expect } = require('chai');
 const TestRunner = require('medic-conf-test-harness');
-const path = require('path');
 const { pregnancyRegistrationScenarios } = require('../../form-inputs');
-const harness = new TestRunner({
-  xformFolderPath: path.join(__dirname, '../../../forms/app'),
-});
+const harness = new TestRunner();
+
 describe('Pregnancy form analytic field tests', () => {
   before(async () => { return await harness.start(); });
   after(async () => { return await harness.stop(); });

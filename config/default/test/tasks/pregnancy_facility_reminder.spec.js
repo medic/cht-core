@@ -2,13 +2,10 @@ const chai = require('chai');
 const expect = chai.expect;
 chai.use(require('chai-like'));
 chai.use(require('chai-things'));
-const path = require('path');
 const TestRunner = require('medic-conf-test-harness');
 const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios } = require('../form-inputs');
 const { getRangeForTask, getTaskTestDays } = require('../test-helpers');
-const harness = new TestRunner({
-  xformFolderPath: path.join(__dirname, '../../forms/app'),
-});
+const harness = new TestRunner();
 
 const now = '2000-01-01';
 const facilityReminderTask = {
@@ -40,13 +37,13 @@ describe('Pregnancy registration and scheduled visit', () => {
       await harness.setNow(now);
       await harness.flush(day);
       if (facilityReminderTaskDays.includes(day)) {
-        const taskForFollowUpReminder = await harness.getTasks();
-        expect(taskForFollowUpReminder).to.be.an('array').that.contains.something.like({ title: 'task.anc.facility_reminder.title' });
+        const taskForFollowUpReminder = await harness.getTasks({ title: 'task.anc.facility_reminder.title' });
+        expect(taskForFollowUpReminder).to.have.property('length', 1);
       }
 
       else {
-        const tasks = await harness.getTasks();
-        expect(tasks).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.facility_reminder.title' });
+        const tasks = await harness.getTasks({ title: 'task.anc.facility_reminder.title' });
+        expect(tasks).to.be.empty;
       }
     }
 
@@ -60,21 +57,21 @@ describe('Pregnancy registration and scheduled visit', () => {
       await harness.setNow(now);
       await harness.flush(day);
       if (facilityReminderTaskDays.includes(day) && resolved === false) {
-        const taskForFollowUpReminder = await harness.getTasks();
-        expect(taskForFollowUpReminder).to.be.an('array').that.contains.something.like({ title: 'task.anc.facility_reminder.title' });
+        const taskForFollowUpReminder = await harness.getTasks({ title: 'task.anc.facility_reminder.title' });
+        expect(taskForFollowUpReminder).to.have.property('length', 1);
 
-        await harness.loadAction(taskForFollowUpReminder[0].actions[0]);
+        await harness.loadAction(taskForFollowUpReminder[0]);
         const followupFormResult = await harness.fillForm(['in_person']);
         expect(followupFormResult.errors).to.be.empty;
-        const tasksAfterFacilityReminder = await harness.getTasks();
-        expect(tasksAfterFacilityReminder).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.facility_reminder.title' });
+        const tasksAfterFacilityReminder = await harness.getTasks({ title: 'task.anc.facility_reminder.title' });
+        expect(tasksAfterFacilityReminder).to.be.empty;
         resolved = true;
 
       }
 
       else {
-        const tasks = await harness.getTasks();
-        expect(tasks).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.facility_reminder.title' });
+        const tasks = await harness.getTasks({ title: 'task.anc.facility_reminder.title' });
+        expect(tasks).to.be.empty;
       }
     }
 
@@ -88,8 +85,8 @@ describe('Pregnancy registration and scheduled visit', () => {
       await harness.setNow(now);
       await harness.flush(day);
       if (facilityReminderTaskDays.includes(day) && cleared === false) {
-        const taskForFacilityReminder = await harness.getTasks();
-        expect(taskForFacilityReminder).to.be.an('array').that.contains.something.like({ title: 'task.anc.facility_reminder.title' });
+        const taskForFacilityReminder = await harness.getTasks({ title: 'task.anc.facility_reminder.title' });
+        expect(taskForFacilityReminder).to.have.property('length', 1);
 
         await harness.loadForm('pregnancy_home_visit');
         const followupFormResult = await harness.fillForm(...pregnancyHomeVisitScenarios.clearAll);
@@ -101,7 +98,7 @@ describe('Pregnancy registration and scheduled visit', () => {
 
       else {
         const tasks = await harness.getTasks();
-        expect(tasks).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.facility_reminder.title' });
+        expect(tasks).to.be.empty;
       }
     }
 

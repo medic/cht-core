@@ -1,11 +1,8 @@
 const chai = require('chai');
 const expect = chai.expect;
-const path = require('path');
 const TestRunner = require('medic-conf-test-harness');
 const { deliveryReportScenarios } = require('../form-inputs');
-const harness = new TestRunner({
-  xformFolderPath: path.join(__dirname, '../../forms/app'),
-});
+const harness = new TestRunner();
 
 describe('Delivery in facility target tests', () => {
   before(async () => {
