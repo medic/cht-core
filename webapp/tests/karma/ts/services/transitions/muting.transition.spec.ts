@@ -278,7 +278,7 @@ describe('Muting Transition', () => {
             fields: {
               patient_id: 'shortcode',
             },
-            client_transitions: { muting: true },
+            client_side_transitions: { muting: true },
           },
           {
             _id: 'patient',
@@ -288,9 +288,9 @@ describe('Muting Transition', () => {
             patient_id: 'shortcode',
             muted: new Date(now).toISOString(),
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{
                 muted: true,
                 date: new Date(now).toISOString(),
                 report_id: 'new_report'
@@ -367,7 +367,7 @@ describe('Muting Transition', () => {
             fields: {
               patient_id: 'shortcode',
             },
-            client_transitions: { muting: true },
+            client_side_transitions: { muting: true },
           },
           {
             _id: 'patient',
@@ -376,9 +376,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'parent' },
             patient_id: 'shortcode',
             muting_history: {
-              last_update: 'client',
-              server: { muted: true, date: 6000 },
-              client: [{
+              last_update: 'client_side',
+              server_side: { muted: true, date: 6000 },
+              client_side: [{
                 muted: false,
                 date: new Date(now).toISOString(),
                 report_id: 'a_report'
@@ -650,7 +650,7 @@ describe('Muting Transition', () => {
             fields: {
               place_id: 'place_id',
             },
-            client_transitions: { muting: true },
+            client_side_transitions: { muting: true },
           },
           {
             _id: 'contact1',
@@ -658,9 +658,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'place', parent: { _id: 'parent' } },
             muted: mutingDate,
             muting_history: {
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'report' }],
-              last_update: 'client',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'report' }],
+              last_update: 'client_side',
             },
           },
           {
@@ -670,9 +670,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'place', parent: { _id: 'parent' } },
             muted: mutingDate,
             muting_history: {
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'report' }],
-              last_update: 'client',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'report' }],
+              last_update: 'client_side',
             },
           },
           {
@@ -681,9 +681,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'clinic1', parent: { _id: 'place', parent: { _id: 'parent' } } },
             muted: mutingDate,
             muting_history: {
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'report' }],
-              last_update: 'client',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'report' }],
+              last_update: 'client_side',
             },
           },
           {
@@ -692,9 +692,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'place', parent: { _id: 'parent' } },
             muted: mutingDate,
             muting_history: {
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'report' }],
-              last_update: 'client',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'report' }],
+              last_update: 'client_side',
             },
           },
           {
@@ -703,9 +703,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'clinic2', parent: { _id: 'place', parent: { _id: 'parent' } } },
             muted: mutingDate,
             muting_history: {
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'report' }],
-              last_update: 'client',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'report' }],
+              last_update: 'client_side',
             },
           },
           {
@@ -717,9 +717,9 @@ describe('Muting Transition', () => {
             place_id: 'place_id',
             muted: mutingDate,
             muting_history: {
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'report' }],
-              last_update: 'client',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'report' }],
+              last_update: 'client_side',
             },
           },
         ]);
@@ -856,7 +856,7 @@ describe('Muting Transition', () => {
             form: 'unmute',
             contact: { _id: 'contact_id' },
             fields: { place_id: 'place_id' },
-            client_transitions: { muting: true },
+            client_side_transitions: { muting: true },
           },
           {
             _id: 'place',
@@ -864,9 +864,9 @@ describe('Muting Transition', () => {
             contact: { _id: 'chw' },
             parent: { _id: 'parent', parent: { _id: 'grandparent' } },
             muting_history: {
-              server: { muted: true, date: 1234 },
-              client: [{ muted: false, date: mutingDate, report_id: 'record' }],
-              last_update: 'client',
+              server_side: { muted: true, date: 1234 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'record' }],
+              last_update: 'client_side',
             },
           },
           {
@@ -875,9 +875,9 @@ describe('Muting Transition', () => {
             contact: { _id: 'other_chw' },
             parent: { _id: 'parent', parent: { _id: 'grandparent' } },
             muting_history: {
-              server: { muted: true, date: 65478 },
-              client: [{ muted: false, date: mutingDate, report_id: 'record' }],
-              last_update: 'client',
+              server_side: { muted: true, date: 65478 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'record' }],
+              last_update: 'client_side',
             },
           },
           {
@@ -885,9 +885,9 @@ describe('Muting Transition', () => {
             type: 'person',
             parent: { _id: 'parent', parent: { _id: 'grandparent' } },
             muting_history: {
-              server: { muted: true, date: 9999 },
-              client: [{ muted: false, date: mutingDate, report_id: 'record' }],
-              last_update: 'client',
+              server_side: { muted: true, date: 9999 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'record' }],
+              last_update: 'client_side',
             },
           },
           {
@@ -898,9 +898,9 @@ describe('Muting Transition', () => {
               parent: { _id: 'parent', parent: { _id: 'grandparent' } },
             },
             muting_history: {
-              server: { muted: true, date: 98412 },
-              client: [{ muted: false, date: mutingDate, report_id: 'record' }],
-              last_update: 'client',
+              server_side: { muted: true, date: 98412 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'record' }],
+              last_update: 'client_side',
             },
           },
           {
@@ -911,9 +911,9 @@ describe('Muting Transition', () => {
               parent: { _id: 'parent', parent: { _id: 'grandparent' } },
             },
             muting_history: {
-              server: { muted: true, date: 87488 },
-              client: [{ muted: false, date: mutingDate, report_id: 'record' }],
-              last_update: 'client',
+              server_side: { muted: true, date: 87488 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'record' }],
+              last_update: 'client_side',
             },
           },
           {
@@ -922,15 +922,15 @@ describe('Muting Transition', () => {
             contact: { _id: 'chw' },
             parent: { _id: 'grandparent' },
             muting_history: {
-              server: { muted: true, date: 1234 },
-              client: [{ muted: false, date: mutingDate, report_id: 'record' }],
-              last_update: 'client',
+              server_side: { muted: true, date: 1234 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'record' }],
+              last_update: 'client_side',
             },
           }
         ]);
       });
 
-      it('should add entry to client muting history', async () => {
+      it('should add entry to client_side muting history', async () => {
         const now = 5000;
         clock.tick(now);
         const docs = [{
@@ -960,9 +960,9 @@ describe('Muting Transition', () => {
               name: 'parent',
             },
             muting_history: {
-              last_update: 'server',
-              server: { muted: false, date: undefined },
-              client: [
+              last_update: 'server_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [
                 { muted: false, date: 100, report_id: 'a' },
                 { muted: true, date: 200, report_id: 'b' },
                 { muted: false, date: 300, report_id: 'c' },
@@ -979,9 +979,9 @@ describe('Muting Transition', () => {
                 type: 'person',
                 parent: { _id: 'place_uuid', parent: { _id: 'parent' } },
                 muting_history: {
-                  last_update: 'client',
-                  server: { muted: false, date: undefined },
-                  client: [
+                  last_update: 'client_side',
+                  server_side: { muted: false, date: undefined },
+                  client_side: [
                     { muted: false, date: 100, report_id: 'aaaa' },
                   ]
                 },
@@ -996,9 +996,9 @@ describe('Muting Transition', () => {
           place_id: 'place_shortcode',
           parent: { _id: 'parent' },
           muting_history: {
-            last_update: 'server',
-            server: { muted: false, date: undefined },
-            client: [
+            last_update: 'server_side',
+            server_side: { muted: false, date: undefined },
+            client_side: [
               { muted: false, date: 100, report_id: 'a' },
               { muted: true, date: 200, report_id: 'b' },
               { muted: false, date: 300, report_id: 'c' },
@@ -1027,7 +1027,7 @@ describe('Muting Transition', () => {
             fields: {
               place_id: 'place_shortcode',
             },
-            client_transitions: { muting: true },
+            client_side_transitions: { muting: true },
           },
           {
             _id: 'patient_uuid',
@@ -1035,9 +1035,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'place_uuid', parent: { _id: 'parent' } },
             muted: new Date(now).toISOString(),
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [
                 { muted: false, date: 100, report_id: 'aaaa' },
                 { muted: true, date: new Date(now).toISOString(), report_id: 'a_report' },
               ]
@@ -1051,9 +1051,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'parent' },
             muted: new Date(now).toISOString(),
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [
                 { muted: false, date: 100, report_id: 'a' },
                 { muted: true, date: 200, report_id: 'b' },
                 { muted: false, date: 300, report_id: 'c' },
@@ -1114,9 +1114,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'parent', parent: { _id: 'grandparent' }},
             muted: muteTime,
             muting_history: {
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: muteTime, report_id: undefined }],
-              last_update: 'client',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: muteTime, report_id: undefined }],
+              last_update: 'client_side',
             }
           },
         ]);
@@ -1143,7 +1143,7 @@ describe('Muting Transition', () => {
             type: 'clinic',
             muted: 1000,
             muting_history: {
-              last_update: 'client',
+              last_update: 'client_side',
             },
             parent: {
               _id: 'grandparent',
@@ -1173,9 +1173,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'parent', parent: { _id: 'grandparent' }},
             muted: muteTime,
             muting_history: {
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: muteTime, report_id: undefined }],
-              last_update: 'client',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: muteTime, report_id: undefined }],
+              last_update: 'client_side',
             }
           },
         ]);
@@ -1228,7 +1228,7 @@ describe('Muting Transition', () => {
         ]);
       });
 
-      it('should copy client muting report in history if it exists', async () => {
+      it('should copy client_side muting report in history if it exists', async () => {
         const now = 32131;
         clock.tick(now);
         const docs = [
@@ -1249,9 +1249,9 @@ describe('Muting Transition', () => {
             type: 'clinic',
             muted: 1000,
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: 1000, report_id: 'server_report' },
-              client: [
+              last_update: 'client_side',
+              server_side: { muted: false, date: 1000, report_id: 'server_report' },
+              client_side: [
                 { muted: true, date: 100, report_id: 'client1' },
                 { muted: false, date: 200, report_id: 'client2' },
                 { muted: true, date: 300, report_id: 'client3' },
@@ -1285,9 +1285,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'parent', parent: { _id: 'grandparent' }},
             muted: muteTime,
             muting_history: {
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: muteTime, report_id: 'client3' }],
-              last_update: 'client',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: muteTime, report_id: 'client3' }],
+              last_update: 'client_side',
             }
           },
         ]);
@@ -1373,9 +1373,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'hc', parent: { _id: 'district' } },
             muted: muteTime,
             muting_history: {
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: muteTime, report_id: undefined }],
-              last_update: 'client',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: muteTime, report_id: undefined }],
+              last_update: 'client_side',
             },
           },
           {
@@ -1385,9 +1385,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'new_clinic', parent: { _id: 'hc', parent: { _id: 'district' } } },
             muted: muteTime,
             muting_history: {
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: muteTime, report_id: undefined }],
-              last_update: 'client',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: muteTime, report_id: undefined }],
+              last_update: 'client_side',
             },
           },
         ]);
@@ -1447,7 +1447,7 @@ describe('Muting Transition', () => {
           fields: {
             patient_id: 'patient1',
           },
-          client_transitions: { muting: true },
+          client_side_transitions: { muting: true },
         };
 
         transitionedPatient = (now) => ({
@@ -1458,9 +1458,9 @@ describe('Muting Transition', () => {
           patient_id: 'patient1',
           muted: new Date(now).toISOString(),
           muting_history: {
-            last_update: 'client',
-            server: { muted: false, date: undefined },
-            client: [{
+            last_update: 'client_side',
+            server_side: { muted: false, date: undefined },
+            client_side: [{
               muted: true,
               date: new Date(now).toISOString(),
               report_id: 'new_report'
@@ -1766,9 +1766,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'hc', parent: { _id: 'district' } },
             muted: muteTime,
             muting_history: {
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: muteTime, report_id: undefined }],
-              last_update: 'client',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: muteTime, report_id: undefined }],
+              last_update: 'client_side',
             },
           },
           {
@@ -1883,7 +1883,7 @@ describe('Muting Transition', () => {
             fields: {
               patient_id: 'shortcode',
             },
-            client_transitions: { muting: true },
+            client_side_transitions: { muting: true },
           },
           {
             _id: 'b_report',
@@ -1901,9 +1901,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'parent' },
             patient_id: 'shortcode',
             muting_history: {
-              last_update: 'client',
-              server: { muted: true, date: 6000 },
-              client: [{
+              last_update: 'client_side',
+              server_side: { muted: true, date: 6000 },
+              client_side: [{
                 muted: false,
                 date: new Date(now).toISOString(),
                 report_id: 'a_report'
@@ -1989,9 +1989,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'parent' },
             muted: mutingDate,
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2001,9 +2001,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'new_place', parent: { _id: 'parent' } },
             muted: mutingDate,
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2011,7 +2011,7 @@ describe('Muting Transition', () => {
             type: 'data_record',
             form: 'mute',
             fields: { place_id: 'new_place' },
-            client_transitions: { muting: true },
+            client_side_transitions: { muting: true },
           },
         ]);
       });
@@ -2109,9 +2109,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'parent' },
             muted: mutingDate,
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2121,9 +2121,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'new_place', parent: { _id: 'parent' } },
             muted: mutingDate,
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2133,9 +2133,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'new_place', parent: { _id: 'parent' } },
             muted: mutingDate,
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2143,7 +2143,7 @@ describe('Muting Transition', () => {
             type: 'data_record',
             form: 'mute',
             fields: { place_id: 'new_place' },
-            client_transitions: { muting: true },
+            client_side_transitions: { muting: true },
           },
         ]);
       });
@@ -2241,9 +2241,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'parent' },
             muted: mutingDate,
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2253,9 +2253,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'new_place', parent: { _id: 'parent' } },
             muted: mutingDate,
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2269,7 +2269,7 @@ describe('Muting Transition', () => {
             type: 'data_record',
             form: 'mute',
             fields: { place_id: 'new_place' },
-            client_transitions: { muting: true },
+            client_side_transitions: { muting: true },
           },
         ]);
       });
@@ -2350,9 +2350,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'old_place', parent: { _id: 'parent' } },
             muted: mutingDate,
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2360,7 +2360,7 @@ describe('Muting Transition', () => {
             type: 'data_record',
             form: 'mute',
             fields: { place_id: 'old_place' },
-            client_transitions: { muting: true },
+            client_side_transitions: { muting: true },
           },
           {
             _id: 'old_person1',
@@ -2368,9 +2368,9 @@ describe('Muting Transition', () => {
             type: 'person',
             muted: mutingDate,
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2379,9 +2379,9 @@ describe('Muting Transition', () => {
             type: 'person',
             muted: mutingDate,
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2391,9 +2391,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'parent' },
             muted: mutingDate,
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
             },
           }
         ]);
@@ -2469,9 +2469,9 @@ describe('Muting Transition', () => {
             parent: { _id: 'old_place', parent: { _id: 'parent' } },
             muted: mutingDate,
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: true, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2479,7 +2479,7 @@ describe('Muting Transition', () => {
             type: 'data_record',
             form: 'mute',
             fields: { patient_uuid: 'new_person' },
-            client_transitions: { muting: true },
+            client_side_transitions: { muting: true },
           },
         ]);
       });
@@ -2570,9 +2570,9 @@ describe('Muting Transition', () => {
             type: 'person',
             parent: { _id: 'old_place', parent: { _id: 'district' } },
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2580,16 +2580,16 @@ describe('Muting Transition', () => {
             type: 'data_record',
             form: 'unmute',
             fields: { patient_uuid: 'new_person' },
-            client_transitions: { muting: true },
+            client_side_transitions: { muting: true },
           },
           {
             _id: 'old_place',
             type: 'clinic',
             parent: { _id: 'district' },
             muting_history: {
-              last_update: 'client',
-              server: { muted: true, date: 100 },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: true, date: 100 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2597,9 +2597,9 @@ describe('Muting Transition', () => {
             type: 'person',
             parent: { _id: 'district' },
             muting_history: {
-              last_update: 'client',
-              server: { muted: true, date: 100 },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: true, date: 100 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2607,18 +2607,18 @@ describe('Muting Transition', () => {
             type: 'clinic',
             parent: { _id: 'district' },
             muting_history: {
-              last_update: 'client',
-              server: { muted: true, date: 100 },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: true, date: 100 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
             _id: 'district',
             type: 'district',
             muting_history: {
-              last_update: 'client',
-              server: { muted: true, date: 100 },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: true, date: 100 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           }
         ]);
@@ -2710,9 +2710,9 @@ describe('Muting Transition', () => {
             type: 'person',
             parent: { _id: 'old_place', parent: { _id: 'district' } },
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2720,16 +2720,16 @@ describe('Muting Transition', () => {
             type: 'data_record',
             form: 'unmute',
             fields: { place_id: 'old_place' },
-            client_transitions: { muting: true },
+            client_side_transitions: { muting: true },
           },
           {
             _id: 'old_place',
             type: 'clinic',
             parent: { _id: 'district' },
             muting_history: {
-              last_update: 'client',
-              server: { muted: true, date: 100 },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: true, date: 100 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2737,9 +2737,9 @@ describe('Muting Transition', () => {
             type: 'person',
             parent: { _id: 'district' },
             muting_history: {
-              last_update: 'client',
-              server: { muted: true, date: 100 },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: true, date: 100 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2747,18 +2747,18 @@ describe('Muting Transition', () => {
             type: 'clinic',
             parent: { _id: 'district' },
             muting_history: {
-              last_update: 'client',
-              server: { muted: true, date: 100 },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: true, date: 100 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
             _id: 'district',
             type: 'district',
             muting_history: {
-              last_update: 'client',
-              server: { muted: true, date: 100 },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: true, date: 100 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           }
         ]);
@@ -2846,9 +2846,9 @@ describe('Muting Transition', () => {
             type: 'person',
             parent: { _id: 'new_place', parent: { _id: 'parent' } },
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -2861,25 +2861,25 @@ describe('Muting Transition', () => {
             type: 'data_record',
             form: 'unmute',
             fields: { patient_uuid: 'new_person' },
-            client_transitions: { muting: true },
+            client_side_transitions: { muting: true },
           },
           {
             _id: 'old_contact',
             type: 'person',
             parent: { _id: 'parent' },
             muting_history: {
-              last_update: 'client',
-              server: { muted: true, date: 400 },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: true, date: 400 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
             _id: 'parent',
             type: 'district',
             muting_history: {
-              last_update: 'client',
-              server: { muted: true, date: 400 },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: true, date: 400 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           },
         ]);
@@ -2970,25 +2970,25 @@ describe('Muting Transition', () => {
             type: 'data_record',
             form: 'unmute',
             fields: { place_id: 'parent' },
-            client_transitions: { muting: true },
+            client_side_transitions: { muting: true },
           },
           {
             _id: 'old_contact',
             type: 'person',
             parent: { _id: 'parent' },
             muting_history: {
-              last_update: 'client',
-              server: { muted: true, date: 400 },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: true, date: 400 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
             _id: 'parent',
             type: 'district',
             muting_history: {
-              last_update: 'client',
-              server: { muted: true, date: 400 },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: true, date: 400 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           },
         ]);
@@ -3091,9 +3091,9 @@ describe('Muting Transition', () => {
             type: 'person',
             parent: { _id: 'old_place', parent: { _id: 'parent' } },
             muting_history: {
-              last_update: 'client',
-              server: { muted: false, date: undefined },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: false, date: undefined },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
@@ -3101,25 +3101,25 @@ describe('Muting Transition', () => {
             type: 'data_record',
             form: 'unmute',
             fields: { patient_uuid: 'new_person2' },
-            client_transitions: { muting: true },
+            client_side_transitions: { muting: true },
           },
           {
             _id: 'old_contact',
             type: 'person',
             parent: { _id: 'old_place' },
             muting_history: {
-              last_update: 'client',
-              server: { muted: true, date: 400 },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: true, date: 400 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           },
           {
             _id: 'old_place',
             parent: { _id: 'parent' },
             muting_history: {
-              last_update: 'client',
-              server: { muted: true, date: 500 },
-              client: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
+              last_update: 'client_side',
+              server_side: { muted: true, date: 500 },
+              client_side: [{ muted: false, date: mutingDate, report_id: 'new_report' }],
             },
           },
         ]);

@@ -11,6 +11,7 @@ const TRANSITION_NAME = 'muting';
 const CONFIG_NAME = 'muting';
 const MUTE_PROPERTY = 'mute_forms';
 const UNMUTE_PROPERTY = 'unmute_forms';
+const CLIENT_SIDE_TRANSITIONS = 'client_side_transitions';
 
 const getConfig = () => {
   return config.get(CONFIG_NAME) || {};
@@ -154,8 +155,8 @@ const runTransition = (hydratedReport, infoDocs = []) => {
 
 const wasProcessedClientSide = (change) => {
   return change.doc &&
-         change.doc.client_transitions &&
-         change.doc.client_transitions[TRANSITION_NAME];
+         change.doc[CLIENT_SIDE_TRANSITIONS] &&
+         change.doc[CLIENT_SIDE_TRANSITIONS][TRANSITION_NAME];
 };
 
 const processMutingEvent = (contact, change, muteState, hasRun) => {

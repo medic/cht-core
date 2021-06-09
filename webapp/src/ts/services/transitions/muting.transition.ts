@@ -28,8 +28,8 @@ export class MutingTransition extends Transition {
   private readonly CONFIG_NAME = this.name;
   private readonly MUTE_PROPERTY = 'mute_forms';
   private readonly UNMUTE_PROPERTY = 'unmute_forms';
-  private readonly CLIENT = 'client';
-  private readonly SERVER = 'server';
+  private readonly CLIENT = 'client_side';
+  private readonly SERVER = 'server_side';
 
   private getConfig(settings = {}) {
     return settings[this.CONFIG_NAME] || {};
@@ -336,7 +336,7 @@ export class MutingTransition extends Transition {
    */
   private processContact(contact, muted, reportId, context) {
     if (!contact.muting_history) {
-      // store "server" state when first processing this doc client-side
+      // store "server" state when first processing this doc client_side
       contact.muting_history = {
         [this.SERVER]: {
           muted: !!contact.muted,

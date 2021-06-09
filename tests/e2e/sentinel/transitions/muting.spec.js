@@ -1070,8 +1070,8 @@ describe('muting', () => {
       });
   });
 
-  describe('client-side muting', () => {
-    it('should add infodoc muting history for contacts muted on client and silence registrations', () => {
+  describe('client_side muting', () => {
+    it('should add infodoc muting history for contacts muted client_side and silence registrations', () => {
       const contact = {
         _id: uuid(),
         type: 'person',
@@ -1079,9 +1079,9 @@ describe('muting', () => {
         muted: 12345,
         patient_id: 'the_person',
         muting_history: {
-          last_update: 'client',
-          server: { muted: false },
-          client: [
+          last_update: 'client_side',
+          server_side: { muted: false },
+          client_side: [
             { muted: true, report_id: 'report1', date: 1 },
             { muted: false, report_id: 'report2', date: 2 },
             { muted: true, report_id: 'report3', date: 12345 },
@@ -1145,8 +1145,8 @@ describe('muting', () => {
         ]))
         .then(([updatedContact, infodoc]) => {
           expect(updatedContact.muted).toBeGreaterThan(now);
-          expect(updatedContact.muting_history.last_update).toBe('server');
-          expect(updatedContact.muting_history.server.muted).toBe(true);
+          expect(updatedContact.muting_history.last_update).toBe('server_side');
+          expect(updatedContact.muting_history.server_side.muted).toBe(true);
 
           expect(infodoc.transitions.muting.ok).toBe(true);
           expect(infodoc.muting_history).toEqual([
@@ -1167,9 +1167,9 @@ describe('muting', () => {
         name: 'jane',
         patient_id: 'the_person',
         muting_history: {
-          last_update: 'client',
-          server: { muted: true },
-          client: [
+          last_update: 'client_side',
+          server_side: { muted: true },
+          client_side: [
             { muted: false, report_id: 'report1', date: 1 },
             { muted: true, report_id: 'report2', date: 2 },
             { muted: false, report_id: 'report3', date: 12345 },
@@ -1230,8 +1230,8 @@ describe('muting', () => {
         .then(() => utils.getDoc(contact._id))
         .then(updatedContact => {
           expect(updatedContact.muted).toBeUndefined();
-          expect(updatedContact.muting_history.last_update).toBe('server');
-          expect(updatedContact.muting_history.server.muted).toBe(false);
+          expect(updatedContact.muting_history.last_update).toBe('server_side');
+          expect(updatedContact.muting_history.server_side.muted).toBe(false);
         })
         .then(() => sentinelUtils.getInfoDoc(contact._id))
         .then(infodoc => {
@@ -1244,7 +1244,7 @@ describe('muting', () => {
         });
     });
 
-    it('should replay client muting history when descendents have client muting histories', () => {
+    it('should replay client_side muting history when descendents have client_side muting histories', () => {
       /*
        Timeline:
        - clinic exists
@@ -1278,12 +1278,12 @@ describe('muting', () => {
         },
         reported_date: new Date().getTime(),
         muting_history: {
-          server: { muted: false },
-          client: [
+          server_side: { muted: false },
+          client_side: [
             { report_id: 'mutes_clinic', muted: true, date: 1000 },
             { report_id: 'unmutes_new_person', muted: false, date: 2000 },
           ],
-          last_update: 'client',
+          last_update: 'client_side',
         },
       };
 
@@ -1296,13 +1296,13 @@ describe('muting', () => {
         reported_date: new Date().getTime(),
         muted: 3000,
         muting_history: {
-          client: [
+          client_side: [
             { report_id: 'mutes_person', muted: true, date: 500 },
             { report_id: 'mutes_clinic', muted: true, date: 1000 },
             { report_id: 'unmutes_new_person', muted: false, date: 2000 },
             { report_id: 'mutes_person_again', muted: true, date: 3000 }
           ],
-          last_update: 'client',
+          last_update: 'client_side',
         }
       };
 
@@ -1314,11 +1314,11 @@ describe('muting', () => {
         parent:  { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
         reported_date: new Date().getTime(),
         muting_history: {
-          client: [
+          client_side: [
             { report_id: 'mutes_clinic', muted: true, date: 1000 },
             { report_id: 'unmutes_new_person', muted: false, date: 2000 },
           ],
-          last_update: 'client',
+          last_update: 'client_side',
         }
       };
 
@@ -1332,7 +1332,7 @@ describe('muting', () => {
             patient_id: 'the_new_person',
           },
           reported_date: 500,
-          client_transitions: {
+          client_side_transitions: {
             muting: true
           },
         },
@@ -1345,7 +1345,7 @@ describe('muting', () => {
             place_id: 'the_new_clinic',
           },
           reported_date: 1000,
-          client_transitions: {
+          client_side_transitions: {
             muting: true
           },
         },
@@ -1358,7 +1358,7 @@ describe('muting', () => {
             patient_id: 'the_newnew_person',
           },
           reported_date: 2000,
-          client_transitions: {
+          client_side_transitions: {
             muting: true
           },
         },
@@ -1371,7 +1371,7 @@ describe('muting', () => {
             patient_id: 'the_new_person',
           },
           reported_date: 3000,
-          client_transitions: {
+          client_side_transitions: {
             muting: true
           },
         },
@@ -1394,20 +1394,20 @@ describe('muting', () => {
           const findMutingHistoryForReport = (history, reportId) => history.find(item => item.report_id === reportId);
 
           expect(updatedClinic.muted).toBeUndefined();
-          expect(updatedClinic.muting_history.server.muted).toBe(false);
-          expect(updatedClinic.muting_history.last_update).toBe('server');
+          expect(updatedClinic.muting_history.server_side.muted).toBe(false);
+          expect(updatedClinic.muting_history.last_update).toBe('server_side');
           expect(findMutingHistoryForReport(clinicInfo.muting_history, 'mutes_clinic').muted).toBe(true);
           expect(findMutingHistoryForReport(clinicInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
 
           expect(updatedPerson.muted).toBeDefined();
-          expect(updatedPerson.muting_history.server.muted).toBe(true);
-          expect(updatedPerson.muting_history.last_update).toBe('server');
+          expect(updatedPerson.muting_history.server_side.muted).toBe(true);
+          expect(updatedPerson.muting_history.last_update).toBe('server_side');
           expect(findMutingHistoryForReport(personInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
           expect(findMutingHistoryForReport(personInfo.muting_history, 'mutes_person_again').muted).toBe(true);
 
           expect(updatedNewPerson.muted).toBeUndefined();
-          expect(updatedNewPerson.muting_history.server.muted).toBe(false);
-          expect(updatedNewPerson.muting_history.last_update).toBe('server');
+          expect(updatedNewPerson.muting_history.server_side.muted).toBe(false);
+          expect(updatedNewPerson.muting_history.last_update).toBe('server_side');
           expect(findMutingHistoryForReport(newPersonInfo.muting_history, 'mutes_clinic').muted).toBe(true);
           expect(findMutingHistoryForReport(newPersonInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
         })
@@ -1488,12 +1488,12 @@ describe('muting', () => {
         },
         reported_date: new Date().getTime(),
         muting_history: {
-          server: { muted: false },
-          client: [
+          server_side: { muted: false },
+          client_side: [
             { report_id: 'mutes_clinic_replay', muted: true, date: 1000 },
             { report_id: 'unmutes_new_person_replay', muted: false, date: 2000 },
           ],
-          last_update: 'client',
+          last_update: 'client_side',
         },
       };
 
@@ -1506,13 +1506,13 @@ describe('muting', () => {
         reported_date: new Date().getTime(),
         muted: 3000,
         muting_history: {
-          client: [
+          client_side: [
             { report_id: 'mutes_person_replay', muted: true, date: 500 },
             { report_id: 'mutes_clinic_replay', muted: true, date: 1000 },
             { report_id: 'unmutes_new_person_replay', muted: false, date: 2000 },
             { report_id: 'mutes_person_again_replay', muted: true, date: 3000 }
           ],
-          last_update: 'client',
+          last_update: 'client_side',
         }
       };
 
@@ -1524,11 +1524,11 @@ describe('muting', () => {
         parent:  { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
         reported_date: new Date().getTime(),
         muting_history: {
-          client: [
+          client_side: [
             { report_id: 'mutes_clinic_replay', muted: true, date: 1000 },
             { report_id: 'unmutes_new_person_replay', muted: false, date: 2000 },
           ],
-          last_update: 'client',
+          last_update: 'client_side',
         }
       };
 
@@ -1542,7 +1542,7 @@ describe('muting', () => {
             patient_id: 'the_new_person',
           },
           reported_date: 500,
-          client_transitions: {
+          client_side_transitions: {
             muting: true
           },
         },
@@ -1555,7 +1555,7 @@ describe('muting', () => {
             patient_id: 'the_newnew_person',
           },
           reported_date: 2000,
-          client_transitions: {
+          client_side_transitions: {
             muting: true
           },
         },
@@ -1568,7 +1568,7 @@ describe('muting', () => {
             patient_id: 'the_new_person',
           },
           reported_date: 3000,
-          client_transitions: {
+          client_side_transitions: {
             muting: true
           },
         },
@@ -1583,7 +1583,7 @@ describe('muting', () => {
           place_id: 'the_new_clinic',
         },
         reported_date: 1000,
-        client_transitions: {
+        client_side_transitions: {
           muting: true
         },
       };
@@ -1606,18 +1606,18 @@ describe('muting', () => {
           const findMutingHistoryForReport = (history, reportId) => history.find(item => item.report_id === reportId);
 
           expect(updatedClinic.muted).toBeUndefined();
-          expect(updatedClinic.muting_history.server.muted).toBe(false);
-          expect(updatedClinic.muting_history.last_update).toBe('server');
+          expect(updatedClinic.muting_history.server_side.muted).toBe(false);
+          expect(updatedClinic.muting_history.last_update).toBe('server_side');
           expect(findMutingHistoryForReport(clinicInfo.muting_history, 'unmutes_new_person_replay').muted).toBe(false);
 
           expect(updatedPerson.muted).toBeDefined();
-          expect(updatedPerson.muting_history.server.muted).toBe(true);
-          expect(updatedPerson.muting_history.last_update).toBe('server');
+          expect(updatedPerson.muting_history.server_side.muted).toBe(true);
+          expect(updatedPerson.muting_history.last_update).toBe('server_side');
           expect(findMutingHistoryForReport(personInfo.muting_history, 'mutes_person_again_replay').muted).toBe(true);
 
           expect(updatedNewPerson.muted).toBeUndefined();
-          expect(updatedNewPerson.muting_history.server.muted).toBe(false);
-          expect(updatedNewPerson.muting_history.last_update).toBe('server');
+          expect(updatedNewPerson.muting_history.server_side.muted).toBe(false);
+          expect(updatedNewPerson.muting_history.last_update).toBe('server_side');
           expect(
             findMutingHistoryForReport(newPersonInfo.muting_history, 'unmutes_new_person_replay').muted
           ).toBe(false);

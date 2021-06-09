@@ -8,8 +8,8 @@ const infodoc = require('@medic/infodoc');
 infodoc.initLib(db.medic, db.sentinel);
 
 const BATCH_SIZE = 50;
-const CLIENT = 'client';
-const SERVER = 'server';
+const CLIENT = 'client_side';
+const SERVER = 'server_side';
 
 const isLastUpdatedByClient = (doc) => !!doc.muting_history && doc.muting_history.last_update === CLIENT;
 
