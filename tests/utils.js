@@ -953,6 +953,11 @@ module.exports = {
         browserLogStream.write('\n~~~~~~~~~~~~~~~~~~~~~\n\n');
       });
   },
+  
+  endSession: async (exitCode) => {
+    await rpn.post('http://localhost:31337/die');
+    return module.exports.reporter.afterLaunch(exitCode);
+  },
 
   runAndLog,
 };

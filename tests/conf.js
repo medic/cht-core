@@ -1,6 +1,4 @@
-const request = require('request-promise-native');
 const utils = require('./utils');
-
 const chai = require('chai');
 chai.use(require('chai-exclude'));
 chai.use(require('chai-shallow-deep-equal'));
@@ -54,12 +52,7 @@ const baseConfig = {
       utils.reporter.beforeLaunch(resolve);
     });
   },
-  afterLaunch: function(exitCode) {
-    return new Promise(function(resolve) {
-      return request.post('http://localhost:31337/die')
-        .then(() => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
-    });
-  },
+  afterLaunch: async () => await utils.endSession(),
   onPrepare: async () => {
     jasmine.getEnv().addReporter(utils.specReporter);
     jasmine.getEnv().addReporter(utils.reporter);
@@ -79,3 +72,4 @@ const baseConfig = {
 };
 
 exports.config = baseConfig;
+
