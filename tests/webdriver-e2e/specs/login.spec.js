@@ -1,5 +1,5 @@
-const loginPage = require('./page-objects/login.page');
-const commonPage = require('./page-objects/common.page');
+const loginPage = require('../page-objects/login.page');
+const commonPage = require('../page-objects/common.page');
 
 describe('Login and logout tests', () => {
   beforeEach(async () => {
