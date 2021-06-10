@@ -1,18 +1,17 @@
-class CommonPage {
-  get hamburgerMenu() { return $('#header-dropdown-link'); }
-  get logoutButton() { return $('.fa-power-off'); }
-  get modalBody() { return $('div.modal-body'); }
-  get yesButton() { return $('a.btn.submit.btn-danger'); }
-  // const modal = $('div.modal-dialog');
-  async logout() {
-    await (await this.hamburgerMenu).click();
-    await (await this.logoutButton).click();
-    (await this.modalBody).waitForDisplayed();
-    const warning = await (await this.modalBody).getText();
-    await (await this.yesButton).click();
-    // await helper.waitUntilReadyNative(element(by.css('form#form')));
-    return warning;
-  }
-}
+const hamburgerMenu = () => $('#header-dropdown-link');
+const logoutButton =  () => $('.fa-power-off');
+const modalBody = () => $('div.modal-body');
+const yesButton = () => $('a.btn.submit.btn-danger');
 
-module.exports = new CommonPage();
+const logout = async () => {
+  await (await hamburgerMenu()).click();
+  await (await logoutButton()).click();
+  await (await modalBody()).waitForDisplayed();
+  const warning = await (await modalBody()).getText();
+  await (await yesButton()).click();
+  return warning;
+};
+
+module.exports = {
+  logout
+};
