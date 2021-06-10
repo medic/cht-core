@@ -1,0 +1,11 @@
+{
+  "name": "@medic/cht-script-api",
+  "version": "1.0.0",
+  "description": "Provides an API for CHT Scripts",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha ./test"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}

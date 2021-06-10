@@ -1,5 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
+import * as chtScriptApiFactory from '@medic/cht-script-api';
 
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
@@ -38,6 +39,7 @@ export class CHTScriptApiService implements OnDestroy {
       .get()
       .then(userSettingsDoc => {
         this.userSettingsDoc = userSettingsDoc;
+        chtScriptApiFactory.setUserSettingsDoc(userSettingsDoc);
       });
   }
 
@@ -46,6 +48,7 @@ export class CHTScriptApiService implements OnDestroy {
       .get()
       .then(settings => {
         this.settings = settings;
+        chtScriptApiFactory.setChtCoreSettingsDoc(settings);
       });
   }
 
@@ -95,12 +98,13 @@ export class CHTScriptApiService implements OnDestroy {
   }
 
   getV1Api(): ChtApi {
-    return {
+    /*return {
       v1: {
         hasRole: (role) => this.hasRole(role),
         hasPermission: (permission) => this.hasPermission(permission)
       }
-    };
+    };*/
+    return chtScriptApiFactory.getApi();
   }
 }
 

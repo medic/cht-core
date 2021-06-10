@@ -114,7 +114,7 @@ describe('CHTScriptApiService service', () => {
     }));
   });
 
-  describe('v1.hasPermission()', () => {
+  describe.only('v1.hasPermission()', () => {
     it('should return true when user have the permission', fakeAsync(() => {
       sessionService.isAdmin.returns(false);
       settingsService.get.resolves({
@@ -188,7 +188,7 @@ describe('CHTScriptApiService service', () => {
           can_configure: [ 'nurse' ]
         }
       });
-      userSettingsService.get.resolves({ roles: [ 'admin' ] });
+      userSettingsService.get.resolves({ roles: [ '_admin' ] });
       service.init();
       tick();
       const api = service.getV1Api();
