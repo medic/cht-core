@@ -183,11 +183,11 @@ const deleteAll = (except) => {
               console.log(`Deleted docs: ${JSON.stringify(response)}`);
             }
           }),
-        module.exports.sentinelDb.allDocs({keys: infoIds})
+        module.exports.sentinelDb.allDocs({ keys: infoIds })
           .then(results => {
             const deletes = results.rows
               .filter(row => row.value) // Not already deleted
-              .map(({id, value}) => ({
+              .map(({ id, value }) => ({
                 _id: id,
                 _rev: value.rev,
                 _deleted: true
@@ -277,7 +277,11 @@ const revertDb = async (except, ignoreRefresh) => {
 const deleteUsers = async (users, meta = false) => {
   const usernames = users.map(user => `org.couchdb.user:${user.username}`);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
-  const medicDocs = await request({ path: `/${constants.DB_NAME}/_all_docs`, method: 'POST', body: { keys: usernames}});
+  const medicDocs = await request({
+    path: `/${constants.DB_NAME}/_all_docs`,
+    method: 'POST',
+    body: { keys: usernames }
+  });
   const toDelete = userDocs.rows
     .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
@@ -295,7 +299,7 @@ const deleteUsers = async (users, meta = false) => {
   }
 
   for (const user of users) {
-    await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`,  method: 'DELETE' });
+    await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`, method: 'DELETE' });
   }
 };
 
@@ -315,12 +319,12 @@ const createUsers = async (users, meta = false) => {
   }
 
   for (const user of users) {
-    await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`,  method: 'PUT'});
+    await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`, method: 'PUT' });
   }
 };
 
 const waitForDocRev = (ids) => {
-  ids = ids.map(id => typeof id === 'string' ? { id: id, rev: 1 } : id );
+  ids = ids.map(id => typeof id === 'string' ? { id: id, rev: 1 } : id);
 
   const validRow = row => {
     if (!row.id || !row.value || !row.value.rev) {
@@ -391,7 +395,7 @@ const listenForApi = async () => {
   console.log('Checking API');
   try {
     await request({ path: '/api/info' });
-  } catch(err) {
+  } catch (err) {
     console.log('API check failed, trying again in 1 second');
     console.log(err.message);
     await apiRetry();
@@ -421,7 +425,7 @@ const getLoginUrl = () => {
   return `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login?redirect=${redirectUrl}`;
 };
 
-const saveBrowserLogs= () => {
+const saveBrowserLogs = () => {
   return browser
     .manage()
     .logs()
@@ -436,7 +440,7 @@ const saveBrowserLogs= () => {
     });
 };
 
-const prepServices= async () => {
+const prepServices = async () => {
   if (constants.IS_TRAVIS) {
     console.log('On travis, waiting for horti to first boot api');
     // Travis' horti will be installing and then deploying api and sentinel, and those logs are
@@ -453,7 +457,7 @@ const prepServices= async () => {
 
   await listenForApi();
   const config = await browser.getProcessedConfig();
-  if (config.suite && config.suite === 'web'){
+  if (config.suite && config.suite === 'web') {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
@@ -481,7 +485,7 @@ const setupUser = () => {
       doc.language = 'en';
       return module.exports.saveDoc(doc);
     })
-    .then(() =>refreshToGetNewSettings())
+    .then(() => refreshToGetNewSettings())
     .then(() => module.exports.closeTour());
 };
 
@@ -503,7 +507,7 @@ module.exports = {
     showQuickLinks: true,
     dest: `tests/results/`,
     filename: 'report.html',
-    pathBuilder: function(currentSpec) {
+    pathBuilder: function (currentSpec) {
       return currentSpec.fullName
         .toLowerCase()
         .replace(/[^a-z0-9\s]/g, '')
@@ -563,7 +567,7 @@ module.exports = {
     return request(options, { debug: debug });
   },
 
-  requestOnMedicDb: (options, debug ) => {
+  requestOnMedicDb: (options, debug) => {
     if (typeof options === 'string') {
       options = { path: options };
     }
@@ -611,7 +615,7 @@ module.exports = {
       .requestOnTestDb({
         path: `/_all_docs?include_docs=true`,
         method: 'POST',
-        body: { keys: ids || []},
+        body: { keys: ids || [] },
         headers: { 'content-type': 'application/json' },
       })
       .then(response => {
@@ -668,8 +672,8 @@ module.exports = {
    */
   updateSettings: (updates, ignoreReload) => {
     const watcher = ignoreReload &&
-                    Object.keys(updates).length &&
-                    waitForSettingsUpdateLogs(ignoreReload);
+      Object.keys(updates).length &&
+      waitForSettingsUpdateLogs(ignoreReload);
 
     return updateSettings(updates).then(() => {
       if (!ignoreReload) {
@@ -742,17 +746,17 @@ module.exports = {
       .then(() => {
         return browser.wait(() => {
           return element(by.css('#messages-tab')).isPresent();
-        }, 10000,'Timed out waiting for browser to reset. Looking for element #messages-tab');
+        }, 10000, 'Timed out waiting for browser to reset. Looking for element #messages-tab');
       });
   },
-  resetBrowserNative: (element =$('#messages-tab'), time=10000) => {
+  resetBrowserNative: (element = $('#messages-tab'), time = 10000) => {
     return browser.driver
       .navigate()
       .refresh()
       .then(() => {
         return browser.wait(() => {
           return element.isPresent();
-        }, time,'Timed out waiting for browser to reset. Looking for element #messages-tab');
+        }, time, 'Timed out waiting for browser to reset. Looking for element #messages-tab');
       });
   },
 
@@ -763,9 +767,7 @@ module.exports = {
   },
 
   getCouchUrl: () =>
-    `http://${auth.username}:${auth.password}@${constants.COUCH_HOST}:${
-      constants.COUCH_PORT
-    }/${constants.DB_NAME}`,
+    `http://${auth.username}:${auth.password}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`,
 
   getInstanceUrl: () =>
     `http://${auth.username}:${auth.password}@${constants.API_HOST}:${constants.API_PORT}`,
@@ -780,9 +782,7 @@ module.exports = {
     `http://${constants.API_HOST}:${constants.API_PORT}/admin/#/`,
 
   getLoginUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/${
-      constants.DB_NAME
-    }/login`,
+    `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login`,
 
   // Deletes _users docs and medic/user-settings docs for specified users
   // @param {Array} usernames - list of users to be deleted
@@ -828,11 +828,11 @@ module.exports = {
     });
     tail.watch();
 
-    return function() {
+    return function () {
       tail.unwatch();
 
       if (errors.length) {
-        return Promise.reject({message: 'CollectLogs errored', errors: errors});
+        return Promise.reject({ message: 'CollectLogs errored', errors: errors });
       }
 
       return Promise.resolve(lines);
@@ -887,9 +887,9 @@ module.exports = {
 
   setTransitionSeqToNow: () => {
     return Promise.all([
-      sentinel.get('_local/transitions-seq').catch(() => ({_id: '_local/transitions-seq'})),
+      sentinel.get('_local/transitions-seq').catch(() => ({ _id: '_local/transitions-seq' })),
       db.info()
-    ]).then(([sentinelMetadata, {update_seq: updateSeq}]) => {
+    ]).then(([sentinelMetadata, { update_seq: updateSeq }]) => {
       sentinelMetadata.value = updateSeq;
       return sentinel.put(sentinelMetadata);
     });
@@ -901,7 +901,7 @@ module.exports = {
     const closeButton = element(by.css('#tour-select a.btn.cancel'));
     try {
       await browser.wait(protractor.ExpectedConditions.visibilityOf(closeButton),);
-      await browser.wait(protractor.ExpectedConditions.elementToBeClickable(closeButton),1000);
+      await browser.wait(protractor.ExpectedConditions.elementToBeClickable(closeButton), 1000);
       await closeButton.click();
       // wait for the request to the server to execute
       // is there a way to leverage protractor to achieve this???
