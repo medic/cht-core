@@ -13,7 +13,8 @@
   },
   "scripts": {
     "test": "grunt eslint && grunt unit && grunt test-api-integration && grunt e2e",
-    "webdriver": "webdriver-manager update && webdriver-manager start"
+    "webdriver": "webdriver-manager update && webdriver-manager start",
+    "wdio-local": "grunt e2e-env-setup && wdio run ./tests/webdriver-e2e/wdio.conf.js"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^10.0.1",
