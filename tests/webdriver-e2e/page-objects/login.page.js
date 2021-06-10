@@ -10,7 +10,6 @@ const cookieLogin = async (username, password) => {
   const opts = {
     path: '/medic/login',
     body: { user: username, password: password },
-    port: 5988,
     method: 'POST',
     simple: false,
     headers: {

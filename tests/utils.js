@@ -395,6 +395,7 @@ const listenForApi = async () => {
   console.log('Checking API');
   try {
     await request({ path: '/api/info' });
+    console.log('API is up');
   } catch (err) {
     console.log('API check failed, trying again in 1 second');
     console.log(err.message);
@@ -440,7 +441,7 @@ const saveBrowserLogs = () => {
     });
 };
 
-const prepServices = async () => {
+const prepServices = async (config) => {
   if (constants.IS_TRAVIS) {
     console.log('On travis, waiting for horti to first boot api');
     // Travis' horti will be installing and then deploying api and sentinel, and those logs are
@@ -456,7 +457,7 @@ const prepServices = async () => {
   }
 
   await listenForApi();
-  const config = await browser.getProcessedConfig();
+  config = config || await browser.getProcessedConfig();
   if (config.suite && config.suite === 'web') {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
   }
@@ -487,6 +488,11 @@ const setupUser = () => {
     })
     .then(() => refreshToGetNewSettings())
     .then(() => module.exports.closeTour());
+};
+
+
+const tearDownServices = () => {
+  return rpn.post('http://localhost:31337/die');
 };
 
 
@@ -961,9 +967,9 @@ module.exports = {
   protractorLogin: protractorLogin,
 
   saveBrowserLogs: saveBrowserLogs,
-
+  tearDownServices,
   endSession: async (exitCode) => {
-    await rpn.post('http://localhost:31337/die');
+    await tearDownServices();
     return module.exports.reporter.afterLaunch(exitCode);
   },
 

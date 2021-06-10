@@ -1,5 +1,8 @@
 const IS_TRAVIS = !!process.env.TEST_SUITE;
 
+const COUCH_HOST = 'localhost';
+const COUCH_PORT = IS_TRAVIS ? 5984 : 4984;
+
 module.exports = {
   IS_TRAVIS: IS_TRAVIS,
 
@@ -11,8 +14,8 @@ module.exports = {
 
   // connection information for the couchdb instance
   // locally we spin up a different CouchDB for e2e tests
-  COUCH_PORT: IS_TRAVIS ? 5984 : 4984,
-  COUCH_HOST: 'localhost',
+  COUCH_PORT,
+  COUCH_HOST,
   COUCH_NODE_NAME: IS_TRAVIS ? process.env.COUCH_NODE_NAME : 'nonode@nohost',
 
   // test database to avoid writing to the dev db
@@ -29,4 +32,5 @@ module.exports = {
     type: 'person',
     reported_date: 1541679811408,
   },
+  BASE_URL: `http://${COUCH_HOST}:${COUCH_PORT}/`
 };
