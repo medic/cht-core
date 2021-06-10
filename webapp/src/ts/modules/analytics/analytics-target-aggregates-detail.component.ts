@@ -2,12 +2,12 @@ import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { combineLatest, Subscription, Subject } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
 
 import { Selectors } from '@mm-selectors/index';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { GlobalActions } from '@mm-actions/global';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 @Component({
   selector: 'analytics-target-aggregates-detail',
@@ -26,7 +26,7 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
     private store: Store,
     private route: ActivatedRoute,
     private targetAggregatesService: TargetAggregatesService,
-    private translateService: TranslateService,
+    private translateHelperService: TranslateHelperService,
   ) {
     this.targetAggregatesActions = new TargetAggregatesActions(store);
     this.globalActions = new GlobalActions(store);
@@ -96,7 +96,7 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
       return;
     }
 
-    const title = this.translateService.instant('analytics.target.aggregates');
+    const title = this.translateHelperService.instant('analytics.target.aggregates');
     this.globalActions.setTitle(title);
     this.targetAggregatesActions.setSelectedTargetAggregate(aggregateDetails);
   }

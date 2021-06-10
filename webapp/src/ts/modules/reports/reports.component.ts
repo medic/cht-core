@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
-import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
@@ -21,6 +20,7 @@ import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 const PAGE_SIZE = 50;
 
@@ -57,7 +57,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private router:Router,
     private changesService:ChangesService,
     private searchService:SearchService,
-    private translateService:TranslateService,
+    private translateHelperService:TranslateHelperService,
     private tourService: TourService,
     private addReadStatusService:AddReadStatusService,
     private exportService:ExportService,
@@ -149,7 +149,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   private getReportHeading(form, report) {
     if (form && form.subjectKey) {
-      return this.translateService.instant(form.subjectKey, report);
+      return this.translateHelperService.instant(form.subjectKey, report);
     }
     if (report.validSubject) {
       return report.subject.value;
@@ -157,7 +157,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     if (report.subject.name) {
       return report.subject.name;
     }
-    return this.translateService.instant('report.subject.unknown');
+    return this.translateHelperService.instant('report.subject.unknown');
   }
 
   private prepareReports(reports) {

@@ -1,7 +1,6 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import * as RegistrationUtils from '@medic/registration-utils';
 import * as RulesEngineCore from '@medic/rules-engine';
-import { TranslateService } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounce as _debounce, uniq as _uniq } from 'lodash-es';
 
@@ -19,6 +18,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { DbService } from '@mm-services/db.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
 import { FeedbackService } from '@mm-services/feedback.service';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 interface DebounceActive {
@@ -57,7 +57,7 @@ export class RulesEngineService implements OnDestroy {
   private observable = new Subject();
 
   constructor(
-    private translateService:TranslateService,
+    private translateHelperService:TranslateHelperService,
     private authService:AuthService,
     private sessionService:SessionService,
     private settingsService:SettingsService,
@@ -292,7 +292,7 @@ export class RulesEngineService implements OnDestroy {
   private translateProperty(property, task) {
     if (typeof property === 'string') {
       // new translation key style
-      return this.translateService.instant(property, task);
+      return this.translateHelperService.instant(property, task);
     }
     // old message array style
     return this.translateFromService.get(property, task);

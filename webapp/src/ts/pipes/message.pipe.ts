@@ -1,9 +1,9 @@
 import { Injectable, Pipe, PipeTransform } from '@angular/core';
 import * as _ from 'lodash-es';
-import { TranslateService } from '@ngx-translate/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
 import { FormatProvider } from '@mm-providers/format.provider';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 const getFormName = (record, forms) => {
   const form = _.find(forms, { code: record.form });
@@ -21,7 +21,7 @@ const getFormName = (record, forms) => {
 })
 export class SummaryPipe implements PipeTransform {
   constructor(
-    private translateService:TranslateService,
+    private translateHelperService:TranslateHelperService,
   ) {}
 
   transform(record, forms) {
@@ -40,7 +40,7 @@ export class SummaryPipe implements PipeTransform {
       record.tasks[0].messages[0]) {
       return record.tasks[0].messages[0].message;
     }
-    return this.translateService.instant('tasks.0.messages.0.message');
+    return this.translateHelperService.instant('tasks.0.messages.0.message');
   }
 }
 
@@ -52,7 +52,7 @@ export class SummaryPipe implements PipeTransform {
 })
 export class TitlePipe implements PipeTransform {
   constructor(
-    private translateService:TranslateService,
+    private translateHelperService:TranslateHelperService,
   ) {}
 
   transform(record, forms) {
@@ -63,9 +63,9 @@ export class TitlePipe implements PipeTransform {
       return getFormName(record, forms);
     }
     if (record.kujua_message) {
-      return this.translateService.instant('Outgoing Message');
+      return this.translateHelperService.instant('Outgoing Message');
     }
-    return this.translateService.instant('sms_message.message');
+    return this.translateHelperService.instant('sms_message.message');
   }
 }
 
@@ -78,7 +78,6 @@ export class TitlePipe implements PipeTransform {
 })
 export class ClinicPipe implements PipeTransform {
   constructor(
-    private translateService:TranslateService,
     private formatProvider:FormatProvider,
   ) {}
 
@@ -96,7 +95,6 @@ export class ClinicPipe implements PipeTransform {
 })
 export class LineagePipe implements PipeTransform {
   constructor(
-    private translateService:TranslateService,
     private formatProvider:FormatProvider,
     private sanitizer:DomSanitizer,
   ) {}

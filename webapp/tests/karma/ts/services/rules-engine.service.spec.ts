@@ -470,6 +470,30 @@ describe('RulesEngineService', () => {
     expect(telemetryService.record.args[2][0]).to.equal('rules-engine:tasks:some-contacts');
   });
 
+  it('fetchTaskDocsFor() should not crash with empty priority label', async () => {
+    const taskDoc = JSON.parse(JSON.stringify(sampleTaskDoc));
+    taskDoc.emission.priorityLabel = '';
+    const contactIds = ['a', 'b', 'c'];
+    fetchTasksResult = sinon.stub().resolves([taskDoc]);
+    rulesEngineCoreStubs.getDirtyContacts.returns(['a', 'b']);
+    service = TestBed.inject(RulesEngineService);
+
+    const actual = await service.fetchTaskDocsFor(contactIds);
+
+    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
+    expect(rulesEngineCoreStubs.fetchTasksFor.args[0][0]).to.eq(contactIds);
+    expect(actual.length).to.eq(1);
+    expect(actual[0]).to.nested.include({
+      _id: 'taskdoc',
+      'emission.title': 'translate.this',
+      'emission.priorityLabel': '',
+      'emission.other': true,
+    });
+    expect(telemetryService.record.callCount).to.equal(3);
+    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 2]);
+    expect(telemetryService.record.args[2][0]).to.equal('rules-engine:tasks:some-contacts');
+  });
+
   it('fetchTargets() should send correct range to Rules Engine Core when getting targets', async () => {
     fetchTargetsResult = sinon.stub().resolves([]);
     service = TestBed.inject(RulesEngineService);

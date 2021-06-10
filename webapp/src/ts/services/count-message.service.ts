@@ -1,7 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 
-import { TranslateService } from '@ngx-translate/core';
 import { SettingsService } from '@mm-services/settings.service';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +11,7 @@ export class CountMessageService {
   private gsmChars = new RegExp('^[A-Za-z0-9 \\r\\n@£$¥èéùìòÇØøÅå\u0394_\u03A6\u0393\u039B\u03A9\u03A0\u03A8\u03A3\u0398\u039EÆæßÉ!"#$%&\'()*+,\\-./:;<=>?¡ÄÖÑÜ§¿äöñüà^{}\\\\\\[~\\]|\u20AC]*$'); // eslint-disable-line
 
   constructor(
-    private translateService:TranslateService,
+    private translateHelperService:TranslateHelperService,
     private settingsService:SettingsService,
     private ngZone:NgZone,
   ) { }
@@ -36,7 +36,7 @@ export class CountMessageService {
       key = many ? 'message.characters.left.multiple.many' : 'message.characters.left.multiple';
     }
 
-    return this.translateService.instant(key, count);
+    return this.translateHelperService.instant(key, count);
   }
 
   init() {

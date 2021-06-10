@@ -1,6 +1,5 @@
 import { AfterViewInit, Component } from '@angular/core';
 import * as phoneNumber from '@medic/phone-number';
-import { TranslateService } from '@ngx-translate/core';
 import { filter as _filter, map as _map, partial as _partial } from 'lodash-es';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 
@@ -30,7 +29,6 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
   };
 
   constructor(
-    private translateService: TranslateService,
     private formatProvider: FormatProvider,
     private settingsService: SettingsService,
     private contactTypesService: ContactTypesService,
@@ -90,9 +88,8 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
 
     if (errors.length) {
       const errorRecipients = _map(errors, (error) => this.templateSelection(error)).join(', ');
-      return this.translateService
+      return this.translateHelperService
         .get('Invalid contact numbers', { recipients: errorRecipients })
-        .toPromise()
         .then(value => {
           this.errors.phone = value;
         });
@@ -102,7 +99,7 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
   }
 
   private formatPlace(row) {
-    return this.translateService.instant('Everyone at', {
+    return this.translateHelperService.instant('Everyone at', {
       facility: row.doc && row.doc.name,
       count: row.descendants ? row.descendants.length : ''
     });

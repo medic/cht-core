@@ -1,9 +1,9 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
 import { from, Observable } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
 
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 @Component({
   selector: 'multi-dropdown-filter',
@@ -25,7 +25,7 @@ export class MultiDropdownFilterComponent implements AbstractFilter, OnInit {
   selected = new Set();
   filterLabel;
 
-  constructor(private translateService:TranslateService) {
+  constructor(private translateHelperService:TranslateHelperService) {
     this.apply = _debounce(this.apply, 200);
   }
 
@@ -45,11 +45,11 @@ export class MultiDropdownFilterComponent implements AbstractFilter, OnInit {
         total: this.items,
         selected: this.selected,
       };
-      return this.translateService.get(this.label(state));
+      return this.translateHelperService.get(this.label(state));
     }
 
     if (this.selected.size === 0 || this.selected.size === this.items.length) {
-      return this.translateService.get(this.labelNoFilter);
+      return this.translateHelperService.get(this.labelNoFilter);
     }
 
     if (this.selected.size === 1) {
@@ -60,7 +60,7 @@ export class MultiDropdownFilterComponent implements AbstractFilter, OnInit {
       }
     }
 
-    return this.translateService.get(this.labelFilter, { number: this.selected.size });
+    return this.translateHelperService.get(this.labelFilter, { number: this.selected.size });
   }
 
   private apply() {

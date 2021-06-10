@@ -4,7 +4,6 @@ import sinon from 'sinon';
 import * as moment from 'moment';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Component, Input } from '@angular/core';
-import { of } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
 
 import {
@@ -20,14 +19,14 @@ import {
   WeeksPregnantPipe,
 } from '@mm-pipes/date.pipe';
 import { RelativeDateService } from '@mm-services/relative-date.service';
-import { TranslateService } from '@ngx-translate/core';
 import { FormatDateService } from '@mm-services/format-date.service';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 
 describe('date pipes', () => {
   let relativeDateService;
   let formatDateService;
-  let translateService;
+  let translateHelperService;
   let sanitizer;
 
   const TEST_TASK = {
@@ -39,28 +38,28 @@ describe('date pipes', () => {
   const TEST_DATE = moment.utc(2398472085558);
 
   beforeEach(() => {
-    const RelativeDateMock = {
+    relativeDateService = {
       getRelativeDate: sinon.stub(),
       getCssSelector: () => 'update-relative-date',
       generateDataset: () => 'data-date-options="someOptions"'
     };
-    const FormatDateMock = {
+    formatDateService = {
       age: momentDate => `${momentDate.year() - 1970} years`,
       date: d => `${d.toISOString().split('T')[0]}`,
       datetime: d => `${d.toISOString()}`,
       relative: (d:number) => `${Math.floor((d - TEST_DATE.valueOf()) / 86400000)} days`,
     };
-    const translateServiceMock = {
+    translateHelperService = {
       instant: sinon.stub().returnsArg(0),
-      get: sinon.stub().callsFake(arg => of([arg])),
+      get: sinon.stub().resolvesArg(0),
     };
 
     TestBed
       .configureTestingModule({
         providers: [
-          { provide: RelativeDateService, useValue: RelativeDateMock },
-          { provide: FormatDateService, useValue: FormatDateMock },
-          { provide: TranslateService, useValue: translateServiceMock },
+          { provide: RelativeDateService, useValue: relativeDateService },
+          { provide: FormatDateService, useValue: formatDateService },
+          { provide: TranslateHelperService, useValue: translateHelperService },
           { provide: DomSanitizer, useValue: { bypassSecurityTrustHtml: sinon.stub().returnsArg(0) } },
         ],
         declarations: [
@@ -76,9 +75,7 @@ describe('date pipes', () => {
           WeeksPregnantPipe,
         ]
       });
-    relativeDateService = TestBed.inject(RelativeDateService);
-    formatDateService = TestBed.inject(FormatDateService);
-    translateService = TestBed.inject(TranslateService);
+
     sanitizer = TestBed.inject(DomSanitizer);
   });
 
@@ -103,7 +100,7 @@ describe('date pipes', () => {
 
   describe('autoreply', () => {
     it('should return nicely-formatted output', async () => {
-      const pipe = new AutoreplyPipe(translateService, formatDateService, relativeDateService, sanitizer);
+      const pipe = new AutoreplyPipe(translateHelperService, formatDateService, relativeDateService, sanitizer);
       const expected = '<span><span class="state STATE">state.STATE</span>&nbsp;' +
         '<span class="autoreply" title="MESSAGE"><span class="autoreply-content">autoreply</span></span>&nbsp</span>';
       const actual = await pipe.transform(TEST_TASK);
@@ -178,7 +175,7 @@ describe('date pipes', () => {
 
   describe('state', () => {
     it('should return nicely-formatted output', async () => {
-      const pipe = new StatePipe(translateService, formatDateService, relativeDateService, sanitizer);
+      const pipe = new StatePipe(translateHelperService, formatDateService, relativeDateService, sanitizer);
       const expected = '<span><span class="state STATE">state.STATE</span>&nbsp;</span>';
       const actual = await pipe.transform(TEST_TASK);
       assert.equal(actual, expected);
@@ -241,7 +238,7 @@ describe('date pipes rendering', () => {
     };
     translate = {
       instant: sinon.stub().returnsArg(0),
-      get: sinon.stub().callsFake(arg => of([arg])),
+      get: sinon.stub().resolvesArg(0),
     };
 
     TestBed
@@ -249,7 +246,7 @@ describe('date pipes rendering', () => {
         providers: [
           { provide: RelativeDateService, useValue: relativeDate },
           { provide: FormatDateService, useValue: formatDate },
-          { provide: TranslateService, useValue: translate },
+          { provide: TranslateHelperService, useValue: translate },
         ],
         declarations: [
           AgePipe,
@@ -355,7 +352,7 @@ describe('date pipes rendering', () => {
       it('when no task', async () => {
         const task = {};
         const expected = 'reçu';
-        translate.get.withArgs('state.received').returns(of(expected));
+        translate.get.withArgs('state.received').resolves(expected);
         await override(`<div class="task-state" [innerHTML]="task | state | async"></div>`, { task });
 
         expect(fixture.nativeElement.querySelector('.state').innerText).to.equal(expected);
@@ -366,7 +363,7 @@ describe('date pipes rendering', () => {
           state: 'pending'
         };
         const expected = 'en attente';
-        translate.get.withArgs('state.pending').returns(of([expected]));
+        translate.get.withArgs('state.pending').resolves(expected);
         await override(`<div class="task-state" [innerHTML]="task | state | async "></div>`, { task });
 
         expect(fixture.nativeElement.querySelector('.state').innerText).to.equal(expected);
@@ -432,7 +429,7 @@ describe('date pipes rendering', () => {
           messages: [ { to: '+64123555555' } ]
         };
         const expected = 'au +64123555555';
-        translate.get.withArgs('to recipient', { recipient: '+64123555555' }).returns(of([expected]));
+        translate.get.withArgs('to recipient', { recipient: '+64123555555' }).resolves(expected);
         await override(`<div class="task-state" [innerHTML]="task | state | async "></div>`, { task });
         const nonbreakingSpace = ' '; // this is not a space character...
         expect(fixture.nativeElement.querySelector('.recipient').innerText).to.equal(nonbreakingSpace + expected);

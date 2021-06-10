@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy, AfterViewInit, NgZone } from '@angular/co
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateService } from '@ngx-translate/core';
 import { isEqual as _isEqual } from 'lodash-es';
 
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
@@ -13,6 +12,7 @@ import { Selectors } from '@mm-selectors/index';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 @Component({
   templateUrl: './contacts-report.component.html'
@@ -45,7 +45,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     private translateFromService: TranslateFromService,
     private router: Router,
     private route: ActivatedRoute,
-    private translateService: TranslateService,
+    private translateHelperService: TranslateHelperService,
     private contactViewModelGeneratorService: ContactViewModelGeneratorService,
     private ngZone: NgZone,
   ) {
@@ -230,7 +230,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
       .then((docs) => {
         console.debug('saved report and associated docs', docs);
         this.globalActions.setEnketoSavingStatus(false);
-        this.globalActions.setSnackbarContent(this.translateService.instant('report.created'));
+        this.globalActions.setSnackbarContent(this.translateHelperService.instant('report.created'));
         this.globalActions.setEnketoEditedStatus(false);
 
         this.telemetryData.postSave = Date.now();
@@ -244,7 +244,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
       .catch((err) => {
         this.globalActions.setEnketoSavingStatus(false);
         console.error('Error submitting form data: ', err);
-        this.globalActions.setEnketoError(this.translateService.instant('error.report.save'));
+        this.globalActions.setEnketoError(this.translateHelperService.instant('error.report.save'));
       });
   }
 }

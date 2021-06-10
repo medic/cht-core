@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
 
 import { FeedbackService } from '@mm-services/feedback.service';
 import { MmModalAbstract } from '../mm-modal/mm-modal';
@@ -22,7 +21,6 @@ export class FeedbackComponent extends MmModalAbstract {
   constructor(
     bsModalRef: BsModalRef,
     private feedbackService: FeedbackService,
-    private translateService: TranslateService,
     private store: Store,
     private translateHelperService:TranslateHelperService,
   ) {
@@ -58,9 +56,9 @@ export class FeedbackComponent extends MmModalAbstract {
           .then(() => {
             this.setFinished();
             this.close();
-            this.translateService
+            this.translateHelperService
               .get('feedback.submitted')
-              .subscribe(value => this.globalActions.setSnackbarContent(value));
+              .then(value => this.globalActions.setSnackbarContent(value));
           })
           .catch(err => {
             this.setError(err, 'Error saving feedback');

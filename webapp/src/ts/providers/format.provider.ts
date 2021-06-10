@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import * as _ from 'lodash-es';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FormatProvider {
   constructor(
-    private translateService:TranslateService
+    private translateHelperService:TranslateHelperService
   ) {}
 
   private formatEntity(entity) {
@@ -59,7 +59,7 @@ export class FormatProvider {
       parts.push('<span class="name">' + _.escape(options.name) + '</span>');
     }
     if (options.muted) {
-      parts.push('<span class="muted">' + _.escape(this.translateService.instant('contact.muted')) + '</span>');
+      parts.push('<span class="muted">' + _.escape(this.translateHelperService.instant('contact.muted')) + '</span>');
     }
     if (options.phone) {
       parts.push('<span>' + _.escape(options.phone) + '</span>');

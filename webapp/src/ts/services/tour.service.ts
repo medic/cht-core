@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Router } from '@angular/router';
-import { TranslateService } from '@ngx-translate/core';
 import { compact  as _compact } from 'lodash-es';
 
 import { AuthService } from '@mm-services/auth.service';
@@ -8,6 +7,7 @@ import { FeedbackService } from '@mm-services/feedback.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { SessionService } from '@mm-services/session.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 @Injectable({
   providedIn: 'root'
@@ -24,7 +24,7 @@ export class TourService {
     private authService: AuthService,
     private feedbackService: FeedbackService,
     private sessionService: SessionService,
-    private translateService: TranslateService,
+    private translateHelperService: TranslateHelperService,
     private router: Router,
     private responsiveService:ResponsiveService,
   ) { }
@@ -413,14 +413,14 @@ export class TourService {
               <div class="popover-navigation">
                 <div class="btn-group">
                   <button class="btn btn-sm btn-default" data-role="prev">
-                    &laquo;  ${this.translateService.instant('Previous')}
+                    &laquo;  ${this.translateHelperService.instant('Previous')}
                   </button>
                   <button class="btn btn-sm btn-default" data-role="next">
-                    ${this.translateService.instant('Next')} &raquo;
+                    ${this.translateHelperService.instant('Next')} &raquo;
                   </button>
                 </div>
                 <button class="btn btn-sm btn-link" data-role="end">
-                  ${this.translateService.instant('End tour')}
+                  ${this.translateHelperService.instant('End tour')}
                 </button>
               </div>
             </div>`;
@@ -520,8 +520,8 @@ export class TourService {
 
       const mobile = this.responsiveService.isMobile();
       settings.steps.forEach(step => {
-        step.title = this.translateService.instant(step.title);
-        step.content = this.translateService.instant(step.content);
+        step.title = this.translateHelperService.instant(step.title);
+        step.content = this.translateHelperService.instant(step.content);
         if (mobile) {
           // there's no room to show steps to the left or right on a mobile device
           if (step.mobileElement) {

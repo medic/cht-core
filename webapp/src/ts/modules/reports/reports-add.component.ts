@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { isEqual as _isEqual } from 'lodash-es';
 
@@ -16,6 +15,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { EnketoService } from '@mm-services/enketo.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 
 @Component({
@@ -32,7 +32,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     private lineageModelGeneratorService:LineageModelGeneratorService,
     private xmlFormsService:XmlFormsService,
     private enketoService:EnketoService,
-    private translateService:TranslateService,
+    private translateHelperService:TranslateHelperService,
     private router:Router,
     private route:ActivatedRoute,
     private telemetryService:TelemetryService,
@@ -302,7 +302,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
         console.debug('saved report and associated docs', docs);
         this.globalActions.setEnketoSavingStatus(false);
         const snackBarTranslationKey = this.routeSnapshot.params.reportId ? 'report.updated' : 'report.created';
-        this.globalActions.setSnackbarContent(this.translateService.instant(snackBarTranslationKey));
+        this.globalActions.setSnackbarContent(this.translateHelperService.instant(snackBarTranslationKey));
         this.globalActions.setEnketoEditedStatus(false);
         this.router.navigate(['/reports', docs[0]._id]);
 
@@ -314,9 +314,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       .catch((err) => {
         this.globalActions.setEnketoSavingStatus(false);
         console.error('Error submitting form data: ', err);
-        this.translateService
+        this.translateHelperService
           .get('error.report.save')
-          .toPromise()
           .then(msg => {
             this.globalActions.setEnketoError(msg);
           });

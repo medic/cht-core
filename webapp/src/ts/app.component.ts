@@ -2,7 +2,6 @@ import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/ro
 import * as moment from 'moment';
 import { Component, NgZone, OnInit, HostListener } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
 import { combineLatest } from 'rxjs';
 
@@ -42,6 +41,7 @@ import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 const SYNC_STATUS = {
   inProgress: {

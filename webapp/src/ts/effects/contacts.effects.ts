@@ -3,7 +3,6 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store, select } from '@ngrx/store';
 import { of } from 'rxjs';
 import { exhaustMap, withLatestFrom } from 'rxjs/operators';
-import { TranslateService } from '@ngx-translate/core';
 
 import { Actions as ContactActionList, ContactsActions } from '@mm-actions/contacts';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
@@ -13,6 +12,7 @@ import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 @Injectable()
 export class ContactsEffects {
@@ -28,7 +28,7 @@ export class ContactsEffects {
     private contactSummaryService: ContactSummaryService,
     private tasksForContactService: TasksForContactService,
     private targetAggregateService: TargetAggregatesService,
-    private translateService: TranslateService,
+    private translateHelperService: TranslateHelperService,
     private routeSnapshotService: RouteSnapshotService,
   ) {
     this.contactsActions = new ContactsActions(store);
@@ -66,7 +66,7 @@ export class ContactsEffects {
           .then(() => this.loadTasks())
           .catch(err => {
             if (err.code === 404 && !silent) {
-              this.globalActions.setSnackbarContent(this.translateService.instant('error.404.title'));
+              this.globalActions.setSnackbarContent(this.translateHelperService.instant('error.404.title'));
             }
             console.error('Error selecting contact', err);
             this.globalActions.unsetSelected();
@@ -81,9 +81,9 @@ export class ContactsEffects {
   private setTitle(selected) {
     const routeSnapshot = this.routeSnapshotService.get();
     const deceasedTitle = routeSnapshot?.data?.name === 'contacts.deceased'
-      ? this.translateService.instant('contact.deceased.title') : null;
+      ? this.translateHelperService.instant('contact.deceased.title') : null;
     const title = deceasedTitle || selected.type?.name_key || 'contact.profile';
-    this.globalActions.setTitle(this.translateService.instant(title));
+    this.globalActions.setTitle(this.translateHelperService.instant(title));
   }
 
   private loadContact(id) {

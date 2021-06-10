@@ -2,13 +2,13 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
-import { TranslateService } from '@ngx-translate/core';
 
 import { DbService } from '@mm-services/db.service';
 import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { Selectors } from '@mm-selectors/index';
 import { SessionService } from '@mm-services/session.service';
 import { VersionService } from '@mm-services/version.service';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 @Component({
   templateUrl: './about.component.html'
@@ -36,7 +36,7 @@ export class AboutComponent implements OnInit, OnDestroy {
     private resourceIconsService: ResourceIconsService,
     private sessionService: SessionService,
     private versionService: VersionService,
-    private translateService: TranslateService,
+    private translateService: TranslateHelperService,
     private router: Router
   ) { }
 
@@ -93,7 +93,7 @@ export class AboutComponent implements OnInit, OnDestroy {
       .getRemoteRev()
       .catch(error => {
         console.debug('Could not access remote ddoc rev', error);
-        return this.translateService.get('app.version.unknown').toPromise();
+        return this.translateService.get('app.version.unknown');
       })
       .then(rev => this.remoteRev = rev);
   }

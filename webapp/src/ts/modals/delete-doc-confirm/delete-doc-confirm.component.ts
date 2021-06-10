@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import * as LineageFactory from '@medic/lineage';
-import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -10,6 +9,7 @@ import { DbService } from '@mm-services/db.service';
 import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 @Component({
   selector: 'delete-doc-confirm',
@@ -26,7 +26,7 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
 
   constructor(
     private store: Store,
-    private translateService: TranslateService,
+    private translateHelperService: TranslateHelperService,
     bsModalRef: BsModalRef,
     private dbService: DbService,
     private router: Router
@@ -75,7 +75,7 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
       .get()
       .put(doc)
       .then(() => {
-        const text = this.translateService.instant('document.deleted');
+        const text = this.translateHelperService.instant('document.deleted');
         const route = this.getRoute(this.router.url, doc);
         this.globalActions.setSnackbarContent(text);
         this.close();

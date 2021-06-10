@@ -1,5 +1,4 @@
 import { Injectable, NgZone } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
 import {
   groupBy as _groupBy,
   partial as _partial,
@@ -16,6 +15,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SearchService } from '@mm-services/search.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 /**
  * Hydrates the given contact by uuid and creates a model which
@@ -40,7 +40,7 @@ export class ContactViewModelGeneratorService {
     private lineageModelGeneratorService:LineageModelGeneratorService,
     private dbService:DbService,
     private contactTypesService:ContactTypesService,
-    private translateService:TranslateService,
+    private translateHelperService:TranslateHelperService,
     private searchService:SearchService,
     private contactMutedService:ContactMutedService,
     private getDataRecordsService:GetDataRecordsService,
@@ -276,7 +276,7 @@ export class ContactViewModelGeneratorService {
   private getHeading(report, forms) {
     const form = _find(forms, { code: report.form });
     if (form && form.subjectKey) {
-      return this.translateService.instant(form.subjectKey, report);
+      return this.translateHelperService.instant(form.subjectKey, report);
     }
     if (report.validSubject && report.subject && report.subject.value) {
       return report.subject.value;
@@ -284,7 +284,7 @@ export class ContactViewModelGeneratorService {
     if (report.subject && report.subject.name) {
       return report.subject.name;
     }
-    return this.translateService.instant('report.subject.unknown');
+    return this.translateHelperService.instant('report.subject.unknown');
   }
 
   private addHeading(reports, forms) {

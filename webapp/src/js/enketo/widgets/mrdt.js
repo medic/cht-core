@@ -39,7 +39,7 @@
     const MRDT = window.CHTCore.MRDT;
 
     if ( !MRDT.enabled() ) {
-      $translate.get( 'mrdt.disabled' ).toPromise().then((label) => {
+      $translate.get( 'mrdt.disabled' ).then((label) => {
         $el.append( '<p>' + label + '</p>' );
       });
       return;
@@ -66,7 +66,7 @@
       } );
     } );
 
-    $translate.get( 'mrdt.verify' ).toPromise().then((label) => {
+    $translate.get( 'mrdt.verify' ).then((label) => {
       $el.append(
         '<div><a class="btn btn-default mrdt-verify">' + label + '</a></div>' +
                 '<div><img class="mrdt-preview"/></div>'

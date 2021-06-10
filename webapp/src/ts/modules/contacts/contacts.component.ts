@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateService } from '@ngx-translate/core';
 import { findIndex as _findIndex } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
@@ -24,6 +23,7 @@ import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { TourService } from '@mm-services/tour.service';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 @Component({
   templateUrl: './contacts.component.html'
@@ -63,7 +63,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private store: Store,
     private route: ActivatedRoute,
     private changesService: ChangesService,
-    private translateService: TranslateService,
+    private translateHelperService: TranslateHelperService,
     private searchService: SearchService,
     private contactTypesService: ContactTypesService,
     private userSettingsService: UserSettingsService,
@@ -236,12 +236,12 @@ export class ContactsComponent implements OnInit, OnDestroy{
       if (type && type.count_visits && Number.isInteger(contact.lastVisitedDate)) {
         if (contact.lastVisitedDate === 0) {
           contact.overdue = true;
-          contact.summary = this.translateService.instant('contact.last.visited.unknown');
+          contact.summary = this.translateHelperService.instant('contact.last.visited.unknown');
         } else {
           const now = new Date().getTime();
           const oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
           contact.overdue = contact.lastVisitedDate <= oneMonthAgo;
-          contact.summary = this.translateService.instant(
+          contact.summary = this.translateHelperService.instant(
             'contact.last.visited.date',
             { date: this.relativeDateService.getRelativeDate(contact.lastVisitedDate, {}) }
           );
@@ -249,8 +249,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
         const visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
         contact.visits = {
-          count: this.translateService.instant('contacts.visits.count', { count: visitCount }),
-          summary: this.translateService.instant(
+          count: this.translateHelperService.instant('contacts.visits.count', { count: visitCount }),
+          summary: this.translateHelperService.instant(
             'contacts.visits.visits',
             { VISITS: contact.visitCount }
           )

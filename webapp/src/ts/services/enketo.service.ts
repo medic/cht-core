@@ -2,7 +2,6 @@ import { Injectable, NgZone } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
@@ -23,6 +22,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 
 @Injectable({
@@ -47,8 +47,8 @@ export class EnketoService {
     private userContactService:UserContactService,
     private xmlFormsService:XmlFormsService,
     private zScoreService:ZScoreService,
-    private translateService:TranslateService,
     private transitionsService:TransitionsService,
+    private translateHelperService:TranslateHelperService,
     private ngZone:NgZone,
   ) {
     this.inited = this.init();
@@ -131,7 +131,7 @@ export class EnketoService {
         const $html = $(html);
         $html.find('[data-i18n]').each((idx, element) => {
           const $element = $(element);
-          $element.text(this.translateService.instant('enketo.' + $element.attr('data-i18n')));
+          $element.text(this.translateHelperService.instant('enketo.' + $element.attr('data-i18n')));
         });
 
         // TODO remove this when our enketo-core dependency is updated as the latest
