@@ -217,6 +217,14 @@ module.exports = {
   },
 
   /**
+   * A helper method to introduce a fixed wait 
+   * @param waitInMillis wait time in milliseconds
+   */
+  waitMillis: async (waitInMillis) => {
+    await browser.sleep(waitInMillis);
+  },
+
+  /**
    * Usage: selectDropdownByText (selector, item)
    * selector : select element
    * item : option(s) in the dropdown.
