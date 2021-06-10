@@ -1,5 +1,5 @@
 /**
- * Service to encapsulate repeatedly used translation logic
+ * Service to act as a wrapper for ngx-translate's TranslateService and encapsulate repeatedly used translation logic
  */
 
 import { TranslateService } from '@ngx-translate/core';
@@ -20,6 +20,7 @@ export class TranslateHelperService {
       .then(field => this.get('field is required', { field: field }));
   }
 
+  // ngx-translate's TranslateService throws an error if the key is not defined or is an empty string
   private invalidKey(key) {
     return !key || !key.length;
   }
