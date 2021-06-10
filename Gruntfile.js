@@ -777,7 +777,15 @@ module.exports = function(grunt) {
         src: [
           'sentinel/tests/**/*.js'
         ],
-      }
+      },
+      'e2e-integration': {
+        src: 'tests/integration/**/*.js',
+        options: {
+          timeout: 135000,
+          reporter: 'spec',
+          captureFile: 'tests/integration/results/results.txt'
+        }
+      },
     },
     ngtemplates: {
       adminApp: {
@@ -967,6 +975,14 @@ module.exports = function(grunt) {
     'exec:clean-test-database',
   ]);
 
+  grunt.registerTask('e2e-integration', 'Deploy app for testing', [
+    'exec:clean-test-database',
+    'exec:setup-test-database',
+    'couch-push:test',
+    'exec:e2e-servers',
+    'mochaTest:e2e-integration'
+  ]);
+
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
     'exec:clean-test-database',
     'exec:setup-test-database',
@@ -1052,6 +1068,11 @@ module.exports = function(grunt) {
     'exec:e2e-servers',
     'protractor:e2e-web-tests',
     //'protractor:e2e-mobile-tests',
+  ]);
+
+  grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
+    'exec:e2e-servers',
+    'mochaTest:e2e-integration',
   ]);
 
   grunt.registerTask('ci-e2e-cht', 'Run e2e tests for CI', [
