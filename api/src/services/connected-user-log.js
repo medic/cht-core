@@ -10,10 +10,6 @@ const saveLog = (user) => {
   }
   
   const id = LOG_TYPE + user;
-  const log = {
-    user,
-    timestamp: new Date().getTime()
-  };
 
   return db.medicLogs
     .get(id)
@@ -24,11 +20,14 @@ const saveLog = (user) => {
       throw error;
     })
     .then(doc => {
-      if (log.timestamp - doc.timestamp < UPDATE_TIME_INTERVAL) {
+      const now = new Date().getTime();
+      if (doc.timestamp && now - doc.timestamp < UPDATE_TIME_INTERVAL) {
         return;
       }
-      const logDoc = Object.assign(doc, log);
-      return db.medicLogs.put(logDoc);
+
+      doc.user = user;
+      doc.timestamp = now;
+      return db.medicLogs.put(doc);
     });
 };
 

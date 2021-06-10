@@ -31,5 +31,39 @@ describe('Connected Users Log service', () => {
           chai.expect(putStub.args[0][0]).to.deep.include(expectedDoc);
         });
     });
+
+    it('should throw any error trhat is not a 404', () => {
+      sinon.stub(db.medicLogs, 'get').rejects({ status: 401 });
+
+      return connectedUserLogService
+        .save('userXYZ')
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ status: 401 });
+        });
+    });
+
+    it('should not save the log if the timestamp difference is less than the set interval', () => {
+      sinon.stub(db.medicLogs, 'get').resolves({ timestamp: 1 });
+      const putStub = sinon.stub(db.medicLogs, 'put');
+      clock.tick(25 * 60 * 1000); //25 minutes
+
+      return connectedUserLogService
+        .save('userXYZ')
+        .then(() => {
+          chai.expect(putStub.callCount).to.equal(0);
+        });
+    });
+
+    it('should save the log if the timestamp difference is more than the set interval', () => {
+      sinon.stub(db.medicLogs, 'get').resolves({ timestamp: 1 });
+      const putStub = sinon.stub(db.medicLogs, 'put');
+      clock.tick(31 * 60 * 1000); //31 minutes
+
+      return connectedUserLogService
+        .save('userXYZ')
+        .then(() => {
+          chai.expect(putStub.callCount).to.equal(1);
+        });
+    });
   });
 });
