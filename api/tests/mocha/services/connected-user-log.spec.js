@@ -32,7 +32,7 @@ describe('Connected Users Log service', () => {
         });
     });
 
-    it('should throw any error trhat is not a 404', () => {
+    it('should throw any error that is not a 404', () => {
       sinon.stub(db.medicLogs, 'get').rejects({ status: 401 });
 
       return connectedUserLogService
