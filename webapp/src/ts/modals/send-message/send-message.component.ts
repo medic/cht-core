@@ -9,7 +9,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SendMessageService } from '@mm-services/send-message.service';
 import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { Select2SearchService } from '@mm-services/select2-search.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Component({
   selector: 'send-message',
@@ -35,7 +35,7 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
     bsModalRef: BsModalRef,
     private sendMessageService: SendMessageService,
     private select2SearchService: Select2SearchService,
-    private translateHelperService:TranslateHelperService,
+    private translateService:TranslateService,
   ) {
     super(bsModalRef);
   }
@@ -53,7 +53,7 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
       return;
     }
 
-    return this.translateHelperService
+    return this.translateService
       .fieldIsRequired('tasks.0.messages.0.message')
       .then(value => {
         this.errors.message = value;
@@ -76,7 +76,7 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
   private validatePhoneNumbers(settings, recipients) {
     // Recipients is mandatory
     if (!recipients || !recipients.length) {
-      return this.translateHelperService
+      return this.translateService
         .fieldIsRequired('tasks.0.messages.0.to')
         .then(value => {
           this.errors.phone = value;
@@ -88,7 +88,7 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
 
     if (errors.length) {
       const errorRecipients = _map(errors, (error) => this.templateSelection(error)).join(', ');
-      return this.translateHelperService
+      return this.translateService
         .get('Invalid contact numbers', { recipients: errorRecipients })
         .then(value => {
           this.errors.phone = value;
@@ -99,7 +99,7 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
   }
 
   private formatPlace(row) {
-    return this.translateHelperService.instant('Everyone at', {
+    return this.translateService.instant('Everyone at', {
       facility: row.doc && row.doc.name,
       count: row.descendants ? row.descendants.length : ''
     });

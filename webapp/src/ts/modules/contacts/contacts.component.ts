@@ -23,7 +23,7 @@ import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { TourService } from '@mm-services/tour.service';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Component({
   templateUrl: './contacts.component.html'
@@ -63,7 +63,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private store: Store,
     private route: ActivatedRoute,
     private changesService: ChangesService,
-    private translateHelperService: TranslateHelperService,
+    private translateService: TranslateService,
     private searchService: SearchService,
     private contactTypesService: ContactTypesService,
     private userSettingsService: UserSettingsService,
@@ -236,12 +236,12 @@ export class ContactsComponent implements OnInit, OnDestroy{
       if (type && type.count_visits && Number.isInteger(contact.lastVisitedDate)) {
         if (contact.lastVisitedDate === 0) {
           contact.overdue = true;
-          contact.summary = this.translateHelperService.instant('contact.last.visited.unknown');
+          contact.summary = this.translateService.instant('contact.last.visited.unknown');
         } else {
           const now = new Date().getTime();
           const oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
           contact.overdue = contact.lastVisitedDate <= oneMonthAgo;
-          contact.summary = this.translateHelperService.instant(
+          contact.summary = this.translateService.instant(
             'contact.last.visited.date',
             { date: this.relativeDateService.getRelativeDate(contact.lastVisitedDate, {}) }
           );
@@ -249,8 +249,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
         const visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
         contact.visits = {
-          count: this.translateHelperService.instant('contacts.visits.count', { count: visitCount }),
-          summary: this.translateHelperService.instant(
+          count: this.translateService.instant('contacts.visits.count', { count: visitCount }),
+          summary: this.translateService.instant(
             'contacts.visits.visits',
             { VISITS: contact.visitCount }
           )

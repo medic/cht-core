@@ -4,7 +4,7 @@ import * as moment from 'moment';
 
 import { FormatDateService } from '@mm-services/format-date.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 const getState = (state, translateService) => {
   return translateService
@@ -97,7 +97,7 @@ const getRecipient = (task, translateService) => {
 })
 export class AutoreplyPipe implements PipeTransform {
   constructor(
-    private translateHelperService:TranslateHelperService,
+    private translateService:TranslateService,
     private formatDateService:FormatDateService,
     private relativeDateService:RelativeDateService,
     private sanitizer: DomSanitizer,
@@ -108,10 +108,10 @@ export class AutoreplyPipe implements PipeTransform {
       return Promise.resolve('');
     }
 
-    return getState(task.state, this.translateHelperService).then(state => {
+    return getState(task.state, this.translateService).then(state => {
       const content = state + '&nbsp;' +
         '<span class="autoreply" title="' + task.messages[0].message + '">' +
-        '<span class="autoreply-content">' + this.translateHelperService.instant('autoreply') + '</span>' +
+        '<span class="autoreply-content">' + this.translateService.instant('autoreply') + '</span>' +
         '</span>&nbsp';
 
       const transformedContent = getRelativeDate(getTaskDate(task), {
@@ -133,7 +133,7 @@ export class AutoreplyPipe implements PipeTransform {
 })
 export class StatePipe implements PipeTransform {
   constructor(
-    private translateHelperService:TranslateHelperService,
+    private translateService:TranslateService,
     private formatDateService:FormatDateService,
     private relativeDateService:RelativeDateService,
     private sanitizer: DomSanitizer,
@@ -146,8 +146,8 @@ export class StatePipe implements PipeTransform {
 
     return Promise
       .all([
-        getState(task.state || 'received', this.translateHelperService),
-        getRecipient(task, this.translateHelperService),
+        getState(task.state || 'received', this.translateService),
+        getRecipient(task, this.translateService),
       ])
       .then(([ state, recipient ]) => {
         const relativeDate = getRelativeDate(getTaskDate(task), {
@@ -170,7 +170,7 @@ export class StatePipe implements PipeTransform {
 })
 export class DateOfDeathPipe implements PipeTransform {
   constructor(
-    private translateHelperService:TranslateHelperService,
+    private translateService:TranslateService,
     private formatDateService:FormatDateService,
     private relativeDateService:RelativeDateService,
     private sanitizer: DomSanitizer,
@@ -186,7 +186,7 @@ export class DateOfDeathPipe implements PipeTransform {
       FormatDate: this.formatDateService,
       RelativeDate: this.relativeDateService,
       withoutTime: true,
-      prefix: this.translateHelperService.instant('contact.deceased.date.prefix') + '&nbsp;'
+      prefix: this.translateService.instant('contact.deceased.date.prefix') + '&nbsp;'
     }));
   }
 }

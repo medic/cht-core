@@ -8,7 +8,7 @@ import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { Selectors } from '@mm-selectors/index';
 import { SessionService } from '@mm-services/session.service';
 import { VersionService } from '@mm-services/version.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Component({
   templateUrl: './about.component.html'
@@ -36,7 +36,7 @@ export class AboutComponent implements OnInit, OnDestroy {
     private resourceIconsService: ResourceIconsService,
     private sessionService: SessionService,
     private versionService: VersionService,
-    private translateService: TranslateHelperService,
+    private translateService: TranslateService,
     private router: Router
   ) { }
 

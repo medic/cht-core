@@ -12,7 +12,7 @@ import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Injectable()
 export class ContactsEffects {
@@ -28,7 +28,7 @@ export class ContactsEffects {
     private contactSummaryService: ContactSummaryService,
     private tasksForContactService: TasksForContactService,
     private targetAggregateService: TargetAggregatesService,
-    private translateHelperService: TranslateHelperService,
+    private translateService: TranslateService,
     private routeSnapshotService: RouteSnapshotService,
   ) {
     this.contactsActions = new ContactsActions(store);
@@ -66,7 +66,7 @@ export class ContactsEffects {
           .then(() => this.loadTasks())
           .catch(err => {
             if (err.code === 404 && !silent) {
-              this.globalActions.setSnackbarContent(this.translateHelperService.instant('error.404.title'));
+              this.globalActions.setSnackbarContent(this.translateService.instant('error.404.title'));
             }
             console.error('Error selecting contact', err);
             this.globalActions.unsetSelected();
@@ -81,9 +81,9 @@ export class ContactsEffects {
   private setTitle(selected) {
     const routeSnapshot = this.routeSnapshotService.get();
     const deceasedTitle = routeSnapshot?.data?.name === 'contacts.deceased'
-      ? this.translateHelperService.instant('contact.deceased.title') : null;
+      ? this.translateService.instant('contact.deceased.title') : null;
     const title = deceasedTitle || selected.type?.name_key || 'contact.profile';
-    this.globalActions.setTitle(this.translateHelperService.instant(title));
+    this.globalActions.setTitle(this.translateService.instant(title));
   }
 
   private loadContact(id) {

@@ -1,27 +1,27 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateService as NgxTranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 describe('TranslateHelperService', () => {
-  let service:TranslateHelperService;
-  let translateService;
+  let service:TranslateService;
+  let ngxTranslateService;
 
   beforeEach(() => {
-    translateService = {
+    ngxTranslateService = {
       get: sinon.stub().callsFake((arg) => of(arg)),
       instant: sinon.stub().returnsArg(0),
     };
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: TranslateService, useValue: translateService },
+        { provide: NgxTranslateService, useValue: ngxTranslateService },
       ]
     });
-    service = TestBed.inject(TranslateHelperService);
+    service = TestBed.inject(TranslateService);
   });
 
   afterEach(() => {
@@ -34,8 +34,8 @@ describe('TranslateHelperService', () => {
       const actual = await service.get(expected);
 
       expect(actual).to.equal(expected);
-      expect(translateService.get.callCount).to.equal(1);
-      expect(translateService.get.args[0]).to.deep.equal([expected, undefined]);
+      expect(ngxTranslateService.get.callCount).to.equal(1);
+      expect(ngxTranslateService.get.args[0]).to.deep.equal([expected, undefined]);
     });
 
     it('should pass interpolation params', async () => {
@@ -44,8 +44,8 @@ describe('TranslateHelperService', () => {
       const actual = await service.get(expected, params);
 
       expect(actual).to.equal(expected);
-      expect(translateService.get.callCount).to.equal(1);
-      expect(translateService.get.args[0]).to.deep.equal([expected, params]);
+      expect(ngxTranslateService.get.callCount).to.equal(1);
+      expect(ngxTranslateService.get.args[0]).to.deep.equal([expected, params]);
     });
 
     it('should validate the key', async () => {
@@ -55,7 +55,7 @@ describe('TranslateHelperService', () => {
       expect(empty).to.equal('');
       expect(notDefined).to.equal(undefined);
 
-      expect(translateService.get.callCount).to.equal(0);
+      expect(ngxTranslateService.get.callCount).to.equal(0);
     });
   });
 
@@ -65,8 +65,8 @@ describe('TranslateHelperService', () => {
       const actual = service.instant(expected);
 
       expect(actual).to.equal(expected);
-      expect(translateService.instant.callCount).to.equal(1);
-      expect(translateService.instant.args[0]).to.deep.equal([expected, undefined]);
+      expect(ngxTranslateService.instant.callCount).to.equal(1);
+      expect(ngxTranslateService.instant.args[0]).to.deep.equal([expected, undefined]);
     });
 
     it('should pass interpolation params', () => {
@@ -75,8 +75,8 @@ describe('TranslateHelperService', () => {
       const actual = service.instant(expected, params);
 
       expect(actual).to.equal(expected);
-      expect(translateService.instant.callCount).to.equal(1);
-      expect(translateService.instant.args[0]).to.deep.equal([expected, params]);
+      expect(ngxTranslateService.instant.callCount).to.equal(1);
+      expect(ngxTranslateService.instant.args[0]).to.deep.equal([expected, params]);
     });
 
     it('should validate the key', () => {
@@ -86,7 +86,7 @@ describe('TranslateHelperService', () => {
       expect(empty).to.equal('');
       expect(notDefined).to.equal(undefined);
 
-      expect(translateService.instant.callCount).to.equal(0);
+      expect(ngxTranslateService.instant.callCount).to.equal(0);
     });
   });
 
@@ -97,9 +97,9 @@ describe('TranslateHelperService', () => {
 
       expect(actual).to.equal('field is required');
 
-      expect(translateService.get.callCount).to.equal(2);
-      expect(translateService.get.args[0]).to.deep.equal([field, undefined]);
-      expect(translateService.get.args[1]).to.deep.equal(['field is required', { field }]);
+      expect(ngxTranslateService.get.callCount).to.equal(2);
+      expect(ngxTranslateService.get.args[0]).to.deep.equal([field, undefined]);
+      expect(ngxTranslateService.get.args[1]).to.deep.equal(['field is required', { field }]);
     });
   });
 });

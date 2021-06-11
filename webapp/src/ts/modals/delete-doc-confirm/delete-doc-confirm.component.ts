@@ -9,7 +9,7 @@ import { DbService } from '@mm-services/db.service';
 import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Component({
   selector: 'delete-doc-confirm',
@@ -26,7 +26,7 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
 
   constructor(
     private store: Store,
-    private translateHelperService: TranslateHelperService,
+    private translateService: TranslateService,
     bsModalRef: BsModalRef,
     private dbService: DbService,
     private router: Router
@@ -75,7 +75,7 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
       .get()
       .put(doc)
       .then(() => {
-        const text = this.translateHelperService.instant('document.deleted');
+        const text = this.translateService.instant('document.deleted');
         const route = this.getRoute(this.router.url, doc);
         this.globalActions.setSnackbarContent(text);
         this.close();

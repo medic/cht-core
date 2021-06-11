@@ -8,7 +8,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { AndroidApiService } from '@mm-services/android-api.service';
 import { DbService } from '@mm-services/db.service';
 import { EnketoService } from '@mm-services/enketo.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Injectable({
   providedIn: 'root'
@@ -29,7 +29,7 @@ export class IntegrationApiService {
     private languageService:LanguageService,
     private select2SearchService:Select2SearchService,
     private enketoService:EnketoService,
-    private translateHelperService:TranslateHelperService,
+    private translateService:TranslateService,
     private mrdtService:MRDTService,
     private markdownService:MarkdownService,
     private settingsService:SettingsService,
@@ -44,7 +44,7 @@ export class IntegrationApiService {
     this.Markdown = markdownService;
     this.Settings = settingsService;
     this.AndroidApi = androidApiService;
-    this.Translate = translateHelperService;
+    this.Translate = translateService;
   }
 
   get(service) {

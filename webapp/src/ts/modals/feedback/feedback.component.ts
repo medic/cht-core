@@ -5,7 +5,7 @@ import { Store } from '@ngrx/store';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { MmModalAbstract } from '../mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Component({
   selector: 'feedback-modal',
@@ -22,7 +22,7 @@ export class FeedbackComponent extends MmModalAbstract {
     bsModalRef: BsModalRef,
     private feedbackService: FeedbackService,
     private store: Store,
-    private translateHelperService:TranslateHelperService,
+    private translateService:TranslateService,
   ) {
     super(bsModalRef);
     this.globalActions = new GlobalActions(store);
@@ -33,7 +33,7 @@ export class FeedbackComponent extends MmModalAbstract {
       this.error.message = false;
       return Promise.resolve();
     } else {
-      return this.translateHelperService
+      return this.translateService
         .fieldIsRequired('Bug description')
         .then(value => this.error.message = value);
     }
@@ -56,7 +56,7 @@ export class FeedbackComponent extends MmModalAbstract {
           .then(() => {
             this.setFinished();
             this.close();
-            this.translateHelperService
+            this.translateService
               .get('feedback.submitted')
               .then(value => this.globalActions.setSnackbarContent(value));
           })

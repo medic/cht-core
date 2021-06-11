@@ -20,13 +20,13 @@ import {
 } from '@mm-pipes/date.pipe';
 import { RelativeDateService } from '@mm-services/relative-date.service';
 import { FormatDateService } from '@mm-services/format-date.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 
 describe('date pipes', () => {
   let relativeDateService;
   let formatDateService;
-  let translateHelperService;
+  let translateService;
   let sanitizer;
 
   const TEST_TASK = {
@@ -49,7 +49,7 @@ describe('date pipes', () => {
       datetime: d => `${d.toISOString()}`,
       relative: (d:number) => `${Math.floor((d - TEST_DATE.valueOf()) / 86400000)} days`,
     };
-    translateHelperService = {
+    translateService = {
       instant: sinon.stub().returnsArg(0),
       get: sinon.stub().resolvesArg(0),
     };
@@ -59,7 +59,7 @@ describe('date pipes', () => {
         providers: [
           { provide: RelativeDateService, useValue: relativeDateService },
           { provide: FormatDateService, useValue: formatDateService },
-          { provide: TranslateHelperService, useValue: translateHelperService },
+          { provide: TranslateService, useValue: translateService },
           { provide: DomSanitizer, useValue: { bypassSecurityTrustHtml: sinon.stub().returnsArg(0) } },
         ],
         declarations: [
@@ -100,7 +100,7 @@ describe('date pipes', () => {
 
   describe('autoreply', () => {
     it('should return nicely-formatted output', async () => {
-      const pipe = new AutoreplyPipe(translateHelperService, formatDateService, relativeDateService, sanitizer);
+      const pipe = new AutoreplyPipe(translateService, formatDateService, relativeDateService, sanitizer);
       const expected = '<span><span class="state STATE">state.STATE</span>&nbsp;' +
         '<span class="autoreply" title="MESSAGE"><span class="autoreply-content">autoreply</span></span>&nbsp</span>';
       const actual = await pipe.transform(TEST_TASK);
@@ -175,7 +175,7 @@ describe('date pipes', () => {
 
   describe('state', () => {
     it('should return nicely-formatted output', async () => {
-      const pipe = new StatePipe(translateHelperService, formatDateService, relativeDateService, sanitizer);
+      const pipe = new StatePipe(translateService, formatDateService, relativeDateService, sanitizer);
       const expected = '<span><span class="state STATE">state.STATE</span>&nbsp;</span>';
       const actual = await pipe.transform(TEST_TASK);
       assert.equal(actual, expected);
@@ -246,7 +246,7 @@ describe('date pipes rendering', () => {
         providers: [
           { provide: RelativeDateService, useValue: relativeDate },
           { provide: FormatDateService, useValue: formatDate },
-          { provide: TranslateHelperService, useValue: translate },
+          { provide: TranslateService, useValue: translate },
         ],
         declarations: [
           AgePipe,

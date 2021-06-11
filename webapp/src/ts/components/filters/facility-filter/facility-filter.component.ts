@@ -19,7 +19,7 @@ import {
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 import { SessionService } from '@mm-services/session.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Component({
   selector: 'mm-facility-filter',
@@ -47,7 +47,7 @@ export class FacilityFilterComponent implements OnInit, AbstractFilter, AfterVie
   constructor(
     private store:Store,
     private placeHierarchyService:PlaceHierarchyService,
-    private translateHelperService:TranslateHelperService,
+    private translateService:TranslateService,
     private ngZone:NgZone,
     private sessionService:SessionService,
   ) {
@@ -175,7 +175,7 @@ export class FacilityFilterComponent implements OnInit, AbstractFilter, AfterVie
       return Promise.resolve(facility.doc.name);
     }
 
-    return this.translateHelperService.get(this.isOnlineOnly ? 'place.deleted' : 'place.unavailable');
+    return this.translateService.get(this.isOnlineOnly ? 'place.deleted' : 'place.unavailable');
   }
 
   clear() {

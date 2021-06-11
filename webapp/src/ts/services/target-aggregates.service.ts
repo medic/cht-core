@@ -12,7 +12,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +22,7 @@ export class TargetAggregatesService {
   constructor(
     private uhcSettingsService:UHCSettingsService,
     private dbService:DbService,
-    private translateHelperService:TranslateHelperService,
+    private translateService:TranslateService,
     private translateFromService:TranslateFromService,
     private searchService:SearchService,
     private getDataRecordsService:GetDataRecordsService,
@@ -95,7 +95,7 @@ export class TargetAggregatesService {
 
   private getTranslatedTitle(target) {
     if (target.translation_key) {
-      return this.translateHelperService.instant(target.translation_key);
+      return this.translateService.instant(target.translation_key);
     }
 
     return this.translateFromService.get(target.title);
@@ -168,7 +168,7 @@ export class TargetAggregatesService {
 
     if (aggregate.hasGoal) {
       const translationKey = 'analytics.target.aggregates.ratio';
-      aggregate.aggregateValue.summary = this.translateHelperService.instant(translationKey, aggregate.aggregateValue);
+      aggregate.aggregateValue.summary = this.translateService.instant(translationKey, aggregate.aggregateValue);
     } else {
       aggregate.aggregateValue.summary = aggregate.isPercent ?
         `${aggregate.aggregateValue.percent}%` : aggregate.aggregateValue.pass;

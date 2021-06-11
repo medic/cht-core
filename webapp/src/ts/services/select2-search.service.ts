@@ -8,7 +8,7 @@ import { SearchService } from '@mm-services/search.service';
 import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +17,7 @@ export class Select2SearchService {
 
   constructor(
     private formatProvider: FormatProvider,
-    private translateHelperService: TranslateHelperService,
+    private translateService: TranslateService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
     private searchService: SearchService,
     private sessionService: SessionService,
@@ -36,7 +36,7 @@ export class Select2SearchService {
 
   private defaultTemplateSelection(row) {
     if (row.doc) {
-      return row.doc.name + (row.doc.muted ? ' (' + this.translateHelperService.instant('contact.muted') + ')' : '');
+      return row.doc.name + (row.doc.muted ? ' (' + this.translateService.instant('contact.muted') + ')' : '');
     }
 
     return row.text;
@@ -155,7 +155,7 @@ export class Select2SearchService {
     });
 
     if (options.allowNew) {
-      const addNewText = this.translateHelperService.instant('contact.type.' + types[0] + '.new');
+      const addNewText = this.translateService.instant('contact.type.' + types[0] + '.new');
       const button = $('<a class="btn btn-link add-new"><i class="fa fa-plus"></i> ' + addNewText + '</a>')
         .on('click', () => {
           selectEl.append($('<option value="NEW" selected="selected">' + addNewText + '</option>'));

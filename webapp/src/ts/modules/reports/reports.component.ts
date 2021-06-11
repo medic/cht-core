@@ -20,7 +20,7 @@ import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 const PAGE_SIZE = 50;
 
@@ -57,7 +57,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private router:Router,
     private changesService:ChangesService,
     private searchService:SearchService,
-    private translateHelperService:TranslateHelperService,
+    private translateService:TranslateService,
     private tourService: TourService,
     private addReadStatusService:AddReadStatusService,
     private exportService:ExportService,
@@ -149,7 +149,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   private getReportHeading(form, report) {
     if (form && form.subjectKey) {
-      return this.translateHelperService.instant(form.subjectKey, report);
+      return this.translateService.instant(form.subjectKey, report);
     }
     if (report.validSubject) {
       return report.subject.value;
@@ -157,7 +157,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     if (report.subject.name) {
       return report.subject.name;
     }
-    return this.translateHelperService.instant('report.subject.unknown');
+    return this.translateService.instant('report.subject.unknown');
   }
 
   private prepareReports(reports) {

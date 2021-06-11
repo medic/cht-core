@@ -3,20 +3,21 @@ import { Injectable } from '@angular/core';
 import { RelativeTimeKey } from 'moment';
 
 import { SettingsService } from '@mm-services/settings.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FormatDateService {
   constructor(
-    private translateHelperService:TranslateHelperService,
+    private translateService:TranslateService,
     private settingsService:SettingsService,
   ) {
   }
 
   init() {
-    this.settingsService.get()
+    this.settingsService
+      .get()
       .then((res:any) => {
         this.config.date = res.date_format;
         this.config.datetime = res.reported_date_format;
@@ -63,10 +64,10 @@ export class FormatDateService {
     const today = moment().startOf('day');
     const diff = date.diff(today, 'days');
     if (diff <= 0) {
-      return this.translateHelperService.instant('task.overdue');
+      return this.translateService.instant('task.overdue');
     }
     if (diff <= this.config.taskDayLimit) {
-      return this.translateHelperService.instant('task.days.left', { DAYS: diff });
+      return this.translateService.instant('task.days.left', { DAYS: diff });
     }
     return '';
   }
@@ -75,13 +76,13 @@ export class FormatDateService {
     const diff = this.getDateDiff(moment(date).startOf('day'), options);
     if (options.humanize) {
       if (diff.quantity === 0) {
-        return this.translateHelperService.instant('today');
+        return this.translateService.instant('today');
       }
       if (diff.quantity === 1) {
-        return this.translateHelperService.instant('tomorrow');
+        return this.translateService.instant('tomorrow');
       }
       if (diff.quantity === -1) {
-        return this.translateHelperService.instant('yesterday');
+        return this.translateService.instant('yesterday');
       }
     }
     const quantity = Math.abs(diff.quantity);

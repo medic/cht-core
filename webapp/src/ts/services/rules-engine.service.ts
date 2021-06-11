@@ -18,8 +18,8 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { DbService } from '@mm-services/db.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
 import { FeedbackService } from '@mm-services/feedback.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 interface DebounceActive {
   [key: string]: {
@@ -57,7 +57,7 @@ export class RulesEngineService implements OnDestroy {
   private observable = new Subject();
 
   constructor(
-    private translateHelperService:TranslateHelperService,
+    private translateService:TranslateService,
     private authService:AuthService,
     private sessionService:SessionService,
     private settingsService:SettingsService,
@@ -292,7 +292,7 @@ export class RulesEngineService implements OnDestroy {
   private translateProperty(property, task) {
     if (typeof property === 'string') {
       // new translation key style
-      return this.translateHelperService.instant(property, task);
+      return this.translateService.instant(property, task);
     }
     // old message array style
     return this.translateFromService.get(property, task);

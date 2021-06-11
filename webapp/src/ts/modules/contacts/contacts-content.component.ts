@@ -21,7 +21,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { SessionService } from '@mm-services/session.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 
@@ -58,7 +58,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     private router: Router,
     private changesService: ChangesService,
     private contactChangeFilterService: ContactChangeFilterService,
-    private translateHelperService: TranslateHelperService,
+    private translateService: TranslateService,
     private translateFromService: TranslateFromService,
     private xmlFormsService: XmlFormsService,
     private modalService: ModalService,
@@ -343,7 +343,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         const formSummaries = forms
           .map(xForm => {
             const title = xForm.translation_key ?
-              this.translateHelperService.instant(xForm.translation_key) : this.translateFromService.get(xForm.title);
+              this.translateService.instant(xForm.translation_key) : this.translateFromService.get(xForm.title);
 
             const isUnmuteForm = this.mutingTransition.isUnmuteForm(xForm.internalId, this.settings);
             const isMuted = this.contactMutedService.getMuted(this.selectedContact.doc);

@@ -19,7 +19,7 @@ import { EditReportComponent } from '@mm-modals/edit-report/edit-report.componen
 import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.component';
 import { ServicesActions } from '@mm-actions/services';
 import { AuthService } from '@mm-services/auth.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 
 @Injectable()
@@ -39,7 +39,7 @@ export class ReportsEffects {
     private router:Router,
     private searchService:SearchService,
     private modalService:ModalService,
-    private translateHelperService:TranslateHelperService,
+    private translateService:TranslateService,
     private authService:AuthService,
   ) {
     this.reportActions = new ReportsActions(store);
@@ -281,7 +281,7 @@ export class ReportsEffects {
 
         const promptUserToConfirmVerification = () => {
           const verificationTranslationKey = verified ? 'reports.verify.valid' : 'reports.verify.invalid';
-          const proposedVerificationState = this.translateHelperService.instant(verificationTranslationKey);
+          const proposedVerificationState = this.translateService.instant(verificationTranslationKey);
           return this.modalService
             .show(VerifyReportComponent, { initialState: { model: { proposedVerificationState } } })
             .then(() => true)

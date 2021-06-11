@@ -12,14 +12,14 @@ import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { DbService } from '@mm-services/db.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Component({
   templateUrl: './tasks-content.component.html'
 })
 export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
-    private translateHelperService:TranslateHelperService,
+    private translateService:TranslateService,
     private route:ActivatedRoute,
     private store:Store,
     private enketoService:EnketoService,
@@ -221,7 +221,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
         this.form = formInstance;
         this.loadingForm = false;
         if (formDoc?.translation_key) {
-          this.globalActions.setTitle(this.translateHelperService.instant(formDoc.translation_key));
+          this.globalActions.setTitle(this.translateService.instant(formDoc.translation_key));
         } else {
           this.globalActions.setTitle(this.translateFromService.get(formDoc?.title));
         }
@@ -306,7 +306,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       .save(this.formId, this.form, this.geoHandle)
       .then((docs) => {
         console.debug('saved report and associated docs', docs);
-        this.globalActions.setSnackbarContent(this.translateHelperService.instant('report.created'));
+        this.globalActions.setSnackbarContent(this.translateService.instant('report.created'));
 
         this.globalActions.setEnketoSavingStatus(false);
         this.globalActions.setEnketoEditedStatus(false);
@@ -326,7 +326,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       .catch((err) => {
         this.globalActions.setEnketoSavingStatus(false);
         console.error('Error submitting form data: ', err);
-        this.globalActions.setEnketoError(this.translateHelperService.instant('error.report.save'));
+        this.globalActions.setEnketoError(this.translateService.instant('error.report.save'));
       });
   }
 
