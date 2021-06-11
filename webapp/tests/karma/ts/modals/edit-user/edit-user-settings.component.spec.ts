@@ -10,6 +10,7 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { UpdateUserService } from '@mm-services/update-user.service';
 import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settings.component';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { LanguageService } from '@mm-services/language.service';
 import { LanguagesService } from '@mm-services/languages.service';
 import { MmModal } from '@mm-modals/mm-modal/mm-modal';
 import { SetLanguageService } from '@mm-services/language.service';
@@ -19,6 +20,7 @@ describe('EditUserSettingsComponent', () => {
   let component: EditUserSettingsComponent;
   let fixture: ComponentFixture<EditUserSettingsComponent>;
   let userSettingsService;
+  let languageService;
   let updateUserService;
   let languagesService;
   let setLanguageService;
@@ -35,11 +37,11 @@ describe('EditUserSettingsComponent', () => {
           name: 'admin',
           fullname: 'Admin',
           email: 'admin@demo.medic.com',
-          phone: '+99 999 9999',
-          language: 'es'
+          phone: '+99 999 9999'
         }
       )
     };
+    languageService = { get: sinon.stub().resolves('es') };
     languagesService = {
       get: sinon.stub().resolves(
         [
@@ -66,6 +68,7 @@ describe('EditUserSettingsComponent', () => {
         providers: [
           { provide: UpdateUserService, useValue: updateUserService },
           { provide: UserSettingsService, useValue: userSettingsService },
+          { provide: LanguageService, useValue: languageService },
           { provide: LanguagesService, useValue: languagesService },
           { provide: SetLanguageService, useValue: setLanguageService },
           { provide: BsModalRef, useValue: bdModalRef },
