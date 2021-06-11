@@ -31,7 +31,7 @@ module.exports = {
   DEFAULT_USER_CONTACT_DOC: {
     _id: 'e2e_contact_test_id',
     type: 'person',
-    reported_date: 1541679811408
+    reported_date: 1541679811408,
   },
   BASE_URL: `http://${COUCH_HOST}:${API_PORT}/`
 };
