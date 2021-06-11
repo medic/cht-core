@@ -1,6 +1,7 @@
 const loginPage = require('../page-objects/login.page');
 const commonPage = require('../page-objects/common.page');
 const auth = require('../../auth')();
+const utils = require('../../utils');
 
 describe('Login and logout tests', () => {
   beforeEach(async () => {

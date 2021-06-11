@@ -31,6 +31,7 @@ const cookieLogin = async (username, password) => {
   });
 
   await browser.setCookies(cookieArray);
+  await utils.setupUserDoc(username);
   await browser.url('/');
 };
 

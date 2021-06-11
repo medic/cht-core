@@ -2,6 +2,7 @@ const IS_TRAVIS = !!process.env.TEST_SUITE;
 
 const COUCH_HOST = 'localhost';
 const COUCH_PORT = IS_TRAVIS ? 5984 : 4984;
+const API_PORT = IS_TRAVIS ? 5988 : 4988;
 
 module.exports = {
   IS_TRAVIS: IS_TRAVIS,
@@ -9,7 +10,7 @@ module.exports = {
   // connection information for the test api instance which is
   // intentionally different from the dev api instance to avoid
   // port collisions
-  API_PORT: IS_TRAVIS ? 5988 : 4988,
+  API_PORT,
   API_HOST: 'localhost',
 
   // connection information for the couchdb instance
@@ -30,7 +31,7 @@ module.exports = {
   DEFAULT_USER_CONTACT_DOC: {
     _id: 'e2e_contact_test_id',
     type: 'person',
-    reported_date: 1541679811408,
+    reported_date: 1541679811408
   },
-  BASE_URL: `http://${COUCH_HOST}:${COUCH_PORT}/`
+  BASE_URL: `http://${COUCH_HOST}:${API_PORT}/`
 };

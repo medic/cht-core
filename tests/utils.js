@@ -54,6 +54,7 @@ const request = (options, { debug } = {}) => {
 
   return rpn(options).catch(err => {
     err.responseBody = err.response && err.response.body;
+    console.warn(`A request error occurred ${err.options.uri}`);
     throw err;
   });
 };
@@ -480,14 +481,19 @@ const protractorLogin = async (browser, timeout = 20) => {
 };
 
 const setupUser = () => {
-  return module.exports.getDoc('org.couchdb.user:' + auth.username)
+  return module.exports.setupUserDoc()
+    .then(() => refreshToGetNewSettings())
+    .then(() => module.exports.closeTour());
+};
+
+const setupUserDoc = (userName = auth.username) => {
+  return module.exports.getDoc('org.couchdb.user:' + userName)
     .then(doc => {
       doc.contact_id = constants.USER_CONTACT_ID;
       doc.language = 'en';
+      doc.known = true;
       return module.exports.saveDoc(doc);
-    })
-    .then(() => refreshToGetNewSettings())
-    .then(() => module.exports.closeTour());
+    });
 };
 
 
@@ -501,7 +507,7 @@ module.exports = {
   db: db,
   sentinelDb: sentinel,
   medicLogsDb: medicLogs,
-
+  setupUserDoc,
   request: request,
 
   reporter: new htmlScreenshotReporter({
