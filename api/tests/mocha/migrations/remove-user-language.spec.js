@@ -78,9 +78,9 @@ describe('remove-user-language migration', () => {
       expectedOptions.skip = 200;
       chai.expect(userQuery.args[2]).to.deep.equal([docByType, expectedOptions]);
       chai.expect(bulkDocs.callCount).to.equal(2);
-      chai.expect(bulkDocs.calledWithExactly([ { _id: 'org.couchdb.user:lang0' }, { _id: 'org.couchdb.user:lang1' } ]))
-        .to.be.true;
-      chai.expect(bulkDocs.calledWithExactly([ { _id: 'org.couchdb.user:lang2' } ])).to.be.true;
+      chai.expect(bulkDocs.args[0])
+        .to.deep.equal([[ { _id: 'org.couchdb.user:lang0' }, { _id: 'org.couchdb.user:lang1' } ]]);
+      chai.expect(bulkDocs.args[1]).to.deep.equal([[ { _id: 'org.couchdb.user:lang2' } ]]);
     });
   });
 
@@ -101,9 +101,9 @@ describe('remove-user-language migration', () => {
 
     return migration.run().then(() => {
       chai.expect(userQuery.callCount).to.equal(2);
-      chai.expect(userQuery.calledWithExactly(docByType, expectedOptions)).to.be.true;
+      chai.expect(userQuery.args[0]).to.deep.equal([ docByType, expectedOptions ]);
       expectedOptions.skip = 100;
-      chai.expect(userQuery.calledWithExactly(docByType, expectedOptions)).to.be.true;
+      chai.expect(userQuery.args[1]).to.deep.equal([ docByType, expectedOptions ]);
       chai.expect(bulkDocs.callCount).to.equal(0);
     });
   });
@@ -112,10 +112,12 @@ describe('remove-user-language migration', () => {
     const message = 'Some Error';
     userQuery.rejects(message);
 
-    return migration.run()
+    return migration
+      .run()
+      .then(() => chai.assert.fail('should have thrown'))
       .catch((error) => {
         chai.expect(userQuery.callCount).to.equal(1);
-        chai.expect(userQuery.calledWithExactly(docByType, expectedOptions)).to.be.true;
+        chai.expect(userQuery.args[0]).to.deep.equal([ docByType, expectedOptions ]);
         chai.expect(error.name).to.equal(message);
       });
   });
@@ -132,12 +134,14 @@ describe('remove-user-language migration', () => {
     userQuery.onFirstCall().resolves({ rows: [ user ] });
     bulkDocs.returns(Promise.reject(message));    
 
-    return migration.run()
+    return migration
+      .run()
+      .then(() => chai.assert.fail('should have thrown'))
       .catch((error) => {
         chai.expect(userQuery.callCount).to.equal(1);
-        chai.expect(userQuery.calledWithExactly(docByType, expectedOptions)).to.be.true;
+        chai.expect(userQuery.args[0]).to.deep.equal([ docByType, expectedOptions ]);
         chai.expect(bulkDocs.callCount).to.equal(1);
-        chai.expect(bulkDocs.calledWithExactly([ { _id: 'org.couchdb.user:0' } ])).to.be.true;
+        chai.expect(bulkDocs.args[0]).to.deep.equal([[ { _id: 'org.couchdb.user:0' } ]]);
         chai.expect(error).to.equal(message);
       });
   });

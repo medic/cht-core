@@ -12,11 +12,14 @@ describe('extract-translations migration', () => {
 
   it('returns errors from getSettings', done => {
     const getSettings = sinon.stub(settingsService, 'get').returns(Promise.reject('boom'));
-    migration.run().catch(err => {
-      chai.expect(err).to.equal('boom');
-      chai.expect(getSettings.callCount).to.equal(1);
-      done();
-    });
+    migration
+      .run()
+      .then(() => chai.assert.fail('should have thrown'))
+      .catch(err => {
+        chai.expect(err).to.equal('boom');
+        chai.expect(getSettings.callCount).to.equal(1);
+        done();
+      });
   });
 
   it('does nothing if no configured translations', () => {
@@ -49,13 +52,16 @@ describe('extract-translations migration', () => {
     const getSettings = sinon.stub(settingsService, 'get').resolves({ translations: translations, locales: locales });
     const view = sinon.stub(db.medic, 'query').returns(Promise.reject('boom'));
     const bulk = sinon.stub(db.medic, 'bulkDocs');
-    migration.run().catch(err => {
-      chai.expect(err).to.equal('boom');
-      chai.expect(getSettings.callCount).to.equal(1);
-      chai.expect(view.callCount).to.equal(1);
-      chai.expect(bulk.callCount).to.equal(0);
-      done();
-    });
+    migration
+      .run()
+      .then(() => chai.assert.fail('should have thrown'))
+      .catch(err => {
+        chai.expect(err).to.equal('boom');
+        chai.expect(getSettings.callCount).to.equal(1);
+        chai.expect(view.callCount).to.equal(1);
+        chai.expect(bulk.callCount).to.equal(0);
+        done();
+      });
   });
 
   it('does nothing if no docs', () => {
@@ -119,14 +125,17 @@ describe('extract-translations migration', () => {
     const view = sinon.stub(db.medic, 'query').resolves(docs);
     const bulk = sinon.stub(db.medic, 'bulkDocs').returns(Promise.reject('boom'));
     const updateSettings = sinon.stub(settingsService, 'update');
-    migration.run().catch(err => {
-      chai.expect(err).to.equal('boom');
-      chai.expect(getSettings.callCount).to.equal(1);
-      chai.expect(view.callCount).to.equal(1);
-      chai.expect(bulk.callCount).to.equal(1);
-      chai.expect(updateSettings.callCount).to.equal(0);
-      done();
-    });
+    migration
+      .run()
+      .then(() => chai.assert.fail('should have thrown'))
+      .catch(err => {
+        chai.expect(err).to.equal('boom');
+        chai.expect(getSettings.callCount).to.equal(1);
+        chai.expect(view.callCount).to.equal(1);
+        chai.expect(bulk.callCount).to.equal(1);
+        chai.expect(updateSettings.callCount).to.equal(0);
+        done();
+      });
   });
 
   it('returns errors from settings update', done => {
@@ -160,14 +169,17 @@ describe('extract-translations migration', () => {
     const view = sinon.stub(db.medic, 'query').resolves(docs);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     const updateSettings = sinon.stub(settingsService, 'update').returns(Promise.reject('boom'));
-    migration.run().catch(err => {
-      chai.expect(err).to.equal('boom');
-      chai.expect(getSettings.callCount).to.equal(1);
-      chai.expect(view.callCount).to.equal(1);
-      chai.expect(bulk.callCount).to.equal(1);
-      chai.expect(updateSettings.callCount).to.equal(1);
-      done();
-    });
+    migration
+      .run()
+      .then(() => chai.assert.fail('should have thrown'))
+      .catch(err => {
+        chai.expect(err).to.equal('boom');
+        chai.expect(getSettings.callCount).to.equal(1);
+        chai.expect(view.callCount).to.equal(1);
+        chai.expect(bulk.callCount).to.equal(1);
+        chai.expect(updateSettings.callCount).to.equal(1);
+        done();
+      });
   });
 
   it('merges configuration into docs', () => {

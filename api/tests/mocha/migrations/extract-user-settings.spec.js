@@ -49,12 +49,15 @@ describe('extract-user-settings migration', () => {
 
   it('returns list errors', done => {
     const list = sinon.stub(db.users, 'allDocs').callsArgWith(1, 'boom');
-    migration.run().catch(err => {
-      chai.expect(err).to.equal('boom');
-      chai.expect(list.callCount).to.equal(1);
-      chai.expect(list.args[0][0].include_docs).to.equal(true);
-      done();
-    });
+    migration
+      .run()
+      .then(() => chai.assert.fail('should have thrown'))
+      .catch(err => {
+        chai.expect(err).to.equal('boom');
+        chai.expect(list.callCount).to.equal(1);
+        chai.expect(list.args[0][0].include_docs).to.equal(true);
+        done();
+      });
   });
 
   it('does nothing if no users', () => {
@@ -75,11 +78,14 @@ describe('extract-user-settings migration', () => {
     const list = sinon.stub(db.users, 'allDocs').callsArgWith(1, null, { rows: [ ddoc, userA, userB ] });
     sinon.stub(db.medic, 'get').callsArgWith(1, { error: 'not_found'});
     sinon.stub(db.medic, 'put').callsArgWith(1, 'boom');
-    migration.run().catch(err => {
-      chai.expect(err).to.equal('boom');
-      chai.expect(list.callCount).to.equal(1);
-      done();
-    });
+    migration
+      .run()
+      .then(() => chai.assert.fail('should have thrown'))
+      .catch(err => {
+        chai.expect(err).to.equal('boom');
+        chai.expect(list.callCount).to.equal(1);
+        done();
+      });
   });
 
   it('returns errors from update', done => {
@@ -91,10 +97,13 @@ describe('extract-user-settings migration', () => {
       .onSecondCall().callsArg(1);
     sinon.stub(db.users, 'put').callsArgWith(1, 'boom');
 
-    migration.run().catch(err => {
-      chai.expect(err).to.equal('boom');
-      done();
-    });
+    migration
+      .run()
+      .then(() => chai.assert.fail('should have thrown'))
+      .catch(err => {
+        chai.expect(err).to.equal('boom');
+        done();
+      });
   });
 
   it('saves doc for settings', () => {
