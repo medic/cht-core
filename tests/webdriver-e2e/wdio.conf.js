@@ -145,7 +145,7 @@ const baseConfig = {
   // see also: https://webdriver.io/docs/dot-reporter
   reporters: [
     ['allure', {
-      outputDir: './_results_/allure-raw',
+      outputDir: 'allure-results',
       disableWebdriverStepsReporting  : true,
       disableWebdriverScreenshotsReporting: true,
     }],
@@ -289,10 +289,11 @@ const baseConfig = {
    */
   onComplete: function () {
     const reportError = new Error('Could not generate Allure report');
-    const generation = allure(['generate', './_results_/allure-raw', '--clean']);
+    const timeoutError = new Error('Timeout generating report');
+    const generation = allure(['generate', 'allure-results', '--clean']);
     return new Promise((resolve, reject) => {
       const generationTimeout = setTimeout(
-        () => reject(reportError),
+        () => reject(timeoutError),
         5000);
 
       generation.on('exit', function (exitCode) {

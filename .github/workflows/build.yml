@@ -340,6 +340,7 @@ jobs:
       with:
         name: Results Artifact ${{ matrix.node-version }}
         path: |
-          tests/results
+          allure-results
+          allure-report
           tests/logs
       if: ${{ failure() }}
