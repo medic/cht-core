@@ -1,6 +1,5 @@
 const constants = require('../constants');
 const utils = require('../utils');
-const video = require('wdio-video-reporter');
 const allure = require('allure-commandline');
 
 const baseConfig = {
@@ -27,7 +26,7 @@ const baseConfig = {
   // If you are calling `wdio` from an NPM script (see https://docs.npmjs.com/cli/run-script),
   // then the current working directory is where your `package.json` resides, so `wdio`
   // will be called from there.
-  //
+  // 
   specs: [
     './tests/webdriver-e2e/specs/**/*.spec.js'
   ],
@@ -145,11 +144,12 @@ const baseConfig = {
   // The only one supported by default is 'dot'
   // see also: https://webdriver.io/docs/dot-reporter
   reporters: [
-    'spec',
     ['allure', {
-      outputDir: './allure-results',
-      disableWebdriverStepsReporting: true,
+      outputDir: './_results_/allure-raw',
+      disableWebdriverStepsReporting  : true,
+      disableWebdriverScreenshotsReporting: true,
     }],
+    'spec',
   ],
 
 
@@ -289,7 +289,7 @@ const baseConfig = {
    */
   onComplete: function () {
     const reportError = new Error('Could not generate Allure report');
-    const generation = allure(['generate', 'allure-results', '--clean']);
+    const generation = allure(['generate', './_results_/allure-raw', '--clean']);
     return new Promise((resolve, reject) => {
       const generationTimeout = setTimeout(
         () => reject(reportError),

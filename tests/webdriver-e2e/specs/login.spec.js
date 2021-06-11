@@ -13,5 +13,3 @@ describe('Login and logout tests', () => {
     expect(warning).toBe('Are you sure you want to log out?');
   });
 });
-
-
