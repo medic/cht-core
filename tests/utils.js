@@ -19,6 +19,7 @@ const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_
 const browserLogStream = fs.createWriteStream(
   __dirname + '/../tests/logs/browser.console.log'
 );
+const userSettings = require('./factories/cht/users/user-settings');
 
 let originalSettings;
 const originalTranslations = {};
@@ -486,13 +487,11 @@ const setupUser = () => {
     .then(() => module.exports.closeTour());
 };
 
-const setupUserDoc = (userName = auth.username) => {
+const setupUserDoc = (userName = auth.username, userDoc = userSettings.build()) => {
   return module.exports.getDoc('org.couchdb.user:' + userName)
     .then(doc => {
-      doc.contact_id = constants.USER_CONTACT_ID;
-      doc.language = 'en';
-      doc.known = true;
-      return module.exports.saveDoc(doc);
+      const finalDoc = Object.assign(doc, userDoc);
+      return module.exports.saveDoc(finalDoc);
     });
 };
 
