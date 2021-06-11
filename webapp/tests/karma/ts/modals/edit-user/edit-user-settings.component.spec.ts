@@ -10,10 +10,9 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { UpdateUserService } from '@mm-services/update-user.service';
 import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settings.component';
 import { UserSettingsService } from '@mm-services/user-settings.service';
-import { LanguageService } from '@mm-services/language.service';
 import { LanguagesService } from '@mm-services/languages.service';
 import { MmModal } from '@mm-modals/mm-modal/mm-modal';
-import { SetLanguageService } from '@mm-services/language.service';
+import { SetLanguageService, LanguageService } from '@mm-services/language.service';
 
 describe('EditUserSettingsComponent', () => {
 
