@@ -213,6 +213,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     this.globalActions.setEnketoEditedStatus(false);
     const markFormEdited = this.markFormEdited.bind(this);
     const resetFormError = this.resetFormError.bind(this);
+    action.content.taskId = this.selectedTask._id;
 
     return this.enketoService
       .render('#task-report', formDoc, action.content, markFormEdited, resetFormError)
