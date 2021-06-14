@@ -1,0 +1,25 @@
+<model>
+  <instance>
+    <data id="V" version="2015-06-05">
+      <patient_id tag="id"/>
+      <name tag="name"/>
+      <inputs>
+        <patient_id tag="n"/>
+        <user>
+          <_id tag="ui"/>
+          <facility_id tag="ufi"/>
+        </user>
+      </inputs>
+    </data>
+  </instance>
+  <instance id="contact-summary" />
+  <itext>
+    <translation lang="eng">
+      <text id="patient_id:label">
+        <value>Patient ID</value>
+      </text>
+    </translation>
+  </itext>
+  <bind nodeset="/data/patient_id" type="medicPatientSelect" required="true()" />
+  <bind nodeset="/data/name" type="string" required="true()" />
+</model>

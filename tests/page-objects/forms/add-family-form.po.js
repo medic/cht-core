@@ -114,7 +114,7 @@ module.exports = {
     hygeinicToilet,
     planningMethod
   ) => {
-    helper.waitUntilReadyNative(element.all(by.css('.details>ul>li')));
+    await helper.waitUntilReadyNative(element(by.css('.details>ul>li')));
     const savedParameters = element.all(by.css('.details>ul>li'));
 
     // Primary Caregiver

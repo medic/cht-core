@@ -12,9 +12,24 @@
       <dl class="horizontal">
         <dt>{{'version' | translate}}</dt>
         <dd>{{version}}</dd>
-        <span *ngIf="androidAppVersion">
+        <span *ngIf="androidDeviceInfo?.app?.version">
           <dt>{{'android_app.version.title' | translate}}</dt>
-          <dd>{{androidAppVersion}}</dd>
+          <dd>{{androidDeviceInfo.app.version}}</dd>
+        </span>
+        <span *ngIf="androidDeviceInfo?.app?.packageName">
+          <dt>{{'android_app.package_name.title' | translate}}</dt>
+          <dd>{{androidDeviceInfo.app.packageName}}</dd>
+        </span>
+        <span *ngIf="androidDeviceInfo?.app?.versionCode">
+          <dt>{{'android_app.version_code.title' | translate}}</dt>
+          <dd>{{androidDeviceInfo.app.versionCode}}</dd>
+        </span>
+        <span *ngIf="androidDeviceInfo?.software?.androidVersion">
+          <dt>{{'android_app.os_android_version.title' | translate}}</dt>
+          <dd>
+            {{androidDeviceInfo.software.androidVersion}}
+            <span *ngIf="androidDeviceInfo?.software?.osApiLevel">(SDK {{androidDeviceInfo.software.osApiLevel}})</span>
+          </dd>
         </span>
         <dt>{{'ddoc.version' | translate}}</dt>
         <dd>{{remoteRev}}</dd>

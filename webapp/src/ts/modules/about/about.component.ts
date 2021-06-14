@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { combineLatest, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 
 import { DbService } from '@mm-services/db.service';
@@ -19,9 +19,9 @@ export class AboutComponent implements OnInit, OnDestroy {
 
   userCtx;
   replicationStatus;
-  androidAppVersion;
   partners;
   androidDataUsage;
+  androidDeviceInfo;
   version;
   localRev;
   remoteRev;
@@ -38,60 +38,20 @@ export class AboutComponent implements OnInit, OnDestroy {
     private versionService: VersionService,
     private translateService: TranslateService,
     private router: Router
-  ) {
-  }
+  ) { }
 
   ngOnInit() {
-    const reduxSubscription = combineLatest(
-      this.store.select(Selectors.getReplicationStatus),
-      this.store.select(Selectors.getAndroidAppVersion),
-    ).subscribe(([ replicationStatus, androidAppVersion ]) => {
-      this.replicationStatus = replicationStatus;
-      this.androidAppVersion = androidAppVersion;
-    });
-    this.subscription.add(reduxSubscription);
+    this.subscribeToStore();
+
     this.url = window.location.hostname;
-
     this.userCtx = this.sessionService.userCtx();
-    this.resourceIconsService
-      .getDocResources('partners')
-      .then(partners => this.partners = partners)
-      .catch((err) => {
-        if (err.status !== 404) { // partners doc is not compulsary
-          console.error('Error fetching "partners" doc', err);
-        }
-      });
 
-    this.versionService
-      .getLocal()
-      .then(({ version, rev }) => {
-        this.version = version;
-        this.localRev = rev;
-      })
-      .catch((err) => {
-        console.error('Could not access local version', err);
-      });
+    this.getPartners();
+    this.getVersionAndRevisions();
 
-    this.versionService
-      .getRemoteRev()
-      .catch((err) => {
-        console.debug('Could not access remote ddoc rev', err);
-        return this.translateService.get('app.version.unknown').toPromise();
-      })
-      .then(rev => this.remoteRev = rev);
-
-    if ((<any>window).medicmobile_android && typeof (<any>window).medicmobile_android.getDataUsage === 'function') {
-      this.updateAndroidDataUsage();
-      this.dataUsageUpdate = setInterval(() => this.updateAndroidDataUsage(), 2000);
-    }
-
-    this.dbService
-      .get()
-      .info()
-      .then((result) => this.dbInfo = result)
-      .catch((err) => {
-        console.error('Failed to fetch DB info', err);
-      });
+    this.getAndroidDataUsage();
+    this.getAndroidDeviceInfo();
+    this.getDbInfo();
   }
 
   ngOnDestroy() {
@@ -100,8 +60,69 @@ export class AboutComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  private updateAndroidDataUsage() {
+  private subscribeToStore() {
+    const subscription = this.store
+      .select(Selectors.getReplicationStatus)
+      .subscribe(replicationStatus => this.replicationStatus = replicationStatus);
+    this.subscription.add(subscription);
+  }
+
+  private getPartners() {
+    this.resourceIconsService
+      .getDocResources('partners')
+      .then(partners => this.partners = partners)
+      .catch(error => {
+        if (error.status !== 404) { // Partners doc is not compulsory.
+          console.error('Error fetching "partners" doc', error);
+        }
+      });
+  }
+
+  private getVersionAndRevisions() {
+    this.versionService
+      .getLocal()
+      .then(({ version, rev }) => {
+        this.version = version;
+        this.localRev = rev;
+      })
+      .catch(error => {
+        console.error('Could not access local version', error);
+      });
+
+    this.versionService
+      .getRemoteRev()
+      .catch(error => {
+        console.debug('Could not access remote ddoc rev', error);
+        return this.translateService.get('app.version.unknown').toPromise();
+      })
+      .then(rev => this.remoteRev = rev);
+  }
+
+  private refreshAndroidDataUsage() {
     this.androidDataUsage = JSON.parse((<any>window).medicmobile_android.getDataUsage());
+  }
+
+  private getAndroidDataUsage() {
+    if ((<any>window).medicmobile_android && typeof (<any>window).medicmobile_android.getDataUsage === 'function') {
+      this.refreshAndroidDataUsage();
+      this.dataUsageUpdate = setInterval(() => this.refreshAndroidDataUsage(), 2000);
+    }
+  }
+
+  private getAndroidDeviceInfo() {
+    if ((<any>window).medicmobile_android && typeof (<any>window).medicmobile_android.getDeviceInfo === 'function') {
+      this.androidDeviceInfo = JSON.parse((<any>window).medicmobile_android.getDeviceInfo());
+    }
+  }
+
+  private getDbInfo() {
+    this.dbService
+      .get()
+      .info()
+      .then(result => this.dbInfo = result)
+      .catch(error => {
+        console.error('Failed to fetch DB info', error);
+      });
   }
 
   reload() {
