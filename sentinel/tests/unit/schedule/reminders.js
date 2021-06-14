@@ -6,7 +6,6 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const rewire = require('rewire');
 const db = require('../../../src/db');
-const later = require('later');
 const request = require('request-promise-native');
 
 let reminders;
@@ -110,49 +109,6 @@ describe('reminders', () => {
     it('should return false when given invalid contact type', () => {
       assert.equal(isConfigValid({ form: 'a', message: 'b', cron: 'c', contact_types: [] }), false);
       assert.equal(isConfigValid({ form: 'a', message: 'b', cron: 'c', contact_types: [ 'unknown' ] }), false);
-    });
-  });
-
-  describe('getSchedule', () => {
-    let getSchedule;
-    beforeEach(() => {
-      sinon.stub(later, 'schedule');
-      sinon.stub(later.parse, 'text');
-      sinon.stub(later.parse, 'cron');
-      getSchedule = reminders.__get__('getSchedule');
-    });
-
-    it('should return schedule for cron', () => {
-      later.parse.cron.returns('parsed cron');
-      later.schedule.returns('schedule');
-      assert.equal(getSchedule({ cron: 'something' }), 'schedule');
-      assert.equal(later.parse.cron.callCount, 1);
-      assert.deepEqual(later.parse.cron.args[0], ['something']);
-      assert.equal(later.parse.text.callCount, 0);
-      assert.equal(later.schedule.callCount, 1);
-      assert.deepEqual(later.schedule.args[0], ['parsed cron']);
-    });
-
-    it('should return schedule for text_expression', () => {
-      later.parse.text.returns('parsed expression');
-      later.schedule.returns('schedule');
-      assert.equal(getSchedule({ text_expression: 'other' }), 'schedule');
-      assert.equal(later.parse.text.callCount, 1);
-      assert.deepEqual(later.parse.text.args[0], ['other']);
-      assert.equal(later.parse.cron.callCount, 0);
-      assert.equal(later.schedule.callCount, 1);
-      assert.deepEqual(later.schedule.args[0], ['parsed expression']);
-    });
-
-    it('should prioritize text_expression', () => {
-      later.parse.text.returns('parsed expression');
-      later.schedule.returns('schedule');
-      assert.equal(getSchedule({ text_expression: 'text', cron: 'cron'}), 'schedule');
-      assert.equal(later.parse.text.callCount, 1);
-      assert.deepEqual(later.parse.text.args[0], ['text']);
-      assert.equal(later.parse.cron.callCount, 0);
-      assert.equal(later.schedule.callCount, 1);
-      assert.deepEqual(later.schedule.args[0], ['parsed expression']);
     });
   });
 

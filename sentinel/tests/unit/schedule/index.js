@@ -1,19 +1,24 @@
-const assert = require('chai').assert;
+const { assert, expect } = require('chai');
 const sinon = require('sinon');
 const rewire = require('rewire');
+const later = require('later');
+const moment = require('moment');
 
+const scheduling = require('../../../src/lib/scheduling');
 const config = require('../../../src/config');
+const logger = require('../../../src/lib/logger');
 const transitionsLib = config.getTransitionsLib();
 const reminders = require('../../../src/schedule/reminders');
 const replications = require('../../../src/schedule/replications');
 const outbound = require('../../../src/schedule/outbound');
+const purgeLib = require('../../../src/lib/purging');
 const purging = require('../../../src/schedule/purging');
 const backgroundCleanup = require('../../../src/schedule/background-cleanup');
 
 let unit;
 let clock;
 let realSetTimeout;
-const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
+const nextTick = (millis) => new Promise(resolve => realSetTimeout(resolve, millis));
 const oneInterval = 5 * 60 * 1000;
 
 describe('scheduler', () => {
@@ -324,4 +329,66 @@ describe('scheduler', () => {
     });
   });
 
+  // Regression test to prevent again jobs launched 1 sec before time
+  // to NOT being skipped (https://github.com/medic/cht-core/issues/6634)
+  describe('Scheduling without gaps', () => {
+
+    let purgeMoment;
+
+    beforeEach(() => {
+      realSetTimeout = setTimeout;
+      // default value in the past so if purge is never called because an
+      // unexpected error the math used on this variable will fail
+      purgeMoment = moment().subtract(10, 'seconds');
+      unit = rewire('../../../src/schedule/index'); // rewire AFTER we fake time setTimeout
+      sinon.stub(transitionsLib.dueTasks, 'execute').resolves();
+      sinon.stub(reminders, 'execute').resolves();
+      sinon.stub(replications, 'execute').resolves();
+      sinon.stub(outbound, 'execute').resolves();
+      sinon.stub(backgroundCleanup, 'execute').resolves();
+
+      sinon.stub(purgeLib, 'purge').callsFake(() => {
+        purgeMoment = moment();
+        logger.debug('Purge time: %s', purgeMoment);
+      });
+    });
+
+    afterEach(() => {
+      clearInterval(unit.__get__('interval'));
+      sinon.restore();
+    });
+
+    it('should not skip job scheduled less than 1 sec before time set and launch it 1 sec later', () => {
+      sinon.stub(scheduling, 'getSchedule')
+        .returns(later.parse.cron('* * * * * *', true));  // each 1 second
+      const now = moment();
+      unit.init();
+      return nextTick(1100)
+        .then(() => {
+          expect(purgeMoment.seconds()).to.equal(now.seconds() + 1);
+        });
+    }).slow(1200);
+
+    it('should not skip job scheduled milliseconds ahead the time set and launch it 1 sec later', () => {
+      sinon.stub(scheduling, 'getSchedule')
+        .returns(later.parse.cron('*/2 * * * * *', true));  // each 2 seconds, even seconds
+      let wait = 0;
+      const now = moment();
+      if (now.seconds() % 2 === 1) {
+        wait = 1000;  // wait 1 second if seconds of the current time has odd seconds
+      }
+      // Now time has even seconds, and nothing or some milliseconds ahead of the schedule
+      return nextTick(wait)
+        .then(() => {
+          unit.init();
+          return nextTick(2200)
+            .then(() => {
+              expect(purgeMoment.seconds()).to.equal(now.add(wait, 'milliseconds').seconds() + 1);
+              // job was executed the following second when `init` started
+              // despite being a odd second
+              expect(purgeMoment.seconds() % 2 === 1).to.be.true;
+            });
+        });
+    }).timeout(4000).slow(2400);  // should be less, but just in case
+  });
 });

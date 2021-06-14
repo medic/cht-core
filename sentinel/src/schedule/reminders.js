@@ -5,6 +5,7 @@ const request = require('request-promise-native');
 
 const config = require('../config');
 const db = require('../db');
+const scheduling = require('../lib/scheduling');
 const later = require('later');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const logger = require('../lib/logger');
@@ -40,16 +41,7 @@ const isConfigValid = (reminder) => {
 };
 
 const getSchedule = (config) => {
-  // fetch a schedule based on the configuration, parsing it as a "cron"
-  // or "text" statement see:
-  // http://bunkat.github.io/later/parsers.html
-  if (config.text_expression) {
-    // text expression takes precedence over cron
-    return later.schedule(later.parse.text(config.text_expression));
-  }
-  if (config.cron) {
-    return later.schedule(later.parse.cron(config.cron));
-  }
+  return later.schedule(scheduling.getSchedule(config));
 };
 
 const getReminderWindowStart = (reminder) => {
