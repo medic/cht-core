@@ -7,11 +7,17 @@ const logout = async () => {
   await (await hamburgerMenu()).click();
   await (await logoutButton()).click();
   await (await modalBody()).waitForDisplayed();
-  const warning = await (await modalBody()).getText();
   await (await yesButton()).click();
-  return warning;
+};
+
+const getLogoutMessage = async () => {
+  await (await hamburgerMenu()).click();
+  await (await logoutButton()).click();
+  await (await modalBody()).waitForDisplayed();
+  return (await modalBody()).getText();
 };
 
 module.exports = {
-  logout
+  logout,
+  getLogoutMessage
 };

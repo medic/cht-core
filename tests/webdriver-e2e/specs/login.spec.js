@@ -9,7 +9,7 @@ describe('Login and logout tests', () => {
   });
 
   it('should show a warning before log out', async () => {
-    const warning = await commonPage.logout();
+    const warning = await commonPage.getLogoutMessage();
     expect(warning).toBe('Are you sure you want to log out?');
   });
 });
