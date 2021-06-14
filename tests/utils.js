@@ -500,8 +500,23 @@ const tearDownServices = () => {
   return rpn.post('http://localhost:31337/die');
 };
 
+const parseCookieResponse = (cookieString) => {
+  return cookieString.map((cookie) => {
+    const cookieObject = {};
+    const cookieSplit = cookie.split(';');
+    const [cookieName, cookieValue] = cookieSplit.shift().split('=');
+    cookieObject.name = cookieName;
+    cookieObject.value = cookieValue;
+    cookieSplit.forEach((cookieValues) => {
+      const [key, value] = cookieValues.split('=');
+      cookieObject[key] = (key.includes('Secure') || key.includes('HttpOnly')) ? true : value;    
+    });
+    return cookieObject;
+  });
+};
 
 module.exports = {
+  parseCookieResponse,
   deprecated,
   db: db,
   sentinelDb: sentinel,

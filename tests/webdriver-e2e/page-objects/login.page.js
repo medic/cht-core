@@ -17,18 +17,7 @@ const cookieLogin = async (username, password) => {
     }
   };
   const resp = await utils.request(opts);
-  const cookieArray = [];
-  let cookie = resp.headers['set-cookie'].find(x => x.includes('Auth')).split(';');
-  cookieArray.push({
-    name: cookie[0].split('=')[0],
-    value: cookie[0].split('=')[1]
-  });
-
-  cookie = resp.headers['set-cookie'].find(x => x.includes('userCtx')).split(';');
-  cookieArray.push({
-    name: cookie[0].split('=')[0],
-    value: cookie[0].split('=')[1]
-  });
+  const cookieArray = utils.parseCookieResponse(resp.headers['set-cookie']);
 
   await browser.setCookies(cookieArray);
   await utils.setupUserDoc(username);
