@@ -29,7 +29,6 @@
     "@angular/compiler": "^10.0.14",
     "@angular/compiler-cli": "^10.0.14",
     "@angular/localize": "^10.0.14",
-    "@delta-reporter/wdio-delta-reporter-service": "^1.1.9",
     "@medic/eslint-config": "^1.1.0",
     "@types/chai": "^4.2.16",
     "@types/jquery": "^3.5.5",
