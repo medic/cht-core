@@ -338,7 +338,7 @@ jobs:
     - name: Archive Results
       uses: actions/upload-artifact@v2
       with:
-        name: Results Artifact ${{ matrix.node-version }}
+        name: WDIO Results Artifact ${{ matrix.node-version }}
         path: |
           allure-results
           allure-report
