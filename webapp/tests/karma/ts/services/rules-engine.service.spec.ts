@@ -75,10 +75,7 @@ describe('RulesEngineService', () => {
     roles: [],
   };
   const chtScriptApi = {
-    v1: {
-      hasPermission: () => {},
-      hasRole: () => {}
-    }
+    v1: { hasPermission: () => {} }
   };
   const expectedRulesConfig = {
     rules: 'rules',
@@ -106,7 +103,7 @@ describe('RulesEngineService', () => {
       pipesMap: new Map(),
       getPipeNameVsIsPureMap: PipesService.prototype.getPipeNameVsIsPureMap
     };
-    chtScriptApiService = { getV1Api: sinon.stub().returns(chtScriptApi) };
+    chtScriptApiService = { getApi: sinon.stub().returns(chtScriptApi) };
 
     fetchTasksResult = () => Promise.resolve();
     fetchTasksFor = sinon.stub();

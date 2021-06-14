@@ -99,7 +99,7 @@ export class ContactSummaryService {
       uhcInterval: this.uhcStatsService.getUHCInterval(this.visitCountSettings)
     };
 
-    const chtScriptApi = this.chtScriptApiService.getV1Api();
+    const chtScriptApi = this.chtScriptApiService.getApi();
 
     try {
       const summary = generatorFunction(contact, reports || [], lineage || [], uhcStats, chtScriptApi, targetDoc);

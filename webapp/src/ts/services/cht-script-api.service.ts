@@ -5,20 +5,16 @@ import * as chtScriptApiFactory from '@medic/cht-script-api';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ChangesService } from '@mm-services/changes.service';
-import { SessionService } from '@mm-services/session.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CHTScriptApiService implements OnDestroy {
-  private userSettingsDoc;
-  private settings;
   subscriptions: Subscription = new Subscription();
 
   constructor(
     private userSettingsService: UserSettingsService,
     private settingsService: SettingsService,
-    private sessionService : SessionService,
     private changesService: ChangesService
   ) { }
 
@@ -38,7 +34,6 @@ export class CHTScriptApiService implements OnDestroy {
     return this.userSettingsService
       .get()
       .then(userSettingsDoc => {
-        this.userSettingsDoc = userSettingsDoc;
         chtScriptApiFactory.setUserSettingsDoc(userSettingsDoc);
       });
   }
@@ -47,7 +42,6 @@ export class CHTScriptApiService implements OnDestroy {
     return this.settingsService
       .get()
       .then(settings => {
-        this.settings = settings;
         chtScriptApiFactory.setChtCoreSettingsDoc(settings);
       });
   }
@@ -70,49 +64,7 @@ export class CHTScriptApiService implements OnDestroy {
     this.subscriptions.add(settingsSubscription);
   }
 
-  private hasRole(role: string): boolean {
-    if (!this.userSettingsDoc?.roles?.length) {
-      return false;
-    }
-
-    return this.userSettingsDoc.roles.includes(role);
-  }
-
-  private hasPermission(permission: string): boolean {
-    if (!this.userSettingsDoc?.roles?.length) {
-      return false;
-    }
-
-    if (this.sessionService.isAdmin()) {
-      // Admin has the permissions automatically.
-      return true;
-    }
-
-    const roles = this.settings.permissions[permission];
-
-    if (!roles) {
-      return false;
-    }
-
-    return this.userSettingsDoc.roles.some(role => roles.includes(role));
-  }
-
-  getV1Api(): ChtApi {
-    /*return {
-      v1: {
-        hasRole: (role) => this.hasRole(role),
-        hasPermission: (permission) => this.hasPermission(permission)
-      }
-    };*/
+  getApi() {
     return chtScriptApiFactory.getApi();
   }
-}
-
-interface ChtV1Api {
-  hasRole(string): boolean;
-  hasPermission(string): boolean;
-}
-
-interface ChtApi {
-  v1: ChtV1Api;
 }

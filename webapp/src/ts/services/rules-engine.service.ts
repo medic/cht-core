@@ -216,7 +216,7 @@ export class RulesEngineService implements OnDestroy {
       contact: userContactDoc,
       user: userSettingsDoc,
       monthStartDate: this.uhcSettingsService.getMonthStartDate(settingsDoc),
-      chtScriptApi: this.chtScriptApiService.getV1Api()
+      chtScriptApi: this.chtScriptApiService.getApi()
     };
   }
 

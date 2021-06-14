@@ -26,13 +26,10 @@ describe('ContactSummary service', () => {
       getUHCInterval: sinon.stub()
     };
     chtScriptApi = {
-      v1: {
-        hasRole: () => {},
-        hasPermission: () => {}
-      }
+      v1: { hasPermission: () => {} }
     };
     chtScriptApiService = {
-      getV1Api: sinon.stub().returns(chtScriptApi)
+      getApi: sinon.stub().returns(chtScriptApi)
     };
 
     const pipesTransform = (name, value) => {

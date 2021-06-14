@@ -1,3 +1,4 @@
+
 const ADMIN_ROLE = '_admin';
 const NATIONAL_ADMIN_ROLE = 'national_admin'; // Deprecated: kept for backwards compatibility: #4525
 
@@ -15,6 +16,10 @@ const setChtCoreSettingsDoc = (chtCoreSettingsDoc) => {
 };
 
 const isAdmin = (user) => {
+  if (!user || !user.roles) {
+    return false;
+  }
+
   return [ADMIN_ROLE, NATIONAL_ADMIN_ROLE].some(role => user.roles.includes(role));
 };
 
@@ -23,7 +28,6 @@ const hasPermission = (permission) => {
     || !cache.chtCoreSettingsDoc.permissions
     || !cache.userSettingsDoc
     || !cache.userSettingsDoc.roles
-    || !cache.userSettingsDoc.roles.length
   ) {
     return false;
   }

@@ -38,11 +38,6 @@ describe('Contact summary info', () => {
         width: 3 
       },
       { 
-        label: "is_district_admin", 
-        value: cht.v1.hasRole('district_admin'), 
-        width: 3 
-      },
-      { 
         label: "can_configure", 
         value: cht.v1.hasPermission('can_configure'), 
         width: 3 
@@ -368,9 +363,6 @@ describe('Contact summary info', () => {
 
     await commonElements.goToPeople();
     await contactsPo.selectLHSRowByText(BOB_PLACE.name);
-
-    expect(await contactsPo.cardFieldLabelText('is_district_admin')).toBe('is_district_admin');
-    expect(await contactsPo.cardFieldText('is_district_admin')).toBe('true');
 
     expect(await contactsPo.cardFieldLabelText('can_configure')).toBe('can_configure');
     expect(await contactsPo.cardFieldText('can_configure')).toBe('true');
