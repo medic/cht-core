@@ -144,7 +144,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     this.globalActions.settingSelected();
 
     return this
-      .hydrateTaskEmission(task)
+      .hydrateTaskEmission(task, id)
       .then(hydratedTask => {
         this.tasksActions.setSelectedTask(hydratedTask);
         this.globalActions.setTitle(hydratedTask?.title);
@@ -156,7 +156,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
-  private hydrateTaskEmission(task) {
+  private hydrateTaskEmission(task, selectedTaskId) {
     if (!Array.isArray(task.actions) || task.actions.length === 0 || !task.forId) {
       return Promise.resolve(task);
     }
@@ -169,7 +169,8 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
             ...action,
             content: {
               ...action?.content,
-              contact: action?.content?.contact || contact
+              contact: action?.content?.contact || contact,
+              task_id: selectedTaskId
             },
           };
         }),
@@ -213,9 +214,6 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     this.globalActions.setEnketoEditedStatus(false);
     const markFormEdited = this.markFormEdited.bind(this);
     const resetFormError = this.resetFormError.bind(this);
-    if (this.selectedTask) {
-      action.content.taskId = this.selectedTask._id;
-    }
 
     return this.enketoService
       .render('#task-report', formDoc, action.content, markFormEdited, resetFormError)
