@@ -26,9 +26,21 @@ Docker to run couchdb.
 
 `grunt e2e` installs and runs chromedriver, starts couchdb in docker, pushes the compiled app to couchdb, starts api, starts sentinel, and then runs protractor tests against your local environment. 
 
-### Github Actions Run
+### WebdriverIO Local Run
+
+Run `npm ci`
+Run `grunt`
+Run `npm run wdio-local`
+Viewing the report 
+Run `npx allure open`
+
+### Github Actions Protractor Run 
 
 The build process compiles our application. Then installs horticulturalist to run the app. This puts us closer to production. Executes `grunt ci-e2e`. Which then installs and runs chromedriver. Runs the protractor tests against the installed app version. Currently there are 3 jobs that execute in the supported node environments.  
+
+### WebdriverIO Github Actions Run
+
+The main difference now is that `grunt ci-webdriver` is executed now instead of `ci-e2e`. This executes the Webdriver IO tests.
 
 ## Protractor Tips
 
