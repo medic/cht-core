@@ -4,6 +4,7 @@ chai.use(require('chai-exclude'));
 chai.use(require('chai-shallow-deep-equal'));
 // so the .to.have.members will display the array members when assertions fail instead of [ Array(6) ]
 chai.config.truncateThreshold = 0;
+chai.use(require('chai-exclude'));
 
 const baseConfig = {
   params:{

@@ -165,6 +165,41 @@ describe('messages', () => {
     assert.equal(doc.tasks[2].state, 'pending');
   });
 
+  it('addMessage duplicates messages when not requested to ensure uniqueness', () => {
+    const doc = { to: '+1234567' };
+    messages.addMessage(doc, { message: 'Thank you.' }, '123', {});
+    assert.equal(doc.tasks.length, 1);
+    assert.deepInclude(doc.tasks[0].messages[0], { to: '123', message: 'Thank you.' });
+
+    messages.addMessage(doc, { message: 'Thank you.' }, '123', {});
+    assert.equal(doc.tasks.length, 2);
+    assert.deepInclude(doc.tasks[0].messages[0], { to: '123', message: 'Thank you.' });
+    assert.deepInclude(doc.tasks[1].messages[0], { to: '123', message: 'Thank you.' });
+  });
+
+  it('addMessage does not duplicate messages when requested to ensure uniqueness', () => {
+    const validPhone = '+40755895896';
+    const sender = '+1234567';
+    const doc = { from: sender };
+    messages.addMessage(doc, { message: 'Thank you.' }, validPhone, {}, true);
+    assert.equal(doc.tasks.length, 1);
+    assert.deepInclude(doc.tasks[0].messages[0], { to: validPhone, message: 'Thank you.' });
+
+    messages.addMessage(doc, { message: 'Thank you.' }, validPhone, {}, true);
+    assert.equal(doc.tasks.length, 1);
+    assert.deepInclude(doc.tasks[0].messages[0], { to: validPhone, message: 'Thank you.' });
+
+    messages.addMessage(doc, { message: 'Thank you.' }, undefined, {}, true);
+    assert.equal(doc.tasks.length, 2);
+    assert.deepInclude(doc.tasks[0].messages[0], { to: validPhone, message: 'Thank you.' });
+    assert.deepInclude(doc.tasks[1].messages[0], { to: sender, message: 'Thank you.' });
+
+    messages.addMessage(doc, { message: 'Thank you.' }, undefined, {}, true);
+    assert.equal(doc.tasks.length, 2);
+    assert.deepInclude(doc.tasks[0].messages[0], { to: validPhone, message: 'Thank you.' });
+    assert.deepInclude(doc.tasks[1].messages[0], { to: sender, message: 'Thank you.' });
+  });
+
   it('getMessage returns empty string on empty config', () => {
     const config = { messages: [{
       content: '',

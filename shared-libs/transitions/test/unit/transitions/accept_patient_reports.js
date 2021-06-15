@@ -6,7 +6,7 @@ const utils = require('../../../src/lib/utils');
 const config = require('../../../src/config');
 const transition = require('../../../src/transitions/accept_patient_reports');
 const messages = require('../../../src/lib/messages');
-const validation = require('../../../src/lib/validation');
+const validation = require('@medic/validation');
 
 describe('accept_patient_reports', () => {
   afterEach(() => {
@@ -88,7 +88,7 @@ describe('accept_patient_reports', () => {
       };
       sinon.stub(utils, 'getSubjectIds').returns(['x', 'y']);
       sinon.stub(utils, 'getReportsBySubject').resolves([]);
-      sinon.stub(validation, 'validate').callsArgWith(2, ['some_error']);
+      sinon.stub(validation, 'validate').resolves(['some_error']);
 
       sinon.stub(config, 'get').returns([{
         form: 'aaa',
@@ -113,7 +113,7 @@ describe('accept_patient_reports', () => {
         doc.tasks.length.should.equal(1);
         doc.tasks[0].messages[0].should.deep.include({ to: '+123', message: 'some_error'});
         validation.validate.callCount.should.equal(1);
-        validation.validate.args[0].slice(0, 2).should.deep.equal([doc, ['validation1', 'validation2']]);
+        validation.validate.args[0].should.deep.equal([doc, ['validation1', 'validation2']]);
       });
     });
 
@@ -126,7 +126,7 @@ describe('accept_patient_reports', () => {
       };
       sinon.stub(utils, 'getSubjectIds').returns(['x', 'y']);
       sinon.stub(utils, 'getReportsBySubject').resolves([]);
-      sinon.stub(validation, 'validate').callsArgWith(2, []);
+      sinon.stub(validation, 'validate').resolves([]);
 
       sinon.stub(config, 'get').returns([{
         form: 'aaa',

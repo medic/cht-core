@@ -5,6 +5,7 @@ const moment = require('moment');
 const config = require('../config');
 const taskUtils = require('@medic/task-utils');
 const registrationUtils = require('@medic/registration-utils');
+const messageUtils = require('@medic/message-utils');
 const logger = require('./logger');
 
 /*
@@ -18,15 +19,7 @@ const logger = require('./logger');
  * Return 'en' otherwise.
  *
  */
-const getLocale = doc => {
-  return (
-    doc.locale ||
-    (doc.sms_message && doc.sms_message.locale) ||
-    config.get('locale_outgoing') ||
-    config.get('locale') ||
-    'en'
-  );
-};
+const getLocale = doc => messageUtils.getLocale(config.getAll(), doc);
 
 // updates the states of matching scheduled tasks
 // returns the number of updated tasks
@@ -142,11 +135,11 @@ module.exports = {
   setTaskState: taskUtils.setTaskState,
   setTasksStates: setTasksStates,
   /*
-  * Gets registration documents for the given ids
-  *
-  * NB: Not all ids have registration documents against them, and so this
-  *     is not a valid way of determining if the patient with that id exists
-  */
+   * Gets registration documents for the given ids
+   *
+   * NB: Not all ids have registration documents against them, and so this
+   *     is not a valid way of determining if the patient with that id exists
+   */
   getRegistrations: (options) => {
     const viewOptions = {
       include_docs: true,
