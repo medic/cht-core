@@ -51,7 +51,7 @@ const adminAppPrefix = pathPrefix + '_design/medic-admin/_rewrite/';
 const serverUtils = require('./server-utils');
 const uuid = require('uuid');
 const compression = require('compression');
-const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/'; // jshint ignore:line
+const BUILDS_DB = 'https://staging.app.medicmobile.org/_couch/builds/'; // jshint ignore:line
 const cookie = require('./services/cookie');
 const app = express();
 
