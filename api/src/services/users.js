@@ -34,7 +34,6 @@ const RESTRICTED_SETTINGS_EDITABLE_FIELDS = [
   'fullname',
   'email',
   'phone',
-  'language',
   'known',
 ];
 
