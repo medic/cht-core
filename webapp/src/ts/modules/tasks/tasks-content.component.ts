@@ -144,7 +144,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     this.globalActions.settingSelected();
 
     return this
-      .hydrateTaskEmission(task, id)
+      .hydrateTaskEmission(task)
       .then(hydratedTask => {
         this.tasksActions.setSelectedTask(hydratedTask);
         this.globalActions.setTitle(hydratedTask?.title);
@@ -156,7 +156,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
-  private hydrateTaskEmission(task, selectedTaskId) {
+  private hydrateTaskEmission(task) {
     if (!Array.isArray(task.actions) || task.actions.length === 0 || !task.forId) {
       return Promise.resolve(task);
     }
@@ -170,7 +170,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
             content: {
               ...action?.content,
               contact: action?.content?.contact || contact,
-              task_id: selectedTaskId
+              task_id: task._id
             },
           };
         }),
