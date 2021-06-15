@@ -1,55 +1,60 @@
-
-const ADMIN_ROLE = '_admin';
-const NATIONAL_ADMIN_ROLE = 'national_admin'; // Deprecated: kept for backwards compatibility: #4525
+/**
+ * CHT Script API - Index
+ * Builds and exports a versioned API from feature modules.
+ * Whenever possible keep this file clean by defining new features in modules.
+ */
+const auth = require('./auth');
 
 const cache = {
   userSettingsDoc: null,
   chtCoreSettingsDoc: null
 };
 
+/**
+ * Sets the User Settings Document to the cache.
+ * @param userSettingsDoc
+ */
 const setUserSettingsDoc = (userSettingsDoc) => {
   cache.userSettingsDoc = userSettingsDoc;
 };
 
+/**
+ * Sets the CHT-Core Settings Document to the cache.
+ * @param chtCoreSettingsDoc
+ */
 const setChtCoreSettingsDoc = (chtCoreSettingsDoc) => {
   cache.chtCoreSettingsDoc = chtCoreSettingsDoc;
 };
 
-const isAdmin = (user) => {
-  if (!user || !user.roles) {
-    return false;
+/**
+ * Verify if user has the permission(s).
+ * @param permissions {String|Array[String]} Permission(s) to verify
+ * @param userSettingsDoc {Object} User Settings Document. If undefined then will take from the cache.
+ * @param chtCoreSettingsDoc CHT-Core Settings Document. If undefined then will take from the cache.
+ * @return {boolean}
+ */
+const hasPermissions = (permissions, userSettingsDoc, chtCoreSettingsDoc) => {
+  if (!userSettingsDoc || !chtCoreSettingsDoc) {
+    if (!cache.userSettingsDoc || !cache.chtCoreSettingsDoc) {
+      console.debug('CHT Script API :: Cannot check permissions: Set the user settings and CHT settings documents.');
+      return false;
+    }
+    // Using cache for both documents at the same time.
+    userSettingsDoc = cache.userSettingsDoc;
+    chtCoreSettingsDoc = cache.chtCoreSettingsDoc;
   }
 
-  return [ADMIN_ROLE, NATIONAL_ADMIN_ROLE].some(role => user.roles.includes(role));
+  return auth.hasPermissions(permissions, userSettingsDoc.roles, chtCoreSettingsDoc.permissions);
 };
 
-const hasPermission = (permission) => {
-  if (!cache.chtCoreSettingsDoc
-    || !cache.chtCoreSettingsDoc.permissions
-    || !cache.userSettingsDoc
-    || !cache.userSettingsDoc.roles
-  ) {
-    return false;
-  }
-
-  if (isAdmin(cache.userSettingsDoc)) {
-    // Admin has the permissions automatically.
-    return true;
-  }
-
-  const roles = cache.chtCoreSettingsDoc.permissions[permission];
-
-  if (!roles) {
-    return false;
-  }
-
-  return cache.userSettingsDoc.roles.some(role => roles.includes(role));
-};
-
+/**
+ * Returns a versioned API that is available for internal apps and end users configuring CHT-Core instances.
+ * @return {{v1: Object }}
+ */
 const getApi = () => {
   return {
     v1: {
-      hasPermission
+      hasPermissions
     }
   };
 };

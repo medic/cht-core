@@ -64,11 +64,11 @@ describe('CHTScriptApiService service', () => {
     const result = service.getApi();
 
     expect(result).to.have.all.keys([ 'v1' ]);
-    expect(result.v1).to.have.all.keys([ 'hasPermission' ]);
-    expect(result.v1.hasPermission).to.be.a('function');
+    expect(result.v1).to.have.all.keys([ 'hasPermissions' ]);
+    expect(result.v1.hasPermissions).to.be.a('function');
   });
 
-  describe('v1.hasPermission()', () => {
+  describe('v1.hasPermissions()', () => {
     it('should return true when user have the permission', fakeAsync(() => {
       settingsService.get.resolves({
         permissions: {
@@ -81,7 +81,7 @@ describe('CHTScriptApiService service', () => {
       tick();
       const api = service.getApi();
 
-      const result = api.v1.hasPermission('can_edit');
+      const result = api.v1.hasPermissions('can_edit');
 
       expect(result).to.be.true;
     }));
@@ -98,7 +98,7 @@ describe('CHTScriptApiService service', () => {
       tick();
       const api = service.getApi();
 
-      const result = api.v1.hasPermission('can_create_people');
+      const result = api.v1.hasPermissions('can_create_people');
 
       expect(result).to.be.false;
     }));
@@ -116,14 +116,14 @@ describe('CHTScriptApiService service', () => {
       tick();
       const api = service.getApi();
 
-      const resultUserUndefined = api.v1.hasPermission('can_create_people');
+      const resultUserUndefined = api.v1.hasPermissions('can_create_people');
 
       userSettingsService.get.resolves({ roles: null });
       sinon.resetHistory();
       changesCallback();
       tick();
 
-      const resultNoRoles = api.v1.hasPermission('can_create_people');
+      const resultNoRoles = api.v1.hasPermissions('can_create_people');
 
       expect(resultUserUndefined).to.be.false;
       expect(resultNoRoles).to.be.false;
@@ -143,7 +143,7 @@ describe('CHTScriptApiService service', () => {
       tick();
       const api = service.getApi();
 
-      const result = api.v1.hasPermission('can_create_people');
+      const result = api.v1.hasPermissions('can_create_people');
 
       expect(result).to.be.true;
     }));
@@ -160,7 +160,7 @@ describe('CHTScriptApiService service', () => {
       tick();
       const api = service.getApi();
 
-      const result = api.v1.hasPermission('can_configure');
+      const result = api.v1.hasPermissions('can_configure');
 
       expect(result).to.be.false;
     }));
