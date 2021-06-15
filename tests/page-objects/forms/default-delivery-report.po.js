@@ -21,11 +21,15 @@ const docs = [
 ];
 
 const selectRadioButtonByValue = async value => {
-  await element(by.css(`[value=${value}]`)).click();
+  const elementSelector = by.css(`[value=${value}]`);
+  await helper.waitElementToBeClickable(element(elementSelector));
+  await element(elementSelector).click();
 };
 
 const selectRadioButtonByNameAndValue = async (name, value) => {
-  await element(by.css(`[name="${name}"][value="${value}"]`)).click();
+  const elementSelector = by.css(`[name="${name}"][value="${value}"]`);
+  await helper.waitElementToBeClickable(element(elementSelector));
+  await element(elementSelector).click();
 };
 
 module.exports = {
@@ -71,7 +75,7 @@ module.exports = {
 
   //Foul smelling vaginal discharge
   selectVaginalDischargeButton: async () => {
-    await selectRadioButtonByNameAndValue('/delivery/pnc_danger_sign_check/vaginal_discharge', 'no');
+    await selectRadioButtonByNameAndValue('/delivery/pnc_danger_sign_check/vaginal_discharge', 'yes');
   },
 
   //Convulsions
