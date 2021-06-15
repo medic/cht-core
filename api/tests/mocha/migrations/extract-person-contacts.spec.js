@@ -73,15 +73,12 @@ describe('extract-person-contacts migration', () => {
     // Restore the parent
     updatePlace.onCall(2).resolves();
 
-    migration
-      .run()
-      .then(() => chai.assert.fail('should have thrown'))
-      .catch(err => {
-        chai.expect(err.message).to.equal('Failed to update contact on facility a: "error"');
-        chai.expect(updatePlace.thirdCall.args[0]).to.equal('a');
-        chai.expect(updatePlace.thirdCall.args[1].contact.name).to.equal('name');
-        chai.expect(updatePlace.thirdCall.args[1].contact.phone).to.equal('phone');
-        done();
-      });
+    migration.run().catch(err => {
+      chai.expect(err.message).to.equal('Failed to update contact on facility a: "error"');
+      chai.expect(updatePlace.thirdCall.args[0]).to.equal('a');
+      chai.expect(updatePlace.thirdCall.args[1].contact.name).to.equal('name');
+      chai.expect(updatePlace.thirdCall.args[1].contact.phone).to.equal('phone');
+      done();
+    });
   });
 });
