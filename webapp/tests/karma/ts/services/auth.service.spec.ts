@@ -5,6 +5,8 @@ import { expect } from 'chai';
 import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { AuthService } from '@mm-services/auth.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { ChangesService } from '@mm-services/changes.service';
 
 describe('Auth Service', () => {
   let service:AuthService;
@@ -12,49 +14,63 @@ describe('Auth Service', () => {
   let settingsService;
 
   beforeEach(() => {
+    sessionService = { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() };
+    settingsService = { get: sinon.stub() };
+
     TestBed.configureTestingModule({
       providers: [
-        { provide: SessionService, useValue: { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() } },
-        { provide: SettingsService, useValue: { get: sinon.stub() } },
+        { provide: SessionService, useValue: sessionService },
+        { provide: SettingsService, useValue: settingsService },
+        { provide: UserSettingsService, useValue: {} },
+        { provide: ChangesService, useValue: {} }
       ]
     });
 
     service = TestBed.inject(AuthService);
-    sessionService = TestBed.inject(SessionService);
-    settingsService = TestBed.inject(SettingsService);
   });
 
   afterEach(() => {
     sinon.restore();
   });
 
-  describe('has', () => {
-    it('false when no session', async () => {
+  describe('authService.has', () => {
+    it('should return false when no session', async () => {
       sessionService.userCtx.returns(null);
+      settingsService.get.resolves({ permissions: [] });
+
       const result = await service.has();
+
       expect(result).to.be.false;
     });
 
-    it('false when user has no role', async () => {
+    it('should return false when user has no role', async () => {
       sessionService.userCtx.returns({});
+      settingsService.get.resolves({ permissions: [] });
+
       const result = await service.has();
+
       expect(result).to.be.false;
     });
 
-    it('true when user is db admin', async () => {
+    it('should return true when user is db admin', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
+      settingsService.get.resolves({ permissions: [] });
+
       const result = await service.has(['can_backup_facilities']);
+
       expect(result).to.be.true;
     });
 
-    it('false when settings errors', async () => {
+    it('should return false when settings errors', async () => {
       sessionService.userCtx.returns({ roles: ['district_admin'] });
       settingsService.get.rejects('boom');
+
       const result = await service.has(['can_backup_facilities']);
+
       expect(result).to.be.false;
     });
 
-    it('false when perm is empty string', async () => {
+    it('should return false when perm is empty string', async () => {
       sessionService.userCtx.returns({ roles: ['district_admin'] });
       settingsService.get.resolves({
         permissions: {
@@ -68,6 +84,7 @@ describe('Auth Service', () => {
       });
 
       const result = await service.has(['']);
+
       expect(result).to.be.false;
     });
 
@@ -76,7 +93,7 @@ describe('Auth Service', () => {
       // Unconfigured permissions should behave the same as having the permission
       // configured to false
 
-      it('false when unknown permission', async () => {
+      it('should return false when unknown permission', async () => {
         sessionService.userCtx.returns({ roles: ['district_admin'] });
         settingsService.get.resolves({
           permissions: {
@@ -88,11 +105,13 @@ describe('Auth Service', () => {
             ],
           },
         });
+
         const result = await service.has(['xyz']);
+
         expect(result).to.be.false;
       });
 
-      it('true when !unknown permission', async () => {
+      it('should return true when !unknown permission', async () => {
         sessionService.userCtx.returns({ roles: ['district_admin'] });
         settingsService.get.resolves({
           permissions: {
@@ -104,13 +123,15 @@ describe('Auth Service', () => {
             ],
           },
         });
+
         const result = await service.has(['!xyz']);
+
         expect(result).to.be.true;
       });
 
     });
 
-    it('false when user does not have permission', async () => {
+    it('should return false when user does not have permission', async () => {
       sessionService.userCtx.returns({ roles: ['district_admin'] });
       settingsService.get.resolves({
         permissions: {
@@ -122,11 +143,13 @@ describe('Auth Service', () => {
           ],
         },
       });
+
       const result = await service.has('can_backup_facilities');
+
       expect(result).to.be.false;
     });
 
-    it('false when user does not have all permissions', async () => {
+    it('should return false when user does not have all permissions', async () => {
       sessionService.userCtx.returns({ roles: ['district_admin'] });
       settingsService.get.resolves({
         permissions: {
@@ -138,11 +161,13 @@ describe('Auth Service', () => {
           ],
         },
       });
+
       const result = await service.has(['can_backup_facilities', 'can_export_messages']);
+
       expect(result).to.be.false;
     });
 
-    it('true when user has all permissions', async () => {
+    it('should return true when user has all permissions', async () => {
       sessionService.userCtx.returns({ roles: ['national_admin'] });
       settingsService.get.resolves({
         permissions: {
@@ -154,17 +179,22 @@ describe('Auth Service', () => {
           ],
         },
       });
+
       const result = await service.has(['can_backup_facilities', 'can_export_messages']);
+
       expect(result).to.be.true;
     });
 
-    it('false when admin and !permission', async () => {
+    it('should return false when admin and !permission', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
+      settingsService.get.resolves({ permissions: [] });
+
       const result = await service.has(['!can_backup_facilities']);
+
       expect(result).to.be.false;
     });
 
-    it('rejects when user has one of the !permissions', async () => {
+    it('should rejects when user has one of the !permissions', async () => {
       sessionService.userCtx.returns({ roles: ['analytics'] });
       settingsService.get.resolves({
         permissions: {
@@ -178,10 +208,11 @@ describe('Auth Service', () => {
       });
 
       const result = await service.has(['!can_backup_facilities', '!can_export_messages']);
+
       expect(result).to.be.false;
     });
 
-    it('true when user has none of the !permissions', async () => {
+    it('should return true when user has none of the !permissions', async () => {
       sessionService.userCtx.returns({ roles: ['analytics'] });
       settingsService.get.resolves({
         permissions: {
@@ -195,42 +226,58 @@ describe('Auth Service', () => {
       });
 
       const result = await service.has(['!can_backup_facilities', 'can_export_messages']);
+
       expect(result).to.be.true;
     });
   });
 
-  describe('Auth.any', () => {
-    it('false when no session', async () => {
+  describe('authService.any', () => {
+    it('should return false when no session', async () => {
       sessionService.userCtx.returns(null);
+      settingsService.get.resolves({ permissions: [] });
+
       const result = await service.any();
+
       expect(result).to.be.false;
     });
 
-    it('false when user has no role', async () => {
+    it('should return false when user has no role', async () => {
       sessionService.userCtx.returns({});
+      settingsService.get.resolves({ permissions: [] });
+
       const result = await service.any();
+
       expect(result).to.be.false;
     });
 
-    it('true when admin and no disallowed permissions', async () => {
+    it('should return true when admin and no disallowed permissions', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
+      settingsService.get.resolves({ permissions: [] });
+
       const result = await service.any([['can_backup_facilities'], ['can_export_messages'], ['somepermission']]);
+
       expect(result).to.be.true;
     });
 
-    it('true when admin and some disallowed permissions', async () => {
+    it('should return true when admin and some disallowed permissions', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
+      settingsService.get.resolves({ permissions: [] });
+
       const result = await service.any([['!can_backup_facilities'], ['!can_export_messages'], ['somepermission']]);
+
       expect(result).to.be.true;
     });
 
-    it('false when admin and all disallowed permissions', async () => {
+    it('should return false when admin and all disallowed permissions', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
+      settingsService.get.resolves({ permissions: [] });
+
       const result = await service.any([['!can_backup_facilities'], ['!can_export_messages'], ['!somepermission']]);
+
       expect(result).to.be.false;
     });
 
-    it('true when user has all permissions', async () => {
+    it('should return true when user has all permissions', async () => {
       sessionService.userCtx.returns({ roles: ['district_admin'] });
       settingsService.get.resolves({
         permissions: {
@@ -250,11 +297,13 @@ describe('Auth Service', () => {
         ['can_export_messages', 'can_roll_over'],
         ['can_add_people', 'can_add_places'],
       ];
+
       const result = await service.any(permissions);
+
       expect(result).to.be.true;
     });
 
-    it('true when user has some permissions', async () => {
+    it('should return true when user has some permissions', async () => {
       sessionService.userCtx.returns({ roles: ['district_admin'] });
       settingsService.get.resolves({
         permissions: {
@@ -262,17 +311,18 @@ describe('Auth Service', () => {
           can_backup_people: ['national_admin', 'district_admin'],
         },
       });
-
       const permissions = [
         ['can_backup_facilities', 'can_backup_people'],
         ['can_export_messages', 'can_roll_over'],
         ['can_add_people', 'can_add_places']
       ];
+
       const result = await service.any(permissions);
+
       expect(result).to.be.true;
     });
 
-    it('false when user has none of the permissions', async () => {
+    it('should return false when user has none of the permissions', async () => {
       sessionService.userCtx.returns({ roles: ['district_admin'] });
       settingsService.get.resolves({
         permissions: {
@@ -285,11 +335,13 @@ describe('Auth Service', () => {
         ['can_export_messages', 'can_roll_over'],
         ['can_add_people', 'can_add_places']
       ];
+
       const result = await service.any(permissions);
+
       expect(result).to.be.false;
     });
 
-    it('true when user has all permissions and no disallowed permissions', async () => {
+    it('should return true when user has all permissions and no disallowed permissions', async () => {
       sessionService.userCtx.returns({ roles: ['district_admin'] });
       settingsService.get.resolves({
         permissions: {
@@ -311,10 +363,11 @@ describe('Auth Service', () => {
         ['can_export_messages', '!random2'],
         ['can_add_people', '!random3']
       ]);
+
       expect(result).to.be.true;
     });
 
-    it('true when user has some permissions and some disallowed permissions', async () => {
+    it('should return true when user has some permissions and some disallowed permissions', async () => {
       sessionService.userCtx.returns({ roles: ['district_admin'] });
       settingsService.get.resolves({
         permissions: {
@@ -326,15 +379,17 @@ describe('Auth Service', () => {
           random3: ['national_admin'],
         },
       });
+
       const result = await service.any([
         ['can_backup_facilities', '!can_add_people'],
         ['can_export_messages', '!random2'],
         ['can_backup_people', '!can_add_places']
       ]);
+
       expect(result).to.be.true;
     });
 
-    it('false when user has all disallowed permissions', async () => {
+    it('should return false when user has all disallowed permissions', async () => {
       sessionService.userCtx.returns({ roles: ['district_admin'] });
       settingsService.get.resolves({
         permissions: {
@@ -352,59 +407,66 @@ describe('Auth Service', () => {
         ['can_backup_people', '!random2'],
         ['can_backup_places', '!random3']
       ]);
+
       expect(result).to.be.false;
     });
   });
 
-  describe('Auth.online', () => {
-    it('rejects when no session', () => {
+  describe('authService.online', () => {
+    it('should rejects when no session', () => {
       sessionService.userCtx.returns(null);
+
       const result = service.online(true);
+
       expect(result).to.be.false;
       expect(sessionService.isOnlineOnly.callCount).to.equal(0);
     });
 
-    it('true when requesting online and user is online', () => {
+    it('should return true when requesting online and user is online', () => {
       sessionService.userCtx.returns({ roles: ['a'] });
       sessionService.isOnlineOnly.returns(true);
 
       const result = service.online(true);
+
       expect(result).to.be.true;
       expect(sessionService.isOnlineOnly.callCount).to.equal(1);
       expect(sessionService.isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a'] }]);
     });
 
-    it('true when requesting offline and user is offline', () => {
+    it('should return true when requesting offline and user is offline', () => {
       sessionService.userCtx.returns({ roles: ['a'] });
       sessionService.isOnlineOnly.returns(false);
 
       const result = service.online(false);
+
       expect(result).to.be.true;
       expect(sessionService.isOnlineOnly.callCount).to.equal(1);
       expect(sessionService.isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a'] }]);
     });
 
-    it('false when requesting online and user is offline', () => {
+    it('should return false when requesting online and user is offline', () => {
       sessionService.userCtx.returns({ roles: ['a', 'b'] });
       sessionService.isOnlineOnly.returns(false);
 
       const result = service.online(true);
+
       expect(result).to.be.false;
       expect(sessionService.isOnlineOnly.callCount).to.equal(1);
       expect(sessionService.isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a', 'b'] }]);
     });
 
-    it('false when requesting offline and user is online', () => {
+    it('should return false when requesting offline and user is online', () => {
       sessionService.userCtx.returns({ roles: ['a', 'b'] });
       sessionService.isOnlineOnly.returns(true);
 
       const result = service.online(false);
+
       expect(result).to.be.false;
       expect(sessionService.isOnlineOnly.callCount).to.equal(1);
       expect(sessionService.isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a', 'b'] }]);
     });
 
-    it('accept any kind of truthy input', () => {
+    it('should accept any kind of truthy input', () => {
       sessionService.userCtx.returns({ roles: ['a'] });
       sessionService.isOnlineOnly.returns(true);
 
@@ -415,7 +477,7 @@ describe('Auth Service', () => {
       expect(sessionService.isOnlineOnly.callCount).to.equal(4);
     });
 
-    it('accept any kind of input falsey input', () => {
+    it('should accept any kind of input falsey input', () => {
       sessionService.userCtx.returns({ roles: ['a'] });
       sessionService.isOnlineOnly.returns(false);
 

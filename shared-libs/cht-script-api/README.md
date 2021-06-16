@@ -14,4 +14,5 @@ The API v1 is defined as follows:
 
 | Function | Arguments | Description |
 | -------- | --------- | ----------- |
-| hasPermission | String or array of strings, permission(s) name.<br>Object, User settings document.<br>Object, CHT-Core settings document  | Returns true if the provided user has the permission(s), otherwise returns false |
+| hasPermissions | String or array of strings, permission(s) name.<br>Object, User settings document.<br>Object, CHT-Core settings document  | Returns true if the user has the permission(s), otherwise returns false |
+| hasAnyPermission | Array of groups of permission(s) name.<br>Object, User settings document.<br>Object, CHT-Core settings document  | Returns true if the user has all the permissions of any of the provided groups, otherwise returns false |

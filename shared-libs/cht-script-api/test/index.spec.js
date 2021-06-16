@@ -14,8 +14,9 @@ describe('CHT Script API - index', () => {
     const result = chtScriptApi.getApi();
 
     expect(result).to.have.all.keys([ 'v1' ]);
-    expect(result.v1).to.have.all.keys([ 'hasPermissions' ]);
+    expect(result.v1).to.have.all.keys([ 'hasPermissions', 'hasAnyPermission' ]);
     expect(result.v1.hasPermissions).to.be.a('function');
+    expect(result.v1.hasAnyPermission).to.be.a('function');
   });
 
   it('should call auth.hasPermission and react to cache changes', () => {
@@ -42,5 +43,24 @@ describe('CHT Script API - index', () => {
 
     expect(resultUserUndefined).to.be.false;
     expect(resultHasPermission).to.be.true;
+  });
+
+  it('should call auth.hasPermission and pass documents by parameter', () => {
+    const api = chtScriptApi.getApi();
+    const userSettingsDoc = { roles: [ 'chw' ] };
+    const chtSettingsDoc = {
+      permissions: {
+        can_backup_facilities: [ 'chw', 'national_admin' ],
+        can_export_messages: [ 'national_admin', 'chw', 'analytics' ]
+      }
+    };
+
+    const result = api.v1.hasPermissions(
+      ['can_backup_facilities', 'can_export_messages'],
+      userSettingsDoc,
+      chtSettingsDoc
+    );
+
+    expect(result).to.be.true;
   });
 });

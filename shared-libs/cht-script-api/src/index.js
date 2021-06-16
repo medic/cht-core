@@ -10,32 +10,25 @@ const cache = {
   chtCoreSettingsDoc: null
 };
 
-/**
- * Sets the User Settings Document to the cache.
- * @param userSettingsDoc
- */
 const setUserSettingsDoc = (userSettingsDoc) => {
   cache.userSettingsDoc = userSettingsDoc;
 };
 
-/**
- * Sets the CHT-Core Settings Document to the cache.
- * @param chtCoreSettingsDoc
- */
 const setChtCoreSettingsDoc = (chtCoreSettingsDoc) => {
   cache.chtCoreSettingsDoc = chtCoreSettingsDoc;
 };
 
 /**
- * Verify if user has the permission(s).
- * @param permissions {String|Array[String]} Permission(s) to verify
- * @param userSettingsDoc {Object} User Settings Document. If undefined then will take from the cache.
- * @param chtCoreSettingsDoc CHT-Core Settings Document. If undefined then will take from the cache.
+ * Verify if the user's role has the permission(s).
+ * @param permissions {string | string[]} Permission(s) to verify
+ * @param userSettingsDoc {object} User Settings Document. If undefined then will take from the cache.
+ * @param chtCoreSettingsDoc {object} CHT-Core Settings Document. If undefined then will take from the cache.
  * @return {boolean}
  */
 const hasPermissions = (permissions, userSettingsDoc, chtCoreSettingsDoc) => {
   if (!userSettingsDoc || !chtCoreSettingsDoc) {
     if (!cache.userSettingsDoc || !cache.chtCoreSettingsDoc) {
+      // eslint-disable-next-line no-console
       console.debug('CHT Script API :: Cannot check permissions: Set the user settings and CHT settings documents.');
       return false;
     }
@@ -48,13 +41,36 @@ const hasPermissions = (permissions, userSettingsDoc, chtCoreSettingsDoc) => {
 };
 
 /**
+ * Verify if the user's role has all the permissions of any of the provided groups.
+ * @param permissions {string[][]} Array of groups of permissions due to the complexity of permission grouping
+ * @param userSettingsDoc {object} User Settings Document. If undefined then will take from the cache.
+ * @param chtCoreSettingsDoc {object} CHT-Core Settings Document. If undefined then will take from the cache.
+ * @return {boolean}
+ */
+const hasAnyPermission = (permissions, userSettingsDoc, chtCoreSettingsDoc) => {
+  if (!userSettingsDoc || !chtCoreSettingsDoc) {
+    if (!cache.userSettingsDoc || !cache.chtCoreSettingsDoc) {
+      // eslint-disable-next-line no-console
+      console.debug('CHT Script API :: Cannot check permissions: Set the user settings and CHT settings documents.');
+      return false;
+    }
+    // Using cache for both documents at the same time.
+    userSettingsDoc = cache.userSettingsDoc;
+    chtCoreSettingsDoc = cache.chtCoreSettingsDoc;
+  }
+
+  return auth.hasAnyPermission(permissions, userSettingsDoc.roles, chtCoreSettingsDoc.permissions);
+};
+
+/**
  * Returns a versioned API that is available for internal apps and end users configuring CHT-Core instances.
  * @return {{v1: Object }}
  */
 const getApi = () => {
   return {
     v1: {
-      hasPermissions
+      hasPermissions,
+      hasAnyPermission
     }
   };
 };
