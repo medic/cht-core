@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const auth = require('../src/auth');
 
 describe('CHT Script API - Auth', () => {
-  describe('v1.hasPermissions()', () => {
+  describe('v1.hasPermissions', () => {
     it('should return true when user have the permission', () => {
       const chtPermissions = {
         can_edit: [ 'chw_supervisor' ],
@@ -48,6 +48,212 @@ describe('CHT Script API - Auth', () => {
       const userRoles = [ 'chw_supervisor' ];
 
       const result = auth.hasPermissions('can_configure', userRoles, chtPermissions);
+
+      expect(result).to.be.false;
+    });
+
+    it('should return false for unknown permission', () => {
+      const chtPermissions = {
+        can_backup_facilities: [ 'national_admin' ],
+        can_export_messages: [ 'national_admin', 'district_admin', 'analytics' ]
+      };
+
+      const result = auth.hasPermissions([ 'xyz' ], [ 'district_admin' ], chtPermissions);
+
+      expect(result).to.be.false;
+    });
+
+    it('should return true for disallowed unknown permission', () => {
+      const chtPermissions = {
+        can_backup_facilities: [ 'national_admin' ],
+        can_export_messages: [ 'national_admin', 'district_admin', 'analytics' ]
+      };
+
+      const result = auth.hasPermissions([ '!xyz' ], [ 'district_admin' ], chtPermissions);
+
+      expect(result).to.be.true;
+    });
+
+    it('should return false when user is admin and has disallowed permission', () => {
+      const result = auth.hasPermissions([ '!can_backup_facilities' ], [ '_admin' ], []);
+
+      expect(result).to.be.false;
+    });
+
+    it('should rejects when user has one of disallowed permission', () => {
+      const chtPermissions = {
+        can_backup_facilities: [ 'national_admin' ],
+        can_export_messages: [ 'national_admin', 'district_admin', 'analytics' ]
+      };
+
+      const result = auth.hasPermissions(
+        [ '!can_backup_facilities', '!can_export_messages' ],
+        [ 'analytics' ],
+        chtPermissions
+      );
+
+      expect(result).to.be.false;
+    });
+
+    it('should return true when user doesnt have disallowed permissions', () => {
+      const chtPermissions = {
+        can_backup_facilities: [ 'national_admin' ],
+        can_export_messages: [ 'national_admin', 'district_admin', 'analytics' ]
+      };
+
+      const result = auth.hasPermissions(
+        [ '!can_backup_facilities', 'can_export_messages' ],
+        [ 'analytics' ],
+        chtPermissions
+      );
+
+      expect(result).to.be.true;
+    });
+  });
+
+  describe('v1.hasAnyPermission', () => {
+    it('should return false when user doesnt have roles', () => {
+      const result = auth.hasAnyPermission([], [], []);
+
+      expect(result).to.be.false;
+    });
+
+    it('should return true when user is admin and doesnt have disallowed permissions', () => {
+      const result = auth.hasAnyPermission(
+        [[ 'can_backup_facilities' ], [ 'can_export_messages' ], [ 'somepermission' ]],
+        [ '_admin' ],
+        []
+      );
+
+      expect(result).to.be.true;
+    });
+
+    it('should return true when user is admin and has some disallowed permissions', () => {
+      const result = auth.hasAnyPermission(
+        [[ '!can_backup_facilities' ], [ '!can_export_messages' ], [ 'somepermission' ]],
+        [ '_admin' ],
+        []
+      );
+
+      expect(result).to.be.true;
+    });
+
+    it('should return false when user is admin and has all disallowed permissions', () => {
+      const result = auth.hasAnyPermission(
+        [[ '!can_backup_facilities' ], [ '!can_export_messages' ], [ '!somepermission' ]],
+        [ '_admin' ],
+        []
+      );
+
+      expect(result).to.be.false;
+    });
+
+    it('should return true when user has all permissions', () => {
+      const chtPermissions = {
+        can_backup_facilities: [ 'national_admin', 'district_admin' ],
+        can_export_messages: [ 'national_admin', 'district_admin', 'analytics' ],
+        can_add_people: [ 'national_admin', 'district_admin' ],
+        can_add_places: [ 'national_admin', 'district_admin' ],
+        can_roll_over: [ 'national_admin', 'district_admin' ],
+      };
+      const anyPermissions = [
+        [ 'can_backup_facilities' ],
+        [ 'can_export_messages', 'can_roll_over' ],
+        [ 'can_add_people', 'can_add_places' ],
+      ];
+
+      const result = auth.hasAnyPermission(anyPermissions, [ 'district_admin' ], chtPermissions);
+
+      expect(result).to.be.true;
+    });
+
+    it('should return true when user has some permissions', () => {
+      const chtPermissions = {
+        can_backup_facilities: [ 'national_admin', 'district_admin' ],
+        can_backup_people: [ 'national_admin', 'district_admin' ],
+      };
+      const anyPermissions = [
+        [ 'can_backup_facilities', 'can_backup_people' ],
+        [ 'can_export_messages', 'can_roll_over' ],
+        [ 'can_add_people', 'can_add_places' ]
+      ];
+
+      const result = auth.hasAnyPermission(anyPermissions, [ 'district_admin' ], chtPermissions);
+
+      expect(result).to.be.true;
+    });
+
+    it('should return false when user doesnt have any of the permissions', () => {
+      const chtPermissions = {
+        can_backup_facilities: [ 'national_admin' ],
+        can_backup_people: [ 'national_admin' ]
+      };
+      const anyPermissions = [
+        [ 'can_backup_facilities', 'can_backup_people' ],
+        [ 'can_export_messages', 'can_roll_over' ],
+        [ 'can_add_people', 'can_add_places' ]
+      ];
+
+      const result = auth.hasAnyPermission(anyPermissions, [ 'district_admin' ], chtPermissions);
+
+      expect(result).to.be.false;
+    });
+
+    it('should return true when user has all permissions and no disallowed permissions', () => {
+      const chtPermissions = {
+        can_backup_facilities: [ 'national_admin', 'district_admin' ],
+        can_export_messages: [ 'national_admin', 'district_admin', 'analytics' ],
+        can_add_people: [ 'national_admin', 'district_admin' ],
+        random1: [ 'national_admin' ],
+        random2: [ 'national_admin' ],
+        random3: [ 'national_admin' ]
+      };
+      const anyPermissions = [
+        ['can_backup_facilities', '!random1'],
+        ['can_export_messages', '!random2'],
+        ['can_add_people', '!random3']
+      ];
+
+      const result = auth.hasAnyPermission(anyPermissions, [ 'district_admin' ], chtPermissions);
+
+      expect(result).to.be.true;
+    });
+
+    it('should return true when user has some permissions and some disallowed permissions', () => {
+      const chtPermissions = {
+        can_backup_facilities: [ 'national_admin', 'district_admin' ],
+        can_backup_people: [ 'national_admin', 'district_admin' ],
+        can_add_people: [ 'national_admin' ],
+        can_add_places: [ 'national_admin' ],
+        random1: [ 'national_admin' ],
+        random3: [ 'national_admin' ]
+      };
+      const anyPermissions = [
+        ['can_backup_facilities', '!can_add_people'],
+        ['can_export_messages', '!random2'],
+        ['can_backup_people', '!can_add_places']
+      ];
+
+      const result = auth.hasAnyPermission(anyPermissions, [ 'district_admin' ], chtPermissions);
+
+      expect(result).to.be.true;
+    });
+
+    it('should return false when user has all disallowed permissions', () => {
+      const chtPermissions = {
+        can_backup_facilities: ['national_admin', 'district_admin'],
+        can_backup_people: ['national_admin', 'district_admin'],
+        can_backup_places: ['national_admin', 'district_admin'],
+        random1: ['national_admin', 'district_admin'],
+        random2: ['national_admin', 'district_admin'],
+        random3: ['national_admin', 'district_admin'],
+      };
+      const anyPermissions = [
+        [ 'can_backup_facilities', '!random1' ],
+        [ 'can_backup_people', '!random2' ],
+        [ 'can_backup_places', '!random3' ]
+      ];
+      const result = auth.hasAnyPermission(anyPermissions, [ 'district_admin' ], chtPermissions);
 
       expect(result).to.be.false;
     });

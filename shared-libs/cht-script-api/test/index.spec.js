@@ -1,4 +1,3 @@
-
 const expect = require('chai').expect;
 const chtScriptApi = require('../src/index');
 
@@ -19,7 +18,7 @@ describe('CHT Script API - index', () => {
     expect(result.v1.hasAnyPermission).to.be.a('function');
   });
 
-  it('should call auth.hasPermission and react to cache changes', () => {
+  it('should call auth.hasPermissions and react to cache changes', () => {
     chtScriptApi.setChtCoreSettingsDoc({
       permissions: {
         can_edit: [ 'chw_supervisor' ],
@@ -45,7 +44,7 @@ describe('CHT Script API - index', () => {
     expect(resultHasPermission).to.be.true;
   });
 
-  it('should call auth.hasPermission and pass documents by parameter', () => {
+  it('should call auth.hasPermissions and pass documents by parameter', () => {
     const api = chtScriptApi.getApi();
     const userSettingsDoc = { roles: [ 'chw' ] };
     const chtSettingsDoc = {
@@ -56,10 +55,68 @@ describe('CHT Script API - index', () => {
     };
 
     const result = api.v1.hasPermissions(
-      ['can_backup_facilities', 'can_export_messages'],
+      [ 'can_backup_facilities', 'can_export_messages' ],
       userSettingsDoc,
       chtSettingsDoc
     );
+
+    expect(result).to.be.true;
+  });
+
+  it('should call auth.hasAnyPermission and react to cache changes', () => {
+    chtScriptApi.setChtCoreSettingsDoc({
+      permissions: {
+        can_backup_facilities: [ 'national_admin', 'district_admin' ],
+        can_export_messages: [ 'national_admin', 'district_admin', 'analytics' ],
+        can_roll_over: [ 'national_admin', 'district_admin' ],
+      }
+    });
+    chtScriptApi.setUserSettingsDoc(undefined);
+    const api = chtScriptApi.getApi();
+    const permissions = [
+      ['can_backup_facilities'],
+      ['can_export_messages', 'can_roll_over'],
+      ['can_add_people', 'can_add_places'],
+    ];
+
+    const resultUserUndefined = api.v1.hasAnyPermission(permissions);
+
+    chtScriptApi.setUserSettingsDoc({ roles: [ 'district_admin' ] });
+    chtScriptApi.setChtCoreSettingsDoc({
+      permissions: {
+        can_backup_facilities: [ 'national_admin', 'district_admin' ],
+        can_export_messages: [ 'national_admin', 'district_admin', 'analytics' ],
+        can_add_people: [ 'national_admin', 'district_admin' ],
+        can_add_places: [ 'national_admin', 'district_admin' ],
+        can_roll_over: [ 'national_admin', 'district_admin' ],
+      }
+    });
+
+    const resultHasPermission = api.v1.hasAnyPermission(permissions);
+
+    expect(resultUserUndefined).to.be.false;
+    expect(resultHasPermission).to.be.true;
+  });
+
+  it('should call auth.hasAnyPermission and pass documents by parameter', () => {
+    const api = chtScriptApi.getApi();
+    const userSettingsDoc = { roles: [ 'district_admin' ] };
+    const chtSettingsDoc = {
+      permissions: {
+        can_backup_facilities: [ 'national_admin', 'district_admin' ],
+        can_export_messages: [ 'national_admin', 'district_admin', 'analytics' ],
+        can_add_people: [ 'national_admin', 'district_admin' ],
+        can_add_places: [ 'national_admin', 'district_admin' ],
+        can_roll_over: [ 'national_admin', 'district_admin' ],
+      }
+    };
+    const permissions = [
+      ['can_backup_facilities'],
+      ['can_export_messages', 'can_roll_over'],
+      ['can_add_people', 'can_add_places'],
+    ];
+
+    const result = api.v1.hasAnyPermission(permissions, userSettingsDoc, chtSettingsDoc);
 
     expect(result).to.be.true;
   });

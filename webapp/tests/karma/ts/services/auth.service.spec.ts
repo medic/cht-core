@@ -70,7 +70,7 @@ describe('Auth Service', () => {
       expect(result).to.be.false;
     });
 
-    it('should return false when perm is empty string', async () => {
+    it('should return false when permission parameter is empty string', async () => {
       sessionService.userCtx.returns({ roles: ['district_admin'] });
       settingsService.get.resolves({
         permissions: {
