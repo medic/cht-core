@@ -1294,11 +1294,21 @@ describe('Users service', () => {
       };
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
+      const medicPut = sinon.stub(db.medic, 'put').resolves({});
+      const usersPut = sinon.stub(db.users, 'put').resolves({});
       return service.updateUser('paul', data, true).then(() => {
-        chai.expect(db.medic.put.callCount).to.equal(1);
-        chai.expect(db.users.put.callCount).to.equal(1);
+        chai.expect(medicPut.callCount).to.equal(1);
+        chai.expect(medicPut.args[0]).to.deep.equal([ {
+          'name': 'paul',
+          'type': 'user-settings',
+          '_id': 'org.couchdb.user:paul'
+        } ]);
+        chai.expect(usersPut.callCount).to.equal(1);
+        chai.expect(usersPut.args[0]).to.deep.equal([ {
+          'name': 'paul',
+          'type': 'user',
+          '_id': 'org.couchdb.user:paul'
+        } ]);
       });
     });
 
@@ -1308,11 +1318,21 @@ describe('Users service', () => {
       };
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
+      const medicPut = sinon.stub(db.medic, 'put').resolves({});
+      const usersPut = sinon.stub(db.users, 'put').resolves({});
       return service.updateUser('paul', data, false).then(() => {
-        chai.expect(db.medic.put.callCount).to.equal(1);
-        chai.expect(db.users.put.callCount).to.equal(1);
+        chai.expect(medicPut.callCount).to.equal(1);
+        chai.expect(medicPut.args[0]).to.deep.equal([ {
+          'name': 'paul',
+          'type': 'user-settings',
+          '_id': 'org.couchdb.user:paul'
+        } ]);
+        chai.expect(usersPut.callCount).to.equal(1);
+        chai.expect(usersPut.args[0]).to.deep.equal([ {
+          'name': 'paul',
+          'type': 'user',
+          '_id': 'org.couchdb.user:paul'
+        } ]);
       });
     });
   });
