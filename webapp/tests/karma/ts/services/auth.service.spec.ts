@@ -36,7 +36,7 @@ describe('Auth Service', () => {
   describe('authService.has', () => {
     it('should return false when no session', async () => {
       sessionService.userCtx.returns(null);
-      settingsService.get.resolves({ permissions: [] });
+      settingsService.get.resolves({ permissions: {} });
 
       const result = await service.has();
 
@@ -45,7 +45,7 @@ describe('Auth Service', () => {
 
     it('should return false when user has no role', async () => {
       sessionService.userCtx.returns({});
-      settingsService.get.resolves({ permissions: [] });
+      settingsService.get.resolves({ permissions: {} });
 
       const result = await service.has();
 
@@ -54,7 +54,7 @@ describe('Auth Service', () => {
 
     it('should return true when user is db admin', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
-      settingsService.get.resolves({ permissions: [] });
+      settingsService.get.resolves({ permissions: {} });
 
       const result = await service.has(['can_backup_facilities']);
 
@@ -187,7 +187,7 @@ describe('Auth Service', () => {
 
     it('should return false when admin and !permission', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
-      settingsService.get.resolves({ permissions: [] });
+      settingsService.get.resolves({ permissions: {} });
 
       const result = await service.has(['!can_backup_facilities']);
 
@@ -234,7 +234,7 @@ describe('Auth Service', () => {
   describe('authService.any', () => {
     it('should return false when no session', async () => {
       sessionService.userCtx.returns(null);
-      settingsService.get.resolves({ permissions: [] });
+      settingsService.get.resolves({ permissions: {} });
 
       const result = await service.any();
 
@@ -243,7 +243,7 @@ describe('Auth Service', () => {
 
     it('should return false when user has no role', async () => {
       sessionService.userCtx.returns({});
-      settingsService.get.resolves({ permissions: [] });
+      settingsService.get.resolves({ permissions: {} });
 
       const result = await service.any();
 
@@ -252,7 +252,7 @@ describe('Auth Service', () => {
 
     it('should return true when admin and no disallowed permissions', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
-      settingsService.get.resolves({ permissions: [] });
+      settingsService.get.resolves({ permissions: {} });
 
       const result = await service.any([['can_backup_facilities'], ['can_export_messages'], ['somepermission']]);
 
@@ -261,7 +261,7 @@ describe('Auth Service', () => {
 
     it('should return true when admin and some disallowed permissions', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
-      settingsService.get.resolves({ permissions: [] });
+      settingsService.get.resolves({ permissions: {} });
 
       const result = await service.any([['!can_backup_facilities'], ['!can_export_messages'], ['somepermission']]);
 
@@ -270,7 +270,7 @@ describe('Auth Service', () => {
 
     it('should return false when admin and all disallowed permissions', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
-      settingsService.get.resolves({ permissions: [] });
+      settingsService.get.resolves({ permissions: {} });
 
       const result = await service.any([['!can_backup_facilities'], ['!can_export_messages'], ['!somepermission']]);
 
