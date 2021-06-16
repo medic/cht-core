@@ -1,4 +1,4 @@
-const chtScriptApiFactory = require('@medic/cht-script-api');
+const chtScriptApi = require('@medic/cht-script-api');
 
 angular.module('inboxServices').factory('Auth',
   function(
@@ -7,8 +7,8 @@ angular.module('inboxServices').factory('Auth',
     Settings
   ) {
 
-    'ngInject';
     'use strict';
+    'ngInject';
 
     /**
      * Receives a list of groups of permissions and returns a promise that will be resolved if the
@@ -22,14 +22,15 @@ angular.module('inboxServices').factory('Auth',
         return has(permissionsGroupList);
       }
 
-      const chtApi = chtScriptApiFactory.getApi();
+      const chtApi = chtScriptApi.getApi();
 
-      return Settings
+      return Settings()
         .then(settings => {
           const userCtx = Session.userCtx();
 
           if (!userCtx) {
-            $log.debug('AuthService :: Not logged in');
+            $log.debug('AuthService :: Not logged in.');
+            return false;
           }
 
           return chtApi.v1.hasAnyPermission(permissionsGroupList, userCtx, settings);
@@ -44,14 +45,15 @@ angular.module('inboxServices').factory('Auth',
      * @param permissions {string | string[]}
      */
     const has = (permissions) => {
-      const chtApi = chtScriptApiFactory.getApi();
+      const chtApi = chtScriptApi.getApi();
 
-      return Settings
+      return Settings()
         .then(settings => {
           const userCtx = Session.userCtx();
 
           if (!userCtx) {
             $log.debug('AuthService :: Not logged in.');
+            return false;
           }
 
           return chtApi.v1.hasPermissions(permissions, userCtx, settings);

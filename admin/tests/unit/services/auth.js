@@ -53,7 +53,7 @@ describe('Auth service', function() {
 
     it('false when settings errors', async () => {
       userCtx.returns({ roles: ['district_admin'] });
-      Settings.rejects('boom');
+      Settings.returns(Promise.reject('boom'));
       const result = await service.has(['can_backup_facilities']);
       chai.expect(result).to.be.false;
     });

@@ -32,6 +32,7 @@ export class AuthService {
 
         if (!userCtx) {
           console.debug('AuthService :: Not logged in.');
+          return false;
         }
 
         return this.chtApi.v1.hasPermissions(permissions, userCtx, settings);
@@ -58,6 +59,7 @@ export class AuthService {
 
         if (!userCtx) {
           console.debug('AuthService :: Not logged in');
+          return false;
         }
 
         return this.chtApi.v1.hasAnyPermission(permissionsGroupList, userCtx, settings);
