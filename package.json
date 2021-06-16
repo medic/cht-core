@@ -14,7 +14,7 @@
   "scripts": {
     "test": "grunt eslint && grunt unit && grunt test-api-integration && grunt e2e",
     "webdriver": "webdriver-manager update && webdriver-manager start",
-    "wdio-local": "rm -rf _results_ allure-report && grunt e2e-env-setup && wdio run ./tests/webdriver-e2e/wdio.conf.js",
+    "wdio-local": "rm -rf allure-results allure-report && grunt e2e-env-setup && wdio run ./tests/webdriver-e2e/wdio.conf.js",
     "wdio": "wdio run ./tests/webdriver-e2e/wdio.conf.js"
   },
   "devDependencies": {
