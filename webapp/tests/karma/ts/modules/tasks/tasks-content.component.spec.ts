@@ -476,7 +476,6 @@ describe('TasksContentComponent', () => {
 
       sinon.resetHistory();
       sinon.stub(GlobalActions.prototype, 'setEnketoError');
-      store.overrideSelector(Selectors.getSelectedTask, { _id: 'task-id'});
       store.refreshState();
 
       await component.performAction({ type: 'report', form: 'myform', content: { my: 'content' } });
