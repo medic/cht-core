@@ -7,7 +7,7 @@ const loginPage = require('../page-objects/login/login.po.js');
 const contactsPo = require('../page-objects/contacts/contacts.po');
 
 
-describe('Contact summary info', () => {
+fdescribe('Contact summary info', () => {
   const SCRIPT = `
     let cards = [];
     let context = {};
@@ -44,7 +44,7 @@ describe('Contact summary info', () => {
       },
       { 
         label: "can_edit_or_can_create_people", 
-        value: cht.v1.hasAnyPermission(['can_edit'], ['can_create_people']), 
+        value: cht.v1.hasAnyPermission([['can_edit'], ['can_create_people']]), 
         width: 3 
       }
     ];
