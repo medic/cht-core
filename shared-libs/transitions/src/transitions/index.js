@@ -262,13 +262,13 @@ const saveDoc = (change, callback) => {
 /*
  * All transitions reference the same change.doc and work in series to
  * apply changes to it.  A transition is free to make async calls but the next
- * transition will only run after the previous transitions's callback is
+ * transition will only run after the previous transitions' callback is
  * called.  This is a performance optimization that allows us to apply N
  * transitions (updates) to a document with the cost of a single database
  * change/write.
  */
-const applyTransition = ({ key, change, transition }, callback) => {
-  if (!canRun({ key, change, transition })) {
+const applyTransition = ({ key, change, transition, force }, callback) => {
+  if (!force && !canRun({ key, change, transition })) {
     logger.debug(
       `canRun test failed on transition ${key} for doc ${change.id} seq ${change.seq}`
     );

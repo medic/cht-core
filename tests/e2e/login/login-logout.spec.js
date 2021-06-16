@@ -26,11 +26,6 @@ describe('Login and logout tests', () => {
     error: 'Nombre de usuario o contraseña incorrecto. Favor intentar de nuevo.'
   };   
 
-  it('should show a warning before log out', async () => {
-    const warning = await commonElements.logout();
-    expect(warning).toBe('Are you sure you want to log out?');        
-  });
-
   it('should show locale selector on login page', async () => {
     await commonElements.goToLoginPageNative();
     const locales = await loginPage.getAllLocales(); 

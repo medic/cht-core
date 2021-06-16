@@ -329,7 +329,7 @@ module.exports = function(grunt) {
             'api/build/**/*',
             '**/node_modules/**',
             'build/**',
-            'shared-libs/transitions/src/lib/pupil/**',
+            '**/pupil/**',
           ];
 
           return [ESLINT_COMMAND]
@@ -506,6 +506,12 @@ module.exports = function(grunt) {
           'cd config/standard',
           'npm ci',
           'npm run travis'
+        ].join(' && '),
+        stdio: 'inherit', // enable colors!
+      },
+      'wdio-run': {
+        cmd: [
+          'npm run wdio'
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
@@ -940,6 +946,10 @@ module.exports = function(grunt) {
   // Test tasks
   grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
     'start-webdriver',
+    'e2e-env-setup'
+  ]);
+
+  grunt.registerTask('e2e-env-setup', 'Deploy app for testing', [
     'exec:clean-test-database',
     'exec:setup-test-database',
     'couch-push:test',
@@ -1058,6 +1068,11 @@ module.exports = function(grunt) {
     'start-webdriver',
     'exec:e2e-servers',
     'protractor:e2e-cht-release-tests'
+  ]);
+
+  grunt.registerTask('ci-webdriver', 'Run e2e tests using webdriverIO', [
+    'exec:e2e-servers',
+    'exec:wdio-run'
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [

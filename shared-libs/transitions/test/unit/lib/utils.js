@@ -265,6 +265,7 @@ describe('utils util', () => {
 
   describe('getLocale', () => {
     it('should return correct locale', () => {
+      sinon.stub(config, 'getAll');
       const docs = [
         { locale: 'one' },
         { locale: 'two', sms_message: {} },
@@ -281,15 +282,13 @@ describe('utils util', () => {
       utils.getLocale(docs[2]).should.deep.equal('three');
       utils.getLocale(docs[3]).should.deep.equal('five');
 
-      config.get.withArgs('locale_outgoing').returns('outgoingLocale');
+      config.getAll.returns({ locale_outgoing: 'outgoingLocale' });
       utils.getLocale(docs[4]).should.deep.equal('outgoingLocale');
 
-      config.get.withArgs('locale_outgoing').returns('');
-      config.get.withArgs('locale').returns('defaultLocale');
+      config.getAll.returns({ locale_outgoing: '', locale: 'defaultLocale' });
       utils.getLocale(docs[5]).should.deep.equal('defaultLocale');
 
-      config.get.withArgs('locale_outgoing').returns('');
-      config.get.withArgs('locale').returns('');
+      config.getAll.returns({ locale_outgoing: '', locale: '' });
       utils.getLocale(docs[5]).should.deep.equal('en');
     });
   });

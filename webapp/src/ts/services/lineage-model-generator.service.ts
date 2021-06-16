@@ -112,6 +112,10 @@ export class LineageModelGeneratorService {
         });
       });
   }
+
+  docs(docs) {
+    return this.ngZone.runOutsideAngular(() => this.lineageLib.hydrateDocs(docs));
+  }
 }
 
 

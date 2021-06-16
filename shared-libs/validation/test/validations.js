@@ -1,11 +1,32 @@
 const moment = require('moment');
-const validation = require('../../src/lib/validation');
-const db = require('../../src/db');
+const rewire = require('rewire');
 const sinon = require('sinon');
 const assert = require('chai').assert;
+
+const validation = rewire('../src/validation');
+
 let clock;
+let db;
+let config;
+let translate;
+const logger = console;
+
+const stubMe = (functionName) => {
+  logger.error(new Error(
+    `db.${functionName}() not stubbed!` +
+    `Please stub PouchDB functions that will be interacted with in unit tests.`
+  ));
+  process.exit(1);
+};
 
 describe('validations', () => {
+  beforeEach(() => {
+    db = { medic: { query: () => stubMe('query'), allDocs: () => stubMe('allDocs') } };
+    config = {};
+    translate = sinon.stub().returnsArg(0);
+
+    validation.init({ db, config, translate, logger });
+  });
   afterEach(() => {
     if (clock) {
       clock.restore();
@@ -13,7 +34,12 @@ describe('validations', () => {
     sinon.restore();
   });
 
-  it('validate handles pupil parse errors', done => {
+  it('should throw an error when validate is called without initialization', () => {
+    validation.__set__('inited', false);
+    assert.throws(validation.validate, '');
+  });
+
+  it('validate handles pupil parse errors', () => {
     const doc = {
       phone: '123',
     };
@@ -23,15 +49,14 @@ describe('validations', () => {
         rule: 'regex(bad no quotes)',
       },
     ];
-    validation.validate(doc, validations, function(errors) {
+    return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
         'Error on pupil validations: {"message":"Unexpected identifier","pos":2}',
       ]);
-      done();
     });
   });
 
-  it('validate handles pupil regex', done => {
+  it('validate handles pupil regex', () => {
     const validations = [
       {
         property: 'phone',
@@ -44,24 +69,24 @@ describe('validations', () => {
         ],
       },
     ];
-    validation.validate({ phone: '123' }, validations, function(errors) {
-      assert.deepEqual(errors, []);
-    });
-    validation.validate({ phone: '123a' }, validations, function(errors) {
-      assert.deepEqual(errors, [
-        {
-          code: 'invalid_phone',
-          message: 'Invalid phone {{phone}}.',
-        },
-      ]);
-      done();
-    });
+    return Promise
+      .all([
+        validation.validate({ phone: '123' }, validations),
+        validation.validate({ phone: '123a' }, validations),
+      ])
+      .then((errors) => {
+        assert.deepEqual(errors[0], []);
+        assert.deepEqual(errors[1], [
+          {
+            code: 'invalid_phone',
+            message: 'Invalid phone {{phone}}.',
+          },
+        ]);
+      });
   });
 
-  it('pass unique validation when no doc found', done => {
-    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
-      rows: [],
-    });
+  it('pass unique validation when no doc found', () => {
+    const view = sinon.stub(db.medic, 'query').resolves({ rows: [] });
     const validations = [
       {
         property: 'patient_id',
@@ -72,17 +97,16 @@ describe('validations', () => {
       _id: 'same',
       patient_id: '111',
     };
-    validation.validate(doc, validations, function(errors) {
+    return validation.validate(doc, validations).then(errors => {
       assert.equal(view.callCount, 1);
       assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
       assert.deepEqual(view.args[0][1], { key: ['patient_id:111'] });
       assert.equal(errors.length, 0);
-      done();
     });
   });
 
-  it('pass unique validation when doc is the same', done => {
-    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+  it('pass unique validation when doc is the same', () => {
+    const view = sinon.stub(db.medic, 'query').resolves({
       rows: [
         {
           id: 'same',
@@ -100,17 +124,16 @@ describe('validations', () => {
       _id: 'same',
       patient_id: '111',
     };
-    validation.validate(doc, validations, function(errors) {
+    return validation.validate(doc, validations).then(errors => {
       assert.equal(view.callCount, 1);
       assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
       assert.deepEqual(view.args[0][1], { key: ['patient_id:111'] });
       assert.equal(errors.length, 0);
-      done();
     });
   });
 
-  it('pass unique validation when doc has errors', done => {
-    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+  it('pass unique validation when doc has errors', () => {
+    const view = sinon.stub(db.medic, 'query').resolves({
       rows: [{ id: 'different' }],
     });
     const allDocs = sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
@@ -131,22 +154,21 @@ describe('validations', () => {
       _id: 'same',
       patient_id: '111',
     };
-    validation.validate(doc, validations, function(errors) {
+    return validation.validate(doc, validations).then(errors => {
       assert.equal(view.callCount, 1);
       assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
       assert.deepEqual(view.args[0][1], { key: ['patient_id:111'] });
       assert.equal(allDocs.callCount, 1);
       assert.deepEqual(allDocs.args[0][0], { keys: ['different'], include_docs: true });
       assert.equal(errors.length, 0);
-      done();
     });
   });
 
-  it('fail unique validation on doc with no errors', done => {
-    sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+  it('fail unique validation on doc with no errors', () => {
+    sinon.stub(db.medic, 'query').resolves({
       rows: [{ id: 'different' }],
     });
-    sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
+    sinon.stub(db.medic, 'allDocs').resolves({
       rows: [
         {
           id: 'different',
@@ -170,22 +192,21 @@ describe('validations', () => {
       _id: 'same',
       xyz: '444',
     };
-    validation.validate(doc, validations, function(errors) {
+    return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
         {
           code: 'invalid_xyz_unique',
           message: 'Duplicate: {{xyz}}.',
         },
       ]);
-      done();
     });
   });
 
-  it('fail multiple field unique validation on doc with no errors', done => {
-    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+  it('fail multiple field unique validation on doc with no errors', () => {
+    const view = sinon.stub(db.medic, 'query').resolves({
       rows: [{ id: 'different' }],
     });
-    const allDocs = sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
+    const allDocs = sinon.stub(db.medic, 'allDocs').resolves({
       rows: [
         {
           id: 'different',
@@ -210,7 +231,7 @@ describe('validations', () => {
       xyz: '444',
       abc: 'CHeeSE', // value is lowercased as it is in the view map definition
     };
-    validation.validate(doc, validations, function(errors) {
+    return validation.validate(doc, validations).then(errors => {
       assert.equal(view.callCount, 2);
       assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
       assert.deepEqual(view.args[0][1], { key: ['xyz:444'] });
@@ -224,16 +245,15 @@ describe('validations', () => {
           message: 'Duplicate xyz {{xyz}} and abc {{abc}}.',
         },
       ]);
-      done();
     });
   });
 
-  it('pass uniqueWithin validation on old doc', done => {
+  it('pass uniqueWithin validation on old doc', () => {
     clock = sinon.useFakeTimers();
-    sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+    sinon.stub(db.medic, 'query').resolves({
       rows: [{ id: 'different' }],
     });
-    sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
+    sinon.stub(db.medic, 'allDocs').resolves({
       rows: [
         {
           id: 'different',
@@ -263,19 +283,18 @@ describe('validations', () => {
       _id: 'same',
       xyz: '444',
     };
-    validation.validate(doc, validations, function(errors) {
+    return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 0);
-      done();
     });
   });
 
-  it('fail uniqueWithin validation on new doc', done => {
+  it('fail uniqueWithin validation on new doc', () => {
     clock = sinon.useFakeTimers();
-    sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+    sinon.stub(db.medic, 'query').resolves({
       rows: [{ id: 'different1' }, { id: 'different2' }, { id: 'different3' }],
     });
     // rows are sorted based on uuid not on date, so we have to check all docs
-    sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
+    sinon.stub(db.medic, 'allDocs').resolves({
       rows: [
         {
           id: 'different1',
@@ -325,18 +344,17 @@ describe('validations', () => {
       _id: 'same',
       xyz: '444',
     };
-    validation.validate(doc, validations, function(errors) {
+    return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
         {
           code: 'invalid_xyz_uniqueWithin',
           message: 'Duplicate xyz {{xyz}}.',
         },
       ]);
-      done();
     });
   });
 
-  it('pass isISOWeek validation on doc', done => {
+  it('pass isISOWeek validation on doc', () => {
     const validations = [
       {
         property: 'week',
@@ -348,13 +366,12 @@ describe('validations', () => {
       week: 32,
       year: 2016,
     };
-    validation.validate(doc, validations, function(errors) {
+    return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 0);
-      done();
     });
   });
 
-  it('pass isISOWeek validation on doc when no year field is provided', done => {
+  it('pass isISOWeek validation on doc when no year field is provided', () => {
     const validations = [
       {
         property: 'week',
@@ -365,13 +382,12 @@ describe('validations', () => {
       _id: 'same',
       week: 32,
     };
-    validation.validate(doc, validations, function(errors) {
+    return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 0);
-      done();
     });
   });
 
-  it('fail isISOWeek validation on doc', done => {
+  it('fail isISOWeek validation on doc', () => {
     const validations = [
       {
         property: 'week',
@@ -383,13 +399,12 @@ describe('validations', () => {
       week: 55,
       year: 2016,
     };
-    validation.validate(doc, validations, function(errors) {
+    return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 1);
-      done();
     });
   });
 
-  it('fail isISOWeek validation on doc when no year field is provided', done => {
+  it('fail isISOWeek validation on doc when no year field is provided', () => {
     const validations = [
       {
         property: 'week',
@@ -400,43 +415,16 @@ describe('validations', () => {
       _id: 'same',
       week: 65,
     };
-    validation.validate(doc, validations, function(errors) {
+    return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 1);
-      done();
     });
   });
 
-  it('formatParam does not encode unicode', () => {
-    assert.equal(validation._formatParam('form', 'द'), 'form:"द"');
-  });
-
-  it('formatParam escapes quotes in values', () => {
-    assert.equal(
-      validation._formatParam('form', ' " AND everything'),
-      'form:" \\" AND everything"'
-    );
-  });
-
-  it('formatParam rejects quotes in field names', () => {
-    assert.equal(
-      validation._formatParam('*:"everything', 'xyz'),
-      '*:everything:"xyz"'
-    );
-  });
-
-  it('formatParam quotes strings', () => {
-    assert.equal(validation._formatParam('birds', 'pigeon'), 'birds:"pigeon"');
-  });
-
-  it('formatParam use <int> query on integers', () => {
-    assert.equal(validation._formatParam('lmp', 11), 'lmp<int>:11');
-  });
-
-  it('pass exists validation when matching document', done => {
-    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+  it('pass exists validation when matching document', () => {
+    const view = sinon.stub(db.medic, 'query').resolves({
       rows: [{ id: 'different' }],
     });
-    sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
+    sinon.stub(db.medic, 'allDocs').resolves({
       rows: [
         {
           id: 'different',
@@ -460,19 +448,18 @@ describe('validations', () => {
       _id: 'same',
       patient_id: '444',
     };
-    validation.validate(doc, validations, function(errors) {
+    return validation.validate(doc, validations).then(errors => {
       assert.equal(view.callCount, 2);
       assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
       assert.deepEqual(view.args[0][1], { key: ['patient_id:444'] });
       assert.equal(view.args[1][0], 'medic-client/reports_by_freetext');
       assert.deepEqual(view.args[1][1], { key: ['form:registration'] });
       assert.deepEqual(errors, []);
-      done();
     });
   });
 
-  it('fail exists validation when no matching document', done => {
-    sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+  it('fail exists validation when no matching document', () => {
+    sinon.stub(db.medic, 'query').resolves({
       rows: [],
     });
     const validations = [
@@ -491,19 +478,18 @@ describe('validations', () => {
       _id: 'same',
       parent_id: '444',
     };
-    validation.validate(doc, validations, function(errors) {
+    return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
         {
           code: 'invalid_parent_id_exists',
           message: 'Unknown patient {{parent_id}}.',
         },
       ]);
-      done();
     });
   });
 
-  it('fail exists validation when matching document is same as this', done => {
-    sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+  it('fail exists validation when matching document is same as this', () => {
+    sinon.stub(db.medic, 'query').resolves({
       rows: [
         {
           id: 'same',
@@ -527,14 +513,13 @@ describe('validations', () => {
       _id: 'same',
       parent_id: '444',
     };
-    validation.validate(doc, validations, function(errors) {
+    return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
         {
           code: 'invalid_parent_id_exists',
           message: 'Unknown patient {{parent_id}}.',
         },
       ]);
-      done();
     });
   });
 });

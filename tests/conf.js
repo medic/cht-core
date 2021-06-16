@@ -4,6 +4,7 @@ chai.use(require('chai-exclude'));
 chai.use(require('chai-shallow-deep-equal'));
 // so the .to.have.members will display the array members when assertions fail instead of [ Array(6) ]
 chai.config.truncateThreshold = 0;
+chai.use(require('chai-exclude'));
 
 const baseConfig = {
   params:{
@@ -61,7 +62,7 @@ const baseConfig = {
     browser.waitForAngularEnabled(false);
 
     // wait for startup to complete
-    await browser.driver.wait(utils. prepServices(), 135 * 1000, 'API took too long to start up');
+    await browser.driver.wait(utils.prepServices(), 135 * 1000, 'API took too long to start up');
 
     afterEach(() => {
       return utils.saveBrowserLogs();
