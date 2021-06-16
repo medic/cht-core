@@ -73,7 +73,7 @@ export class AuthService {
     }
 
     if (this.session.isOnlineOnly(userCtx) !== Boolean(online)) {
-      const reason = online ? 'user missing online role' : 'user has online role';
+      const reason = online ? 'User missing online role' : 'User has online role';
       console.debug(`AuthService :: ${reason}. User roles: ${userCtx.roles}`);
       return false;
     }
