@@ -7,7 +7,7 @@ const loginPage = require('../page-objects/login/login.po.js');
 const contactsPo = require('../page-objects/contacts/contacts.po');
 
 
-fdescribe('Contact summary info', () => {
+describe('Contact summary info', () => {
   const SCRIPT = `
     let cards = [];
     let context = {};
