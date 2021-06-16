@@ -1,7 +1,7 @@
-const utils = require('../utils');
-const auth = require('../auth')();
+const utils = require('../../utils');
+const auth = require('../../auth')();
 const request = require('request');
-const constants = require('../constants');
+const constants = require('../../constants');
 const _ = require('lodash');
 const {expect} = require('chai');
 
