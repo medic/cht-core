@@ -39,7 +39,12 @@ describe('Contact summary info', () => {
       },
       { 
         label: "can_configure", 
-        value: cht.v1.hasPermission('can_configure'), 
+        value: cht.v1.hasPermissions('can_configure'), 
+        width: 3 
+      },
+      { 
+        label: "can_edit_or_can_create_people", 
+        value: cht.v1.hasAnyPermission(['can_edit'], ['can_create_people']), 
         width: 3 
       }
     ];
@@ -353,6 +358,7 @@ describe('Contact summary info', () => {
     const originalSettings = await utils.getSettings();
     const permissions = originalSettings.permissions;
     permissions.can_configure = USER_DISTRICT.roles;
+    permissions.can_edit = USER_DISTRICT.roles;
     await utils.updateSettings({ ...SETTINGS, permissions });
 
     await utils.createUsers([ USER_DISTRICT ]);
@@ -366,5 +372,7 @@ describe('Contact summary info', () => {
 
     expect(await contactsPo.cardFieldLabelText('can_configure')).toBe('can_configure');
     expect(await contactsPo.cardFieldText('can_configure')).toBe('true');
+    expect(await contactsPo.cardFieldLabelText('can_edit_or_can_create_people')).toBe('can_edit_or_can_create_people');
+    expect(await contactsPo.cardFieldText('can_edit_or_can_create_people')).toBe('true');
   });
 });
