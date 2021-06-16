@@ -7,7 +7,7 @@ const _ = require('lodash');
 _.uniq = require('lodash/uniq');
 const { assert } = require('chai');
 
-describe('Submit Delivery Report', () => {
+describe('Submit Default Delivery Report', () => {
   const { userContactDoc, docs } = userData;
 
   beforeAll(async () => {
@@ -18,7 +18,7 @@ describe('Submit Delivery Report', () => {
   afterEach(utils.resetBrowser);
   afterAll(utils.afterEach);
 
-  it('open and submit delivery form', async () => {
+  it('open and submit default delivery form', async () => {
     await common.goToReportsNative();
     
     await genericForm.selectFormNative('D');
