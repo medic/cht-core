@@ -40,4 +40,73 @@ describe('Submit Delivery Report', () => {
     await genericForm.submitReports();
     expect(await element(by.css('div.details')).isPresent()).toBeTruthy();
   });
+  it('open and submit delivery form', async () => {
+    await common.goToReportsNative();
+    
+    await genericForm.selectFormNative('D');
+    //select name
+    await deliveryReport.selectPatientName('jack');
+    await genericForm.nextPageNative();
+    await deliveryReport.selectAliveAndWell();
+    await genericForm.nextPageNative();
+    //check Dangersign
+    await deliveryReport.selectFeverButton();
+    await deliveryReport.selectSevereHeadacheButton();
+    await deliveryReport.selectVaginalbleedingButton();
+    await deliveryReport.selectVaginalDischargeButton();
+    await deliveryReport.selectConvulsionsButton();
+    await genericForm.nextPageNative();
+    
+    // Delivery Outcome
+    await deliveryReport.selectBabiesDeliveredButton();
+    await deliveryReport.enterNoOfBabiesDelivered(6);
+    await deliveryReport.selectBabiesAliveButton(3);
+
+    await deliveryReport.enterDeliveryDate('');
+    
+    await deliveryReport.selectDeliveryPlaceButton();
+    await deliveryReport.selectDeliveryMethod();
+    await genericForm.nextPageNative();
+
+    // Dead Babies Information
+    // We need to loop through all dead babies and fill out information
+    for (let i = 1; i <= 3; i++) {
+      deliveryReport.populateDeadBabyInformation(i);
+    }
+    await genericForm.nextPageNative();
+
+    // Alive Babies Information
+    // We need to loop through all alive babies and fill out information
+    for (let i = 4; i <= 6; i++) {
+      deliveryReport.populateAliveBabyInformation(i);
+    }
+
+    await genericForm.nextPageNative();
+    await genericForm.nextPageNative();
+    await genericForm.nextPageNative();
+    await genericForm.nextPageNative();
+    await deliveryReport.pncCheckBox();
+    await genericForm.nextPageNative();
+
+    //submit
+    await genericForm.submitReports();
+
+    // Verify dead babies UUIDs are unique
+    const deadBabyUUIds = [];
+    for (let i = 0; i <= 2; i++) {
+      deadBabyUUIds.push(await deliveryReport.getDeadBabyUUID(i));
+    }
+    console.log(`Dead UUIDS: ${deadBabyUUIds}`);
+
+    // Verify alive babies UUIDs are unique
+    const aliveBabyUUIds = [];
+    for (let i = 0; i <= 2; i++) {
+      aliveBabyUUIds.push(await deliveryReport.getAliveBabyUUID(i));
+    }
+    console.log(`Alive UUIDS: ${aliveBabyUUIds}`);
+
+    assert.equal(_.uniq(deadBabyUUIds).length,3);
+    assert.equal(_.uniq(aliveBabyUUIds).length,3);
+ 
+  });
 });
