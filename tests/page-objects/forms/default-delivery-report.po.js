@@ -22,13 +22,13 @@ const docs = [
 
 const selectRadioButtonByValue = async value => {
   const elementSelector = by.css(`[value=${value}]`);
-  await helper.waitElementToBeClickable(element(elementSelector));
+  await helper.waitElementToBeVisible(element(elementSelector));
   await element(elementSelector).click();
 };
 
 const selectRadioButtonByNameAndValue = async (name, value) => {
   const elementSelector = by.css(`[name="${name}"][value="${value}"]`);
-  await helper.waitElementToBeClickable(element(elementSelector));
+  await helper.waitElementToBeVisible(element(elementSelector));
   await element(elementSelector).click();
 };
 

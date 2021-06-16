@@ -13,10 +13,9 @@ const baseConfig = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
   suites: {
     web: [
-      'e2e/!(cht)/**/*.js',
-      'e2e/*.js',
-      'mobile/**/*.js',
-      'medic-conf/**/*.js'
+     
+      'e2e/forms/submit-default-delivery-*.js'
+   
     ],
     cht: [
       'e2e/cht/*.spec.js'
