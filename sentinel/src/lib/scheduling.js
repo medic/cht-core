@@ -25,17 +25,12 @@ const getSchedule = config => {
 
 /**
  * Return the milliseconds ahead for the first job scheduled.
- * If the first job time is less than 1 second ahead of time,
- * add a thousand milliseconds to the response.
  * @param scheduleConfig a scheduling configuration parsed by "later"
  * @return {number} milliseconds ahead
  */
 const nextScheduleMillis = scheduleConfig => {
   const schedule = later.schedule(scheduleConfig);
   const diff = schedule.next().getTime() - Date.now();
-  if (diff <= 1000) {
-    return diff + 1000;
-  }
   return diff;
 };
 

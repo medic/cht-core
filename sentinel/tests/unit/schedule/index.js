@@ -333,6 +333,7 @@ describe('scheduler', () => {
   // to NOT being skipped (https://github.com/medic/cht-core/issues/6634)
   describe('Scheduling without gaps', () => {
 
+    let initMoment;
     let purgeMoment;
 
     beforeEach(() => {
@@ -358,37 +359,60 @@ describe('scheduler', () => {
       sinon.restore();
     });
 
-    it('should not skip job scheduled less than 1 sec before time set and launch it 1 sec later', () => {
-      sinon.stub(scheduling, 'getSchedule')
-        .returns(later.parse.cron('* * * * * *', true));  // each 1 second
-      const now = moment();
-      unit.init();
-      return nextTick(1100)
-        .then(() => {
-          expect(purgeMoment.seconds()).to.equal(now.seconds() + 1);
-        });
-    }).slow(1200);
-
-    it('should not skip job scheduled milliseconds ahead the time set and launch it 1 sec later', () => {
+    it('should not skip job when time is milliseconds before schedule and launch it before next one', () => {
       sinon.stub(scheduling, 'getSchedule')
         .returns(later.parse.cron('*/2 * * * * *', true));  // each 2 seconds, even seconds
       let wait = 0;
       const now = moment();
-      if (now.seconds() % 2 === 1) {
-        wait = 1000;  // wait 1 second if seconds of the current time has odd seconds
+      if (now.seconds() % 2 === 0) {  // if seconds of the current time has even seconds (e.g. 32)
+        wait = 1000;                  // wait 1 second until an odd second is reached    (e.g. 33)
       }
-      // Now time has even seconds, and nothing or some milliseconds ahead of the schedule
       return nextTick(wait)
         .then(() => {
+          // now time has odd seconds + some milliseconds ahead
+          initMoment = moment();
+          logger.debug('Init time: %s', now);
           unit.init();
-          return nextTick(2200)
-            .then(() => {
-              expect(purgeMoment.seconds()).to.equal(now.add(wait, 'milliseconds').seconds() + 1);
-              // job was executed the following second when `init` started
-              // despite being a odd second
-              expect(purgeMoment.seconds() % 2 === 1).to.be.true;
-            });
+        })
+        .then(() => nextTick(2200))
+        .then(() => {
+          // because scheduling was calculated just milliseconds BEFORE of the first
+          // schedule, a purge job was launched on time, the next second init()
+          // was called (regardless of the difference in milliseconds)
+          expect(purgeMoment.seconds()).to.be.equal(initMoment.seconds() + 1);
+          // actual execution time will vary, but the execution should happen
+          // in a even second because the job was launched on time
+          expect(purgeMoment.seconds() % 2 === 0).to.be.true;
         });
     }).timeout(4000).slow(2400);  // should be less, but just in case
+
+    it('should not skip job when time is milliseconds ahead schedule and launch within the same second', () => {
+      sinon.stub(scheduling, 'getSchedule')
+        .returns(later.parse.cron('*/2 * * * * *', true));  // each 2 seconds, even seconds
+      let wait = 0;
+      const now = moment();
+      if (now.seconds() % 2 === 1) {  // if seconds of the current time has odd seconds (e.g. 31)
+        wait = 1000;                  // wait 1 second until an even second is reached  (e.g. 32)
+      }
+      return nextTick(wait)
+        .then(() => {
+          // now time has even seconds + some milliseconds ahead
+          initMoment = moment();
+          logger.debug('Init time: %s', now);
+          unit.init();
+        })
+        .then(() => nextTick(2200))
+        .then(() => {
+          // because scheduling was calculated just milliseconds AHEAD of the first
+          // schedule, a purge job was launched just milliseconds ahead, and depending
+          // of machine workload time will vary, but the execution should happen
+          // within the same second or next second, and before the next even second
+          expect(purgeMoment.seconds() < initMoment.seconds() + 2).to.be.true;
+          // If milliseconds from initMoment where to close to 1000, the second
+          // when the purgeMoment happen may or may not be even, the only warranty
+          // is that the schedule was executed and before the next schedule
+        });
+    }).timeout(4000).slow(2400);  // should be less, but just in case
+
   });
 });
