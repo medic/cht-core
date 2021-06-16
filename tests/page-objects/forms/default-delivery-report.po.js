@@ -8,8 +8,8 @@ const xml = fs.readFileSync(`${__dirname}/../../../config/default/forms/app/deli
 const docs = [
   {
     _id: 'form:delivery',
-    internalId: 'D',
-    title: 'Delivery',
+    internalId: 'DD',
+    title: 'Default Delivery',
     type: 'form',
     _attachments: {
       xml: {
@@ -211,13 +211,13 @@ module.exports = {
   
   getDeadBabyUUID: async (deadBabyIndex) => {
     const uuidElement = await element(by.xpath(
-      `//*[text()="report.D.baby_death.baby_death_repeat.${deadBabyIndex}.baby_death_profile_doc"]/../../p`));
+      `//*[text()="report.DD.baby_death.baby_death_repeat.${deadBabyIndex}.baby_death_profile_doc"]/../../p`));
     return uuidElement.getText();
   },  
 
   getAliveBabyUUID: async (aliveBabyIndex) => {
     const uuidaliveElement = await element(by.xpath(
-      `//*[text()="report.D.babys_condition.baby_repeat.${aliveBabyIndex}.baby_details.child_doc"]/../../p`));
+      `//*[text()="report.DD.babys_condition.baby_repeat.${aliveBabyIndex}.baby_details.child_doc"]/../../p`));
     return uuidaliveElement.getText();
   }
 };

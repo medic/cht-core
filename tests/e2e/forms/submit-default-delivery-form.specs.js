@@ -18,10 +18,12 @@ describe('Submit Delivery Report', () => {
   afterEach(utils.resetBrowser);
   afterAll(utils.afterEach);
 
+  afterEach(utils.revertDb);
+
   it('open and submit delivery form', async () => {
     await common.goToReportsNative();
     
-    await genericForm.selectFormNative('D');
+    await genericForm.selectFormNative('DD');
     //select name
     await deliveryReport.selectPatientName('jack');
     await genericForm.nextPageNative();
@@ -35,7 +37,7 @@ describe('Submit Delivery Report', () => {
     await deliveryReport.selectConvulsionsButton();
     await genericForm.nextPageNative();
     
-    // Delivery Outcome
+    // // Delivery Outcome
     await deliveryReport.selectBabiesDeliveredButton();
     await deliveryReport.enterNoOfBabiesDelivered(6);
     await deliveryReport.selectBabiesAliveButton(3);
@@ -46,27 +48,27 @@ describe('Submit Delivery Report', () => {
     await deliveryReport.selectDeliveryMethod();
     await genericForm.nextPageNative();
 
-    // Dead Babies Information
-    // We need to loop through all dead babies and fill out information
+    // // Dead Babies Information
+    // // We need to loop through all dead babies and fill out information
     for (let i = 1; i <= 3; i++) {
       deliveryReport.populateDeadBabyInformation(i);
     }
     await genericForm.nextPageNative();
 
-    // Alive Babies Information
-    // We need to loop through all alive babies and fill out information
+    // // Alive Babies Information
+    // // We need to loop through all alive babies and fill out information
     for (let i = 4; i <= 6; i++) {
       deliveryReport.populateAliveBabyInformation(i);
     }
-
     await genericForm.nextPageNative();
+    
     await genericForm.nextPageNative();
     await genericForm.nextPageNative();
     await genericForm.nextPageNative();
     await deliveryReport.pncCheckBox();
     await genericForm.nextPageNative();
 
-    //submit
+    // //submit
     await genericForm.submitReports();
 
     // Verify dead babies UUIDs are unique
