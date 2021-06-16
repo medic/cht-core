@@ -1,8 +1,9 @@
-const commonElements = require('../../page-objects/common/common.po.js');
-const loginPage = require('../../page-objects/login/login.po.js');
+const loginPage = require('../../page-objects/login.page');
+const commonPage = require('../../page-objects/common.page');
+const auth = require('../../../auth')();
+
 
 describe('Login and logout tests', () => {
-
   const defaultLocales = [
     { code: 'bm', name: 'Bamanankan (Bambara)' },
     { code: 'en', name: 'English' },
@@ -14,7 +15,7 @@ describe('Login and logout tests', () => {
     { code: 'sw', name: 'Kiswahili (Swahili)' }
   ];
 
-  const frTranslations ={
+  const frTranslations = {
     user: `Nom d'utilisateur`,
     pass: 'Mot de passe',
     error: `Nom d'utilisateur ou mot de passe incorrect. Veuillez réessayer`
@@ -24,17 +25,34 @@ describe('Login and logout tests', () => {
     user: 'Nombre de usuario',
     pass: 'Contraseña',
     error: 'Nombre de usuario o contraseña incorrecto. Favor intentar de nuevo.'
-  };   
+  };
+
+  afterEach(async () => {
+    await browser.deleteCookies();
+    await browser.refresh();
+  });
 
   it('should show locale selector on login page', async () => {
-    await commonElements.goToLoginPageNative();
-    const locales = await loginPage.getAllLocales(); 
-    expect(locales).toEqual(defaultLocales);  
+    const locales = await loginPage.getAllLocales();
+    expect(locales).toEqual(defaultLocales);
   });
 
   it('should change locale on login page', async () => {
     //French and Spanish translations
     expect(await loginPage.changeLanguage('fr')).toEqual(frTranslations);
     expect(await loginPage.changeLanguage('es')).toEqual(esTranslations);
+  });
+
+  it('should show a warning before log out', async () => {
+    await loginPage.cookieLogin(auth.username, auth.password);
+    const warning = await commonPage.getLogoutMessage();
+    expect(warning).toBe('Are you sure you want to log out?');
+    await (await commonPage.yesButton()).click();
+  });
+
+  it('should log in using username and password fields', async () => {
+    await loginPage.login(auth.username, auth.password);
+    expect(await commonPage.analyticsTab()).toBeDisplayed();
+    expect(await commonPage.messagesTab()).toBeDisplayed();
   });
 });
