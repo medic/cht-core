@@ -51,7 +51,7 @@ module.exports = {
     await search.click();
     await search.sendKeys(name);
     const nameElm = element(by.css('.name'));
-    await helper.waitElementToBeVisibleNative(nameElm));
+    await helper.waitElementToBeVisibleNative(nameElm);
     await nameElm.click();
   },
 
