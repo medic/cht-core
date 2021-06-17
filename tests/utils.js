@@ -275,6 +275,24 @@ const revertDb = async (except, ignoreRefresh) => {
   await setUserContactDoc();
 };
 
+//to use for non ui tests
+const revertDbNative = async (except, ignoreRefresh) => {
+  const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
+  const needsRefresh = await revertSettings();
+  await deleteAll(except);
+  await revertTranslations();
+  if (!ignoreRefresh && (needsRefresh)) {
+    watcher && watcher.cancel();
+    await refreshToGetNewSettings();
+  } else if (needsRefresh) {
+    await watcher && watcher.promise;
+  } else {
+    watcher && watcher.cancel();
+  }
+
+  await setUserContactDoc();
+};
+
 const deleteUsers = async (users, meta = false) => {
   const usernames = users.map(user => `org.couchdb.user:${user.username}`);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
@@ -467,6 +485,21 @@ const prepServices = async (noBrowser) => {
     }
     await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
   }
+};
+
+//non browser tests
+const prepServicesNative = async () => {
+  if (constants.IS_TRAVIS) {
+    console.log('On travis, waiting for horti to first boot api');
+    await listenForApi();
+    console.log('Horti booted API, rebooting under our logging structure');
+    await rpn.post('http://localhost:31337/all/restart');
+  } else {
+    // Locally we just need to start them and can do so straight away
+    await rpn.post('http://localhost:31337/all/start');
+  }
+  await listenForApi();
+  await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
 };
 
 const protractorLogin = async (browser, timeout = 20) => {
@@ -744,7 +777,7 @@ module.exports = {
    * @return {Promise}
    */
   revertDb: revertDb,
-
+  revertDbNative: revertDbNative,
   resetBrowser: () => {
     return browser.driver
       .navigate()
@@ -962,6 +995,8 @@ module.exports = {
   getSettings: () => module.exports.getDoc('settings').then(settings => settings.settings),
 
   prepServices: prepServices,
+  prepServicesnative: prepServicesNative,
+
 
   setupUser: setupUser,
   protractorLogin: protractorLogin,

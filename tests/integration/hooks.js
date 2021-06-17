@@ -3,9 +3,8 @@ const request = require('request-promise-native');
 
 exports.mochaHooks = {
   beforeAll: async ()=> {
-
     console.log('Starting services......');
-    await utils.prepServices(true);
+    await utils.prepServicesNative(true);
     console.log('Services started');
   },
 
