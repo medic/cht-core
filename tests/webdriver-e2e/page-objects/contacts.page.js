@@ -22,11 +22,9 @@ const getReportFiltersText = async () => {
 };
 
 const getReportTaskFiltersText = async () => {
-  await browser.waitUntil(async () => { 
-    const length = (await taskFilters()).length;
-    console.log('length is ');
-    console.log(length);
-    return  length > 0; });
+  await browser.waitUntil(async () => {
+    return (await taskFilters()).length > 0;
+  });
   return Promise.all((await taskFilters()).map(filter => filter.getText()));
 };
 
