@@ -9,7 +9,6 @@ const specReporter = require('jasmine-spec-reporter').SpecReporter;
 const fs = require('fs');
 const path = require('path');
 const Tail = require('tail').Tail;
-const{browser} = require('protractor');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -276,19 +275,19 @@ const revertDb = async (except, ignoreRefresh) => {
 };
 
 //to use for non ui tests
-const revertDbNative = async (except, ignoreRefresh) => {
-  const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
-  const needsRefresh = await revertSettings();
+const revertDbNative = async (except) => {
+  //const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
+  //const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
-  if (!ignoreRefresh && (needsRefresh)) {
-    watcher && watcher.cancel();
-    await refreshToGetNewSettings();
-  } else if (needsRefresh) {
-    await watcher && watcher.promise;
-  } else {
-    watcher && watcher.cancel();
-  }
+  // if (!ignoreRefresh && (needsRefresh)) {
+  //   watcher && watcher.cancel();
+  //   await refreshToGetNewSettings();
+  // } else if (needsRefresh) {
+  //   await watcher && watcher.promise;
+  // } else {
+  //   watcher && watcher.cancel();
+  // }
 
   await setUserContactDoc();
 };
@@ -995,7 +994,7 @@ module.exports = {
   getSettings: () => module.exports.getDoc('settings').then(settings => settings.settings),
 
   prepServices: prepServices,
-  prepServicesnative: prepServicesNative,
+  prepServicesNative: prepServicesNative,
 
 
   setupUser: setupUser,
