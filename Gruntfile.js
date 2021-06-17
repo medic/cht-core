@@ -615,6 +615,10 @@ module.exports = function(grunt) {
         },
         stdio: 'inherit', // enable colors!
       },
+      //using npm run, as 'grunt-mocha-test' has issues with the integration with newer versions of mocha.
+      'e2e-integration': {
+        cmd: 'npm run mochatests'
+      }
     },
     watch: {
       options: {
@@ -777,15 +781,7 @@ module.exports = function(grunt) {
         src: [
           'sentinel/tests/**/*.js'
         ],
-      },
-      'e2e-integration': {
-        src: 'tests/integration/**/*.js',
-        options: {
-          timeout: 135000,
-          reporter: 'spec',
-          captureFile: 'tests/results/results.txt'
-        }
-      },
+      }
     },
     ngtemplates: {
       adminApp: {
@@ -980,7 +976,7 @@ module.exports = function(grunt) {
     'exec:setup-test-database',
     'couch-push:test',
     'exec:e2e-servers',
-    'mochaTest:e2e-integration'
+    'exec:e2e-integration'
   ]);
 
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
@@ -1072,7 +1068,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
     'exec:e2e-servers',
-    'mochaTest:e2e-integration',
+    'exec:e2e-integration',
   ]);
 
   grunt.registerTask('ci-e2e-cht', 'Run e2e tests for CI', [
