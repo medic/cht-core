@@ -46,11 +46,13 @@ module.exports = {
     const select = element(by.css('.selection'));
     await helper.waitUntilReadyNative(select);
     await select.click();
-    const search = await element(by.css('.select2-search__field'));
+    const search = element(by.css('.select2-search__field'));
+    await helper.waitUntilReadyNative(search);
     await search.click();
     await search.sendKeys(name);
-    await helper.waitElementToBeVisibleNative(element(by.css('.name')));
-    await element(by.css('.name')).click();
+    const nameElm = element(by.css('.name'));
+    await helper.waitElementToBeVisibleNative(nameElm));
+    await nameElm.click();
   },
 
   //outcome for women
