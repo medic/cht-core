@@ -37,10 +37,14 @@ describe('Login and logout tests', () => {
     expect(locales).toEqual(defaultLocales);
   });
 
-  it('should change locale on login page', async () => {
-    //French and Spanish translations
-    expect(await loginPage.changeLanguage('fr')).toEqual(frTranslations);
-    expect(await loginPage.changeLanguage('es')).toEqual(esTranslations);
+  it('should change locale to French', async () => {
+    //French translations
+    expect(await loginPage.changeLanguage('fr',frTranslations.user)).toEqual(frTranslations);
+  });
+
+  it('should change locale to Spanish', async () => {
+    //Spanish translations
+    expect(await loginPage.changeLanguage('es',esTranslations.user)).toEqual(esTranslations);
   });
 
   it('should show a warning before log out', async () => {

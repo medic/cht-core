@@ -4,6 +4,9 @@ const modalBody = () => $('div.modal-body');
 const yesButton = () => $('a.btn.submit.btn-danger');
 const messagesTab = () => $('#messages-tab');
 const analyticsTab =  () => $('#analytics-tab');
+const getReportsButtonLabel = () => $('#reports-tab .button-label');
+const getMessagesButtonLabel = () => $('#messages-tab .button-label');
+const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 
 
 const navigateToLogoutModal = async () => {
@@ -24,11 +27,24 @@ const getLogoutMessage = async () => {
   return body.getText();
 };
 
+const goToReports = async () => {
+  await browser.url('/#/reports');
+};
+
+const goToPeople = async () => {
+  await browser.url('/#/contacts');
+};
+
 module.exports = {
   logout,
   logoutButton,
   getLogoutMessage,
   yesButton,
   messagesTab,
-  analyticsTab
+  analyticsTab,
+  goToReports,
+  goToPeople,
+  getReportsButtonLabel,
+  getMessagesButtonLabel,
+  getTasksButtonLabel
 };

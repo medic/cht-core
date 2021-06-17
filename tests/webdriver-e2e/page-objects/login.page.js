@@ -1,5 +1,5 @@
 const utils = require('../../utils');
-
+const auth = require('../../auth')();
 const loginButton = () => $('#login');
 const userField = () => $('#user');
 const passwordField = () => $('#password');
@@ -14,7 +14,7 @@ const login = async (username, password) => {
   await (await loginButton()).click();
 };
 
-const cookieLogin = async (username, password) => {
+const cookieLogin = async (username = auth.username, password = auth.password) => {
   const opts = {
     path: '/medic/login',
     body: { user: username, password: password },
@@ -37,10 +37,10 @@ const open = () => {
 };
 
 const getLanguage = async (selector) => {
-  const lang = await Promise.all((await $$(selector)).map(async loc => {
+  const lang = await Promise.all((await $$(selector)).map(async localeElement => {
     return {
-      code: await loc.getAttribute('name'),
-      name: await loc.getText(),
+      code: await localeElement.getAttribute('name'),
+      name: await localeElement.getText(),
     };
   }));
   return lang;
@@ -53,8 +53,9 @@ const changeLocale = async locale => {
   return (await $(`.locale[name="${locale}"]`)).click();
 };
 
-const changeLanguage = async (languageCode) => {
+const changeLanguage = async (languageCode, userTranslation) => {
   await changeLocale(languageCode);
+  browser.waitUntil(async () => { return (await labelForUser()).getText() === userTranslation; });
   return {
     user: await (await labelForUser()).getText(),
     pass: await (await labelForPassword()).getText(),
