@@ -336,6 +336,11 @@ describe('scheduler', () => {
     let initMoment;
     let purgeMoment;
 
+    // Difference in seconds without taking into account milliseconds
+    const secondsDiff = (moment1, moment2) => {
+      return moment1.milliseconds(0).diff(moment2.milliseconds(0), 'seconds');
+    }
+
     beforeEach(() => {
       realSetTimeout = setTimeout;
       // default value in the past so if purge is never called because an
@@ -359,7 +364,7 @@ describe('scheduler', () => {
       sinon.restore();
     });
 
-    it('should not skip job when time is milliseconds before schedule and launch it before next one', () => {
+    it('should not skip job when time is milliseconds before schedule and should launch before next one', () => {
       sinon.stub(scheduling, 'getSchedule')
         .returns(later.parse.cron('*/2 * * * * *', true));  // each 2 seconds, even seconds
       let wait = 0;
@@ -377,16 +382,16 @@ describe('scheduler', () => {
         .then(() => nextTick(2200))
         .then(() => {
           // because scheduling was calculated just milliseconds BEFORE of the first
-          // schedule, a purge job was launched on time, the next second init()
-          // was called (regardless of the difference in milliseconds)
-          expect(purgeMoment.seconds()).to.be.equal(initMoment.seconds() + 1);
+          // schedule, a purge job was launched on time (the next second `init()`
+          // was called regardless of the difference in milliseconds)
+          expect(secondsDiff(purgeMoment, initMoment)).to.equal(1);
           // actual execution time will vary, but the execution should happen
           // in a even second because the job was launched on time
           expect(purgeMoment.seconds() % 2 === 0).to.be.true;
         });
     }).timeout(4000).slow(2400);  // should be less, but just in case
 
-    it('should not skip job when time is milliseconds ahead schedule and launch within the same second', () => {
+    it('should not skip job when time is milliseconds ahead schedule and should launch within the same second', () => {
       sinon.stub(scheduling, 'getSchedule')
         .returns(later.parse.cron('*/2 * * * * *', true));  // each 2 seconds, even seconds
       let wait = 0;
@@ -405,9 +410,9 @@ describe('scheduler', () => {
         .then(() => {
           // because scheduling was calculated just milliseconds AHEAD of the first
           // schedule, a purge job was launched just milliseconds ahead, and depending
-          // of machine workload time will vary, but the execution should happen
+          // of machine workload, time will vary, but the execution should happen
           // within the same second or next second, and before the next even second
-          expect(purgeMoment.seconds() < initMoment.seconds() + 2).to.be.true;
+          expect(secondsDiff(purgeMoment, initMoment) < 2).to.be.true;
           // If milliseconds from initMoment where to close to 1000, the second
           // when the purgeMoment happen may or may not be even, the only warranty
           // is that the schedule was executed and before the next schedule
