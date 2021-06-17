@@ -6,9 +6,6 @@ const _ = require('lodash');
 const {expect} = require('chai');
 
 describe('server',  () => {
-  before(async () => await utils.prepServices());
-  after(async () => await request.post('http://localhost:31337/die'));
-
   describe('JSON-only endpoints', () => {
     it('should require application/json Content-Type header', () => {
       const opts = {
