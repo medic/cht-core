@@ -460,12 +460,13 @@ const prepServices = async (noBrowser) => {
   if(noBrowser){
     await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
     return;
+  } else {
+    const config = await browser.getProcessedConfig();
+    if (config.suite && config.suite === 'web') {
+      await runAndLogApiStartupMessage('Settings setup', setupSettings);
+    }
+    await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
   }
-  const config = await browser.getProcessedConfig();
-  if (config.suite && config.suite === 'web') {
-    await runAndLogApiStartupMessage('Settings setup', setupSettings);
-  }
-  await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
 };
 
 const protractorLogin = async (browser, timeout = 20) => {
