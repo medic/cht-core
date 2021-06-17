@@ -64,7 +64,7 @@ const hasAnyPermission = (permissions, userSettingsDoc, chtCoreSettingsDoc) => {
 
 /**
  * Returns a versioned API that is available for internal apps and end users configuring CHT-Core instances.
- * @return {{v1: Object }}
+ * @return {{v1: object }}
  */
 const getApi = () => {
   return {

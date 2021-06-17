@@ -30,6 +30,19 @@ describe('Auth service', function() {
   });
 
   describe('has', () => {
+    it('should return false when no settings and no permissions configured.', async () => {
+      userCtx.returns({ roles: ['chw'] });
+
+      Settings.resolves(null);
+      const resultNoSettings = await service.has('can_edit');
+
+      Settings.resolves({});
+      const resultNoPermissions = await service.has('can_edit');
+
+      chai.expect(resultNoSettings).to.be.false;
+      chai.expect(resultNoPermissions).to.be.false;
+    });
+
     it('false when no session', async () => {
       userCtx.returns(null);
       Settings.resolves({ permissions: {} });
@@ -205,6 +218,19 @@ describe('Auth service', function() {
   });
 
   describe('Auth.any', () => {
+    it('should return false when no settings and no permissions configured.', async () => {
+      userCtx.returns({ roles: ['chw'] });
+
+      Settings.resolves(null);
+      const resultNoSettings = await service.any([['can_edit'], ['can_configure']]);
+
+      Settings.resolves({});
+      const resultNoPermissions = await service.any([['can_edit'], ['can_configure']]);
+
+      chai.expect(resultNoSettings).to.be.false;
+      chai.expect(resultNoPermissions).to.be.false;
+    });
+
     it('false when no session', async () => {
       userCtx.returns(null);
       Settings.resolves({ permissions: {} });
