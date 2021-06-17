@@ -1,9 +1,12 @@
-const elementHelper = require('../helpers/element');
 const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
 const rowByText = (text) => $(`span=${text}`);
-const reportFilters = () => $$('.card.reports .table-filter a');
-const taskFilters = () => $$('.card.tasks .table-filter a');
+const reportFilterSelector = '.card.reports .table-filter a';
+const reportFilter = () => $(reportFilterSelector);
+const reportFilters = () => $$(reportFilterSelector);
+const taskFilterSelector = '.card.tasks .table-filter a';
+const taskFilter = () => $(taskFilterSelector);
+const taskFilters = () => $$(taskFilterSelector);
 const contactList = () => $('#contacts-list');
 
 const search = async (query) => {
@@ -14,19 +17,18 @@ const search = async (query) => {
 
 const selectLHSRowByText = async (text) => {
   await search(text);
-  await elementHelper.handleUpdateModal();
   await (await rowByText(text)).click();
 };
 
 const getReportFiltersText = async () => {
+  await (await reportFilter()).waitForDisplayed();
   return Promise.all((await reportFilters()).map(filter => filter.getText()));
 };
 
 const getReportTaskFiltersText = async () => {
-  await browser.waitUntil(async () => {
-    return (await taskFilters()).length > 0;
-  });
-  return Promise.all((await taskFilters()).map(filter => filter.getText()));
+  await (await taskFilter()).waitForDisplayed();
+  const blah = await Promise.all((await taskFilters()).map(filter => filter.getText()));
+  return blah;
 };
 
 
