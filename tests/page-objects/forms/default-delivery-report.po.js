@@ -43,7 +43,7 @@ module.exports = {
   },
 
   selectPatientName: async name => {
-    const select = element(by.css('section[name="/delivery/inputs/contact"] .selection'));
+    const select = element(by.css('section[name="/delivery/inputs/contact"] .select2-selection'));
     await helper.waitUntilReadyNative(select);
     await select.click();
     const search = element(by.css('.select2-search__field'));
