@@ -112,6 +112,23 @@ describe('reminders', () => {
     });
   });
 
+  describe('getSchedule', () => {
+    let getSchedule;
+    beforeEach(() => {
+      getSchedule = reminders.__get__('getSchedule');
+    });
+
+    it('should return date from next schedule for cron', () => {
+      clock = sinon.useFakeTimers(moment('2021-06-17T10:48:54.000Z').valueOf());
+      assert.equal(getSchedule({ cron: '0 * * * *' }).next().toISOString(), '2021-06-17T11:00:00.000Z');
+    });
+
+    it('should return date from next schedule for text_expression', () => {
+      clock = sinon.useFakeTimers(moment('2021-06-17T10:48:54.000Z').valueOf());
+      assert.equal(getSchedule({ text_expression: 'every 5 mins' }).next().toISOString(), '2021-06-17T10:50:00.000Z');
+    });
+  });
+
   describe('runReminder', () => {
     let runReminder;
     beforeEach(() => {
