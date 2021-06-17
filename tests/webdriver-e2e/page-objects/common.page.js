@@ -7,6 +7,7 @@ const analyticsTab =  () => $('#analytics-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
+const contactsPage = require('./contacts.page');
 
 
 const navigateToLogoutModal = async () => {
@@ -39,6 +40,7 @@ const goToReports = async () => {
 
 const goToPeople = async () => {
   await browser.url('/#/contacts');
+  await (await contactsPage.contactList()).waitForDisplayed();
 };
 
 module.exports = {

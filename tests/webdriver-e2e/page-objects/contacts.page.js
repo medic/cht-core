@@ -4,6 +4,7 @@ const searchButton = () => $('#search');
 const rowByText = (text) => $(`span=${text}`);
 const reportFilters = () => $$('.card.reports .table-filter a');
 const taskFilters = () => $$('.card.tasks .table-filter a');
+const contactList = () => $('contacts-list');
 
 const search = async (query) => {
   await (await searchBox()).clearValue();
@@ -33,5 +34,6 @@ module.exports = {
   selectLHSRowByText,
   reportFilters,
   getReportFiltersText,
-  getReportTaskFiltersText
+  getReportTaskFiltersText,
+  contactList
 };
