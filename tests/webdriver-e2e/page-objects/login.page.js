@@ -1,5 +1,6 @@
 const utils = require('../../utils');
 const auth = require('../../auth')();
+const commonPage = require('./common.page')
 const loginButton = () => $('#login');
 const userField = () => $('#user');
 const passwordField = () => $('#password');
@@ -29,7 +30,7 @@ const cookieLogin = async (username = auth.username, password = auth.password) =
 
   await browser.setCookies(cookieArray);
   await utils.setupUserDoc(username);
-  await browser.url('/');
+  await commonPage.goToBase();
 };
 
 const open = () => {

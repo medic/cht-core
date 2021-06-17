@@ -27,6 +27,12 @@ const getLogoutMessage = async () => {
   return body.getText();
 };
 
+const goToBase = async () => {
+  await browser.url('/');
+  await (await analyticsTab()).waitForDisplayed();
+  await (await messagesTab()).waitForDisplayed();
+};
+
 const goToReports = async () => {
   await browser.url('/#/reports');
 };
@@ -46,5 +52,6 @@ module.exports = {
   goToPeople,
   getReportsButtonLabel,
   getMessagesButtonLabel,
-  getTasksButtonLabel
+  getTasksButtonLabel,
+  goToBase
 };
