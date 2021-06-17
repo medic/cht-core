@@ -9,6 +9,7 @@ const specReporter = require('jasmine-spec-reporter').SpecReporter;
 const fs = require('fs');
 const path = require('path');
 const Tail = require('tail').Tail;
+const{browser} = require('protractor');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -440,7 +441,7 @@ const saveBrowserLogs = () => {
     });
 };
 
-const prepServices = async () => {
+const prepServices = async (noBrowser) => {
   if (constants.IS_TRAVIS) {
     console.log('On travis, waiting for horti to first boot api');
     // Travis' horti will be installing and then deploying api and sentinel, and those logs are
@@ -456,6 +457,10 @@ const prepServices = async () => {
   }
 
   await listenForApi();
+  if(noBrowser){
+    await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
+    return;
+  }
   const config = await browser.getProcessedConfig();
   if (config.suite && config.suite === 'web') {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
