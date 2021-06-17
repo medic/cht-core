@@ -95,7 +95,7 @@ jobs:
       run: node --stack_size=10000 `which grunt` exec:test-config-standard
 
   test-e2e:
-    needs: [build, e2e-integration]
+    needs: build
     name: e2e Tests for Node version ${{ matrix.node-version }}
     runs-on: ubuntu-18.04
 
@@ -171,7 +171,7 @@ jobs:
           tests/logs
       if: ${{ failure() }}
   e2e-integration:
-    needs: build
+    needs: [build, test-e2e]
     name: e2e Integration Tests for Node version ${{ matrix.node-version }}
     runs-on: ubuntu-18.04
 
