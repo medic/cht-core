@@ -16,10 +16,10 @@ describe('Submit Default Delivery Report', () => {
   });
 
 
-  afterEach(utils.resetBrowser);
-  afterAll(utils.afterEach);
-
-  afterEach(utils.revertDb);
+  afterEach(async () => {
+    await utils.resetBrowser();
+    await utils.revertDb();
+  });
 
   it('open and submit default delivery form', async () => {
     await common.goToReportsNative();
