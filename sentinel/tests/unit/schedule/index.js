@@ -339,7 +339,7 @@ describe('scheduler', () => {
     // Difference in seconds without taking into account milliseconds
     const secondsDiff = (moment1, moment2) => {
       return moment1.milliseconds(0).diff(moment2.milliseconds(0), 'seconds');
-    }
+    };
 
     beforeEach(() => {
       realSetTimeout = setTimeout;
