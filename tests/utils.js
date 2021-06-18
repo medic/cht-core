@@ -276,19 +276,8 @@ const revertDb = async (except, ignoreRefresh) => {
 
 //to use for non ui tests
 const revertDbNative = async (except) => {
-  //const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
-  //const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
-  // if (!ignoreRefresh && (needsRefresh)) {
-  //   watcher && watcher.cancel();
-  //   await refreshToGetNewSettings();
-  // } else if (needsRefresh) {
-  //   await watcher && watcher.promise;
-  // } else {
-  //   watcher && watcher.cancel();
-  // }
-
   await setUserContactDoc();
 };
 
