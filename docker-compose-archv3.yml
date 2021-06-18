@@ -16,8 +16,8 @@ services:
     container_name: medic-couchdb
     image: medicmobile/couchdb:2.3.1-test14
     environment:
-      - COUCHDB_USER=${COUCHDB_USER}
-      - COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
+      COUCHDB_USER: "${COUCHDB_USER:-cht}"
+      COUCHDB_PASSWORD: "${COUCHDB_PASSWORD:-cht_password}"
     # https://hub.docker.com/_/couchdb
     volumes:
       - medic-data:/opt/couchdb/data/
@@ -27,12 +27,12 @@ services:
 
   medic-api:
     container_name: medic-api
-    image: medicmobile/medic-api:3.10.0-010520-test4
+    image: medicmobile/medic-api:3.10.0-010520-test3
     environment:
       COUCHDB_SERVICE_NAME: couchdb
       COUCH_NODE_NAME: "couchdb@127.0.0.1"
-      COUCHDB_USER: ${COUCHDB_USER}
-      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
+      COUCHDB_USER: "${COUCHDB_USER:-cht}"
+      COUCHDB_PASSWORD: "${COUCHDB_PASSWORD:-cht_password}"
       HORTI_BOOTSTRAP_VERSION: 3.10.0
       NODE_ENV: production
       HAPROXY_SVC: haproxy
@@ -47,8 +47,8 @@ services:
     environment:
       COUCHDB_SERVICE_NAME: couchdb
       COUCH_NODE_NAME: "couchdb@127.0.0.1"
-      COUCHDB_USER: ${COUCHDB_USER}
-      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
+      COUCHDB_USER: "${COUCHDB_USER:-cht}"
+      COUCHDB_PASSWORD: "${COUCHDB_PASSWORD:-cht_password}"
       HAPROXY_SVC: haproxy
       API_SVC_NAME: medic-api
       NODE_ENV: production
@@ -64,8 +64,8 @@ services:
     environment:
       COUCHDB_SERVICE_NAME: couchdb
       COUCH_NODE_NAME: "couchdb@127.0.0.1"
-      COUCHDB_USER: ${COUCHDB_USER}
-      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
+      COUCHDB_USER: "${COUCHDB_USER:-cht}"
+      COUCHDB_PASSWORD: "${COUCHDB_PASSWORD:-cht_password}"
       HAPROXY_SVC: haproxy
       API_SVC_NAME: medic-api
     networks:
@@ -76,10 +76,10 @@ services:
 
   haproxy:
     container_name: haproxy
-    image: medicmobile/haproxy:rc-1.18
+    image: medicmobile/haproxy:rc-1.17
     environment:
-      COUCHDB_USER: ${COUCHDB_USER}
-      COUCHDB_PASSWoRD: ${COUCHDB_PASSWORD}
+      COUCHDB_USER: "${COUCHDB_USER:-cht}"
+      COUCHDB_PASSWoRD: "${COUCHDB_PASSWORD:-cht_password}"
       COUCHDB_HOST: couchdb
     networks:
       - medic-net
@@ -91,7 +91,7 @@ services:
     container_name: medic-nginx
     image: medicmobile/nginx:3.10.0-slim-01052021-11
     environment:
-      CHT_DOMAIN: 
+      -cht_DOMAIN:
     volumes:
       - medic-ssl:/root/.acme.sh/
     #  - ./ssl-certificate-key.pem:/etc/nginx/private/key.pem
