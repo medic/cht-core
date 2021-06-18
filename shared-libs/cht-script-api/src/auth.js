@@ -8,7 +8,7 @@ const NATIONAL_ADMIN_ROLE = 'national_admin'; // Deprecated: kept for backwards 
 const DISALLOWED_PERMISSION_PREFIX = '!';
 
 const isAdmin = (userRoles) => {
-  if (!userRoles) {
+  if (!Array.isArray(userRoles)) {
     return false;
   }
 
@@ -35,9 +35,9 @@ const printLog = (reason, permissions, roles) => {
   console.debug(`CHT Script API :: ${reason}. User roles: ${roles}. Wanted permissions: ${permissions}`);
 };
 
-const checkUserHasPermissions = (permissions, userRoles, chtPermissions, expectedToHave) => {
+const checkUserHasPermissions = (permissions, userRoles, chtPermissionsSettings, expectedToHave) => {
   return permissions.every(permission => {
-    const roles = chtPermissions[permission];
+    const roles = chtPermissionsSettings[permission];
 
     if (!roles) {
       return !expectedToHave;
@@ -47,10 +47,34 @@ const checkUserHasPermissions = (permissions, userRoles, chtPermissions, expecte
   });
 };
 
+const verifyParameters = (permissions, userRoles, chtPermissionsSettings) => {
+  if (!permissions || !permissions.length) {
+    printLog('No permissions to verify.');
+    return false;
+  }
 
-const hasPermissions = (permissions, userRoles, chtPermissions) => {
   if (!userRoles || !userRoles.length) {
     printLog('User has no roles');
+    return false;
+  }
+
+  if (!chtPermissionsSettings || !Object.keys(chtPermissionsSettings).length) {
+    printLog('No permissions configured in CHT-Core');
+    return false;
+  }
+
+  return true;
+};
+
+/**
+ * Verify if the user's role has the permission(s).
+ * @param permissions {string | string[]} Permission(s) to verify
+ * @param userRoles {string[]} Array of user roles.
+ * @param chtPermissionsSettings {object} Object of configured permissions in CHT-Core's settings.
+ * @return {boolean}
+ */
+const hasPermissions = (permissions, userRoles, chtPermissionsSettings) => {
+  if (!verifyParameters(permissions, userRoles, chtPermissionsSettings)) {
     return false;
   }
 
@@ -69,8 +93,8 @@ const hasPermissions = (permissions, userRoles, chtPermissions) => {
     return true;
   }
 
-  const hasDisallowed = !checkUserHasPermissions(disallowed, userRoles, chtPermissions, false);
-  const hasAllowed = checkUserHasPermissions(allowed, userRoles, chtPermissions, true);
+  const hasDisallowed = !checkUserHasPermissions(disallowed, userRoles, chtPermissionsSettings, false);
+  const hasAllowed = checkUserHasPermissions(allowed, userRoles, chtPermissionsSettings, true);
 
   if (hasDisallowed) {
     printLog('Found disallowed permission(s)', permissions, userRoles);
@@ -88,13 +112,12 @@ const hasPermissions = (permissions, userRoles, chtPermissions) => {
 /**
  * Verify if the user's role has all the permissions of any of the provided groups.
  * @param permissionsGroupList {string[][]} Array of groups of permissions due to the complexity of permission grouping
- * @param userRoles {Object} User Settings Document. If undefined then will take from the cache.
- * @param chtPermissions CHT-Core Settings Document. If undefined then will take from the cache.
+ * @param userRoles {string[]} Array of user roles.
+ * @param chtPermissionsSettings {object} Object of configured permissions in CHT-Core's settings.
  * @return {boolean}
  */
-const hasAnyPermission = (permissionsGroupList, userRoles, chtPermissions) => {
-  if (!userRoles || !userRoles.length) {
-    printLog('User has no roles');
+const hasAnyPermission = (permissionsGroupList, userRoles, chtPermissionsSettings) => {
+  if (!verifyParameters(permissionsGroupList, userRoles, chtPermissionsSettings)) {
     return false;
   }
 
@@ -116,8 +139,8 @@ const hasAnyPermission = (permissionsGroupList, userRoles, chtPermissions) => {
   }
 
   const hasAnyPermissionGroup = permissionsGroupList.some((permissions, i) => {
-    const hasAnyAllowed = checkUserHasPermissions(allowedGroupList[i], userRoles, chtPermissions, true);
-    const hasAnyDisallowed = !checkUserHasPermissions(disallowedGroupList[i], userRoles, chtPermissions, false);
+    const hasAnyAllowed = checkUserHasPermissions(allowedGroupList[i], userRoles, chtPermissionsSettings, true);
+    const hasAnyDisallowed = !checkUserHasPermissions(disallowedGroupList[i], userRoles, chtPermissionsSettings, false);
     // Checking the 'permission group' is valid.
     return hasAnyAllowed && !hasAnyDisallowed;
   });

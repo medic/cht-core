@@ -5,7 +5,6 @@ import { expect } from 'chai';
 import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { AuthService } from '@mm-services/auth.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ChangesService } from '@mm-services/changes.service';
 
 describe('Auth Service', () => {
@@ -21,7 +20,6 @@ describe('Auth Service', () => {
       providers: [
         { provide: SessionService, useValue: sessionService },
         { provide: SettingsService, useValue: settingsService },
-        { provide: UserSettingsService, useValue: {} },
         { provide: ChangesService, useValue: {} }
       ]
     });
@@ -67,7 +65,7 @@ describe('Auth Service', () => {
 
     it('should return true when user is db admin', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
-      settingsService.get.resolves({ permissions: {} });
+      settingsService.get.resolves({ permissions: { can_edit: ['chw'] } });
 
       const result = await service.has(['can_backup_facilities']);
 
@@ -278,7 +276,7 @@ describe('Auth Service', () => {
 
     it('should return true when admin and no disallowed permissions', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
-      settingsService.get.resolves({ permissions: {} });
+      settingsService.get.resolves({ permissions: { can_edit: [ 'chw' ] } });
 
       const result = await service.any([['can_backup_facilities'], ['can_export_messages'], ['somepermission']]);
 
@@ -287,7 +285,7 @@ describe('Auth Service', () => {
 
     it('should return true when admin and some disallowed permissions', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
-      settingsService.get.resolves({ permissions: {} });
+      settingsService.get.resolves({ permissions: { can_edit: [ 'chw' ] } });
 
       const result = await service.any([['!can_backup_facilities'], ['!can_export_messages'], ['somepermission']]);
 

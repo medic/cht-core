@@ -3,24 +3,24 @@ import { expect } from 'chai';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ChangesService } from '@mm-services/changes.service';
+import { SessionService } from '@mm-services/session.service';
 
 describe('CHTScriptApiService service', () => {
   let service: CHTScriptApiService;
-  let userSettingsService;
+  let sessionService;
   let settingsService;
   let changesService;
 
   beforeEach(() => {
-    userSettingsService = { getUserDocId: sinon.stub(), get: sinon.stub() };
+    sessionService = { userCtx: sinon.stub() };
     settingsService = { get: sinon.stub() };
     changesService = { subscribe: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: UserSettingsService, useValue: userSettingsService },
+        { provide: SessionService, useValue: sessionService },
         { provide: SettingsService, useValue: settingsService },
         { provide: ChangesService, useValue: changesService}
       ]
@@ -44,20 +44,16 @@ describe('CHTScriptApiService service', () => {
   it('should initialise service', async () => {
     const addSubscriptionSpy = sinon.spy(service.subscriptions, 'add');
     settingsService.get.resolves();
-    userSettingsService.get.resolves();
+    sessionService.userCtx.returns();
 
     await service.init();
 
-    expect(changesService.subscribe.callCount).to.equal(2);
-    expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-user-settings-changes');
+    expect(changesService.subscribe.callCount).to.equal(1);
+    expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
     expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
     expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
-    expect(changesService.subscribe.args[1][0].key).to.equal('cht-script-api-settings-changes');
-    expect(changesService.subscribe.args[1][0].filter).to.be.a('function');
-    expect(changesService.subscribe.args[1][0].callback).to.be.a('function');
-    expect(addSubscriptionSpy.callCount).to.equal(2);
+    expect(addSubscriptionSpy.callCount).to.equal(1);
     expect(settingsService.get.callCount).to.equal(1);
-    expect(userSettingsService.get.callCount).to.equal(1);
   });
 
   it('should return versioned api', () => {
@@ -77,7 +73,7 @@ describe('CHTScriptApiService service', () => {
           can_configure: [ 'nurse' ]
         }
       });
-      userSettingsService.get.resolves({ roles: [ 'chw_supervisor', 'gateway' ] });
+      sessionService.userCtx.returns({ roles: [ 'chw_supervisor', 'gateway' ] });
       service.init();
       tick();
       const api = service.getApi();
@@ -94,7 +90,7 @@ describe('CHTScriptApiService service', () => {
           can_configure: [ 'nurse' ]
         }
       });
-      userSettingsService.get.resolves({ roles: [ 'chw_supervisor', 'gateway' ] });
+      sessionService.userCtx.returns({ roles: [ 'chw_supervisor', 'gateway' ] });
       service.init();
       tick();
       const api = service.getApi();
@@ -111,24 +107,30 @@ describe('CHTScriptApiService service', () => {
           can_configure: [ 'nurse' ]
         }
       });
-      userSettingsService.get.resolves();
+      sessionService.userCtx.returns({ roles: [ 'nurse' ] });
       service.init();
-      const changesCallback = changesService.subscribe.args[1][0].callback;
+      const changesCallback = changesService.subscribe.args[0][0].callback;
       tick();
       const api = service.getApi();
 
-      const resultUserUndefined = api.v1.hasPermissions('can_create_people');
+      const permissionNotFound = api.v1.hasPermissions('can_create_people');
 
-      userSettingsService.get.resolves({ roles: null });
+      settingsService.get.resolves({
+        permissions: {
+          can_edit: [ 'chw_supervisor' ],
+          can_configure: [ 'nurse' ],
+          can_create_people: [ 'chw_supervisor', 'nurse' ]
+        }
+      });
       sinon.resetHistory();
       changesCallback();
       tick();
 
-      const resultNoRoles = api.v1.hasPermissions('can_create_people');
+      const permissionFound = api.v1.hasPermissions('can_create_people');
 
-      expect(resultUserUndefined).to.be.false;
-      expect(resultNoRoles).to.be.false;
-      expect(userSettingsService.get.callCount).to.equal(0);
+      expect(permissionNotFound).to.be.false;
+      expect(permissionFound).to.be.true;
+      expect(sessionService.userCtx.callCount).to.equal(0);
       expect(settingsService.get.callCount).to.equal(1);
     }));
 
@@ -139,7 +141,7 @@ describe('CHTScriptApiService service', () => {
           can_configure: [ 'nurse' ]
         }
       });
-      userSettingsService.get.resolves({ roles: [ '_admin' ] });
+      sessionService.userCtx.returns({ roles: [ '_admin' ] });
       service.init();
       tick();
       const api = service.getApi();
@@ -156,7 +158,7 @@ describe('CHTScriptApiService service', () => {
           can_configure: null
         }
       });
-      userSettingsService.get.resolves({ roles: [ 'chw_supervisor' ] });
+      sessionService.userCtx.returns({ roles: [ 'chw_supervisor' ] });
       service.init();
       tick();
       const api = service.getApi();

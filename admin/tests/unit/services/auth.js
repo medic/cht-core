@@ -59,7 +59,7 @@ describe('Auth service', function() {
 
     it('true when user is db admin', async () => {
       userCtx.returns({ roles: ['_admin'] });
-      Settings.resolves({ permissions: {} });
+      Settings.resolves({ permissions: { can_edit: [ 'chw' ] } });
       const result = await service.has(['can_backup_facilities']);
       chai.expect(result).to.be.true;
     });
@@ -247,14 +247,14 @@ describe('Auth service', function() {
 
     it('true when admin and no disallowed permissions', async () => {
       userCtx.returns({ roles: ['_admin'] });
-      Settings.resolves({ permissions: {} });
+      Settings.resolves({ permissions: { can_edit: [ 'chw' ] } });
       const result = await service.any([['can_backup_facilities'], ['can_export_messages'], ['somepermission']]);
       chai.expect(result).to.be.true;
     });
 
     it('true when admin and some disallowed permissions', async () => {
       userCtx.returns({ roles: ['_admin'] });
-      Settings.resolves({ permissions: {} });
+      Settings.resolves({ permissions: { can_edit: [ 'chw' ] } });
       const result = await service.any([['!can_backup_facilities'], ['!can_export_messages'], ['somepermission']]);
       chai.expect(result).to.be.true;
     });

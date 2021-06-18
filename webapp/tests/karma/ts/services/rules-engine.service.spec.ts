@@ -75,7 +75,7 @@ describe('RulesEngineService', () => {
     roles: [],
   };
   const chtScriptApi = {
-    v1: { hasPermission: () => {} }
+    v1: { hasPermissions: sinon.stub() }
   };
   const expectedRulesConfig = {
     rules: 'rules',

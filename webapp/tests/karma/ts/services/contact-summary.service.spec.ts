@@ -26,7 +26,7 @@ describe('ContactSummary service', () => {
       getUHCInterval: sinon.stub()
     };
     chtScriptApi = {
-      v1: { hasPermission: () => {} }
+      v1: { hasPermissions: sinon.stub() }
     };
     chtScriptApiService = {
       getApi: sinon.stub().returns(chtScriptApi)
