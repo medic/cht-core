@@ -233,8 +233,7 @@ const getCurrentSeq = () => {
     });
 };
 
-// eslint-disable-next-line jasmine/no-focused-tests
-fdescribe('changes handler', () => {
+describe('changes handler', () => {
 
   const DOCS_TO_KEEP = [
     'PARENT_PLACE',
