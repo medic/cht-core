@@ -22,10 +22,13 @@ angular.module('inboxServices').factory('Auth',
         return has(permissionsGroupList);
       }
 
-      const chtApi = chtScriptApi.getApi();
-
       return Settings()
         .then(settings => {
+          if (!settings) {
+            $log.debug('AuthService :: CHT-Core settings not configured.');
+            return false;
+          }
+
           const userCtx = Session.userCtx();
 
           if (!userCtx) {
@@ -33,7 +36,7 @@ angular.module('inboxServices').factory('Auth',
             return false;
           }
 
-          return chtApi.v1.hasAnyPermission(permissionsGroupList, userCtx, settings);
+          return chtScriptApi.v1.hasAnyPermission(permissionsGroupList, userCtx.roles, settings.permissions);
         })
         .catch(() => false);
     };
@@ -45,10 +48,13 @@ angular.module('inboxServices').factory('Auth',
      * @param permissions {string | string[]}
      */
     const has = (permissions) => {
-      const chtApi = chtScriptApi.getApi();
-
       return Settings()
         .then(settings => {
+          if (!settings) {
+            $log.debug('AuthService :: CHT-Core settings not configured.');
+            return false;
+          }
+
           const userCtx = Session.userCtx();
 
           if (!userCtx) {
@@ -56,7 +62,7 @@ angular.module('inboxServices').factory('Auth',
             return false;
           }
 
-          return chtApi.v1.hasPermissions(permissions, userCtx, settings);
+          return chtScriptApi.v1.hasPermissions(permissions, userCtx.roles, settings.permissions);
         })
         .catch(() => false);
     };

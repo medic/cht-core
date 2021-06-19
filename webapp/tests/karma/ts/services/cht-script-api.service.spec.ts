@@ -33,16 +33,7 @@ describe('CHTScriptApiService service', () => {
     sinon.restore();
   });
 
-  it('should unsubscribe from observables when ngOnDestroy() is called', () => {
-    const unsubscribeSpy = sinon.spy(service.subscriptions, 'unsubscribe');
-
-    service.ngOnDestroy();
-
-    expect(unsubscribeSpy.callCount).to.equal(1);
-  });
-
   it('should initialise service', async () => {
-    const addSubscriptionSpy = sinon.spy(service.subscriptions, 'add');
     settingsService.get.resolves();
     sessionService.userCtx.returns();
 
@@ -52,7 +43,6 @@ describe('CHTScriptApiService service', () => {
     expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
     expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
     expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
-    expect(addSubscriptionSpy.callCount).to.equal(1);
     expect(settingsService.get.callCount).to.equal(1);
   });
 

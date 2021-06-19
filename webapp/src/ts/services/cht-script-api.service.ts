@@ -1,5 +1,4 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Injectable } from '@angular/core';
 import * as chtScriptApiFactory from '@medic/cht-script-api';
 
 import { SettingsService } from '@mm-services/settings.service';
@@ -9,8 +8,9 @@ import { SessionService } from '@mm-services/session.service';
 @Injectable({
   providedIn: 'root'
 })
-export class CHTScriptApiService implements OnDestroy {
-  subscriptions: Subscription = new Subscription();
+export class CHTScriptApiService {
+  private userCtx;
+  private settings;
 
   constructor(
     private sessionService: SessionService,
@@ -20,36 +20,46 @@ export class CHTScriptApiService implements OnDestroy {
 
   init() {
     this.watchChanges();
-    this.getUserCtx();
+    this.userCtx = this.sessionService.userCtx();
     return this.getSettings();
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
-  }
-
-  private getUserCtx() {
-    chtScriptApiFactory.setUserSettingsDoc(this.sessionService.userCtx());
   }
 
   private getSettings() {
     return this.settingsService
       .get()
-      .then(settings => {
-        chtScriptApiFactory.setChtCoreSettingsDoc(settings);
-      });
+      .then(settings => this.settings = settings);
   }
 
   private watchChanges() {
-    const settingsSubscription = this.changesService.subscribe({
+    this.changesService.subscribe({
       key: 'cht-script-api-settings-changes',
       filter: change => change.id === 'settings',
       callback: () => this.getSettings()
     });
-    this.subscriptions.add(settingsSubscription);
+  }
+
+  private getChtPermissionsFromSettings(chtSettings) {
+    return chtSettings?.permissions || this.settings?.permissions;
+  }
+
+  private getRolesFromUser(user) {
+    return user?.roles || this.userCtx?.roles;
   }
 
   getApi() {
-    return chtScriptApiFactory.getApi();
+    return {
+      v1: {
+        hasPermissions: (permissions, user?, chtSettings?) => {
+          const userRoles = this.getRolesFromUser(user);
+          const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
+          return chtScriptApiFactory.v1.hasPermissions(permissions, userRoles, chtPermissionsSettings);
+        },
+        hasAnyPermission: (permissionsGroupList, user?, chtSettings?) => {
+          const userRoles = this.getRolesFromUser(user);
+          const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
+          return chtScriptApiFactory.v1.hasAnyPermission(permissionsGroupList, userRoles, chtPermissionsSettings);
+        }
+      }
+    };
   }
 }
