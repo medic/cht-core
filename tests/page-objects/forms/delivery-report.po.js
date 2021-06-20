@@ -40,7 +40,7 @@ module.exports = {
     const search = await element(by.css('.select2-search__field'));
     await search.click();
     await search.sendKeys(name);
-    await helper.waitElementToBeVisible(element(by.css('.name')));
+    await helper.waitElementToBeVisibleNative(element(by.css('.name')));
     await element(by.css('.name')).click();
   },
 
@@ -111,7 +111,7 @@ module.exports = {
 
   getFollowUpMessage: async () => {
     const css = '[lang="en"] [data-value=" /delivery/chw_sms "]';
-    await helper.waitElementToBeVisible(element(by.css(css)));
+    await helper.waitElementToBeVisibleNative(element(by.css(css)));
     return element(by.css(css)).getText();
   },
 };

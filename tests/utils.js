@@ -19,6 +19,7 @@ const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_
 const browserLogStream = fs.createWriteStream(
   __dirname + '/../tests/logs/browser.console.log'
 );
+const userSettings = require('./factories/cht/users/user-settings');
 
 let originalSettings;
 const originalTranslations = {};
@@ -54,6 +55,7 @@ const request = (options, { debug } = {}) => {
 
   return rpn(options).catch(err => {
     err.responseBody = err.response && err.response.body;
+    console.warn(`A request error occurred ${err.options.uri}`);
     throw err;
   });
 };
@@ -402,6 +404,7 @@ const listenForApi = async () => {
   console.log('Checking API');
   try {
     await request({ path: '/api/info' });
+    console.log('API is up');
   } catch (err) {
     console.log('API check failed, trying again in 1 second');
     console.log(err.message);
@@ -447,7 +450,8 @@ const saveBrowserLogs = () => {
     });
 };
 
-const prepServices = async (noBrowser) => {
+
+const prepServices = async (config) => {
   if (constants.IS_TRAVIS) {
     console.log('On travis, waiting for horti to first boot api');
     // Travis' horti will be installing and then deploying api and sentinel, and those logs are
@@ -463,17 +467,6 @@ const prepServices = async (noBrowser) => {
   }
 
   await listenForApi();
-  if(noBrowser){
-    await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
-    return;
-  } else {
-    const config = await browser.getProcessedConfig();
-    if (config.suite && config.suite === 'web') {
-      await runAndLogApiStartupMessage('Settings setup', setupSettings);
-    }
-    await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
-  }
-};
 
 //non browser tests
 const prepServicesNative = async () => {
@@ -485,6 +478,11 @@ const prepServicesNative = async () => {
   } else {
     // Locally we just need to start them and can do so straight away
     await rpn.post('http://localhost:31337/all/start');
+    
+  config = config || await browser.getProcessedConfig();
+  if (config.suite && config.suite === 'web') {
+    await runAndLogApiStartupMessage('Settings setup', setupSettings);
+
   }
   await listenForApi();
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
@@ -506,23 +504,46 @@ const protractorLogin = async (browser, timeout = 20) => {
 };
 
 const setupUser = () => {
-  return module.exports.getDoc('org.couchdb.user:' + auth.username)
-    .then(doc => {
-      doc.contact_id = constants.USER_CONTACT_ID;
-      doc.language = 'en';
-      return module.exports.saveDoc(doc);
-    })
+  return module.exports.setupUserDoc()
     .then(() => refreshToGetNewSettings())
     .then(() => module.exports.closeTour());
 };
 
+const setupUserDoc = (userName = auth.username, userDoc = userSettings.build()) => {
+  return module.exports.getDoc('org.couchdb.user:' + userName)
+    .then(doc => {
+      const finalDoc = Object.assign(doc, userDoc);
+      return module.exports.saveDoc(finalDoc);
+    });
+};
+
+
+const tearDownServices = () => {
+  return rpn.post('http://localhost:31337/die');
+};
+
+const parseCookieResponse = (cookieString) => {
+  return cookieString.map((cookie) => {
+    const cookieObject = {};
+    const cookieSplit = cookie.split(';');
+    const [cookieName, cookieValue] = cookieSplit.shift().split('=');
+    cookieObject.name = cookieName;
+    cookieObject.value = cookieValue;
+    cookieSplit.forEach((cookieValues) => {
+      const [key, value] = cookieValues.split('=');
+      cookieObject[key] = (key.includes('Secure') || key.includes('HttpOnly')) ? true : value;    
+    });
+    return cookieObject;
+  });
+};
 
 module.exports = {
+  parseCookieResponse,
   deprecated,
   db: db,
   sentinelDb: sentinel,
   medicLogsDb: medicLogs,
-
+  setupUserDoc,
   request: request,
 
   reporter: new htmlScreenshotReporter({
@@ -630,10 +651,16 @@ module.exports = {
       });
   },
 
-  getDoc: id => {
+  getDoc: (id, rev) => {
+    const params = { };
+    if (rev) {
+      params.rev = rev;
+    }
+
     return module.exports.requestOnTestDb({
       path: `/${id}`,
       method: 'GET',
+      params,
     });
   },
 
@@ -990,9 +1017,9 @@ module.exports = {
   protractorLogin: protractorLogin,
 
   saveBrowserLogs: saveBrowserLogs,
-
+  tearDownServices,
   endSession: async (exitCode) => {
-    await rpn.post('http://localhost:31337/die');
+    await tearDownServices();
     return module.exports.reporter.afterLaunch(exitCode);
   },
 

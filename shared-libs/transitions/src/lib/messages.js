@@ -35,8 +35,22 @@ const isDeniedByAlphas = (from, denyWithAlphas) => {
   return denyWithAlphas === true && from.match(/[a-z]/i);
 };
 
+const findExistentTask = (doc, newTask) => {
+  if (!newTask.messages[0]) {
+    return;
+  }
+
+  return doc.tasks.find(task => {
+    return task &&
+           task.messages &&
+           task.messages[0] &&
+           task.messages[0].to === newTask.messages[0].to &&
+           task.messages[0].message === newTask.messages[0].message;
+  });
+};
+
 module.exports = {
-  addMessage: (doc, messageConfig, recipient = 'reporting_unit', context = {}) => {
+  addMessage: (doc, messageConfig, recipient = 'reporting_unit', context = {}, unique = false) => {
     doc.tasks = doc.tasks || [];
     const content = {
       translationKey: messageConfig.translation_key,
@@ -52,6 +66,14 @@ module.exports = {
         context
       );
       const task = { messages: generated };
+
+      if (unique) {
+        const found = findExistentTask(doc, task);
+        if (found) {
+          return found;
+        }
+      }
+
       utils.setTaskState(task, messageStatus(doc.from, generated[0]));
       doc.tasks.push(task);
       return task;
@@ -68,35 +90,9 @@ module.exports = {
      * Take message configuration and return message content. The configuration
      * should have either a `messages` property with an array of messages, or
      * a `translation_key` property with a string.
-     * Use locale if found otherwise defaults to 'en'.
      */
-  getMessage: function(configuration, locale) {
-    if (!configuration) {
-      return '';
-    }
-    // use the translation key if provided
-    if (configuration.translation_key) {
-      return utils.translate(configuration.translation_key, locale);
-    }
-
-    // otherwise, use the configured messages (deprecated)
-    const messages = configuration.messages || configuration.message;
-    if (!_.isArray(messages)) {
-      logger.warn(
-        'Message property should be an array. Please check your configuration.'
-      );
-      return '';
-    }
-    if (!messages.length) {
-      logger.warn(
-        'Message property array was empty. Please check your configuration.'
-      );
-      return '';
-    }
-    // default to first item in messages array in case locale match fails
-    const message =
-      _.find(messages, { locale: locale || 'en' }) || messages[0];
-    return (message.content && message.content.trim()) || '';
+  getMessage: (configuration, locale) => {
+    return messageUtils.getMessage(configuration, utils.translate, locale, logger);
   },
   /*
      * Return true when the recipient phone is not denied.
@@ -166,7 +162,7 @@ module.exports = {
     // support mustache template syntax in error messages
     try {
       error.message = messageUtils.template(
-        config,
+        config.getAll(),
         utils.translate,
         doc,
         error,
