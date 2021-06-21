@@ -127,7 +127,13 @@ export class Select2SearchService {
         resolution = Promise.resolve();
       } else {
         resolution = this.getDoc(value)
-          .then((doc) => selectEl.select2('data')[0].doc = doc)
+          .then((doc) => {
+            if (doc) {
+              selectEl.select2('data')[0].doc = doc;
+            } else {
+              selectEl.select2('data')[0].text = '';
+            }
+          })
           .catch(err => console.error('Select2 failed to get document', err));
       }
     }
@@ -173,7 +179,11 @@ export class Select2SearchService {
         if (docId) {
           this.getDoc(docId)
             .then((doc) => {
-              selectEl.select2('data')[0].doc = doc;
+              if (doc) {
+                selectEl.select2('data')[0].doc = doc;
+              } else {
+                selectEl.select2('data')[0].text = '';
+              }
               selectEl.trigger('change');
             })
             .catch(err => console.error('Select2 failed to get document', err));
