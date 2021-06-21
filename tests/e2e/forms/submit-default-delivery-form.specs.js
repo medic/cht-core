@@ -52,14 +52,14 @@ describe('Submit Default Delivery Report', () => {
     // // Dead Babies Information
     // // We need to loop through all dead babies and fill out information
     for (let i = 1; i <= 3; i++) {
-      deliveryReport.populateDeadBabyInformation(i);
+      await deliveryReport.populateDeadBabyInformation(i);
     }
     await genericForm.nextPageNative();
 
     // // Alive Babies Information
     // // We need to loop through all alive babies and fill out information
     for (let i = 4; i <= 6; i++) {
-      deliveryReport.populateAliveBabyInformation(i);
+      await deliveryReport.populateAliveBabyInformation(i);
     }
     await genericForm.nextPageNative();
     
