@@ -467,6 +467,12 @@ const prepServices = async (config) => {
   }
 
   await listenForApi();
+  config = config || await browser.getProcessedConfig();
+  if (config.suite && config.suite === 'web') {
+    await runAndLogApiStartupMessage('Settings setup', setupSettings);
+  }
+  await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
+};
 
 //non browser tests
 const prepServicesNative = async () => {
@@ -478,12 +484,8 @@ const prepServicesNative = async () => {
   } else {
     // Locally we just need to start them and can do so straight away
     await rpn.post('http://localhost:31337/all/start');
-    
-  config = config || await browser.getProcessedConfig();
-  if (config.suite && config.suite === 'web') {
-    await runAndLogApiStartupMessage('Settings setup', setupSettings);
-
   }
+  await runAndLogApiStartupMessage('Settings setup', setupSettings);
   await listenForApi();
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
 };
@@ -531,7 +533,7 @@ const parseCookieResponse = (cookieString) => {
     cookieObject.value = cookieValue;
     cookieSplit.forEach((cookieValues) => {
       const [key, value] = cookieValues.split('=');
-      cookieObject[key] = (key.includes('Secure') || key.includes('HttpOnly')) ? true : value;    
+      cookieObject[key] = (key.includes('Secure') || key.includes('HttpOnly')) ? true : value;
     });
     return cookieObject;
   });
