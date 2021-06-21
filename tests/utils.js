@@ -485,7 +485,7 @@ const prepServicesNative = async () => {
     // Locally we just need to start them and can do so straight away
     await rpn.post('http://localhost:31337/all/start');
   }
-  await runAndLogApiStartupMessage('Settings setup', setupSettings);
+ 
   await listenForApi();
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
 };
