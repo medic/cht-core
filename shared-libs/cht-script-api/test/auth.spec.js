@@ -25,7 +25,7 @@ describe('CHT Script API - Auth', () => {
       expect(resultEmptyString).to.be.false;
     });
 
-    it('should return true when user have the permission', () => {
+    it('should return true when user has the permission', () => {
       const chtPermissions = {
         can_edit: [ 'chw_supervisor' ],
         can_configure: [ 'nurse' ]
