@@ -21,15 +21,15 @@ const docs = [
 ];
 
 const selectRadioButtonByValue = async value => {
-  const elementSelector = by.css(`[value=${value}]`);
-  await helper.waitElementToBeVisible(element(elementSelector));
-  await element(elementSelector).click();
+  const radioElement = element(by.css(`[value=${value}]`));
+  await helper.waitElementToBeVisible(radioElement);
+  await helper.clickElementNative(radioElement);
 };
 
 const selectRadioButtonByNameAndValue = async (name, value) => {
-  const elementSelector = by.css(`[name="${name}"][value="${value}"]`);
-  await helper.waitElementToBeVisible(element(elementSelector));
-  await element(elementSelector).click();
+  const radioElement = element(by.css(`[name="${name}"][value="${value}"]`));
+  await helper.waitElementToBeVisible(radioElement);
+  await helper.clickElementNative(radioElement);
 };
 
 module.exports = {
@@ -45,14 +45,14 @@ module.exports = {
   selectPatientName: async name => {
     const select = element(by.css('section[name="/delivery/inputs/contact"] .select2-selection'));
     await helper.waitUntilReadyNative(select);
-    await select.click();
+    await helper.clickElementNative(select);
     const search = element(by.css('.select2-search__field'));
     await helper.waitUntilReadyNative(search);
-    await search.click();
+    await helper.clickElementNative(search);
     await search.sendKeys(name);
     const nameElm = element(by.css('.name'));
     await helper.waitElementToBeVisibleNative(nameElm);
-    await nameElm.click();
+    await helper.clickElementNative(nameElm);
   },
 
   //outcome for women
