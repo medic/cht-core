@@ -169,7 +169,8 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
             ...action,
             content: {
               ...action?.content,
-              contact: action?.content?.contact || contact
+              contact: action?.content?.contact || contact,
+              task_id: task._id
             },
           };
         }),
