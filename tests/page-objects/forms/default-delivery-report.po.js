@@ -7,7 +7,7 @@ const xml = fs.readFileSync(`${__dirname}/../../../config/default/forms/app/deli
 
 const docs = [
   {
-    _id: 'form:delivery',
+    _id: 'form:dd',
     internalId: 'DD',
     title: 'Default Delivery',
     type: 'form',
@@ -100,7 +100,7 @@ module.exports = {
   selectBabiesAliveButton: async (noOfBabiesAlive) => {
     await helper.waitElementToBeVisibleNative(element(
       by.css(`[name="/delivery/delivery_outcome/babies_alive"][value="3"]`)));
-    selectRadioButtonByNameAndValue('/delivery/delivery_outcome/babies_alive', noOfBabiesAlive);
+    await selectRadioButtonByNameAndValue('/delivery/delivery_outcome/babies_alive', noOfBabiesAlive);
   },
 
   //Delivery date
@@ -119,7 +119,7 @@ module.exports = {
   //Delivery Method
   selectDeliveryMethod: async () => {
     await helper.waitElementToBeVisibleNative(element(by.name('/delivery/delivery_outcome/delivery_mode')));
-    selectRadioButtonByValue('vaginal');
+    await selectRadioButtonByValue('vaginal');
   },
 
   populateDeadBabyInformation: async (deadBabyIndex) => {
