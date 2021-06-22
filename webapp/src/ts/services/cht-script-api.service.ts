@@ -19,11 +19,18 @@ export class CHTScriptApiService {
     private changesService: ChangesService
   ) { }
 
-  init() {
+  isInitialized() {
+    if (!this.initialized) {
+      this.initialized = this.init();
+    }
+
+    return this.initialized;
+  }
+
+  private init() {
     this.watchChanges();
     this.userCtx = this.sessionService.userCtx();
-    this.initialized = this.getSettings();
-    return this.initialized;
+    return this.getSettings();
   }
 
   private getSettings() {
@@ -49,21 +56,23 @@ export class CHTScriptApiService {
   }
 
   getApi() {
-    return this.initialized.then(() => {
-      return {
-        v1: {
-          hasPermissions: (permissions, user?, chtSettings?) => {
-            const userRoles = this.getRolesFromUser(user);
-            const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
-            return chtScriptApiFactory.v1.hasPermissions(permissions, userRoles, chtPermissionsSettings);
-          },
-          hasAnyPermission: (permissionsGroupList, user?, chtSettings?) => {
-            const userRoles = this.getRolesFromUser(user);
-            const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
-            return chtScriptApiFactory.v1.hasAnyPermission(permissionsGroupList, userRoles, chtPermissionsSettings);
+    return this
+      .isInitialized()
+      .then(() => {
+        return {
+          v1: {
+            hasPermissions: (permissions, user?, chtSettings?) => {
+              const userRoles = this.getRolesFromUser(user);
+              const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
+              return chtScriptApiFactory.v1.hasPermissions(permissions, userRoles, chtPermissionsSettings);
+            },
+            hasAnyPermission: (permissionsGroupList, user?, chtSettings?) => {
+              const userRoles = this.getRolesFromUser(user);
+              const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
+              return chtScriptApiFactory.v1.hasAnyPermission(permissionsGroupList, userRoles, chtPermissionsSettings);
+            }
           }
-        }
-      };
-    });
+        };
+      });
   }
 }

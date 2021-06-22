@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { SettingsService } from '@mm-services/settings.service';
@@ -37,7 +37,7 @@ describe('CHTScriptApiService service', () => {
     settingsService.get.resolves();
     sessionService.userCtx.returns();
 
-    await service.init();
+    await service.isInitialized();
 
     expect(changesService.subscribe.callCount).to.equal(1);
     expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
@@ -48,7 +48,7 @@ describe('CHTScriptApiService service', () => {
 
   it('should return versioned api', async () => {
     settingsService.get.resolves();
-    service.init();
+    await service.isInitialized();
     const result = await service.getApi();
 
     expect(result).to.have.all.keys([ 'v1' ]);
@@ -58,7 +58,7 @@ describe('CHTScriptApiService service', () => {
   });
 
   describe('v1.hasPermissions()', () => {
-    it('should return true when user has the permission', fakeAsync(async () => {
+    it('should return true when user has the permission', async () => {
       settingsService.get.resolves({
         permissions: {
           can_edit: [ 'chw_supervisor' ],
@@ -66,16 +66,15 @@ describe('CHTScriptApiService service', () => {
         }
       });
       sessionService.userCtx.returns({ roles: [ 'chw_supervisor', 'gateway' ] });
-      service.init();
-      tick();
+      await service.isInitialized();
       const api = await service.getApi();
 
       const result = api.v1.hasPermissions('can_edit');
 
       expect(result).to.be.true;
-    }));
+    });
 
-    it('should return false when user doesnt have the permission', fakeAsync(async () => {
+    it('should return false when user doesnt have the permission', async () => {
       settingsService.get.resolves({
         permissions: {
           can_edit: [ 'chw_supervisor' ],
@@ -83,14 +82,13 @@ describe('CHTScriptApiService service', () => {
         }
       });
       sessionService.userCtx.returns({ roles: [ 'chw_supervisor', 'gateway' ] });
-      service.init();
-      tick();
+      await service.isInitialized();
       const api = await service.getApi();
 
       const result = api.v1.hasPermissions('can_create_people');
 
       expect(result).to.be.false;
-    }));
+    });
 
     it('should react to settings changes', fakeAsync(async () => {
       settingsService.get.resolves({
@@ -100,9 +98,8 @@ describe('CHTScriptApiService service', () => {
         }
       });
       sessionService.userCtx.returns({ roles: [ 'nurse' ] });
-      service.init();
+      await service.isInitialized();
       const changesCallback = changesService.subscribe.args[0][0].callback;
-      tick();
       const api = await service.getApi();
 
       const permissionNotFound = api.v1.hasPermissions('can_create_people');
@@ -126,7 +123,7 @@ describe('CHTScriptApiService service', () => {
       expect(settingsService.get.callCount).to.equal(1);
     }));
 
-    it('should return true when user is admin', fakeAsync(async () => {
+    it('should return true when user is admin', async () => {
       settingsService.get.resolves({
         permissions: {
           can_edit: [ 'chw_supervisor' ],
@@ -134,16 +131,15 @@ describe('CHTScriptApiService service', () => {
         }
       });
       sessionService.userCtx.returns({ roles: [ '_admin' ] });
-      service.init();
-      tick();
+      await service.isInitialized();
       const api = await service.getApi();
 
       const result = api.v1.hasPermissions('can_create_people');
 
       expect(result).to.be.true;
-    }));
+    });
 
-    it('should return false when settings doesnt have roles assigned for the permission', fakeAsync(async () => {
+    it('should return false when settings doesnt have roles assigned for the permission', async () => {
       settingsService.get.resolves({
         permissions: {
           can_edit: [ 'chw_supervisor' ],
@@ -151,18 +147,17 @@ describe('CHTScriptApiService service', () => {
         }
       });
       sessionService.userCtx.returns({ roles: [ 'chw_supervisor' ] });
-      service.init();
-      tick();
+      await service.isInitialized();
       const api = await service.getApi();
 
       const result = api.v1.hasPermissions('can_configure');
 
       expect(result).to.be.false;
-    }));
+    });
   });
 
   describe('v1.hasAnyPermission()', () => {
-    it('should return true when user has the any of the permissions', fakeAsync(async () => {
+    it('should return true when user has the any of the permissions', async () => {
       settingsService.get.resolves({
         permissions: {
           can_backup_facilities: [ 'national_admin', 'district_admin' ],
@@ -173,8 +168,7 @@ describe('CHTScriptApiService service', () => {
         }
       });
       sessionService.userCtx.returns({ roles: [ 'district_admin' ] });
-      service.init();
-      tick();
+      await service.isInitialized();
       const api = await service.getApi();
 
       const result = api.v1.hasAnyPermission([
@@ -184,9 +178,9 @@ describe('CHTScriptApiService service', () => {
       ]);
 
       expect(result).to.be.true;
-    }));
+    });
 
-    it('should return false when user doesnt have the permission', fakeAsync(async () => {
+    it('should return false when user doesnt have the permission', async () => {
       settingsService.get.resolves({
         permissions: {
           can_backup_facilities: [ 'national_admin' ],
@@ -194,8 +188,7 @@ describe('CHTScriptApiService service', () => {
         }
       });
       sessionService.userCtx.returns({ roles: [ 'district_admin' ] });
-      service.init();
-      tick();
+      await service.isInitialized();
       const api = await service.getApi();
 
       const result = api.v1.hasAnyPermission([
@@ -205,7 +198,7 @@ describe('CHTScriptApiService service', () => {
       ]);
 
       expect(result).to.be.false;
-    }));
+    });
 
     it('should react to settings changes', fakeAsync(async () => {
       settingsService.get.resolves({
@@ -215,9 +208,8 @@ describe('CHTScriptApiService service', () => {
         }
       });
       sessionService.userCtx.returns({ roles: [ 'nurse' ] });
-      service.init();
+      await service.isInitialized();
       const changesCallback = changesService.subscribe.args[0][0].callback;
-      tick();
       const api = await service.getApi();
 
       const permissionNotFound = api.v1.hasAnyPermission([[ 'can_create_people' ], [ '!can_edit' ]]);
@@ -241,7 +233,7 @@ describe('CHTScriptApiService service', () => {
       expect(settingsService.get.callCount).to.equal(1);
     }));
 
-    it('should return true when user is admin', fakeAsync(async () => {
+    it('should return true when user is admin', async () => {
       settingsService.get.resolves({
         permissions: {
           can_edit: [ 'chw_supervisor' ],
@@ -249,16 +241,15 @@ describe('CHTScriptApiService service', () => {
         }
       });
       sessionService.userCtx.returns({ roles: [ '_admin' ] });
-      service.init();
-      tick();
+      await service.isInitialized();
       const api = await service.getApi();
 
       const result = api.v1.hasAnyPermission([[ 'can_create_people' ], [ 'can_edit', 'can_configure' ]]);
 
       expect(result).to.be.true;
-    }));
+    });
 
-    it('should return false when settings doesnt have roles assigned for the permission', fakeAsync(async () => {
+    it('should return false when settings doesnt have roles assigned for the permission', async () => {
       settingsService.get.resolves({
         permissions: {
           can_edit: [ 'chw_supervisor' ],
@@ -268,13 +259,12 @@ describe('CHTScriptApiService service', () => {
         }
       });
       sessionService.userCtx.returns({ roles: [ 'chw_supervisor' ] });
-      service.init();
-      tick();
+      await service.isInitialized();
       const api = await service.getApi();
 
       const result = api.v1.hasAnyPermission([[ 'can_configure', 'can_create_people' ], [ 'can_backup_facilities' ] ]);
 
       expect(result).to.be.false;
-    }));
+    });
   });
 });

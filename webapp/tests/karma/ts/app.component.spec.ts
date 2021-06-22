@@ -105,7 +105,7 @@ describe('AppComponent', () => {
     setLanguageService = { set: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub().resolves() };
-    chtScriptApiService = { init: sinon.stub() };
+    chtScriptApiService = { isInitialized: sinon.stub() };
     databaseConnectionMonitorService = {
       listenForDatabaseClosed: sinon.stub().returns(of())
     };
@@ -229,7 +229,7 @@ describe('AppComponent', () => {
     // init rules engine
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     // init CHTScriptApiService
-    expect(chtScriptApiService.init.callCount).to.equal(1);
+    expect(chtScriptApiService.isInitialized.callCount).to.equal(1);
     // init unread count
     expect(unreadRecordsService.init.callCount).to.equal(1);
     expect(unreadRecordsService.init.args[0][0]).to.be.a('Function');
