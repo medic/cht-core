@@ -94,3 +94,37 @@ From here we get the ddocs update sequences. Stage the branch which is associate
 Once the medic script completes we begin setting up for jmeter. The `start_jmeter_ec2.sh` script launches a new ec2 instance with the `user-data` script at `cht-core/tests/scalability/run_suite.sh`. 
 
 The script clones cht-core and navigates to the scalability dir. Then installs java, nodejs, jmeter, and its plugins. Executes the scalability suite which is defined in the `cht-core/tests/scalability/sync.jmx`, and finally it uploads the results to an s3 bucket. 
+
+
+
+## Distributed Workflow
+
+![Diagram of our current setup.](jmeter_distributed.png)
+
+Our current setup has 1 ec2 instance acting as the JMeter Orchestrator with 2 worker nodes. This can generate 1400 virtual users. Against our Application environment under test. 
+
+### Setup
+
+1. Launch an ec2 instance c5.2xlarge(Orchestrator)
+1. Launch 2 ec2 instances of c5.4xlarge(Worker)
+1. SSH into each of these machines. 
+1. Copy `tests/scalability/run_suite.sh` to the user directory. From this branch.
+1. Execute the `run_suite.sh`. This clones cht-core, installs JAVA, installs Node 14, runs npm install, installs JMeter, and its plugins.
+1. Update the `config.json` to ensure the users and URL are correct.
+1. Split the `config.json` using `tests/scalability/ec2/split_config.js`. JMeter does not send any data to the workers. All it does is trigger the action to run as if you were doing it manually on that machine. You will need to split the `config.json` to have users for each worker node. 
+1. Create a [RMI key](https://jmeter.apache.org/usermanual/remote-test.html#setup_ssl) 
+1. Copy the RMI key and `config.json` split to each node. to the `cht-core/tests/scalability` directory.
+1. Start jmeter server on the worker nodes. 
+    1. `cd cht-core/tests/scalability`
+    1. `./jmeter/bin/jmeter-server`
+1. Execute the distributed run from the orchestrator.
+    1. `rm -rf report/ report_remote/`
+    1. `./jmeter/bin/jmeter -n  -t sync.jmx -Gnumber_of_threads=700 -Gramp_up_period=5 -Gworking_dir=/home/ubuntu/cht-core/tests/scalability/ -Gnode_binary=/usr/bin/node -l ./report_remote/cli_run.jtl -e -o ./report_remote -R 3.8.93.43,3.11.81.213`
+
+    NOTE: The params as listed. 
+    * `-Gnumber_of_threads` number of virtual users. If you have a `config.json` with the number of users matching number of threads. You will have 1 unique user per thread. If your config is less it will reuse users. 
+    * `-Gramp_up_period` number of seconds before the next thread starts. 
+    * `-Gworking_dir` working directory on the worker node. This is the same since we are using the `run_suite.sh` to setup everything. 
+    * `-Gnode_binary` path to node on the worker node.
+    * `-l ./report_remote/cli_run.jtl` output file on the orchestrator
+    * `-R 3.8.93.43,3.11.81.213` comma separated list of the worker nodes ip addresses. 
