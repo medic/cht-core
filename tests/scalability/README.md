@@ -128,3 +128,5 @@ Our current setup has 1 ec2 instance acting as the JMeter Orchestrator with 2 wo
     * `-Gnode_binary` path to node on the worker node.
     * `-l ./report_remote/cli_run.jtl` output file on the orchestrator
     * `-R 3.8.93.43,3.11.81.213` comma separated list of the worker nodes ip addresses. 
+  1. Review the results in `cht-core/tests/scalability/report_remote`. The cli_run.jtl is the raw results. There should be a generated report with an `index.html` to view as well. 
+  NOTE: Review the `jmeter-server.log` or `jmeter.log` files in the `cht-core/tests/scalability` dir for real time details. 
