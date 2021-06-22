@@ -73,6 +73,25 @@ describe('CHT Script API - Auth', () => {
       expect(result).to.be.false;
     });
 
+    it('should return true when checking for multiple permissions spread across roles', () => {
+      const chtPermissions = {
+        can_access_gateway_api: [ 'gateway', 'district-admin' ],
+        can_view_analytics: [ 'analytics', 'district-admin' ],
+        can_view_analytics_tab: [ 'analytics', 'district-admin' ],
+        can_view_contacts: [ 'chw', 'district-admin' ],
+        can_write_wealth_quintiles: [ 'district-admin' ]
+      };
+      const userRoles = [ 'analytics', 'gateway', 'chw' ];
+
+      const result = auth.hasPermissions(
+        [ 'can_access_gateway_api', 'can_view_analytics', 'can_view_contacts' ],
+        userRoles,
+        chtPermissions
+      );
+
+      expect(result).to.be.true;
+    });
+
     it('should return false for unknown permission', () => {
       const chtPermissions = {
         can_backup_facilities: [ 'national_admin' ],
@@ -261,6 +280,27 @@ describe('CHT Script API - Auth', () => {
       ];
 
       const result = auth.hasAnyPermission(anyPermissions, [ 'district_admin' ], chtPermissions);
+
+      expect(result).to.be.true;
+    });
+
+    it('should return true when checking for multiple permissions spread across roles', () => {
+      const chtPermissions = {
+        can_access_gateway_api: [ 'gateway', 'district-admin' ],
+        can_view_analytics: [ 'analytics', 'district-admin' ],
+        can_view_analytics_tab: [ 'analytics', 'district-admin' ],
+        can_view_contacts: [ 'chw', 'district-admin' ],
+        can_write_wealth_quintiles: [ 'district-admin' ],
+        can_backup_facilities: [ 'district-admin' ],
+        can_backup_people: [ 'district-admin' ]
+      };
+      const userRoles = [ 'analytics', 'gateway', 'chw' ];
+      const anyPermissions = [
+        ['can_access_gateway_api', 'can_view_analytics', 'can_view_contacts' ],
+        [ 'can_backup_facilities', 'can_backup_people' ]
+      ];
+
+      const result = auth.hasAnyPermission(anyPermissions, userRoles, chtPermissions);
 
       expect(result).to.be.true;
     });
