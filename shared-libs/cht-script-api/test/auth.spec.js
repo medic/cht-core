@@ -196,9 +196,13 @@ describe('CHT Script API - Auth', () => {
     it('should return false when permissionsGroupList parameter is empty', () => {
       const resultNoPermissions = auth.hasAnyPermission(null, [ 'chw' ], { can_edit: [ 'chw' ] });
       const resultEmptyArray = auth.hasAnyPermission([], [ 'chw' ], { can_edit: [ 'chw' ] });
+      const resultListWrongType = auth.hasAnyPermission('can_edit', [ 'chw' ], { can_edit: [ 'chw' ] });
+      const resultGroupWrongType = auth.hasAnyPermission([ 'can_edit' ], [ 'chw' ], { can_edit: [ 'chw' ] });
 
       expect(resultNoPermissions).to.be.false;
       expect(resultEmptyArray).to.be.false;
+      expect(resultListWrongType).to.be.false;
+      expect(resultGroupWrongType).to.be.false;
     });
 
     it('should return true when user is admin and doesnt have disallowed permissions', () => {

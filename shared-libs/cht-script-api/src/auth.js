@@ -30,7 +30,7 @@ const groupPermissions = (permissions) => {
   return groups;
 };
 
-const printLog = (reason, permissions, roles) => {
+const debug = (reason, permissions, roles) => {
   // eslint-disable-next-line no-console
   console.debug(`CHT Script API :: ${reason}. User roles: ${roles}. Wanted permissions: ${permissions}`);
 };
@@ -48,18 +48,18 @@ const checkUserHasPermissions = (permissions, userRoles, chtPermissionsSettings,
 };
 
 const verifyParameters = (permissions, userRoles, chtPermissionsSettings) => {
-  if (!permissions || !permissions.length) {
-    printLog('No permissions to verify.');
+  if (!Array.isArray(permissions) || !permissions.length) {
+    debug('Permissions to verify are not provided or have invalid type');
     return false;
   }
 
-  if (!userRoles || !userRoles.length) {
-    printLog('User has no roles');
+  if (!Array.isArray(userRoles)) {
+    debug('User roles are not provided or have invalid type');
     return false;
   }
 
   if (!chtPermissionsSettings || !Object.keys(chtPermissionsSettings).length) {
-    printLog('No permissions configured in CHT-Core');
+    debug('CHT-Core\'s configured permissions are not provided');
     return false;
   }
 
@@ -74,19 +74,19 @@ const verifyParameters = (permissions, userRoles, chtPermissionsSettings) => {
  * @return {boolean}
  */
 const hasPermissions = (permissions, userRoles, chtPermissionsSettings) => {
-  if (!verifyParameters(permissions, userRoles, chtPermissionsSettings)) {
-    return false;
+  if (permissions && typeof permissions === 'string') {
+    permissions = [ permissions ];
   }
 
-  if (!Array.isArray(permissions)) {
-    permissions = [ permissions ];
+  if (!verifyParameters(permissions, userRoles, chtPermissionsSettings)) {
+    return false;
   }
 
   const { allowed, disallowed } = groupPermissions(permissions);
 
   if (isAdmin(userRoles)) {
     if (disallowed.length) {
-      printLog('Disallowed permission(s) found for admin', permissions, userRoles);
+      debug('Disallowed permission(s) found for admin', permissions, userRoles);
       return false;
     }
     // Admin has the permissions automatically.
@@ -97,12 +97,12 @@ const hasPermissions = (permissions, userRoles, chtPermissionsSettings) => {
   const hasAllowed = checkUserHasPermissions(allowed, userRoles, chtPermissionsSettings, true);
 
   if (hasDisallowed) {
-    printLog('Found disallowed permission(s)', permissions, userRoles);
+    debug('Found disallowed permission(s)', permissions, userRoles);
     return false;
   }
 
   if (!hasAllowed) {
-    printLog('Missing permission(s)', permissions, userRoles);
+    debug('Missing permission(s)', permissions, userRoles);
     return false;
   }
 
@@ -121,6 +121,12 @@ const hasAnyPermission = (permissionsGroupList, userRoles, chtPermissionsSetting
     return false;
   }
 
+  const validGroup = permissionsGroupList.every(permissions => Array.isArray(permissions));
+  if (!validGroup) {
+    debug('Permission groups to verify are invalid');
+    return false;
+  }
+
   const allowedGroupList = [];
   const disallowedGroupList = [];
   permissionsGroupList.forEach(permissions => {
@@ -131,7 +137,7 @@ const hasAnyPermission = (permissionsGroupList, userRoles, chtPermissionsSetting
 
   if (isAdmin(userRoles)) {
     if (disallowedGroupList.every(permissions => permissions.length)) {
-      printLog('Disallowed permission(s) found for admin', permissionsGroupList, userRoles);
+      debug('Disallowed permission(s) found for admin', permissionsGroupList, userRoles);
       return false;
     }
     // Admin has the permissions automatically.
@@ -146,7 +152,7 @@ const hasAnyPermission = (permissionsGroupList, userRoles, chtPermissionsSetting
   });
 
   if (!hasAnyPermissionGroup) {
-    printLog('No matching permissions', permissionsGroupList, userRoles);
+    debug('No matching permissions', permissionsGroupList, userRoles);
     return false;
   }
 
