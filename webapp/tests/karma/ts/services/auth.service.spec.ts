@@ -6,25 +6,30 @@ import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { AuthService } from '@mm-services/auth.service';
 import { ChangesService } from '@mm-services/changes.service';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 describe('Auth Service', () => {
   let service:AuthService;
   let sessionService;
   let settingsService;
+  let chtScriptApiService;
+  let changesService;
 
   beforeEach(() => {
     sessionService = { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() };
     settingsService = { get: sinon.stub() };
+    changesService = { subscribe: sinon.stub().resolves() };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: SessionService, useValue: sessionService },
         { provide: SettingsService, useValue: settingsService },
-        { provide: ChangesService, useValue: {} }
+        { provide: ChangesService, useValue: changesService }
       ]
     });
 
     service = TestBed.inject(AuthService);
+    chtScriptApiService = TestBed.inject(CHTScriptApiService);
   });
 
   afterEach(() => {
@@ -32,22 +37,30 @@ describe('Auth Service', () => {
   });
 
   describe('authService.has', () => {
-    it('should return false when no settings and no permissions configured', async () => {
+    it('should return false when no settings', async () => {
       sessionService.userCtx.returns({ roles: ['chw'] });
-
       settingsService.get.resolves(null);
-      const resultNoSettings = await service.has('can_edit');
+      chtScriptApiService.init();
 
+      const result = await service.has('can_edit');
+
+      expect(result).to.be.false;
+    });
+
+    it('should return false when no permissions configured', async () => {
+      sessionService.userCtx.returns({ roles: ['chw'] });
       settingsService.get.resolves({});
-      const resultNoPermissions = await service.has('can_edit');
+      chtScriptApiService.init();
 
-      expect(resultNoSettings).to.be.false;
-      expect(resultNoPermissions).to.be.false;
+      const result = await service.has('can_edit');
+
+      expect(result).to.be.false;
     });
 
     it('should return false when no session', async () => {
       sessionService.userCtx.returns(null);
       settingsService.get.resolves({ permissions: {} });
+      chtScriptApiService.init();
 
       const result = await service.has();
 
@@ -57,6 +70,7 @@ describe('Auth Service', () => {
     it('should return false when user has no role', async () => {
       sessionService.userCtx.returns({});
       settingsService.get.resolves({ permissions: {} });
+      chtScriptApiService.init();
 
       const result = await service.has();
 
@@ -66,6 +80,7 @@ describe('Auth Service', () => {
     it('should return true when user is db admin', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
       settingsService.get.resolves({ permissions: { can_edit: ['chw'] } });
+      chtScriptApiService.init();
 
       const result = await service.has(['can_backup_facilities']);
 
@@ -75,6 +90,7 @@ describe('Auth Service', () => {
     it('should return false when settings errors', async () => {
       sessionService.userCtx.returns({ roles: ['district_admin'] });
       settingsService.get.rejects('boom');
+      chtScriptApiService.init();
 
       const result = await service.has(['can_backup_facilities']);
 
@@ -93,6 +109,7 @@ describe('Auth Service', () => {
           ],
         },
       });
+      chtScriptApiService.init();
 
       const result = await service.has(['']);
 
@@ -116,6 +133,7 @@ describe('Auth Service', () => {
             ],
           },
         });
+        chtScriptApiService.init();
 
         const result = await service.has(['xyz']);
 
@@ -134,6 +152,7 @@ describe('Auth Service', () => {
             ],
           },
         });
+        chtScriptApiService.init();
 
         const result = await service.has(['!xyz']);
 
@@ -154,6 +173,7 @@ describe('Auth Service', () => {
           ],
         },
       });
+      chtScriptApiService.init();
 
       const result = await service.has('can_backup_facilities');
 
@@ -172,6 +192,7 @@ describe('Auth Service', () => {
           ],
         },
       });
+      chtScriptApiService.init();
 
       const result = await service.has(['can_backup_facilities', 'can_export_messages']);
 
@@ -190,6 +211,7 @@ describe('Auth Service', () => {
           ],
         },
       });
+      chtScriptApiService.init();
 
       const result = await service.has(['can_backup_facilities', 'can_export_messages']);
 
@@ -199,6 +221,7 @@ describe('Auth Service', () => {
     it('should return false when admin and !permission', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
       settingsService.get.resolves({ permissions: {} });
+      chtScriptApiService.init();
 
       const result = await service.has(['!can_backup_facilities']);
 
@@ -217,6 +240,7 @@ describe('Auth Service', () => {
           ],
         },
       });
+      chtScriptApiService.init();
 
       const result = await service.has(['!can_backup_facilities', '!can_export_messages']);
 
@@ -235,6 +259,7 @@ describe('Auth Service', () => {
           ],
         },
       });
+      chtScriptApiService.init();
 
       const result = await service.has(['!can_backup_facilities', 'can_export_messages']);
 
@@ -243,22 +268,30 @@ describe('Auth Service', () => {
   });
 
   describe('authService.any', () => {
+    it('should return false when no settings', async () => {
+      sessionService.userCtx.returns({ roles: ['chw'] });
+      settingsService.get.resolves(null);
+      chtScriptApiService.init();
+
+      const result = await service.any([['can_edit'], ['can_configure']]);
+
+      expect(result).to.be.false;
+    });
+
     it('should return false when no settings and no permissions configured', async () => {
       sessionService.userCtx.returns({ roles: ['chw'] });
-
-      settingsService.get.resolves(null);
-      const resultNoSettings = await service.any([['can_edit'], ['can_configure']]);
-
       settingsService.get.resolves({});
-      const resultNoPermissions = await service.any([['can_edit'], ['can_configure']]);
+      chtScriptApiService.init();
 
-      expect(resultNoSettings).to.be.false;
-      expect(resultNoPermissions).to.be.false;
+      const result = await service.any([['can_edit'], ['can_configure']]);
+
+      expect(result).to.be.false;
     });
 
     it('should return false when no session', async () => {
       sessionService.userCtx.returns(null);
       settingsService.get.resolves({ permissions: {} });
+      chtScriptApiService.init();
 
       const result = await service.any();
 
@@ -268,6 +301,7 @@ describe('Auth Service', () => {
     it('should return false when user has no role', async () => {
       sessionService.userCtx.returns({});
       settingsService.get.resolves({ permissions: {} });
+      chtScriptApiService.init();
 
       const result = await service.any();
 
@@ -277,6 +311,7 @@ describe('Auth Service', () => {
     it('should return true when admin and no disallowed permissions', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
       settingsService.get.resolves({ permissions: { can_edit: [ 'chw' ] } });
+      chtScriptApiService.init();
 
       const result = await service.any([['can_backup_facilities'], ['can_export_messages'], ['somepermission']]);
 
@@ -286,6 +321,7 @@ describe('Auth Service', () => {
     it('should return true when admin and some disallowed permissions', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
       settingsService.get.resolves({ permissions: { can_edit: [ 'chw' ] } });
+      chtScriptApiService.init();
 
       const result = await service.any([['!can_backup_facilities'], ['!can_export_messages'], ['somepermission']]);
 
@@ -295,6 +331,7 @@ describe('Auth Service', () => {
     it('should return false when admin and all disallowed permissions', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
       settingsService.get.resolves({ permissions: {} });
+      chtScriptApiService.init();
 
       const result = await service.any([['!can_backup_facilities'], ['!can_export_messages'], ['!somepermission']]);
 
@@ -316,6 +353,7 @@ describe('Auth Service', () => {
           can_roll_over: ['national_admin', 'district_admin'],
         },
       });
+      chtScriptApiService.init();
       const permissions = [
         ['can_backup_facilities'],
         ['can_export_messages', 'can_roll_over'],
@@ -335,6 +373,7 @@ describe('Auth Service', () => {
           can_backup_people: ['national_admin', 'district_admin'],
         },
       });
+      chtScriptApiService.init();
       const permissions = [
         ['can_backup_facilities', 'can_backup_people'],
         ['can_export_messages', 'can_roll_over'],
@@ -354,6 +393,7 @@ describe('Auth Service', () => {
           can_backup_people: ['national_admin'],
         },
       });
+      chtScriptApiService.init();
       const permissions = [
         ['can_backup_facilities', 'can_backup_people'],
         ['can_export_messages', 'can_roll_over'],
@@ -381,6 +421,7 @@ describe('Auth Service', () => {
           random3: ['national_admin'],
         },
       });
+      chtScriptApiService.init();
 
       const result = await service.any([
         ['can_backup_facilities', '!random1'],
@@ -403,12 +444,14 @@ describe('Auth Service', () => {
           random3: ['national_admin'],
         },
       });
+      chtScriptApiService.init();
 
       const result = await service.any([
         ['can_backup_facilities', '!can_add_people'],
         ['can_export_messages', '!random2'],
         ['can_backup_people', '!can_add_places']
       ]);
+      chtScriptApiService.init();
 
       expect(result).to.be.true;
     });
@@ -425,6 +468,7 @@ describe('Auth Service', () => {
           random3: ['national_admin', 'district_admin'],
         },
       });
+      chtScriptApiService.init();
 
       const result = await service.any([
         ['can_backup_facilities', '!random1'],

@@ -102,15 +102,17 @@ export class RulesEngineService implements OnDestroy {
           .all([
             this.settingsService.get(),
             this.userContactService.get(),
-            this.userSettingsService.get()
+            this.userSettingsService.get(),
+            this.chtScriptApiService.getApi()
           ])
-          .then(([settingsDoc, userContactDoc, userSettingsDoc]) => {
+          .then(([settingsDoc, userContactDoc, userSettingsDoc, chtScriptApi]) => {
             const rulesSettings = this.getRulesSettings(
               settingsDoc,
               userContactDoc,
               userSettingsDoc,
               canViewTasks,
-              canViewTargets
+              canViewTargets,
+              chtScriptApi
             );
             const initializeTelemetryData = this.telemetryEntry('rules-engine:initialize', true);
 
@@ -121,7 +123,14 @@ export class RulesEngineService implements OnDestroy {
 
                 if (isEnabled) {
                   this.assignMonthStartDate(settingsDoc);
-                  this.monitorChanges(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
+                  this.monitorChanges(
+                    settingsDoc,
+                    userContactDoc,
+                    userSettingsDoc,
+                    canViewTasks,
+                    canViewTargets,
+                    chtScriptApi
+                  );
 
                   const tasksDebounceRef = _debounce(() => {
                     this.debounceActive.tasks.active = false;
@@ -201,7 +210,7 @@ export class RulesEngineService implements OnDestroy {
     debounceInfo.active = false;
   }
 
-  private getRulesSettings(settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets) {
+  private getRulesSettings(settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets, chtScriptApi) {
     const settingsTasks = settingsDoc && settingsDoc.tasks || {};
     const filterTargetByContext = (target) => target.context ?
       !!this.parseProvider.parse(target.context)({ user: userContactDoc }) : true;
@@ -216,11 +225,11 @@ export class RulesEngineService implements OnDestroy {
       contact: userContactDoc,
       user: userSettingsDoc,
       monthStartDate: this.uhcSettingsService.getMonthStartDate(settingsDoc),
-      chtScriptApi: this.chtScriptApiService.getApi()
+      chtScriptApi
     };
   }
 
-  private monitorChanges(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets) {
+  private monitorChanges(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets, chtScriptApi) {
     const isReport = doc => doc.type === 'data_record' && !!doc.form;
 
     const dirtyContactsSubscription = this.changesService.subscribe({
@@ -258,24 +267,39 @@ export class RulesEngineService implements OnDestroy {
             .get()
             .then(updatedUser => {
               userContactDoc = updatedUser;
-              this.rulesConfigChange(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
+              this.rulesConfigChange(
+                settingsDoc,
+                userContactDoc,
+                userSettingsDoc,
+                canViewTasks,
+                canViewTargets,
+                chtScriptApi
+              );
             });
         }
 
         settingsDoc = change.doc.settings;
-        this.rulesConfigChange(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
+        this.rulesConfigChange(
+          settingsDoc,
+          userContactDoc,
+          userSettingsDoc,
+          canViewTasks,
+          canViewTargets,
+          chtScriptApi
+        );
       },
     });
     this.subscriptions.add(rulesUpdateSubscription);
   }
 
-  private rulesConfigChange(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets) {
+  private rulesConfigChange(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets, chtScriptApi) {
     const rulesSettings = this.getRulesSettings(
       settingsDoc,
       userContactDoc,
       userSettingsDoc,
       canViewTasks,
-      canViewTargets
+      canViewTargets,
+      chtScriptApi
     );
     this.rulesEngineCore.rulesConfigChange(rulesSettings);
     this.assignMonthStartDate(settingsDoc);

@@ -1,22 +1,17 @@
 import { Injectable } from '@angular/core';
 
 import { SessionService } from '@mm-services/session.service';
-import { SettingsService } from '@mm-services/settings.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private chtApi;
 
   constructor(
     private session: SessionService,
-    private settings: SettingsService,
     private chtScriptApiService: CHTScriptApiService
-  ) {
-    this.chtApi = this.chtScriptApiService.getApi();
-  }
+  ) { }
 
   /**
    * Returns true if the current user's role has all the permissions passed in as arguments.
@@ -25,9 +20,9 @@ export class AuthService {
    * @param permissions {string | string[]}
    */
   has(permissions?: string | string[]): Promise<boolean> {
-    return this.settings
-      .get()
-      .then(settings => {
+    return this.chtScriptApiService
+      .getApi()
+      .then(chtApi => {
         const userCtx = this.session.userCtx();
 
         if (!userCtx) {
@@ -35,7 +30,7 @@ export class AuthService {
           return false;
         }
 
-        return this.chtApi.v1.hasPermissions(permissions, userCtx, settings);
+        return chtApi.v1.hasPermissions(permissions, userCtx);
       })
       .catch(() => false);
   }
@@ -52,9 +47,9 @@ export class AuthService {
       return this.has(permissionsGroupList);
     }
 
-    return this.settings
-      .get()
-      .then(settings => {
+    return this.chtScriptApiService
+      .getApi()
+      .then(chtApi => {
         const userCtx = this.session.userCtx();
 
         if (!userCtx) {
@@ -62,7 +57,7 @@ export class AuthService {
           return false;
         }
 
-        return this.chtApi.v1.hasAnyPermission(permissionsGroupList, userCtx, settings);
+        return chtApi.v1.hasAnyPermission(permissionsGroupList, userCtx);
       })
       .catch(() => false);
   }

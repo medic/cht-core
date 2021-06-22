@@ -11,6 +11,7 @@ import { SessionService } from '@mm-services/session.service';
 export class CHTScriptApiService {
   private userCtx;
   private settings;
+  private initialized;
 
   constructor(
     private sessionService: SessionService,
@@ -21,7 +22,8 @@ export class CHTScriptApiService {
   init() {
     this.watchChanges();
     this.userCtx = this.sessionService.userCtx();
-    return this.getSettings();
+    this.initialized = this.getSettings();
+    return this.initialized;
   }
 
   private getSettings() {
@@ -47,19 +49,21 @@ export class CHTScriptApiService {
   }
 
   getApi() {
-    return {
-      v1: {
-        hasPermissions: (permissions, user?, chtSettings?) => {
-          const userRoles = this.getRolesFromUser(user);
-          const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
-          return chtScriptApiFactory.v1.hasPermissions(permissions, userRoles, chtPermissionsSettings);
-        },
-        hasAnyPermission: (permissionsGroupList, user?, chtSettings?) => {
-          const userRoles = this.getRolesFromUser(user);
-          const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
-          return chtScriptApiFactory.v1.hasAnyPermission(permissionsGroupList, userRoles, chtPermissionsSettings);
+    return this.initialized.then(() => {
+      return {
+        v1: {
+          hasPermissions: (permissions, user?, chtSettings?) => {
+            const userRoles = this.getRolesFromUser(user);
+            const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
+            return chtScriptApiFactory.v1.hasPermissions(permissions, userRoles, chtPermissionsSettings);
+          },
+          hasAnyPermission: (permissionsGroupList, user?, chtSettings?) => {
+            const userRoles = this.getRolesFromUser(user);
+            const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
+            return chtScriptApiFactory.v1.hasAnyPermission(permissionsGroupList, userRoles, chtPermissionsSettings);
+          }
         }
-      }
-    };
+      };
+    });
   }
 }
