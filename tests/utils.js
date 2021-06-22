@@ -9,6 +9,7 @@ const specReporter = require('jasmine-spec-reporter').SpecReporter;
 const fs = require('fs');
 const path = require('path');
 const Tail = require('tail').Tail;
+const { browser } = require('protractor');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -467,26 +468,15 @@ const prepServices = async (config) => {
   }
 
   await listenForApi();
+  if(config === 'mocha'){
+    await listenForApi();
+    await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
+    return;
+  }
   config = config || await browser.getProcessedConfig();
   if (config.suite && config.suite === 'web') {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
   }
-  await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
-};
-
-//non browser tests
-const prepServicesNative = async () => {
-  if (constants.IS_TRAVIS) {
-    console.log('On travis, waiting for horti to first boot api');
-    await listenForApi();
-    console.log('Horti booted API, rebooting under our logging structure');
-    await rpn.post('http://localhost:31337/all/restart');
-  } else {
-    // Locally we just need to start them and can do so straight away
-    await rpn.post('http://localhost:31337/all/start');
-  }
- 
-  await listenForApi();
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
 };
 
@@ -1012,8 +1002,6 @@ module.exports = {
   getSettings: () => module.exports.getDoc('settings').then(settings => settings.settings),
 
   prepServices: prepServices,
-  prepServicesNative: prepServicesNative,
-
 
   setupUser: setupUser,
   protractorLogin: protractorLogin,
