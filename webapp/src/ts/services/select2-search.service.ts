@@ -131,7 +131,7 @@ export class Select2SearchService {
             if (doc) {
               selectEl.select2('data')[0].doc = doc;
             } else {
-              selectEl.select2('data')[0].text = '';
+              selectEl.val('');
             }
           })
           .catch(err => console.error('Select2 failed to get document', err));
@@ -182,7 +182,7 @@ export class Select2SearchService {
               if (doc) {
                 selectEl.select2('data')[0].doc = doc;
               } else {
-                selectEl.select2('data')[0].text = '';
+                selectEl.val('');
               }
               selectEl.trigger('change');
             })
