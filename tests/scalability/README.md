@@ -117,7 +117,8 @@ Our current setup has 1 ec2 instance acting as the JMeter Orchestrator with 2 wo
 1. Start jmeter server on the worker nodes. 
     1. `cd cht-core/tests/scalability`
     1. `./jmeter/bin/jmeter-server`
-1. Execute the distributed run from the orchestrator.
+1. Execute the distributed run from the orchestrator:
+    1. `cd cht-core/tests/scalability`
     1. `rm -rf report/ report_remote/`
     1. `./jmeter/bin/jmeter -n  -t sync.jmx -Gnumber_of_threads=700 -Gramp_up_period=5 -Gworking_dir=/home/ubuntu/cht-core/tests/scalability/ -Gnode_binary=/usr/bin/node -l ./report_remote/cli_run.jtl -e -o ./report_remote -R 3.8.93.43,3.11.81.213`
 
