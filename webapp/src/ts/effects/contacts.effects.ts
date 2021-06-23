@@ -106,10 +106,14 @@ export class ContactsEffects {
   }
 
   private loadReports(forms) {
+    const initialContactId = this.selectedContact._id;
     return this.contactViewModelGeneratorService
       .loadReports(this.selectedContact, forms)
       .then(reports => {
-        return this.contactsActions.receiveSelectedContactReports(reports);
+        // Make sure the selected contact did not change while the reports were fetched
+        if(this.selectedContact._id === initialContactId) {
+          return this.contactsActions.receiveSelectedContactReports(reports);
+        }
       });
   }
 

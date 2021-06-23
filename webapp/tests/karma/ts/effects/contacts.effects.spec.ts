@@ -293,6 +293,52 @@ describe('Contacts effects', () => {
         expect(receiveSelectedContactReports.args[0]).to.deep.equal([[{ _id: 'report1' }]]);
       });
 
+      it('should not receive reports if they are for a different contact', async () => {
+        store.overrideSelector(Selectors.getForms, [{ id: 'form1' }]);
+        contactViewModelGeneratorService.getContact.onFirstCall().resolves({ _id: 'place', doc: { _id: 'place' } });
+        contactViewModelGeneratorService.getContact.onSecondCall().resolves({ _id: 'person', doc: { _id: 'person' } });
+        contactViewModelGeneratorService.loadChildren.onFirstCall().resolves([
+          { type: { id: 'person' }, contacts: [{ _id: 'person1' }] },
+          { type: { id: 'place' }, contacts: [{ _id: 'place' }] },
+        ]);
+        contactViewModelGeneratorService.loadReports.onFirstCall().callsFake(async () => {
+          // Change the selected contact before returning the first set of reports.
+          actions$ = of(ContactActionList.selectContact({id: 'person'}));
+          await effects.selectContact.toPromise();
+          return Promise.resolve().then(() => [{_id: 'report1'}]);
+        });
+        contactViewModelGeneratorService.loadReports.onSecondCall().resolves([{ _id: 'report2' }]);
+        const receiveSelectedContactReports:any = ContactsActions.prototype.receiveSelectedContactReports;
+
+        actions$ = of(ContactActionList.selectContact({ id: 'place' }));
+        await effects.selectContact.toPromise();
+
+        expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(2);
+        expect(contactViewModelGeneratorService.loadReports.args[0]).to.deep.equal([
+          {
+            _id: 'place',
+            doc: { _id: 'place' },
+            children: [
+              { type: { id: 'person' }, contacts: [{ _id: 'person1' }] },
+              { type: { id: 'place' }, contacts: [{ _id: 'place' }] },
+            ],
+          },
+          [{ id: 'form1' }],
+        ]);
+        expect(contactViewModelGeneratorService.loadReports.args[1]).to.deep.equal([
+          {
+            _id: 'person',
+            doc: { _id: 'person' },
+            children: [],
+          },
+          [{ id: 'form1' }],
+        ]);
+        // Only the second array of reports is actually received since the selectedContact changed before the
+        // first reports were returned
+        expect(receiveSelectedContactReports.callCount).to.equal(1);
+        expect(receiveSelectedContactReports.args[0]).to.deep.equal([[{ _id: 'report2' }]]);
+      });
+
       it('should handle errors when loading reports', async () => {
         sinon.stub(console, 'error');
         const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
