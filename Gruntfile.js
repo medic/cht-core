@@ -623,7 +623,7 @@ module.exports = function(grunt) {
       },
       //using npm run, as 'grunt-mocha-test' has issues with the integration with newer versions of mocha.
       'e2e-integration': {
-        cmd: 'npm run mochatests'
+        cmd: 'npm run e2e-integration'
       }
     },
     watch: {
