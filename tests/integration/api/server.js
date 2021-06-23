@@ -5,7 +5,7 @@ const constants = require('../../constants');
 const _ = require('lodash');
 const {expect} = require('chai');
 
-describe('server',  () => {
+describe('server', () => {
   describe('JSON-only endpoints', () => {
     it('should require application/json Content-Type header', () => {
       const opts = {
@@ -163,20 +163,19 @@ describe('server',  () => {
       const png = '<contact><_id>689960f3-edc2-429b-92f7-96799b3db7d5</_id><patient_id>40599</patient_id>' +
                   '<name>Person 1.1.2.1</name><date_of_birth /><sex /><parent><contact><phone />' +
                   '<name>Person 1.1.2.1</name></contact></parent></contact>';
-      const doc=await utils
-        .getDoc('sample_doc2');
-      const options={
+      const doc = await utils.getDoc('sample_doc2');
+      const options = {
         uri: '/sample_doc2/attach?rev='+doc._rev,
         body: png,
         headers: { 'Content-Type': 'image/png' },
         method: 'PUT'
       };
-      const { body }=await requestWrapper(options);
-      const options_2={ uri: '/sample_doc2/attach?rev='+body.rev };
-      const { res, body: body_1 }=await requestWrapper(options_2);
+      const { body } = await requestWrapper(options);
+      const optionsTwo = { uri: '/sample_doc2/attach?rev='+body.rev };
+      const { res, body: bodyOne } = await requestWrapper(optionsTwo);
       expect(res.headers[ 'content-type' ]).to.equal('image/png');
       expect(res.headers[ 'content-encoding' ]).to.be.undefined;
-      expect(body_1).to.equal(png);
+      expect(bodyOne).to.equal(png);
     });
   });
 });
