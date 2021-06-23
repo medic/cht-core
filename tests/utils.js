@@ -9,7 +9,6 @@ const specReporter = require('jasmine-spec-reporter').SpecReporter;
 const fs = require('fs');
 const path = require('path');
 const Tail = require('tail').Tail;
-const { browser } = require('protractor');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -25,6 +24,7 @@ const userSettings = require('./factories/cht/users/user-settings');
 let originalSettings;
 const originalTranslations = {};
 let e2eDebug;
+const hasModal = async () => await element(by.css('#update-available')).isPresent();
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
@@ -262,8 +262,11 @@ const revertDb = async (except, ignoreRefresh) => {
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
+  if(ignoreRefresh){
+    await setUserContactDoc();
+    return;
+  }
 
-  const hasModal = await element(by.css('#update-available')).isPresent();
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || hasModal)) {
     watcher && watcher.cancel();
@@ -473,7 +476,7 @@ const prepServices = async (config) => {
     await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
     return;
   }
-  config = config || await browser.getProcessedConfig();
+
   if (config.suite && config.suite === 'web') {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
   }

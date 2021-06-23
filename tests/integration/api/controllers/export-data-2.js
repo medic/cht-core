@@ -4,7 +4,7 @@ const {expect} = require('chai');
 
 describe('Export Data V2.0', () => {
 
-  after(() => utils.revertDbNative());
+  after(() => utils.revertDb([], true));
 
   describe('GET|POST /api/v2/export/reports', () => {
     const docs = [{

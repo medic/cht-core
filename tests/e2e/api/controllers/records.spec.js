@@ -2,7 +2,8 @@ const { expect } = require('chai');
 const moment = require('moment');
 const utils = require('../../../utils');
 
-describe('Import Records', () => {
+// eslint-disable-next-line jasmine/no-focused-tests
+fdescribe('Import Records', () => {
 
   afterAll(() => utils.deleteAllDocs().then(() => utils.revertSettings()));
 
