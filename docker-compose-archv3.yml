@@ -5,7 +5,7 @@ version: '3.7'
 ## docker-compose up -f docker-compose-archv3.yml
 ## cntrl+c to exit
 ## docker-compose down
-## docker volume rm medic-data medic-couchconfig
+## docker volume rm cht-data cht-couchconfig
 
 ## docker-compose up
 ## https://localhost
@@ -20,8 +20,8 @@ services:
       COUCHDB_PASSWORD: "${COUCHDB_PASSWORD:-cht_password}"
     # https://hub.docker.com/_/couchdb
     volumes:
-      - medic-data:/opt/couchdb/data/
-      - medic-couchconfig:/opt/couchdb/etc/local.d/
+      - cht-data:/opt/couchdb/data/
+      - cht-couchconfig:/opt/couchdb/etc/local.d/
     networks:
       - medic-net
 
@@ -43,7 +43,7 @@ services:
 
   medic-sentinel:
     container_name: medic-sentinel
-    image: medicmobile/medic-sentinel:3.10.0-011020-test1
+    image: medicmobile/medic-sentinel:3.10.0-010520-test1
     environment:
       COUCHDB_SERVICE_NAME: couchdb
       COUCH_NODE_NAME: "couchdb@127.0.0.1"
@@ -91,9 +91,18 @@ services:
     container_name: medic-nginx
     image: medicmobile/nginx:3.10.0-slim-01052021-11
     environment:
-      -cht_DOMAIN:
+      CERTIFICATE_MODE: "${CERTIFICATE_MODE:-SELF_SIGNED}"
+      CHT_DOMAIN: "${CHT_DOMAIN?CHT_DOMAIN is required}"
+      COUNTRY: "${COUNTRY:-US}"
+      STATE: "${STATE:-Colorado}"
+      LOCALITY: "${LOCALITY:-Denver}"
+      ORGANISATION: "${ORGANISATION:-medic}"
+      DEPARTMENT: "${DEPARTMENT:-Department of Information Security}"
+      COMMON_NAME: "${COMMON_NAME:-test.medic.org}"
+      EMAIL: "${EMAIL:-devops@medic.org}"
+
     volumes:
-      - medic-ssl:/root/.acme.sh/
+      - cht-ssl: /root/.acme.sh/
     #  - ./ssl-certificate-key.pem:/etc/nginx/private/key.pem
     #  - ./ssl-certificate.pem:/etc/nginx/private/cert.pem
     networks:
@@ -105,12 +114,12 @@ services:
       - 443:443
 
 volumes:
-  medic-data:
-    name: medic-data
-  medic-couchconfig:
-    name: medic-couchconfig
-  medic-ssl:
-    name: medic-ssl
+  cht-data:
+    name: cht-data
+  cht-couchconfig:
+    name: cht-couchconfig
+  cht-ssl:
+    name: cht-ssl
 
 networks:
   medic-net:
