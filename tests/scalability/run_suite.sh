@@ -27,7 +27,11 @@ wget  https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/1.4/jmeter-pl
 wget 'http://search.maven.org/remotecontent?filepath=kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar' -O ./jmeter/lib/cmdrunner-2.2.jar &&
 java -cp jmeter/lib/ext/jmeter-plugins-manager-1.4.jar org.jmeterplugins.repository.PluginManagerCMDInstaller &&
 ./jmeter/bin/PluginsManagerCMD.sh install jpgc-mergeresults &&
-echo "JMETER installed"
+echo ""
+echo " ----------------------- "
+echo "JMETER installed successfully"
+echo " ----------------------- "
+echo ""
 # echo "jmeter do it!"
 # ./jmeter/bin/jmeter -n  -t sync.jmx -Jnumber_of_threads=100 -Jworking_dir=./ -Jnode_binary=$(which node) -l ./report/cli_run.jtl -e -o ./report
 # mv ./jmeter.log ./report/jmeter.log
