@@ -28,7 +28,7 @@ describe('CHT Script API - index', () => {
 
     expect(result).to.be.true;
     expect(authHasPermissions.callCount).to.equal(1);
-    expect(authHasPermissions.args[0]).to.have.members([ permissions, userRoles, chtPermissionsSettings ]);
+    expect(authHasPermissions.args[0]).to.deep.equal([ permissions, userRoles, chtPermissionsSettings ]);
   });
 
   it('should call auth.hasAnyPermission', () => {
@@ -51,6 +51,6 @@ describe('CHT Script API - index', () => {
 
     expect(result).to.be.true;
     expect(authHasAnyPermission.callCount).to.equal(1);
-    expect(authHasAnyPermission.args[0]).to.have.members([ permissions, userRoles, chtPermissionsSettings ]);
+    expect(authHasAnyPermission.args[0]).to.deep.equal([ permissions, userRoles, chtPermissionsSettings ]);
   });
 });

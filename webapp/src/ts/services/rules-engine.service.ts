@@ -106,7 +106,7 @@ export class RulesEngineService implements OnDestroy {
             this.chtScriptApiService.getApi()
           ])
           .then(([settingsDoc, userContactDoc, userSettingsDoc, chtScriptApi]) => {
-            const rulesSettings = this.getRulesSettings(
+            const rulesEngineContext = this.getRulesEngineContext(
               settingsDoc,
               userContactDoc,
               userSettingsDoc,
@@ -114,6 +114,7 @@ export class RulesEngineService implements OnDestroy {
               canViewTargets,
               chtScriptApi
             );
+            const rulesSettings = this.getRulesSettings(rulesEngineContext);
             const initializeTelemetryData = this.telemetryEntry('rules-engine:initialize', true);
 
             return this.rulesEngineCore
@@ -123,14 +124,7 @@ export class RulesEngineService implements OnDestroy {
 
                 if (isEnabled) {
                   this.assignMonthStartDate(settingsDoc);
-                  this.monitorChanges(
-                    settingsDoc,
-                    userContactDoc,
-                    userSettingsDoc,
-                    canViewTasks,
-                    canViewTargets,
-                    chtScriptApi
-                  );
+                  this.monitorChanges(rulesEngineContext);
 
                   const tasksDebounceRef = _debounce(() => {
                     this.debounceActive.tasks.active = false;
@@ -210,26 +204,37 @@ export class RulesEngineService implements OnDestroy {
     debounceInfo.active = false;
   }
 
-  private getRulesSettings(settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets, chtScriptApi) {
-    const settingsTasks = settingsDoc && settingsDoc.tasks || {};
+  private getRulesEngineContext(settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets, chtScriptApi){
+    return {
+      settingsDoc,
+      userContactDoc,
+      userSettingsDoc,
+      enableTasks,
+      enableTargets,
+      chtScriptApi
+    };
+  }
+
+  private getRulesSettings(rulesEngineContext) {
+    const settingsTasks = rulesEngineContext?.settingsDoc?.tasks || {};
     const filterTargetByContext = (target) => target.context ?
-      !!this.parseProvider.parse(target.context)({ user: userContactDoc }) : true;
+      !!this.parseProvider.parse(target.context)({ user: rulesEngineContext.userContactDoc }) : true;
     const targets = settingsTasks.targets && settingsTasks.targets.items || [];
 
     return {
       rules: settingsTasks.rules,
       taskSchedules: settingsTasks.schedules,
       targets: targets.filter(filterTargetByContext),
-      enableTasks,
-      enableTargets,
-      contact: userContactDoc,
-      user: userSettingsDoc,
-      monthStartDate: this.uhcSettingsService.getMonthStartDate(settingsDoc),
-      chtScriptApi
+      enableTasks: rulesEngineContext.enableTasks,
+      enableTargets: rulesEngineContext.enableTargets,
+      contact: rulesEngineContext.userContactDoc,
+      user: rulesEngineContext.userSettingsDoc,
+      monthStartDate: this.uhcSettingsService.getMonthStartDate(rulesEngineContext.settingsDoc),
+      chtScriptApi: rulesEngineContext.chtScriptApi
     };
   }
 
-  private monitorChanges(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets, chtScriptApi) {
+  private monitorChanges(rulesEngineContext) {
     const isReport = doc => doc.type === 'data_record' && !!doc.form;
 
     const dirtyContactsSubscription = this.changesService.subscribe({
@@ -251,7 +256,7 @@ export class RulesEngineService implements OnDestroy {
 
     const userLineage = [];
     for (
-      let current = userContactDoc;
+      let current = rulesEngineContext.userContactDoc;
       !!current && userLineage.length < this.MAX_LINEAGE_DEPTH;
       current = current.parent)
     {
@@ -266,43 +271,22 @@ export class RulesEngineService implements OnDestroy {
           return this.userContactService
             .get()
             .then(updatedUser => {
-              userContactDoc = updatedUser;
-              this.rulesConfigChange(
-                settingsDoc,
-                userContactDoc,
-                userSettingsDoc,
-                canViewTasks,
-                canViewTargets,
-                chtScriptApi
-              );
+              rulesEngineContext.userContactDoc = updatedUser;
+              this.rulesConfigChange(rulesEngineContext);
             });
         }
 
-        settingsDoc = change.doc.settings;
-        this.rulesConfigChange(
-          settingsDoc,
-          userContactDoc,
-          userSettingsDoc,
-          canViewTasks,
-          canViewTargets,
-          chtScriptApi
-        );
+        rulesEngineContext.settingsDoc = change.doc.settings;
+        this.rulesConfigChange(rulesEngineContext);
       },
     });
     this.subscriptions.add(rulesUpdateSubscription);
   }
 
-  private rulesConfigChange(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets, chtScriptApi) {
-    const rulesSettings = this.getRulesSettings(
-      settingsDoc,
-      userContactDoc,
-      userSettingsDoc,
-      canViewTasks,
-      canViewTargets,
-      chtScriptApi
-    );
+  private rulesConfigChange(rulesEngineContext) {
+    const rulesSettings = this.getRulesSettings(rulesEngineContext);
     this.rulesEngineCore.rulesConfigChange(rulesSettings);
-    this.assignMonthStartDate(settingsDoc);
+    this.assignMonthStartDate(rulesEngineContext.settingsDoc);
   }
 
   private translateProperty(property, task) {
