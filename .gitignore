@@ -31,3 +31,6 @@ config/*/json_docs/*
 config/*/upload-docs.*
 config/*/users.csv
 /**/*/.snapshots/local.json
+tests/scalability/report/
+tests/scalability/report_remote/
+tests/scalability/jmeter*.log
