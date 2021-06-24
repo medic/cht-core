@@ -45,8 +45,8 @@ describe('Export Data V2.0', () => {
     }];
     before(() => utils.saveDocs(docs));
 
-    it('Returns all reports that exist in the system', (done) =>
-      utils.request({ path: '/api/v2/export/reports' }).then(result => {
+    it('Returns all reports that exist in the system', () => {
+      return utils.request({ path: '/api/v2/export/reports' }).then(result => {
         const rows = result.split('\n');
         rows.pop(); // Last row is empty string, discard
         const expected = [
@@ -60,9 +60,10 @@ describe('Export Data V2.0', () => {
         rows.splice(1).forEach(row => {
           expect(expected).to.contain(row);
         });
-      }).then(done()));
-    it('POST Filters by form', done =>
-      utils.request({
+      });
+    });
+    it('POST Filters by form', () => {
+      return utils.request({
         method: 'POST',
         path: '/api/v2/export/reports',
         body: {
@@ -80,8 +81,9 @@ describe('Export Data V2.0', () => {
         ];
         expect(rows.length).to.equal(2);
         expect(rows).to.deep.equal(expected);
-      }).then(done()));
-    it('GET Filters by date', done => {
+      });
+    });
+    it('GET Filters by date', () => {
       const from = Date.UTC(2018,1,2,12);
       const to = Date.UTC(2018,1,3,12);
       return utils.request(`/api/v2/export/reports?` +
@@ -97,7 +99,7 @@ describe('Export Data V2.0', () => {
         ];
         expect(rows.length).to.equal(2);
         expect(rows).to.deep.equal(expected);
-      }).then(done());
+      });
     });
   });
   describe('Weird data', () => {
@@ -116,8 +118,8 @@ describe('Export Data V2.0', () => {
       }
     }));
 
-    it('Outputs weird data types correctly', done =>
-      utils.request({
+    it('Outputs weird data types correctly', () => {
+      return utils.request({
         method: 'POST',
         path: '/api/v2/export/reports',
         body: {
@@ -140,6 +142,7 @@ describe('Export Data V2.0', () => {
         ];
         expect(rows.length).to.equal(2);
         expect(rows).to.deep.equal(expected);
-      }).then(done()));
+      });
+    });
   });
 });
