@@ -59,12 +59,16 @@ export class ContactsEffects {
 
         const loadContact = this
           .loadContact(id)
-          .then(() => this.loadChildren(userFacilityId))
-          .then(() => this.loadReports(forms))
-          .then(() => this.loadTargetDoc())
-          .then(() => this.loadContactSummary())
-          .then(() => this.loadTasks())
+          .then(() => this.loadChildren(id, userFacilityId))
+          .then(() => this.loadReports(id, forms))
+          .then(() => this.loadTargetDoc(id))
+          .then(() => this.loadContactSummary(id))
+          .then(() => this.loadTasks(id))
           .catch(err => {
+            // If the selected contact changed, just stop loading this one
+            if (err.code === 409) {
+              return of();
+            }
             if (err.code === 404 && !silent) {
               this.globalActions.setSnackbarContent(this.translateService.instant('error.404.title'));
             }
@@ -96,50 +100,49 @@ export class ContactsEffects {
       });
   }
 
-  private loadChildren(userFacilityId) {
-    const getChildPlaces = userFacilityId !== this.selectedContact?._id;
-    return this.contactViewModelGeneratorService
-      .loadChildren(this.selectedContact, { getChildPlaces })
-      .then(children => {
-        this.contactsActions.receiveSelectedContactChildren(children);
-      });
+  private verifySelectedContactNotChanged(id) {
+    return this.selectedContact?._id !== id ? Promise.reject({code: 409}) : Promise.resolve();
   }
 
-  private loadReports(forms) {
-    const initialContactId = this.selectedContact._id;
+  private loadChildren(contactId, userFacilityId) {
+    const getChildPlaces = userFacilityId !== contactId;
+    return this.contactViewModelGeneratorService
+      .loadChildren(this.selectedContact, {getChildPlaces})
+      .then(children => this.verifySelectedContactNotChanged(contactId)
+        .then(() => this.contactsActions.receiveSelectedContactChildren(children)));
+  }
+
+  private loadReports(contactId, forms) {
     return this.contactViewModelGeneratorService
       .loadReports(this.selectedContact, forms)
-      .then(reports => {
-        // Make sure the selected contact did not change while the reports were fetched
-        if(this.selectedContact._id === initialContactId) {
-          return this.contactsActions.receiveSelectedContactReports(reports);
-        }
-      });
+      .then(reports => this.verifySelectedContactNotChanged(contactId)
+        .then(() => this.contactsActions.receiveSelectedContactReports(reports)));
   }
 
-  private loadTargetDoc() {
+  private loadTargetDoc(contactId) {
     return this.targetAggregateService
       .getCurrentTargetDoc(this.selectedContact)
-      .then(targetDoc => {
-        this.contactsActions.receiveSelectedContactTargetDoc(targetDoc);
-      });
+      .then(targetDoc => this.verifySelectedContactNotChanged(contactId)
+        .then(() => this.contactsActions.receiveSelectedContactTargetDoc(targetDoc)));
   }
 
-  private loadTasks() {
+  private loadTasks(contactId) {
     return this.tasksForContactService
       .get(this.selectedContact)
-      .then(tasks => {
-        this.contactsActions.updateSelectedContactsTasks(tasks);
-      });
+      .then(tasks => this.verifySelectedContactNotChanged(contactId)
+        .then(() => {
+          this.contactsActions.updateSelectedContactsTasks(tasks);
+        }));
   }
 
-  private loadContactSummary() {
+  private loadContactSummary(contactId) {
     const selected = this.selectedContact;
     return this.contactSummaryService
       .get(selected.doc, selected.reports, selected.lineage, selected.targetDoc)
-      .then(summary => {
-        this.contactsActions.setContactsLoadingSummary(false);
-        return this.contactsActions.updateSelectedContactSummary(summary);
-      });
+      .then(summary => this.verifySelectedContactNotChanged(contactId)
+        .then(() => {
+          this.contactsActions.setContactsLoadingSummary(false);
+          return this.contactsActions.updateSelectedContactSummary(summary);
+        }));
   }
 }
