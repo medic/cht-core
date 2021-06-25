@@ -189,6 +189,12 @@ describe('TelemetryService', () => {
           }
         ]
       });
+      metaDb.get
+        .withArgs('settings')
+        .resolves({
+          _id: 'somerandomid',
+          _rev: 'somerandomrevision'
+        });
     }
 
     it('should aggregate once a day and resets the db first', async () => {
@@ -216,7 +222,8 @@ describe('TelemetryService', () => {
         app: '3.0.0',
         forms: {
           'anc_followup': '1-abc'
-        }
+        },
+        settings: 'somerandomrevision'
       });
       expect(aggregatedDoc.dbInfo).to.deep.equal({ some: 'stats' });
       expect(aggregatedDoc.device).to.deep.equal({
@@ -372,6 +379,10 @@ describe('TelemetryService', () => {
         deploy_info: {
           version: '3.0.0'
         }
+      });
+      metaDb.get.withArgs('settings').resolves({
+        _id: 'randomid',
+        _rev: 'randomrev'
       });
       metaDb.query.resolves({ rows: [] });
 

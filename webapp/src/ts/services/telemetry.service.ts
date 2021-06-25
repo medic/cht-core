@@ -119,9 +119,10 @@ export class TelemetryService {
     return Promise
       .all([
         this.dbService.get().get('_design/medic-client'),
-        this.dbService.get().query('medic-client/doc_by_type', { key: ['form'], include_docs: true })
+        this.dbService.get().query('medic-client/doc_by_type', { key: ['form'], include_docs: true }),
+        this.dbService.get().get('settings')
       ])
-      .then(([ddoc, formResults]) => {
+      .then(([ddoc, formResults, settings]) => {
         const date = this.getFirstAggregatedDate();
         const version = (ddoc.deploy_info && ddoc.deploy_info.version) || 'unknown';
         const forms = formResults.rows.reduce((keyToVersion, row) => {
@@ -138,7 +139,8 @@ export class TelemetryService {
           deviceId: this.getUniqueDeviceId(),
           versions: {
             app: version,
-            forms: forms
+            forms: forms,
+            settings: settings._rev,
           }
         };
       });
