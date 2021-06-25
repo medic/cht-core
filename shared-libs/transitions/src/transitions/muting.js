@@ -5,11 +5,13 @@ const utils = require('../lib/utils');
 const messages = require('../lib/messages');
 const mutingUtils = require('../lib/muting_utils');
 const contactTypesUtils = require('@medic/contact-types-utils');
+const transitions = require('./index');
 
 const TRANSITION_NAME = 'muting';
 const CONFIG_NAME = 'muting';
 const MUTE_PROPERTY = 'mute_forms';
 const UNMUTE_PROPERTY = 'unmute_forms';
+const CLIENT_SIDE_TRANSITIONS = 'client_side_transitions';
 
 const getConfig = () => {
   return config.get(CONFIG_NAME) || {};
@@ -36,6 +38,18 @@ const isRelevantReport = (doc, info = {}) =>
           !transitionUtils.hasRun(info, TRANSITION_NAME) &&
           utils.isValidSubmission(doc));
 
+const isNewContactWithMutedParent = (doc, infoDoc = {}) => {
+  return Boolean(
+    !doc.muted &&
+    // If initial_replication_date is 'unknown' .getTime() will return NaN, which is an
+    // acceptable value to pass to isMutedInLineage (it will mean that it won't match because
+    // there is no possible mute date that is "after" NaN)
+    mutingUtils.isMutedInLineage(doc, new Date(infoDoc.initial_replication_date).getTime()) &&
+    !infoDoc.muting_history &&
+    !mutingUtils.isLastUpdatedByClient(doc) // contacts that are updated client-side are treated separately
+  );
+};
+
 //
 // When *new* contacts are added that have muted parents, they and their schedules should be muted.
 //
@@ -43,15 +57,120 @@ const isRelevantReport = (doc, info = {}) =>
 //  - They were initially replicated *after* a mute that has happened in their parent lineage
 //  - And we haven't performed any kind of mute on them before
 //
-const isRelevantContact = (doc, infoDoc = {}) =>
-  Boolean(doc &&
-          isContact(doc) &&
-          !doc.muted &&
-          // If initial_replication_date is 'unknown' .getTime() will return NaN, which is an
-          // acceptable value to pass to isMutedInLineage (it will mean that it won't match because
-          // there is no possible mute date that is "after" NaN)
-          mutingUtils.isMutedInLineage(doc, new Date(infoDoc.initial_replication_date).getTime()) &&
-          !infoDoc.muting_history);
+const isRelevantContact = (doc, infoDoc = {}) => {
+  return Boolean(
+    doc &&
+    isContact(doc) &&
+    (isNewContactWithMutedParent(doc, infoDoc) || mutingUtils.isLastUpdatedByClient(doc))
+  );
+};
+
+const getMutedDate = (change) => {
+  if (isNewContactWithMutedParent(change.doc, change.info) || change.doc.muted) {
+    return new Date();
+  }
+  return false;
+};
+
+const processContact = (change) => {
+  const muted = getMutedDate(change);
+
+  const initialReplicationTs = new Date(change.info && change.info.initial_replication_date).getTime();
+  return mutingUtils
+    .updateRegistrations(utils.getSubjectIds(change.doc), muted)
+    .then(() => mutingUtils.updateMutingHistory(change.doc, initialReplicationTs, muted))
+    .then(() => {
+      mutingUtils.updateContact(change.doc, muted);
+      return true;
+    });
+};
+
+/**
+ * Given a list of report ids to process
+ * - hydrates the docs
+ * - excludes irrelevant reports
+ * - reads infodocs
+ * - (re)runs muting transition over every report, in sequence, even if it had already ran
+ * - reports should be processed in the same order we have received them
+ * The purpose of this action is to reconcile client-side muting events that have already been processed, but due
+ * to characteristics of CouchDB + PouchDB sync + changes watching, there is no guarantee that we process these
+ * changes in their chronological order naturally.
+ * The reportIds parameter is a list of reports that have been created client-side after the currently processed report,
+ * and have changed at least one contact that the currently processed report has changed.
+ * This resolves most "conflicts" but does not guarantee a consistent muting state for every case.
+ *
+ * @param {Array<string>} reportIds - an ordered list of report uuids to be processed
+ * @return {Promise}
+ */
+const replayClientMutingEvents = (reportIds = []) => {
+  if (!reportIds.length) {
+    return Promise.resolve();
+  }
+
+  return mutingUtils.lineage
+    .fetchHydratedDocs(reportIds)
+    .then(hydratedReports => {
+      hydratedReports = hydratedReports.filter(doc => isRelevantReport(doc, {}));
+
+      const changes = hydratedReports.map(report => ({ id: report._id }));
+      return mutingUtils.infodoc.bulkGet(changes).then(infoDocs => {
+        let promiseChain = Promise.resolve();
+        reportIds.forEach(reportId => {
+          const hydratedReport = hydratedReports.find(report => report._id === reportId);
+          if (hydratedReport) {
+            promiseChain = promiseChain.then(() => runTransition(hydratedReport, infoDocs));
+          }
+        });
+        return promiseChain;
+      });
+    });
+};
+
+/**
+ * Runs muting transition over provided report
+ * @param {Object} hydratedReport
+ * @param {Array<Object>} infoDocs
+ * @return {Promise}
+ */
+const runTransition = (hydratedReport, infoDocs = []) => {
+  const change = {
+    id: hydratedReport._id,
+    doc: hydratedReport,
+    info: infoDocs.find(infoDoc => infoDoc.doc_id === hydratedReport._id),
+  };
+
+  const transitionContext = {
+    change,
+    transition: module.exports,
+    key: TRANSITION_NAME,
+    force: true,
+  };
+  return new Promise((resolve, reject) => {
+    transitions.applyTransition(transitionContext, (err, result) => {
+      const transitionContext = { change, results: [result] };
+      transitions.finalize(transitionContext, (err) => err ? reject(err) : resolve());
+    });
+  });
+};
+
+const wasProcessedClientSide = (change) => {
+  return change.doc &&
+         change.doc[CLIENT_SIDE_TRANSITIONS] &&
+         change.doc[CLIENT_SIDE_TRANSITIONS][TRANSITION_NAME];
+};
+
+const processMutingEvent = (contact, change, muteState, hasRun) => {
+  const processedClientSide = wasProcessedClientSide(change);
+  return mutingUtils
+    .updateMuteState(contact, muteState, change.id, processedClientSide)
+    .then(reportIds => {
+      module.exports._addMsg(getEventType(muteState), change.doc, hasRun);
+
+      if (processedClientSide) {
+        return replayClientMutingEvents(reportIds);
+      }
+    });
+};
 
 module.exports = {
   name: TRANSITION_NAME,
@@ -72,7 +191,7 @@ module.exports = {
     const config = getConfig();
     return transitionUtils.validate(config, doc).then(errors => {
       if (errors && errors.length) {
-        messages.addErrors(config, doc, errors, { patient: doc.patient });
+        messages.addErrors(config, doc, errors, { patient: doc.patient, place: doc.place });
         return false;
       }
       return true;
@@ -81,21 +200,18 @@ module.exports = {
 
   onMatch: change => {
     if (change.doc.type !== 'data_record') {
-      // process new contacts
-      const muted = new Date();
-      mutingUtils.updateContact(change.doc, muted);
-      return mutingUtils
-        .updateRegistrations(utils.getSubjectIds(change.doc), muted)
-        .then(() => mutingUtils.updateMutingHistory(
-          change.doc,
-          new Date(change.info.initial_replication_date).getTime(),
-          muted
-        ))
-        .then(() => true);
+      return processContact(change);
     }
 
     const muteState = isMuteForm(change.doc.form);
-    let targetContact;
+    const contact = change.doc.patient || change.doc.place;
+    const hasRun = transitionUtils.hasRun(change.info, TRANSITION_NAME);
+
+    if (!contact) {
+      module.exports._addErr('contact_not_found', change.doc);
+      module.exports._addMsg('contact_not_found', change.doc, hasRun);
+      return Promise.resolve(true);
+    }
 
     return module.exports
       .validate(change.doc)
@@ -104,39 +220,25 @@ module.exports = {
           return;
         }
 
-        return mutingUtils
-          .getContact(change.doc)
-          .then(contact => {
-            targetContact = contact;
-
-            if (Boolean(contact.muted) === muteState) {
-              // don't update registrations if contact already has desired state
-              module.exports._addMsg(contact.muted ? 'already_muted' : 'already_unmuted', change.doc);
-              return;
-            }
-
-            return mutingUtils.updateMuteState(contact, muteState, change.id);
-          });
-      })
-      .then(changed => changed && module.exports._addMsg(getEventType(muteState), change.doc, targetContact))
-      .catch(err => {
-        if (err && err.message === 'contact_not_found') {
-          module.exports._addErr('contact_not_found', change.doc);
-          module.exports._addMsg('contact_not_found', change.doc);
+        if (Boolean(contact.muted) === muteState && !wasProcessedClientSide(change)) {
+          // don't update registrations if contact already has desired state
+          // but do process muting events that have been handled on the client
+          module.exports._addMsg(contact.muted ? 'already_muted' : 'already_unmuted', change.doc, hasRun);
           return;
         }
 
-        throw(err);
+        return processMutingEvent(contact, change, muteState, hasRun);
       })
       .then(() => true);
   },
-  _addMsg: function(eventType, doc, contact) {
+  _addMsg: (eventType, doc, forceUniqueMessages) => {
     const msgConfig = _.find(getConfig().messages, { event_type: eventType });
     if (msgConfig) {
-      messages.addMessage(doc, msgConfig, msgConfig.recipient, { patient: contact });
+      const context = { patient: doc.patient, place: doc.place };
+      messages.addMessage(doc, msgConfig, msgConfig.recipient, context, forceUniqueMessages);
     }
   },
-  _addErr: function(eventType, doc) {
+  _addErr: (eventType, doc) => {
     const locale = utils.getLocale(doc);
     const evConf = _.find(getConfig().messages, { event_type: eventType });
 

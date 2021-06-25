@@ -2,7 +2,6 @@ const chai = require('chai');
 const expect = chai.expect;
 chai.use(require('chai-like'));
 chai.use(require('chai-things'));
-const path = require('path');
 
 //const { Forms } = require('../../nools-extras');
 const TestRunner = require('medic-conf-test-harness');
@@ -10,8 +9,7 @@ const TestRunner = require('medic-conf-test-harness');
 const { pncDangerSignFollowUpScenarios } = require('../form-inputs');
 const { newbornBaby } = require('../contacts');
 const harness = new TestRunner({
-  xformFolderPath: path.join(__dirname, '../../forms/app'),
-  inputs: { content: { contact: newbornBaby } }
+  subject: newbornBaby,
 });
 const now = '2000-05-01';
 
@@ -30,41 +28,38 @@ describe('PNC danger sign follow up for baby tests', () => {
   it('PNC danger sign follow up for baby from profile', async () => {
 
     // Confirm a task appears immediately
-    const tasksFromContact = await harness.getTasks();
+    const tasksFromContact = await harness.getTasks({ title: 'task.pnc.danger_sign_followup_baby.title' });
     expect(tasksFromContact).to.have.property('length', 1); //also follow up
-    expect(tasksFromContact).to.be.an('array').that.contains.something.like({ title: 'task.pnc.danger_sign_followup_baby.title' });
 
     // Complete the task and confirm the task disappears 
     await harness.flush(1);
-    await harness.loadAction(tasksFromContact[0].actions[0]);
+    await harness.loadAction(tasksFromContact[0]);
     const followupFormResult = await harness.fillForm(...pncDangerSignFollowUpScenarios.baby.cured);
     expect(followupFormResult.errors).to.be.empty;
-    const tasksAfterDangerSignsFollowUp = await harness.getTasks();
-    expect(tasksAfterDangerSignsFollowUp).to.be.an('array').that.does.not.contain.something.like({ title: 'task.pnc.danger_sign_followup_baby.title' });
+    const tasksAfterDangerSignsFollowUp = await harness.getTasks({ title: 'task.pnc.danger_sign_followup_baby.title' });
+    expect(tasksAfterDangerSignsFollowUp).to.have.property('length', 0);
 
   });
 
   it('PNC danger sign follow up from PNC danger sign follow up', async () => {
 
-    const tasksFromContact = await harness.getTasks();
+    const tasksFromContact = await harness.getTasks({ title: 'task.pnc.danger_sign_followup_baby.title' });
     expect(tasksFromContact).to.have.property('length', 1);
-    expect(tasksFromContact).to.be.an('array').that.contains.something.like({ title: 'task.pnc.danger_sign_followup_baby.title' });
 
     await harness.flush(1);
     // Complete the task and confirm the task disappears 
 
-    await harness.loadAction(tasksFromContact[0].actions[0]);
+    await harness.loadAction(tasksFromContact[0]);
     let followupFormResult = await harness.fillForm(...pncDangerSignFollowUpScenarios.baby.danger);
-    const tasksAfterDangerSignFollowUp = await harness.getTasks();
+    const tasksAfterDangerSignFollowUp = await harness.getTasks({ title: 'task.pnc.danger_sign_followup_baby.title' });
 
     expect(tasksAfterDangerSignFollowUp).to.have.property('length', 1);
-    expect(tasksAfterDangerSignFollowUp).to.be.an('array').that.contains.something.like({ title: 'task.pnc.danger_sign_followup_baby.title' });
     await harness.flush(1);
-    await harness.loadAction(tasksAfterDangerSignFollowUp[0].actions[0]);
+    await harness.loadAction(tasksAfterDangerSignFollowUp[0]);
     followupFormResult = await harness.fillForm(...pncDangerSignFollowUpScenarios.baby.cured);
     expect(followupFormResult.errors).to.be.empty;
-    const tasksAfterDangerSignsFollowUp = await harness.getTasks();
-    expect(tasksAfterDangerSignsFollowUp).to.be.an('array').that.does.not.contain.something.like({ title: 'task.pnc.danger_sign_followup_baby.title' });
+    const tasksAfterDangerSignsFollowUp = await harness.getTasks({ title: 'task.pnc.danger_sign_followup_baby.title' });
+    expect(tasksAfterDangerSignsFollowUp).to.have.property('length', 0);
 
   });
 });

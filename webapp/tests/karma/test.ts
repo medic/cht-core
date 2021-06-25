@@ -14,6 +14,10 @@ declare const require: {
   };
 };
 
+import * as chai from 'chai';
+import chaiExclude from 'chai-exclude';
+chai.use(chaiExclude);
+
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
   BrowserDynamicTestingModule,

@@ -1,5 +1,5 @@
 import { v4 as uuidV4 } from 'uuid';
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { reduce as _reduce, isObject as _isObject, defaults as _defaults } from 'lodash-es';
 
@@ -8,6 +8,7 @@ import { EnketoTranslationService } from '@mm-services/enketo-translation.servic
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { TransitionsService } from '@mm-services/transitions.service';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +23,8 @@ export class ContactSaveService {
     private dbService:DbService,
     private enketoTranslationService:EnketoTranslationService,
     private extractLineageService:ExtractLineageService,
+    private transitionsService:TransitionsService,
+    private ngZone:NgZone,
   ) {
     this.servicesActions = new ServicesActions(store);
   }
@@ -171,29 +174,39 @@ export class ContactSaveService {
   }
 
   save(form, docId, type) {
-    return Promise
-      .resolve()
-      .then(() => docId ? this.dbService.get().get(docId) : null)
-      .then(original => {
-        const submitted = this.enketoTranslationService.contactRecordToJs(form.getDataStr({ irrelevant: false }));
-        return this.prepareSubmittedDocsForSave(original, submitted, type);
-      })
-      .then((preparedDocs) => {
-        const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
-        this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
+    return this.ngZone.runOutsideAngular(() => {
+      return (docId ? this.dbService.get().get(docId) : Promise.resolve())
+        .then(original => {
+          const submitted = this.enketoTranslationService.contactRecordToJs(form.getDataStr({ irrelevant: false }));
+          return this.prepareSubmittedDocsForSave(original, submitted, type);
+        })
+        .then((preparedDocs) => this.applyTransitions(preparedDocs))
+        .then((preparedDocs) => {
+          const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
+          this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
 
-        return this.dbService
-          .get()
-          .bulkDocs(preparedDocs.preparedDocs)
-          .then((bulkDocsResult) => {
-            const failureMessage = this.generateFailureMessage(bulkDocsResult);
+          return this.dbService
+            .get()
+            .bulkDocs(preparedDocs.preparedDocs)
+            .then((bulkDocsResult) => {
+              const failureMessage = this.generateFailureMessage(bulkDocsResult);
 
-            if (failureMessage) {
-              throw new Error(failureMessage);
-            }
+              if (failureMessage) {
+                throw new Error(failureMessage);
+              }
 
-            return { docId: preparedDocs.docId, bulkDocsResult };
-          });
+              return { docId: preparedDocs.docId, bulkDocsResult };
+            });
+        });
+    });
+  }
+
+  private applyTransitions(preparedDocs) {
+    return this.transitionsService
+      .applyTransitions(preparedDocs.preparedDocs)
+      .then(updatedDocs => {
+        preparedDocs.preparedDocs = updatedDocs;
+        return preparedDocs;
       });
   }
 }

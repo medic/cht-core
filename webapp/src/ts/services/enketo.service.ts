@@ -23,6 +23,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
+import { TransitionsService } from '@mm-services/transitions.service';
 
 @Injectable({
   providedIn: 'root'
@@ -47,6 +48,7 @@ export class EnketoService {
     private xmlFormsService:XmlFormsService,
     private zScoreService:ZScoreService,
     private translateService:TranslateService,
+    private transitionsService:TransitionsService,
     private ngZone:NgZone,
   ) {
     this.inited = this.init();
@@ -433,7 +435,11 @@ export class EnketoService {
     return this.renderForm(selector, formDoc, instanceData, editedListener, valuechangeListener);
   }
 
-  private xmlToDocs(doc, record) {
+  private xmlToDocs(doc, formXml, record) {
+    const recordDoc = $.parseXML(record);
+    const $record = $($(recordDoc).children()[0]);
+    const repeatPaths = this.enketoTranslationService.getRepeatPaths(formXml);
+
     const mapOrAssignId = (e, id?) => {
       if (!id) {
         const $id = $(e).children('_id');
@@ -447,11 +453,43 @@ export class EnketoService {
       e._couchId = id;
     };
 
+    mapOrAssignId($record[0], doc._id || uuid());
+
     const getId = (xpath) => {
-      return recordDoc
-        .evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null)
-        .iterateNext()
-        ._couchId;
+      const xPathResult = recordDoc.evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null);
+      let node = xPathResult.iterateNext();
+      while (node) {
+        if (node._couchId) {
+          return node._couchId;
+        }
+        node = xPathResult.iterateNext();
+      }
+    };
+
+    const getRelativePath = (path) => {
+      const repeatReference = repeatPaths?.find(repeatPath => path.startsWith(repeatPath));
+      if (repeatReference) {
+        return path.replace(`${repeatReference}/`, '');
+      }
+
+      if (path.startsWith('./')) {
+        return path.replace('./', '');
+      }
+    };
+
+    const getClosestPath = (element, $element, path) => {
+      const relativePath = getRelativePath(path.trim());
+      if (!relativePath) {
+        return;
+      }
+
+      // assign a unique id for xpath context, since the element can be inside a repeat
+      if (!element.id) {
+        element.id = uuid();
+      }
+      const uniqueElementSelector = `${element.nodeName}[@id="${element.id}"]`;
+
+      return `//${uniqueElementSelector}/ancestor-or-self::*/descendant-or-self::${relativePath}`;
     };
 
     // Chrome 30 doesn't support $xml.outerHTML: #3880
@@ -461,10 +499,6 @@ export class EnketoService {
       }
       return $('<temproot>').append($(xml).clone()).html();
     };
-
-    const recordDoc = $.parseXML(record);
-    const $record = $($(recordDoc).children()[0]);
-    mapOrAssignId($record[0], doc._id || uuid());
 
     $record
       .find('[db-doc]')
@@ -478,9 +512,12 @@ export class EnketoService {
     $record
       .find('[db-doc-ref]')
       .each((idx, element) => {
-        const $ref = $(element);
-        const refId = getId($ref.attr('db-doc-ref'));
-        $ref.text(refId);
+        const $element = $(element);
+        const reference = $element.attr('db-doc-ref');
+        const path = getClosestPath(element, $element, reference);
+
+        const refId = path && getId(path) || getId(reference);
+        $element.text(refId);
       });
 
     const docsToStore = $record
@@ -531,13 +568,14 @@ export class EnketoService {
 
     docsToStore.unshift(doc);
 
+    doc.fields = this.enketoTranslationService.reportRecordToJs(record, formXml);
+    return docsToStore;
+  }
+
+  private getFormXml(form) {
     return this.xmlFormsService
-      .get(doc.form)
-      .then((form) => this.getFormAttachment(form))
-      .then((form) => {
-        doc.fields = this.enketoTranslationService.reportRecordToJs(record, form);
-        return docsToStore;
-      });
+      .get(form)
+      .then(formDoc => this.getFormAttachment(formDoc));
   }
 
   private saveDocs(docs) {
@@ -641,13 +679,16 @@ export class EnketoService {
   }
 
   private _save(formInternalId, form, geoHandle, docId?) {
-    const promise = docId ? this.update(docId) : this.create(formInternalId);
+    const getDocPromise = docId ? this.update(docId) : this.create(formInternalId);
 
-    return promise
-      .then((doc) => {
-        return this.xmlToDocs(doc, form.getDataStr({ irrelevant: false }));
-      })
+    return Promise
+      .all([
+        getDocPromise,
+        this.getFormXml(formInternalId),
+      ])
+      .then(([doc, formXml]) => this.xmlToDocs(doc, formXml, form.getDataStr({ irrelevant: false })))
       .then((docs) => this.saveGeo(geoHandle, docs))
+      .then((docs) => this.transitionsService.applyTransitions(docs))
       .then((docs) => this.saveDocs(docs))
       .then((docs) => {
         this.servicesActions.setLastChangedDoc(docs[0]);

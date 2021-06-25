@@ -254,7 +254,18 @@ const getReplicationLimitLog = () => {
     });
 };
 
-const jsonV1 = () => {
+const getConnectedUserLogs = (connectedUserInterval) => {
+  const earliestTimestamp = moment().subtract(connectedUserInterval, 'days').valueOf();
+  return db.medicLogs
+    .query('logs/connected_users', { startkey: earliestTimestamp, reduce: true })
+    .then(result => getResultCount(result))
+    .catch(err => {
+      logger.error('Error fetching connected users logs: %o', err);
+      return -1;
+    });
+};
+
+const jsonV1 = (connectedUserInterval) => {
   return Promise
     .all([
       getAppVersion(),
@@ -265,7 +276,8 @@ const jsonV1 = () => {
       getOutgoingMessageStatusCounts(),
       getFeedbackCount(),
       getConflictCount(),
-      getReplicationLimitLog()
+      getReplicationLimitLog(),
+      getConnectedUserLogs(connectedUserInterval)
     ])
     .then(([
       appVersion,
@@ -276,7 +288,8 @@ const jsonV1 = () => {
       outgoingMessageStatus,
       feedbackCount,
       conflictCount,
-      replicationLimitLogs
+      replicationLimitLogs,
+      connectedUserLogs
     ]) => {
       return {
         version: {
@@ -308,15 +321,18 @@ const jsonV1 = () => {
         },
         replication_limit: {
           count: replicationLimitLogs
+        },
+        connected_users: {
+          count: connectedUserLogs
         }
       };
     });
 };
 
-const jsonV2 = () => {
+const jsonV2 = (connectedUserInterval) => {
   return Promise
     .all([
-      jsonV1(),
+      jsonV1(connectedUserInterval),
       getWeeklyOutgoingMessageStatusCounts(),
       getLastHundredStatusUpdatesCounts(),
     ])

@@ -6,13 +6,13 @@
     "test": "test"
   },
   "scripts": {
-    "eslint": "node ../../node_modules/eslint/bin/eslint.js *.json test/**/*.js",
+    "eslint": "npx eslint *.json test/**/*.js",
     "test": "npm run eslint && npm run test-unit",
-    "test-forms": "npm run eslint && mocha --reporter spec test/forms/**/*.spec.js --timeout 10000",
-    "test-tasks": "npm run eslint && mocha --reporter progress test/tasks/*.spec.js --timeout 10000",
-    "test-targets": "npm run eslint && mocha --reporter progress test/targets/*.spec.js --timeout 10000",
-    "test-contact-summary": "npm run eslint && mocha --reporter progress test/contact-summary/*.spec.js --timeout 10000",
-    "test-unit": "mocha --recursive --reporter spec test --timeout 20000",
+    "test-forms": "npm run eslint && TZ=Africa/Nairobi mocha --reporter spec test/forms/**/*.spec.js --timeout 10000",
+    "test-tasks": "npm run eslint && TZ=Africa/Nairobi mocha --reporter progress test/tasks/*.spec.js --timeout 10000",
+    "test-targets": "npm run eslint && TZ=Africa/Nairobi mocha --reporter progress test/targets/*.spec.js --timeout 10000",
+    "test-contact-summary": "npm run eslint && TZ=Africa/Nairobi mocha --reporter progress test/contact-summary/*.spec.js --timeout 10000",
+    "test-unit": "TZ=Africa/Nairobi mocha --recursive --reporter spec test --timeout 20000",
     "travis": "npm run test-unit"
   },
   "devDependencies": {
@@ -22,7 +22,7 @@
     "chai-things": "^0.2.0",
     "eslint-plugin-json": "^2.0.1",
     "medic-conf": "^3.1.0",
-    "medic-conf-test-harness": "^0.1.19",
+    "medic-conf-test-harness": "^2.1.3",
     "mocha": "^5.1.1",
     "sinon": "^7.3.2"
   },

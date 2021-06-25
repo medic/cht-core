@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { assert } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
+import { cloneDeep } from 'lodash-es';
 
 import { DbService } from '@mm-services/db.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -9,6 +10,7 @@ import { EnketoTranslationService } from '@mm-services/enketo-translation.servic
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
 import { ServicesActions } from '@mm-actions/services';
+import { TransitionsService } from '@mm-services/transitions.service';
 
 describe('ContactSave service', () => {
 
@@ -18,6 +20,7 @@ describe('ContactSave service', () => {
   let contactTypesService;
   let enketoTranslationService;
   let extractLineageService;
+  let transitionsService;
   let setLastChangedDoc;
   let clock;
 
@@ -28,6 +31,7 @@ describe('ContactSave service', () => {
 
     contactTypesService = { isHardcodedType: sinon.stub().returns(false) };
     extractLineageService = { extract: sinon.stub() };
+    transitionsService = { applyTransitions: sinon.stub().resolvesArg(0) };
     bulkDocs = sinon.stub();
     get = sinon.stub();
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
@@ -39,6 +43,7 @@ describe('ContactSave service', () => {
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: EnketoTranslationService, useValue: enketoTranslationService },
         { provide: ExtractLineageService, useValue: extractLineageService },
+        { provide: TransitionsService, useValue: transitionsService },
       ]
     });
 
@@ -224,6 +229,64 @@ describe('ContactSave service', () => {
           reported_date: 5000,
         });
 
+        assert.equal(setLastChangedDoc.callCount, 1);
+        assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
+      });
+  });
+
+  it('should pass the contacts to transitions service before saving and save modified contacts', () => {
+    const form = { getDataStr: () => '<data></data>' };
+    const docId = null;
+    const type = 'some-contact-type';
+
+    enketoTranslationService.contactRecordToJs.returns({
+      doc: { _id: 'main1', type: 'main', contact: { _id: 'abc', name: 'Richard' } }
+    });
+    bulkDocs.resolves([]);
+    get.resolves({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } });
+    extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
+    transitionsService.applyTransitions.callsFake((docs) => {
+      const clonedDocs = cloneDeep(docs); // don't mutate so we can assert
+      clonedDocs[0].transitioned = true;
+      clonedDocs.push({ this: 'is a new doc' });
+      return Promise.resolve(clonedDocs);
+    });
+    clock = sinon.useFakeTimers(1000);
+
+    return service
+      .save(form, docId, type)
+      .then(() => {
+        assert.equal(get.callCount, 1);
+        assert.equal(get.args[0][0], 'abc');
+
+        assert.equal(transitionsService.applyTransitions.callCount, 1);
+        assert.deepEqual(transitionsService.applyTransitions.args[0], [[
+          {
+            _id: 'main1',
+            contact: { _id: 'abc', parent: { _id: 'def' } },
+            contact_type: type,
+            type: 'contact',
+            parent: undefined,
+            reported_date: 1000
+          }
+        ]]);
+
+        assert.equal(bulkDocs.callCount, 1);
+        const savedDocs = bulkDocs.args[0][0];
+
+        assert.equal(savedDocs.length, 2);
+        assert.deepEqual(savedDocs, [
+          {
+            _id: 'main1',
+            contact: { _id: 'abc', parent: { _id: 'def' } },
+            contact_type: type,
+            type: 'contact',
+            parent: undefined,
+            reported_date: 1000,
+            transitioned: true,
+          },
+          { this: 'is a new doc' },
+        ]);
         assert.equal(setLastChangedDoc.callCount, 1);
         assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
       });

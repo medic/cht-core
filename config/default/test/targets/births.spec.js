@@ -1,13 +1,11 @@
 const chai = require('chai');
 const expect = chai.expect;
-const path = require('path');
 const moment = require('moment');
 const sinon = require('sinon');
 const TestRunner = require('medic-conf-test-harness');
 const { newbornBaby } = require('../contacts');
 const harness = new TestRunner({
-  xformFolderPath: path.join(__dirname, '../../forms/app'),
-  inputs: { content: { contact: newbornBaby } }
+  subject: newbornBaby,
 });
 let clock;
 

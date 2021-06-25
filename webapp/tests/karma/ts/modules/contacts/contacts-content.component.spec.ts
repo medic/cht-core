@@ -22,6 +22,8 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SessionService } from '@mm-services/session.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { ContactMutedService } from '@mm-services/contact-muted.service';
+import { MutingTransition } from '@mm-services/transitions/muting.transition';
 
 describe('Contacts content component', () => {
   let component: ContactsContentComponent;
@@ -41,6 +43,9 @@ describe('Contacts content component', () => {
   let sessionService;
   let contactTypesService;
   let responsiveService;
+  let contactMutedService;
+  let mutingTransition;
+  let settings;
 
   beforeEach(async(() => {
     changesService = { subscribe: sinon.stub().resolves(of({})) };
@@ -50,7 +55,8 @@ describe('Contacts content component', () => {
       isRelevantReport: sinon.stub(),
       isDeleted: sinon.stub(),
     };
-    settingsService = { get: sinon.stub().resolves([]) };
+    settings = {};
+    settingsService = { get: sinon.stub().resolves(settings) };
     xmlFormsService = { subscribe: sinon.stub() };
     translateFromService = { get: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub().resolves() };
@@ -78,6 +84,8 @@ describe('Contacts content component', () => {
       setRightActionBar: sinon.spy(GlobalActions.prototype, 'setRightActionBar'),
       updateRightActionBar: sinon.spy(GlobalActions.prototype, 'updateRightActionBar')
     };
+    mutingTransition = { isUnmuteForm: sinon.stub() };
+    contactMutedService = { getMuted: sinon.stub() };
 
     selectedContact = {
       doc: {},
@@ -123,6 +131,8 @@ describe('Contacts content component', () => {
           { provide: TranslateFromService, useValue: translateFromService },
           { provide: ModalService, useValue: modalService },
           { provide: ResponsiveService, useValue: responsiveService },
+          { provide: ContactMutedService, useValue: contactMutedService },
+          { provide: MutingTransition, useValue: mutingTransition },
         ]
       })
       .compileComponents()
@@ -475,7 +485,7 @@ describe('Contacts content component', () => {
       });
     }));
 
-    it('should set relevant report forms based on the selected contact', fakeAsync(() => {
+    it('should set relevant report forms based on the selected contact when muted', fakeAsync(() => {
       sinon.resetHistory();
       const forms = [
         { _id: 'form:test_report_type3', title: 'Type 3', internalId: 3, icon: 'a' },
@@ -491,6 +501,10 @@ describe('Contacts content component', () => {
       });
       store.refreshState();
       fixture.detectChanges();
+      contactMutedService.getMuted.returns(true);
+      mutingTransition.isUnmuteForm
+        .withArgs(2).returns(true)
+        .withArgs(3).returns(false);
 
       component.ngOnInit();
       flush();
@@ -512,7 +526,7 @@ describe('Contacts content component', () => {
             id: 'form:test_report_type2',
             code: 2,
             icon: 'b',
-            showUnmuteModal: true,
+            showUnmuteModal: false,
             title: 'Type 2',
           },
           {
@@ -520,6 +534,66 @@ describe('Contacts content component', () => {
             code: 3,
             icon: 'a',
             showUnmuteModal: true,
+            title: 'Type 3',
+          }
+        ]
+      });
+      expect(mutingTransition.isUnmuteForm.callCount).to.equal(2);
+      expect(mutingTransition.isUnmuteForm.args).to.have.deep.members([
+        [2, settings],
+        [3, settings],
+      ]);
+    }));
+
+    it('should set relevant report forms based on the selected contact when not muted', fakeAsync(() => {
+      sinon.resetHistory();
+      const forms = [
+        { _id: 'form:test_report_type3', title: 'Type 3', internalId: 3, icon: 'a' },
+        { _id: 'form:test_report_type2', title: 'Type 2', internalId: 2, icon: 'b' },
+      ];
+      store.overrideSelector(Selectors.getSelectedContact, {
+        doc: { _id: 'district-123', phone: '123' },
+        type: { person: true },
+        summary: { context: 'test' },
+        children: [],
+        tasks: [],
+        reports: []
+      });
+      store.refreshState();
+      fixture.detectChanges();
+      contactMutedService.getMuted.returns(false);
+      mutingTransition.isUnmuteForm
+        .withArgs(2).returns(true)
+        .withArgs(3).returns(false);
+
+      component.ngOnInit();
+      flush();
+
+      expect(xmlFormsService.subscribe.callCount).to.equal(2);
+      expect(xmlFormsService.subscribe.args[1][0]).to.equal('SelectedContactReportForms');
+      expect(xmlFormsService.subscribe.args[1][1]).to.deep.equal({
+        contactForms: false,
+        contactSummary: 'test',
+        doc: { _id: 'district-123', phone: '123' }
+      });
+
+      xmlFormsService.subscribe.args[1][2](null, forms);
+
+      expect(globalActions.updateRightActionBar.callCount).to.equal(1);
+      expect(globalActions.updateRightActionBar.args[0][0]).to.deep.equal({
+        relevantForms: [
+          {
+            id: 'form:test_report_type2',
+            code: 2,
+            icon: 'b',
+            showUnmuteModal: false,
+            title: 'Type 2',
+          },
+          {
+            id: 'form:test_report_type3',
+            code: 3,
+            icon: 'a',
+            showUnmuteModal: false,
             title: 'Type 3',
           }
         ]

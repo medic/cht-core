@@ -2,15 +2,12 @@ const chai = require('chai');
 const expect = chai.expect;
 chai.use(require('chai-like'));
 chai.use(require('chai-things'));
-const path = require('path');
 const moment = require('moment');
 const sinon = require('sinon');
 const TestRunner = require('medic-conf-test-harness');
 const { getRangeForTask, getTaskTestDays } = require('../test-helpers');
 const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios, deliveryReportScenarios } = require('../form-inputs');
-const harness = new TestRunner({
-  xformFolderPath: path.join(__dirname, '../../forms/app'),
-});
+const harness = new TestRunner();
 
 const MAX_DAYS_FOR_DELIVERY = 336;
 let clock;
@@ -78,11 +75,11 @@ describe('Delivery tasks tests', () => {
       await harness.setNow('1999-08-01');//10 weeks after LMP date
       await harness.flush(day);
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
-      const taskForDelivery = await harness.getTasks();
+      const taskForDelivery = await harness.getTasks({ title: 'task.anc.delivery.title' });
 
       if (deliveryTaskDays.includes(day) && cleared === false) {
         //expect(taskForDelivery).to.have.property('length', 1);
-        expect(taskForDelivery).to.be.an('array').that.contains.something.like({ title: 'task.anc.delivery.title' });
+        expect(taskForDelivery.length).to.eq(1);
         await harness.loadForm('pregnancy_home_visit');
         const followupFormResult = await harness.fillForm(...pregnancyHomeVisitScenarios.clearAll);
         expect(followupFormResult.errors).to.be.empty;
@@ -106,11 +103,11 @@ describe('Delivery tasks tests', () => {
       await harness.setNow('1999-08-01');//10 weeks after LMP date
       await harness.flush(day);
       clock = sinon.useFakeTimers(moment('1999-08-01').add(day, 'days').toDate());
-      const taskForDelivery = await harness.getTasks();
+      const taskForDelivery = await harness.getTasks({ title: 'task.anc.delivery.title' });
       if (deliveryTaskDays.includes(day) && resolved === false) {
-        expect(taskForDelivery.length, day).to.be.above(1);//there is also a home-visit task
-        expect(taskForDelivery).to.be.an('array').that.contains.something.like({ title: 'task.anc.delivery.title' });
-        await harness.loadAction(taskForDelivery[1].actions[0]);
+        expect(taskForDelivery.length).to.eq(1);//there is also a home-visit task
+        
+        await harness.loadAction(taskForDelivery[0]);
         const deliveryFormResult = await harness.fillForm(...deliveryReportScenarios.oneChildHealthyFacility);
         expect(deliveryFormResult.errors).to.be.empty;
         const tasksAfterDeliveryReport = await harness.getTasks();

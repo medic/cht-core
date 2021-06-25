@@ -34,7 +34,6 @@ module.exports = function (config) {
         flags: ['--no-sandbox'],
       }
     },
-    files: [],
     browserConsoleLogOptions: {
       level: 'log',
       format: '%b %T: %m',
@@ -46,5 +45,11 @@ module.exports = function (config) {
       fixWebpackSourcePaths: true,
       skipFilesWithNoCoverage: true,
     },
+  });
+
+  // allow to require xml files as strings
+  config.buildWebpack.webpackConfig.module.rules.push({
+    test: /enketo-xml\/.*\.xml$/i,
+    use: 'raw-loader',
   });
 };

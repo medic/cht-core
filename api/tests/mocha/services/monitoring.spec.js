@@ -94,7 +94,10 @@ const setUpMocks = () => {
   sinon.stub(db.medicUsersMeta, 'query')
     .resolves({ rows: [ { value: 2 } ] });
   sinon.stub(db.medicLogs, 'query')
-    .resolves({ rows: [ { value: 1 } ] });
+    .withArgs('logs/replication_limit')
+    .resolves({ rows: [ { value: 1 } ] })
+    .withArgs('logs/connected_users', { startkey: 0, reduce: true })
+    .resolves({ rows: [ { value: 2 } ] });
 };
 
 const generateRows = (statusCounters) => {
@@ -294,6 +297,7 @@ describe('Monitoring service', () => {
       chai.expect(actual.conflict).to.deep.equal({ count: 40 });
       chai.expect(actual.date.current).to.equal(0);
       chai.expect(actual.replication_limit.count).to.equal(1);
+      chai.expect(actual.connected_users.count).to.equal(2);
     });
   });
 
@@ -305,7 +309,11 @@ describe('Monitoring service', () => {
     sinon.stub(db.medic, 'query').rejects();
     sinon.stub(db.sentinel, 'query').rejects();
     sinon.stub(db.medicUsersMeta, 'query').rejects();
-    sinon.stub(db.medicLogs, 'query').rejects();
+    sinon.stub(db.medicLogs, 'query')
+      .withArgs('logs/replication_limit')
+      .rejects()
+      .withArgs('logs/connected_users', { startkey: 0, reduce: true })
+      .rejects();
 
     return service.jsonV1().then(actual => {
       chai.expect(actual.version).to.deep.equal({
@@ -448,6 +456,7 @@ describe('Monitoring service', () => {
       chai.expect(actual.outbound_push).to.deep.equal({ backlog: -1 });
       chai.expect(actual.feedback).to.deep.equal({ count: -1 });
       chai.expect(actual.replication_limit).to.deep.equal({ count: -1 });
+      chai.expect(actual.connected_users).to.deep.equal({ count: -1 });
     });
   });
 
