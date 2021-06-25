@@ -4,7 +4,6 @@ const common = require('../../page-objects/common/common.po');
 const utils = require('../../utils');
 const userData = require('../../page-objects/forms/data/user.po.data');
 const _ = require('lodash');
-_.uniq = require('lodash/uniq');
 const { assert } = require('chai');
 
 describe('Submit Default Delivery Report', () => {
@@ -38,7 +37,7 @@ describe('Submit Default Delivery Report', () => {
     await deliveryReport.selectConvulsionsButton();
     await genericForm.nextPageNative();
 
-    // // Delivery Outcome
+    // Delivery Outcome
     await deliveryReport.selectBabiesDeliveredButton();
     await deliveryReport.enterNoOfBabiesDelivered(6);
     await deliveryReport.selectBabiesAliveButton(3);
@@ -49,16 +48,19 @@ describe('Submit Default Delivery Report', () => {
     await deliveryReport.selectDeliveryMethod();
     await genericForm.nextPageNative();
 
-    // // Dead Babies Information
-    // // We need to loop through all dead babies and fill out information
-    for (let i = 1; i <= 3; i++) {
+    const noOfDeadBabies = 3;
+    const noOfAliveBabies = 3;
+
+    // Dead Babies Information
+    // We need to loop through all dead babies and fill out information
+    for (let i = 1; i <= noOfDeadBabies; i++) {
       await deliveryReport.populateDeadBabyInformation(i);
     }
     await genericForm.nextPageNative();
 
-    // // Alive Babies Information
-    // // We need to loop through all alive babies and fill out information
-    for (let i = 4; i <= 6; i++) {
+    // Alive Babies Information
+    // We need to loop through all alive babies and fill out information
+    for (let i = noOfDeadBabies + 1; i <= noOfDeadBabies + noOfAliveBabies; i++) {
       await deliveryReport.populateAliveBabyInformation(i);
     }
     await genericForm.nextPageNative();
@@ -69,25 +71,22 @@ describe('Submit Default Delivery Report', () => {
     await deliveryReport.pncCheckBox();
     await genericForm.nextPageNative();
 
-    // //submit
+    //submit
     await genericForm.submitReports();
 
     // Verify dead babies UUIDs are unique
     const deadBabyUUIds = [];
-    for (let i = 0; i <= 2; i++) {
+    for (let i = 0; i <= noOfDeadBabies - 1; i++) {
       deadBabyUUIds.push(await deliveryReport.getDeadBabyUUID(i));
     }
-    console.log(`Dead UUIDS: ${deadBabyUUIds}`);
 
     // Verify alive babies UUIDs are unique
     const aliveBabyUUIds = [];
-    for (let i = 0; i <= 2; i++) {
+    for (let i = 0; i <= noOfAliveBabies - 1; i++) {
       aliveBabyUUIds.push(await deliveryReport.getAliveBabyUUID(i));
     }
-    console.log(`Alive UUIDS: ${aliveBabyUUIds}`);
 
-    assert.equal(_.uniq(deadBabyUUIds).length,3);
-    assert.equal(_.uniq(aliveBabyUUIds).length,3);
-
+    assert.equal(_.uniq(deadBabyUUIds).length, noOfDeadBabies);
+    assert.equal(_.uniq(aliveBabyUUIds).length,noOfAliveBabies);
   });
 });
