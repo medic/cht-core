@@ -492,6 +492,10 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTombstones 
   const validatedIds = [MEDIC_CLIENT_DDOC, getUserSettingsId(authCtx.userCtx.name)];
   const tombstoneIds = [];
 
+  if (!docsByReplicationKey || !docsByReplicationKey.length) {
+    return validatedIds;
+  }
+
   docsByReplicationKey.forEach(row => {
     if (isTaskDoc(row) && !includeTasks) {
       return;

@@ -551,6 +551,36 @@ describe('Users Controller', () => {
         });
       });
     });
+
+    it('should intersect purged results correctly', () => {
+      const authContext = {
+        userCtx,
+        contactsByDepthKeys: [['some_facility_id']],
+        subjectIds: ['some_facility_id', 'a', 'b', 'c']
+      };
+
+      const allDocIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      const warnDocIds = [1, 2, 3, 4, 5];
+      const unpurgedIds = [2, 4, 6, 9, 10];
+
+      authorization.getAuthorizationContext.resolves(authContext);
+      authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
+      authorization.filterAllowedDocIds
+        .onCall(0).returns(allDocIds)
+        .onCall(1).returns(warnDocIds);
+      sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(unpurgedIds);
+
+      return controller.info(req, res).then(() => {
+        chai.expect(serverUtils.error.callCount).to.equal(0);
+        chai.expect(res.json.callCount).to.equal(1);
+        chai.expect(res.json.args[0]).to.deep.equal([{
+          total_docs: 5, // 2, 4, 6, 9, 10
+          warn_docs: 2, // 2, 4
+          warn: false,
+          limit: 10000,
+        }]);
+      });
+    });
   });
 
   describe('create', () => {
