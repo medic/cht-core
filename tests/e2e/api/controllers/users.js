@@ -118,7 +118,7 @@ describe('Users API', () => {
       })
         .then(() => utils.getDoc(getUserId(username)))
         .then(doc => {
-          expect(doc.facility_id).toBe(newPlaceId);
+          chai.expect(doc.facility_id).to.equal(newPlaceId);
         }));
 
     it('401s if a user without the right permissions attempts to modify someone else', () =>
@@ -132,7 +132,7 @@ describe('Users API', () => {
       })
         .then(() => fail('You should get a 401 in this situation'))
         .catch(err => {
-          expect(err.responseBody.error).toBe('You do not have permissions to modify this person');
+          chai.expect(err.responseBody.error).to.equal('You do not have permissions to modify this person');
         }));
 
     it('Errors if a user edits themselves but attempts to change their roles', () =>
@@ -146,7 +146,7 @@ describe('Users API', () => {
       })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
-          expect(err.responseBody.error).toBe('unauthorized');
+          chai.expect(err.responseBody.error).to.equal('unauthorized');
         }));
 
     it('Allows for users to modify themselves with a cookie', () =>
@@ -163,7 +163,7 @@ describe('Users API', () => {
       })
         .then(() => utils.getDoc(getUserId(username)))
         .then(doc => {
-          expect(doc.fullname).toBe('Awesome Guy');
+          chai.expect(doc.fullname).to.equal('Awesome Guy');
         }));
 
     it('Does not allow users to update their password with only a cookie', () =>
@@ -180,7 +180,7 @@ describe('Users API', () => {
       })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
-          expect(err.responseBody.error).toBe('You must authenticate with Basic Auth to modify your password');
+          chai.expect(err.responseBody.error).to.equal('You must authenticate with Basic Auth to modify your password');
         }));
 
     it('Does allow users to update their password with a cookie and also basic auth', () =>
@@ -322,6 +322,7 @@ describe('Users API', () => {
     let offlineRequestOptions;
     let onlineRequestOptions;
     const nbrOfflineDocs = 30;
+    const nbrTasks = 20;
     // _design/medic-client + org.couchdb.user:offline + fixture:offline + OfflineUser
     let expectedNbrDocs = nbrOfflineDocs + 4;
     let docsForAll;
@@ -336,6 +337,12 @@ describe('Users API', () => {
             type: `clinic`,
             parent: { _id: 'fixture:offline' }
           }));
+          docs.push(...Array.from(Array(nbrTasks), () => ({
+            _id: `task~org.couchdb.user:offline~${uuid()}`,
+            type: 'task',
+            user: 'org.couchdb.user:offline'
+          })));
+
           return utils.saveDocs(docs);
         })
         .then(() => utils.requestOnTestDb('/_design/medic/_view/docs_by_replication_key?key="_all"'))
@@ -368,15 +375,27 @@ describe('Users API', () => {
     });
 
     it('should return correct number of allowed docs for offline users', () => {
-      return utils.request(offlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
-      });
+      return utils
+        .request(offlineRequestOptions)
+        .then(resp => {
+          chai.expect(resp).to.deep.equal({
+            total_docs: expectedNbrDocs + nbrTasks,
+            warn_docs: expectedNbrDocs,
+            warn: false,
+            limit: 10000
+          });
+        });
     });
 
     it('should return correct number of allowed docs when requested by online user', () => {
       onlineRequestOptions.path += '?role=district_admin&facility_id=fixture:offline';
       return utils.request(onlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+        chai.expect(resp).to.deep.equal({
+          total_docs: expectedNbrDocs,
+          warn_docs: expectedNbrDocs,
+          warn: false,
+          limit: 10000
+        });
       });
     });
 
@@ -387,7 +406,12 @@ describe('Users API', () => {
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
       return utils.request(onlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+        chai.expect(resp).to.deep.equal({
+          total_docs: expectedNbrDocs,
+          warn_docs: expectedNbrDocs,
+          warn: false,
+          limit: 10000
+        });
       });
     });
 
@@ -398,7 +422,12 @@ describe('Users API', () => {
       };
       offlineRequestOptions.path += '?' + querystring.stringify(params);
       return utils.request(offlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+        chai.expect(resp).to.deep.equal({
+          total_docs: expectedNbrDocs + nbrTasks,
+          warn_docs: expectedNbrDocs,
+          warn: false,
+          limit: 10000
+        });
       });
     });
 
@@ -411,9 +440,9 @@ describe('Users API', () => {
       onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
       return utils
         .request(onlineRequestOptions)
-        .then(resp => expect(resp).toEqual('should have thrown'))
+        .then(resp => chai.expect(resp).to.deep.equal('should have thrown'))
         .catch(err => {
-          expect(err.statusCode).toEqual(400);
+          chai.expect(err.statusCode).to.deep.equal(400);
         });
     });
 
@@ -425,9 +454,9 @@ describe('Users API', () => {
       onlineRequestOptions.path += '?' + querystring.stringify(params);
       return utils
         .request(onlineRequestOptions)
-        .then(resp => expect(resp).toEqual('should have thrown'))
+        .then(resp => chai.expect(resp).to.deep.equal('should have thrown'))
         .catch(err => {
-          expect(err.statusCode).toEqual(400);
+          chai.expect(err.statusCode).to.deep.equal(400);
         });
     });
 
@@ -441,7 +470,7 @@ describe('Users API', () => {
       return utils
         .request(onlineRequestOptions)
         .then(resp => {
-          expect(resp).toEqual({ total_docs: docsForAll, warn: false, limit: 10000 });
+          chai.expect(resp).to.deep.equal({ total_docs: docsForAll, warn_docs: docsForAll, warn: false, limit: 10000 });
         });
     });
   });

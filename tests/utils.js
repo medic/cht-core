@@ -509,7 +509,7 @@ const parseCookieResponse = (cookieString) => {
     cookieObject.value = cookieValue;
     cookieSplit.forEach((cookieValues) => {
       const [key, value] = cookieValues.split('=');
-      cookieObject[key] = (key.includes('Secure') || key.includes('HttpOnly')) ? true : value;    
+      cookieObject[key] = (key.includes('Secure') || key.includes('HttpOnly')) ? true : value;
     });
     return cookieObject;
   });
@@ -932,7 +932,7 @@ module.exports = {
   closeTour: async () => {
     const closeButton = element(by.css('#tour-select a.btn.cancel'));
     try {
-      await browser.wait(protractor.ExpectedConditions.visibilityOf(closeButton),);
+      await browser.wait(protractor.ExpectedConditions.visibilityOf(closeButton), 1000);
       await browser.wait(protractor.ExpectedConditions.elementToBeClickable(closeButton), 1000);
       await closeButton.click();
       // wait for the request to the server to execute
