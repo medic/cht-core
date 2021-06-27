@@ -55,8 +55,8 @@ describe('Export Data V2.0', () => {
           '"export-data-2-test-doc-2","a","abc124",1517529600000,,,,,,"barVal2",,"fooVal2","smangsmongVal2"',
           '"export-data-2-test-doc-1","a","abc123",1517443200000,,,,,,"barVal",,"fooVal","smangsmongVal"',
         ];
-        expect(rows.length).to.be(expected.length);
-        expect(rows[0]).to.be(expected[0]);
+        expect(rows.length).to.equal(expected.length);
+        expect(rows[0]).to.equal(expected[0]);
         rows.splice(1).forEach(row => {
           expect(expected).to.contain(row);
         });
