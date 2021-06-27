@@ -1,6 +1,6 @@
 module.exports={
   'allow-uncaught': false,
-  'async-only': true,
+  'async-only': false,
   color: true,
   checkLeaks: true,
   fullTrace: true,
