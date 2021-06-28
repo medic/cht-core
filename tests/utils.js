@@ -280,13 +280,6 @@ const revertDb = async (except, ignoreRefresh) => {
   await setUserContactDoc();
 };
 
-//to use for non ui tests
-const revertDbNative = async (except) => {
-  await deleteAll(except);
-  await revertTranslations();
-  await setUserContactDoc();
-};
-
 const deleteUsers = async (users, meta = false) => {
   const usernames = users.map(user => `org.couchdb.user:${user.username}`);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
@@ -526,7 +519,7 @@ const parseCookieResponse = (cookieString) => {
     cookieObject.value = cookieValue;
     cookieSplit.forEach((cookieValues) => {
       const [key, value] = cookieValues.split('=');
-      cookieObject[key] = (key.includes('Secure') || key.includes('HttpOnly')) ? true : value;
+      cookieObject[key] = (key.includes('Secure') || key.includes('HttpOnly')) ? true : value; 
     });
     return cookieObject;
   });
@@ -787,7 +780,6 @@ module.exports = {
    * @return {Promise}
    */
   revertDb: revertDb,
-  revertDbNative: revertDbNative,
   resetBrowser: () => {
     return browser.driver
       .navigate()
