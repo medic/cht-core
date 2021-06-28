@@ -254,7 +254,7 @@ describe('Contacts effects', () => {
           // Change the selected contact before returning the first set of children.
           actions$ = of(ContactActionList.selectContact({id: 'contact2'}));
           await effects.selectContact.toPromise();
-          return Promise.resolve([{type: {id: 'person'}, contacts: [{_id: 'person1'}]}]);
+          return [{ type: { id: 'person' }, contacts: [{ _id: 'person1' }] }];
         });
         contactViewModelGeneratorService.loadChildren.onSecondCall()
           .resolves([{type: {id: 'place'}, contacts: [{_id: 'place'}]}]);
@@ -352,7 +352,7 @@ describe('Contacts effects', () => {
           // Change the selected contact before returning the first set of reports.
           actions$ = of(ContactActionList.selectContact({id: 'person'}));
           await effects.selectContact.toPromise();
-          return Promise.resolve([{_id: 'report1'}]);
+          return [{_id: 'report1'}];
         });
         contactViewModelGeneratorService.loadReports.onSecondCall().resolves([{_id: 'report2'}]);
         const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
@@ -436,10 +436,10 @@ describe('Contacts effects', () => {
         contactViewModelGeneratorService.loadChildren.resolves([]);
         contactViewModelGeneratorService.loadReports.resolves([]);
         targetAggregateService.getCurrentTargetDoc.onFirstCall().callsFake(async () => {
-          // Change the selected contact before returning the first set of reports.
+          // Change the selected contact before returning the first target doc
           actions$ = of(ContactActionList.selectContact({id: 'person'}));
           await effects.selectContact.toPromise();
-          return Promise.resolve({_id: 'targetDoc0'});
+          return {_id: 'targetDoc0'};
         });
         targetAggregateService.getCurrentTargetDoc.onSecondCall().resolves({_id: 'targetDoc1'});
         const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
@@ -538,10 +538,10 @@ describe('Contacts effects', () => {
         targetAggregateService.getCurrentTargetDoc.resolves({_id: 'targetDoc'});
 
         contactSummaryService.get.onFirstCall().callsFake(async () => {
-          // Change the selected contact before returning the first set of reports.
+          // Change the selected contact before returning the first contact summary result.
           actions$ = of(ContactActionList.selectContact({id: 'person'}));
           await effects.selectContact.toPromise();
-          return Promise.resolve({cards: [{id: 'card0'}], fields: [{id: 'field0'}]});
+          return {cards: [{id: 'card0'}], fields: [{id: 'field0'}]};
         });
         contactSummaryService.get.onSecondCall().resolves({cards: [{id: 'card1'}], fields: [{id: 'field1'}]});
         const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
@@ -642,10 +642,10 @@ describe('Contacts effects', () => {
         contactSummaryService.get.resolves({cards: [{id: 'card'}], fields: [{id: 'field'}]});
 
         tasksForContactService.get.onFirstCall().callsFake(async () => {
-          // Change the selected contact before returning the first set of reports.
+          // Change the selected contact before returning the first set of tasks.
           actions$ = of(ContactActionList.selectContact({id: 'person'}));
           await effects.selectContact.toPromise();
-          return Promise.resolve().then(() => [{_id: 'task0'}]);
+          return [{_id: 'task0'}];
         });
         tasksForContactService.get.onSecondCall().resolves([{_id: 'task1'}]);
         const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
