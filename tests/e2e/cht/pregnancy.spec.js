@@ -125,8 +125,10 @@ describe('Pregnancy workflow on cht : ', () => {
     expect(liveBirthsCount).toBe('2');
     expect(liveBirthsTitle).toBe('Live births');
     const inFacilityDeliveries = analyticsPo.targetById('facility-deliveries');
-    const inFacilityDeliveriesCount = await helper.getTextFromElementNative(analyticsPo.targetNumber(inFacilityDeliveries));
-    const inFacilityDeliveriesTitle = await helper.getTextFromElementNative(analyticsPo.targetTitle(inFacilityDeliveries));
+    const inFacilityDeliveriesCount = await helper.getTextFromElementNative(
+      analyticsPo.targetNumber(inFacilityDeliveries));
+    const inFacilityDeliveriesTitle = await helper.getTextFromElementNative(
+      analyticsPo.targetTitle(inFacilityDeliveries));
     expect(inFacilityDeliveriesCount).toBe('100% (1 of 1)');
     expect(inFacilityDeliveriesTitle).toBe('In-facility deliveries');
   });
