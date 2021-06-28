@@ -95,7 +95,8 @@ describe('TelemetryService', () => {
       info: sinon.stub(),
       put: sinon.stub(),
       get: sinon.stub(),
-      query: sinon.stub()
+      query: sinon.stub(),
+      allDocs: sinon.stub()
     };
     dbService = { get: () => metaDb };
     consoleErrorSpy = sinon.spy(console, 'error');
@@ -189,12 +190,13 @@ describe('TelemetryService', () => {
           }
         ]
       });
-      metaDb.get
-        .withArgs('settings')
-        .resolves({
-          _id: 'somerandomid',
-          _rev: 'somerandomrevision'
-        });
+      metaDb.allDocs.resolves({
+        rows: [{
+          value: {
+            rev: 'somerandomrevision'
+          }
+        }]
+      });
     }
 
     it('should aggregate once a day and resets the db first', async () => {
@@ -380,9 +382,12 @@ describe('TelemetryService', () => {
           version: '3.0.0'
         }
       });
-      metaDb.get.withArgs('settings').resolves({
-        _id: 'randomid',
-        _rev: 'randomrev'
+      metaDb.allDocs.resolves({
+        rows: [{
+          value: {
+            rev: 'randomrev'
+          }
+        }]
       });
       metaDb.query.resolves({ rows: [] });
 
