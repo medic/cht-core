@@ -66,7 +66,7 @@ describe('Submitting forms for muted contacts', () => {
     await utils.updateSettings(settings);
   });
 
-  afterEach(() => utils.revertDb());
+  afterEach(async () => await utils.revertDb());
 
   it('should not show popup for unmuted persons', async () => {
     await contactsObjects.selectLHSRowByText(patient2.name);
