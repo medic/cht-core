@@ -171,11 +171,11 @@ describe('server', () => {
         method: 'PUT'
       };
       const { body } = await requestWrapper(options);
-      const optionsTwo = { uri: '/sample_doc2/attach?rev='+body.rev };
-      const { res, body: bodyOne } = await requestWrapper(optionsTwo);
+      const getAttachmentOptions = { uri: '/sample_doc2/attach?rev=' + body.rev };
+      const { res, body: attachmentBody } = await requestWrapper(getAttachmentOptions);
       expect(res.headers[ 'content-type' ]).to.equal('image/png');
       expect(res.headers[ 'content-encoding' ]).to.be.undefined;
-      expect(bodyOne).to.equal(png);
+      expect(attachmentBody).to.equal(png);
     });
   });
 });
