@@ -15,7 +15,7 @@ describe('server', () => {
       };
 
       return utils.requestOnTestDb(opts, true)
-        .then(() => assert.fail('should have thrown'))
+        .then(() => expect.fail('should have thrown'))
         .catch(e => {
           expect(e.responseBody).to.equal('Content-Type must be application/json');
         });

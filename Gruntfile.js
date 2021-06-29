@@ -595,7 +595,7 @@ module.exports = function(grunt) {
         cmd: () => {
           const configuration = TRAVIS_BUILD_NUMBER ? 'production' : 'development';
           return `
-            cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true & 
+            cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true &
             cd ../
           `;
         },
@@ -982,10 +982,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('e2e-integration', 'Deploy app for testing', [
-    'exec:clean-test-database',
-    'exec:setup-test-database',
-    'couch-push:test',
-    'exec:e2e-servers',
+    'exec:e2e-env-setup',
     'exec:e2e-integration'
   ]);
 

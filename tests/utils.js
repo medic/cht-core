@@ -24,7 +24,7 @@ const userSettings = require('./factories/cht/users/user-settings');
 let originalSettings;
 const originalTranslations = {};
 let e2eDebug;
-const hasModal = async () => await element(by.css('#update-available')).isPresent();
+const hasModal = () => element(by.css('#update-available')).isPresent();
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
@@ -262,11 +262,7 @@ const revertDb = async (except, ignoreRefresh) => {
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
-  if(ignoreRefresh){
-    await setUserContactDoc();
-    return;
-  }
-
+  
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || hasModal)) {
     watcher && watcher.cancel();
@@ -464,13 +460,7 @@ const prepServices = async (config) => {
   }
 
   await listenForApi();
-  if(config === 'mocha'){
-    await listenForApi();
-    await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
-    return;
-  }
-
-  if (config.suite && config.suite === 'web') {
+  if (config && config.suite === 'web') {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
@@ -519,7 +509,7 @@ const parseCookieResponse = (cookieString) => {
     cookieObject.value = cookieValue;
     cookieSplit.forEach((cookieValues) => {
       const [key, value] = cookieValues.split('=');
-      cookieObject[key] = (key.includes('Secure') || key.includes('HttpOnly')) ? true : value; 
+      cookieObject[key] = (key.includes('Secure') || key.includes('HttpOnly')) ? true : value;
     });
     return cookieObject;
   });
