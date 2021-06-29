@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { Router, ActivatedRoute } from '@angular/router';
-import { TranslateService } from '@ngx-translate/core';
 
 import { Selectors } from '@mm-selectors/index';
 import { ContactsActions } from '@mm-actions/contacts';
@@ -21,10 +20,9 @@ export class ContactsDeceasedComponent implements OnInit, OnDestroy {
   constructor(
     private store: Store,
     private changesService: ChangesService,
-    private translateService:TranslateService,
     private router: Router,
     private route: ActivatedRoute,
-  ){
+  ) {
     this.contactsActions = new ContactsActions(store);
   }
 

@@ -1,15 +1,14 @@
 import { Pipe, PipeTransform, Injectable } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { TranslateService } from '@ngx-translate/core';
 import * as moment from 'moment';
 
 import { FormatDateService } from '@mm-services/format-date.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 const getState = (state, translateService) => {
   return translateService
     .get('state.' + state)
-    .toPromise()
     .then(label => '<span class="state ' + state + '">' + label + '</span>');
 };
 
@@ -85,7 +84,6 @@ const getRecipient = (task, translateService) => {
 
   return translateService
     .get('to recipient', { recipient: recipient })
-    .toPromise()
     .then(label => {
       return '<span class="recipient">&nbsp;' + label + '</span>';
     });
