@@ -39,6 +39,7 @@ import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-clo
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TransitionsService } from '@mm-services/transitions.service';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 describe('AppComponent', () => {
   let getComponent;
@@ -74,6 +75,7 @@ describe('AppComponent', () => {
   let translateLocaleService;
   let telemetryService;
   let transitionsService;
+  let chtScriptApiService;
   // End Services
 
   let globalActions;
@@ -103,6 +105,7 @@ describe('AppComponent', () => {
     setLanguageService = { set: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub().resolves() };
+    chtScriptApiService = { isInitialized: sinon.stub() };
     databaseConnectionMonitorService = {
       listenForDatabaseClosed: sinon.stub().returns(of())
     };
@@ -185,6 +188,7 @@ describe('AppComponent', () => {
         { provide: TranslateLocaleService, useValue: translateLocaleService },
         { provide: TelemetryService, useValue: telemetryService },
         { provide: TransitionsService, useValue: transitionsService },
+        { provide: CHTScriptApiService, useValue: chtScriptApiService }
       ]
     });
 
@@ -224,6 +228,8 @@ describe('AppComponent', () => {
     expect(privacyPoliciesService.hasAccepted.callCount).to.equal(1);
     // init rules engine
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
+    // init CHTScriptApiService
+    expect(chtScriptApiService.isInitialized.callCount).to.equal(1);
     // init unread count
     expect(unreadRecordsService.init.callCount).to.equal(1);
     expect(unreadRecordsService.init.args[0][0]).to.be.a('Function');

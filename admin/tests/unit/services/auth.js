@@ -13,7 +13,6 @@ describe('Auth service', function() {
     Settings = sinon.stub();
     isOnlineOnly = sinon.stub();
     module(function ($provide) {
-      $provide.value('$q', Q);
       $provide.factory('Session', function() {
         return { userCtx: userCtx, isOnlineOnly: isOnlineOnly };
       });
@@ -31,20 +30,36 @@ describe('Auth service', function() {
   });
 
   describe('has', () => {
+    it('should return false when no settings and no permissions configured.', async () => {
+      userCtx.returns({ roles: ['chw'] });
+
+      Settings.resolves(null);
+      const resultNoSettings = await service.has('can_edit');
+
+      Settings.resolves({});
+      const resultNoPermissions = await service.has('can_edit');
+
+      chai.expect(resultNoSettings).to.be.false;
+      chai.expect(resultNoPermissions).to.be.false;
+    });
+
     it('false when no session', async () => {
       userCtx.returns(null);
+      Settings.resolves({ permissions: {} });
       const result = await service.has();
       chai.expect(result).to.be.false;
     });
 
     it('false when user has no role', async () => {
       userCtx.returns({});
+      Settings.resolves({ permissions: {} });
       const result = await service.has();
       chai.expect(result).to.be.false;
     });
 
     it('true when user is db admin', async () => {
       userCtx.returns({ roles: ['_admin'] });
+      Settings.resolves({ permissions: { can_edit: [ 'chw' ] } });
       const result = await service.has(['can_backup_facilities']);
       chai.expect(result).to.be.true;
     });
@@ -80,18 +95,16 @@ describe('Auth service', function() {
 
       it('false when unknown permission', async () => {
         userCtx.returns({ roles: ['district_admin'] });
-        Settings.returns(
-          Promise.resolve({
-            permissions: {
-              can_backup_facilities: ['national_admin'],
-              can_export_messages: [
-                'national_admin',
-                'district_admin',
-                'analytics',
-              ],
-            },
-          })
-        );
+        Settings.resolves({
+          permissions: {
+            can_backup_facilities: ['national_admin'],
+            can_export_messages: [
+              'national_admin',
+              'district_admin',
+              'analytics',
+            ],
+          },
+        });
         const result = await service.has(['xyz']);
         chai.expect(result).to.be.false;
       });
@@ -164,6 +177,7 @@ describe('Auth service', function() {
 
     it('false when admin and !permission', async () => {
       userCtx.returns({ roles: ['_admin'] });
+      Settings.resolves({ permissions: {} });
       const result = await service.has(['!can_backup_facilities']);
       chai.expect(result).to.be.false;
     });
@@ -204,32 +218,50 @@ describe('Auth service', function() {
   });
 
   describe('Auth.any', () => {
+    it('should return false when no settings and no permissions configured.', async () => {
+      userCtx.returns({ roles: ['chw'] });
+
+      Settings.resolves(null);
+      const resultNoSettings = await service.any([['can_edit'], ['can_configure']]);
+
+      Settings.resolves({});
+      const resultNoPermissions = await service.any([['can_edit'], ['can_configure']]);
+
+      chai.expect(resultNoSettings).to.be.false;
+      chai.expect(resultNoPermissions).to.be.false;
+    });
+
     it('false when no session', async () => {
       userCtx.returns(null);
+      Settings.resolves({ permissions: {} });
       const result = await service.any();
       chai.expect(result).to.be.false;
     });
 
     it('false when user has no role', async () => {
       userCtx.returns({});
+      Settings.resolves({ permissions: {} });
       const result = await service.any();
       chai.expect(result).to.be.false;
     });
 
     it('true when admin and no disallowed permissions', async () => {
       userCtx.returns({ roles: ['_admin'] });
+      Settings.resolves({ permissions: { can_edit: [ 'chw' ] } });
       const result = await service.any([['can_backup_facilities'], ['can_export_messages'], ['somepermission']]);
       chai.expect(result).to.be.true;
     });
 
     it('true when admin and some disallowed permissions', async () => {
       userCtx.returns({ roles: ['_admin'] });
+      Settings.resolves({ permissions: { can_edit: [ 'chw' ] } });
       const result = await service.any([['!can_backup_facilities'], ['!can_export_messages'], ['somepermission']]);
       chai.expect(result).to.be.true;
     });
 
     it('false when admin and all disallowed permissions', async () => {
       userCtx.returns({ roles: ['_admin'] });
+      Settings.resolves({ permissions: {} });
       const result = await service.any([['!can_backup_facilities'], ['!can_export_messages'], ['!somepermission']]);
       chai.expect(result).to.be.false;
     });
