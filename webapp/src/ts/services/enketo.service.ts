@@ -24,6 +24,7 @@ import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 @Injectable({
   providedIn: 'root'
@@ -50,6 +51,7 @@ export class EnketoService {
     private transitionsService:TransitionsService,
     private translateService:TranslateService,
     private ngZone:NgZone,
+    private translateHelperService:TranslateHelperService,
   ) {
     this.inited = this.init();
     this.servicesActions = new ServicesActions(this.store);
@@ -288,7 +290,7 @@ export class EnketoService {
       });
   }
 
-  private renderFromXmls(doc, wrapper, instanceData) {
+  private renderFromXmls({ doc, wrapper, instanceData, titleKey }) {
     wrapper
       .find('.form-footer')
       .addClass('end')
@@ -307,7 +309,12 @@ export class EnketoService {
       // manually translate the title as enketo-core doesn't have any way to do this
       // https://github.com/enketo/enketo-core/issues/405
       const $title = wrapper.find('#form-title');
-      if (doc.title) {
+      if (titleKey) {
+        // using translation key - overwrite contents
+        this.translateHelperService
+          .get(titleKey)
+          .then(title => $title.text(title));
+      } else if (doc.title) {
         // title defined in the doc - overwrite contents
         $title.text(this.translateFromService.get(doc.title));
       } else if ($title.text() === 'No Title') {
@@ -392,14 +399,14 @@ export class EnketoService {
     });
   }
 
-  private renderForm(selector, formDoc, instanceData, editedListener, valuechangeListener) {
+  private renderForm({ selector, formDoc, instanceData, editedListener, valuechangeListener, titleKey = undefined }) {
     return this.languageService.get().then(language => {
       const $selector = $(selector);
       return this
         .transformXml(formDoc, language)
         .then(doc => {
           this.replaceJavarosaMediaWithLoaders(formDoc, doc.html);
-          return this.renderFromXmls(doc, $selector, instanceData);
+          return this.renderFromXmls({ doc, wrapper: $selector, instanceData, titleKey });
         })
         .then((form) => {
           const formContainer = $selector.find('.container').first();
@@ -427,12 +434,12 @@ export class EnketoService {
         this.getUserContact(),
       ])
       .then(() => {
-        return this.renderForm(selector, form, instanceData, editedListener, valuechangeListener);
+        return this.renderForm({ selector, formDoc: form, instanceData, editedListener, valuechangeListener });
       });
   }
 
-  renderContactForm(selector, formDoc, instanceData, editedListener, valuechangeListener) {
-    return this.renderForm(selector, formDoc, instanceData, editedListener, valuechangeListener);
+  renderContactForm({ selector, formDoc, instanceData, editedListener, valuechangeListener, titleKey }) {
+    return this.renderForm({ selector, formDoc, instanceData, editedListener, valuechangeListener, titleKey });
   }
 
   private xmlToDocs(doc, formXml, record) {

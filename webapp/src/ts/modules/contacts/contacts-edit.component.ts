@@ -145,24 +145,23 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     this.initForm();
   }
 
-  private initForm() {
+  private async initForm() {
     this.contentError = false;
     this.errorTranslationKey = false;
 
-    return this
-      .getContact()
-      .then((contact) => this.getForm(contact))
-      .then((formId) => this.renderForm(formId))
-      .then((formInstance) => this.setEnketoContact(formInstance))
-      .then(() => {
-        this.globalActions.setLoadingContent(false);
-      })
-      .catch((err) => {
-        this.errorTranslationKey = err.translationKey || 'error.loading.form';
-        this.globalActions.setLoadingContent(false);
-        this.contentError = true;
-        console.error('Error loading contact form.', err);
-      });
+    try {
+      const contact = await this.getContact();
+      const formId = await this.getForm(contact);
+      const formInstance = await this.renderForm(formId, contact);
+      this.setEnketoContact(formInstance);
+
+      this.globalActions.setLoadingContent(false);
+    } catch (error) {
+      this.errorTranslationKey = error.translationKey || 'error.loading.form';
+      this.globalActions.setLoadingContent(false);
+      this.contentError = true;
+      console.error('Error loading contact form.', error);
+    }
   }
 
   private getFormInstanceData() {
@@ -236,27 +235,46 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  private renderForm(formId) {
+  private getTitleKey(contact) {
+    const typeId = this.contactTypesService.getTypeId(contact) || this.routeSnapshot.params?.type;
+
+    return this.contactTypesService
+      .get(typeId)
+      .then(type => {
+        if (!type) {
+          console.error(`Unknown contact type "${typeId}"`);
+          return;
+        }
+
+        if (contact) { // editing
+          return type.edit_key;
+        } else { // adding
+          return type.create_key;
+        }
+      });
+  }
+
+  private async renderForm(formId, contact) {
     if (!formId) {
       throw new Error('Unknown form');
     }
 
     this.globalActions.setEnketoEditedStatus(false);
-    return this.dbService
-      .get()
-      .get(formId)
-      .then(form => {
-        const formInstanceData = this.getFormInstanceData();
-        const markFormEdited = this.markFormEdited.bind(this);
-        const resetFormError = this.resetFormError.bind(this);
-        return this.enketoService.renderContactForm(
-          '#contact-form',
-          form,
-          formInstanceData,
-          markFormEdited,
-          resetFormError
-        );
-      });
+    const [titleKey, form] = await Promise.all([
+      this.getTitleKey(contact),
+      this.dbService.get().get(formId),
+    ]);
+    const formInstanceData = this.getFormInstanceData();
+    const markFormEdited = this.markFormEdited.bind(this);
+    const resetFormError = this.resetFormError.bind(this);
+    return this.enketoService.renderContactForm({
+      selector: '#contact-form',
+      formDoc: form,
+      instanceData: formInstanceData,
+      editedListener: markFormEdited,
+      valuechangeListener: resetFormError,
+      titleKey,
+    });
   }
 
   private setEnketoContact(formInstance) {
