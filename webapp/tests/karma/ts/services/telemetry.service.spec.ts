@@ -11,7 +11,8 @@ describe('TelemetryService', () => {
   const NOW = new Date(2018, 10, 10, 12, 33).getTime(); // -> 2018-11-10T12:33:00
   let service: TelemetryService;
   let dbService;
-  let db;
+  let metaDb;
+  let medicDb;
   let sessionService;
   let clock;
   let telemetryDb;
@@ -91,14 +92,19 @@ describe('TelemetryService', () => {
 
   beforeEach(() => {
     defineWindow();
-    db = {
-      info: sinon.stub(),
+    metaDb = {
       put: sinon.stub(),
+    };
+    medicDb = {
+      info: sinon.stub(),
       get: sinon.stub(),
       query: sinon.stub(),
       allDocs: sinon.stub()
     };
-    dbService = { get: () => db };
+    const getStub = sinon.stub();
+    getStub.withArgs({meta: true}).returns(metaDb);
+    getStub.returns(medicDb);
+    dbService = { get: getStub };
     consoleErrorSpy = sinon.spy(console, 'error');
     telemetryDb = {
       post: sinon.stub().resolves(),
@@ -169,15 +175,15 @@ describe('TelemetryService', () => {
           { key: 'bar', value: {sum:93, min:43, max:50, count:2, sumsqr:4349} },
         ],
       });
-      db.info.resolves({ some: 'stats' });
-      db.put.resolves();
-      db.get
+      medicDb.info.resolves({ some: 'stats' });
+      metaDb.put.resolves();
+      medicDb.get
         .withArgs('_design/medic-client')
         .resolves({
           _id: '_design/medic-client',
           deploy_info: { version: '3.0.0' }
         });
-      db.query.resolves({
+      medicDb.query.resolves({
         rows: [
           {
             id: 'form:anc_followup',
@@ -190,7 +196,7 @@ describe('TelemetryService', () => {
           }
         ]
       });
-      db.allDocs.resolves({
+      medicDb.allDocs.resolves({
         rows: [{
           value: {
             rev: 'somerandomrevision'
@@ -208,8 +214,8 @@ describe('TelemetryService', () => {
       expect(telemetryDb.post.callCount).to.equal(1);
       expect(telemetryDb.post.args[0][0]).to.deep.include({ key: 'test', value: 1 });
 
-      expect(db.put.callCount).to.equal(1);
-      const aggregatedDoc = db.put.args[0][0];
+      expect(metaDb.put.callCount).to.equal(1);
+      const aggregatedDoc = metaDb.put.args[0][0];
       expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-5-greg-[\w-]+$/);
       expect(aggregatedDoc.metrics).to.deep.equal({
         foo: {sum:2876, min:581, max:2295, count:2, sumsqr:5604586},
@@ -238,9 +244,9 @@ describe('TelemetryService', () => {
         deviceInfo: {}
       });
 
-      expect(db.query.callCount).to.equal(1);
-      expect(db.query.args[0][0]).to.equal('medic-client/doc_by_type');
-      expect(db.query.args[0][1]).to.deep.equal({ key: ['form'], include_docs: true });
+      expect(medicDb.query.callCount).to.equal(1);
+      expect(medicDb.query.args[0][0]).to.equal('medic-client/doc_by_type');
+      expect(medicDb.query.args[0][1]).to.deep.equal({ key: ['form'], include_docs: true });
       expect(telemetryDb.destroy.callCount).to.equal(1);
       expect(telemetryDb.close.callCount).to.equal(0);
 
@@ -256,7 +262,7 @@ describe('TelemetryService', () => {
       expect(telemetryDb.post.callCount).to.equal(1);     // Telemetry entry has been recorded
       expect(telemetryDb.post.args[0][0]).to.deep.include({ key: 'test', value: 10 });
       expect(telemetryDb.query.called).to.be.false;       // NO telemetry aggregation has
-      expect(db.put.callCount).to.equal(0);           // been recorded yet
+      expect(metaDb.put.callCount).to.equal(0);           // been recorded yet
 
       clock = sinon.useFakeTimers(moment(NOW).add(1, 'minutes').valueOf()); // 1 min later ...
       await service.record('test', 5);
@@ -264,7 +270,7 @@ describe('TelemetryService', () => {
       expect(telemetryDb.post.callCount).to.equal(2);     // second call
       expect(telemetryDb.post.args[1][0]).to.deep.include({ key: 'test', value: 5 });
       expect(telemetryDb.query.called).to.be.false;       // still NO aggregation has
-      expect(db.put.callCount).to.equal(0);           // been recorded (same day)
+      expect(metaDb.put.callCount).to.equal(0);           // been recorded (same day)
 
       let postCalledAfterQuery = false;
       telemetryDb.post.callsFake(async () => postCalledAfterQuery = telemetryDb.query.called);
@@ -274,13 +280,13 @@ describe('TelemetryService', () => {
       expect(telemetryDb.post.callCount).to.equal(3);     // third call
       expect(telemetryDb.post.args[2][0]).to.deep.include({ key: 'test', value: 2 });
       expect(telemetryDb.query.callCount).to.equal(1);    // Now aggregation HAS been performed
-      expect(db.put.callCount).to.equal(1);           // and the stats recorded
+      expect(metaDb.put.callCount).to.equal(1);           // and the stats recorded
 
       // The telemetry record has been recorded after aggregation to not being included in the stats,
       // because the record belong to the current date, not the day aggregated (yesterday)
       expect(postCalledAfterQuery).to.be.true;
 
-      const aggregatedDoc = db.put.args[0][0];
+      const aggregatedDoc = metaDb.put.args[0][0];
       expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-10-greg-[\w-]+$/);     // Now is 2018-11-11 but aggregation
       expect(telemetryDb.destroy.callCount).to.equal(1);                            // is from the previous day
 
@@ -294,22 +300,22 @@ describe('TelemetryService', () => {
       await service.record('datapoint', 12);
 
       expect(telemetryDb.post.callCount).to.equal(1);
-      expect(db.put.callCount).to.equal(0);             // NO telemetry has been recorded yet
+      expect(metaDb.put.callCount).to.equal(0);             // NO telemetry has been recorded yet
 
       clock = sinon.useFakeTimers(moment(NOW).add(1, 'minutes').valueOf()); // 1 min later ...
       await service.record('another.datapoint');
 
       expect(telemetryDb.post.callCount).to.equal(2);       // second call
-      expect(db.put.callCount).to.equal(0);             // still NO telemetry has been recorded (same day)
+      expect(metaDb.put.callCount).to.equal(0);             // still NO telemetry has been recorded (same day)
 
       storageGetItemStub.withArgs('medic-greg-telemetry-date').returns(sameDay());
       clock = sinon.useFakeTimers(moment(NOW).add(2, 'days').valueOf()); // 2 days later ...
       await service.record('test', 2);
 
       expect(telemetryDb.post.callCount).to.equal(3);       // third call
-      expect(db.put.callCount).to.equal(1);             // Now telemetry IS recorded
+      expect(metaDb.put.callCount).to.equal(1);             // Now telemetry IS recorded
 
-      let aggregatedDoc = db.put.args[0][0];
+      let aggregatedDoc = metaDb.put.args[0][0];
       expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-10-greg-[\w-]+$/);  // Today 2018-11-12 but aggregation is
       expect(telemetryDb.destroy.callCount).to.equal(1);                         // from from 2 days ago (not Yesterday)
 
@@ -319,8 +325,8 @@ describe('TelemetryService', () => {
       await service.record('point.a', 1);
 
       expect(telemetryDb.post.callCount).to.equal(4);       // 4th call
-      expect(db.put.callCount).to.equal(2);             // Telemetry IS recorded again
-      aggregatedDoc = db.put.args[1][0];
+      expect(metaDb.put.callCount).to.equal(2);             // Telemetry IS recorded again
+      aggregatedDoc = metaDb.put.args[1][0];
       expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-12-greg-[\w-]+$/); // Now is Nov 19 but agg. is from Nov 12
 
       // A new record is added ...
@@ -329,7 +335,7 @@ describe('TelemetryService', () => {
       // ...the aggregation count is the same because
       // the aggregation was already performed 2 hours ago within the same day
       expect(telemetryDb.post.callCount).to.equal(5);       // 5th call
-      expect(db.put.callCount).to.equal(2);             // Telemetry count is the same
+      expect(metaDb.put.callCount).to.equal(2);             // Telemetry count is the same
 
       expect(consoleErrorSpy.callCount).to.equal(0);        // no errors
     });
@@ -373,30 +379,30 @@ describe('TelemetryService', () => {
           },
         ],
       });
-      db.info.resolves({ some: 'stats' });
-      db.put.onFirstCall().rejects({ status: 409 });
-      db.put.onSecondCall().resolves();
-      db.get.withArgs('_design/medic-client').resolves({
+      medicDb.info.resolves({ some: 'stats' });
+      metaDb.put.onFirstCall().rejects({ status: 409 });
+      metaDb.put.onSecondCall().resolves();
+      medicDb.get.withArgs('_design/medic-client').resolves({
         _id: '_design/medic-client',
         deploy_info: {
           version: '3.0.0'
         }
       });
-      db.allDocs.resolves({
+      medicDb.allDocs.resolves({
         rows: [{
           value: {
             rev: 'randomrev'
           }
         }]
       });
-      db.query.resolves({ rows: [] });
+      medicDb.query.resolves({ rows: [] });
 
       await service.record('test', 1);
 
       expect(consoleErrorSpy.callCount).to.equal(0);
-      expect(db.put.callCount).to.equal(2);
-      expect(db.put.args[1][0]._id).to.match(/^telemetry-2018-11-5-greg-[\w-]+-conflicted-[\w-]+$/);
-      expect(db.put.args[1][0].metadata.conflicted).to.equal(true);
+      expect(metaDb.put.callCount).to.equal(2);
+      expect(metaDb.put.args[1][0]._id).to.match(/^telemetry-2018-11-5-greg-[\w-]+-conflicted-[\w-]+$/);
+      expect(metaDb.put.args[1][0].metadata.conflicted).to.equal(true);
       expect(telemetryDb.destroy.callCount).to.equal(1);
       expect(telemetryDb.close.callCount).to.equal(0);
     });
