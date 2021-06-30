@@ -230,7 +230,7 @@ describe('Contacts effects', () => {
           { type: { id: 'patient' }, contacts: [{ _id: 'person1' }] },
         ]);
 
-        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        actions$ = of(ContactActionList.selectContact({ id: 'facility' }));
         await effects.selectContact.toPromise();
 
         expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
@@ -243,6 +243,53 @@ describe('Contacts effects', () => {
         expect(receiveSelectedContactChildren.args[0]).to.deep.equal([[
           { type: { id: 'patient' }, contacts: [{ _id: 'person1' }] },
         ]]);
+      });
+
+      it('should not receive children if the selected contact changes', async () => {
+        contactViewModelGeneratorService.getContact.onFirstCall()
+          .resolves({_id: 'contact1', doc: {_id: 'contact1'}});
+        contactViewModelGeneratorService.getContact.onSecondCall()
+          .resolves({_id: 'contact2', doc: {_id: 'contact2'}});
+        contactViewModelGeneratorService.loadChildren.onFirstCall().callsFake(async () => {
+          // Change the selected contact before returning the first set of children.
+          actions$ = of(ContactActionList.selectContact({id: 'contact2'}));
+          await effects.selectContact.toPromise();
+          return [{ type: { id: 'person' }, contacts: [{ _id: 'person1' }] }];
+        });
+        contactViewModelGeneratorService.loadChildren.onSecondCall()
+          .resolves([{type: {id: 'place'}, contacts: [{_id: 'place'}]}]);
+        const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
+        const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+        const receiveSelectedContactChildren: any = ContactsActions.prototype.receiveSelectedContactChildren;
+        const setSelectedContact: any = ContactsActions.prototype.setSelectedContact;
+
+        actions$ = of(ContactActionList.selectContact({id: 'contact1'}));
+        await effects.selectContact.toPromise();
+
+        expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(2);
+        expect(contactViewModelGeneratorService.loadChildren.args[0][0]._id).to.equal('contact1');
+        expect(contactViewModelGeneratorService.loadChildren.args[1][0]._id).to.equal('contact2');
+        // Only the second array of children is actually received since the selectedContact changed before the
+        // first children were returned
+        expect(receiveSelectedContactChildren.callCount).to.equal(1);
+        expect(receiveSelectedContactChildren.args[0]).to.deep
+          .equal([[{type: {id: 'place'}, contacts: [{_id: 'place'}]}]]);
+
+        // Stops loading data for initial contact after children
+        expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
+        expect(contactViewModelGeneratorService.loadReports.args[0][0]._id).to.equal('contact2');
+        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(1);
+        expect(targetAggregateService.getCurrentTargetDoc.args[0][0]._id).to.equal('contact2');
+        expect(contactSummaryService.get.callCount).to.equal(1);
+        expect(contactSummaryService.get.args[0][0]._id).to.equal('contact2');
+        expect(tasksForContactService.get.callCount).to.equal(1);
+        expect(tasksForContactService.get.args[0][0]._id).to.equal('contact2');
+        // Does not reset the selected contact when there is a conflict error
+        expect(setSnackbarContent.callCount).to.equal(0);
+        expect(unsetSelected.callCount).to.equal(0);
+        expect(setSelectedContact.callCount).to.equal(2);
+        expect(setSelectedContact.args[0][0]._id).to.equal('contact1');
+        expect(setSelectedContact.args[1][0]._id).to.equal('contact2');
       });
 
       it('should handle errors when loading children', async () => {
@@ -293,6 +340,56 @@ describe('Contacts effects', () => {
         expect(receiveSelectedContactReports.args[0]).to.deep.equal([[{ _id: 'report1' }]]);
       });
 
+      it('should not receive reports if the selected contact changes', async () => {
+        store.overrideSelector(Selectors.getForms, [{id: 'form1'}]);
+        contactViewModelGeneratorService.getContact.onFirstCall().resolves({_id: 'place', doc: {_id: 'place'}});
+        contactViewModelGeneratorService.getContact.onSecondCall().resolves({_id: 'person', doc: {_id: 'person'}});
+        contactViewModelGeneratorService.loadChildren.onFirstCall().resolves([
+          {type: {id: 'person'}, contacts: [{_id: 'person1'}]},
+          {type: {id: 'place'}, contacts: [{_id: 'place'}]},
+        ]);
+        contactViewModelGeneratorService.loadReports.onFirstCall().callsFake(async () => {
+          // Change the selected contact before returning the first set of reports.
+          actions$ = of(ContactActionList.selectContact({id: 'person'}));
+          await effects.selectContact.toPromise();
+          return [{_id: 'report1'}];
+        });
+        contactViewModelGeneratorService.loadReports.onSecondCall().resolves([{_id: 'report2'}]);
+        const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
+        const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+        const receiveSelectedContactReports: any = ContactsActions.prototype.receiveSelectedContactReports;
+        const setSelectedContact: any = ContactsActions.prototype.setSelectedContact;
+
+        actions$ = of(ContactActionList.selectContact({id: 'place'}));
+        await effects.selectContact.toPromise();
+
+        expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(2);
+        expect(contactViewModelGeneratorService.loadReports.args[0][0]._id).to.equal('place');
+        expect(contactViewModelGeneratorService.loadReports.args[1][0]._id).to.equal('person');
+        // Only the second array of reports is actually received since the selectedContact changed before the
+        // first reports were returned
+        expect(receiveSelectedContactReports.callCount).to.equal(1);
+        expect(receiveSelectedContactReports.args[0]).to.deep.equal([[{_id: 'report2'}]]);
+
+        // Loads children before the reports
+        expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(2);
+        expect(contactViewModelGeneratorService.loadChildren.args[0][0]._id).to.equal('place');
+        expect(contactViewModelGeneratorService.loadChildren.args[1][0]._id).to.equal('person');
+        // Stops loading data for initial contact after reports
+        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(1);
+        expect(targetAggregateService.getCurrentTargetDoc.args[0][0]._id).to.equal('person');
+        expect(contactSummaryService.get.callCount).to.equal(1);
+        expect(contactSummaryService.get.args[0][0]._id).to.equal('person');
+        expect(tasksForContactService.get.callCount).to.equal(1);
+        expect(tasksForContactService.get.args[0][0]._id).to.equal('person');
+        // Does not reset the selected contact when there is a conflict error
+        expect(setSnackbarContent.callCount).to.equal(0);
+        expect(unsetSelected.callCount).to.equal(0);
+        expect(setSelectedContact.callCount).to.equal(2);
+        expect(setSelectedContact.args[0][0]._id).to.equal('place');
+        expect(setSelectedContact.args[1][0]._id).to.equal('person');
+      });
+
       it('should handle errors when loading reports', async () => {
         sinon.stub(console, 'error');
         const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
@@ -318,7 +415,7 @@ describe('Contacts effects', () => {
         contactViewModelGeneratorService.loadReports.resolves([{ _id: 'report' }]);
         targetAggregateService.getCurrentTargetDoc.resolves({ _id: 'targetDoc' });
 
-        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        actions$ = of(ContactActionList.selectContact({ id: 'person' }));
         await effects.selectContact.toPromise();
 
         expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(1);
@@ -331,6 +428,54 @@ describe('Contacts effects', () => {
         const receiveSelectedContactTargetDoc:any = ContactsActions.prototype.receiveSelectedContactTargetDoc;
         expect(receiveSelectedContactTargetDoc.callCount).to.equal(1);
         expect(receiveSelectedContactTargetDoc.args[0]).to.deep.equal([{ _id: 'targetDoc' }]);
+      });
+
+      it('should not receive target doc if the selected contact changes', async () => {
+        contactViewModelGeneratorService.getContact.onFirstCall().resolves({_id: 'place', doc: {_id: 'place'}});
+        contactViewModelGeneratorService.getContact.onSecondCall().resolves({_id: 'person', doc: {_id: 'person'}});
+        contactViewModelGeneratorService.loadChildren.resolves([]);
+        contactViewModelGeneratorService.loadReports.resolves([]);
+        targetAggregateService.getCurrentTargetDoc.onFirstCall().callsFake(async () => {
+          // Change the selected contact before returning the first target doc
+          actions$ = of(ContactActionList.selectContact({id: 'person'}));
+          await effects.selectContact.toPromise();
+          return {_id: 'targetDoc0'};
+        });
+        targetAggregateService.getCurrentTargetDoc.onSecondCall().resolves({_id: 'targetDoc1'});
+        const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
+        const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+        const receiveSelectedContactTargetDoc: any = ContactsActions.prototype.receiveSelectedContactTargetDoc;
+        const setSelectedContact: any = ContactsActions.prototype.setSelectedContact;
+
+        actions$ = of(ContactActionList.selectContact({id: 'place'}));
+        await effects.selectContact.toPromise();
+
+        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(2);
+        expect(targetAggregateService.getCurrentTargetDoc.args[0][0]._id).to.equal('place');
+        expect(targetAggregateService.getCurrentTargetDoc.args[1][0]._id).to.equal('person');
+        expect(receiveSelectedContactTargetDoc.callCount).to.equal(1);
+        // Only the second target doc is actually received since the selectedContact changed before the
+        // first target doc was returned
+        expect(receiveSelectedContactTargetDoc.args[0]).to.deep.equal([{_id: 'targetDoc1'}]);
+
+        // Loads children and reports before the target doc
+        expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(2);
+        expect(contactViewModelGeneratorService.loadChildren.args[0][0]._id).to.equal('place');
+        expect(contactViewModelGeneratorService.loadChildren.args[1][0]._id).to.equal('person');
+        expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(2);
+        expect(contactViewModelGeneratorService.loadReports.args[0][0]._id).to.equal('place');
+        expect(contactViewModelGeneratorService.loadReports.args[1][0]._id).to.equal('person');
+        // Stops loading data for initial contact after target doc
+        expect(contactSummaryService.get.callCount).to.equal(1);
+        expect(contactSummaryService.get.args[0][0]._id).to.equal('person');
+        expect(tasksForContactService.get.callCount).to.equal(1);
+        expect(tasksForContactService.get.args[0][0]._id).to.equal('person');
+        // Does not reset the selected contact when there is a conflict error
+        expect(setSnackbarContent.callCount).to.equal(0);
+        expect(unsetSelected.callCount).to.equal(0);
+        expect(setSelectedContact.callCount).to.equal(2);
+        expect(setSelectedContact.args[0][0]._id).to.equal('place');
+        expect(setSelectedContact.args[1][0]._id).to.equal('person');
       });
 
       it('should handle errors when loading the target doc', async () => {
@@ -364,7 +509,7 @@ describe('Contacts effects', () => {
         targetAggregateService.getCurrentTargetDoc.resolves({ _id: 'targetDoc' });
         contactSummaryService.get.resolves({ cards: [{ id: 'card' }], fields: [{ id: 'field' }] });
 
-        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        actions$ = of(ContactActionList.selectContact({ id: 'person' }));
         await effects.selectContact.toPromise();
 
         expect(contactSummaryService.get.callCount).to.equal(1);
@@ -379,6 +524,62 @@ describe('Contacts effects', () => {
         expect(updateSelectedContactSummary.args[0]).to.deep.equal([
           { cards: [{ id: 'card' }], fields: [{ id: 'field' }] }
         ]);
+      });
+
+      it('should not receive contact summary if the selected contact changes', async () => {
+        contactViewModelGeneratorService.getContact.onFirstCall().resolves({_id: 'place', doc: {_id: 'place'}});
+        contactViewModelGeneratorService.getContact.onSecondCall().resolves({
+          _id: 'person',
+          doc: {_id: 'person', parent: {_id: 'parent'}},
+          lineage: [{_id: 'parent'}, {_id: 'grandparent'}],
+        });
+        contactViewModelGeneratorService.loadChildren.resolves([]);
+        contactViewModelGeneratorService.loadReports.resolves([]);
+        targetAggregateService.getCurrentTargetDoc.resolves({_id: 'targetDoc'});
+
+        contactSummaryService.get.onFirstCall().callsFake(async () => {
+          // Change the selected contact before returning the first contact summary result.
+          actions$ = of(ContactActionList.selectContact({id: 'person'}));
+          await effects.selectContact.toPromise();
+          return {cards: [{id: 'card0'}], fields: [{id: 'field0'}]};
+        });
+        contactSummaryService.get.onSecondCall().resolves({cards: [{id: 'card1'}], fields: [{id: 'field1'}]});
+        const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
+        const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+        const updateSelectedContactSummary: any = ContactsActions.prototype.updateSelectedContactSummary;
+        const setSelectedContact: any = ContactsActions.prototype.setSelectedContact;
+
+        actions$ = of(ContactActionList.selectContact({id: 'place'}));
+        await effects.selectContact.toPromise();
+
+        expect(contactSummaryService.get.callCount).to.equal(2);
+        expect(contactSummaryService.get.args[0][0]._id).to.equal('place');
+        expect(contactSummaryService.get.args[1][0]._id).to.equal('person');
+        // Only the second summary is actually received since the selectedContact changed before the
+        // first summary was returned
+        expect(updateSelectedContactSummary.callCount).to.equal(1);
+        expect(updateSelectedContactSummary.args[0]).to.deep
+          .equal([{cards: [{id: 'card1'}], fields: [{id: 'field1'}]}]);
+
+        // Loads children, reports, and target doc before the summary
+        expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(2);
+        expect(contactViewModelGeneratorService.loadChildren.args[0][0]._id).to.equal('place');
+        expect(contactViewModelGeneratorService.loadChildren.args[1][0]._id).to.equal('person');
+        expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(2);
+        expect(contactViewModelGeneratorService.loadReports.args[0][0]._id).to.equal('place');
+        expect(contactViewModelGeneratorService.loadReports.args[1][0]._id).to.equal('person');
+        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(2);
+        expect(targetAggregateService.getCurrentTargetDoc.args[0][0]._id).to.equal('place');
+        expect(targetAggregateService.getCurrentTargetDoc.args[1][0]._id).to.equal('person');
+        // Stops loading data for initial contact after summary
+        expect(tasksForContactService.get.callCount).to.equal(1);
+        expect(tasksForContactService.get.args[0][0]._id).to.equal('person');
+        // Does not reset the selected contact when there is a conflict error
+        expect(setSnackbarContent.callCount).to.equal(0);
+        expect(unsetSelected.callCount).to.equal(0);
+        expect(setSelectedContact.callCount).to.equal(2);
+        expect(setSelectedContact.args[0][0]._id).to.equal('place');
+        expect(setSelectedContact.args[1][0]._id).to.equal('person');
       });
 
       it('should handle errors when loading the contact summary', async () => {
@@ -412,7 +613,7 @@ describe('Contacts effects', () => {
         contactSummaryService.get.resolves({ cards: [{ id: 'card' }], fields: [{ id: 'field' }] });
         tasksForContactService.get.resolves([{ _id: 'task1' }]);
 
-        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        actions$ = of(ContactActionList.selectContact({ id: 'person' }));
         await effects.selectContact.toPromise();
 
         expect(tasksForContactService.get.callCount).to.equal(1);
@@ -427,6 +628,61 @@ describe('Contacts effects', () => {
         const updateSelectedContactsTasks:any = ContactsActions.prototype.updateSelectedContactsTasks;
         expect(updateSelectedContactsTasks.callCount).to.equal(1);
         expect(updateSelectedContactsTasks.args[0]).to.deep.equal([[{ _id: 'task1' }]]);
+      });
+
+      it('should not update tasks if the selected contact changes', async () => {
+        contactViewModelGeneratorService.getContact.onFirstCall().resolves({_id: 'place', doc: {_id: 'place'}});
+        contactViewModelGeneratorService.getContact.onSecondCall().resolves({
+          _id: 'person',
+          doc: {_id: 'person', parent: {_id: 'parent'}},
+        });
+        contactViewModelGeneratorService.loadChildren.resolves([{type: 'a'}]);
+        contactViewModelGeneratorService.loadReports.resolves([{_id: 'the_report'}]);
+        targetAggregateService.getCurrentTargetDoc.resolves({_id: 'targetDoc'});
+        contactSummaryService.get.resolves({cards: [{id: 'card'}], fields: [{id: 'field'}]});
+
+        tasksForContactService.get.onFirstCall().callsFake(async () => {
+          // Change the selected contact before returning the first set of tasks.
+          actions$ = of(ContactActionList.selectContact({id: 'person'}));
+          await effects.selectContact.toPromise();
+          return [{_id: 'task0'}];
+        });
+        tasksForContactService.get.onSecondCall().resolves([{_id: 'task1'}]);
+        const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
+        const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+        const updateSelectedContactsTasks: any = ContactsActions.prototype.updateSelectedContactsTasks;
+        const setSelectedContact: any = ContactsActions.prototype.setSelectedContact;
+
+        actions$ = of(ContactActionList.selectContact({id: 'place'}));
+        await effects.selectContact.toPromise();
+
+        expect(tasksForContactService.get.callCount).to.equal(2);
+        expect(tasksForContactService.get.args[0][0]._id).to.equal('place');
+        expect(tasksForContactService.get.args[1][0]._id).to.equal('person');
+        // Only the second array of tasks is actually updated since the selectedContact changed before the
+        // first tasks were returned
+        expect(updateSelectedContactsTasks.callCount).to.equal(1);
+        expect(updateSelectedContactsTasks.args[0]).to.deep.equal([[{_id: 'task1'}]]);
+
+        // Loads everything else before the tasks
+        expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(2);
+        expect(contactViewModelGeneratorService.loadChildren.args[0][0]._id).to.equal('place');
+        expect(contactViewModelGeneratorService.loadChildren.args[1][0]._id).to.equal('person');
+        expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(2);
+        expect(contactViewModelGeneratorService.loadReports.args[0][0]._id).to.equal('place');
+        expect(contactViewModelGeneratorService.loadReports.args[1][0]._id).to.equal('person');
+        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(2);
+        expect(targetAggregateService.getCurrentTargetDoc.args[0][0]._id).to.equal('place');
+        expect(targetAggregateService.getCurrentTargetDoc.args[1][0]._id).to.equal('person');
+        expect(contactSummaryService.get.callCount).to.equal(2);
+        expect(contactSummaryService.get.args[0][0]._id).to.equal('place');
+        expect(contactSummaryService.get.args[1][0]._id).to.equal('person');
+        // Does not reset the selected contact when there is a conflict error
+        expect(setSnackbarContent.callCount).to.equal(0);
+        expect(unsetSelected.callCount).to.equal(0);
+        expect(setSelectedContact.callCount).to.equal(2);
+        expect(setSelectedContact.args[0][0]._id).to.equal('place');
+        expect(setSelectedContact.args[1][0]._id).to.equal('person');
       });
 
       it('should handle errors when loading tasks', async () => {
