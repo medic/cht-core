@@ -4,6 +4,7 @@ import * as passwordTester from 'simple-password-tester';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { LanguageService } from '@mm-services/language.service';
 import { UpdateUserService } from '@mm-services/update-user.service';
 import { UserLoginService } from '@mm-services/user-login.service';
 import { EditUserAbstract } from '@mm-modals/edit-user/edit-user.component';
@@ -37,12 +38,13 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
   constructor(
     bsModalRef: BsModalRef,
     userSettingsService: UserSettingsService,
+    languageService: LanguageService,
     private updateUserService: UpdateUserService,
     private userLoginService: UserLoginService,
     private translateService:TranslateService,
     private modalService: ModalService,
   ) {
-    super(bsModalRef, userSettingsService);
+    super(bsModalRef, userSettingsService, languageService);
   }
 
   async ngOnInit(): Promise<void> {

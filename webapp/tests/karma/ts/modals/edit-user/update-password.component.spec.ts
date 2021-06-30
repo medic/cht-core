@@ -8,6 +8,7 @@ import { Subject } from 'rxjs';
 
 import { UpdatePasswordComponent } from '@mm-modals/edit-user/update-password.component';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { LanguageService } from '@mm-services/language.service';
 import { UpdateUserService } from '@mm-services/update-user.service';
 import { UserLoginService } from '@mm-services/user-login.service';
 import { MmModal, MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
@@ -20,6 +21,7 @@ describe('UpdatePasswordComponent', () => {
   let component: UpdatePasswordComponent;
   let fixture: ComponentFixture<UpdatePasswordComponent>;
   let userSettingsService;
+  let languageService;
   let updateUserService;
   let translateService;
   let bsModalRef;
@@ -46,11 +48,11 @@ describe('UpdatePasswordComponent', () => {
           name: 'admin',
           fullname: 'Admin',
           email: 'admin@demo.medic.com',
-          phone: '+99 999 9999',
-          language: 'es'
+          phone: '+99 999 9999'
         }
       )
     };
+    languageService = { get: sinon.stub().resolves('es') };
     translateService = {
       fieldIsRequired: sinon.stub().resolvesArg(0),
       get: sinon.stub().resolvesArg(0),
@@ -73,6 +75,7 @@ describe('UpdatePasswordComponent', () => {
           { provide: UserLoginService, useValue: userLoginService },
           { provide: ModalService, useValue: modalService },
           { provide: UserSettingsService, useValue: userSettingsService },
+          { provide: LanguageService, useValue: languageService },
           { provide: BsModalRef, useValue: bsModalRef },
           { provide: TranslateService, useValue: translateService },
         ]
