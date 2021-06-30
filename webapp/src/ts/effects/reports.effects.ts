@@ -56,6 +56,8 @@ export class ReportsEffects {
       ofType(ReportActionList.selectReport),
       filter(({ payload: { id } }) => !!id),
       exhaustMap(({ payload: { id, silent } }) => {
+      // concatMap(({ payload: { id, silent } }) => {
+      // switchMap(({ payload: { id, silent } }) => {
         if (!silent) {
           this.globalActions.setLoadingShowContent(id);
         }

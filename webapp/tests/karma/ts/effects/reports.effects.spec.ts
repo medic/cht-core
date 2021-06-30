@@ -140,6 +140,41 @@ describe('Reports effects', () => {
       expect(unsetSelected.callCount).to.equal(0);
     });
 
+    it('should load reports when selected nearly simultaneously', async () => {
+      const setLoadingShowContent = sinon.stub(GlobalActions.prototype, 'setLoadingShowContent');
+      const setSelected = sinon.stub(ReportsActions.prototype, 'setSelected');
+      const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+      reportViewModelGeneratorService.get.onFirstCall().resolves({_id: 'reportID0', model: true});
+      reportViewModelGeneratorService.get.onSecondCall().resolves({_id: 'reportID1', model: true});
+
+      actions$ = of(ReportActionList.selectReport({id: 'reportID0', silent: true}),
+        ReportActionList.selectReport({id: 'reportID1', silent: true}));
+      await effects.selectReport.toPromise();
+
+      expect(setLoadingShowContent.callCount).to.equal(0);
+
+      // exhaustMap - maps the first and exhausts the second
+      expect(reportViewModelGeneratorService.get.callCount).to.equal(1);
+      expect(reportViewModelGeneratorService.get.args).to.deep.equal([['reportID0']]);
+      expect(setSelected.callCount).to.equal(1);
+      expect(setSelected.args).to.deep.equal([[{_id: 'reportID0', model: true}]]);
+
+      // concatMap - maps the first and then the second
+      // expect(reportViewModelGeneratorService.get.callCount).to.equal(2);
+      // expect(reportViewModelGeneratorService.get.args).to.deep.equal([['reportID0'], ['reportID1']]);
+      // expect(setSelected.callCount).to.equal(2);
+      // expect(setSelected.args).to.deep
+      //   .equal([[{_id: 'reportID0', model: true}], [{_id: 'reportID1', model: true}]]);
+
+      // switchMap - Starts mapping the first, then cancels it and maps the second
+      // expect(reportViewModelGeneratorService.get.callCount).to.equal(2);
+      // expect(reportViewModelGeneratorService.get.args).to.deep.equal([['reportID0'], ['reportID1']]);
+      // expect(setSelected.callCount).to.equal(1);
+      // expect(setSelected.args).to.deep.equal([[{_id: 'reportID1', model: true}]]);
+
+      expect(unsetSelected.callCount).to.equal(0);
+    });
+
     it('should unset selected when error is thrown', async () => {
       actions$ = of(ReportActionList.selectReport({ id: 'report' }));
       const setLoadingShowContent = sinon.stub(GlobalActions.prototype, 'setLoadingShowContent');
