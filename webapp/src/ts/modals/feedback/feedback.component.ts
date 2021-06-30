@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
 
 import { FeedbackService } from '@mm-services/feedback.service';
 import { MmModalAbstract } from '../mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Component({
   selector: 'feedback-modal',
@@ -22,9 +21,8 @@ export class FeedbackComponent extends MmModalAbstract {
   constructor(
     bsModalRef: BsModalRef,
     private feedbackService: FeedbackService,
-    private translateService: TranslateService,
     private store: Store,
-    private translateHelperService:TranslateHelperService,
+    private translateService:TranslateService,
   ) {
     super(bsModalRef);
     this.globalActions = new GlobalActions(store);
@@ -35,7 +33,7 @@ export class FeedbackComponent extends MmModalAbstract {
       this.error.message = false;
       return Promise.resolve();
     } else {
-      return this.translateHelperService
+      return this.translateService
         .fieldIsRequired('Bug description')
         .then(value => this.error.message = value);
     }
@@ -60,7 +58,7 @@ export class FeedbackComponent extends MmModalAbstract {
             this.close();
             this.translateService
               .get('feedback.submitted')
-              .subscribe(value => this.globalActions.setSnackbarContent(value));
+              .then(value => this.globalActions.setSnackbarContent(value));
           })
           .catch(err => {
             this.setError(err, 'Error saving feedback');

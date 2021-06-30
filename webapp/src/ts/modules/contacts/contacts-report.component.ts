@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy, AfterViewInit, NgZone } from '@angular/co
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateService } from '@ngx-translate/core';
 import { isEqual as _isEqual } from 'lodash-es';
 
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
@@ -13,6 +12,7 @@ import { Selectors } from '@mm-selectors/index';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Component({
   templateUrl: './contacts-report.component.html'

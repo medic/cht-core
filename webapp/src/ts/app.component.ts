@@ -2,7 +2,6 @@ import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/ro
 import * as moment from 'moment';
 import { Component, NgZone, OnInit, HostListener } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
 import { combineLatest } from 'rxjs';
 
@@ -40,6 +39,9 @@ import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-clo
 import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-matcher.provider';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { TransitionsService } from '@mm-services/transitions.service';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -117,7 +119,9 @@ export class AppComponent implements OnInit {
     private databaseConnectionMonitorService: DatabaseConnectionMonitorService,
     private translateLocaleService:TranslateLocaleService,
     private telemetryService:TelemetryService,
+    private transitionsService:TransitionsService,
     private ngZone:NgZone,
+    private chtScriptApiService: CHTScriptApiService
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -257,8 +261,10 @@ export class AppComponent implements OnInit {
     // initialisation tasks that can occur after the UI has been rendered
     this.setupPromise = this.sessionService
       .init()
+      .then(() => this.chtScriptApiService.isInitialized())
       .then(() => this.checkPrivacyPolicy())
       .then(() => this.initRulesEngine())
+      .then(() => this.initTransitions())
       .then(() => this.initForms())
       .then(() => this.initUnreadCount())
       .then(() => this.checkDateService.check(true))
@@ -276,6 +282,12 @@ export class AppComponent implements OnInit {
     this.requestPersistentStorage();
     this.startWealthQuintiles();
     this.enableTooltips();
+  }
+
+  private initTransitions() {
+    if (!this.sessionService.isOnlineOnly()) {
+      return this.transitionsService.init();
+    }
   }
 
   private setupAndroidVersion() {
@@ -426,9 +438,9 @@ export class AppComponent implements OnInit {
 
   private initForms() {
     /**
-    * Translates using the key if truthy using the old style label
-    * array as a fallback.
-    */
+     * Translates using the key if truthy using the old style label
+     * array as a fallback.
+     */
     const translateTitle = (key, label) => {
       return key ? this.translateService.instant(key) : this.translateFromService.get(label);
     };

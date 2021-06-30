@@ -8,7 +8,7 @@ import { LanguageService } from '@mm-services/language.service';
 import { UpdateUserService } from '@mm-services/update-user.service';
 import { UserLoginService } from '@mm-services/user-login.service';
 import { EditUserAbstract } from '@mm-modals/edit-user/edit-user.component';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 import { ConfirmPasswordUpdatedComponent } from '@mm-modals/edit-user/confirm-password-updated.component';
 
 const PASSWORD_MINIMUM_LENGTH = 8;
@@ -41,7 +41,7 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
     languageService: LanguageService,
     private updateUserService: UpdateUserService,
     private userLoginService: UserLoginService,
-    private translateHelperService:TranslateHelperService,
+    private translateService:TranslateService,
     private modalService: ModalService,
   ) {
     super(bsModalRef, userSettingsService, languageService);
@@ -79,12 +79,12 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
         })
         .catch(err => {
           if (err.status === 0) { //Offline Status
-            this.translateHelperService.get('online.action.message').then(value => {
+            this.translateService.get('online.action.message').then(value => {
               this.errors.currentPassword = value;
               this.setError(err, value);
             });
           } else if (err.status === 401) {
-            this.translateHelperService.get('password.incorrect').then(value => {
+            this.translateService.get('password.incorrect').then(value => {
               this.errors.currentPassword = value;
               this.setError(err, value);
             });
@@ -110,7 +110,7 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
 
   private validateRequired(fieldName, fieldDisplayName) {
     if (!this.editUserModel[fieldName]) {
-      this.translateHelperService
+      this.translateService
         .fieldIsRequired(fieldDisplayName)
         .then(value => {
           this.errors[fieldName] = value;
@@ -126,7 +126,7 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
   private validatePasswordStrength() {
     const password = this.editUserModel.password || '';
     if (password.length < PASSWORD_MINIMUM_LENGTH) {
-      this.translateHelperService
+      this.translateService
         .get('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH })
         .then((value) => {
           this.errors.password = value;
@@ -134,7 +134,7 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
       return false;
     }
     if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
-      this.translateHelperService
+      this.translateService
         .get('password.weak')
         .then(value => {
           this.errors.password = value;
@@ -146,7 +146,7 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
 
   private validateConfirmPasswordMatches() {
     if (this.editUserModel.password !== this.editUserModel.passwordConfirm) {
-      this.translateHelperService.get('Passwords must match').then(value => {
+      this.translateService.get('Passwords must match').then(value => {
         this.errors.password = value;
       });
       return false;

@@ -2,7 +2,6 @@ import { Injectable, NgZone } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
@@ -23,6 +22,8 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
+import { TranslateService } from '@mm-services/translate.service';
+import { TransitionsService } from '@mm-services/transitions.service';
 
 @Injectable({
   providedIn: 'root'
@@ -46,6 +47,7 @@ export class EnketoService {
     private userContactService:UserContactService,
     private xmlFormsService:XmlFormsService,
     private zScoreService:ZScoreService,
+    private transitionsService:TransitionsService,
     private translateService:TranslateService,
     private ngZone:NgZone,
   ) {
@@ -686,6 +688,7 @@ export class EnketoService {
       ])
       .then(([doc, formXml]) => this.xmlToDocs(doc, formXml, form.getDataStr({ irrelevant: false })))
       .then((docs) => this.saveGeo(geoHandle, docs))
+      .then((docs) => this.transitionsService.applyTransitions(docs))
       .then((docs) => this.saveDocs(docs))
       .then((docs) => {
         this.servicesActions.setLastChangedDoc(docs[0]);

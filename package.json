@@ -13,7 +13,9 @@
   },
   "scripts": {
     "test": "grunt eslint && grunt unit && grunt test-api-integration && grunt e2e",
-    "webdriver": "webdriver-manager update && webdriver-manager start"
+    "webdriver": "webdriver-manager update && webdriver-manager start",
+    "wdio-local": "rm -rf _results_ allure-report && grunt e2e-env-setup && wdio run ./tests/webdriver-e2e/wdio.conf.js",
+    "wdio": "wdio run ./tests/webdriver-e2e/wdio.conf.js"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^10.0.1",
@@ -38,6 +40,12 @@
     "@types/sinon": "^9.0.11",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
+    "@wdio/allure-reporter": "^7.7.3",
+    "@wdio/cli": "^7.7.3",
+    "@wdio/local-runner": "^7.7.3",
+    "@wdio/mocha-framework": "^7.7.3",
+    "@wdio/spec-reporter": "^7.7.3",
+    "allure-commandline": "^2.13.8",
     "angular-jsdoc": "^1.5.1",
     "angular-mocks": "^1.7.9",
     "autoprefixer": "^9.8.6",

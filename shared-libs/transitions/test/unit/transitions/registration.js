@@ -8,7 +8,7 @@ const utils = require('../../../src/lib/utils');
 const config = require('../../../src/config');
 const transitionUtils = require('../../../src/transitions/utils');
 const acceptPatientReports = require('../../../src/transitions/accept_patient_reports');
-const validation = require('../../../src/lib/validation');
+const validation = require('@medic/validation');
 const contactTypeUtils = require('@medic/contact-types-utils');
 
 let transition = rewire('../../../src/transitions/registration');
@@ -88,7 +88,7 @@ describe('registration', () => {
         events: [{ name: 'on_create', trigger: 'add_patient' }],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves(null);
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
       sinon.stub(config, 'getAll').returns(settings);
@@ -135,7 +135,7 @@ describe('registration', () => {
       };
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(config, 'getAll').returns(settings);
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves(null);
       return transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(0);
       });
@@ -172,7 +172,7 @@ describe('registration', () => {
         ],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(transitionUtils, 'isIdUnique').resolves(true);
       sinon.stub(config, 'getAll').returns(settings);
 
@@ -218,7 +218,7 @@ describe('registration', () => {
         }],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves('05649');
       sinon.stub(config, 'getAll').returns({
@@ -270,7 +270,7 @@ describe('registration', () => {
       configGet.returns([eventConfig]);
       sinon.stub(config, 'getAll').returns(settings);
 
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
 
       return transition.onMatch(change).then(() => {
         (typeof doc.patient_id).should.equal('undefined');
@@ -319,7 +319,7 @@ describe('registration', () => {
 
       sinon.stub(transitionUtils, 'isIdUnique').resolves(false);
 
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(config, 'getAll').returns(settings);
 
       return transition.onMatch(change).then(() => {
@@ -363,7 +363,7 @@ describe('registration', () => {
         events: [{ name: 'on_create', trigger: 'add_patient', params: 'name' }],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
 
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
@@ -411,7 +411,7 @@ describe('registration', () => {
         ],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
 
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
@@ -456,7 +456,7 @@ describe('registration', () => {
         ],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
 
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
@@ -541,7 +541,7 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
 
@@ -639,7 +639,7 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
 
@@ -728,7 +728,7 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
 
@@ -811,7 +811,7 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
 
@@ -903,7 +903,7 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(patientId);
 
@@ -997,7 +997,7 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(placeId);
 
@@ -1079,7 +1079,7 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(placeId);
 
@@ -1169,7 +1169,7 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(placeId);
 
@@ -1271,7 +1271,7 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(placeId);
 
@@ -1369,7 +1369,7 @@ describe('registration', () => {
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
 
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(placeId);
 
@@ -1431,7 +1431,7 @@ describe('registration', () => {
       sinon.stub(db.medic, 'query').withArgs('medic-client/contacts_by_phone').resolves({ rows: [] });
       sinon.stub(db.medic, 'get');
 
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(placeId);
 
@@ -1490,7 +1490,7 @@ describe('registration', () => {
       };
       sinon.stub(config, 'get').withArgs('registrations').returns([eventConfig]);
 
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(placeId);
 
@@ -1545,7 +1545,7 @@ describe('registration', () => {
       };
       sinon.stub(config, 'get').withArgs('registrations').returns([eventConfig]);
 
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(placeId);
 
@@ -1622,7 +1622,7 @@ describe('registration', () => {
       ];
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(config, 'getAll').returns({ contact_types: contactTypes });
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
       sinon.stub(transitionUtils, 'getUniqueId').resolves(placeId);
 
@@ -1667,7 +1667,7 @@ describe('registration', () => {
         events: [{ name: 'on_create', trigger: 'add_case' }],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(transitionUtils, 'getUniqueId').resolves(caseId);
       sinon.stub(config, 'getAll').returns(settings);
 
@@ -1694,7 +1694,7 @@ describe('registration', () => {
         events: [{ name: 'on_create', trigger: 'add_case' }],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(transitionUtils, 'getUniqueId').resolves(caseId);
       sinon.stub(config, 'getAll').returns(settings);
 
@@ -1730,7 +1730,7 @@ describe('registration', () => {
         ],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon
         .stub(utils, 'getRegistrations')
         .withArgs({ id: '05649' }).resolves([{ _id: 'xyz' }])
@@ -1781,7 +1781,7 @@ describe('registration', () => {
         ],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations')
         .withArgs({ id: '79999' }).resolves([{ _id: 'place_registration' }])
         .withArgs({ id: undefined }).resolves([]);
@@ -1834,7 +1834,7 @@ describe('registration', () => {
         ],
       };
       sinon.stub(config, 'get').returns([eventConfig]);
-      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations')
         .onCall(0).resolves([{ _id: 'patient_registration' }])
         .onCall(1).resolves([{ _id: 'place_registration' }]);
@@ -2626,7 +2626,7 @@ describe('registration', () => {
     });
 
     it('should adds error if validation fails, with patient subject', () => {
-      sinon.stub(validation, 'validate').callsArgWith(2, ['error']);
+      sinon.stub(validation, 'validate').resolves(['error']);
       sinon.stub(messages, 'addErrors');
 
       doc = {
@@ -2650,7 +2650,7 @@ describe('registration', () => {
     });
 
     it('should adds error if validation fails, with place subject', () => {
-      sinon.stub(validation, 'validate').callsArgWith(2, ['an error']);
+      sinon.stub(validation, 'validate').resolves(['an error']);
       sinon.stub(messages, 'addErrors');
 
       doc = {
@@ -2673,7 +2673,7 @@ describe('registration', () => {
     });
 
     it('should add error if validation fails, with both patient and place subjects', () => {
-      sinon.stub(validation, 'validate').callsArgWith(2, ['some error']);
+      sinon.stub(validation, 'validate').resolves(['some error']);
       sinon.stub(messages, 'addErrors');
 
       doc = {
@@ -2698,7 +2698,7 @@ describe('registration', () => {
     });
 
     it('should run triggers when there is no subject', () => {
-      sinon.stub(validation, 'validate').callsArg(2);
+      sinon.stub(validation, 'validate').resolves();
       sinon.stub(messages, 'addErrors');
 
       doc = { form: 'R' };
@@ -2713,7 +2713,7 @@ describe('registration', () => {
     });
 
     it('should fail if subject does not exist, with patient_id', () => {
-      sinon.stub(validation, 'validate').callsArg(2);
+      sinon.stub(validation, 'validate').resolves();
       doc = { form: 'R', fields: { patient_id: '56987' } };
 
       sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
@@ -2727,7 +2727,7 @@ describe('registration', () => {
     });
 
     it('should fail if patient exists but its not a person', () => {
-      sinon.stub(validation, 'validate').callsArg(2);
+      sinon.stub(validation, 'validate').resolves();
       doc = {
         form: 'R',
         fields: { patient_id: '56987' },
@@ -2751,7 +2751,7 @@ describe('registration', () => {
     });
 
     it('should fail if subject does not exist, with place_id', () => {
-      sinon.stub(validation, 'validate').callsArg(2);
+      sinon.stub(validation, 'validate').resolves();
       doc = { form: 'R', fields: { place_id: '98754' } };
       sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
 
@@ -2764,7 +2764,7 @@ describe('registration', () => {
     });
 
     it('should fail if place exists but its not a place', () => {
-      sinon.stub(validation, 'validate').callsArg(2);
+      sinon.stub(validation, 'validate').resolves();
       doc = {
         form: 'R',
         fields: { place_id: '56987' },
@@ -2788,7 +2788,7 @@ describe('registration', () => {
     });
 
     it('should fail if subject does not exist, with place_id and patient_id', () => {
-      sinon.stub(validation, 'validate').callsArg(2);
+      sinon.stub(validation, 'validate').resolves();
       doc = { form: 'R', fields: { place_id: 'the_place_id', patient_id: 'the_patient_id' } };
       sinon.stub(transitionUtils, 'addRegistrationNotFoundError');
 
@@ -2801,7 +2801,7 @@ describe('registration', () => {
     });
 
     it('should fail if place and patient exist, but are switched', () => {
-      sinon.stub(validation, 'validate').callsArg(2);
+      sinon.stub(validation, 'validate').resolves();
       doc = {
         form: 'R',
         fields: { place_id: '56987', patient_id: '69874' },
@@ -2834,7 +2834,7 @@ describe('registration', () => {
     });
 
     it('should fail if place and patient exist, place is a place but patient is not a person', () => {
-      sinon.stub(validation, 'validate').callsArg(2);
+      sinon.stub(validation, 'validate').resolves();
       doc = {
         form: 'R',
         fields: { place_id: '56987', patient_id: '69874' },
@@ -2865,7 +2865,7 @@ describe('registration', () => {
     });
 
     it('should fail if place and patient exist, patient is a person but place is not a place', () => {
-      sinon.stub(validation, 'validate').callsArg(2);
+      sinon.stub(validation, 'validate').resolves();
       doc = {
         form: 'R',
         fields: { place_id: '56987', patient_id: '69874' },
@@ -2904,7 +2904,7 @@ describe('registration', () => {
     });
 
     it('should run triggers when subject exists', () => {
-      sinon.stub(validation, 'validate').callsArg(2);
+      sinon.stub(validation, 'validate').resolves();
       doc = {
         form: 'R',
         fields: { patient_id: 'the_patient_id' },

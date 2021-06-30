@@ -1,7 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 
-import { TranslateService } from '@ngx-translate/core';
 import { SettingsService } from '@mm-services/settings.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Injectable({
   providedIn: 'root'
