@@ -83,6 +83,7 @@ describe('Authorization middleware', () => {
     it('should allow authorized when no param is passed and request has no error', () => {
       const fn = middleware.handleAuthentication();
       testReq.authorized = true;
+      testReq.userCtx = { };
       fn(testReq, testRes, next);
       next.callCount.should.equal(1);
       serverUtils.error.callCount.should.equal(0);
@@ -91,6 +92,7 @@ describe('Authorization middleware', () => {
     it('should allow not authorized when no param is passed and request has no auth error', () => {
       const fn = middleware.handleAuthentication();
       testReq.authorized = false;
+      testReq.userCtx = {};
       fn(testReq, testRes, next);
       next.callCount.should.equal(1);
       serverUtils.error.callCount.should.equal(0);
@@ -112,6 +114,14 @@ describe('Authorization middleware', () => {
       fn(testReq, testRes, next);
       next.callCount.should.equal(1);
       serverUtils.error.callCount.should.equal(0);
+    });
+
+    it('should error when no authErr and no userCtx', () => {
+      const fn = middleware.handleAuthentication();
+      fn(testReq, testRes, next);
+      next.callCount.should.equal(0);
+      serverUtils.error.callCount.should.equal(1);
+      serverUtils.error.args[0].should.deep.equal(['Authentication error', testReq, testRes]);
     });
   });
 

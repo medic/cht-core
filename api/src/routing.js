@@ -733,6 +733,10 @@ proxyForChanges.on('proxyReq', (proxyReq, req) => {
 
 // because these are longpolls, we need to manually flush the CouchDB heartbeats through compression
 proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
+  if (proxyRes.statusCode === 401) {
+    return serverUtils.notLoggedIn(req, res);
+  }
+
   copyProxyHeaders(proxyRes, res);
 
   proxyRes.pipe(res);

@@ -41,6 +41,10 @@ module.exports = {
         return serverUtils.error(req.authErr, req, res);
       }
 
+      if (!req.userCtx) {
+        return serverUtils.error('Authentication error', req, res);
+      }
+
       next();
     };
   },
