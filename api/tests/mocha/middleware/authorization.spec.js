@@ -71,54 +71,80 @@ describe('Authorization middleware', () => {
     });
   });
 
-  describe('handleAuthentication', () => {
-    it('should allow authorized when param is passed', () => {
-      const fn = middleware.handleAuthentication(true);
+  describe('handleAuthErrors', () => {
+    it('should not allow authorized with no userCtx', () => {
       testReq.authorized = true;
-      fn(testReq, testRes, next);
-      next.callCount.should.equal(1);
-      serverUtils.error.callCount.should.equal(0);
+      middleware.handleAuthErrors(testReq, testRes, next);
+      next.callCount.should.equal(0);
+      serverUtils.error.callCount.should.equal(1);
     });
 
-    it('should allow authorized when no param is passed and request has no error', () => {
-      const fn = middleware.handleAuthentication();
+    it('should allow authorized when request has no error and has userctx', () => {
       testReq.authorized = true;
       testReq.userCtx = { };
-      fn(testReq, testRes, next);
+      middleware.handleAuthErrors(testReq, testRes, next);
       next.callCount.should.equal(1);
       serverUtils.error.callCount.should.equal(0);
     });
 
-    it('should allow not authorized when no param is passed and request has no auth error', () => {
-      const fn = middleware.handleAuthentication();
+    it('should allow non-authorized when request has no auth error', () => {
       testReq.authorized = false;
       testReq.userCtx = {};
-      fn(testReq, testRes, next);
+      middleware.handleAuthErrors(testReq, testRes, next);
+      next.callCount.should.equal(1);
+      serverUtils.error.callCount.should.equal(0);
+    });
+
+    it('should write the auth error', () => {
+      testReq.authErr = { some: 'error' };
+      middleware.handleAuthErrors(testReq, testRes, next);
+      next.callCount.should.equal(0);
+      serverUtils.error.callCount.should.equal(1);
+      serverUtils.error.args[0].should.deep.equal([{ some: 'error' }, testReq, testRes]);
+    });
+
+    it('should error when no authErr and no userCtx', () => {
+      middleware.handleAuthErrors(testReq, testRes, next);
+      next.callCount.should.equal(0);
+      serverUtils.error.callCount.should.equal(1);
+      serverUtils.error.args[0].should.deep.equal(['Authentication error', testReq, testRes]);
+    });
+  });
+
+  describe('handleAuthErrorsAllowingAuthorized', () => {
+    it('should allow authorized', () => {
+      testReq.authorized = true;
+      middleware.handleAuthErrorsAllowingAuthorized(testReq, testRes, next);
+      next.callCount.should.equal(1);
+      serverUtils.error.callCount.should.equal(0);
+    });
+
+    it('should allow non-authorized when the request has no error', () => {
+      testReq.authorized = false;
+      testReq.userCtx = { };
+      middleware.handleAuthErrorsAllowingAuthorized(testReq, testRes, next);
       next.callCount.should.equal(1);
       serverUtils.error.callCount.should.equal(0);
     });
 
     it('should write the auth error when not authorized', () => {
-      const fn = middleware.handleAuthentication();
       testReq.authErr = { some: 'error' };
-      fn(testReq, testRes, next);
+      middleware.handleAuthErrorsAllowingAuthorized(testReq, testRes, next);
       next.callCount.should.equal(0);
       serverUtils.error.callCount.should.equal(1);
       serverUtils.error.args[0].should.deep.equal([{ some: 'error' }, testReq, testRes]);
     });
 
     it('should allow authorized when param is passed even with auth error', () => {
-      const fn = middleware.handleAuthentication(true);
       testReq.authorized = true;
       testReq.authErr = { some: 'error' };
-      fn(testReq, testRes, next);
+      middleware.handleAuthErrorsAllowingAuthorized(testReq, testRes, next);
       next.callCount.should.equal(1);
       serverUtils.error.callCount.should.equal(0);
     });
 
     it('should error when no authErr and no userCtx', () => {
-      const fn = middleware.handleAuthentication();
-      fn(testReq, testRes, next);
+      middleware.handleAuthErrorsAllowingAuthorized(testReq, testRes, next);
       next.callCount.should.equal(0);
       serverUtils.error.callCount.should.equal(1);
       serverUtils.error.args[0].should.deep.equal(['Authentication error', testReq, testRes]);

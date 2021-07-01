@@ -31,22 +31,24 @@ module.exports = {
       .then(next);
   },
 
-  handleAuthentication: (allowAuthorized) => {
-    return (req, res, next) => {
-      if (allowAuthorized && req.authorized) {
-        return next();
-      }
+  handleAuthErrors: (req, res, next) => {
+    if (req.authErr) {
+      return serverUtils.error(req.authErr, req, res);
+    }
 
-      if (req.authErr) {
-        return serverUtils.error(req.authErr, req, res);
-      }
+    if (!req.userCtx) {
+      return serverUtils.error('Authentication error', req, res);
+    }
 
-      if (!req.userCtx) {
-        return serverUtils.error('Authentication error', req, res);
-      }
+    next();
+  },
 
-      next();
-    };
+  handleAuthErrorsAllowingAuthorized: (req, res, next) => {
+    if (req.authorized) {
+      return next();
+    }
+
+    return module.exports.handleAuthErrors(req, res, next);
   },
 
   // blocks offline users not-authorized requests
