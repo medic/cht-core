@@ -72,6 +72,8 @@ module.exports = {
    * an authentication error.
    */
   notLoggedIn: (req, res, showPrompt) => {
+    res.setHeader('Authorization', 'CHT-Core');
+
     if (showPrompt) {
       // api access - basic auth allowed
       promptForBasicAuth(res);

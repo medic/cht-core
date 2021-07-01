@@ -265,7 +265,7 @@ const ONLINE_ONLY_ENDPOINTS = [
 
 // block offline users from accessing some unaudited CouchDB endpoints
 ONLINE_ONLY_ENDPOINTS.forEach(url =>
-  app.all(routePrefix + url, authorization.offlineUserFirewall)
+  app.all(routePrefix + url, authorization.handleAuthentication(), authorization.offlineUserFirewall)
 );
 
 // allow anyone to access their session
@@ -431,12 +431,36 @@ app.postJson('/api/v1/people', function(req, res) {
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
 
 // offline users are not allowed to hydrate documents via the hydrate API
-app.get('/api/v1/hydrate', authorization.offlineUserFirewall, jsonQueryParser, hydration.hydrate);
-app.post('/api/v1/hydrate', authorization.offlineUserFirewall, jsonParser, jsonQueryParser, hydration.hydrate);
+app.get(
+  '/api/v1/hydrate',
+  authorization.handleAuthentication(),
+  authorization.offlineUserFirewall,
+  jsonQueryParser,
+  hydration.hydrate
+);
+app.post(
+  '/api/v1/hydrate',
+  authorization.handleAuthentication(),
+  authorization.offlineUserFirewall,
+  jsonParser,
+  jsonQueryParser,
+  hydration.hydrate
+);
 
 // offline users are not allowed to get contacts by phone
-app.get('/api/v1/contacts-by-phone', authorization.offlineUserFirewall, contactsByPhone.request);
-app.post('/api/v1/contacts-by-phone', authorization.offlineUserFirewall, jsonParser, contactsByPhone.request);
+app.get(
+  '/api/v1/contacts-by-phone',
+  authorization.handleAuthentication(),
+  authorization.offlineUserFirewall,
+  contactsByPhone.request
+);
+app.post(
+  '/api/v1/contacts-by-phone',
+  authorization.handleAuthentication(),
+  authorization.offlineUserFirewall,
+  jsonParser,
+  contactsByPhone.request
+);
 
 app.get(`${appPrefix}app_settings/${environment.ddoc}/:path?`, settings.getV0); // deprecated
 app.get('/api/v1/settings', settings.get);
@@ -447,9 +471,24 @@ app.putJson('/api/v1/settings', settings.put);
 
 app.get('/api/couch-config-attachments', couchConfigController.getAttachments);
 
-app.get('/purging', authorization.onlineUserPassThrough, purgedDocsController.info);
-app.get('/purging/changes', authorization.onlineUserPassThrough, purgedDocsController.getPurgedDocs);
-app.get('/purging/checkpoint', authorization.onlineUserPassThrough, purgedDocsController.checkpoint);
+app.get(
+  '/purging',
+  authorization.handleAuthentication(),
+  authorization.onlineUserPassThrough,
+  purgedDocsController.info
+);
+app.get(
+  '/purging/changes',
+  authorization.handleAuthentication(),
+  authorization.onlineUserPassThrough,
+  purgedDocsController.getPurgedDocs
+);
+app.get(
+  '/purging/checkpoint',
+  authorization.handleAuthentication(),
+  authorization.onlineUserPassThrough,
+  purgedDocsController.checkpoint
+);
 
 app.get('/api/v1/users-doc-count', replicationLimitLogController.get);
 
@@ -467,11 +506,13 @@ const changesPath = routePrefix + '_changes(/*)?';
 
 app.get(
   changesPath,
+  authorization.handleAuthentication(),
   onlineUserChangesProxy,
   changesHandler
 );
 app.post(
   changesPath,
+  authorization.handleAuthentication(),
   onlineUserChangesProxy,
   jsonParser,
   changesHandler
@@ -481,9 +522,16 @@ app.post(
 const allDocsHandler = require('./controllers/all-docs').request;
 const allDocsPath = routePrefix + '_all_docs(/*)?';
 
-app.get(allDocsPath, onlineUserProxy, jsonQueryParser, allDocsHandler);
+app.get(
+  allDocsPath,
+  authorization.handleAuthentication(),
+  onlineUserProxy,
+  jsonQueryParser,
+  allDocsHandler
+);
 app.post(
   allDocsPath,
+  authorization.handleAuthentication(),
   onlineUserProxy,
   jsonParser,
   jsonQueryParser,
@@ -494,6 +542,7 @@ app.post(
 const bulkGetHandler = require('./controllers/bulk-get').request;
 app.post(
   routePrefix + '_bulk_get(/*)?',
+  authorization.handleAuthentication(),
   onlineUserProxy,
   jsonParser,
   jsonQueryParser,
@@ -506,6 +555,7 @@ app.post(
   routePrefix + '_bulk_docs(/*)?',
   jsonParser,
   infodoc.mark,
+  authorization.handleAuthentication(),
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonQueryParser,
   bulkDocs.request,
@@ -521,6 +571,7 @@ const ddocPath = routePrefix + '_design/+:ddocId*';
 
 app.get(
   ddocPath,
+  authorization.handleAuthentication(),
   onlineUserProxy,
   jsonQueryParser,
   _.partial(dbDocHandler.requestDdoc, environment.ddoc),
@@ -529,6 +580,7 @@ app.get(
 
 app.get(
   docPath,
+  authorization.handleAuthentication(),
   onlineUserProxy, // online user GET requests are proxied directly to CouchDB
   jsonQueryParser,
   dbDocHandler.request
@@ -537,6 +589,7 @@ app.post(
   `/+${environment.db}/?`,
   jsonParser,
   infodoc.mark,
+  authorization.handleAuthentication(),
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonQueryParser,
   dbDocHandler.request,
@@ -546,6 +599,7 @@ app.put(
   docPath,
   jsonParser,
   infodoc.mark,
+  authorization.handleAuthentication(),
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
   jsonQueryParser,
   dbDocHandler.request,
@@ -553,6 +607,7 @@ app.put(
 );
 app.delete(
   docPath,
+  authorization.handleAuthentication(),
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
   jsonQueryParser,
   dbDocHandler.request,
@@ -560,6 +615,7 @@ app.delete(
 );
 app.all(
   attachmentPath,
+  authorization.handleAuthentication(),
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonQueryParser,
   dbDocHandler.request,
@@ -700,6 +756,7 @@ app.all(appPrefix + '*', authorization.setAuthorized);
 // block offline users requests from accessing CouchDB directly, via Proxy
 // requests which are authorized (fe: by BulkDocsHandler or DbDocHandler) can pass through
 // unauthenticated requests will be redirected to login or given a meaningful error
+app.use(authorization.handleAuthentication(true));
 app.use(authorization.offlineUserFirewall);
 
 const canEdit = function(req, res) {
@@ -742,8 +799,18 @@ proxyForAuth.on('proxyReq', function(proxyReq, req) {
   writeParsedBody(proxyReq, req);
 });
 
+proxy.on('proxyRes', (proxyRes, req, res) => {
+  if (proxyRes.statusCode === 401) {
+    serverUtils.notLoggedIn(req, res);
+  }
+});
+
 // intercept responses from filtered offline endpoints to fill in with forbidden docs stubs
 proxyForAuth.on('proxyRes', (proxyRes, req, res) => {
+  if (proxyRes.statusCode === 401) {
+    return serverUtils.notLoggedIn(req, res);
+  }
+
   copyProxyHeaders(proxyRes, res);
 
   if (res.interceptResponse) {
