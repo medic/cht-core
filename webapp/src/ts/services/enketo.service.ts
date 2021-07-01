@@ -24,7 +24,6 @@ import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 @Injectable({
   providedIn: 'root'
@@ -51,7 +50,6 @@ export class EnketoService {
     private transitionsService:TransitionsService,
     private translateService:TranslateService,
     private ngZone:NgZone,
-    private translateHelperService:TranslateHelperService,
   ) {
     this.inited = this.init();
     this.servicesActions = new ServicesActions(this.store);
@@ -311,7 +309,7 @@ export class EnketoService {
       const $title = wrapper.find('#form-title');
       if (titleKey) {
         // using translation key - overwrite contents
-        this.translateHelperService
+        this.translateService
           .get(titleKey)
           .then(title => $title.text(title));
       } else if (doc.title) {
