@@ -146,7 +146,7 @@ describe('Server utils', () => {
       chai.expect(redirect.args[0][0]).to.equal(302);
       chai.expect(redirect.args[0][1]).to.equal('/medic/login?redirect=someurl');
       chai.expect(res.setHeader.callCount).to.equal(1);
-      chai.expect(res.setHeader.args[0]).to.deep.equal(['Authorization', 'CHT-Core']);
+      chai.expect(res.setHeader.args[0]).to.deep.equal(['logout-authorization', 'CHT-Core API']);
     });
 
     it('returns 401 for medic-collect', () => {
@@ -159,7 +159,7 @@ describe('Server utils', () => {
       chai.expect(writeHead.args[0][0]).to.equal(401);
 
       chai.expect(res.setHeader.callCount).to.equal(1);
-      chai.expect(res.setHeader.args[0]).to.deep.equal(['Authorization', 'CHT-Core']);
+      chai.expect(res.setHeader.args[0]).to.deep.equal(['logout-authorization', 'CHT-Core API']);
     });
 
     it('shows prompt if requested', () => {
@@ -175,7 +175,7 @@ describe('Server utils', () => {
       chai.expect(end.args[0][0]).to.equal('not logged in');
 
       chai.expect(res.setHeader.callCount).to.equal(1);
-      chai.expect(res.setHeader.args[0]).to.deep.equal(['Authorization', 'CHT-Core']);
+      chai.expect(res.setHeader.args[0]).to.deep.equal(['logout-authorization', 'CHT-Core API']);
     });
 
     it('responds with JSON if requested', () => {
@@ -194,7 +194,7 @@ describe('Server utils', () => {
       chai.expect(json.args[0][0].code).to.equal(401);
 
       chai.expect(res.setHeader.callCount).to.equal(1);
-      chai.expect(res.setHeader.args[0]).to.deep.equal(['Authorization', 'CHT-Core']);
+      chai.expect(res.setHeader.args[0]).to.deep.equal(['logout-authorization', 'CHT-Core API']);
     });
 
   });

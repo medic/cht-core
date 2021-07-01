@@ -204,7 +204,7 @@ describe('routing', () => {
       ]).then(results => {
         results.forEach(result => {
           expect(result.statusCode).toEqual(401);
-          expect(result.response.headers['authorization']).toEqual('CHT-Core');
+          expect(result.response.headers['logout-authorization']).toEqual('CHT-Core API');
           expect(result.responseBody.error).toEqual('unauthorized');
         });
       });
