@@ -33,7 +33,6 @@
     if (!rdToolkitService.enabled()) {
       window.CHTCore.Translate
         .get('rdtoolkit.disabled')
-        .toPromise()
         .then(label => $widget.append(`<label>${label}</label>`));
       return;
     }
@@ -76,7 +75,6 @@
   function displayActions($widget) {
     window.CHTCore.Translate
       .get('rdtoolkit-provision.title')
-      .toPromise()
       .then(label => {
         $widget
           .append(`
