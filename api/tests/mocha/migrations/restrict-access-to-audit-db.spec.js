@@ -48,7 +48,9 @@ describe('restrict-access-to-audit-db', () => {
     const putStub = sinon.stub(request, 'put').resolves(Promise.reject('Some Error'));
     const message = 'Failed to add member to audit db."Some Error"';
 
-    return migration.run()
+    return migration
+      .run()
+      .then(() => chai.assert.fail('should have thrown'))
       .catch((error) => {
         chai.expect(putStub.callCount).to.equal(1);
         chai.expect(error.message).to.equal(message);

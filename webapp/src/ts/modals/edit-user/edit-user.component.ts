@@ -2,6 +2,7 @@ import { BsModalRef } from 'ngx-bootstrap/modal';
 
 import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { LanguageService } from '@mm-services/language.service';
 
 export abstract class EditUserAbstract extends MmModalAbstract {
   editUserModel;
@@ -9,6 +10,7 @@ export abstract class EditUserAbstract extends MmModalAbstract {
   constructor(
     bsModalRef: BsModalRef,
     private userSettingsService: UserSettingsService,
+    private languageService: LanguageService,
   ) {
     super(bsModalRef);
   }
@@ -22,8 +24,12 @@ export abstract class EditUserAbstract extends MmModalAbstract {
   }
 
   determineEditUserModel(): Promise<any> {
-    return this.userSettingsService.get()
-      .then((user: any) => {
+    return Promise
+      .all<any, any>([
+        this.userSettingsService.get(),
+        this.languageService.get()
+      ])
+      .then(([ user, language ]) => {
         if (user) {
           return {
             id: user._id,
@@ -31,7 +37,7 @@ export abstract class EditUserAbstract extends MmModalAbstract {
             fullname: user.fullname,
             email: user.email,
             phone: user.phone,
-            language: { code: user.language }
+            language: { code: language }
           };
         } else {
           return {};

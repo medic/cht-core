@@ -12,7 +12,6 @@ import { ContactsActions } from '@mm-actions/contacts';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
-import { TranslateService } from '@ngx-translate/core';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted.component';
@@ -22,6 +21,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { SessionService } from '@mm-services/session.service';
+import { TranslateService } from '@mm-services/translate.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 

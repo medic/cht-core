@@ -1,7 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import * as moment from 'moment';
 import { isString as _isString } from 'lodash-es';
-import { TranslateService } from '@ngx-translate/core';
 
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { DbService } from '@mm-services/db.service';
@@ -13,6 +12,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Injectable({
   providedIn: 'root'
@@ -167,8 +167,8 @@ export class TargetAggregatesService {
     aggregate.aggregateValue.hasGoal = aggregate.hasGoal;
 
     if (aggregate.hasGoal) {
-      const summary = this.translateService.instant('analytics.target.aggregates.ratio', aggregate.aggregateValue);
-      aggregate.aggregateValue.summary = summary;
+      const translationKey = 'analytics.target.aggregates.ratio';
+      aggregate.aggregateValue.summary = this.translateService.instant(translationKey, aggregate.aggregateValue);
     } else {
       aggregate.aggregateValue.summary = aggregate.isPercent ?
         `${aggregate.aggregateValue.percent}%` : aggregate.aggregateValue.pass;

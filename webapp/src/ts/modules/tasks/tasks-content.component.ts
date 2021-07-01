@@ -2,7 +2,6 @@ import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subject, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateService } from '@ngx-translate/core';
 
 import { EnketoService } from '@mm-services/enketo.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
@@ -13,6 +12,7 @@ import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { DbService } from '@mm-services/db.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Component({
   templateUrl: './tasks-content.component.html'

@@ -5,6 +5,7 @@ import { PipesService } from '@mm-services/pipes.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { UHCStatsService } from '@mm-services/uhc-stats.service';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 /**
  * Service for generating summary information based on a given
@@ -26,7 +27,8 @@ export class ContactSummaryService {
     private feedbackService:FeedbackService,
     private ngZone:NgZone,
     private uhcSettingsService:UHCSettingsService,
-    private uhcStatsService:UHCStatsService
+    private uhcStatsService:UHCStatsService,
+    private chtScriptApiService:CHTScriptApiService
   ) { }
 
   private getGeneratorFunction() {
@@ -36,7 +38,15 @@ export class ContactSummaryService {
       if (!script) {
         this.generatorFunction = function() {};
       } else {
-        this.generatorFunction = new Function('contact', 'reports', 'lineage', 'uhcStats', 'targetDoc', script);
+        this.generatorFunction = new Function(
+          'contact',
+          'reports',
+          'lineage',
+          'uhcStats',
+          'cht',
+          'targetDoc',
+          script
+        );
       }
     }
 
@@ -89,8 +99,10 @@ export class ContactSummaryService {
       uhcInterval: this.uhcStatsService.getUHCInterval(this.visitCountSettings)
     };
 
+    const chtScriptApi = await this.chtScriptApiService.getApi();
+
     try {
-      const summary = generatorFunction(contact, reports || [], lineage || [], uhcStats, targetDoc);
+      const summary = generatorFunction(contact, reports || [], lineage || [], uhcStats, chtScriptApi, targetDoc);
       return this.applyFilters(summary);
     } catch (error) {
       console.error('Configuration error in contact-summary function: ' + error);

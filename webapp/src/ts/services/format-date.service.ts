@@ -1,9 +1,9 @@
 import * as moment from 'moment';
 import { Injectable } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
 import { RelativeTimeKey } from 'moment';
 
 import { SettingsService } from '@mm-services/settings.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +16,8 @@ export class FormatDateService {
   }
 
   init() {
-    this.settingsService.get()
+    this.settingsService
+      .get()
       .then((res:any) => {
         this.config.date = res.date_format;
         this.config.datetime = res.reported_date_format;

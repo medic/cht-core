@@ -2,7 +2,6 @@ import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/ro
 import * as moment from 'moment';
 import { Component, NgZone, OnInit, HostListener } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
 import { combineLatest } from 'rxjs';
 
@@ -41,6 +40,8 @@ import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-m
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TransitionsService } from '@mm-services/transitions.service';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -120,6 +121,7 @@ export class AppComponent implements OnInit {
     private telemetryService:TelemetryService,
     private transitionsService:TransitionsService,
     private ngZone:NgZone,
+    private chtScriptApiService: CHTScriptApiService
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -259,6 +261,7 @@ export class AppComponent implements OnInit {
     // initialisation tasks that can occur after the UI has been rendered
     this.setupPromise = this.sessionService
       .init()
+      .then(() => this.chtScriptApiService.isInitialized())
       .then(() => this.checkPrivacyPolicy())
       .then(() => this.initRulesEngine())
       .then(() => this.initTransitions())

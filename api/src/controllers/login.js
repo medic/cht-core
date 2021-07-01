@@ -158,13 +158,6 @@ const setUserCtxCookie = (res, userCtx) => {
   cookie.setUserCtx(res, JSON.stringify(content));
 };
 
-const updateUserLanguageIfRequired = (user, current, selected) => {
-  if (current === selected) {
-    return Promise.resolve();
-  }
-  return users.updateUser(user, { language: selected });
-};
-
 const setCookies = (req, res, sessionRes) => {
   const sessionCookie = getSessionCookie(sessionRes);
   if (!sessionCookie) {
@@ -178,22 +171,19 @@ const setCookies = (req, res, sessionRes) => {
       setUserCtxCookie(res, userCtx);
       // Delete login=force cookie
       res.clearCookie('login');
-      return auth
-        .getUserSettings(userCtx)
-        .catch(err => {
-          if (err.status === 404 && auth.isDbAdmin(userCtx)) {
-            return users.createAdmin(userCtx).then(() => auth.getUserSettings(userCtx));
-          }
-          throw err;
+
+      return Promise.resolve()
+        .then(() => {
+          if (auth.isDbAdmin(userCtx)) {
+            return users.createAdmin(userCtx);
+          }      
         })
-        .then(({ language }={}) => {
+        .then(() => {
           const selectedLocale = req.body.locale
-            || language
             || config.get('locale');
           cookie.setLocale(res, selectedLocale);
-          return updateUserLanguageIfRequired(req.body.user, language, selectedLocale);
-        })
-        .then(() => getRedirectUrl(userCtx, req.body.redirect));
+          return getRedirectUrl(userCtx, req.body.redirect);
+        });
     })
     .catch(err => {
       logger.error(`Error getting authCtx %o`, err);
@@ -274,7 +264,7 @@ const loginByToken = (req, res) => {
       }
 
       return tokenLogin.resetPassword(userId).then(({ user, password }) => {
-        req.body = { user, password };
+        req.body = { user, password, locale: req.body.locale };
 
         return createSessionRetry(req)
           .then(sessionRes => setCookies(req, res, sessionRes))

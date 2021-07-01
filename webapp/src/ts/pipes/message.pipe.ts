@@ -1,9 +1,9 @@
 import { Injectable, Pipe, PipeTransform } from '@angular/core';
 import * as _ from 'lodash-es';
-import { TranslateService } from '@ngx-translate/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
 import { FormatProvider } from '@mm-providers/format.provider';
+import { TranslateService } from '@mm-services/translate.service';
 
 const getFormName = (record, forms) => {
   const form = _.find(forms, { code: record.form });
@@ -78,7 +78,6 @@ export class TitlePipe implements PipeTransform {
 })
 export class ClinicPipe implements PipeTransform {
   constructor(
-    private translateService:TranslateService,
     private formatProvider:FormatProvider,
   ) {}
 
@@ -96,7 +95,6 @@ export class ClinicPipe implements PipeTransform {
 })
 export class LineagePipe implements PipeTransform {
   constructor(
-    private translateService:TranslateService,
     private formatProvider:FormatProvider,
     private sanitizer:DomSanitizer,
   ) {}

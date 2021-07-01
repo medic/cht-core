@@ -34,7 +34,6 @@ const RESTRICTED_SETTINGS_EDITABLE_FIELDS = [
   'fullname',
   'email',
   'phone',
-  'language',
   'known',
 ];
 
@@ -48,11 +47,14 @@ const SETTINGS_EDITABLE_FIELDS = RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat([
 
 const META_FIELDS = ['token_login'];
 
+// No longer used, but allowed for backwards compatibility
+const LEGACY_FIELDS = ['language'];
+
 const ALLOWED_RESTRICTED_EDITABLE_FIELDS =
   RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat(RESTRICTED_USER_EDITABLE_FIELDS, META_FIELDS);
 
 const illegalDataModificationAttempts = data =>
-  Object.keys(data).filter(k => !ALLOWED_RESTRICTED_EDITABLE_FIELDS.includes(k));
+  Object.keys(data).filter(k => !ALLOWED_RESTRICTED_EDITABLE_FIELDS.concat(LEGACY_FIELDS).includes(k));
 
 /*
  * Set error codes to 400 to minimize 500 errors and stacktraces in the logs.
@@ -306,7 +308,6 @@ const mapUsers = (users, settings, facilities) => {
         phone: setting.phone,
         place: getDoc(user.doc.facility_id, facilities),
         type: getType(user.doc),
-        language: { code: setting.language },
         contact: getDoc(setting.contact_id, facilities),
         external_id: setting.external_id,
         known: user.doc.known
@@ -349,9 +350,6 @@ const getSettingsUpdates = (username, data) => {
   }
   if (data.contact) {
     settings.contact_id = getDocID(data.contact);
-  }
-  if (data.language && data.language.code) {
-    settings.language = data.language.code;
   }
 
   return settings;
@@ -516,12 +514,19 @@ module.exports = {
 
   /*
   * Take the userCtx of an admin user and create the _user doc and user-settings doc
+  * if they do not already exist.
   */
   createAdmin: userCtx => {
-    const data = { username: userCtx.name, roles: ['admin'] };
-    return validateNewUsername(userCtx.name)
-      .then(() => createUser(data, {}))
-      .then(() => createUserSettings(data, {}));
+    return validateUser(createID(userCtx.name))
+      .catch(err => {
+        if (err && err.status === 404) {
+          const data = { username: userCtx.name, roles: ['admin'] };
+          return validateNewUsername(userCtx.name)
+            .then(() => createUser(data, {}))
+            .then(() => createUserSettings(data, {}));
+        }
+        return Promise.reject(err);
+      });
   },
 
   /**
@@ -552,7 +557,7 @@ module.exports = {
       }
     }
 
-    const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS, META_FIELDS));
+    const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS, META_FIELDS, LEGACY_FIELDS));
 
     // Online users can remove place or contact
     if (!_.isNull(data.place) &&
