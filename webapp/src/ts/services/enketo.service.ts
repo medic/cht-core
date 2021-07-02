@@ -298,39 +298,52 @@ export class EnketoService {
     const formContainer = wrapper.find('.container').first();
     formContainer.html(doc.html);
 
-    return this.getEnketoOptions(doc, instanceData).then((options) => {
-      this.currentForm = new window.EnketoForm(wrapper.find('form').first(), options);
-      const loadErrors = this.currentForm.init();
-      if (loadErrors && loadErrors.length) {
-        return Promise.reject(new Error(JSON.stringify(loadErrors)));
-      }
-      // manually translate the title as enketo-core doesn't have any way to do this
-      // https://github.com/enketo/enketo-core/issues/405
-      const $title = wrapper.find('#form-title');
-      if (titleKey) {
-        // using translation key - overwrite contents
-        this.translateService
-          .get(titleKey)
-          .then(title => $title.text(title));
-      } else if (doc.title) {
-        // title defined in the doc - overwrite contents
-        $title.text(this.translateFromService.get(doc.title));
-      } else if ($title.text() === 'No Title') {
-        // useless enketo default - remove it
-        $title.remove();
-      } // else the title is hardcoded in the form definition - leave it alone
-      wrapper.show();
+    return this.getEnketoOptions(doc, instanceData)
+      .then((options) => {
+        this.currentForm = new window.EnketoForm(wrapper.find('form').first(), options);
+        const loadErrors = this.currentForm.init();
+        if (loadErrors && loadErrors.length) {
+          return Promise.reject(new Error(JSON.stringify(loadErrors)));
+        }
+      })
+      .then(() => this.getFormTitle({ titleKey, doc }))
+      .then((title) => {
+        this.setFormTitle({ wrapper, title });
+        wrapper.show();
 
-      wrapper.find('input').on('keydown', this.handleKeypressOnInputField);
+        wrapper.find('input').on('keydown', this.handleKeypressOnInputField);
 
-      // handle page turning using browser history
-      window.history.replaceState({ enketo_page_number: 0 }, '');
-      this.overrideNavigationButtons(this.currentForm, wrapper);
-      this.addPopStateHandler(this.currentForm, wrapper);
-      this.forceRecalculate(this.currentForm);
+        // handle page turning using browser history
+        window.history.replaceState({ enketo_page_number: 0 }, '');
+        this.overrideNavigationButtons(this.currentForm, wrapper);
+        this.addPopStateHandler(this.currentForm, wrapper);
+        this.forceRecalculate(this.currentForm);
 
-      return this.currentForm;
-    });
+        return this.currentForm;
+      });
+  }
+
+  private getFormTitle({ titleKey, doc }) {
+    if (titleKey) {
+      // using translation key
+      return this.translateService.get(titleKey);
+    } else if (doc.title) {
+      // title defined in the doc
+      return Promise.resolve(this.translateFromService.get(doc.title));
+    }
+  }
+
+  private setFormTitle({ wrapper, title }) {
+    // manually translate the title as enketo-core doesn't have any way to do this
+    // https://github.com/enketo/enketo-core/issues/405
+    const $title = wrapper.find('#form-title');
+    if ($title.text() === 'No Title') {
+      // useless enketo default - remove it
+      $title.remove();
+    } else if (title) {
+      // overwrite contents
+      $title.text(title);
+    } // else the title is hardcoded in the form definition - leave it alone
   }
 
   private overrideNavigationButtons(form, $wrapper) {

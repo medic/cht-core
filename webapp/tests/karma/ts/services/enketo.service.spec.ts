@@ -3,7 +3,6 @@ import sinon from 'sinon';
 import { expect, assert } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import * as _ from 'lodash-es';
-import { TranslateService } from '@ngx-translate/core';
 
 import { DbService } from '@mm-services/db.service';
 import { Form2smsService } from '@mm-services/form2sms.service';
@@ -23,6 +22,7 @@ import { EnketoService } from '@mm-services/enketo.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TransitionsService } from '@mm-services/transitions.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -127,6 +127,7 @@ describe('Enketo service', () => {
         },
         { provide: ZScoreService, useValue: { getScoreUtil: sinon.stub().resolves(sinon.stub())} },
         { provide: TransitionsService, useValue: transitionsService },
+        { provide: TranslateService, useValue: { get: sinon.stub().callsFake((key) => `translated key ${key}`) } },
       ],
     });
 
@@ -1470,4 +1471,52 @@ describe('Enketo service', () => {
     });
   });
 
+  describe('renderContactForm', () => {
+    beforeEach(() => {
+      service.setFormTitle = sinon.stub();
+      dbGetAttachment.resolves('<form/>');
+    });
+
+    const noop = () => {};
+    const instanceData = {
+      health_center: {
+        type: 'contact',
+        contact_type: 'health_center',
+        parent: 'parent',
+      },
+    };
+    const formDoc = {
+      ...mockEnketoDoc('myform'),
+      title: 'New Area',
+    };
+
+    it('translate titleKey when provided', async () => {
+      await service.renderContactForm({
+        selector: $('<div></div>'),
+        formDoc,
+        instanceData,
+        editedListener: noop,
+        valuechangeListener: noop,
+        titleKey: 'contact.type.health_center.new',
+      });
+
+      expect(service.setFormTitle.callCount).to.be.equal(1);
+      expect(service.setFormTitle.args[0][0]).to.deep.include({
+        title: 'translated key contact.type.health_center.new',
+      });
+    });
+
+    it('fallback to translate document title when titleKey is not available', async () => {
+      await service.renderContactForm({
+        selector: $('<div></div>'),
+        formDoc,
+        instanceData,
+        editedListener: noop,
+        valuechangeListener: noop,
+      });
+
+      expect(service.setFormTitle.callCount).to.be.equal(1);
+      expect(service.setFormTitle.args[0][0]).to.deep.include({ title: 'translated' });
+    });
+  });
 });
