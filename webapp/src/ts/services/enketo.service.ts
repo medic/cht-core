@@ -337,12 +337,12 @@ export class EnketoService {
     // manually translate the title as enketo-core doesn't have any way to do this
     // https://github.com/enketo/enketo-core/issues/405
     const $title = wrapper.find('#form-title');
-    if ($title.text() === 'No Title') {
-      // useless enketo default - remove it
-      $title.remove();
-    } else if (title) {
+    if (title) {
       // overwrite contents
       $title.text(title);
+    } else if ($title.text() === 'No Title') {
+      // useless enketo default - remove it
+      $title.remove();
     } // else the title is hardcoded in the form definition - leave it alone
   }
 
