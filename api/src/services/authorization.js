@@ -467,7 +467,7 @@ const getDocsByReplicationKey = (authorizationContext) => {
 
     const docsByReplicationKey = [];
 
-    results.rows.map(row => {
+    results.rows.forEach(row => {
       const { key: subject, value: { submitter, private } = {} } = row;
       const allowedSubmitter = () => sortedIncludes(sortedSubjects, submitter);
       if (isSensitive(authorizationContext.userCtx, subject, submitter, private, allowedSubmitter)) {
@@ -502,14 +502,13 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTombstones 
     }
 
     if (tombstoneUtils.isTombstoneId(row.id)) {
-      tombstoneIds.push(row.id);
-      return;
+      return includeTombstones && tombstoneIds.push(row.id);
     }
 
     validatedIds.push(row.id);
   });
 
-  if (includeTombstones && tombstoneIds.length) {
+  if (tombstoneIds.length) {
     // only include tombstones if the winning rev of the document is deleted
     // if a doc appears in the view results, it means that the winning rev is not deleted
     const sortedValidatedIds = prepareForSortedSearch(validatedIds);
