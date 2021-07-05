@@ -182,7 +182,7 @@ module.exports = {
 
   deleteContactByName: async (contactName) => {
     await module.exports.selectContactByName(contactName);
-    await deleteContact.click();
+    await helper.clickElementNative(deleteContact);
   },
 
   getReportsFilters: () => element.all(by.css('.card.reports .table-filter a')),

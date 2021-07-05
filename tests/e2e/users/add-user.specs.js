@@ -16,7 +16,7 @@ describe('Add user  : ', () => {
 
     afterEach(async () => {
       await utils.deleteUsers([{ username: addedUser }]);
-      await utils.revertDb();
+      await utils.revertDb([], true);
     });
 
     it('should add user with valid password', async () => {

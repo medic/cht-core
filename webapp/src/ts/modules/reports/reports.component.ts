@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
-import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
@@ -21,6 +20,7 @@ import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 const PAGE_SIZE = 50;
 

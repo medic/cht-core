@@ -3,6 +3,7 @@ const auth = require('../../auth')();
 const request = require('request');
 const constants = require('../../constants');
 const _ = require('lodash');
+const {expect} = require('chai');
 
 describe('server', () => {
   describe('JSON-only endpoints', () => {
@@ -14,16 +15,14 @@ describe('server', () => {
       };
 
       return utils.requestOnTestDb(opts, true)
-        .then(fail)
+        .then(() => expect.fail('should have thrown'))
         .catch(e => {
-          expect(e.responseBody).toBe('Content-Type must be application/json');
+          expect(e.responseBody).to.equal('Content-Type must be application/json');
         });
     });
   });
 
   describe('response compression', () => {
-    afterAll(utils.afterEach);
-
     const requestWrapper = (options) => {
       _.defaults(options, {
         auth: Object.assign({ sendImmediately: true }, auth),
@@ -56,8 +55,8 @@ describe('server', () => {
       const options = { uri: '/_all_docs' };
 
       return requestWrapper(options).then(({res}) => {
-        expect(res.headers['content-encoding']).toEqual('gzip');
-        expect(res.headers['content-type']).toEqual('application/json');
+        expect(res.headers['content-encoding']).to.equal('gzip');
+        expect(res.headers['content-type']).to.equal('application/json');
       });
     });
 
@@ -65,8 +64,8 @@ describe('server', () => {
       const options = { uri: '/_all_docs', gzip: false, headers: { 'Accept-Encoding': 'deflate' } };
 
       return requestWrapper(options).then(({res}) => {
-        expect(res.headers['content-encoding']).toEqual('deflate');
-        expect(res.headers['content-type']).toEqual('application/json');
+        expect(res.headers['content-encoding']).to.equal('deflate');
+        expect(res.headers['content-type']).to.equal('application/json');
       });
     });
 
@@ -74,8 +73,8 @@ describe('server', () => {
       const options = { uri: '/_all_docs', gzip: false };
 
       return requestWrapper(options).then(({res}) => {
-        expect(res.headers['content-type']).toEqual('application/json');
-        expect(res.headers['content-encoding']).toBeFalsy();
+        expect(res.headers['content-type']).to.equal('application/json');
+        expect(res.headers['content-encoding']).to.be.undefined;
       });
     });
 
@@ -98,12 +97,12 @@ describe('server', () => {
       };
 
       return requestWrapper(options).then(({res, body}) => {
-        expect(res.headers['content-type']).toEqual('application/json');
-        expect(res.headers['content-encoding']).toEqual('gzip');
-        expect(body.length).toEqual(18);
-        expect(_.omit(body[0], 'rev')).toEqual({ id: 'sample_doc', ok: true });
-        expect(_.omit(body[1], 'rev')).toEqual({ id: 'sample_doc2', ok: true });
-        expect(_.omit(body[2], 'rev')).toEqual({ id: 'sample_doc3', ok: true });
+        expect(res.headers['content-type']).to.equal('application/json');
+        expect(res.headers['content-encoding']).to.equal('gzip');
+        expect(body.length).to.equal(18);
+        expect(_.omit(body[0], 'rev')).to.eql({ id: 'sample_doc', ok: true });
+        expect(_.omit(body[1], 'rev')).to.eql({ id: 'sample_doc2', ok: true });
+        expect(_.omit(body[2], 'rev')).to.eql({ id: 'sample_doc3', ok: true });
       });
     });
 
@@ -126,9 +125,9 @@ describe('server', () => {
           return requestWrapper(options);
         })
         .then(({res, body}) => {
-          expect(res.headers['content-type']).toEqual('text/plain');
-          expect(res.headers['content-encoding']).toEqual('gzip');
-          expect(body).toEqual('my-attachment-content');
+          expect(res.headers['content-type']).to.equal('text/plain');
+          expect(res.headers['content-encoding']).to.equal('gzip');
+          expect(body).to.equal('my-attachment-content');
         });
     });
 
@@ -154,38 +153,29 @@ describe('server', () => {
           return requestWrapper(options);
         })
         .then(({res, body}) => {
-          expect(res.headers['content-type']).toEqual('application/xml');
-          expect(res.headers['content-encoding']).toEqual('gzip');
-          expect(body).toEqual(xml);
+          expect(res.headers['content-type']).to.equal('application/xml');
+          expect(res.headers['content-encoding']).to.equal('gzip');
+          expect(body).to.equal(xml);
         });
     });
 
-    it('does not compress uncompressible CouchDB doc attachments (image/png)', () => {
+    it('does not compress uncompressible CouchDB doc attachments (image/png)', async () => {
       const png = '<contact><_id>689960f3-edc2-429b-92f7-96799b3db7d5</_id><patient_id>40599</patient_id>' +
                   '<name>Person 1.1.2.1</name><date_of_birth /><sex /><parent><contact><phone />' +
                   '<name>Person 1.1.2.1</name></contact></parent></contact>';
-      return utils
-        .getDoc('sample_doc2')
-        .then(doc => {
-          const options = {
-            uri: '/sample_doc2/attach?rev=' + doc._rev,
-            body: png,
-            headers: { 'Content-Type': 'image/png' },
-            method: 'PUT'
-          };
-
-          return requestWrapper(options);
-        })
-        .then(({body}) => {
-          const options = { uri: '/sample_doc2/attach?rev=' + body.rev};
-
-          return requestWrapper(options);
-        })
-        .then(({res, body}) => {
-          expect(res.headers['content-type']).toEqual('image/png');
-          expect(res.headers['content-encoding']).toBeFalsy();
-          expect(body).toEqual(png);
-        });
+      const doc = await utils.getDoc('sample_doc2');
+      const options = {
+        uri: '/sample_doc2/attach?rev='+doc._rev,
+        body: png,
+        headers: { 'Content-Type': 'image/png' },
+        method: 'PUT'
+      };
+      const { body } = await requestWrapper(options);
+      const getAttachmentOptions = { uri: '/sample_doc2/attach?rev=' + body.rev };
+      const { res, body: attachmentBody } = await requestWrapper(getAttachmentOptions);
+      expect(res.headers[ 'content-type' ]).to.equal('image/png');
+      expect(res.headers[ 'content-encoding' ]).to.be.undefined;
+      expect(attachmentBody).to.equal(png);
     });
   });
 });

@@ -1,9 +1,9 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
 import { from, Observable } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
 
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Component({
   selector: 'multi-dropdown-filter',

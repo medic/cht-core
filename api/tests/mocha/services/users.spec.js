@@ -75,6 +75,12 @@ describe('Users service', () => {
       chai.expect(settings.fullname).to.equal('John');
     });
 
+    it('does not reassign language', () => {
+      const data = { language: 'sw' };
+      const settings = service.__get__('getSettingsUpdates')('john', data);
+      chai.expect(settings).to.not.have.property('language');
+    });
+
     it('supports external_id field', () => {
       const data = {
         fullname: 'John',
@@ -1288,6 +1294,53 @@ describe('Users service', () => {
       });
     });
 
+    it('succeeds if only language is defined by a user with full access', () => {
+      const data = {
+        language: 'es'
+      };
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
+      const medicPut = sinon.stub(db.medic, 'put').resolves({});
+      const usersPut = sinon.stub(db.users, 'put').resolves({});
+      return service.updateUser('paul', data, true).then(() => {
+        chai.expect(medicPut.callCount).to.equal(1);
+        chai.expect(medicPut.args[0]).to.deep.equal([ {
+          'name': 'paul',
+          'type': 'user-settings',
+          '_id': 'org.couchdb.user:paul'
+        } ]);
+        chai.expect(usersPut.callCount).to.equal(1);
+        chai.expect(usersPut.args[0]).to.deep.equal([ {
+          'name': 'paul',
+          'type': 'user',
+          '_id': 'org.couchdb.user:paul'
+        } ]);
+      });
+    });
+
+    it('succeeds if only language is defined by a user without full access', () => {
+      const data = {
+        language: 'es'
+      };
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
+      const medicPut = sinon.stub(db.medic, 'put').resolves({});
+      const usersPut = sinon.stub(db.users, 'put').resolves({});
+      return service.updateUser('paul', data, false).then(() => {
+        chai.expect(medicPut.callCount).to.equal(1);
+        chai.expect(medicPut.args[0]).to.deep.equal([ {
+          'name': 'paul',
+          'type': 'user-settings',
+          '_id': 'org.couchdb.user:paul'
+        } ]);
+        chai.expect(usersPut.callCount).to.equal(1);
+        chai.expect(usersPut.args[0]).to.deep.equal([ {
+          'name': 'paul',
+          'type': 'user',
+          '_id': 'org.couchdb.user:paul'
+        } ]);
+      });
+    });
   });
 
   describe('validateNewUsername', () => {
@@ -1347,8 +1400,8 @@ describe('Users service', () => {
           chai.expect(err).to.deep.include({ code: 400 });
           chai.expect(db.medic.get.callCount).to.equal(1);
           chai.expect(db.medic.get.args[0]).to.deep.equal(['org.couchdb.user:my_user']);
-          chai.expect(db.users.get.callCount).to.equal(1);
-          chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:my_user']);
+          chai.expect(db.users.get.callCount).to.equal(2);
+          chai.expect(db.users.get.args).to.deep.equal([['org.couchdb.user:my_user'], ['org.couchdb.user:my_user']]);
         });
     });
 
@@ -1388,6 +1441,21 @@ describe('Users service', () => {
           chai.expect(db.medic.put.args[0]).to.deep.equal([
             { name: 'agatha', type: 'user-settings', roles: ['admin'], _id: 'org.couchdb.user:agatha' }
           ]);
+        });
+    });
+
+    it('should throw if validating user fails for something other than a 404', () => {
+      sinon.stub(db.users, 'get').rejects({ status: 500 });
+
+      sinon.stub(db.users, 'put');
+      sinon.stub(db.medic, 'put');
+      return service
+        .createAdmin({ name: 'agatha' })
+        .then(() => chai.expect().to.equal('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ status: 500 });
+          chai.expect(db.users.put.callCount).to.equal(0);
+          chai.expect(db.medic.put.callCount).to.equal(0);
         });
     });
 

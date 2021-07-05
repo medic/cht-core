@@ -1,5 +1,4 @@
 import { Injectable, NgZone } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
 import {
   groupBy as _groupBy,
   partial as _partial,
@@ -16,6 +15,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SearchService } from '@mm-services/search.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 /**
  * Hydrates the given contact by uuid and creates a model which

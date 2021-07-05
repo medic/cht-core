@@ -4,9 +4,8 @@ import { Actions, ofType, createEffect } from '@ngrx/effects';
 import { from, of } from 'rxjs';
 import { map, exhaustMap, filter, catchError, withLatestFrom, concatMap, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { TranslateService } from '@ngx-translate/core';
-import * as lineageFactory from '@medic/lineage';
 
+import * as lineageFactory from '@medic/lineage';
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-generator.service';
@@ -20,6 +19,7 @@ import { EditReportComponent } from '@mm-modals/edit-report/edit-report.componen
 import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.component';
 import { ServicesActions } from '@mm-actions/services';
 import { AuthService } from '@mm-services/auth.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 
 @Injectable()

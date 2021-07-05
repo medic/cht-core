@@ -12,7 +12,7 @@ import { ContactSaveService } from '@mm-services/contact-save.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { ContactsActions } from '@mm-actions/contacts';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 
 @Component({
@@ -28,7 +28,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private contactTypesService:ContactTypesService,
     private dbService:DbService,
     private contactSaveService:ContactSaveService,
-    private translateHelperService:TranslateHelperService,
+    private translateService:TranslateService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -217,7 +217,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
           .select(Selectors.getTranslationsLoaded)
           .subscribe((loaded) => {
             if (loaded) {
-              this.translateHelperService
+              this.translateService
                 .get(titleKey)
                 .then((title) => this.globalActions.setTitle(title));
             }
@@ -293,7 +293,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
             this.globalActions.setEnketoSavingStatus(false);
             this.globalActions.setEnketoEditedStatus(false);
 
-            this.translateHelperService
+            this.translateService
               .get(docId ? 'contact.updated' : 'contact.created')
               .then(snackBarContent => this.globalActions.setSnackbarContent(snackBarContent));
 
@@ -303,7 +303,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
             console.error('Error submitting form data', err);
 
             this.globalActions.setEnketoSavingStatus(false);
-            return this.translateHelperService
+            return this.translateService
               .get('Error updating contact')
               .then(error => this.globalActions.setEnketoError(error));
           });

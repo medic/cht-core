@@ -16,6 +16,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { RulesEngineCoreFactoryService, RulesEngineService } from '@mm-services/rules-engine.service';
 import { PipesService } from '@mm-services/pipes.service';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 describe('RulesEngineService', () => {
   let service: RulesEngineService;
@@ -30,6 +31,7 @@ describe('RulesEngineService', () => {
   let translateFromService;
   let rulesEngineCoreStubs;
   let pipesService;
+  let chtScriptApiService;
   let clock;
 
   let fetchTasksFor;
@@ -72,6 +74,12 @@ describe('RulesEngineService', () => {
     type: 'user-settings',
     roles: [],
   };
+  const chtScriptApi = {
+    v1: {
+      hasPermissions: sinon.stub(),
+      hasAnyPermission: sinon.stub()
+    }
+  };
   const expectedRulesConfig = {
     rules: 'rules',
     taskSchedules: ['schedules'],
@@ -81,6 +89,7 @@ describe('RulesEngineService', () => {
     contact: userContactDoc,
     user: userSettingsDoc,
     monthStartDate: 1,
+    chtScriptApi
   };
 
   beforeEach(() => {
@@ -97,6 +106,7 @@ describe('RulesEngineService', () => {
       pipesMap: new Map(),
       getPipeNameVsIsPureMap: PipesService.prototype.getPipeNameVsIsPureMap
     };
+    chtScriptApiService = { getApi: sinon.stub().returns(chtScriptApi) };
 
     fetchTasksResult = () => Promise.resolve();
     fetchTasksFor = sinon.stub();
@@ -152,7 +162,8 @@ describe('RulesEngineService', () => {
         { provide: ChangesService, useValue: changesService },
         { provide: TranslateFromService, useValue: translateFromService },
         { provide: RulesEngineCoreFactoryService, useValue: rulesEngineCoreFactory },
-        { provide: PipesService, useValue: pipesService }
+        { provide: PipesService, useValue: pipesService },
+        { provide: CHTScriptApiService, useValue: chtScriptApiService }
       ]
     });
   });
@@ -452,6 +463,30 @@ describe('RulesEngineService', () => {
       _id: 'taskdoc',
       'emission.title': 'translate.this',
       'emission.priorityLabel': 'and.this',
+      'emission.other': true,
+    });
+    expect(telemetryService.record.callCount).to.equal(3);
+    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 2]);
+    expect(telemetryService.record.args[2][0]).to.equal('rules-engine:tasks:some-contacts');
+  });
+
+  it('fetchTaskDocsFor() should not crash with empty priority label', async () => {
+    const taskDoc = JSON.parse(JSON.stringify(sampleTaskDoc));
+    taskDoc.emission.priorityLabel = '';
+    const contactIds = ['a', 'b', 'c'];
+    fetchTasksResult = sinon.stub().resolves([taskDoc]);
+    rulesEngineCoreStubs.getDirtyContacts.returns(['a', 'b']);
+    service = TestBed.inject(RulesEngineService);
+
+    const actual = await service.fetchTaskDocsFor(contactIds);
+
+    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
+    expect(rulesEngineCoreStubs.fetchTasksFor.args[0][0]).to.eq(contactIds);
+    expect(actual.length).to.eq(1);
+    expect(actual[0]).to.nested.include({
+      _id: 'taskdoc',
+      'emission.title': 'translate.this',
+      'emission.priorityLabel': '',
       'emission.other': true,
     });
     expect(telemetryService.record.callCount).to.equal(3);

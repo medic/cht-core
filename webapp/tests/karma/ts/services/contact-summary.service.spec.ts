@@ -8,15 +8,15 @@ import { PipesService } from '@mm-services/pipes.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { UHCStatsService } from '@mm-services/uhc-stats.service';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 describe('ContactSummary service', () => {
-
-  'use strict';
-
   let service;
   let Settings;
   let feedbackService;
   let uhcStatsService;
+  let chtScriptApiService;
+  let chtScriptApi;
 
   beforeEach(() => {
     Settings = sinon.stub();
@@ -25,6 +25,16 @@ describe('ContactSummary service', () => {
       getHomeVisitStats: sinon.stub(),
       getUHCInterval: sinon.stub()
     };
+    chtScriptApi = {
+      v1: {
+        hasPermissions: sinon.stub(),
+        hasAnyPermission: sinon.stub()
+      }
+    };
+    chtScriptApiService = {
+      getApi: sinon.stub().returns(chtScriptApi)
+    };
+
     const pipesTransform = (name, value) => {
       if (name !== 'reversify') {
         throw new Error('unknown filter');
@@ -37,7 +47,8 @@ describe('ContactSummary service', () => {
         { provide: SettingsService, useValue: { get: Settings } },
         { provide: PipesService, useValue: { transform: pipesTransform } },
         { provide: FeedbackService, useValue: feedbackService },
-        { provide: UHCStatsService, useValue: uhcStatsService }
+        { provide: UHCStatsService, useValue: uhcStatsService },
+        { provide: CHTScriptApiService, useValue: chtScriptApiService }
       ]
     });
     service = TestBed.inject(ContactSummaryService);
@@ -208,6 +219,31 @@ describe('ContactSummary service', () => {
         { label: 'Last visited', value: moment('2021-04-07 13:30:59.999').valueOf() },
         { label: 'UHC interval start date', value: moment('2021-03-26 00:00:00.000').valueOf() },
         { label: 'UHC interval end date', value: moment('2021-04-25 23:59:59.999').valueOf() }
+      ]
+    });
+  });
+
+  it('should pass the cht script api to the ContactSummary script', async () => {
+    const contact = { _id: 1 };
+    const reports = [];
+    const script = `
+    return { fields: [
+      { label: "has can_edit", value: cht.v1.hasPermissions('can_edit') },
+      { label: "has any can_edit or can_configure:", value: cht.v1.hasAnyPermission([['can_edit'], ['can_configure']]) }
+    ] };
+    `;
+    chtScriptApi.v1.hasPermissions.returns(true);
+    chtScriptApi.v1.hasAnyPermission.returns(false);
+
+    Settings.resolves({ contact_summary: script });
+
+    const contactSummary = await service.get(contact, reports);
+
+    expect(contactSummary).to.deep.equal({
+      cards: [],
+      fields: [
+        { label: 'has can_edit', value: true },
+        { label: 'has any can_edit or can_configure:', value: false }
       ]
     });
   });

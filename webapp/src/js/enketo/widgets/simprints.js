@@ -37,7 +37,7 @@
     };
 
     if ( !service.enabled() ) {
-      $translate.get( 'simprints.disabled' ).toPromise().then(function( label ) {
+      $translate.get( 'simprints.disabled' ).then(function( label ) {
         $el.append( '<p>' + label + '</p>' );
       });
       return;
@@ -49,7 +49,7 @@
       } );
     } );
 
-    $translate.get( 'simprints.register' ).toPromise().then( function( label ) {
+    $translate.get( 'simprints.register' ).then( function( label ) {
       $el.append( '<div><a class="btn btn-default simprints-register">' +
         '<img src="/img/simprints.png" width="20" height="20"/> ' + label + '</a>' +
       '</div>' );
