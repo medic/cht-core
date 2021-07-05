@@ -306,9 +306,9 @@ export class EnketoService {
           return Promise.reject(new Error(JSON.stringify(loadErrors)));
         }
       })
-      .then(() => this.getFormTitle({ titleKey, doc }))
+      .then(() => this.getFormTitle(titleKey, doc))
       .then((title) => {
-        this.setFormTitle({ wrapper, title });
+        this.setFormTitle(wrapper, title);
         wrapper.show();
 
         wrapper.find('input').on('keydown', this.handleKeypressOnInputField);
@@ -323,7 +323,7 @@ export class EnketoService {
       });
   }
 
-  private getFormTitle({ titleKey, doc }) {
+  private getFormTitle(titleKey, doc) {
     if (titleKey) {
       // using translation key
       return this.translateService.get(titleKey);
@@ -333,7 +333,7 @@ export class EnketoService {
     }
   }
 
-  private setFormTitle({ wrapper, title }) {
+  private setFormTitle(wrapper, title) {
     // manually translate the title as enketo-core doesn't have any way to do this
     // https://github.com/enketo/enketo-core/issues/405
     const $title = wrapper.find('#form-title');
