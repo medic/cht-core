@@ -1477,7 +1477,7 @@ describe('Enketo service', () => {
       dbGetAttachment.resolves('<form/>');
     });
 
-    const noop = () => {};
+    const callbackMock = () => {};
     const instanceData = {
       health_center: {
         type: 'contact',
@@ -1495,8 +1495,8 @@ describe('Enketo service', () => {
         selector: $('<div></div>'),
         formDoc,
         instanceData,
-        editedListener: noop,
-        valuechangeListener: noop,
+        editedListener: callbackMock,
+        valuechangeListener: callbackMock,
         titleKey: 'contact.type.health_center.new',
       });
 
@@ -1511,8 +1511,8 @@ describe('Enketo service', () => {
         selector: $('<div></div>'),
         formDoc,
         instanceData,
-        editedListener: noop,
-        valuechangeListener: noop,
+        editedListener: callbackMock,
+        valuechangeListener: callbackMock,
       });
 
       expect(service.setFormTitle.callCount).to.be.equal(1);
