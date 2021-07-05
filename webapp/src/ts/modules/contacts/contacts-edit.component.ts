@@ -235,23 +235,15 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  private getTitleKey(contact) {
+  private async getTitleKey(contact) {
     const typeId = this.contactTypesService.getTypeId(contact) || this.routeSnapshot.params?.type;
+    const type = await this.contactTypesService.get(typeId);
+    if (!type) {
+      console.error(`Unknown contact type "${typeId}"`);
+      return;
+    }
 
-    return this.contactTypesService
-      .get(typeId)
-      .then(type => {
-        if (!type) {
-          console.error(`Unknown contact type "${typeId}"`);
-          return;
-        }
-
-        if (contact) { // editing
-          return type.edit_key;
-        } else { // adding
-          return type.create_key;
-        }
-      });
+    return contact ? type.edit_key : type.create_key;
   }
 
   private async renderForm(formId, contact) {
