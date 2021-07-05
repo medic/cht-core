@@ -61,6 +61,7 @@ describe('Enketo service', () => {
   let Search;
   let LineageModelGenerator;
   let transitionsService;
+  let translateService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -93,12 +94,15 @@ describe('Enketo service', () => {
       output: { update: () => {} },
     });
     transitionsService = { applyTransitions: sinon.stub().resolvesArg(0) };
+    translateService = {
+      instant: sinon.stub().returnsArg(0),
+      get: sinon.stub(),
+    };
 
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: TranslateService, useValue: { instant: sinon.stub().returnsArg(0) } },
         provideMockStore(),
         {
           provide: DbService,
@@ -127,7 +131,7 @@ describe('Enketo service', () => {
         },
         { provide: ZScoreService, useValue: { getScoreUtil: sinon.stub().resolves(sinon.stub())} },
         { provide: TransitionsService, useValue: transitionsService },
-        { provide: TranslateService, useValue: { get: sinon.stub().callsFake((key) => `translated key ${key}`) } },
+        { provide: TranslateService, useValue: translateService },
       ],
     });
 
@@ -1475,6 +1479,7 @@ describe('Enketo service', () => {
     beforeEach(() => {
       service.setFormTitle = sinon.stub();
       dbGetAttachment.resolves('<form/>');
+      translateService.get.callsFake((key) => `translated key ${key}`);
     });
 
     const callbackMock = () => {};
