@@ -1490,7 +1490,7 @@ describe('Enketo service', () => {
       title: 'New Area',
     };
 
-    it('translate titleKey when provided', async () => {
+    it('should translate titleKey when provided', async () => {
       await service.renderContactForm({
         selector: $('<div></div>'),
         formDoc,
@@ -1506,7 +1506,7 @@ describe('Enketo service', () => {
       });
     });
 
-    it('fallback to translate document title when titleKey is not available', async () => {
+    it('should fallback to translate document title when the titleKey is not available', async () => {
       await service.renderContactForm({
         selector: $('<div></div>'),
         formDoc,
