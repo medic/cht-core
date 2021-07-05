@@ -1506,9 +1506,7 @@ describe('Enketo service', () => {
       });
 
       expect(service.setFormTitle.callCount).to.be.equal(1);
-      expect(service.setFormTitle.args[0][0]).to.deep.include({
-        title: 'translated key contact.type.health_center.new',
-      });
+      expect(service.setFormTitle.args[0][1]).to.be.equal('translated key contact.type.health_center.new');
     });
 
     it('should fallback to translate document title when the titleKey is not available', async () => {
@@ -1521,7 +1519,7 @@ describe('Enketo service', () => {
       });
 
       expect(service.setFormTitle.callCount).to.be.equal(1);
-      expect(service.setFormTitle.args[0][0]).to.deep.include({ title: 'translated' });
+      expect(service.setFormTitle.args[0][1]).to.be.equal('translated');
     });
   });
 });
