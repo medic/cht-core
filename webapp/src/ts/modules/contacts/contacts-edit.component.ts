@@ -5,7 +5,7 @@ import { isEqual as _isEqual } from 'lodash-es';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { EnketoService, ContactFormContext } from '@mm-services/enketo.service';
+import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
@@ -257,7 +257,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     const instanceData = this.getFormInstanceData();
     const markFormEdited = this.markFormEdited.bind(this);
     const resetFormError = this.resetFormError.bind(this);
-    const contactFormContext: ContactFormContext = {
+    const formContext: EnketoFormContext = {
       selector: '#contact-form',
       formDoc,
       instanceData,
@@ -266,7 +266,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       titleKey,
     };
 
-    return this.enketoService.renderContactForm(contactFormContext);
+    return this.enketoService.renderContactForm(formContext);
   }
 
   private setEnketoContact(formInstance) {

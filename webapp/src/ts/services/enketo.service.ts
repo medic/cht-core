@@ -329,7 +329,9 @@ export class EnketoService {
     if (titleKey) {
       // using translation key
       return this.translateService.get(titleKey);
-    } else if (doc.title) {
+    }
+
+    if (doc.title) {
       // title defined in the doc
       return Promise.resolve(this.translateFromService.get(doc.title));
     }
@@ -412,14 +414,14 @@ export class EnketoService {
     });
   }
 
-  private renderForm(contactFormContext: ContactFormContext) {
+  private renderForm(formContext: EnketoFormContext) {
     return this.languageService.get().then(language => {
-      const $selector = $(contactFormContext.selector);
+      const $selector = $(formContext.selector);
       return this
-        .transformXml(contactFormContext.formDoc, language)
+        .transformXml(formContext.formDoc, language)
         .then(doc => {
-          this.replaceJavarosaMediaWithLoaders(contactFormContext.formDoc, doc.html);
-          const { instanceData, titleKey } = contactFormContext;
+          this.replaceJavarosaMediaWithLoaders(formContext.formDoc, doc.html);
+          const { instanceData, titleKey } = formContext;
           const xmlFormContext: XmlFormContext = {
             doc,
             wrapper: $selector,
@@ -430,10 +432,10 @@ export class EnketoService {
         })
         .then((form) => {
           const formContainer = $selector.find('.container').first();
-          this.replaceMediaLoaders(formContainer, contactFormContext.formDoc);
-          this.registerAddrepeatListener($selector, contactFormContext.formDoc);
-          this.registerEditedListener($selector, contactFormContext.editedListener);
-          this.registerValuechangeListener($selector, contactFormContext.valuechangeListener);
+          this.replaceMediaLoaders(formContainer, formContext.formDoc);
+          this.registerAddrepeatListener($selector, formContext.formDoc);
+          this.registerEditedListener($selector, formContext.editedListener);
+          this.registerValuechangeListener($selector, formContext.valuechangeListener);
 
           window.CHTCore.debugFormModel = () => form.model.getStr();
           return form;
@@ -454,19 +456,19 @@ export class EnketoService {
         this.getUserContact(),
       ])
       .then(() => {
-        const contactFormContext: ContactFormContext = {
+        const formContext: EnketoFormContext = {
           selector,
           formDoc: form,
           instanceData,
           editedListener,
           valuechangeListener,
         };
-        return this.renderForm(contactFormContext);
+        return this.renderForm(formContext);
       });
   }
 
-  renderContactForm(contactFormContext: ContactFormContext) {
-    return this.renderForm(contactFormContext);
+  renderContactForm(formContext: EnketoFormContext) {
+    return this.renderForm(formContext);
   }
 
   private xmlToDocs(doc, formXml, record) {
@@ -760,7 +762,7 @@ interface XmlFormContext {
   titleKey: string;
 }
 
-export interface ContactFormContext {
+export interface EnketoFormContext {
   selector: string;
   formDoc: string;
   instanceData: Record<string, any>;
