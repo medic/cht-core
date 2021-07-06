@@ -56,7 +56,7 @@ const request = (options, { debug } = {}) => {
 
   return rpn(options).catch(err => {
     err.responseBody = err.response && err.response.body;
-    console.warn(`A request error occurred ${err.options.uri}`);
+    debug && console.warn(`A request error occurred ${err.options.uri}`);
     throw err;
   });
 };
@@ -931,7 +931,7 @@ module.exports = {
   closeTour: async () => {
     const closeButton = element(by.css('#tour-select a.btn.cancel'));
     try {
-      await browser.wait(protractor.ExpectedConditions.visibilityOf(closeButton),);
+      await browser.wait(protractor.ExpectedConditions.visibilityOf(closeButton), 10000);
       await browser.wait(protractor.ExpectedConditions.elementToBeClickable(closeButton), 1000);
       await closeButton.click();
       // wait for the request to the server to execute
