@@ -185,7 +185,11 @@ const moment = require('moment');
     $window.PouchDB.fetch = function() {
       return dbFetch.apply(this, arguments)
         .then(function(response) {
-          if (response.status === 401) {
+          const hasValidHeader = (response) => response.headers &&
+                                               response.headers.get &&
+                                               response.headers.get('logout-authorization') === 'CHT-Core API';
+          // ignore 401 that could come through other channels than CHT API
+          if (response.status === 401 && hasValidHeader(response)) {
             showSessionExpired();
             $timeout(() => {
               $log.info('Redirect to login after 1 minute of inactivity');

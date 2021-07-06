@@ -24,12 +24,23 @@ describe('Auth', () => {
 
     it('returns error when not logged in', () => {
       environment.serverUrl = 'http://abc.com';
-      const get = sinon.stub(request, 'get').resolves();
+      const get = sinon.stub(request, 'get').rejects({ statusCode: 401 });
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0].url).to.equal('http://abc.com/_session');
         chai.expect(err.message).to.equal('Not logged in');
         chai.expect(err.code).to.equal(401);
+      });
+    });
+
+    it('returns error with incomplete session', () => {
+      environment.serverUrl = 'http://abc.com';
+      const get = sinon.stub(request, 'get').resolves();
+      return auth.check({ }).catch(err => {
+        chai.expect(get.callCount).to.equal(1);
+        chai.expect(get.args[0][0].url).to.equal('http://abc.com/_session');
+        chai.expect(err.message).to.equal('Failed to authenticate');
+        chai.expect(err.code).to.equal(500);
       });
     });
 
@@ -38,19 +49,18 @@ describe('Auth', () => {
       const get = sinon.stub(request, 'get').resolves({ roles: [] });
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
-        chai.expect(err.message).to.equal('Not logged in');
-        chai.expect(err.code).to.equal(401);
+        chai.expect(err.message).to.equal('Failed to authenticate');
+        chai.expect(err.code).to.equal(500);
       });
     });
 
     it('returns error when request errors', () => {
       environment.serverUrl = 'http://abc.com';
-      const get = sinon.stub(request, 'get').rejects('boom');
+      const get = sinon.stub(request, 'get').rejects({ error: 'boom' });
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0].url).to.equal('http://abc.com/_session');
-        chai.expect(err.message).to.equal('Not logged in');
-        chai.expect(err.code).to.equal(401);
+        chai.expect(err).to.deep.equal({ error: 'boom' });
       });
     });
 
