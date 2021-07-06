@@ -196,7 +196,8 @@ export class AppComponent implements OnInit {
       return dbFetch
         .apply(dbFetch, args)
         .then((response) => {
-          if (response.status === 401) {
+          // ignore 401 that could come through other channels than CHT API
+          if (response.status === 401 && response.headers?.get('logout-authorization') === 'CHT-Core API') {
             this.showSessionExpired();
             setTimeout(() => {
               console.info('Redirect to login after 1 minute of inactivity');
