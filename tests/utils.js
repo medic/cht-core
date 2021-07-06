@@ -776,8 +776,8 @@ module.exports = {
   closeTour: async () => {
     const closeButton = element(by.css('#tour-select a.btn.cancel'));
     try {
-      await browser.wait(protractor.ExpectedConditions.visibilityOf(closeButton),);
-      await browser.wait(protractor.ExpectedConditions.elementToBeClickable(closeButton),1000);
+      await browser.wait(protractor.ExpectedConditions.visibilityOf(closeButton), 10000);
+      await browser.wait(protractor.ExpectedConditions.elementToBeClickable(closeButton), 1000);
       await closeButton.click();
       // wait for the request to the server to execute
       // is there a way to leverage protractor to achieve this???
