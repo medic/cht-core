@@ -10,8 +10,10 @@ const acceptPatientReports = require('./accept_patient_reports');
 const moment = require('moment');
 const config = require('../config');
 const date = require('../date');
+const bs = require('bikram-sambat');
 
 const contactTypesUtils = require('@medic/contact-types-utils');
+const { padStart } = require('lodash');
 
 const NAME = 'registration';
 const PARENT_NOT_FOUND = 'parent_not_found';
@@ -125,6 +127,33 @@ const getDaysSinceDOB = doc => {
   return findFirstDefinedValue(doc, fields);
 };
 
+const getExactLMPDate = doc => {
+  let lmpYYYY, lmpMM, lmpDD;
+  let gregDate;
+  if (doc.fields.lmpYYYY.length > 4) {//YYYY*(M)M*(D)D
+    const matchArray = doc.fields.lmpYYYY.match(/^([0-9]{2,4})[^0-9]([0-9]{1,2})[^0-9]([0-9]{1,2})$/);
+    if (matchArray && matchArray.length === 4) {//All 3 groups matched
+      lmpYYYY = matchArray[1].padStart(4, '2000');
+      lmpMM = matchArray[2].padStart(2, '00');
+      lmpDD = matchArray[3].padStart(2, '00');
+    }
+  }
+  else if (doc.fields.lmpDD) {
+    lmpYYYY = doc.fields.lmpYYYY.padStart(4, '2000');
+    lmpMM = doc.fields.lmpMM.padStart(2, '00');
+    lmpDD = doc.fields.lmpDD.padStart(2, '00');
+  }
+  else {
+    throw ("Could not get the date from input.");//TODO:send error msg to the sender
+  }
+  if (lmpYYYY > moment().year() + 54) {//Bikram Sambat?
+    gregDate = bs.toGreg_text(lmpYYYY, lmpMM, lmpDD);
+  }
+  else {
+    gregDate = `${lmpYYYY}-${lmpMM}-${lmpDD}`;
+  }
+  return moment(gregDate);
+};
 /*
  * Given a doc get the LMP value as a number, including 0. Supports three
  * property names atm.
@@ -141,13 +170,14 @@ const getWeeksSinceLMP = doc => {
 
 const setExpectedBirthDate = doc => {
   const lmp = getWeeksSinceLMP(doc);
-  const start = moment(doc.reported_date).startOf('day');
+  let start = moment(doc.reported_date).startOf('day');
   if (lmp === 0) {
     // means baby was already born, chw just wants a registration.
     doc.lmp_date = null;
     doc.expected_date = null;
-  } else {
-    start.subtract(lmp, 'weeks');
+  }
+  else {
+    start = doc.fields.lmpYYYY ? getExactLMPDate(doc) : start.subtract(lmp, 'weeks');
     doc.lmp_date = start.toISOString();
     doc.expected_date = start
       .clone()
@@ -287,7 +317,7 @@ const addMessages = (config, doc) => {
       utils.getRegistrations({ id: patientId }),
       utils.getRegistrations({ id: placeId }),
     ])
-    .then(([ patientRegistrations, placeRegistrations ]) => {
+    .then(([patientRegistrations, placeRegistrations]) => {
       const context = {
         patient: doc.patient,
         place: doc.place,
@@ -315,7 +345,7 @@ const assignSchedule = (options) => {
       utils.getRegistrations({ id: patientId }),
       utils.getRegistrations({ id: placeId }),
     ])
-    .then(([ patientRegistrations, placeRegistrations ]) => {
+    .then(([patientRegistrations, placeRegistrations]) => {
       options.params.forEach(scheduleName => {
         const schedule = schedules.getScheduleConfig(scheduleName);
         const context = {
