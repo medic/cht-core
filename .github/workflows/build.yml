@@ -7,7 +7,7 @@ env:
   COUCH_NODE_NAME: nonode@nohost
   BUILDS_SERVER: _couch/builds_testing
   STAGING_SERVER: _couch/builds
-  MARKET_URL: ${{ secrets.MARKET_URL }}
+  UPLOAD_URL: ${{ secrets.MARKET_URL }}
 
 jobs:
   build:
@@ -24,10 +24,10 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
       if: steps.get-docker-hub-username.outputs.dockerhub_username
-    - name: Set MARKET_URL var
+    - name: Set UPLOAD_URL var
       run: |
-        if [[ -z "$MARKET_URL" ]]; then
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
+        if [[ -z "$UPLOAD_URL" ]]; then
+          echo "UPLOAD_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
           echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
           echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
         fi
@@ -84,8 +84,8 @@ jobs:
         echo "TEST_SUITE=integration" >> $GITHUB_ENV
     - name: Set UPLOARD_URL var
       run: |
-        if [[ -z "$MARKET_URL" ]]; then
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
+        if [[ -z "$UPLOAD_URL" ]]; then
+          echo "UPLOAD_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
           echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
           echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
         fi
@@ -110,15 +110,15 @@ jobs:
       run: ./scripts/travis/couch-config
     - name: Echo Vars
       run: |
-        echo "HORTI_BUILDS_SERVER=${MARKET_URL}/${BUILDS_SERVER}"
+        echo "HORTI_BUILDS_SERVER=${UPLOAD_URL}/${BUILDS_SERVER}"
         echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
         echo "COUCH_URL=${COUCH_URL}"
     - name: Curl Couch_url
       run: curl ${COUCH_URL}
     - name: horti setup
       run: |
-        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
-        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
+        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$UPLOAD_URL/$BUILDS_SERVER"
+        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$UPLOAD_URL/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
     - name: Test it!
       run: node --stack_size=10000 `which grunt` ci-e2e
     - name: Dump Couch logs
@@ -140,10 +140,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set MARKET_URL var
+    - name: Set UPLOAD_URL var
       run: |
-        if [[ -z "$MARKET_URL" ]]; then
-        echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
+        if [[ -z "$UPLOAD_URL" ]]; then
+        echo "UPLOAD_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
         echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
         echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
         fi
