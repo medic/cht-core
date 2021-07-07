@@ -1,4 +1,4 @@
-import { async, ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
@@ -143,7 +143,7 @@ describe('AnalyticsComponent', () => {
     const navigateStub = sinon.stub(router, 'navigate');
 
     router.events.next(event);
-    flush();
+    tick();
 
     expect(navigateStub.callCount).to.equal(1);
     expect(navigateStub.args[0]).to.deep.equal([['/', 'analytics', 'targets']]);
@@ -160,7 +160,7 @@ describe('AnalyticsComponent', () => {
     const navigateStub = sinon.stub(router, 'navigate');
 
     router.events.next(event);
-    flush();
+    tick();
 
     expect(navigateStub.callCount).to.equal(0);
   }));
