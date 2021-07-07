@@ -222,7 +222,7 @@ describe('ContactsEdit component', () => {
       await createComponent();
       await fixture.whenStable();
 
-      expect(contactTypesService.get.callCount).to.equal(2);
+      expect(contactTypesService.get.callCount).to.equal(1);
       expect(enketoService.renderContactForm.callCount).to.equal(1);
 
       expect(enketoService.renderContactForm.args[0][0]).to.deep.include({
@@ -239,7 +239,7 @@ describe('ContactsEdit component', () => {
       flushMicrotasks();
 
       expect(dbGet.callCount).to.equal(2);
-      expect(contactTypesService.get.callCount).to.equal(4);
+      expect(contactTypesService.get.callCount).to.equal(2);
       expect(enketoService.renderContactForm.callCount).to.equal(2);
       expect(enketoService.renderContactForm.args[1][0]).to.deep.include({
         selector: '#contact-form',
@@ -289,7 +289,7 @@ describe('ContactsEdit component', () => {
         await createComponent();
         await fixture.whenStable();
 
-        expect(contactTypesService.get.callCount).to.equal(2);
+        expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['person']);
         expect(dbGet.callCount).to.equal(1);
         expect(dbGet.args[0]).to.deep.equal(['person_create_form_id']);
@@ -309,7 +309,7 @@ describe('ContactsEdit component', () => {
         await createComponent();
         await fixture.whenStable();
 
-        expect(contactTypesService.get.callCount).to.equal(2);
+        expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['clinic']);
         expect(dbGet.callCount).to.equal(1);
         expect(dbGet.args[0]).to.deep.equal(['clinic_create_form_id']);
@@ -340,7 +340,7 @@ describe('ContactsEdit component', () => {
         await fixture.whenStable();
 
 
-        expect(contactTypesService.get.callCount).to.equal(2);
+        expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['district_hospital']);
         expect(dbGet.callCount).to.equal(1);
         expect(dbGet.args[0]).to.deep.equal(['district_create_form_id']);
@@ -419,7 +419,7 @@ describe('ContactsEdit component', () => {
         await createComponent();
         await fixture.whenStable();
 
-        expect(contactTypesService.get.callCount).to.equal(2);
+        expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['patient']);
         expect(dbGet.callCount).to.equal(1);
         expect(dbGet.args[0]).to.deep.equal(['patient_edit_form']);
@@ -445,7 +445,7 @@ describe('ContactsEdit component', () => {
         await createComponent();
         await fixture.whenStable();
 
-        expect(contactTypesService.get.callCount).to.equal(2);
+        expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['patient']);
         expect(dbGet.callCount).to.equal(1);
         expect(dbGet.args[0]).to.deep.equal(['patient_edit_form']);
@@ -481,7 +481,7 @@ describe('ContactsEdit component', () => {
         await createComponent();
         await fixture.whenStable();
 
-        expect(contactTypesService.get.callCount).to.equal(2);
+        expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['a_clinic_type']);
         expect(dbGet.callCount).to.equal(1);
         expect(dbGet.args[0]).to.deep.equal(['a_clinic_type_create_form']);
@@ -520,7 +520,7 @@ describe('ContactsEdit component', () => {
         await createComponent();
         await fixture.whenStable();
 
-        expect(contactTypesService.get.callCount).to.equal(2);
+        expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['the correct type']);
         expect(dbGet.callCount).to.equal(1);
         expect(dbGet.args[0]).to.deep.equal(['the correct_edit_form']);

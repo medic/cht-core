@@ -151,8 +151,15 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
     try {
       const contact = await this.getContact();
-      const formId = await this.getForm(contact);
-      const formInstance = await this.renderForm(formId, contact);
+      const contactTypeId = this.contactTypesService.getTypeId(contact) || this.routeSnapshot.params?.type;
+      const contactType = await this.contactTypesService.get(contactTypeId);
+      if (!contactType) {
+        console.error(`Unknown contact type "${contactTypeId}"`);
+        return;
+      }
+
+      const formId = this.getForm(contact, contactType);
+      const formInstance = await this.renderForm(formId, contact, contactType);
       this.setEnketoContact(formInstance);
 
       this.globalActions.setLoadingContent(false);
@@ -183,46 +190,36 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       .then((result) => result.doc);
   }
 
-  private getForm(contact) {
+  private getForm(contact, contactType) {
     let formId;
     let titleKey;
-    const typeId = this.contactTypesService.getTypeId(contact) || this.routeSnapshot.params?.type;
-    return this.contactTypesService
-      .get(typeId)
-      .then(type => {
-        if (!type) {
-          console.error(`Unknown contact type "${typeId}"`);
-          return;
-        }
+    if (contact) { // editing
+      this.contact = contact;
+      this.contactId = contact._id;
+      titleKey = contactType.edit_key;
+      formId = contactType.edit_form || contactType.create_form;
+    } else { // adding
+      this.contact = {
+        type: 'contact',
+        contact_type: this.routeSnapshot.params?.type,
+        parent: this.routeSnapshot.params?.parent_id || '',
+      };
+      this.contactId = null;
+      formId = contactType.create_form;
+      titleKey = contactType.create_key;
+    }
 
-        if (contact) { // editing
-          this.contact = contact;
-          this.contactId = contact._id;
-          titleKey = type.edit_key;
-          formId = type.edit_form || type.create_form;
-        } else { // adding
-          this.contact = {
-            type: 'contact',
-            contact_type: this.routeSnapshot.params?.type,
-            parent: this.routeSnapshot.params?.parent_id || '',
-          };
-          this.contactId = null;
-          formId = type.create_form;
-          titleKey = type.create_key;
+    this.translationsLoadedSubscription?.unsubscribe();
+    this.translationsLoadedSubscription = this.store
+      .select(Selectors.getTranslationsLoaded)
+      .subscribe((loaded) => {
+        if (loaded) {
+          this.translateService
+            .get(titleKey)
+            .then((title) => this.globalActions.setTitle(title));
         }
-
-        this.translationsLoadedSubscription?.unsubscribe();
-        this.translationsLoadedSubscription = this.store
-          .select(Selectors.getTranslationsLoaded)
-          .subscribe((loaded) => {
-            if (loaded) {
-              this.translateService
-                .get(titleKey)
-                .then((title) => this.globalActions.setTitle(title));
-            }
-          });
-        return formId;
       });
+    return formId;
   }
 
   private markFormEdited() {
@@ -235,24 +232,17 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  private async getTitleKey(contact) {
-    const typeId = this.contactTypesService.getTypeId(contact) || this.routeSnapshot.params?.type;
-    const type = await this.contactTypesService.get(typeId);
-    if (!type) {
-      console.error(`Unknown contact type "${typeId}"`);
-      return;
-    }
-
-    return contact ? type.edit_key : type.create_key;
+  private getTitleKey(contact, contactType) {
+    return contact ? contactType.edit_key : contactType.create_key;
   }
 
-  private async renderForm(formId, contact) {
+  private async renderForm(formId, contact, contactType) {
     if (!formId) {
       throw new Error('Unknown form');
     }
 
     this.globalActions.setEnketoEditedStatus(false);
-    const titleKey = await this.getTitleKey(contact);
+    const titleKey = this.getTitleKey(contact, contactType);
     const formDoc = await this.dbService.get().get(formId);
     const instanceData = this.getFormInstanceData();
     const markFormEdited = this.markFormEdited.bind(this);
