@@ -290,7 +290,7 @@ export class EnketoService {
   }
 
   private renderFromXmls(xmlFormContext: XmlFormContext) {
-    const { wrapper } = xmlFormContext;
+    const { doc, instanceData, titleKey, wrapper } = xmlFormContext;
     wrapper
       .find('.form-footer')
       .addClass('end')
@@ -298,10 +298,10 @@ export class EnketoService {
       .addClass('disabled');
 
     const formContainer = wrapper.find('.container').first();
-    formContainer.html(xmlFormContext.doc.html.get(0));
+    formContainer.html(doc.html.get(0));
 
     return this
-      .getEnketoOptions(xmlFormContext.doc, xmlFormContext.instanceData)
+      .getEnketoOptions(doc, instanceData)
       .then((options) => {
         this.currentForm = new window.EnketoForm(wrapper.find('form').first(), options);
         const loadErrors = this.currentForm.init();
@@ -309,7 +309,7 @@ export class EnketoService {
           return Promise.reject(new Error(JSON.stringify(loadErrors)));
         }
       })
-      .then(() => this.getFormTitle(xmlFormContext.titleKey, xmlFormContext.doc))
+      .then(() => this.getFormTitle(titleKey, doc))
       .then((title) => {
         this.setFormTitle(wrapper, title);
         wrapper.show();
@@ -416,13 +416,21 @@ export class EnketoService {
   }
 
   private renderForm(formContext: EnketoFormContext) {
+    const {
+      editedListener,
+      formDoc,
+      instanceData,
+      selector,
+      titleKey,
+      valuechangeListener,
+    } = formContext;
+
     return this.languageService.get().then(language => {
-      const $selector = $(formContext.selector);
+      const $selector = $(selector);
       return this
-        .transformXml(formContext.formDoc, language)
+        .transformXml(formDoc, language)
         .then(doc => {
-          this.replaceJavarosaMediaWithLoaders(formContext.formDoc, doc.html);
-          const { instanceData, titleKey } = formContext;
+          this.replaceJavarosaMediaWithLoaders(formDoc, doc.html);
           const xmlFormContext: XmlFormContext = {
             doc,
             wrapper: $selector,
@@ -433,10 +441,10 @@ export class EnketoService {
         })
         .then((form) => {
           const formContainer = $selector.find('.container').first();
-          this.replaceMediaLoaders(formContainer, formContext.formDoc);
-          this.registerAddrepeatListener($selector, formContext.formDoc);
-          this.registerEditedListener($selector, formContext.editedListener);
-          this.registerValuechangeListener($selector, formContext.valuechangeListener);
+          this.replaceMediaLoaders(formContainer, formDoc);
+          this.registerAddrepeatListener($selector, formDoc);
+          this.registerEditedListener($selector, editedListener);
+          this.registerValuechangeListener($selector, valuechangeListener);
 
           window.CHTCore.debugFormModel = () => form.model.getStr();
           return form;
