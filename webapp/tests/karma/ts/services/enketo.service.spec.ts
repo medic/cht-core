@@ -1475,11 +1475,12 @@ describe('Enketo service', () => {
     });
   });
 
-  describe('renderContactForm', () => {
+  describe.only('renderContactForm', () => {
     beforeEach(() => {
       service.setFormTitle = sinon.stub();
       dbGetAttachment.resolves('<form/>');
       translateService.get.callsFake((key) => `translated key ${key}`);
+      TranslateFrom.callsFake((sentence) => `translated sentence ${sentence}`);
     });
 
     const callbackMock = () => {};
@@ -1519,7 +1520,7 @@ describe('Enketo service', () => {
       });
 
       expect(service.setFormTitle.callCount).to.be.equal(1);
-      expect(service.setFormTitle.args[0][1]).to.be.equal('translated');
+      expect(service.setFormTitle.args[0][1]).to.be.equal('translated sentence New Area');
     });
   });
 });
