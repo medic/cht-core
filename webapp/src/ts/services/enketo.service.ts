@@ -300,11 +300,12 @@ export class EnketoService {
     const formContainer = wrapper.find('.container').first();
     formContainer.html(xmlFormContext.doc.html.get(0));
 
-    return this.getEnketoOptions(xmlFormContext.doc, xmlFormContext.instanceData)
+    return this
+      .getEnketoOptions(xmlFormContext.doc, xmlFormContext.instanceData)
       .then((options) => {
         this.currentForm = new window.EnketoForm(wrapper.find('form').first(), options);
         const loadErrors = this.currentForm.init();
-        if (loadErrors && loadErrors.length) {
+        if (loadErrors?.length) {
           return Promise.reject(new Error(JSON.stringify(loadErrors)));
         }
       })
