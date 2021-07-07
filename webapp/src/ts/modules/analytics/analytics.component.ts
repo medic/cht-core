@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { find as _find } from 'lodash-es';
+import { filter } from 'rxjs/operators';
 import { combineLatest, Subscription } from 'rxjs';
 
 import { TourService } from '@mm-services/tour.service';
@@ -32,7 +32,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscribeToStore();
-    this.analyticsActions.setSelectedAnalytics(null);
+    this.subscribeRouterNavigation();
     this.globalActions.unsetSelected();
     this.getAnalyticsModules();
 
@@ -44,30 +44,38 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToStore() {
-    const selectorsSubscription = combineLatest(
-      this.store.select(Selectors.getAnalyticsModules),
-    )
-      .subscribe(([
-        analyticsModules = [],
-      ]) => {
+    const selectorsSubscription = combineLatest(this.store.select(Selectors.getAnalyticsModules))
+      .subscribe(([ analyticsModules = [] ]) => {
         this.analyticsModules = analyticsModules;
       });
     this.subscriptions.add(selectorsSubscription);
   }
 
+  private subscribeRouterNavigation() {
+    const subscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => this.redirectToModule(this.analyticsModules));
+    this.subscriptions.add(subscription);
+  }
+
+  private redirectToModule(analyticsModules) {
+    if (!analyticsModules) {
+      return;
+    }
+
+    const isAnalyticsTab = this.route.snapshot.firstChild?.data?.tab === 'analytics';
+
+    if (isAnalyticsTab && analyticsModules.length === 1) {
+      this.router.navigate(analyticsModules[0].route);
+    }
+  }
+
   private getAnalyticsModules() {
     return this.analyticsModulesService
       .get()
-      .then((modules) => {
+      .then(modules => {
         this.analyticsActions.setAnalyticsModules(modules);
-        if (this.route.snapshot.firstChild?.data?.tab === 'analytics') {
-          if (modules.length === 1) {
-            return this.router.navigate(modules[0].route);
-          }
-        } else {
-          const selectedAnalytics = _find(modules, { id: this.route.snapshot?.firstChild?.data?.moduleId });
-          this.analyticsActions.setSelectedAnalytics(selectedAnalytics);
-        }
+        this.redirectToModule(modules);
       });
   }
 }
