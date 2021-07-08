@@ -157,8 +157,25 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         throw new Error(`Unknown contact type "${contactTypeId}"`);
       }
 
-      const formId = this.getForm(contact, contactType);
-      const formInstance = await this.renderForm(formId, contact, contactType);
+      const titleKey = contact ? contactType.edit_key : contactType.create_key;
+      const formId = this.getForm(contact, contactType, titleKey);
+      if (!formId) {
+        throw new Error('Unknown form');
+      }
+
+      const formDoc = await this.dbService.get().get(formId);
+      const instanceData = this.getFormInstanceData();
+      const markFormEdited = this.markFormEdited.bind(this);
+      const resetFormError = this.resetFormError.bind(this);
+      const formContext: EnketoFormContext = {
+        selector: '#contact-form',
+        formDoc,
+        instanceData,
+        editedListener: markFormEdited,
+        valuechangeListener: resetFormError,
+        titleKey,
+      };
+      const formInstance = await this.renderForm(formContext);
       this.setEnketoContact(formInstance);
 
       this.globalActions.setLoadingContent(false);
@@ -189,13 +206,11 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       .then((result) => result.doc);
   }
 
-  private getForm(contact, contactType) {
+  private getForm(contact, contactType, titleKey) {
     let formId;
-    let titleKey;
     if (contact) { // editing
       this.contact = contact;
       this.contactId = contact._id;
-      titleKey = contactType.edit_key;
       formId = contactType.edit_form || contactType.create_form;
     } else { // adding
       this.contact = {
@@ -205,7 +220,6 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       };
       this.contactId = null;
       formId = contactType.create_form;
-      titleKey = contactType.create_key;
     }
 
     this.translationsLoadedSubscription?.unsubscribe();
@@ -231,29 +245,8 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  private getTitleKey(contact, contactType) {
-    return contact ? contactType.edit_key : contactType.create_key;
-  }
-
-  private async renderForm(formId, contact, contactType) {
-    if (!formId) {
-      throw new Error('Unknown form');
-    }
-
+  private async renderForm(formContext: EnketoFormContext) {
     this.globalActions.setEnketoEditedStatus(false);
-    const titleKey = this.getTitleKey(contact, contactType);
-    const formDoc = await this.dbService.get().get(formId);
-    const instanceData = this.getFormInstanceData();
-    const markFormEdited = this.markFormEdited.bind(this);
-    const resetFormError = this.resetFormError.bind(this);
-    const formContext: EnketoFormContext = {
-      selector: '#contact-form',
-      formDoc,
-      instanceData,
-      editedListener: markFormEdited,
-      valuechangeListener: resetFormError,
-      titleKey,
-    };
 
     return this.enketoService.renderContactForm(formContext);
   }
