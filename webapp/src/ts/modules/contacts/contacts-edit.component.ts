@@ -5,7 +5,7 @@ import { isEqual as _isEqual } from 'lodash-es';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
+import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
@@ -154,8 +154,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       const contactTypeId = this.contactTypesService.getTypeId(contact) || this.routeSnapshot.params?.type;
       const contactType = await this.contactTypesService.get(contactTypeId);
       if (!contactType) {
-        console.error(`Unknown contact type "${contactTypeId}"`);
-        return;
+        throw new Error(`Unknown contact type "${contactTypeId}"`);
       }
 
       const formId = this.getForm(contact, contactType);
