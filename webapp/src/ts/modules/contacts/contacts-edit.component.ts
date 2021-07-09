@@ -163,19 +163,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         throw new Error('Unknown form');
       }
 
-      const formDoc = await this.dbService.get().get(formId);
-      const instanceData = this.getFormInstanceData();
-      const markFormEdited = this.markFormEdited.bind(this);
-      const resetFormError = this.resetFormError.bind(this);
-      const formContext: EnketoFormContext = {
-        selector: '#contact-form',
-        formDoc,
-        instanceData,
-        editedListener: markFormEdited,
-        valuechangeListener: resetFormError,
-        titleKey,
-      };
-      const formInstance = await this.renderForm(formContext);
+      const formInstance = await this.renderForm(formId, titleKey);
       this.setEnketoContact(formInstance);
 
       this.globalActions.setLoadingContent(false);
@@ -245,7 +233,20 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  private async renderForm(formContext: EnketoFormContext) {
+  private async renderForm(formId: string, titleKey: string) {
+    const formDoc = await this.dbService.get().get(formId);
+    const instanceData = this.getFormInstanceData();
+    const markFormEdited = this.markFormEdited.bind(this);
+    const resetFormError = this.resetFormError.bind(this);
+    const formContext: EnketoFormContext = {
+      selector: '#contact-form',
+      formDoc,
+      instanceData,
+      editedListener: markFormEdited,
+      valuechangeListener: resetFormError,
+      titleKey,
+    };
+
     this.globalActions.setEnketoEditedStatus(false);
 
     return this.enketoService.renderContactForm(formContext);
