@@ -1475,7 +1475,7 @@ describe('Enketo service', () => {
     });
   });
 
-  describe.only('renderContactForm', () => {
+  describe('renderContactForm', () => {
     beforeEach(() => {
       service.setFormTitle = sinon.stub();
       dbGetAttachment.resolves('<form/>');
