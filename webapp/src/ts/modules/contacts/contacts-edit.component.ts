@@ -157,12 +157,13 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         throw new Error(`Unknown contact type "${contactTypeId}"`);
       }
 
-      const titleKey = contact ? contactType.edit_key : contactType.create_key;
-      const formId = this.getForm(contact, contactType, titleKey);
+      const formId = this.getForm(contact, contactType);
       if (!formId) {
         throw new Error('Unknown form');
       }
 
+      const titleKey = contact ? contactType.edit_key : contactType.create_key;
+      this.setTitle(titleKey);
       const formInstance = await this.renderForm(formId, titleKey);
       this.setEnketoContact(formInstance);
 
@@ -194,7 +195,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       .then((result) => result.doc);
   }
 
-  private getForm(contact, contactType, titleKey) {
+  private getForm(contact, contactType) {
     let formId;
     if (contact) { // editing
       this.contact = contact;
@@ -210,6 +211,10 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       formId = contactType.create_form;
     }
 
+    return formId;
+  }
+
+  private setTitle(titleKey: string) {
     this.translationsLoadedSubscription?.unsubscribe();
     this.translationsLoadedSubscription = this.store
       .select(Selectors.getTranslationsLoaded)
@@ -220,7 +225,6 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
             .then((title) => this.globalActions.setTitle(title));
         }
       });
-    return formId;
   }
 
   private markFormEdited() {
