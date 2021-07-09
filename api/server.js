@@ -70,7 +70,7 @@ process
     logger.error('%o',err);
     process.exit(1);
   }
-  
+
   // Define error-handling middleware last.
   // http://expressjs.com/guide/error-handling.html
   app.use((err, req, res, next) => {
@@ -82,8 +82,9 @@ process
     serverUtils.serverError(err, req, res);
   });
 
-  app.listen(apiPort, () => {
+  const server = app.listen(apiPort, () => {
     logger.info('Medic API listening on port ' + apiPort);
   });
-
+  const ONE_HOUR = 60 * 60 * 1000;
+  server.setTimeout(ONE_HOUR);
 })();
