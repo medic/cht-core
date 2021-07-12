@@ -86,6 +86,9 @@ describe('monitoring', () => {
         replication_limit: {
           count: 0,
         },
+        connected_users: {
+          count: 1,
+        },
       });
     });
   });
@@ -181,6 +184,9 @@ describe('monitoring', () => {
         },
         replication_limit: {
           count: 0,
+        },
+        connected_users: {
+          count: 1,
         },
       });
     });

@@ -5,7 +5,7 @@ import { EditUserAbstract } from '@mm-modals/edit-user/edit-user.component';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { UpdateUserService } from '@mm-services/update-user.service';
 import { LanguagesService } from '@mm-services/languages.service';
-import { SetLanguageService } from '@mm-services/language.service';
+import { SetLanguageService, LanguageService } from '@mm-services/language.service';
 
 @Component({
   selector: 'update-password',
@@ -31,11 +31,12 @@ export class EditUserSettingsComponent extends EditUserAbstract implements OnIni
   constructor(
     bsModalRef: BsModalRef,
     userSettingsService: UserSettingsService,
+    languageService: LanguageService,
     private updateUserService: UpdateUserService,
     private languagesService: LanguagesService,
     private setLanguageService: SetLanguageService,
   ) {
-    super(bsModalRef, userSettingsService);
+    super(bsModalRef, userSettingsService, languageService);
   }
 
   async ngOnInit(): Promise<void> {

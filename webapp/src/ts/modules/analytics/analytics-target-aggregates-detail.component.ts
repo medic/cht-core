@@ -2,12 +2,12 @@ import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { combineLatest, Subscription, Subject } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
 
 import { Selectors } from '@mm-selectors/index';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { GlobalActions } from '@mm-actions/global';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Component({
   selector: 'analytics-target-aggregates-detail',

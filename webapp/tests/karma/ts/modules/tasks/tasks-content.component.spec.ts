@@ -161,6 +161,7 @@ describe('TasksContentComponent', () => {
     expect(render.args[0][2]).to.deep.eq({
       contact: { _id: 'contact' },
       something: 'nothing',
+      task_id: '123',
     });
   });
 
@@ -204,6 +205,7 @@ describe('TasksContentComponent', () => {
           content: {
             something: 'nothing',
             contact: { some: 'thing' },
+            task_id: '123',
           },
         }, {
           type: 'report',
@@ -211,6 +213,7 @@ describe('TasksContentComponent', () => {
           content: {
             something: 'other',
             contact: { _id: 'contact' },
+            task_id: '123',
           },
         }]
       }
@@ -235,7 +238,7 @@ describe('TasksContentComponent', () => {
     expect(get.callCount).to.eq(1);
     expect(get.args).to.deep.eq([['dne']]);
     expect(render.callCount).to.eq(1);
-    expect(render.args[0][2]).to.deep.eq({ contact: { _id: 'dne' } });
+    expect(render.args[0][2]).to.deep.eq({ contact: { _id: 'dne' }, task_id: '123' });
   });
 
   it('should work when form not found', async () => {
@@ -350,6 +353,7 @@ describe('TasksContentComponent', () => {
     expect(render.args[0][2]).to.deep.eq({
       contact: { _id: 'contact' },
       something: 'other',
+      task_id: '123',
     });
   }));
 
@@ -472,6 +476,7 @@ describe('TasksContentComponent', () => {
 
       sinon.resetHistory();
       sinon.stub(GlobalActions.prototype, 'setEnketoError');
+      store.refreshState();
 
       await component.performAction({ type: 'report', form: 'myform', content: { my: 'content' } });
 

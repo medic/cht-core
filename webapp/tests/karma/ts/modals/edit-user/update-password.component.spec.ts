@@ -8,10 +8,11 @@ import { Subject } from 'rxjs';
 
 import { UpdatePasswordComponent } from '@mm-modals/edit-user/update-password.component';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { LanguageService } from '@mm-services/language.service';
 import { UpdateUserService } from '@mm-services/update-user.service';
 import { UserLoginService } from '@mm-services/user-login.service';
 import { MmModal, MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { ConfirmPasswordUpdatedComponent } from '@mm-modals/edit-user/confirm-password-updated.component';
 
@@ -20,8 +21,9 @@ describe('UpdatePasswordComponent', () => {
   let component: UpdatePasswordComponent;
   let fixture: ComponentFixture<UpdatePasswordComponent>;
   let userSettingsService;
+  let languageService;
   let updateUserService;
-  let translateHelperService;
+  let translateService;
   let bsModalRef;
   let userLoginService;
   let modalService;
@@ -46,12 +48,12 @@ describe('UpdatePasswordComponent', () => {
           name: 'admin',
           fullname: 'Admin',
           email: 'admin@demo.medic.com',
-          phone: '+99 999 9999',
-          language: 'es'
+          phone: '+99 999 9999'
         }
       )
     };
-    translateHelperService = {
+    languageService = { get: sinon.stub().resolves('es') };
+    translateService = {
       fieldIsRequired: sinon.stub().resolvesArg(0),
       get: sinon.stub().resolvesArg(0),
     };
@@ -73,8 +75,9 @@ describe('UpdatePasswordComponent', () => {
           { provide: UserLoginService, useValue: userLoginService },
           { provide: ModalService, useValue: modalService },
           { provide: UserSettingsService, useValue: userSettingsService },
+          { provide: LanguageService, useValue: languageService },
           { provide: BsModalRef, useValue: bsModalRef },
-          { provide: TranslateHelperService, useValue: translateHelperService },
+          { provide: TranslateService, useValue: translateService },
         ]
       })
       .compileComponents()
@@ -110,8 +113,8 @@ describe('UpdatePasswordComponent', () => {
     const consoleErrorMock = sinon.stub(console, 'error');
     component.editUserModel.password = '';
     component.updatePassword();
-    expect(translateHelperService.fieldIsRequired.called).to.equal(true);
-    expect(translateHelperService.fieldIsRequired.args[0]).to.deep.equal(['Password']);
+    expect(translateService.fieldIsRequired.called).to.equal(true);
+    expect(translateService.fieldIsRequired.args[0]).to.deep.equal(['Password']);
     expect(updateUserService.update.called).to.equal(false);
     expect(consoleErrorMock.callCount).to.equal(1);
     expect(consoleErrorMock.args[0][0]).to.equal('Error submitting modal');
@@ -123,8 +126,8 @@ describe('UpdatePasswordComponent', () => {
     component.editUserModel.passwordConfirm = '2sml4me';
     component.editUserModel.currentPassword = '2xml4me';
     component.updatePassword();
-    expect(translateHelperService.get.called).to.equal(true);
-    expect(translateHelperService.get.getCall(0).args[0]).to.equal('password.length.minimum');
+    expect(translateService.get.called).to.equal(true);
+    expect(translateService.get.getCall(0).args[0]).to.equal('password.length.minimum');
     expect(updateUserService.update.called).to.equal(false);
     expect(consoleErrorMock.callCount).to.equal(1);
     expect(consoleErrorMock.args[0][0]).to.equal('Error submitting modal');
@@ -136,8 +139,8 @@ describe('UpdatePasswordComponent', () => {
     component.editUserModel.passwordConfirm = 'password';
     component.editUserModel.currentPassword = '2xml4me';
     component.updatePassword();
-    expect(translateHelperService.get.called).to.equal(true);
-    expect(translateHelperService.get.getCall(0).args[0]).to.equal('password.weak');
+    expect(translateService.get.called).to.equal(true);
+    expect(translateService.get.getCall(0).args[0]).to.equal('password.weak');
     expect(updateUserService.update.called).to.equal(false);
     expect(consoleErrorMock.callCount).to.equal(1);
     expect(consoleErrorMock.args[0][0]).to.equal('Error submitting modal');
@@ -150,8 +153,8 @@ describe('UpdatePasswordComponent', () => {
     component.editUserModel.passwordConfirm = password + 'a';
     component.editUserModel.currentPassword = '2xml4me';
     component.updatePassword();
-    expect(translateHelperService.get.called).to.equal(true);
-    expect(translateHelperService.get.getCall(0).args[0]).to.equal('Passwords must match');
+    expect(translateService.get.called).to.equal(true);
+    expect(translateService.get.getCall(0).args[0]).to.equal('Passwords must match');
     expect(updateUserService.update.called).to.equal(false);
     expect(consoleErrorMock.callCount).to.equal(1);
     expect(consoleErrorMock.args[0][0]).to.equal('Error submitting modal');
@@ -167,7 +170,7 @@ describe('UpdatePasswordComponent', () => {
     userLoginService.login.resolves({});
     await component.updatePassword();
 
-    expect(translateHelperService.get.called).to.equal(false);
+    expect(translateService.get.called).to.equal(false);
     expect(component.errors).to.deep.equal({});
     expect(updateUserService.update.called).to.equal(true);
     expect(updateUserService.update.getCall(0).args[0]).to.equal(user);
@@ -230,8 +233,8 @@ describe('UpdatePasswordComponent', () => {
     component.editUserModel.passwordConfirm = password;
 
     component.updatePassword();
-    expect(translateHelperService.fieldIsRequired.called).to.equal(true);
-    expect(translateHelperService.fieldIsRequired.getCall(0).args[0]).to.deep.equal('Current Password');
+    expect(translateService.fieldIsRequired.called).to.equal(true);
+    expect(translateService.fieldIsRequired.getCall(0).args[0]).to.deep.equal('Current Password');
     expect(updateUserService.update.called).to.equal(false);
     expect(consoleErrorMock.callCount).to.equal(1);
     expect(consoleErrorMock.args[0][0]).to.equal('Error submitting modal');

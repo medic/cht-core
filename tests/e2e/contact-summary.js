@@ -36,6 +36,16 @@ describe('Contact summary info', () => {
         label: "uhc_stats_interval_end", 
         value: uhcStats.uhcInterval ? uhcStats.uhcInterval.end : '', 
         width: 3 
+      },
+      { 
+        label: "can_configure", 
+        value: cht.v1.hasPermissions('can_configure'), 
+        width: 3 
+      },
+      { 
+        label: "can_edit_or_can_create_people", 
+        value: cht.v1.hasAnyPermission([['can_edit'], ['can_create_people']]), 
+        width: 3 
       }
     ];
     
@@ -197,15 +207,26 @@ describe('Contact summary info', () => {
 
   const DOCS = [ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT, DAVID_VISIT];
 
-  const USER = {
-    username: 'user',
+  const USER_HOME_VISITS = {
+    username: 'user-home-visits',
     password: 'Sup3rSecret!',
     place: BOB_PLACE._id,
     contact: {
-      _id: 'fixture:user:offline',
-      name: 'Offline'
+      _id: 'fixture:user-home-visits:offline',
+      name: 'user-home-visits'
     },
     roles: ['national_admin']
+  };
+
+  const USER_DISTRICT = {
+    username: 'user-district',
+    password: 'Sup3rSecret!',
+    place: BOB_PLACE._id,
+    contact: {
+      _id: 'fixture:user-district:offline',
+      name: 'user-district'
+    },
+    roles: ['district_admin']
   };
 
   const SETTINGS = {
@@ -237,7 +258,7 @@ describe('Contact summary info', () => {
   afterAll(async () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
-    await utils.deleteUsers([ USER ]);
+    await utils.deleteUsers([ USER_HOME_VISITS, USER_DISTRICT ]);
     await utils.revertDb();
     await commonElements.calmNative();
   });
@@ -303,12 +324,13 @@ describe('Contact summary info', () => {
   it('should display UHC Stats in contact summary, if contact counts visits and user has permission', async () => {
     const originalSettings = await utils.getSettings();
     const permissions = originalSettings.permissions;
-    permissions.can_view_uhc_stats = USER.roles;
+    permissions.can_view_uhc_stats = USER_HOME_VISITS.roles;
     await utils.updateSettings({ ...SETTINGS, permissions });
 
-    await utils.createUsers([ USER ]);
+    await utils.createUsers([ USER_HOME_VISITS ]);
     await commonElements.goToLoginPageNative();
-    await loginPage.loginNative(USER.username, USER.password);
+    await loginPage.loginNative(USER_HOME_VISITS.username, USER_HOME_VISITS.password);
+    await commonElements.calmNative();
     await utils.closeTour();
 
     await commonElements.goToPeople();
@@ -330,5 +352,27 @@ describe('Contact summary info', () => {
     expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_end')).toBe('uhc_stats_interval_end');
     const endDate = moment().endOf('month').valueOf().toString();
     expect(await contactsPo.cardFieldText('uhc_stats_interval_end')).toBe(endDate);
+  });
+
+  it('should have access to the "cht" global api variable', async () => {
+    const originalSettings = await utils.getSettings();
+    const permissions = originalSettings.permissions;
+    permissions.can_configure = USER_DISTRICT.roles;
+    permissions.can_edit = USER_DISTRICT.roles;
+    await utils.updateSettings({ ...SETTINGS, permissions });
+
+    await utils.createUsers([ USER_DISTRICT ]);
+    await commonElements.goToLoginPageNative();
+    await loginPage.loginNative(USER_DISTRICT.username, USER_DISTRICT.password);
+    await commonElements.calmNative();
+    await utils.closeTour();
+
+    await commonElements.goToPeople();
+    await contactsPo.selectLHSRowByText(BOB_PLACE.name);
+
+    expect(await contactsPo.cardFieldLabelText('can_configure')).toBe('can_configure');
+    expect(await contactsPo.cardFieldText('can_configure')).toBe('true');
+    expect(await contactsPo.cardFieldLabelText('can_edit_or_can_create_people')).toBe('can_edit_or_can_create_people');
+    expect(await contactsPo.cardFieldText('can_edit_or_can_create_people')).toBe('true');
   });
 });

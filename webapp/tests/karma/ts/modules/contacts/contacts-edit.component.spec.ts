@@ -11,7 +11,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { ContactsEditComponent } from '@mm-modules/contacts/contacts-edit.component';
 import { ComponentsModule } from '@mm-components/components.module';
-import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { TranslateService } from '@mm-services/translate.service';
 import { DbService } from '@mm-services/db.service';
 import { Selectors } from '@mm-selectors/index';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
@@ -22,7 +22,7 @@ import { GlobalActions } from '@mm-actions/global';
 
 describe('ContactsEdit component', () => {
   let contactTypesService;
-  let translateHelperService;
+  let translateService;
   let router;
   let route;
   let dbGet;
@@ -39,7 +39,7 @@ describe('ContactsEdit component', () => {
       get: sinon.stub().resolves(),
       getTypeId: sinon.stub().callsFake(contact => contact?.type === 'contact' ? contact.contact_type : contact?.type),
     };
-    translateHelperService = { get: sinon.stub().resolvesArg(0) };
+    translateService = { get: sinon.stub().resolvesArg(0) };
     dbGet = sinon.stub().resolves();
     router = { navigate: sinon.stub() };
     routeSnapshot = { params: {}, queryParams: {} };
@@ -76,7 +76,7 @@ describe('ContactsEdit component', () => {
       ],
       providers: [
         provideMockStore({ selectors: mockedSelectors }),
-        { provide: TranslateHelperService, useValue: translateHelperService },
+        { provide: TranslateService, useValue: translateService },
         { provide: DbService, useValue: { get: () => ({ get: dbGet }) } },
         { provide: Router, useValue: router  },
         { provide: ActivatedRoute, useValue: route },

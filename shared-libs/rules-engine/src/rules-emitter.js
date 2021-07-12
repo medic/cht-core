@@ -48,6 +48,7 @@ module.exports = {
         scope: {
           Utils: nootilsInstance,
           user: settings.contact,
+          cht: settings.chtScriptApi,
         },
       });
     } catch (err) {

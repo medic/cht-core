@@ -283,29 +283,23 @@ describe('Facility Filter Component', () => {
   });
 
   describe('getLabel', () => {
-    it('should return the facility name, if existent', async(() => {
+    it('should return the facility name, if existent', async () => {
       const facility = { doc: { name: 'fancy' } };
-      component.itemLabel(facility).subscribe(value => {
-        expect(value).to.equal('fancy');
-      });
-    }));
+      expect(await component.itemLabel(facility)).to.equal('fancy');
+    });
 
-    it('should return deleted for admins when name is not set', async(() => {
+    it('should return deleted for admins when name is not set', async () => {
       const facility = { doc: { _id: 'fancy' } };
-      component.itemLabel(facility).subscribe(value => {
-        expect(value).to.equal('place.deleted');
-      });
-    }));
+      expect(await component.itemLabel(facility)).to.equal('place.deleted');
+    });
 
-    it('should return unavailable for offline users when name is not set', async(() => {
+    it('should return unavailable for offline users when name is not set', async() => {
       sessionService.isOnlineOnly.returns(false);
       component.ngOnInit();
       fixture.detectChanges();
       const facility = { doc: { _id: 'fancy' } };
-      component.itemLabel(facility).subscribe(value => {
-        expect(value).to.equal('place.unavailable');
-      });
-    }));
+      expect(await component.itemLabel(facility)).to.equal('place.unavailable');
+    });
   });
 
   it('clear should clear dropdown filter', () => {

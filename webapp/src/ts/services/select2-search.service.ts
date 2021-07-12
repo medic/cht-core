@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
 import { sortBy as _sortBy } from 'lodash-es';
 import * as phoneNumber from '@medic/phone-number';
 
@@ -9,6 +8,7 @@ import { SearchService } from '@mm-services/search.service';
 import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Injectable({
   providedIn: 'root'

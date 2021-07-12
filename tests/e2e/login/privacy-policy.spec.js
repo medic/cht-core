@@ -79,7 +79,7 @@ describe('Privacy policy', () => {
   });
 
   afterEach(async () => {
-    await utils.revertDb(['privacy-policies', 'PARENT_PLACE']);
+    await utils.revertDb(['privacy-policies', 'PARENT_PLACE'], true);
   });
 
   afterAll(async () => {

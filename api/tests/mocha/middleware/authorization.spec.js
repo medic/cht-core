@@ -14,7 +14,7 @@ describe('Authorization middleware', () => {
     sinon.stub(auth, 'getUserCtx');
     sinon.stub(auth, 'isOnlineOnly');
     sinon.stub(auth, 'getUserSettings');
-    sinon.stub(serverUtils, 'notLoggedIn');
+    sinon.stub(serverUtils, 'error');
     proxy = { web: sinon.stub().resolves() };
     next = sinon.stub().resolves();
     testReq = {
@@ -39,7 +39,7 @@ describe('Authorization middleware', () => {
           next.callCount.should.equal(1);
           (!!testReq.userCtx).should.equal(false);
           testReq.authErr.should.deep.equal({ some: 'error' });
-          serverUtils.notLoggedIn.callCount.should.equal(0);
+          serverUtils.error.callCount.should.equal(0);
         });
     });
 
@@ -48,7 +48,7 @@ describe('Authorization middleware', () => {
       return middleware
         .getUserCtx(testReq, testRes, next)
         .then(() => {
-          serverUtils.notLoggedIn.callCount.should.equal(0);
+          serverUtils.error.callCount.should.equal(0);
           next.callCount.should.equal(1);
           testReq.userCtx.should.deep.equal({ name: 'user' });
           (!!testReq.authErr).should.equal(false);
@@ -62,7 +62,7 @@ describe('Authorization middleware', () => {
       return middleware
         .getUserCtx(testReq, testRes, next)
         .then(() => {
-          serverUtils.notLoggedIn.callCount.should.equal(0);
+          serverUtils.error.callCount.should.equal(0);
           next.callCount.should.equal(1);
           testReq.userCtx.should.deep.equal({ name: 'user' });
           testReq.replicationId.should.equal('some random uuid');
@@ -71,13 +71,87 @@ describe('Authorization middleware', () => {
     });
   });
 
-  describe('Online Users Proxy', () => {
-    it('blocks unauthenticated requests', () => {
-      middleware.onlineUserProxy(proxy, testReq, testRes, next);
+  describe('handleAuthErrors', () => {
+    it('should not allow authorized with no userCtx', () => {
+      testReq.authorized = true;
+      middleware.handleAuthErrors(testReq, testRes, next);
       next.callCount.should.equal(0);
-      serverUtils.notLoggedIn.callCount.should.equal(1);
+      serverUtils.error.callCount.should.equal(1);
     });
 
+    it('should allow authorized when request has no error and has userctx', () => {
+      testReq.authorized = true;
+      testReq.userCtx = { };
+      middleware.handleAuthErrors(testReq, testRes, next);
+      next.callCount.should.equal(1);
+      serverUtils.error.callCount.should.equal(0);
+    });
+
+    it('should allow non-authorized when request has no auth error', () => {
+      testReq.authorized = false;
+      testReq.userCtx = {};
+      middleware.handleAuthErrors(testReq, testRes, next);
+      next.callCount.should.equal(1);
+      serverUtils.error.callCount.should.equal(0);
+    });
+
+    it('should write the auth error', () => {
+      testReq.authErr = { some: 'error' };
+      middleware.handleAuthErrors(testReq, testRes, next);
+      next.callCount.should.equal(0);
+      serverUtils.error.callCount.should.equal(1);
+      serverUtils.error.args[0].should.deep.equal([{ some: 'error' }, testReq, testRes]);
+    });
+
+    it('should error when no authErr and no userCtx', () => {
+      middleware.handleAuthErrors(testReq, testRes, next);
+      next.callCount.should.equal(0);
+      serverUtils.error.callCount.should.equal(1);
+      serverUtils.error.args[0].should.deep.equal(['Authentication error', testReq, testRes]);
+    });
+  });
+
+  describe('handleAuthErrorsAllowingAuthorized', () => {
+    it('should allow authorized', () => {
+      testReq.authorized = true;
+      middleware.handleAuthErrorsAllowingAuthorized(testReq, testRes, next);
+      next.callCount.should.equal(1);
+      serverUtils.error.callCount.should.equal(0);
+    });
+
+    it('should allow non-authorized when the request has no error', () => {
+      testReq.authorized = false;
+      testReq.userCtx = { };
+      middleware.handleAuthErrorsAllowingAuthorized(testReq, testRes, next);
+      next.callCount.should.equal(1);
+      serverUtils.error.callCount.should.equal(0);
+    });
+
+    it('should write the auth error when not authorized', () => {
+      testReq.authErr = { some: 'error' };
+      middleware.handleAuthErrorsAllowingAuthorized(testReq, testRes, next);
+      next.callCount.should.equal(0);
+      serverUtils.error.callCount.should.equal(1);
+      serverUtils.error.args[0].should.deep.equal([{ some: 'error' }, testReq, testRes]);
+    });
+
+    it('should allow authorized when param is passed even with auth error', () => {
+      testReq.authorized = true;
+      testReq.authErr = { some: 'error' };
+      middleware.handleAuthErrorsAllowingAuthorized(testReq, testRes, next);
+      next.callCount.should.equal(1);
+      serverUtils.error.callCount.should.equal(0);
+    });
+
+    it('should error when no authErr and no userCtx', () => {
+      middleware.handleAuthErrorsAllowingAuthorized(testReq, testRes, next);
+      next.callCount.should.equal(0);
+      serverUtils.error.callCount.should.equal(1);
+      serverUtils.error.args[0].should.deep.equal(['Authentication error', testReq, testRes]);
+    });
+  });
+
+  describe('Online Users Proxy', () => {
     it('it proxies the request for online users', () => {
       testReq.userCtx = { name: 'user' };
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(true);
@@ -85,7 +159,7 @@ describe('Authorization middleware', () => {
       return middleware
         .onlineUserProxy(proxy, testReq, testRes, next)
         .then(() => {
-          serverUtils.notLoggedIn.callCount.should.equal(0);
+          serverUtils.error.callCount.should.equal(0);
           next.callCount.should.equal(0);
           auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
           proxy.web.callCount.should.equal(1);
@@ -101,7 +175,7 @@ describe('Authorization middleware', () => {
       return middleware
         .onlineUserProxy(proxy, testReq, testRes, next)
         .then(() => {
-          serverUtils.notLoggedIn.callCount.should.equal(0);
+          serverUtils.error.callCount.should.equal(0);
           next.callCount.should.equal(1);
           proxy.web.callCount.should.equal(0);
           auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
@@ -118,7 +192,7 @@ describe('Authorization middleware', () => {
       return middleware
         .onlineUserProxy(proxy, testReq, testRes, next)
         .then(() => {
-          serverUtils.notLoggedIn.callCount.should.equal(0);
+          serverUtils.error.callCount.should.equal(0);
           next.callCount.should.equal(1);
           next.args[0].should.deep.equal([undefined]);
           proxy.web.callCount.should.equal(0);
@@ -137,7 +211,7 @@ describe('Authorization middleware', () => {
       return middleware
         .onlineUserProxy(proxy, testReq, testRes, next)
         .then(() => {
-          serverUtils.notLoggedIn.callCount.should.equal(0);
+          serverUtils.error.callCount.should.equal(0);
           next.callCount.should.equal(1);
           next.args[0].should.deep.equal([{ some: 'error' }]);
           proxy.web.callCount.should.equal(0);
@@ -149,12 +223,6 @@ describe('Authorization middleware', () => {
   });
 
   describe('Online User Pass Through', () => {
-    it('blocks unauthenticated requests', () => {
-      middleware.onlineUserPassThrough(testReq, testRes, next);
-      next.callCount.should.equal(0);
-      serverUtils.notLoggedIn.callCount.should.equal(1);
-    });
-
     it('it sends online user requests to next route', () => {
       testReq.userCtx = { name: 'user' };
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(true);
@@ -162,7 +230,7 @@ describe('Authorization middleware', () => {
       return middleware
         .onlineUserPassThrough(testReq, testRes, next)
         .then(() => {
-          serverUtils.notLoggedIn.callCount.should.equal(0);
+          serverUtils.error.callCount.should.equal(0);
           next.callCount.should.equal(1);
           next.args[0][0].should.equal('route');
           auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
@@ -177,7 +245,7 @@ describe('Authorization middleware', () => {
       return middleware
         .onlineUserPassThrough(testReq, testRes, next)
         .then(() => {
-          serverUtils.notLoggedIn.callCount.should.equal(0);
+          serverUtils.error.callCount.should.equal(0);
           next.callCount.should.equal(1);
           next.args[0].should.deep.equal([undefined]);
           testReq.userCtx.should.deep.equal({ name: 'user', contact_id: 'a' });
@@ -194,7 +262,7 @@ describe('Authorization middleware', () => {
       return middleware
         .onlineUserPassThrough(testReq, testRes, next)
         .then(() => {
-          serverUtils.notLoggedIn.callCount.should.equal(0);
+          serverUtils.error.callCount.should.equal(0);
           next.callCount.should.equal(1);
           next.args[0].should.deep.equal([{ some: 'error' }]);
           testReq.userCtx.should.deep.equal({ name: 'user' });
@@ -205,18 +273,12 @@ describe('Authorization middleware', () => {
   });
 
   describe('offlineUserFirewall', () => {
-    it('blocks unauthenticated requests', () => {
-      middleware.offlineUserFirewall(testReq, testRes, next);
-      next.callCount.should.equal(0);
-      serverUtils.notLoggedIn.callCount.should.equal(1);
-    });
-
     it('should block offline users', () => {
       testReq.userCtx = { name: 'user' };
       testReq.authorized = false;
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
       middleware.offlineUserFirewall(testReq, testRes, next);
-      serverUtils.notLoggedIn.callCount.should.equal(0);
+      serverUtils.error.callCount.should.equal(0);
       next.callCount.should.equal(0);
       testRes.status.callCount.should.equal(1);
       testRes.status.args[0].should.deep.equal([403]);
@@ -233,7 +295,7 @@ describe('Authorization middleware', () => {
       testReq.authorized = true;
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
       middleware.offlineUserFirewall(testReq, testRes, next);
-      serverUtils.notLoggedIn.callCount.should.equal(0);
+      serverUtils.error.callCount.should.equal(0);
       next.callCount.should.equal(1);
       testRes.status.callCount.should.equal(0);
       testRes.json.callCount.should.equal(0);
@@ -244,7 +306,7 @@ describe('Authorization middleware', () => {
       testReq.authorized = false;
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(true);
       middleware.offlineUserFirewall(testReq, testRes, next);
-      serverUtils.notLoggedIn.callCount.should.equal(0);
+      serverUtils.error.callCount.should.equal(0);
       next.callCount.should.equal(1);
       testRes.status.callCount.should.equal(0);
       testRes.json.callCount.should.equal(0);
@@ -260,12 +322,6 @@ describe('Authorization middleware', () => {
   });
 
   describe('GetUserSettings', () => {
-    it('blocks unauthenticated requests', () => {
-      middleware.getUserSettings(testReq, testRes, next);
-      next.callCount.should.equal(0);
-      serverUtils.notLoggedIn.callCount.should.equal(1);
-    });
-
     it('it nexts request for online users', () => {
       testReq.userCtx = { name: 'user' };
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(true);
@@ -273,7 +329,7 @@ describe('Authorization middleware', () => {
       return middleware
         .getUserSettings(testReq, testRes, next)
         .then(() => {
-          serverUtils.notLoggedIn.callCount.should.equal(0);
+          serverUtils.error.callCount.should.equal(0);
           next.callCount.should.equal(1);
           auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
         });
@@ -288,7 +344,7 @@ describe('Authorization middleware', () => {
       return middleware
         .getUserSettings(testReq, testRes, next)
         .then(() => {
-          serverUtils.notLoggedIn.callCount.should.equal(0);
+          serverUtils.error.callCount.should.equal(0);
           next.callCount.should.equal(1);
           next.args[0].should.deep.equal([undefined]);
           testReq.userCtx.should.deep.equal({ name: 'user', contact_id: 'a' });

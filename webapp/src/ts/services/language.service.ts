@@ -1,10 +1,9 @@
 import * as moment from 'moment';
 import { Injectable } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateService as NgxTranslateService } from '@ngx-translate/core';
 
 import { SettingsService } from '@mm-services/settings.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 
 const localeCookieKey = 'locale';
 
@@ -32,7 +31,7 @@ export class SetLanguageCookieService {
 })
 export class SetLanguageService {
   constructor(
-    private translateService:TranslateService,
+    private ngxTranslateService:NgxTranslateService,
     private setLanguageCookieService:SetLanguageCookieService,
   ) {
   }
@@ -46,7 +45,7 @@ export class SetLanguageService {
   async set(code, setLanguageCookie?) {
     moment.locale([ code, 'en' ]);
     this.setDatepickerLanguage(code);
-    await this.translateService.use(code).toPromise();
+    await this.ngxTranslateService.use(code).toPromise();
 
     if (setLanguageCookie !== false) {
       this.setLanguageCookieService.set(code);
@@ -63,25 +62,16 @@ export class LanguageService {
     private cookieService:CookieService,
     private setLanguageCookieService:SetLanguageCookieService,
     private settingsService:SettingsService,
-    private userSettingsService:UserSettingsService,
   ) {
   }
 
   private readonly DEFAULT_LOCALE = 'en';
 
   private fetchLocale() {
-    return this.userSettingsService
+    return this.settingsService
       .get()
-      .then((user:any) => {
-        if (user && user.language) {
-          return user.language;
-        }
-
-        return this.settingsService
-          .get()
-          .then((settings:any) => {
-            return settings.locale || this.DEFAULT_LOCALE;
-          });
+      .then((settings:any) => {
+        return settings.locale || this.DEFAULT_LOCALE;
       });
   }
 
