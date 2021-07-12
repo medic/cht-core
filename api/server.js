@@ -85,6 +85,5 @@ process
   const server = app.listen(apiPort, () => {
     logger.info('Medic API listening on port ' + apiPort);
   });
-  const ONE_HOUR = 60 * 60 * 1000;
-  server.setTimeout(ONE_HOUR);
+  server.setTimeout(0);
 })();
