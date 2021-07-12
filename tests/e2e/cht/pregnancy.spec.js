@@ -57,6 +57,7 @@ describe('Pregnancy workflow on cht : ', () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(offlineUser.username, offlineUser.password);
     await utils.closeTour();
+    await commonElements.syncNative();
     await commonElements.goToPeople();
     await contactsPage.selectLHSRowByText(clinic.name);
     await contactsPage.selectContactByName(pregnancyWoman.name);
