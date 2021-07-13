@@ -7,7 +7,7 @@ const analyticsTab =  () => $('#analytics-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
-const contactsPage = require('./contacts.page');
+const contactsPage = require('../contacts/contacts.wdio.page');
 
 
 const navigateToLogoutModal = async () => {

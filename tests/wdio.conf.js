@@ -1,5 +1,5 @@
-const constants = require('../constants');
-const utils = require('../utils');
+const constants = require('./constants');
+const utils = require('./utils');
 const allure = require('allure-commandline');
 
 const baseConfig = {
@@ -28,7 +28,7 @@ const baseConfig = {
   // will be called from there.
   // 
   specs: [
-    './tests/webdriver-e2e/specs/**/*.spec.js'
+    './tests/e2e/**/*.wdio-spec.js'
   ],
   // Patterns to exclude.
   exclude: [

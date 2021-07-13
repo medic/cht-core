@@ -1,6 +1,6 @@
 const utils = require('../../utils');
 const auth = require('../../auth')();
-const commonPage = require('./common.page');
+const commonPage = require('../common/common.wdio.page');
 const loginButton = () => $('#login');
 const userField = () => $('#user');
 const passwordField = () => $('#password');

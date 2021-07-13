@@ -1,37 +1,34 @@
 const utils = require('../../utils');
-const helper = require('../../helper');
-const commonElements = require('../../page-objects/common/common.po');
-const contactElements = require('../../page-objects/contacts/contacts.po');
+const loginPage = require('../../page-objects/login/login.wdio.page');
+const placeFactory = require('../../factories/cht/contacts/place');
+const commonPage = require('../../page-objects/common/common.wdio.page');
+const contactElements = require('../../page-objects/contacts/contacts.wdio.page');
+const district_hospital = placeFactory.generateHierarchy(['district_hospital'])[0];
 
 describe('MessageFormat', () => {
-  const createContact = () => utils.saveDoc({
-    _id: 'district',
-    name: 'The District',
-    type: 'district_hospital',
-    reported_date: 1000,
-    parent: '',
-  });
+  const createContact = async () => {
+    await utils.saveDoc(district_hospital);
+  };
 
-  afterEach(async () => {
-    await utils.afterEach();
+  before(async () => {
+    await createContact();
+    await loginPage.cookieLogin();
   });
 
   it('should display plurals correctly', async () => {
-    await commonElements.goToReportsNative();
-    await createContact();
-    await commonElements.goToPeople();
-    await contactElements.selectLHSRowByText('The District');
+    await commonPage.goToPeople();
+    await contactElements.selectLHSRowByText(district_hospital.name);
 
-    const reportsFilter = await helper.getTextFromElements(contactElements.getReportsFilters(), 3);
+    const reportsFilter = await contactElements.getReportFiltersText();
     expect(reportsFilter.sort()).toEqual(['3 months', '6 months', 'View all'].sort());
 
-    const tasksFilter = await helper.getTextFromElements(contactElements.getTasksFilters(), 3);
+    const tasksFilter = await contactElements.getReportTaskFiltersText();
     expect(tasksFilter.sort()).toEqual(['1 week', '2 weeks', 'View all'].sort());
 
   });
 
   it('should work with botched translations', async () => {
-    await commonElements.goToReportsNative();
+    await commonPage.goToReports();
     await utils.addTranslations('en', {
       'Messages': 'Messages {thing}',
       'Tasks': 'Tasks {thing',
@@ -39,13 +36,15 @@ describe('MessageFormat', () => {
     });
 
     // wait for language to load
-    await browser.wait(
-      async () => await commonElements.getReportsButtonLabel().getText() === 'Reports {{thing}}',
-      2000
-    );
+    await browser.waitUntil(async () => {
+      return await (await commonPage.getReportsButtonLabel()).getText() === 'Reports {{thing}}';
+    }, {
+      timeout: 2000,
+      timeoutMsg: 'Timed out waiting for translations to update'
+    });
 
-    expect(await commonElements.getReportsButtonLabel().getText()).toEqual('Reports {{thing}}');
-    expect(await commonElements.getTasksButtonLabel().getText()).toEqual('Tasks {thing');
-    expect(await commonElements.getMessagesButtonLabel().getText()).toEqual('Messages {thing}');
+    expect(await (await commonPage.getReportsButtonLabel()).getText()).toEqual('Reports {{thing}}');
+    expect(await (await commonPage.getTasksButtonLabel()).getText()).toEqual('Tasks {thing');
+    expect(await (await commonPage.getMessagesButtonLabel()).getText()).toEqual('Messages {thing}');
   });
 });
