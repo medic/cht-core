@@ -40,6 +40,9 @@ import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { AnalyticsActions } from '@mm-actions/analytics';
+import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
+import { HeaderTabsService } from '@mm-services/header-tabs.service';
 
 describe('AppComponent', () => {
   let getComponent;
@@ -76,11 +79,15 @@ describe('AppComponent', () => {
   let telemetryService;
   let transitionsService;
   let chtScriptApiService;
+  let analyticsModulesService;
+  let headerTabsService;
   // End Services
 
   let globalActions;
+  let analyticsActions;
   let originalPouchDB;
   const changesListener = {};
+  let consoleErrorStub;
 
   beforeEach(async(() => {
     // set this in index.html
@@ -106,6 +113,8 @@ describe('AppComponent', () => {
     translateService = { instant: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub().resolves() };
     chtScriptApiService = { isInitialized: sinon.stub() };
+    headerTabsService = { canAccessTab: sinon.stub() };
+    analyticsModulesService = { get: sinon.stub() };
     databaseConnectionMonitorService = {
       listenForDatabaseClosed: sinon.stub().returns(of())
     };
@@ -140,11 +149,15 @@ describe('AppComponent', () => {
       setForms: sinon.stub(GlobalActions.prototype, 'setForms'),
       setIsAdmin: sinon.stub(GlobalActions.prototype, 'setIsAdmin')
     };
+    analyticsActions = {
+      setAnalyticsModules: sinon.stub(AnalyticsActions.prototype, 'setAnalyticsModules')
+    };
     originalPouchDB = window.PouchDB;
     window.PouchDB = {
       fetch: sinon.stub()
     };
     telemetryService = { record: sinon.stub() };
+    consoleErrorStub = sinon.stub(console, 'error');
 
     TestBed.configureTestingModule({
       declarations: [
@@ -188,7 +201,9 @@ describe('AppComponent', () => {
         { provide: TranslateLocaleService, useValue: translateLocaleService },
         { provide: TelemetryService, useValue: telemetryService },
         { provide: TransitionsService, useValue: transitionsService },
-        { provide: CHTScriptApiService, useValue: chtScriptApiService }
+        { provide: CHTScriptApiService, useValue: chtScriptApiService },
+        { provide: AnalyticsModulesService, useValue: analyticsModulesService },
+        { provide: HeaderTabsService, useValue: headerTabsService }
       ]
     });
 
@@ -560,5 +575,84 @@ describe('AppComponent', () => {
       expect(translateLocaleService.reloadLang.callCount).to.equal(1);
       expect(translateLocaleService.reloadLang.args[0]).to.deep.equal(['enabled_locale', true]);
     });
+  });
+
+  describe('Initialized Analytics Modules', () => {
+    it('should set modules if user have access to tab', fakeAsync(async () => {
+      headerTabsService.canAccessTab.resolves(true);
+      analyticsModulesService.get.resolves([{
+        id: 'targets',
+        label: 'analytics.targets',
+        route: [ '/', 'analytics', 'targets' ]
+      }]);
+
+      await getComponent();
+      tick();
+
+      expect(consoleErrorStub.callCount).to.equal(0);
+      expect(headerTabsService.canAccessTab.callCount).to.equal(1);
+      expect(headerTabsService.canAccessTab.args[0]).to.deep.equal([ 'analytics' ]);
+      expect(analyticsModulesService.get.callCount).to.equal(1);
+      expect(analyticsActions.setAnalyticsModules.callCount).to.equal(1);
+      expect(analyticsActions.setAnalyticsModules.args[0]).to.deep.equal([
+        [{
+          id: 'targets',
+          label: 'analytics.targets',
+          route: [ '/', 'analytics', 'targets' ]
+        }]
+      ]);
+    }));
+
+    it('should not set modules if user doesnt have access to tab', fakeAsync(async () => {
+      headerTabsService.canAccessTab.resolves(false);
+      analyticsModulesService.get.resolves([{
+        id: 'targets',
+        label: 'analytics.targets',
+        route: [ '/', 'analytics', 'targets' ]
+      }]);
+
+      await getComponent();
+      tick();
+
+      expect(consoleErrorStub.callCount).to.equal(0);
+      expect(headerTabsService.canAccessTab.callCount).to.equal(1);
+      expect(headerTabsService.canAccessTab.args[0]).to.deep.equal([ 'analytics' ]);
+      expect(analyticsModulesService.get.callCount).to.equal(0);
+      expect(analyticsActions.setAnalyticsModules.callCount).to.equal(0);
+    }));
+
+    it('should set empty array to modules if analyticsModulesService returns falsy value', fakeAsync(async () => {
+      headerTabsService.canAccessTab.resolves(true);
+      analyticsModulesService.get.resolves(undefined);
+
+      await getComponent();
+      tick();
+
+      expect(consoleErrorStub.callCount).to.equal(0);
+      expect(headerTabsService.canAccessTab.callCount).to.equal(1);
+      expect(headerTabsService.canAccessTab.args[0]).to.deep.equal([ 'analytics' ]);
+      expect(analyticsModulesService.get.callCount).to.equal(1);
+      expect(analyticsActions.setAnalyticsModules.callCount).to.equal(1);
+      expect(analyticsActions.setAnalyticsModules.args[0]).to.deep.equal([ [] ]);
+    }));
+
+    it('should catch exception', fakeAsync(async () => {
+      headerTabsService.canAccessTab.throws({ error: 'Oops' });
+      analyticsModulesService.get.resolves([{
+        id: 'targets',
+        label: 'analytics.targets',
+        route: [ '/', 'analytics', 'targets' ]
+      }]);
+
+      await getComponent();
+      tick();
+
+      expect(consoleErrorStub.callCount).to.equal(1);
+      expect(consoleErrorStub.args[0][0]).to.deep.equal({ error: 'Oops' });
+      expect(headerTabsService.canAccessTab.callCount).to.equal(1);
+      expect(headerTabsService.canAccessTab.args[0]).to.deep.equal([ 'analytics' ]);
+      expect(analyticsModulesService.get.callCount).to.equal(0);
+      expect(analyticsActions.setAnalyticsModules.callCount).to.equal(0);
+    }));
   });
 });

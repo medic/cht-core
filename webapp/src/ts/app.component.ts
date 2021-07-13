@@ -42,6 +42,9 @@ import { TelemetryService } from '@mm-services/telemetry.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
+import { AnalyticsActions } from '@mm-actions/analytics';
+import { HeaderTabsService } from '@mm-services/header-tabs.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -72,6 +75,7 @@ const SYNC_STATUS = {
 })
 export class AppComponent implements OnInit {
   private globalActions;
+  private analyticsActions;
   setupPromise;
   translationsLoaded;
 
@@ -121,9 +125,12 @@ export class AppComponent implements OnInit {
     private telemetryService:TelemetryService,
     private transitionsService:TransitionsService,
     private ngZone:NgZone,
-    private chtScriptApiService: CHTScriptApiService
+    private chtScriptApiService: CHTScriptApiService,
+    private analyticsModulesService: AnalyticsModulesService,
+    private headerTabsService: HeaderTabsService
   ) {
     this.globalActions = new GlobalActions(store);
+    this.analyticsActions = new AnalyticsActions(store);
 
     moment.locale(['en']);
 
@@ -283,6 +290,7 @@ export class AppComponent implements OnInit {
     this.requestPersistentStorage();
     this.startWealthQuintiles();
     this.enableTooltips();
+    this.initAnalyticsModules();
   }
 
   private initTransitions() {
@@ -642,5 +650,21 @@ export class AppComponent implements OnInit {
   private stopWatchingChanges() {
     // avoid Failed to fetch errors being logged when the browser window is reloaded
     this.changesService.killWatchers();
+  }
+
+  private async initAnalyticsModules() {
+    try {
+      const canAccess= await this.headerTabsService.canAccessTab('analytics');
+
+      if (!canAccess) {
+        return;
+      }
+
+      const modules = await this.analyticsModulesService.get();
+      this.analyticsActions.setAnalyticsModules(modules || []);
+
+    } catch (error) {
+      console.error(error);
+    }
   }
 }

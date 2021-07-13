@@ -8,6 +8,7 @@ import { AnalyticsTargetAggregatesComponent } from '@mm-modules/analytics/analyt
 import {
   AnalyticsTargetAggregatesDetailComponent
 } from '@mm-modules/analytics/analytics-target-aggregates-detail.component';
+import { AnalyticsRouteGuardProvider } from '@mm-providers/analytics-route-guard.provider';
 
 export const routes:Routes = [
   {
@@ -15,6 +16,7 @@ export const routes:Routes = [
     component: AnalyticsComponent,
     data: { permissions: [ 'can_view_analytics' ], tab: 'analytics' },
     canActivate: [ RouteGuardProvider ],
+    canActivateChild: [ AnalyticsRouteGuardProvider ],
     children: [
       {
         path: '',

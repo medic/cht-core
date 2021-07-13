@@ -4,7 +4,7 @@ import { Actions } from '@mm-actions/analytics';
 
 const initialState = {
   selected: null,
-  analyticsModules: []
+  analyticsModules: null
 };
 
 const _analyticsReducer = createReducer(
