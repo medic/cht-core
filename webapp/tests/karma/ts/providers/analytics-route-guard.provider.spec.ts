@@ -20,7 +20,7 @@ describe('AnalyticsRouteGuard provider', () => {
 
   afterEach(() => sinon.restore());
 
-  it('should return new path if single module is present', async(() => {
+  it('should return module path if single module is present', async(() => {
     const route = new ActivatedRouteSnapshot();
     route.data = { tab: 'analytics' };
     const subject = new Subject();
@@ -41,7 +41,7 @@ describe('AnalyticsRouteGuard provider', () => {
     expect(store.select.args[0]).to.deep.equal([Selectors.getAnalyticsModules]);
   }));
 
-  it('should not return new path if multiple modules are present', async(() => {
+  it('should return true and not module path if multiple modules are present', async(() => {
     const route = new ActivatedRouteSnapshot();
     route.data = { tab: 'analytics' };
     const subject = new Subject();
@@ -64,7 +64,7 @@ describe('AnalyticsRouteGuard provider', () => {
     expect(store.select.args[0]).to.deep.equal([Selectors.getAnalyticsModules]);
   }));
 
-  it('should not return new path if it is not analytics tab', async(() => {
+  it('should return true and not module path if it is not analytics tab', async(() => {
     const route = new ActivatedRouteSnapshot();
     route.data = { tab: 'messages' };
     const subject = new Subject();

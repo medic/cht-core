@@ -86,7 +86,7 @@ describe('HeaderTabs service', () => {
     it('should reject if tab is not found', async () => {
       authService.has.resolves(true);
 
-      const undefinedTab = await service
+      const nullTab = await service
         .canAccessTab(null)
         .catch(error => {
           const expectedError = 'HeaderTabsService :: Tab \'null\' not found, cannot determine tab permissions.';
@@ -100,7 +100,7 @@ describe('HeaderTabs service', () => {
           expect(error.message).to.equal(expectedError);
         });
 
-      expect(undefinedTab).to.not.be.true;
+      expect(nullTab).to.not.be.true;
       expect(unknownTab).to.not.be.true;
     });
   });

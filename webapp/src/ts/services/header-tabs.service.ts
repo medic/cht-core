@@ -81,7 +81,7 @@ export class HeaderTabsService {
     return this.tabs;
   }
 
-  canAccessTab(tabName) {
+  canAccessTab(tabName: string): Promise<boolean> {
     const tab = this.tabs.find(tabItem => tabItem.name === tabName);
 
     if (!tab) {
