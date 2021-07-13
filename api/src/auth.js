@@ -193,7 +193,19 @@ module.exports = {
       ])
       .then(([ user, medicUser ]) => {
         Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
-        return medicUser;
+
+        return db.medic
+          .allDocs({ keys: [ medicUser.facility_id, medicUser.contact_id ], include_docs: true })
+          .then(response => {
+            if (!response || !response.rows || response.rows.length !== 2) { // malformed response
+              return medicUser;
+            }
+
+            medicUser.facility = response.rows[0].doc;
+            medicUser.contact = response.rows[1].doc;
+
+            return medicUser;
+          });
       });
   },
 

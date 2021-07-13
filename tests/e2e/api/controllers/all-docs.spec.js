@@ -8,7 +8,8 @@ const password = 'passwordSUP3RS3CR37!';
 const parentPlace = {
   _id: 'PARENT_PLACE',
   type: 'district_hospital',
-  name: 'Big Parent Hospital'
+  name: 'Big Parent Hospital',
+  place_id: 'district_hospital_shortcode',
 };
 
 const users = [
@@ -19,11 +20,13 @@ const users = [
       _id: 'fixture:offline',
       type: 'health_center',
       name: 'Offline place',
-      parent: 'PARENT_PLACE'
+      place_id: 'offline_hc_shortcode',
+      parent: 'PARENT_PLACE',
     },
     contact: {
       _id: 'fixture:user:offline',
-      name: 'OfflineUser'
+      name: 'OfflineUser',
+      patient_id: 'offline_user_shortcode',
     },
     roles: ['district_admin']
   },
@@ -34,11 +37,13 @@ const users = [
       _id: 'fixture:online',
       type: 'health_center',
       name: 'Online place',
-      parent: 'PARENT_PLACE'
+      parent: 'PARENT_PLACE',
+      place_id: 'online_hc_shortcode',
     },
     contact: {
       _id: 'fixture:user:online',
-      name: 'OnlineUser'
+      name: 'OnlineUser',
+      patient_id: 'online_user_shortcode',
     },
     roles: ['national_admin']
   },
@@ -49,6 +54,7 @@ const users = [
     contact: {
       _id: 'fixture:user:supervisor',
       name: 'Supervisor',
+      patient_id: 'supervisor_user_shortcode',
     },
     roles: ['district_admin'],
   },
@@ -438,14 +444,14 @@ describe('all_docs handler', () => {
         _id: 'insensitive_report_1',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:offline'},
+        contact: { _id: 'fixture:offline' },
         patient_id: 'fixture:offline'
       },
       {
         _id: 'insensitive_report_2',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:offline'},
+        contact: { _id: 'fixture:offline' },
         patient_id: 'fixture:offline',
         fields: { private: true },
       },
@@ -453,17 +459,53 @@ describe('all_docs handler', () => {
         _id: 'insensitive_report_3',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:online'},
+        contact: { _id: 'fixture:online' },
         patient_id: 'fixture:offline',
         fields: { private: false },
       },
       {
-        _id: 'sensitive_report',
+        _id: 'sensitive_report_1',
         type: 'data_record',
         form: 'a',
-        contact: { _id: 'fixture:online'},
+        contact: { _id: 'fixture:online' },
         patient_id: 'fixture:offline',
         fields: { private: true },
+      },
+      {
+        _id: 'sensitive_report_2',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:online' },
+        patient_id: 'fixture:user:offline',
+        fields: { private: true },
+      },
+      {
+        _id: 'sensitive_report_3',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:online' },
+        fields: { private: true, place_id: 'offline_hc_shortcode' },
+      },
+      {
+        _id: 'sensitive_report_4',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:online' },
+        fields: { private: true, place_id: 'fixture:offline' },
+      },
+      {
+        _id: 'sensitive_report_5',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:online' },
+        fields: { private: true, patient_id: 'offline_user_shortcode' },
+      },
+      {
+        _id: 'sensitive_report_6',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:online' },
+        fields: { private: true, patient_uuid: 'fixture:user:offline' },
       },
     ];
 
@@ -479,7 +521,12 @@ describe('all_docs handler', () => {
           { id: 'insensitive_report_1', key: 'insensitive_report_1', value: { rev: docs[0]._rev }},
           { id: 'insensitive_report_2', key: 'insensitive_report_2', value: { rev: docs[1]._rev }},
           { id: 'insensitive_report_3', key: 'insensitive_report_3', value: { rev: docs[2]._rev }},
-          { id: 'sensitive_report', error: 'forbidden' },
+          { id: 'sensitive_report_1', error: 'forbidden' },
+          { id: 'sensitive_report_2', error: 'forbidden' },
+          { id: 'sensitive_report_3', error: 'forbidden' },
+          { id: 'sensitive_report_4', error: 'forbidden' },
+          { id: 'sensitive_report_5', error: 'forbidden' },
+          { id: 'sensitive_report_6', error: 'forbidden' },
         ]);
       });
   });
