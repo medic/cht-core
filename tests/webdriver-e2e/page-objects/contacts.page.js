@@ -1,6 +1,7 @@
 const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
-const rowByText = (text) => $(`span=${text}`);
+const contentRow = () => $('.content-row');
+const rowByText = async (text) => { return (await contentRow()).$(`span=${text}`); };
 const reportFilterSelector = '.card.reports .table-filter a';
 const reportFilter = () => $(reportFilterSelector);
 const reportFilters = () => $$(reportFilterSelector);
