@@ -8,7 +8,7 @@ import { AnalyticsTargetAggregatesComponent } from '@mm-modules/analytics/analyt
 import {
   AnalyticsTargetAggregatesDetailComponent
 } from '@mm-modules/analytics/analytics-target-aggregates-detail.component';
-import { AnalyticsRouteGuardProvider } from '@mm-providers/analytics-route-guard.provider';
+import { AnalyticsRouteGuardProvider } from '@mm-modules/analytics/analytics-route-guard.provider';
 
 export const routes:Routes = [
   {

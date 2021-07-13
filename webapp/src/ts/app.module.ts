@@ -34,7 +34,7 @@ import { PipesModule } from '@mm-pipes/pipes.module';
 import { DbService } from '@mm-services/db.service';
 import { IntegrationApiService } from '@mm-services/integration-api.service';
 import { RouteGuardProvider } from '@mm-providers/route-guard.provider';
-import { AnalyticsRouteGuardProvider } from '@mm-providers/analytics-route-guard.provider';
+import { AnalyticsRouteGuardProvider } from '@mm-modules/analytics/analytics-route-guard.provider';
 import { TranslationLoaderProvider } from '@mm-providers/translation-loader.provider';
 import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-messageformat-compiler.provider';
 import { ExceptionHandlerProvider } from '@mm-providers/exception-handler.provider';
