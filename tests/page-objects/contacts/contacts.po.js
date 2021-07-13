@@ -16,7 +16,7 @@ const contactName = element(by.css('contacts-content .body.meta .heading-content
 const rows = element.all(by.css('#contacts-list .content-row'));
 const dateOfBirthField = element(by.css('[placeholder="yyyy-mm-dd"]'));
 const contactSexField = element(by.css('[data-name="/data/contact/sex"][value="female"]'));
-const peopleRows = element.all(by.css('.right-pane .card.children li'));
+const peopleRows = () => element.all(by.css('.right-pane .card.children li'));
 const deleteContact = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('fa fa-trash-o'));
 const editContact = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('fa fa-pencil'));
 const newActions = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('dropdown-toggle'));
@@ -171,7 +171,7 @@ module.exports = {
   },
 
   selectContactByName: async (contactName) => {
-    const peopleRow = await peopleRows
+    const peopleRow = await peopleRows()
       .filter((row) => row.getText().then(text => text.includes(contactName)))
       .first();
     await helper.waitUntilReadyNative(peopleRow);

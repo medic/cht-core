@@ -56,6 +56,6 @@ describe('Editing contacts with the CHT config', () => {
     await contactPage.deleteContactByName(expectedDocs[2].name);
     await commonElements.confirmDelete();
     await contactPage.selectLHSRowByText(healtchCenterName);
-    expect(await contactPage.peopleRows.count()).toBe(0);
+    expect(await contactPage.peopleRows().count()).toBe(0);
   });
 });

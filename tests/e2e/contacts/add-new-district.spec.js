@@ -81,8 +81,8 @@ describe('Add new district tests : ', () => {
     // expect to have a single children section
     expect(await contactPage.childrenCards().count()).toEqual(1);
     // expect to list two children
-    expect(await contactPage.peopleRows.count()).toEqual(2);
-    const childrenNames = await contactPage.peopleRows.map(row => helper.getTextFromElementNative(row));
+    expect(await contactPage.peopleRows().count()).toEqual(2);
+    const childrenNames = await contactPage.peopleRows().map(row => helper.getTextFromElementNative(row));
     expect(childrenNames).toEqual(['Tudor', 'Ginny']);
   });
 });
