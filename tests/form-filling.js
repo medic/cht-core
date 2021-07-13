@@ -68,6 +68,7 @@ const fillForm = async (reportFields, reportName, allFormPages) => {
     }
   }
   await genericFormPo.submitNative();
+  await helper.waitElementToDisappearNative(element(by.css('.snackbar-content')));
 };
 
 module.exports = {
