@@ -4,7 +4,7 @@ import { Subject } from 'rxjs';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
 
-import { AnalyticsRouteGuardProvider } from '@mm-modules/analytics/analytics-route-guard.provider';
+import { AnalyticsRouteGuardProvider } from '@mm-modules/analytics/analytics-route.guard.provider';
 import { Selectors } from '@mm-selectors/index';
 
 describe('AnalyticsRouteGuard provider', () => {

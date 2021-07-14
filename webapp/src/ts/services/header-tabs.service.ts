@@ -1,14 +1,10 @@
 import { Injectable } from '@angular/core';
 
-import { AuthService } from '@mm-services/auth.service';
-
 @Injectable({
   providedIn: 'root'
 })
 export class HeaderTabsService {
-  constructor(
-    private authService: AuthService
-  ) { }
+  constructor() {}
 
   private readonly tabs = [
     {
@@ -79,16 +75,5 @@ export class HeaderTabsService {
     });
 
     return this.tabs;
-  }
-
-  canAccessTab(tabName: string): Promise<boolean> {
-    const tab = this.tabs.find(tabItem => tabItem.name === tabName);
-
-    if (!tab) {
-      const error = new Error(`HeaderTabsService :: Tab '${tabName}' not found, cannot determine tab permissions.`);
-      return Promise.reject(error);
-    }
-
-    return this.authService.has(tab.permissions);
   }
 }

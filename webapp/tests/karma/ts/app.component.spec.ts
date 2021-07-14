@@ -42,7 +42,6 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
-import { HeaderTabsService } from '@mm-services/header-tabs.service';
 
 describe('AppComponent', () => {
   let getComponent;
@@ -80,7 +79,6 @@ describe('AppComponent', () => {
   let transitionsService;
   let chtScriptApiService;
   let analyticsModulesService;
-  let headerTabsService;
   // End Services
 
   let globalActions;
@@ -113,7 +111,6 @@ describe('AppComponent', () => {
     translateService = { instant: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub().resolves() };
     chtScriptApiService = { isInitialized: sinon.stub() };
-    headerTabsService = { canAccessTab: sinon.stub() };
     analyticsModulesService = { get: sinon.stub() };
     databaseConnectionMonitorService = {
       listenForDatabaseClosed: sinon.stub().returns(of())
@@ -203,7 +200,6 @@ describe('AppComponent', () => {
         { provide: TransitionsService, useValue: transitionsService },
         { provide: CHTScriptApiService, useValue: chtScriptApiService },
         { provide: AnalyticsModulesService, useValue: analyticsModulesService },
-        { provide: HeaderTabsService, useValue: headerTabsService }
       ]
     });
 
@@ -578,8 +574,7 @@ describe('AppComponent', () => {
   });
 
   describe('Initialized Analytics Modules', () => {
-    it('should set modules if user have access to tab', fakeAsync(async () => {
-      headerTabsService.canAccessTab.resolves(true);
+    it('should set analytics modules', fakeAsync(async () => {
       analyticsModulesService.get.resolves([{
         id: 'targets',
         label: 'analytics.targets',
@@ -590,8 +585,6 @@ describe('AppComponent', () => {
       tick();
 
       expect(consoleErrorStub.callCount).to.equal(0);
-      expect(headerTabsService.canAccessTab.callCount).to.equal(1);
-      expect(headerTabsService.canAccessTab.args[0]).to.deep.equal([ 'analytics' ]);
       expect(analyticsModulesService.get.callCount).to.equal(1);
       expect(analyticsActions.setAnalyticsModules.callCount).to.equal(1);
       expect(analyticsActions.setAnalyticsModules.args[0]).to.deep.equal([
@@ -603,55 +596,18 @@ describe('AppComponent', () => {
       ]);
     }));
 
-    it('should not set modules if user doesnt have access to tab', fakeAsync(async () => {
-      headerTabsService.canAccessTab.resolves(false);
-      analyticsModulesService.get.resolves([{
-        id: 'targets',
-        label: 'analytics.targets',
-        route: [ '/', 'analytics', 'targets' ]
-      }]);
-
-      await getComponent();
-      tick();
-
-      expect(consoleErrorStub.callCount).to.equal(0);
-      expect(headerTabsService.canAccessTab.callCount).to.equal(1);
-      expect(headerTabsService.canAccessTab.args[0]).to.deep.equal([ 'analytics' ]);
-      expect(analyticsModulesService.get.callCount).to.equal(0);
-      expect(analyticsActions.setAnalyticsModules.callCount).to.equal(0);
-    }));
-
-    it('should set empty array to modules if analyticsModulesService returns falsy value', fakeAsync(async () => {
-      headerTabsService.canAccessTab.resolves(true);
-      analyticsModulesService.get.resolves(undefined);
-
-      await getComponent();
-      tick();
-
-      expect(consoleErrorStub.callCount).to.equal(0);
-      expect(headerTabsService.canAccessTab.callCount).to.equal(1);
-      expect(headerTabsService.canAccessTab.args[0]).to.deep.equal([ 'analytics' ]);
-      expect(analyticsModulesService.get.callCount).to.equal(1);
-      expect(analyticsActions.setAnalyticsModules.callCount).to.equal(1);
-      expect(analyticsActions.setAnalyticsModules.args[0]).to.deep.equal([ [] ]);
-    }));
-
     it('should catch exception', fakeAsync(async () => {
-      headerTabsService.canAccessTab.throws({ error: 'Oops' });
-      analyticsModulesService.get.resolves([{
-        id: 'targets',
-        label: 'analytics.targets',
-        route: [ '/', 'analytics', 'targets' ]
-      }]);
+      analyticsModulesService.get.throws({ error: 'Oops' });
 
       await getComponent();
       tick();
 
       expect(consoleErrorStub.callCount).to.equal(1);
-      expect(consoleErrorStub.args[0][0]).to.deep.equal({ error: 'Oops' });
-      expect(headerTabsService.canAccessTab.callCount).to.equal(1);
-      expect(headerTabsService.canAccessTab.args[0]).to.deep.equal([ 'analytics' ]);
-      expect(analyticsModulesService.get.callCount).to.equal(0);
+      expect(consoleErrorStub.args[0]).to.deep.equal([
+        'Error while initializing analytics modules',
+        { error: 'Oops' }
+      ]);
+      expect(analyticsModulesService.get.callCount).to.equal(1);
       expect(analyticsActions.setAnalyticsModules.callCount).to.equal(0);
     }));
   });

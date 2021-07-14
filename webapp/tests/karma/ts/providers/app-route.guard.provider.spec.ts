@@ -3,18 +3,18 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { ActivatedRouteSnapshot } from '@angular/router';
 
-import { RouteGuardProvider } from '@mm-providers/route-guard.provider';
+import { AppRouteGuardProvider } from '../../../../src/ts/app-route.guard.provider';
 
 describe('RouteGuard provider', () => {
   let authService;
   let router;
-  let provider:RouteGuardProvider;
+  let provider:AppRouteGuardProvider;
 
   beforeEach(() => {
     authService = { has: sinon.stub() };
     router = { navigate: sinon.stub() };
 
-    provider = new RouteGuardProvider(authService, router);
+    provider = new AppRouteGuardProvider(authService, router);
   });
 
   afterEach(() => sinon.stub());

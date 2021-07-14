@@ -44,7 +44,6 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
-import { HeaderTabsService } from '@mm-services/header-tabs.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -127,7 +126,6 @@ export class AppComponent implements OnInit {
     private ngZone:NgZone,
     private chtScriptApiService: CHTScriptApiService,
     private analyticsModulesService: AnalyticsModulesService,
-    private headerTabsService: HeaderTabsService
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
@@ -654,17 +652,10 @@ export class AppComponent implements OnInit {
 
   private async initAnalyticsModules() {
     try {
-      const canAccess= await this.headerTabsService.canAccessTab('analytics');
-
-      if (!canAccess) {
-        return;
-      }
-
       const modules = await this.analyticsModulesService.get();
-      this.analyticsActions.setAnalyticsModules(modules || []);
-
+      this.analyticsActions.setAnalyticsModules(modules);
     } catch (error) {
-      console.error(error);
+      console.error('Error while initializing analytics modules', error);
     }
   }
 }

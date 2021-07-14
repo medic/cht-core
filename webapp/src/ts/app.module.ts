@@ -24,6 +24,7 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
 
 
 import { AppRoutingModule } from './app-routing.module';
+import { AppRouteGuardProvider } from './app-route.guard.provider';
 import { AppComponent } from './app.component';
 import { ModulesModule } from '@mm-modules/modules.module';
 import { environment } from '@mm-environments/environment';
@@ -33,8 +34,7 @@ import { DirectivesModule } from '@mm-directives/directives.module';
 import { PipesModule } from '@mm-pipes/pipes.module';
 import { DbService } from '@mm-services/db.service';
 import { IntegrationApiService } from '@mm-services/integration-api.service';
-import { RouteGuardProvider } from '@mm-providers/route-guard.provider';
-import { AnalyticsRouteGuardProvider } from '@mm-modules/analytics/analytics-route-guard.provider';
+import { AnalyticsRouteGuardProvider } from '@mm-modules/analytics/analytics-route.guard.provider';
 import { TranslationLoaderProvider } from '@mm-providers/translation-loader.provider';
 import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-messageformat-compiler.provider';
 import { ExceptionHandlerProvider } from '@mm-providers/exception-handler.provider';
@@ -97,7 +97,7 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     { provide: APP_BASE_HREF, useValue: '/' },
     { provide: ErrorHandler, useClass: ExceptionHandlerProvider },
     BsModalRef,
-    RouteGuardProvider,
+    AppRouteGuardProvider,
     AnalyticsRouteGuardProvider,
     CookieService,
     ParseProvider,

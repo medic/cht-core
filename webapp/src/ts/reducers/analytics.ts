@@ -10,7 +10,7 @@ const initialState = {
 const _analyticsReducer = createReducer(
   initialState,
   on(Actions.setAnalyticsModules, (state, { payload: { analyticsModules } }) => {
-    return { ...state, analyticsModules };
+    return { ...state, analyticsModules: analyticsModules || [] };
   }),
 );
 

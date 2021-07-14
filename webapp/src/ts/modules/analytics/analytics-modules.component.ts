@@ -30,7 +30,7 @@ export class AnalyticsModulesComponent implements OnInit, OnDestroy {
     const subscription = this.store
       .select(Selectors.getAnalyticsModules)
       .subscribe(analyticsModules => {
-        this.analyticsModules = analyticsModules || [];
+        this.analyticsModules = analyticsModules;
         this.loading = false;
       });
     this.subscriptions.add(subscription);
