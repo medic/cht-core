@@ -25,7 +25,7 @@ export class AndroidApiService {
   private currentTab;
 
   constructor(
-    private store: Store,
+    private store:Store,
     private feedbackService:FeedbackService,
     private geolocationService:GeolocationService,
     private mrdtService:MRDTService,
@@ -34,7 +34,7 @@ export class AndroidApiService {
     private simprintsService:SimprintsService,
     private zone:NgZone,
     private routeSnapshotService:RouteSnapshotService,
-    private headerTabsService: HeaderTabsService,
+    private headerTabsService:HeaderTabsService,
   ) {
     this.subscribeToStore();
     this.getPrimaryTab();
@@ -189,7 +189,7 @@ export class AndroidApiService {
 
     // If we're viewing a tab, but not the primary tab, go to primary tab
     if (this.primaryTab?.name !== this.currentTab) {
-      if (this.primaryTab.route) {
+      if (this.primaryTab?.route) {
         this.router.navigate([ this.primaryTab.route ]);
         return true;
       } else {
