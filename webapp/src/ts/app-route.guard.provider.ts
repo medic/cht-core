@@ -4,8 +4,6 @@ import { from, Observable, of } from 'rxjs';
 
 import { AuthService } from '@mm-services/auth.service';
 
-
-
 @Injectable()
 export class AppRouteGuardProvider implements CanActivate {
   constructor(

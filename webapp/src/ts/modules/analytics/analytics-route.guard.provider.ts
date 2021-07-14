@@ -18,7 +18,7 @@ export class AnalyticsRouteGuardProvider implements CanActivateChild {
     return this.store
       .select(Selectors.getAnalyticsModules)
       .pipe(
-        filter(modules => !!modules),
+        filter(modules => !!modules), // Ignoring initial state and wait for analytics modules data.
         map(analyticsModules => {
           if (route.data?.tab === 'analytics' && analyticsModules?.length === 1) {
             return this.router.createUrlTree(analyticsModules[0].route);
