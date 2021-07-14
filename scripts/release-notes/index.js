@@ -87,7 +87,8 @@ const getIssues = async (milestoneId) => {
     owner: OWNER,
     repo: REPO_NAME,
     milestone: milestoneId,
-    per_page: 100
+    per_page: 100,
+    state: 'all',
   });
   return validateIssues(issues);
 };
