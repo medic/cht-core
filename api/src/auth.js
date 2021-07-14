@@ -55,6 +55,26 @@ const getFacilityId = (req, userCtx) => {
   return get(url, req.headers).then(user => user.facility_id);
 };
 
+const hydrateUserSettings = (userSettings) => {
+  return db.medic
+    .allDocs({ keys: [ userSettings.facility_id, userSettings.contact_id ], include_docs: true })
+    .then((response) => {
+      if (!Array.isArray(response.rows) || response.rows.length !== 2) { // malformed response
+        return userSettings;
+      }
+
+      const [facilityRow, contactRow] = response.rows;
+      if (!facilityRow || !contactRow) { // malformed response
+        return userSettings;
+      }
+
+      userSettings.facility = facilityRow.doc;
+      userSettings.contact = contactRow.doc;
+
+      return userSettings;
+    });
+};
+
 module.exports = {
   isOnlineOnly: userCtx => {
     return hasRole(userCtx, '_admin') ||
@@ -193,19 +213,7 @@ module.exports = {
       ])
       .then(([ user, medicUser ]) => {
         Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
-
-        return db.medic
-          .allDocs({ keys: [ medicUser.facility_id, medicUser.contact_id ], include_docs: true })
-          .then(response => {
-            if (!response || !response.rows || response.rows.length !== 2) { // malformed response
-              return medicUser;
-            }
-
-            medicUser.facility = response.rows[0].doc;
-            medicUser.contact = response.rows[1].doc;
-
-            return medicUser;
-          });
+        return hydrateUserSettings(medicUser);
       });
   },
 

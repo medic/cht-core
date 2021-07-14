@@ -345,6 +345,76 @@ describe('Auth', () => {
       });
     });
 
+    it('should not use malformed results from all docs', () => {
+      environment.serverUrl = 'http://abc.com';
+
+      sinon.stub(db.users, 'get').resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user',
+        roles: [ 'a' ],
+        type: 'user',
+        password_scheme: 'abcd',
+        facility_id: 'myUserVille'
+      });
+      sinon.stub(db.medic, 'get').resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user-edited',
+        roles: [ '_admin' ],
+        type: 'user-settings',
+        some: 'field',
+        contact_id: 'my-user-contact',
+        facility_id: 'otherVille'
+      });
+      sinon.stub(db.medic, 'allDocs').resolves({});
+
+      return auth.getUserSettings({ name: 'my-user' }).then(result => {
+        chai.expect(result).to.deep.equal({
+          _id: 'org.couchdb.user:my-user',
+          name: 'my-user',
+          roles: [ 'a' ],
+          type: 'user-settings',
+          some: 'field',
+          contact_id: 'my-user-contact',
+          facility_id: 'myUserVille',
+        });
+      });
+    });
+
+    it('should not use malformed results from all docs', () => {
+      environment.serverUrl = 'http://abc.com';
+
+      sinon.stub(db.users, 'get').resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user',
+        roles: [ 'a' ],
+        type: 'user',
+        password_scheme: 'abcd',
+        facility_id: 'myUserVille'
+      });
+      sinon.stub(db.medic, 'get').resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user-edited',
+        roles: [ '_admin' ],
+        type: 'user-settings',
+        some: 'field',
+        contact_id: 'my-user-contact',
+        facility_id: 'otherVille'
+      });
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: {} });
+
+      return auth.getUserSettings({ name: 'my-user' }).then(result => {
+        chai.expect(result).to.deep.equal({
+          _id: 'org.couchdb.user:my-user',
+          name: 'my-user',
+          roles: [ 'a' ],
+          type: 'user-settings',
+          some: 'field',
+          contact_id: 'my-user-contact',
+          facility_id: 'myUserVille',
+        });
+      });
+    });
+
     it('should work with not found contact', () => {
       environment.serverUrl = 'http://abc.com';
 
