@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core';
 
+import { AuthService } from '@mm-services/auth.service';
+
 @Injectable({
   providedIn: 'root'
 })
 export class HeaderTabsService {
-  constructor() {}
+  constructor(
+    private authService: AuthService
+  ) { }
 
-  private readonly tabs = [
+  private readonly tabs: HeaderTab[] = [
     {
       name: 'messages',
       route: 'messages',
@@ -56,7 +60,7 @@ export class HeaderTabsService {
     }
   ];
 
-  get(settings:any = {}) {
+  get(settings:any = {}): HeaderTab[] {
     if (!settings.header_tabs) {
       return this.tabs;
     }
@@ -69,6 +73,7 @@ export class HeaderTabsService {
       if (settings.header_tabs[tab.name].icon && settings.header_tabs[tab.name].icon.startsWith('fa-')) {
         tab.icon = settings.header_tabs[tab.name].icon;
       }
+
       if (settings.header_tabs[tab.name].resource_icon) {
         tab.resourceIcon = settings.header_tabs[tab.name].resource_icon;
       }
@@ -76,4 +81,32 @@ export class HeaderTabsService {
 
     return this.tabs;
   }
+
+  async getAuthorizedTabs(settings:any = {}): Promise<HeaderTab[]> {
+    const tabs = this.get(settings);
+    const results = await Promise.all(tabs.map(tab => this.authService.has(tab.permissions)));
+
+    return tabs.filter((tab, index) => results[index]);
+  }
+
+  async getFirstAuthorizedTab(settings:any = {}): Promise<HeaderTab> {
+    const tabs = await this.getAuthorizedTabs(settings);
+
+    if (!tabs.length) {
+      return;
+    }
+
+    return tabs[0];
+  }
+}
+
+interface HeaderTab {
+  name: string;
+  route: string;
+  defaultIcon: string;
+  translation: string;
+  permissions: string[];
+  typeName?: string;
+  icon?: string;
+  resourceIcon?: string;
 }
