@@ -308,7 +308,7 @@ describe('Auth', () => {
             facility_id: 'myUserVille',
             facility: { _id: 'myUserVille', place_id: 'user_ville' },
             contact: { _id: 'my-user-contact', patient_id: 'contact' },
-          })
+          });
         });
     });
 
