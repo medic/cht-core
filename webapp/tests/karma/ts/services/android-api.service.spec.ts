@@ -63,7 +63,7 @@ describe('AndroidApi service', () => {
     };
 
     headerTabsService = {
-      getFirstAuthorizedTab: sinon.stub().resolves()
+      getPrimaryTab: sinon.stub().resolves()
     };
 
     const mockedSelectors = [
@@ -216,7 +216,7 @@ describe('AndroidApi service', () => {
     it('should navigate to primaryTab if it is not the current tab', fakeAsync(() => {
       store.overrideSelector(Selectors.getCurrentTab, 'tasks');
       store.refreshState();
-      headerTabsService.getFirstAuthorizedTab.resolves({ name: 'messages', route: 'messages' });
+      headerTabsService.getPrimaryTab.resolves({ name: 'messages', route: 'messages' });
       service = TestBed.inject(AndroidApiService);
       tick();
 
@@ -226,14 +226,14 @@ describe('AndroidApi service', () => {
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([ ['messages'] ]);
       expect(feedbackService.submit.callCount).to.equal(0);
-      expect(headerTabsService.getFirstAuthorizedTab.callCount).to.equal(1);
+      expect(headerTabsService.getPrimaryTab.callCount).to.equal(1);
     }));
 
     it('should submit feedback if routes is missing', fakeAsync(() => {
       feedbackService.submit.resolves();
       store.overrideSelector(Selectors.getCurrentTab, 'tasks');
       store.refreshState();
-      headerTabsService.getFirstAuthorizedTab.resolves({ name: 'messages', route: null });
+      headerTabsService.getPrimaryTab.resolves({ name: 'messages', route: null });
       service = TestBed.inject(AndroidApiService);
       tick();
 
@@ -244,12 +244,13 @@ describe('AndroidApi service', () => {
       expect(feedbackService.submit.args[0]).to.deep.equal(
         ['Attempt to back to an undefined state [AndroidApi.back()]']
       );
+      expect(router.navigate.callCount).to.equal(0);
     }));
 
     it('should return false if primaryTab is the current tab', fakeAsync(() => {
       store.overrideSelector(Selectors.getCurrentTab, 'messages');
       store.refreshState();
-      headerTabsService.getFirstAuthorizedTab.resolves({ name: 'messages', route: 'messages' });
+      headerTabsService.getPrimaryTab.resolves({ name: 'messages', route: 'messages' });
       service = TestBed.inject(AndroidApiService);
       tick();
 
@@ -257,7 +258,8 @@ describe('AndroidApi service', () => {
 
       expect(result).to.be.false;
       expect(feedbackService.submit.callCount).to.equal(0);
-      expect(headerTabsService.getFirstAuthorizedTab.callCount).to.equal(1);
+      expect(headerTabsService.getPrimaryTab.callCount).to.equal(1);
+      expect(router.navigate.callCount).to.equal(0);
     }));
   });
 

@@ -17,9 +17,9 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     return this.headerTabsService
-      .getFirstAuthorizedTab()
+      .getPrimaryTab() // Not passing settings since icons aren't needed.
       .then(tab => {
-        const nextRoute = !tab?.route ? [ 'error', '403' ] : [ tab?.route ];
+        const nextRoute = tab?.route ? [ tab.route ] : [ 'error', '403' ];
         this.router.navigate(nextRoute);
       });
   }

@@ -48,7 +48,7 @@ export class AndroidApiService {
 
   private getPrimaryTab() {
     this.headerTabsService
-      .getFirstAuthorizedTab()
+      .getPrimaryTab() // Not passing settings since icons aren't needed.
       .then(tab => this.primaryTab = tab);
   }
 
