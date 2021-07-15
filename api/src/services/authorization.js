@@ -391,8 +391,8 @@ const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
  * @param {Object} userCtx                    User context object
  * @param {string} userCtx.contact_id         the user's contact's uuid
  * @param {string} userCtx.facility_id        the user's place's uuid
- * @param {Object} userCtx.contact            the user's contact
- * @param {Object} userCtx.facility           the user's place
+ * @param {Object|undefined} userCtx.contact  the user's contact
+ * @param {Object|undefined} userCtx.facility the user's place
  * @param {string|undefined} subject          report's subject
  * @param {string|undefined} submitter        report's submitter
  * @param {boolean} isPrivate                 whether the report is private
