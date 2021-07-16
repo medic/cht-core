@@ -28,26 +28,72 @@ const updateContacts = (contacts, muted) => {
     return Promise.resolve();
   }
 
-  contacts.forEach(contact => updateContact(contact, muted));
-  return db.medic.bulkDocs(contacts);
+  const updatedContacts = contacts
+    .map(contact => {
+      if (updateContact(contact, muted)) {
+        return contact;
+      }
+    })
+    .filter(contact => contact);
+
+  return db.medic.bulkDocs(updatedContacts);
 };
 
+/**
+ * Updates the muted state on a given contact, updates local muting history, if it exists.
+ * If a contact does not need updating, the object is not mutated and the function returns boolean false.
+ * The contact does not need updating when either:
+ * a) an already muted contact is muted and there is no muting history
+ * b) an already unmuted contact is unmuted and there is no muting history
+ * c) an already muted contact is muted, and the muting history is up to date
+ * d) an already unmuted contact is unmuted, and the muting history is up to date
+ * Muting history is up to date when:
+ * - the last update was made on the server
+ * - the server muted state corresponds with the updated muted state.
+ * In any other case, the contact will be updated with the new muted state.
+ * @param {Object} contact
+ * @param {string|boolean} muted
+ * @return {boolean}
+ */
 const updateContact = (contact, muted) => {
+  const isMutingHistoryUpToDate = !contact.muting_history ||
+                                  (
+                                    contact.muting_history &&
+                                    contact.muting_history.last_update === SERVER &&
+                                    contact.muting_history[SERVER].muted === !!muted
+                                  );
+
+  let updated = false;
+  let mutedTimestamp;
   if (muted) {
-    contact.muted = muted;
-  } else {
-    delete contact.muted;
+    if (isMutingHistoryUpToDate) {
+      // if muting an already muted contact and muting history requires no changes, use the contact's muted timestamp
+      mutedTimestamp = contact.muted || muted;
+    } else {
+      // if muting an already muted contact and muting history requires changes, use the new muted timestamp
+      mutedTimestamp = muted;
+    }
   }
 
-  if (contact.muting_history) {
+  if (!isMutingHistoryUpToDate && contact.muting_history) {
+    updated = true;
     contact.muting_history[SERVER] = {
       muted: !!muted,
-      date: muted || new Date().getTime(),
+      date: mutedTimestamp || new Date().getTime(),
     };
     contact.muting_history.last_update = SERVER;
   }
 
-  return contact;
+  if (!isMutingHistoryUpToDate || contact.muted !== mutedTimestamp) {
+    updated = true;
+    if (muted) {
+      contact.muted = mutedTimestamp;
+    } else {
+      delete contact.muted;
+    }
+  }
+
+  return updated;
 };
 
 const updateRegistrations = (subjectIds, muted) => {
