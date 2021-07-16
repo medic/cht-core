@@ -2,13 +2,12 @@ import { TestBed } from '@angular/core/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { NavigationService } from '@mm-services/navigation.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
-import { TranslateService } from '@mm-services/translate.service';
-import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
 describe('NavigationComponent', () => {
   let component: NavigationComponent;
@@ -39,7 +38,6 @@ describe('NavigationComponent', () => {
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
           { provide: NavigationService, useValue: navigationService },
-          { provide: TranslateService, useValue: {} },
         ]
       })
       .compileComponents()
