@@ -168,6 +168,74 @@ describe('mutingUtils', () => {
       });
     });
 
+    it('should not update docs without changes when muting', () => {
+      const timestamp = 5000;
+      const contacts = [
+        { _id: 'a', muted: 100 },
+        { _id: 'b' },
+        { _id: 'c', muted: 1000, muting_history: { last_update: 'client_side' } },
+        { _id: 'd', muting_history: { last_update: 'client_side', server_side: { muted: true, date: 1000 } } },
+        { _id: 'e', muting_history: { last_update: 'server_side', server_side: { muted: false } } },
+        { _id: 'f', muted: 3000, muting_history: { last_update: 'server_side', server_side: { muted: true } } },
+      ];
+      db.medic.bulkDocs.resolves();
+
+      return mutingUtils._updateContacts(contacts, timestamp).then(() => {
+        chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
+        chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
+          { _id: 'b', muted: timestamp },
+          {
+            _id: 'c',
+            muted: timestamp,
+            muting_history: { last_update: 'server_side', server_side: { muted: true, date: timestamp } }
+          },
+          {
+            _id: 'd',
+            muted: timestamp,
+            muting_history: { last_update: 'server_side', server_side: { muted: true, date: timestamp } }
+          },
+          {
+            _id: 'e',
+            muted: timestamp,
+            muting_history: { last_update: 'server_side', server_side: { muted: true, date: timestamp } },
+          },
+        ]]); // a and f are skipped
+      });
+    });
+
+    it('should not update docs without changes when unmuting', () => {
+      const timestamp = 5000;
+      clock = sinon.useFakeTimers(timestamp);
+      const contacts = [
+        { _id: 'a' },
+        { _id: 'b', muted: 100 },
+        { _id: 'c', muted: 1000, muting_history: { last_update: 'client_side' } },
+        { _id: 'd', muting_history: { last_update: 'client_side' } },
+        { _id: 'e', muted: 2000, muting_history: { last_update: 'server_side', server_side: { muted: true } } },
+        { _id: 'f', muting_history: { last_update: 'server_side', server_side: { muted: false } } },
+      ];
+      db.medic.bulkDocs.resolves();
+
+      return mutingUtils._updateContacts(contacts, false).then(() => {
+        chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
+        chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
+          { _id: 'b' },
+          {
+            _id: 'c',
+            muting_history: { last_update: 'server_side', server_side: { muted: false, date: timestamp } }
+          },
+          {
+            _id: 'd',
+            muting_history: { last_update: 'server_side', server_side: { muted: false, date: timestamp } },
+          },
+          {
+            _id: 'e',
+            muting_history: { last_update: 'server_side', server_side: { muted: false, date: timestamp } }
+          },
+        ]]); // a and f are skipped
+      });
+    });
+
     it('should not call bulkDocs if contacts are empty', () => {
       return mutingUtils._updateContacts([], true).then(result => {
         chai.expect(result).to.equal(undefined);
@@ -1584,17 +1652,24 @@ describe('mutingUtils', () => {
 
   describe('updateContact', () => {
     it('should remove muted property when unmuting', () => {
-      chai.expect(mutingUtils.updateContact({}, false)).to.deep.equal({ });
-      chai.expect(mutingUtils.updateContact({ muted: 'something' }, false)).to.deep.equal({ });
-      chai
-        .expect(mutingUtils.updateContact({ _id: 'a', patient_id: 'b', muted: 'something' }, false))
-        .to.deep.equal({ _id: 'a', patient_id: 'b' });
+      let contact = { muted: 'something' };
+      chai.expect(mutingUtils.updateContact(contact, false)).to.equal(true);
+      chai.expect(contact).to.deep.equal({});
+
+      contact = { _id: 'a', patient_id: 'b', muted: 'something' };
+      chai.expect(mutingUtils.updateContact(contact, false)).to.equal(true);
+      chai.expect(contact).to.deep.equal({ _id: 'a', patient_id: 'b' });
     });
 
     it('set muted to received value', () => {
       const timestamp = 5000;
-      chai.expect(mutingUtils.updateContact({}, timestamp)).to.deep.equal({ muted: timestamp });
-      chai.expect(mutingUtils.updateContact({}, timestamp + timestamp)).to.deep.equal({ muted: timestamp + timestamp });
+      let contact = {};
+      chai.expect(mutingUtils.updateContact(contact, timestamp)).to.equal(true);
+      chai.expect(contact).to.deep.equal({ muted: timestamp });
+
+      contact = {};
+      chai.expect(mutingUtils.updateContact(contact, timestamp + timestamp)).to.equal(true);
+      chai.expect(contact).to.deep.equal({ muted: timestamp + timestamp });
     });
 
     it('should set muting history when available', () => {
@@ -1629,7 +1704,9 @@ describe('mutingUtils', () => {
         },
       };
 
-      chai.expect(mutingUtils.updateContact(_.cloneDeep(mutedContact), timestamp)).to.deep.equal({
+      let contact = _.cloneDeep(mutedContact);
+      chai.expect(mutingUtils.updateContact(contact, timestamp)).to.equal(true);
+      chai.expect(contact).to.deep.equal({
         muted: timestamp,
         muting_history: {
           server_side: {
@@ -1643,7 +1720,10 @@ describe('mutingUtils', () => {
           last_update: 'server_side',
         },
       });
-      chai.expect(mutingUtils.updateContact(_.cloneDeep(mutedContact))).to.deep.equal({
+
+      contact = _.cloneDeep(mutedContact);
+      chai.expect(mutingUtils.updateContact(contact)).to.equal(true);
+      chai.expect(contact).to.deep.equal({
         muting_history: {
           server_side: {
             muted: false,
@@ -1657,7 +1737,9 @@ describe('mutingUtils', () => {
         },
       });
 
-      chai.expect(mutingUtils.updateContact(_.cloneDeep(unmutedContact), timestamp)).to.deep.equal({
+      contact = _.cloneDeep(unmutedContact);
+      chai.expect(mutingUtils.updateContact(contact, timestamp)).to.equal(true);
+      chai.expect(contact).to.deep.equal({
         muted: timestamp,
         muting_history: {
           server_side: {
@@ -1672,7 +1754,9 @@ describe('mutingUtils', () => {
         },
       });
 
-      chai.expect(mutingUtils.updateContact(_.cloneDeep(unmutedContact))).to.deep.equal({
+      contact = _.cloneDeep(unmutedContact);
+      chai.expect(mutingUtils.updateContact(contact)).to.equal(true);
+      chai.expect(contact).to.deep.equal({
         muting_history: {
           server_side: {
             muted: false,
@@ -1684,6 +1768,193 @@ describe('mutingUtils', () => {
           }],
           last_update: 'server_side',
         },
+      });
+    });
+
+    describe('should update contact when muting context changes', () => {
+      const timestamp = 4567;
+      beforeEach(() => {
+        clock = sinon.useFakeTimers(timestamp);
+      });
+
+      it('when muted on client, unmuted on server and muting', () => {
+        const contact = {
+          muted: 2000,
+          muting_history: {
+            last_update: 'client_side',
+            server_side: { muted: false, date: 100 },
+            client_side: [{ muted: true, date: 2000 }],
+          },
+        };
+        chai.expect(mutingUtils.updateContact(contact, timestamp)).to.equal(true);
+        chai.expect(contact).to.deep.equal({
+          muted: timestamp,
+          muting_history: {
+            last_update: 'server_side',
+            server_side: { muted: true, date: timestamp },
+            client_side: [{ muted: true, date: 2000 }],
+          }
+        });
+      });
+
+      it('when not muted on server and muting ', () => {
+        const contact = {
+          muting_history: {
+            last_update: 'server_side',
+            server_side: { muted: false, date: 100 },
+            client_side: [{ muted: true, date: 2000 }],
+          },
+        };
+
+        chai.expect(mutingUtils.updateContact(contact, timestamp)).to.equal(true);
+        chai.expect(contact).to.deep.equal({
+          muted: timestamp,
+          muting_history: {
+            last_update: 'server_side',
+            server_side: { muted: true, date: timestamp },
+            client_side: [{ muted: true, date: 2000 }],
+          }
+        });
+      });
+
+      it('when unmuted on client, muted on server and unmuting', () => {
+        const contact = {
+          muting_history: {
+            last_update: 'server_side',
+            server_side: { muted: true, date: 100 },
+            client_side: [{ muted: false, date: 2000 }],
+          },
+        };
+
+        chai.expect(mutingUtils.updateContact(contact, false)).to.deep.equal(true);
+        chai.expect(contact).to.deep.equal({
+          muting_history: {
+            last_update: 'server_side',
+            server_side: { muted: false, date: timestamp },
+            client_side: [{ muted: false, date: 2000 }],
+          }
+        });
+      });
+
+      it('when unmuted on client, unmuted on server but last updated on client', () => {
+        const contact = {
+          muting_history: {
+            last_update: 'client_side',
+            server_side: { muted: false, date: 100 },
+            client_side: [{ muted: false, date: 2000 }],
+          },
+        };
+
+        chai.expect(mutingUtils.updateContact(contact, false)).to.deep.equal(true);
+        chai.expect(contact).to.deep.equal({
+          muting_history: {
+            last_update: 'server_side',
+            server_side: { muted: false, date: timestamp },
+            client_side: [{ muted: false, date: 2000 }],
+          }
+        });
+      });
+
+      it('when muted on client, muted on server but last updated on client', () => {
+        const contact = {
+          muted: 2500,
+          muting_history: {
+            last_update: 'client_side',
+            server_side: { muted: true, date: 100 },
+            client_side: [{ muted: true, date: 2500 }],
+          },
+        };
+
+        chai.expect(mutingUtils.updateContact(contact, timestamp)).to.deep.equal(true);
+        chai.expect(contact).to.deep.equal({
+          muted: timestamp,
+          muting_history: {
+            last_update: 'server_side',
+            server_side: { muted: true, date: timestamp },
+            client_side: [{ muted: true, date: 2500 }],
+          }
+        });
+      });
+
+      it('when muting an unmuted contact', () => {
+        const contact = {};
+        chai.expect(mutingUtils.updateContact(contact, timestamp)).to.deep.equal(true);
+        chai.expect(contact).to.deep.equal({ muted: timestamp });
+      });
+
+      it('when unmuting a muted contact', () => {
+        const contact = { muted: 1000 };
+        chai.expect(mutingUtils.updateContact(contact, false)).to.deep.equal(true);
+        chai.expect(contact).to.deep.equal({});
+      });
+    });
+
+    describe('should not update contact when muting context does not change', () => {
+      const timestamp = 4567;
+      beforeEach(() => {
+        clock = sinon.useFakeTimers(timestamp);
+      });
+
+      it('when unmuting an unmuted contact', () => {
+        const contact = {};
+        chai.expect(mutingUtils.updateContact(contact, false)).to.equal(false);
+        chai.expect(contact).to.deep.equal({});
+      });
+
+      it('when unmuting an unmuted contact with muting history', () => {
+        let contact = {
+          muting_history: {
+            last_update: 'server_side',
+            server_side: { muted: false, date: 2000 },
+            client_side: [{ muted: false, date: 1000 }],
+          },
+        };
+        let contactClone = _.cloneDeep(contact);
+        chai.expect(mutingUtils.updateContact(contact, false)).to.equal(false);
+        chai.expect(contact).to.deep.equal(contactClone);
+
+        contact = {
+          muting_history: {
+            last_update: 'server_side',
+            server_side: { muted: false, date: 2000 },
+            client_side: [{ muted: true, date: 1000 }],
+          },
+        };
+        contactClone = _.cloneDeep(contact);
+        chai.expect(mutingUtils.updateContact(contact)).to.equal(false);
+        chai.expect(contact).to.deep.equal(contactClone);
+      });
+
+      it('when muting a muted contact', () => {
+        const contact = { muted: 1000 };
+        chai.expect(mutingUtils.updateContact(contact, timestamp)).to.equal(false);
+        chai.expect(contact).to.deep.equal({ muted: 1000 });
+      });
+
+      it('when muting an muted contact with muting history', () => {
+        let contact = {
+          muted: 2000,
+          muting_history: {
+            last_update: 'server_side',
+            server_side: { muted: true, date: 2000 },
+            client_side: [{ muted: false, date: 1000 }],
+          },
+        };
+        let contactClone = _.cloneDeep(contact);
+        chai.expect(mutingUtils.updateContact(contact, timestamp)).to.equal(false);
+        chai.expect(contact).to.deep.equal(contactClone);
+
+        contact = {
+          muted: 1000,
+          muting_history: {
+            last_update: 'server_side',
+            server_side: { muted: true, date: 1000 },
+            client_side: [{ muted: true, date: 1000 }],
+          },
+        };
+        contactClone = _.cloneDeep(contact);
+        chai.expect(mutingUtils.updateContact(contact, timestamp)).to.equal(false);
+        chai.expect(contact).to.deep.equal(contactClone);
       });
     });
   });
