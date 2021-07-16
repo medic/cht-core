@@ -6,6 +6,7 @@ chai.use(require('chai-shallow-deep-equal'));
 chai.config.truncateThreshold = 0;
 chai.use(require('chai-exclude'));
 
+
 const baseConfig = {
   params:{
     pathToConfig: false
