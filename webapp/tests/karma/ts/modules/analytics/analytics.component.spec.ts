@@ -14,6 +14,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { TourService } from '@mm-services/tour.service';
+import { NavigationService } from '@mm-services/navigation.service';
 
 describe('AnalyticsComponent', () => {
   let component: AnalyticsComponent;
@@ -61,6 +62,7 @@ describe('AnalyticsComponent', () => {
           { provide: AnalyticsModulesService, useValue: analyticsModulesService },
           { provide: ActivatedRoute, useValue: activatedRoute },
           { provide: TourService, useValue: { startIfNeeded: sinon.stub() } },
+          { provide: NavigationService, useValue: {} },
         ]
       })
       .compileComponents()

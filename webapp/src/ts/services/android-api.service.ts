@@ -1,15 +1,10 @@
 import { Injectable, NgZone } from '@angular/core';
-import { Router } from '@angular/router';
-import { Store } from '@ngrx/store';
 
-import { FeedbackService } from '@mm-services/feedback.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SessionService } from '@mm-services/session.service';
-import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { SimprintsService } from '@mm-services/simprints.service';
-import { HeaderTabsService } from '@mm-services/header-tabs.service';
-import { Selectors } from '@mm-selectors/index';
+import { NavigationService } from '@mm-services/navigation.service';
 
 /**
  * An API to provide integration with the medic-android app.
@@ -21,36 +16,15 @@ import { Selectors } from '@mm-selectors/index';
   providedIn: 'root',
 })
 export class AndroidApiService {
-  private primaryTab;
-  private currentTab;
 
   constructor(
-    private store:Store,
-    private feedbackService:FeedbackService,
     private geolocationService:GeolocationService,
     private mrdtService:MRDTService,
     private sessionService:SessionService,
-    private router:Router,
     private simprintsService:SimprintsService,
     private zone:NgZone,
-    private routeSnapshotService:RouteSnapshotService,
-    private headerTabsService:HeaderTabsService,
-  ) {
-    this.subscribeToStore();
-    this.getPrimaryTab();
-  }
-
-  private subscribeToStore() {
-    this.store
-      .select(Selectors.getCurrentTab)
-      .subscribe(currentTab => this.currentTab = currentTab);
-  }
-
-  private getPrimaryTab() {
-    this.headerTabsService
-      .getPrimaryTab() // Not passing settings since icons aren't needed.
-      .then(tab => this.primaryTab = tab);
-  }
+    private navigationService:NavigationService,
+  ) { }
 
   private runInZone(property:string, args:any[]=[]) {
     if (!this[property] || typeof this[property] !== 'function') {
@@ -84,7 +58,6 @@ export class AndroidApiService {
       });
     return closed;
   }
-
 
   /**
    * Close the highest-priority dropdown within a particular container.
@@ -138,19 +111,7 @@ export class AndroidApiService {
     }
   }
 
-  /**
-   * Kill the session.
-   */
-  logout() {
-    this.sessionService.logout();
-  }
-
-  /**
-   * Handle hardware back-button presses when inside the android app.
-   * @return {boolean} `true` if angular handled the back button; otherwise
-   *   the android app will handle it as it sees fit.
-   */
-  back() {
+  private closeUserInterfaceElements() {
     // If there's a modal open, close any dropdowns inside it, or try to close the modal itself.
     const $modals = $('.modal:visible');
     if ($modals.length) {
@@ -176,30 +137,34 @@ export class AndroidApiService {
       return true;
     }
 
-    const routeSnapshot = this.routeSnapshotService.get();
-    if (routeSnapshot?.data?.name === 'contacts.deceased') {
-      this.router.navigate(['/contacts', routeSnapshot.params.id]);
-      return true;
-    }
-
-    if (routeSnapshot?.params?.id) {
-      this.router.navigate(['/', routeSnapshot.parent.routeConfig.path]);
-      return true;
-    }
-
-    // If we're viewing a tab, but not the primary tab, go to primary tab
-    if (this.primaryTab?.name !== this.currentTab) {
-      if (this.primaryTab?.route) {
-        this.router.navigate([ this.primaryTab.route ]);
-        return true;
-      } else {
-        this.feedbackService
-          .submit('Attempt to back to an undefined state [AndroidApi.back()]')
-          .catch(error => console.error('Error saving feedback', error));
-      }
-    }
-
+    // Nothing to close.
     return false;
+  }
+
+  /**
+   * Handle hardware back-button presses when inside the android app.
+   * @return {boolean} `true` if angular handled the back button; otherwise
+   *   the android app will handle it as it sees fit.
+   */
+  back() {
+    if (this.closeUserInterfaceElements()) {
+      return true;
+    }
+
+    if (this.navigationService.goBack()) {
+      return true;
+    }
+
+    this.navigationService.goToPrimaryTab();
+    // Not giving back the control to the android app so it doesn't minimize the app. Ref: #6698
+    return true;
+  }
+
+  /**
+   * Kill the session.
+   */
+  logout() {
+    this.sessionService.logout();
   }
 
   /**
