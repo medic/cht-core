@@ -66,7 +66,7 @@ describe('Navigation tests : ', () => {
   });
 
   //mobile resolution
-  fdescribe('Mobile view tests : ', () => {
+  describe('Mobile view tests : ', () => {
     const district = {
       _id: 'district_id',
       type: 'clinic',
