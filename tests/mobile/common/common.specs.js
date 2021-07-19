@@ -1,5 +1,6 @@
 const commonElements = require('../../page-objects/common/common.po.js');
 const utils = require('../../utils');
+const loginPage = require('../../page-objects/login/login.po');
 
 describe('Navigation tests : ', () => {
   beforeEach(utils.beforeEach);
@@ -65,23 +66,34 @@ describe('Navigation tests : ', () => {
   });
 
   //mobile resolution
-  describe('Mobile view tests : ', () => {
+  fdescribe('Mobile view tests : ', () => {
     const district = {
       _id: 'district_id',
-      reported_date: 1,
       type: 'clinic',
-      name: 'User Place',
+      name: 'District',
     };
     const offlineUser = {
-      username: 'user-district',
+      username: 'user',
       password: 'Sup3rSecret!',
       place: district._id,
       contact: {
-        _id: 'fixture:user-district:offline',
-        name: 'user-district'
+        _id: 'some_id',
+        name: 'user'
       },
       roles: ['district_admin']
     };
+
+    const settings = {
+      'permissions': {
+        'can_view_messages': ['district_admin'],
+        'can_view_messages_tab': ['district_admin'],
+        'can_view_reports': ['district_admin'],
+        'can_view_reports_tab': ['district_admin'],
+        'can_view_contacts': ['district_admin'],
+        'can_view_contacts_tab': ['district_admin']
+      }
+    };
+
     let originalTimeout;
 
     beforeEach(async () =>{
@@ -90,7 +102,7 @@ describe('Navigation tests : ', () => {
       await utils.beforeEach();
     });
 
-    afterEach(function() {
+    afterAll(function() {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     });
 
@@ -104,6 +116,17 @@ describe('Navigation tests : ', () => {
       const tabTexts = await element.all(by.css('.button-label')).getText();
       expect(tabTexts.length).toBe(5);
       expect(tabTexts).toEqual([ '', '', '', '', '' ]);
+    });
+
+    it('Display page tab text labels even on mobile view, whenever there are 3 or fewer tabs', async () => {
+      //change permissions
+      await utils.updateSettings(settings);
+      await commonElements.goToLoginPageNative();
+      await loginPage.loginNative(offlineUser.username, offlineUser.password);
+      await utils.closeTour(50000);
+      const tabTexts = await element.all(by.css('.button-label')).getText();
+      expect(tabTexts.length).toBe(3);
+      expect(tabTexts).toEqual([ 'Messages','Reports', 'People']);
     });
   });
 });
