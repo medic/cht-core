@@ -247,7 +247,7 @@ describe('MessagesContentComponent', () => {
     });
   });
 
-  describe('New message section', () => {
+  describe.only('New message section', () => {
     it('should display the "new message" section in a conversation with a known recipient', async () => {
       component.selectedConversation = {
         'id': '7aeaa4bc-ae5e-4964-8771-697209d2c6dd',
@@ -262,8 +262,11 @@ describe('MessagesContentComponent', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      const footer = fixture.debugElement.query(By.css('#message-footer'))?.nativeElement;
-      expect(footer).to.not.be.undefined;
+      const newMessageInput = fixture
+        .debugElement
+        .query(By.css('#message-footer textarea[name="message"]'))
+        ?.nativeElement;
+      expect(newMessageInput).to.not.be.undefined;
     });
 
     it('should hide the "new message" section in a conversation with an unknown recipient', async () => {
@@ -282,8 +285,11 @@ describe('MessagesContentComponent', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      const footer = fixture.debugElement.query(By.css('#message-footer'))?.nativeElement;
-      expect(footer).to.be.undefined;
+      const unknownContactMessage = fixture
+        .debugElement
+        .query(By.css('#unknown-contact-error-message'))
+        ?.nativeElement;
+      expect(unknownContactMessage).to.not.be.undefined;
     });
   });
 });
