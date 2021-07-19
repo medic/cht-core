@@ -63,4 +63,48 @@ describe('Navigation tests : ', () => {
     expect(await display.isPresent()).toBeTruthy();
     await browser.get(utils.getBaseUrl() + 'messages/');
   });
+
+  //mobile resolution
+  describe('Mobile view tests : ', () => {
+    const district = {
+      _id: 'district_id',
+      reported_date: 1,
+      type: 'clinic',
+      name: 'User Place',
+    };
+    const offlineUser = {
+      username: 'user-district',
+      password: 'Sup3rSecret!',
+      place: district._id,
+      contact: {
+        _id: 'fixture:user-district:offline',
+        name: 'user-district'
+      },
+      roles: ['district_admin']
+    };
+    let originalTimeout;
+
+    beforeEach(async () =>{
+      originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = 2 * 60 * 1000;
+      await utils.beforeEach();
+    });
+
+    afterEach(function() {
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    });
+
+    beforeAll(async () => {
+      await utils.saveDoc(district);
+      await utils.createUsers([offlineUser]);
+    });
+
+    it('No tab text labels displayed  on mobile view for over 3 tabs', async () => {
+      await browser.driver.manage().window().setSize(389, 500);
+      const tabTexts = await element.all(by.css('.button-label')).getText();
+      expect(tabTexts.length).toBe(5);
+      expect(tabTexts).toEqual([ '', '', '', '', '' ]);
+    });
+  });
 });
+
