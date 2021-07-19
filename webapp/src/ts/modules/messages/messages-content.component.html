@@ -56,37 +56,44 @@
 
       <div id="message-footer"
         class="reply message-form"
-        [ngClass]="{sending: textAreaFocused || send.message?.length}"
-        *ngIf="selectedConversation.messages[0] && (selectedConversation.contact?.name || selectedConversation.contact?.doc?.name)">
+        [ngClass]="{sending: textAreaFocused || send.message?.length}">
 
-        <div class="control-group">
-          <div class="controls">
-            <textarea name="message"
-              [(ngModel)]="send.message"
-              placeholder="{{ 'Reply to name' | translate:{ contact: (selectedConversation.contact?.doc?.name || selectedConversation.contact?.name || '')} }}">
-            </textarea>
+        <ng-container *ngIf="selectedConversation.messages[0] && (selectedConversation.contact?.name || selectedConversation.contact?.doc?.name) else unknownContactMessage">
+          <div class="control-group">
+            <div class="controls">
+              <textarea name="message"
+                [(ngModel)]="send.message"
+                placeholder="{{ 'Reply to name' | translate:{ contact: (selectedConversation.contact?.doc?.name || selectedConversation.contact?.name || '')} }}">
+              </textarea>
+            </div>
           </div>
-        </div>
 
-        <div class="message-actions" *ngIf="textAreaFocused || send.message?.length">
-          <button class="btn btn-link btn-add-recipients"
-            (click)="addRecipients()"
-            (mouseover)="isAddRecipientBtnActive = true"
-            (mouseout)="isAddRecipientBtnActive = false">
-            {{'Add recipient' | translate}}
-          </button>
-          <!-- Count is done by CountMessageService -->
-          <span class="count"></span>
-          <button class="btn submit btn-primary"
-            (click)="sendMessage()"
-            [disabled]="!send.message?.length"
-            [ngClass]="{disabled: !send.message?.length}">
-            {{'Send' | translate}}
-          </button>
-        </div>
+          <div class="message-actions" *ngIf="textAreaFocused || send.message?.length">
+            <button class="btn btn-link btn-add-recipients"
+              (click)="addRecipients()"
+              (mouseover)="isAddRecipientBtnActive = true"
+              (mouseout)="isAddRecipientBtnActive = false">
+              {{'Add recipient' | translate}}
+            </button>
+            <!-- Count is done by CountMessageService -->
+            <span class="count"></span>
+            <button class="btn submit btn-primary"
+              (click)="sendMessage()"
+              [disabled]="!send.message?.length"
+              [ngClass]="{disabled: !send.message?.length}">
+              {{'Send' | translate}}
+            </button>
+          </div>
+        </ng-container>
 
       </div>
 
     </div>
   </div>
 </div>
+
+<ng-template #unknownContactMessage>
+  <p class="alert alert-danger" role="alert">
+    {{'This contact does not exist anymore, you can\'t send them a message' | translate}}
+  </p>
+</ng-template>
