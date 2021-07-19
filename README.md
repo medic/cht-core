@@ -2,7 +2,7 @@
 
 This is the repository of the CHT Core Framework, a technical resource of the [Community Health Toolkit (CHT)](https://communityhealthtoolkit.org) contributed by Medic.
 
-Medic is a nonprofit organization on a mission to improve health in the hardest-to-reach communities through open-source software. Medic Mobile serves as the technical steward of the Community Health Toolkit.
+Medic is a nonprofit organization on a mission to improve health in the hardest-to-reach communities through open-source software. Medic serves as the technical steward of the Community Health Toolkit.
 
 For the latest changes and release announcements see our [release notes](https://github.com/medic/cht-core/tree/master/release-notes). Our exact support matrix (including older app versions) can be found [in our docs](https://docs.communityhealthtoolkit.org/core/overview/supported-software/).
 

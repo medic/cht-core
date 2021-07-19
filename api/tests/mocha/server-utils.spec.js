@@ -170,7 +170,7 @@ describe('Server utils', () => {
       chai.expect(writeHead.callCount).to.equal(1);
       chai.expect(writeHead.args[0][0]).to.equal(401);
       chai.expect(writeHead.args[0][1]['Content-Type']).to.equal('text/plain');
-      chai.expect(writeHead.args[0][1]['WWW-Authenticate']).to.equal('Basic realm="Medic Mobile Web Services"');
+      chai.expect(writeHead.args[0][1]['WWW-Authenticate']).to.equal('Basic realm="Medic Web Services"');
       chai.expect(end.callCount).to.equal(1);
       chai.expect(end.args[0][0]).to.equal('not logged in');
 
