@@ -33,10 +33,6 @@ const cookieLogin = async (username = auth.username, password = auth.password) =
   await commonPage.goToBase();
 };
 
-const open = () => {
-  return browser.url();
-};
-
 const getLanguage = async (selector) => {
   const lang = await Promise.all((await $$(selector)).map(async localeElement => {
     return {
@@ -66,7 +62,6 @@ const changeLanguage = async (languageCode, userTranslation) => {
 
 
 module.exports = {
-  open,
   login,
   cookieLogin,
   getAllLocales: async () => await getLanguage('.locale'),
