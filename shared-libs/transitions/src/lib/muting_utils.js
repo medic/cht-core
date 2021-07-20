@@ -93,6 +93,10 @@ const updateContact = (contact, muted) => {
     }
   }
 
+  if (updated) {
+    console.log('updated_contact', JSON.stringify(contact, null, 2));
+  }
+
   return updated;
 };
 
@@ -112,7 +116,7 @@ const updateRegistrations = (subjectIds, muted) => {
     });
 };
 
-const getContactsAndSubjectIds = (contactIds, muted) => {
+const getContactsAndSubjectIds = (contactIds) => {
   return db.medic
     .allDocs({ keys: contactIds, include_docs: true })
     .then(result => {
@@ -120,7 +124,7 @@ const getContactsAndSubjectIds = (contactIds, muted) => {
       const subjectIds = [];
 
       result.rows.forEach(row => {
-        if (!row.doc || Boolean(row.doc.muted) === Boolean(muted)) {
+        if (!row.doc) {
           return;
         }
         contacts.push(row.doc);
@@ -167,6 +171,12 @@ const updateMutingHistory = (contact, initialReplicationDatetime, muted) => {
 
 const addMutingHistory = (info, muted, reportId) => {
   info.muting_history = info.muting_history || [];
+
+  const lastEntry = info.muting_history.length && info.muting_history[info.muting_history.length - 1];
+  if (lastEntry && (lastEntry.muted === !!muted && lastEntry.report_id === reportId)) {
+    return;
+  }
+
   info.muting_history.push({
     muted: !!muted,
     date: muted || moment(),
@@ -187,6 +197,8 @@ const addMutingHistory = (info, muted, reportId) => {
  */
 const updateMuteState = (contact, muted, reportId, replayClientMuting = false) => {
   muted = muted && moment();
+
+  console.log(JSON.stringify(contact, null, 2));
 
   let rootContactId = contact._id;
   if (!muted) {
@@ -209,8 +221,9 @@ const updateMuteState = (contact, muted, reportId, replayClientMuting = false) =
     return batches
       .reduce((promise, batch) => {
         return promise
-          .then(() => getContactsAndSubjectIds(batch, muted))
+          .then(() => getContactsAndSubjectIds(batch))
           .then(result => {
+            console.log('afected contacts', result.contacts.map(contact => contact._id));
             if (replayClientMuting) {
               clientMutingEventQueue.push(...getClientMutingEventsToReplay(result.contacts, reportId));
             }
