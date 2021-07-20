@@ -95,6 +95,11 @@ const expectStates = (updated, ...states) => {
   });
 };
 
+const getMutingRev = (infoDoc) => {
+  const rev = infoDoc.transitions.muting.last_rev;
+  return parseInt(rev.split('-')[0]);
+};
+
 describe('muting', () => {
   beforeEach(done => utils.saveDocs(contacts).then(done));
   afterAll(done => utils.revertDb().then(done));
@@ -781,7 +786,7 @@ describe('muting', () => {
         chai.expect(infos[0].transitions.muting.ok).to.equal(true);
 
         chai.expect(infos[1].muting_history).to.be.ok;
-        chai.expect(infos[1].muting_history.length).to.equal(1);
+        chai.expect(infos[1].muting_history.length).to.equal(2);
         chai.expect(infos[1].muting_history[0]).to.deep.equal({
           muted: true,
           date: mutePersonTime,
@@ -793,6 +798,12 @@ describe('muting', () => {
         chai.expect(infos[2].muting_history[0].muted).to.equal(true);
         chai.expect(infos[2].muting_history[0].report_id).to.equal(muteHC._id);
         muteHCTime = infos[2].muting_history[0].date;
+
+        chai.expect(infos[1].muting_history[1]).to.deep.equal({
+          muted: true,
+          date: muteHCTime,
+          report_id: muteHC._id
+        });
 
         chai.expect(infos[3].muting_history).to.be.ok;
         chai.expect(infos[3].muting_history.length).to.equal(1);
@@ -820,9 +831,9 @@ describe('muting', () => {
         chai.expect(infos[0].transitions.muting.ok).to.equal(true);
 
         chai.expect(infos[1].muting_history).to.be.ok;
-        chai.expect(infos[1].muting_history.length).to.equal(2);
-        chai.expect(infos[1].muting_history[1].muted).to.equal(false);
-        chai.expect(infos[1].muting_history[1].report_id).to.equal(unmute._id);
+        chai.expect(infos[1].muting_history.length).to.equal(3);
+        chai.expect(infos[1].muting_history[2].muted).to.equal(false);
+        chai.expect(infos[1].muting_history[2].report_id).to.equal(unmute._id);
 
         chai.expect(infos[2].muting_history).to.be.ok;
         chai.expect(infos[2].muting_history.length).to.equal(2);
@@ -1789,13 +1800,9 @@ describe('muting', () => {
         })
         .then(() => sentinelUtils.getInfoDocs(reportIds))
         .then(([mutesPersonInfo, unmutesNewPersonInfo, mutesPersonAgainInfo]) => {
-          console.log(unmutesNewPersonInfo);
-          console.log(mutesPersonAgainInfo);
-          console.log(mutesPersonInfo);
-
-          // chai.expect(mutesPersonInfo.transitions.muting.last_rev.startsWith('1-')).to.equal(true); // not replayed
-          // chai.expect(unmutesNewPersonInfo.transitions.muting.last_rev.startsWith('2-')).to.equal(true); // replayed
-          // chai.expect(mutesPersonAgainInfo.transitions.muting.last_rev.startsWith('2-')).to.equal(true); // replayed
+          chai.expect(getMutingRev(mutesPersonInfo)).to.equal(1); // not replayed
+          chai.expect(getMutingRev(unmutesNewPersonInfo)).to.be.greaterThan(1);  // replayed
+          chai.expect(getMutingRev(mutesPersonAgainInfo)).to.be.greaterThan(1);  // replayed
         })
         // update the report again
         .then(() => utils.getDoc(mutesClinic._id))
@@ -1809,15 +1816,9 @@ describe('muting', () => {
         })
         .then(() => sentinelUtils.getInfoDocs(reportIds))
         .then(([mutesPersonInfo, unmutesNewPersonInfo, mutesPersonAgainInfo]) => {
-          console.log(mutesPersonInfo);
-          console.log(unmutesNewPersonInfo);
-          console.log(mutesPersonAgainInfo);
-          // not replayed
-          chai.expect(mutesPersonInfo.transitions.muting.last_rev.startsWith('2-')).to.equal(true);
-          // replayed once
-          chai.expect(unmutesNewPersonInfo.transitions.muting.last_rev.startsWith('3-')).to.equal(true);
-          // replayed once
-          chai.expect(mutesPersonAgainInfo.transitions.muting.last_rev.startsWith('3-')).to.equal(true);
+          chai.expect(getMutingRev(mutesPersonInfo)).to.equal(1); // not replayed
+          chai.expect(getMutingRev(unmutesNewPersonInfo)).to.be.greaterThan(1); // replayed once
+          chai.expect(getMutingRev(mutesPersonAgainInfo)).to.be.greaterThan(1); // replayed once
         });
     });
   });

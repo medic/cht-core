@@ -36,6 +36,10 @@ const updateContacts = (contacts, muted) => {
     })
     .filter(contact => contact);
 
+  if (!updatedContacts.length) {
+    return Promise.resolve();
+  }
+
   return db.medic.bulkDocs(updatedContacts);
 };
 
@@ -93,10 +97,6 @@ const updateContact = (contact, muted) => {
     }
   }
 
-  if (updated) {
-    console.log('updated_contact', JSON.stringify(contact, null, 2));
-  }
-
   return updated;
 };
 
@@ -142,8 +142,14 @@ const updateMutingHistories = (contacts, muted, reportId) => {
 
   return infodoc
     .bulkGet(contacts.map(contact => ({ id: contact._id, doc: contact})))
-    .then(infoDocs => infoDocs.map((info) => addMutingHistory(info, muted, reportId)))
-    .then(infoDocs => infodoc.bulkUpdate(infoDocs));
+    .then(infoDocs => {
+      const updatedInfoDocs = infoDocs.filter((info) => addMutingHistory(info, muted, reportId));
+      if (!updatedInfoDocs.length) {
+        return Promise.resolve();
+      }
+
+      return infodoc.bulkUpdate(updatedInfoDocs);
+    });
 };
 
 const getLastMutingEventReportId = mutingHistory => {
@@ -197,8 +203,6 @@ const addMutingHistory = (info, muted, reportId) => {
  */
 const updateMuteState = (contact, muted, reportId, replayClientMuting = false) => {
   muted = muted && moment();
-
-  console.log(JSON.stringify(contact, null, 2));
 
   let rootContactId = contact._id;
   if (!muted) {
