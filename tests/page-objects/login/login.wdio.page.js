@@ -52,7 +52,7 @@ const changeLocale = async locale => {
 
 const changeLanguage = async (languageCode, userTranslation) => {
   await changeLocale(languageCode);
-  browser.waitUntil(async () => { return (await labelForUser()).getText() === userTranslation; });
+  browser.waitUntil(async () => (await labelForUser()).getText() === userTranslation);
   return {
     user: await (await labelForUser()).getText(),
     pass: await (await labelForPassword()).getText(),
@@ -64,6 +64,6 @@ const changeLanguage = async (languageCode, userTranslation) => {
 module.exports = {
   login,
   cookieLogin,
-  getAllLocales: async () => await getLanguage('.locale'),
+  getAllLocales: () => getLanguage('.locale'),
   changeLanguage,
 };
