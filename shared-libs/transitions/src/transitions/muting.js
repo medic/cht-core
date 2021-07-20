@@ -250,7 +250,7 @@ module.exports = {
 
         return processMutingEvent(contact, change, muteState, hasRun);
       })
-      .then(() => !hasRun);
+      .then(() => true);
   },
   _addMsg: (eventType, doc, forceUniqueMessages) => {
     const msgConfig = _.find(getConfig().messages, { event_type: eventType });
