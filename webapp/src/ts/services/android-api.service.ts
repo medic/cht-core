@@ -142,9 +142,15 @@ export class AndroidApiService {
   }
 
   /**
-   * Handle hardware back-button presses when inside the android app.
-   * @return {boolean} `true` if angular handled the back button; otherwise
-   *   the android app will handle it as it sees fit.
+   * Handle hardware back-button when it's pressed inside the Android app.
+   *
+   * This function is intended to always return 'true' and not give back the control of back-button to the Android app.
+   * This prevents Android from minimizing the app when the primary tab is active. Ref: #6698.
+   *
+   * Warning: If this function returns a falsy value, the Android app will handle the back-button
+   *          and possibly minimize the app.
+   *
+   * @return {boolean}
    */
   back() {
     if (this.closeUserInterfaceElements()) {
@@ -156,7 +162,7 @@ export class AndroidApiService {
     }
 
     this.navigationService.goToPrimaryTab();
-    // Not giving back the control to the android app so it doesn't minimize the app. Ref: #6698
+    // Not giving back the control to the Android app so it doesn't minimize the app. Ref: #6698
     return true;
   }
 
