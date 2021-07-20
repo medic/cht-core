@@ -57,7 +57,7 @@ Builds brought to you courtesy of GitHub Actions.
 
 ## Copyright
 
-Copyright 2013-2021 Medic, Inc. <hello@medic.org>
+Copyright 2013-2021 Medic Mobile, Inc. <hello@medic.org>
 
 ## License
 
