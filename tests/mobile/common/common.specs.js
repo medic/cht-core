@@ -102,17 +102,20 @@ describe('Navigation tests : ', () => {
       await utils.beforeEach();
     });
 
-    afterAll(function() {
+    afterAll(async () => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+
+      //restore window size
+      await browser.driver.manage().window().setSize(1024,768);
     });
 
     beforeAll(async () => {
+      await browser.driver.manage().window().setSize(389, 500);
       await utils.saveDoc(district);
       await utils.createUsers([offlineUser]);
     });
 
     it('No tab text labels displayed  on mobile view for over 3 tabs', async () => {
-      await browser.driver.manage().window().setSize(389, 500);
       const tabTexts = await element.all(by.css('.button-label')).getText();
       expect(tabTexts.length).toBe(5);
       expect(tabTexts).toEqual([ '', '', '', '', '' ]);
