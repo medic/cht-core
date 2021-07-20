@@ -1,4 +1,5 @@
 const sinon = require('sinon');
+const moment = require('moment');
 const config = require('../../../src/config');
 const chai = require('chai');
 const transitionUtils = require('../../../src/transitions/utils');
@@ -176,17 +177,18 @@ describe('Muting transition', () => {
         utils.getSubjectIds.returns(['id', 'patient']);
         mutingUtils.updateMutingHistory.resolves();
         mutingUtils.isMutedInLineage.returns(true);
+        mutingUtils.updateContact.returns(true);
 
         return transition.onMatch({ doc, info }).then(result => {
           chai.expect(result).to.equal(true);
           chai.expect(mutingUtils.updateContact.callCount).to.equal(1);
-          chai.expect(mutingUtils.updateContact.args[0]).to.deep.equal([doc, new Date()]);
+          chai.expect(mutingUtils.updateContact.args[0]).to.deep.equal([doc, moment()]);
           chai.expect(utils.getSubjectIds.callCount).to.equal(1);
           chai.expect(utils.getSubjectIds.args[0]).to.deep.equal([doc]);
           chai.expect(mutingUtils.updateRegistrations.callCount).to.equal(1);
-          chai.expect(mutingUtils.updateRegistrations.args[0]).to.deep.equal([['id', 'patient'], new Date()]);
+          chai.expect(mutingUtils.updateRegistrations.args[0]).to.deep.equal([['id', 'patient'], moment()]);
           chai.expect(mutingUtils.updateMutingHistory.callCount).to.equal(1);
-          chai.expect(mutingUtils.updateMutingHistory.args[0]).to.deep.equal([doc, NaN, new Date()]);
+          chai.expect(mutingUtils.updateMutingHistory.args[0]).to.deep.equal([doc, NaN, moment()]);
         });
       });
 
@@ -206,7 +208,7 @@ describe('Muting transition', () => {
             chai.expect(utils.getSubjectIds.callCount).to.equal(1);
             chai.expect(utils.getSubjectIds.args[0]).to.deep.equal([doc]);
             chai.expect(mutingUtils.updateRegistrations.callCount).to.equal(1);
-            chai.expect(mutingUtils.updateRegistrations.args[0]).to.deep.equal([['id', 'patient'], new Date()]);
+            chai.expect(mutingUtils.updateRegistrations.args[0]).to.deep.equal([['id', 'patient'],  moment()]);
             chai.expect(mutingUtils.updateMutingHistory.callCount).to.equal(0);
           });
       });
@@ -228,10 +230,32 @@ describe('Muting transition', () => {
             chai.expect(utils.getSubjectIds.callCount).to.equal(1);
             chai.expect(utils.getSubjectIds.args[0]).to.deep.equal([doc]);
             chai.expect(mutingUtils.updateRegistrations.callCount).to.equal(1);
-            chai.expect(mutingUtils.updateRegistrations.args[0]).to.deep.equal([['id', 'patient'], new Date()]);
+            chai.expect(mutingUtils.updateRegistrations.args[0]).to.deep.equal([['id', 'patient'], moment()]);
             chai.expect(mutingUtils.updateMutingHistory.callCount).to.equal(1);
-            chai.expect(mutingUtils.updateMutingHistory.args[0]).to.deep.equal([doc, NaN, new Date()]);
+            chai.expect(mutingUtils.updateMutingHistory.args[0]).to.deep.equal([doc, NaN, moment()]);
           });
+      });
+
+      it('should return false when contact is not updated', () => {
+        const doc = { _id: 'id', type: 'person', patient_id: 'patient' };
+        const info = { initial_replication_date: 'unknown' };
+        mutingUtils.updateRegistrations.resolves();
+        utils.getSubjectIds.returns(['id', 'patient']);
+        mutingUtils.updateMutingHistory.resolves();
+        mutingUtils.isMutedInLineage.returns(true);
+        mutingUtils.updateContact.returns(false);
+
+        return transition.onMatch({ doc, info }).then(result => {
+          chai.expect(result).to.equal(false);
+          chai.expect(mutingUtils.updateContact.callCount).to.equal(1);
+          chai.expect(mutingUtils.updateContact.args[0]).to.deep.equal([doc, moment()]);
+          chai.expect(utils.getSubjectIds.callCount).to.equal(1);
+          chai.expect(utils.getSubjectIds.args[0]).to.deep.equal([doc]);
+          chai.expect(mutingUtils.updateRegistrations.callCount).to.equal(1);
+          chai.expect(mutingUtils.updateRegistrations.args[0]).to.deep.equal([['id', 'patient'], moment()]);
+          chai.expect(mutingUtils.updateMutingHistory.callCount).to.equal(1);
+          chai.expect(mutingUtils.updateMutingHistory.args[0]).to.deep.equal([doc, NaN, moment()]);
+        });
       });
     });
 
@@ -265,17 +289,18 @@ describe('Muting transition', () => {
         utils.getSubjectIds.returns(['patient']);
         mutingUtils.updateMutingHistory.resolves();
         mutingUtils.isMutedInLineage.returns(true);
+        mutingUtils.updateContact.returns(true);
 
         return transition.onMatch({ doc, info }).then(result => {
           chai.expect(result).to.equal(true);
           chai.expect(mutingUtils.updateContact.callCount).to.equal(1);
-          chai.expect(mutingUtils.updateContact.args[0]).to.deep.equal([ doc, new Date()]);
+          chai.expect(mutingUtils.updateContact.args[0]).to.deep.equal([ doc, moment()]);
           chai.expect(utils.getSubjectIds.callCount).to.equal(1);
           chai.expect(utils.getSubjectIds.args[0]).to.deep.equal([ doc]);
           chai.expect(mutingUtils.updateRegistrations.callCount).to.equal(1);
-          chai.expect(mutingUtils.updateRegistrations.args[0]).to.deep.equal([['patient'], new Date()]);
+          chai.expect(mutingUtils.updateRegistrations.args[0]).to.deep.equal([['patient'], moment()]);
           chai.expect(mutingUtils.updateMutingHistory.callCount).to.equal(1);
-          chai.expect(mutingUtils.updateMutingHistory.args[0]).to.deep.equal([ doc, NaN, new Date()]);
+          chai.expect(mutingUtils.updateMutingHistory.args[0]).to.deep.equal([ doc, NaN, moment()]);
         });
       });
 
@@ -299,6 +324,7 @@ describe('Muting transition', () => {
         utils.getSubjectIds.returns(['patient']);
         mutingUtils.updateMutingHistory.resolves();
         mutingUtils.isMutedInLineage.returns(true);
+        mutingUtils.updateContact.returns(true);
 
         return transition.onMatch({ doc, info }).then(result => {
           chai.expect(result).to.equal(true);
@@ -684,7 +710,8 @@ describe('Muting transition', () => {
             change: {
               id: 'a',
               doc: { _id: 'a', some: 'data', form: 'mute', type: 'data_record' },
-              info: { doc_id: 'a' }
+              info: { doc_id: 'a' },
+              skipReplay: true,
             },
             force: true,
           });
@@ -695,6 +722,7 @@ describe('Muting transition', () => {
               id: 'd',
               doc: { _id: 'd', form: 'unmute', type: 'data_record' },
               info: { doc_id: 'd' },
+              skipReplay: true,
             },
             force: true,
           });
@@ -703,7 +731,8 @@ describe('Muting transition', () => {
             change: {
               id: 'a',
               doc: { _id: 'a', some: 'data', form: 'mute', type: 'data_record' },
-              info: { doc_id: 'a' }
+              info: { doc_id: 'a' },
+              skipReplay: true,
             },
             results: [true]
           });
@@ -711,7 +740,8 @@ describe('Muting transition', () => {
             change: {
               id: 'd',
               doc: { _id: 'd', form: 'unmute', type: 'data_record' },
-              info: { doc_id: 'd' }
+              info: { doc_id: 'd' },
+              skipReplay: true,
             },
             results: [true]
           });
