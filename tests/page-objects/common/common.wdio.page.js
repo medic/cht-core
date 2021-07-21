@@ -1,29 +1,27 @@
 const hamburgerMenu = () => $('#header-dropdown-link');
 const logoutButton =  () => $('.fa-power-off');
-const modalBody = () => $('div.modal-body');
-const yesButton = () => $('a.btn.submit.btn-danger');
 const messagesTab = () => $('#messages-tab');
 const analyticsTab =  () => $('#analytics-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const contactsPage = require('../contacts/contacts.wdio.page');
-
+const modal = require('./modal.wdio.page');
 
 const navigateToLogoutModal = async () => {
   await (await hamburgerMenu()).click();
   await (await logoutButton()).click();
-  await (await modalBody()).waitForDisplayed();
+  await (await modal.body()).waitForDisplayed();
 };
 
 const logout = async () => {
   await navigateToLogoutModal();
-  await (await yesButton()).click();
+  await (await modal.confirm()).click();
 };
 
 const getLogoutMessage = async () => {
   await navigateToLogoutModal();
-  const body = await modalBody();
+  const body = await modal.body();
   await body.waitForDisplayed();
   return body.getText();
 };
@@ -47,7 +45,6 @@ module.exports = {
   logout,
   logoutButton,
   getLogoutMessage,
-  yesButton,
   messagesTab,
   analyticsTab,
   goToReports,
