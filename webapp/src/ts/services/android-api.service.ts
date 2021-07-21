@@ -1,6 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 
+import { ExternalAppLauncherService } from '@mm-services/external-app-launcher.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
@@ -19,6 +20,7 @@ import { SimprintsService } from '@mm-services/simprints.service';
 })
 export class AndroidApiService {
   constructor(
+    private externalAppLauncherService:ExternalAppLauncherService,
     private feedbackService:FeedbackService,
     private geolocationService:GeolocationService,
     private mrdtService:MRDTService,
@@ -254,6 +256,17 @@ export class AndroidApiService {
     this.geolocationService.permissionRequestResolved();
   }
 
+  resolveCHTExternalAppResponse(response) {
+    try {
+      this.externalAppLauncherService.resolveExternalAppResponse(response);
+    } catch (error) {
+      console.error(
+        `AndroidApiService :: Error when processing response from external app, error: "${error.message}, response:"`,
+        response
+      );
+    }
+  }
+
   v1 = {
     back: () => this.runInZone('back'),
     logout: () => this.runInZone('logout'),
@@ -262,5 +275,6 @@ export class AndroidApiService {
     simprintsResponse: (...args) => this.runInZone('simprintsResponse', args),
     smsStatusUpdate: (...args) => this.runInZone('smsStatusUpdate', args),
     locationPermissionRequestResolved: () => this.runInZone('locationPermissionRequestResolve'),
+    resolveCHTExternalAppResponse: (...args) => this.runInZone('resolveCHTExternalAppResponse', args),
   };
 }
