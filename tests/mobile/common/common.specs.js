@@ -66,8 +66,7 @@ describe('Navigation tests : ', () => {
   });
 
   //mobile resolution
-  // eslint-disable-next-line jasmine/no-focused-tests
-  fdescribe('Mobile view tests : ', () => {
+  describe('Mobile view tests : ', () => {
     const district = {
       _id: 'district_id',
       type: 'clinic',
@@ -127,7 +126,6 @@ describe('Navigation tests : ', () => {
       await utils.updateSettings({permissions: Object.assign(permissions, newPermissions)});
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative(user.username, user.password);
-      //await utils.closeTour();
       const tabTexts = await element.all(by.css('.button-label')).getText();
       expect(tabTexts.length).toBe(3);
       expect(tabTexts).toEqual([ 'Messages','Reports', 'People']);
