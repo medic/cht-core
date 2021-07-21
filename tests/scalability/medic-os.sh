@@ -9,3 +9,4 @@ mkdir -p /home/medic/self-hosting/main/
 echo DOCKER_COUCHDB_ADMIN_PASSWORD=medicScalability >> /home/medic/self-hosting/.env
 echo HA_PASSWORD=medicScalability >> /home/medic/self-hosting/.env
 ./prepare.sh
+sudo shutdown -P +60
