@@ -2635,11 +2635,64 @@ describe('mutingUtils', () => {
     });
 
     it('should not update infodocs that get no changes', () => {
-      // todo
+      const contacts = [{ _id: 'a' }, { _id: 'b' }, { _id: 'c' }];
+      infodoc.bulkGet.resolves([
+        { _id: 'a-info', type: 'info', _rev: '1' },
+        { _id: 'b-info', type: 'info' },
+        { _id: 'c-info', type: 'info', _rev: '2', muting_history: [{ muted: false, report_id: 'reportId' }] },
+      ]);
+      infodoc.bulkUpdate.resolves();
+
+      return mutingUtils._updateMuteHistories(contacts, false, 'reportId').then(() => {
+        chai.expect(infodoc.bulkGet.callCount).to.equal(1);
+        chai.expect(infodoc.bulkGet.args[0]).to.deep.equal([[
+          { id: 'a', doc: {_id: 'a'} },
+          { id: 'b', doc: {_id: 'b'} },
+          { id: 'c', doc: {_id: 'c'} }
+        ]]);
+
+        chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
+        chai.expect(infodoc.bulkUpdate.args[0]).to.deep.equal([[
+          {
+            _id: 'a-info',
+            type: 'info',
+            _rev: '1',
+            muting_history: [{
+              muted: false,
+              date: moment(),
+              report_id: 'reportId'
+            }]
+          },
+          {
+            _id: 'b-info',
+            type: 'info',
+            muting_history: [{
+              muted: false,
+              date: moment(),
+              report_id: 'reportId'
+            }]
+          },
+        ]]);
+      });
     });
 
     it('should not call bulkUpdate when there are no updates to make', () => {
-      // todo
+      const contacts = [{ _id: 'a' }, { _id: 'b' }];
+      infodoc.bulkGet.resolves([
+        { _id: 'a-info', type: 'info', _rev: '1', muting_history: [{ muted: false, report_id: 'reportId' }] },
+        { _id: 'b-info', type: 'info', muting_history: [{ muted: false, report_id: 'reportId' }] },
+      ]);
+      infodoc.bulkUpdate.resolves();
+
+      return mutingUtils._updateMuteHistories(contacts, false, 'reportId').then(() => {
+        chai.expect(infodoc.bulkGet.callCount).to.equal(1);
+        chai.expect(infodoc.bulkGet.args[0]).to.deep.equal([[
+          { id: 'a', doc: {_id: 'a'} },
+          { id: 'b', doc: {_id: 'b'} },
+        ]]);
+
+        chai.expect(infodoc.bulkUpdate.callCount).to.equal(0);
+      });
     });
   });
 
