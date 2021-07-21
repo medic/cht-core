@@ -16,7 +16,7 @@ services:
       - medic-net
     environment:
       - DOCKER_NETWORK_NAME=haproxy
-      - DOCKER_COUCHDB_ADMIN_PASSWORD=password
+      - DOCKER_COUCHDB_ADMIN_PASSWORD=${DOCKER_COUCHDB_ADMIN_PASSWORD:-password}
 
   haproxy:
     container_name: haproxy
