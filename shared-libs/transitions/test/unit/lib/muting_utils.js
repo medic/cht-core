@@ -269,9 +269,6 @@ describe('mutingUtils', () => {
         parent: { _id: 'p1', parent: { _id: 'p2' }}
       };
 
-      sinon.stub(infodoc, 'bulkGet').resolves([]);
-      sinon.stub(infodoc, 'bulkUpdate').resolves();
-
       const contacts = [
         { _id: 'my-place', muted: false, place_id: 'my-place-id'},
         { _id: 'my-place2', muted: false },
@@ -282,6 +279,18 @@ describe('mutingUtils', () => {
         { _id: 'my-place4', muted: 657 },
         { _id: 'contact4', muted: 123 }
       ];
+
+      sinon.stub(infodoc, 'bulkGet').resolves([
+        { _id: 'my-place-info', muting_history: [{ muted: false, date: 123 }] },
+        { _id: 'my-place2-info', muting_history: [{ muted: false, date: 123 }] },
+        { _id: 'my-place3-info' },
+        { _id: 'contact1-info' },
+        { _id: 'contact2-info' },
+        { _id: 'contact3-info' },
+        { _id: 'my-place4-info', muting_history: [{ muted: true, date: 657 }] },
+        { _id: 'contact4-info', muting_history: [{ muted: true, date: 123 }] },
+      ]);
+      sinon.stub(infodoc, 'bulkUpdate').resolves();
 
       db.medic.query.resolves({ rows: [
         { id: 'my-place', value: null },
@@ -322,7 +331,8 @@ describe('mutingUtils', () => {
         chai.expect(utils.getReportsBySubject.args[0]).to.deep.equal([{
           ids: [
             'my-place', 'my-place-id', 'my-place2', 'my-place3', 'place3',
-            'contact1', 'patient1', 'contact2', 'patient2', 'contact3', 'patient3'
+            'contact1', 'patient1', 'contact2', 'patient2', 'contact3', 'patient3',
+            'my-place4', 'contact4',
           ],
           registrations: true
         }]);
@@ -336,6 +346,8 @@ describe('mutingUtils', () => {
           ['contact1', 'contact1'],
           ['contact2', 'contact2'],
           ['contact3', 'contact3'],
+          ['my-place4', 'my-place4'],
+          ['contact4', 'contact4'],
         ]);
         chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
       });
@@ -373,7 +385,16 @@ describe('mutingUtils', () => {
       db.medic.allDocs.resolves({ rows: contacts.map(doc => ({ id: doc._id, doc: doc }))});
       utils.getReportsBySubject.resolves([]);
       db.medic.bulkDocs.resolves();
-      sinon.stub(infodoc, 'bulkGet').resolves([]);
+      sinon.stub(infodoc, 'bulkGet').resolves([
+        { _id: 'my-place-info', muting_history: [{ muted: true, date: 123 }] },
+        { _id: 'my-place2-info', muting_history: [{ muted: true, date: 456 }] },
+        { _id: 'my-place3-info' },
+        { _id: 'contact1-info' },
+        { _id: 'contact2-info' },
+        { _id: 'contact3-info' },
+        { _id: 'my-place4-info', muting_history: [{ muted: true, date: 789 }] },
+        { _id: 'contact4-info', muting_history: [{ muted: true, date: 657 }] },
+      ]);
       sinon.stub(infodoc, 'bulkUpdate').resolves();
 
       return mutingUtils.updateMuteState(hydratedContact, false).then(result => {
@@ -382,7 +403,9 @@ describe('mutingUtils', () => {
         chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
         chai.expect(utils.getReportsBySubject.args[0]).to.deep.equal([{
           ids: [
-            'my-place', 'my-place1', 'my-place2', 'my-place4', 'contact4', 'patient4'
+            'my-place', 'my-place1', 'my-place2',
+            'my-place3', 'contact1', 'patient1', 'contact2', 'patient2', 'contact3', 'patient3',
+            'my-place4', 'contact4', 'patient4',
           ],
           registrations: true
         }]);
@@ -410,6 +433,10 @@ describe('mutingUtils', () => {
         chai.expect(infodoc.bulkGet.args[0][0].map(({id, doc}) => ([id, doc._id]))).to.deep.equal([
           ['my-place', 'my-place'],
           ['my-place2', 'my-place2'],
+          ['my-place3', 'my-place3'],
+          ['contact1', 'contact1'],
+          [ 'contact2', 'contact2'],
+          [ 'contact3', 'contact3' ],
           ['my-place4', 'my-place4'],
           ['contact4', 'contact4'],
         ]);
@@ -453,7 +480,13 @@ describe('mutingUtils', () => {
       db.medic.allDocs.resolves({ rows: contacts.map(doc => ({ id: doc._id, doc: doc }))});
       utils.getReportsBySubject.resolves([]);
       db.medic.bulkDocs.resolves();
-      sinon.stub(infodoc, 'bulkGet').resolves([]);
+      sinon.stub(infodoc, 'bulkGet').resolves([
+        { _id: 'p2-info', muting_history: [{  muted: true, date: 123 }] },
+        { _id: 'p1-info', muting_history: [{  muted: true, date: 456 }] },
+        { _id: 'my-place-info', muting_history: [{  muted: true, date: 12 }] },
+        { _id: 'contact1-info', muting_history: [{ muted: true }] },
+        { _id: 'contact2-info', muting_history: [{ muted: true }] },
+      ]);
       sinon.stub(infodoc, 'bulkUpdate').resolves();
 
       return mutingUtils.updateMuteState(hydratedPlace, false).then(result => {
@@ -512,7 +545,7 @@ describe('mutingUtils', () => {
       ]);
       utils.setTasksStates.returns(true);
       db.medic.bulkDocs.resolves();
-      sinon.stub(infodoc, 'bulkGet').resolves([]);
+      sinon.stub(infodoc, 'bulkGet').resolves([{ _id: 'contact-info' }]);
       sinon.stub(infodoc, 'bulkUpdate').resolves();
 
       return mutingUtils.updateMuteState(contact, true).then(result => {
@@ -600,7 +633,13 @@ describe('mutingUtils', () => {
       db.medic.allDocs.resolves({ rows: contacts.map(doc => ({ id: doc._id, doc: doc }))});
       utils.getReportsBySubject.resolves([]);
       db.medic.bulkDocs.resolves();
-      sinon.stub(infodoc, 'bulkGet').resolves([]);
+      sinon.stub(infodoc, 'bulkGet').resolves([
+        {  _id: 'p2-info', muting_history: [ { date: 100, muted: true }, { date: 200, muted: true } ] },
+        { _id: 'p1-info', muting_history: [ { date: 100, muted: true }, { date: 200, muted: true } ] },
+        { _id: 'my-place-info' },
+        { _id: 'contact1-info', muting_history: [{ muted: true }] },
+        { _id: 'contact2-info', muting_history: [{ muted: true }] },
+      ]);
       sinon.stub(infodoc, 'bulkUpdate').resolves();
 
       return mutingUtils.updateMuteState(hydratedPlace, false, reportId).then(result => {
@@ -643,6 +682,7 @@ describe('mutingUtils', () => {
     });
 
     it('should return next reports, sorted by date, when requested', () => {
+      clock = sinon.useFakeTimers();
       const reportId = 'reportid';
       const hydratedPlace = {
         _id: 'my-place',
@@ -689,7 +729,13 @@ describe('mutingUtils', () => {
       db.medic.allDocs.resolves({ rows: contacts.map(doc => ({ id: doc._id, doc: doc }))});
       utils.getReportsBySubject.resolves([]);
       db.medic.bulkDocs.resolves();
-      sinon.stub(infodoc, 'bulkGet').resolves([]);
+      sinon.stub(infodoc, 'bulkGet').resolves([
+        { _id: 'p2-info', type: 'info', muting_history: contacts[0].muting_history.client_side },
+        { _id: 'p1-info', type: 'info', muting_history: contacts[1].muting_history.client_side },
+        { _id: 'my-place-info', type: 'info' },
+        { _id: 'contact1-info', type: 'info' },
+        { _id: 'contact2-info', type: 'info' },
+      ]);
       sinon.stub(infodoc, 'bulkUpdate').resolves();
 
       return mutingUtils.updateMuteState(hydratedPlace, false, reportId, true).then(result => {
@@ -723,11 +769,36 @@ describe('mutingUtils', () => {
         chai.expect(infodoc.bulkGet.args[0]).to.deep.equal([[
           { id: 'p2', doc: { _id: 'p2', muting_history: contacts[0].muting_history } },
           { id: 'p1', doc: { _id: 'p1', muting_history: contacts[1].muting_history } },
-          { id: 'my-place', doc: {_id: 'my-place'} },
-          { id: 'contact1', doc: {_id: 'contact1', patient_id: 'patient1'} },
-          { id: 'contact2', doc: {_id: 'contact2', patient_id: 'patient2'} }
+          { id: 'my-place', doc: { _id: 'my-place'} },
+          { id: 'contact1', doc: { _id: 'contact1', patient_id: 'patient1' } },
+          { id: 'contact2', doc: { _id: 'contact2', patient_id: 'patient2' } }
         ]]);
         chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
+
+        const historyEntry = { date: moment(), report_id: reportId, muted: false };
+        chai.expect(infodoc.bulkUpdate.args[0]).to.deep.equal([[
+          {
+            _id: 'p2-info',
+            type: 'info',
+            muting_history: [
+              { date: '100', report_id: reportId },
+              { date: '300', report_id: 'other_report1' },
+              historyEntry
+            ],
+          },
+          {
+            _id: 'p1-info',
+            type: 'info',
+            muting_history: [
+              { date: '100', report_id: reportId },
+              { date: '200', report_id: 'other_report2' },
+              historyEntry
+            ],
+          },
+          { _id: 'my-place-info', type: 'info', muting_history: [historyEntry] },
+          { _id: 'contact1-info', type: 'info', muting_history: [historyEntry] },
+          { _id: 'contact2-info', type: 'info', muting_history: [historyEntry] },
+        ]]);
       });
     });
 
@@ -753,14 +824,20 @@ describe('mutingUtils', () => {
         { _id: 'p1', muted: 456 },
         { _id: 'my-place', muted: true },
         { _id: 'contact1', muted: true, patient_id: 'patient1' },
-        { _id: 'contact2', muted: true, patient_id: 'patient2' }
+        { _id: 'contact2', muted: true, patient_id: 'patient2' },
       ];
 
       db.medic.query.resolves({ rows: contacts.map(contact => ({ id: contact._id, value: contact.patient_id })) });
       db.medic.allDocs.resolves({ rows: contacts.map(doc => ({ id: doc._id, doc: doc }))});
       utils.getReportsBySubject.resolves([]);
       db.medic.bulkDocs.resolves();
-      sinon.stub(infodoc, 'bulkGet').resolves([]);
+      sinon.stub(infodoc, 'bulkGet').resolves([
+        { _id: 'p2-info', muting_history: [{ muted: true, date: 123 }] },
+        { _id: 'p1-info', muting_history: [{ muted: true, date: 456 }] },
+        { _id: 'my-place-info', muting_history: [{ muted: true }] },
+        { _id: 'contact1-info', muting_history: [{ muted: true }] },
+        { _id: 'contact2-info', muting_history: [{ muted: true }] },
+      ]);
       sinon.stub(infodoc, 'bulkUpdate').resolves();
 
       return mutingUtils.updateMuteState(hydratedPlace, false, reportId, true).then(result => {
@@ -1148,7 +1225,7 @@ describe('mutingUtils', () => {
       db.medic.query.resolves({ rows: [{ id: 'contact' }] });
       db.medic.allDocs.resolves({ rows: [{ doc: { _id: 'contact' } }]});
       utils.getReportsBySubject.resolves([]);
-      sinon.stub(infodoc, 'bulkGet').resolves([]);
+      sinon.stub(infodoc, 'bulkGet').resolves([{ _id: 'contact-info' }]);
       sinon.stub(infodoc, 'bulkUpdate').rejects({ some: 'error' });
 
       return mutingUtils
@@ -1213,7 +1290,9 @@ describe('mutingUtils', () => {
         ]);
 
       utils.setTasksStates.returns(true);
-      sinon.stub(infodoc, 'bulkGet').resolves([]);
+      sinon
+        .stub(infodoc, 'bulkGet')
+        .callsFake((contacts) => Promise.resolve(contacts.map(({ id }) => ({ _id: `${id}-info` }))));
       sinon.stub(infodoc, 'bulkUpdate').resolves();
 
       return mutingUtils.updateMuteState({ _id: 'contact' }, true).then(result => {
@@ -1333,7 +1412,9 @@ describe('mutingUtils', () => {
         ]);
 
       utils.setTasksStates.returns(true);
-      sinon.stub(infodoc, 'bulkGet').resolves([]);
+      sinon
+        .stub(infodoc, 'bulkGet')
+        .callsFake((contacts) => Promise.resolve(contacts.map(({ id }) => ({ _id: `${id}-info` }))));
       sinon.stub(infodoc, 'bulkUpdate').resolves();
 
       return mutingUtils
@@ -1389,7 +1470,9 @@ describe('mutingUtils', () => {
         ]);
 
       utils.setTasksStates.returns(true);
-      sinon.stub(infodoc, 'bulkGet').resolves([]);
+      sinon
+        .stub(infodoc, 'bulkGet')
+        .callsFake((contacts) => Promise.resolve(contacts.map(({ id }) => ({ _id: `${id}-info` }))));
       sinon.stub(infodoc, 'bulkUpdate').resolves();
 
       return mutingUtils
@@ -1439,8 +1522,9 @@ describe('mutingUtils', () => {
         ]);
 
       utils.setTasksStates.returns(true);
-      sinon.stub(infodoc, 'bulkGet')
-        .onCall(0).resolves([])
+      sinon
+        .stub(infodoc, 'bulkGet')
+        .onCall(0).callsFake((contacts) => Promise.resolve(contacts.map(({ id }) => ({ _id: `${id}-info` }))))
         .onCall(1).rejects({ some: 'error' });
       sinon.stub(infodoc, 'bulkUpdate').resolves();
 
@@ -1491,7 +1575,9 @@ describe('mutingUtils', () => {
         ]);
 
       utils.setTasksStates.returns(true);
-      sinon.stub(infodoc, 'bulkGet').resolves([]);
+      sinon
+        .stub(infodoc, 'bulkGet')
+        .callsFake((contacts) => Promise.resolve(contacts.map(({ id }) => ({ _id: `${id}-info` }))));
       sinon.stub(infodoc, 'bulkUpdate')
         .onCall(0).resolves()
         .onCall(1).rejects({ some: 'error' });
@@ -1547,7 +1633,7 @@ describe('mutingUtils', () => {
         });
     });
 
-    it('should only return contacts and subjects with different muted state', () => {
+    it('should return contacts and subjects, regardless of muted state', () => {
       const ids = ['1', '2', '3', '4', '5', '6'];
       db.medic.allDocs.resolves({ rows: [
         { doc: { _id: '1', place_id: 'place_1' } },
@@ -1561,14 +1647,19 @@ describe('mutingUtils', () => {
       return mutingUtils._getContactsAndSubjectIds(ids, new Date()).then(result => {
         chai.expect(result.contacts).to.deep.equal([
           { _id: '1', place_id: 'place_1' },
+          { _id: '2', patient_id: 'patient_2', muted: true },
           { _id: '3', muted: null },
-          { _id: '4', patient_id: 'patient_4', muted: 0 }
+          { _id: '4', patient_id: 'patient_4', muted: 0 },
+          { _id: '6', patient_id: 'patient_6', muted: 123 },
         ]);
-        chai.expect(result.subjectIds).to.deep.equal(['1', 'place_1', '3', '4', 'patient_4']);
+        chai.expect(result.subjectIds).to.deep.equal([
+          '1', 'place_1', '2', 'patient_2',
+          '3', '4', 'patient_4', '6', 'patient_6',
+        ]);
       });
     });
 
-    it('should only return contacts and subjects with different muted state', () => {
+    it('should return contacts and subjects, regardless of muted state', () => {
       const ids = ['1', '2', '3', '4', '5', '6', '7'];
       db.medic.allDocs.resolves({ rows: [
         { doc: { _id: '1', place_id: 'place_1', muted: 1234 } },
@@ -1583,9 +1674,16 @@ describe('mutingUtils', () => {
       return mutingUtils._getContactsAndSubjectIds(ids, false).then(result => {
         chai.expect(result.contacts).to.deep.equal([
           { _id: '1', place_id: 'place_1', muted: 1234 } ,
+          { _id: '2', patient_id: 'patient_2', muted: false },
+          { _id: '3', muted: null },
+          { _id: '4', patient_id: 'patient_4', muted: 0 },
+          { _id: '6', patient_id: 'patient_6' },
           { _id: '7', patient_id: 'patient_7', muted: true }
         ]);
-        chai.expect(result.subjectIds).to.deep.equal(['1', 'place_1', '7', 'patient_7']);
+        chai.expect(result.subjectIds).to.deep.equal([
+          '1', 'place_1', '2', 'patient_2', '3', '4', 'patient_4',
+          '6', 'patient_6', '7', 'patient_7'
+        ]);
       });
     });
   });

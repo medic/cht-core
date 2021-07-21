@@ -106,7 +106,6 @@ const replayClientMutingEvents = (reportIds = []) => {
     return Promise.resolve();
   }
 
-  console.log('replaying history', reportIds);
   let promiseChain = Promise.resolve();
   reportIds.forEach(reportId => {
     promiseChain = promiseChain
@@ -123,24 +122,6 @@ const replayClientMutingEvents = (reportIds = []) => {
   });
 
   return promiseChain;
-
-  /*return mutingUtils.lineage
-    .fetchHydratedDocs(reportIds)
-    .then(hydratedReports => {
-      hydratedReports = hydratedReports.filter(doc => isRelevantReport(doc, {}));
-
-      const changes = hydratedReports.map(report => ({ id: report._id }));
-      return mutingUtils.infodoc.bulkGet(changes).then(infoDocs => {
-        let promiseChain = Promise.resolve();
-        reportIds.forEach(reportId => {
-          const hydratedReport = hydratedReports.find(report => report._id === reportId);
-          if (hydratedReport) {
-            promiseChain = promiseChain.then(() => runTransition(hydratedReport, infoDocs));
-          }
-        });
-        return promiseChain;
-      });
-    });*/
 };
 
 /**
@@ -150,7 +131,6 @@ const replayClientMutingEvents = (reportIds = []) => {
  * @return {Promise}
  */
 const runTransition = (hydratedReport, infoDoc = []) => {
-  console.log('running transition for', hydratedReport._id);
   const change = {
     id: hydratedReport._id,
     doc: hydratedReport,
@@ -167,7 +147,6 @@ const runTransition = (hydratedReport, infoDoc = []) => {
   return new Promise((resolve, reject) => {
     transitions.applyTransition(transitionContext, (err, result) => {
       const transitionContext = { change, results: [result] };
-      console.log('finalizing transition for', hydratedReport._id);
       transitions.finalize(transitionContext, (err) => err ? reject(err) : resolve());
     });
   });
@@ -187,7 +166,6 @@ const processMutingEvent = (contact, change, muteState, hasRun) => {
       module.exports._addMsg(getEventType(muteState), change.doc, hasRun);
 
       if (processedClientSide && !change.skipReplay) {
-        console.log('for change', change.id);
         return replayClientMutingEvents(reportIds);
       }
     });

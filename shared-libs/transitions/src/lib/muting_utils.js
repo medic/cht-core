@@ -227,7 +227,6 @@ const updateMuteState = (contact, muted, reportId, replayClientMuting = false) =
         return promise
           .then(() => getContactsAndSubjectIds(batch))
           .then(result => {
-            console.log('afected contacts', result.contacts.map(contact => contact._id));
             if (replayClientMuting) {
               clientMutingEventQueue.push(...getClientMutingEventsToReplay(result.contacts, reportId));
             }
