@@ -10,6 +10,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SimprintsService } from '@mm-services/simprints.service';
+import { RDToolkitService } from '@mm-services/rdtoolkit.service';
 
 
 describe('AndroidApi service', () => {
@@ -22,6 +23,7 @@ describe('AndroidApi service', () => {
   let geolocationService;
   let simprintsService;
   let consoleErrorMock;
+  let rdToolkitService;
 
   beforeEach(() => {
     sessionService = {
@@ -58,6 +60,11 @@ describe('AndroidApi service', () => {
       registerResponse: sinon.stub()
     };
 
+    rdToolkitService = {
+      resolveProvisionedTest: sinon.stub(),
+      resolveCapturedTest: sinon.stub()
+    };
+
     consoleErrorMock = sinon.stub(console, 'error');
 
     TestBed.configureTestingModule({
@@ -68,6 +75,7 @@ describe('AndroidApi service', () => {
         { provide: FeedbackService, useValue: feedbackService },
         { provide: Router, useValue: router },
         { provide: MRDTService, useValue: mrdtService },
+        { provide: RDToolkitService, useValue: rdToolkitService },
       ],
     });
 
@@ -229,6 +237,86 @@ describe('AndroidApi service', () => {
     it('should call geolocation permissionRequestResolved', () => {
       service.locationPermissionRequestResolve();
       expect(geolocationService.permissionRequestResolved.callCount).to.equal(1);
+    });
+  });
+
+  describe('RDToolkit', () => {
+    it('should process response after provisioning test with RDToolkit app', () => {
+      const response = {
+        'state': 'RUNNING',
+        'timeStarted': 'Sat Mar 28 17:17:13 GMT+07:00 2021',
+        'timeResolved': 'Sat Mar 28 17:45:18 GMT+07:00 2021',
+        'sessionId': 'cc571ef2-7778-43a0-8bcf-47f7ea42801c'
+      };
+
+      service.rdToolkitProvisionedTestResponse(response);
+
+      expect(rdToolkitService.resolveProvisionedTest.callCount).to.equal(1);
+      expect(rdToolkitService.resolveProvisionedTest.args[0]).to.have.members([response]);
+      expect(consoleErrorMock.callCount).to.equal(0);
+    });
+
+    it('should catch exception when processing response after provisioning test with RDToolkit app', () => {
+      const response = {
+        invalid: 'object'
+      };
+      rdToolkitService.resolveProvisionedTest.throws(new Error('some error'));
+
+      service.rdToolkitProvisionedTestResponse(response);
+
+      expect(rdToolkitService.resolveProvisionedTest.callCount).to.equal(1);
+      expect(rdToolkitService.resolveProvisionedTest.args[0]).to.have.members([response]);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0]).to.have.members([
+        'RDToolkit - Error processing response from android app, error: "some error", response:',
+        response
+      ]);
+    });
+
+    it('should process response after capturing test result with RDToolkit app', () => {
+      const response = {
+        'results': [{
+          'result': 'mal_pf_neg',
+          'test': 'mal_pf'
+        }, {
+          'result': 'mal_pv_pos',
+          'test': 'mal_pv'
+        },{
+          'result': 'universal_control_failure',
+          'test': 'mal_pv'
+        }],
+        'croppedImage': '',
+        'mainImage': '',
+        'timeRead': 'Thu Mar 30 17:52:50 GMT+07:00 2021',
+        'state': 'RUNNING',
+        'timeStarted': 'Sat Mar 30 17:17:13 GMT+07:00 2021',
+        'timeResolved': 'Sat Mar 30 17:45:18 GMT+07:00 2021',
+        'sessionId': 'cc571ef2-7778-43a0-8bcf-47f7ea42801c',
+      };
+
+      service.rdToolkitCapturedTestResponse(response);
+
+      expect(rdToolkitService.resolveCapturedTest.callCount).to.equal(1);
+      expect(rdToolkitService.resolveCapturedTest.args[0]).to.have.members([response]);
+      expect(consoleErrorMock.callCount).to.equal(0);
+    });
+
+
+    it('should catch exception when processing response after capturing test result with RDToolkit app', () => {
+      const response = {
+        invalid: 'object'
+      };
+      rdToolkitService.resolveCapturedTest.throws(new Error('some error'));
+
+      service.rdToolkitCapturedTestResponse(response);
+
+      expect(rdToolkitService.resolveCapturedTest.callCount).to.equal(1);
+      expect(rdToolkitService.resolveCapturedTest.args[0]).to.have.members([response]);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0]).to.have.members([
+        'RDToolkit - Error processing response from android app, error: "some error", response:',
+        response
+      ]);
     });
   });
 

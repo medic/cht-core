@@ -1,0 +1,180 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+  <h:head>
+    <h:title>Rapid Diagnostic Toolkit Demo</h:title>
+    <model>
+      <itext>
+        <translation lang="en">
+          <text id="/rdtoolkit-provision/data/__patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/rdtoolkit-provision/data/__patient_name:label">
+            <value>Patient name</value>
+          </text>
+          <text id="/rdtoolkit-provision/data/rdtoolkit_session_id:label">
+            <value>Session ID</value>
+          </text>
+          <text id="/rdtoolkit-provision/data/rdtoolkit_state:label">
+            <value>Status</value>
+          </text>
+          <text id="/rdtoolkit-provision/data/rdtoolkit_time_resolved:label">
+            <value>Results available on</value>
+          </text>
+          <text id="/rdtoolkit-provision/data/rdtoolkit_time_started:label">
+            <value>Started on</value>
+          </text>
+          <text id="/rdtoolkit-provision/inputs/contact/_id:label">
+            <value>What is the patient's name?</value>
+          </text>
+        </translation>
+        <translation lang="fr">
+          <text id="/rdtoolkit-provision/data/__patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/rdtoolkit-provision/data/__patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/rdtoolkit-provision/data/__patient_uuid:label">
+            <value>-</value>
+          </text>
+          <text id="/rdtoolkit-provision/data/rdtoolkit_api_url:label">
+            <value>-</value>
+          </text>
+          <text id="/rdtoolkit-provision/data/rdtoolkit_filter:label">
+            <value>-</value>
+          </text>
+          <text id="/rdtoolkit-provision/data/rdtoolkit_session_id:label">
+            <value>-</value>
+          </text>
+          <text id="/rdtoolkit-provision/data/rdtoolkit_state:label">
+            <value>-</value>
+          </text>
+          <text id="/rdtoolkit-provision/data/rdtoolkit_time_resolved:label">
+            <value>-</value>
+          </text>
+          <text id="/rdtoolkit-provision/data/rdtoolkit_time_started:label">
+            <value>-</value>
+          </text>
+          <text id="/rdtoolkit-provision/data:label">
+            <value>-</value>
+          </text>
+          <text id="/rdtoolkit-provision/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/rdtoolkit-provision/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/rdtoolkit-provision/inputs/contact/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/rdtoolkit-provision/inputs/contact:label">
+            <value>-</value>
+          </text>
+          <text id="/rdtoolkit-provision/inputs/source:label">
+            <value>-</value>
+          </text>
+          <text id="/rdtoolkit-provision/inputs:label">
+            <value>-</value>
+          </text>
+          <text id="/rdtoolkit-provision/patient_id:label">
+            <value>../inputs/contact/patient_id</value>
+          </text>
+          <text id="/rdtoolkit-provision/patient_name:label">
+            <value>../inputs/contact/name</value>
+          </text>
+          <text id="/rdtoolkit-provision/patient_uuid:label">
+            <value>../inputs/contact/_id</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <rdtoolkit-provision id="rdtoolkit-provision" prefix="J1!rdtoolkit-provision!" delimiter="#" version="2021-05-20 22:38:12">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <source tag="hidden">user</source>
+            <contact tag="hidden">
+              <_id/>
+              <name/>
+              <patient_id/>
+            </contact>
+          </inputs>
+          <data>
+            <__patient_uuid tag="hidden"/>
+            <__patient_name/>
+            <__patient_id/>
+            <rdtoolkit_session_id tag="hidden"/>
+            <rdtoolkit_state/>
+            <rdtoolkit_time_started/>
+            <rdtoolkit_time_resolved/>
+            <rdtoolkit_filter tag="hidden">mal_pf</rdtoolkit_filter>
+            <rdtoolkit_api_url tag="hidden"/>
+          </data>
+          <patient_uuid tag="hidden"/>
+          <patient_id tag="hidden"/>
+          <patient_name tag="hidden"/>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </rdtoolkit-provision>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/rdtoolkit-provision/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/rdtoolkit-provision/inputs/source" type="string"/>
+      <bind nodeset="/rdtoolkit-provision/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/rdtoolkit-provision/inputs/contact/name" type="string"/>
+      <bind nodeset="/rdtoolkit-provision/inputs/contact/patient_id" type="string"/>
+      <bind nodeset="/rdtoolkit-provision/data/__patient_uuid" type="string" calculate="../../inputs/contact/_id"/>
+      <bind nodeset="/rdtoolkit-provision/data/__patient_name" type="string" calculate="../../inputs/contact/name" readonly="true()"/>
+      <bind nodeset="/rdtoolkit-provision/data/__patient_id" type="string" calculate="../../inputs/contact/patient_id" required="true()" readonly="true()"/>
+      <bind nodeset="/rdtoolkit-provision/data/rdtoolkit_session_id" type="string" required="true()"/>
+      <bind nodeset="/rdtoolkit-provision/data/rdtoolkit_state" type="string"/>
+      <bind nodeset="/rdtoolkit-provision/data/rdtoolkit_time_started" type="string"/>
+      <bind nodeset="/rdtoolkit-provision/data/rdtoolkit_time_resolved" type="string"/>
+      <bind nodeset="/rdtoolkit-provision/data/rdtoolkit_filter" type="string" required="true()"/>
+      <bind nodeset="/rdtoolkit-provision/data/rdtoolkit_api_url" type="string"/>
+      <bind nodeset="/rdtoolkit-provision/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/rdtoolkit-provision/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
+      <bind nodeset="/rdtoolkit-provision/patient_name" type="string" calculate="../inputs/contact/name"/>
+      <bind nodeset="/rdtoolkit-provision/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group ref="/rdtoolkit-provision/inputs">
+      <group ref="/rdtoolkit-provision/inputs/contact">
+        <input appearance="db-object" ref="/rdtoolkit-provision/inputs/contact/_id">
+          <label ref="jr:itext('/rdtoolkit-provision/inputs/contact/_id:label')"/>
+        </input>
+      </group>
+    </group>
+    <group appearance="field-list rdtoolkit-provision" ref="/rdtoolkit-provision/data">
+      <input appearance="hidden" ref="/rdtoolkit-provision/data/__patient_uuid"/>
+      <input ref="/rdtoolkit-provision/data/__patient_name">
+        <label ref="jr:itext('/rdtoolkit-provision/data/__patient_name:label')"/>
+      </input>
+      <input appearance="rdtoolkit-action-btn" ref="/rdtoolkit-provision/data/__patient_id">
+        <label ref="jr:itext('/rdtoolkit-provision/data/__patient_id:label')"/>
+      </input>
+      <input appearance="hidden" ref="/rdtoolkit-provision/data/rdtoolkit_session_id">
+        <label ref="jr:itext('/rdtoolkit-provision/data/rdtoolkit_session_id:label')"/>
+      </input>
+      <input appearance="hidden" ref="/rdtoolkit-provision/data/rdtoolkit_state">
+        <label ref="jr:itext('/rdtoolkit-provision/data/rdtoolkit_state:label')"/>
+      </input>
+      <input appearance="hidden" ref="/rdtoolkit-provision/data/rdtoolkit_time_started">
+        <label ref="jr:itext('/rdtoolkit-provision/data/rdtoolkit_time_started:label')"/>
+      </input>
+      <input appearance="hidden" ref="/rdtoolkit-provision/data/rdtoolkit_time_resolved">
+        <label ref="jr:itext('/rdtoolkit-provision/data/rdtoolkit_time_resolved:label')"/>
+      </input>
+      <input appearance="hidden" ref="/rdtoolkit-provision/data/rdtoolkit_filter"/>
+      <input appearance="hidden" ref="/rdtoolkit-provision/data/rdtoolkit_api_url"/>
+    </group>
+  </h:body>
+</h:html>

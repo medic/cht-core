@@ -22,6 +22,8 @@
     require( './widgets/bikram-sambat-datepicker' ),
     require( './widgets/simprints' ),
     require( './widgets/mrdt' ),
+    require( './widgets/rdtoolkit-provision' ),
+    require( './widgets/rdtoolkit-capture' ),
   ];
 
   module.exports = widgets;

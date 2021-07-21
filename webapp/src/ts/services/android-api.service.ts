@@ -7,6 +7,7 @@ import { MRDTService } from '@mm-services/mrdt.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { SimprintsService } from '@mm-services/simprints.service';
+import { RDToolkitService } from '@mm-services/rdtoolkit.service';
 
 /**
  * An API to provide integration with the medic-android app.
@@ -27,6 +28,7 @@ export class AndroidApiService {
     private simprintsService:SimprintsService,
     private zone:NgZone,
     private routeSnapshotService:RouteSnapshotService,
+    private rdToolkitService:RDToolkitService
   ) {
   }
 
@@ -254,6 +256,24 @@ export class AndroidApiService {
     this.geolocationService.permissionRequestResolved();
   }
 
+  rdToolkitProvisionedTestResponse(response) {
+    try {
+      this.rdToolkitService.resolveProvisionedTest(response);
+    } catch (e) {
+      const message = `RDToolkit - Error processing response from android app, error: "${e.message}", response:`;
+      return console.error(message, response);
+    }
+  }
+
+  rdToolkitCapturedTestResponse(response) {
+    try {
+      this.rdToolkitService.resolveCapturedTest(response);
+    } catch (e) {
+      const message = `RDToolkit - Error processing response from android app, error: "${e.message}", response:`;
+      return console.error(message, response);
+    }
+  }
+
   v1 = {
     back: () => this.runInZone('back'),
     logout: () => this.runInZone('logout'),
@@ -262,5 +282,7 @@ export class AndroidApiService {
     simprintsResponse: (...args) => this.runInZone('simprintsResponse', args),
     smsStatusUpdate: (...args) => this.runInZone('smsStatusUpdate', args),
     locationPermissionRequestResolved: () => this.runInZone('locationPermissionRequestResolve'),
+    rdToolkitProvisionedTestResponse: (...args) => this.runInZone('rdToolkitProvisionedTestResponse', args),
+    rdToolkitCapturedTestResponse: (...args) => this.runInZone('rdToolkitCapturedTestResponse', args),
   };
 }
