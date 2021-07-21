@@ -159,13 +159,13 @@ const wasProcessedClientSide = (change) => {
 };
 
 const processMutingEvent = (contact, change, muteState, hasRun) => {
-  const processedClientSide = wasProcessedClientSide(change);
+  const replayClientSideMuting = wasProcessedClientSide(change) && !change.skipReplay;
   return mutingUtils
-    .updateMuteState(contact, muteState, change.id, processedClientSide)
+    .updateMuteState(contact, muteState, change.id, replayClientSideMuting)
     .then(reportIds => {
       module.exports._addMsg(getEventType(muteState), change.doc, hasRun);
 
-      if (processedClientSide && !change.skipReplay) {
+      if (replayClientSideMuting) {
         return replayClientMutingEvents(reportIds);
       }
     });

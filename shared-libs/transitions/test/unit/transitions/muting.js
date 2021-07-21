@@ -755,6 +755,10 @@ describe('Muting transition', () => {
         });
       });
 
+      it('should skip replaying client-side muting when skipReplay is passed', () => {
+        // todo
+      });
+
       it('should throw lineage errors when processing muting queue', () => {
         const doc = {
           _id: 'report',
