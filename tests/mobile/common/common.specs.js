@@ -72,26 +72,26 @@ describe('Navigation tests : ', () => {
       type: 'clinic',
       name: 'District',
     };
-    const offlineUser = {
+    const user = {
       username: 'user',
       password: 'Sup3rSecret!',
-      place: district._id,
+      place:district._id,
       contact: {
         _id: 'some_id',
-        name: 'user'
+        name: 'contact'
       },
-      roles: ['district_admin']
+      roles: ['program_officer']
     };
 
-    const settings = {
-      'permissions': {
-        'can_view_messages': ['district_admin'],
-        'can_view_messages_tab': ['district_admin'],
-        'can_view_reports': ['district_admin'],
-        'can_view_reports_tab': ['district_admin'],
-        'can_view_contacts': ['district_admin'],
-        'can_view_contacts_tab': ['district_admin']
-      }
+    const newPermissions =  {
+      can_view_messages: ['program_officer'],
+      can_view_messages_tab: ['program_officer'],
+      can_view_reports: ['program_officer'],
+      can_view_reports_tab: ['program_officer'],
+      can_view_contacts: ['program_officer'],
+      can_view_contacts_tab: ['program_officer'],
+      can_view_analytics: [],
+      can_view_nalytics_tab: []
     };
 
     let originalTimeout;
@@ -104,15 +104,13 @@ describe('Navigation tests : ', () => {
 
     afterAll(async () => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-
-      //restore window size
       await browser.driver.manage().window().setSize(1024,768);
     });
 
     beforeAll(async () => {
       await browser.driver.manage().window().setSize(389, 500);
       await utils.saveDoc(district);
-      await utils.createUsers([offlineUser]);
+      await utils.createUsers([user]);
     });
 
     it('No tab text labels displayed  on mobile view for over 3 tabs', async () => {
@@ -123,9 +121,11 @@ describe('Navigation tests : ', () => {
 
     it('Display page tab text labels even on mobile view, whenever there are 3 or fewer tabs', async () => {
       //change permissions
-      await utils.updateSettings(settings);
+      const settings = await utils.getSettings();
+      const permissions = settings.permissions;
+      await utils.updateSettings({permissions: Object.assign(permissions, newPermissions)});
       await commonElements.goToLoginPageNative();
-      await loginPage.loginNative(offlineUser.username, offlineUser.password);
+      await loginPage.loginNative(user.username, user.password);
       await utils.closeTour(50000);
       const tabTexts = await element.all(by.css('.button-label')).getText();
       expect(tabTexts.length).toBe(3);
