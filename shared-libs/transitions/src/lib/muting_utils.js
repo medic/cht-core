@@ -178,6 +178,7 @@ const updateMutingHistory = (contact, initialReplicationDatetime, muted) => {
 const addMutingHistory = (info, muted, reportId) => {
   info.muting_history = info.muting_history || [];
 
+  // we could be replaying offline muting history. don't duplicate last entry of muting history.
   const lastEntry = info.muting_history.length && info.muting_history[info.muting_history.length - 1];
   if (lastEntry && (lastEntry.muted === !!muted && lastEntry.report_id === reportId)) {
     return;

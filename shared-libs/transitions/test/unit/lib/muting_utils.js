@@ -2633,6 +2633,14 @@ describe('mutingUtils', () => {
           chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
         });
     });
+
+    it('should not update infodocs that get no changes', () => {
+      // todo
+    });
+
+    it('should not call bulkUpdate when there are no updates to make', () => {
+      // todo
+    });
   });
 
   describe('isLastUpdatedByClient', () => {

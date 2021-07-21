@@ -1522,9 +1522,6 @@ describe('muting', () => {
           sentinelUtils.getInfoDocs([clinic._id, person._id, newPerson._id])
         ]))
         .then(([ updatedContacts, infoDocs ]) => {
-
-          console.log(JSON.stringify(infoDocs, null, 2));
-
           const [ updatedClinic, updatedPerson, updatedNewPerson ] = updatedContacts;
           const [ clinicInfo, personInfo, newPersonInfo ] = infoDocs;
           const findMutingHistoryForReport = (history, reportId) => history.find(item => item.report_id === reportId);
