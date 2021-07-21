@@ -671,8 +671,6 @@ describe('muting', () => {
         chai.expect(clinicInfo.muting_history[0].report_id).to.equal(muteClinic._id);
         clinicMuteTime = clinicInfo.muting_history[0].date;
 
-        console.log(personInfo, person3Info);
-
         chai.expect(personInfo.muting_history).to.be.ok;
         chai.expect(personInfo.muting_history.length).to.equal(2);
         chai.expect(personInfo.muting_history[1]).to.deep.equal({
@@ -1814,8 +1812,113 @@ describe('muting', () => {
         .then(() => sentinelUtils.getInfoDocs(reportIds))
         .then(([mutesPersonInfo, unmutesNewPersonInfo, mutesPersonAgainInfo]) => {
           chai.expect(getMutingRev(mutesPersonInfo)).to.equal(1); // not replayed
-          chai.expect(getMutingRev(unmutesNewPersonInfo)).to.be.greaterThan(1); // replayed once
-          chai.expect(getMutingRev(mutesPersonAgainInfo)).to.be.greaterThan(1); // replayed once
+          chai.expect(getMutingRev(unmutesNewPersonInfo)).to.be.greaterThan(1); // replayed
+          chai.expect(getMutingRev(mutesPersonAgainInfo)).to.be.greaterThan(1); // replayed
+        });
+    });
+
+    it('should work with circular client-side muting', () => {
+      // the code should not produce this, this would be a result of manual tampering with the data.
+      // nevertheless ...
+
+      const settings = {
+        transitions: { muting: true },
+        muting: {
+          mute_forms: ['mute'],
+          unmute_forms: ['unmute']
+        },
+      };
+
+      const clinic = {
+        _id: 'new_clinic',
+        name: 'new_clinic',
+        type: 'clinic',
+        place_id: 'the_new_clinic',
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
+        contact: {
+          _id: 'new_person',
+          parent:  { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+        },
+        reported_date: new Date().getTime(),
+        muting_history: {
+          server_side: { muted: false },
+          client_side: [
+            { report_id: 'mutes_clinic', muted: true, date: 1000 },
+            { report_id: 'unmutes_person', muted: false, date: 2000 },
+            { report_id: 'mutes_clinic', muted: true, date: 4000 },
+          ],
+          last_update: 'client_side',
+        },
+      };
+
+      const person = {
+        _id: 'new_person',
+        type: 'person',
+        name: 'new_person',
+        patient_id: 'the_new_person',
+        parent:  { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+        reported_date: new Date().getTime(),
+        muted: 3000,
+        muting_history: {
+          client_side: [
+            { report_id: 'mutes_clinic', muted: true, date: 1000 },
+            { report_id: 'unmutes_person', muted: false, date: 2000 },
+            { report_id: 'mutes_clinic', muted: true, date: 4000 },
+          ],
+          last_update: 'client_side',
+        }
+      };
+
+      const reports = [
+        {
+          _id: 'unmutes_person',
+          type: 'data_record',
+          content_type: 'xml',
+          form: 'unmute',
+          fields: {
+            patient_id: 'the_new_person',
+          },
+          reported_date: 2000,
+          client_side_transitions: {
+            muting: true
+          },
+        },
+      ];
+
+      const mutesClinic =  {
+        _id: 'mutes_clinic',
+        type: 'data_record',
+        content_type: 'xml',
+        form: 'mute',
+        fields: {
+          place_id: 'the_new_clinic',
+        },
+        reported_date: 1000,
+        client_side_transitions: {
+          muting: true
+        },
+      };
+
+      const reportIds = reports.map(r => r._id);
+      const docs = _.shuffle([clinic, person, ...reports]);
+
+      return utils
+        .updateSettings(settings, 'sentinel')
+        .then(() => utils.saveDocs(docs))
+        .then(() => sentinelUtils.waitForSentinel(reportIds))
+        .then(() => utils.getDocs([clinic._id, person._id]))
+        .then(([ updatedClinic, updatedPerson ]) => {
+          // nothing changed
+          chai.expect(updatedClinic.muted).to.be.undefined;
+          chai.expect(updatedPerson.muted).to.be.undefined;
+        })
+        .then(() => utils.saveDoc(mutesClinic))
+        .then(() => sentinelUtils.waitForSentinel())
+        .then(() => utils.getDocs([clinic._id, person._id]))
+        .then(([ updatedClinic, updatedPerson ]) => {
+          // nothing changed
+          chai.expect(updatedClinic.muted).to.be.ok;
+          chai.expect(updatedPerson.muted).to.be.ok;
         });
     });
   });

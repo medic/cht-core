@@ -756,7 +756,37 @@ describe('Muting transition', () => {
       });
 
       it('should skip replaying client-side muting when skipReplay is passed', () => {
-        // todo
+        const doc = {
+          _id: 'report',
+          type: 'data_record',
+          form: 'mute',
+          patient: { _id: 'patient', name: 'mary' },
+          client_side_transitions: {
+            notMuting: true,
+            alsoNotMuting: true,
+            muting: true,
+          },
+        };
+
+        config.get.returns(mutingConfig);
+        mutingUtils.updateMuteState.resolves(['a', 'b', 'c', 'd', 'e', 'f']);
+        sinon.stub(utils, 'isValidSubmission').returns(true);
+        sinon.stub(mutingUtils.lineage, 'fetchHydratedDocs');
+
+        sinon.stub(mutingUtils.infodoc, 'get');
+        sinon.stub(transitionsIndex, 'applyTransition').callsArgWith(1, null, true);
+        sinon.stub(transitionsIndex, 'finalize').callsArg(1);
+
+        return transition.onMatch({ doc, id: doc._id, skipReplay: true }).then(result => {
+          chai.expect(result).to.equal(true);
+          chai.expect(mutingUtils.updateMuteState.callCount).to.equal(1);
+          chai.expect(mutingUtils.updateMuteState.args[0]).to.deep.equal([ doc.patient, true, doc._id, false ]);
+          chai.expect(mutingUtils.lineage.fetchHydratedDocs.callCount).to.equal(0);
+          chai.expect(mutingUtils.infodoc.get.callCount).to.equal(0);
+
+          chai.expect(transitionsIndex.applyTransition.callCount).to.equal(0);
+          chai.expect(transitionsIndex.finalize.callCount).to.equal(0);
+        });
       });
 
       it('should throw lineage errors when processing muting queue', () => {
