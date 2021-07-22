@@ -4,6 +4,7 @@ const _ = require('lodash');
 const config = require('../config');
 const viewMapUtils = require('@medic/view-map-utils');
 const tombstoneUtils = require('@medic/tombstone-utils');
+const registrationUtils = require('@medic/registration-utils');
 
 const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records everyone can access
 const UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
@@ -388,8 +389,10 @@ const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
 /**
  * Method to ensure users don't see private reports submitted by their boss about the user's contact
  * @param {Object} userCtx                    User context object
- * @param {string} userCtx.contact_id         _id of the user's contact
- * @param {string} userCtx.facility_id        _id of the user's place
+ * @param {string} userCtx.contact_id         the user's contact's uuid
+ * @param {string} userCtx.facility_id        the user's place's uuid
+ * @param {Object|undefined} userCtx.contact  the user's contact
+ * @param {Object|undefined} userCtx.facility the user's place
  * @param {string|undefined} subject          report's subject
  * @param {string|undefined} submitter        report's submitter
  * @param {boolean} isPrivate                 whether the report is private
@@ -402,7 +405,14 @@ const isSensitive = (userCtx, subject, submitter, isPrivate, allowedSubmitter) =
     return false;
   }
 
-  if (subject !== userCtx.contact_id && subject !== userCtx.facility_id) {
+  const sensitiveSubjects = [
+    ...registrationUtils.getSubjectIds(userCtx.facility),
+    ...registrationUtils.getSubjectIds(userCtx.contact),
+    userCtx.facility_id,
+    userCtx.contact_id,
+  ];
+
+  if (!sensitiveSubjects.includes(subject)) {
     return false;
   }
 

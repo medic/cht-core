@@ -55,11 +55,13 @@ const users = [
       _id: 'fixture:bobville',
       type: 'health_center',
       name: 'Bobville',
-      parent: 'PARENT_PLACE'
+      parent: 'PARENT_PLACE',
+      place_id: 'shortcode:bobville',
     },
     contact: {
       _id: 'fixture:user:bob',
-      name: 'Bob'
+      name: 'Bob',
+      patient_id: 'shortcode:user:bob',
     },
     roles: ['district-manager', 'kujua_user', 'data_entry', 'district_admin']
   },
@@ -70,11 +72,13 @@ const users = [
       _id: 'fixture:clareville',
       type: 'health_center',
       name: 'Clareville',
-      parent: 'PARENT_PLACE'
+      parent: 'PARENT_PLACE',
+      place_id: 'shortcode:clareville',
     },
     contact: {
       _id: 'fixture:user:clare',
-      name: 'Clare'
+      name: 'Clare',
+      patient_id: 'shortcode:clare',
     },
     roles: ['district_admin']
   },
@@ -85,11 +89,13 @@ const users = [
       _id: 'fixture:chw-bossville',
       type: 'health_center',
       name: 'CHW Bossville',
-      parent: 'PARENT_PLACE'
+      parent: 'PARENT_PLACE',
+      place_id: 'shortcode:chw-bossville',
     },
     contact: {
       _id: 'fixture:user:chw-boss',
-      name: 'CHW Boss'
+      name: 'CHW Boss',
+      patient_id: 'shortcode:user:chw-boss',
     },
     roles: ['district_admin']
   },
@@ -100,11 +106,13 @@ const users = [
       _id: 'fixture:chwville',
       type: 'clinic',
       name: 'Chwville',
-      parent: 'fixture:chw-bossville'
+      parent: 'fixture:chw-bossville',
+      place_id: 'shortcode:chwville',
     },
     contact: {
       _id: 'fixture:user:chw',
-      name: 'CHW'
+      name: 'CHW',
+      patient_id: 'shortcode:user:chw',
     },
     roles: ['district_admin', 'analytics']
   },
@@ -114,7 +122,8 @@ const users = [
     place: 'PARENT_PLACE',
     contact: {
       _id: 'fixture:user:supervisor',
-      name: 'Supervisor'
+      name: 'Supervisor',
+      patient_id: 'shortcode:user:supervisor',
     },
     roles: ['district_admin']
   },
@@ -125,11 +134,13 @@ const users = [
       _id: 'fixture:steveville',
       type: 'health_center',
       name: 'Steveville',
-      parent: 'PARENT_PLACE'
+      parent: 'PARENT_PLACE',
+      place_id: 'shortcode:steveville',
     },
     contact: {
       _id: 'fixture:user:steve',
-      name: 'Steve'
+      name: 'Steve',
+      patient_id: 'shortcode:user:steve',
     },
     roles: ['district-manager', 'kujua_user', 'data_entry', 'district_admin']
   },
@@ -140,11 +151,13 @@ const users = [
       _id: 'fixture:managerville',
       type: 'health_center',
       name: 'Managerville',
-      parent: 'PARENT_PLACE'
+      parent: 'PARENT_PLACE',
+      place_id: 'shortcode:managerville',
     },
     contact: {
       _id: 'fixture:user:manager',
-      name: 'Manager'
+      name: 'Manager',
+      patient_id: 'shortcode:user:manager',
     },
     roles: ['national_admin']
   },
@@ -1543,7 +1556,7 @@ describe('changes handler', () => {
     });
   });
 
-  it('should not return reports about your place by someone above you in the hierarchy', () => {
+  it('should not return sensitive reports about your place by someone above you in the hierarchy', () => {
     const docs = [
       {
         // report about home place submitted by logged in user
@@ -1563,21 +1576,78 @@ describe('changes handler', () => {
         fields: { private: true },
       },
       {
-        // report about place submitted by someone else
+        // private report about place submitted by logged in user
         _id: 'chw-report-3',
+        type: 'data_record',
+        contact: { _id: 'fixture:user:chw' },
+        form: 'form',
+        fields: { private: true, place_id: 'shortcode:chwville', },
+      },
+      {
+        // private report about self submitted by logged in user
+        _id: 'chw-report-4',
+        type: 'data_record',
+        patient_id: 'shortcode:user:chw',
+        contact: { _id: 'fixture:user:chw' },
+        form: 'form',
+        fields: { private: true },
+      },
+      {
+        // private report about self submitted by logged in user
+        _id: 'chw-report-5',
+        type: 'data_record',
+        contact: { _id: 'fixture:user:chw' },
+        form: 'form',
+        fields: { private: true, patient_id: 'shortcode:user:chw', },
+      },
+      {
+        // report about place submitted by someone else
+        _id: 'chw-report-6',
         type: 'data_record',
         place_id: 'fixture:chwville',
         contact: { _id: 'someone_else' },
         form: 'form',
       },
       {
+        // report about place submitted by someone else
+        _id: 'chw-report-7',
+        type: 'data_record',
+        contact: { _id: 'someone_else' },
+        fields: { place_id: 'shortcode:chwville' },
+        form: 'form',
+      },
+      {
         // private report about place submitted by someone else
-        _id: 'chw-report-4',
+        _id: 'chw-report-8',
         type: 'data_record',
         place_id: 'fixture:chwville',
         contact: { _id: 'someone_else' },
         form: 'form',
         fields: { private: true },
+      },
+      {
+        // private report about place submitted by someone else
+        _id: 'chw-report-9',
+        type: 'data_record',
+        contact: { _id: 'someone_else' },
+        form: 'form',
+        fields: { private: true, place_id: 'shortcode:chwville', },
+      },
+      {
+        // private report about self submitted by someone else
+        _id: 'chw-report-10',
+        type: 'data_record',
+        contact: { _id: 'someone_else' },
+        form: 'form',
+        fields: { private: true, patient_id: 'shortcode:user:chw', },
+      },
+      {
+        // private report about self submitted by someone else
+        _id: 'chw-report-11',
+        type: 'data_record',
+        contact: { _id: 'someone_else' },
+        form: 'form',
+        fields: { private: true, patient_uuid: 'fixture:user:chw', },
       },
     ];
     return utils
@@ -1591,6 +1661,10 @@ describe('changes handler', () => {
           'chw-report-1',
           'chw-report-2',
           'chw-report-3',
+          'chw-report-4',
+          'chw-report-5',
+          'chw-report-6',
+          'chw-report-7',
         );
       });
   });

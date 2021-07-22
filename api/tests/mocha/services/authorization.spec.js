@@ -8,7 +8,13 @@ const rewire = require('rewire');
 const service = rewire('../../../src/services/authorization');
 
 const should = require('chai').should();
-const userCtx = { name: 'user', contact_id: 'contact_id', facility_id: 'facility_id' };
+const userCtx = {
+  name: 'user',
+  contact_id: 'contact_id',
+  facility_id: 'facility_id',
+  contact: { _id: 'contact_id', patient_id: 'contact_shortcode', name: 'contact', type: 'person' },
+  facility: { _id: 'facility_id', place_id: 'facility_shortcode', name: 'health center', type: 'health_center' },
+};
 const subjectIds = [1, 2, 3];
 
 let contact;
@@ -268,7 +274,17 @@ describe('Authorization service', () => {
     });
 
     it('merges results from both view, except for sensitive ones, includes ddoc and user doc', () => {
-      const subjectIds = [ 'sbj1', 'sbj2', 'sbj3', 'sbj4', 'facility_id', 'contact_id', 'c1', 'c2', 'c3', 'c4' ];
+      const subjectIds = [
+        'sbj1', 'sbj2', 'sbj3', 'sbj4', 'facility_id', 'contact_id', 'c1', 'c2', 'c3', 'c4',
+        'facility_sh', 'contact_sh',
+      ];
+      const userCtx = {
+        name: 'user',
+        facility_id: 'facility_id',
+        contact_id: 'contact_id',
+        facility: { _id: 'facility_id', place_id: 'facility_sh' },
+        contact: { _id: 'contact_id', patient_id: 'contact_sh' },
+      };
       db.medic.query
         .withArgs('medic/docs_by_replication_key')
         .resolves({ rows: [
@@ -280,6 +296,8 @@ describe('Authorization service', () => {
           { id: 'r6', key: 'contact_id', value: {} },
           { id: 'r7', key: 'facility_id', value: { submitter: 'c-unknown', private: true } }, //sensitive
           { id: 'r8', key: 'contact_id', value: { submitter: 'c-unknown', private: 'something' } }, //sensitive
+          { id: 'r7', key: 'facility_sh', value: { submitter: 'c-unknown', private: true } }, //sensitive
+          { id: 'r8', key: 'contact_sh', value: { submitter: 'c-unknown', private: 'something' } }, //sensitive
           { id: 'r9', key: 'facility_id', value: { submitter: 'c3' } },
           { id: 'r10', key: 'contact_id', value: { submitter: 'c4' } },
           { id: 'r11', key: 'sbj3', value: { } },
@@ -289,7 +307,7 @@ describe('Authorization service', () => {
         ]});
 
       return service
-        .getAllowedDocIds({subjectIds, userCtx: { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' }})
+        .getAllowedDocIds({ subjectIds, userCtx })
         .then(result => {
           result.length.should.equal(14);
           result.should.deep.equal([
@@ -764,10 +782,30 @@ describe('Authorization service', () => {
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
 
+        feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact.patient_id ];
+        viewResults = {
+          replicationKeys: [{
+            key: userCtx.contact.patient_id,
+            value: { submitter: 'submitter', type: 'data_record', private: true }}
+          ],
+          contactsByDepth: [],
+        };
+        service.allowedDoc(report, feed, viewResults).should.equal(false);
+
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facility_id ];
         viewResults = {
           replicationKeys: [{
             key: userCtx.facility_id,
+            value: { submitter: 'submitter', type: 'data_record', private: true }
+          }],
+          contactsByDepth: [],
+        };
+        service.allowedDoc(report, feed, viewResults).should.equal(false);
+
+        feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facility.place_id ];
+        viewResults = {
+          replicationKeys: [{
+            key: userCtx.facility.place_id,
             value: { submitter: 'submitter', type: 'data_record', private: true }
           }],
           contactsByDepth: [],
@@ -783,9 +821,23 @@ describe('Authorization service', () => {
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
 
+        feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact.patient_id ];
+        viewResults = {
+          replicationKeys: [{ key: userCtx.contact.patient_id, value: { submitter: 'contact', type: 'data_record' }}],
+          contactsByDepth: [],
+        };
+        service.allowedDoc(report, feed, viewResults).should.equal(true);
+
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facility_id ];
         viewResults = {
           replicationKeys: [{ key: userCtx.facility_id, value: { submitter: 'contact', type: 'data_record' }}],
+          contactsByDepth: [],
+        };
+        service.allowedDoc(report, feed, viewResults).should.equal(true);
+
+        feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facility.place_id ];
+        viewResults = {
+          replicationKeys: [{ key: userCtx.facility.place_id, value: { submitter: 'contact', type: 'data_record' }}],
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
@@ -3303,6 +3355,121 @@ describe('Authorization service', () => {
 
       authCtx.reportDepth = 2;
       service.__get__('isAllowedDepth')(authCtx, replicationKeys).should.equal(true);
+    });
+  });
+
+  describe('isSensitive', () => {
+    const returnsTrue = sinon.stub().returns(true);
+    const returnsFalse = sinon.stub().returns(false);
+
+    it('should return false when there is no subject, no submitter or doc is not private', () => {
+      service.__get__('isSensitive')().should.equal(false);
+      service.__get__('isSensitive')({}, 'subj').should.equal(false);
+      service.__get__('isSensitive')({}, 'subj', 'subm').should.equal(false);
+      service.__get__('isSensitive')({}, 'subj', 'subm', false).should.equal(false);
+    });
+
+    it('should return false when subject is not sensitive', () => {
+      const userCtx = {
+        name: 'user',
+        facility_id: 'my_facility',
+        contact_id: 'my_contact',
+        facility: { _id: 'my_facility', place_id: 'facility_shortcode' },
+        contact: { _id: 'my_contact', patient_id: 'patient_shortcode' },
+      };
+
+      service.__get__('isSensitive')(userCtx, 'subj', 'subm', true).should.equal(false);
+      service.__get__('isSensitive')(userCtx, 'other', 'subm', true).should.equal(false);
+      service.__get__('isSensitive')(userCtx, 'subj', 'subm', true, true).should.equal(false);
+      service.__get__('isSensitive')(userCtx, 'other', 'subm', true, false).should.equal(false);
+      service.__get__('isSensitive')(userCtx, 'subj', 'subm', true, returnsTrue).should.equal(false);
+      service.__get__('isSensitive')(userCtx, 'other', 'subm', true, returnsFalse).should.equal(false);
+    });
+
+    describe('when subject is sensitive', () => {
+      let userCtx;
+
+      beforeEach(() => {
+        userCtx = {
+          name: 'user',
+          facility_id: 'my_facility',
+          contact_id: 'my_contact',
+          facility: { _id: 'my_facility', place_id: 'facility_shortcode' },
+          contact: { _id: 'my_contact', patient_id: 'patient_shortcode' },
+        };
+      });
+
+      it('when subject is facility id', () => {
+        // with not allowed submitter
+        service.__get__('isSensitive')(userCtx, 'my_facility', 'subm', true, returnsFalse).should.equal(true);
+        service.__get__('isSensitive')(userCtx, 'my_facility', 'subm', true, false).should.equal(true);
+        // with allowed submitter
+        service.__get__('isSensitive')(userCtx, 'my_facility', 'subm', true, returnsTrue).should.equal(false);
+        service.__get__('isSensitive')(userCtx, 'my_facility', 'subm', true, true).should.equal(false);
+
+        delete userCtx.facility;
+
+        // with not allowed submitter
+        service.__get__('isSensitive')(userCtx, 'my_facility', 'subm', true, returnsFalse).should.equal(true);
+        service.__get__('isSensitive')(userCtx, 'my_facility', 'subm', true, false).should.equal(true);
+        // with allowed submitter
+        service.__get__('isSensitive')(userCtx, 'my_facility', 'subm', true, returnsTrue).should.equal(false);
+        service.__get__('isSensitive')(userCtx, 'my_facility', 'subm', true, true).should.equal(false);
+      });
+
+      it('when subject is facility shortcode', () => {
+        // with not allowed submitter
+        service.__get__('isSensitive')(userCtx, 'facility_shortcode', 'subm', true, returnsFalse).should.equal(true);
+        service.__get__('isSensitive')(userCtx, 'facility_shortcode', 'subm', true, false).should.equal(true);
+        // with allowed submitter
+        service.__get__('isSensitive')(userCtx, 'facility_shortcode', 'subm', true, returnsTrue).should.equal(false);
+        service.__get__('isSensitive')(userCtx, 'facility_shortcode', 'subm', true, true).should.equal(false);
+
+        delete userCtx.facility; // no longer have facility_shortcode available
+
+        // with not allowed submitter
+        service.__get__('isSensitive')(userCtx, 'facility_shortcode', 'subm', true, returnsFalse).should.equal(false);
+        service.__get__('isSensitive')(userCtx, 'facility_shortcode', 'subm', true, false).should.equal(false);
+        // with allowed submitter
+        service.__get__('isSensitive')(userCtx, 'facility_shortcode', 'subm', true, returnsTrue).should.equal(false);
+        service.__get__('isSensitive')(userCtx, 'facility_shortcode', 'subm', true, true).should.equal(false);
+      });
+
+      it('when subject is contact id', () => {
+        // with not allowed submitter
+        service.__get__('isSensitive')(userCtx, 'my_contact', 'subm', true, returnsFalse).should.equal(true);
+        service.__get__('isSensitive')(userCtx, 'my_contact', 'subm', true, false).should.equal(true);
+        // with allowed submitter
+        service.__get__('isSensitive')(userCtx, 'my_contact', 'subm', true, returnsTrue).should.equal(false);
+        service.__get__('isSensitive')(userCtx, 'my_contact', 'subm', true, true).should.equal(false);
+
+        delete userCtx.contact;
+
+        // with not allowed submitter
+        service.__get__('isSensitive')(userCtx, 'my_contact', 'subm', true, returnsFalse).should.equal(true);
+        service.__get__('isSensitive')(userCtx, 'my_contact', 'subm', true, false).should.equal(true);
+        // with allowed submitter
+        service.__get__('isSensitive')(userCtx, 'my_contact', 'subm', true, returnsTrue).should.equal(false);
+        service.__get__('isSensitive')(userCtx, 'my_contact', 'subm', true, true).should.equal(false);
+      });
+
+      it('when subject is contact shortcode', () => {
+        // with not allowed submitter
+        service.__get__('isSensitive')(userCtx, 'patient_shortcode', 'subm', true, returnsFalse).should.equal(true);
+        service.__get__('isSensitive')(userCtx, 'patient_shortcode', 'subm', true, false).should.equal(true);
+        // with allowed submitter
+        service.__get__('isSensitive')(userCtx, 'patient_shortcode', 'subm', true, returnsTrue).should.equal(false);
+        service.__get__('isSensitive')(userCtx, 'patient_shortcode', 'subm', true, true).should.equal(false);
+
+        delete userCtx.contact;
+
+        // with not allowed submitter
+        service.__get__('isSensitive')(userCtx, 'patient_shortcode', 'subm', true, returnsFalse).should.equal(false);
+        service.__get__('isSensitive')(userCtx, 'patient_shortcode', 'subm', true, false).should.equal(false);
+        // with allowed submitter
+        service.__get__('isSensitive')(userCtx, 'patient_shortcode', 'subm', true, returnsTrue).should.equal(false);
+        service.__get__('isSensitive')(userCtx, 'patient_shortcode', 'subm', true, true).should.equal(false);
+      });
     });
   });
 });

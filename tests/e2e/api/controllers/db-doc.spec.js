@@ -22,10 +22,12 @@ const users = [
       type: 'health_center',
       name: 'Offline place',
       parent: 'PARENT_PLACE',
+      place_id: 'shortcode:offline',
     },
     contact: {
       _id: 'fixture:user:offline',
       name: 'OfflineUser',
+      patient_id: 'shortcode:user:offline',
     },
     roles: ['district_admin'],
   },
@@ -37,10 +39,12 @@ const users = [
       type: 'health_center',
       name: 'Online place',
       parent: 'PARENT_PLACE',
+      place_id: 'shortcode:online',
     },
     contact: {
       _id: 'fixture:user:online',
       name: 'OnlineUser',
+      patient_id: 'shortcode:user:online',
     },
     roles: ['national_admin'],
   },
@@ -51,6 +55,7 @@ const users = [
     contact: {
       _id: 'fixture:user:supervisor',
       name: 'Supervisor',
+      patient_id: 'shortcode:user:supervisor',
     },
     roles: ['district_admin'],
   },
@@ -1234,27 +1239,91 @@ describe('db-doc handler', () => {
           fields: { private: false },
         },
         {
-          _id: 'sensitive_report',
+          _id: 'insensitive_report_4',
           type: 'data_record',
           form: 'a',
           contact: { _id: 'fixture:online'},
-          patient_id: 'fixture:offline',
+          fields: { private: false, place_id: 'shortcode:offline', },
+        },
+        {
+          _id: 'insensitive_report_5',
+          type: 'data_record',
+          form: 'a',
+          contact: { _id: 'fixture:online'},
+          fields: { private: false, patient_id: 'shortcode:user:offline', },
+        },
+        {
+          _id: 'insensitive_report_6',
+          type: 'data_record',
+          form: 'a',
+          contact: { _id: 'fixture:offline'},
+          fields: { private: true, patient_id: 'shortcode:user:offline', },
+        },
+        {
+          _id: 'sensitive_report_1',
+          type: 'data_record',
+          form: 'a',
+          contact: { _id: 'fixture:online'},
+          patient_id: 'fixture:user:offline',
           fields: { private: true },
+        },
+        {
+          _id: 'sensitive_report_2',
+          type: 'data_record',
+          form: 'a',
+          contact: { _id: 'fixture:online'},
+          patient_id: 'shortcode:user:offline',
+          fields: { private: true },
+        },
+        {
+          _id: 'sensitive_report_3',
+          type: 'data_record',
+          form: 'a',
+          contact: { _id: 'fixture:online'},
+          fields: { private: true, place_id: 'shortcode:offline', },
+        },
+        {
+          _id: 'sensitive_report_4',
+          type: 'data_record',
+          form: 'a',
+          contact: { _id: 'fixture:online'},
+          fields: { private: true, place_id: 'fixture:offline', },
+        },
+        {
+          _id: 'sensitive_report_5',
+          type: 'data_record',
+          form: 'a',
+          contact: { _id: 'fixture:online'},
+          fields: { private: true, patient_uuid: 'fixture:user:offline', },
+        },
+        {
+          _id: 'sensitive_report_6',
+          type: 'data_record',
+          form: 'a',
+          contact: { _id: 'fixture:online'},
+          fields: { private: true, patient_id: 'shortcode:user:offline', },
         },
       ];
 
       return utils
         .saveDocs(docs)
-        .then(() => Promise.all(
-          docs.map(doc =>
-            utils.requestOnTestDb(_.defaults({ path: `/${doc._id}` }, offlineRequestOptions)).catch(err => err)
-          )
-        ))
+        .then(() => Promise.all(docs.map(doc =>
+          utils
+            .requestOnTestDb(_.defaults({ path: `/${doc._id}` }, offlineRequestOptions))
+            .catch(err => err)
+        )))
         .then(results => {
-          chai.expect(results[0]).excluding('_rev').to.deep.equal(docs[0]);
-          chai.expect(results[1]).excluding('_rev').to.deep.equal(docs[1]);
-          chai.expect(results[2]).excluding('_rev').to.deep.equal(docs[2]);
-          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+          results.forEach((result, idx) => {
+            const originalDoc = docs[idx];
+
+            if (originalDoc._id.startsWith('insensitive')) {
+              // not a private report, expect the result to match the doc
+              chai.expect(result).excluding('_rev').to.deep.equal(originalDoc);
+            } else {
+              // a private report, expect an error
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
+          });
         });
     });
 
