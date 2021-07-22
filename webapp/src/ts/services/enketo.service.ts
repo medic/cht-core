@@ -2,6 +2,7 @@ import { Injectable, NgZone } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import { Store } from '@ngrx/store';
+import type JQuery from 'jquery';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
@@ -288,7 +289,8 @@ export class EnketoService {
       });
   }
 
-  private renderFromXmls(doc, wrapper, instanceData) {
+  private renderFromXmls(xmlFormContext: XmlFormContext) {
+    const { doc, instanceData, titleKey, wrapper } = xmlFormContext;
     wrapper
       .find('.form-footer')
       .addClass('end')
@@ -296,36 +298,57 @@ export class EnketoService {
       .addClass('disabled');
 
     const formContainer = wrapper.find('.container').first();
-    formContainer.html(doc.html);
+    formContainer.html(doc.html.get(0));
 
-    return this.getEnketoOptions(doc, instanceData).then((options) => {
-      this.currentForm = new window.EnketoForm(wrapper.find('form').first(), options);
-      const loadErrors = this.currentForm.init();
-      if (loadErrors && loadErrors.length) {
-        return Promise.reject(new Error(JSON.stringify(loadErrors)));
-      }
-      // manually translate the title as enketo-core doesn't have any way to do this
-      // https://github.com/enketo/enketo-core/issues/405
-      const $title = wrapper.find('#form-title');
-      if (doc.title) {
-        // title defined in the doc - overwrite contents
-        $title.text(this.translateFromService.get(doc.title));
-      } else if ($title.text() === 'No Title') {
-        // useless enketo default - remove it
-        $title.remove();
-      } // else the title is hardcoded in the form definition - leave it alone
-      wrapper.show();
+    return this
+      .getEnketoOptions(doc, instanceData)
+      .then((options) => {
+        this.currentForm = new window.EnketoForm(wrapper.find('form').first(), options);
+        const loadErrors = this.currentForm.init();
+        if (loadErrors?.length) {
+          return Promise.reject(new Error(JSON.stringify(loadErrors)));
+        }
+      })
+      .then(() => this.getFormTitle(titleKey, doc))
+      .then((title) => {
+        this.setFormTitle(wrapper, title);
+        wrapper.show();
 
-      wrapper.find('input').on('keydown', this.handleKeypressOnInputField);
+        wrapper.find('input').on('keydown', this.handleKeypressOnInputField);
 
-      // handle page turning using browser history
-      window.history.replaceState({ enketo_page_number: 0 }, '');
-      this.overrideNavigationButtons(this.currentForm, wrapper);
-      this.addPopStateHandler(this.currentForm, wrapper);
-      this.forceRecalculate(this.currentForm);
+        // handle page turning using browser history
+        window.history.replaceState({ enketo_page_number: 0 }, '');
+        this.overrideNavigationButtons(this.currentForm, wrapper);
+        this.addPopStateHandler(this.currentForm, wrapper);
+        this.forceRecalculate(this.currentForm);
 
-      return this.currentForm;
-    });
+        return this.currentForm;
+      });
+  }
+
+  private getFormTitle(titleKey, doc) {
+    if (titleKey) {
+      // using translation key
+      return this.translateService.get(titleKey);
+    }
+
+    if (doc.title) {
+      // title defined in the doc
+      return Promise.resolve(this.translateFromService.get(doc.title));
+    }
+  }
+
+  private setFormTitle(wrapper, title) {
+    // manually translate the title as enketo-core doesn't have any way to do this
+    // https://github.com/enketo/enketo-core/issues/405
+    const $title = wrapper.find('#form-title');
+    if (title) {
+      // overwrite contents
+      $title.text(title);
+    } else if ($title.text() === 'No Title') {
+      // useless enketo default - remove it
+      $title.remove();
+    } // else the title is hardcoded in the form definition - leave it alone
   }
 
   private overrideNavigationButtons(form, $wrapper) {
@@ -392,14 +415,29 @@ export class EnketoService {
     });
   }
 
-  private renderForm(selector, formDoc, instanceData, editedListener, valuechangeListener) {
+  private renderForm(formContext: EnketoFormContext) {
+    const {
+      editedListener,
+      formDoc,
+      instanceData,
+      selector,
+      titleKey,
+      valuechangeListener,
+    } = formContext;
+
     return this.languageService.get().then(language => {
       const $selector = $(selector);
       return this
         .transformXml(formDoc, language)
         .then(doc => {
           this.replaceJavarosaMediaWithLoaders(formDoc, doc.html);
-          return this.renderFromXmls(doc, $selector, instanceData);
+          const xmlFormContext: XmlFormContext = {
+            doc,
+            wrapper: $selector,
+            instanceData,
+            titleKey,
+          };
+          return this.renderFromXmls(xmlFormContext);
         })
         .then((form) => {
           const formContainer = $selector.find('.container').first();
@@ -427,12 +465,19 @@ export class EnketoService {
         this.getUserContact(),
       ])
       .then(() => {
-        return this.renderForm(selector, form, instanceData, editedListener, valuechangeListener);
+        const formContext: EnketoFormContext = {
+          selector,
+          formDoc: form,
+          instanceData,
+          editedListener,
+          valuechangeListener,
+        };
+        return this.renderForm(formContext);
       });
   }
 
-  renderContactForm(selector, formDoc, instanceData, editedListener, valuechangeListener) {
-    return this.renderForm(selector, formDoc, instanceData, editedListener, valuechangeListener);
+  renderContactForm(formContext: EnketoFormContext) {
+    return this.renderForm(formContext);
   }
 
   private xmlToDocs(doc, formXml, record) {
@@ -712,4 +757,25 @@ export class EnketoService {
     delete this.currentForm;
     this.objUrls.length = 0;
   }
+}
+
+interface XmlFormContext {
+  doc: {
+    html: JQuery;
+    model: string;
+    title: string;
+    hasContactSummary: boolean;
+  };
+  wrapper: JQuery;
+  instanceData: Record<string, any>;
+  titleKey: string;
+}
+
+export interface EnketoFormContext {
+  selector: string;
+  formDoc: string;
+  instanceData: Record<string, any>;
+  editedListener: () => void;
+  valuechangeListener: () => void;
+  titleKey?: string;
 }
