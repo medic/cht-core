@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-v3-horticulturalist
+  annotations:
+    horticulturalist.version: medicmobile/horticulturalist:dockerize-123120-3
+  labels:
+    cht.service: dev-v3-horticulturalist
+    app: dev-v3
+spec:
+  selector:
+    matchLabels:
+      cht.service: dev-v3-horticulturalist
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        horticulturalist.version: medicmobile/horticulturalist:dockerize-123120-3
+      labels:
+        cht.service: dev-v3-horticulturalist
+        app: dev-v3
+    spec:
+      containers:
+      - name: horticulturalist
+        image: medicmobile/horticulturalist:dockerize-123120-3
+        envFrom:
+        - secretRef:
+            name: "secret-dev-v3-env"
+        resources: {}
+      restartPolicy: Always
+status: {}

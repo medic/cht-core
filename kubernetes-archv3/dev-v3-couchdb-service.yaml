@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-v3-couchdb
+spec:
+  selector:
+    cht.service: dev-v3-couchdb
+  clusterIP: None
+  ports:
+  - name: couchdb-port
+    port: 5985
+    targetPort: 5985

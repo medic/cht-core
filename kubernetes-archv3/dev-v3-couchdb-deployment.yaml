@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-v3-couchdb
+  annotations:
+    couchdb.version: medicmobile/couchdb:2.3.1-test14
+  labels:
+    cht.service: dev-v3-couchdb
+    app: dev-v3
+spec:
+  selector:
+    matchLabels:
+      cht.service: dev-v3-couchdb
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        couchdb.version: medicmobile/couchdb:2.3.1-test14
+      labels:
+        cht.service: dev-v3-couchdb
+        app: dev-v3
+    spec:
+      containers:
+      - name: medic-couchdb
+        image: medicmobile/couchdb:2.3.1-test14
+        envFrom:
+        - secretRef:
+            name: "secret-dev-v3-env"
+        resources: {}
+        volumeMounts:
+        - mountPath: /opt/couchdb/data/
+          name: medic-data
+        - mountPath: /opt/couchdb/etc/local.d/
+          name: medic-couchconfig
+      restartPolicy: Always
+      setHostnameAsFQDN: true
+
+      volumes:
+      - name: medic-data
+        persistentVolumeClaim:
+          claimName: dev-v3-medic-data
+      - name: medic-couchconfig
+        persistentVolumeClaim:
+          claimName: dev-v3-medic-couchconfig
+status: {}

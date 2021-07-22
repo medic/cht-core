@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-v3-medic-api
+spec:
+  selector:
+    cht.service: dev-v3-medic-api
+  clusterIP: None
+  ports:
+  - name: medic-api-port
+    port: 5988
+    targetPort: 5988
