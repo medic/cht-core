@@ -198,7 +198,7 @@ const getDefaultBranding = () => {
   return promisify(fs.readFile)(logoPath, {}).then(logo => {
     const data = Buffer.from(logo).toString('base64');
     return {
-      name: 'Medic Mobile',
+      name: 'Medic',
       logo: getInlineImage(data, 'image/svg+xml')
     };
   });

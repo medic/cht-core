@@ -175,7 +175,7 @@ module.exports = function(grunt) {
     uglify: {
       options: {
         banner:
-          '/*! Medic Mobile <%= grunt.template.today("yyyy-mm-dd") %> */\n',
+          '/*! Medic <%= grunt.template.today("yyyy-mm-dd") %> */\n',
       },
       web: {
         files: {
@@ -698,7 +698,7 @@ module.exports = function(grunt) {
     notify: {
       deployed: {
         options: {
-          title: 'Medic Mobile',
+          title: 'Medic',
           message: 'Deployed successfully',
         },
       },

@@ -52,7 +52,7 @@ Connection: close\r
         assert.equal(res.statusCode, 401, JSON.stringify(res));
         assert.equal(
           res.headers['WWW-Authenticate'],
-          'Basic realm="Medic Mobile Web Services"',
+          'Basic realm="Medic Web Services"',
           JSON.stringify(res)
         );
       });
@@ -103,7 +103,7 @@ Connection: close\r
         assert.equal(res.statusCode, 401, JSON.stringify(res));
         assert.equal(
           res.headers['WWW-Authenticate'],
-          'Basic realm="Medic Mobile Web Services"',
+          'Basic realm="Medic Web Services"',
           JSON.stringify(res)
         );
       });
