@@ -348,7 +348,9 @@ describe('EditUserCtrl controller', () => {
       mockContact(userToEdit.contact_id);
       mockFacility(userToEdit.facility_id);
       mockContactGet(userToEdit.contact_id);
-      http.get.withArgs('/api/v1/users-info').resolves({ data: { total_docs: 1000, warn: false, limit: 10000 }});
+      http.get
+        .withArgs('/api/v1/users-info')
+        .resolves({ data: { total_docs: 20000, warn_docs: 800, warn: false, limit: 10000 }});
 
       return mockEditAUser(userToEdit)
         .setupPromise
@@ -445,7 +447,9 @@ describe('EditUserCtrl controller', () => {
       mockContact('new_contact_id');
       mockFacility('new_facility_id');
       mockContactGet('new_facility_id');
-      http.get.withArgs('/api/v1/users-info').resolves({ data: { warn: true, total_docs: 10200, limit: 10000 } });
+      http.get
+        .withArgs('/api/v1/users-info')
+        .resolves({ data: { warn: true, total_docs: 13000, warn_docs: 10200, limit: 10000 } });
 
       return mockEditAUser(userToEdit)
         .setupPromise
@@ -489,7 +493,9 @@ describe('EditUserCtrl controller', () => {
       mockContact('new_contact_id');
       mockFacility('new_facility_id');
       mockContactGet('new_facility_id');
-      http.get.withArgs('/api/v1/users-info').resolves({ data: { warn: true, total_docs: 10200, limit: 10000 } });
+      http.get
+        .withArgs('/api/v1/users-info')
+        .resolves({ data: { warn: true, total_docs: 12000, warn_docs: 10200, limit: 10000 } });
       translate.resolves('translation');
 
       return mockEditAUser(userToEdit)
@@ -515,7 +521,10 @@ describe('EditUserCtrl controller', () => {
           ]);
 
           chai.expect(translate.callCount).to.equal(1);
-          chai.expect(translate.args[0][0]).to.equal('configuration.user.replication.limit.exceeded');
+          chai.expect(translate.args[0]).to.deep.equal([
+            'configuration.user.replication.limit.exceeded',
+            { total_docs: 10200, limit: 10000 },
+          ]);
 
           return scope.editUser();
         })
@@ -639,7 +648,9 @@ describe('EditUserCtrl controller', () => {
       return mockCreateNewUser()
         .setupPromise
         .then(() => {
-          http.get.withArgs('/api/v1/users-info').resolves({ data: { warn: false, total_docs: 100, limit: 10000 } });
+          http.get
+            .withArgs('/api/v1/users-info')
+            .resolves({ data: { warn: false, total_docs: 100, warn_docs: 100, limit: 10000 } });
           scope.editUserModel.username = 'newuser';
           scope.editUserModel.role = 'data-entry';
           scope.editUserModel.token_login = true;
@@ -670,7 +681,9 @@ describe('EditUserCtrl controller', () => {
           app_url: 'url',
         }
       });
-      http.get.withArgs('/api/v1/users-info').resolves({ data: { warn: false, total_docs: 100, limit: 10000 } });
+      http.get
+        .withArgs('/api/v1/users-info')
+        .resolves({ data: { warn: false, total_docs: 100, warn_docs: 100, limit: 10000 } });
       Translate.fieldIsRequired.resolves('Facility field is a required field');
 
       userToEdit.token_login = true;
@@ -703,7 +716,9 @@ describe('EditUserCtrl controller', () => {
           app_url: 'url',
         }
       });
-      http.get.withArgs('/api/v1/users-info').resolves({ data: { warn: false, total_docs: 100, limit: 10000 } });
+      http.get
+        .withArgs('/api/v1/users-info')
+        .resolves({ data: { warn: false, total_docs: 100, warn_docs: 100, limit: 10000 } });
       Translate.fieldIsRequired.withArgs('Password').resolves('password required');
 
       userToEdit.token_login = true;

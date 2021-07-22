@@ -16,7 +16,9 @@ describe('Users Controller', () => {
     req = {};
     res = {};
     sinon.stub(authorization, 'getAuthorizationContext');
-    sinon.stub(authorization, 'getAllowedDocIds');
+    sinon.stub(authorization, 'getDocsByReplicationKey');
+    sinon.stub(authorization, 'filterAllowedDocIds');
+
     sinon.stub(auth, 'isOnlineOnly');
     sinon.stub(auth, 'isOffline');
     sinon.stub(auth, 'hasAllPermissions');
@@ -39,21 +41,21 @@ describe('Users Controller', () => {
         chai.expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'err' }, req, res]);
         chai.expect(res.json.callCount).to.equal(0);
         chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
-        chai.expect(authorization.getAllowedDocIds.callCount).to.equal(0);
+        chai.expect(authorization.getDocsByReplicationKey.callCount).to.equal(0);
       });
     });
 
     it('should catch auth ids errors', () => {
       serverUtils.error.resolves();
       authorization.getAuthorizationContext.resolves({});
-      authorization.getAllowedDocIds.rejects({ some: 'other err' });
+      authorization.getDocsByReplicationKey.rejects({ some: 'other err' });
       sinon.stub(purgedDocs, 'getUnPurgedIds');
       return controller.info(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'other err' }, req, res]);
         chai.expect(res.json.callCount).to.equal(0);
         chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
-        chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
+        chai.expect(authorization.getDocsByReplicationKey.callCount).to.equal(1);
         chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(0);
       });
     });
@@ -61,14 +63,14 @@ describe('Users Controller', () => {
     it('should catch purge ids errors', () => {
       serverUtils.error.resolves();
       authorization.getAuthorizationContext.resolves({});
-      authorization.getAllowedDocIds.resolves([1, 2, 3]);
+      authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key' });
       sinon.stub(purgedDocs, 'getUnPurgedIds').rejects({ some: 'err' });
       return controller.info(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'err' }, req, res]);
         chai.expect(res.json.callCount).to.equal(0);
         chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
-        chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
+        chai.expect(authorization.getDocsByReplicationKey.callCount).to.equal(1);
         chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
       });
     });
@@ -155,9 +157,13 @@ describe('Users Controller', () => {
           contactsByDepthKeys: [['some_facility_id']],
           subjectIds: ['some_facility_id', 'a', 'b', 'c']
         };
-        const docIds = ['some_facility_id', 'a', 'b', 'c', '1', '2', '3'];
+        const docIds = ['some_facility_id', 'a', 'b', 'c', '1', '2', '3', 'task1', 'task2'];
         authorization.getAuthorizationContext.resolves(authContext);
-        authorization.getAllowedDocIds.resolves(docIds);
+        authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
+        authorization.filterAllowedDocIds
+          .onCall(0).returns(docIds)
+          .onCall(1).returns(['some_facility_id', 'a', 'b', 'c', '1', '2', '3']);
+
         sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
 
         return controller.info(req, res).then(() => {
@@ -168,13 +174,23 @@ describe('Users Controller', () => {
             facility_id: req.query.facility_id,
             contact_id: undefined
           }]);
-          chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
-          chai.expect(authorization.getAllowedDocIds.args[0])
-            .to.deep.equal([authContext, { includeTombstones: false }]);
+          chai.expect(authorization.getDocsByReplicationKey.callCount).to.equal(1);
+          chai.expect(authorization.getDocsByReplicationKey.args[0]).to.deep.equal([ authContext ]);
+          chai.expect(authorization.filterAllowedDocIds.callCount).to.equal(2);
+          chai.expect(authorization.filterAllowedDocIds.args[0]).to.deep.equal([
+            authContext,
+            { docs: 'by replication key'},
+            { includeTombstones: false }
+          ]);
+          chai.expect(authorization.filterAllowedDocIds.args[1]).to.deep.equal([
+            authContext,
+            { docs: 'by replication key'},
+            { includeTombstones: false, includeTasks: false },
+          ]);
           chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
           chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([['some_role'], docIds]);
           chai.expect(res.json.callCount).to.equal(1);
-          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 7, warn: false, limit: 10000 }]);
+          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 9, warn_docs: 7, warn: false, limit: 10000 }]);
         });
       });
 
@@ -191,9 +207,12 @@ describe('Users Controller', () => {
           contactsByDepthKeys: [['some_facility_id']],
           subjectIds: ['some_facility_id', 'a', 'b', 'c']
         };
-        const docIds = ['some_facility_id', 'a', 'b', 'c', '1', '2', '3'];
+        const docIds = ['some_facility_id', 'a', 'b', 'c', '1', '2', '3', 'task1', 'task2'];
         authorization.getAuthorizationContext.resolves(authContext);
-        authorization.getAllowedDocIds.resolves(docIds);
+        authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
+        authorization.filterAllowedDocIds
+          .onCall(0).returns(docIds)
+          .onCall(1).returns(['some_facility_id', 'a', 'b', 'c', '1', '2', '3']);
         sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
 
         return controller.info(req, res).then(() => {
@@ -204,11 +223,22 @@ describe('Users Controller', () => {
             facility_id: req.query.facility_id,
             contact_id: req.query.contact_id
           }]);
-          chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
-          chai.expect(authorization.getAllowedDocIds.args[0])
-            .to.deep.equal([authContext, { includeTombstones: false }]);
+          chai.expect(authorization.getDocsByReplicationKey.callCount).to.equal(1);
+          chai.expect(authorization.getDocsByReplicationKey.args[0]).to.deep.equal([authContext]);
+
+          chai.expect(authorization.filterAllowedDocIds.callCount).to.equal(2);
+          chai.expect(authorization.filterAllowedDocIds.args[0]).to.deep.equal([
+            authContext,
+            { docs: 'by replication key'},
+            { includeTombstones: false },
+          ]);
+          chai.expect(authorization.filterAllowedDocIds.args[1]).to.deep.equal([
+            authContext,
+            { docs: 'by replication key'},
+            { includeTombstones: false, includeTasks: false },
+          ]);
           chai.expect(res.json.callCount).to.equal(1);
-          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 7, warn: false, limit: 10000 }]);
+          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 9, warn_docs: 7, warn: false, limit: 10000 }]);
         });
       });
 
@@ -224,14 +254,53 @@ describe('Users Controller', () => {
           contactsByDepthKeys: [['some_facility_id']],
           subjectIds: ['some_facility_id', 'a', 'b', 'c']
         };
-        const docIds = Array.from(Array(10500), (x, idx) => idx + 1);
+        const docIds = Array.from(Array(15000), (x, idx) => idx + 1);
         authorization.getAuthorizationContext.resolves(authContext);
-        authorization.getAllowedDocIds.resolves(docIds);
+        authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
+        authorization.filterAllowedDocIds
+          .onCall(0).returns(docIds)
+          .onCall(1).returns(docIds.slice(0, 10200));
         sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
 
         return controller.info(req, res).then(() => {
           chai.expect(res.json.callCount).to.equal(1);
-          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 10500, warn: true, limit: 10000 }]);
+          chai.expect(res.json.args[0]).to.deep.equal([{
+            total_docs: 15000,
+            warn_docs: 10200,
+            warn: true,
+            limit: 10000
+          }]);
+        });
+      });
+
+      it('should only count non-task documents towards the warning', () => {
+        req.query = {
+          role: 'some_role',
+          facility_id: 'some_facility_id'
+        };
+        auth.isOffline.returns(true);
+        auth.hasAllPermissions.returns(true);
+        const authContext = {
+          userCtx: { roles: ['some_role'], facility_id: req.query.facility_id },
+          contactsByDepthKeys: [['some_facility_id']],
+          subjectIds: ['some_facility_id', 'a', 'b', 'c']
+        };
+        const docIds = Array.from(Array(15000), (x, idx) => idx + 1);
+        authorization.getAuthorizationContext.resolves(authContext);
+        authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
+        authorization.filterAllowedDocIds
+          .onCall(0).returns(docIds)
+          .onCall(1).returns(docIds.slice(0, 9800));
+        sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
+
+        return controller.info(req, res).then(() => {
+          chai.expect(res.json.callCount).to.equal(1);
+          chai.expect(res.json.args[0]).to.deep.equal([{
+            total_docs: 15000,
+            warn_docs: 9800,
+            warn: false,
+            limit: 10000
+          }]);
         });
       });
 
@@ -250,12 +319,21 @@ describe('Users Controller', () => {
         const docIds = Array.from(Array(10500), (x, idx) => idx + 1);
         const unpurgedIds = docIds.slice(0, 8000);
         authorization.getAuthorizationContext.resolves(authContext);
-        authorization.getAllowedDocIds.resolves(docIds);
+        authorization.getAuthorizationContext.resolves(authContext);
+        authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
+        authorization.filterAllowedDocIds
+          .onCall(0).returns(docIds)
+          .onCall(1).returns(docIds.slice(0, 9800));
         sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(unpurgedIds);
 
         return controller.info(req, res).then(() => {
           chai.expect(res.json.callCount).to.equal(1);
-          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: unpurgedIds.length, warn: false,limit: 10000 }]);
+          chai.expect(res.json.args[0]).to.deep.equal([{
+            total_docs: unpurgedIds.length,
+            warn_docs: unpurgedIds.length,
+            warn: false,
+            limit: 10000
+          }]);
         });
       });
 
@@ -273,7 +351,8 @@ describe('Users Controller', () => {
         };
         const docIds = Array.from(Array(1000), (x, idx) => idx + 1);
         authorization.getAuthorizationContext.resolves(authContext);
-        authorization.getAllowedDocIds.resolves(docIds);
+        authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
+        authorization.filterAllowedDocIds.returns(docIds);
         sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
 
         return controller.info(req, res).then(() => {
@@ -285,12 +364,17 @@ describe('Users Controller', () => {
           chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
           chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([['role1', 'role2'], docIds]);
           chai.expect(res.json.callCount).to.equal(1);
-          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 1000, warn: false, limit: 10000 }]);
+          chai.expect(res.json.args[0]).to.deep.equal([{
+            total_docs: 1000,
+            warn_docs: 1000,
+            warn: false,
+            limit: 10000,
+          }]);
         });
       });
 
       describe('roles scenarios', () => {
-        const expected = { total_docs: 3, warn: false, limit: 10000 };
+        const expected = { total_docs: 3, warn_docs: 3, warn: false, limit: 10000 };
         const scenarios = [
           { role: 'aaaa', name: 'string single role' },
           { role: JSON.stringify('aaaa'), name: 'json single role' },
@@ -306,7 +390,8 @@ describe('Users Controller', () => {
 
         beforeEach(() => {
           authorization.getAuthorizationContext.callsFake(userCtx => Promise.resolve({ userCtx }));
-          authorization.getAllowedDocIds.resolves(['1', '2', '3']);
+          authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
+          authorization.filterAllowedDocIds.returns(['1', '2', '3']);
           sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(['1', '2', '3']);
           auth.isOffline.returns(true);
           auth.hasAllPermissions.returns(true);
@@ -352,19 +437,35 @@ describe('Users Controller', () => {
         const docIds = Array.from(Array(8000), (x, idx) => idx + 1);
 
         authorization.getAuthorizationContext.resolves(authContext);
-        authorization.getAllowedDocIds.resolves(docIds);
+        authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
+        authorization.filterAllowedDocIds.returns(docIds);
         sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
 
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(0);
           chai.expect(res.json.callCount).to.equal(1);
-          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 8000, warn: false, limit: 10000 }]);
+          chai.expect(res.json.args[0]).to.deep.equal([{
+            total_docs: 8000,
+            warn_docs: 8000,
+            warn: false,
+            limit: 10000,
+          }]);
 
           chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
           chai.expect(authorization.getAuthorizationContext.args[0]).to.deep.equal([userCtx]);
-          chai.expect(authorization.getAllowedDocIds.callCount).to.equal(1);
-          chai.expect(authorization.getAllowedDocIds.args[0])
-            .to.deep.equal([authContext, { includeTombstones: false } ]);
+          chai.expect(authorization.getDocsByReplicationKey.callCount).to.equal(1);
+          chai.expect(authorization.getDocsByReplicationKey.args[0]).to.deep.equal([authContext]);
+          chai.expect(authorization.filterAllowedDocIds.callCount).to.equal(2);
+          chai.expect(authorization.filterAllowedDocIds.args[0]).to.deep.equal([
+            authContext,
+            { docs: 'by replication key' },
+            { includeTombstones: false }
+          ]);
+          chai.expect(authorization.filterAllowedDocIds.args[1]).to.deep.equal([
+            authContext,
+            { docs: 'by replication key' },
+            { includeTombstones: false, includeTasks: false }
+          ]);
           chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
           chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([['offline'], docIds]);
         });
@@ -376,16 +477,51 @@ describe('Users Controller', () => {
           contactsByDepthKeys: [['some_facility_id']],
           subjectIds: ['some_facility_id', 'a', 'b', 'c']
         };
-        const docIds = Array.from(Array(10500), (x, idx) => idx + 1);
+        const docIds = Array.from(Array(15000), (x, idx) => idx + 1);
 
         authorization.getAuthorizationContext.resolves(authContext);
-        authorization.getAllowedDocIds.resolves(docIds);
+        authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
+        authorization.filterAllowedDocIds
+          .onCall(0).returns(docIds)
+          .onCall(1).returns(docIds.slice(0, 11000));
         sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
 
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(0);
           chai.expect(res.json.callCount).to.equal(1);
-          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 10500, warn: true, limit: 10000 }]);
+          chai.expect(res.json.args[0]).to.deep.equal([{
+            total_docs: 15000,
+            warn_docs: 11000,
+            warn: true,
+            limit: 10000,
+          }]);
+        });
+      });
+
+      it('should only count non-task docs towards warning', () => {
+        const authContext = {
+          userCtx,
+          contactsByDepthKeys: [['some_facility_id']],
+          subjectIds: ['some_facility_id', 'a', 'b', 'c']
+        };
+        const docIds = Array.from(Array(15000), (x, idx) => idx + 1);
+
+        authorization.getAuthorizationContext.resolves(authContext);
+        authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
+        authorization.filterAllowedDocIds
+          .onCall(0).returns(docIds)
+          .onCall(1).returns(docIds.slice(0, 9600));
+        sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(docIds);
+
+        return controller.info(req, res).then(() => {
+          chai.expect(serverUtils.error.callCount).to.equal(0);
+          chai.expect(res.json.callCount).to.equal(1);
+          chai.expect(res.json.args[0]).to.deep.equal([{
+            total_docs: docIds.length,
+            warn_docs: 9600,
+            warn: false,
+            limit: 10000,
+          }]);
         });
       });
 
@@ -399,14 +535,50 @@ describe('Users Controller', () => {
         const unpurgedIds = docIds.slice(0, 9500);
 
         authorization.getAuthorizationContext.resolves(authContext);
-        authorization.getAllowedDocIds.resolves(docIds);
+        authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
+        authorization.filterAllowedDocIds.returns(docIds);
         sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(unpurgedIds);
 
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(0);
           chai.expect(res.json.callCount).to.equal(1);
-          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: unpurgedIds.length, warn: false, limit: 10000 }]);
+          chai.expect(res.json.args[0]).to.deep.equal([{
+            total_docs: unpurgedIds.length,
+            warn_docs: unpurgedIds.length,
+            warn: false,
+            limit: 10000,
+          }]);
         });
+      });
+    });
+
+    it('should intersect purged results correctly', () => {
+      const authContext = {
+        userCtx,
+        contactsByDepthKeys: [['some_facility_id']],
+        subjectIds: ['some_facility_id', 'a', 'b', 'c']
+      };
+
+      const allDocIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      const warnDocIds = [1, 2, 3, 4, 5];
+      const unpurgedIds = [2, 4, 6, 9, 10];
+
+      authorization.getAuthorizationContext.resolves(authContext);
+      authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
+      authorization.filterAllowedDocIds
+        .onCall(0).returns(allDocIds)
+        .onCall(1).returns(warnDocIds);
+      sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(unpurgedIds);
+
+      return controller.info(req, res).then(() => {
+        chai.expect(serverUtils.error.callCount).to.equal(0);
+        chai.expect(res.json.callCount).to.equal(1);
+        chai.expect(res.json.args[0]).to.deep.equal([{
+          total_docs: 5, // 2, 4, 6, 9, 10
+          warn_docs: 2, // 2, 4
+          warn: false,
+          limit: 10000,
+        }]);
       });
     });
   });

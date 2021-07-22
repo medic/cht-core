@@ -90,15 +90,26 @@ const getInfoUserCtx = req => {
   return {
     roles: roles,
     facility_id: params.facility_id,
-    contact_id: params.contact_id
+    contact_id: params.contact_id,
   };
 };
 
-const getAllowedDocIds = userCtx => {
-  return authorization
-    .getAuthorizationContext(userCtx)
-    .then(ctx => authorization.getAllowedDocIds(ctx, { includeTombstones: false }))
-    .then(allowedDocIds => purgedDocs.getUnPurgedIds(userCtx.roles, allowedDocIds));
+const getAllowedDocsCounts = async (userCtx) => {
+  const authCtx = await authorization.getAuthorizationContext(userCtx);
+  const docsByReplicationKey = await authorization.getDocsByReplicationKey(authCtx);
+
+  const excludeTombstones = { includeTombstones: false };
+  const allAllowedIds = authorization.filterAllowedDocIds(authCtx, docsByReplicationKey, excludeTombstones);
+  const allUnpurgedIds = await purgedDocs.getUnPurgedIds(userCtx.roles, allAllowedIds);
+
+  const excludeTombstonesAndTasks = { includeTombstones: false, includeTasks: false };
+  const allWarnIds = authorization.filterAllowedDocIds(authCtx, docsByReplicationKey, excludeTombstonesAndTasks);
+  const unpurgedWarnIds = _.intersection(allUnpurgedIds, allWarnIds);
+
+  return {
+    total: allUnpurgedIds.length,
+    warn: unpurgedWarnIds.length,
+  };
 };
 
 // this might not be correct.
@@ -205,11 +216,12 @@ module.exports = {
     } catch (err) {
       return serverUtils.error(err, req, res);
     }
-    return getAllowedDocIds(userCtx)
-      .then(docIds => res.json({
-        total_docs: docIds.length,
-        warn: docIds.length >= usersService.DOC_IDS_WARN_LIMIT,
-        limit: usersService.DOC_IDS_WARN_LIMIT
+    return getAllowedDocsCounts(userCtx)
+      .then(({ total, warn }) => res.json({
+        total_docs: total,
+        warn_docs: warn,
+        warn: warn >= usersService.DOC_IDS_WARN_LIMIT,
+        limit: usersService.DOC_IDS_WARN_LIMIT,
       }))
       .catch(err => serverUtils.error(err, req, res));
   },
