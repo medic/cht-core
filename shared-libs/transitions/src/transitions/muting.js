@@ -127,10 +127,10 @@ const replayClientMutingEvents = (reportIds = []) => {
 /**
  * Runs muting transition over provided report
  * @param {Object} hydratedReport
- * @param {Array<Object>} infoDocs
+ * @param {Object} infoDoc
  * @return {Promise}
  */
-const runTransition = (hydratedReport, infoDoc = []) => {
+const runTransition = (hydratedReport, infoDoc) => {
   const change = {
     id: hydratedReport._id,
     doc: hydratedReport,
