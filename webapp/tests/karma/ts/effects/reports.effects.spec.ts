@@ -1,7 +1,7 @@
 import { provideMockActions } from '@ngrx/effects/testing';
 import { async, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
-import { Observable, of } from 'rxjs';
+import { concat, Observable, of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { Action } from '@ngrx/store';
@@ -137,6 +137,29 @@ describe('Reports effects', () => {
       expect(reportViewModelGeneratorService.get.args[0]).to.deep.equal(['myreport']);
       expect(setSelected.callCount).to.equal(1);
       expect(setSelected.args[0]).to.deep.equal([{ _id: 'myreport', model: 'yes' }]);
+      expect(unsetSelected.callCount).to.equal(0);
+    });
+
+    it('should set report when a new report is selected while still loading an initial report', async () => {
+      const setLoadingShowContent = sinon.stub(GlobalActions.prototype, 'setLoadingShowContent');
+      const setSelected = sinon.stub(ReportsActions.prototype, 'setSelected');
+      const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+      reportViewModelGeneratorService.get.onFirstCall().resolves({_id: 'reportID0', model: true});
+      reportViewModelGeneratorService.get.onSecondCall().resolves({_id: 'reportID1', model: true});
+
+      // Two report selection observables are emitted, one right after the other
+      actions$ = of(ReportActionList.selectReport({id: 'reportID0', silent: true}),
+        ReportActionList.selectReport({id: 'reportID1', silent: true}));
+      await effects.selectReport.toPromise();
+
+      expect(setLoadingShowContent.callCount).to.equal(0);
+
+      // The first action starts then gets canceled because the second starts
+      expect(reportViewModelGeneratorService.get.callCount).to.equal(2);
+      expect(reportViewModelGeneratorService.get.args).to.deep.equal([['reportID0'], ['reportID1']]);
+      expect(setSelected.callCount).to.equal(1);
+      expect(setSelected.args).to.deep.equal([[{_id: 'reportID1', model: true}]]);
+
       expect(unsetSelected.callCount).to.equal(0);
     });
 
@@ -883,6 +906,56 @@ describe('Reports effects', () => {
         verified: false,
         verified_date: 1000,
       }]);
+    }));
+
+    it('should allow selecting a different report while completing verification', fakeAsync(() => {
+      const selectedReports = [{
+        _id: 'report',
+        doc: {
+          _id: 'report',
+          _rev: 2,
+          contact: { _id: 'contact', name: 'name', parent: { _id: 'parent', type: 'clinic' } },
+        },
+      }];
+      authService.has.resolves(true);
+      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.refreshState();
+
+      sinon.stub(Date, 'now').returns(1000); // using faketimers breaks fakeAsync's tick :(
+      // Updating the report causes it to be re-selected
+      dbService.put.callsFake(() => {
+        actions$ = of(ReportActionList.selectReport({id: 'report', silent: true}));
+      });
+      dbService.get.resolves({ _id: 'report', _rev: 3 });
+
+      const setSelected = sinon.stub(ReportsActions.prototype, 'setSelected');
+      reportViewModelGeneratorService.get.onFirstCall().resolves({_id: 'report', model: true});
+      reportViewModelGeneratorService.get.onSecondCall().resolves({_id: 'report1', model: true});
+
+      // Trigger report verification
+      actions$ = of(ReportActionList.verifyReport(false));
+      effects.verifyReport.subscribe();
+      tick();
+
+      // Change the selected report before the re-selection from the verification has completed
+      actions$ = concat(actions$, of(ReportActionList.selectReport({id: 'report1', silent: false})));
+      effects.selectReport.subscribe();
+      tick();
+
+      expect(dbService.put.callCount).to.equal(1);
+      expect(dbService.put.args[0]).to.deep.equal([{
+        _id: 'report',
+        _rev: 3,
+        contact: { _id: 'contact', parent: { _id: 'parent' } },
+        verified: false,
+        verified_date: 1000,
+      }]);
+
+      // The first select action starts then gets canceled because the second starts
+      expect(reportViewModelGeneratorService.get.callCount).to.equal(2);
+      expect(reportViewModelGeneratorService.get.args).to.deep.equal([['report'], ['report1']]);
+      expect(setSelected.callCount).to.equal(1);
+      expect(setSelected.args).to.deep.equal([[{_id: 'report1', model: true}]]);
     }));
 
     it('should launch modal with correct params on invalid', fakeAsync(() => {

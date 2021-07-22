@@ -66,6 +66,8 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     });
     this.subscription.add(reduxSubscription);
 
+    const isMatchingRouteParam = (change) => this.route.snapshot.params?.id === change.id;
+
     const changesSubscription = this.changesService.subscribe({
       key: 'reports-content',
       filter: (change) => {
@@ -74,8 +76,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
           _.some(this.selectedReports, (item) => item._id === change.id);
         // When submitting new report that gets updated immediately by Sentinel,
         // we might be in a situation where we receive the change before the report was fully selected
-        const isMatchingRouteParam = this.route.snapshot.params?.id === change.id;
-        return isSelected || isMatchingRouteParam;
+        return isSelected || isMatchingRouteParam(change);
       },
       callback: (change) => {
         if (change.deleted) {
@@ -84,7 +85,8 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
           } else {
             return this.router.navigate([this.route.snapshot.parent.routeConfig.path]);
           }
-        } else {
+        } else if (!this.route.snapshot.params?.id || isMatchingRouteParam(change)) {
+          // Avoid selecting this report if a different report is already being routed to
           this.reportsActions.selectReport(change.id, { silent: true });
         }
       }
