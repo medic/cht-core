@@ -215,7 +215,7 @@ describe('TelemetryService', () => {
       expect(aggregatedDoc.metadata.versions).to.deep.equal({
         app: '3.0.0',
         forms: {
-          'anc_followup': '1-abc'
+          anc_followup: '1-abc'
         }
       });
       expect(aggregatedDoc.dbInfo).to.deep.equal({ some: 'stats' });

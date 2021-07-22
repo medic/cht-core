@@ -30,6 +30,6 @@ export const POUCHDB_OPTIONS = {
     },
   },
   remote_headers: {
-    'Accept': 'application/json'
+    Accept: 'application/json'
   }
 };

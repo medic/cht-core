@@ -84,7 +84,7 @@ describe('PrivacyPoliciesService', () => {
         },
         _attachments: {
           'the_en_a.html': { digest: 'digest' },
-          'the_fr': { digest: 'digest' },
+          the_fr: { digest: 'digest' },
           rand1: { digest: 'something' },
           rand3: { digst: 'other' },
         },
@@ -109,7 +109,7 @@ describe('PrivacyPoliciesService', () => {
         },
         _attachments: {
           'the_en_a.html': { digest: 'digest' },
-          'the_fr': { digest: 'digest' },
+          the_fr: { digest: 'digest' },
           rand1: { digest: 'something' },
           rand3: { digst: 'other' },
         },
@@ -369,7 +369,7 @@ describe('PrivacyPoliciesService', () => {
           fr: 'fr.html',
         },
         _attachments: {
-          'en_html': { data: 'aaaa' },
+          en_html: { data: 'aaaa' },
           'fr.html': { data: 'bbbb' },
         },
       });
@@ -393,9 +393,9 @@ describe('PrivacyPoliciesService', () => {
           ne: 'some_ne',
         },
         _attachments: {
-          'en_html': { data: 'aaaa' },
+          en_html: { data: 'aaaa' },
           'fr.html': { data: 'bbbb' },
-          'ne': { data: 'cccc' },
+          ne: { data: 'cccc' },
         },
       });
 
@@ -418,7 +418,7 @@ describe('PrivacyPoliciesService', () => {
           ne: 'ne.json',
         },
         _attachments: {
-          'en_html': { data: 'aaaa' },
+          en_html: { data: 'aaaa' },
           'fr.html': { data: 'bbbb' },
           'ne.json': { data: 'bbbb', content_type: 'application/json' },
         },
@@ -446,7 +446,7 @@ describe('PrivacyPoliciesService', () => {
         _attachments: {
           'en.h': { data: 'aaaa' },
           'fr.d': { data: 'bbbb' },
-          'northwest': { data: btoa(html), digest: 'md5', content_type: 'text/html' },
+          northwest: { data: btoa(html), digest: 'md5', content_type: 'text/html' },
         },
       });
 

@@ -107,7 +107,7 @@ describe('XmlForms service', () => {
           doc: {
             internalId: 'one',
             _attachments: {
-              'image': { something: true },
+              image: { something: true },
               'form.xml': { something: true }
             },
           },
@@ -117,8 +117,8 @@ describe('XmlForms service', () => {
           doc: {
             internalId: 'two',
             _attachments: {
-              'image': { something: true },
-              'xml': { something: true }
+              image: { something: true },
+              xml: { something: true }
             },
           },
         },
@@ -127,8 +127,8 @@ describe('XmlForms service', () => {
           doc: {
             internalId: 'three',
             _attachments: {
-              'image': { something: true },
-              'notxml': { something: true }
+              image: { something: true },
+              notxml: { something: true }
             },
           },
         }

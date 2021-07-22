@@ -94,20 +94,20 @@ describe('Translate MessageFormat compiler provider', () => {
   describe('compile translations', () => {
     it('should compile every value', () => {
       const translations = {
-        'a': 'a translation',
-        'b': 'b translation',
-        'c': 'c translation',
-        'd': 'd translation',
+        a: 'a translation',
+        b: 'b translation',
+        c: 'c translation',
+        d: 'd translation',
       };
       provider = new TranslateMessageFormatCompilerProvider();
       sinon.stub(provider, 'compile').callsFake((translation) => `${translation} compiled`);
 
       const result = provider.compileTranslations(translations, 'the_lang');
       expect(result).to.deep.equal({
-        'a': 'a translation compiled',
-        'b': 'b translation compiled',
-        'c': 'c translation compiled',
-        'd': 'd translation compiled',
+        a: 'a translation compiled',
+        b: 'b translation compiled',
+        c: 'c translation compiled',
+        d: 'd translation compiled',
       });
       expect(provider.compile.callCount).to.equal(4);
       expect(provider.compile.args).to.deep.equal([
