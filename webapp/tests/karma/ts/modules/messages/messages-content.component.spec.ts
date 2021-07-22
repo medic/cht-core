@@ -247,15 +247,15 @@ describe('MessagesContentComponent', () => {
     });
   });
 
-  describe.only('New message section', () => {
+  describe('New message section', () => {
     it('should display the "new message" section in a conversation with a known recipient', async () => {
       component.selectedConversation = {
-        'id': '7aeaa4bc-ae5e-4964-8771-697209d2c6dd',
-        'messages': [
-          { 'id': '68e4ae1a-bb6c-4561-98e7-3f7cdfd00486' }
+        id: '7aeaa4bc-ae5e-4964-8771-697209d2c6dd',
+        messages: [
+          { id: '68e4ae1a-bb6c-4561-98e7-3f7cdfd00486' }
         ],
-        'contact': {
-          'doc': { 'name': 'Groot' }
+        contact: {
+          doc: { name: 'Groot' }
         }
       };
 
@@ -267,17 +267,23 @@ describe('MessagesContentComponent', () => {
         .query(By.css('#message-footer textarea[name="message"]'))
         ?.nativeElement;
       expect(newMessageInput).to.not.be.undefined;
+
+      const unknownContactMessage = fixture
+        .debugElement
+        .query(By.css('#unknown-contact-error-message'))
+        ?.nativeElement;
+      expect(unknownContactMessage).to.be.undefined;
     });
 
     it('should hide the "new message" section in a conversation with an unknown recipient', async () => {
       component.selectedConversation = {
-        'id': '52c1de4a-33dd-4d22-9916-24e7c77451f5',
-        'messages': [
-          { 'id': '40b0678a-0f16-47cb-8591-fb3eab3b81d2' }
+        id: '52c1de4a-33dd-4d22-9916-24e7c77451f5',
+        messages: [
+          { id: '40b0678a-0f16-47cb-8591-fb3eab3b81d2' }
         ],
-        'contact': {
-          'doc': {
-            'name': ''
+        contact: {
+          doc: {
+            name: ''
           }
         }
       };
@@ -290,6 +296,12 @@ describe('MessagesContentComponent', () => {
         .query(By.css('#unknown-contact-error-message'))
         ?.nativeElement;
       expect(unknownContactMessage).to.not.be.undefined;
+
+      const newMessageInput = fixture
+        .debugElement
+        .query(By.css('#message-footer textarea[name="message"]'))
+        ?.nativeElement;
+      expect(newMessageInput).to.be.undefined;
     });
   });
 });
