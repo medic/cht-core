@@ -222,15 +222,15 @@ describe('mutingUtils', () => {
           { _id: 'b' },
           {
             _id: 'c',
-            muting_history: { last_update: 'server_side', server_side: { muted: false, date: timestamp } }
+            muting_history: { last_update: 'server_side', server_side: { muted: false, date: moment() } }
           },
           {
             _id: 'd',
-            muting_history: { last_update: 'server_side', server_side: { muted: false, date: timestamp } },
+            muting_history: { last_update: 'server_side', server_side: { muted: false, date: moment() } },
           },
           {
             _id: 'e',
-            muting_history: { last_update: 'server_side', server_side: { muted: false, date: timestamp } }
+            muting_history: { last_update: 'server_side', server_side: { muted: false, date: moment() } }
           },
         ]]); // a and f are skipped
       });
@@ -1825,7 +1825,7 @@ describe('mutingUtils', () => {
         muting_history: {
           server_side: {
             muted: false,
-            date: timestamp,
+            date: moment(),
           },
           client_side: [{
             muted: true,
@@ -1858,7 +1858,7 @@ describe('mutingUtils', () => {
         muting_history: {
           server_side: {
             muted: false,
-            date: timestamp,
+            date: moment(),
           },
           client_side: [{
             muted: false,
@@ -1884,12 +1884,12 @@ describe('mutingUtils', () => {
             client_side: [{ muted: true, date: 2000 }],
           },
         };
-        chai.expect(mutingUtils.updateContact(contact, timestamp)).to.equal(true);
+        chai.expect(mutingUtils.updateContact(contact, moment())).to.equal(true);
         chai.expect(contact).to.deep.equal({
-          muted: timestamp,
+          muted: moment(),
           muting_history: {
             last_update: 'server_side',
-            server_side: { muted: true, date: timestamp },
+            server_side: { muted: true, date: moment() },
             client_side: [{ muted: true, date: 2000 }],
           }
         });
@@ -1928,7 +1928,7 @@ describe('mutingUtils', () => {
         chai.expect(contact).to.deep.equal({
           muting_history: {
             last_update: 'server_side',
-            server_side: { muted: false, date: timestamp },
+            server_side: { muted: false, date: moment() },
             client_side: [{ muted: false, date: 2000 }],
           }
         });
@@ -1947,7 +1947,7 @@ describe('mutingUtils', () => {
         chai.expect(contact).to.deep.equal({
           muting_history: {
             last_update: 'server_side',
-            server_side: { muted: false, date: timestamp },
+            server_side: { muted: false, date: moment() },
             client_side: [{ muted: false, date: 2000 }],
           }
         });

@@ -28,14 +28,7 @@ const updateContacts = (contacts, muted) => {
     return Promise.resolve();
   }
 
-  const updatedContacts = contacts
-    .map(contact => {
-      if (updateContact(contact, muted)) {
-        return contact;
-      }
-    })
-    .filter(contact => contact);
-
+  const updatedContacts = contacts.filter(contact => updateContact(contact, muted));
   if (!updatedContacts.length) {
     return Promise.resolve();
   }
@@ -56,7 +49,7 @@ const updateContacts = (contacts, muted) => {
  * - the server muted state corresponds with the updated muted state.
  * In any other case, the contact will be updated with the new muted state.
  * @param {Object} contact
- * @param {string|boolean} muted
+ * @param {moment|boolean} muted
  * @return {boolean}
  */
 const updateContact = (contact, muted) => {
@@ -83,7 +76,7 @@ const updateContact = (contact, muted) => {
     updated = true;
     contact.muting_history[SERVER] = {
       muted: !!muted,
-      date: mutedTimestamp || new Date().getTime(),
+      date: mutedTimestamp || moment(),
     };
     contact.muting_history.last_update = SERVER;
   }
