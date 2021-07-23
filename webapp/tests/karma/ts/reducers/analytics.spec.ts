@@ -24,43 +24,6 @@ describe('Analytics Reducer', () => {
     });
   });
 
-  it('should set the selected analytic in state', () => {
-    const data = { id: '123' };
-    const action = Actions.setSelectedAnalytics(data);
-
-    const result = analyticsReducer(state, action);
-
-    expect(result).to.deep.include({
-      selected: { id: '123' },
-      analyticsModules: []
-    });
-  });
-
-  it('should update the selected analytic in state', () => {
-    state.selected = { id: '123' };
-    const data = { id: '123', something: 'something' };
-    const action = Actions.setSelectedAnalytics(data);
-
-    const result = analyticsReducer(state, action);
-
-    expect(result).to.deep.include({
-      selected: { id: '123', something: 'something' },
-      analyticsModules: []
-    });
-  });
-
-  it('should set null the selected analytic in state', () => {
-    state.selected = { id: '123' };
-    const action = Actions.setSelectedAnalytics(null);
-
-    const result = analyticsReducer(state, action);
-
-    expect(result).to.deep.include({
-      selected: null,
-      analyticsModules: []
-    });
-  });
-
   it('should set the analyticsModules in state', () => {
     const data = [ { id: 'targets', label: 'analytics.targets' } ];
     const action = Actions.setAnalyticsModules(data);

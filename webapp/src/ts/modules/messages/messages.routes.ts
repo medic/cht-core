@@ -1,6 +1,6 @@
 import { Routes, UrlSegment } from '@angular/router';
 
-import { RouteGuardProvider } from '@mm-providers/route-guard.provider';
+import { AppRouteGuardProvider } from '../../app-route.guard.provider';
 import { MessagesComponent } from './messages.component';
 import { MessagesContentComponent } from './messages-content.component';
 
@@ -9,7 +9,7 @@ export const routes: Routes = [
     path: 'messages',
     component: MessagesComponent,
     data: { permissions: ['can_view_messages'], tab: 'messages'},
-    canActivate: [RouteGuardProvider],
+    canActivate: [AppRouteGuardProvider],
     children: [
       {
         path: '',

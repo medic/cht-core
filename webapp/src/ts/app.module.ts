@@ -22,27 +22,27 @@ import { EffectsModule } from '@ngrx/effects';
 import * as _ from 'lodash-es';
 _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
 
-import { environment } from './environments/environment';
 
 import { AppRoutingModule } from './app-routing.module';
+import { AppRouteGuardProvider } from './app-route.guard.provider';
 import { AppComponent } from './app.component';
-import { ComponentsModule } from './components/components.module';
-import { ModalsModule } from './modals/modals.module';
-import { ModulesModule } from './modules/modules.module';
-import { DirectivesModule } from './directives/directives.module';
-import { PipesModule } from './pipes/pipes.module';
-import { TranslationLoaderProvider } from './providers/translation-loader.provider';
-import { DbService } from './services/db.service';
-import { RouteGuardProvider } from './providers/route-guard.provider';
-import { ExceptionHandlerProvider } from './providers/exception-handler.provider';
+import { ModulesModule } from '@mm-modules/modules.module';
+import { environment } from '@mm-environments/environment';
+import { ComponentsModule } from '@mm-components/components.module';
+import { ModalsModule } from '@mm-modals/modals.module';
+import { DirectivesModule } from '@mm-directives/directives.module';
+import { PipesModule } from '@mm-pipes/pipes.module';
+import { DbService } from '@mm-services/db.service';
+import { IntegrationApiService } from '@mm-services/integration-api.service';
+import { AnalyticsRouteGuardProvider } from '@mm-modules/analytics/analytics-route.guard.provider';
+import { TranslationLoaderProvider } from '@mm-providers/translation-loader.provider';
+import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-messageformat-compiler.provider';
+import { ExceptionHandlerProvider } from '@mm-providers/exception-handler.provider';
+import { ParseProvider } from '@mm-providers/parse.provider';
 import { GlobalEffects } from '@mm-effects/global.effects';
 import { ReportsEffects } from '@mm-effects/reports.effects';
 import { ContactsEffects } from '@mm-effects/contacts.effects';
-import { ParseProvider } from '@mm-providers/parse.provider';
-import { IntegrationApiService } from '@mm-services/integration-api.service';
-import { reducers } from './reducers';
-
-import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-messageformat-compiler.provider';
+import { reducers } from '@mm-reducers/index';
 
 const logger = reducer => {
   // default, no options
@@ -97,7 +97,8 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     { provide: APP_BASE_HREF, useValue: '/' },
     { provide: ErrorHandler, useClass: ExceptionHandlerProvider },
     BsModalRef,
-    RouteGuardProvider,
+    AppRouteGuardProvider,
+    AnalyticsRouteGuardProvider,
     CookieService,
     ParseProvider,
     DatePipe,
