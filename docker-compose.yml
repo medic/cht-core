@@ -7,8 +7,8 @@ services:
     volumes:
       - medic-data:/srv
     ports:
-      - 80:80
-      - 443:443
+      - "${MEDIC_HTTP:-80}:80"
+      - "${MEDIC_HTTPS:-443}:443"
     working_dir: /srv
     depends_on:
       - haproxy
@@ -25,7 +25,7 @@ services:
       - medic-data:/srv
     environment:
       - COUCHDB_HOST=medic-os
-      - HA_PASSWORD=password
+      - HA_PASSWORD=${DOCKER_COUCHDB_ADMIN_PASSWORD:-password}
     networks:
       - medic-net
 
