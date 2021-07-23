@@ -7,8 +7,8 @@ services:
     volumes:
       - medic-data:/srv
     ports:
-      - "${MEDIC_HTTP:-80}:80"
-      - "${MEDIC_HTTPS:-443}:443"
+      - "${CHT_HTTP:-80}:80"
+      - "${CHT_HTTPS:-443}:443"
     working_dir: /srv
     depends_on:
       - haproxy

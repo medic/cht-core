@@ -4,10 +4,10 @@ services:
   medic-os:
     image: medicmobile/medic-os:cht-3.9.0-rc.2
     volumes:
-      - "${MEDIC_DATA:-medic-data}:/srv"
+      - "${CHT_DATA:-medic-data}:/srv"
     ports:
-      - "${MEDIC_HTTP:-80}:80"
-      - "${MEDIC_HTTPS:-443}:443"
+      - "${CHT_HTTP:-80}:80"
+      - "${CHT_HTTPS:-443}:443"
     working_dir: /srv
     depends_on:
       - haproxy
@@ -16,11 +16,9 @@ services:
       - DOCKER_COUCHDB_ADMIN_PASSWORD=${DOCKER_COUCHDB_ADMIN_PASSWORD:-password}
 
   haproxy:
-
     image: medicmobile/haproxy:rc-1.17
     volumes:
-      - "${MEDIC_DATA:-medic-data}:/srv"
+      - "${CHT_DATA:-medic-data}:/srv"
     environment:
       - COUCHDB_HOST=medic-os
       - HA_PASSWORD=${DOCKER_COUCHDB_ADMIN_PASSWORD:-password}
-
