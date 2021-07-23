@@ -1,20 +1,11 @@
 #!/bin/bash
 #Requires jq
 export NODE_TLS_REJECT_UNAUTHORIZED=0
-#Base 64 encode the user-data script to start medic-os
-jq '.UserData = "'$(base64 medic-os.sh -w 0)'"' launch-specification.json >> launch-specification-medic-os.json
 
-echo Starting Instance Requests
-SpotInstanceRequestId=$(aws ec2 request-spot-instances --spot-price '0.333' --instance-count 1 --type 'one-time' --launch-specification file://launch-specification-medic-os.json --block-duration-minutes 60 | jq .SpotInstanceRequests[0].SpotInstanceRequestId -r)      
-echo Getting Instance ID
-instanceID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SpotInstanceRequestId | jq .SpotInstanceRequests[0].InstanceId -r )
-while [ "$instanceID" = null ]
-do
-sleep 5
-instanceID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SpotInstanceRequestId | jq .SpotInstanceRequests[0].InstanceId -r )
-echo "Sleeping while waiting for instance ID to be setup."
+echo Triggering EC2 Run Instance Command and getting Instance ID
+instanceID=$(aws ec2 run-instances --image-id ami-065ba2b6b298ed80f --instance-type c5.2xlarge --security-group-ids sg-0fa20cd785acec256 --block-device-mappings file://block-device-mapping.json --user-data file://medic-os.sh --instance-initiated-shutdown-behavior terminate | jq .Instances[0].InstanceId -r )
 echo Instance id is $instanceID
-done 
+
 echo Getting PublicDnsName
 PublicDnsName=$(aws ec2 describe-instances --instance-ids $instanceID | jq .Reservations[0].Instances[0].PublicDnsName -r)
 echo DNS is $PublicDnsName
@@ -44,13 +35,12 @@ version=$(curl -s $url/api/info -k  | jq .version -r)
 sleep 10
 echo Sleeping again. Version is $version
 echo
-echo 
+echo
 done
 
 echo Api Is up
 
 MEDIC_CONF_URL='https://medic:medicScalability@'$PublicDnsName
-
 
 cp -r ./csv ../../config/standard/
 
@@ -63,7 +53,7 @@ echo installing pyxform
 sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic -q
 
 echo installing medic-conf
-npm install medic-conf 
+npm install medic-conf
 
 sleep 10
 # echo Uploading settings and seeding data
@@ -102,7 +92,7 @@ echo New length is $current_leng
 echo sleeping again for 120
 sleep 120
 echo
-echo 
+echo
 done
 
 echo Sentinel has caught up.
@@ -137,7 +127,7 @@ post_stage+=($(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_i
 done
 
 echo Checking post stage sequences to pre stage
-for i in ${!pre_update_seqs[@]}; do 
+for i in ${!pre_update_seqs[@]}; do
 if ! [ ${post_stage[$i]} -ge ${pre_update_seqs[$i]} ]
 then
 echo "The sequence for ${ddocs[$i]} did not get updated. It should have been warmed."
