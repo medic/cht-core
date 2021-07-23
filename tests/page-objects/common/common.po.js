@@ -39,11 +39,20 @@ const selectedPreferenceHeading = element(by.css('#language-preference-heading >
 const messagesLanguage = element(by.css('.locale a.selected span.rectangle'));
 const defaultLanguage=  element(by.css('.locale-outgoing a.selected span.rectangle'));
 
+const waitForLoaderToDisappear = async (timeout) => {
+  try {
+    await helper.waitElementToDisappear(by.css('.loader', timeout));
+  } catch(err) {
+    // element can go stale
+  }
+};
+
 module.exports = {
   snackBarContent,
   messagesList,
   messagesTab,
   analyticsTab,
+  waitForLoaderToDisappear,
   calm: async () => {
     utils.deprecated('calm', 'calmNative');
     // const bootstrapperSelector = by.css('.bootstrap-layer');
@@ -53,12 +62,12 @@ module.exports = {
     await helper.waitUntilReady(medicLogo);
   },
 
-  calmNative: async () => {
+  calmNative: async (timeout) => {
     // const bootstrapperSelector = by.css('.bootstrap-layer');
     // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
     // await helper.waitElementToPresent(element(bootstrapperSelector));
     // await helper.waitElementToDisappear(bootstrapperSelector);
-    await helper.waitUntilReadyNative(medicLogo);
+    await helper.waitUntilReadyNative(medicLogo, timeout);
   },
 
   checkAbout: async () => {

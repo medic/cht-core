@@ -262,7 +262,7 @@ const revertDb = async (except, ignoreRefresh) => {
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
-  
+
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || hasModal)) {
     watcher && watcher.cancel();
@@ -928,10 +928,10 @@ module.exports = {
   refreshToGetNewSettings: refreshToGetNewSettings,
   closeReloadModal: closeReloadModal,
 
-  closeTour: async () => {
+  closeTour: async (timeout = 10000) => {
     const closeButton = element(by.css('#tour-select a.btn.cancel'));
     try {
-      await browser.wait(protractor.ExpectedConditions.visibilityOf(closeButton), 10000);
+      await browser.wait(protractor.ExpectedConditions.visibilityOf(closeButton), timeout);
       await browser.wait(protractor.ExpectedConditions.elementToBeClickable(closeButton), 1000);
       await closeButton.click();
       // wait for the request to the server to execute
