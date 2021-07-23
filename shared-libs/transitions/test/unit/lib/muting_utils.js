@@ -13,7 +13,6 @@ describe('mutingUtils', () => {
   beforeEach(() => {
     sinon.stub(utils, 'getReportsBySubject');
     sinon.stub(utils, 'setTasksStates');
-    sinon.stub(mutingUtils.lineage, 'fetchHydratedDoc');
     sinon.stub(db.medic, 'bulkDocs');
     sinon.stub(db.medic, 'query');
     sinon.stub(db.medic, 'allDocs');
