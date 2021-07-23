@@ -685,11 +685,11 @@ describe('Muting transition', () => {
         sinon.stub(utils, 'isValidSubmission').returns(true);
         sinon.stub(mutingUtils.lineage, 'fetchHydratedDocs')
           .withArgs(['a']).resolves([{ _id: 'a', some: 'data', form: 'mute', type: 'data_record' }])
-          .withArgs(['b']).resolves([])
+          .withArgs(['b']).resolves([]) // not found
           .withArgs(['c']).resolves([{ _id: 'c', irrelevant: true }])
           .withArgs(['d']).resolves([{ _id: 'd', form: 'not-mute', type: 'data_record' }])
           .withArgs(['e']).resolves([{ _id: 'e', form: 'unmute', type: 'data_record' }])
-          .withArgs(['f']).resolves([]);
+          .withArgs(['f']).resolves([]); // not found
 
         sinon.stub(mutingUtils.infodoc, 'get')
           .callsFake(change => Promise.resolve({ doc_id: change.id }));
