@@ -30,6 +30,7 @@ import { TourService } from '@mm-services/tour.service';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { GlobalActions } from '@mm-actions/global';
+import { NavigationService } from '@mm-services/navigation.service';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -149,6 +150,7 @@ describe('Contacts component', () => {
           { provide: ScrollLoaderProvider, useValue: scrollLoaderProvider },
           { provide: ExportService, useValue: exportService },
           { provide: XmlFormsService, useValue: xmlFormsService },
+          { provide: NavigationService, useValue: {} },
         ]
       })
       .compileComponents().then(() => {

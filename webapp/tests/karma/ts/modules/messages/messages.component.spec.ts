@@ -14,6 +14,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { TourService } from '@mm-services/tour.service';
+import { NavigationService } from '@mm-services/navigation.service';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -60,7 +61,8 @@ describe('Messages Component', () => {
           { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
           { provide: exportService, useValue: {} },
           { provide: ModalService, useValue: modalService },
-          { provide: TourService, useValue: tourServiceMock }
+          { provide: TourService, useValue: tourServiceMock },
+          { provide: NavigationService, useValue: {} },
         ]
       })
       .compileComponents()

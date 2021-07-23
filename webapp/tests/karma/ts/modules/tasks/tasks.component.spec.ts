@@ -15,6 +15,7 @@ import { TourService } from '@mm-services/tour.service';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { Selectors } from '@mm-selectors/index';
+import { NavigationService } from '@mm-services/navigation.service';
 
 describe('TasksComponent', () => {
   let getComponent;
@@ -54,7 +55,8 @@ describe('TasksComponent', () => {
         { provide: RulesEngineService, useValue: rulesEngineService },
         { provide: TelemetryService, useValue: telemetryService },
         { provide: TourService, useValue: tourService },
-        { provide: ContactTypesService, useValue: contactTypesService }
+        { provide: ContactTypesService, useValue: contactTypesService },
+        { provide: NavigationService, useValue: {} },
       ],
       declarations: [
         TasksComponent,

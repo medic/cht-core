@@ -263,50 +263,56 @@ body {
         }
       }
 
-      &:hover:not(.selected) {
-        &.messages-tab {
-          &,
-          .mm-icon-inverse,
-          .mm-icon-inverse:hover,
-          .resource-icon svg * {
-            color: @messages-color;
-            fill: @messages-color;
+      @media (hover: hover) { // Prevents sticky hover state in mobile devices.
+        &:hover:not(.selected) {
+          &.messages-tab {
+            &,
+            .mm-icon-inverse,
+            .mm-icon-inverse:hover,
+            .resource-icon svg * {
+              color: @messages-color;
+              fill: @messages-color;
+            }
           }
-        }
-        &.tasks-tab {
-          &,
-          .mm-icon-inverse,
-          .mm-icon-inverse:hover,
-          .resource-icon svg * {
-            color: @tasks-color;
-            fill: @tasks-color;
+
+          &.tasks-tab {
+            &,
+            .mm-icon-inverse,
+            .mm-icon-inverse:hover,
+            .resource-icon svg * {
+              color: @tasks-color;
+              fill: @tasks-color;
+            }
           }
-        }
-        &.reports-tab {
-          &,
-          .mm-icon-inverse,
-          .mm-icon-inverse:hover,
-          .resource-icon svg * {
-            color: @reports-color;
-            fill: @reports-color;
+
+          &.reports-tab {
+            &,
+            .mm-icon-inverse,
+            .mm-icon-inverse:hover,
+            .resource-icon svg * {
+              color: @reports-color;
+              fill: @reports-color;
+            }
           }
-        }
-        &.analytics-tab {
-          &,
-          .mm-icon-inverse,
-          .mm-icon-inverse:hover,
-          .resource-icon svg * {
-            color: @analytics-color;
-            fill: @analytics-color;
+
+          &.analytics-tab {
+            &,
+            .mm-icon-inverse,
+            .mm-icon-inverse:hover,
+            .resource-icon svg * {
+              color: @analytics-color;
+              fill: @analytics-color;
+            }
           }
-        }
-        &.contacts-tab {
-          &,
-          .mm-icon-inverse,
-          .mm-icon-inverse:hover,
-          .resource-icon svg * {
-            color: @contacts-color;
-            fill: @contacts-color;
+
+          &.contacts-tab {
+            &,
+            .mm-icon-inverse,
+            .mm-icon-inverse:hover,
+            .resource-icon svg * {
+              color: @contacts-color;
+              fill: @contacts-color;
+            }
           }
         }
       }

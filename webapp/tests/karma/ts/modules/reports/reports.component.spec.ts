@@ -22,6 +22,7 @@ import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { TourService } from '@mm-services/tour.service';
 import { SessionService } from '@mm-services/session.service';
+import { NavigationService } from '@mm-services/navigation.service';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -78,6 +79,7 @@ describe('Reports Component', () => {
           { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves() } },
           { provide: TourService, useValue: tourServiceMock },
           { provide: SessionService, useValue: { isOnlineOnly: sinon.stub() } },
+          { provide: NavigationService, useValue: {} },
         ]
       })
       .compileComponents()
