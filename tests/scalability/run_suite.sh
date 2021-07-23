@@ -1,5 +1,5 @@
 #!/bin/bash
-
+sudo shutdown -P +60
 echo Cloning cht-core to /cht-core
 git clone --single-branch --branch $TAG_NAME https://github.com/medic/cht-core.git;
 
@@ -38,4 +38,3 @@ sudo ./aws/install
 echo "Uploading logs and screenshots to ${S3_PATH}..."
 /usr/local/bin/aws s3 cp ./report "$S3_PATH" --recursive
 echo "FINISHED! "
-sudo shutdown -P +60
