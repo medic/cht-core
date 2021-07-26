@@ -29,7 +29,6 @@ const contactCard = () =>$('.card h2');
 
 
 const search = async (query) => {
-  await (await searchBox()).clearValue();
   await (await searchBox()).setValue(query);
   await (await searchButton()).click();
 };
@@ -61,27 +60,27 @@ const getTextForElements = async (elements) => {
 const addPlace = async (type, placeName , contactName ) => {
   await (await resourceIcon(type.replace('_','-'))).click();
   await (await newPrimaryContactButton()).click();
-  await (await newPrimaryContactName()).setValue(contactName);
-  await (await dateOfBirthField()).setValue('2000-01-01');
+  await (await newPrimaryContactName()).addValue(contactName);
+  await (await dateOfBirthField()).addValue('2000-01-01');
   await (await contactSexField()).click();
-  await genericForm.nextPageNative();
+  await genericForm.nextPage();
   await (await writeNamePlace(type)).click();
-  await (await newPlaceName()).setValue(placeName);
-  await (await externalIdField(type)).setValue('1234457');
-  await (await notes(type)).setValue(`Some ${type} notes`);
+  await (await newPlaceName()).addValue(placeName);
+  await (await externalIdField(type)).addValue('1234457');
+  await (await notes(type)).addValue(`Some ${type} notes`);
   await (await genericForm.submitButton()).click();
-  await (await contactCard()).waitForDisplayed({ timeout: 10000 });
+  await (await contactCard()).waitForDisplayed();
 };
 
 const addPerson = async (name, dob = '2000-01-01') => {
   await (await resourceIcon('person')).click();
-  await (await personName()).setValue(name);
-  await (await dateOfBirthField()).setValue(dob);
+  await (await personName()).addValue(name);
+  await (await dateOfBirthField()).addValue(dob);
   await (await personName()).click(); // blur the datepicker field so the sex field is visible
   await (await personSexField()).click();
-  await (await notes('person')).setValue('some person notes');
+  await (await notes('person')).addValue('some person notes');
   await (await genericForm.submitButton()).click();
-  return await (await contactCard()).getText();
+  return (await contactCard()).getText();
 };
 
 const getPrimaryContactName = async () => {
