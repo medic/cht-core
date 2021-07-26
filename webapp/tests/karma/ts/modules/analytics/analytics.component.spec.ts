@@ -1,49 +1,32 @@
-import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ActivatedRoute, Router } from '@angular/router';
-import { provideMockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { of } from 'rxjs';
 
 import { AnalyticsComponent } from '@mm-modules/analytics/analytics.component';
 import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filter/analytics-filter.component';
-import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { GlobalActions } from '@mm-actions/global';
-import { AnalyticsActions } from '@mm-actions/analytics';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { TourService } from '@mm-services/tour.service';
+import { Selectors } from '@mm-selectors/index';
 
 describe('AnalyticsComponent', () => {
   let component: AnalyticsComponent;
   let fixture: ComponentFixture<AnalyticsComponent>;
-  let analyticsModulesService;
   let globalActions;
-  let analyticsActions;
-  let activatedRoute;
-  let router;
+  let tourService;
+  let store;
 
   beforeEach(async(() => {
-    analyticsModulesService = { get: sinon.stub().resolves([]) };
     const mockSelectors = [
-      { selector: 'getAnalyticsModules', value: [] },
+      { selector: Selectors.getAnalyticsModules, value: [] },
     ];
     globalActions = {
       unsetSelected: sinon.stub(GlobalActions.prototype, 'unsetSelected')
     };
-    analyticsActions = {
-      setSelectedAnalytics: sinon.stub(AnalyticsActions.prototype, 'setSelectedAnalytics'),
-      setAnalyticsModules: sinon.stub(AnalyticsActions.prototype, 'setAnalyticsModules')
-    };
-    activatedRoute = {
-      snapshot: {
-        firstChild: { data: {} }
-      },
-      url: {
-        subscribe: sinon.stub().resolves(of({})),
-      }
-    };
+    tourService = { startIfNeeded: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
@@ -58,16 +41,14 @@ describe('AnalyticsComponent', () => {
         ],
         providers: [
           provideMockStore({ selectors: mockSelectors }),
-          { provide: AnalyticsModulesService, useValue: analyticsModulesService },
-          { provide: ActivatedRoute, useValue: activatedRoute },
-          { provide: TourService, useValue: { startIfNeeded: sinon.stub() } },
+          { provide: TourService, useValue: tourService },
         ]
       })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(AnalyticsComponent);
         component = fixture.componentInstance;
-        router = TestBed.inject(Router);
+        store = TestBed.inject(MockStore);
         fixture.detectChanges();
       });
   }));
@@ -79,65 +60,20 @@ describe('AnalyticsComponent', () => {
   it('should create and set up controller with no modules', () => {
     expect(component).to.exist;
     expect(component.analyticsModules).to.be.empty;
-    expect(analyticsActions.setSelectedAnalytics.callCount).to.equal(2);
     expect(globalActions.unsetSelected.callCount).to.equal(1);
-    expect(analyticsModulesService.get.callCount).to.equal(1);
+    expect(tourService.startIfNeeded.callCount).to.equal(1);
   });
 
-  it('should set selected the specified module', fakeAsync(() => {
-    sinon.reset();
-    const analyticsModules = [
+  it('should set analytics module when store emits', () => {
+    store.overrideSelector(Selectors.getAnalyticsModules, [
       { id: 'target-aggregates', route: ['/', 'analytics', 'target-aggregates'] },
       { id: 'targets', route: ['/', 'analytics', 'targets'] }
-    ];
-    activatedRoute.snapshot.firstChild.data.moduleId = 'targets';
-    analyticsModulesService.get.resolves(analyticsModules);
+    ]);
+    store.refreshState();
 
-    component.ngOnInit();
-    tick(50);
-
-    expect(analyticsModulesService.get.callCount).to.equal(1);
-    expect(analyticsActions.setSelectedAnalytics.callCount).to.equal(2);
-    expect(analyticsActions.setSelectedAnalytics.getCall(1).args[0]).to.equal(analyticsModules[1]);
-    expect(analyticsActions.setAnalyticsModules.callCount).to.equal(1);
-    expect(analyticsActions.setAnalyticsModules.args[0][0]).to.have.members(analyticsModules);
-  }));
-
-  it('should jump to child route if single module is present', fakeAsync(() => {
-    sinon.reset();
-    activatedRoute.snapshot.firstChild.data.tab = 'analytics';
-    const navigateStub = sinon.stub(router, 'navigate');
-    const analyticsModules = [{ id: 'targets', route: ['/', 'analytics', 'targets'] }];
-    analyticsModulesService.get.resolves(analyticsModules);
-
-    component.ngOnInit();
-    tick(50);
-
-    expect(analyticsModulesService.get.callCount).to.equal(1);
-    expect(analyticsActions.setSelectedAnalytics.callCount).to.equal(1);
-    expect(analyticsActions.setAnalyticsModules.callCount).to.equal(1);
-    expect(analyticsActions.setAnalyticsModules.args[0][0]).to.have.members(analyticsModules);
-    expect(navigateStub.callCount).to.equal(1);
-    expect(navigateStub.args[0][0]).to.deep.equal(['/', 'analytics', 'targets']);
-  }));
-
-  it('should not jump to child route if multiple module are present', fakeAsync(() => {
-    sinon.reset();
-    activatedRoute.snapshot.firstChild.data.tab = 'analytics';
-    const navigateStub = sinon.stub(router, 'navigate');
-    const analyticsModules = [
+    expect(component.analyticsModules).to.deep.equal([
       { id: 'target-aggregates', route: ['/', 'analytics', 'target-aggregates'] },
       { id: 'targets', route: ['/', 'analytics', 'targets'] }
-    ];
-    analyticsModulesService.get.resolves(analyticsModules);
-
-    component.ngOnInit();
-    tick(50);
-
-    expect(analyticsModulesService.get.callCount).to.equal(1);
-    expect(analyticsActions.setSelectedAnalytics.callCount).to.equal(1);
-    expect(analyticsActions.setAnalyticsModules.callCount).to.equal(1);
-    expect(analyticsActions.setAnalyticsModules.args[0][0]).to.have.members(analyticsModules);
-    expect(navigateStub.callCount).to.equal(0);
-  }));
+    ]);
+  });
 });
