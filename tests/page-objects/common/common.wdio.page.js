@@ -28,7 +28,7 @@ const getLogoutMessage = async () => {
 
 const goToBase = async () => {
   await browser.url('/');
-  await (await analyticsTab()).waitForDisplayed();
+  await (await analyticsTab()).waitForDisplayed({ timeout: 40000 }); // Page takes lot of time for a new User
   await (await messagesTab()).waitForDisplayed();
 };
 

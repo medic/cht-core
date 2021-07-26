@@ -15,7 +15,7 @@ const login = async (username, password) => {
   await (await loginButton()).click();
 };
 
-const cookieLogin = async (username = auth.username, password = auth.password) => {
+const cookieLogin = async (username = auth.username, password = auth.password, createUser = true) => {
   const opts = {
     path: '/medic/login',
     body: { user: username, password: password },
@@ -29,7 +29,9 @@ const cookieLogin = async (username = auth.username, password = auth.password) =
   const cookieArray = utils.parseCookieResponse(resp.headers['set-cookie']);
 
   await browser.setCookies(cookieArray);
-  await utils.setupUserDoc(username);
+  if (createUser) {
+    await utils.setupUserDoc(username);
+  }
   await commonPage.goToBase();
 };
 
