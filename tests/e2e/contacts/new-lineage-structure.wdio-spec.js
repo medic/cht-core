@@ -1,4 +1,3 @@
-const auth = require('../../auth')();
 const contactPage = require('../../page-objects/contacts/contacts.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
@@ -15,7 +14,7 @@ const householdContact = faker.name.findName();
 
 describe('Create new lineage structure', () => {
   before(async () => {
-    await loginPage.cookieLogin(auth.username, auth.password);
+    await loginPage.cookieLogin();
   });
 
   after(async () => {
