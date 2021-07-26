@@ -1,5 +1,8 @@
 version: '3.7'
 
+# For more information on how to use this docker compose file see our docs page:
+#   https://docs.communityhealthtoolkit.org/apps/guides/hosting/app-developer/
+
 services:
   medic-os:
 

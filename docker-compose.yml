@@ -1,5 +1,8 @@
 version: '3.7'
 
+# For more information on how to use this docker compose file see our docs page:
+#   http://localhost:1313/apps/guides/hosting/self-hosting/
+
 services:
   medic-os:
     container_name: medic-os
