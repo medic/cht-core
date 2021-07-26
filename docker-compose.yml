@@ -1,8 +1,7 @@
-version: '3.7'
+version: '3.9'
 
 services:
   medic-os:
-    container_name: medic-os
     image: medicmobile/medic-os:cht-3.9.0-rc.2
     volumes:
       - medic-data:/srv
@@ -19,7 +18,6 @@ services:
       - DOCKER_COUCHDB_ADMIN_PASSWORD=${DOCKER_COUCHDB_ADMIN_PASSWORD:-password}
 
   haproxy:
-    container_name: haproxy
     image: medicmobile/haproxy:rc-1.17
     volumes:
       - medic-data:/srv
@@ -31,8 +29,8 @@ services:
 
 volumes:
   medic-data:
-    name: medic-data
+    
 
 networks:
   medic-net:
-    name: medic-net
+    
