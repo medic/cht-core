@@ -111,6 +111,7 @@ describe('Navigation tests : ', () => {
     afterAll(async () => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
       await browser.driver.manage().window().setSize(1024,768);
+      await utils.revertDb();
     });
 
     it('No tab text labels displayed  on mobile view for over 3 tabs', async () => {
