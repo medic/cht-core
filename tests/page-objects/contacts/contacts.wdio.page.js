@@ -1,6 +1,8 @@
 const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
-const contentRow = () => $('.content-row');
+const contentRowSelector = '.content-row';
+const contentRow = () => $(contentRowSelector);
+const contentRows = () => $$(contentRowSelector);
 const rowByText = async (text) => (await contentRow()).$(`span=${text}`);
 const reportFilterSelector = '.card.reports .table-filter a';
 const reportFilter = () => $(reportFilterSelector);
@@ -32,11 +34,18 @@ const getReportTaskFiltersText = async () => {
   return blah;
 };
 
+const getAllContactRows = async () => {
+  await (await contentRow()).waitForDisplayed();
+  const blah = await Promise.all((await contentRows()).map(filter => filter.getText()));
+  return blah;
+};
+
 
 module.exports = {
   selectLHSRowByText,
   reportFilters,
   getReportFiltersText,
   getReportTaskFiltersText,
-  contactList
+  contactList,
+  getAllContactRows
 };

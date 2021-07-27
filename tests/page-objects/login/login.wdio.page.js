@@ -15,7 +15,7 @@ const login = async (username, password) => {
   await (await loginButton()).click();
 };
 
-const cookieLogin = async (username = auth.username, password = auth.password, createUser = true) => {
+const cookieLogin = async (username = auth.username, password = auth.password, createUser = true, timeoutForBaseLoadMillis) => {
   const opts = {
     path: '/medic/login',
     body: { user: username, password: password },
@@ -32,7 +32,7 @@ const cookieLogin = async (username = auth.username, password = auth.password, c
   if (createUser) {
     await utils.setupUserDoc(username);
   }
-  await commonPage.goToBase();
+  await commonPage.goToBase(timeoutForBaseLoadMillis);
 };
 
 const getLanguage = async (selector) => {

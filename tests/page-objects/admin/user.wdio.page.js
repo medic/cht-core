@@ -1,5 +1,5 @@
 const addUserButton = () => $('a#add-user');
-const addUserDialog = () => $('h2=Add user');
+const addUserDialog = () => $('div#edit-user-profile');
 const userName = () => $('#edit-username');
 const userFullName = () => $('#fullname');
 const userRole = () => $('#role');
@@ -7,12 +7,11 @@ const userPlace = () => $('//span[@aria-labelledby="select2-facilitySelect-conta
 const userAssociatedContact = () => $('//span[@aria-labelledby="select2-contactSelect-container"]');
 const userPassword = () => $('#edit-password');
 const userConfirmPassword = () => $('#edit-password-confirm');
-const saveUserButton = () => $('a=Add user');
-const logoutButton = () => $('span=Log out');
+const saveUserButton = () => $('a#edit-user-profile-submit-btn');
+const logoutButton = () => $('i.fa-power-off');
 const select2SearchInputBox = () => $('//input[@aria-controls="select2-facilitySelect-results"]');
 const select2Name = () => $('.name');
 const select2SearchContactInputBox = () => $('//input[@aria-controls="select2-contactSelect-results"]');
-const select2AssociatedContact = () => $('.name');
 
 const goToAdminUser = async () => {
   await browser.url('/admin/#/users');
@@ -44,7 +43,7 @@ const selectPlace = async (place) => {
 const selectContact = async (associatedContact) => {
   await (await userAssociatedContact()).click();
   await (await select2SearchContactInputBox()).addValue(associatedContact);
-  await (await select2AssociatedContact()).click();
+  await (await select2Name()).click();
 
 };
 
@@ -60,7 +59,7 @@ const logout = async () => {
 };
 
 module.exports = {
-  goToAdmin: goToAdminUser,
+  goToAdminUser,
   openAddUserDialog,
   inputAddUserFields,
   saveUser,
