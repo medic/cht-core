@@ -89,7 +89,10 @@ describe('Enketo service', () => {
     window.URL.createObjectURL = createObjectURL;
     EnketoForm.returns({
       init: enketoInit,
-      langs: { setAll: () => {} },
+      langs: {
+        setAll: () => {},
+        $formLanguages: $('<select><option value="en">en</option></select>'),
+      },
       calc: { update: () => {} },
       output: { update: () => {} },
     });
