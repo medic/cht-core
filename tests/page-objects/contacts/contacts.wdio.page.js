@@ -73,12 +73,9 @@ const addPerson = async (name, dob = '2000-01-01') => {
   return (await contactCard()).getText();
 };
 
-
-
 const getPrimaryContactName = async () => {
   return await (await name()).getText();
 };
-
 
 module.exports = {
   selectLHSRowByText,
