@@ -25,7 +25,7 @@ services:
       - medic-data:/srv
     environment:
       - COUCHDB_HOST=medic-os
-      - HA_PASSWORD=password
+      - HA_PASSWORD=${DOCKER_COUCHDB_ADMIN_PASSWORD:-password}
     networks:
       - medic-net
 
