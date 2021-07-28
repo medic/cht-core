@@ -36,7 +36,7 @@ const getReportTaskFiltersText = async () => {
 
 const getAllContactText = async () => {
   await (await contentRow()).waitForDisplayed();
-  return await getTextForElements(contentRows);
+  return getTextForElements(contentRows);
 };
 
 const getTextForElements = async (elements) => {
