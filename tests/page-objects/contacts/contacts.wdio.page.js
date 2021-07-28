@@ -36,11 +36,11 @@ const getReportTaskFiltersText = async () => {
 
 const getAllContactText = async () => {
   await (await contentRow()).waitForDisplayed();
-  return getTextForElements(contentRows);
+  return await getTextForElements(contentRows);
 };
 
 const getTextForElements = async (elements) => {
-  return await Promise.all((await elements()).map(filter => filter.getText()));
+  return Promise.all((await elements()).map(filter => filter.getText()));
 };
 
 module.exports = {
