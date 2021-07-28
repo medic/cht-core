@@ -44,44 +44,41 @@ describe('generating short codes', () => {
       body: body
     });
   };
+  beforeEach(async () => await cookieLogin());
 
-  describe('submits new sms messages', () => {
+  before(async () => {
+    const forms = {
+      'CASEID': {'meta': {'code': 'CASEID', 'icon': 'icon-healthcare', 'translation_key': 'Case Id Form'},
+        'fields': {}, 'use_sentinel': true
+      }
+    };
 
-    beforeEach(async () => await cookieLogin());
+    const registrations =  {
+      'form': 'CASEID', 'events': [ { 'name': 'on_create', 'trigger': 'add_case' } ]
+    };
 
-    before(async () => {
-      const forms = {
-        'CASEID': {'meta': {'code': 'CASEID', 'icon': 'icon-healthcare', 'translation_key': 'Case Id Form'},
-          'fields': {}, 'use_sentinel': true
-        }
-      };
+    await utils.saveDocs(docs);
+    await utils.updateSettings({forms:forms, registrations:registrations,
+      transitions:{'self_report':true}, contact_types:[{'id': 'district_hospital'}]},
+    false, true);
+  });
 
-      const registrations =  {
-        'form': 'CASEID', 'events': [ { 'name': 'on_create', 'trigger': 'add_case' } ]
-      };
-
-      await utils.saveDocs(docs);
-      await utils.updateSettings({forms:forms, registrations:registrations,
-        transitions:{'self_report':true}, contact_types:[{'id': 'district_hospital'}]},
-      false, true);
+  it('create case ID', async () => {
+    await submit({
+      _meta: {
+        form: 'CASEID',
+        from: PHONE
+      },
+      some_data: 'hello',
+      a_number: 42,
+      a_boolean: false,
+      another_boolean: 0,
+      an_optional_date: '2018-11-10'
     });
-
-    it('create case ID', async () => {
-      await submit({
-        _meta: {
-          form: 'CASEID',
-          from: PHONE
-        },
-        some_data: 'hello',
-        a_number: 42,
-        a_boolean: false,
-        another_boolean: 0,
-        an_optional_date: '2018-11-10'
-      });
-      await sUtils.waitForSentinel();
-      await commonElements.goToReports();
-      await (await reportsPage.firstReport()).click();
-      expect(await (await reportsPage.submitterName()).getText()).toMatch(`Unknown sender`);
-    });
+    await sUtils.waitForSentinel();
+    await commonElements.goToReports();
+    await (await reportsPage.firstReport()).click();
+    expect(await (await reportsPage.submitterName()).getText()).toMatch(`Unknown sender`);
   });
 });
+
