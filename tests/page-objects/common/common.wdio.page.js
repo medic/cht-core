@@ -7,6 +7,7 @@ const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const contactsPage = require('../contacts/contacts.wdio.page');
 const modal = require('./modal.wdio.page');
+const _ = require('lodash');
 
 const navigateToLogoutModal = async () => {
   await (await hamburgerMenu()).click();
@@ -26,9 +27,15 @@ const getLogoutMessage = async () => {
   return body.getText();
 };
 
-const goToBase = async () => {
+const goToBase = async (timeoutForBaseLoadMillis) => {
   await browser.url('/');
-  await (await analyticsTab()).waitForDisplayed();
+  
+  let waitForDisplayedConfig = {};
+  if (_.isNumber(timeoutForBaseLoadMillis)) {
+    waitForDisplayedConfig = { timeout: timeoutForBaseLoadMillis };
+  }
+
+  await (await analyticsTab()).waitForDisplayed(waitForDisplayedConfig);
   await (await messagesTab()).waitForDisplayed();
 };
 
