@@ -1,6 +1,6 @@
 const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
-const contentRowSelector = '.content-row';
+const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
 const contentRows = () => $$(contentRowSelector);
 const rowByText = async (text) => (await contentRow()).$(`span=${text}`);
