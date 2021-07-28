@@ -34,12 +34,16 @@ const getReportTaskFiltersText = async () => {
   return blah;
 };
 
-const getAllContactRows = async () => {
+const getAllContactText = async () => {
   await (await contentRow()).waitForDisplayed();
-  const blah = await Promise.all((await contentRows()).map(filter => filter.getText()));
+  const blah = await getTextForElements(contentRows);
   return blah;
 };
 
+const getTextForElements = async (elements) => {
+  const texts = await Promise.all((await elements()).map(filter => filter.getText()));
+  return texts;
+};
 
 module.exports = {
   selectLHSRowByText,
@@ -47,5 +51,5 @@ module.exports = {
   getReportFiltersText,
   getReportTaskFiltersText,
   contactList,
-  getAllContactRows
+  getAllContactText
 };

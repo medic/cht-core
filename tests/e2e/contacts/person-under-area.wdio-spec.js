@@ -57,7 +57,7 @@ describe('Create Person Under Area', async () => {
     await usersAdminPage.logout();
     await loginPage.cookieLogin(username, password, false, 50000); //Page takes lot of time to load for a new User
     await commonPage.goToPeople();
-    const rows = await contactPage.getAllContactRows();
+    const rows = await contactPage.getAllContactText();
     // Only one row will be displayed: for HealthCenter
     expect(rows.length).toEqual(1);
     expect(rows[0]).toEqual(healthCenter2.name);

@@ -7,7 +7,7 @@ const userPlace = () => $('//span[@aria-labelledby="select2-facilitySelect-conta
 const userAssociatedContact = () => $('//span[@aria-labelledby="select2-contactSelect-container"]');
 const userPassword = () => $('#edit-password');
 const userConfirmPassword = () => $('#edit-password-confirm');
-const saveUserButton = () => $('a#edit-user-profile-submit-btn');
+const saveUserButton = () => $('//a[@test-id="modal-submit-btn"]');
 const logoutButton = () => $('i.fa-power-off');
 const select2SearchInputBox = () => $('//input[@aria-controls="select2-facilitySelect-results"]');
 const select2Name = () => $('.name');
