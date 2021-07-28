@@ -1,89 +1,87 @@
 const utils = require('../../../utils');
 const sUtils = require('../../sentinel/utils');
 const commonElements = require('../../../page-objects/common/common.wdio.page');
-const auth= require('../../../auth')();
 const { cookieLogin } = require('../../../page-objects/login/login.wdio.page');
 const reportsPage = require('../../../page-objects/reports/reportsPage.wdio');
-const userFactory = require('../../../factories/cht/users/users');
+const PHONE = '+254712345670';
+const PARENT_ID ='parent-' + Date.now();
+const CONTACT_ID ='contact-'+ Date.now();
 
-const personFactory = require('../../../factories/cht/contacts/person');
-const place = require('../../../factories/cht/contacts/place');
-
-const places = place.generateHierarchy();
-const clinic = places.find((place) => place.type === 'health_center');
-const PHONE = '+64271234567';
-const person = personFactory.build(
-  {
+const parentPlace = {
+  _id: PARENT_ID,
+  type: 'district_hospital',
+  name: 'Big Parent Hostpital',
+  contact: {
+    _id: CONTACT_ID,
     parent: {
-      _id: clinic._id,
-      parent: clinic.parent
-    },
-    phone: PHONE
-  });
-const docs = [...places, person];
+      _id: PARENT_ID
+    }
+  }
+};
 
+const contact = {
+  parent: {
+    _id: PARENT_ID,
+    parent: parentPlace.parent
+  },
+  name: 'Test Contact',
+  phone: PHONE,
+  reported_date: 1557404580557,
+  type: 'person',
+  _id: CONTACT_ID
+};
+
+const docs = [parentPlace, contact];
 
 describe('generating short codes', () => {
-
-  const submit = () => {
-    return utils.request({
+  const submit =  (body) => {
+    return  utils.request({
       method: 'POST',
       path: '/api/v2/records',
       headers: {
         'Content-type': 'application/json'
       },
-      body: {
-        _meta: {
-          form: 'CASEID',
-          from: PHONE
-        }
-      }
+      body: body
     });
   };
 
   describe('submits new sms messages', () => {
-    beforeEach(async () => {
 
-      await cookieLogin();
-    });
+    beforeEach(async () => await cookieLogin());
 
     before(async () => {
-
-      const settings = await utils.getSettings();
-      settings.forms = {
-        'CASEID': {
-					 'meta': {
-						 'code': 'CASEID', 'icon': 'icon-healthcare', 'translation_key': 'Case Id Form'
-          },
-          'fields': {},
-          'use_sentinel': true
+      const forms = {
+        'CASEID': {'meta': {'code': 'CASEID', 'icon': 'icon-healthcare', 'translation_key': 'Case Id Form'},
+          'fields': {}, 'use_sentinel': true
         }
       };
 
-      settings.registrations =  {
+      const registrations =  {
         'form': 'CASEID', 'events': [ { 'name': 'on_create', 'trigger': 'add_case' } ]
       };
 
-      await utils.updateSettings(settings,false, true);
       await utils.saveDocs(docs);
-      await browser.pause(10000);
+      await utils.updateSettings({forms:forms, registrations:registrations,
+        transitions:{'self_report':true}, contact_types:[{'id': 'district_hospital'}]},
+      false, true);
     });
-    after(async () => await utils.revertDb([], true));
 
-    const checkItemSummary = async () => {
-      expect(await (await reportsPage.submitterName()).getText()).toMatch(`Submitted by ${person.name}`);
-      expect(await(await reportsPage.subjectName()).getText()).toBe('Siobhan');
-      expect(await(await reportsPage.submitterPhone()).getText()).toBe(person.phone);
-      expect(await(await reportsPage.submitterPlace()).getText()).toBe(clinic.name);
-    };
-
-    it('shows content', async () => {
-      await submit();
+    it('create case ID', async () => {
+      await submit({
+        _meta: {
+          form: 'CASEID',
+          from: PHONE
+        },
+        some_data: 'hello',
+        a_number: 42,
+        a_boolean: false,
+        another_boolean: 0,
+        an_optional_date: '2018-11-10'
+      });
       await sUtils.waitForSentinel();
       await commonElements.goToReports();
-      await browser.pause(20000);
       await (await reportsPage.firstReport()).click();
-      await checkItemSummary();
+      expect(await (await reportsPage.submitterName()).getText()).toMatch(`Unknown sender`);
     });
   });
 });

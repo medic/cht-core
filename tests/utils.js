@@ -262,7 +262,7 @@ const revertDb = async (except, ignoreRefresh) => {
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
-  
+
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || hasModal)) {
     watcher && watcher.cancel();
@@ -702,13 +702,14 @@ module.exports = {
    *                                       api logs, if value equals 'sentinel', will watch sentinel logs instead.
    * @return {Promise}        completion promise
    */
-  updateSettings: (updates, ignoreReload) => {
+  updateSettings: (updates, ignoreReload,wdio) => {
     const watcher = ignoreReload &&
       Object.keys(updates).length &&
       waitForSettingsUpdateLogs(ignoreReload);
 
     return updateSettings(updates).then(() => {
       if (!ignoreReload) {
+        if(wdio){return;}
         return refreshToGetNewSettings();
       }
       return watcher && watcher.promise;
