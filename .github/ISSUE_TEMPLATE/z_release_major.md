@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-# Planning - Manager
+# Planning - Product Manager
 
 - [ ] Create a GH Milestone for the release. We use [semver](http://semver.org) so if there are breaking changes increment the major, otherwise if there are new features increment the minor, otherwise increment the service pack. Breaking changes in our case relate to updated software requirements (egs: CouchDB, node, minimum browser versions), broken backwards compatibility in an api, or a major visual update that requires user retraining.
 - [ ] Add all the issues to be worked on to the Milestone. Ideally each minor release will have one or two features, a handful of improvements, and plenty of bug fixes.
@@ -37,9 +37,6 @@ Once all issues have passed acceptance testing and have been merged into `master
 - [ ] Confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/builds/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
 - [ ] Upgrade the `demo-cht.dev` instance to this version.
 - [ ] Add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/overview/supported-software/) and update the EOL date and status of previous releases.
-
-# Communicating - Product Manager
-
 - [ ] Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org/c/product/releases/26), under the "Product - Releases" category using this template:
 ```
 @channel *We're excited to announce the release of {{version}} of {{product}}*

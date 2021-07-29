@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-# Planning - Manager
+# Planning - Product Manager
 
 - [ ] Create an GH Milestone and add this issue to it.
 - [ ] Add all the issues to be worked on to the Milestone.
