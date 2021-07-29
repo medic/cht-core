@@ -10,7 +10,7 @@ import { Injectable } from '@angular/core';
 })
 export class TranslateService {
   constructor(
-    private ngxTraslateService:NgxTranslateService,
+    private ngxTranslateService:NgxTranslateService,
   ) {
   }
 
@@ -30,7 +30,7 @@ export class TranslateService {
       return Promise.resolve(key);
     }
 
-    return this.ngxTraslateService.get(key, interpolateParams).toPromise();
+    return this.ngxTranslateService.get(key, interpolateParams).toPromise();
   }
 
   instant(key, interpolateParams?) {
@@ -38,6 +38,6 @@ export class TranslateService {
       return key;
     }
 
-    return this.ngxTraslateService.instant(key, interpolateParams);
+    return this.ngxTranslateService.instant(key, interpolateParams);
   }
 }

@@ -1,7 +1,9 @@
 const genericForm = require('../forms/generic-form.wdio.page');
 const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
-const contentRow = () => $('.content-row');
+const contentRowSelector = '#contacts-list .content-row';
+const contentRow = () => $(contentRowSelector);
+const contentRows = () => $$(contentRowSelector);
 const rowByText = async (text) => (await contentRow()).$(`span=${text}`);
 const reportFilterSelector = '.card.reports .table-filter a';
 const reportFilter = () => $(reportFilterSelector);
@@ -74,7 +76,15 @@ const addPerson = async (name, dob = '2000-01-01') => {
 };
 
 const getPrimaryContactName = async () => {
-  return await (await name()).getText();
+  return (await name()).getText();
+
+const getAllContactText = async () => {
+  await (await contentRow()).waitForDisplayed();
+  return getTextForElements(contentRows);
+};
+
+const getTextForElements = async (elements) => {
+  return Promise.all((await elements()).map(filter => filter.getText()));
 };
 
 module.exports = {
@@ -85,6 +95,8 @@ module.exports = {
   contactList,
   addPerson,
   addPlace,
-  topContact,
-  getPrimaryContactName,
+  topContact,  
+  ContactName,
+  getAllContactText
+
 };
