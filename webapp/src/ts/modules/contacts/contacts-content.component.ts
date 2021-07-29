@@ -185,7 +185,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     const routeSubscription =  this.route.params.subscribe((params) => {
       if (params.id) {
         this.contactsActions.selectContact(this.route.snapshot.params.id);
-        this.globalActions.clearCancelCallback();
+        this.globalActions.clearNavigation();
 
         $('.tooltip').remove();
       } else {

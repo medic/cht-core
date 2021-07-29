@@ -54,6 +54,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
   private enketoError;
   private enketoSaving;
   private viewInited = new Subject();
+  private selectedTaskAction;
 
   ngOnInit() {
     this.telemetryData = { preRender: Date.now() };
@@ -69,7 +70,8 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     this.subscription.unsubscribe();
     this.geoHandle?.cancel();
     this.enketoService.unload(this.form);
-    this.globalActions.clearCancelCallback();
+    this.globalActions.clearNavigation();
+    this.globalActions.clearEnketoStatus();
   }
 
   private subscribeToStore() {
@@ -233,6 +235,8 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
+    this.selectedTaskAction = action;
+
     if (skipDetails) {
       const cancelCallback = (tasksActions:TasksActions, router:Router) => {
         tasksActions.setSelectedTask(null);
@@ -246,7 +250,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
         this.form = null;
         this.loadingForm = false;
         this.contentError = false;
-        this.globalActions.clearCancelCallback();
+        this.globalActions.clearNavigation();
       };
       // unfortunately, this callback has to update the component itself
       this.globalActions.setCancelCallback(cancelCallback.bind(this));
@@ -312,9 +316,9 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
         this.globalActions.setEnketoEditedStatus(false);
         this.enketoService.unload(this.form);
         this.globalActions.unsetSelected();
-        this.globalActions.clearCancelCallback();
+        this.globalActions.clearNavigation();
 
-        this.router.navigate(['/tasks']);
+        this.router.navigate(['/tasks', 'group', this.selectedTaskAction.content?.contact?._id || '']);
       })
       .then(() => {
         this.telemetryData.postSave = Date.now();

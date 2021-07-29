@@ -7,10 +7,15 @@ const initialState = {
     left: {},
     right: {}
   },
-  cancelCallback: null,
+  navigation: {
+    cancelCallback: null,
+    cancelMessage: null,
+    preventNavigation: null,
+  },
   currentTab: null,
   snapshotData: null,
   enketoStatus: {
+    form: false,
     edited: false,
     saving: false,
     error: null
@@ -148,9 +153,10 @@ const _globalReducer = createReducer(
   on(Actions.setEnketoStatus, (state, { payload: { enketoStatus } }) => {
     return {
       ...state,
-      enketoStatus: { ...state.enketoStatus, ...enketoStatus },
+      enketoStatus: { ...state.enketoStatus, ...enketoStatus, form: true },
     };
   }),
+  on(Actions.clearEnketoStatus, state => ({ ...state, enketoStatus: { ...initialState.enketoStatus } })),
   on(Actions.setPrivacyPolicyAccepted, (state, { payload: { accepted } }) => {
     return { ...state, privacyPolicyAccepted: accepted };
   }),
@@ -159,6 +165,17 @@ const _globalReducer = createReducer(
   }),
   on(Actions.setCancelCallback, (state, { payload: { cancelCallback } }) => {
     return { ...state, cancelCallback };
+  }),
+  on(Actions.setNavigation, (state, { payload: { cancelCallback, cancelMessage, preventNavigation } }) => {
+    return {
+      ...state,
+      navigation: {
+        ...state.navigation,
+        cancelCallback,
+        cancelMessage,
+        preventNavigation,
+      }
+    };
   }),
   on(Actions.setLoadingSubActionBar, (state, { payload: { loading } }) => {
     return { ...state, loadingSubActionBar: loading };

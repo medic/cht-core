@@ -69,7 +69,8 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     this.subscription.unsubscribe();
     this.geoHandle && this.geoHandle.cancel();
     this.enketoService.unload(this.form);
-    this.globalActions.clearCancelCallback();
+    this.globalActions.clearNavigation();
+    this.globalActions.clearEnketoStatus();
   }
 
   ngAfterViewInit() {
@@ -204,7 +205,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
       };
       this.globalActions.setCancelCallback(cancelCallback.bind({}, this.router, this.routeSnapshot?.params?.id));
     } else {
-      this.globalActions.clearCancelCallback();
+      this.globalActions.clearNavigation();
     }
   }
 

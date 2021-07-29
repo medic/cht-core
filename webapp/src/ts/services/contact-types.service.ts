@@ -97,4 +97,21 @@ export class ContactTypesService {
   isPersonType(type?) {
     return contactTypesUtils.isPersonType(type);
   }
+
+  getLeafPlaceTypes() {
+    return this.settingsService
+      .get()
+      .then(config => contactTypesUtils.getLeafPlaceTypes(config));
+  }
+
+  isLeafPlaceType(types:[ContactType], typeId) {
+    if (!typeId || !types || !types.length) {
+      return false;
+    }
+    return !!types.find((type:ContactType) => type.id === typeId);
+  }
+}
+
+interface ContactType {
+  id:string;
 }

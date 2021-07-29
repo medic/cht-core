@@ -1,6 +1,6 @@
 import { createAction, Store } from '@ngrx/store';
 
-import { createSingleValueAction } from './actionUtils';
+import { createSingleValueAction, createMultiValueAction } from './actionUtils';
 
 export const Actions = {
   updateReplicationStatus: createSingleValueAction('UPDATE_REPLICATION_STATUS', 'replicationStatus'),
@@ -27,9 +27,11 @@ export const Actions = {
   setPrivacyPolicyAccepted: createSingleValueAction('SET_PRIVACY_POLICY_ACCEPTED', 'accepted'),
   setShowPrivacyPolicy: createSingleValueAction('SET_SHOW_PRIVACY_POLICY', 'show'),
   setEnketoStatus: createSingleValueAction('SET_ENKETO_STATUS', 'enketoStatus'),
+  clearEnketoStatus: createAction('CLEAR_ENKETO_STATUS'),
   navigationCancel: createSingleValueAction('NAVIGATION_CANCEL', 'nextUrl'),
   clearSelected: createAction('CLEAR_SELECTED'),
   setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
+  setNavigation: createMultiValueAction('SET_NAVIGATION'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
   setLoadingSubActionBar: createSingleValueAction('SET_LOADING_SUB_ACTION_BAR', 'loading'),
   setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'),
@@ -132,8 +134,12 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setCancelCallback(value));
   }
 
-  clearCancelCallback() {
-    return this.store.dispatch(Actions.setCancelCallback(null));
+  setNavigation({ cancelCallback, preventNavigation, warningTranslationKey }) {
+    return this.store.dispatch(Actions.setNavigation({ cancelCallback, preventNavigation, warningTranslationKey }));
+  }
+
+  clearNavigation() {
+    return this.store.dispatch(Actions.setNavigation({ }));
   }
 
   /**
@@ -194,6 +200,10 @@ export class GlobalActions {
 
   setEnketoSavingStatus(saving) {
     return this.store.dispatch(Actions.setEnketoStatus({ saving }));
+  }
+
+  clearEnketoStatus() {
+    return this.store.dispatch(Actions.clearEnketoStatus());
   }
 
   navigationCancel(nextUrl?) {

@@ -1,0 +1,41 @@
+<div class="content-pane right-pane">
+  <div class="col-sm-8 item-content empty-selection" *ngIf="loadingContent">
+    <div>
+      <div class="loader"></div>
+    </div>
+  </div>
+
+  <div class="col-sm-8 item-content empty-selection" *ngIf="!loadingContent && contentError">
+    <div>{{ errorTranslationKey | translate}}</div>
+  </div>
+
+  <div class="col-sm-8 item-content" *ngIf="!loadingContent && !contentError && tasks.length">
+    <div class="material">
+      <div>
+        <div class="card children persons">
+          <div class="action-header cell">
+            <div class="col-xs-12">
+              <h3>{{'tasks.for.household' | translate}}</h3>
+            </div>
+          </div>
+          <ul>
+            <mm-content-row *ngFor="let task of tasks"
+                            [id]="task.emission._id"
+                            [route]="['/', 'tasks', task.emission._id]"
+                            [icon]="task.emission.icon"
+                            [date]="task.emission.dueDate"
+                            [overdue]="task.emission.overdue"
+                            [dateFormat]="'taskDueDate'"
+                            [heading]="task.emission.contact?.name"
+                            [summary]="task.emission.title"
+                            [warning]="task.emission.priorityLabel"
+            ></mm-content-row>
+          </ul>
+        </div>
+      </div>
+
+      <div class="padding"></div>
+    </div>
+  </div>
+
+</div>

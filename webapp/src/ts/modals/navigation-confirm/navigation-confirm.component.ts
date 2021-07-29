@@ -9,6 +9,7 @@ import { MmModalAbstract } from '../mm-modal/mm-modal';
 })
 export class NavigationConfirmComponent extends MmModalAbstract {
   static id = 'navigation-confirm-modal';
+  model = { cancelMessage: null };
 
   constructor(
     bsModalRef: BsModalRef,

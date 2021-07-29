@@ -39,18 +39,19 @@ export class TasksForContactService {
         }
 
         // must be either a person type
-        if (type?.person) {
+        if (type.person) {
           return true;
         }
 
         // ... or a leaf place type
-        return this.contactTypesService
-          .getAll()
-          .then(types => {
-            const hasChild = types.some(t => !t.person && t.parents && t.parents.includes(type?.id));
-            return !hasChild;
-          });
+        return this.isLeafPlaceType(type);
       });
+  }
+
+  private isLeafPlaceType(type) {
+    return this.contactTypesService
+      .getLeafPlaceTypes()
+      .then(leafPlaceTypes => this.contactTypesService.isLeafPlaceType(leafPlaceTypes, type.id));
   }
 
   private decorateAndSortTasks(tasks) {

@@ -3,7 +3,11 @@ import { Routes } from '@angular/router';
 import { AppRouteGuardProvider } from '../../app-route.guard.provider';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
-import { TasksRouteGuardProvider } from '@mm-modules/tasks/tasks-route.guard.provider';
+import {
+  TasksContentRouteGuardProvider,
+  TasksGroupRouteGuardProvider
+} from '@mm-modules/tasks/tasks-route-guard.provider';
+import { TasksGroupComponent } from '@mm-modules/tasks/tasks-group.component';
 
 export const routes:Routes = [
   {
@@ -21,9 +25,14 @@ export const routes:Routes = [
         path: ':id',
         component: TasksContentComponent,
         data: { name: 'tasks.detail' },
-        canDeactivate: [TasksRouteGuardProvider],
+        canDeactivate: [TasksContentRouteGuardProvider],
       },
-
+      {
+        path: 'group/:id',
+        component: TasksGroupComponent,
+        data: { name: 'tasks.group' },
+        canDeactivate: [TasksGroupRouteGuardProvider],
+      },
     ]
   },
 ];
