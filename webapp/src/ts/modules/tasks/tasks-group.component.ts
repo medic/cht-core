@@ -25,6 +25,8 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
   loadingContent;
   contentError;
   errorTranslationKey;
+  private lastCompletedTask;
+  private activePlace;
 
   constructor(
     private route:ActivatedRoute,
@@ -45,14 +47,16 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
     this.leafPlaceTypes$ = this.contactTypesService.getLeafPlaceTypes();
 
     const cancelCallback = (router:Router) => {
-      router.navigate(['/tasks']);
+      return router.navigate(['/tasks']);
     };
 
     this.globalActions.setNavigation({
       cancelCallback: cancelCallback.bind({}, this.router),
       preventNavigation: true,
-      warningTranslationKey: 'task.group.leave',
+      cancelMessage: 'task.group.leave',
     });
+
+
   }
 
   ngOnDestroy() {
@@ -63,9 +67,13 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
     const subscription = combineLatest(
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getCancelCallback),
+      this.store.select(Selectors.getLastCompletedTask),
+      this.store.select(Selectors.getActiveTaskPlace),
     ).subscribe(([
       loadingContent,
       cancelCallback,
+      lastCompletedTask,
+      getActiveTaskPlace,
     ]) => {
       this.loadingContent = loadingContent;
       this.cancelCallback = cancelCallback;
@@ -74,32 +82,32 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToRoute() {
-    const routeSubscription = this.route.params.subscribe(async (params) => {
-      this.globalActions.setLoadingContent(true);
-      this.tasks = [];
-      const contactId = params.id;
-      if (!contactId) {
-        //this.globalActions.navigationCancel();
-        return;
-      }
-
-      const contact = await this.displayTasksFor(contactId);
-      if (!contact) {
-        //this.globalActions.navigationCancel();
-        return;
-      }
-
-      const tasks = await this.tasksForContactService.get(contact);
-      if (!tasks || !tasks.length) {
-        this.globalActions.setSnackbarContent(this.translateService.instant('all.group.tasks.complete'));
-        //this.globalActions.navigationCancel();
-        return;
-      }
-
-      this.tasks = tasks;
-      this.globalActions.setLoadingContent(false);
-    });
+    const routeSubscription = this.route.params.subscribe((params) => this.displayHouseholdTasks(params.id));
     this.subscription.add(routeSubscription);
+  }
+
+  private async displayHouseholdTasks(contactId) {
+    this.globalActions.setLoadingContent(true);
+    this.tasks = [];
+    if (!contactId) {
+      return;
+    }
+
+    const contact = await this.displayTasksFor(contactId);
+    if (!contact) {
+      this.globalActions.navigationCancel();
+      return;
+    }
+
+    const tasks = await this.tasksForContactService.get(contact);
+    if (!tasks || !tasks.length) {
+      this.globalActions.setSnackbarContent(this.translateService.instant('tasks.group.complete'));
+      this.globalActions.navigationCancel();
+      return;
+    }
+
+    this.tasks = tasks;
+    this.globalActions.setLoadingContent(false);
   }
 
   private async displayTasksFor(contactId) {

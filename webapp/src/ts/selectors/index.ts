@@ -129,4 +129,6 @@ export const Selectors = {
   getTasksList: createSelector(getTasksState, (tasksState) => tasksState.tasksList),
   getTasksLoaded: createSelector(getTasksState, (tasksState) => tasksState.loaded),
   getSelectedTask: createSelector(getTasksState, (tasksState) => tasksState.selected),
+  getLastCompletedTask: createSelector(getTasksState, (tasksState) => tasksState.lastCompletedTask),
+  getActiveTaskPlace: createSelector(getTasksState, (tasksState) => tasksState.activePlace),
 };

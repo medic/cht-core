@@ -312,13 +312,14 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
         console.debug('saved report and associated docs', docs);
         this.globalActions.setSnackbarContent(this.translateService.instant('report.created'));
 
+        this.tasksActions.setLastCompletedTask(this.selectedTask);
         this.globalActions.setEnketoSavingStatus(false);
         this.globalActions.setEnketoEditedStatus(false);
         this.enketoService.unload(this.form);
         this.globalActions.unsetSelected();
         this.globalActions.clearNavigation();
 
-        this.router.navigate(['/tasks', 'group', this.selectedTaskAction.content?.contact?._id || '']);
+        this.router.navigate(['/tasks', 'group']);
       })
       .then(() => {
         this.telemetryData.postSave = Date.now();

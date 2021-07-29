@@ -66,14 +66,8 @@ export class TasksGroupRouteGuardProvider implements CanDeactivate<TasksGroupCom
       return true;
     }
 
-    // todo: if route is to a new task, go!
     const emissionId = this.getEmissionIdFromUrl(nextState.url);
-    if (!emissionId) {
-      return true;
-    }
-
-    console.log(component);
-    if (component.isHouseHoldTask(emissionId)) {
+    if (emissionId && component.isHouseHoldTask(emissionId)) {
       return true;
     }
 

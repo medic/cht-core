@@ -22,16 +22,16 @@ export const routes:Routes = [
         data: { name: 'tasks.detail' },
       },
       {
+        path: 'group',
+        component: TasksGroupComponent,
+        data: { name: 'tasks.group' },
+        canDeactivate: [TasksGroupRouteGuardProvider],
+      },
+      {
         path: ':id',
         component: TasksContentComponent,
         data: { name: 'tasks.detail' },
         canDeactivate: [TasksContentRouteGuardProvider],
-      },
-      {
-        path: 'group/:id',
-        component: TasksGroupComponent,
-        data: { name: 'tasks.group' },
-        canDeactivate: [TasksGroupRouteGuardProvider],
       },
     ]
   },

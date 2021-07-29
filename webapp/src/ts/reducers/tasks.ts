@@ -7,6 +7,8 @@ const initialState = {
   tasksList: [],
   selected: null,
   loaded: false,
+  lastCompletedTask: null,
+  activePlace: null,
 };
 
 const orderByDueDate = (t1, t2) => {
@@ -39,6 +41,10 @@ const _tasksReducer = createReducer(
   on(Actions.setTasksLoaded, (state, { payload: { loaded }}) => ({ ...state, loaded })),
 
   on(Actions.setSelectedTask, (state, { payload: { selected } }) => ({ ...state, selected })),
+
+  on(Actions.setLastCompletedTask, (state, { payload: { task } }) => ({ ...state, lastCompletedTask: task })),
+
+  on(Actions.setActivePlace, (state, { payload: { place } }) => ({ ...state, activePlace: place })),
 );
 
 export function tasksReducer(state, action) {

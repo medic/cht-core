@@ -37,6 +37,7 @@ export class GlobalEffects {
   );
 
   private cancelFormSubmission(nextUrl, enketoStatus, navigationStatus) {
+    console.error(navigationStatus);
     if (enketoStatus.saving) {
       // wait for save to finish
       return;
@@ -44,7 +45,7 @@ export class GlobalEffects {
 
     if (!enketoStatus.edited) {
       // form hasn't been modified - return immediately
-      this.navigate(null, navigationStatus.cancelCallback);
+      this.navigate(nextUrl, navigationStatus.cancelCallback);
       return;
     }
 

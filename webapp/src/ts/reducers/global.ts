@@ -164,7 +164,13 @@ const _globalReducer = createReducer(
     return { ...state, showPrivacyPolicy: show };
   }),
   on(Actions.setCancelCallback, (state, { payload: { cancelCallback } }) => {
-    return { ...state, cancelCallback };
+    return {
+      ...state,
+      navigation: {
+        ...state.navigation,
+        cancelCallback,
+      },
+    };
   }),
   on(Actions.setNavigation, (state, { payload: { cancelCallback, cancelMessage, preventNavigation } }) => {
     return {
