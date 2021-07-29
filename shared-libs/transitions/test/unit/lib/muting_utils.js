@@ -2029,6 +2029,12 @@ describe('mutingUtils', () => {
         chai.expect(contact).to.deep.equal({ muted: 1000 });
       });
 
+      it('when muting a muted contact with the same muted timestamp', () => {
+        const contact = { muted: 1000 };
+        chai.expect(mutingUtils.updateContact(contact, moment(1000))).to.equal(false);
+        chai.expect(contact).to.deep.equal({ muted: 1000 });
+      });
+
       it('when muting an muted contact with muting history', () => {
         let contact = {
           muted: 2000,

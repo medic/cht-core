@@ -65,7 +65,7 @@ const updateContact = (contact, muted) => {
   if (muted) {
     if (isMutingHistoryUpToDate) {
       // if muting an already muted contact and muting history requires no changes, use the contact's muted timestamp
-      mutedTimestamp = contact.muted || muted;
+      mutedTimestamp = contact.muted && moment(contact.muted) || muted;
     } else {
       // if muting an already muted contact and muting history requires changes, use the new muted timestamp
       mutedTimestamp = muted;
@@ -81,7 +81,9 @@ const updateContact = (contact, muted) => {
     contact.muting_history.last_update = SERVER;
   }
 
-  if (!isMutingHistoryUpToDate || contact.muted !== mutedTimestamp) {
+  const mutingTimestampChanged = !!contact.muted !== !!mutedTimestamp || // one truthy, one falsy
+                                 (contact.muted && !moment(contact.muted).isSame(mutedTimestamp));
+  if (!isMutingHistoryUpToDate || mutingTimestampChanged) {
     updated = true;
     if (muted) {
       contact.muted = mutedTimestamp;
