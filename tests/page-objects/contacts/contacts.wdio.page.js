@@ -84,7 +84,16 @@ const addPerson = async (name, dob = '2000-01-01') => {
 };
 
 const getPrimaryContactName = async () => {
-  return await (await name()).getText();
+  return (await name()).getText();
+};
+
+const getAllContactText = async () => {
+  await (await contentRow()).waitForDisplayed();
+  return getTextForElements(contentRows);
+};
+
+const getTextForElements = async (elements) => {
+  return Promise.all((await elements()).map(filter => filter.getText()));
 };
 
 module.exports = {
@@ -98,4 +107,5 @@ module.exports = {
   addPlace,
   topContact,
   getPrimaryContactName,
+  getAllContactText
 };
