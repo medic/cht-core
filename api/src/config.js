@@ -9,6 +9,8 @@ const settingsService = require('./services/settings');
 const translations = require('./translations');
 const translationUtils = require('@medic/translation-utils');
 const viewMapUtils = require('@medic/view-map-utils');
+const serverUtils = require('./server-utils');
+const environment = require('./environment');
 
 const translationCache = {};
 let settings = {};
@@ -109,6 +111,14 @@ const loadViewMaps = () => {
   });
 };
 
+
+const addUserRolesToDb = async () => {
+  const roles = module.exports.get('roles');
+  for (const role of Object.keys(roles)) {
+    await serverUtils.addRoleToSecurity(environment.db, role, false);
+  }
+};
+
 module.exports = {
   get: key => (key ? settings[key] : settings),
   translate: (key, locale, ctx) => {
@@ -171,6 +181,7 @@ module.exports = {
               logger.error('Failed to reload settings: %o', err);
               process.exit(1);
             })
+            .then(() => addUserRolesToDb())
             .then(() => initTransitionLib())
             .then(() => logger.debug('Settings updated'));
         } else if (change.id.startsWith('messages-')) {
@@ -189,5 +200,6 @@ module.exports = {
       });
   },
   initTransitionLib: initTransitionLib,
-  getTransitionsLib: () => transitionsLib
+  getTransitionsLib: () => transitionsLib,
+  addUserRolesToDb: addUserRolesToDb,
 };

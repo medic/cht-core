@@ -72,6 +72,7 @@ describe('Auth', () => {
       const district = '123';
       const userCtx = { userCtx: { name: 'steve', roles: [ '_admin' ] } };
       const get = sinon.stub(request, 'get').resolves(userCtx);
+      sinon.stub(db.users, 'get').resolves({ });
       return auth.check({headers: []}, 'can_edit', district).then(ctx => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(ctx.user).to.equal('steve');
@@ -83,12 +84,12 @@ describe('Auth', () => {
       environment.serverUrl = 'http://abc.com';
       const district = '123';
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
-      const get = sinon.stub(request, 'get');
-      get.onFirstCall().resolves(userCtx);
-      get.onSecondCall().resolves({ facility_id: district });
+      const get = sinon.stub(request, 'get').resolves(userCtx);
+      sinon.stub(db.users, 'get').resolves({ facility_id: district });
       sinon.stub(config, 'get').returns({ can_edit: ['district_admin'] });
       return auth.check({headers: []}, 'can_edit', district).then(ctx => {
-        chai.expect(get.callCount).to.equal(2);
+        chai.expect(get.callCount).to.equal(1);
+        chai.expect(db.users.get.callCount).to.equal(1);
         chai.expect(ctx.user).to.equal('steve');
         chai.expect(ctx.district).to.equal(district);
       });
@@ -98,12 +99,12 @@ describe('Auth', () => {
       environment.serverUrl = 'http://abc.com';
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
       sinon.stub(url, 'format').returns('http://abc.com');
-      const get = sinon.stub(request, 'get');
-      get.onFirstCall().resolves(userCtx);
-      get.onSecondCall().resolves({ facility_id: '123' });
+      const get = sinon.stub(request, 'get').resolves(userCtx);
+      sinon.stub(db.users, 'get').resolves({ facility_id: '123' });
       sinon.stub(config, 'get').returns({ can_edit: ['district_admin'] });
       return auth.check({headers: []}, 'can_edit', '789').catch(err => {
-        chai.expect(get.callCount).to.equal(2);
+        chai.expect(get.callCount).to.equal(1);
+        chai.expect(db.users.get.callCount).to.equal(1);
         chai.expect(err.message).to.equal('Insufficient privileges');
         chai.expect(err.code).to.equal(403);
       });
@@ -114,15 +115,15 @@ describe('Auth', () => {
       const district = '123';
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
       sinon.stub(url, 'format').returns('http://abc.com');
-      const get = sinon.stub(request, 'get');
-      get.onFirstCall().resolves(userCtx);
-      get.onSecondCall().resolves({ facility_id: district });
+      const get = sinon.stub(request, 'get').resolves(userCtx);
+      sinon.stub(db.users, 'get').resolves({ facility_id: district });
       sinon.stub(config, 'get').returns({
         can_export_messages: ['district_admin'],
         can_export_contacts: ['district_admin'],
       });
       return auth.check({headers: []}, [ 'can_export_messages', 'can_export_contacts' ], district).then(ctx => {
-        chai.expect(get.callCount).to.equal(2);
+        chai.expect(get.callCount).to.equal(1);
+        chai.expect(db.users.get.callCount).to.equal(1);
         chai.expect(ctx.user).to.equal('steve');
         chai.expect(ctx.district).to.equal(district);
       });

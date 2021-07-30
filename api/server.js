@@ -46,6 +46,7 @@ process
 
     logger.info('Loading configuration…');
     await config.load();
+    await config.addUserRolesToDb();
     logger.info('Configuration loaded successfully');
     await config.listen();
 

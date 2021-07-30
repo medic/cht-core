@@ -3,6 +3,7 @@ const path = require('path');
 const environment = require('./environment');
 const isClientHuman = require('./is-client-human');
 const logger = require('./logger');
+const request = require('request-promise-native');
 const MEDIC_BASIC_AUTH = 'Basic realm="Medic Mobile Web Services"';
 
 const wantsJSON = req => req.get('Accept') === 'application/json';
@@ -10,6 +11,43 @@ const wantsJSON = req => req.get('Accept') === 'application/json';
 const writeJSON = (res, code, error, details) => {
   res.status(code);
   res.json({ code, error, details });
+};
+
+const DEFAULT_SECURITY_STRUCTURE = {
+  names: [],
+  roles: [],
+};
+
+const addRoleToSecurity = (dbname, role, addAsAdmin) => {
+  const securityUrl = url.format({
+    protocol: environment.protocol,
+    hostname: environment.host,
+    port: environment.port,
+    pathname: `${dbname}/_security`,
+  });
+  const credentials = {
+    user: environment.username,
+    pass: environment.password
+  };
+
+  return request
+    .get({ url: securityUrl, auth: credentials, json: true })
+    .then(body => {
+      // In CouchDB 1.x, if you have not written to the _security object before
+      // it is empty.
+      const property = addAsAdmin ? 'admins' : 'members';
+      if (!body[property]) {
+        body[property] = DEFAULT_SECURITY_STRUCTURE;
+      }
+
+      if (body[property].roles.includes(role)) {
+        return;
+      }
+
+      logger.info(`Adding ${role} role to ${dbname} ${property}`);
+      body[property].roles.push(role);
+      return request.put({ url: securityUrl, auth: credentials, json: true, body });
+    });
 };
 
 const respond = (req, res, code, message, details) => {
@@ -111,4 +149,6 @@ module.exports = {
     };
     return module.exports.error(err, req, res);
   },
+
+  addRoleToSecurity,
 };

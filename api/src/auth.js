@@ -51,8 +51,7 @@ const checkDistrict = (requested, permitted) => {
 };
 
 const getFacilityId = (req, userCtx) => {
-  const url = '/_users/org.couchdb.user:' + userCtx.name;
-  return get(url, req.headers).then(user => user.facility_id);
+  return db.users.get('org.couchdb.user:' + userCtx.name).then(user => user.facility_id);
 };
 
 module.exports = {
