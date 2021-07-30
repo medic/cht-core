@@ -18,21 +18,28 @@
 
 get_lan_ip(){
   routerIP=$(ip r | grep default | awk '{print $3}')
-  subnet=$(echo $routerIP|cut -d'.' -f1,2,3)
-  lanInterface=$(ip r | grep $subnet| grep default | cut -d' ' -f 5)
-  lanAddress=$(ip a s $lanInterface | awk '/inet /{gsub(/\/.*/,"");print $2}')
-#  lanHostname=$(getent hosts $lanAddress | awk '{print $2}')
-#  echo "lanHostname $lanHostname"
 #  echo "routerIP $routerIP"
-#  echo "LAN Interfact $lanInterface"
-  echo "$lanAddress"
+  if [ ! $routerIp ]; then
+    subnet=$(echo $routerIP|cut -d'.' -f1,2,3)
+    lanInterface=$(ip r | grep $subnet| grep default | cut -d' ' -f 5)
+    lanAddress=$(ip a s $lanInterface | awk '/inet /{gsub(/\/.*/,"");print $2}')
+    lanHostname=$(getent hosts $lanAddress | awk '{print $2}')
+#    echo "lanHostname $lanHostname"
+#    echo "routerIP $routerIP"
+#    echo "LAN Interfact $lanInterface"
+    echo "$lanAddress"
+  fi
 }
 
 get_local_ip_url(){
   lanAddress="`get_lan_ip`"
-  IFS='.' read -ra ip_array <<< $lanAddress
-  url="https://${ip_array[0]}-${ip_array[1]}-${ip_array[2]}-${ip_array[3]}.my.local-ip.co"
-  echo "$url"
+  if [ ! $lanAddress ]; then
+    IFS='.' read -ra ip_array <<< $lanAddress
+    url="https://${ip_array[0]}-${ip_array[1]}-${ip_array[2]}-${ip_array[3]}.my.local-ip.co"
+    echo "$url"
+  else
+    echo " - not found - are you offline?"
+  fi
 }
 
 is_installed(){
@@ -55,9 +62,9 @@ main (){
 #    append "`is_installed docker`"
 #    append "`is_installed horti`"
 #    append "`is_installed docker-compose`"
-#    append "Lan IP `get_lan_ip`"
-#    append "URL `get_local_ip_url`"
-    append_tabbed "CHT URL|`get_local_ip_url`" 4 "|"
+    append "Lan IP `get_lan_ip`"
+    append "CHT URL `get_local_ip_url`"
+#    append_tabbed "CHT URL|`get_local_ip_url`" 2 "|"
 #    addsep
 #    append_tabbed "Up since|`uptime | cut -f1 -d"," | sed 's/^ *//' | cut -f3- -d" "`" 2 "|"
 #    append_tabbed "Users:`uptime | cut -f2 -d"," | sed 's/^ *//'| cut -f1 -d" "`" 2
