@@ -13,6 +13,8 @@
 # your URL for CHT:
 # https://10-0-2-4.my.local-ip.co
 
+container="${1:-medic-os}"
+
 if ! command -v docker&> /dev/null
 then
   echo ""
@@ -21,18 +23,19 @@ then
   exit
 fi
 
-if [ "$( docker container inspect -f '{{.State.Status}}' 'medic-os' )" == "running" ]; then
-  docker exec -it medic-os bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem"
-  docker exec -it medic-os bash -c "curl -s -o chain.pem http://local-ip.co/cert/chain.pem"
-  docker exec -it medic-os bash -c "cat server.pem chain.pem > /srv/settings/medic-core/nginx/private/default.crt"
-  docker exec -it medic-os bash -c "curl -s -o /srv/settings/medic-core/nginx/private/default.key http://local-ip.co/cert/server.key"
-  docker exec -it medic-os bash -c "/boot/svc-restart medic-core nginx"
+status=$(docker inspect --format="{{.State.Running}}" $container 2> /dev/null)
+if [ "$status" = "true" ]; then
+  docker exec -it $container bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem"
+  docker exec -it $container bash -c "curl -s -o chain.pem http://local-ip.co/cert/chain.pem"
+  docker exec -it $container bash -c "cat server.pem chain.pem > /srv/settings/medic-core/nginx/private/default.crt"
+  docker exec -it $container bash -c "curl -s -o /srv/settings/medic-core/nginx/private/default.key http://local-ip.co/cert/server.key"
+  docker exec -it $container bash -c "/boot/svc-restart medic-core nginx"
   echo ""
   echo "If no errors output above, certificates successfully installed."
   echo ""
 else
   echo ""
-  echo "'medic-os' docker container is not running. Please start it and try again."
+  echo "'$container' docker container is not running. Please start it and try again."
   echo "See this URL for more information:"
   echo ""
   echo "    https://docs.communityhealthtoolkit.org/apps/tutorials/local-setup/"
