@@ -10,7 +10,7 @@ const CONTACT_ID ='contact-'+ Date.now();
 const parentPlace = {
   _id: PARENT_ID,
   type: 'district_hospital',
-  name: 'Big Parent Hostpital',
+  name: 'Test Hostpital',
   contact: {
     _id: CONTACT_ID,
     parent: {
@@ -47,19 +47,20 @@ describe('generating short codes', () => {
   beforeEach(async () => await cookieLogin());
 
   before(async () => {
+    await utils.deleteAllDocs;
     const forms = {
       'CASEID': {'meta': {'code': 'CASEID', 'icon': 'icon-healthcare', 'translation_key': 'Case Id Form'},
         'fields': {}, 'use_sentinel': true
       }
     };
 
-    const registrations =  {
-      'form': 'CASEID', 'events': [ { 'name': 'on_create', 'trigger': 'add_case' } ]
-    };
+    const registrations = [{'form': 'CASEID', 'events': [ { 'name': 'on_create', 'trigger': 'add_case' } ]}];
 
     await utils.saveDocs(docs);
     await utils.updateSettings({forms:forms, registrations:registrations,
-      transitions:{'self_report':true}, contact_types:[{'id': 'district_hospital'}]},
+      transitions:{
+        'update_clinics': true,
+        'registration': true}, contact_types:[{'id': 'district_hospital'}]},
     false, true);
   });
 
@@ -78,7 +79,12 @@ describe('generating short codes', () => {
     await sUtils.waitForSentinel();
     await commonElements.goToReports();
     await (await reportsPage.firstReport()).click();
-    expect(await (await reportsPage.submitterName()).getText()).toMatch(`Unknown sender`);
+    await browser.pause(20000);
+    await browser.saveScreenshot('screen.png');
+    expect(await (await reportsPage.submitterName()).getText()).toMatch(contact.name);
+    const caseId = await reportsPage.getCaseId();
+    expect(caseId.length).toEqual(5);
+    expect(await reportsPage.getCaseId()).toMatch(/^\d{5}$/);
   });
 });
 
