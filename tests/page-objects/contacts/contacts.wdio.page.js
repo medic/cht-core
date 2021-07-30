@@ -77,6 +77,7 @@ const addPerson = async (name, dob = '2000-01-01') => {
 
 const getPrimaryContactName = async () => {
   return (await name()).getText();
+};
 
 const getAllContactText = async () => {
   await (await contentRow()).waitForDisplayed();
@@ -95,8 +96,7 @@ module.exports = {
   contactList,
   addPerson,
   addPlace,
-  topContact,  
-  ContactName,
+  topContact,
+  getPrimaryContactName,
   getAllContactText
-
 };
