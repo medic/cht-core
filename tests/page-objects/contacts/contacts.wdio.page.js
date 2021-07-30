@@ -87,44 +87,6 @@ const getAllContactText = async () => {
 const getTextForElements = async (elements) => {
   return Promise.all((await elements()).map(filter => filter.getText()));
 };
-const addPlace = async (type, placeName , contactName ) => {
-  await (await resourceIcon(type.replace('_','-'))).click();
-  await (await newPrimaryContactButton()).click();
-  await (await newPrimaryContactName()).addValue(contactName);
-  await (await dateOfBirthField()).addValue('2000-01-01');
-  await (await contactSexField()).click();
-  await genericForm.nextPage();
-  await (await writeNamePlace(type)).click();
-  await (await newPlaceName()).addValue(placeName);
-  await (await externalIdField(type)).addValue('1234457');
-  await (await notes(type)).addValue(`Some ${type} notes`);
-  await (await genericForm.submitButton()).click();
-  await (await contactCard()).waitForDisplayed();
-};
-
-const addPerson = async (name, dob = '2000-01-01') => {
-  await (await resourceIcon('person')).click();
-  await (await personName()).addValue(name);
-  await (await dateOfBirthField()).addValue(dob);
-  await (await personName()).click(); // blur the datepicker field so the sex field is visible
-  await (await personSexField()).click();
-  await (await notes('person')).addValue('some person notes');
-  await (await genericForm.submitButton()).click();
-  return (await contactCard()).getText();
-};
-
-const getPrimaryContactName = async () => {
-  return (await name()).getText();
-};
-
-const getAllContactText = async () => {
-  await (await contentRow()).waitForDisplayed();
-  return getTextForElements(contentRows);
-};
-
-const getTextForElements = async (elements) => {
-  return Promise.all((await elements()).map(filter => filter.getText()));
-};
 
 module.exports = {
   selectLHSRowByText,
@@ -136,6 +98,5 @@ module.exports = {
   addPerson,
   addPlace,
   topContact,
-  getPrimaryContactName,
-  getAllContactText
+  getPrimaryContactName
 };
