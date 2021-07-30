@@ -96,13 +96,11 @@ describe('Navigation tests : ', () => {
 
     let originalTimeout;
 
-    beforeEach(async () =>{
-      originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-      jasmine.DEFAULT_TIMEOUT_INTERVAL = 2 * 60 * 1000;
-      await utils.beforeEach();
-    });
+    beforeEach(async () =>await utils.beforeEach());
 
     beforeAll(async () => {
+      originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = 2 * 60 * 1000;
       await browser.driver.manage().window().setSize(389, 500);
       await utils.saveDoc(district);
       await utils.createUsers([user]);
