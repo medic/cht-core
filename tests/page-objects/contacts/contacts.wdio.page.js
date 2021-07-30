@@ -1,3 +1,4 @@
+const genericForm = require('../forms/generic-form.wdio.page');
 const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
 const contentRowSelector = '#contacts-list .content-row';
@@ -11,9 +12,23 @@ const taskFilterSelector = '.card.tasks .table-filter a';
 const taskFilter = () => $(taskFilterSelector);
 const taskFilters = () => $$(taskFilterSelector);
 const contactList = () => $('#contacts-list');
+const newPlaceName = () => $('[name="/data/init/custom_place_name"]');
+const newPrimaryContactName = () => $('[name="/data/contact/name"]');
+const newPrimaryContactButton = () => $('[name="/data/init/create_new_person"][value="new_person"]');
+const resourceIcon = (name) => $(`[title="medic-${name}"]`);
+const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
+const contactSexField = () => $('[data-name="/data/contact/sex"][value="female"]');
+const personName = () => $('[name="/data/person/name"]');
+const personSexField = () => $('[data-name="/data/person/sex"][value="female"]');
+const topContact = () => $('#contacts-list > ul > li:nth-child(1) > a > div.content > div > h4 > span');
+const name = () => $('.children h4 span');
+const externalIdField = (place) => $(`[name="/data/${place}/external_id"]`);
+const notes = (place) => $(`[name="/data/${place}/notes"]`);
+const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][value="false"]`);
+const contactCard = () =>$('.card h2');
+
 
 const search = async (query) => {
-  await (await searchBox()).clearValue();
   await (await searchBox()).setValue(query);
   await (await searchButton()).click();
 };
@@ -34,6 +49,36 @@ const getReportTaskFiltersText = async () => {
   return blah;
 };
 
+const addPlace = async (type, placeName , contactName ) => {
+  await (await resourceIcon(type.replace('_','-'))).click();
+  await (await newPrimaryContactButton()).click();
+  await (await newPrimaryContactName()).addValue(contactName);
+  await (await dateOfBirthField()).addValue('2000-01-01');
+  await (await contactSexField()).click();
+  await genericForm.nextPage();
+  await (await writeNamePlace(type)).click();
+  await (await newPlaceName()).addValue(placeName);
+  await (await externalIdField(type)).addValue('1234457');
+  await (await notes(type)).addValue(`Some ${type} notes`);
+  await (await genericForm.submitButton()).click();
+  await (await contactCard()).waitForDisplayed();
+};
+
+const addPerson = async (name, dob = '2000-01-01') => {
+  await (await resourceIcon('person')).click();
+  await (await personName()).addValue(name);
+  await (await dateOfBirthField()).addValue(dob);
+  await (await personName()).click(); // blur the datepicker field so the sex field is visible
+  await (await personSexField()).click();
+  await (await notes('person')).addValue('some person notes');
+  await (await genericForm.submitButton()).click();
+  return (await contactCard()).getText();
+};
+
+const getPrimaryContactName = async () => {
+  return (await name()).getText();
+};
+
 const getAllContactText = async () => {
   await (await contentRow()).waitForDisplayed();
   return getTextForElements(contentRows);
@@ -49,5 +94,9 @@ module.exports = {
   getReportFiltersText,
   getReportTaskFiltersText,
   contactList,
-  getAllContactText
+  getAllContactText,
+  addPerson,
+  addPlace,
+  topContact,
+  getPrimaryContactName
 };
