@@ -69,7 +69,7 @@ const isRelevantContact = (doc, infoDoc = {}) => {
 
 const getMutedDate = (change) => {
   if (isNewContactWithMutedParent(change.doc, change.info) || change.doc.muted) {
-    return moment();
+    return moment().toISOString();
   }
   return false;
 };

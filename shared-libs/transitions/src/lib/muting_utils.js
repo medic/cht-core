@@ -49,7 +49,7 @@ const updateContacts = (contacts, muted) => {
  * - the server muted state corresponds with the updated muted state.
  * In any other case, the contact will be updated with the new muted state.
  * @param {Object} contact
- * @param {moment|boolean} muted
+ * @param {string|boolean} muted
  * @return {boolean}
  */
 const updateContact = (contact, muted) => {
@@ -65,7 +65,7 @@ const updateContact = (contact, muted) => {
   if (muted) {
     if (isMutingHistoryUpToDate) {
       // if muting an already muted contact and muting history requires no changes, use the contact's muted timestamp
-      mutedTimestamp = contact.muted && moment(contact.muted) || muted;
+      mutedTimestamp = contact.muted || muted;
     } else {
       // if muting an already muted contact and muting history requires changes, use the new muted timestamp
       mutedTimestamp = muted;
@@ -76,14 +76,12 @@ const updateContact = (contact, muted) => {
     updated = true;
     contact.muting_history[SERVER] = {
       muted: !!muted,
-      date: mutedTimestamp || moment(),
+      date: mutedTimestamp || moment().toISOString(),
     };
     contact.muting_history.last_update = SERVER;
   }
 
-  const mutingTimestampChanged = !!contact.muted !== !!mutedTimestamp || // one truthy, one falsy
-                                 (contact.muted && !moment(contact.muted).isSame(mutedTimestamp));
-  if (!isMutingHistoryUpToDate || mutingTimestampChanged) {
+  if (!isMutingHistoryUpToDate || contact.muted !== mutedTimestamp) {
     updated = true;
     if (muted) {
       contact.muted = mutedTimestamp;
@@ -181,7 +179,7 @@ const addMutingHistory = (info, muted, reportId) => {
 
   info.muting_history.push({
     muted: !!muted,
-    date: muted || moment(),
+    date: muted || moment().toISOString(),
     report_id: reportId
   });
 
@@ -198,7 +196,7 @@ const addMutingHistory = (info, muted, reportId) => {
  * @return {Promise<Array>} - a sorted list of report ids, representing muting events that need to be replayed
  */
 const updateMuteState = (contact, muted, reportId, replayClientMuting = false) => {
-  muted = muted && moment();
+  muted = muted && moment().toISOString();
 
   let rootContactId = contact._id;
   if (!muted) {

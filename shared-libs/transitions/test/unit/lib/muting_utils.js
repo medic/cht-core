@@ -221,15 +221,15 @@ describe('mutingUtils', () => {
           { _id: 'b' },
           {
             _id: 'c',
-            muting_history: { last_update: 'server_side', server_side: { muted: false, date: moment() } }
+            muting_history: { last_update: 'server_side', server_side: { muted: false, date: moment().toISOString() } }
           },
           {
             _id: 'd',
-            muting_history: { last_update: 'server_side', server_side: { muted: false, date: moment() } },
+            muting_history: { last_update: 'server_side', server_side: { muted: false, date: moment().toISOString() } },
           },
           {
             _id: 'e',
-            muting_history: { last_update: 'server_side', server_side: { muted: false, date: moment() } }
+            muting_history: { last_update: 'server_side', server_side: { muted: false, date: moment().toISOString() } }
           },
         ]]); // a and f are skipped
       });
@@ -310,12 +310,12 @@ describe('mutingUtils', () => {
         chai.expect(!!result).to.equal(true);
         chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
         chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
-          { _id: 'my-place', muted: moment(), place_id: 'my-place-id'},
-          { _id: 'my-place2', muted: moment() },
-          { _id: 'my-place3', place_id: 'place3', muted: moment() },
-          { _id: 'contact1', patient_id: 'patient1', muted: moment() },
-          { _id: 'contact2', patient_id: 'patient2', muted: moment() },
-          { _id: 'contact3', patient_id: 'patient3', muted: moment() }
+          { _id: 'my-place', muted: moment().toISOString(), place_id: 'my-place-id'},
+          { _id: 'my-place2', muted: moment().toISOString() },
+          { _id: 'my-place3', place_id: 'place3', muted: moment().toISOString() },
+          { _id: 'contact1', patient_id: 'patient1', muted: moment().toISOString() },
+          { _id: 'contact2', patient_id: 'patient2', muted: moment().toISOString() },
+          { _id: 'contact3', patient_id: 'patient3', muted: moment().toISOString() },
         ]]);
 
         chai.expect(db.medic.query.callCount).to.equal(1);
@@ -569,7 +569,7 @@ describe('mutingUtils', () => {
         chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[{
           _id: 'contact',
           patient_id: 'patient',
-          muted: moment()
+          muted: moment().toISOString()
         }]]);
         chai.expect(db.medic.bulkDocs.args[1]).to.deep.equal([[
           { _id: 'r1' },
@@ -774,7 +774,7 @@ describe('mutingUtils', () => {
         ]]);
         chai.expect(infodoc.bulkUpdate.callCount).to.equal(1);
 
-        const historyEntry = { date: moment(), report_id: reportId, muted: false };
+        const historyEntry = { date: moment().toISOString(), report_id: reportId, muted: false };
         chai.expect(infodoc.bulkUpdate.args[0]).to.deep.equal([[
           {
             _id: 'p2-info',
@@ -1323,19 +1323,19 @@ describe('mutingUtils', () => {
         chai.expect(requestedContacts).to.deep.equal(contactIds);
 
         chai.expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([
-          { _id: 'a', muted: moment() },
-          { _id: 'b', muted: moment() },
-          { _id: 'c', muted: moment() }
+          { _id: 'a', muted: moment().toISOString() },
+          { _id: 'b', muted: moment().toISOString() },
+          { _id: 'c', muted: moment().toISOString() },
         ]);
         chai.expect(db.medic.bulkDocs.args[2][0]).to.deep.equal([
-          { _id: 'd', muted: moment() },
-          { _id: 'e', muted: moment() },
-          { _id: 'f', muted: moment() }
+          { _id: 'd', muted: moment().toISOString() },
+          { _id: 'e', muted: moment().toISOString() },
+          { _id: 'f', muted: moment().toISOString() },
         ]);
         chai.expect(db.medic.bulkDocs.args[4][0]).to.deep.equal([
-          { _id: 'g', muted: moment() },
-          { _id: 'h', muted: moment() },
-          { _id: 'i', muted: moment() }
+          { _id: 'g', muted: moment().toISOString() },
+          { _id: 'h', muted: moment().toISOString() },
+          { _id: 'i', muted: moment().toISOString() },
         ]);
 
         chai.expect(db.medic.bulkDocs.args[1][0]).to.deep.equal([
@@ -1825,7 +1825,7 @@ describe('mutingUtils', () => {
         muting_history: {
           server_side: {
             muted: false,
-            date: moment(),
+            date: moment().toISOString(),
           },
           client_side: [{
             muted: true,
@@ -1858,7 +1858,7 @@ describe('mutingUtils', () => {
         muting_history: {
           server_side: {
             muted: false,
-            date: moment(),
+            date: moment().toISOString(),
           },
           client_side: [{
             muted: false,
@@ -1884,12 +1884,12 @@ describe('mutingUtils', () => {
             client_side: [{ muted: true, date: 2000 }],
           },
         };
-        chai.expect(mutingUtils.updateContact(contact, moment())).to.equal(true);
+        chai.expect(mutingUtils.updateContact(contact, timestamp)).to.equal(true);
         chai.expect(contact).to.deep.equal({
-          muted: moment(),
+          muted: timestamp,
           muting_history: {
             last_update: 'server_side',
-            server_side: { muted: true, date: moment() },
+            server_side: { muted: true, date: timestamp },
             client_side: [{ muted: true, date: 2000 }],
           }
         });
@@ -1904,12 +1904,12 @@ describe('mutingUtils', () => {
           },
         };
 
-        chai.expect(mutingUtils.updateContact(contact, moment())).to.equal(true);
+        chai.expect(mutingUtils.updateContact(contact, timestamp)).to.equal(true);
         chai.expect(contact).to.deep.equal({
-          muted: moment(),
+          muted: timestamp,
           muting_history: {
             last_update: 'server_side',
-            server_side: { muted: true, date: moment() },
+            server_side: { muted: true, date: timestamp },
             client_side: [{ muted: true, date: 2000 }],
           }
         });
@@ -1928,7 +1928,7 @@ describe('mutingUtils', () => {
         chai.expect(contact).to.deep.equal({
           muting_history: {
             last_update: 'server_side',
-            server_side: { muted: false, date: moment() },
+            server_side: { muted: false, date: moment().toISOString() },
             client_side: [{ muted: false, date: 2000 }],
           }
         });
@@ -1947,7 +1947,7 @@ describe('mutingUtils', () => {
         chai.expect(contact).to.deep.equal({
           muting_history: {
             last_update: 'server_side',
-            server_side: { muted: false, date: moment() },
+            server_side: { muted: false, date: moment().toISOString() },
             client_side: [{ muted: false, date: 2000 }],
           }
         });
@@ -1963,12 +1963,12 @@ describe('mutingUtils', () => {
           },
         };
 
-        chai.expect(mutingUtils.updateContact(contact, moment())).to.deep.equal(true);
+        chai.expect(mutingUtils.updateContact(contact, timestamp)).to.deep.equal(true);
         chai.expect(contact).to.deep.equal({
-          muted: moment(),
+          muted: timestamp,
           muting_history: {
             last_update: 'server_side',
-            server_side: { muted: true, date: moment() },
+            server_side: { muted: true, date: timestamp },
             client_side: [{ muted: true, date: 2500 }],
           }
         });
@@ -1976,8 +1976,8 @@ describe('mutingUtils', () => {
 
       it('when muting an unmuted contact', () => {
         const contact = {};
-        chai.expect(mutingUtils.updateContact(contact, moment())).to.deep.equal(true);
-        chai.expect(contact).to.deep.equal({ muted: moment() });
+        chai.expect(mutingUtils.updateContact(contact, timestamp)).to.deep.equal(true);
+        chai.expect(contact).to.deep.equal({ muted: timestamp });
       });
 
       it('when unmuting a muted contact', () => {
@@ -2303,7 +2303,7 @@ describe('mutingUtils', () => {
             },
             {
               muted: false,
-              date: moment(),
+              date: moment().toISOString(),
               report_id: 'report4'
             }
           ]
@@ -2387,7 +2387,7 @@ describe('mutingUtils', () => {
             },
             {
               muted: false,
-              date: moment(),
+              date: moment().toISOString(),
               report_id: 'report4'
             }
           ]
@@ -2449,7 +2449,7 @@ describe('mutingUtils', () => {
           muting_history: [
             {
               muted: false,
-              date: moment(),
+              date: moment().toISOString(),
               report_id: undefined
             }
           ]
@@ -2584,7 +2584,7 @@ describe('mutingUtils', () => {
             _rev: '1',
             muting_history: [{
               muted: false,
-              date: moment(),
+              date: moment().toISOString(),
               report_id: 'reportId'
             }]
           },
@@ -2593,7 +2593,7 @@ describe('mutingUtils', () => {
             type: 'info',
             muting_history: [{
               muted: false,
-              date: moment(),
+              date: moment().toISOString(),
               report_id: 'reportId'
             }]
           },
@@ -2605,7 +2605,7 @@ describe('mutingUtils', () => {
               { muted: true },
               {
                 muted: false,
-                date: moment(),
+                date: moment().toISOString(),
                 report_id: 'reportId'
               }
             ]
@@ -2665,7 +2665,7 @@ describe('mutingUtils', () => {
             _rev: '1',
             muting_history: [{
               muted: false,
-              date: moment(),
+              date: moment().toISOString(),
               report_id: 'reportId'
             }]
           },
@@ -2674,7 +2674,7 @@ describe('mutingUtils', () => {
             type: 'info',
             muting_history: [{
               muted: false,
-              date: moment(),
+              date: moment().toISOString(),
               report_id: 'reportId'
             }]
           },
