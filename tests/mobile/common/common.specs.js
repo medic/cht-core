@@ -4,6 +4,7 @@ const loginPage = require('../../page-objects/login/login.po');
 
 describe('Navigation tests : ', () => {
   beforeEach(utils.beforeEach);
+  afterAll(utils.revertDb());
 
   it('should open Messages tab', async () => {
     await commonElements.goToMessagesNative();
@@ -120,9 +121,7 @@ describe('Navigation tests : ', () => {
 
     it('Display page tab text labels even on mobile view, whenever there are 3 or fewer tabs', async () => {
       //change permissions
-      const settings = await utils.getSettings();
-      const permissions = settings.permissions;
-      await utils.updateSettings({permissions: Object.assign(permissions, newPermissions)});
+      await utils.updateSettings({permissions:newPermissions});
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative(user.username, user.password);
       const tabTexts = await element.all(by.css('.button-label')).getText();
