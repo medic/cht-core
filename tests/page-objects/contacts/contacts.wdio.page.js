@@ -1,11 +1,14 @@
 const genericForm = require('../forms/generic-form.wdio.page');
 const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
-const contentRowSelector = '#contacts-list .content-row';
+const contentRowSelector = '#contacts-list .content-row .heading h4 span';
 const contentRow = () => $(contentRowSelector);
 const contentRows = () => $$(contentRowSelector);
 const rowByText = async (text) => (await contentRow()).$(`span=${text}`);
 const reportFilterSelector = '.card.reports .table-filter a';
+const reportRowSelector = '#reports-list .content-row .heading h4 span';
+const reportRow = () => $(reportRowSelector);
+const reportRows = () => $$(reportRowSelector);
 const reportFilter = () => $(reportFilterSelector);
 const reportFilters = () => $$(reportFilterSelector);
 const taskFilterSelector = '.card.tasks .table-filter a';
@@ -88,6 +91,11 @@ const getTextForElements = async (elements) => {
   return Promise.all((await elements()).map(filter => filter.getText()));
 };
 
+const getAllReportsText = async () => {
+  await (await reportRow()).waitForDisplayed();
+  return getTextForElements(reportRows);
+};
+
 module.exports = {
   selectLHSRowByText,
   reportFilters,
@@ -98,5 +106,6 @@ module.exports = {
   addPerson,
   addPlace,
   topContact,
-  getPrimaryContactName
+  getPrimaryContactName,
+  getAllReportsText
 };
