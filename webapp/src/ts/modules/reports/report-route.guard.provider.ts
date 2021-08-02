@@ -23,7 +23,6 @@ export class ReportsAddDeactivationGuardProvider implements CanDeactivate<Report
     currentState:RouterStateSnapshot,
     nextState:RouterStateSnapshot,
   ) {
-    console.log(component.enketoEdited, component.cancelCallback);
     if (!component.enketoEdited || !component.cancelCallback) {
       return true;
     }

@@ -62,7 +62,7 @@ export class TasksGroupRouteGuardProvider implements CanDeactivate<TasksGroupCom
     currentState:RouterStateSnapshot,
     nextState:RouterStateSnapshot,
   ) {
-    if (!component.tasks || !component.cancelCallback) {
+    if (!component.tasks || !component.cancelCallback || !component.preventNavigation) {
       return true;
     }
 

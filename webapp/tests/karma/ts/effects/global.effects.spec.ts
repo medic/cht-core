@@ -21,13 +21,14 @@ describe('GlobalEffects', () => {
   let modalService;
   let store;
   let router;
+  let initialModalState;
+  let cancelCallback;
 
   beforeEach(async(() => {
     actions$ = new Observable<Action>();
     const mockedSelectors = [
-      { selector: Selectors.getEnketoSavingStatus, value: false },
-      { selector: Selectors.getEnketoEditedStatus, value: false },
-      { selector: Selectors.getCancelCallback, value: undefined },
+      { selector: Selectors.getEnketoStatus, value: { error: false, saving: false, form: false, edited: false } },
+      { selector: Selectors.getNavigation, value: { cancelCallback: undefined } },
     ];
 
     modalService = {
@@ -37,6 +38,9 @@ describe('GlobalEffects', () => {
     router = {
       navigate: sinon.stub(),
     };
+
+    initialModalState = { initialState: { model: { cancelMessage: undefined } } };
+    cancelCallback = sinon.stub();
 
     TestBed.configureTestingModule({
       declarations: [
@@ -85,73 +89,163 @@ describe('GlobalEffects', () => {
   });
 
   describe('navigationCancel', () => {
-    it('when saving, do nothing', async(() => {
-      const callback = sinon.stub();
-      store.overrideSelector(Selectors.getEnketoSavingStatus, true);
-      store.overrideSelector(Selectors.getCancelCallback, callback);
+    describe('for enketo forms', () => {
+      it('when saving, do nothing', async(() => {
+        store.overrideSelector(Selectors.getEnketoStatus, { form: true, saving: true, edited: true });
+        store.overrideSelector(Selectors.getNavigation, { cancelCallback });
 
-      actions$ = of(GlobalActionsList.navigationCancel('next'));
-      effects.navigationCancel.subscribe();
-      expect(callback.callCount).to.equal(0);
-      expect(modalService.show.callCount).to.equal(0);
-      expect(router.navigate.callCount).to.equal(0);
-    }));
+        actions$ = of(GlobalActionsList.navigationCancel('next'));
+        effects.navigationCancel.subscribe();
+        expect(cancelCallback.callCount).to.equal(0);
+        expect(modalService.show.callCount).to.equal(0);
+        expect(router.navigate.callCount).to.equal(0);
+      }));
 
-    it('when not saving and not edited and no cancelCallback', async(async () => {
-      actions$ = of(GlobalActionsList.navigationCancel('next'));
-      effects.navigationCancel.subscribe();
-      expect(modalService.show.callCount).to.equal(0);
-      await Promise.resolve(); // wait for modalService to resolve: means user clicks to confirm navigation
-      expect(router.navigate.callCount).to.equal(0);
-    }));
+      it('when not saving and not edited and no cancelCallback', async(async () => {
+        store.overrideSelector(Selectors.getEnketoStatus, { form: true, saving: false, edited: false });
+        actions$ = of(GlobalActionsList.navigationCancel('next'));
+        effects.navigationCancel.subscribe();
+        expect(modalService.show.callCount).to.equal(0);
+        await Promise.resolve(); // wait for modalService to resolve: means user clicks to confirm navigation
+        expect(router.navigate.callCount).to.equal(1);
+        expect(router.navigate.args[0]).to.deep.equal([['next']]);
+      }));
 
-    it('when not saving edited and no cancel callback and no route', async (async () => {
-      store.overrideSelector(Selectors.getEnketoEditedStatus, true);
-      actions$ = of(GlobalActionsList.navigationCancel(''));
-      effects.navigationCancel.subscribe();
-      expect(modalService.show.callCount).to.equal(1);
-      expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent]);
-      expect(router.navigate.callCount).to.equal(0);
-      await Promise.resolve(); // wait for modalService to resolve: means user clicks to confirm navigation
-      expect(router.navigate.callCount).to.equal(0);
-    }));
+      it('when not saving edited and no cancel callback and no route', async (async () => {
+        store.overrideSelector(Selectors.getEnketoStatus, { form: true, saving: false, edited: true });
+        actions$ = of(GlobalActionsList.navigationCancel(''));
+        effects.navigationCancel.subscribe();
+        expect(modalService.show.callCount).to.equal(1);
+        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
+        expect(router.navigate.callCount).to.equal(0);
+        await Promise.resolve(); // wait for modalService to resolve: means user clicks to confirm navigation
+        expect(router.navigate.callCount).to.equal(0);
+      }));
 
-    it('when not saving edited and no cancel callback and route', async (async () => {
-      store.overrideSelector(Selectors.getEnketoEditedStatus, true);
-      actions$ = of(GlobalActionsList.navigationCancel('next'));
-      effects.navigationCancel.subscribe();
-      expect(modalService.show.callCount).to.equal(1);
-      expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent]);
-      expect(router.navigate.callCount).to.equal(0);
-      await Promise.resolve(); // wait for modalService to resolve: means user clicks to confirm navigation
-      expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['next']]);
-    }));
+      it('when not saving edited and no cancel callback and route', async (async () => {
+        store.overrideSelector(Selectors.getEnketoStatus, { form: true, saving: false, edited: true });
+        actions$ = of(GlobalActionsList.navigationCancel('next'));
+        effects.navigationCancel.subscribe();
+        expect(modalService.show.callCount).to.equal(1);
+        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
+        expect(router.navigate.callCount).to.equal(0);
+        await Promise.resolve(); // wait for modalService to resolve: means user clicks to confirm navigation
+        expect(router.navigate.callCount).to.equal(0);
+        //expect(router.navigate.args[0]).to.deep.equal([['next']]);
+      }));
 
-    it('when not saving edited and cancel callback but user cancels modal', async (async () => {
-      const cancelCallback = sinon.stub();
-      modalService.show.rejects({ means: 'that user cancelled' });
-      store.overrideSelector(Selectors.getCancelCallback, cancelCallback);
-      store.overrideSelector(Selectors.getEnketoEditedStatus, true);
-      actions$ = of(GlobalActionsList.navigationCancel(''));
-      effects.navigationCancel.subscribe();
-      expect(modalService.show.callCount).to.equal(1);
-      expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent]);
-      expect(router.navigate.callCount).to.equal(0);
-      await Promise.resolve(); // wait for modalService to reject: means user clicks to cancel navigation
-      expect(router.navigate.callCount).to.equal(0);
-      expect(cancelCallback.callCount).to.equal(0);
-    }));
+      it('when not saving edited and cancel callback but user cancels modal', async (async () => {
+        modalService.show.rejects({ means: 'that user cancelled' });
+        store.overrideSelector(Selectors.getNavigation, { cancelCallback });
+        store.overrideSelector(Selectors.getEnketoStatus, { form: true, saving: false, edited: true });
+        actions$ = of(GlobalActionsList.navigationCancel(''));
+        effects.navigationCancel.subscribe();
+        expect(modalService.show.callCount).to.equal(1);
+        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
+        expect(router.navigate.callCount).to.equal(0);
+        await Promise.resolve(); // wait for modalService to reject: means user clicks to cancel navigation
+        expect(router.navigate.callCount).to.equal(0);
+        expect(cancelCallback.callCount).to.equal(0);
+      }));
 
-    it('when not saving, not edited and cancelCallback ', async(async () => {
-      const cancelCallback = sinon.stub();
-      store.overrideSelector(Selectors.getCancelCallback, cancelCallback);
-      actions$ = of(GlobalActionsList.navigationCancel('next'));
-      effects.navigationCancel.subscribe();
-      expect(cancelCallback.callCount).to.equal(1);
-      expect(cancelCallback.args[0]).to.deep.equal([]);
-      expect(modalService.show.callCount).to.equal(0);
-      expect(router.navigate.callCount).to.equal(0);
-    }));
+      it('when not saving, not edited and cancelCallback ', async(async () => {
+        store.overrideSelector(Selectors.getEnketoStatus, { form: true });
+        store.overrideSelector(Selectors.getNavigation, { cancelCallback });
+        actions$ = of(GlobalActionsList.navigationCancel(null));
+        effects.navigationCancel.subscribe();
+        expect(cancelCallback.callCount).to.equal(1);
+        expect(cancelCallback.args[0]).to.deep.equal([]);
+        expect(modalService.show.callCount).to.equal(0);
+        expect(router.navigate.callCount).to.equal(0);
+      }));
+    });
+
+    describe('for regular pages', () => {
+      it('when navigation is not prevented and with route', async(() => {
+        store.overrideSelector(Selectors.getNavigation, { cancelCallback });
+        actions$ = of(GlobalActionsList.navigationCancel('route'));
+        effects.navigationCancel.subscribe();
+        expect(cancelCallback.callCount).to.equal(0);
+        expect(modalService.show.callCount).to.equal(0);
+        expect(router.navigate.callCount).to.equal(1);
+        expect(router.navigate.args[0]).to.deep.equal([['route']]);
+      }));
+
+      it('when navigation is not prevented and no route', async(() => {
+        store.overrideSelector(Selectors.getNavigation, { cancelCallback });
+        actions$ = of(GlobalActionsList.navigationCancel(null));
+        effects.navigationCancel.subscribe();
+        expect(cancelCallback.callCount).to.equal(1);
+        expect(cancelCallback.args[0]).to.deep.equal([]);
+        expect(modalService.show.callCount).to.equal(0);
+        expect(router.navigate.callCount).to.equal(0);
+      }));
+
+      it('when navigation is not prevented and no route and no cancel callback', async(() => {
+        store.overrideSelector(Selectors.getNavigation, { });
+        actions$ = of(GlobalActionsList.navigationCancel(null));
+        effects.navigationCancel.subscribe();
+        expect(cancelCallback.callCount).to.equal(0);
+        expect(modalService.show.callCount).to.equal(0);
+        expect(router.navigate.callCount).to.equal(0);
+      }));
+
+      it('when navigation is prevented and user cancels modal', async(async () => {
+        store.overrideSelector(Selectors.getNavigation, { cancelCallback, preventNavigation: true });
+        modalService.show.rejects();
+        actions$ = of(GlobalActionsList.navigationCancel(null));
+        effects.navigationCancel.subscribe();
+
+        expect(cancelCallback.callCount).to.equal(0);
+        expect(router.navigate.callCount).to.equal(0);
+
+        await Promise.resolve(); // wait for modal cancel
+
+        expect(cancelCallback.callCount).to.equal(0);
+        expect(router.navigate.callCount).to.equal(0);
+        expect(modalService.show.callCount).to.equal(1);
+        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
+      }));
+
+      it('when navigation is prevented and user confirms modal with route', async(async () => {
+        store.overrideSelector(Selectors.getNavigation, { cancelCallback, preventNavigation: true });
+        modalService.show.rejects();
+        actions$ = of(GlobalActionsList.navigationCancel('path'));
+        effects.navigationCancel.subscribe();
+
+        expect(cancelCallback.callCount).to.equal(0);
+        expect(router.navigate.callCount).to.equal(0);
+
+        await Promise.resolve(); // wait for modal confirm
+
+        expect(cancelCallback.callCount).to.equal(0);
+        expect(router.navigate.callCount).to.equal(1);
+        expect(router.navigate.args[0]).to.deep.equal([['path']]);
+        expect(modalService.show.callCount).to.equal(1);
+        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
+      }));
+
+      it('when navigation is prevented and user confirms modal without route', async(async () => {
+        store.overrideSelector(Selectors.getNavigation, { cancelCallback, preventNavigation: true });
+        modalService.show.rejects();
+        actions$ = of(GlobalActionsList.navigationCancel(null));
+        effects.navigationCancel.subscribe();
+
+        expect(cancelCallback.callCount).to.equal(0);
+        expect(router.navigate.callCount).to.equal(0);
+
+        await Promise.resolve(); // wait for modal confirm
+
+        expect(cancelCallback.callCount).to.equal(1);
+        expect(cancelCallback.args[0]).to.deep.equal([]);
+        expect(router.navigate.callCount).to.equal(0);
+        expect(modalService.show.callCount).to.equal(1);
+        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
+      }));
+
+      it('should pass cancelMessage to modal', () => {
+
+      });
+    });
   });
 });

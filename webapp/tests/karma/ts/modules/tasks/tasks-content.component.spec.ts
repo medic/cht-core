@@ -360,7 +360,7 @@ describe('TasksContentComponent', () => {
   describe('perform action', () => {
     beforeEach(() => {
       sinon.stub(GlobalActions.prototype, 'setCancelCallback');
-      sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
+      sinon.stub(GlobalActions.prototype, 'clearNavigation');
       sinon.stub(TasksActions.prototype, 'setSelectedTask');
     });
 
@@ -397,7 +397,7 @@ describe('TasksContentComponent', () => {
       expect(component.form).to.equal(null);
       expect(component.loadingForm).to.equal(false);
       expect(component.contentError).to.equal(false);
-      expect((<any>GlobalActions.prototype.clearCancelCallback).callCount).to.equal(1);
+      expect((<any>GlobalActions.prototype.clearNavigation).callCount).to.equal(1);
       expect(router.navigate.callCount).to.equal(0);
     });
 
@@ -424,7 +424,7 @@ describe('TasksContentComponent', () => {
       expect(component.form).to.equal('someform');
       expect(component.loadingForm).to.equal(true);
       expect(component.contentError).to.equal(false);
-      expect((<any>GlobalActions.prototype.clearCancelCallback).callCount).to.equal(0);
+      expect((<any>GlobalActions.prototype.clearNavigation).callCount).to.equal(0);
 
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/tasks']]);
@@ -518,13 +518,13 @@ describe('TasksContentComponent', () => {
     let setEnketoError;
     let setEnketoSavingStatus;
     let unsetSelected;
-    let clearCancelCallback;
+    let clearNavigation;
 
     beforeEach(() => {
       setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
       setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
       unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
-      clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
+      clearNavigation = sinon.stub(GlobalActions.prototype, 'clearNavigation');
     });
 
     it('should do nothing if already saving', async () => {
@@ -568,7 +568,7 @@ describe('TasksContentComponent', () => {
 
       expect(setEnketoEditedStatus.callCount).to.equal(0);
       expect(enketoService.unload.callCount).to.equal(0);
-      expect(clearCancelCallback.callCount).to.equal(0);
+      expect(clearNavigation.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(0);
       expect(unsetSelected.callCount).to.equal(0);
       expect(consoleErrorMock.callCount).to.equal(1);
@@ -605,10 +605,10 @@ describe('TasksContentComponent', () => {
 
       expect(enketoService.unload.callCount).to.equal(1);
       expect(enketoService.unload.args[0]).to.deep.equal([{ the: 'form' }]);
-      expect(clearCancelCallback.callCount).to.equal(1);
+      expect(clearNavigation.callCount).to.equal(1);
 
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['/tasks']]);
+      expect(router.navigate.args[0]).to.deep.equal([['/tasks', 'group']]);
 
       expect(setEnketoError.callCount).to.equal(0);
       expect(unsetSelected.callCount).to.equal(1);

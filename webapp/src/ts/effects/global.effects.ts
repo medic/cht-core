@@ -37,7 +37,6 @@ export class GlobalEffects {
   );
 
   private cancelFormSubmission(nextUrl, enketoStatus, navigationStatus) {
-    console.error(navigationStatus);
     if (enketoStatus.saving) {
       // wait for save to finish
       return;
@@ -91,13 +90,12 @@ export class GlobalEffects {
         this.store.pipe(select(Selectors.getNavigation)),
       ),
       tap(([{ payload: { nextUrl } }, enketoStatus, navigationStatus]) => {
-        console.error(enketoStatus);
         if (enketoStatus.form) {
           return this.cancelFormSubmission(nextUrl, enketoStatus, navigationStatus);
         }
 
         if (!navigationStatus.preventNavigation) {
-          this.navigate(null, navigationStatus.cancelCallback);
+          return this.navigate(nextUrl, navigationStatus.cancelCallback);
         }
 
         return this
@@ -106,7 +104,7 @@ export class GlobalEffects {
             if (!confirm) {
               return;
             }
-            this.globalActions.setNavigation({ preventNavigation: false });
+            this.globalActions.setPreventNavigation(false);
             this.navigate(nextUrl, navigationStatus.cancelCallback);
           });
       }),

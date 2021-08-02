@@ -183,6 +183,15 @@ const _globalReducer = createReducer(
       }
     };
   }),
+  on(Actions.setPreventNavigation, (state, { payload: { preventNavigation } }) => {
+    return {
+      ...state,
+      navigation: {
+        ...state.navigation,
+        preventNavigation,
+      },
+    };
+  }),
   on(Actions.setLoadingSubActionBar, (state, { payload: { loading } }) => {
     return { ...state, loadingSubActionBar: loading };
   }),

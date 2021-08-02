@@ -32,6 +32,7 @@ export const Actions = {
   clearSelected: createAction('CLEAR_SELECTED'),
   setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
   setNavigation: createMultiValueAction('SET_NAVIGATION'),
+  setPreventNavigation: createSingleValueAction('SET_PREVENT_NAVIGATION', 'preventNavigation'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
   setLoadingSubActionBar: createSingleValueAction('SET_LOADING_SUB_ACTION_BAR', 'loading'),
   setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'),
@@ -136,6 +137,10 @@ export class GlobalActions {
 
   setNavigation({ cancelCallback, preventNavigation, cancelMessage }) {
     return this.store.dispatch(Actions.setNavigation({ cancelCallback, preventNavigation, cancelMessage }));
+  }
+
+  setPreventNavigation(preventNavigation) {
+    return this.store.dispatch(Actions.setPreventNavigation(preventNavigation));
   }
 
   clearNavigation() {

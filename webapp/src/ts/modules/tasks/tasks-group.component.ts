@@ -22,11 +22,13 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
   private leafPlaceTypes$;
   tasks:[];
   cancelCallback;
+  preventNavigation;
   loadingContent;
   contentError;
   errorTranslationKey;
   private lastCompletedTask;
   private activePlace;
+  private loaded = false;
 
   constructor(
     private route:ActivatedRoute,
@@ -42,70 +44,89 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.subscribeToRoute();
+    this.setNavigation();
     this.subscribeToStore();
     this.leafPlaceTypes$ = this.contactTypesService.getLeafPlaceTypes();
+  }
 
-    const cancelCallback = (router:Router) => {
+  private setNavigation(preventNavigation?:Boolean) {
+    const cancelCallback = (router:Router, globalActions) => {
+      globalActions.setPreventNavigation(false);
       return router.navigate(['/tasks']);
     };
 
     this.globalActions.setNavigation({
-      cancelCallback: cancelCallback.bind({}, this.router),
-      preventNavigation: true,
+      cancelCallback: cancelCallback.bind({}, this.router, this.globalActions),
       cancelMessage: 'task.group.leave',
+      preventNavigation,
     });
+  }
 
-
+  private navigationCancel(completed?:Boolean) {
+    if (completed) {
+      this.globalActions.setSnackbarContent(this.translateService.instant('tasks.group.complete'));
+    }
+    this.globalActions.navigationCancel();
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+    this.globalActions.clearNavigation();
+    this.globalActions.setLoadingContent(false);
+    this.globalActions.setShowContent(false);
   }
 
   private subscribeToStore() {
     const subscription = combineLatest(
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getCancelCallback),
+      this.store.select(Selectors.getPreventNavigation),
       this.store.select(Selectors.getLastCompletedTask),
       this.store.select(Selectors.getActiveTaskPlace),
     ).subscribe(([
       loadingContent,
       cancelCallback,
+      preventNavigation,
       lastCompletedTask,
-      getActiveTaskPlace,
+      activeTaskPlace,
     ]) => {
       this.loadingContent = loadingContent;
       this.cancelCallback = cancelCallback;
+      this.preventNavigation = preventNavigation;
+      this.lastCompletedTask = lastCompletedTask;
+      this.activePlace = activeTaskPlace;
+
+      if (!this.loaded) {
+        this.loaded = true;
+        return this.displayHouseholdTasks();
+      }
     });
+
     this.subscription.add(subscription);
   }
 
-  private subscribeToRoute() {
-    const routeSubscription = this.route.params.subscribe((params) => this.displayHouseholdTasks(params.id));
-    this.subscription.add(routeSubscription);
-  }
-
-  private async displayHouseholdTasks(contactId) {
+  private async displayHouseholdTasks() {
+    this.globalActions.setShowContent(true);
     this.globalActions.setLoadingContent(true);
+    this.globalActions.setTitle('tasks.for.household');
     this.tasks = [];
+
+    const contactId = this.lastCompletedTask?.actions?.[0]?.content?.contact?._id;
     if (!contactId) {
-      return;
+      return this.navigationCancel();
     }
 
     const contact = await this.displayTasksFor(contactId);
     if (!contact) {
-      this.globalActions.navigationCancel();
-      return;
+      return this.navigationCancel();
     }
 
     const tasks = await this.tasksForContactService.get(contact);
     if (!tasks || !tasks.length) {
-      this.globalActions.setSnackbarContent(this.translateService.instant('tasks.group.complete'));
-      this.globalActions.navigationCancel();
-      return;
+      return this.navigationCancel();
     }
 
+    this.setNavigation(true);
     this.tasks = tasks;
     this.globalActions.setLoadingContent(false);
   }

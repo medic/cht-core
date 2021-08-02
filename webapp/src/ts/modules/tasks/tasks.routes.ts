@@ -6,7 +6,7 @@ import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component
 import {
   TasksContentRouteGuardProvider,
   TasksGroupRouteGuardProvider
-} from '@mm-modules/tasks/tasks-route-guard.provider';
+} from '@mm-modules/tasks/tasks-route.guard.provider';
 import { TasksGroupComponent } from '@mm-modules/tasks/tasks-group.component';
 
 export const routes:Routes = [

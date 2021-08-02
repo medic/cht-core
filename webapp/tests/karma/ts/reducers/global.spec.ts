@@ -144,31 +144,31 @@ describe('Global Reducer', () => {
 
   it('should set correct enketo status', () => {
     state = globalReducer(state, Actions.setEnketoStatus({ edited: true }));
-    expect(state).to.deep.equal({ enketoStatus: { edited: true } });
+    expect(state).to.deep.equal({ enketoStatus: { edited: true, form: true } });
 
     state = globalReducer(state, Actions.setEnketoStatus({ saving: true }));
-    expect(state).to.deep.equal({ enketoStatus: { edited: true, saving: true }});
+    expect(state).to.deep.equal({ enketoStatus: { edited: true, saving: true, form: true }});
 
     state = globalReducer(state, Actions.setEnketoStatus({ saving: false, edited: false }));
-    expect(state).to.deep.equal({ enketoStatus: { edited: false, saving: false }});
+    expect(state).to.deep.equal({ enketoStatus: { edited: false, saving: false, form: true }});
 
     state = globalReducer(state, Actions.setEnketoStatus({ error: 'some error' }));
-    expect(state).to.deep.equal({ enketoStatus: { edited: false, saving: false, error: 'some error' }});
+    expect(state).to.deep.equal({ enketoStatus: { edited: false, saving: false, error: 'some error', form: true }});
   });
 
   it('should set cancel callback', () => {
     const callback = () => 'anything';
     state = globalReducer(state, Actions.setCancelCallback(callback));
-    expect(state).to.deep.equal({ cancelCallback: callback });
-    expect(state.cancelCallback()).to.equal('anything');
+    expect(state).to.deep.equal({ navigation: { cancelCallback: callback } });
+    expect(state.navigation.cancelCallback()).to.equal('anything');
 
     const otherCallback = () => 'otherthing';
     state = globalReducer(state, Actions.setCancelCallback(otherCallback));
-    expect(state).to.deep.equal({ cancelCallback: otherCallback });
-    expect(state.cancelCallback()).to.equal('otherthing');
+    expect(state).to.deep.equal({ navigation: { cancelCallback: otherCallback } });
+    expect(state.navigation.cancelCallback()).to.equal('otherthing');
 
     state = globalReducer(state, Actions.setCancelCallback(null));
-    expect(state).to.deep.equal({ cancelCallback: null });
+    expect(state).to.deep.equal({ navigation: { cancelCallback: null } });
   });
 
   it('should set right action bar', () => {

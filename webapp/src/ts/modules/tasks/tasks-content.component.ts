@@ -54,7 +54,6 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
   private enketoError;
   private enketoSaving;
   private viewInited = new Subject();
-  private selectedTaskAction;
 
   ngOnInit() {
     this.telemetryData = { preRender: Date.now() };
@@ -234,8 +233,6 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!action) {
       return;
     }
-
-    this.selectedTaskAction = action;
 
     if (skipDetails) {
       const cancelCallback = (tasksActions:TasksActions, router:Router) => {

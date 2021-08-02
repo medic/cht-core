@@ -100,7 +100,7 @@ describe('Reports Content Component', () => {
     it('should react correctly when route has id param', () => {
       const callback = activatedRoute.params.subscribe.args[0][0];
       const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
-      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
+      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearNavigation');
       const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
       activatedRoute.snapshot.params = { id: 'someID' };
 
@@ -114,7 +114,7 @@ describe('Reports Content Component', () => {
     it('should react correctly when route does not have id param', () => {
       const callback = activatedRoute.params.subscribe.args[0][0];
       const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
-      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
+      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearNavigation');
       const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
       activatedRoute.snapshot.params = { id: 'someID' };
 

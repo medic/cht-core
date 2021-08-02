@@ -20,7 +20,11 @@ const state = {
     forms: ['these', 'are', 'some', 'forms'],
     filters: { some: 'filters' },
     isAdmin: 'is it an admin',
-    cancelCallback: function() {},
+    navigation: {
+      cancelCallback: function() {},
+      cancelMessage: 'cancel message',
+      preventNavigation: 'prevent nav',
+    },
     title: 'the title',
     privacyPolicyAccepted: 'has accepted policy',
     showPrivacyPolicy: 'show policy',
@@ -171,7 +175,7 @@ describe('Selectors', () => {
     });
 
     it('should getCancelCallback', () => {
-      expect(Selectors.getCancelCallback(state)).to.deep.equal(clonedState.global.cancelCallback);
+      expect(Selectors.getCancelCallback(state)).to.deep.equal(clonedState.global.navigation.cancelCallback);
     });
 
     it('should getTitle', () => {

@@ -10,6 +10,7 @@ describe('TasksForContact service', () => {
 
   let fetchTaskDocsFor;
   let rulesEngineIsEnabled;
+  let contactTypesService;
   let service: TasksForContactService;
 
   const docId = 'dockyMcDocface';
@@ -19,12 +20,16 @@ describe('TasksForContact service', () => {
 
   beforeEach(() => {
     rulesEngineIsEnabled = sinon.stub().resolves(true);
-    const contactTypes = [ PERSON_TYPE, CLINIC_TYPE, HEALTH_CENTER_TYPE ];
     fetchTaskDocsFor = sinon.stub();
+    contactTypesService = {
+      getLeafPlaceTypes: sinon.stub().resolves([CLINIC_TYPE]),
+      isLeafPlaceType: sinon.stub().returns(false),
+    };
+    contactTypesService.isLeafPlaceType.withArgs([CLINIC_TYPE], CLINIC_TYPE.id).returns(true);
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: ContactTypesService, useValue: { getAll: sinon.stub().resolves(contactTypes) } },
+        { provide: ContactTypesService, useValue: contactTypesService },
         { provide: RulesEngineService, useValue: { isEnabled: rulesEngineIsEnabled, fetchTaskDocsFor } },
       ],
     });
@@ -52,14 +57,14 @@ describe('TasksForContact service', () => {
   for (const contactType of [PERSON_TYPE, CLINIC_TYPE]) {
     it(`displays tasks for contact-type ${contactType.id}`, async () => {
       const task = emissionAsDoc({ _id: 'aa', contact: { _id: docId } });
-      
+
       fetchTaskDocsFor.resolves([task]);
       const model = {
         doc: { _id: docId },
         children: [],
         type: contactType
       };
-  
+
       const tasks = await service.get(model);
       expect(fetchTaskDocsFor.args).to.deep.eq([[[docId]]]);
       expect(tasks).to.deep.eq([task]);
@@ -69,7 +74,7 @@ describe('TasksForContact service', () => {
   for (const contactType of [HEALTH_CENTER_TYPE]) {
     it(`does not display tasks for contact-type ${contactType.id}`, async () => {
       const task = emissionAsDoc({ _id: 'aa', contact: { _id: docId } });
-      
+
       fetchTaskDocsFor.resolves([task]);
       const model = {
         doc: { _id: docId },

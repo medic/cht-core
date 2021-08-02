@@ -17,6 +17,8 @@ describe('Tasks reducer', () => {
         tasksList: [],
         selected: null,
         loaded: false,
+        activePlace: null,
+        lastCompletedTask: null,
       });
     });
 
@@ -62,6 +64,8 @@ describe('Tasks reducer', () => {
         tasksList: [],
         selected: null,
         loaded: true,
+        activePlace: null,
+        lastCompletedTask: null,
       });
     });
 
@@ -107,6 +111,8 @@ describe('Tasks reducer', () => {
         tasksList: [],
         selected: selected,
         loaded: false,
+        activePlace: null,
+        lastCompletedTask: null,
       });
     });
 
@@ -160,6 +166,8 @@ describe('Tasks reducer', () => {
         tasksList: [],
         selected: null,
         loaded: false,
+        activePlace: null,
+        lastCompletedTask: null,
       });
     });
 
@@ -215,6 +223,8 @@ describe('Tasks reducer', () => {
       expect(state).to.deep.equal({
         selected: null,
         loaded: false,
+        activePlace: null,
+        lastCompletedTask: null,
         tasksList: [
           { _id: 'task9', dueDate: -100, state: 'Ready', field: 9 },
           { _id: 'task7', dueDate: 125, state: 'Ready', field: 7 },
