@@ -33,20 +33,23 @@ describe('generating short codes', () => {
   beforeEach(async () => await cookieLogin());
 
   before(async () => {
-    const forms = {
-      'CASEID': {'meta': {'code': 'CASEID', 'icon': 'icon-healthcare', 'translation_key': 'Case Id Form'},
-        'fields': {}, 'use_sentinel': true
+    const caseForm = {
+      CASEID: {meta: {code: 'CASEID', icon: 'icon-healthcare', translation_key: 'Case Id Form'},
+        fields: {}, use_sentinel: true
       }
     };
-    const registrations = [{'form': 'CASEID', 'events': [ { 'name': 'on_create', 'trigger': 'add_case' } ]}];
-
+    const CaseRegistration = [{form: 'CASEID', events: [ { name: 'on_create', trigger: 'add_case' } ]}];
+    const originalSettings = await utils.getSettings();
+    const transitions = Object.assign(originalSettings.transitions,{update_clinics: true, registration: true}) ;
     await utils.saveDocs(docs);
-    await utils.updateSettings({forms:forms, registrations:registrations,
-      transitions:{'update_clinics': true,'registration': true}},
+    await utils.updateSettings({
+      forms:caseForm,
+      registrations:CaseRegistration,
+      transitions: transitions},
     false, true);
   });
 
-  after(async () => await utils.deleteAllDocs());
+  after(async () => await utils.revertDb([], true, true));
 
   it('create case ID', async () => {
     await submit({

@@ -257,8 +257,8 @@ const setUserContactDoc = () => {
     }));
 };
 
-const revertDb = async (except, ignoreRefresh) => {
-  const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
+const revertDb = async (except, ignoreRefresh, wdio) => {
+  const watcher = ignoreRefresh && waitForSettingsUpdateLogs(wdio);
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
@@ -371,13 +371,14 @@ const deprecated = (name, replacement) => {
   }
 };
 
-const waitForSettingsUpdateLogs = (type) => {
+const waitForSettingsUpdateLogs = (type, wdio) => {
   if (type === 'sentinel') {
     return module.exports.waitForLogs(
       'sentinel.e2e.log',
       /Reminder messages allowed between/,
     );
   }
+  if(wdio){return;}
 
   return module.exports.waitForLogs(
     'api.e2e.log',
