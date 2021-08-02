@@ -56,6 +56,10 @@ describe('Test Contact Search Functionality', async () => {
     await commonPage.goToPeople();
   });
 
+  after(async () => {
+    await utils.revertDb([], true);
+  });
+
   it('search by NON empty string should display results with contains match and clears search', async () => {
     // Waiting for initial load
     await contactPage.getAllContactText();

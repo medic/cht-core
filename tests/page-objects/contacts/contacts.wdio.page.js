@@ -1,14 +1,14 @@
 const genericForm = require('../forms/generic-form.wdio.page');
 const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
-const contentRowSelector = '#contacts-list .content-row .heading h4 span';
+const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
-const contentRows = () => $$(contentRowSelector);
+const contentRowsText = () => $$(`${contentRowSelector} .heading h4 span`);
 const rowByText = async (text) => (await contentRow()).$(`span=${text}`);
 const reportFilterSelector = '.card.reports .table-filter a';
-const reportRowSelector = '#reports-list .content-row .heading h4 span';
+const reportRowSelector = '#reports-list .content-row';
 const reportRow = () => $(reportRowSelector);
-const reportRows = () => $$(reportRowSelector);
+const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 const reportFilter = () => $(reportFilterSelector);
 const reportFilters = () => $$(reportFilterSelector);
 const taskFilterSelector = '.card.tasks .table-filter a';
@@ -84,7 +84,7 @@ const getPrimaryContactName = async () => {
 
 const getAllContactText = async () => {
   await (await contentRow()).waitForDisplayed();
-  return getTextForElements(contentRows);
+  return getTextForElements(contentRowsText);
 };
 
 const getTextForElements = async (elements) => {
@@ -93,7 +93,7 @@ const getTextForElements = async (elements) => {
 
 const getAllReportsText = async () => {
   await (await reportRow()).waitForDisplayed();
-  return getTextForElements(reportRows);
+  return getTextForElements(reportRowsText);
 };
 
 module.exports = {
