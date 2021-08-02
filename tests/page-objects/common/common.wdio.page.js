@@ -6,6 +6,7 @@ const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const contactsPage = require('../contacts/contacts.wdio.page');
+const tabContent = () => $('.inner');
 const modal = require('./modal.wdio.page');
 const _ = require('lodash');
 
@@ -29,7 +30,7 @@ const getLogoutMessage = async () => {
 
 const goToBase = async (timeoutForBaseLoadMillis) => {
   await browser.url('/');
-  
+
   let waitForDisplayedConfig = {};
   if (_.isNumber(timeoutForBaseLoadMillis)) {
     waitForDisplayedConfig = { timeout: timeoutForBaseLoadMillis };
@@ -48,6 +49,11 @@ const goToPeople = async () => {
   await (await contactsPage.contactList()).waitForDisplayed();
 };
 
+const goToTab = async (tab) => {
+  await browser.url(`/#/${tab}`);
+  await (await tabContent()).waitForDisplayed();
+};
+
 module.exports = {
   logout,
   logoutButton,
@@ -56,6 +62,7 @@ module.exports = {
   analyticsTab,
   goToReports,
   goToPeople,
+  goToTab,
   getReportsButtonLabel,
   getMessagesButtonLabel,
   getTasksButtonLabel,

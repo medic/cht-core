@@ -262,7 +262,7 @@ const revertDb = async (except, ignoreRefresh) => {
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
-  
+
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || hasModal)) {
     watcher && watcher.cancel();
@@ -371,13 +371,14 @@ const deprecated = (name, replacement) => {
   }
 };
 
-const waitForSettingsUpdateLogs = (type) => {
+const waitForSettingsUpdateLogs = (type, wdio) => {
   if (type === 'sentinel') {
     return module.exports.waitForLogs(
       'sentinel.e2e.log',
       /Reminder messages allowed between/,
     );
   }
+  if(wdio){return;}
 
   return module.exports.waitForLogs(
     'api.e2e.log',
@@ -702,10 +703,10 @@ module.exports = {
    *                                       api logs, if value equals 'sentinel', will watch sentinel logs instead.
    * @return {Promise}        completion promise
    */
-  updateSettings: (updates, ignoreReload) => {
+  updateSettings: (updates, ignoreReload, wdio) => {
     const watcher = ignoreReload &&
       Object.keys(updates).length &&
-      waitForSettingsUpdateLogs(ignoreReload);
+      waitForSettingsUpdateLogs(ignoreReload,wdio);
 
     return updateSettings(updates).then(() => {
       if (!ignoreReload) {

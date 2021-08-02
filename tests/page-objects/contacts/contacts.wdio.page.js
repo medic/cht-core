@@ -28,6 +28,7 @@ const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][v
 const contactCard = () =>$('.card h2');
 
 
+
 const search = async (query) => {
   await (await searchBox()).setValue(query);
   await (await searchButton()).click();
