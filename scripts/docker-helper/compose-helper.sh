@@ -97,7 +97,7 @@ main (){
   if [ -z "$appStatus" ] && [ -z "$health" ] && [ "$self_signed" = "0" ]; then
     overAllHealth="Good"
   else
-    overAllHealth="*** Bad - see errors below ***"
+    overAllHealth="=== Bad - see below ==="
   fi
 
   window "CHT Docker Helper" "green" "50%"
