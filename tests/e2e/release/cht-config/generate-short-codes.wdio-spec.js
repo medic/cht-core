@@ -1,7 +1,7 @@
 const utils = require('../../../utils');
 const sUtils = require('../../sentinel/utils');
 const commonElements = require('../../../page-objects/common/common.wdio.page');
-const { cookieLogin } = require('../../../page-objects/login/login.wdio.page');
+const loginPage = require('../../../page-objects/login/login.wdio.page');
 const reportsPage = require('../../../page-objects/reports/reportsPage.wdio');
 const personFactory = require('../../../factories/cht/contacts/person');
 const place = require('../../../factories/cht/contacts/place');
@@ -30,26 +30,34 @@ describe('generating short codes', () => {
       body: body
     });
   };
-  beforeEach(async () => await cookieLogin());
 
   before(async () => {
+
     const caseForm = {
-      CASEID: {meta: {code: 'CASEID', icon: 'icon-healthcare', translation_key: 'Case Id Form'},
-        fields: {}, use_sentinel: true
+      CASEID: {
+        meta: {
+          code: 'CASEID', icon: 'icon-healthcare', translation_key: 'Case Id Form'
+        },
+        use_sentinel: true
       }
     };
-    const CaseRegistration = [{form: 'CASEID', events: [ { name: 'on_create', trigger: 'add_case' } ]}];
+
+    const CaseRegistration = [{ form: 'CASEID', events: [ { name: 'on_create', trigger: 'add_case' } ] }];
     const originalSettings = await utils.getSettings();
-    const transitions = Object.assign(originalSettings.transitions,{update_clinics: true, registration: true}) ;
+    const transitions = Object.assign(originalSettings.transitions,{ update_clinics: true, registration: true }) ;
+
     await utils.saveDocs(docs);
     await utils.updateSettings({
       forms:caseForm,
       registrations:CaseRegistration,
-      transitions: transitions},
-    false, true);
+      transitions: transitions
+    },
+    true);
+
+    await loginPage.cookieLogin();
   });
 
-  after(async () => await utils.revertDb([], true, true));
+  after(async () => await utils.revertDb([], true));
 
   it('create case ID', async () => {
     await submit({
@@ -61,11 +69,11 @@ describe('generating short codes', () => {
     await sUtils.waitForSentinel();
     await commonElements.goToReports();
     await (await reportsPage.firstReport()).click();
-    expect(await reportsPage.submitterName()).toMatch(contact.name);
-    expect(await reportsPage.submitterPhone()).toBe(contact.phone);
-    expect(await reportsPage.submitterPlace()).toBe(clinic.name);
-    expect(await reportsPage.getCaseIdLabel()).toBe('Case ID');
-    expect(await reportsPage.getCaseId()).toMatch(/^\d{5}$/);
+    expect(await (await reportsPage.submitterName()).getText()).toMatch(contact.name);
+    expect(await (await reportsPage.submitterPhone()).getText()).toBe(contact.phone);
+    expect(await (await reportsPage.submitterPlace()).getText()).toBe(clinic.name);
+    expect(await (await reportsPage.caseIdLabel()).getText()).toBe('Case ID');
+    expect(await (await reportsPage.caseId()).getText()).toMatch(/^\d{5}$/);
   });
 });
 

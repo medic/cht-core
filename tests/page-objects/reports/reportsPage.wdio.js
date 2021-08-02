@@ -1,13 +1,17 @@
 const reportListID = '#reports-list';
 const caseId = () => $(`li.indent-0 p span a`);
 const caseIdLabel = () => $('li.indent-0 label span');
+const submitterPlace = () => $('.position a');
+const submitterPhone = () => $('.sender .phone');
+const submitterName = () => $('.sender .name');
+const  firstReport = () => $(`${reportListID} li:first-child`);
 
 module.exports = {
-  firstReport: () => $(`${reportListID} li:first-child`),
-  submitterName: async () => await (await $('.sender .name')).getText(),
-  submitterPhone: async () => await (await $('.sender .phone')).getText(),
-  submitterPlace: async () => await (await $('.position a')).getText(),
-  getCaseId: async () =>  (await caseId()).getText(),
-  getCaseIdLabel: async () => (await caseIdLabel()).getText(),
+  firstReport,
+  submitterName,
+  submitterPhone,
+  submitterPlace,
+  caseId,
+  caseIdLabel
 };
 

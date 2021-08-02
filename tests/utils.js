@@ -257,8 +257,8 @@ const setUserContactDoc = () => {
     }));
 };
 
-const revertDb = async (except, ignoreRefresh, wdio) => {
-  const watcher = ignoreRefresh && waitForSettingsUpdateLogs(wdio);
+const revertDb = async (except, ignoreRefresh) => {
+  const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
@@ -371,14 +371,13 @@ const deprecated = (name, replacement) => {
   }
 };
 
-const waitForSettingsUpdateLogs = (type, wdio) => {
+const waitForSettingsUpdateLogs = (type) => {
   if (type === 'sentinel') {
     return module.exports.waitForLogs(
       'sentinel.e2e.log',
       /Reminder messages allowed between/,
     );
   }
-  if(wdio){return;}
 
   return module.exports.waitForLogs(
     'api.e2e.log',
@@ -703,14 +702,13 @@ module.exports = {
    *                                       api logs, if value equals 'sentinel', will watch sentinel logs instead.
    * @return {Promise}        completion promise
    */
-  updateSettings: (updates, ignoreReload,wdio) => {
+  updateSettings: (updates, ignoreReload) => {
     const watcher = ignoreReload &&
       Object.keys(updates).length &&
       waitForSettingsUpdateLogs(ignoreReload);
 
     return updateSettings(updates).then(() => {
       if (!ignoreReload) {
-        if(wdio){return;}
         return refreshToGetNewSettings();
       }
       return watcher && watcher.promise;
