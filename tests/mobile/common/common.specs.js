@@ -4,7 +4,7 @@ const loginPage = require('../../page-objects/login/login.po');
 
 describe('Navigation tests : ', () => {
   beforeEach(utils.beforeEach);
-  afterAll(utils.revertDb());
+  afterAll(async () => await utils.revertDb());
 
   it('should open Messages tab', async () => {
     await commonElements.goToMessagesNative();
