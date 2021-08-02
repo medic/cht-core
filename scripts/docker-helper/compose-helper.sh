@@ -17,14 +17,19 @@
 #. `dirname $0`/helper_helpers.sh
 
 get_lan_ip(){
-  routerIP=$(ip r | grep default | awk '{print $3}')
+  routerIP=$(ip r | grep default | head -n1 | awk '{print $3}')
   subnet=$(echo $routerIP|cut -d'.' -f1,2,3)
-  lanInterface=$(ip r | grep $subnet| grep default | cut -d' ' -f 5)
-  lanAddress=$(ip a s $lanInterface | awk '/inet /{gsub(/\/.*/,"");print $2}')
-  lanHostname=$(getent hosts $lanAddress | awk '{print $2}')
-#    echo "lanHostname $lanHostname"
-#    echo "routerIP $routerIP"
-#    echo "LAN Interfact $lanInterface"
+  if [ -z $subnet ];then
+    subnet=127.0.0
+  fi
+  lanInterface=$(ip r | grep $subnet| grep default | head -n1 | cut -d' ' -f 5)
+  lanAddress=$(ip a s $lanInterface | awk '/inet /{gsub(/\/.*/,"");print $2}' | head -n1)
+#  lanHostname=$(getent hosts $lanAddress | awk '{print $2}')
+
+#  echo "routerIP $routerIP"
+#  echo "subnet $subnet"
+#  echo "lanInterface $lanInterface"
+#  echo "lanHostname $lanHostname"
   echo "$lanAddress"
 }
 
@@ -85,7 +90,7 @@ main (){
   lanPort="443"
   chtUrl="`get_local_ip_url`"
 
-  appsString="ip;docker;horti;docker-compose;docker;nc"
+  appsString="ip;docker;docker-compose;nc;curl"
   appStatus=`required_apps_installed $appsString`
   health="`cht_healthy $lanAddress $lanPort $chtUrl`"
   if [ -n "$health" ]; then
@@ -97,7 +102,7 @@ main (){
   if [ -z "$appStatus" ] && [ -z "$health" ] && [ "$self_signed" = "0" ]; then
     overAllHealth="Good"
   else
-    overAllHealth="=== Bad - see below ==="
+    overAllHealth="!= Bad =!"
   fi
 
   window "CHT Docker Helper" "green" "50%"
@@ -109,7 +114,8 @@ main (){
 
   if [ -n "$appStatus" ]; then
     window "WARNING: Missing Apps" "red" "50%"
-    append "Please install these before proceeding $appStatus"
+    append "Please install these before proceeding:"
+    append "$appStatus"
     endwin
   fi
 
@@ -125,8 +131,6 @@ main (){
     append "Please install a valid certificate"
     endwin
   fi
-
-
 
 }
 main_loop -t 0.5 "$@"
