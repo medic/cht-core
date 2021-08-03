@@ -928,10 +928,10 @@ module.exports = {
   refreshToGetNewSettings: refreshToGetNewSettings,
   closeReloadModal: closeReloadModal,
 
-  closeTour: async (timeout = 10000) => {
+  closeTour: async () => {
     const closeButton = element(by.css('#tour-select a.btn.cancel'));
     try {
-      await browser.wait(protractor.ExpectedConditions.visibilityOf(closeButton), timeout);
+      await browser.wait(protractor.ExpectedConditions.visibilityOf(closeButton), 10000);
       await browser.wait(protractor.ExpectedConditions.elementToBeClickable(closeButton), 1000);
       await closeButton.click();
       // wait for the request to the server to execute

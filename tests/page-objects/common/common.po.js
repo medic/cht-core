@@ -62,12 +62,12 @@ module.exports = {
     await helper.waitUntilReady(medicLogo);
   },
 
-  calmNative: async (timeout = 20000) => {
+  calmNative: async () => {
     // const bootstrapperSelector = by.css('.bootstrap-layer');
     // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
     // await helper.waitElementToPresent(element(bootstrapperSelector));
     // await helper.waitElementToDisappear(bootstrapperSelector);
-    await helper.waitUntilReadyNative(medicLogo, timeout);
+    await helper.waitUntilReadyNative(medicLogo);
   },
 
   checkAbout: async () => {

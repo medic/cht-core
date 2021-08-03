@@ -330,9 +330,8 @@ module.exports = {
     );
   },
 
-  waitUntilReadyNative: (elm, timeout = 10000) => {
-    return browser.wait(EC.visibilityOf(elm), timeout,
-      'visibilityOf failed in ${timeout/1000} seconds ' + elm.locator());
+  waitUntilReadyNative: elm => {
+    return browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
   },
 
   waitUntilTranslated: elm => {
