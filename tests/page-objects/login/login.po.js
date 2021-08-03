@@ -1,7 +1,5 @@
 const { browser } = require('protractor');
 const helper = require('../../helper');
-const utils = require('../../utils');
-const commonPo = require('../common/common.po');
 
 const incorrectCredentialsText =
   'Incorrect user name or password. Please try again.';
