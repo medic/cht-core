@@ -123,9 +123,9 @@ describe('Navigation tests : ', () => {
       //change permissions
       await utils.updateSettings({permissions:newPermissions});
       await commonElements.goToLoginPageNative();
+      await loginPage.loginNative(user.username, user.password);
       await commonElements.waitForLoaderToDisappear(200000);
       await utils.closeTour();
-      await loginPage.loginNative(user.username, user.password);
       const tabTexts = await element.all(by.css('.button-label')).getText();
       expect(tabTexts.length).toBe(3);
       expect(tabTexts).toEqual([ 'Messages','Reports', 'People']);
