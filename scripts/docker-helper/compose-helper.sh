@@ -86,12 +86,11 @@ cht_healthy(){
 }
 
 main (){
-  envFile=$1
   lanAddress="`get_lan_ip`"
   lanPort="443"
   chtUrl="`get_local_ip_url`"
 
-  appsString="ip;docker;docker-compose;nc;curl;foo"
+  appsString="ip;docker;docker-compose;nc;curl"
   appStatus=`required_apps_installed $appsString`
   health="`cht_healthy $lanAddress $lanPort $chtUrl`"
   if [ -n "$health" ]; then
@@ -146,5 +145,4 @@ main (){
 
 }
 
-echo "input: $1"
-main_loop -t 0.5 "$@"
+main_loop -t 0.5 $@

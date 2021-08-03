@@ -684,11 +684,13 @@ parse_args (){
     VERBOSE=1
     BSC_TITLECROP=0
     time=1
+    envFile='Env file not set'
     while [[ $# -gt 0 ]]; do
         # shellcheck disable=SC2034
         case "$1" in
         -c | --crop )        BSC_TITLECROP=1; shift 1 ;;
         -h | --help )        usage; exit 0 ;;
+        -e | --env-file )    envFile=$2; shift 2 ;;
         -q | --quiet )       VERBOSE=0; shift 1 ;;
         -s | --scroll )      BSC_MODE=scroll; shift 1 ;;
         -t | --time )        time=$2; shift 2 ;;
