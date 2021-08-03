@@ -35,7 +35,7 @@ get_lan_ip(){
 
 get_local_ip_url(){
   cookedLanAddress=$(echo "`get_lan_ip`"|tr . -)
-  url="https://${cookedLanAddress}.my.local-ip.co"
+  url="https://${cookedLanAddress}.my.local-ip.co:${CHT_HTTPS}"
   echo "$url"
 }
 
@@ -85,14 +85,58 @@ cht_healthy(){
   fi
 }
 
+validate_env_file(){
+  envFile=$1
+  if [ ! -f "$envFile" ]; then
+    echo "File not found: $envFile"
+    return 0
+  fi
+
+  # shellcheck source=/dev/null
+  . "$envFile"
+  if [ -z "$COMPOSE_PROJECT_NAME" ] || [ -z "$CHT_HTTP" ] || [ -z "$CHT_HTTPS" ]; then
+    echo "Missing env value in file: COMPOSE_PROJECT_NAME, CHT_HTTP or CHT_HTTPS"
+    return 0
+  fi
+
+  return 0
+}
+
+get_container_count(){
+  project=$1
+  # todo - don't hard code this ;)
+  result=$(docker ps -a|grep -Ec 'another3_medic-os_|another3_haproxy_')
+  echo "$result"
+}
+
+volume_exists(){
+  project=$1
+  return "$(docker volume ls|grep -c "${project}"_medic_data)"
+}
+
 main (){
-  lanAddress="`get_lan_ip`"
-  lanPort="443"
-  chtUrl="`get_local_ip_url`"
+
+  validEnv="`validate_env_file $envFile`"
+  if [ -n "$validEnv" ]; then
+    window "CHT Docker Helper - WARNING - Missing or invalid .env File" "red" "100%"
+    append "$validEnv"
+    endwin
+    return 0
+  fi
+
+  if [ -z "$validEnv" ]; then
+    # shellcheck source=/dev/null
+    . "$envFile"
+  fi
+
+
 
   appsString="ip;docker;docker-compose;nc;curl"
+  lanAddress="`get_lan_ip`"
+  chtUrl="`get_local_ip_url`"
   appStatus=`required_apps_installed $appsString`
-  health="`cht_healthy $lanAddress $lanPort $chtUrl`"
+  health="`cht_healthy $lanAddress $CHT_HTTPS $chtUrl`"
+
   if [ -n "$health" ]; then
     self_signed=0
   else
@@ -106,19 +150,13 @@ main (){
   fi
 
   window "CHT Docker Helper" "green" "100%"
+  append_tabbed "PROJECT|$COMPOSE_PROJECT_NAME" 2 "|"
+  append_tabbed "" 2 "|"
   append_tabbed "LAN IP|$lanAddress" 2 "|"
   append_tabbed "CHT URL|$chtUrl" 2 "|"
   append_tabbed "" 2 "|"
   append_tabbed "CHT Health|$overAllHealth" 2 "|"
   endwin
-
-  if [ ! -f "$envFile" ]; then
-    window "WARNING: Missing .env File" "red" "100%"
-    append "Environment file not found:"
-    append "$envFile"
-    endwin
-    return 0
-  fi
 
   if [ -n "$appStatus" ]; then
     window "WARNING: Missing Apps" "red" "100%"
