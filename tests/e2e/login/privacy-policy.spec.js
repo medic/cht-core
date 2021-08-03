@@ -161,6 +161,7 @@ describe('Privacy policy', () => {
       // Update privacy policies
       const newPolicyText = 'Cette text est totalement different c`est fois!';
       await privacyPolicyPage.updatePrivacyPolicy('privacy-policies', 'fr_attachment', newPolicyText);
+      await utils.closeTour();
       await commonElements.syncNative();
       await browser.driver.navigate().refresh();
 
