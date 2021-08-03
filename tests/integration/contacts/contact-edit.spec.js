@@ -4,7 +4,7 @@ const placeFactory = require('../../factories/cht/contacts/place');
 const {expect} = require('chai');
 
 describe('Editing contacts ', () => {
-  const district = placeFactory.generateHierarchy(['district_hospital'])[0];
+  const district = placeFactory.place().build({type:'district_hospital'});
   const originalContact = personFactory.build(
     {
       parent: {
