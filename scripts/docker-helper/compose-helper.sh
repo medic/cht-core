@@ -86,11 +86,12 @@ cht_healthy(){
 }
 
 main (){
+  envFile=$1
   lanAddress="`get_lan_ip`"
   lanPort="443"
   chtUrl="`get_local_ip_url`"
 
-  appsString="ip;docker;docker-compose;nc;curl"
+  appsString="ip;docker;docker-compose;nc;curl;foo"
   appStatus=`required_apps_installed $appsString`
   health="`cht_healthy $lanAddress $lanPort $chtUrl`"
   if [ -n "$health" ]; then
@@ -105,32 +106,45 @@ main (){
     overAllHealth="!= Bad =!"
   fi
 
-  window "CHT Docker Helper" "green" "50%"
+  window "CHT Docker Helper" "green" "100%"
   append_tabbed "LAN IP|$lanAddress" 2 "|"
   append_tabbed "CHT URL|$chtUrl" 2 "|"
   append_tabbed "" 2 "|"
   append_tabbed "CHT Health|$overAllHealth" 2 "|"
   endwin
 
+  if [ ! -f "$envFile" ]; then
+    window "WARNING: Missing .env File" "red" "100%"
+    append "Environment file not found:"
+    append "$envFile"
+    endwin
+    return 0
+  fi
+
   if [ -n "$appStatus" ]; then
-    window "WARNING: Missing Apps" "red" "50%"
-    append "Please install these before proceeding:"
+    window "WARNING: Missing Apps" "red" "100%"
+    append "Install before proceeding:"
     append "$appStatus"
     endwin
+    return 0
   fi
 
   if [ -n "$health" ]; then
-    window "WARNING: CHT Not running" "red" "50%"
+    window "WARNING: CHT Not running" "red" "100%"
     append "Please try restarting the docker-compose command"
     append "$health"
     endwin
+    return 0
   fi
 
   if [ "$self_signed" = "1" ]; then
-    window "WARNING: CHT has self signed certificate" "red" "50%"
+    window "WARNING: CHT has self signed certificate" "red" "100%"
     append "Please install a valid certificate"
     endwin
+    return 0
   fi
 
 }
+
+echo "input: $1"
 main_loop -t 0.5 "$@"
