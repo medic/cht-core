@@ -64,11 +64,10 @@ module.exports = {
     await changeLocale(locale);
     await helper.clickElementNative(getLoginButton());
     if (shouldFail) {
-      return await browser.wait(() => helper.isTextDisplayed(incorrectCredentialsText), 2000);
+      await browser.wait(() => helper.isTextDisplayed(incorrectCredentialsText), 2000);
     }
-    await commonPo.waitForLoaderToDisappear(20000);
-    await utils.closeTour();
   },
+
   returnToLogin: () => element(by.css('.btn[href="/medic/login"]')),
 
   getAllLocales: async () => await getLanguage('.locale'),
