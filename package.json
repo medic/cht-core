@@ -16,7 +16,8 @@
     "webdriver": "webdriver-manager update && webdriver-manager start",
     "wdio-local": "rm -rf allure-results allure-report && grunt e2e-env-setup && wdio run ./tests/wdio.conf.js",
     "e2e-integration": "mocha --config tests/integration/.mocharc.js ",
-    "wdio": "wdio run ./tests/wdio.conf.js"
+    "wdio": "wdio run ./tests/wdio.conf.js",
+    "wdio-standard": "rm -rf allure-results allure-report && grunt e2e-env-setup && wdio run ./tests/wdio-standard.conf.js"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^10.0.1",

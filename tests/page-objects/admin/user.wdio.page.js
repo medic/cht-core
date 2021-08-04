@@ -12,6 +12,7 @@ const logoutButton = () => $('i.fa-power-off');
 const select2SearchInputBox = () => $('//input[@aria-controls="select2-facilitySelect-results"]');
 const select2Name = () => $('.name');
 const select2SearchContactInputBox = () => $('//input[@aria-controls="select2-contactSelect-results"]');
+const userPhoneNumber = () => $('input#phone');
 
 const goToAdminUser = async () => {
   await browser.url('/admin/#/users');
@@ -23,9 +24,11 @@ const openAddUserDialog = async () => {
   await (await addUserDialog()).waitForDisplayed();
 };
 
-const inputAddUserFields = async (username, fullname, role, place, associatedContact, password) => {
+const inputAddUserFields = async (username, fullname, role, place, 
+  associatedContact, password, phoneNumber = '+12063348676') => {
   await (await userName()).addValue(username);
   await (await userFullName()).addValue(fullname);
+  await (await userPhoneNumber()).addValue(phoneNumber);
   await (await userRole()).setValue(role);
   await selectPlace(place);
   await selectContact(associatedContact);

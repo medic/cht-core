@@ -14,8 +14,9 @@
     <span class="help-block" ng-if="errors.from" translate>{{errors.from}}</span>
   </div>
 
-  <a class="btn btn-primary" ng-click="submit()" ng-disabled="saving" translate>Send Message</a>
-  <span translate ng-if="success">report.created</span>
-  <span translate ng-if="failure">Error sending message</span>
+  <a class="btn btn-primary" ng-click="submit()" ng-disabled="saving" translate test-id="sms-test-btn">Send Message</a>
+  <span translate test-id="report-submitted-msg" ng-if="success">report.created</span>
+  <span translate test-id="report-failure-msg" ng-if="failure">Error sending message</span>
 
 </form>
+
