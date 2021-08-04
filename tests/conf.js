@@ -16,13 +16,12 @@ const baseConfig = {
     web: [
       'e2e/!(cht)/**/*.js',
       'e2e/*.js',
-      'mobile/**/*.js',
       'medic-conf/**/*.js'
     ],
     cht: [
       'e2e/cht/*.spec.js'
     ],
-    mobile: [],
+    mobile: ['mobile/**/*.js'],
     // performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',

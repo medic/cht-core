@@ -39,7 +39,7 @@ const selectedPreferenceHeading = element(by.css('#language-preference-heading >
 const messagesLanguage = element(by.css('.locale a.selected span.rectangle'));
 const defaultLanguage=  element(by.css('.locale-outgoing a.selected span.rectangle'));
 
-const waitForLoaderToDisappear = async (timeout) => {
+const waitForLoaderToDisappear = async (timeout = 10000) => {
   try {
     await helper.waitElementToDisappear(by.css('.loader', timeout));
   } catch(err) {
@@ -142,11 +142,9 @@ module.exports = {
 
   goToAnalytics: async () => {
     await analyticsTab.click();
-    await helper.waitUntilReadyNative(medicLogo);
   },
 
   goToConfiguration: async () => {
-    await helper.waitUntilReadyNative(medicLogo);
     await browser.get(utils.getAdminBaseUrl());
   },
 
@@ -170,13 +168,11 @@ module.exports = {
 
   goToMessagesNative: async () => {
     await browser.get(utils.getBaseUrl() + 'messages/');
-    await helper.waitUntilReadyNative(medicLogo);
     await helper.waitUntilReadyNative(element(by.id('message-list')));
   },
 
   goToPeople: async () => {
     await browser.get(utils.getBaseUrl() + 'contacts/');
-    await helper.waitUntilReadyNative(medicLogo);
     await helper.waitUntilReadyNative(element(by.id('contacts-list')));
   },
 
@@ -231,13 +227,11 @@ module.exports = {
 
   goToTasks: async () => {
     await browser.get(utils.getBaseUrl() + 'tasks/');
-    await helper.waitUntilReadyNative(medicLogo);
     await helper.waitUntilReadyNative(element(by.id('tasks-list')));
   },
 
   isAt: async (list) => {
-    await helper.waitUntilReadyNative(medicLogo);
-    return element(by.id(list)).isPresent();
+    return await element(by.id(list)).isPresent();
   },
 
   logout: async () => {

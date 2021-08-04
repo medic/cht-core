@@ -1,5 +1,6 @@
 const commonElements = require('../../page-objects/common/common.po.js');
 const utils = require('../../utils');
+const auth = require('../../auth')();
 const loginPage = require('../../page-objects/login/login.po');
 
 describe('Navigation tests : ', () => {
@@ -84,17 +85,6 @@ describe('Navigation tests : ', () => {
       roles: ['program_officer']
     };
 
-    const newPermissions =  {
-      can_view_messages: ['program_officer'],
-      can_view_messages_tab: ['program_officer'],
-      can_view_reports: ['program_officer'],
-      can_view_reports_tab: ['program_officer'],
-      can_view_contacts: ['program_officer'],
-      can_view_contacts_tab: ['program_officer'],
-      can_view_analytics: [],
-      can_view_nalytics_tab: []
-    };
-
     let originalTimeout;
 
     beforeEach(async () =>await utils.beforeEach());
@@ -102,15 +92,17 @@ describe('Navigation tests : ', () => {
     beforeAll(async () => {
       originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
       jasmine.DEFAULT_TIMEOUT_INTERVAL = 2 * 60 * 1000;
-      await browser.driver.manage().window().setSize(389, 500);
       await utils.saveDoc(district);
       await utils.createUsers([user]);
     });
 
     afterAll(async () => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-      await browser.driver.manage().window().setSize(1024,768);
-      await utils.revertDb();
+      await utils.deleteUsers([user]);
+      await utils.revertSettings();
+      await commonElements.goToLoginPageNative();
+      await loginPage.loginNative(auth.username, auth.password);
+      await commonElements.waitForLoaderToDisappear();
     });
 
     it('No tab text labels displayed  on mobile view for over 3 tabs', async () => {
@@ -121,10 +113,18 @@ describe('Navigation tests : ', () => {
 
     it('Display page tab text labels even on mobile view, whenever there are 3 or fewer tabs', async () => {
       //change permissions
-      await utils.updateSettings({permissions:newPermissions});
+      const originalSettings = await utils.getSettings();
+      const permissions = originalSettings.permissions;
+      await utils.updateSettings({ permissions:Object.assign(permissions, {
+        can_view_analytics: [],
+        can_view_analytics_tab: [],
+        can_view_tasks: [],
+        can_view_tasks_tab: []
+      })});
+
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative(user.username, user.password);
-      await commonElements.waitForLoaderToDisappear(200000);
+      await commonElements.waitForLoaderToDisappear();
       await utils.closeTour();
       const tabTexts = await element.all(by.css('.button-label')).getText();
       expect(tabTexts.length).toBe(3);
