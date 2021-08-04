@@ -125,6 +125,22 @@ volume_exists(){
   fi
 }
 
+get_docker_compose_yml_path(){
+  if [ -f docker-compose-developer.yml ]; then
+    echo "docker-compose-developer.yml"
+  elif [ -f ../../docker-compose-developer.yml ]; then
+    echo "../../docker-compose-developer.yml"
+  else
+    return 0
+  fi
+}
+
+docker_up(){
+  envFile=$1
+  composeFile=$2
+  docker-compose --env-file ${envFile} -f ${composeFile} up -d 2>&1
+}
+
 main (){
 
   validEnv="`validate_env_file $envFile`"
@@ -143,6 +159,7 @@ main (){
   chtUrl="`get_local_ip_url`"
   appStatus=`required_apps_installed $appsString`
   health="`cht_healthy $lanAddress $CHT_HTTPS $chtUrl`"
+  dockerComposePath="`get_docker_compose_yml_path`"
 
   if [ -n "$health" ]; then
     self_signed=0
@@ -173,28 +190,33 @@ main (){
     return 0
   fi
 
-  ## todo - just download it for them!
-  if [ ! -f docker-compose-developer.yml ]; then
+  ## todo - just download it for them?
+  # curl -o docker-compose-developer.yml https://raw.githubusercontent.com/medic/cht-core/master/docker-compose-developer.yml
+  if [ -z "$dockerComposePath" ]; then
     window "WARNING: Missing Compose File " "red" "100%"
-    append "Download before proceeding: docker-compose-developer.yml"
+    append "Download before proceeding: "
+    append "wget https://github.com/medic/cht-core/blob/master/docker-compose-developer.yml"
     endwin
     return 0
   fi
 
-  ## todo - this doesn't work
-  if [ -n "$volumeExists" ]; then
-    window "Volume non-existant - please wait while booting..." "yellow" "100%"
-    append "$volumeExists"
-    if [ $sleep -eq 200 ];then
-      (( sleep-- ))
-       docker-compose -d --env-file ${envFile} -f docker-compose-developer.yml up
+  if [ -n "$volumeExists" ] || [[ "$sleep" > 0 ]]; then
+    window "Volume for project $COMPOSE_PROJECT_NAME missing - please wait while booting..." "yellow" "100%"
+#    append "Waiting $sleep..."
+#    append "Reboot Count $reboot_count"
+    endwin
+
+    # only boot and sleep once
+    if [[ "$reboot_count" = 0 ]]; then
+      sleep=60
+      docker_up $envFile $dockerComposePath &
+      (( reboot_count++ ))
     fi
 
-    (( sleep-- ))
-    echo "Waiting $sleep..."
-    echo "$sleep"
+    if [[ "$sleep" > 0 ]]; then
+      (( sleep-- ))
+    fi
 
-    endwin
     return 0
   fi
 
