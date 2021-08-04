@@ -72,7 +72,7 @@ const addPerson = async (name, dob = '2000-01-01') => {
   await (await personSexField()).click();
   await (await notes('person')).addValue('some person notes');
   await (await genericForm.submitButton()).click();
-  await (await genericForm.submitButton()).waitForDisplay({ reverse: true });
+  await (await genericForm.submitButton()).waitForDisplayed({ reverse: true });
   await selectLHSRowByText(name);
   return (await contactCard()).getText();
 };
