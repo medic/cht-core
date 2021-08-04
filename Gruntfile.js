@@ -982,7 +982,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('e2e-integration', 'Deploy app for testing', [
-    'exec:e2e-env-setup',
+    'e2e-env-setup',
     'exec:e2e-integration'
   ]);
 
