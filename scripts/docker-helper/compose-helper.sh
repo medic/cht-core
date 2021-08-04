@@ -135,10 +135,10 @@ get_docker_compose_yml_path(){
   fi
 }
 
-docker_up(){
+docker_up_or_restart(){
   envFile=$1
   composeFile=$2
-  docker-compose --env-file ${envFile} -f ${composeFile} up -d 2>&1
+  docker-compose --env-file ${envFile} -f ${composeFile} restart -d > /dev/null 2>&1
 }
 
 main (){
@@ -200,24 +200,17 @@ main (){
     return 0
   fi
 
-  if [ -n "$volumeExists" ] || [[ "$sleep" > 0 ]]; then
-    window "Volume for project $COMPOSE_PROJECT_NAME missing - please wait while booting..." "yellow" "100%"
-#    append "Waiting $sleep..."
-#    append "Reboot Count $reboot_count"
+  if [ -n "$volumeExists" ] && [[ "$reboot_count" = 0 ]]; then
+    sleep=30
+    docker_up_or_restart $envFile $dockerComposePath &
+    (( reboot_count++ ))
+  fi
+
+  if [[ "$sleep" > 0 ]]; then
+    window "Attempting to boot $COMPOSE_PROJECT_NAME for $reboot_count time" "yellow" "100%"
+    append "Waiting $sleep..."
     endwin
-
-    # only boot and sleep once
-    if [[ "$reboot_count" = 0 ]]; then
-      sleep=60
-      docker_up $envFile $dockerComposePath &
-      (( reboot_count++ ))
-    fi
-
-    if [[ "$sleep" > 0 ]]; then
-      (( sleep-- ))
-    fi
-
-    return 0
+    (( sleep-- ))
   fi
 
   if [ -n "$health" ]; then
