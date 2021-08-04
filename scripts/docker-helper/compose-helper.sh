@@ -92,26 +92,37 @@ validate_env_file(){
     return 0
   fi
 
-  # shellcheck source=/dev/null
-  . "$envFile"
+  # TODO- maybe grep for env vars we're expecting? Blindly including
+  # is a bit promiscuous
+  . "${envFile}"
   if [ -z "$COMPOSE_PROJECT_NAME" ] || [ -z "$CHT_HTTP" ] || [ -z "$CHT_HTTPS" ]; then
     echo "Missing env value in file: COMPOSE_PROJECT_NAME, CHT_HTTP or CHT_HTTPS"
-    return 0
   fi
-
-  return 0
 }
 
-get_container_count(){
+
+# thanks https://yaroslavgrebnov.com/blog/bash-docker-check-container-existence-and-status/
+container_status(){
   project=$1
-  # todo - don't hard code this ;)
-  result=$(docker ps -a|grep -Ec 'another3_medic-os_|another3_haproxy_')
+  result=''
+  containers=(""${project}"_medic-os_1" ""${project}"_haproxy_1")
+
+  for container in "${containers[@]}"; do
+    if [ "$( docker ps -f name="${container}" | wc -l )" -ne 2 ]; then
+      result="${container} not running. ${result}"
+    fi
+  done
+
   echo "$result"
 }
 
 volume_exists(){
   project=$1
-  return "$(docker volume ls|grep -c "${project}"_medic_data)"
+  volume=""${project}"_medic-data"
+  infoLines="$( docker volume inspect "${volume}" 2>&1  | wc -l )"
+  if [ "$infoLines" -eq 2 ]; then
+    echo "${volume}"
+  fi
 }
 
 main (){
@@ -122,15 +133,11 @@ main (){
     append "$validEnv"
     endwin
     return 0
+  else
+    . "${envFile}"
   fi
 
-  if [ -z "$validEnv" ]; then
-    # shellcheck source=/dev/null
-    . "$envFile"
-  fi
-
-
-
+  volumeExists="`volume_exists $COMPOSE_PROJECT_NAME`"
   appsString="ip;docker;docker-compose;nc;curl"
   lanAddress="`get_lan_ip`"
   chtUrl="`get_local_ip_url`"
@@ -166,9 +173,33 @@ main (){
     return 0
   fi
 
+  ## todo - just download it for them!
+  if [ ! -f docker-compose-developer.yml ]; then
+    window "WARNING: Missing Compose File " "red" "100%"
+    append "Download before proceeding: docker-compose-developer.yml"
+    endwin
+    return 0
+  fi
+
+  ## todo - this doesn't work
+  if [ -n "$volumeExists" ]; then
+    window "Volume non-existant - please wait while booting..." "yellow" "100%"
+    append "$volumeExists"
+    if [ $sleep -eq 200 ];then
+      (( sleep-- ))
+       docker-compose -d --env-file ${envFile} -f docker-compose-developer.yml up
+    fi
+
+    (( sleep-- ))
+    echo "Waiting $sleep..."
+    echo "$sleep"
+
+    endwin
+    return 0
+  fi
+
   if [ -n "$health" ]; then
     window "WARNING: CHT Not running" "red" "100%"
-    append "Please try restarting the docker-compose command"
     append "$health"
     endwin
     return 0
@@ -176,7 +207,6 @@ main (){
 
   if [ "$self_signed" = "1" ]; then
     window "WARNING: CHT has self signed certificate" "red" "100%"
-    append "Please install a valid certificate"
     endwin
     return 0
   fi

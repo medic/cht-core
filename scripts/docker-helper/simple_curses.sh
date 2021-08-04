@@ -182,7 +182,7 @@ backtotoprow () {
     [ $travelback -gt 0 ] && tput cuu $travelback
 }
 
-#Append a window 
+#Append a window
 function window() {
     local title
     local color
@@ -215,7 +215,7 @@ function window() {
         "11" )
         # Window is requested to be displayed in a new column starting from top
     backtotoprow $BSC_COLHGT
-        
+
         BSC_COLLFT=$(( BSC_COLLFT + BSC_COLWIDTH_MAX ))
         BSC_WLFT=$BSC_COLLFT
 
@@ -247,7 +247,7 @@ function window() {
             bsc_cols=$3
         ;;
     esac
-    
+
     if [ "$bsc_cols" -lt 3 ]; then
         echo "Column width of window \"$title\" is too narrow to render (sz=$bsc_cols)." >&2
         exit 1;
@@ -495,7 +495,7 @@ progressbar(){
     len=$1
     progress=$2
     max=$3
- 
+
     done=$(( progress * len / max ))
     todo=$(( len - done - 1 ))
     modulo=$(( $(date +%s) % 4 ))
@@ -683,6 +683,8 @@ parse_args (){
     BSC_MODE=dashboard
     VERBOSE=1
     BSC_TITLECROP=0
+    reboot_count=0
+    sleep=0
     time=1
     envFile='Env file not set'
     while [[ $# -gt 0 ]]; do
@@ -740,7 +742,7 @@ main_loop (){
 
         # Display the buffer
         cat $BSC_BUFFER
-    
+
         [ $VERBOSE -gt 0 ] && [ -f "$BSC_STDERR" ] && cat $BSC_STDERR && rm $BSC_STDERR
 
         $update_fn "$time"
