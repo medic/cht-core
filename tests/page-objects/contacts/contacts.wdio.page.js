@@ -3,9 +3,12 @@ const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
-const contentRows = () => $$(contentRowSelector);
+const contentRowsText = () => $$(`${contentRowSelector} .heading h4 span`);
 const rowByText = async (text) => (await contentRow()).$(`span=${text}`);
 const reportFilterSelector = '.card.reports .table-filter a';
+const reportRowSelector = '#reports-list .content-row';
+const reportRow = () => $(reportRowSelector);
+const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 const reportFilter = () => $(reportFilterSelector);
 const reportFilters = () => $$(reportFilterSelector);
 const taskFilterSelector = '.card.tasks .table-filter a';
@@ -81,11 +84,16 @@ const getPrimaryContactName = async () => {
 
 const getAllContactText = async () => {
   await (await contentRow()).waitForDisplayed();
-  return getTextForElements(contentRows);
+  return getTextForElements(contentRowsText);
 };
 
 const getTextForElements = async (elements) => {
   return Promise.all((await elements()).map(filter => filter.getText()));
+};
+
+const getAllReportsText = async () => {
+  await (await reportRow()).waitForDisplayed();
+  return getTextForElements(reportRowsText);
 };
 
 module.exports = {
@@ -98,5 +106,6 @@ module.exports = {
   addPerson,
   addPlace,
   topContact,
-  getPrimaryContactName
+  getPrimaryContactName,
+  getAllReportsText
 };

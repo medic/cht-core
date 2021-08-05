@@ -34,14 +34,18 @@ const inputAddUserFields = async (username, fullname, role, place, associatedCon
 };
 
 const selectPlace = async (place) => {
+  await (await userPlace()).waitForDisplayed();
   await (await userPlace()).click();
+  await (await select2SearchInputBox()).waitForDisplayed();
   await (await select2SearchInputBox()).addValue(place);
   await (await select2Name()).click();
 
 };
 
 const selectContact = async (associatedContact) => {
+  await (await userAssociatedContact()).waitForDisplayed();
   await (await userAssociatedContact()).click();
+  await (await select2SearchContactInputBox()).waitForDisplayed();
   await (await select2SearchContactInputBox()).addValue(associatedContact);
   await (await select2Name()).click();
 
