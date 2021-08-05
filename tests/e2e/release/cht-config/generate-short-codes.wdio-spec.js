@@ -31,33 +31,24 @@ describe('generating short codes', () => {
     });
   };
 
-  const form = {
+  const forms = {
     'CASEID': {
       'meta': { 'code': 'CASEID', 'icon': 'icon-healthcare', 'translation_key': 'Case Id Form' },
-      'fields': {},
-      'use_sentinel': true
+      'fields': {}
     }
   };
 
-  const registration = [{
+  const registrations = [{
     form: 'CASEID', events: [ { name: 'on_create', trigger: 'add_case' } ]
   }];
-  
-  const transition = {
+
+  const transitions = {
     update_clinics: true, registration: true
   };
 
   before(async () => {
-    const originalSettings = await utils.getSettings();
-    const transitions = Object.assign(originalSettings.transitions,transition);
-
     await utils.saveDocs(docs);
-    await utils.updateSettings({
-      forms:form,
-      registrations: registration,
-      transitions: transitions
-    },
-    true);
+    await utils.updateSettings({forms, registrations, transitions}, true);
 
     await loginPage.cookieLogin();
   });
