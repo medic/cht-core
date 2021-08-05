@@ -1,5 +1,8 @@
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
+const place = require('../../factories/cht/contacts/place');
+const userFactory = require('../../factories/cht/users/users');
+const utils = require('../../utils');
 const auth = require('../../auth')();
 
 
@@ -32,30 +35,43 @@ describe('Login and logout tests', () => {
     await browser.refresh();
   });
 
-  it('should show locale selector on login page', async () => {
-    const locales = await loginPage.getAllLocales();
-    expect(locales).toEqual(defaultLocales);
-  });
+  // it('should show locale selector on login page', async () => {
+  //   const locales = await loginPage.getAllLocales();
+  //   expect(locales).toEqual(defaultLocales);
+  // });
 
-  it('should change locale to French', async () => {
-    //French translations
-    expect(await loginPage.changeLanguage('fr',frTranslations.user)).toEqual(frTranslations);
-  });
+  // it('should change locale to French', async () => {
+  //   //French translations
+  //   expect(await loginPage.changeLanguage('fr',frTranslations.user)).toEqual(frTranslations);
+  // });
 
-  it('should change locale to Spanish', async () => {
-    //Spanish translations
-    expect(await loginPage.changeLanguage('es',esTranslations.user)).toEqual(esTranslations);
-  });
+  // it('should change locale to Spanish', async () => {
+  //   //Spanish translations
+  //   expect(await loginPage.changeLanguage('es',esTranslations.user)).toEqual(esTranslations);
+  // });
 
-  it('should show a warning before log out', async () => {
-    await loginPage.cookieLogin(auth.username, auth.password);
-    const warning = await commonPage.getLogoutMessage();
-    expect(warning).toBe('Are you sure you want to log out?');
-  });
+  // it('should show a warning before log out', async () => {
+  //   await loginPage.cookieLogin(auth.username, auth.password);
+  //   const warning = await commonPage.getLogoutMessage();
+  //   expect(warning).toBe('Are you sure you want to log out?');
+  // });
 
-  it('should log in using username and password fields', async () => {
-    await loginPage.login(auth.username, auth.password);
-    expect(await commonPage.analyticsTab()).toBeDisplayed();
-    expect(await commonPage.messagesTab()).toBeDisplayed();
+  // it('should log in using username and password fields', async () => {
+  //   await loginPage.login(auth.username, auth.password);
+  //   expect(await commonPage.analyticsTab()).toBeDisplayed();
+  //   expect(await commonPage.messagesTab()).toBeDisplayed();
+  // });
+
+  it('can log in as an offline user', async () => {
+    const places = place.generateHierarchy();
+    const healthCenter = places.find((place) => place.type === 'health_center');
+    const offlineUser = userFactory.build({
+      place: healthCenter._id
+    });
+    await utils.saveDocs(places);
+    await utils.createUsers([offlineUser]);
+    await loginPage.login(offlineUser.username, offlineUser.password);
+    await expect(await commonPage.analyticsTab()).toBeDisplayed();
+    await expect(await commonPage.messagesTab()).toBeDisplayed();
   });
 });
