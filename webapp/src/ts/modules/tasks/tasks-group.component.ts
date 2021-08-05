@@ -29,7 +29,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
   tasks;
   loadingContent;
   contentError;
-  errorTranslationKey;
+  errorTranslationKey = 'tasks.group.error';
 
   constructor(
     private router:Router,
@@ -60,7 +60,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
     this.globalActions.setNavigation({
       cancelCallback: cancelCallback.bind({}, this.router, this.globalActions),
       preventNavigation,
-      cancelTranslationKey: 'task.group.leave',
+      cancelTranslationKey: 'tasks.group.leave',
       recordTelemetry: 'tasks:group:modal:',
     });
   }
@@ -112,7 +112,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
   private async displayHouseholdTasks(task) {
     this.globalActions.setShowContent(true);
     this.globalActions.setLoadingContent(true);
-    this.globalActions.setTitle('tasks.for.household');
+    this.globalActions.setTitle(this.translateService.instant('tasks.group.title'));
     this.tasks = [];
 
     const contactId = this.getTaskContact(task);
@@ -121,23 +121,30 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const contactModel = await this.displayTasksFor(contactId);
-    if (!contactModel) {
-      this.navigationCancel();
-      return;
-    }
+    try {
+      const contactModel = await this.displayTasksFor(contactId);
+      if (!contactModel) {
+        this.navigationCancel();
+        return;
+      }
 
-    const tasks = await this.tasksForContactService.get(contactModel);
-    // intentionally don't block on telemetry, but start counting after tasks were recalculated
-    this.recordTaskCountTelemetry(contactModel);
-    if (!tasks || !tasks.length) {
-      this.navigationCancel(true);
-      return;
-    }
+      const tasks = await this.tasksForContactService.get(contactModel);
+      // intentionally don't block on telemetry, but start counting after tasks were recalculated
+      this.recordTaskCountTelemetry(contactModel);
+      if (!tasks || !tasks.length) {
+        this.navigationCancel(true);
+        return;
+      }
 
-    this.setNavigation(true);
-    this.tasks = tasks;
-    this.globalActions.setLoadingContent(false);
+      this.setNavigation(true);
+      this.tasks = tasks;
+      this.globalActions.setLoadingContent(false);
+    } catch (err) {
+      console.error('Error loading tasks to display', err);
+      this.contentError = true;
+      this.globalActions.setLoadingContent(false);
+      this.setNavigation(false);
+    }
   }
 
   private async recordTaskCountTelemetry(contactModel) {

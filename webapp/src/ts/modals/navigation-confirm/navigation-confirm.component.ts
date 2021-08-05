@@ -10,7 +10,7 @@ import { TelemetryService } from '@mm-services/telemetry.service';
 })
 export class NavigationConfirmComponent extends MmModalAbstract {
   static id = 'navigation-confirm-modal';
-  cancelTranslationKey;
+  translationKey;
   telemetryEntry;
 
   constructor(

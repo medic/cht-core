@@ -121,14 +121,14 @@ describe('TasksGroupComponent', () => {
       expect(setNavigation.callCount).to.equal(1);
       expect(setNavigation.args[0][0]).to.include({
         preventNavigation: undefined,
-        cancelTranslationKey: 'task.group.leave',
+        cancelTranslationKey: 'tasks.group.leave',
         recordTelemetry: 'tasks:group:modal:',
       });
       const cancelCallback = setNavigation.args[0][0].cancelCallback;
 
       expect(setShowContent.args).to.deep.equal([[true]]);
       expect(setLoadingContent.args).to.deep.equal([[true]]);
-      expect(setTitle.args).to.deep.equal([['tasks.for.household']]);
+      expect(setTitle.args).to.deep.equal([['tasks.group.title']]);
       expect(setPreventNavigation.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(0);
 
