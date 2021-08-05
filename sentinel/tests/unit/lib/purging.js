@@ -10,6 +10,7 @@ const config = require('../../../src/config');
 const purgingUtils = require('@medic/purging-utils');
 const request = require('request-promise-native');
 const db = require('../../../src/db');
+const chtScriptApi = require('@medic/cht-script-api');
 
 let service;
 let clock;
@@ -2294,5 +2295,58 @@ describe('ServerSidePurge', () => {
         chai.expect(closePurgeDbs.callCount).to.equal(1);
       });
     });
+
+    it('purgeFn should pass cht script api and permission settings', () => {
+      const roles = { 'a': [1, 2, 3], 'b': [4, 5, 6] };
+      sinon.stub(request, 'get');
+      sinon.stub(config, 'get').returns({ can_export_messages: [ 'a' ]});
+      request.get.onCall(0).resolves({ rows: [
+        { id: 'r1', doc: { _id: 'r1', form: 'a' } },
+        { id: 'r2', doc: { _id: 'r2', form: 'a' } },
+        { id: 'r3', doc: { _id: 'r3' } },
+        { id: 'r4', doc: { _id: 'r4', form: 'a' } },
+        { id: 'r5', doc: { _id: 'r5' } },
+        { id: 'r6', doc: { _id: 'r6', form: 'a' } },
+      ]});
+
+      request.get.onCall(1).resolves({ rows: [
+        { id: 'r6', doc: { _id: 'r6' } },
+      ]});
+
+      sinon.stub(db, 'get').returns({ changes: sinon.stub().resolves({ results: [] }) });
+
+      return service.__get__('batchedUnallocatedPurge')(roles, purgeFn).then(() => {
+        chai.expect(request.get.callCount).to.equal(2);
+        chai.expect(purgeFn.callCount).to.equal(12);
+        chai.expect(typeof(purgeFn.args[0][4].v1.hasPermissions)).to.equal('function');
+        chai.expect(typeof(purgeFn.args[0][4].v1.hasAnyPermission)).to.equal('function');
+        chai.expect(purgeFn.args[0][5]).to.deep.equal({ can_export_messages: [ 'a' ] });
+      });
+    });
+
+    it('should be possible to use cht script api in purge functions', () => {
+      const roles = { 'a': [1, 2, 3], 'b': [4, 5, 6] };
+      const purgeFunction = (userCtx, contact, reports, messages, chtScript, settings) => {
+        if(chtScript.v1.hasPermissions('can_export_messages', userCtx.roles, settings)) {
+          return [ 'purge 1', 'purge 2' ];
+        }
+      };
+      sinon.stub(request, 'get').resolves({ rows: [{ id: 'first', key: 'district_hospital', doc: { _id: 'first' } }]});
+      sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'first', doc: { _id: 'first' } }] });
+      const purgeDbChanges = sinon.stub().resolves({ results: [] });
+      sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
+      sinon.stub(config, 'get').returns({ can_export_messages: [ 1 ]});
+      sinon.stub(chtScriptApi.v1, 'hasPermissions');
+
+      return service.__get__('batchedContactsPurge')(roles, purgeFunction).then(() => {
+        chai.expect(chtScriptApi.v1.hasPermissions.args[0]).to.deep.equal(
+          [ 'can_export_messages', [ 1, 2, 3 ], { can_export_messages: [ 1 ] } ]
+        );
+        chai.expect(chtScriptApi.v1.hasPermissions.args[1]).to.deep.equal(
+          [ 'can_export_messages', [ 4, 5, 6 ], { can_export_messages: [ 1 ] } ]
+        );
+      });
+    });
+
   });
 });
