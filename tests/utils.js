@@ -262,7 +262,7 @@ const revertDb = async (except, ignoreRefresh) => {
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
-  
+
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || hasModal)) {
     watcher && watcher.cancel();

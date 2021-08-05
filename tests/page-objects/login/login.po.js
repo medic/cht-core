@@ -32,7 +32,7 @@ const getLanguage = async (selector) => {
   const lang = await element.all(by.css(selector)).map(loc => {
     return {
       code: loc.getAttribute('name'),
-      name: loc.getText(),       
+      name: loc.getText(),
     };
   });
   return lang;
@@ -65,10 +65,11 @@ module.exports = {
       await browser.wait(() => helper.isTextDisplayed(incorrectCredentialsText), 2000);
     }
   },
+
   returnToLogin: () => element(by.css('.btn[href="/medic/login"]')),
-  
+
   getAllLocales: async () => await getLanguage('.locale'),
-  
+
   labelForUser: async () => await helper.getTextFromElementNative(labelForUser),
   labelForPassword: async () => await helper.getTextFromElementNative(labelForPassword),
   getselectedLanguage: async () => await getLanguage('.locale.selected'),

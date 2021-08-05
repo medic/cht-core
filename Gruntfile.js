@@ -1072,6 +1072,11 @@ module.exports = function(grunt) {
     'protractor:e2e-web-tests',
     //'protractor:e2e-mobile-tests',
   ]);
+  grunt.registerTask('ci-e2e-mobile', 'Run e2e tests for CI', [
+    'start-webdriver',
+    'exec:e2e-servers',
+    'protractor:e2e-mobile-tests',
+  ]);
 
   grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
     'exec:e2e-servers',
