@@ -686,6 +686,7 @@ parse_args (){
     reboot_count=0
     sleep=0
     time=1
+    last_action='Initializing'
     envFile='Env file not set'
     while [[ $# -gt 0 ]]; do
         # shellcheck disable=SC2034

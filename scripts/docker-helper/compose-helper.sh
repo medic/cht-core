@@ -65,6 +65,7 @@ port_open(){
   nc -z $ip $port; echo $?
 }
 
+# todo - just find the "add-local-ip-certs-to-docker.sh" script and install cert for them?
 has_self_signed_cert(){
   url=$1
   curl --insecure -vvI $url 2>&1 | grep -c "self signed certificate"
@@ -116,12 +117,28 @@ container_status(){
   echo "$result"
 }
 
+# thanks https://yaroslavgrebnov.com/blog/bash-docker-check-container-existence-and-status/
+get_running_container_count(){
+  project=$1
+  result=0
+  containers=(""${project}"_medic-os_1" ""${project}"_haproxy_1")
+
+  for container in "${containers[@]}"; do
+    if [ "$( docker ps -f name="${container}" | wc -l )" -eq 2 ]; then
+      (( result++ ))
+    fi
+  done
+
+  echo "$result"
+}
+
 volume_exists(){
   project=$1
   volume=""${project}"_medic-data"
-  infoLines="$( docker volume inspect "${volume}" 2>&1  | wc -l )"
-  if [ "$infoLines" -eq 2 ]; then
-    echo "${volume}"
+  if [ "$( docker volume inspect "${volume}" 2>&1  | wc -l )" -eq 2 ]; then
+    echo "0"
+  else
+    echo "1"
   fi
 }
 
@@ -138,7 +155,27 @@ get_docker_compose_yml_path(){
 docker_up_or_restart(){
   envFile=$1
   composeFile=$2
-  docker-compose --env-file ${envFile} -f ${composeFile} restart -d > /dev/null 2>&1
+  containerCount=$3
+  volumeCount=$4
+  if [[ $volumeCount != 1 ]] || [[ $containerCount != 2 ]];then
+
+    # todo - remove debug
+    echo "DOCKER UP!!!! volumeCount: $volumeCount  containerCount: $containerCount "
+    docker-compose --env-file ${envFile} -f ${composeFile} up -d > /dev/null 2>&1
+  else
+    # todo - remove debug
+    echo "DOCKER RESTART!!!! volumeCount: $volumeCount  containerCount: $containerCount "
+
+    # todo - decide which of these to use here
+    # todo - "docker restart" isn't working for some reason?
+
+#    docker-compose --env-file ${envFile} -f ${composeFile} down && docker-compose --env-file ${envFile} -f ${composeFile} up > /dev/null 2>&1
+     docker restart "${project}"_medic-os_1" "${project}"_haproxy_1"  > /dev/null 2>&1
+  fi
+}
+
+reboot_medic_os_services(){
+  docker exec -it ${COMPOSE_PROJECT_NAME}_medic-os_1 /boot/svc-restart medic-core > /dev/null 2>&1
 }
 
 main (){
@@ -153,13 +190,27 @@ main (){
     . "${envFile}"
   fi
 
-  volumeExists="`volume_exists $COMPOSE_PROJECT_NAME`"
   appsString="ip;docker;docker-compose;nc;curl"
+  if [ -n "$appStatus" ]; then
+    window "WARNING: Missing Apps" "red" "100%"
+    append "Install before proceeding:"
+    append "$appStatus"
+    endwin
+    return 0
+  fi
+
+  volumeCount="`volume_exists $COMPOSE_PROJECT_NAME`"
+  containerCount="`get_running_container_count $COMPOSE_PROJECT_NAME`"
+
+echo "volumeCount $volumeCount"
+echo "containerCount $containerCount"
   lanAddress="`get_lan_ip`"
   chtUrl="`get_local_ip_url`"
   appStatus=`required_apps_installed $appsString`
   health="`cht_healthy $lanAddress $CHT_HTTPS $chtUrl`"
   dockerComposePath="`get_docker_compose_yml_path`"
+  maxReboots=5
+  defaultSleep=45
 
   if [ -n "$health" ]; then
     self_signed=0
@@ -169,6 +220,8 @@ main (){
 
   if [ -z "$appStatus" ] && [ -z "$health" ] && [ "$self_signed" = "0" ]; then
     overAllHealth="Good"
+  elif [[ "$sleep" > 0 ]]; then
+    overAllHealth="Booting..."
   else
     overAllHealth="!= Bad =!"
   fi
@@ -180,15 +233,9 @@ main (){
   append_tabbed "CHT URL|$chtUrl" 2 "|"
   append_tabbed "" 2 "|"
   append_tabbed "CHT Health|$overAllHealth" 2 "|"
+  append_tabbed "Running Containers|$containerCount of 2" 2 "|"
+  append_tabbed "Last Action|$last_action" 2 "|"
   endwin
-
-  if [ -n "$appStatus" ]; then
-    window "WARNING: Missing Apps" "red" "100%"
-    append "Install before proceeding:"
-    append "$appStatus"
-    endwin
-    return 0
-  fi
 
   ## todo - just download it for them?
   # curl -o docker-compose-developer.yml https://raw.githubusercontent.com/medic/cht-core/master/docker-compose-developer.yml
@@ -200,17 +247,44 @@ main (){
     return 0
   fi
 
-  if [ -n "$volumeExists" ] && [[ "$reboot_count" = 0 ]]; then
-    sleep=30
-    docker_up_or_restart $envFile $dockerComposePath &
+  if [[ "$volumeCount" = 0 ]] && [[ "$reboot_count" = 0 ]]; then
+    sleep=$defaultSleep
+    last_action="First run of \"docker-compose up\""
+    docker_up_or_restart $envFile $dockerComposePath $volumeCount $containerCount &
+    (( reboot_count++ ))
+  fi
+
+  if [[ "$containerCount" != 2 ]] && [[ "$reboot_count" != "$maxReboots" ]] && [[ "$sleep" = 0 ]]; then
+    sleep=$defaultSleep
+    last_action="Running \"docker-compose down\" then  \"docker-compose up\""
+    docker_up_or_restart $envFile $dockerComposePath $volumeCount $containerCount &
+    (( reboot_count++ ))
+  fi
+
+  if [ -n "$health" ] && [[ "$sleep" = 0 ]] && [[ "$reboot_count" != "$maxReboots" ]]; then
+    sleep=$defaultSleep
+
+    # todo - decide which of these to use here
+
+#    last_action="Rebooting medic-os services in container"
+#    reboot_medic_os_services &
+
+    last_action="Running \"docker-compose down\" then  \"docker-compose up\""
+    docker_up_or_restart $envFile $dockerComposePath volumeCount containerCount &
     (( reboot_count++ ))
   fi
 
   if [[ "$sleep" > 0 ]]; then
-    window "Attempting to boot $COMPOSE_PROJECT_NAME for $reboot_count time" "yellow" "100%"
+    window "Attempt number $reboot_count / $maxReboots to boot $COMPOSE_PROJECT_NAME" "yellow" "100%"
     append "Waiting $sleep..."
     endwin
     (( sleep-- ))
+  fi
+
+  if [[ "$reboot_count" = "$maxReboots" ]] && [[ "$sleep" = 0 ]]; then
+    window "Reboot max met: $reboot_count reboots" "red" "100%"
+    append "Please try running this script again"
+    endwin
   fi
 
   if [ -n "$health" ]; then
@@ -222,6 +296,8 @@ main (){
 
   if [ "$self_signed" = "1" ]; then
     window "WARNING: CHT has self signed certificate" "red" "100%"
+    append "Run script to fix:"
+    append "./cht-core/scripts/add-local-ip-certs-to-docker.sh ${COMPOSE_PROJECT_NAME}_medic-os_1"
     endwin
     return 0
   fi
