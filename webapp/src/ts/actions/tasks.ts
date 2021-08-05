@@ -6,7 +6,6 @@ export const Actions = {
   setTasksLoaded: createSingleValueAction('SET_TASKS_LOADED', 'loaded'),
   setSelectedTask: createSingleValueAction('SET_SELECTED_TASK', 'selected'),
   setLastCompletedTask: createSingleValueAction('SET_LAST_COMPLETED_TASK', 'task'),
-  setActivePlace: createSingleValueAction('SET_ACTIVE_PLACE', 'place'),
 };
 
 export class TasksActions {
@@ -26,9 +25,5 @@ export class TasksActions {
 
   setLastCompletedTask(task) {
     return this.store.dispatch(Actions.setLastCompletedTask(task));
-  }
-
-  setActivePlace(place) {
-    return this.store.dispatch(Actions.setActivePlace(place));
   }
 }

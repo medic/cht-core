@@ -39,14 +39,14 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
   private tasksActions;
 
   enketoStatus;
-  enketoEdited;
+  private enketoEdited;
   loadingContent;
   selectedTask;
   form;
   loadingForm;
   contentError;
   formId;
-  cancelCallback;
+  private cancelCallback;
   errorTranslationKey;
   private tasksList;
   private geoHandle;
@@ -334,5 +334,14 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
 
   navigationCancel() {
     this.globalActions.navigationCancel();
+  }
+
+  canDeactivate(nextUrl) {
+    if (!this.enketoEdited || !this.cancelCallback) {
+      return true;
+    }
+
+    this.globalActions.navigationCancel(nextUrl);
+    return false;
   }
 }

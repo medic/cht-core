@@ -156,6 +156,15 @@ describe('Global Reducer', () => {
     expect(state).to.deep.equal({ enketoStatus: { edited: false, saving: false, error: 'some error', form: true }});
   });
 
+  it('should clear enketo status', () => {
+    state = globalReducer(state, Actions.clearEnketoStatus());
+    expect(state).to.deep.equal({ enketoStatus: { edited: false, form: false, saving: false, error: null } });
+
+    state.enketoStatus = { form: true, edited: false };
+    state = globalReducer(state, Actions.clearEnketoStatus());
+    expect(state).to.deep.equal({ enketoStatus: { edited: false, form: false, saving: false, error: null } });
+  });
+
   it('should set cancel callback', () => {
     const callback = () => 'anything';
     state = globalReducer(state, Actions.setCancelCallback(callback));
@@ -169,6 +178,111 @@ describe('Global Reducer', () => {
 
     state = globalReducer(state, Actions.setCancelCallback(null));
     expect(state).to.deep.equal({ navigation: { cancelCallback: null } });
+  });
+
+  it('should set navigation', () => {
+    state = globalReducer(state, Actions.setNavigation({}));
+    expect(state).to.deep.equal({
+      navigation: {
+        cancelCallback: undefined,
+        preventNavigation: undefined,
+        cancelTranslationKey: undefined,
+        recordTelemetry: undefined,
+      },
+    });
+
+    const callback = () => 'something';
+    state = globalReducer(state, Actions.setNavigation({ cancelCallback: callback }));
+    expect(state).to.deep.equal({
+      navigation: {
+        cancelCallback: callback,
+        preventNavigation: undefined,
+        cancelTranslationKey: undefined,
+        recordTelemetry: undefined,
+      },
+    });
+
+    state = globalReducer(state, Actions.setNavigation({ preventNavigation: true }));
+    expect(state).to.deep.equal({
+      navigation: {
+        cancelCallback: undefined,
+        preventNavigation: true,
+        cancelTranslationKey: undefined,
+        recordTelemetry: undefined,
+      },
+    });
+
+    state = globalReducer(state, Actions.setNavigation({ cancelTranslationKey: 'my key' }));
+    expect(state).to.deep.equal({
+      navigation: {
+        cancelCallback: undefined,
+        preventNavigation: undefined,
+        cancelTranslationKey: 'my key',
+        recordTelemetry: undefined,
+      },
+    });
+
+    state = globalReducer(state, Actions.setNavigation({ recordTelemetry: 'telemetry.entry' }));
+    expect(state).to.deep.equal({
+      navigation: {
+        cancelCallback: undefined,
+        preventNavigation: undefined,
+        cancelTranslationKey: undefined,
+        recordTelemetry: 'telemetry.entry',
+      },
+    });
+
+    state = globalReducer(state, Actions.setNavigation({
+      cancelCallback: callback,
+      preventNavigation: false,
+      recordTelemetry: '.entry',
+      cancelTranslationKey: 'a key'
+    }));
+    expect(state).to.deep.equal({
+      navigation: {
+        cancelCallback: callback,
+        preventNavigation: false,
+        cancelTranslationKey: 'a key',
+        recordTelemetry: '.entry',
+      },
+    });
+
+    state = globalReducer(state, Actions.setNavigation({
+      cancelCallback: callback,
+      preventNavigation: false,
+      recordTelemetry: '.entry',
+      cancelTranslationKey: 'a key',
+      extra: 'property',
+      is: !'saved',
+    }));
+    expect(state).to.deep.equal({
+      navigation: {
+        cancelCallback: callback,
+        preventNavigation: false,
+        cancelTranslationKey: 'a key',
+        recordTelemetry: '.entry',
+      },
+    });
+  });
+
+  it('should set preventNavigation', () => {
+    state = globalReducer(state, Actions.setPreventNavigation(false));
+    expect(state).to.deep.equal({ navigation: { preventNavigation: false } });
+
+    state = globalReducer(state, Actions.setPreventNavigation(true));
+    expect(state).to.deep.equal({ navigation: { preventNavigation: true } });
+
+    const callback = () => {};
+    state.navigation = { cancelCallback: callback, cancelTranslationKey: 'a', recordTelemetry: 'b' };
+    state = globalReducer(state, Actions.setPreventNavigation(true));
+    expect(state).to.deep.equal({
+      navigation: {
+        cancelCallback: callback,
+        cancelTranslationKey: 'a',
+        recordTelemetry: 'b',
+        preventNavigation: true,
+      },
+    });
   });
 
   it('should set right action bar', () => {

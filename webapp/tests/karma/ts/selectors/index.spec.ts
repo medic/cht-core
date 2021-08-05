@@ -22,8 +22,9 @@ const state = {
     isAdmin: 'is it an admin',
     navigation: {
       cancelCallback: function() {},
-      cancelMessage: 'cancel message',
-      preventNavigation: 'prevent nav',
+      preventNavigation: 'prevent',
+      cancelTranslationKey: 'cancel key',
+      recordTelemetry: 'telemetry entry',
     },
     title: 'the title',
     privacyPolicyAccepted: 'has accepted policy',
@@ -35,6 +36,7 @@ const state = {
       edited: 'is edited',
       saving: 'is saving',
       error: 'has error',
+      form: 'is form',
     }
   },
   services: {
@@ -103,6 +105,7 @@ const state = {
     tasksList: [{ _id: 'task1' }, { _id: 'task2' }],
     loaded: 'are tasks loaded?',
     selected: { _id: 'selected task' },
+    lastCompletedTask: { _id: 'last completed task' },
   },
 };
 const clonedState = cloneDeep(state);
@@ -178,6 +181,14 @@ describe('Selectors', () => {
       expect(Selectors.getCancelCallback(state)).to.deep.equal(clonedState.global.navigation.cancelCallback);
     });
 
+    it('should getNavigation', () => {
+      expect(Selectors.getNavigation(state)).to.deep.equal(clonedState.global.navigation);
+    });
+
+    it('should getPreventNavigation', () => {
+      expect(Selectors.getPreventNavigation(state)).to.deep.equal(clonedState.global.navigation.preventNavigation);
+    });
+
     it('should getTitle', () => {
       expect(Selectors.getTitle(state)).to.equal(clonedState.global.title);
     });
@@ -212,6 +223,10 @@ describe('Selectors', () => {
 
     it('should getEnketoSavingStatus', () => {
       expect(Selectors.getEnketoSavingStatus(state)).to.equal(clonedState.global.enketoStatus.saving);
+    });
+
+    it('should getEnketoForm', () => {
+      expect(Selectors.getEnketoForm(state)).to.equal(clonedState.global.enketoStatus.form);
     });
 
     it('should getEnketoError', () => {
@@ -412,6 +427,10 @@ describe('Selectors', () => {
 
     it('should null check tasks state', () => {
       expect(Selectors.getSelectedTask({})).to.equal(undefined);
+    });
+
+    it('should getLastCompletedTask', () => {
+      expect(Selectors.getLastCompletedTask(state)).to.deep.equal(clonedState.tasks.lastCompletedTask);
     });
   });
 });

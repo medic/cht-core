@@ -88,7 +88,7 @@ export class ContactTypesService {
   }
 
   getTypeById(contactTypes = [], typeId) {
-    return contactTypes?.find(type => type.id === typeId);
+    return contactTypes.find(type => type?.id === typeId);
   }
 
   /**
@@ -104,11 +104,11 @@ export class ContactTypesService {
       .then(config => contactTypesUtils.getLeafPlaceTypes(config));
   }
 
-  isLeafPlaceType(types:[ContactType], typeId) {
+  isLeafPlaceType(types, typeId) {
     if (!typeId || !types || !types.length) {
       return false;
     }
-    return !!types.find((type:ContactType) => type.id === typeId);
+    return !!types.find((type:ContactType) => type?.id === typeId);
   }
 }
 

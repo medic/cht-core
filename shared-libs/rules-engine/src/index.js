@@ -41,6 +41,14 @@ module.exports = db => {
     fetchTasksFor: contactIds => wireupToProvider.fetchTasksFor(provider, contactIds),
 
     /**
+     * Returns a breakdown of tasks by state and title for the provided list of contacts
+     *
+     * @param {string[]} contactIds An array of contact ids. If undefined, all contacts are
+     * @returns {Promise<Object>} The breakdown of tasks counts by state and title
+     */
+    fetchTasksBreakdown: contactIds => wireupToProvider.fetchTasksBreakdown(provider, contactIds),
+
+    /**
      * Refreshes all rules documents and returns the latest target document
      *
      * @param {Object} filterInterval Target emissions with date within the interval will be aggregated into the

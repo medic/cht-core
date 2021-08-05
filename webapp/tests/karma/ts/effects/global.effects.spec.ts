@@ -15,6 +15,8 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
 import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
 
+const nextTick = () => new Promise(r => setTimeout(r));
+
 describe('GlobalEffects', () => {
   let effects:GlobalEffects;
   let actions$;
@@ -39,7 +41,7 @@ describe('GlobalEffects', () => {
       navigate: sinon.stub(),
     };
 
-    initialModalState = { initialState: { model: { cancelMessage: undefined } } };
+    initialModalState = { initialState: { translationKey: undefined, telemetryEntry: undefined } };
     cancelCallback = sinon.stub();
 
     TestBed.configureTestingModule({
@@ -209,20 +211,22 @@ describe('GlobalEffects', () => {
 
       it('when navigation is prevented and user confirms modal with route', async(async () => {
         store.overrideSelector(Selectors.getNavigation, { cancelCallback, preventNavigation: true });
-        modalService.show.rejects();
+        modalService.show.resolves();
         actions$ = of(GlobalActionsList.navigationCancel('path'));
         effects.navigationCancel.subscribe();
 
         expect(cancelCallback.callCount).to.equal(0);
         expect(router.navigate.callCount).to.equal(0);
 
-        await Promise.resolve(); // wait for modal confirm
+        expect(modalService.show.callCount).to.equal(1);
+        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
+
+        await nextTick(); // wait for modal confirm
 
         expect(cancelCallback.callCount).to.equal(0);
         expect(router.navigate.callCount).to.equal(1);
         expect(router.navigate.args[0]).to.deep.equal([['path']]);
-        expect(modalService.show.callCount).to.equal(1);
-        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
+
       }));
 
       it('when navigation is prevented and user confirms modal without route', async(async () => {
@@ -236,16 +240,69 @@ describe('GlobalEffects', () => {
 
         await Promise.resolve(); // wait for modal confirm
 
-        expect(cancelCallback.callCount).to.equal(1);
-        expect(cancelCallback.args[0]).to.deep.equal([]);
+        expect(cancelCallback.callCount).to.equal(0);
         expect(router.navigate.callCount).to.equal(0);
         expect(modalService.show.callCount).to.equal(1);
         expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
       }));
 
-      it('should pass cancelMessage to modal', () => {
+      it('should pass message translation key to modal', async(async () => {
+        const nav = {
+          cancelCallback,
+          preventNavigation: true,
+          cancelTranslationKey: 'somekey',
+        };
+        store.overrideSelector(Selectors.getNavigation, nav);
+        modalService.show.rejects();
+        actions$ = of(GlobalActionsList.navigationCancel(null));
+        effects.navigationCancel.subscribe();
 
-      });
+        expect(cancelCallback.callCount).to.equal(0);
+        expect(router.navigate.callCount).to.equal(0);
+
+        await nextTick();
+
+        expect(cancelCallback.callCount).to.equal(0);
+        expect(router.navigate.callCount).to.equal(0);
+        expect(modalService.show.callCount).to.equal(1);
+        expect(modalService.show.args[0][1]).to.deep.equal({
+          initialState: {
+            translationKey: 'somekey',
+            telemetryEntry: undefined,
+          },
+        });
+      }));
+
+      it('should pass whether to record telemetry to modal', async(async () => {
+        const nav = {
+          cancelCallback,
+          preventNavigation: true,
+          cancelTranslationKey: 'somekey',
+          recordTelemetry: 'someEntry',
+        };
+        store.overrideSelector(Selectors.getNavigation, nav);
+        modalService.show.rejects();
+        actions$ = of(GlobalActionsList.navigationCancel(null));
+        effects.navigationCancel.subscribe();
+
+        expect(cancelCallback.callCount).to.equal(0);
+        expect(router.navigate.callCount).to.equal(0);
+
+        await Promise.resolve(); // wait for modal confirm
+
+        expect(cancelCallback.callCount).to.equal(0);
+        expect(router.navigate.callCount).to.equal(0);
+        expect(modalService.show.callCount).to.equal(1);
+        expect(modalService.show.args[0]).to.deep.equal([
+          NavigationConfirmComponent,
+          {
+            initialState: {
+              translationKey: 'somekey',
+              telemetryEntry: 'someEntry',
+            },
+          },
+        ]);
+      }));
     });
   });
 });

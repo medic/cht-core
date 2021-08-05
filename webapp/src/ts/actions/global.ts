@@ -135,8 +135,13 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setCancelCallback(value));
   }
 
-  setNavigation({ cancelCallback, preventNavigation, cancelMessage }) {
-    return this.store.dispatch(Actions.setNavigation({ cancelCallback, preventNavigation, cancelMessage }));
+  setNavigation({ cancelCallback, preventNavigation, cancelTranslationKey, recordTelemetry }) {
+    return this.store.dispatch(Actions.setNavigation({
+      cancelCallback,
+      preventNavigation,
+      cancelTranslationKey,
+      recordTelemetry,
+    }));
   }
 
   setPreventNavigation(preventNavigation) {

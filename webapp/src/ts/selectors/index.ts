@@ -47,7 +47,6 @@ export const Selectors = {
   //navigation
   getNavigation: createSelector(getNavigation, (navigationState) => navigationState),
   getCancelCallback: createSelector(getNavigation, (navState) => navState?.cancelCallback),
-  getCancelMessage: createSelector(getNavigation, (navState) => navState?.cancelMessage),
   getPreventNavigation: createSelector(getNavigation, (navState) => navState?.preventNavigation),
 
   // services
@@ -130,5 +129,4 @@ export const Selectors = {
   getTasksLoaded: createSelector(getTasksState, (tasksState) => tasksState.loaded),
   getSelectedTask: createSelector(getTasksState, (tasksState) => tasksState.selected),
   getLastCompletedTask: createSelector(getTasksState, (tasksState) => tasksState.lastCompletedTask),
-  getActiveTaskPlace: createSelector(getTasksState, (tasksState) => tasksState.activePlace),
 };

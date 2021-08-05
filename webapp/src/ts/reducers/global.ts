@@ -9,8 +9,9 @@ const initialState = {
   },
   navigation: {
     cancelCallback: null,
-    cancelMessage: null,
     preventNavigation: null,
+    cancelTranslationKey: null,
+    recordTelemetry: null,
   },
   currentTab: null,
   snapshotData: null,
@@ -172,14 +173,16 @@ const _globalReducer = createReducer(
       },
     };
   }),
-  on(Actions.setNavigation, (state, { payload: { cancelCallback, cancelMessage, preventNavigation } }) => {
+  on(Actions.setNavigation, (state, { payload }) => {
+    const { cancelCallback, preventNavigation, cancelTranslationKey, recordTelemetry } = payload;
     return {
       ...state,
       navigation: {
         ...state.navigation,
         cancelCallback,
-        cancelMessage,
         preventNavigation,
+        cancelTranslationKey,
+        recordTelemetry,
       }
     };
   }),

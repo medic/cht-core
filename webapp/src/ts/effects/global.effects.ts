@@ -49,7 +49,7 @@ export class GlobalEffects {
     }
 
     return this
-      .showModal(navigationStatus.cancelMessage)
+      .showModal(navigationStatus)
       .then(confirm => {
         if (!confirm) {
           return;
@@ -60,9 +60,14 @@ export class GlobalEffects {
       });
   }
 
-  private showModal(cancelMessage) {
+  private showModal({ cancelTranslationKey, recordTelemetry }) {
+    const modalInitialState = {
+      translationKey: cancelTranslationKey,
+      telemetryEntry: recordTelemetry,
+    };
+
     return this.modalService
-      .show(NavigationConfirmComponent, { initialState: { model: { cancelMessage }} })
+      .show(NavigationConfirmComponent, { initialState: modalInitialState })
       .then(() => true)
       .catch(() => false);
   }
@@ -70,8 +75,7 @@ export class GlobalEffects {
   private navigate(nextUrl, cancelCallback) {
     try {
       if (nextUrl) {
-        this.router.navigate([nextUrl]);
-        return;
+        return this.router.navigate([nextUrl]);
       }
 
       if (cancelCallback) {
@@ -99,13 +103,13 @@ export class GlobalEffects {
         }
 
         return this
-          .showModal(navigationStatus.cancelMessage)
+          .showModal(navigationStatus)
           .then(confirm => {
             if (!confirm) {
               return;
             }
             this.globalActions.setPreventNavigation(false);
-            this.navigate(nextUrl, navigationStatus.cancelCallback);
+            return this.navigate(nextUrl, navigationStatus.cancelCallback);
           });
       }),
     );

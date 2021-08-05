@@ -81,4 +81,17 @@ export class TasksForContactService {
           .then(tasks => this.decorateAndSortTasks(tasks));
       });
   }
+
+  getTasksBreakdown(model) {
+    return this
+      .areTasksEnabled(model.type)
+      .then(enabled => {
+        if (!enabled) {
+          return;
+        }
+
+        const contactIds = this.getIdsForTasks(model);
+        return this.rulesEngineService.fetchTasksBreakdown(contactIds);
+      });
+  }
 }

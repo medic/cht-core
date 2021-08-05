@@ -87,6 +87,40 @@ module.exports = {
   },
 
   /**
+   * Returns a breakdown of task counts by state and title for the provided contacts, or all contacts
+   * Does NOT refresh rules emissions
+   * @param {Object} provider A data provider
+   * @param {string[]} contactIds An array of contact ids. If undefined, all task documents
+   * @return {Promise<{
+   *  Ready: number,
+   *  Draft: number,
+   *  Failed: number,
+   *  Completed: number,
+   *  Cancelled: number,
+   *}>}
+   */
+  fetchTasksBreakdown: (provider, contactIds) => {
+    const tasksByState = Object.assign({}, TaskStates.states);
+    Object.keys(tasksByState).forEach(state => tasksByState[state] = 0);
+
+    if (!rulesEmitter.isEnabled() || !wireupOptions.enableTasks) {
+      return Promise.resolve(tasksByState);
+    }
+
+    const getTasks = contactIds ? provider.allTaskRowsByOwner(contactIds) : provider.allTaskRows();
+
+    return getTasks.then(taskRows => {
+      taskRows.forEach(({ value: { state } }) => {
+        if (Object.hasOwnProperty.call(tasksByState, state)) {
+          tasksByState[state]++;
+        }
+      });
+
+      return tasksByState;
+    });
+  },
+
+  /**
    * Refreshes the rules emissions for all contacts
    *
    * @param {Object} provider A data provider

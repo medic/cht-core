@@ -519,12 +519,14 @@ describe('TasksContentComponent', () => {
     let setEnketoSavingStatus;
     let unsetSelected;
     let clearNavigation;
+    let setLastCompletedTask;
 
     beforeEach(() => {
       setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
       setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
       unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
       clearNavigation = sinon.stub(GlobalActions.prototype, 'clearNavigation');
+      setLastCompletedTask = sinon.stub(TasksActions.prototype, 'setLastCompletedTask');
     });
 
     it('should do nothing if already saving', async () => {
@@ -571,6 +573,8 @@ describe('TasksContentComponent', () => {
       expect(clearNavigation.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(0);
       expect(unsetSelected.callCount).to.equal(0);
+      expect(setLastCompletedTask.callCount).to.equal(0);
+
       expect(consoleErrorMock.callCount).to.equal(1);
       expect(consoleErrorMock.args[0][0]).to.equal('Error submitting form data: ');
     });
@@ -612,6 +616,56 @@ describe('TasksContentComponent', () => {
 
       expect(setEnketoError.callCount).to.equal(0);
       expect(unsetSelected.callCount).to.equal(1);
+      expect(setLastCompletedTask.callCount).to.equal(1);
+      expect(setLastCompletedTask.args[0]).to.deep.equal([component.selectedTask]);
+    });
+  });
+
+  describe('navigationCancel', () => {
+    it('should call navigation cancel', () => {
+      const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
+      component.navigationCancel();
+      expect(navigationCancel.callCount).to.equal(1);
+      expect(navigationCancel.args[0]).to.deep.equal([]);
+    });
+  });
+
+  describe('canDeactivate', () => {
+    let navigationCancel;
+    beforeEach(async () => {
+      navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
+      await compileComponent();
+    });
+
+    it('should return true when not edited', () => {
+      store.overrideSelector(Selectors.getEnketoEditedStatus, false);
+      store.overrideSelector(Selectors.getCancelCallback, sinon.stub());
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(component.canDeactivate('')).to.equal(true);
+      expect(navigationCancel.callCount).to.equal(0);
+    });
+
+    it('should return true when no cancel callback', () => {
+      store.overrideSelector(Selectors.getEnketoEditedStatus, true);
+      store.overrideSelector(Selectors.getCancelCallback, null);
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(component.canDeactivate('')).to.equal(true);
+      expect(navigationCancel.callCount).to.equal(0);
+    });
+
+    it('should return false otherwise', () => {
+      store.overrideSelector(Selectors.getEnketoEditedStatus, true);
+      store.overrideSelector(Selectors.getCancelCallback, sinon.stub());
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(component.canDeactivate('theurl')).to.equal(false);
+      expect(navigationCancel.callCount).to.equal(1);
+      expect(navigationCancel.args[0]).to.deep.equal(['theurl']);
     });
   });
 });

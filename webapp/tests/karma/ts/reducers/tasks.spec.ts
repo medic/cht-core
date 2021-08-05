@@ -17,7 +17,6 @@ describe('Tasks reducer', () => {
         tasksList: [],
         selected: null,
         loaded: false,
-        activePlace: null,
         lastCompletedTask: null,
       });
     });
@@ -64,7 +63,6 @@ describe('Tasks reducer', () => {
         tasksList: [],
         selected: null,
         loaded: true,
-        activePlace: null,
         lastCompletedTask: null,
       });
     });
@@ -111,7 +109,6 @@ describe('Tasks reducer', () => {
         tasksList: [],
         selected: selected,
         loaded: false,
-        activePlace: null,
         lastCompletedTask: null,
       });
     });
@@ -166,7 +163,6 @@ describe('Tasks reducer', () => {
         tasksList: [],
         selected: null,
         loaded: false,
-        activePlace: null,
         lastCompletedTask: null,
       });
     });
@@ -223,7 +219,6 @@ describe('Tasks reducer', () => {
       expect(state).to.deep.equal({
         selected: null,
         loaded: false,
-        activePlace: null,
         lastCompletedTask: null,
         tasksList: [
           { _id: 'task9', dueDate: -100, state: 'Ready', field: 9 },
@@ -236,6 +231,65 @@ describe('Tasks reducer', () => {
           { _id: 'task2', dueDate: undefined, state: 'Ready', field: 2 },
           { _id: 'task3', dueDate: 0, state: 'Ready', field: 3 },
         ]
+      });
+    });
+  });
+
+  describe('setLastCompletedTask', () => {
+    it('should work on empty state', () => {
+      const task = { _id: 'task_id', due: '22', field: 1 };
+      state = tasksReducer(state, Actions.setLastCompletedTask(task));
+      expect(state).to.deep.equal({
+        tasksList: [],
+        selected: null,
+        loaded: false,
+        lastCompletedTask: task,
+      });
+    });
+
+    it('should work with existent state', () => {
+      state = {
+        selected: { _id: 'task_id', due: '22', field: 1 },
+        tasksList: [
+          { _id: 'task1', dueDate: 22, state: 'Ready' },
+          { _id: 'task2', dueDate: 33, state: 'Ready' },
+        ],
+        loaded: true,
+        lastCompletedTask: { _id: 'othertask' },
+      };
+      const task = { _id: 'task_id2', due: '33', field: 2 };
+      state = tasksReducer(state, Actions.setLastCompletedTask(task));
+      expect(state).to.deep.equal({
+        tasksList: [
+          { _id: 'task1', dueDate: 22, state: 'Ready' },
+          { _id: 'task2', dueDate: 33, state: 'Ready' },
+        ],
+        selected: { _id: 'task_id', due: '22', field: 1 },
+        loaded: true,
+        lastCompletedTask: task,
+      });
+    });
+
+    it('should work with null task', () => {
+      state = {
+        selected: { _id: 'task_id', due: '22', field: 1 },
+        tasksList: [
+          { _id: 'task1', dueDate: 22, state: 'Ready' },
+          { _id: 'task2', dueDate: 33, state: 'Ready' },
+        ],
+        loaded: true,
+        lastCompletedTask: { _id: 'othertask' },
+      };
+
+      state = tasksReducer(state, Actions.setLastCompletedTask(null));
+      expect(state).to.deep.equal({
+        selected: { _id: 'task_id', due: '22', field: 1 },
+        tasksList: [
+          { _id: 'task1', dueDate: 22, state: 'Ready' },
+          { _id: 'task2', dueDate: 33, state: 'Ready' },
+        ],
+        loaded: true,
+        lastCompletedTask: null,
       });
     });
   });
