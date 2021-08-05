@@ -5,7 +5,7 @@ const contactPage = require('../../page-objects/contacts/contacts.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const placeFactory = require('../../factories/cht/contacts/place');
 const personFactory = require('../../factories/cht/contacts/person');
-const places = placeFactory.generateHierarchy(); // This generates ['district_hospital', 'health_center', 'clinic']
+const places = placeFactory.generateHierarchy();
 
 //Add two more health_center
 const sittuHospital = placeFactory.place().build({
