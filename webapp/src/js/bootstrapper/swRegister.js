@@ -17,24 +17,23 @@ function register(onInstalling) {
           return resolve();
         }
 
-        onInstalling();
-        registration.onupdatefound = function() {
-          const installingWorker = registration.installing;
-          installingWorker.onstatechange = function() {
-            switch (installingWorker.state) {
-            case 'activated':
-              resolve(installingWorker);
-              installingWorker.onstatechange = undefined;
-              break;
-            case 'redundant':
-              reject(new Error('Service worker labeled redundant'));
-              installingWorker.onstatechange = undefined;
-              break;
-            default:
-              console.debug(`Service worker state changed to ${installingWorker.state}`);
-            }
-          };
+        const installingWorker = registration.installing;
+        installingWorker.onstatechange = function() {
+          switch (installingWorker.state) {
+          case 'activated':
+            resolve(installingWorker);
+            installingWorker.onstatechange = undefined;
+            break;
+          case 'redundant':
+            reject(new Error('Service worker labeled redundant'));
+            installingWorker.onstatechange = undefined;
+            break;
+          default:
+            console.debug(`Service worker state changed to ${installingWorker.state}`);
+          }
         };
+
+        onInstalling();
       })
       .catch(reject);
   });
