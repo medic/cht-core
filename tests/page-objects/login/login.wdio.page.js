@@ -15,10 +15,11 @@ const login = async (username, password) => {
   await (await loginButton()).click();
 };
 
-const cookieLogin = async (username = auth.username, password = auth.password, createUser = true) => {
+const cookieLogin = async (username = auth.username, password = auth.password, createUser = true, locale) => {
+  const currentLanguage = locale || await getCurrentLanguage();
   const opts = {
     path: '/medic/login',
-    body: { user: username, password: password },
+    body: { user: username, password, locale: currentLanguage.code },
     method: 'POST',
     simple: false,
   };
@@ -40,6 +41,14 @@ const getLanguage = async (selector) => {
     };
   }));
   return lang;
+};
+
+const getCurrentLanguage = async () => {
+  const localeElement = await $('.locale.selected');
+  return {
+    code: await localeElement.getAttribute('name'),
+    name: await localeElement.getText(),
+  };
 };
 
 const changeLocale = async locale => {
@@ -65,4 +74,5 @@ module.exports = {
   cookieLogin,
   getAllLocales: () => getLanguage('.locale'),
   changeLanguage,
+  getCurrentLanguage,
 };
