@@ -2,15 +2,19 @@ const fs = require('fs');
 const path = require('path');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
+const utils = require('./utils');
 
 const runCommand = async (action, folder) => {
+  const url = utils.getInstanceUrl();
   try {
-    const { stdout } = await exec(`medic-conf ${action} --force --debug`, { cwd: folder });
+    const { stdout } = await exec(`medic-conf --url=${url} ${action} --force --debug`, { cwd: folder });
     return stdout;
   } catch (err) {
     return err.stdout;
   }
 };
+
+const getDirPath = () => path.join(__dirname, 'config-temp');
 
 // ToDo: When no longer supporting Node.js -v.12, replace with: fs.rmdirSync(outputPath, { recursive: true });
 const removeDirectoryRecursive = (dirPath) => {
@@ -40,7 +44,10 @@ const createDirectory = (dir) => {
   fs.mkdirSync(dir);
 };
 
-const initializeConfigDir = async (dir) => {
+const initializeConfigDir = async () => {
+  const dir = getDirPath();
+
+  createDirectory(dir);
   await runCommand('initialise-project-layout', dir);
   // make project eslint be root
   const eslintPath = path.join(dir, '.eslintrc');
@@ -50,10 +57,7 @@ const initializeConfigDir = async (dir) => {
 };
 
 const compileNoolsConfig = async (tasksFile, targetsFile) => {
-  const dir = path.join(__dirname, 'config-temp');
-
-  createDirectory(dir);
-  await initializeConfigDir(dir);
+  const dir = getDirPath();
 
   if (tasksFile && fs.existsSync(tasksFile)) {
     fs.copyFileSync(tasksFile, path.join(dir, 'tasks.js'));
@@ -69,6 +73,24 @@ const compileNoolsConfig = async (tasksFile, targetsFile) => {
   return appSettings && appSettings.tasks;
 };
 
+const compileAndUploadAppForms = async (formsDir) => {
+  const dir = getDirPath();
+
+  if (!fs.existsSync(formsDir)) {
+    return;
+  }
+  // copy files
+  const configForms = path.join(dir, 'forms', 'app');
+  fs.readdirSync(formsDir).forEach(file => {
+    fs.copyFileSync(path.join(formsDir, file), path.join(configForms, file));
+  });
+
+  await runCommand('compile-app-forms', dir);
+  await runCommand('upload-app-forms', dir);
+};
+
 module.exports = {
   compileNoolsConfig,
+  initializeConfigDir,
+  compileAndUploadAppForms,
 };

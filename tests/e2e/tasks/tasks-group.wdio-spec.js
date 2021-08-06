@@ -1,8 +1,9 @@
 const path = require('path');
+const chai = require('chai');
 
 const utils = require('../../utils');
-//const sentinelUtils = require('../sentinel/utils');
-//const tasksPage = require('../../page-objects/tasks/tasks.wdio.page');
+const sentinelUtils = require('../sentinel/utils');
+const tasksPage = require('../../page-objects/tasks/tasks.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const chtConfUtils = require('../../cht-conf-utils');
@@ -136,6 +137,12 @@ describe('Tasks group landing page', () => {
   before(async () => {
     await utils.saveDocs([...places, ...people]);
     await utils.createUsers([user]);
+    await sentinelUtils.waitForSentinel();
+
+    await chtConfUtils.initializeConfigDir();
+
+    const formsPath = path.join(__dirname, 'tasks-group-config', 'forms');
+    await chtConfUtils.compileAndUploadAppForms(formsPath);
 
     const tasksFilePath = path.join(__dirname, 'tasks-group-config', 'tasks.js');
     const compiledTasks = await chtConfUtils.compileNoolsConfig(tasksFilePath);
@@ -146,7 +153,12 @@ describe('Tasks group landing page', () => {
     expect(await commonPage.analyticsTab()).toBeDisplayed();
   });
 
-  it('should work', async () => {
+  it('should have tasks', async () => {
+    await tasksPage.goToTasksTab();
+    //const list = await tasksPage.getTasks();
+    //console.log(list);
+    //chai.expect(list.value.length).to.equal(people.length + 3);
+
     await browser.pause(100);
   });
 

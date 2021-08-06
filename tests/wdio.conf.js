@@ -66,7 +66,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: [/*'--headless',*/ '--disable-gpu']
+      args: ['--headless', '--disable-gpu']
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs

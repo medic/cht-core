@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Place Home Visit</h:title>
+    <model>
+      <instance>
+        <place_home_visit delimiter="#" id="place_home_visit" prefix="J1!place_home_visit!" version="2017-11-24">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <source>user</source>
+            <source_id/>
+            <contact>
+              <_id/>
+              <name/>
+              <place_id/>
+              <reported_date/>
+              <type/>
+              <parent>
+                <_id/>
+              </parent>
+            </contact>
+          </inputs>
+          <visited_contact_uuid/>
+          <place_uuid/>
+          <place_id/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </place_home_visit>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/place_home_visit/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/place_home_visit/inputs/source" type="string"/>
+      <bind nodeset="/place_home_visit/inputs/source_id" type="string"/>
+      <bind nodeset="/place_home_visit/inputs/contact/_id" type="db:clinic"/>
+      <bind nodeset="/place_home_visit/inputs/contact/name" type="string"/>
+      <bind nodeset="/place_home_visit/inputs/contact/place_id" type="string"/>
+      <bind nodeset="/place_home_visit/inputs/contact/reported_date" type="string"/>
+      <bind nodeset="/place_home_visit/inputs/contact/type" type="string"/>
+      <bind nodeset="/place_home_visit/inputs/contact/parent/_id" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/place_home_visit/visited_contact_uuid" type="string"/>
+      <bind calculate="../inputs/contact/_id" jr:requiredMsg="This field is required" nodeset="/place_home_visit/place_uuid" required="true()" type="string"/>
+      <bind calculate="../inputs/contact/place_id" jr:requiredMsg="This field is required" nodeset="/place_home_visit/place_id" required="true()" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/place_home_visit/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/place_home_visit/inputs">
+      <label>Patient</label>
+      <input appearance="hidden" ref="/place_home_visit/inputs/source">
+        <label>Source</label>
+      </input>
+      <input appearance="hidden" ref="/place_home_visit/inputs/source_id">
+        <label>Source ID</label>
+      </input>
+      <group ref="/place_home_visit/inputs/contact">
+        <input appearance="db-object" ref="/place_home_visit/inputs/contact/_id">
+          <label>What is the clinic name?</label>
+          <hint>select a clinic from the list</hint>
+        </input>
+        <group ref="/place_home_visit/inputs/contact/parent" appearance="hidden">
+          <label>Parent</label>
+          <input ref="/place_home_visit/inputs/contact/parent/_id" appearance="hidden" >
+            <label>Parent ID</label>
+          </input>
+        </group>
+      </group>
+    </group>
+  </h:body>
+</h:html>

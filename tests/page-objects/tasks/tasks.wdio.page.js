@@ -6,12 +6,16 @@ const getTaskById = (emissionId) => {
   return $(`${taskListSelector} li[data-record-id="${emissionId}"`);
 };
 
+const getTasks = () => {
+  return $(`${taskListSelector} li`);
+};
+
 const getTaskByContact = async (name) => {
   return (await $(`${taskListSelector} li h4`)).$(`span=${name}`);
 };
 
 const goToTasksTab = async () => {
-  await browser.url('/tasks');
+  await browser.url('/#/tasks');
   await (await tasksList()).waitForDisplayed();
 };
 
@@ -21,6 +25,8 @@ const waitForTaskContentLoaded = async (name) => {
 };
 
 module.exports = {
+  tasksList,
+  getTasks,
   goToTasksTab,
   getTaskById,
   getTaskByContact,
