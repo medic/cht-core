@@ -30,7 +30,7 @@ const getLogoutMessage = async () => {
 
 const goToBase = async (timeoutForBaseLoadMillis) => {
   await browser.url('/');
-  
+
   let waitForDisplayedConfig = {};
   if (_.isNumber(timeoutForBaseLoadMillis)) {
     waitForDisplayedConfig = { timeout: timeoutForBaseLoadMillis };
@@ -50,6 +50,20 @@ const goToPeople = async () => {
   await (await contactsPage.contactList()).waitForDisplayed();
 };
 
+const closeTour = async () => {
+  const closeButton = await $('#tour-select a.btn.cancel');
+  try {
+    await closeButton.waitForDisplayed();
+    await closeButton.click();
+    // wait for the request to the server to execute
+    // is there a way to leverage protractor to achieve this???
+    await browser.pause(500);
+  } catch (err) {
+    // there might not be a tour, show a warning
+    console.warn('Tour modal has not appeared after 2 seconds');
+  }
+};
+
 module.exports = {
   logout,
   logoutButton,
@@ -61,5 +75,6 @@ module.exports = {
   getReportsButtonLabel,
   getMessagesButtonLabel,
   getTasksButtonLabel,
-  goToBase
+  goToBase,
+  closeTour,
 };

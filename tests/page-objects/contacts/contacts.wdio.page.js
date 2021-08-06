@@ -49,8 +49,7 @@ const getReportFiltersText = async () => {
 
 const getReportTaskFiltersText = async () => {
   await (await taskFilter()).waitForDisplayed();
-  const blah = await Promise.all((await taskFilters()).map(filter => filter.getText()));
-  return blah;
+  return Promise.all((await taskFilters()).map(filter => filter.getText()));
 };
 
 const addPlace = async (type, placeName , contactName ) => {
