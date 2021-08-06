@@ -12,17 +12,17 @@ const baseConfig = {
   },
   SELENIUM_PROMISE_MANAGER: false,
   seleniumAddress: 'http://localhost:4444/wd/hub',
+  exclude: ['**/*.wdio-spec.js'],
   suites: {
     web: [
       'e2e/!(cht)/**/*.js',
       'e2e/*.js',
-      'mobile/**/*.js',
       'medic-conf/**/*.js'
     ],
     cht: [
       'e2e/cht/*.spec.js'
     ],
-    mobile: [],
+    mobile: ['mobile/**/*.js'],
     // performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',

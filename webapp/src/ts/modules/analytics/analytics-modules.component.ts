@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { combineLatest, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
 
@@ -27,15 +27,12 @@ export class AnalyticsModulesComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToStore() {
-    const selectorsSubscription = combineLatest(
-      this.store.select(Selectors.getAnalyticsModules),
-    )
-      .subscribe(([
-        analyticsModules = [],
-      ]) => {
+    const subscription = this.store
+      .select(Selectors.getAnalyticsModules)
+      .subscribe(analyticsModules => {
         this.analyticsModules = analyticsModules;
         this.loading = false;
       });
-    this.subscriptions.add(selectorsSubscription);
+    this.subscriptions.add(subscription);
   }
 }

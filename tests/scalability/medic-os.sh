@@ -1,4 +1,5 @@
 #!/bin/bash
+sudo shutdown -P +60
 sudo mkfs -t ext4 /dev/nvme0n1;
 sudo mount /dev/nvme0n1 /srv;
 sudo chmod 777 /srv;

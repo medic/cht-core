@@ -25,6 +25,5 @@ describe('Login tests : ', () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(wrongUsername, wrongPassword, true);
     await loginPage.loginNative(auth.username, auth.password);
-    await commonElements.calmNative();
   });
 });
