@@ -684,7 +684,7 @@ parse_args (){
     VERBOSE=1
     BSC_TITLECROP=0
     reboot_count=0
-    sleep=0
+    sleepFor=0
     time=1
     last_action='Initializing'
     envFile='Env file not set'

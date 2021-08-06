@@ -14,10 +14,10 @@
 
 
 # shellcheck disable=SC2046
-. `dirname $0`/simple_curses.sh
+. $(dirname $0)/simple_curses.sh
 
 # shellcheck disable=SC2046
-#. `dirname $0`/helper_helpers.sh
+. $(dirname $0)/helper_helpers.sh
 
 get_lan_ip(){
   routerIP=$(ip r | grep default | head -n1 | awk '{print $3}')
@@ -32,17 +32,18 @@ get_lan_ip(){
 
 get_local_ip_url(){
   lanIp=$1
-  cookedLanAddress=$(echo $lanIp|tr . -)
+  cookedLanAddress=$(echo "$lanIp"|tr . -)
   url="https://${cookedLanAddress}.my.local-ip.co:${CHT_HTTPS}"
   echo "$url"
 }
 
 required_apps_installed(){
   error=''
-  IFS=';' read -ra appsArray <<< "$APP_STRING"
+  appString=$1
+  IFS=';' read -ra appsArray <<< "$appString"
   for app in "${appsArray[@]}"
   do
-    if ! command -v $app&> /dev/null
+    if ! command -v "$app"&> /dev/null
     then
       error="${app} ${error}"
     fi
@@ -53,22 +54,21 @@ required_apps_installed(){
 port_open(){
   ip=$1
   port=$2
-  nc -z $ip $port; echo $?
+  nc -z "$ip" "$port"; echo $?
 }
 
-# todo - just find the "add-local-ip-certs-to-docker.sh" script and install cert for them?
 has_self_signed_cert(){
   url=$1
-  curl --insecure -vvI $url 2>&1 | grep -c "self signed certificate"
+  curl --insecure -vvI "$url" 2>&1 | grep -c "self signed certificate"
 }
 
 cht_healthy(){
   chtIp=$1
   chtPort=$2
   chtUrl=$3
-  portIsOpen="`port_open $chtIp $chtPort`"
+  portIsOpen=$(port_open "$chtIp" "$chtPort")
   if [ "$portIsOpen" = "0" ];then
-    http_code="`curl -k --silent --show-error --head $chtUrl --write-out '%{http_code}'|tail -n1`"
+    http_code=$(curl -k --silent --show-error --head "$chtUrl" --write-out '%{http_code}'|tail -n1)
     if [ "$http_code" != "200" ];then
       echo "CHT is returning $http_code instead of 200."
     fi
@@ -110,15 +110,12 @@ container_status(){
   echo "$result"
 }
 
-# todo containers string being passed in isn't working
-# thanks https://yaroslavgrebnov.com/blog/bash-docker-check-container-existence-and-status/
 get_running_container_count(){
   result=0
-  containers=$1
+  containers="$1"
   IFS=' ' read -ra containersArray <<< "$containers"
   for container in "${containersArray[@]}"
   do
-    echo "checking $container"
     if [ "$( docker ps -f name="${container}" | wc -l )" -eq 2 ]; then
         (( result++ ))
     fi
@@ -147,38 +144,17 @@ get_docker_compose_yml_path(){
 }
 
 docker_up_or_restart(){
-
   # some times this function called too quickly after a docker change, so
   # we sleep 3 secs here to let the docker container/volume stabilize
   sleep 3
 
   envFile=$1
   composeFile=$2
-  containerCount=$3
-  volumeCount=$4
-  containers=$5
 
-  IFS=';' read -ra appsArray <<< "$APP_STRING"
-  for app in "${appsArray[@]}"
-  do
-    if ! command -v $app&> /dev/null
-    then
-      error="${app} ${error}"
-    fi
-  done
-
-  totalCount="$(( $volumeCount + $containerCount ))"
-  if [[ $totalCount != 3 ]];then
-    # haproxy never starts on first "up" call, so you know, call it twice ;)
-    docker-compose --env-file "${envFile}" -f "${composeFile}" up -d > /dev/null 2>&1
-    docker-compose --env-file "${envFile}" -f "${composeFile}" up -d > /dev/null 2>&1
-  else
-
-    # todo - decide which of these to use here
-    # todo - neither is working for some reason?
-#    docker-compose --env-file ${envFile} -f ${composeFile} down && docker-compose --env-file ${envFile} -f ${composeFile} up > /dev/null 2>&1
-     docker restart "${containers}"  > /dev/null 2>&1
-  fi
+  # haproxy never starts on first "up" call, so you know, call it twice ;)
+  docker-compose --env-file ${envFile} -f ${composeFile} down  > /dev/null 2>&1
+  docker-compose --env-file ${envFile} -f ${composeFile} up -d > /dev/null 2>&1
+  docker-compose --env-file ${envFile} -f ${composeFile} up -d > /dev/null 2>&1
 }
 
 reboot_medic_os_services(){
@@ -197,7 +173,8 @@ install_local_ip_cert(){
 
 main (){
 
-  validEnv="`validate_env_file $envFile`"
+  # very first thing check we have valid env file, exit if not
+  validEnv=$(validate_env_file "$envFile")
   if [ -n "$validEnv" ]; then
     window "CHT Docker Helper - WARNING - Missing or invalid .env File" "red" "100%"
     append "$validEnv"
@@ -208,14 +185,17 @@ main (){
     . "${envFile}"
   fi
 
+  # after valid env file is loaded, let's set all our constants
   declare -r APP_STRING="ip;docker;docker-compose;nc;curl"
   declare -r MAX_REBOOTS=5
-  declare -r DEFAULT_SLEEP=45
+  declare -r DEFAULT_SLEEP=75
   declare -r MEDIC_OS="${COMPOSE_PROJECT_NAME}_medic-os_1"
   declare -r HAPROXY="${COMPOSE_PROJECT_NAME}_haproxy_1"
   declare -r ALL_CONTAINERS="${MEDIC_OS} ${HAPROXY}"
+  declare -r GLOBAL_CONTAINERS="*_medic-os_1 *_haproxy_1"
 
-  appStatus=$(required_apps_installed)
+  # with constants set, let's ensure all the apps are present, exit if not
+  appStatus=$(required_apps_installed "$APP_STRING")
   if [ -n "$appStatus" ]; then
     window "WARNING: Missing Apps" "red" "100%"
     append "Install before proceeding:"
@@ -224,50 +204,42 @@ main (){
     return 0
   fi
 
-  volumeCount="`volume_exists $COMPOSE_PROJECT_NAME`"
-  containerCount="`get_running_container_count $ALL_CONTAINERS`"
-  lanAddress="`get_lan_ip`"
-  chtUrl="`get_local_ip_url $lanAddress`"
-  health="`cht_healthy $lanAddress $CHT_HTTPS $chtUrl`"
-  dockerComposePath="`get_docker_compose_yml_path`"
+  # do all the various checks of stuffs
+  volumeCount=$(volume_exists "$COMPOSE_PROJECT_NAME")
+  containerCount=$(get_running_container_count "$ALL_CONTAINERS")
+  # todo - get_running_container_count won't work as is . need to either refactor or add new function
+  globalContainerCount=$(get_running_container_count "$GLOBAL_CONTAINERS")
+  lanAddress=$(get_lan_ip)
+  chtUrl=$(get_local_ip_url "$lanAddress")
+  health=$(cht_healthy "$lanAddress" "$CHT_HTTPS" "$chtUrl")
+  dockerComposePath=$(get_docker_compose_yml_path)
 
-# todo remove debub output
-echo "
-volumeCount $volumeCount
-containerCount $containerCount
-lanAddress $lanAddress
-chtUrl $chtUrl
-ALL_CONTAINERS $ALL_CONTAINERS
-"
-
+  # if we're healthy
   if [ -n "$health" ]; then
     self_signed=0
   else
-    self_signed="`has_self_signed_cert $chtUrl`"
+    self_signed=$(has_self_signed_cert "$chtUrl")
   fi
 
   if [ -z "$appStatus" ] && [ -z "$health" ] && [ "$self_signed" = "0" ]; then
     overAllHealth="Good"
-  elif [[ "$sleep" > 0 ]]; then
+  elif [[ "$sleepFor" > 0 ]]; then
     overAllHealth="Booting..."
   else
     overAllHealth="!= Bad =!"
   fi
 
-  window "CHT Docker Helper" "green" "100%"
-  append_tabbed "PROJECT|$COMPOSE_PROJECT_NAME" 2 "|"
+  window "CHT Docker Helper: PROJECT ${COMPOSE_PROJECT_NAME}" "green" "100%"
+  append_tabbed "LAN IP|${lanAddress}" 2 "|"
+  append_tabbed "CHT URL|${chtUrl}" 2 "|"
+  append_tabbed "FAUXTON URL|${chtUrl}/_utils/" 2 "|"
   append_tabbed "" 2 "|"
-  append_tabbed "LAN IP|$lanAddress" 2 "|"
-  append_tabbed "CHT URL|$chtUrl" 2 "|"
-  append_tabbed "FAUXTON URL|$chtUrl/_utils/" 2 "|"
-  append_tabbed "" 2 "|"
-  append_tabbed "CHT Health|$overAllHealth" 2 "|"
-  append_tabbed "Running Containers|$containerCount of 2" 2 "|"
-  append_tabbed "Last Action|$last_action" 2 "|"
+  append_tabbed "CHT Health|${overAllHealth}" 2 "|"
+  append_tabbed "Project Running Containers|${containerCount} of 2" 2 "|"
+  append_tabbed "Global Running Containers|${globalContainerCount}" 2 "|"
+  append_tabbed "Last Action|${last_action}" 2 "|"
   endwin
 
-  ## todo - just download it for them?
-  # curl -o docker-compose-developer.yml https://raw.githubusercontent.com/medic/cht-core/master/docker-compose-developer.yml
   if [ -z "$dockerComposePath" ]; then
     window "WARNING: Missing Compose File " "red" "100%"
     append "Download before proceeding: "
@@ -277,45 +249,40 @@ ALL_CONTAINERS $ALL_CONTAINERS
   fi
 
   if [[ "$volumeCount" = 0 ]] && [[ "$reboot_count" = 0 ]]; then
-    sleep=$DEFAULT_SLEEP
+    sleepFor=$DEFAULT_SLEEP
     last_action="First run of \"docker-compose up\""
-    docker_up_or_restart $envFile $dockerComposePath $containerCount $volumeCount $ALL_CONTAINERS &
+    docker_up_or_restart "$envFile" "$dockerComposePath" "$containerCount" "$volumeCount" "$ALL_CONTAINERS" &
     (( reboot_count++ ))
   fi
 
-  if [[ "$containerCount" != 2 ]] && [[ "$reboot_count" != "$MAX_REBOOTS" ]] && [[ "$sleep" = 0 ]]; then
-    sleep=$DEFAULT_SLEEP
+  if [[ "$containerCount" != 2 ]] && [[ "$reboot_count" != "$MAX_REBOOTS" ]] && [[ "$sleepFor" = 0 ]]; then
+    sleepFor=$DEFAULT_SLEEP
     last_action="Running \"docker-compose down\" then  \"docker-compose up\""
-    docker_up_or_restart $envFile $dockerComposePath $containerCount $volumeCount $ALL_CONTAINERS &
+    docker_up_or_restart "$envFile" "$dockerComposePath" "$containerCount" "$volumeCount" "$ALL_CONTAINERS" &
     (( reboot_count++ ))
   fi
 
-  if [ -n "$health" ] && [[ "$sleep" = 0 ]] && [[ "$reboot_count" != "$MAX_REBOOTS" ]]; then
-    sleep=$DEFAULT_SLEEP
-
-    # todo - decide which of these to use here
-
-#    last_action="Restarting medic-os services in container"
-#    reboot_medic_os_services &
-
+  if [ -n "$health" ] && [[ "$sleepFor" = 0 ]] && [[ "$reboot_count" != "$MAX_REBOOTS" ]]; then
+    sleepFor=$DEFAULT_SLEEP
     last_action="Running \"docker-compose down\" then  \"docker-compose up\""
-    docker_up_or_restart $envFile $dockerComposePath $containerCount $volumeCount $ALL_CONTAINERS &
+    docker_up_or_restart "$envFile" "$dockerComposePath" "$containerCount" "$volumeCount" "$ALL_CONTAINERS" &
     (( reboot_count++ ))
   fi
 
-  if [[ "$sleep" > 0 ]] && [ -n "$health" ]; then
+  if [[ "$sleepFor" > 0 ]] && [ -n "$health" ]; then
     window "Attempt number $reboot_count / $MAX_REBOOTS to boot $COMPOSE_PROJECT_NAME" "yellow" "100%"
-    append "Waiting $sleep..."
+    append "Waiting $sleepFor..."
     endwin
-    (( sleep-- ))
+    (( sleepFor-- ))
   fi
 
-  if [[ "$reboot_count" = "$MAX_REBOOTS" ]] && [[ "$sleep" = 0 ]]; then
-    window "Reboot max met: $reboot_count reboots" "red" "100%"
-    append "Please try running this script again"
+  if [[ "$reboot_count" = "$MAX_REBOOTS" ]] && [[ "$sleepFor" = 0 ]]; then
+    window "Reboot max met: $MAX_REBOOTS reboots" "red" "100%"
+    append "Please try running docker helper script again"
     endwin
   fi
 
+  # show health status
   if [ -n "$health" ]; then
     window "WARNING: CHT Not running" "red" "100%"
     append "$health"
@@ -323,6 +290,7 @@ ALL_CONTAINERS $ALL_CONTAINERS
     return 0
   fi
 
+  # check for self signed cert, install if so
   if [ "$self_signed" = "1" ]; then
     window "WARNING: CHT has self signed certificate" "red" "100%"
     append "Installing local-ip.co certificate to fix..."
@@ -334,10 +302,10 @@ ALL_CONTAINERS $ALL_CONTAINERS
     return 0
   fi
 
-  # if we're here, we're happy!
-  sleep=0
+  # if we're here, we're happy! reset all the things, show smiley face
+  sleepFor=0
   reboot_count=0
   last_action=" :) "
 }
 
-main_loop -t 0.5 $@
+main_loop -t 1.2 $@
