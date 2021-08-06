@@ -466,8 +466,8 @@ module.exports = function(grunt) {
       'start-webdriver': {
         cmd:
           'mkdir -p tests/logs && ' +
-          './node_modules/.bin/webdriver-manager update --versions.chrome 90.0.4430.24 && ' +
-          './node_modules/.bin/webdriver-manager start --versions.chrome 90.0.4430.24 > tests/logs/webdriver.log & ' +
+          './node_modules/.bin/webdriver-manager update && ' +
+          './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
       },
       'start-webdriver-ci': {
@@ -595,7 +595,7 @@ module.exports = function(grunt) {
         cmd: () => {
           const configuration = TRAVIS_BUILD_NUMBER ? 'production' : 'development';
           return `
-            cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true & 
+            cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true &
             cd ../
           `;
         },
@@ -621,6 +621,10 @@ module.exports = function(grunt) {
         },
         stdio: 'inherit', // enable colors!
       },
+      //using npm run, as 'grunt-mocha-test' has issues with the integration with newer versions of mocha.
+      'e2e-integration': {
+        cmd: 'npm run e2e-integration'
+      }
     },
     watch: {
       options: {
@@ -977,6 +981,11 @@ module.exports = function(grunt) {
     'exec:clean-test-database',
   ]);
 
+  grunt.registerTask('e2e-integration', 'Deploy app for testing', [
+    'e2e-env-setup',
+    'exec:e2e-integration'
+  ]);
+
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
     'exec:clean-test-database',
     'exec:setup-test-database',
@@ -1062,6 +1071,16 @@ module.exports = function(grunt) {
     'exec:e2e-servers',
     'protractor:e2e-web-tests',
     //'protractor:e2e-mobile-tests',
+  ]);
+  grunt.registerTask('ci-e2e-mobile', 'Run e2e tests for CI', [
+    'start-webdriver',
+    'exec:e2e-servers',
+    'protractor:e2e-mobile-tests',
+  ]);
+
+  grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
+    'exec:e2e-servers',
+    'exec:e2e-integration',
   ]);
 
   grunt.registerTask('ci-e2e-cht', 'Run e2e tests for CI', [

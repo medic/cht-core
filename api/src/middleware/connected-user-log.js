@@ -8,6 +8,11 @@ module.exports = {
       .getUserCtx(req)
       .then(({ name }) => connectedUserLogService.save(name))
       .catch(err => {
+        if (err && err.code === 401) {
+          // don't spam the logs with authentication errors
+          return;
+        }
+
         logger.error('Error recording user connection:', err);
       })
       .then(() => next());

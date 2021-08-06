@@ -3,7 +3,6 @@ import sinon from 'sinon';
 import { expect, assert } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import * as _ from 'lodash-es';
-import { TranslateService } from '@ngx-translate/core';
 
 import { DbService } from '@mm-services/db.service';
 import { Form2smsService } from '@mm-services/form2sms.service';
@@ -23,6 +22,7 @@ import { EnketoService } from '@mm-services/enketo.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TransitionsService } from '@mm-services/transitions.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -61,6 +61,7 @@ describe('Enketo service', () => {
   let Search;
   let LineageModelGenerator;
   let transitionsService;
+  let translateService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -93,12 +94,15 @@ describe('Enketo service', () => {
       output: { update: () => {} },
     });
     transitionsService = { applyTransitions: sinon.stub().resolvesArg(0) };
+    translateService = {
+      instant: sinon.stub().returnsArg(0),
+      get: sinon.stub(),
+    };
 
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: TranslateService, useValue: { instant: sinon.stub().returnsArg(0) } },
         provideMockStore(),
         {
           provide: DbService,
@@ -127,6 +131,7 @@ describe('Enketo service', () => {
         },
         { provide: ZScoreService, useValue: { getScoreUtil: sinon.stub().resolves(sinon.stub())} },
         { provide: TransitionsService, useValue: transitionsService },
+        { provide: TranslateService, useValue: translateService },
       ],
     });
 
@@ -1470,4 +1475,52 @@ describe('Enketo service', () => {
     });
   });
 
+  describe('renderContactForm', () => {
+    beforeEach(() => {
+      service.setFormTitle = sinon.stub();
+      dbGetAttachment.resolves('<form/>');
+      translateService.get.callsFake((key) => `translated key ${key}`);
+      TranslateFrom.callsFake((sentence) => `translated sentence ${sentence}`);
+    });
+
+    const callbackMock = () => {};
+    const instanceData = {
+      health_center: {
+        type: 'contact',
+        contact_type: 'health_center',
+        parent: 'parent',
+      },
+    };
+    const formDoc = {
+      ...mockEnketoDoc('myform'),
+      title: 'New Area',
+    };
+
+    it('should translate titleKey when provided', async () => {
+      await service.renderContactForm({
+        selector: $('<div></div>'),
+        formDoc,
+        instanceData,
+        editedListener: callbackMock,
+        valuechangeListener: callbackMock,
+        titleKey: 'contact.type.health_center.new',
+      });
+
+      expect(service.setFormTitle.callCount).to.be.equal(1);
+      expect(service.setFormTitle.args[0][1]).to.be.equal('translated key contact.type.health_center.new');
+    });
+
+    it('should fallback to translate document title when the titleKey is not available', async () => {
+      await service.renderContactForm({
+        selector: $('<div></div>'),
+        formDoc,
+        instanceData,
+        editedListener: callbackMock,
+        valuechangeListener: callbackMock,
+      });
+
+      expect(service.setFormTitle.callCount).to.be.equal(1);
+      expect(service.setFormTitle.args[0][1]).to.be.equal('translated sentence New Area');
+    });
+  });
 });

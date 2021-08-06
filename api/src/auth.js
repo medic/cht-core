@@ -86,14 +86,17 @@ module.exports = {
   getUserCtx: req => {
     return get('/_session', req.headers)
       .catch(err => {
-        throw { code: 401, message: 'Not logged in', err: err };
+        if (err.statusCode === 401) {
+          throw { code: 401, message: 'Not logged in', err: err };
+        }
+        throw err;
       })
       .then(auth => {
         if (auth && auth.userCtx && auth.userCtx.name) {
           req.headers['X-Medic-User'] = auth.userCtx.name;
           return auth.userCtx;
         }
-        throw { code: 401, message: 'Not logged in' };
+        throw { code: 500, message: 'Failed to authenticate' };
       });
   },
 
