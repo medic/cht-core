@@ -4,34 +4,57 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class ExternalAppLauncherService {
-  appsToResolve: Record<string, Function> = { };
+  launchToResolve: Function;
 
   constructor() { }
 
   isEnabled() {
     return !!(
       window.medicmobile_android
-      && typeof window.medicmobile_android.cht_launchExternalApp === 'function'
+      && typeof window.medicmobile_android.launchExternalApp === 'function'
     );
   }
 
-  launchExternalApp(appID: string, appName: string, inputs: Record<string, any>): Promise<any>|undefined {
+  launchExternalApp(chtExternalApp: ChtExternalApp): Promise<any>|undefined {
     try {
-      window.medicmobile_android.cht_launchExternalApp(appID, appName, inputs);
-      return new Promise(resolve => this.appsToResolve[appID] = resolve);
-    } catch (error) {
-      console.error(
-        `ExternalAppLauncherService :: Error when launching external app with id: ${appID} and name: ${appName}`,
-        error
+      const { action, category, type, extras, uri, packageName, flags } = chtExternalApp;
+      const extrasStr = extras ? JSON.stringify(extras) : null;
+
+      window.medicmobile_android.launchExternalApp(
+        action || null,
+        category || null,
+        type || null,
+        extrasStr,
+        uri || null,
+        packageName || null,
+        flags || null
       );
+
+      return new Promise(resolve => this.launchToResolve = resolve);
+
+    } catch (error) {
+      const message = `ExternalAppLauncherService :: Error when launching external app.
+       ChtExternalApp=${ JSON.stringify(chtExternalApp) }, Enabled=${this.isEnabled()}`;
+      console.error(message, error);
     }
   }
 
   resolveExternalAppResponse(response: Record<string, any>) {
-    if (!response?.appID || !this.appsToResolve[response.appID]) {
+    if (!response || !this.launchToResolve) {
       return;
     }
 
-    this.appsToResolve[response.appID](response);
+    this.launchToResolve(response);
+    this.launchToResolve = null;
   }
+}
+
+interface ChtExternalApp {
+  action: string;
+  category?: string;
+  type?: string;
+  extras?: Record<string, any>;
+  uri?: string;
+  packageName?: string;
+  flags?: number;
 }

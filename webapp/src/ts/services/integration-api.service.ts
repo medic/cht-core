@@ -15,7 +15,7 @@ import { TranslateService } from '@mm-services/translate.service';
   providedIn: 'root'
 })
 export class IntegrationApiService {
-  ExternalAppLauncherService;
+  ExternalAppLauncher;
   Language;
   Select2Search;
   Enketo;
@@ -40,7 +40,7 @@ export class IntegrationApiService {
     private androidApiService:AndroidApiService,
   ) {
     this.DB = dbService;
-    this.ExternalAppLauncherService = externalAppLauncherService;
+    this.ExternalAppLauncher = externalAppLauncherService;
     this.Language = languageService;
     this.Select2Search = select2SearchService;
     this.Enketo = enketoService;

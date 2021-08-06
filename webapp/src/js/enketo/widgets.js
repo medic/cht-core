@@ -22,6 +22,7 @@
     require( './widgets/bikram-sambat-datepicker' ),
     require( './widgets/simprints' ),
     require( './widgets/mrdt' ),
+    require( './widgets/external-app-launcher' ),
   ];
 
   module.exports = widgets;
