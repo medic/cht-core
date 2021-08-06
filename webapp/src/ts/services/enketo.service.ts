@@ -289,11 +289,14 @@ export class EnketoService {
         if (loadErrors?.length) {
           return Promise.reject(new Error(JSON.stringify(loadErrors)));
         }
+        const language = options.language;
+        this.currentForm.view.$.on(
+          'click',
+          'button.add-repeat-btn:enabled',
+          () => this.currentForm.langs.setAll(language),
+        );
+        this.currentForm.langs.$formLanguages.val(language).trigger('change');
       })
-      .then(() => this.languageService.get())
-      // TODO remove this when our enketo-core dependency is updated as the latest
-      //      version uses the language passed to the constructor
-      .then((language) => this.currentForm.langs.$formLanguages.val(language).trigger('change'))
       .then(() => this.getFormTitle(titleKey, doc))
       .then((title) => {
         this.setFormTitle(wrapper, title);
