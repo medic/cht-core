@@ -922,15 +922,20 @@ describe('Reports effects', () => {
       store.refreshState();
 
       sinon.stub(Date, 'now').returns(1000); // using faketimers breaks fakeAsync's tick :(
+      // Getting the report from the db causes a new report to be selected
+      dbService.get.callsFake(() => {
+        actions$ = concat(actions$, of(ReportActionList.selectReport({id: 'report', silent: false})));
+        return Promise.resolve().then(() => {return { _id: 'report', _rev: 3 };});
+      });
       // Updating the report causes it to be re-selected
       dbService.put.callsFake(() => {
-        actions$ = of(ReportActionList.selectReport({id: 'report', silent: true}));
+        actions$ = concat(actions$, of(ReportActionList.selectReport({id: 'report1', silent: false})));
       });
-      dbService.get.resolves({ _id: 'report', _rev: 3 });
 
       const setSelected = sinon.stub(ReportsActions.prototype, 'setSelected');
       reportViewModelGeneratorService.get.onFirstCall().resolves({_id: 'report', model: true});
       reportViewModelGeneratorService.get.onSecondCall().resolves({_id: 'report1', model: true});
+      reportViewModelGeneratorService.get.onThirdCall().resolves({_id: 'report2', model: true});
 
       // Trigger report verification
       actions$ = of(ReportActionList.verifyReport(false));
@@ -938,7 +943,7 @@ describe('Reports effects', () => {
       tick();
 
       // Change the selected report before the re-selection from the verification has completed
-      actions$ = concat(actions$, of(ReportActionList.selectReport({id: 'report1', silent: false})));
+      actions$ = concat(actions$, of(ReportActionList.selectReport({id: 'report2', silent: false})));
       effects.selectReport.subscribe();
       tick();
 
@@ -952,10 +957,17 @@ describe('Reports effects', () => {
       }]);
 
       // The first select action starts then gets canceled because the second starts
-      expect(reportViewModelGeneratorService.get.callCount).to.equal(2);
-      expect(reportViewModelGeneratorService.get.args).to.deep.equal([['report'], ['report1']]);
+      expect(reportViewModelGeneratorService.get.callCount).to.equal(3);
+      expect(reportViewModelGeneratorService.get.args).to.deep.equal([['report'], ['report1'], ['report2']]);
       expect(setSelected.callCount).to.equal(1);
-      expect(setSelected.args).to.deep.equal([[{_id: 'report1', model: true}]]);
+      expect(setSelected.args).to.deep.equal([[{_id: 'report2', model: true}]]);
+
+      // Make sure we only end up setting the data we expect onto the report
+      expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(3);
+      expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).args[2]).to.deep.equal([{ _rev: 3 }]);
+      expect((<any>ReportsActions.prototype.setFirstSelectedReportFormattedProperty).callCount).to.equal(1);
+      expect((<any>ReportsActions.prototype.setFirstSelectedReportFormattedProperty).args[0]).to.deep.equal(
+        [{ oldVerified: undefined, verified: false }]);
     }));
 
     it('should launch modal with correct params on invalid', fakeAsync(() => {
