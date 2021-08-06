@@ -246,6 +246,9 @@
       "chw_supervisor",
       "chw"
     ],
+    "can_view_tasks_group": [
+      "chw"
+    ],
     "can_view_unallocated_data_records": [
       "gateway",
       "program_officer",

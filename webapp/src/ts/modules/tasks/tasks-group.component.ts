@@ -140,7 +140,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
       this.tasks = tasks;
       this.globalActions.setLoadingContent(false);
     } catch (err) {
-      console.error('Error loading tasks to display', err);
+      console.error('Error loading tasks group', err);
       this.contentError = true;
       this.globalActions.setLoadingContent(false);
       this.setNavigation(false);

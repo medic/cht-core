@@ -444,6 +444,146 @@ describe('TasksGroupComponent', () => {
       ]);
       expect(navigationCancel.callCount).to.equal(0);
     }));
+
+    it('should log error when getting lineage fails', async (async () => {
+      const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
+      lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
+      const contact = { _id: 'the_contact', type: 'person', parent: { _id: 'clinic', parent: { _id: 'hc' } } };
+      const leafPlaceTypes = [{ id: 'clinic' }];
+
+      contactTypesService.getLeafPlaceTypes.resolves(leafPlaceTypes);
+      contactTypesService.getTypeId.callsFake(c => c.type);
+      contactTypesService.isLeafPlaceType
+        .withArgs(leafPlaceTypes, 'person').returns(false)
+        .withArgs(leafPlaceTypes, 'clinic').returns(true);
+      lineageModelGeneratorService.contact.rejects({ error: 'boom' });
+
+      await compileComponent();
+      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
+      expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal([contact._id]);
+
+      expect(contactTypesService.getTypeId.callCount).to.equal(0);
+      expect(contactTypesService.isLeafPlaceType.callCount).to.equal(0);
+      expect(contactViewModelGeneratorService.getContact.callCount).to.equal(0);
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(0);
+      expect(tasksForContactService.get.callCount).to.equal(0);
+
+      expect(component.tasks).to.deep.equal([]);
+      expect(component.contentError).to.equal(true);
+      expect(navigationCancel.callCount).to.equal(0);
+
+      expect(telemetryService.record.callCount).to.equal(0);
+    }));
+
+    it('should log error when getting contact model fails', async (async () => {
+      const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
+      lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
+      const contact = { _id: 'the_contact', type: 'person', parent: { _id: 'clinic', parent: { _id: 'hc' } } };
+      const clinic = { _id: 'clinic', type: 'clinic', parent: { _id: 'hc' } };
+      const healthCenter = { _id: 'hc', type: 'health_center' };
+      const leafPlaceTypes = [{ id: 'clinic' }];
+
+      contactTypesService.getLeafPlaceTypes.resolves(leafPlaceTypes);
+      contactTypesService.getTypeId.callsFake(c => c.type);
+      contactTypesService.isLeafPlaceType
+        .withArgs(leafPlaceTypes, 'person').returns(false)
+        .withArgs(leafPlaceTypes, 'clinic').returns(true);
+      lineageModelGeneratorService.contact.resolves({ doc: contact, lineage: [clinic, healthCenter] });
+      contactViewModelGeneratorService.getContact.rejects({ err: 'omg' });
+
+      await compileComponent();
+      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
+      expect(contactTypesService.getTypeId.callCount).to.equal(2);
+      expect(contactTypesService.isLeafPlaceType.callCount).to.equal(2);
+      expect(contactViewModelGeneratorService.getContact.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(0);
+      expect(tasksForContactService.get.callCount).to.equal(0);
+
+      expect(component.tasks).to.deep.equal([]);
+      expect(component.contentError).to.equal(true);
+      expect(navigationCancel.callCount).to.equal(0);
+
+      expect(telemetryService.record.callCount).to.equal(0);
+    }));
+
+    it('should log error when getting model children fails', async (async () => {
+      const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
+      lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
+      const contact = { _id: 'the_contact', type: 'person', parent: { _id: 'clinic', parent: { _id: 'hc' } } };
+      const clinic = { _id: 'clinic', type: 'clinic', parent: { _id: 'hc' } };
+      const healthCenter = { _id: 'hc', type: 'health_center' };
+      const leafPlaceTypes = [{ id: 'clinic' }];
+      const contactModel = {
+        type: { _id: 'clinic' },
+        doc: clinic,
+      };
+
+      contactTypesService.getLeafPlaceTypes.resolves(leafPlaceTypes);
+      contactTypesService.getTypeId.callsFake(c => c.type);
+      contactTypesService.isLeafPlaceType
+        .withArgs(leafPlaceTypes, 'person').returns(false)
+        .withArgs(leafPlaceTypes, 'clinic').returns(true);
+      lineageModelGeneratorService.contact.resolves({ doc: contact, lineage: [clinic, healthCenter] });
+      contactViewModelGeneratorService.getContact.resolves(contactModel);
+      contactViewModelGeneratorService.loadChildren.rejects({ some: 'error' });
+
+      await compileComponent();
+      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
+      expect(contactTypesService.getTypeId.callCount).to.equal(2);
+      expect(contactTypesService.isLeafPlaceType.callCount).to.equal(2);
+      expect(contactViewModelGeneratorService.getContact.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+      expect(tasksForContactService.get.callCount).to.equal(0);
+
+      expect(component.tasks).to.deep.equal([]);
+      expect(component.contentError).to.equal(true);
+      expect(navigationCancel.callCount).to.equal(0);
+
+      expect(telemetryService.record.callCount).to.equal(0);
+    }));
+
+    it('should log error when getting tasks fails', async (async () => {
+      const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
+      lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
+      const contact = { _id: 'the_contact', type: 'person', parent: { _id: 'clinic', parent: { _id: 'hc' } } };
+      const clinic = { _id: 'clinic', type: 'clinic', parent: { _id: 'hc' } };
+      const healthCenter = { _id: 'hc', type: 'health_center' };
+      const leafPlaceTypes = [{ id: 'clinic' }];
+      const contactModel = {
+        type: { _id: 'clinic' },
+        doc: clinic,
+      };
+
+      contactTypesService.getLeafPlaceTypes.resolves(leafPlaceTypes);
+      contactTypesService.getTypeId.callsFake(c => c.type);
+      contactTypesService.isLeafPlaceType
+        .withArgs(leafPlaceTypes, 'person').returns(false)
+        .withArgs(leafPlaceTypes, 'clinic').returns(true);
+      lineageModelGeneratorService.contact.resolves({ doc: contact, lineage: [clinic, healthCenter] });
+      contactViewModelGeneratorService.getContact.resolves(contactModel);
+      contactViewModelGeneratorService.loadChildren.resolves({ some: 'children' });
+      tasksForContactService.get.rejects({ err: true });
+      tasksForContactService.getTasksBreakdown.resolves({
+        Ready: 3,
+        Cancelled: 2,
+        Draft: 12,
+        Failed: 4,
+      });
+
+      await compileComponent();
+      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
+      expect(contactTypesService.getTypeId.callCount).to.equal(2);
+      expect(contactTypesService.isLeafPlaceType.callCount).to.equal(2);
+      expect(contactViewModelGeneratorService.getContact.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+      expect(tasksForContactService.get.callCount).to.equal(1);
+
+      expect(component.tasks).to.deep.equal([]);
+      expect(component.contentError).to.equal(true);
+      expect(navigationCancel.callCount).to.equal(0);
+
+      expect(telemetryService.record.callCount).to.equal(0);
+    }));
   });
 
   describe('isHouseHoldTask', () => {

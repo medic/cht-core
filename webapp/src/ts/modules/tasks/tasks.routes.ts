@@ -24,7 +24,8 @@ export const routes:Routes = [
       {
         path: 'group',
         component: TasksGroupComponent,
-        data: { name: 'tasks.group' },
+        data: { name: 'tasks.group', permissions: ['can_view_tasks_group'], redirect: ['/tasks'] },
+        canActivate: [AppRouteGuardProvider],
         canDeactivate: [TasksGroupRouteGuardProvider],
       },
       {
