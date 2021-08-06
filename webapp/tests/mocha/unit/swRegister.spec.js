@@ -5,7 +5,7 @@ const { expect } = require('chai');
 let fakeRegisterFunc;
 
 function executeSwLifecycle(registration) {
-  setTimeout(() => registration.onupdatefound(), 1);
+  //setTimeout(() => registration.onupdatefound(), 1);
   setTimeout(() => registration.installing.onstatechange(), 2);
 }
 

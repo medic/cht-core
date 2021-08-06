@@ -308,14 +308,10 @@ describe('bootstrapper', () => {
     localGet.withArgs('_design/medic-client').rejects();
     sinon.stub(purger, 'setOptions');
 
-    const localReplicateResult = Promise.reject({ status: 401 });
-    localReplicateResult.on = () => {};
-    localReplicate.returns(localReplicateResult);
-
-    localAllDocs.resolves({ total_rows: 0 });
-    fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
-
     bootstrapper(pouchDbOptions, err => {
+      assert.equal(localReplicate.callCount, 0);
+      assert.equal(localAllDocs.callCount, 0);
+      assert.equal(fetch.callCount, 0);
       assert.equal(err.status, 401);
       assert.equal(
         err.redirect,
