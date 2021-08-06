@@ -106,7 +106,7 @@ validate_env_file(){
 container_status(){
   project=$1
   result=''
-  containers=(""${project}"_medic-os_1" ""${project}"_haproxy_1")
+  containers=(""${COMPOSE_PROJECT_NAME}"_medic-os_1" ""${COMPOSE_PROJECT_NAME}"_haproxy_1")
 
   for container in "${containers[@]}"; do
     if [ "$( docker ps -f name="${container}" | wc -l )" -ne 2 ]; then
@@ -119,9 +119,8 @@ container_status(){
 
 # thanks https://yaroslavgrebnov.com/blog/bash-docker-check-container-existence-and-status/
 get_running_container_count(){
-  project=$1
   result=0
-  containers=(""${project}"_medic-os_1" ""${project}"_haproxy_1")
+  containers=(""${COMPOSE_PROJECT_NAME}"_medic-os_1" ""${COMPOSE_PROJECT_NAME}"_haproxy_1")
 
   for container in "${containers[@]}"; do
     if [ "$( docker ps -f name="${container}" | wc -l )" -eq 2 ]; then
@@ -133,8 +132,7 @@ get_running_container_count(){
 }
 
 volume_exists(){
-  project=$1
-  volume=""${project}"_medic-data"
+  volume=""${COMPOSE_PROJECT_NAME}"_medic-data"
   if [ "$( docker volume inspect "${volume}" 2>&1  | wc -l )" -eq 2 ]; then
     echo "0"
   else
@@ -157,20 +155,18 @@ docker_up_or_restart(){
   composeFile=$2
   containerCount=$3
   volumeCount=$4
-  if [[ $volumeCount != 1 ]] || [[ $containerCount != 2 ]];then
-
-    # todo - remove debug
-    echo "DOCKER UP!!!! volumeCount: $volumeCount  containerCount: $containerCount "
+  totalCount="$(( $volumeCount + $containerCount ))"
+  if [[ $totalCount != 3 ]];then
+    # haproxy never starts on first "up" call, so you know, call it twice ;)
+    sleep 3
+    docker-compose --env-file ${envFile} -f ${composeFile} up -d > /dev/null 2>&1
     docker-compose --env-file ${envFile} -f ${composeFile} up -d > /dev/null 2>&1
   else
-    # todo - remove debug
-    echo "DOCKER RESTART!!!! volumeCount: $volumeCount  containerCount: $containerCount "
 
     # todo - decide which of these to use here
-    # todo - "docker restart" isn't working for some reason?
-
+    # todo - neither is working for some reason?
 #    docker-compose --env-file ${envFile} -f ${composeFile} down && docker-compose --env-file ${envFile} -f ${composeFile} up > /dev/null 2>&1
-     docker restart "${project}"_medic-os_1" "${project}"_haproxy_1"  > /dev/null 2>&1
+     docker restart "${COMPOSE_PROJECT_NAME}"_medic-os_1" "${COMPOSE_PROJECT_NAME}"_haproxy_1"  > /dev/null 2>&1
   fi
 }
 
@@ -199,11 +195,9 @@ main (){
     return 0
   fi
 
-  volumeCount="`volume_exists $COMPOSE_PROJECT_NAME`"
-  containerCount="`get_running_container_count $COMPOSE_PROJECT_NAME`"
+  volumeCount="`volume_exists`"
+  containerCount="`get_running_container_count`"
 
-echo "volumeCount $volumeCount"
-echo "containerCount $containerCount"
   lanAddress="`get_lan_ip`"
   chtUrl="`get_local_ip_url`"
   appStatus=`required_apps_installed $appsString`
@@ -231,6 +225,7 @@ echo "containerCount $containerCount"
   append_tabbed "" 2 "|"
   append_tabbed "LAN IP|$lanAddress" 2 "|"
   append_tabbed "CHT URL|$chtUrl" 2 "|"
+  append_tabbed "FAUXTON URL|$chtUrl/_utils/" 2 "|"
   append_tabbed "" 2 "|"
   append_tabbed "CHT Health|$overAllHealth" 2 "|"
   append_tabbed "Running Containers|$containerCount of 2" 2 "|"
@@ -250,14 +245,14 @@ echo "containerCount $containerCount"
   if [[ "$volumeCount" = 0 ]] && [[ "$reboot_count" = 0 ]]; then
     sleep=$defaultSleep
     last_action="First run of \"docker-compose up\""
-    docker_up_or_restart $envFile $dockerComposePath $volumeCount $containerCount &
+    docker_up_or_restart $envFile $dockerComposePath $containerCount $volumeCount  &
     (( reboot_count++ ))
   fi
 
   if [[ "$containerCount" != 2 ]] && [[ "$reboot_count" != "$maxReboots" ]] && [[ "$sleep" = 0 ]]; then
     sleep=$defaultSleep
     last_action="Running \"docker-compose down\" then  \"docker-compose up\""
-    docker_up_or_restart $envFile $dockerComposePath $volumeCount $containerCount &
+    docker_up_or_restart $envFile $dockerComposePath $containerCount $volumeCount &
     (( reboot_count++ ))
   fi
 
@@ -266,15 +261,15 @@ echo "containerCount $containerCount"
 
     # todo - decide which of these to use here
 
-#    last_action="Rebooting medic-os services in container"
+#    last_action="Restarting medic-os services in container"
 #    reboot_medic_os_services &
 
     last_action="Running \"docker-compose down\" then  \"docker-compose up\""
-    docker_up_or_restart $envFile $dockerComposePath volumeCount containerCount &
+    docker_up_or_restart $envFile $dockerComposePath $containerCount $volumeCount
     (( reboot_count++ ))
   fi
 
-  if [[ "$sleep" > 0 ]]; then
+  if [[ "$sleep" > 0 ]] && [ -n "$health" ]; then
     window "Attempt number $reboot_count / $maxReboots to boot $COMPOSE_PROJECT_NAME" "yellow" "100%"
     append "Waiting $sleep..."
     endwin
@@ -302,6 +297,10 @@ echo "containerCount $containerCount"
     return 0
   fi
 
+  # if we're here, we're happy!
+  sleep=0
+  reboot_count=0
+  last_action=" :) "
 }
 
 main_loop -t 0.5 $@
