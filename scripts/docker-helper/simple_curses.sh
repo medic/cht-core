@@ -686,6 +686,7 @@ parse_args (){
     reboot_count=0
     sleepFor=0
     time=1
+    exitNext=''
     last_action='Initializing'
     docker_action='up'
     envFile='Env file not set'

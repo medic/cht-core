@@ -170,21 +170,21 @@ install_local_ip_cert(){
 }
 
 docker_down(){
-  set -e
   envFile=$1
   composeFile=$2
-  docker-compose --env-file ${envFile} -f ${composeFile} down  > /dev/null 2>&1
-  exit 0
+  docker-compose --env-file ${envFile} -f ${composeFile} down > /dev/null 2>&1
 }
 
 docker_destroy(){
-  set -e
   project=$1
-  docker stop -t 0 "${project}"_medic-os_1 > /dev/null 2>&1
-  docker stop -t 0 "${project}"_haproxy_1 > /dev/null 2>&1
+  containers=$2
+  IFS=' ' read -ra containersArray <<< "$containers"
+  for container in "${containersArray[@]}"
+  do
+    docker stop -t 0 "${container}" > /dev/null 2>&1
+  done
   docker rm "${project}"_haproxy_1 another3_medic-os_1 > /dev/null 2>&1
   docker volume rm "${project}"_medic-data > /dev/null 2>&1
-  exit 0
 }
 
 main (){
@@ -208,7 +208,6 @@ main (){
   declare -r MEDIC_OS="${COMPOSE_PROJECT_NAME}_medic-os_1"
   declare -r HAPROXY="${COMPOSE_PROJECT_NAME}_haproxy_1"
   declare -r ALL_CONTAINERS="${MEDIC_OS} ${HAPROXY}"
-  declare -r GLOBAL_CONTAINERS="*_medic-os_1 *_haproxy_1"
 
   # with constants set, let's ensure all the apps are present, exit if not
   appStatus=$(required_apps_installed "$APP_STRING")
@@ -224,19 +223,32 @@ main (){
   volumeCount=$(volume_exists "$COMPOSE_PROJECT_NAME")
   containerCount=$(get_running_container_count "$ALL_CONTAINERS")
   # todo - get_running_container_count won't work as is . need to either refactor or add new function
-  globalContainerCount=$(get_running_container_count "$GLOBAL_CONTAINERS")
+#  globalContainerCount=$(get_running_container_count "$GLOBAL_CONTAINERS")
   lanAddress=$(get_lan_ip)
   chtUrl=$(get_local_ip_url "$lanAddress")
   health=$(cht_healthy "$lanAddress" "$CHT_HTTPS" "$chtUrl")
   dockerComposePath=$(get_docker_compose_yml_path)
 
-  # if we're healthy
+  # if we're exiting, call down or destory and quit proper
+  if [ -n "$exitNext" ];then
+    if [ "$exitNext" = "destroy" ]; then
+      docker_destroy "$COMPOSE_PROJECT_NAME" "$ALL_CONTAINERS"
+    elif [ "$exitNext" = "down" ]; then
+      docker_down "$envFile" "$dockerComposePath"
+    fi
+    set -e
+    exit 0
+  fi
+
+  # if we're not healthy, report self signed as zero, otherwise if
+  # we are healthy, check for self_signed cert
   if [ -n "$health" ]; then
     self_signed=0
   else
     self_signed=$(has_self_signed_cert "$chtUrl")
   fi
 
+  # derive overall healthy
   if [ -z "$appStatus" ] && [ -z "$health" ] && [ "$self_signed" = "0" ]; then
     overAllHealth="Good"
   elif [[ "$sleepFor" > 0 ]]; then
@@ -245,33 +257,24 @@ main (){
     overAllHealth="!= Bad =!"
   fi
 
-  if [ "$docker_action" = "down" ]; then
-    set -e
-    window "Shutting down project ${COMPOSE_PROJECT_NAME} " "red" "100%"
+  # display only action so this paints on bash screen. next loop we'll quit and show nothign new
+  if [ "$docker_action" != "up" ]; then
+    window "${docker_action}ing project ${COMPOSE_PROJECT_NAME} " "red" "100%"
     append "Please wait... "
     endwin
-    docker_down "$envFile" "$dockerComposePath"
+    exitNext=$docker_action
+    return 0
   fi
-
-
-  if [ "$docker_action" = "destroy" ]; then
-    window "Destroying project ${COMPOSE_PROJECT_NAME} " "red" "100%"
-    append "Please wait... "
-    endwin
-    docker_destroy "$COMPOSE_PROJECT_NAME"
-    exit 0
-  fi
-
 
   window "CHT Docker Helper: PROJECT ${COMPOSE_PROJECT_NAME}" "green" "100%"
-  append_tabbed "" 2 "|"
-  append_tabbed "LAN IP|${lanAddress}" 2 "|"
+#  append_tabbed "LAN IP|${lanAddress}" 2 "|"
   append_tabbed "CHT URL|${chtUrl}" 2 "|"
   append_tabbed "FAUXTON URL|${chtUrl}/_utils/" 2 "|"
   append_tabbed "" 2 "|"
   append_tabbed "CHT Health|${overAllHealth}" 2 "|"
   append_tabbed "Project Running Containers|${containerCount} of 2" 2 "|"
-  append_tabbed "Global Running Containers|${globalContainerCount}" 2 "|"
+  # todo - get_running_container_count won't work as is . need to either refactor or add new function
+#  append_tabbed "Global Running Containers|${globalContainerCount}" 2 "|"
   append_tabbed "Last Action|${last_action}" 2 "|"
   endwin
 
@@ -331,16 +334,24 @@ main (){
     append "Installing local-ip.co certificate to fix..."
     last_action="Installing local-ip.co certificate..."
     endwin
-    sleep 1
     install_local_ip_cert $MEDIC_OS&
-    sleep 2
     return 0
   fi
 
-  # if we're here, we're happy! reset all the things, show smiley face
+  # reset all the things to be thorough
   sleepFor=0
   reboot_count=0
   last_action=" :) "
+
+  # if we're here, we're happy! Show happy sign and exit next iteration via exitNext
+  window "Successfully started project ${COMPOSE_PROJECT_NAME} " "green" "100%"
+  append "login: medic"
+  append "password: secret"
+  append ""
+  append "Have a great day!"
+  endwin
+  exitNext="happy"
+
 }
 
 main_loop -t 1.2 $@
