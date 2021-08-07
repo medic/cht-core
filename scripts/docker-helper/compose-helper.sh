@@ -93,8 +93,6 @@ validate_env_file(){
   fi
 }
 
-
-# thanks https://yaroslavgrebnov.com/blog/bash-docker-check-container-existence-and-status/
 container_status(){
   result=''
   containers=$1
@@ -171,6 +169,24 @@ install_local_ip_cert(){
   docker exec -it "${medicOs}" bash -c "/boot/svc-restart medic-core nginx" > /dev/null 2>&1
 }
 
+docker_down(){
+  set -e
+  envFile=$1
+  composeFile=$2
+  docker-compose --env-file ${envFile} -f ${composeFile} down  > /dev/null 2>&1
+  exit 0
+}
+
+docker_destroy(){
+  set -e
+  project=$1
+  docker stop -t 0 "${project}"_medic-os_1 > /dev/null 2>&1
+  docker stop -t 0 "${project}"_haproxy_1 > /dev/null 2>&1
+  docker rm "${project}"_haproxy_1 another3_medic-os_1 > /dev/null 2>&1
+  docker volume rm "${project}"_medic-data > /dev/null 2>&1
+  exit 0
+}
+
 main (){
 
   # very first thing check we have valid env file, exit if not
@@ -229,7 +245,26 @@ main (){
     overAllHealth="!= Bad =!"
   fi
 
+  if [ "$docker_action" = "down" ]; then
+    set -e
+    window "Shutting down project ${COMPOSE_PROJECT_NAME} " "red" "100%"
+    append "Please wait... "
+    endwin
+    docker_down "$envFile" "$dockerComposePath"
+  fi
+
+
+  if [ "$docker_action" = "destroy" ]; then
+    window "Destroying project ${COMPOSE_PROJECT_NAME} " "red" "100%"
+    append "Please wait... "
+    endwin
+    docker_destroy "$COMPOSE_PROJECT_NAME"
+    exit 0
+  fi
+
+
   window "CHT Docker Helper: PROJECT ${COMPOSE_PROJECT_NAME}" "green" "100%"
+  append_tabbed "" 2 "|"
   append_tabbed "LAN IP|${lanAddress}" 2 "|"
   append_tabbed "CHT URL|${chtUrl}" 2 "|"
   append_tabbed "FAUXTON URL|${chtUrl}/_utils/" 2 "|"
@@ -251,21 +286,21 @@ main (){
   if [[ "$volumeCount" = 0 ]] && [[ "$reboot_count" = 0 ]]; then
     sleepFor=$DEFAULT_SLEEP
     last_action="First run of \"docker-compose up\""
-    docker_up_or_restart "$envFile" "$dockerComposePath" "$containerCount" "$volumeCount" "$ALL_CONTAINERS" &
+    docker_up_or_restart "$envFile" "$dockerComposePath" &
     (( reboot_count++ ))
   fi
 
   if [[ "$containerCount" != 2 ]] && [[ "$reboot_count" != "$MAX_REBOOTS" ]] && [[ "$sleepFor" = 0 ]]; then
     sleepFor=$DEFAULT_SLEEP
     last_action="Running \"docker-compose down\" then  \"docker-compose up\""
-    docker_up_or_restart "$envFile" "$dockerComposePath" "$containerCount" "$volumeCount" "$ALL_CONTAINERS" &
+    docker_up_or_restart "$envFile" "$dockerComposePath" &
     (( reboot_count++ ))
   fi
 
   if [ -n "$health" ] && [[ "$sleepFor" = 0 ]] && [[ "$reboot_count" != "$MAX_REBOOTS" ]]; then
     sleepFor=$DEFAULT_SLEEP
     last_action="Running \"docker-compose down\" then  \"docker-compose up\""
-    docker_up_or_restart "$envFile" "$dockerComposePath" "$containerCount" "$volumeCount" "$ALL_CONTAINERS" &
+    docker_up_or_restart "$envFile" "$dockerComposePath"  &
     (( reboot_count++ ))
   fi
 

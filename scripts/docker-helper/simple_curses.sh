@@ -687,6 +687,7 @@ parse_args (){
     sleepFor=0
     time=1
     last_action='Initializing'
+    docker_action='up'
     envFile='Env file not set'
     while [[ $# -gt 0 ]]; do
         # shellcheck disable=SC2034
@@ -694,6 +695,7 @@ parse_args (){
         -c | --crop )        BSC_TITLECROP=1; shift 1 ;;
         -h | --help )        usage; exit 0 ;;
         -e | --env-file )    envFile=$2; shift 2 ;;
+        -d | --docker_action ) docker_action=$2; shift 2 ;;
         -q | --quiet )       VERBOSE=0; shift 1 ;;
         -s | --scroll )      BSC_MODE=scroll; shift 1 ;;
         -t | --time )        time=$2; shift 2 ;;
