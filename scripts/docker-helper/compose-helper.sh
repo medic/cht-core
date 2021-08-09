@@ -229,8 +229,8 @@ main (){
   health=$(cht_healthy "$lanAddress" "$CHT_HTTPS" "$chtUrl")
   dockerComposePath=$(get_docker_compose_yml_path)
 
-  # if we're exiting, call down or destory and quit proper
-  if [ -n "$exitNext" ];then
+  # if we're exiting, call down or destroy and quit proper
+  if [ "$exitNext" = "destroy" ] || [ "$exitNext" = "down" ];then
     if [ "$exitNext" = "destroy" ]; then
       docker_destroy "$COMPOSE_PROJECT_NAME" "$ALL_CONTAINERS"
     elif [ "$exitNext" = "down" ]; then
@@ -257,8 +257,8 @@ main (){
     overAllHealth="!= Bad =!"
   fi
 
-  # display only action so this paints on bash screen. next loop we'll quit and show nothign new
-  if [ "$docker_action" != "up" ]; then
+  # display only action so this paints on bash screen. next loop we'll quit and show nothing new
+  if [ "$docker_action" = "destroy" ] || [ "$docker_action" = "down" ]; then
     window "${docker_action}ing project ${COMPOSE_PROJECT_NAME} " "red" "100%"
     append "Please wait... "
     endwin
