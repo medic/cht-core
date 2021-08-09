@@ -1,0 +1,57 @@
+version: "3.7"
+services:
+    cht-nginx:
+        container_name: cht-nginx
+        build:
+            context: .
+        environment:
+            CERTIFICATE_MODE: "${CERTIFICATE_MODE:-SELF_SIGNED}"
+            CHT_DOMAIN: "${CHT_DOMAIN:-test-nginx.dev.medicmobile.org}"
+            COUNTRY: "${COUNTRY:-US}"
+            STATE: "${STATE:-Colorado}"
+            LOCALITY: "${LOCALITY:-Denver}"
+            ORGANISATION: "${ORGANISATION:-medic}"
+            DEPARTMENT: "${DEPARTMENT:-Department of Information Security}"
+            COMMON_NAME: "${COMMON_NAME:-test-nginx.dev.medicmobile.org}"
+            EMAIL: "${EMAIL:-domains@medic.org}"
+        ports:
+            - 80:80
+            - 443:443
+        volumes:
+             - cht-ssl:/root/.acme.sh/
+        depends_on:
+            - medic-api
+            - haproxy
+        networks:
+            - cht-net
+
+    medic-api:
+        image: mockserver/mockserver
+        container_name: medic-api-mock
+        command: -serverPort 5988
+        environment:
+            MOCKSERVER_PROPERTY_FILE: /config/mockserver.properties
+            MOCKSERVER_INITIALIZATION_JSON_PATH: /config/initializerJson.json
+        volumes:
+        - ./mock-config:/config
+        networks:
+            - cht-net
+
+    haproxy:
+        image: mockserver/mockserver
+        container_name: haproxy-mock
+        command: -serverPort 5984
+        environment:
+            MOCKSERVER_PROPERTY_FILE: /config/mockserver.properties
+            MOCKSERVER_INITIALIZATION_JSON_PATH: /config/initializerJson.json
+        volumes:
+        - ./mock-config:/config
+        networks:
+            - cht-net
+
+volumes:
+    cht-ssl:
+        name: cht-ssl
+networks:
+    cht-net:
+        name: cht-net

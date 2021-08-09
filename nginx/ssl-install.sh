@@ -83,7 +83,6 @@ generate_certificate_letsencrypt(){
             --key-file /etc/nginx/private/key.pem \
             --fullchain-file /etc/nginx/private/cert.pem
         echo "SSL Cert installed." >&2
-        tail -f /dev/null
   fi
 }
 
