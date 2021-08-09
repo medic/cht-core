@@ -10,7 +10,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SimprintsService } from '@mm-services/simprints.service';
-
+import { ExternalAppLauncherService } from '@mm-services/external-app-launcher.service';
 
 describe('AndroidApi service', () => {
 
@@ -22,6 +22,7 @@ describe('AndroidApi service', () => {
   let geolocationService;
   let simprintsService;
   let consoleErrorMock;
+  let externalAppLauncherService;
 
   beforeEach(() => {
     sessionService = {
@@ -58,6 +59,10 @@ describe('AndroidApi service', () => {
       registerResponse: sinon.stub()
     };
 
+    externalAppLauncherService = {
+      resolveExternalAppResponse: sinon.stub()
+    };
+
     consoleErrorMock = sinon.stub(console, 'error');
 
     TestBed.configureTestingModule({
@@ -68,6 +73,7 @@ describe('AndroidApi service', () => {
         { provide: FeedbackService, useValue: feedbackService },
         { provide: Router, useValue: router },
         { provide: MRDTService, useValue: mrdtService },
+        { provide: ExternalAppLauncherService, useValue: externalAppLauncherService },
       ],
     });
 
@@ -293,6 +299,38 @@ describe('AndroidApi service', () => {
         ' content=a_content,' +
         ' status=a_status,' +
         ' detail=a_detail'
+      ]);
+    });
+  });
+
+  describe('External App Launcher', () => {
+    it('should process response after launching external app', () => {
+      const response = {
+        status: 'located',
+        person: { name: 'Jack', dateOfBirth: '13/05/1995' }
+      };
+
+      service.resolveCHTExternalAppResponse(response);
+
+      expect(externalAppLauncherService.resolveExternalAppResponse.callCount).to.equal(1);
+      expect(externalAppLauncherService.resolveExternalAppResponse.args[0]).to.have.members([response]);
+      expect(consoleErrorMock.callCount).to.equal(0);
+    });
+
+    it('should catch exception when processing response after launching external app', () => {
+      const response = {
+        invalid: 'object'
+      };
+      externalAppLauncherService.resolveExternalAppResponse.throws(new Error('some error'));
+
+      service.resolveCHTExternalAppResponse(response);
+
+      expect(externalAppLauncherService.resolveExternalAppResponse.callCount).to.equal(1);
+      expect(externalAppLauncherService.resolveExternalAppResponse.args[0]).to.have.members([response]);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0]).to.have.members([
+        'AndroidApiService :: Error when processing response from external app, error: "some error, response:"',
+        response
       ]);
     });
   });

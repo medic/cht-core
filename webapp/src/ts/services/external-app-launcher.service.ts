@@ -18,13 +18,14 @@ export class ExternalAppLauncherService {
   launchExternalApp(chtExternalApp: ChtExternalApp): Promise<any>|undefined {
     try {
       const { action, category, type, extras, uri, packageName, flags } = chtExternalApp;
-      const extrasStr = extras ? JSON.stringify(extras) : null;
 
+      // If any parameter is undefined, then ensure that it's null value
+      // Otherwise Android will receive a string with "undefined" as text.
       window.medicmobile_android.launchExternalApp(
         action || null,
         category || null,
         type || null,
-        extrasStr,
+        extras ? JSON.stringify(extras) : null,
         uri || null,
         packageName || null,
         flags || null
@@ -33,9 +34,9 @@ export class ExternalAppLauncherService {
       return new Promise(resolve => this.launchToResolve = resolve);
 
     } catch (error) {
-      const message = `ExternalAppLauncherService :: Error when launching external app.
-       ChtExternalApp=${ JSON.stringify(chtExternalApp) }, Enabled=${this.isEnabled()}`;
-      console.error(message, error);
+      const message = 'ExternalAppLauncherService :: Error when launching external app. ';
+      const details = `ChtExternalApp=${ JSON.stringify(chtExternalApp) }, Enabled=${ this.isEnabled() }`;
+      console.error(message + details, error);
     }
   }
 

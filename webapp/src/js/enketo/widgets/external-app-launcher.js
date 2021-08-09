@@ -1,11 +1,20 @@
 {
   'use strict';
-  const _ = require('lodash/core');
+  const _isPlainObject = require('lodash/isPlainObject');
   const Widget = require('enketo-core/src/js/Widget');
   const $ = require('jquery');
   require('enketo-core/src/js/plugins');
 
-  const pluginName = 'externalapplauncherwidget';
+  const PLUGIN_NAME = 'externalapplauncherwidget';
+  const APPEARANCES = {
+    widget: '.or-appearance-external-app-launcher',
+    outputs: '.or-appearance-external-app-outputs',
+    inputs: '.or-appearance-external-app-inputs',
+    object: '.or-appearance-external-app-object',
+    valueList: '.or-appearance-external-app-value-list',
+    objectList: '.or-appearance-external-app-object-list',
+    image: '.or-appearance-external-app-image'
+  };
 
   /**
    * External App Launcher widget
@@ -15,7 +24,7 @@
    * @param e {*=} Event
    */
   function Externalapplauncherwidget(element, options) {
-    this.namespace = pluginName;
+    this.namespace = PLUGIN_NAME;
     Widget.call(this, element, options);
     this._init();
   }
@@ -57,15 +66,11 @@
 
   function launchApp($widget) {
     const externalApp = getExternalAppConfig($widget);
-    // eslint-disable-next-line no-console
-    console.warn('externalApp', externalApp);
 
     window.CHTCore.ExternalAppLauncher
       .launchExternalApp(externalApp)
       .then(response => {
-        // eslint-disable-next-line no-console
-        console.warn('response', response);
-        const $outputs = $widget.find('.or-appearance-external-app-outputs');
+        const $outputs = $widget.find(APPEARANCES.outputs);
 
         if (!$outputs.length) {
           return;
@@ -77,7 +82,7 @@
 
   function getExternalAppConfig($widget) {
     const config = mapToObject($widget);
-    const $inputs = $widget.find('.or-appearance-external-app-inputs');
+    const $inputs = $widget.find(APPEARANCES.inputs);
 
     if (!$inputs.length) {
       return config;
@@ -107,7 +112,7 @@
   }
 
   function mapSubLevelObject(group) {
-    const subLevels = $(group).children('.or-appearance-external-app-object');
+    const subLevels = $(group).children(APPEARANCES.object);
 
     if (!subLevels.length) {
       return;
@@ -132,7 +137,7 @@
     // XForm's repeat is automatically wrapped in a <section> element.
     const repeatGroups = $(group)
       .children('section')
-      .children('.or-appearance-external-app-value-list');
+      .children(APPEARANCES.valueList);
 
     if (!repeatGroups.length) {
       return;
@@ -169,7 +174,7 @@
     // XForm's repeat is automatically wrapped in a <section> element.
     const repeatGroups = $(group)
       .children('section')
-      .children('.or-appearance-external-app-object-list');
+      .children(APPEARANCES.objectList);
 
     if (!repeatGroups.length) {
       return;
@@ -212,7 +217,7 @@
    * @param data {Object} External app data object or sub-object.
    */
   function processOutputData(group, data) {
-    if (!group || !_.isPlainObject(data) || !Object.keys(data).length) {
+    if (!group || !_isPlainObject(data) || !Object.keys(data).length) {
       return;
     }
 
@@ -244,7 +249,7 @@
     // XForm's repeat is automatically wrapped in a <section> element.
     const repeatGroups = $(group)
       .children('section')
-      .children('.or-appearance-external-app-value-list');
+      .children(APPEARANCES.valueList);
 
     if (!repeatGroups.length) {
       return;
@@ -283,7 +288,7 @@
     // XForm's repeat is automatically wrapped in a <section> element.
     const repeatGroups = $(group)
       .children('section')
-      .children('.or-appearance-external-app-object-list');
+      .children(APPEARANCES.objectList);
 
     if (!repeatGroups.length) {
       return;
@@ -311,7 +316,7 @@
    */
   function processOutputSubLevels(group, data) {
     $(group)
-      .children('.or-appearance-external-app-object')
+      .children(APPEARANCES.object)
       .each((index, objectGroup) => {
         const prop = getElementName(objectGroup);
         processOutputData(objectGroup, data[prop]);
@@ -323,7 +328,7 @@
       return;
     }
 
-    if (_.isPlainObject(value)) {
+    if (_isPlainObject(value)) {
       // eslint-disable-next-line no-console
       console.debug(`External App Launcher Widget :: Cannot set value to "${inputName}" field, value is an object.`);
       return;
@@ -335,7 +340,34 @@
       return;
     }
 
-    $(input).val(value);
+    const $input = $(input)
+      .val(value)
+      .trigger('change');
+
+    const $image = getImageElement($input.parent());
+
+    if ($image) {
+      $input.hide();
+      $image.attr('src', `data:image/png;base64,${value}`);
+    }
+  }
+
+  function getImageElement($wrapper) {
+    if (!$wrapper.is(APPEARANCES.image)) {
+      return;
+    }
+
+    const imgClass = 'external-app-image';
+    const $img = $wrapper.children(`.${imgClass}`);
+
+    if ($img.length) {
+      return $img;
+    }
+
+    const $imgElement = $(`<img class="${imgClass}">`);
+    $wrapper.append($imgElement);
+
+    return $imgElement;
   }
 
   function getFieldsInGroup(group) {
@@ -370,15 +402,15 @@
     return true;
   }
 
-  $.fn[pluginName] = function (options, event) {
+  $.fn[PLUGIN_NAME] = function (options, event) {
     return this.each(function () {
       const $this = $(this);
-      let data = $this.data(pluginName);
+      let data = $this.data(PLUGIN_NAME);
 
       options = options || {};
 
       if (!data && typeof options === 'object') {
-        $this.data(pluginName, (data = new Externalapplauncherwidget(this, options, event)));
+        $this.data(PLUGIN_NAME, (data = new Externalapplauncherwidget(this, options, event)));
       } else if (data && typeof options === 'string') {
         data[options](this);
       }
@@ -386,7 +418,7 @@
   };
 
   module.exports = {
-    'name': pluginName,
-    'selector': '.or-appearance-external-app-launcher',
+    'name': PLUGIN_NAME,
+    'selector': APPEARANCES.widget,
   };
 }
