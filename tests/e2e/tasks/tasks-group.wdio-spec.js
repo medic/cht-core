@@ -206,7 +206,14 @@ describe('Tasks group landing page', () => {
     await tasksPage.waitForTasksGroupLoaded();
     // clicking on one of the tasks in the group opens the task
     const groupTasks = await tasksPage.getTasksInGroup();
-    await groupTasks[0].click();
+    for (const task of groupTasks) {
+      const info = await tasksPage.getContactNameAndFormTitle(task);
+      if (info.contactName === 'Julius Caesar') {
+        await task.click();
+        break;
+      }
+    }
+
     await tasksPage.waitForTaskContentLoaded('Home Visit');
     await tasksPage.submitTask();
 
@@ -257,8 +264,33 @@ describe('Tasks group landing page', () => {
     await tasksPage.waitForTasksGroupLoaded();
 
     // clicking on another page displays the modal
-    await browser.url('/#/reports');
+    await browser.url('/#/contacts');
     await expectTasksGroupLeaveModal();
+    await (await modalPage.confirm()).click();
+    await (await $('#contacts-list')).waitForDisplayed();
+  });
+
+  it('should not show page when there are no more household tasks', async () => {
+    await tasksPage.goToTasksTab();
+    await tasksPage.getTasks();
+    const task = await tasksPage.getTaskByContactAndForm('Napoleon Bonaparte', 'person_create');
+    await task.click();
+
+    await tasksPage.waitForTaskContentLoaded('Home Visit');
+    await tasksPage.submitTask();
+
+    await tasksPage.waitForTasksGroupLoaded();
+    const tasksInGroup = await tasksPage.getTasksInGroup();
+
+    chai.expect(tasksInGroup.length).to.equal(1);
+    await tasksInGroup[0].click();
+
+    await tasksPage.waitForTaskContentLoaded('Place Home Visit');
+    await tasksPage.submitTask();
+
+    const emptySelection = await tasksPage.noSelectedTask();
+    await (emptySelection).waitForDisplayed();
+    chai.expect(await emptySelection.getText()).to.equal('No task selected');
   });
 
   after(async () => {

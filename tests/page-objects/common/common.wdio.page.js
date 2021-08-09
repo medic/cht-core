@@ -28,15 +28,10 @@ const getLogoutMessage = async () => {
   return body.getText();
 };
 
-const goToBase = async (timeoutForBaseLoadMillis) => {
+const goToBase = async () => {
   await browser.url('/');
 
-  let waitForDisplayedConfig = {};
-  if (_.isNumber(timeoutForBaseLoadMillis)) {
-    waitForDisplayedConfig = { timeout: timeoutForBaseLoadMillis };
-  }
-
-  await (await analyticsTab()).waitForDisplayed(waitForDisplayedConfig);
+  await (await analyticsTab()).waitForDisplayed();
   await (await messagesTab()).waitForDisplayed();
 };
 
@@ -56,7 +51,7 @@ const closeTour = async () => {
     await closeButton.waitForDisplayed();
     await closeButton.click();
     // wait for the request to the server to execute
-    // is there a way to leverage protractor to achieve this???
+    // is there a way to leverage wdio to achieve this???
     await browser.pause(500);
   } catch (err) {
     // there might not be a tour, show a warning

@@ -21,6 +21,8 @@ const openAddUserDialog = async () => {
   await (await addUserButton()).waitForDisplayed();
   await (await addUserButton()).click();
   await (await addUserDialog()).waitForDisplayed();
+  // wait for animations to finish
+  await browser.pause(500);
 };
 
 const inputAddUserFields = async (username, fullname, role, place, associatedContact, password) => {
@@ -35,6 +37,7 @@ const inputAddUserFields = async (username, fullname, role, place, associatedCon
 
 const selectPlace = async (place) => {
   await (await userPlace()).waitForDisplayed();
+  await (await userPlace()).scrollIntoView();
   await (await userPlace()).click();
   await (await select2SearchInputBox()).waitForDisplayed();
   await (await select2SearchInputBox()).addValue(place);
@@ -44,11 +47,11 @@ const selectPlace = async (place) => {
 
 const selectContact = async (associatedContact) => {
   await (await userAssociatedContact()).waitForDisplayed();
+  await (await userAssociatedContact()).scrollIntoView();
   await (await userAssociatedContact()).click();
   await (await select2SearchContactInputBox()).waitForDisplayed();
   await (await select2SearchContactInputBox()).addValue(associatedContact);
   await (await select2Name()).click();
-
 };
 
 const saveUser = async ()  => {
@@ -59,7 +62,7 @@ const saveUser = async ()  => {
 
 const logout = async () => {
   await (await logoutButton()).waitForDisplayed();
-  await (await logoutButton()).click(); 
+  await (await logoutButton()).click();
 };
 
 module.exports = {

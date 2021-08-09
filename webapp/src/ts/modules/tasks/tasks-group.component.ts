@@ -67,7 +67,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
 
   private navigationCancel(completed?:Boolean) {
     if (completed) {
-      this.globalActions.setSnackbarContent(this.translateService.instant('tasks.group.complete'));
+      this.globalActions.setSnackbarContent(this.translateService.instant('tasks.group.completed'));
     }
     this.globalActions.navigationCancel();
   }

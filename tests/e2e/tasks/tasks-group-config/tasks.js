@@ -1,5 +1,6 @@
 const oneDay = 24 * 60 * 60 * 1000;
 const isFormArraySubmittedInWindow = (reports, formArray, start, end, count) => {
+  end = end || start + 10 * oneDay;
   let found = false;
   let reportCount = 0;
   reports.forEach(function (report) {
@@ -27,9 +28,7 @@ module.exports = [
       return true;
     },
     resolvedIf: function (contact) {
-      const start = contact.contact.reported_date;
-      const end = start + 10 * oneDay;
-      return isFormArraySubmittedInWindow(contact.reports, ['home_visit'], start, end);
+      return isFormArraySubmittedInWindow(contact.reports, ['home_visit'], contact.contact.reported_date);
     },
     actions: [
       {
@@ -58,9 +57,7 @@ module.exports = [
       return true;
     },
     resolvedIf: function (contact) {
-      const start = contact.contact.reported_date;
-      const end = start + 10 * oneDay;
-      return isFormArraySubmittedInWindow(contact.reports, ['place_home_visit'], start, end);
+      return isFormArraySubmittedInWindow(contact.reports, ['place_home_visit'], contact.contact.reported_date);
     },
     actions: [
       {

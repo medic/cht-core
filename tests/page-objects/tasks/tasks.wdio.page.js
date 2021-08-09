@@ -4,6 +4,7 @@ const taskListSelector = '#tasks-list';
 const taskFormSelector = '#task-report';
 const tasksGroupSelector = '#tasks-group .item-content';
 const formTitleSelector = `${taskFormSelector} h3#form-title`;
+const noSelectedTaskSelector = '.empty-selection';
 
 const tasksList = () => $(taskListSelector);
 
@@ -66,6 +67,8 @@ const getTasksInGroup = () => {
   return $$(`${tasksGroupSelector} li`);
 };
 
+const noSelectedTask = () => $(noSelectedTaskSelector);
+
 module.exports = {
   tasksList,
   getTasks,
@@ -77,4 +80,5 @@ module.exports = {
   submitTask,
   waitForTasksGroupLoaded,
   getTasksInGroup,
+  noSelectedTask,
 };

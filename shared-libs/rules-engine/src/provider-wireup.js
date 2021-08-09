@@ -66,7 +66,7 @@ module.exports = {
    * Commits those changes (async)
    *
    * @param {Object} provider A data provider
-   * @param {string[]} contactIds An array of contact ids. If undefined, all task documents
+   * @param {string[]} contactIds An array of contact ids. If undefined, returns tasks for all contacts
    * @returns {Promise<Object[]>} All the fresh task docs owned by contacts
    */
   fetchTasksFor: (provider, contactIds) => {
@@ -90,7 +90,7 @@ module.exports = {
    * Returns a breakdown of task counts by state and title for the provided contacts, or all contacts
    * Does NOT refresh rules emissions
    * @param {Object} provider A data provider
-   * @param {string[]} contactIds An array of contact ids. If undefined, all task documents
+   * @param {string[]} contactIds An array of contact ids. If undefined, returns breakdown for all contacts
    * @return {Promise<{
    *  Ready: number,
    *  Draft: number,
