@@ -75,7 +75,7 @@ generate_certificate_letsencrypt(){
         echo "SSL cert already exists." >&2
   elif [ ! -f /etc/nginx/private/cert.pem -a ! -f /etc/nginx/private/key.pem ]; then
         mkdir -p /etc/nginx/private
-        curl https://get.acme.sh | sh email=$EMAIL
+        curl https://get.acme.sh | sh -s email=$EMAIL
         if [ ! -d /root/.acme.sh/${CHT_DOMAIN} ]; then
             /root/.acme.sh/acme.sh --issue -d ${CHT_DOMAIN} --standalone
         fi
