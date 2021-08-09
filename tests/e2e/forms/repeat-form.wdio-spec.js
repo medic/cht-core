@@ -59,6 +59,10 @@ describe('RepeatForm', () => {
 
     const cityLabel = await $('#report-form .question-label.active[data-itext-id="/repeat/basic/rep/city_1:label"]');
     expect(await cityLabel.getText()).toBe('Select a city: - SV');
+
+    // eslint-disable-next-line max-len
+    const melbourneLabel = await $('#report-form .option-label.active[data-itext-id="/repeat/basic/rep/city_1/melbourne:label"]');
+    expect(await melbourneLabel.getText()).toBe('ML');
   });
 
   it('should display the initial form and its repeated content in English', async () => {
@@ -77,5 +81,9 @@ describe('RepeatForm', () => {
 
     const cityLabel = await $('#report-form .question-label.active[data-itext-id="/repeat/basic/rep/city_1:label"]');
     expect(await cityLabel.getText()).toBe('Select a city:');
+
+    // eslint-disable-next-line max-len
+    const melbourneLabel = await $('#report-form .option-label.active[data-itext-id="/repeat/basic/rep/city_1/melbourne:label"]');
+    expect(await melbourneLabel.getText()).toBe('Melbourne');
   });
 });
