@@ -5,42 +5,42 @@
         <model>
             <itext>
                 <translation lang="en">
-                    <text id="/repeat/basic/rep/city_1/melbourne:label">
+                    <text id="/repeat-translation/basic/rep/city_1/melbourne:label">
                         <value>Melbourne</value>
                     </text>
-                    <text id="/repeat/basic/rep/city_1:label">
+                    <text id="/repeat-translation/basic/rep/city_1:label">
                         <value>Select a city:</value>
                     </text>
-                    <text id="/repeat/basic/state_1/VIC:label">
+                    <text id="/repeat-translation/basic/state_1/VIC:label">
                         <value>Victoria</value>
                     </text>
-                    <text id="/repeat/basic/state_1:label">
+                    <text id="/repeat-translation/basic/state_1:label">
                         <value>Select a state:</value>
                     </text>
-                    <text id="/repeat/basic:label">
+                    <text id="/repeat-translation/basic:label">
                         <value>Cascading Selects:</value>
                     </text>
                 </translation>
                 <translation lang="sw">
-                    <text id="/repeat/basic/rep/city_1/melbourne:label">
+                    <text id="/repeat-translation/basic/rep/city_1/melbourne:label">
                         <value>ML</value>
                     </text>
-                    <text id="/repeat/basic/rep/city_1:label">
+                    <text id="/repeat-translation/basic/rep/city_1:label">
                         <value>Select a city: - SV</value>
                     </text>
-                    <text id="/repeat/basic/state_1/VIC:label">
+                    <text id="/repeat-translation/basic/state_1/VIC:label">
                         <value>VIC</value>
                     </text>
-                    <text id="/repeat/basic/state_1:label">
+                    <text id="/repeat-translation/basic/state_1:label">
                         <value>Select a state: - SV</value>
                     </text>
-                    <text id="/repeat/basic:label">
+                    <text id="/repeat-translation/basic:label">
                         <value>Cascading Selects: - SV</value>
                     </text>
                 </translation>
             </itext>
             <instance>
-                <repeat id="repeat" prefix="J1!repeat!" delimiter="#" version="2019-08-09">
+                <repeat id="repeat-translation" prefix="J1!repeat-translation!" delimiter="#" version="2019-08-09">
                     <basic>
                         <state_1/>
                         <rep jr:template="">
@@ -53,28 +53,28 @@
                 </repeat>
             </instance>
             <instance id="contact-summary"/>
-            <bind nodeset="/repeat/basic/state_1" type="select1"/>
-            <bind nodeset="/repeat/basic/rep/city_1" type="select1"/>
-            <bind nodeset="/repeat/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+            <bind nodeset="/repeat-translation/basic/state_1" type="select1"/>
+            <bind nodeset="/repeat-translation/basic/rep/city_1" type="select1"/>
+            <bind nodeset="/repeat-translation/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
         </model>
     </h:head>
     <h:body class="pages">
-        <group appearance="field-list" ref="/repeat/basic">
-            <label ref="jr:itext('/repeat/basic:label')"/>
-            <select1 ref="/repeat/basic/state_1">
-                <label ref="jr:itext('/repeat/basic/state_1:label')"/>
+        <group appearance="field-list" ref="/repeat-translation/basic">
+            <label ref="jr:itext('/repeat-translation/basic:label')"/>
+            <select1 ref="/repeat-translation/basic/state_1">
+                <label ref="jr:itext('/repeat-translation/basic/state_1:label')"/>
                 <item>
-                    <label ref="jr:itext('/repeat/basic/state_1/VIC:label')"/>
+                    <label ref="jr:itext('/repeat-translation/basic/state_1/VIC:label')"/>
                     <value>VIC</value>
                 </item>
             </select1>
-            <group ref="/repeat/basic/rep">
+            <group ref="/repeat-translation/basic/rep">
                 <label></label>
-                <repeat nodeset="/repeat/basic/rep">
-                    <select1 ref="/repeat/basic/rep/city_1">
-                        <label ref="jr:itext('/repeat/basic/rep/city_1:label')"/>
+                <repeat nodeset="/repeat-translation/basic/rep">
+                    <select1 ref="/repeat-translation/basic/rep/city_1">
+                        <label ref="jr:itext('/repeat-translation/basic/rep/city_1:label')"/>
                         <item>
-                            <label ref="jr:itext('/repeat/basic/rep/city_1/melbourne:label')"/>
+                            <label ref="jr:itext('/repeat-translation/basic/rep/city_1/melbourne:label')"/>
                             <value>melbourne</value>
                         </item>
                     </select1>

@@ -43,6 +43,12 @@ describe('RepeatForm', () => {
     await browser.refresh();
   });
 
+  /* eslint-disable max-len */
+  const stateLabelPath = '#report-form .question-label.active[data-itext-id="/repeat-translation/basic/state_1:label"]';
+  const cityLabelPath = '#report-form .question-label.active[data-itext-id="/repeat-translation/basic/rep/city_1:label"]';
+  const melbourneLabelPath = '#report-form .option-label.active[data-itext-id="/repeat-translation/basic/rep/city_1/melbourne:label"]';
+  /* eslint-enable max-len */
+
   it('should display the initial form and its repeated content in Swahili', async () => {
     const swUserName = 'Jina la mtumizi';
     await loginPage.changeLanguage('sw', swUserName);
@@ -52,17 +58,16 @@ describe('RepeatForm', () => {
     await (await reportsPage.submitReportButton()).click();
     await (await reportsPage.formActionsLink(formDocument.internalId)).click();
 
-    const stateLabel = await $('#report-form .question-label.active[data-itext-id="/repeat/basic/state_1:label"]');
+    const stateLabel = await $(stateLabelPath);
     expect(await stateLabel.getText()).toBe('Select a state: - SV');
 
     const addRepeatButton = await $('.btn.btn-default.add-repeat-btn');
     await addRepeatButton.click();
 
-    const cityLabel = await $('#report-form .question-label.active[data-itext-id="/repeat/basic/rep/city_1:label"]');
+    const cityLabel = await $(cityLabelPath);
     expect(await cityLabel.getText()).toBe('Select a city: - SV');
 
-    // eslint-disable-next-line max-len
-    const melbourneLabel = await $('#report-form .option-label.active[data-itext-id="/repeat/basic/rep/city_1/melbourne:label"]');
+    const melbourneLabel = await $(melbourneLabelPath);
     expect(await melbourneLabel.getText()).toBe('ML');
   });
 
@@ -75,17 +80,16 @@ describe('RepeatForm', () => {
     await (await reportsPage.submitReportButton()).click();
     await (await reportsPage.formActionsLink(formDocument.internalId)).click();
 
-    const stateLabel = await $('#report-form .question-label.active[data-itext-id="/repeat/basic/state_1:label"]');
+    const stateLabel = await $(stateLabelPath);
     expect(await stateLabel.getText()).toBe('Select a state:');
 
     const addRepeatButton = await $('.btn.btn-default.add-repeat-btn');
     await addRepeatButton.click();
 
-    const cityLabel = await $('#report-form .question-label.active[data-itext-id="/repeat/basic/rep/city_1:label"]');
+    const cityLabel = await $(cityLabelPath);
     expect(await cityLabel.getText()).toBe('Select a city:');
 
-    // eslint-disable-next-line max-len
-    const melbourneLabel = await $('#report-form .option-label.active[data-itext-id="/repeat/basic/rep/city_1/melbourne:label"]');
+    const melbourneLabel = await $(melbourneLabelPath);
     expect(await melbourneLabel.getText()).toBe('Melbourne');
   });
 });
