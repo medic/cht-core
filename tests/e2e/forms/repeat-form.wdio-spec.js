@@ -6,7 +6,6 @@ const auth = require('../../auth')();
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
-const waitUntil = require("webdriverio/build/commands/browser/waitUntil");
 
 const xml = fs.readFileSync(`${__dirname}/../../../demo-forms/repeat-translation.xml`, 'utf8');
 const formDocument = {
@@ -63,8 +62,7 @@ describe('RepeatForm', () => {
     const stateLabel = await $(stateLabelPath);
     expect(await stateLabel.getText()).toBe('Select a state: - SV');
 
-    const addRepeatButton = await $('.btn.btn-default.add-repeat-btn');
-    await addRepeatButton.click();
+    await reportsPage.repeatForm();
 
     const cityLabel = await $(cityLabelPath);
     expect(await cityLabel.getText()).toBe('Select a city: - SV');
@@ -85,8 +83,7 @@ describe('RepeatForm', () => {
     const stateLabel = await $(stateLabelPath);
     expect(await stateLabel.getText()).toBe('Select a state:');
 
-    const addRepeatButton = await $('.btn.btn-default.add-repeat-btn');
-    await addRepeatButton.click();
+    await reportsPage.repeatForm();
 
     const cityLabel = await $(cityLabelPath);
     expect(await cityLabel.getText()).toBe('Select a city:');
