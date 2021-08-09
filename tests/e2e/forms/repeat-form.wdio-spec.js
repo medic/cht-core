@@ -50,7 +50,7 @@ describe('RepeatForm', () => {
     await loginPage.cookieLogin({ locale: currentLanguage.code });
     await commonPage.goToReports();
     await (await reportsPage.submitReportButton()).click();
-    await (await reportsPage.formLinkByHref(formDocument.internalId)).click();
+    await (await reportsPage.formActionsLink(formDocument.internalId)).click();
 
     const stateLabel = await $('#report-form .question-label.active[data-itext-id="/repeat/basic/state_1:label"]');
     expect(await stateLabel.getText()).toBe('Select a state: - SV');
@@ -73,7 +73,7 @@ describe('RepeatForm', () => {
     await loginPage.cookieLogin({ locale: currentLanguage.code });
     await commonPage.goToReports();
     await (await reportsPage.submitReportButton()).click();
-    await (await reportsPage.formLinkByHref(formDocument.internalId)).click();
+    await (await reportsPage.formActionsLink(formDocument.internalId)).click();
 
     const stateLabel = await $('#report-form .question-label.active[data-itext-id="/repeat/basic/state_1:label"]');
     expect(await stateLabel.getText()).toBe('Select a state:');
