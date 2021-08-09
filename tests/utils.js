@@ -62,14 +62,7 @@ const request = (options, { debug } = {}) => {
 };
 
 const postToApi =  (path, body) => {
-  return  request({
-    method: 'POST',
-    path: path,
-    headers: {
-      'Content-type': 'application/json'
-    },
-    body: body
-  });
+  return request({ method: 'POST', path, body });
 };
 
 // Update both ddocs, to avoid instability in tests.
