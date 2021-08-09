@@ -2,9 +2,11 @@ const fs = require('fs');
 
 const constants = require('../../constants');
 const utils = require('../../utils');
+const auth = require('../../auth')();
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
+const waitUntil = require("webdriverio/build/commands/browser/waitUntil");
 
 const xml = fs.readFileSync(`${__dirname}/../../../demo-forms/repeat-translation.xml`, 'utf8');
 const formDocument = {
@@ -52,8 +54,8 @@ describe('RepeatForm', () => {
   it('should display the initial form and its repeated content in Swahili', async () => {
     const swUserName = 'Jina la mtumizi';
     await loginPage.changeLanguage('sw', swUserName);
-    const currentLanguage = await loginPage.getCurrentLanguage();
-    await loginPage.cookieLogin({ locale: currentLanguage.code });
+    await loginPage.login({ username: auth.username, password: auth.password, createUser: true });
+    await commonPage.goToBase();
     await commonPage.goToReports();
     await (await reportsPage.submitReportButton()).click();
     await (await reportsPage.formActionsLink(formDocument.internalId)).click();
@@ -74,8 +76,8 @@ describe('RepeatForm', () => {
   it('should display the initial form and its repeated content in English', async () => {
     const enUserName = 'User name';
     await loginPage.changeLanguage('en', enUserName);
-    const currentLanguage = await loginPage.getCurrentLanguage();
-    await loginPage.cookieLogin({ locale: currentLanguage.code });
+    await loginPage.login({ username: auth.username, password: auth.password, createUser: true });
+    await commonPage.goToBase();
     await commonPage.goToReports();
     await (await reportsPage.submitReportButton()).click();
     await (await reportsPage.formActionsLink(formDocument.internalId)).click();

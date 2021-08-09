@@ -59,7 +59,10 @@ describe('Login and logout tests', () => {
   });
 
   it('should log in using username and password fields', async () => {
-    await loginPage.login(auth.username, auth.password);
+    await loginPage.login({
+      username: auth.username,
+      password: auth.password,
+    });
     await (await commonPage.analyticsTab()).waitForDisplayed();
     await (await commonPage.messagesTab()).waitForDisplayed();
   });

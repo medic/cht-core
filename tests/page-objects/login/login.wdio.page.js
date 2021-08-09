@@ -8,11 +8,18 @@ const labelForUser = () => $('label[for="user"]');
 const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
 
-
-const login = async (username, password) => {
+const login = async ({ username, password, createUser = false }) => {
   await (await userField()).setValue(username);
   await (await passwordField()).setValue(password);
   await (await loginButton()).click();
+
+  if (createUser) {
+    await browser.waitUntil(async () => {
+      const cookies = await browser.getCookies('userCtx');
+      return cookies.some(cookie => cookie.name === 'userCtx');
+    });
+    await utils.setupUserDoc(username);
+  }
 };
 
 const cookieLogin = async (options = {}) => {
