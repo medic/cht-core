@@ -5,7 +5,7 @@ services:
         build:
             context: .
         environment:
-            CERTIFICATE_MODE: "${CERTIFICATE_MODE:-SELF_SIGNED}"
+            CERTIFICATE_MODE: "${CERTIFICATE_MODE:-AUTO_GENERATE}"
             COMMON_NAME: "${COMMON_NAME:-test-nginx.dev.medicmobile.org}"
             EMAIL: "${EMAIL:-domains@medic.org}"
             COUNTRY: "${COUNTRY:-US}"
