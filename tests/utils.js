@@ -61,10 +61,6 @@ const request = (options, { debug } = {}) => {
   });
 };
 
-const postToApi =  (path, body) => {
-  return request({ method: 'POST', path, body });
-};
-
 // Update both ddocs, to avoid instability in tests.
 // Note that API will be copying changes to medic over to medic-client, so change
 // medic-client first (api does nothing) and medic after (api copies changes over to
@@ -1002,5 +998,4 @@ module.exports = {
   },
 
   runAndLogApiStartupMessage: runAndLogApiStartupMessage,
-  postToApi,
 };
