@@ -61,6 +61,17 @@ const request = (options, { debug } = {}) => {
   });
 };
 
+const postToApi =  (path, body) => {
+  return  request({
+    method: 'POST',
+    path: path,
+    headers: {
+      'Content-type': 'application/json'
+    },
+    body: body
+  });
+};
+
 // Update both ddocs, to avoid instability in tests.
 // Note that API will be copying changes to medic over to medic-client, so change
 // medic-client first (api does nothing) and medic after (api copies changes over to
@@ -262,7 +273,6 @@ const revertDb = async (except, ignoreRefresh) => {
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
-
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || hasModal)) {
     watcher && watcher.cancel();
@@ -999,4 +1009,5 @@ module.exports = {
   },
 
   runAndLogApiStartupMessage: runAndLogApiStartupMessage,
+  postToApi,
 };

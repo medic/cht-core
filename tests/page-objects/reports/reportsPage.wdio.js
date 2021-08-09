@@ -1,7 +1,7 @@
 const reportListID = '#reports-list';
 const reportBodyDetails = '#reports-content .report-body .details';
-const caseId = () => $(`${reportBodyDetails} > ul > li > p > span > a`);
-const caseIdLabel = () => $(`${reportBodyDetails} ul > li > label > span`);
+const selectedCaseId = () => $(`${reportBodyDetails} > ul > li > p > span > a`);
+const selectedCaseIdLabel = () => $(`${reportBodyDetails} ul > li > label > span`);
 const submitterPlace = () => $('.position a');
 const submitterPhone = () => $('.sender .phone');
 const submitterName = () => $('.sender .name');
@@ -12,7 +12,7 @@ module.exports = {
   submitterName,
   submitterPhone,
   submitterPlace,
-  caseId,
-  caseIdLabel
+  selectedCaseId,
+  selectedCaseIdLabel
 };
 

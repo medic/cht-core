@@ -1,5 +1,5 @@
 const utils = require('../../../utils');
-const sUtils = require('../../sentinel/utils');
+const sentinelUtils = require('../../sentinel/utils');
 const commonElements = require('../../../page-objects/common/common.wdio.page');
 const loginPage = require('../../../page-objects/login/login.wdio.page');
 const reportsPage = require('../../../page-objects/reports/reportsPage.wdio');
@@ -20,17 +20,6 @@ const contact = personFactory.build(
 const docs = [...places, contact];
 
 describe('generating short codes', () => {
-  const submit =  (body) => {
-    return  utils.request({
-      method: 'POST',
-      path: '/api/v2/records',
-      headers: {
-        'Content-type': 'application/json'
-      },
-      body: body
-    });
-  };
-
   const forms = {
     'CASEID': {
       'meta': { 'code': 'CASEID', 'icon': 'icon-healthcare', 'translation_key': 'Case Id Form' },
@@ -56,20 +45,20 @@ describe('generating short codes', () => {
   after(async () => await utils.revertDb([], true));
 
   it('create case ID', async () => {
-    await submit({
+    await utils.postToApi('/api/v2/records', {
       _meta: {
         form: 'CASEID',
         from: contact.phone
       }
     });
-    await sUtils.waitForSentinel();
+    await sentinelUtils.waitForSentinel();
     await commonElements.goToReports();
     await (await reportsPage.firstReport()).click();
     expect(await (await reportsPage.submitterName()).getText()).toMatch(contact.name);
     expect(await (await reportsPage.submitterPhone()).getText()).toBe(contact.phone);
     expect(await (await reportsPage.submitterPlace()).getText()).toBe(clinic.name);
-    expect(await (await reportsPage.caseIdLabel()).getText()).toBe('Case ID');
-    expect(await (await reportsPage.caseId()).getText()).toMatch(/^\d{5}$/);
+    expect(await (await reportsPage.selectedCaseIdLabel()).getText()).toBe('Case ID');
+    expect(await (await reportsPage.selectedCaseId()).getText()).toMatch(/^\d{5}$/);
   });
 });
 
