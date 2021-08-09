@@ -31,7 +31,7 @@ set_environment_variables_if_not_set(){
   fi
 
   if [[ -z "${EMAIL}" ]]; then
-  EMAIL="devops@medic.org"
+  EMAIL="domains@medic.org"
   fi
 }
 #Creates Self signed certificates if they do not exist
@@ -75,7 +75,7 @@ generate_certificate_letsencrypt(){
         echo "SSL cert already exists." >&2
   elif [ ! -f /etc/nginx/private/cert.pem -a ! -f /etc/nginx/private/key.pem ]; then
         mkdir -p /etc/nginx/private
-        curl https://get.acme.sh | sh
+        curl https://get.acme.sh | sh email=$EMAIL
         if [ ! -d /root/.acme.sh/${CHT_DOMAIN} ]; then
             /root/.acme.sh/acme.sh --issue -d ${CHT_DOMAIN} --standalone
         fi
@@ -83,7 +83,7 @@ generate_certificate_letsencrypt(){
             --key-file /etc/nginx/private/key.pem \
             --fullchain-file /etc/nginx/private/cert.pem
         echo "SSL Cert installed." >&2
-        cat /etc/nginx/nginx.conf
+        tail -f /dev/null
   fi
 }
 
