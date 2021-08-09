@@ -15,11 +15,16 @@ const login = async (username, password) => {
   await (await loginButton()).click();
 };
 
-const cookieLogin = async (username = auth.username, password = auth.password, createUser = true, locale) => {
-  const currentLanguage = locale || await getCurrentLanguage();
+const cookieLogin = async (options = {}) => {
+  const {
+    username = auth.username,
+    password = auth.password,
+    createUser = true,
+    locale = 'en',
+  } = options;
   const opts = {
     path: '/medic/login',
-    body: { user: username, password, locale: currentLanguage.code },
+    body: { user: username, password, locale },
     method: 'POST',
     simple: false,
   };

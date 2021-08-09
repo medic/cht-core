@@ -46,7 +46,8 @@ describe('RepeatForm', () => {
   it('should display the initial form and its repeated content in Swahili', async () => {
     const swUserName = 'Jina la mtumizi';
     await loginPage.changeLanguage('sw', swUserName);
-    await loginPage.cookieLogin();
+    const currentLanguage = await loginPage.getCurrentLanguage();
+    await loginPage.cookieLogin({ locale: currentLanguage.code });
     await commonPage.goToReports();
     await (await reportsPage.submitReportButton()).click();
     await (await reportsPage.formLinkByHref(formDocument.internalId)).click();
@@ -68,7 +69,8 @@ describe('RepeatForm', () => {
   it('should display the initial form and its repeated content in English', async () => {
     const enUserName = 'User name';
     await loginPage.changeLanguage('en', enUserName);
-    await loginPage.cookieLogin();
+    const currentLanguage = await loginPage.getCurrentLanguage();
+    await loginPage.cookieLogin({ locale: currentLanguage.code });
     await commonPage.goToReports();
     await (await reportsPage.submitReportButton()).click();
     await (await reportsPage.formLinkByHref(formDocument.internalId)).click();
