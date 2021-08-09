@@ -6,14 +6,13 @@ services:
             context: .
         environment:
             CERTIFICATE_MODE: "${CERTIFICATE_MODE:-SELF_SIGNED}"
-            CHT_DOMAIN: "${CHT_DOMAIN:-test-nginx.dev.medicmobile.org}"
+            COMMON_NAME: "${COMMON_NAME:-test-nginx.dev.medicmobile.org}"
+            EMAIL: "${EMAIL:-domains@medic.org}"
             COUNTRY: "${COUNTRY:-US}"
             STATE: "${STATE:-Colorado}"
             LOCALITY: "${LOCALITY:-Denver}"
             ORGANISATION: "${ORGANISATION:-medic}"
             DEPARTMENT: "${DEPARTMENT:-Department of Information Security}"
-            COMMON_NAME: "${COMMON_NAME:-test-nginx.dev.medicmobile.org}"
-            EMAIL: "${EMAIL:-domains@medic.org}"
         ports:
             - 80:80
             - 443:443

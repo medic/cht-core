@@ -64,10 +64,10 @@ generate_self_signed_cert(){
     fi
 }
 
-generate_certificate_letsencrypt(){
+ generate_certificate_auto(){
 
-  if [ -z "$CHT_DOMAIN" ]; then
-  echo "Mandatory CHT_DOMAIN variable not set. Please provide the domain for which to generate the ssl certificate from let's encrpty " >&2
+  if [ -z "$COMMON_NAME" ]; then
+  echo "Mandatory COMMON_NAME variable not set. Please provide the domain for which to generate the ssl certificate from let's encrpty " >&2
   exit 1
   fi
 
@@ -76,10 +76,10 @@ generate_certificate_letsencrypt(){
   elif [ ! -f /etc/nginx/private/cert.pem -a ! -f /etc/nginx/private/key.pem ]; then
         mkdir -p /etc/nginx/private
         curl https://get.acme.sh | sh -s email=$EMAIL
-        if [ ! -d /root/.acme.sh/${CHT_DOMAIN} ]; then
-            /root/.acme.sh/acme.sh --issue -d ${CHT_DOMAIN} --standalone
+        if [ ! -d /root/.acme.sh/${COMMON_NAME} ]; then
+            /root/.acme.sh/acme.sh --issue -d ${COMMON_NAME} --standalone
         fi
-        /root/.acme.sh/acme.sh --install-cert -d ${CHT_DOMAIN} \
+        /root/.acme.sh/acme.sh --install-cert -d ${COMMON_NAME} \
             --key-file /etc/nginx/private/key.pem \
             --fullchain-file /etc/nginx/private/cert.pem
         echo "SSL Cert installed." >&2
@@ -106,8 +106,8 @@ case $CERTIFICATE_MODE in
     ensure_own_cert_exits
     ;;
 
-  LETS_ENCRYPT_GENERATE)
-    generate_certificate_letsencrypt
+  AUTO_GENERATE)
+     generate_certificate_auto
     ;;
 
   SELF_SIGNED)
