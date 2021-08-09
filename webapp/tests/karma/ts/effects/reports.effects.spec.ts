@@ -845,23 +845,26 @@ describe('Reports effects', () => {
   });
 
   describe('verifyReport', () => {
+    let setFirstSelectedReportDocProperty;
+    let setFirstSelectedReportFormattedProperty;
+
     beforeEach(() => {
-      sinon
-        .stub(ReportsActions.prototype, 'setFirstSelectedReportDocProperty')
-        .callsFake(props => {
-          store
-            .select(Selectors.getSelectedReports)
-            .pipe(take(1))
-            .subscribe(selectedReports => {
-              selectedReports[0] = {
-                ...selectedReports[0],
-                doc: { ...selectedReports[0].doc, ...props },
-              };
-              store.overrideSelector(Selectors.getSelectedReports, selectedReports);
-              store.refreshState();
-            });
-        });
-      sinon.stub(ReportsActions.prototype, 'setFirstSelectedReportFormattedProperty');
+      setFirstSelectedReportDocProperty = sinon.stub(ReportsActions.prototype, 'setFirstSelectedReportDocProperty');
+      setFirstSelectedReportDocProperty.callsFake(props => {
+        store
+          .select(Selectors.getSelectedReports)
+          .pipe(take(1))
+          .subscribe(selectedReports => {
+            selectedReports[0] = {
+              ...selectedReports[0],
+              doc: { ...selectedReports[0].doc, ...props },
+            };
+            store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+            store.refreshState();
+          });
+      });
+      setFirstSelectedReportFormattedProperty = sinon
+        .stub(ReportsActions.prototype, 'setFirstSelectedReportFormattedProperty');
       sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
     });
 
@@ -924,18 +927,48 @@ describe('Reports effects', () => {
       sinon.stub(Date, 'now').returns(1000); // using faketimers breaks fakeAsync's tick :(
       // Getting the report from the db causes a new report to be selected
       dbService.get.callsFake(() => {
-        actions$ = concat(actions$, of(ReportActionList.selectReport({id: 'report', silent: false})));
-        return Promise.resolve().then(() => {return { _id: 'report', _rev: 3 };});
+        actions$ = concat(actions$, of(ReportActionList.selectReport({id: 'report1', silent: false})));
+        return Promise.resolve({ _id: 'report', _rev: 3 });
       });
       // Updating the report causes it to be re-selected
       dbService.put.callsFake(() => {
-        actions$ = concat(actions$, of(ReportActionList.selectReport({id: 'report1', silent: false})));
+        actions$ = concat(actions$, of(ReportActionList.selectReport({id: 'report', silent: false})));
       });
 
       const setSelected = sinon.stub(ReportsActions.prototype, 'setSelected');
-      reportViewModelGeneratorService.get.onFirstCall().resolves({_id: 'report', model: true});
-      reportViewModelGeneratorService.get.onSecondCall().resolves({_id: 'report1', model: true});
-      reportViewModelGeneratorService.get.onThirdCall().resolves({_id: 'report2', model: true});
+      // Update the selected report when setSelected is called
+      setSelected.callsFake(data => {
+        const { _id } = data;
+        store.overrideSelector(Selectors.getSelectedReports, [{ _id }]);
+        store.refreshState();
+      });
+      reportViewModelGeneratorService.get.withArgs('report').resolves({_id: 'report', model: true});
+      reportViewModelGeneratorService.get.withArgs('report1').resolves({_id: 'report1', model: true});
+      reportViewModelGeneratorService.get.withArgs('report2').resolves({_id: 'report2', model: true});
+
+      // Assert that properties are only set on report (not report1 or report2)
+      setFirstSelectedReportDocProperty.callsFake(props => {
+        store
+          .select(Selectors.getSelectedReports)
+          .pipe(take(1))
+          .subscribe(selectedReports => {
+            expect(selectedReports[0]._id).to.equal('report');
+            selectedReports[0] = {
+              ...selectedReports[0],
+              doc: { ...selectedReports[0].doc, ...props },
+            };
+            store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+            store.refreshState();
+          });
+      });
+      setFirstSelectedReportFormattedProperty.callsFake(() => {
+        store
+          .select(Selectors.getSelectedReports)
+          .pipe(take(1))
+          .subscribe(selectedReports => {
+            expect(selectedReports[0]._id).to.equal('report');
+          });
+      });
 
       // Trigger report verification
       actions$ = of(ReportActionList.verifyReport(false));
@@ -958,7 +991,7 @@ describe('Reports effects', () => {
 
       // The first select action starts then gets canceled because the second starts
       expect(reportViewModelGeneratorService.get.callCount).to.equal(3);
-      expect(reportViewModelGeneratorService.get.args).to.deep.equal([['report'], ['report1'], ['report2']]);
+      expect(reportViewModelGeneratorService.get.args).to.deep.equal([['report1'], ['report'], ['report2']]);
       expect(setSelected.callCount).to.equal(1);
       expect(setSelected.args).to.deep.equal([[{_id: 'report2', model: true}]]);
 
