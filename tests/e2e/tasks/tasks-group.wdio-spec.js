@@ -7,6 +7,7 @@ const tasksPage = require('../../page-objects/tasks/tasks.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const chtConfUtils = require('../../cht-conf-utils');
+const modalPage = require('../../page-objects/common/modal.wdio.page');
 
 const places = [
   {
@@ -24,6 +25,9 @@ const places = [
     place_id: 'health_center',
     reported_date: new Date().getTime(),
   },
+];
+
+const clinics = [
   {
     _id: 'fixture:politicians',
     type: 'clinic',
@@ -133,9 +137,28 @@ const user = {
   roles: ['chw'],
 };
 
+
+const getGroupTasksNamesAndTitles = async () => {
+  const groupTasks = await tasksPage.getTasksInGroup();
+  const groupTasksNamesAndTitles = [];
+  for (const task of groupTasks) {
+    groupTasksNamesAndTitles.push(await tasksPage.getContactNameAndFormTitle(task));
+  }
+  return groupTasksNamesAndTitles;
+};
+
+const expectTasksGroupLeaveModal = async () => {
+  chai.expect(await (await modalPage.body()).getText()).to.equal(
+    'Are you sure you want to leave this page? You will no longer be able to see this household\'s other tasks.'
+  );
+  // modals have an animation, so clicking immediately on any of the buttons, mid animation, might cause the click to
+  // land in a different place, instead of the button. So wait for the animation to finish...
+  await browser.pause(500);
+};
+
 describe('Tasks group landing page', () => {
   before(async () => {
-    await utils.saveDocs([...places, ...people]);
+    await utils.saveDocs([...places, ...clinics, ...people]);
     await utils.createUsers([user]);
     await sentinelUtils.waitForSentinel();
 
@@ -150,16 +173,92 @@ describe('Tasks group landing page', () => {
 
     await loginPage.login(user.username, user.password);
     await commonPage.closeTour();
-    expect(await commonPage.analyticsTab()).toBeDisplayed();
+    await (await commonPage.analyticsTab()).waitForDisplayed();
   });
 
   it('should have tasks', async () => {
     await tasksPage.goToTasksTab();
-    //const list = await tasksPage.getTasks();
-    //console.log(list);
-    //chai.expect(list.value.length).to.equal(people.length + 3);
+    const list = await tasksPage.getTasks();
+    chai.expect(list.length).to.equal(people.length + clinics.length + 1);
+  });
 
-    await browser.pause(100);
+  it('should display tasks group landing page after task completion', async () => {
+    const task = await tasksPage.getTaskByContactAndForm('Queen Victoria', 'person_create');
+    await task.click();
+    await tasksPage.waitForTaskContentLoaded('Home Visit');
+    await tasksPage.submitTask();
+
+    // tasks group is displayed
+    await tasksPage.waitForTasksGroupLoaded();
+    const groupTasks = await tasksPage.getTasksInGroup();
+    chai.expect(groupTasks.length).to.equal(3);
+
+    const groupTasksNamesAndTitles = await getGroupTasksNamesAndTitles();
+    // and we see correct tasks
+    chai.expect(groupTasksNamesAndTitles).to.have.deep.members([
+      { contactName: 'Julius Caesar', formTitle: 'person_create' },
+      { contactName: 'Napoleon Bonaparte', formTitle: 'person_create' },
+      { contactName: 'Politicians', formTitle: 'clinic_create' },
+    ]);
+  });
+
+  it('should open task from the same group', async () => {
+    await tasksPage.waitForTasksGroupLoaded();
+    // clicking on one of the tasks in the group opens the task
+    const groupTasks = await tasksPage.getTasksInGroup();
+    await groupTasks[0].click();
+    await tasksPage.waitForTaskContentLoaded('Home Visit');
+    await tasksPage.submitTask();
+
+    // tasks group is displayed again
+    await tasksPage.waitForTasksGroupLoaded();
+    const secondGroupTasks = await tasksPage.getTasksInGroup();
+    chai.expect(secondGroupTasks.length).to.equal(2);
+  });
+
+  it('should display modal when clicking on a task from another group', async () => {
+    await tasksPage.waitForTasksGroupLoaded();
+
+    // clicking on a task from a different group from the list displays a modal
+    const taskFromOtherGroup = await tasksPage.getTaskByContactAndForm('Artists', 'clinic_create');
+    await taskFromOtherGroup.click();
+    await expectTasksGroupLeaveModal();
+
+    // cancelling keeps you on the same page
+    await (await modalPage.cancel()).click();
+    await (await modalPage.body()).waitForDisplayed({ reverse: true });
+
+    await tasksPage.waitForTasksGroupLoaded();
+
+    // submitting the modal takes us to the other task
+    await taskFromOtherGroup.click();
+    await expectTasksGroupLeaveModal();
+    await (await modalPage.confirm()).click();
+
+    await tasksPage.waitForTaskContentLoaded('Place Home Visit');
+    await tasksPage.submitTask();
+
+    await tasksPage.waitForTasksGroupLoaded();
+    const groupTasksAndTitles = await getGroupTasksNamesAndTitles();
+    chai.expect(groupTasksAndTitles).to.have.deep.members([
+      { contactName: 'Leonardo da Vinci', formTitle: 'person_create' },
+      { contactName: 'Francisco Goya', formTitle: 'person_create' },
+      { contactName: 'Wolfgang Amadeus Mozart', formTitle: 'person_create' },
+    ]);
+  });
+
+  it('should not display modal when clicking list task from same group', async () => {
+    await tasksPage.waitForTasksGroupLoaded();
+    const task = await tasksPage.getTaskByContactAndForm('Francisco Goya', 'person_create');
+    await task.click();
+    await tasksPage.waitForTaskContentLoaded('Home Visit');
+    await tasksPage.submitTask();
+
+    await tasksPage.waitForTasksGroupLoaded();
+
+    // clicking on another page displays the modal
+    await browser.url('/#/reports');
+    await expectTasksGroupLeaveModal();
   });
 
   after(async () => {
