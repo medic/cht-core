@@ -50,6 +50,14 @@ const getTimezoneOffsetAsTime = function(date) {
   return direction + hours + ':' + minutes;
 };
 
+const parseTimestampToDate = (timestamp) => {
+  if (!timestamp || !timestamp.v || typeof timestamp.v !== 'number')  {
+    return { t:'str', v: '' };
+  }
+
+  return { t:'date', v: new Date(timestamp.v) };
+};
+
 module.exports = {
   getTimezoneOffsetAsTime: getTimezoneOffsetAsTime,
   toISOLocalString: toISOLocalString,
@@ -68,7 +76,8 @@ module.exports = {
         return { t: 'str', v: '' };
       }
       return { t: 'num', v: result };
-    }
+    },
+    parseTimestampToDate,
   },
   process: {
     toExternalResult: function(r) {
