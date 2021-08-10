@@ -1,6 +1,12 @@
+const allure = require('allure-commandline');
+const fs = require('fs');
+
 const constants = require('./constants');
 const utils = require('./utils');
-const allure = require('allure-commandline');
+const path = require('path');
+
+const ALLURE_OUTPUT = 'allure-results';
+
 
 const baseConfig = {
   //
@@ -26,7 +32,7 @@ const baseConfig = {
   // If you are calling `wdio` from an NPM script (see https://docs.npmjs.com/cli/run-script),
   // then the current working directory is where your `package.json` resides, so `wdio`
   // will be called from there.
-  // 
+  //
   specs: [
     './tests/e2e/**/*.wdio-spec.js'
   ],
@@ -145,7 +151,7 @@ const baseConfig = {
   // see also: https://webdriver.io/docs/dot-reporter
   reporters: [
     ['allure', {
-      outputDir: 'allure-results',
+      outputDir: ALLURE_OUTPUT,
       disableWebdriverStepsReporting: true
     }],
     'spec',
@@ -174,6 +180,15 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    */
   onPrepare: async function (config) {
+    // delete all previous test
+    if (fs.existsSync(ALLURE_OUTPUT)) {
+      const files = fs.readdirSync(ALLURE_OUTPUT) || [];
+      files.forEach(fileName => {
+        const filePath = path.join(ALLURE_OUTPUT, fileName);
+        fs.unlinkSync(filePath);
+      });
+    }
+
     await utils.prepServices(config);
   },
   /**
