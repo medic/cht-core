@@ -6,6 +6,7 @@ const sentinelUtils = require('../sentinel/utils');
 const tasksPage = require('../../page-objects/tasks/tasks.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
+const contactsPage = require('../../page-objects/contacts/contacts.wdio.page');
 const chtConfUtils = require('../../cht-conf-utils');
 const modalPage = require('../../page-objects/common/modal.wdio.page');
 
@@ -264,10 +265,10 @@ describe('Tasks group landing page', () => {
     await tasksPage.waitForTasksGroupLoaded();
 
     // clicking on another page displays the modal
-    await browser.url('/#/contacts');
+    await commonPage.goToPeople(false);
     await expectTasksGroupLeaveModal();
     await (await modalPage.confirm()).click();
-    await (await $('#contacts-list')).waitForDisplayed();
+    await (await contactsPage.contactList()).waitForDisplayed();
   });
 
   it('should not show page when there are no more household tasks', async () => {
@@ -290,6 +291,7 @@ describe('Tasks group landing page', () => {
 
     const emptySelection = await tasksPage.noSelectedTask();
     await (emptySelection).waitForDisplayed();
+    await commonPage.waitForLoaderToDisappear(emptySelection);
     chai.expect(await emptySelection.getText()).to.equal('No task selected');
   });
 

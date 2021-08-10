@@ -39,9 +39,11 @@ const goToReports = async () => {
   await (await reportsPage.reportList()).waitForDisplayed();
 };
 
-const goToPeople = async () => {
+const goToPeople = async (shouldLoad = true) => {
   await browser.url('/#/contacts');
-  await (await contactsPage.contactList()).waitForDisplayed();
+  if (shouldLoad) {
+    await (await contactsPage.contactList()).waitForDisplayed();
+  }
 };
 
 const closeTour = async () => {
@@ -58,6 +60,12 @@ const closeTour = async () => {
   }
 };
 
+const waitForLoaderToDisappear = async (element) => {
+  const loaderSelector = '.loader';
+  const loader = await (element ? element.$(loaderSelector) : $(loaderSelector));
+  await loader.waitForDisplayed({ reverse: true });
+};
+
 module.exports = {
   logout,
   logoutButton,
@@ -71,4 +79,5 @@ module.exports = {
   getTasksButtonLabel,
   goToBase,
   closeTour,
+  waitForLoaderToDisappear,
 };
