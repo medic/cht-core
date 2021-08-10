@@ -28,9 +28,8 @@ const name = () => $('.children h4 span');
 const externalIdField = (place) => $(`[name="/data/${place}/external_id"]`);
 const notes = (place) => $(`[name="/data/${place}/notes"]`);
 const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][value="false"]`);
-const contactCard = () =>$('.card h2');
+const contactCard = () => $('.card h2');
 const personIcon = () => $('[title="medic-person"]');
-
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
