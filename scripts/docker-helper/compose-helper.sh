@@ -183,8 +183,9 @@ docker_destroy(){
   do
     docker stop -t 0 "${container}" > /dev/null 2>&1
   done
-  docker rm "${project}"_haproxy_1 another3_medic-os_1 > /dev/null 2>&1
+  docker rm "${project}"_haproxy_1 "${project}"_medic-os_1 > /dev/null 2>&1
   docker volume rm "${project}"_medic-data > /dev/null 2>&1
+  docker network rm "${project}"_medic-net > /dev/null 2>&1
 }
 
 main (){
