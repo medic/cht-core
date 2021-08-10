@@ -231,7 +231,7 @@ main (){
   dockerComposePath=$(get_docker_compose_yml_path)
 
   # if we're exiting, call down or destroy and quit proper
-  if [ "$exitNext" = "destroy" ] || [ "$exitNext" = "down" ];then
+  if [ "$exitNext" = "destroy" ] || [ "$exitNext" = "down" ] || [ "$exitNext" = "happy" ];then
     if [ "$exitNext" = "destroy" ]; then
       docker_destroy "$COMPOSE_PROJECT_NAME" "$ALL_CONTAINERS"
     elif [ "$exitNext" = "down" ]; then
