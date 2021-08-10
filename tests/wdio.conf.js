@@ -127,7 +127,7 @@ const baseConfig = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  // services: [],
+  services: ['devtools', 'chromedriver'],
 
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
@@ -255,6 +255,7 @@ const baseConfig = {
    * Function to be executed after a test (in Mocha/Jasmine).
    */
   afterTest: async function (test, context, { passed }) {
+    await utils.saveWdioBrowserLogs(test);
     if (passed === false) {
       await browser.takeScreenshot();
     }
@@ -312,7 +313,7 @@ const baseConfig = {
         () => reject(timeoutError),
         60 * 1000);
 
-      generation.on('exit', function (exitCode) {
+      generation.on('exit', (exitCode) => {
         clearTimeout(generationTimeout);
 
         if (exitCode !== 0) {

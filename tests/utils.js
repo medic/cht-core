@@ -443,6 +443,15 @@ const saveBrowserLogs = () => {
     });
 };
 
+const saveWdioBrowserLogs = async (test) => {
+  const logs = await browser.getLogs('browser');
+  browserLogStream.write(`\n~~~~~~~~~~~ ${test.title} ~~~~~~~~~~~~~~~~~~~~~\n\n`);
+  logs
+    .map(log => `[${log.level}] ${log.message}\n`)
+    .forEach(log => browserLogStream.write(log));
+  browserLogStream.write('\n~~~~~~~~~~~~~~~~~~~~~\n\n');
+};
+
 
 const prepServices = async (config) => {
   if (constants.IS_TRAVIS) {
@@ -992,6 +1001,7 @@ module.exports = {
   protractorLogin: protractorLogin,
 
   saveBrowserLogs: saveBrowserLogs,
+  saveWdioBrowserLogs,
   tearDownServices,
   endSession: async (exitCode) => {
     await tearDownServices();

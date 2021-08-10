@@ -11,10 +11,14 @@ const areaContact = faker.name.findName();
 const household = faker.address.city();
 const householdContact = faker.name.findName();
 
-
 describe('Create new lineage structure', () => {
   before(async () => {
     await loginPage.cookieLogin();
+    await commonPage.goToPeople();
+    await browser.execute(() => {
+      // eslint-disable-next-line no-undef
+      window.jQuery('.snackbar-content').hide();
+    });
   });
 
   after(async () => {
@@ -22,7 +26,6 @@ describe('Create new lineage structure', () => {
   });
 
   it('Create new health center', async () => {
-    await commonPage.goToPeople();
     await contactPage.addPlace('district_hospital', centerName, centerContact);
     expect(await contactPage.getPrimaryContactName()).toBe(centerContact);
   });

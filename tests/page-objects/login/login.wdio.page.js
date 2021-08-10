@@ -55,7 +55,7 @@ const changeLanguage = async (languageCode, userTranslation) => {
   return {
     user: await (await labelForUser()).getText(),
     pass: await (await labelForPassword()).getText(),
-    error: await (await errorMessageField()).getText()
+    error: await (await errorMessageField()).getHTML(false),
   };
 };
 
