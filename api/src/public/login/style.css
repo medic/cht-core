@@ -12,7 +12,7 @@ body, input {
 .logo {
   width: 14.2em;
   height: 3.8em;
-  margin: 0px auto;
+  margin: 30px auto 60px auto;
   display: block;
 }
 label, input {

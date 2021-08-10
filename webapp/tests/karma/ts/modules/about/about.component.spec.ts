@@ -152,7 +152,7 @@ describe('About Component', () => {
   }));
 
   it ('should display partner logo if it exists', fakeAsync(() => {
-    resourceIconsService.getDocResources.resolves(['Medic Mobile']);
+    resourceIconsService.getDocResources.resolves(['Medic']);
     versionService.getLocal.resolves({ version: '3.5.0', rev: '12' });
     versionService.getRemoteRev.resolves('15');
 
@@ -160,7 +160,7 @@ describe('About Component', () => {
     flush();
     discardPeriodicTasks();
 
-    expect(component.partners[0]).to.equal('Medic Mobile');
+    expect(component.partners[0]).to.equal('Medic');
   }));
 
   it('ngOnDestroy() should unsubscribe from observables', () => {
