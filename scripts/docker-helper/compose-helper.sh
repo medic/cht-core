@@ -203,7 +203,7 @@ main (){
   fi
 
   # after valid env file is loaded, let's set all our constants
-  declare -r APP_STRING="ip;docker;docker-compose;nc;curl"
+  declare -r APP_STRING="ip;docker;docker-compose;nc;curl;tr"
   declare -r MAX_REBOOTS=5
   declare -r DEFAULT_SLEEP=75
   declare -r MEDIC_OS="${COMPOSE_PROJECT_NAME}_medic-os_1"
