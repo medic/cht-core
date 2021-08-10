@@ -31,7 +31,6 @@ config/*/backups/*
 config/*/json_docs/*
 config/*/upload-docs.*
 config/*/users.csv
-config/*/forms/contact/*.xlsx
 /**/*/.snapshots/local.json
 tests/integration/results/
 allure*
