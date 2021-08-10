@@ -29,6 +29,19 @@ main (){
 
   col_right
   move_up
+  
+  window "IPs" "green" "25%"
+  containers=$(docker ps | wc -l)
+  if [[ $containers > 1 ]];then
+    ips=$(docker ps | awk 'NR>1{ print $1 }' | xargs docker inspect -f '{{range .NetworkSettings.Networks}}{{$.Name}}{{" "}}{{.IPAddress}}{{end}}')
+    append_command "echo $ips"
+  else
+    append "No containers running"
+  fi
+  endwin
+
+  col_right
+  move_up
 
   window "networks" "green" "25%"
   dockerLs=$(docker network ls --format 'table {{.Name}}\t')
@@ -43,19 +56,8 @@ main (){
   append "$dockerVol"
   endwin
 
-  col_right
-  move_up
 
-  window "IPs" "green" "25%"
-  containers=$(docker ps | wc -l)
-  if [[ $containers > 1 ]];then
-    ips=$(docker ps | awk 'NR>1{ print $1 }' | xargs docker inspect -f '{{range .NetworkSettings.Networks}}{{$.Name}}{{" "}}{{.IPAddress}}{{end}}')
-    append_command "echo $ips"
 
-  else
-    append "No containers running"
-  fi
-  endwin
 
 }
 
