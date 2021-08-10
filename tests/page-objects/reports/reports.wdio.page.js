@@ -5,7 +5,7 @@ const selectedCaseIdLabel = () => $(`${reportBodyDetails} ul > li > label > span
 const submitterPlace = () => $('.position a');
 const submitterPhone = () => $('.sender .phone');
 const submitterName = () => $('.sender .name');
-const  firstReport = () => $(`${reportListID} li:first-child`);
+const firstReport = () => $(`${reportListID} li:first-child`);
 const reportList = () => $(`${reportListID}`);
 
 module.exports = {
