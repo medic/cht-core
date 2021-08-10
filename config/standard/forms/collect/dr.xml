@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>Death Report (DR)</h:title>
     <model>
       <itext>
-        <translation default="true()" lang="English (en)">
+        <translation lang="English (en)" default="true()">
           <text id="/dr/id:jr:constraintMsg">
             <value>Must be 5 to 13 digits</value>
           </text>
@@ -14,15 +14,15 @@
         </translation>
       </itext>
       <instance>
-        <dr delimiter="#" id="dr" prefix="J1!dr!" version="2019-02-06 15-57">
+        <dr id="dr" prefix="J1!dr!" delimiter="#" version="2019-02-06 15-57">
           <id/>
           <meta tag="hidden">
             <instanceID/>
           </meta>
         </dr>
       </instance>
-      <bind constraint="regex(., '[0-9]{5,13}')" jr:constraintMsg="jr:itext('/dr/id:jr:constraintMsg')" nodeset="/dr/id" required="true()" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/dr/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/dr/id" type="string" constraint="regex(., '[0-9]{5,13}')" required="true()" jr:constraintMsg="jr:itext('/dr/id:jr:constraintMsg')"/>
+      <bind nodeset="/dr/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body>
