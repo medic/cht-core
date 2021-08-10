@@ -347,7 +347,6 @@
     const $image = getImageElement($input.parent());
 
     if ($image) {
-      $input.hide();
       $image.attr('src', `data:image/png;base64,${value}`);
     }
   }
