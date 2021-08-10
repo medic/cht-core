@@ -29,6 +29,7 @@ const externalIdField = (place) => $(`[name="/data/${place}/external_id"]`);
 const notes = (place) => $(`[name="/data/${place}/notes"]`);
 const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][value="false"]`);
 const contactCard = () =>$('.card h2');
+const personIcon = () => $('[title="medic-person"]');
 
 
 const search = async (query) => {
@@ -75,6 +76,7 @@ const addPerson = async (name, dob = '2000-01-01') => {
   await (await personSexField()).click();
   await (await notes('person')).addValue('some person notes');
   await (await genericForm.submitButton()).click();
+  await (await personIcon()).waitForDisplayed();
   return (await contactCard()).getText();
 };
 
