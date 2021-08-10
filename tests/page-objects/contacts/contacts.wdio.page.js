@@ -18,7 +18,7 @@ const contactList = () => $('#contacts-list');
 const newPlaceName = () => $('[name="/data/init/custom_place_name"]');
 const newPrimaryContactName = () => $('[name="/data/contact/name"]');
 const newPrimaryContactButton = () => $('[name="/data/init/create_new_person"][value="new_person"]');
-const resourceIcon = (name) => $(`[title="medic-${name}"]`);
+const resourceIcon = (name) => $(`.actions.dropup .mm-icon [title="medic-${name}"]`);
 const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
 const contactSexField = () => $('[data-name="/data/contact/sex"][value="female"]');
 const personName = () => $('[name="/data/person/name"]');
@@ -28,8 +28,7 @@ const name = () => $('.children h4 span');
 const externalIdField = (place) => $(`[name="/data/${place}/external_id"]`);
 const notes = (place) => $(`[name="/data/${place}/notes"]`);
 const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][value="false"]`);
-const contactCard = () =>$('.card h2');
-const personIcon = () => $('[title="medic-person"]');
+const contactCard = () => $('.card h2');
 
 
 const search = async (query) => {
@@ -49,8 +48,7 @@ const getReportFiltersText = async () => {
 
 const getReportTaskFiltersText = async () => {
   await (await taskFilter()).waitForDisplayed();
-  const blah = await Promise.all((await taskFilters()).map(filter => filter.getText()));
-  return blah;
+  return await Promise.all((await taskFilters()).map(filter => filter.getText()));
 };
 
 const addPlace = async (type, placeName , contactName ) => {
@@ -76,7 +74,7 @@ const addPerson = async (name, dob = '2000-01-01') => {
   await (await personSexField()).click();
   await (await notes('person')).addValue('some person notes');
   await (await genericForm.submitButton()).click();
-  await (await personIcon()).waitForDisplayed();
+  await (await resourceIcon('person')).waitForDisplayed();
   return (await contactCard()).getText();
 };
 

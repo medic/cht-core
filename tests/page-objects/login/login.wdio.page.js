@@ -15,16 +15,12 @@ const login = async (username, password) => {
   await (await loginButton()).click();
 };
 
-const cookieLogin = async (username = auth.username, password = auth.password, createUser = true, 
-  timeoutForBaseLoadMillis) => {
+const cookieLogin = async (username = auth.username, password = auth.password, createUser = true) => {
   const opts = {
     path: '/medic/login',
     body: { user: username, password: password },
     method: 'POST',
     simple: false,
-    headers: {
-      'Content-Type': 'application/json'
-    }
   };
   const resp = await utils.request(opts);
   const cookieArray = utils.parseCookieResponse(resp.headers['set-cookie']);
@@ -33,7 +29,7 @@ const cookieLogin = async (username = auth.username, password = auth.password, c
   if (createUser) {
     await utils.setupUserDoc(username);
   }
-  await commonPage.goToBase(timeoutForBaseLoadMillis);
+  await commonPage.goToBase();
 };
 
 const getLanguage = async (selector) => {

@@ -56,15 +56,17 @@ describe('Adding new language', () => {
     // change language
     await helper.selectDropdownByValue(userSettingsElements.getLanguageField(), 'afr');
     await helper.clickElementNative(userSettingsElements.getSubmitButton());
-    await commonPo.goToMessagesNative();
+
+    await browser.wait(async () => await helper.getTextFromElementNative(commonPo.analyticsTab) === 'Analytiks', 2000);
+    expect(await helper.getTextFromElementNative(commonPo.analyticsTab)).toBe('Analytiks');
 
     //check for translations
+    await commonPo.goToMessagesNative();
     expect(await helper.getTextFromElementNative(commonPo.messagesList)).toBe('Geen boodskappe gevind nie');
     await utils.resetBrowserNative();
     await commonPo.goToReportsNative();
     expect(await helper.getTextFromElementNative(reportsPage.list())).toBe('Geen verslae gevind nie');
     await commonPo.goToPeople();
     expect(await helper.getTextFromElementNative(contactsPage.contactsList())).toBe('Geen mense gevind nie');
-    expect(await helper.getTextFromElementNative(commonPo.analyticsTab)).toBe('Analytiks');
   });
 });

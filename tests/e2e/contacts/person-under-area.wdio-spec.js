@@ -59,7 +59,9 @@ describe('Create Person Under Area', async () => {
     await usersAdminPage.inputAddUserFields(username, 'Jack', 'CHW', healthCenter2.name, person2.name, password);
     await usersAdminPage.saveUser();
     await usersAdminPage.logout();
-    await loginPage.cookieLogin(username, password, false, 50000); //Page takes lot of time to load for a new User
+    await loginPage.login(username, password);
+    await commonPage.closeTour();
+
     await commonPage.goToPeople();
     const rows = await contactPage.getAllContactText();
     // Only one row will be displayed: for HealthCenter
