@@ -1129,10 +1129,10 @@
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
       <bind nodeset="/data/inputs/user/name" type="string"/>
       <bind nodeset="/data/init/create_new_person" type="select1" required="true()"/>
-      <bind nodeset="/data/init/select_person" type="db:person" relevant="selected( /data/init/create_new_person ,'old_person')" required="true()"/>
+      <bind nodeset="/data/init/select_person" type="db:person" required="true()" relevant="selected( /data/init/create_new_person ,'old_person')"/>
       <bind nodeset="/data/init/name" type="string"/>
       <bind nodeset="/data/init/contact_name" type="string" calculate="coalesce(../name, ../../contact/name)"/>
-      <bind nodeset="/data/init/custom_place_name" type="string" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/district_hospital/is_name_generated , 'false') or selected( /data/district_hospital/is_name_generated , 'no')" required="true()"/>
+      <bind nodeset="/data/init/custom_place_name" type="string" required="true()" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/district_hospital/is_name_generated , 'false') or selected( /data/district_hospital/is_name_generated , 'no')"/>
       <bind nodeset="/data/init/place_type" type="select1"/>
       <bind nodeset="/data/init/place_type_translation" type="string" calculate="jr:choice-name( /data/init/place_type ,' /data/init/place_type ')"/>
       <bind nodeset="/data/init/generated_name" type="select1"/>
@@ -1144,7 +1144,7 @@
       <bind nodeset="/data/contact/phone" type="tel" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" constraint="true()"/>
       <bind nodeset="/data/contact/phone_alternate" type="tel" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" constraint="true()"/>
       <bind nodeset="/data/contact/role" type="select1"/>
-      <bind nodeset="/data/contact/role_other" type="string" relevant="selected(  /data/contact/role ,'other')" required="true()"/>
+      <bind nodeset="/data/contact/role_other" type="string" required="true()" relevant="selected(  /data/contact/role ,'other')"/>
       <bind nodeset="/data/contact/external_id" type="string"/>
       <bind nodeset="/data/contact/notes" type="string"/>
       <bind nodeset="/data/contact/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
@@ -1152,8 +1152,8 @@
       <bind nodeset="/data/contact/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
       <bind nodeset="/data/district_hospital/parent" type="string"/>
       <bind nodeset="/data/district_hospital/type" type="string"/>
-      <bind nodeset="/data/district_hospital/is_name_generated" type="select1" relevant="not(selected( /data/init/create_new_person ,'none'))" required="true()"/>
-      <bind nodeset="/data/district_hospital/name" type="string" calculate="if( ( selected( /data/district_hospital/is_name_generated , 'true') or selected( /data/district_hospital/is_name_generated , 'yes') ),  /data/init/generated_name_translation ,  /data/init/custom_place_name )" required="true()"/>
+      <bind nodeset="/data/district_hospital/is_name_generated" type="select1" required="true()" relevant="not(selected( /data/init/create_new_person ,'none'))"/>
+      <bind nodeset="/data/district_hospital/name" type="string" required="true()" calculate="if( ( selected( /data/district_hospital/is_name_generated , 'true') or selected( /data/district_hospital/is_name_generated , 'yes') ),  /data/init/generated_name_translation ,  /data/init/custom_place_name )"/>
       <bind nodeset="/data/district_hospital/external_id" type="string"/>
       <bind nodeset="/data/district_hospital/use_cases" type="select" relevant="../type = 'health_center'"/>
       <bind nodeset="/data/district_hospital/vaccines" type="select" relevant="../type = 'health_center' and selected( /data/district_hospital/use_cases ,'imm')"/>

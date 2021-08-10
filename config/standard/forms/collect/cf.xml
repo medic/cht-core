@@ -18,7 +18,7 @@
           </meta>
         </cf>
       </instance>
-      <bind nodeset="/cf/id" type="int" required="true()" constraint="regex(., '[0-9]{5,13}')"/>
+      <bind nodeset="/cf/id" type="int" constraint="regex(., '[0-9]{5,13}')" required="true()"/>
       <bind nodeset="/cf/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>

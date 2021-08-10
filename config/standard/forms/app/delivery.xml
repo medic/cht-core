@@ -1469,7 +1469,7 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
       <bind nodeset="/delivery/group_chw_info" relevant=" /delivery/inputs/source  = 'task'"/>
       <bind nodeset="/delivery/group_chw_info/chw_information" readonly="true()" type="string"/>
       <bind nodeset="/delivery/group_chw_info/call_button" readonly="true()" type="string"/>
-      <bind nodeset="/delivery/group_chw_info/still_pregnant" type="select1" constraint="selected(.,'no')" required="true()" jr:constraintMsg="jr:itext('/delivery/group_chw_info/still_pregnant:jr:constraintMsg')"/>
+      <bind nodeset="/delivery/group_chw_info/still_pregnant" type="select1" required="true()" constraint="selected(.,'no')" jr:constraintMsg="jr:itext('/delivery/group_chw_info/still_pregnant:jr:constraintMsg')"/>
       <bind nodeset="/delivery/group_delivery_summary" relevant="selected( /delivery/group_chw_info/still_pregnant , 'no')"/>
       <bind nodeset="/delivery/group_delivery_summary/g_pregnancy_outcome" type="select1" required="true()"/>
       <bind nodeset="/delivery/group_delivery_summary/g_delivery_code" type="select1" required="true()" relevant=" /delivery/group_delivery_summary/g_pregnancy_outcome  != 'miscarriage'"/>

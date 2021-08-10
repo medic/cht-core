@@ -2066,9 +2066,9 @@
       <bind nodeset="/nutrition_screening/c_program" type="string" calculate="jr:choice-name( /nutrition_screening/treatment/program , ' /nutrition_screening/treatment/program ')"/>
       <bind nodeset="/nutrition_screening/c_facility" type="string" calculate="jr:choice-name( /nutrition_screening/treatment/facility , ' /nutrition_screening/treatment/facility ')"/>
       <bind nodeset="/nutrition_screening/measurements/gender" type="select1" required="true()"/>
-      <bind nodeset="/nutrition_screening/measurements/weight" type="decimal" required="true()" jr:constraintMsg="jr:itext('/nutrition_screening/measurements/weight:jr:constraintMsg')" constraint=". &gt;= 0.8 and . &lt;= 68.5"/>
-      <bind nodeset="/nutrition_screening/measurements/height" type="decimal" required="true()" jr:constraintMsg="jr:itext('/nutrition_screening/measurements/height:jr:constraintMsg')" constraint=". &gt;= 45 and . &lt;= 120"/>
-      <bind nodeset="/nutrition_screening/measurements/muac" type="decimal" required="false()" jr:constraintMsg="jr:itext('/nutrition_screening/measurements/muac:jr:constraintMsg')" relevant=" /nutrition_screening/age_in_days  &gt;= 180" constraint=". &gt;= 5 and . &lt;= 30"/>
+      <bind nodeset="/nutrition_screening/measurements/weight" type="decimal" jr:constraintMsg="jr:itext('/nutrition_screening/measurements/weight:jr:constraintMsg')" constraint=". &gt;= 0.8 and . &lt;= 68.5" required="true()"/>
+      <bind nodeset="/nutrition_screening/measurements/height" type="decimal" jr:constraintMsg="jr:itext('/nutrition_screening/measurements/height:jr:constraintMsg')" constraint=". &gt;= 45 and . &lt;= 120" required="true()"/>
+      <bind nodeset="/nutrition_screening/measurements/muac" type="decimal" jr:constraintMsg="jr:itext('/nutrition_screening/measurements/muac:jr:constraintMsg')" relevant=" /nutrition_screening/age_in_days  &gt;= 180" constraint=". &gt;= 5 and . &lt;= 30" required="false()"/>
       <bind nodeset="/nutrition_screening/treatment/n_zscore" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_screening/treatment/n_wfa" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_screening/treatment/n_wfa_s_malnourished" readonly="true()" type="string" relevant=" /nutrition_screening/wfa  &lt; -3"/>
@@ -2087,17 +2087,17 @@
       <bind nodeset="/nutrition_screening/treatment/n_wfh_normal" readonly="true()" type="string" relevant=" /nutrition_screening/wfh  &lt;= 2 and  /nutrition_screening/wfh  &gt;= -2"/>
       <bind nodeset="/nutrition_screening/treatment/n_wfh_overwweight" readonly="true()" type="string" relevant=" /nutrition_screening/wfh  &gt; 2"/>
       <bind nodeset="/nutrition_screening/treatment/enroll" type="select1" required="true()"/>
-      <bind nodeset="/nutrition_screening/treatment/reason" type="select1" required="true()" relevant=" /nutrition_screening/treatment/enroll  = 'no'"/>
-      <bind nodeset="/nutrition_screening/treatment/admission_type" type="select1" required="true()" relevant=" /nutrition_screening/treatment/enroll  = 'yes'"/>
-      <bind nodeset="/nutrition_screening/treatment/admission_criteria" type="select" required="true()" relevant=" /nutrition_screening/treatment/enroll  = 'yes'"/>
-      <bind nodeset="/nutrition_screening/treatment/program" type="select1" required="true()" relevant=" /nutrition_screening/treatment/enroll  = 'yes'"/>
+      <bind nodeset="/nutrition_screening/treatment/reason" type="select1" relevant=" /nutrition_screening/treatment/enroll  = 'no'" required="true()"/>
+      <bind nodeset="/nutrition_screening/treatment/admission_type" type="select1" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" required="true()"/>
+      <bind nodeset="/nutrition_screening/treatment/admission_criteria" type="select" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" required="true()"/>
+      <bind nodeset="/nutrition_screening/treatment/program" type="select1" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" required="true()"/>
       <bind nodeset="/nutrition_screening/treatment/n_otp" readonly="true()" type="string" relevant=" /nutrition_screening/treatment/program  = 'OTP'"/>
       <bind nodeset="/nutrition_screening/treatment/n_sfp" readonly="true()" type="string" relevant=" /nutrition_screening/treatment/program  = 'SFP'"/>
       <bind nodeset="/nutrition_screening/treatment/n_sc" readonly="true()" type="string" relevant=" /nutrition_screening/treatment/program  = 'SC'"/>
-      <bind nodeset="/nutrition_screening/treatment/facility" type="select1" required="true()" relevant=" /nutrition_screening/treatment/enroll  = 'yes'"/>
-      <bind nodeset="/nutrition_screening/treatment/target_weight" type="decimal" jr:constraintMsg="jr:itext('/nutrition_screening/treatment/target_weight:jr:constraintMsg')" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'" constraint=". &gt;= 0.8 and . &lt;= 68.5"/>
-      <bind nodeset="/nutrition_screening/treatment/target_muac" type="decimal" jr:constraintMsg="jr:itext('/nutrition_screening/treatment/target_muac:jr:constraintMsg')" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'" constraint=". &gt;= 5 and . &lt;= 30"/>
-      <bind nodeset="/nutrition_screening/treatment/other_facility" type="string" required="true()" relevant=" /nutrition_screening/treatment/facility  = 'other_clinic'"/>
+      <bind nodeset="/nutrition_screening/treatment/facility" type="select1" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" required="true()"/>
+      <bind nodeset="/nutrition_screening/treatment/target_weight" type="decimal" jr:constraintMsg="jr:itext('/nutrition_screening/treatment/target_weight:jr:constraintMsg')" constraint=". &gt;= 0.8 and . &lt;= 68.5" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'"/>
+      <bind nodeset="/nutrition_screening/treatment/target_muac" type="decimal" jr:constraintMsg="jr:itext('/nutrition_screening/treatment/target_muac:jr:constraintMsg')" constraint=". &gt;= 5 and . &lt;= 30" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'"/>
+      <bind nodeset="/nutrition_screening/treatment/other_facility" type="string" relevant=" /nutrition_screening/treatment/facility  = 'other_clinic'" required="true()"/>
       <bind nodeset="/nutrition_screening/treatment/additional_notes" type="string"/>
       <bind nodeset="/nutrition_screening/summary/n_1" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_screening/summary/n_2" readonly="true()" type="string"/>

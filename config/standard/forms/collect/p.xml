@@ -149,7 +149,7 @@
       </instance>
       <bind nodeset="/p/id" type="string" required="true()"/>
       <bind nodeset="/p/lmp_known" type="select1"/>
-      <bind nodeset="/p/lmp" type="int" required="true()" relevant="selected( /p/lmp_known ,'yes')" jr:constraintMsg="jr:itext('/p/lmp:jr:constraintMsg')" constraint=". &gt;= 2 and . &lt;= 42"/>
+      <bind nodeset="/p/lmp" type="int" jr:constraintMsg="jr:itext('/p/lmp:jr:constraintMsg')" constraint=". &gt;= 2 and . &lt;= 42" relevant="selected( /p/lmp_known ,'yes')" required="true()"/>
       <bind nodeset="/p/review_with_lmp" readonly="true()" type="string" relevant="selected( /p/lmp_known ,'yes')"/>
       <bind nodeset="/p/review_without_lmp" readonly="true()" type="string" relevant="not(selected( /p/lmp_known ,'yes'))"/>
       <bind nodeset="/p/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>

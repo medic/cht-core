@@ -25,7 +25,7 @@
           </meta>
         </g>
       </instance>
-      <bind nodeset="/g/id" type="string" required="true()" jr:constraintMsg="jr:itext('/g/id:jr:constraintMsg')" constraint="regex(., '[0-9]{5,13}')"/>
+      <bind nodeset="/g/id" type="string" jr:constraintMsg="jr:itext('/g/id:jr:constraintMsg')" required="true()" constraint="regex(., '[0-9]{5,13}')"/>
       <bind nodeset="/g/severity" type="select1" required="true()"/>
       <bind nodeset="/g/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>

@@ -627,9 +627,9 @@
       <bind nodeset="/nutrition_followup/wfh" type="string" calculate="round(z-score('weight-for-height',  /nutrition_followup/measurements/gender ,  /nutrition_followup/measurements/height ,  /nutrition_followup/measurements/weight ), 1)"/>
       <bind nodeset="/nutrition_followup/measurements" relevant=" /nutrition_followup/attend_visit  = 'yes'"/>
       <bind nodeset="/nutrition_followup/measurements/gender" type="select1" required="true()"/>
-      <bind nodeset="/nutrition_followup/measurements/weight" type="decimal" jr:constraintMsg="jr:itext('/nutrition_followup/measurements/weight:jr:constraintMsg')" constraint=". &gt;= 0.8 and . &lt;= 68.5" required="true()"/>
-      <bind nodeset="/nutrition_followup/measurements/height" type="decimal" jr:constraintMsg="jr:itext('/nutrition_followup/measurements/height:jr:constraintMsg')" constraint=". &gt;= 45 and . &lt;= 120" required="true()"/>
-      <bind nodeset="/nutrition_followup/measurements/muac" type="decimal" jr:constraintMsg="jr:itext('/nutrition_followup/measurements/muac:jr:constraintMsg')" constraint=". &gt;= 5 and . &lt;= 30" required="false()"/>
+      <bind nodeset="/nutrition_followup/measurements/weight" type="decimal" constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="jr:itext('/nutrition_followup/measurements/weight:jr:constraintMsg')" required="true()"/>
+      <bind nodeset="/nutrition_followup/measurements/height" type="decimal" constraint=". &gt;= 45 and . &lt;= 120" jr:constraintMsg="jr:itext('/nutrition_followup/measurements/height:jr:constraintMsg')" required="true()"/>
+      <bind nodeset="/nutrition_followup/measurements/muac" type="decimal" constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="jr:itext('/nutrition_followup/measurements/muac:jr:constraintMsg')" required="false()"/>
       <bind nodeset="/nutrition_followup/measurements/nn3" readonly="true()" type="string" relevant=" /nutrition_followup/measurements/weight  != '' and  /nutrition_followup/measurements/height  != ''"/>
       <bind nodeset="/nutrition_followup/measurements/n_14" readonly="true()" type="string" relevant=" /nutrition_followup/wfh  &lt; -3"/>
       <bind nodeset="/nutrition_followup/measurements/n_15" readonly="true()" type="string" relevant=" /nutrition_followup/wfh  &lt; -2 and  /nutrition_followup/wfh  &gt;= -3"/>

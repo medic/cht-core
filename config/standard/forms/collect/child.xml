@@ -118,9 +118,9 @@
         </child>
       </instance>
       <bind nodeset="/child/n" type="string" required="true()"/>
-      <bind nodeset="/child/w" type="string" required="true()" calculate="round(  /child/d  div 7, 0 )"/>
+      <bind nodeset="/child/w" type="string" calculate="round(  /child/d  div 7, 0 )" required="true()"/>
       <bind nodeset="/child/d" type="string" calculate="today() -  /child/birth_date "/>
-      <bind nodeset="/child/birth_date" type="date" required="true()" jr:constraintMsg="jr:itext('/child/birth_date:jr:constraintMsg')" constraint=". &lt;= today()"/>
+      <bind nodeset="/child/birth_date" type="date" jr:constraintMsg="jr:itext('/child/birth_date:jr:constraintMsg')" required="true()" constraint=". &lt;= today()"/>
       <bind nodeset="/child/review" readonly="true()" type="string"/>
       <bind nodeset="/child/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>

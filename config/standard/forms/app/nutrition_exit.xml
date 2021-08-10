@@ -855,9 +855,9 @@
       <bind nodeset="/nutrition_exit/treatment_program" type="string" calculate="instance('contact-summary')/context/treatment_program"/>
       <bind nodeset="/nutrition_exit/wfh" type="string" calculate="round(z-score('weight-for-height',  /nutrition_exit/measurements/gender ,  /nutrition_exit/measurements/height ,  /nutrition_exit/measurements/weight ), 1)"/>
       <bind nodeset="/nutrition_exit/measurements/gender" type="select1" required="true()"/>
-      <bind nodeset="/nutrition_exit/measurements/weight" type="decimal" jr:constraintMsg="jr:itext('/nutrition_exit/measurements/weight:jr:constraintMsg')" constraint=". &gt;= 0.8 and . &lt;= 68.5" required="true()"/>
-      <bind nodeset="/nutrition_exit/measurements/height" type="decimal" jr:constraintMsg="jr:itext('/nutrition_exit/measurements/height:jr:constraintMsg')" constraint=". &gt;= 45 and . &lt;= 120" required="true()"/>
-      <bind nodeset="/nutrition_exit/measurements/muac" type="decimal" jr:constraintMsg="jr:itext('/nutrition_exit/measurements/muac:jr:constraintMsg')" constraint=". &gt;= 5 and . &lt;= 30" required="false()"/>
+      <bind nodeset="/nutrition_exit/measurements/weight" type="decimal" jr:constraintMsg="jr:itext('/nutrition_exit/measurements/weight:jr:constraintMsg')" required="true()" constraint=". &gt;= 0.8 and . &lt;= 68.5"/>
+      <bind nodeset="/nutrition_exit/measurements/height" type="decimal" jr:constraintMsg="jr:itext('/nutrition_exit/measurements/height:jr:constraintMsg')" required="true()" constraint=". &gt;= 45 and . &lt;= 120"/>
+      <bind nodeset="/nutrition_exit/measurements/muac" type="decimal" jr:constraintMsg="jr:itext('/nutrition_exit/measurements/muac:jr:constraintMsg')" required="false()" constraint=". &gt;= 5 and . &lt;= 30"/>
       <bind nodeset="/nutrition_exit/measurements/n_wfh" readonly="true()" type="string" relevant=" /nutrition_exit/measurements/weight  != '' and  /nutrition_exit/measurements/height  != ''"/>
       <bind nodeset="/nutrition_exit/measurements/n_14" readonly="true()" type="string" relevant=" /nutrition_exit/wfh  &lt; -3"/>
       <bind nodeset="/nutrition_exit/measurements/n_15" readonly="true()" type="string" relevant=" /nutrition_exit/wfh  &lt; -2 and  /nutrition_exit/wfh  &gt;= -3"/>

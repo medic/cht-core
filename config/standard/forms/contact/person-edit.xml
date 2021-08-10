@@ -733,10 +733,10 @@
       <bind nodeset="/data/init/name" type="string"/>
       <bind nodeset="/data/init/note_place" readonly="true()" type="string"/>
       <bind nodeset="/data/init/change_parent" type="select1" required="true()"/>
-      <bind nodeset="/data/init/edited_place_type" type="select1" required="true()" relevant="selected( /data/init/change_parent , 'true')"/>
-      <bind nodeset="/data/init/id_district_hospital" type="db:district_hospital" required="true()" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'district_hospital')"/>
-      <bind nodeset="/data/init/id_health_center" type="db:health_center" required="true()" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'health_center')"/>
-      <bind nodeset="/data/init/id_clinic" type="db:clinic" required="true()" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'clinic')"/>
+      <bind nodeset="/data/init/edited_place_type" type="select1" relevant="selected( /data/init/change_parent , 'true')" required="true()"/>
+      <bind nodeset="/data/init/id_district_hospital" type="db:district_hospital" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'district_hospital')" required="true()"/>
+      <bind nodeset="/data/init/id_health_center" type="db:health_center" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'health_center')" required="true()"/>
+      <bind nodeset="/data/init/id_clinic" type="db:clinic" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'clinic')" required="true()"/>
       <bind nodeset="/data/person/parent" type="string" calculate="coalesce(coalesce(coalesce( /data/init/id_district_hospital ,  /data/init/id_health_center ),  /data/init/id_clinic ), /data/person/parent )"/>
       <bind nodeset="/data/person/_id" type="string" readonly="true()"/>
       <bind nodeset="/data/person/type" type="string" readonly="true()"/>
@@ -746,7 +746,7 @@
       <bind nodeset="/data/person/phone_alternate" type="tel" jr:constraintMsg="jr:itext('/data/person/phone_alternate:jr:constraintMsg')" constraint="true()"/>
       <bind nodeset="/data/person/sex" type="select1"/>
       <bind nodeset="/data/person/role" type="select1"/>
-      <bind nodeset="/data/person/role_other" type="string" required="true()" relevant="selected(  /data/person/role ,'other')"/>
+      <bind nodeset="/data/person/role_other" type="string" relevant="selected(  /data/person/role ,'other')" required="true()"/>
       <bind nodeset="/data/person/external_id" type="string"/>
       <bind nodeset="/data/person/notes" type="string"/>
       <bind nodeset="/data/person/meta/created_by" type="string" readonly="true()"/>

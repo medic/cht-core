@@ -21,7 +21,7 @@
           </meta>
         </dr>
       </instance>
-      <bind nodeset="/dr/id" type="string" constraint="regex(., '[0-9]{5,13}')" jr:constraintMsg="jr:itext('/dr/id:jr:constraintMsg')" required="true()"/>
+      <bind nodeset="/dr/id" type="string" jr:constraintMsg="jr:itext('/dr/id:jr:constraintMsg')" constraint="regex(., '[0-9]{5,13}')" required="true()"/>
       <bind nodeset="/dr/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
