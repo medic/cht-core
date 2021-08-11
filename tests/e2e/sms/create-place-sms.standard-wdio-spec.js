@@ -2,15 +2,16 @@ const utils = require('../../utils');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const contactPage = require('../../page-objects/contacts/contacts.wdio.page');
+const placeFactory = require('../../factories/cht/contacts/place');
 
 const messageValue = 'N Potu';
 const phoneNumber = '+12068881234';
 
-const parentPlace = {
+const parentPlace = placeFactory.place().build({
   _id: 'PARENT_PLACE',
+  name: 'Big Parent Hostpital',
   type: 'district_hospital',
-  name: 'Big Parent Hostpital'
-};
+});
 
 const sittuUser = {
   username: 'sittu-user',
@@ -37,7 +38,7 @@ describe('SMS Test Forms', async () => {
   });
 
   it('create person via SMS', async () => {
-    await utils.request({ method: 'POST', path: '/api/v1/users', body: sittuUser });
+    await utils.createUsers([sittuUser]);
 
     await utils.request({ method: 'POST', path: '/api/sms', body: { messages: [ {
       id: 'some-message-id',
