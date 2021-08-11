@@ -334,7 +334,7 @@ main (){
   # if we're here, we're happy! Show happy sign and exit next iteration via exitNext
   window "Successfully started project ${COMPOSE_PROJECT_NAME} " "green" "100%"
   append "login: medic"
-  append "password: secret"
+  append "password: password"
   append ""
   append "Have a great day!"
   endwin
