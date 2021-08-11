@@ -12,6 +12,7 @@ const getBrowserLogFilePath = (specs) => {
   return path.join(__dirname, 'logs', 'browser.' + specName + '.log');
 };
 const browserLogPath = path.join(__dirname, 'logs', 'browser.console.log');
+const browserUtils = require('./utils/browser');
 
 const baseConfig = {
   //
@@ -266,6 +267,11 @@ const baseConfig = {
    * Function to be executed after a test (in Mocha/Jasmine).
    */
   afterTest: async (test, context, { passed }) => {
+    const feedBackDocs = await browserUtils.feedBackDocs(`${test.parent} ${test.title}`);
+    if(feedBackDocs){
+      passed = false;
+      context.test.callback(new Error('Feedback docs were generated during the test.'));
+    }
     if (passed === false) {
       await browser.takeScreenshot();
     }
