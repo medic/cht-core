@@ -256,6 +256,9 @@ main (){
     exit 0
   fi
 
+  # todo - add CHT version as info displayed
+#  curl -s https://medic:password@192-168-68-40.my.local-ip.co:8443/api/v1/monitoring | jq .version.app
+#  "3.9.0"
   window "CHT Docker Helper: PROJECT ${COMPOSE_PROJECT_NAME}" "green" "100%"
   append_tabbed "CHT URL|${chtUrl}" 2 "|"
   append_tabbed "FAUXTON URL|${chtUrl}/_utils/" 2 "|"
