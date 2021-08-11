@@ -59,7 +59,7 @@ export class ReportsEffects {
         if (!silent) {
           this.globalActions.setLoadingShowContent(id);
         }
-console.log('JKUESTER: Hello World');
+
         return from(this.reportViewModelGeneratorService.get(id)).pipe(
           map(model => this.reportActions.setSelected(model)),
           catchError(error => {
