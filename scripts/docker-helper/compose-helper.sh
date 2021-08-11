@@ -81,7 +81,6 @@ validate_env_file(){
   envFile=$1
   if [ ! -f "$envFile" ]; then
     echo "File not found: $envFile"
-    return 0
   fi
 
   # TODO- maybe grep for env vars we're expecting? Blindly including
@@ -90,22 +89,9 @@ validate_env_file(){
   . "${envFile}"
   if [ -z "$COMPOSE_PROJECT_NAME" ] || [ -z "$CHT_HTTP" ] || [ -z "$CHT_HTTPS" ]; then
     echo "Missing env value in file: COMPOSE_PROJECT_NAME, CHT_HTTP or CHT_HTTPS"
+  elif [[ "$COMPOSE_PROJECT_NAME" =~ [A-Z] ]];then
+    echo "COMPOSE_PROJECT_NAME can not have upper case: $COMPOSE_PROJECT_NAME"
   fi
-}
-
-container_status(){
-  result=''
-  containers=$1
-
-  IFS=' ' read -ra containersArray <<< "$containers"
-  for container in "${containersArray[@]}"
-  do
-    if [ "$( docker ps -f name="${container}" | wc -l )" -ne 2 ]; then
-      result="${container} not running. ${result}"
-    fi
-  done
-
-  echo "$result"
 }
 
 get_running_container_count(){
@@ -155,11 +141,6 @@ docker_up_or_restart(){
   docker-compose --env-file ${envFile} -f ${composeFile} up -d > /dev/null 2>&1
 }
 
-reboot_medic_os_services(){
-  project=$1
-  docker exec -it "${project}"_medic-os_1 /boot/svc-restart medic-core > /dev/null 2>&1
-}
-
 install_local_ip_cert(){
   medicOs=$1
   docker exec -it "${medicOs}" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem" > /dev/null 2>&1
@@ -205,7 +186,7 @@ main (){
   # after valid env file is loaded, let's set all our constants
   declare -r APP_STRING="ip;docker;docker-compose;nc;curl;tr"
   declare -r MAX_REBOOTS=5
-  declare -r DEFAULT_SLEEP=75
+  declare -r DEFAULT_SLEEP=$((100*$((reboot_count+1))))
   declare -r MEDIC_OS="${COMPOSE_PROJECT_NAME}_medic-os_1"
   declare -r HAPROXY="${COMPOSE_PROJECT_NAME}_haproxy_1"
   declare -r ALL_CONTAINERS="${MEDIC_OS} ${HAPROXY}"
@@ -265,6 +246,11 @@ main (){
     endwin
     exitNext=$docker_action
     return 0
+  elif [ -z $docker_action ] || [ $docker_action != "up" ] || [ $docker_action = "" ];then
+    echo "die die die!4"
+    date
+    set -e
+    exit 0
   fi
 
   window "CHT Docker Helper: PROJECT ${COMPOSE_PROJECT_NAME}" "green" "100%"
@@ -355,4 +341,4 @@ main (){
 
 }
 
-main_loop -t 1.2 $@
+main_loop -t 1.5 $@

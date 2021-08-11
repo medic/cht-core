@@ -696,7 +696,16 @@ parse_args (){
         -c | --crop )        BSC_TITLECROP=1; shift 1 ;;
         -h | --help )        usage; exit 0 ;;
         -e | --env-file )    envFile=$2; shift 2 ;;
-        -d | --docker_action ) docker_action=$2; shift 2 ;;
+        -d | --docker_action )
+          if [ "$2" = "up" ] || [ "$2" = "down" ] || [ "$2" = "destroy" ];then
+            docker_action=$2
+            shift 2
+          else
+            echo "Invalid < -d | --docker_action > passed.  Must use: up, down or  destroy"
+            set -e
+            exit 0
+          fi
+           ;;
         -q | --quiet )       VERBOSE=0; shift 1 ;;
         -s | --scroll )      BSC_MODE=scroll; shift 1 ;;
         -t | --time )        time=$2; shift 2 ;;
