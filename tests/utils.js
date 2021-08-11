@@ -16,9 +16,9 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 const db = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`, { auth });
 const sentinel = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-sentinel`, { auth });
 const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-logs`, { auth });
-
-const browserlogFilePath = path.join(__dirname, '/../tests/logs/browser.console.log');
-let browserLogStream = fs.createWriteStream(browserlogFilePath, { flags: 'a' });
+const browserLogStream = fs.createWriteStream(
+  __dirname + '/../tests/logs/browser.console.log'
+);
 const userSettings = require('./factories/cht/users/user-settings');
 
 let originalSettings;
@@ -443,6 +443,7 @@ const saveBrowserLogs = () => {
     });
 };
 
+
 const prepServices = async (config) => {
   if (constants.IS_TRAVIS) {
     console.log('On travis, waiting for horti to first boot api');
@@ -454,9 +455,6 @@ const prepServices = async (config) => {
     console.log('Horti booted API, rebooting under our logging structure');
     await rpn.post('http://localhost:31337/all/restart');
   } else {
-    // clear logs
-    fs.unlinkSync(browserlogFilePath);
-    browserLogStream = fs.createWriteStream(browserlogFilePath, { flags: 'a' });
     // Locally we just need to start them and can do so straight away
     await rpn.post('http://localhost:31337/all/start');
   }
