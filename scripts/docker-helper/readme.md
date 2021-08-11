@@ -2,7 +2,9 @@
 
 ## Introduction
 
-These scripts help start CHT instances using `docker-compose` to develop CHT apps on. 
+These scripts help start CHT instances using `docker-compose` to develop CHT apps on:
+
+![](helper.png)
 
 This document is a placeholder while this beta version is out for testing.  These documents should and need to be moved to the [docs site](https://docs.communityhealthtoolkit.org/) when this script leaves beta.
 
@@ -12,7 +14,7 @@ Please do not use this script for production hosting. See [Medic's "Hosting" sec
 
 ### OS 
 
-The main requirement is Ubuntu OS and has only been tested on Ubuntu.  It likely will work on Windows WSL2.  It will not work on MacOS as it's missing the `ip` command.
+The main requirement is Ubuntu OS and this script has only been tested on Ubuntu.  It likely will work on Windows WSL2.  It will not work on MacOS as it's missing the `ip` command.
 
 ### Software
 
@@ -119,7 +121,9 @@ To account for this, the wait time is multiplied times the boot iteration for ea
 
 ## Too many containers
 
-If you're on a resource constrained computer, like a very old or very slow laptop, be sure to watch the total number of containers you're running.  More than one or two projects (2 or 4 containers) and you may notice a slow down. You can use the `./docker-status.sh` script if you forgot which projects you have running. 
+If you're on a resource constrained computer, like a very old or very slow laptop, be sure to watch the total number of containers you're running.  More than one or two projects (2 or 4 containers) and you may notice a slow down. You can use the `./docker-status.sh` script if you forgot which projects you have running:
+
+![](docker.status.png)
 
 
 ## Troubleshooting
