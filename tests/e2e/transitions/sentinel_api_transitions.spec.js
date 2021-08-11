@@ -320,10 +320,13 @@ const isUntransitionedDoc = doc => {
          !doc.patient_id;
 };
 
+const contactsRevs = [];
+
 describe('transitions', () => {
   beforeAll(() => {
     return utils
       .saveDocs(contacts)
+      .then((results) => contactsRevs.push(...results))
       .then(() => sentinelUtils.waitForSentinel());
   });
   afterAll(done => utils.revertDb().then(done));
@@ -577,7 +580,12 @@ describe('transitions', () => {
         chai.expect(child1[0].doc.name).to.equal('Child name');
 
         chai.expect(person3.date_of_death).to.be.ok;
-        chai.expect(person4.muted).to.equal(undefined);
+        if (person4._rev !== contactsRevs.find(result => result.id === person4._id).rev) {
+          // if the rev changed, it means that Sentinel was super fast to process muting while we ran assertions
+          chai.expect(person4.muted).to.be.ok;
+        } else {
+          chai.expect(person4.muted).to.equal(undefined);
+        }
       })
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => Promise.all([

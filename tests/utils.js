@@ -443,21 +443,6 @@ const saveBrowserLogs = () => {
     });
 };
 
-const saveWdioBrowserLogs = async (test) => {
-  // saving browser logs requires chromedriver service
-  if (!browser.getLogs) {
-    return;
-  }
-
-  const logs = await browser.getLogs('browser');
-  browserLogStream.write(`\n~~~~~~~~~~~ ${test.title} ~~~~~~~~~~~~~~~~~~~~~\n\n`);
-  logs
-    .map(log => `[${log.level}] ${log.message}\n`)
-    .forEach(log => browserLogStream.write(log));
-  browserLogStream.write('\n~~~~~~~~~~~~~~~~~~~~~\n\n');
-};
-
-
 const prepServices = async (config) => {
   if (constants.IS_TRAVIS) {
     console.log('On travis, waiting for horti to first boot api');
@@ -1009,7 +994,6 @@ module.exports = {
   protractorLogin: protractorLogin,
 
   saveBrowserLogs: saveBrowserLogs,
-  saveWdioBrowserLogs,
   tearDownServices,
   endSession: async (exitCode) => {
     await tearDownServices();

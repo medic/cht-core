@@ -63,7 +63,6 @@ describe('Adding new language', () => {
     //check for translations
     await commonPo.goToMessagesNative();
     expect(await helper.getTextFromElementNative(commonPo.messagesList)).toBe('Geen boodskappe gevind nie');
-    await utils.resetBrowserNative();
     await commonPo.goToReportsNative();
     expect(await helper.getTextFromElementNative(reportsPage.list())).toBe('Geen verslae gevind nie');
     await commonPo.goToPeople();

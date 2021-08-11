@@ -6,14 +6,11 @@ const utils = require('./utils');
 const path = require('path');
 
 const ALLURE_OUTPUT = 'allure-results';
-const SERVICES = [];
-
-try {
-  require('chromedriver');
-  SERVICES.push('chromedriver');
-} catch (err) {
-  // chromedriver is an optional dependency that isn't installed on node 8
-}
+const getSpecName = (specs) => specs[0].split('/').slice(-1)[0].split('.wdio-spec')[0];
+const getBrowserLogFilePath = (specs) => {
+  const specName = getSpecName(specs);
+  return path.join(__dirname, 'logs', 'browser.' + specName + '.log');
+};
 
 const baseConfig = {
   //
@@ -79,7 +76,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: ['--headless', '--disable-gpu']
+      args: ['--headless', '--disable-gpu', '--enable-logging']
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
@@ -134,7 +131,7 @@ const baseConfig = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  services: SERVICES,
+  // services: [],
 
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
@@ -163,9 +160,6 @@ const baseConfig = {
     }],
     'spec',
   ],
-
-
-
   //
   // Options to be passed to Mocha.
   // See the full list at http://mochajs.org/
@@ -216,8 +210,9 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {Array.<String>} specs List of spec file paths that are to be run
    */
-  // beforeSession: function (config, capabilities, specs) {
-  // },
+  beforeSession: function (config, capabilities, specs) {
+    process.env.CHROME_LOG_FILE = getBrowserLogFilePath(specs);
+  },
   /**
    * Gets executed before test execution begins. At this point you can access to all global
    * variables like `browser`. It is the perfect place to define custom commands.
@@ -261,8 +256,7 @@ const baseConfig = {
   /**
    * Function to be executed after a test (in Mocha/Jasmine).
    */
-  afterTest: async function (test, context, { passed }) {
-    await utils.saveWdioBrowserLogs(test);
+  afterTest: async (test, context, { passed }) => {
     if (passed === false) {
       await browser.takeScreenshot();
     }
@@ -299,9 +293,17 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {Array.<String>} specs List of spec file paths that ran
    */
-  // afterSession: function () {
+  afterSession: (config, capabilities, specs) => {
+    // coalesce logs into main log file
+    const logPath = getBrowserLogFilePath(specs);
+    const allLogsPath = path.join(__dirname, 'logs', 'browser.console.log');
 
-  // },
+    const logEntries = fs.readFileSync(logPath, 'utf-8');
+    fs.appendFileSync(allLogsPath, '~~~~~~~~' + getSpecName(specs) + '~~~~~~~~~~~~\n');
+    fs.appendFileSync(allLogsPath, logEntries);
+    fs.appendFileSync(allLogsPath, '~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n');
+    fs.unlinkSync(logPath);
+  },
   /**
    * Gets executed after all workers got shut down and the process is about to exit. An error
    * thrown in the onComplete hook will result in the test run failing.
