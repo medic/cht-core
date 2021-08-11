@@ -1,6 +1,7 @@
 const constants = require('./constants');
 const utils = require('./utils');
 const allure = require('allure-commandline');
+const browserUtils = require('./utils/browser');
 
 const baseConfig = {
   //
@@ -240,6 +241,11 @@ const baseConfig = {
    * Function to be executed after a test (in Mocha/Jasmine).
    */
   afterTest: async function (test, context, { passed }) {
+    const feedBackDocs = await browserUtils.feedBackDocs(`${test.parent} ${test.title}`);
+    if(feedBackDocs){
+      passed = false;
+      context.test.callback(new Error('Feedback docs were generated during the test.'));
+    }
     if (passed === false) {
       await browser.takeScreenshot();
     }
