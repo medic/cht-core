@@ -75,8 +75,6 @@ Follow these steps to create your first developer instance. You can create as ma
 4. Your CHT instance will be started when you see the text:
    > Successfully started project my_first_project
 
-`cht-docker-compose.sh` is the main script
-
 ### Second Run
 
 When you're done with an instance, be sure to shut it down:
