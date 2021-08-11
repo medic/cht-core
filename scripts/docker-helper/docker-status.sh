@@ -26,7 +26,7 @@ main (){
   endwin
 
   move_up
-  
+
   window "networks" "green" "50%"
   dockerLs=$(docker network ls --format 'table {{.Name}}\t')
   append "$dockerLs"

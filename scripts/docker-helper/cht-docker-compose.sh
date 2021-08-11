@@ -12,12 +12,8 @@
 #
 # See https://github.com/medic/cht-core/issues/7218 for more info
 
-
 # shellcheck disable=SC2046
 . $(dirname $0)/simple_curses.sh
-
-# shellcheck disable=SC2046
-. $(dirname $0)/helper_helpers.sh
 
 get_lan_ip(){
   routerIP=$(ip r | grep default | head -n1 | awk '{print $3}')
@@ -105,6 +101,14 @@ get_running_container_count(){
     fi
   done
   echo "$result"
+}
+
+get_global_running_container_count(){
+  if [ "$( docker ps --format={{.Names}} | wc -l )" -gt 0 ]; then
+    docker ps --format={{.Names}} | wc -l
+  else
+    echo "0"
+  fi
 }
 
 volume_exists(){
@@ -204,8 +208,7 @@ main (){
   # do all the various checks of stuffs
   volumeCount=$(volume_exists "$COMPOSE_PROJECT_NAME")
   containerCount=$(get_running_container_count "$ALL_CONTAINERS")
-  # todo - get_running_container_count won't work as is . need to either refactor or add new function
-#  globalContainerCount=$(get_running_container_count "$GLOBAL_CONTAINERS")
+  globalContainerCount=$(get_global_running_container_count)
   lanAddress=$(get_lan_ip)
   chtUrl=$(get_local_ip_url "$lanAddress")
   health=$(cht_healthy "$lanAddress" "$CHT_HTTPS" "$chtUrl")
@@ -254,14 +257,12 @@ main (){
   fi
 
   window "CHT Docker Helper: PROJECT ${COMPOSE_PROJECT_NAME}" "green" "100%"
-#  append_tabbed "LAN IP|${lanAddress}" 2 "|"
   append_tabbed "CHT URL|${chtUrl}" 2 "|"
   append_tabbed "FAUXTON URL|${chtUrl}/_utils/" 2 "|"
   append_tabbed "" 2 "|"
   append_tabbed "CHT Health|${overAllHealth}" 2 "|"
   append_tabbed "Project Running Containers|${containerCount} of 2" 2 "|"
-  # todo - get_running_container_count won't work as is . need to either refactor or add new function
-#  append_tabbed "Global Running Containers|${globalContainerCount}" 2 "|"
+  append_tabbed "Global Running Containers|${globalContainerCount}" 2 "|"
   append_tabbed "Last Action|${last_action}" 2 "|"
   endwin
 
@@ -341,4 +342,4 @@ main (){
 
 }
 
-main_loop -t 1.5 $@
+main_loop -t 1.0 $@
