@@ -23,6 +23,7 @@
     require( './widgets/simprints' ),
     require( './widgets/mrdt' ),
     require( './widgets/external-app-launcher' ),
+    require( './widgets/display-base64-image' ),
   ];
 
   module.exports = widgets;

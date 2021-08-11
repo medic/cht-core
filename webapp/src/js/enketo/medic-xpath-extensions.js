@@ -50,12 +50,21 @@ const getTimezoneOffsetAsTime = function(date) {
   return direction + hours + ':' + minutes;
 };
 
-const parseTimestampToDate = (timestamp) => {
-  if (!timestamp || !timestamp.v || typeof timestamp.v !== 'number')  {
-    return { t:'str', v: '' };
+const parseTimestampToDate = (value) => {
+  const empty = { t:'str', v: '' };
+
+  if (!value || !value.v) {
+    return empty;
   }
 
-  return { t:'date', v: new Date(timestamp.v) };
+  let timestamp = value.t === 'arr' && value.v.length ? timestamp = value.v[0] : value.v;
+  timestamp = parseInt(timestamp);
+
+  if (isNaN(timestamp))  {
+    return empty;
+  }
+
+  return { t:'date', v: new Date(timestamp) };
 };
 
 module.exports = {
@@ -77,7 +86,7 @@ module.exports = {
       }
       return { t: 'num', v: result };
     },
-    parseTimestampToDate,
+    'parse-timestamp-to-date': parseTimestampToDate, // Function name convention of XForm
   },
   process: {
     toExternalResult: function(r) {

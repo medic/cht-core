@@ -13,7 +13,6 @@
     object: '.or-appearance-external-app-object',
     valueList: '.or-appearance-external-app-value-list',
     objectList: '.or-appearance-external-app-object-list',
-    image: '.or-appearance-external-app-image'
   };
 
   /**
@@ -340,33 +339,9 @@
       return;
     }
 
-    const $input = $(input)
+    $(input)
       .val(value)
       .trigger('change');
-
-    const $image = getImageElement($input.parent());
-
-    if ($image) {
-      $image.attr('src', `data:image/png;base64,${value}`);
-    }
-  }
-
-  function getImageElement($wrapper) {
-    if (!$wrapper.is(APPEARANCES.image)) {
-      return;
-    }
-
-    const imgClass = 'external-app-image';
-    const $img = $wrapper.children(`.${imgClass}`);
-
-    if ($img.length) {
-      return $img;
-    }
-
-    const $imgElement = $(`<img class="${imgClass}">`);
-    $wrapper.append($imgElement);
-
-    return $imgElement;
   }
 
   function getFieldsInGroup(group) {
