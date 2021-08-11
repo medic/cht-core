@@ -444,7 +444,7 @@ const saveBrowserLogs = () => {
 };
 
 const saveWdioBrowserLogs = async (test) => {
-  // saving browser logs requires
+  // saving browser logs requires chromedriver service
   if (!browser.getLogs) {
     return;
   }
