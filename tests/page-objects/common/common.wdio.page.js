@@ -45,8 +45,13 @@ const goToReports = async () => {
   await (await reportsPage.reportList()).waitForDisplayed();
 };
 
-const goToPeople = async () => {
-  await browser.url('/#/contacts');
+const goToPeople = async (contactId) => {
+  if (!_.isEmpty(contactId)) {
+    await browser.url(`/#/contacts/${contactId}`);
+  } else {
+    await browser.url('/#/contacts');
+  }
+  
   await (await contactsPage.contactList()).waitForDisplayed();
 };
 
