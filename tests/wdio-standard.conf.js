@@ -3,6 +3,7 @@ const _ = require('lodash');
 const utils = require('./utils');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
+const constants = require('./constants');
 
 // Override specific properties from wdio base config
 const standardConfig = _.merge(wdioBaseConfig.config, {
@@ -20,7 +21,8 @@ const uploadStandardConfig = async () => {
   try {
     console.log(`Executing medic-conf from Standard Config`);
     await exec(`npm ci`, { cwd: 'config/standard' });
-    const { stdout } = await exec(`./node_modules/.bin/medic-conf --url=http://admin:pass@localhost:4988 --force --no-check`, 
+    const apiPort = constants.API_PORT;
+    const { stdout } = await exec(`./node_modules/.bin/medic-conf --url=http://admin:pass@localhost:${apiPort} --force --no-check`, 
       { cwd: 'config/standard' });
     console.log(`Executing medic-conf from Standard Config Completed: ${stdout}`);
     return stdout;
