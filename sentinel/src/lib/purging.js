@@ -7,7 +7,7 @@ const logger = require('./logger');
 const { performance } = require('perf_hooks');
 const db = require('../db');
 const moment = require('moment');
-const chtScriptApi = require('@medic/cht-script-api');
+// const chtScriptApi = require('@medic/cht-script-api');
 
 const TASK_EXPIRATION_PERIOD = 60; // days
 const TARGET_EXPIRATION_PERIOD = 6; // months
@@ -304,7 +304,7 @@ const getDocsToPurge = (purgeFn, groups, roles) => {
         group.contact,
         group.reports,
         group.messages,
-        chtScriptApi.v1,
+        serverSidePurgeUtils,
         permissionSettings
       );
       if (!validPurgeResults(idsToPurge)) {
@@ -385,8 +385,8 @@ const batchedUnallocatedPurge = (roles, purgeFn) => {
       rolesHashes.forEach(hash => {
         toPurge[hash] = toPurge[hash] || {};
         const purgeIds = doc.form ?
-          purgeFn({ roles: roles[hash] }, {}, [doc], [], chtScriptApi.v1, permissionSettings) :
-          purgeFn({ roles: roles[hash] }, {}, [], [doc], chtScriptApi.v1, permissionSettings);
+          purgeFn({ roles: roles[hash] }, {}, [doc], [], serverSidePurgeUtils, permissionSettings) :
+          purgeFn({ roles: roles[hash] }, {}, [], [doc], serverSidePurgeUtils, permissionSettings);
 
         if (!validPurgeResults(purgeIds)) {
           return;
