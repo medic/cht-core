@@ -39,16 +39,17 @@ describe('RepeatForm', () => {
     await utils.seedTestData(userContactDoc, [formDocument]);
   });
 
+  after(() => utils.revertDb([], true));
+
   afterEach(async () => {
     await browser.deleteCookies();
     await browser.refresh();
   });
 
-  /* eslint-disable max-len */
-  const stateLabelPath = '#report-form .question-label.active[data-itext-id="/repeat-translation/basic/state_1:label"]';
-  const cityLabelPath = '#report-form .question-label.active[data-itext-id="/repeat-translation/basic/rep/city_1:label"]';
-  const melbourneLabelPath = '#report-form .option-label.active[data-itext-id="/repeat-translation/basic/rep/city_1/melbourne:label"]';
-  /* eslint-enable max-len */
+  const selectorPrefix = '#report-form .active';
+  const stateLabelPath = `${selectorPrefix}.question-label[data-itext-id="/repeat-translation/basic/state_1:label"]`;
+  const cityLabelPath = `${selectorPrefix}.question-label[data-itext-id="/repeat-translation/basic/rep/city_1:label"]`;
+  const melbourneLabelPath = `${selectorPrefix}[data-itext-id="/repeat-translation/basic/rep/city_1/melbourne:label"]`;
 
   it('should display the initial form and its repeated content in Swahili', async () => {
     const swUserName = 'Jina la mtumizi';
