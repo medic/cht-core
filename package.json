@@ -147,5 +147,9 @@
       "path": "./build/ddocs/medic/_attachments/styles.css",
       "maxSize": "70 kB"
     }
-  ]
+  ],
+  "optionalDependencies": {
+    "chromedriver": "^92.0.1",
+    "wdio-chromedriver-service": "^7.2.0"
+  }
 }
