@@ -26,6 +26,10 @@ The script will check and require these commands. All but the first two should b
 * nc
 * curl
 * tr
+* awk
+* grep
+* jq
+* cut
 
 ### Docker compose file and helper scripts
 

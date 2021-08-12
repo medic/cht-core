@@ -176,6 +176,11 @@ docker_destroy(){
 get_cht_version(){
   url=$1
   urlWithPassAndPath="https://medic:password@$(echo $url | cut -c 9-9999)/medic/_design/medic "
+  # todo - as of 20.04, ubuntu still doesn't actually ship with JQ default :(
+  # todo - or maybe just download it for them per https://unix.stackexchange.com/a/649872 ?
+  #         but would this work on macos? oh - looks like yes!?
+  # "The binaries should just run, but on OS X and Linux you may need to make them executable first using chmod +x jq."
+  # - https://stedolan.github.io/jq/download/
   version=$(curl -sk "$urlWithPassAndPath"|jq .build_info.base_version | tr -d '"')
   echo "$version"
 }
