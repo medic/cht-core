@@ -580,6 +580,7 @@ describe('transitions', () => {
         chai.expect(child1[0].doc.name).to.equal('Child name');
 
         chai.expect(person3.date_of_death).to.be.ok;
+
         if (person4._rev !== contactsRevs.find(result => result.id === person4._id).rev) {
           // if the rev changed, it means that Sentinel was super fast to process muting while we ran assertions
           chai.expect(person4.muted).to.be.ok;
