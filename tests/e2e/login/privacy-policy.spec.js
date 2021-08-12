@@ -83,10 +83,9 @@ describe('Privacy policy', () => {
   });
 
   afterAll(async () => {
+    await utils.revertDb([], 'api');
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
-    await commonElements.calmNative();
-    await utils.revertDb();
     await commonElements.calmNative();
   });
 
