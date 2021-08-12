@@ -11,6 +11,7 @@ const getBrowserLogFilePath = (specs) => {
   const specName = getSpecName(specs);
   return path.join(__dirname, 'logs', 'browser.' + specName + '.log');
 };
+const browserLogPath = path.join(__dirname, 'logs', 'browser.console.log');
 
 const baseConfig = {
   //
@@ -295,14 +296,14 @@ const baseConfig = {
    */
   afterSession: (config, capabilities, specs) => {
     // coalesce logs into main log file
-    const logPath = getBrowserLogFilePath(specs);
-    const allLogsPath = path.join(__dirname, 'logs', 'browser.console.log');
+    const specLogPath = getBrowserLogFilePath(specs);
+    const logEntries = fs.readFileSync(specLogPath, 'utf-8');
 
-    const logEntries = fs.readFileSync(logPath, 'utf-8');
-    fs.appendFileSync(allLogsPath, '~~~~~~~~' + getSpecName(specs) + '~~~~~~~~~~~~\n');
-    fs.appendFileSync(allLogsPath, logEntries);
-    fs.appendFileSync(allLogsPath, '~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n');
-    fs.unlinkSync(logPath);
+    fs.appendFileSync(browserLogPath, '~~~~~~~~' + getSpecName(specs) + '~~~~~~~~~~~~\n');
+    fs.appendFileSync(browserLogPath, logEntries);
+    fs.appendFileSync(browserLogPath, '~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n');
+
+    fs.unlinkSync(specLogPath);
   },
   /**
    * Gets executed after all workers got shut down and the process is about to exit. An error
