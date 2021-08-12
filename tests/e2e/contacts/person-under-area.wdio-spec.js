@@ -49,6 +49,10 @@ describe('Create Person Under Area', async () => {
     await loginPage.cookieLogin();
   });
 
+  afterEach(async () => {
+    await utils.revertDb([], true);
+  });
+
   it('create person under area should only see children', async () => {
     await usersAdminPage.goToAdminUser();
     await usersAdminPage.openAddUserDialog();

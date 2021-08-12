@@ -175,7 +175,7 @@ module.exports = function(grunt) {
     uglify: {
       options: {
         banner:
-          '/*! Medic Mobile <%= grunt.template.today("yyyy-mm-dd") %> */\n',
+          '/*! Medic <%= grunt.template.today("yyyy-mm-dd") %> */\n',
       },
       web: {
         files: {
@@ -698,7 +698,7 @@ module.exports = function(grunt) {
     notify: {
       deployed: {
         options: {
-          title: 'Medic Mobile',
+          title: 'Medic',
           message: 'Deployed successfully',
         },
       },
@@ -1071,6 +1071,11 @@ module.exports = function(grunt) {
     'exec:e2e-servers',
     'protractor:e2e-web-tests',
     //'protractor:e2e-mobile-tests',
+  ]);
+  grunt.registerTask('ci-e2e-mobile', 'Run e2e tests for CI', [
+    'start-webdriver',
+    'exec:e2e-servers',
+    'protractor:e2e-mobile-tests',
   ]);
 
   grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [

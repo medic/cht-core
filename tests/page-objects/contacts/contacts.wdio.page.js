@@ -3,9 +3,12 @@ const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
-const contentRows = () => $$(contentRowSelector);
+const contentRowsText = () => $$(`${contentRowSelector} .heading h4 span`);
 const rowByText = async (text) => (await contentRow()).$(`span=${text}`);
 const reportFilterSelector = '.card.reports .table-filter a';
+const reportRowSelector = '#reports-list .content-row';
+const reportRow = () => $(reportRowSelector);
+const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 const reportFilter = () => $(reportFilterSelector);
 const reportFilters = () => $$(reportFilterSelector);
 const taskFilterSelector = '.card.tasks .table-filter a';
@@ -26,6 +29,7 @@ const externalIdField = (place) => $(`[name="/data/${place}/external_id"]`);
 const notes = (place) => $(`[name="/data/${place}/notes"]`);
 const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][value="false"]`);
 const contactCard = () =>$('.card h2');
+const personIcon = () => $('[title="medic-person"]');
 
 
 const search = async (query) => {
@@ -72,6 +76,7 @@ const addPerson = async (name, dob = '2000-01-01') => {
   await (await personSexField()).click();
   await (await notes('person')).addValue('some person notes');
   await (await genericForm.submitButton()).click();
+  await (await personIcon()).waitForDisplayed();
   return (await contactCard()).getText();
 };
 
@@ -81,11 +86,16 @@ const getPrimaryContactName = async () => {
 
 const getAllContactText = async () => {
   await (await contentRow()).waitForDisplayed();
-  return getTextForElements(contentRows);
+  return getTextForElements(contentRowsText);
 };
 
 const getTextForElements = async (elements) => {
   return Promise.all((await elements()).map(filter => filter.getText()));
+};
+
+const getAllReportsText = async () => {
+  await (await reportRow()).waitForDisplayed();
+  return getTextForElements(reportRowsText);
 };
 
 module.exports = {
@@ -98,5 +108,6 @@ module.exports = {
   addPerson,
   addPlace,
   topContact,
-  getPrimaryContactName
+  getPrimaryContactName,
+  getAllReportsText
 };

@@ -15,6 +15,10 @@ describe('MessageFormat', () => {
     await loginPage.cookieLogin();
   });
 
+  after(async () => {
+    await utils.revertDb([], true);
+  });
+
   it('should display plurals correctly', async () => {
     await commonPage.goToPeople();
     await contactElements.selectLHSRowByText(district_hospital.name);

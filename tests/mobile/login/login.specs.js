@@ -8,7 +8,7 @@ describe('Login tests : ', () => {
 
   it('should have a title', async () => {
     await commonElements.goToLoginPageNative();
-    expect(await browser.getTitle()).toEqual('Medic Mobile');
+    expect(await browser.getTitle()).toEqual('Medic');
   });
 
   it('should try to sign in with blank password and verify that credentials were incorrect', async () => {
@@ -25,6 +25,5 @@ describe('Login tests : ', () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(wrongUsername, wrongPassword, true);
     await loginPage.loginNative(auth.username, auth.password);
-    await commonElements.calmNative();
   });
 });
