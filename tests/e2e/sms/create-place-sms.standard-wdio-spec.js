@@ -3,51 +3,36 @@ const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const contactPage = require('../../page-objects/contacts/contacts.wdio.page');
 const placeFactory = require('../../factories/cht/contacts/place');
+const userFactory = require('../../factories/cht/users/users');
+const gatewayApiUtils = require('../../gateway-api.utils');
 
 const messageValue = 'N Potu';
-const phoneNumber = '+12068881234';
 
-const parentPlace = placeFactory.place().build({
-  _id: 'PARENT_PLACE',
-  name: 'Big Parent Hostpital',
-  type: 'district_hospital',
-});
+const places = placeFactory.generateHierarchy();
+const hcId = places.find(x => x.type === 'health_center')._id;
 
-const sittuUser = {
-  username: 'sittu-user',
-  password: 'Pass@500',
-  roles: ['district_admin'],
-  place: {
-    _id: 'someplace',
-    type: 'health_center',
-    name: 'Sittu Place',
-    parent: 'PARENT_PLACE'
-  },
-  contact: {
-    _id: 'someperson',
-    name: 'Sittu',
-    phone: phoneNumber
-  },
-  phone: phoneNumber
-};
+const user = userFactory.build({ place: hcId });
+
 
 describe('SMS Test Forms', async () => {
   beforeEach(async () => {
-    await utils.saveDocs([parentPlace]);
+    await utils.saveDocs(places);
     await loginPage.cookieLogin();
   });
 
   it('create person via SMS', async () => {
-    await utils.createUsers([sittuUser]);
+    await utils.createUsers([user]);
 
-    await utils.request({ method: 'POST', path: '/api/sms', body: { messages: [ {
+    await gatewayApiUtils.api.postMessage({
       id: 'some-message-id',
-      from: phoneNumber,
+      from: user.phone,
       content: messageValue
-    }] } });
-    
-    await commonPage.goToPeople('someplace');
+    });
+
+    await commonPage.goToPeople(user.place);
+    await commonPage.waitForLoaders();
     const allRHSPeople = await contactPage.getAllRHSPeopleNames();
-    expect(allRHSPeople.sort()).toEqual(['Potu', sittuUser.contact.name]);
+    expect(allRHSPeople.length).toEqual(2);
+    expect(allRHSPeople).toEqual(expect.arrayContaining(['Potu', user.contact.name]));
   });
 });

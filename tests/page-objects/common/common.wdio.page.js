@@ -1,7 +1,7 @@
 const hamburgerMenu = () => $('#header-dropdown-link');
-const logoutButton =  () => $('.fa-power-off');
+const logoutButton = () => $('.fa-power-off');
 const messagesTab = () => $('#messages-tab');
-const analyticsTab =  () => $('#analytics-tab');
+const analyticsTab = () => $('#analytics-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
@@ -9,6 +9,7 @@ const contactsPage = require('../contacts/contacts.wdio.page');
 const reportsPage = require('../reports/reports.wdio.page');
 const modal = require('./modal.wdio.page');
 const _ = require('lodash');
+const loaders = () => $$('.container-fluid .loader');
 
 const navigateToLogoutModal = async () => {
   await (await hamburgerMenu()).click();
@@ -30,7 +31,7 @@ const getLogoutMessage = async () => {
 
 const goToBase = async (timeoutForBaseLoadMillis) => {
   await browser.url('/');
-  
+
   let waitForDisplayedConfig = {};
   if (_.isNumber(timeoutForBaseLoadMillis)) {
     waitForDisplayedConfig = { timeout: timeoutForBaseLoadMillis };
@@ -46,8 +47,14 @@ const goToReports = async () => {
 };
 
 const goToPeople = async (contactId = '') => {
-  await browser.url(`/#/contacts/${contactId }`);
+  await browser.url(`/#/contacts/${contactId}`);
   await (await contactsPage.contactList()).waitForDisplayed();
+};
+
+const waitForLoaders = async () => {
+  await browser.waitUntil(async () => {
+    return (await loaders()).map((loader) => loader.isDisplayed()).length === 0;
+  });
 };
 
 module.exports = {
@@ -61,5 +68,6 @@ module.exports = {
   getReportsButtonLabel,
   getMessagesButtonLabel,
   getTasksButtonLabel,
-  goToBase
+  goToBase,
+  waitForLoaders
 };
