@@ -216,10 +216,10 @@ describe('Purging on login', () => {
 
   afterAll(async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    await utils.revertDb([], 'api');
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
     await utils.deleteUsers([restrictedUserName]);
-    await utils.revertDb();
     await sentinelUtils.deletePurgeDbs();
     await commonElements.calmNative();
   });

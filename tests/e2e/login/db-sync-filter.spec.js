@@ -206,10 +206,10 @@ describe('db-sync-filter', () => {
   });
 
   afterAll(async () => {
+    await utils.revertDb([], 'api');
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
     await utils.deleteUsers([restrictedUserName]);
-    await utils.revertDb();
     await commonElements.calmNative();
   });
 
