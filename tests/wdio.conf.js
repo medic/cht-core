@@ -242,8 +242,12 @@ const baseConfig = {
   /**
    * Function to be executed before a test (in Mocha/Jasmine) starts.
    */
-  // beforeTest: function (test, context) {
-  // },
+  beforeTest: async (test) => {
+    await browser.execute(`
+      console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+      console.log("~~~~~~~~~~~~~~~~~~~ ${test.title} ~~~~~~~~~~~~~~~~~~~~");     
+    `);
+  },
   /**
    * Hook that gets executed _before_ a hook within the suite starts (e.g. runs before calling
    * beforeEach in Mocha)
@@ -260,11 +264,6 @@ const baseConfig = {
    * Function to be executed after a test (in Mocha/Jasmine).
    */
   afterTest: async (test, context, { passed }) => {
-
-    await browser.execute(`
-      console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-      console.log("~~~~~~~~~~~~~~~~~~~ ${test.title} ~~~~~~~~~~~~~~~~~~~~");     
-    `);
     if (passed === false) {
       await browser.takeScreenshot();
     }
