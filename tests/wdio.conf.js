@@ -191,6 +191,8 @@ const baseConfig = {
       });
     }
 
+    // clear the main log file
+    fs.unlinkSync(browserLogPath);
     await utils.prepServices(config);
   },
   /**
@@ -258,6 +260,11 @@ const baseConfig = {
    * Function to be executed after a test (in Mocha/Jasmine).
    */
   afterTest: async (test, context, { passed }) => {
+
+    await browser.execute(`
+      console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+      console.log("~~~~~~~~~~~~~~~~~~~ ${test.title} ~~~~~~~~~~~~~~~~~~~~");     
+    `);
     if (passed === false) {
       await browser.takeScreenshot();
     }
@@ -298,11 +305,7 @@ const baseConfig = {
     // coalesce logs into main log file
     const specLogPath = getBrowserLogFilePath(specs);
     const logEntries = fs.readFileSync(specLogPath, 'utf-8');
-
-    fs.appendFileSync(browserLogPath, '~~~~~~~~' + getSpecName(specs) + '~~~~~~~~~~~~\n');
     fs.appendFileSync(browserLogPath, logEntries);
-    fs.appendFileSync(browserLogPath, '~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n');
-
     fs.unlinkSync(specLogPath);
   },
   /**
