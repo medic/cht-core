@@ -105,6 +105,21 @@ When you're done with a project and want to completely destroy it, run `destroy`
 
 ## Caveats
 
+## Cookie collisions
+
+The CHT stores its cookies based on the domain.  This means if you're running two concurrent instances on `https://192-168-68-40.my.local-ip.co:8443` and `https://192-168-68-40.my.local-ip.co:8440` (note different ports), the CHT would write the cookie under the same `192-168-68-40.my.local-ip.co` domain. When logging out of one instance, you would get logged out of both and other consistencies.
+
+To avoid this collision of cookies, you can use different IP addresses to access the instances.  This works because of two reasons:
+1. the TLS certificate being used is valid for any subdomain of `*.my.local-ip.co`. Further, the URL always resolves to the IP passed in the `*` section, so you can use any IP
+2. the IPs that are available to reference your `localhost` are actually a `/8` netmask, meaning [there are 16 million addresses](https://en.wikipedia.org/wiki/Localhost#Name_resolution) to choose from!
+
+Using the above two reasons, these URLs could work to avoid the cookie colission:
+
+* `https://127-0-0-1.my.local-ip.co:8443`
+* `https://127-0-0-2.my.local-ip.co:8440`
+
+This would result in the domains being `127.0.0.1` and `127.0.0.2` from the CHT's perspective. When using a mobile device for testing, you're limited to use the LAN ip output in the helper and can not use the `127.x.x.x` IPs. 
+
 ### Port conflicts
 
 If you have two `.env_docker` files that have the same ports or re-use the same project name, bad things will happen.  Don't do this.
@@ -121,7 +136,7 @@ To account for this, the wait time is multiplied times the boot iteration for ea
 
 If you're on a resource constrained computer, like a very old or very slow laptop, be sure to watch the total number of containers you're running.  More than one or two projects (2 or 4 containers) and you may notice a slow down. You can use the `./docker-status.sh` script if you forgot which projects you have running:
 
-![](docker.status.png)
+![](docker.status.png?8.12.21a)
 
 
 ## Troubleshooting
