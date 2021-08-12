@@ -192,7 +192,9 @@ const baseConfig = {
     }
 
     // clear the main log file
-    fs.unlinkSync(browserLogPath);
+    if (fs.existsSync(browserLogPath)) {
+      fs.unlinkSync(browserLogPath);
+    }
     await utils.prepServices(config);
   },
   /**
