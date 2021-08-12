@@ -394,5 +394,6 @@
   module.exports = {
     'name': PLUGIN_NAME,
     'selector': APPEARANCES.widget,
+    'widget': Externalapplauncherwidget
   };
 }

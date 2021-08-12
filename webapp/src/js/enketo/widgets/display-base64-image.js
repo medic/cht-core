@@ -50,6 +50,10 @@
   };
 
   function setSource($img, value) {
+    if (!$img || !value) {
+      return;
+    }
+
     $img.attr('src', `data:image/png;base64,${value}`);
   }
 
@@ -71,5 +75,6 @@
   module.exports = {
     'name': PLUGIN_NAME,
     'selector': APPEARANCE_WIDGET,
+    'widget': Displaybase64image
   };
 }
