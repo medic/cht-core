@@ -20,7 +20,7 @@ function _exit_fail {
 
 function _usage {
     echo ""
-    echo "Post a message to Medic Mobile"
+    echo "Post a message to Medic"
     echo ""
     echo "Usage: $SELF <base url> <auth> <message> <from> <timestamp>"
     echo ""

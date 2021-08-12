@@ -175,7 +175,7 @@ module.exports = function(grunt) {
     uglify: {
       options: {
         banner:
-          '/*! Medic Mobile <%= grunt.template.today("yyyy-mm-dd") %> */\n',
+          '/*! Medic <%= grunt.template.today("yyyy-mm-dd") %> */\n',
       },
       web: {
         files: {
@@ -466,8 +466,8 @@ module.exports = function(grunt) {
       'start-webdriver': {
         cmd:
           'mkdir -p tests/logs && ' +
-          './node_modules/.bin/webdriver-manager update --versions.chrome 90.0.4430.24 && ' +
-          './node_modules/.bin/webdriver-manager start --versions.chrome 90.0.4430.24 > tests/logs/webdriver.log & ' +
+          './node_modules/.bin/webdriver-manager update && ' +
+          './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
       },
       'start-webdriver-ci': {
@@ -698,7 +698,7 @@ module.exports = function(grunt) {
     notify: {
       deployed: {
         options: {
-          title: 'Medic Mobile',
+          title: 'Medic',
           message: 'Deployed successfully',
         },
       },
@@ -982,7 +982,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('e2e-integration', 'Deploy app for testing', [
-    'exec:e2e-env-setup',
+    'e2e-env-setup',
     'exec:e2e-integration'
   ]);
 
@@ -1071,6 +1071,11 @@ module.exports = function(grunt) {
     'exec:e2e-servers',
     'protractor:e2e-web-tests',
     //'protractor:e2e-mobile-tests',
+  ]);
+  grunt.registerTask('ci-e2e-mobile', 'Run e2e tests for CI', [
+    'start-webdriver',
+    'exec:e2e-servers',
+    'protractor:e2e-mobile-tests',
   ]);
 
   grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
