@@ -50,7 +50,7 @@ describe('Login and logout tests', () => {
   it('should show a warning before log out', async () => {
     await loginPage.cookieLogin(auth.username, auth.password);
     const warning = await commonPage.getLogoutMessage();
-    expect(warning).toBe('Are you sure you want to log out? - omg');
+    expect(warning).toBe('Are you sure you want to log out?');
   });
 
   it('should log in using username and password fields', async () => {
