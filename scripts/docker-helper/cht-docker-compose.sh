@@ -250,7 +250,6 @@ main (){
     exitNext=$docker_action
     return 0
   elif [ -z $docker_action ] || [ $docker_action != "up" ] || [ $docker_action = "" ];then
-    echo "die die die!4"
     date
     set -e
     exit 0
