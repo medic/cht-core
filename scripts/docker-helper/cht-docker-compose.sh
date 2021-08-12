@@ -173,6 +173,13 @@ docker_destroy(){
   docker network rm "${project}"_medic-net > /dev/null 2>&1
 }
 
+get_cht_version(){
+  url=$1
+  urlWithPassAndPath="https://medic:password@$(echo $url | cut -c 9-9999)/medic/_design/medic "
+  version=$(curl -sk "$urlWithPassAndPath"|jq .build_info.base_version | tr -d '"')
+  echo "$version"
+}
+
 main (){
 
   # very first thing check we have valid env file, exit if not
@@ -188,7 +195,7 @@ main (){
   fi
 
   # after valid env file is loaded, let's set all our constants
-  declare -r APP_STRING="ip;docker;docker-compose;nc;curl;tr"
+  declare -r APP_STRING="ip;docker;docker-compose;nc;curl;tr;awk;grep;jq;cut"
   declare -r MAX_REBOOTS=5
   declare -r DEFAULT_SLEEP=$((100*$((reboot_count+1))))
   declare -r MEDIC_OS="${COMPOSE_PROJECT_NAME}_medic-os_1"
@@ -213,6 +220,7 @@ main (){
   chtUrl=$(get_local_ip_url "$lanAddress")
   health=$(cht_healthy "$lanAddress" "$CHT_HTTPS" "$chtUrl")
   dockerComposePath=$(get_docker_compose_yml_path)
+  chtVersion="NA"
 
   # if we're exiting, call down or destroy and quit proper
   if [ "$exitNext" = "destroy" ] || [ "$exitNext" = "down" ] || [ "$exitNext" = "happy" ];then
@@ -226,10 +234,11 @@ main (){
   fi
 
   # if we're not healthy, report self signed as zero, otherwise if
-  # we are healthy, check for self_signed cert
+  # we are healthy, check for self_signed cert and version
   if [ -n "$health" ]; then
     self_signed=0
   else
+    chtVersion=$(get_cht_version "$chtUrl")
     self_signed=$(has_self_signed_cert "$chtUrl")
   fi
 
@@ -256,13 +265,12 @@ main (){
   fi
 
   # todo - add CHT version as info displayed
-#  curl -s https://medic:password@192-168-68-40.my.local-ip.co:8443/api/v1/monitoring | jq .version.app
-#  "3.9.0"
   window "CHT Docker Helper: PROJECT ${COMPOSE_PROJECT_NAME}" "green" "100%"
   append_tabbed "CHT URL|${chtUrl}" 2 "|"
   append_tabbed "FAUXTON URL|${chtUrl}/_utils/" 2 "|"
   append_tabbed "" 2 "|"
   append_tabbed "CHT Health|${overAllHealth}" 2 "|"
+  append_tabbed "CHT Version|${chtVersion}" 2 "|"
   append_tabbed "Project Running Containers|${containerCount} of 2" 2 "|"
   append_tabbed "Global Running Containers|${globalContainerCount}" 2 "|"
   append_tabbed "Last Action|${last_action}" 2 "|"
