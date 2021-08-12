@@ -4,7 +4,7 @@
 
 These scripts help start CHT instances using `docker-compose` to develop CHT apps on:
 
-![](helper.png)
+![](helper.png?8.12.21a)
 
 This document is a placeholder while this beta version is out for testing.  These documents should and need to be moved to the [docs site](https://docs.communityhealthtoolkit.org/) when this script leaves beta.
 
