@@ -23,6 +23,7 @@ const baseConfig = {
       'e2e/cht/*.spec.js'
     ],
     mobile: ['mobile/**/*.js'],
+
     // performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',
