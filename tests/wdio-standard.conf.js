@@ -22,7 +22,7 @@ const uploadStandardConfig = async () => {
     console.log(`Executing medic-conf from Standard Config`);
     await exec(`npm ci`, { cwd: 'config/standard' });
     const apiPort = constants.API_PORT;
-    const { stdout } = await exec(`./node_modules/.bin/medic-conf --url=http://admin:pass@localhost:${apiPort} --force --no-check`, 
+    const { stdout } = await exec(`./node_modules/.bin/cht --url=http://admin:pass@localhost:${apiPort} --force --no-check`, 
       { cwd: 'config/standard' });
     console.log(`Executing medic-conf from Standard Config Completed: ${stdout}`);
     return stdout;
