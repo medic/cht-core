@@ -299,7 +299,6 @@ const baseConfig = {
       }
       passed = false;
     }
-    browser.cdp('Console', 'clearMessages');
     if (passed === false) {
       await browser.takeScreenshot();
     }
