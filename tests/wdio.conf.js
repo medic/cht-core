@@ -1,6 +1,17 @@
+const allure = require('allure-commandline');
+const fs = require('fs');
+
 const constants = require('./constants');
 const utils = require('./utils');
-const allure = require('allure-commandline');
+const path = require('path');
+
+const ALLURE_OUTPUT = 'allure-results';
+const getSpecName = (specs) => specs[0].split('/').slice(-1)[0].split('.wdio-spec')[0];
+const getBrowserLogFilePath = (specs) => {
+  const specName = getSpecName(specs);
+  return path.join(__dirname, 'logs', 'browser.' + specName + '.log');
+};
+const browserLogPath = path.join(__dirname, 'logs', 'browser.console.log');
 
 const baseConfig = {
   //
@@ -26,7 +37,7 @@ const baseConfig = {
   // If you are calling `wdio` from an NPM script (see https://docs.npmjs.com/cli/run-script),
   // then the current working directory is where your `package.json` resides, so `wdio`
   // will be called from there.
-  // 
+  //
   specs: [
     './tests/e2e/**/*.wdio-spec.js'
   ],
@@ -66,7 +77,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: ['--headless', '--disable-gpu']
+      args: ['--headless', '--disable-gpu', '--enable-logging']
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
@@ -145,14 +156,11 @@ const baseConfig = {
   // see also: https://webdriver.io/docs/dot-reporter
   reporters: [
     ['allure', {
-      outputDir: 'allure-results',
+      outputDir: ALLURE_OUTPUT,
       disableWebdriverStepsReporting: true
     }],
     'spec',
   ],
-
-
-
   //
   // Options to be passed to Mocha.
   // See the full list at http://mochajs.org/
@@ -174,6 +182,19 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    */
   onPrepare: async function (config) {
+    // delete all previous test
+    if (fs.existsSync(ALLURE_OUTPUT)) {
+      const files = fs.readdirSync(ALLURE_OUTPUT) || [];
+      files.forEach(fileName => {
+        const filePath = path.join(ALLURE_OUTPUT, fileName);
+        fs.unlinkSync(filePath);
+      });
+    }
+
+    // clear the main log file
+    if (fs.existsSync(browserLogPath)) {
+      fs.unlinkSync(browserLogPath);
+    }
     await utils.prepServices(config);
   },
   /**
@@ -194,8 +215,9 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {Array.<String>} specs List of spec file paths that are to be run
    */
-  // beforeSession: function (config, capabilities, specs) {
-  // },
+  beforeSession: function (config, capabilities, specs) {
+    process.env.CHROME_LOG_FILE = getBrowserLogFilePath(specs);
+  },
   /**
    * Gets executed before test execution begins. At this point you can access to all global
    * variables like `browser`. It is the perfect place to define custom commands.
@@ -222,8 +244,12 @@ const baseConfig = {
   /**
    * Function to be executed before a test (in Mocha/Jasmine) starts.
    */
-  // beforeTest: function (test, context) {
-  // },
+  beforeTest: async (test) => {
+    await browser.execute(`
+      console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+      console.log("~~~~~~~~~~~~~~~~~~~ ${test.title} ~~~~~~~~~~~~~~~~~~~~");     
+    `);
+  },
   /**
    * Hook that gets executed _before_ a hook within the suite starts (e.g. runs before calling
    * beforeEach in Mocha)
@@ -239,7 +265,7 @@ const baseConfig = {
   /**
    * Function to be executed after a test (in Mocha/Jasmine).
    */
-  afterTest: async function (test, context, { passed }) {
+  afterTest: async (test, context, { passed }) => {
     if (passed === false) {
       await browser.takeScreenshot();
     }
@@ -276,9 +302,13 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {Array.<String>} specs List of spec file paths that ran
    */
-  // afterSession: function () {
-
-  // },
+  afterSession: (config, capabilities, specs) => {
+    // coalesce logs into main log file
+    const specLogPath = getBrowserLogFilePath(specs);
+    const logEntries = fs.readFileSync(specLogPath, 'utf-8');
+    fs.appendFileSync(browserLogPath, logEntries);
+    fs.unlinkSync(specLogPath);
+  },
   /**
    * Gets executed after all workers got shut down and the process is about to exit. An error
    * thrown in the onComplete hook will result in the test run failing.
@@ -297,7 +327,7 @@ const baseConfig = {
         () => reject(timeoutError),
         60 * 1000);
 
-      generation.on('exit', function (exitCode) {
+      generation.on('exit', (exitCode) => {
         clearTimeout(generationTimeout);
 
         if (exitCode !== 0) {
