@@ -66,6 +66,17 @@ const waitForLoaderToDisappear = async (element) => {
   await loader.waitForDisplayed({ reverse: true });
 };
 
+const hideSnackbar = () => {
+  // snackbar appears in the bottom of the page for 5 seconds when certain actions are made
+  // for example when filling a form, or creating a contact
+  // and intercepts all clicks in the actionbar
+  // this action is temporary, and will be undone with a refresh
+  return browser.execute(() => {
+    // eslint-disable-next-line no-undef
+    window.jQuery('.snackbar-content').hide();
+  });
+};
+
 module.exports = {
   logout,
   logoutButton,
@@ -79,5 +90,6 @@ module.exports = {
   getTasksButtonLabel,
   goToBase,
   closeTour,
+  hideSnackbar,
   waitForLoaderToDisappear,
 };

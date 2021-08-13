@@ -28,7 +28,7 @@ const openAddUserDialog = async () => {
 const inputAddUserFields = async (username, fullname, role, place, associatedContact, password) => {
   await (await userName()).addValue(username);
   await (await userFullName()).addValue(fullname);
-  await (await userRole()).setValue(role);
+  await (await userRole()).selectByVisibleText(role);
   await selectPlace(place);
   await selectContact(associatedContact);
   await (await userPassword()).addValue(password);
