@@ -22,7 +22,6 @@ The script will check and require these commands. All but the first two should b
 
 * docker
 * docker-compose
-* ip
 * nc
 * curl
 * tr
