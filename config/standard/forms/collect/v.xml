@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>Clinic Visit (V)</h:title>
     <model>
@@ -12,7 +12,7 @@
             <value>Mengirimkan laporan kunjungan untuk ID <output value=" /v/id "/></value>
           </text>
         </translation>
-        <translation default="true()" lang="English (en)">
+        <translation lang="English (en)" default="true()">
           <text id="/v/id:label">
             <value>Patient ID</value>
           </text>
@@ -46,7 +46,7 @@
         </translation>
       </itext>
       <instance>
-        <v delimiter="#" id="v" prefix="J1!v!" version="2018-09-27_07-24">
+        <v id="v" prefix="J1!v!" delimiter="#" version="2018-09-27_07-24">
           <id/>
           <review/>
           <meta tag="hidden">
@@ -54,9 +54,9 @@
           </meta>
         </v>
       </instance>
-      <bind nodeset="/v/id" required="true()" type="string"/>
+      <bind nodeset="/v/id" type="string" required="true()"/>
       <bind nodeset="/v/review" readonly="true()" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/v/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/v/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">

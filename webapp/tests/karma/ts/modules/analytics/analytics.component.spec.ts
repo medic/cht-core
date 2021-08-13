@@ -11,6 +11,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { TourService } from '@mm-services/tour.service';
 import { Selectors } from '@mm-selectors/index';
+import { NavigationService } from '@mm-services/navigation.service';
 
 describe('AnalyticsComponent', () => {
   let component: AnalyticsComponent;
@@ -42,6 +43,7 @@ describe('AnalyticsComponent', () => {
         providers: [
           provideMockStore({ selectors: mockSelectors }),
           { provide: TourService, useValue: tourService },
+          { provide: NavigationService, useValue: {} },
         ]
       })
       .compileComponents()

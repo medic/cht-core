@@ -16,9 +16,7 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 const db = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`, { auth });
 const sentinel = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-sentinel`, { auth });
 const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-logs`, { auth });
-const browserLogStream = fs.createWriteStream(
-  __dirname + '/../tests/logs/browser.console.log'
-);
+let browserLogStream;
 const userSettings = require('./factories/cht/users/user-settings');
 
 let originalSettings;
@@ -429,6 +427,11 @@ const getLoginUrl = () => {
 };
 
 const saveBrowserLogs = () => {
+  // wdio also writes in this file
+  if (!browserLogStream) {
+    browserLogStream = fs.createWriteStream(__dirname + '/../tests/logs/browser.console.log');
+  }
+
   return browser
     .manage()
     .logs()

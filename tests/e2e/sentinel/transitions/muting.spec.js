@@ -2,6 +2,7 @@ const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const uuid = require('uuid');
 const _ = require('lodash');
+const chai = require('chai');
 
 const contacts = [
   {
@@ -58,7 +59,16 @@ const extraContacts = [
     name: 'Person',
     type: 'person',
     parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
-    phone: '+444999',
+    phone: '+444777',
+    reported_date: new Date().getTime()
+  },
+  {
+    _id: 'person3',
+    name: 'Person',
+    type: 'person',
+    patient_id: '888888',
+    parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    phone: '+444888',
     reported_date: new Date().getTime()
   }
 ];
@@ -66,17 +76,28 @@ const extraContacts = [
 const notToday = 36 * 24 * 60 * 60 * 1000;
 
 const expectSameState = (original, updated) => {
-  expect(original.scheduled_tasks.length).toBe(updated.scheduled_tasks.length, `length not equal ${original._id}`);
+  chai.expect(original.scheduled_tasks.length).to.equal(
+    updated.scheduled_tasks.length,
+    `length not equal ${original._id}`
+  );
   original.scheduled_tasks.forEach((task, i) => {
-    expect(task.state).toBe(updated.scheduled_tasks[i].state, `state not equal ${original._id}, task ${i}`);
+    chai.expect(task.state).to.equal(
+      updated.scheduled_tasks[i].state,
+      `state not equal ${original._id}, task ${i}`
+    );
   });
 };
 
 const expectStates = (updated, ...states) => {
-  expect(updated.scheduled_tasks.length).toBe(states.length);
+  chai.expect(updated.scheduled_tasks.length).to.equal(states.length);
   updated.scheduled_tasks.forEach((task, i) => {
-    expect(task.state).toBe(states[i], `state not equal ${updated._id}, task ${i}`);
+    chai.expect(task.state).to.equal(states[i], `state not equal ${updated._id}, task ${i}`);
   });
+};
+
+const getMutingRev = (infoDoc) => {
+  const rev = infoDoc.transitions.muting.last_rev;
+  return parseInt(rev.split('-')[0]);
 };
 
 describe('muting', () => {
@@ -114,7 +135,7 @@ describe('muting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        chai.expect(Object.keys(info.transitions).length).to.equal(0);
       });
   });
 
@@ -148,7 +169,7 @@ describe('muting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        chai.expect(Object.keys(info.transitions).length).to.equal(0);
       });
   });
 
@@ -220,35 +241,35 @@ describe('muting', () => {
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.muting).toBeDefined();
-        expect(infos[0].transitions.muting.ok).toBe(true);
+        chai.expect(infos[0].transitions).to.be.ok;
+        chai.expect(infos[0].transitions.muting).to.be.ok;
+        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
 
-        expect(infos[1].transitions).toBeDefined();
-        expect(infos[1].transitions.muting).toBeDefined();
-        expect(infos[1].transitions.muting.ok).toBe(true);
+        chai.expect(infos[1].transitions).to.be.ok;
+        chai.expect(infos[1].transitions.muting).to.be.ok;
+        chai.expect(infos[1].transitions.muting.ok).to.equal(true);
       })
       .then(() => utils.getDocs([doc1._id, doc2._id]))
       .then(updated => {
-        expect(updated[0].tasks).toBeDefined();
-        expect(updated[0].tasks.length).toEqual(1);
-        expect(updated[0].tasks[0].messages[0].message).toEqual('Contact not found');
-        expect(updated[0].tasks[0].messages[0].to).toEqual('+444999');
-        expect(updated[0].tasks[0].state).toEqual('pending');
+        chai.expect(updated[0].tasks).to.be.ok;
+        chai.expect(updated[0].tasks.length).to.equal(1);
+        chai.expect(updated[0].tasks[0].messages[0].message).to.equal('Contact not found');
+        chai.expect(updated[0].tasks[0].messages[0].to).to.equal('+444999');
+        chai.expect(updated[0].tasks[0].state).to.equal('pending');
 
-        expect(updated[0].errors).toBeDefined();
-        expect(updated[0].errors.length).toEqual(1);
-        expect(updated[0].errors[0].message).toEqual('Contact not found');
+        chai.expect(updated[0].errors).to.be.ok;
+        chai.expect(updated[0].errors.length).to.equal(1);
+        chai.expect(updated[0].errors[0].message).to.equal('Contact not found');
 
-        expect(updated[1].tasks).toBeDefined();
-        expect(updated[1].tasks.length).toEqual(1);
-        expect(updated[1].tasks[0].messages[0].message).toEqual('somefield id incorrect');
-        expect(updated[1].tasks[0].messages[0].to).toEqual('+444999');
-        expect(updated[1].tasks[0].state).toEqual('pending');
+        chai.expect(updated[1].tasks).to.be.ok;
+        chai.expect(updated[1].tasks.length).to.equal(1);
+        chai.expect(updated[1].tasks[0].messages[0].message).to.equal('somefield id incorrect');
+        chai.expect(updated[1].tasks[0].messages[0].to).to.equal('+444999');
+        chai.expect(updated[1].tasks[0].state).to.equal('pending');
 
-        expect(updated[1].errors).toBeDefined();
-        expect(updated[1].errors.length).toEqual(1);
-        expect(updated[1].errors[0].message).toEqual('somefield id incorrect');
+        chai.expect(updated[1].errors).to.be.ok;
+        chai.expect(updated[1].errors.length).to.equal(1);
+        chai.expect(updated[1].errors[0].message).to.equal('somefield id incorrect');
       });
   });
 
@@ -357,99 +378,99 @@ describe('muting', () => {
       .then(() => sentinelUtils.waitForSentinel(mute1._id))
       .then(() => sentinelUtils.getInfoDocs([mute1._id, 'person', 'person2', 'clinic']))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.muting).toBeDefined();
-        expect(infos[0].transitions.muting.ok).toBe(true);
+        chai.expect(infos[0].transitions).to.be.ok;
+        chai.expect(infos[0].transitions.muting).to.be.ok;
+        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
 
-        expect(infos[1].muting_history).toBeDefined();
-        expect(infos[1].muting_history.length).toEqual(1);
-        expect(infos[1].muting_history[0].muted).toEqual(true);
-        expect(infos[1].muting_history[0].report_id).toEqual(mute1._id);
+        chai.expect(infos[1].muting_history).to.be.ok;
+        chai.expect(infos[1].muting_history.length).to.equal(1);
+        chai.expect(infos[1].muting_history[0].muted).to.equal(true);
+        chai.expect(infos[1].muting_history[0].report_id).to.equal(mute1._id);
         muteTime = infos[1].muting_history[0].date;
 
-        expect(infos[2].muting_history).not.toBeDefined();
-        expect(infos[3].muting_history).not.toBeDefined();
+        chai.expect(infos[2].muting_history).not.to.be.ok;
+        chai.expect(infos[3].muting_history).not.to.be.ok;
       })
       .then(() => utils.getDocs([mute1._id, 'person', 'person2', 'clinic']))
       .then(updated => {
-        expect(updated[0].tasks).toBeDefined();
-        expect(updated[0].tasks.length).toEqual(1);
-        expect(updated[0].tasks[0].messages[0].message).toEqual('Contact muted');
-        expect(updated[0].tasks[0].messages[0].to).toEqual('+444999');
-        expect(updated[0].tasks[0].state).toEqual('pending');
+        chai.expect(updated[0].tasks).to.be.ok;
+        chai.expect(updated[0].tasks.length).to.equal(1);
+        chai.expect(updated[0].tasks[0].messages[0].message).to.equal('Contact muted');
+        chai.expect(updated[0].tasks[0].messages[0].to).to.equal('+444999');
+        chai.expect(updated[0].tasks[0].state).to.equal('pending');
 
-        expect(updated[1].muted).toEqual(muteTime);
+        chai.expect(updated[1].muted).to.equal(muteTime);
 
-        expect(updated[2].muted).not.toBeDefined();
-        expect(updated[3].muted).not.toBeDefined();
+        chai.expect(updated[2].muted).not.to.be.ok;
+        chai.expect(updated[3].muted).not.to.be.ok;
       })
       .then(() => utils.saveDoc(mute2))
       .then(() => sentinelUtils.waitForSentinel(mute2._id))
       .then(() => sentinelUtils.getInfoDocs([mute2._id, 'person']))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.muting).toBeDefined();
-        expect(infos[0].transitions.muting.ok).toBe(true);
+        chai.expect(infos[0].transitions).to.be.ok;
+        chai.expect(infos[0].transitions.muting).to.be.ok;
+        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
 
-        expect(infos[1].muting_history).toBeDefined();
-        expect(infos[1].muting_history.length).toEqual(1);
-        expect(infos[1].muting_history[0].date).toEqual(muteTime);
+        chai.expect(infos[1].muting_history).to.be.ok;
+        chai.expect(infos[1].muting_history.length).to.equal(1);
+        chai.expect(infos[1].muting_history[0].date).to.equal(muteTime);
       })
       .then(() => utils.getDocs([mute2._id, 'person']))
       .then(updated => {
-        expect(updated[0].tasks).toBeDefined();
-        expect(updated[0].tasks.length).toEqual(1);
-        expect(updated[0].tasks[0].messages[0].message).toEqual('Contact already muted');
-        expect(updated[0].tasks[0].messages[0].to).toEqual('+444999');
-        expect(updated[0].tasks[0].state).toEqual('pending');
+        chai.expect(updated[0].tasks).to.be.ok;
+        chai.expect(updated[0].tasks.length).to.equal(1);
+        chai.expect(updated[0].tasks[0].messages[0].message).to.equal('Contact already muted');
+        chai.expect(updated[0].tasks[0].messages[0].to).to.equal('+444999');
+        chai.expect(updated[0].tasks[0].state).to.equal('pending');
 
-        expect(updated[1].muted).toEqual(muteTime);
+        chai.expect(updated[1].muted).to.equal(muteTime);
       })
       .then(() => utils.saveDoc(unmute1))
       .then(() => sentinelUtils.waitForSentinel(unmute1._id))
       .then(() => sentinelUtils.getInfoDocs([unmute1._id, 'person']))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.muting).toBeDefined();
-        expect(infos[0].transitions.muting.ok).toBe(true);
+        chai.expect(infos[0].transitions).to.be.ok;
+        chai.expect(infos[0].transitions.muting).to.be.ok;
+        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
 
-        expect(infos[1].muting_history).toBeDefined();
-        expect(infos[1].muting_history.length).toEqual(2);
-        expect(infos[1].muting_history[1].muted).toEqual(false);
-        expect(infos[1].muting_history[1].report_id).toEqual(unmute1._id);
+        chai.expect(infos[1].muting_history).to.be.ok;
+        chai.expect(infos[1].muting_history.length).to.equal(2);
+        chai.expect(infos[1].muting_history[1].muted).to.equal(false);
+        chai.expect(infos[1].muting_history[1].report_id).to.equal(unmute1._id);
         unmuteTime = infos[1].muting_history[1].date;
       })
       .then(() => utils.getDocs([unmute1._id, 'person']))
       .then(updated => {
-        expect(updated[0].tasks).toBeDefined();
-        expect(updated[0].tasks.length).toEqual(1);
-        expect(updated[0].tasks[0].messages[0].message).toEqual('Contact unmuted');
-        expect(updated[0].tasks[0].messages[0].to).toEqual('+444999');
-        expect(updated[0].tasks[0].state).toEqual('pending');
+        chai.expect(updated[0].tasks).to.be.ok;
+        chai.expect(updated[0].tasks.length).to.equal(1);
+        chai.expect(updated[0].tasks[0].messages[0].message).to.equal('Contact unmuted');
+        chai.expect(updated[0].tasks[0].messages[0].to).to.equal('+444999');
+        chai.expect(updated[0].tasks[0].state).to.equal('pending');
 
-        expect(updated[1].muted).not.toBeDefined();
+        chai.expect(updated[1].muted).not.to.be.ok;
       })
       .then(() => utils.saveDoc(unmute2))
       .then(() => sentinelUtils.waitForSentinel(unmute2._id))
       .then(() => sentinelUtils.getInfoDocs([unmute2._id, 'person']))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.muting).toBeDefined();
-        expect(infos[0].transitions.muting.ok).toBe(true);
+        chai.expect(infos[0].transitions).to.be.ok;
+        chai.expect(infos[0].transitions.muting).to.be.ok;
+        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
 
-        expect(infos[1].muting_history).toBeDefined();
-        expect(infos[1].muting_history.length).toEqual(2);
-        expect(infos[1].muting_history[1].date).toEqual(unmuteTime);
+        chai.expect(infos[1].muting_history).to.be.ok;
+        chai.expect(infos[1].muting_history.length).to.equal(2);
+        chai.expect(infos[1].muting_history[1].date).to.equal(unmuteTime);
       })
       .then(() => utils.getDocs([unmute2._id, 'person']))
       .then(updated => {
-        expect(updated[0].tasks).toBeDefined();
-        expect(updated[0].tasks.length).toEqual(1);
-        expect(updated[0].tasks[0].messages[0].message).toEqual('Contact already unmuted');
-        expect(updated[0].tasks[0].messages[0].to).toEqual('+444999');
-        expect(updated[0].tasks[0].state).toEqual('pending');
+        chai.expect(updated[0].tasks).to.be.ok;
+        chai.expect(updated[0].tasks.length).to.equal(1);
+        chai.expect(updated[0].tasks[0].messages[0].message).to.equal('Contact already unmuted');
+        chai.expect(updated[0].tasks[0].messages[0].to).to.equal('+444999');
+        chai.expect(updated[0].tasks[0].state).to.equal('pending');
 
-        expect(updated[1].muted).not.toBeDefined();
+        chai.expect(updated[1].muted).not.to.be.ok;
       });
   });
 
@@ -500,73 +521,177 @@ describe('muting', () => {
       .then(() => sentinelUtils.waitForSentinel(mute._id))
       .then(() => sentinelUtils.getInfoDocs([mute._id, 'clinic', 'person', 'clinic2', 'person2']))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.muting).toBeDefined();
-        expect(infos[0].transitions.muting.ok).toBe(true);
+        chai.expect(infos[0].transitions).to.be.ok;
+        chai.expect(infos[0].transitions.muting).to.be.ok;
+        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
 
-        expect(infos[1].muting_history).toBeDefined();
-        expect(infos[1].muting_history.length).toEqual(1);
-        expect(infos[1].muting_history[0].muted).toEqual(true);
-        expect(infos[1].muting_history[0].report_id).toEqual(mute._id);
+        chai.expect(infos[1].muting_history).to.be.ok;
+        chai.expect(infos[1].muting_history.length).to.equal(1);
+        chai.expect(infos[1].muting_history[0].muted).to.equal(true);
+        chai.expect(infos[1].muting_history[0].report_id).to.equal(mute._id);
         muteTime = infos[1].muting_history[0].date;
 
-        expect(infos[2].muting_history).toBeDefined();
-        expect(infos[2].muting_history.length).toEqual(1);
+        chai.expect(infos[2].muting_history).to.be.ok;
+        chai.expect(infos[2].muting_history.length).to.equal(1);
 
-        expect(infos[2].muting_history[0]).toEqual({
+        chai.expect(infos[2].muting_history[0]).to.deep.equal({
           muted: true,
           report_id: mute._id,
           date: muteTime
         });
 
-        expect(infos[3].muting_history).not.toBeDefined();
-        expect(infos[4].muting_history).not.toBeDefined();
+        chai.expect(infos[3].muting_history).not.to.be.ok;
+        chai.expect(infos[4].muting_history).not.to.be.ok;
       })
       .then(() => utils.getDocs(['clinic', 'person', 'person2', 'clinic2']))
       .then(updated => {
-        expect(updated[0].muted).toEqual(muteTime);
-        expect(updated[1].muted).toEqual(muteTime);
+        chai.expect(updated[0].muted).to.equal(muteTime);
+        chai.expect(updated[1].muted).to.equal(muteTime);
 
-        expect(updated[2].muted).not.toBeDefined();
-        expect(updated[3].muted).not.toBeDefined();
+        chai.expect(updated[2].muted).not.to.be.ok;
+        chai.expect(updated[3].muted).not.to.be.ok;
       })
       .then(() => utils.saveDoc(unmute))
       .then(() => sentinelUtils.waitForSentinel(unmute._id))
       .then(() => sentinelUtils.getInfoDocs([unmute._id, 'clinic', 'person', 'clinic2', 'person2']))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.muting).toBeDefined();
-        expect(infos[0].transitions.muting.ok).toBe(true);
+        chai.expect(infos[0].transitions).to.be.ok;
+        chai.expect(infos[0].transitions.muting).to.be.ok;
+        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
 
-        expect(infos[1].muting_history).toBeDefined();
-        expect(infos[1].muting_history.length).toEqual(2);
-        expect(infos[1].muting_history[0]).toEqual({
+        chai.expect(infos[1].muting_history).to.be.ok;
+        chai.expect(infos[1].muting_history.length).to.equal(2);
+        chai.expect(infos[1].muting_history[0]).to.deep.equal({
           muted: true,
           report_id: mute._id,
           date: muteTime
         });
-        expect(infos[1].muting_history[1].muted).toEqual(false);
-        expect(infos[1].muting_history[1].report_id).toEqual(unmute._id);
+        chai.expect(infos[1].muting_history[1].muted).to.equal(false);
+        chai.expect(infos[1].muting_history[1].report_id).to.equal(unmute._id);
 
-        expect(infos[2].muting_history).toBeDefined();
-        expect(infos[2].muting_history.length).toEqual(2);
-        expect(infos[2].muting_history[0]).toEqual({
+        chai.expect(infos[2].muting_history).to.be.ok;
+        chai.expect(infos[2].muting_history.length).to.equal(2);
+        chai.expect(infos[2].muting_history[0]).to.deep.equal({
           muted: true,
           report_id: mute._id,
           date: muteTime
         });
-        expect(infos[2].muting_history[1].muted).toEqual(false);
-        expect(infos[2].muting_history[1].report_id).toEqual(unmute._id);
+        chai.expect(infos[2].muting_history[1].muted).to.equal(false);
+        chai.expect(infos[2].muting_history[1].report_id).to.equal(unmute._id);
 
-        expect(infos[3].muting_history).not.toBeDefined();
-        expect(infos[4].muting_history).not.toBeDefined();
+        chai.expect(infos[3].muting_history).not.to.be.ok;
+        chai.expect(infos[4].muting_history).not.to.be.ok;
       })
       .then(() => utils.getDocs(['clinic', 'person', 'person2', 'clinic2']))
       .then(updated => {
-        expect(updated[0].muted).not.toBeDefined();
-        expect(updated[1].muted).not.toBeDefined();
-        expect(updated[2].muted).not.toBeDefined();
-        expect(updated[3].muted).not.toBeDefined();
+        chai.expect(updated[0].muted).not.to.be.ok;
+        chai.expect(updated[1].muted).not.to.be.ok;
+        chai.expect(updated[2].muted).not.to.be.ok;
+        chai.expect(updated[3].muted).not.to.be.ok;
+      });
+  });
+
+  it('should not update cascading contacts unless necessary', () => {
+    const settings = {
+      transitions: { muting: true },
+      muting: {
+        mute_forms: ['mute'],
+        unmute_forms: ['unmute']
+      },
+      forms: { mute: { }, unmute: { } }
+    };
+
+    const muteClinic = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'mute',
+      fields: {
+        place_id: 'clinic'
+      },
+      reported_date: new Date().getTime(),
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    const mutePerson = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'mute',
+      fields: {
+        patient_id: 'person',
+      },
+      reported_date: new Date().getTime(),
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    let personMuteTime;
+    let clinicMuteTime;
+
+    return utils
+      .updateSettings(settings, 'sentinel')
+      .then(() => utils.saveDocs(extraContacts))
+      .then(() => utils.saveDoc(mutePerson))
+      .then(() => sentinelUtils.waitForSentinel(mutePerson._id))
+      .then(() => sentinelUtils.getInfoDocs([mutePerson._id, 'clinic', 'person' ,'person3']))
+      .then(([ mutePersonInfo, clinicInfo, personInfo, person3Info ]) => {
+        chai.expect(mutePersonInfo.transitions).to.be.ok;
+        chai.expect(mutePersonInfo.transitions.muting).to.be.ok;
+
+        chai.expect(clinicInfo.muting_history).to.be.undefined;
+
+        chai.expect(personInfo.muting_history).to.be.ok;
+        chai.expect(personInfo.muting_history.length).to.equal(1);
+        chai.expect(personInfo.muting_history[0].muted).to.equal(true);
+        chai.expect(personInfo.muting_history[0].report_id).to.equal(mutePerson._id);
+        personMuteTime = personInfo.muting_history[0].date;
+
+        chai.expect(person3Info.muting_history).to.be.undefined;
+      })
+      .then(() => utils.getDocs(['clinic', 'person', 'person3']))
+      .then(([ updatedClinic, updatedPerson, updatedPerson3 ]) => {
+        chai.expect(updatedClinic.muted).to.be.undefined;
+        chai.expect(updatedPerson.muted).to.equal(personMuteTime);
+        chai.expect(updatedPerson3.muted).to.be.undefined;
+      })
+      .then(() => utils.saveDoc(muteClinic))
+      .then(() => sentinelUtils.waitForSentinel(muteClinic._id))
+      .then(() => sentinelUtils.getInfoDocs([muteClinic._id, 'clinic', 'person', 'person3']))
+      .then(([ muteClinicInfo, clinicInfo, personInfo, person3Info ]) => {
+        chai.expect(muteClinicInfo.transitions).to.be.ok;
+        chai.expect(muteClinicInfo.transitions.muting).to.be.ok;
+
+        chai.expect(clinicInfo.muting_history).to.be.ok;
+        chai.expect(clinicInfo.muting_history.length).to.equal(1);
+        chai.expect(clinicInfo.muting_history[0].muted).to.equal(true);
+        chai.expect(clinicInfo.muting_history[0].report_id).to.equal(muteClinic._id);
+        clinicMuteTime = clinicInfo.muting_history[0].date;
+
+        chai.expect(personInfo.muting_history).to.be.ok;
+        chai.expect(personInfo.muting_history.length).to.equal(2);
+        chai.expect(personInfo.muting_history[1]).to.deep.equal({
+          muted: true,
+          report_id: muteClinic._id,
+          date: clinicMuteTime,
+        });
+
+        chai.expect(person3Info.muting_history).to.be.ok;
+        chai.expect(person3Info.muting_history.length).to.equal(1);
+        chai.expect(person3Info.muting_history[0]).to.deep.equal({
+          muted: true,
+          report_id: muteClinic._id,
+          date: clinicMuteTime,
+        });
+      })
+      .then(() => utils.getDocs(['clinic', 'person', 'person3']))
+      .then(([ updatedClinic, updatedPerson, updatedPerson3 ]) => {
+        chai.expect(updatedClinic.muted).to.equal(clinicMuteTime);
+        chai.expect(updatedPerson.muted).to.equal(personMuteTime); // not changed
+        chai.expect(updatedPerson3.muted).to.equal(clinicMuteTime);
       });
   });
 
@@ -631,95 +756,101 @@ describe('muting', () => {
       .then(() => sentinelUtils.waitForSentinel(mute._id))
       .then(() => sentinelUtils.getInfoDocs([mute._id, 'person', 'clinic', 'health_center']))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.muting).toBeDefined();
-        expect(infos[0].transitions.muting.ok).toBe(true);
+        chai.expect(infos[0].transitions).to.be.ok;
+        chai.expect(infos[0].transitions.muting).to.be.ok;
+        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
 
-        expect(infos[1].muting_history).toBeDefined();
-        expect(infos[1].muting_history.length).toEqual(1);
-        expect(infos[1].muting_history[0].muted).toEqual(true);
-        expect(infos[1].muting_history[0].report_id).toEqual(mute._id);
+        chai.expect(infos[1].muting_history).to.be.ok;
+        chai.expect(infos[1].muting_history.length).to.equal(1);
+        chai.expect(infos[1].muting_history[0].muted).to.equal(true);
+        chai.expect(infos[1].muting_history[0].report_id).to.equal(mute._id);
         mutePersonTime = infos[1].muting_history[0].date;
 
-        expect(infos[2].muting_history).not.toBeDefined();
-        expect(infos[3].muting_history).not.toBeDefined();
+        chai.expect(infos[2].muting_history).not.to.be.ok;
+        chai.expect(infos[3].muting_history).not.to.be.ok;
       })
       .then(() => utils.getDocs(['person', 'clinic', 'health_center']))
       .then(updated => {
-        expect(updated[0].muted).toEqual(mutePersonTime);
-        expect(updated[1].muted).not.toBeDefined();
-        expect(updated[2].muted).not.toBeDefined();
+        chai.expect(updated[0].muted).to.equal(mutePersonTime);
+        chai.expect(updated[1].muted).not.to.be.ok;
+        chai.expect(updated[2].muted).not.to.be.ok;
       })
       .then(() => utils.saveDoc(muteHC))
       .then(() => sentinelUtils.waitForSentinel(muteHC._id))
       .then(() => sentinelUtils.getInfoDocs([muteHC._id, 'person', 'health_center', 'clinic', 'district_hospital']))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.muting).toBeDefined();
-        expect(infos[0].transitions.muting.ok).toBe(true);
+        chai.expect(infos[0].transitions).to.be.ok;
+        chai.expect(infos[0].transitions.muting).to.be.ok;
+        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
 
-        expect(infos[1].muting_history).toBeDefined();
-        expect(infos[1].muting_history.length).toEqual(1);
-        expect(infos[1].muting_history[0]).toEqual({
+        chai.expect(infos[1].muting_history).to.be.ok;
+        chai.expect(infos[1].muting_history.length).to.equal(2);
+        chai.expect(infos[1].muting_history[0]).to.deep.equal({
           muted: true,
           date: mutePersonTime,
           report_id: mute._id
         });
 
-        expect(infos[2].muting_history).toBeDefined();
-        expect(infos[2].muting_history.length).toEqual(1);
-        expect(infos[2].muting_history[0].muted).toEqual(true);
-        expect(infos[2].muting_history[0].report_id).toEqual(muteHC._id);
+        chai.expect(infos[2].muting_history).to.be.ok;
+        chai.expect(infos[2].muting_history.length).to.equal(1);
+        chai.expect(infos[2].muting_history[0].muted).to.equal(true);
+        chai.expect(infos[2].muting_history[0].report_id).to.equal(muteHC._id);
         muteHCTime = infos[2].muting_history[0].date;
 
-        expect(infos[3].muting_history).toBeDefined();
-        expect(infos[3].muting_history.length).toEqual(1);
-        expect(infos[3].muting_history[0]).toEqual({
+        chai.expect(infos[1].muting_history[1]).to.deep.equal({
           muted: true,
           date: muteHCTime,
           report_id: muteHC._id
         });
 
-        expect(infos[4].muting_history).not.toBeDefined();
+        chai.expect(infos[3].muting_history).to.be.ok;
+        chai.expect(infos[3].muting_history.length).to.equal(1);
+        chai.expect(infos[3].muting_history[0]).to.deep.equal({
+          muted: true,
+          date: muteHCTime,
+          report_id: muteHC._id
+        });
+
+        chai.expect(infos[4].muting_history).not.to.be.ok;
       })
       .then(() => utils.getDocs(['person', 'health_center', 'clinic', 'district_hospital']))
       .then(updated => {
-        expect(updated[0].muted).toEqual(mutePersonTime);
-        expect(updated[1].muted).toEqual(muteHCTime);
-        expect(updated[2].muted).toEqual(muteHCTime);
-        expect(updated[3].muted).not.toBeDefined();
+        chai.expect(updated[0].muted).to.equal(mutePersonTime);
+        chai.expect(updated[1].muted).to.equal(muteHCTime);
+        chai.expect(updated[2].muted).to.equal(muteHCTime);
+        chai.expect(updated[3].muted).not.to.be.ok;
       })
       .then(() => utils.saveDoc(unmute))
       .then(() => sentinelUtils.waitForSentinel(unmute._id))
       .then(() => sentinelUtils.getInfoDocs([unmute._id, 'person', 'health_center', 'clinic', 'district_hospital']))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.muting).toBeDefined();
-        expect(infos[0].transitions.muting.ok).toBe(true);
+        chai.expect(infos[0].transitions).to.be.ok;
+        chai.expect(infos[0].transitions.muting).to.be.ok;
+        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
 
-        expect(infos[1].muting_history).toBeDefined();
-        expect(infos[1].muting_history.length).toEqual(2);
-        expect(infos[1].muting_history[1].muted).toEqual(false);
-        expect(infos[1].muting_history[1].report_id).toEqual(unmute._id);
+        chai.expect(infos[1].muting_history).to.be.ok;
+        chai.expect(infos[1].muting_history.length).to.equal(3);
+        chai.expect(infos[1].muting_history[2].muted).to.equal(false);
+        chai.expect(infos[1].muting_history[2].report_id).to.equal(unmute._id);
 
-        expect(infos[2].muting_history).toBeDefined();
-        expect(infos[2].muting_history.length).toEqual(2);
-        expect(infos[2].muting_history[1].muted).toEqual(false);
-        expect(infos[2].muting_history[1].report_id).toEqual(unmute._id);
+        chai.expect(infos[2].muting_history).to.be.ok;
+        chai.expect(infos[2].muting_history.length).to.equal(2);
+        chai.expect(infos[2].muting_history[1].muted).to.equal(false);
+        chai.expect(infos[2].muting_history[1].report_id).to.equal(unmute._id);
 
-        expect(infos[3].muting_history).toBeDefined();
-        expect(infos[3].muting_history.length).toEqual(2);
-        expect(infos[3].muting_history[1].muted).toEqual(false);
-        expect(infos[3].muting_history[1].report_id).toEqual(unmute._id);
+        chai.expect(infos[3].muting_history).to.be.ok;
+        chai.expect(infos[3].muting_history.length).to.equal(2);
+        chai.expect(infos[3].muting_history[1].muted).to.equal(false);
+        chai.expect(infos[3].muting_history[1].report_id).to.equal(unmute._id);
 
-        expect(infos[4].muting_history).not.toBeDefined();
+        chai.expect(infos[4].muting_history).not.to.be.ok;
       })
       .then(() => utils.getDocs(['person', 'health_center', 'clinic', 'district_hospital']))
       .then(() => updated => {
-        expect(updated[0].muted).not.toBeDefined();
-        expect(updated[1].muted).not.toBeDefined();
-        expect(updated[2].muted).not.toBeDefined();
-        expect(updated[3].muted).not.toBeDefined();
+        chai.expect(updated[0].muted).not.to.be.ok;
+        chai.expect(updated[1].muted).not.to.be.ok;
+        chai.expect(updated[2].muted).not.to.be.ok;
+        chai.expect(updated[3].muted).not.to.be.ok;
       });
   });
 
@@ -772,23 +903,23 @@ describe('muting', () => {
       .then(() => sentinelUtils.waitForSentinel([person._id, personWithContactType._id]))
       .then(() => sentinelUtils.getInfoDocs([person._id, personWithContactType._id]))
       .then(([infoPerson, infoPersonWithContactType]) => {
-        expect(infoPerson.transitions).toBeDefined();
-        expect(infoPerson.transitions.muting).toBeDefined();
-        expect(infoPerson.transitions.muting.ok).toBe(true);
+        chai.expect(infoPerson.transitions).to.be.ok;
+        chai.expect(infoPerson.transitions.muting).to.be.ok;
+        chai.expect(infoPerson.transitions.muting.ok).to.equal(true);
 
-        expect(infoPerson.muting_history).toBeDefined();
-        expect(infoPerson.muting_history.length).toEqual(1);
-        expect(infoPerson.muting_history[0].muted).toEqual(true);
-        expect(infoPerson.muting_history[0].report_id).toEqual(mute._id);
+        chai.expect(infoPerson.muting_history).to.be.ok;
+        chai.expect(infoPerson.muting_history.length).to.equal(1);
+        chai.expect(infoPerson.muting_history[0].muted).to.equal(true);
+        chai.expect(infoPerson.muting_history[0].report_id).to.equal(mute._id);
 
-        expect(infoPersonWithContactType.transitions.muting.ok).toBe(true);
-        expect(infoPersonWithContactType.muting_history.length).toEqual(1);
-        expect(infoPersonWithContactType.muting_history[0].report_id).toEqual(mute._id);
+        chai.expect(infoPersonWithContactType.transitions.muting.ok).to.equal(true);
+        chai.expect(infoPersonWithContactType.muting_history.length).to.equal(1);
+        chai.expect(infoPersonWithContactType.muting_history[0].report_id).to.equal(mute._id);
       })
       .then(() => utils.getDocs([person._id, personWithContactType._id]))
       .then(([updatedPerson, updatedPersonWithContactType]) => {
-        expect(updatedPerson.muted).toBeDefined();
-        expect(updatedPersonWithContactType.muted).toBeDefined();
+        chai.expect(updatedPerson.muted).to.be.ok;
+        chai.expect(updatedPersonWithContactType.muted).to.be.ok;
       });
   });
 
@@ -1101,7 +1232,7 @@ describe('muting', () => {
       };
 
       const inTheFuture = new Date().getTime() + notToday;
-      const now = new Date().toISOString();
+      const now = new Date();
 
       const reports = [
         {
@@ -1144,12 +1275,12 @@ describe('muting', () => {
           sentinelUtils.getInfoDoc(contact._id),
         ]))
         .then(([updatedContact, infodoc]) => {
-          expect(updatedContact.muted).toBeGreaterThan(now);
-          expect(updatedContact.muting_history.last_update).toBe('server_side');
-          expect(updatedContact.muting_history.server_side.muted).toBe(true);
+          chai.expect(new Date(updatedContact.muted)).to.be.greaterThan(now);
+          chai.expect(updatedContact.muting_history.last_update).to.equal('server_side');
+          chai.expect(updatedContact.muting_history.server_side.muted).to.equal(true);
 
-          expect(infodoc.transitions.muting.ok).toBe(true);
-          expect(infodoc.muting_history).toEqual([
+          chai.expect(infodoc.transitions.muting.ok).to.equal(true);
+          chai.expect(infodoc.muting_history).to.deep.equal([
             { muted: true, date: updatedContact.muted, report_id: 'report3' },
           ]);
         })
@@ -1229,13 +1360,13 @@ describe('muting', () => {
         .then(() => sentinelUtils.waitForSentinel(contact._id))
         .then(() => utils.getDoc(contact._id))
         .then(updatedContact => {
-          expect(updatedContact.muted).toBeUndefined();
-          expect(updatedContact.muting_history.last_update).toBe('server_side');
-          expect(updatedContact.muting_history.server_side.muted).toBe(false);
+          chai.expect(updatedContact.muted).to.be.undefined;
+          chai.expect(updatedContact.muting_history.last_update).to.equal('server_side');
+          chai.expect(updatedContact.muting_history.server_side.muted).to.equal(false);
         })
         .then(() => sentinelUtils.getInfoDoc(contact._id))
         .then(infodoc => {
-          expect(infodoc.transitions.muting.ok).toBe(true);
+          chai.expect(infodoc.transitions.muting.ok).to.equal(true);
         })
         .then(() => utils.getDocs(reportIds))
         .then(updatedReports => {
@@ -1393,23 +1524,31 @@ describe('muting', () => {
           const [ clinicInfo, personInfo, newPersonInfo ] = infoDocs;
           const findMutingHistoryForReport = (history, reportId) => history.find(item => item.report_id === reportId);
 
-          expect(updatedClinic.muted).toBeUndefined();
-          expect(updatedClinic.muting_history.server_side.muted).toBe(false);
-          expect(updatedClinic.muting_history.last_update).toBe('server_side');
-          expect(findMutingHistoryForReport(clinicInfo.muting_history, 'mutes_clinic').muted).toBe(true);
-          expect(findMutingHistoryForReport(clinicInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
+          chai.expect(updatedClinic.muted).to.be.undefined;
+          chai.expect(updatedClinic.muting_history.server_side.muted).to.equal(false);
+          chai.expect(updatedClinic.muting_history.last_update).to.equal('server_side');
+          chai.expect(findMutingHistoryForReport(clinicInfo.muting_history, 'mutes_clinic').muted).to.equal(true);
+          chai.expect(
+            findMutingHistoryForReport(clinicInfo.muting_history, 'unmutes_new_person').muted
+          ).to.equal(false);
 
-          expect(updatedPerson.muted).toBeDefined();
-          expect(updatedPerson.muting_history.server_side.muted).toBe(true);
-          expect(updatedPerson.muting_history.last_update).toBe('server_side');
-          expect(findMutingHistoryForReport(personInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
-          expect(findMutingHistoryForReport(personInfo.muting_history, 'mutes_person_again').muted).toBe(true);
+          chai.expect(updatedPerson.muted).to.be.ok;
+          chai.expect(updatedPerson.muting_history.server_side.muted).to.equal(true);
+          chai.expect(updatedPerson.muting_history.last_update).to.equal('server_side');
+          chai.expect(
+            findMutingHistoryForReport(personInfo.muting_history, 'unmutes_new_person').muted
+          ).to.equal(false);
+          chai.expect(
+            findMutingHistoryForReport(personInfo.muting_history, 'mutes_person_again').muted
+          ).to.equal(true);
 
-          expect(updatedNewPerson.muted).toBeUndefined();
-          expect(updatedNewPerson.muting_history.server_side.muted).toBe(false);
-          expect(updatedNewPerson.muting_history.last_update).toBe('server_side');
-          expect(findMutingHistoryForReport(newPersonInfo.muting_history, 'mutes_clinic').muted).toBe(true);
-          expect(findMutingHistoryForReport(newPersonInfo.muting_history, 'unmutes_new_person').muted).toBe(false);
+          chai.expect(updatedNewPerson.muted).to.be.undefined;
+          chai.expect(updatedNewPerson.muting_history.server_side.muted).to.equal(false);
+          chai.expect(updatedNewPerson.muting_history.last_update).to.equal('server_side');
+          chai.expect(findMutingHistoryForReport(newPersonInfo.muting_history, 'mutes_clinic').muted).to.equal(true);
+          chai.expect(
+            findMutingHistoryForReport(newPersonInfo.muting_history, 'unmutes_new_person').muted
+          ).to.equal(false);
         })
         // muting won't run again if the replayed docs get updated!
         .then(() => utils.getDoc('mutes_clinic'))
@@ -1418,9 +1557,9 @@ describe('muting', () => {
         .then(() => utils.getDocs([clinic._id, person._id, newPerson._id]))
         .then(([ updatedClinic, updatedPerson, updatedNewPerson ]) => {
           // nothing changed
-          expect(updatedClinic.muted).toBeUndefined();
-          expect(updatedPerson.muted).toBeDefined();
-          expect(updatedNewPerson.muted).toBeUndefined();
+          chai.expect(updatedClinic.muted).to.be.undefined;
+          chai.expect(updatedPerson.muted).to.be.ok;
+          chai.expect(updatedNewPerson.muted).to.be.undefined;
         });
     });
 
@@ -1605,33 +1744,37 @@ describe('muting', () => {
           const [ clinicInfo, personInfo, newPersonInfo ] = infoDocs;
           const findMutingHistoryForReport = (history, reportId) => history.find(item => item.report_id === reportId);
 
-          expect(updatedClinic.muted).toBeUndefined();
-          expect(updatedClinic.muting_history.server_side.muted).toBe(false);
-          expect(updatedClinic.muting_history.last_update).toBe('server_side');
-          expect(findMutingHistoryForReport(clinicInfo.muting_history, 'unmutes_new_person_replay').muted).toBe(false);
+          chai.expect(updatedClinic.muted).to.be.undefined;
+          chai.expect(updatedClinic.muting_history.server_side.muted).to.equal(false);
+          chai.expect(updatedClinic.muting_history.last_update).to.equal('server_side');
+          chai.expect(
+            findMutingHistoryForReport(clinicInfo.muting_history, 'unmutes_new_person_replay').muted
+          ).to.equal(false);
 
-          expect(updatedPerson.muted).toBeDefined();
-          expect(updatedPerson.muting_history.server_side.muted).toBe(true);
-          expect(updatedPerson.muting_history.last_update).toBe('server_side');
-          expect(findMutingHistoryForReport(personInfo.muting_history, 'mutes_person_again_replay').muted).toBe(true);
+          chai.expect(updatedPerson.muted).to.be.ok;
+          chai.expect(updatedPerson.muting_history.server_side.muted).to.equal(true);
+          chai.expect(updatedPerson.muting_history.last_update).to.equal('server_side');
+          chai.expect(
+            findMutingHistoryForReport(personInfo.muting_history, 'mutes_person_again_replay').muted
+          ).to.equal(true);
 
-          expect(updatedNewPerson.muted).toBeUndefined();
-          expect(updatedNewPerson.muting_history.server_side.muted).toBe(false);
-          expect(updatedNewPerson.muting_history.last_update).toBe('server_side');
-          expect(
+          chai.expect(updatedNewPerson.muted).to.be.undefined;
+          chai.expect(updatedNewPerson.muting_history.server_side.muted).to.equal(false);
+          chai.expect(updatedNewPerson.muting_history.last_update).to.equal('server_side');
+          chai.expect(
             findMutingHistoryForReport(newPersonInfo.muting_history, 'unmutes_new_person_replay').muted
-          ).toBe(false);
+          ).to.equal(false);
 
           // tasks are added to reports
           const [updatedMutesPerson, updatedUnmutesNewPerson, updatedMutesPersonAgain] = updatedReports;
-          expect(updatedMutesPerson.tasks.length).toBe(1);
-          expect(updatedMutesPerson.tasks[0].messages[0].message).toBe('Contact muted');
+          chai.expect(updatedMutesPerson.tasks.length).to.equal(1);
+          chai.expect(updatedMutesPerson.tasks[0].messages[0].message).to.equal('Contact muted');
 
-          expect(updatedUnmutesNewPerson.tasks.length).toBe(1);
-          expect(updatedUnmutesNewPerson.tasks[0].messages[0].message).toBe('Contact unmuted');
+          chai.expect(updatedUnmutesNewPerson.tasks.length).to.equal(1);
+          chai.expect(updatedUnmutesNewPerson.tasks[0].messages[0].message).to.equal('Contact unmuted');
 
-          expect(updatedMutesPersonAgain.tasks.length).toBe(1);
-          expect(updatedMutesPersonAgain.tasks[0].messages[0].message).toBe('Contact muted');
+          chai.expect(updatedMutesPersonAgain.tasks.length).to.equal(1);
+          chai.expect(updatedMutesPersonAgain.tasks[0].messages[0].message).to.equal('Contact muted');
 
         })
         // push a doc from the client-side muting history
@@ -1640,21 +1783,21 @@ describe('muting', () => {
         .then(() => utils.getDocs([clinic._id, person._id, newPerson._id, ...reportIds]))
         .then(([ updatedClinic, updatedPerson, updatedNewPerson, ...updatedReports ]) => {
           // nothing changed
-          expect(updatedClinic.muted).toBeUndefined();
-          expect(updatedPerson.muted).toBeDefined();
-          expect(updatedNewPerson.muted).toBeUndefined();
+          chai.expect(updatedClinic.muted).to.be.undefined;
+          chai.expect(updatedPerson.muted).to.be.ok;
+          chai.expect(updatedNewPerson.muted).to.be.undefined;
 
           // tasks are not duplicated on replayed reports
           const [updatedMutesPerson, updatedUnmutesNewPerson, updatedMutesPersonAgain] = updatedReports;
-          expect(updatedMutesPerson.tasks.length).toBe(1);
-          expect(updatedUnmutesNewPerson.tasks.length).toBe(1);
-          expect(updatedMutesPersonAgain.tasks.length).toBe(1);
+          chai.expect(updatedMutesPerson.tasks.length).to.equal(1);
+          chai.expect(updatedUnmutesNewPerson.tasks.length).to.equal(1);
+          chai.expect(updatedMutesPersonAgain.tasks.length).to.equal(1);
         })
         .then(() => sentinelUtils.getInfoDocs(reportIds))
         .then(([mutesPersonInfo, unmutesNewPersonInfo, mutesPersonAgainInfo]) => {
-          expect(mutesPersonInfo.transitions.muting.last_rev.startsWith('1-')).toBe(true); // this is not replayed
-          expect(unmutesNewPersonInfo.transitions.muting.last_rev.startsWith('2-')).toBe(true); // replayed
-          expect(mutesPersonAgainInfo.transitions.muting.last_rev.startsWith('2-')).toBe(true); // replayed
+          chai.expect(getMutingRev(mutesPersonInfo)).to.equal(1); // not replayed
+          chai.expect(getMutingRev(unmutesNewPersonInfo)).to.be.greaterThan(1);  // replayed
+          chai.expect(getMutingRev(mutesPersonAgainInfo)).to.be.greaterThan(1);  // replayed
         })
         // update the report again
         .then(() => utils.getDoc(mutesClinic._id))
@@ -1662,15 +1805,120 @@ describe('muting', () => {
         .then(() => utils.getDocs([clinic._id, person._id, newPerson._id]))
         .then(([ updatedClinic, updatedPerson, updatedNewPerson ]) => {
           // nothing changed
-          expect(updatedClinic.muted).toBeUndefined();
-          expect(updatedPerson.muted).toBeDefined();
-          expect(updatedNewPerson.muted).toBeUndefined();
+          chai.expect(updatedClinic.muted).to.be.undefined;
+          chai.expect(updatedPerson.muted).to.be.ok;
+          chai.expect(updatedNewPerson.muted).to.be.undefined;
         })
         .then(() => sentinelUtils.getInfoDocs(reportIds))
         .then(([mutesPersonInfo, unmutesNewPersonInfo, mutesPersonAgainInfo]) => {
-          expect(mutesPersonInfo.transitions.muting.last_rev.startsWith('1-')).toBe(true); // this is not replayed
-          expect(unmutesNewPersonInfo.transitions.muting.last_rev.startsWith('2-')).toBe(true); // replayed once
-          expect(mutesPersonAgainInfo.transitions.muting.last_rev.startsWith('2-')).toBe(true); // replayed once
+          chai.expect(getMutingRev(mutesPersonInfo)).to.equal(1); // not replayed
+          chai.expect(getMutingRev(unmutesNewPersonInfo)).to.be.greaterThan(1); // replayed
+          chai.expect(getMutingRev(mutesPersonAgainInfo)).to.be.greaterThan(1); // replayed
+        });
+    });
+
+    it('should work with circular client-side muting', () => {
+      // the code should not produce this, this would be a result of manual tampering with the data.
+      // nevertheless ...
+
+      const settings = {
+        transitions: { muting: true },
+        muting: {
+          mute_forms: ['mute'],
+          unmute_forms: ['unmute']
+        },
+      };
+
+      const clinic = {
+        _id: 'new_clinic',
+        name: 'new_clinic',
+        type: 'clinic',
+        place_id: 'the_new_clinic',
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
+        contact: {
+          _id: 'new_person',
+          parent:  { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+        },
+        reported_date: new Date().getTime(),
+        muting_history: {
+          server_side: { muted: false },
+          client_side: [
+            { report_id: 'mutes_clinic', muted: true, date: 1000 },
+            { report_id: 'unmutes_person', muted: false, date: 2000 },
+            { report_id: 'mutes_clinic', muted: true, date: 4000 },
+          ],
+          last_update: 'client_side',
+        },
+      };
+
+      const person = {
+        _id: 'new_person',
+        type: 'person',
+        name: 'new_person',
+        patient_id: 'the_new_person',
+        parent:  { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+        reported_date: new Date().getTime(),
+        muted: 3000,
+        muting_history: {
+          client_side: [
+            { report_id: 'mutes_clinic', muted: true, date: 1000 },
+            { report_id: 'unmutes_person', muted: false, date: 2000 },
+            { report_id: 'mutes_clinic', muted: true, date: 4000 },
+          ],
+          last_update: 'client_side',
+        }
+      };
+
+      const reports = [
+        {
+          _id: 'unmutes_person',
+          type: 'data_record',
+          content_type: 'xml',
+          form: 'unmute',
+          fields: {
+            patient_id: 'the_new_person',
+          },
+          reported_date: 2000,
+          client_side_transitions: {
+            muting: true
+          },
+        },
+      ];
+
+      const mutesClinic =  {
+        _id: 'mutes_clinic',
+        type: 'data_record',
+        content_type: 'xml',
+        form: 'mute',
+        fields: {
+          place_id: 'the_new_clinic',
+        },
+        reported_date: 1000,
+        client_side_transitions: {
+          muting: true
+        },
+      };
+
+      const reportIds = reports.map(r => r._id);
+      const docs = _.shuffle([clinic, person, ...reports]);
+
+      return utils
+        .updateSettings(settings, 'sentinel')
+        .then(() => utils.saveDocs(docs))
+        .then(() => sentinelUtils.waitForSentinel(reportIds))
+        .then(() => utils.getDocs([clinic._id, person._id]))
+        .then(([ updatedClinic, updatedPerson ]) => {
+          // nothing changed
+          chai.expect(updatedClinic.muted).to.be.undefined;
+          chai.expect(updatedPerson.muted).to.be.undefined;
+        })
+        .then(() => utils.saveDoc(mutesClinic))
+        .then(() => sentinelUtils.waitForSentinel())
+        .then(() => utils.getDocs([clinic._id, person._id]))
+        .then(([ updatedClinic, updatedPerson ]) => {
+          // nothing changed
+          chai.expect(updatedClinic.muted).to.be.ok;
+          chai.expect(updatedPerson.muted).to.be.ok;
         });
     });
   });
