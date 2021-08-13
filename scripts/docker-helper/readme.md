@@ -87,7 +87,7 @@ When you're done with an instance, be sure to shut it down:
 ./cht-docker-compose.sh -e ../../../my_first_project/.env_docker -d down
 ```
 
-All information will be saved and you can be fully offline when you next start it.  
+All information will be saved and it should be quick to start for the Nth time.  
 
 To start an existing instance again, just run the command from the "First Run" section:
 
@@ -124,6 +124,23 @@ Using the above two reasons, these URLs could work to avoid the cookie colission
 
 This would result in the domains being `127.0.0.1` and `127.0.0.2` from the CHT's perspective. When using a mobile device for testing, you're limited to use the LAN ip output in the helper and can not use the `127.x.x.x` IPs. 
 
+### Running without the `ip` utility
+
+If you're on MacOS, or other OS with out the `ip` utility, your IP address will always show as `127.0.0.1`.  You can not connect to this IP from a mobile client on your LAN because it always references the host it's on, not a foriegn host.  
+
+To work around this, you can find out your IP on your LAN and just replace the `127-0-0-1` part of the `https://127-0-0-1.my.local-ip.co:8443` URL to be your IP addres.  So if your local IP was `192.168.0.22` your URL would be `https://192-168-0-22.my.local-ip.co:8443`
+
+### Booting with no connectivity
+
+This script can work without connectivity after the initial boot.  However, it needs connectivity to do DNS lookups for the *.my.local-ip.co URLs.  To work around this, when you have no connectivity, add an entry in your `/etc/hosts` for the URL showing up in the script. For example, if you're seeing `https://127-0-0-1.my.local-ip.co:8443` as your IP, add this line to the top of your `/etc/hosts` file. 
+
+```shell script
+127.0.0.1   127-0-0-1.my.local-ip.co
+```
+
+_**NOTE**_ - You need connectivity on the initial boot of the VM to connect to `staging.dev.medicmobile.org` to download the base version of the CHT. Subsequent boots do not require connectivity. 
+
+
 ### Port conflicts
 
 If you have two `.env_docker` files that have the same ports or re-use the same project name, bad things will happen.  Don't do this.
@@ -148,6 +165,12 @@ If you're on a resource constrained computer, like a very old or very slow lapto
 This script's raison d'être is to avoid troubleshooting!  Hopefully you don't have any problems, but please report them if you do. As well, see "Caveats" above.
 
 If any scripts fail to exit, you can hit hold down the control key and press "c" (`ctrl + c`) to quit out of the script.
+
+### "Device '' does not exist'" and "Could not resolve host" errors
+
+If you see either of these errors, you're very likely off-line such that you effectively cannot reach the Internet. The script will not work as is.  See the "Booting with no connectivity" section above for work-arounds.
+
+### Resetting everything
 
 If you REALLY get stuck and want to destroy _**ALL**_ docker containers/volumes/networks, even those not started by this script, run this (but be  _**extra**_ sure that's what you want to do):
 
