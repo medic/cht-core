@@ -12,7 +12,7 @@ const baseConfig = {
   },
   SELENIUM_PROMISE_MANAGER: false,
   seleniumAddress: 'http://localhost:4444/wd/hub',
-  exclude: ['**/*.wdio-spec.js', '**/*.standard-wdio-spec.js'],
+  exclude: ['**/*wdio-spec.js'],
   suites: {
     web: [
       'e2e/!(cht)/**/*.js',
