@@ -139,8 +139,7 @@ This script can work without connectivity after the initial boot.  However, it n
 127.0.0.1   127-0-0-1.my.local-ip.co
 ```
 
-_**NOTE**_ - You need connectivity on the initial boot of the VM to connect to `staging.dev.medicmobile.org` to download the base version of the CHT. Subsequent boots do not require connectivity. 
-
+_**NOTE**_ - You need connectivity on the initial boot of the VM to connect to `staging.dev.medicmobile.org` to download the base version of the CHT. Subsequent boots do not require connectivity as long as you do not run `destroy`.
 
 ### Port conflicts
 
