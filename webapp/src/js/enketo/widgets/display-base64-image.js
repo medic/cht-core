@@ -50,11 +50,8 @@
   };
 
   function setSource($img, value) {
-    if (!$img || !value) {
-      return;
-    }
-
-    $img.attr('src', `data:image/png;base64,${value}`);
+    const src = value ? `data:image/png;base64,${value}` : '';
+    $img.attr('src', src);
   }
 
   $.fn[PLUGIN_NAME] = function (options, event) {

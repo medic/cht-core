@@ -27,7 +27,7 @@ describe('Display Base64 Image Widget', () => {
     const $images = $html.find('img');
 
     expect($images.length).to.equal(1);
-    expect($images.attr('src')).to.be.undefined;
+    expect($images.attr('src')).to.equal('');
   });
 
   it('should insert image element with base64', () => {
@@ -51,5 +51,20 @@ describe('Display Base64 Image Widget', () => {
 
     expect($images.length).to.equal(1);
     expect($images.attr('src')).to.equal('data:image/png;base64,TmFuYW5hbmFuYSBiYXRtYW4h');
+  });
+
+  it('should not keep previous image if input doesnt have a value', () => {
+    const $input = $html.find('input');
+    $input.val('SSdtIGJhdG1hbg==').trigger('change');
+    let $images = $html.find('img');
+
+    expect($images.length).to.equal(1);
+    expect($images.attr('src')).to.equal('data:image/png;base64,SSdtIGJhdG1hbg==');
+
+    $input.val('').trigger('change');
+    $images = $html.find('img');
+
+    expect($images.length).to.equal(1);
+    expect($images.attr('src')).to.equal('');
   });
 });

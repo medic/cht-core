@@ -51,17 +51,10 @@ const getTimezoneOffsetAsTime = function(date) {
 };
 
 const parseTimestampToDate = (value) => {
-  const empty = { t:'str', v: '' };
+  const timestamp = parseInt(getValue(value));
 
-  if (!value || !value.v) {
-    return empty;
-  }
-
-  let timestamp = value.t === 'arr' && value.v.length ? timestamp = value.v[0] : value.v;
-  timestamp = parseInt(timestamp);
-
-  if (isNaN(timestamp))  {
-    return empty;
+  if (isNaN(timestamp)) {
+    return { t: 'str', v: '' };
   }
 
   return { t:'date', v: new Date(timestamp) };

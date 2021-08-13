@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
-import { expect } from 'chai';
+import { expect, assert } from 'chai';
 
-import { ExternalAppLauncherService } from '@mm-services/external-app-launcher.service';
+import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.service';
 
-describe('ExternalAppLauncherService', () => {
-  let service: ExternalAppLauncherService;
+describe('AndroidAppLauncherService', () => {
+  let service: AndroidAppLauncherService;
   const medicMobileAndroid: any = {};
   let originalMedicMobileAndroid;
   let consoleErrorMock;
@@ -17,7 +17,7 @@ describe('ExternalAppLauncherService', () => {
     window.medicmobile_android = medicMobileAndroid;
 
     TestBed.configureTestingModule({});
-    service = TestBed.inject(ExternalAppLauncherService);
+    service = TestBed.inject(AndroidAppLauncherService);
   });
 
   afterEach(() => {
@@ -26,7 +26,7 @@ describe('ExternalAppLauncherService', () => {
   });
 
   describe('isEnabled()', () => {
-    it('should return true if launchExternalApp function is defined', () => {
+    it('should return true if launchAndroidApp function is defined', () => {
       medicMobileAndroid.launchExternalApp = () => {};
 
       expect(service.isEnabled()).to.equal(true);
@@ -43,9 +43,9 @@ describe('ExternalAppLauncherService', () => {
     });
   });
 
-  describe('launchExternalApp()', () => {
-    it('should launch external app with some parameters', () => {
-      const externalApp = {
+  describe('launchAndroidApp()', () => {
+    it('should launch android app with some parameters', () => {
+      const androidApp = {
         action: 'com.my-app.action.LOCATE',
         extras: {
           id: '1',
@@ -55,7 +55,7 @@ describe('ExternalAppLauncherService', () => {
         },
       };
 
-      const result = service.launchExternalApp(externalApp);
+      const result = service.launchAndroidApp(androidApp);
 
       expect(medicMobileAndroid.launchExternalApp.callCount).to.equal(1);
       expect(medicMobileAndroid.launchExternalApp.args[0]).to.have.members([
@@ -71,8 +71,8 @@ describe('ExternalAppLauncherService', () => {
       expect(consoleErrorMock.callCount).to.equal(0);
     });
 
-    it('should launch external app with all parameters', () => {
-      const externalApp = {
+    it('should launch android app with all parameters', () => {
+      const androidApp = {
         action: 'com.my-app.action.LOCATE',
         category: 'a-category',
         type: 'a-type',
@@ -87,7 +87,7 @@ describe('ExternalAppLauncherService', () => {
         flags: 5,
       };
 
-      const result = service.launchExternalApp(externalApp);
+      const result = service.launchAndroidApp(androidApp);
 
       expect(medicMobileAndroid.launchExternalApp.callCount).to.equal(1);
       expect(medicMobileAndroid.launchExternalApp.args[0]).to.have.members([
@@ -103,8 +103,8 @@ describe('ExternalAppLauncherService', () => {
       expect(consoleErrorMock.callCount).to.equal(0);
     });
 
-    it('should launch external app with all null parameters', () => {
-      const result = service.launchExternalApp({} as any);
+    it('should launch android app with all null parameters', () => {
+      const result = service.launchAndroidApp({} as any);
 
       expect(medicMobileAndroid.launchExternalApp.callCount).to.equal(1);
       expect(medicMobileAndroid.launchExternalApp.args[0]).to.have.members([
@@ -120,8 +120,8 @@ describe('ExternalAppLauncherService', () => {
       expect(consoleErrorMock.callCount).to.equal(0);
     });
 
-    it('should resolve external app response', async () => {
-      const externalApp = {
+    it('should resolve android app response', async () => {
+      const androidApp = {
         action: 'com.my-app.action.LOCATE',
         extras: {
           id: '1',
@@ -131,23 +131,24 @@ describe('ExternalAppLauncherService', () => {
         },
       };
 
-      const promise = service.launchExternalApp(externalApp);
+      const promise = service.launchAndroidApp(androidApp);
 
-      service.resolveExternalAppResponse({
+      service.resolveAndroidAppResponse({
         status: 'located',
         person: { name: 'Jack' }
       });
 
       const response = await promise;
 
+      expect(promise instanceof Promise).to.equal(true);
       expect(response).to.deep.equal({
         status: 'located',
         person: { name: 'Jack' }
       });
     });
 
-    it('should catch exception when launching external app', () => {
-      const externalApp = {
+    it('should catch exception when launching android app and reject with message', () => {
+      const androidApp = {
         action: 'com.my-app.action.LOCATE',
         extras: {
           id: '1',
@@ -158,25 +159,26 @@ describe('ExternalAppLauncherService', () => {
       };
       medicMobileAndroid.launchExternalApp.throws(new Error('some error'));
 
-      service.launchExternalApp(externalApp);
-
-      expect(medicMobileAndroid.launchExternalApp.callCount).to.equal(1);
-      expect(medicMobileAndroid.launchExternalApp.args[0]).to.have.members([
-        'com.my-app.action.LOCATE',
-        null,
-        null,
-        '{"id":"1","location":{"city":"Tokyo"}}',
-        null,
-        null,
-        null,
-      ]);
-      expect(consoleErrorMock.callCount).to.equal(1);
-      expect(consoleErrorMock.args[0][0]).to.equal(
-        'ExternalAppLauncherService :: Error when launching external app. ' +
-        'ChtExternalApp={"action":"com.my-app.action.LOCATE","extras":{"id":"1","location":{"city":"Tokyo"}}},' +
-        ' Enabled=true',
-        'Error: some error'
-      );
+      return service
+        .launchAndroidApp(androidApp)
+        .then(() => assert.fail('Should have thrown exception.'))
+        .catch(error => {
+          expect(error).to.equal('AndroidAppLauncherService :: Error when launching Android app. ChtAndroidApp=' +
+            '{"action":"com.my-app.action.LOCATE","extras":{"id":"1","location":{"city":"Tokyo"}}}, Enabled=true');
+          expect(consoleErrorMock.callCount).to.equal(1);
+          expect(consoleErrorMock.args[0][0].message).to.equal('some error');
+          expect(medicMobileAndroid.launchExternalApp.callCount).to.equal(1);
+          expect(medicMobileAndroid.launchExternalApp.args[0]).to.have.members([
+            'com.my-app.action.LOCATE',
+            null,
+            null,
+            '{"id":"1","location":{"city":"Tokyo"}}',
+            null,
+            null,
+            null,
+          ]);
+        });
     });
   });
+
 });

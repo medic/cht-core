@@ -1,6 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 
-import { ExternalAppLauncherService } from '@mm-services/external-app-launcher.service';
+import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SessionService } from '@mm-services/session.service';
@@ -19,7 +19,7 @@ import { NavigationService } from '@mm-services/navigation.service';
 export class AndroidApiService {
 
   constructor(
-    private externalAppLauncherService:ExternalAppLauncherService,
+    private androidAppLauncherService:AndroidAppLauncherService,
     private geolocationService:GeolocationService,
     private mrdtService:MRDTService,
     private sessionService:SessionService,
@@ -244,14 +244,7 @@ export class AndroidApiService {
   }
 
   resolveCHTExternalAppResponse(response) {
-    try {
-      this.externalAppLauncherService.resolveExternalAppResponse(response);
-    } catch (error) {
-      console.error(
-        `AndroidApiService :: Error when processing response from external app, error: "${error.message}, response:"`,
-        response
-      );
-    }
+    this.androidAppLauncherService.resolveAndroidAppResponse(response);
   }
 
   v1 = {

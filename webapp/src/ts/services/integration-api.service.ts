@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { ExternalAppLauncherService } from '@mm-services/external-app-launcher.service';
+import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.service';
 import { LanguageService } from '@mm-services/language.service';
 import { Select2SearchService } from '@mm-services/select2-search.service';
 import { MRDTService } from '@mm-services/mrdt.service';
@@ -15,7 +15,7 @@ import { TranslateService } from '@mm-services/translate.service';
   providedIn: 'root'
 })
 export class IntegrationApiService {
-  ExternalAppLauncher;
+  AndroidAppLauncher;
   Language;
   Select2Search;
   Enketo;
@@ -28,7 +28,7 @@ export class IntegrationApiService {
 
   constructor(
     private dbService:DbService,
-    private externalAppLauncherService:ExternalAppLauncherService,
+    private androidAppLauncherService:AndroidAppLauncherService,
     private languageService:LanguageService,
     private select2SearchService:Select2SearchService,
     private enketoService:EnketoService,
@@ -40,7 +40,7 @@ export class IntegrationApiService {
     private androidApiService:AndroidApiService,
   ) {
     this.DB = dbService;
-    this.ExternalAppLauncher = externalAppLauncherService;
+    this.AndroidAppLauncher = androidAppLauncherService;
     this.Language = languageService;
     this.Select2Search = select2SearchService;
     this.Enketo = enketoService;
