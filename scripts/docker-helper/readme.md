@@ -28,8 +28,9 @@ The script will check and require these commands. All but the first two should b
 * tr
 * awk
 * grep
-* jq
 * cut
+
+Optionally you can install `jq` so that the script can parse JSON and tell you  
 
 ### Docker compose file and helper scripts
 

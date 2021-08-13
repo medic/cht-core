@@ -36,14 +36,14 @@ get_lan_ip() {
   echo "$lanAddress"
 }
 
-get_local_ip_url() {
+get_local_ip_url(){
   lanIp=$1
   cookedLanAddress=$(echo "$lanIp" | tr . -)
   url="https://${cookedLanAddress}.my.local-ip.co:${CHT_HTTPS}"
   echo "$url"
 }
 
-required_apps_installed() {
+required_apps_installed(){
   error=''
   appString=$1
   IFS=';' read -ra appsArray <<<"$appString"
@@ -55,7 +55,7 @@ required_apps_installed() {
   echo "${error}"
 }
 
-port_open() {
+port_open(){
   ip=$1
   port=$2
   nc -z "$ip" "$port"
@@ -69,7 +69,7 @@ has_self_signed_cert() {
   curl --insecure -vvI "$url" 2>&1 | grep -c "self signed certificate"
 }
 
-cht_healthy() {
+cht_healthy(){
   chtIp=$1
   chtPort=$2
   chtUrl=$3
@@ -86,7 +86,7 @@ cht_healthy() {
   fi
 }
 
-validate_env_file() {
+validate_env_file(){
   envFile=$1
   if [ ! -f "$envFile" ]; then
     echo "File not found: $envFile"
@@ -98,42 +98,43 @@ validate_env_file() {
   . "${envFile}"
   if [ -z "$COMPOSE_PROJECT_NAME" ] || [ -z "$CHT_HTTP" ] || [ -z "$CHT_HTTPS" ]; then
     echo "Missing env value in file: COMPOSE_PROJECT_NAME, CHT_HTTP or CHT_HTTPS"
-  elif [[ "$COMPOSE_PROJECT_NAME" =~ [A-Z] ]]; then
+  elif [[ "$COMPOSE_PROJECT_NAME" =~ [A-Z] ]];then
     echo "COMPOSE_PROJECT_NAME can not have upper case: $COMPOSE_PROJECT_NAME"
   fi
 }
 
-get_running_container_count() {
+get_running_container_count(){
   result=0
   containers="$1"
-  IFS=' ' read -ra containersArray <<<"$containers"
-  for container in "${containersArray[@]}"; do
-    if [ "$(docker ps -f name="${container}" | wc -l)" -eq 2 ]; then
-      ((result++))
+  IFS=' ' read -ra containersArray <<< "$containers"
+  for container in "${containersArray[@]}"
+  do
+    if [ "$( docker ps -f name="${container}" | wc -l )" -eq 2 ]; then
+        (( result++ ))
     fi
   done
   echo "$result"
 }
 
-get_global_running_container_count() {
-  if [ "$(docker ps --format={{.Names}} | wc -l)" -gt 0 ]; then
+get_global_running_container_count(){
+  if [ "$( docker ps --format={{.Names}} | wc -l )" -gt 0 ]; then
     docker ps --format={{.Names}} | wc -l
   else
     echo "0"
   fi
 }
 
-volume_exists() {
+volume_exists(){
   project=$1
   volume="${project}_medic-data"
-  if [ "$(docker volume inspect "${volume}" 2>&1 | wc -l)" -eq 2 ]; then
+  if [ "$( docker volume inspect "${volume}" 2>&1  | wc -l )" -eq 2 ]; then
     echo "0"
   else
     echo "1"
   fi
 }
 
-get_docker_compose_yml_path() {
+get_docker_compose_yml_path(){
   if [ -f docker-compose-developer.yml ]; then
     echo "docker-compose-developer.yml"
   elif [ -f ../../docker-compose-developer.yml ]; then
@@ -143,7 +144,7 @@ get_docker_compose_yml_path() {
   fi
 }
 
-docker_up_or_restart() {
+docker_up_or_restart(){
   # some times this function called too quickly after a docker change, so
   # we sleep 3 secs here to let the docker container/volume stabilize
   sleep 3
@@ -157,7 +158,7 @@ docker_up_or_restart() {
   docker-compose --env-file ${envFile} -f ${composeFile} up -d >/dev/null 2>&1
 }
 
-install_local_ip_cert() {
+install_local_ip_cert(){
   medicOs=$1
   docker exec -it "${medicOs}" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem" >/dev/null 2>&1
   docker exec -it "${medicOs}" bash -c "curl -s -o chain.pem http://local-ip.co/cert/chain.pem" >/dev/null 2>&1
@@ -166,13 +167,13 @@ install_local_ip_cert() {
   docker exec -it "${medicOs}" bash -c "/boot/svc-restart medic-core nginx" >/dev/null 2>&1
 }
 
-docker_down() {
+docker_down(){
   envFile=$1
   composeFile=$2
   docker-compose --env-file ${envFile} -f ${composeFile} down >/dev/null 2>&1
 }
 
-docker_destroy() {
+docker_destroy(){
   project=$1
   containers=$2
   IFS=' ' read -ra containersArray <<<"$containers"
@@ -192,11 +193,17 @@ get_cht_version() {
   #         but would this work on macos? oh - looks like yes!?
   # "The binaries should just run, but on OS X and Linux you may need to make them executable first using chmod +x jq."
   # - https://stedolan.github.io/jq/download/
-  version=$(curl -sk "$urlWithPassAndPath" | jq .build_info.base_version | tr -d '"')
-  echo "$version"
+  if [ -n "$(required_apps_installed "jq")" ];then
+    echo "NA (jq not installed)"
+  else
+    url=$1
+    urlWithPassAndPath="https://medic:password@$(echo $url | cut -c 9-9999)/medic/_design/medic "
+    version=$(curl -sk "$urlWithPassAndPath"|jq .build_info.base_version | tr -d '"')
+    echo "$version"
+  fi
 }
 
-main() {
+main (){
 
   # very first thing check we have valid env file, exit if not
   validEnv=$(validate_env_file "$envFile")
@@ -300,35 +307,35 @@ main() {
     return 0
   fi
 
-  if [[ "$volumeCount" == 0 ]] && [[ "$reboot_count" == 0 ]]; then
+  if [[ "$volumeCount" = 0 ]] && [[ "$reboot_count" = 0 ]]; then
     sleepFor=$DEFAULT_SLEEP
     last_action="First run of \"docker-compose up\""
     docker_up_or_restart "$envFile" "$dockerComposePath" &
-    ((reboot_count++))
+    (( reboot_count++ ))
   fi
 
-  if [[ "$containerCount" != 2 ]] && [[ "$reboot_count" != "$MAX_REBOOTS" ]] && [[ "$sleepFor" == 0 ]]; then
+  if [[ "$containerCount" != 2 ]] && [[ "$reboot_count" != "$MAX_REBOOTS" ]] && [[ "$sleepFor" = 0 ]]; then
     sleepFor=$DEFAULT_SLEEP
     last_action="Running \"docker-compose down\" then  \"docker-compose up\""
     docker_up_or_restart "$envFile" "$dockerComposePath" &
-    ((reboot_count++))
+    (( reboot_count++ ))
   fi
 
-  if [ -n "$health" ] && [[ "$sleepFor" == 0 ]] && [[ "$reboot_count" != "$MAX_REBOOTS" ]]; then
+  if [ -n "$health" ] && [[ "$sleepFor" = 0 ]] && [[ "$reboot_count" != "$MAX_REBOOTS" ]]; then
     sleepFor=$DEFAULT_SLEEP
     last_action="Running \"docker-compose down\" then  \"docker-compose up\""
-    docker_up_or_restart "$envFile" "$dockerComposePath" &
-    ((reboot_count++))
+    docker_up_or_restart "$envFile" "$dockerComposePath"  &
+    (( reboot_count++ ))
   fi
 
   if [[ "$sleepFor" > 0 ]] && [ -n "$health" ]; then
     window "Attempt number $reboot_count / $MAX_REBOOTS to boot $COMPOSE_PROJECT_NAME" "yellow" "100%"
     append "Waiting $sleepFor..."
     endwin
-    ((sleepFor--))
+    (( sleepFor-- ))
   fi
 
-  if [[ "$reboot_count" == "$MAX_REBOOTS" ]] && [[ "$sleepFor" == 0 ]]; then
+  if [[ "$reboot_count" = "$MAX_REBOOTS" ]] && [[ "$sleepFor" = 0 ]]; then
     window "Reboot max met: $MAX_REBOOTS reboots" "red" "100%"
     append "Please try running docker helper script again"
     endwin
