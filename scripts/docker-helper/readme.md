@@ -62,6 +62,7 @@ These steps assume:
 * the first project is `my_first_project`
 * one `.env_docker` environment file per project
 * `my_first_project` and `cht-core` directories are next to each other in the same parent directory
+* you have Internet connectivity (*See [booting with no connectivity](./readme.md#booting-with-no-connectivity)*)
 
 Follow these steps to create your first developer instance. You can create as many as you'd like:
 
