@@ -1,7 +1,7 @@
 {
   'use strict';
-  const FormModel = require( 'enketo-core/src/js/Form-model' );
-  const Widget = require( 'enketo-core/src/js/Widget' );
+  const FormModel = require( 'enketo-core' ).FormModel;
+  const Widget = require( 'enketo-core/src/js/widget' ).default;
   const $ = require( 'jquery' );
   const phoneNumber = require('@medic/phone-number');
   require( 'enketo-core/src/js/plugins' );
@@ -52,12 +52,14 @@
      */
 
   function PhoneWidget( element, options, Settings ) {
-    this.namespace = pluginName;
-    Widget.call( this, element, options );
-    if ( !Settings ) {
-      Settings = window.CHTCore.Settings;
+    if(element) {
+      this.namespace = pluginName;
+      Object.assign( this, new Widget( element, options ) );
+      if (!Settings) {
+        Settings = window.CHTCore.Settings;
+      }
+      this._init(Settings);
     }
-    this._init( Settings );
   }
 
   //copy the prototype functions from the Widget super class
