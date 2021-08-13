@@ -8,7 +8,7 @@ const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const contactsPage = require('../contacts/contacts.wdio.page');
 const reportsPage = require('../reports/reports.wdio.page');
 const modal = require('./modal.wdio.page');
-const _ = require('lodash');
+const loaders = () => $$('.container-fluid .loader');
 
 const navigateToLogoutModal = async () => {
   await (await hamburgerMenu()).click();
