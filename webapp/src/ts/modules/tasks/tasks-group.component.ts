@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { PRIMARY_OUTLET, Router } from '@angular/router';
@@ -26,7 +26,13 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
 
   subscription = new Subscription();
 
-  tasks;
+  private tasksList;
+  private contactModel;
+  private lastCompletedTask;
+  private taskGroupContact;
+  private telemetryRecorded;
+
+  tasks = [];
   loadingContent;
   contentError;
   errorTranslationKey = 'tasks.group.error';
@@ -40,6 +46,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
     private tasksForContactService:TasksForContactService,
     private contactViewModelGeneratorService:ContactViewModelGeneratorService,
     private telemetryService:TelemetryService,
+    private ngZone:NgZone,
   ) {
     this.globalActions = new GlobalActions(store);
     this.tasksActions = new TasksActions(store);
@@ -49,6 +56,10 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
     this.setNavigation();
     this.subscribeToStore();
     this.leafPlaceTypes$ = this.contactTypesService.getLeafPlaceTypes();
+
+    this.globalActions.setShowContent(true);
+    this.globalActions.setLoadingContent(true);
+    this.globalActions.setTitle(this.translateService.instant('tasks.group.title'));
   }
 
   private setNavigation(preventNavigation?:Boolean) {
@@ -75,9 +86,9 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.subscription.unsubscribe();
     this.globalActions.clearNavigation();
+    this.tasksActions.clearTaskGroup();
     this.globalActions.setLoadingContent(false);
     this.globalActions.setShowContent(false);
-    this.tasksActions.setLastCompletedTask(null);
   }
 
   private subscribeToStore() {
@@ -95,50 +106,82 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
       this.preventNavigation = preventNavigation;
     });
 
-    const lastTaskSubscription = this.store
-      .select(Selectors.getLastCompletedTask)
-      .subscribe((lastCompletedTask) => {
-        this.displayHouseholdTasks(lastCompletedTask);
-      });
+    const lastTaskSubscription = combineLatest(
+      this.store.select(Selectors.getLastCompletedTask),
+      this.store.select(Selectors.getTaskGroupContact),
+      this.store.select(Selectors.getTaskGroupLoadingContact),
+      this.store.select(Selectors.getTasksList),
+    ).subscribe(([
+      lastCompletedTask,
+      contact,
+      loadingContact,
+      tasksList,
+    ]) => {
+      console.warn('task list refreshed');
+      this.tasksList = tasksList;
+      this.lastCompletedTask = lastCompletedTask;
+      this.taskGroupContact = contact;
+
+      if (!loadingContact) {
+        this.loadGroupTasks();
+      }
+    });
 
     this.subscription.add(lastTaskSubscription);
     this.subscription.add(storeSubscription);
   }
 
-  private getTaskContact(task) {
-    return task?.actions?.[0]?.content?.contact?._id;
+  private getTaskOwner(task) {
+    return task?.owner;
   }
 
-  private async displayHouseholdTasks(task) {
-    this.globalActions.setShowContent(true);
-    this.globalActions.setLoadingContent(true);
-    this.globalActions.setTitle(this.translateService.instant('tasks.group.title'));
-    this.tasks = [];
+  private cherryPickTasks(contactIds:Array<string>) {
+    return this.tasksList.filter(task =>
+      task._id !== this.lastCompletedTask._id && // don't display the task we already completed
+      contactIds.includes(this.getTaskOwner(task))
+    );
+  }
 
-    const contactId = this.getTaskContact(task);
-    if (!contactId) {
-      this.navigationCancel();
+  /*
+  Only loads the contact's children once, no matter how may times the function is called
+  */
+  private async loadContactModel() {
+    if (this.contactModel && this.contactModel.children) {
+      return await this.contactModel.getChildren$;
+    }
+
+    if (!this.taskGroupContact) {
       return;
     }
 
+    const getChildren$ = this.contactViewModelGeneratorService.loadChildren(this.taskGroupContact, { hydrate: false });
+    this.contactModel = {
+      ...this.taskGroupContact,
+      getChildren$,
+    };
+    this.contactModel.children = await getChildren$;
+  }
+
+  private async loadGroupTasks() {
     try {
-      const contactModel = await this.displayTasksFor(contactId);
-      if (!contactModel) {
+      await this.loadContactModel();
+      if (!this.contactModel) {
         this.navigationCancel();
         return;
       }
 
-      const tasks = await this.tasksForContactService.get(contactModel);
-      // intentionally don't block on telemetry, but start counting after tasks were recalculated
-      this.recordTaskCountTelemetry(contactModel);
-      if (!tasks || !tasks.length) {
+      const idsForTasks = this.tasksForContactService.getIdsForTasks(this.contactModel);
+      const filteredTasks = this.cherryPickTasks(idsForTasks);
+      console.log(JSON.stringify(filteredTasks, null, 2));
+      if (!filteredTasks || !filteredTasks.length) {
         this.navigationCancel(true);
         return;
       }
 
       this.setNavigation(true);
-      this.tasks = tasks;
+      this.tasks = filteredTasks;
       this.globalActions.setLoadingContent(false);
+      this.recordTaskCountTelemetry(this.contactModel);
     } catch (err) {
       console.error('Error loading tasks group', err);
       this.contentError = true;
@@ -147,57 +190,49 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async recordTaskCountTelemetry(contactModel) {
-    const taskCounts = await this.tasksForContactService.getTasksBreakdown(contactModel);
-    let allTasksCount = 0;
-    Object.keys(taskCounts).forEach(state => allTasksCount += taskCounts[state]);
+  private recordTaskCountTelemetry(contactModel) {
+    if (this.telemetryRecorded) {
+      return;
+    }
 
-    this.telemetryService.record('tasks:group:all-tasks', allTasksCount);
-    this.telemetryService.record('tasks:group:cancelled', taskCounts.Cancelled);
-    this.telemetryService.record('tasks:group:ready', taskCounts.Ready);
-    const breakdownByTitle:any = { };
-    this.tasks.forEach(({ title }) => {
-      if (Object.hasOwnProperty.call(breakdownByTitle, title)) {
-        breakdownByTitle[title]++;
-      } else {
-        breakdownByTitle[title] = 1;
-      }
-    });
-    Object.keys(breakdownByTitle).forEach(title => {
-      this.telemetryService.record(`tasks:group:ready:${title}`, breakdownByTitle[title]);
+    this.ngZone.runOutsideAngular(async () => {
+      this.telemetryRecorded = true;
+      const taskCounts = await this.tasksForContactService.getTasksBreakdown(contactModel);
+      let allTasksCount = 0;
+      Object.keys(taskCounts).forEach(state => allTasksCount += taskCounts[state]);
+
+      this.telemetryService.record('tasks:group:all-tasks', allTasksCount);
+      this.telemetryService.record('tasks:group:cancelled', taskCounts.Cancelled);
+      this.telemetryService.record('tasks:group:ready', this.tasks.length);
+      const breakdownByTitle:any = { };
+      this.tasks.forEach(({ title }) => {
+        if (Object.hasOwnProperty.call(breakdownByTitle, title)) {
+          breakdownByTitle[title]++;
+        } else {
+          breakdownByTitle[title] = 1;
+        }
+      });
+      Object.keys(breakdownByTitle).forEach(title => {
+        this.telemetryService.record(`tasks:group:ready:${title}`, breakdownByTitle[title]);
+      });
     });
   }
 
-  private async displayTasksFor(contactId) {
-    const { doc, lineage } = await this.lineageModelGeneratorService.contact(contactId);
-
-    if (!doc || !lineage) {
-      return false;
-    }
-
-    const leafPlaceTypes = await this.leafPlaceTypes$;
-    for (const contact of [doc, ...lineage]) {
-      const typeId = this.contactTypesService.getTypeId(contact);
-      if (this.contactTypesService.isLeafPlaceType(leafPlaceTypes, typeId)) {
-        const model = await this.contactViewModelGeneratorService.getContact(contact._id);
-        model.children = await this.contactViewModelGeneratorService.loadChildren(model);
-        return model;
-      }
-    }
-    return false;
-  }
-
-  isHouseHoldTask(emissionId) {
-    return Array.isArray(this.tasks) && this.tasks.find((task:any) => task?.emission?._id === emissionId);
+  isGroupTask(emissionId) {
+    return Array.isArray(this.tasks) && this.tasks.find((task:any) => task?._id === emissionId);
   }
 
   canDeactivate(nextUrl) {
+    console.log('can deactivate called');
+    console.log(JSON.stringify(this.tasks, null, 2));
+    console.log(JSON.stringify(this.preventNavigation, null, 2));
+    console.log(JSON.stringify(this.lastCompletedTask, null, 2));
     if (!this.tasks || !this.tasks.length || !this.cancelCallback || !this.preventNavigation) {
       return true;
     }
 
     const emissionId = this.getEmissionIdFromUrl(nextUrl);
-    if (emissionId && this.isHouseHoldTask(emissionId)) {
+    if (emissionId && this.isGroupTask(emissionId)) {
       return true;
     }
 
@@ -207,12 +242,10 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
 
   private getEmissionIdFromUrl(url) {
     const tree = this.router.parseUrl(url);
+    // https://angular.io/api/router/UrlTree#example
     const segments = tree.root.children[PRIMARY_OUTLET].segments;
-    if (segments.length < 2 || segments[0].path !== 'tasks') {
-      return;
+    if (segments && segments.length === 2 && segments[0]?.path === 'tasks') {
+      return segments[1]?.path;
     }
-
-    const emissionId = segments[1].path;
-    return emissionId;
   }
 }

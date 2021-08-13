@@ -273,6 +273,14 @@ describe('ContactTypes service', () => {
       Settings.resolves({ contact_types: types });
       expect(await service.getLeafPlaceTypes()).to.deep.equal([{ id: 'nothing', parents: ['something'] }]);
     });
+
+    it('should return nothing with bad data', async () => {
+      Settings.resolves({ });
+      expect(await service.getLeafPlaceTypes()).to.deep.equal([]);
+
+      Settings.resolves({ contact_types: {} });
+      expect(await service.getLeafPlaceTypes()).to.deep.equal([]);
+    });
   });
 
   describe('isLeafPlaceType', () => {

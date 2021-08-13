@@ -3,17 +3,23 @@ import * as moment from 'moment';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TasksForContactService {
+  private leafPlaceTypes$;
+
   constructor(
     private contactTypesService:ContactTypesService,
-    private rulesEngineService:RulesEngineService
-  ) { }
+    private rulesEngineService:RulesEngineService,
+    private lineageModelGeneratorService:LineageModelGeneratorService,
+  ) {
+    this.leafPlaceTypes$ = this.contactTypesService.getLeafPlaceTypes();
+  }
 
-  private getIdsForTasks(model) {
+  getIdsForTasks(model) {
     const contactIds = [];
     if (!model?.type?.person && model?.children) {
       model.children.forEach(child => {
@@ -49,8 +55,8 @@ export class TasksForContactService {
   }
 
   private isLeafPlaceType(type) {
-    return this.contactTypesService
-      .getLeafPlaceTypes()
+    return this
+      .leafPlaceTypes$
       .then(leafPlaceTypes => this.contactTypesService.isLeafPlaceType(leafPlaceTypes, type.id));
   }
 
@@ -93,5 +99,27 @@ export class TasksForContactService {
         const contactIds = this.getIdsForTasks(model);
         return this.rulesEngineService.fetchTasksBreakdown(contactIds);
       });
+  }
+
+  async getLeafTypePlaceParent(contactId) {
+    if (!contactId) {
+      return false;
+    }
+
+    const { doc, lineage } = await this.lineageModelGeneratorService.contact(contactId, { hydrate: false });
+    if (!doc || !lineage) {
+      return false;
+    }
+
+    const leafPlaceTypes = await this.leafPlaceTypes$;
+    for (const contact of [doc, ...lineage]) {
+      const typeId = this.contactTypesService.getTypeId(contact);
+      if (this.contactTypesService.isLeafPlaceType(leafPlaceTypes, typeId)) {
+        const type = this.contactTypesService.getTypeById(leafPlaceTypes, typeId);
+        console.log(typeId, leafPlaceTypes, typeId);
+        return { doc: contact, type: type };
+      }
+    }
+    return false;
   }
 }

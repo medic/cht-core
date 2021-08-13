@@ -1,4 +1,4 @@
-import { Store } from '@ngrx/store';
+import { Store, createAction } from '@ngrx/store';
 import { createSingleValueAction } from './actionUtils';
 
 export const Actions = {
@@ -6,6 +6,10 @@ export const Actions = {
   setTasksLoaded: createSingleValueAction('SET_TASKS_LOADED', 'loaded'),
   setSelectedTask: createSingleValueAction('SET_SELECTED_TASK', 'selected'),
   setLastCompletedTask: createSingleValueAction('SET_LAST_COMPLETED_TASK', 'task'),
+  setTaskGroupContact: createSingleValueAction('SET_TASK_GROUP_CONTACT', 'contact'),
+  setTaskGroupContactLoading: createSingleValueAction('SET_TASK_GROUP_CONTACT_LOADING', 'loading'),
+  setTaskGroup: createSingleValueAction('SET_TASK_GROUP', 'taskGroup'),
+  clearTaskGroup: createAction('CLEAR_TASK_GROUP'),
 };
 
 export class TasksActions {
@@ -25,5 +29,21 @@ export class TasksActions {
 
   setLastCompletedTask(task) {
     return this.store.dispatch(Actions.setLastCompletedTask(task));
+  }
+
+  setTaskGroupContact(contact) {
+    return this.store.dispatch(Actions.setTaskGroupContact(contact));
+  }
+
+  setTaskGroupContactLoading(loading) {
+    return this.store.dispatch(Actions.setTaskGroupContactLoading(loading));
+  }
+
+  setTaskGroup(taskGroup) {
+    return this.store.dispatch(Actions.setTaskGroup(taskGroup));
+  }
+
+  clearTaskGroup() {
+    return this.store.dispatch(Actions.clearTaskGroup());
   }
 }

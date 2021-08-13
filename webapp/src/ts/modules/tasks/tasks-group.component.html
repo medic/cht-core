@@ -20,15 +20,15 @@
           </div>
           <ul>
             <mm-content-row *ngFor="let task of tasks"
-                            [id]="task.emission._id"
-                            [route]="['/', 'tasks', task.emission._id]"
-                            [icon]="task.emission.icon"
-                            [date]="task.emission.dueDate"
-                            [overdue]="task.emission.overdue"
+                            [id]="task._id"
+                            [route]="['/', 'tasks', task._id]"
+                            [icon]="task.icon"
+                            [date]="task.dueDate"
+                            [overdue]="task.overdue"
                             [dateFormat]="'taskDueDate'"
-                            [heading]="task.emission.contact?.name"
-                            [summary]="task.emission.title"
-                            [warning]="task.emission.priorityLabel"
+                            [heading]="task.contact?.name"
+                            [summary]="task.title"
+                            [warning]="task.priorityLabel"
             ></mm-content-row>
           </ul>
         </div>

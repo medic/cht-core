@@ -23,7 +23,6 @@ describe('TasksGroupComponent', () => {
 
   let compileComponent;
 
-  let lastCompletedTask;
   let router;
   let store;
   let contactTypesService;
@@ -33,7 +32,6 @@ describe('TasksGroupComponent', () => {
   let tasksForContactService;
 
   beforeEach(() => {
-    lastCompletedTask = null;
     const mockedSelectors = [
       { selector: Selectors.getLastCompletedTask, value: null },
     ];
@@ -72,12 +70,15 @@ describe('TasksGroupComponent', () => {
     });
 
     store = TestBed.inject(MockStore);
-    compileComponent = () => {
+    compileComponent = (lastCompletedTask, tasks, contact) => {
       store.overrideSelector(Selectors.getLastCompletedTask, lastCompletedTask);
       return TestBed.compileComponents().then(() => {
         fixture = TestBed.createComponent(TasksGroupComponent);
+
+        // don't mock the whole routing module, in order to test that the route tree is computed correctly
         router = TestBed.inject(Router);
         sinon.stub(router, 'navigate');
+
         component = fixture.componentInstance;
         fixture.detectChanges();
         return fixture.whenStable();
@@ -95,7 +96,7 @@ describe('TasksGroupComponent', () => {
     const clearNavigation = sinon.stub(GlobalActions.prototype, 'clearNavigation');
     const setLoadingContent = sinon.stub(GlobalActions.prototype, 'setLoadingContent');
     const setShowContent = sinon.stub(GlobalActions.prototype, 'setShowContent');
-    const setLastCompletedTask = sinon.stub(TasksActions.prototype, 'setLastCompletedTask');
+    const clearTaskGroup = sinon.stub(TasksActions.prototype, 'clearTaskGroup');
 
     component.ngOnDestroy();
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
@@ -104,12 +105,12 @@ describe('TasksGroupComponent', () => {
     expect(setLoadingContent.args[0]).to.deep.equal([false]);
     expect(setShowContent.callCount).to.equal(1);
     expect(setLoadingContent.args[0]).to.deep.equal([false]);
-    expect(setLastCompletedTask.callCount).to.equal(1);
-    expect(setLastCompletedTask.args[0]).to.deep.equal([null]);
+    expect(clearTaskGroup.callCount).to.equal(1);
+    expect(clearTaskGroup.args[0]).to.deep.equal([null]);
   });
 
   describe('ngOnInit', () => {
-    it('should set navigation and subscribe to store when inited', async () => {
+    it('should set navigation and subscribe to store', async () => {
       const setNavigation = sinon.stub(GlobalActions.prototype, 'setNavigation');
       const setShowContent = sinon.stub(GlobalActions.prototype, 'setShowContent');
       const setLoadingContent = sinon.stub(GlobalActions.prototype, 'setLoadingContent');
@@ -140,18 +141,15 @@ describe('TasksGroupComponent', () => {
       expect(router.navigate.args[0]).to.deep.equal([['/tasks']]);
     });
 
-    it('should only load household tasks once', async () => {
-      lastCompletedTask = {
+    it('should only load group tasks once', async () => {
+      const lastCompletedTask = {
         actions: [{
           content: { contact: { _id: 'the_contact' } },
         }],
       };
-      await compileComponent();
+      await compileComponent(lastCompletedTask);
 
       expect(contactTypesService.getLeafPlaceTypes.callCount).to.equal(1);
-      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
-      expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal(['the_contact']);
-
       store.overrideSelector(Selectors.getLoadingContent, true);
       store.refreshState();
 
@@ -161,39 +159,35 @@ describe('TasksGroupComponent', () => {
       expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
     });
 
-    describe('malformed tasks', () => {
+    describe('when lastCompletedTask is malformed', () => {
       let navigationCancel;
       beforeEach(() => {
         navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
       });
 
       it('with no actions', async (async () => {
-        lastCompletedTask = {};
-        await compileComponent();
+        await compileComponent({});
 
         expect(lineageModelGeneratorService.contact.callCount).to.equal(0);
         expect(navigationCancel.callCount).to.equal(1);
       }));
 
-      it('with action with no content', async( async () => {
-        lastCompletedTask = { actions: {} };
-        await compileComponent();
+      it('with action, with no content', async( async () => {
+        await compileComponent({ actions: {} });
 
         expect(lineageModelGeneratorService.contact.callCount).to.equal(0);
         expect(navigationCancel.callCount).to.equal(1);
       }));
 
-      it('with action with no contact', async(async () => {
-        lastCompletedTask = { actions: { content: {} } };
-        await compileComponent();
+      it('with action, with no contact', async(async () => {
+        await compileComponent({ actions: { content: {} } });
 
         expect(lineageModelGeneratorService.contact.callCount).to.equal(0);
         expect(navigationCancel.callCount).to.equal(1);
       }));
 
-      it('with action with no contact id', async(async () => {
-        lastCompletedTask = { actions: { content: { contact: { } } } };
-        await compileComponent();
+      it('with action, with no contact id', async(async () => {
+        await compileComponent({ actions: { content: { contact: { } } } });
 
         expect(lineageModelGeneratorService.contact.callCount).to.equal(0);
         expect(navigationCancel.callCount).to.equal(1);
@@ -201,8 +195,8 @@ describe('TasksGroupComponent', () => {
     });
   });
 
-  describe('displayHouseholdTasks', () => {
-    it('should redirect to tasks page when no last completed task', async(async () => {
+  describe('getTasks', () => {
+    it('should redirect to tasks page when lastCompletedTask is not defined', async(async () => {
       const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
       await compileComponent();
 
@@ -210,9 +204,9 @@ describe('TasksGroupComponent', () => {
       expect(navigationCancel.callCount).to.equal(1);
     }));
 
-    it('should redirect to tasks page when leaf type place was not found', async(async () => {
+    it('should redirect to tasks page when leaf type place was not found in task owner lineage', async(async () => {
       const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      lastCompletedTask = { actions: [{ content: { contact: { _id: 'contact' } } }] };
+      const lastCompletedTask = { actions: [{ content: { contact: { _id: 'contact' } } }] };
       const contact = { _id: 'the_contact', type: 'health_center', parent: { _id: 'district' } };
       const district = { _id: 'district', type: 'district_hospital' };
       const leafPlaceTypes = [{ id: 'clinic' }];
@@ -222,7 +216,8 @@ describe('TasksGroupComponent', () => {
       contactTypesService.isLeafPlaceType.returns(false);
       lineageModelGeneratorService.contact.resolves({ doc: contact, lineage: [district] });
 
-      await compileComponent();
+      await compileComponent(lastCompletedTask);
+
       expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
       expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal(['contact']);
 
@@ -239,9 +234,9 @@ describe('TasksGroupComponent', () => {
       expect(component.tasks).to.deep.equal([]);
     }));
 
-    it('should redirect to tasks page when there are no tasks to display and record telemetry', async(async () => {
+    it('should redirect to tasks page when there are no tasks to display, should record telemetry', async(async () => {
       const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
+      const lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
       const contact = { _id: 'the_contact', type: 'person', parent: { _id: 'clinic' } };
       const clinic = { _id: 'clinic', type: 'clinic' };
       const leafPlaceTypes = [{ id: 'clinic' }];
@@ -266,7 +261,8 @@ describe('TasksGroupComponent', () => {
         Failed: 3,
       });
 
-      await compileComponent();
+      await compileComponent(lastCompletedTask);
+
       expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
       expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal([contact._id]);
 
@@ -303,9 +299,9 @@ describe('TasksGroupComponent', () => {
       ]);
     }));
 
-    it('should display tasks for correct place when last task links to person', async(async () => {
+    it('should display tasks for correct place when lastCompletedTask owner is a person contact', async(async () => {
       const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
+      const lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
       const contact = { _id: 'the_contact', type: 'person', parent: { _id: 'clinic', parent: { _id: 'hc' } } };
       const clinic = { _id: 'clinic', type: 'clinic', parent: { _id: 'hc' } };
       const healthCenter = { _id: 'hc', type: 'health_center' };
@@ -335,7 +331,8 @@ describe('TasksGroupComponent', () => {
         Failed: 4,
       });
 
-      await compileComponent();
+      await compileComponent(lastCompletedTask);
+
       expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
       expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal([contact._id]);
 
@@ -376,9 +373,9 @@ describe('TasksGroupComponent', () => {
       expect(navigationCancel.callCount).to.equal(0);
     }));
 
-    it('should display tasks for the correct place when last task links to place', async(async () => {
+    it('should display tasks for the correct place when lastCompletedTask owner is a place contact', async(async () => {
       const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      lastCompletedTask = { actions: [{ content: { contact: { _id: 'clinic' } } }] };
+      const lastCompletedTask = { actions: [{ content: { contact: { _id: 'clinic' } } }] };
       const clinic = { _id: 'clinic', type: 'clinic', parent: { _id: 'hc' } };
       const healthCenter = { _id: 'hc', type: 'health_center' };
       const leafPlaceTypes = [{ id: 'clinic' }];
@@ -406,7 +403,8 @@ describe('TasksGroupComponent', () => {
         Failed: 4,
       });
 
-      await compileComponent();
+      await compileComponent(lastCompletedTask);
+
       expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
       expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal([clinic._id]);
 
@@ -445,9 +443,9 @@ describe('TasksGroupComponent', () => {
       expect(navigationCancel.callCount).to.equal(0);
     }));
 
-    it('should log error when getting lineage fails', async (async () => {
+    it('should log error when getting task owner lineage fails', async (async () => {
       const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
+      const lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
       const contact = { _id: 'the_contact', type: 'person', parent: { _id: 'clinic', parent: { _id: 'hc' } } };
       const leafPlaceTypes = [{ id: 'clinic' }];
 
@@ -458,7 +456,8 @@ describe('TasksGroupComponent', () => {
         .withArgs(leafPlaceTypes, 'clinic').returns(true);
       lineageModelGeneratorService.contact.rejects({ error: 'boom' });
 
-      await compileComponent();
+      await compileComponent(lastCompletedTask);
+
       expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
       expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal([contact._id]);
 
@@ -475,9 +474,9 @@ describe('TasksGroupComponent', () => {
       expect(telemetryService.record.callCount).to.equal(0);
     }));
 
-    it('should log error when getting contact model fails', async (async () => {
+    it('should log error when getting place model fails', async (async () => {
       const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
+      const lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
       const contact = { _id: 'the_contact', type: 'person', parent: { _id: 'clinic', parent: { _id: 'hc' } } };
       const clinic = { _id: 'clinic', type: 'clinic', parent: { _id: 'hc' } };
       const healthCenter = { _id: 'hc', type: 'health_center' };
@@ -491,7 +490,8 @@ describe('TasksGroupComponent', () => {
       lineageModelGeneratorService.contact.resolves({ doc: contact, lineage: [clinic, healthCenter] });
       contactViewModelGeneratorService.getContact.rejects({ err: 'omg' });
 
-      await compileComponent();
+      await compileComponent(lastCompletedTask);
+
       expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
       expect(contactTypesService.getTypeId.callCount).to.equal(2);
       expect(contactTypesService.isLeafPlaceType.callCount).to.equal(2);
@@ -506,9 +506,9 @@ describe('TasksGroupComponent', () => {
       expect(telemetryService.record.callCount).to.equal(0);
     }));
 
-    it('should log error when getting model children fails', async (async () => {
+    it('should log error when getting place model children fails', async (async () => {
       const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
+      const lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
       const contact = { _id: 'the_contact', type: 'person', parent: { _id: 'clinic', parent: { _id: 'hc' } } };
       const clinic = { _id: 'clinic', type: 'clinic', parent: { _id: 'hc' } };
       const healthCenter = { _id: 'hc', type: 'health_center' };
@@ -527,7 +527,8 @@ describe('TasksGroupComponent', () => {
       contactViewModelGeneratorService.getContact.resolves(contactModel);
       contactViewModelGeneratorService.loadChildren.rejects({ some: 'error' });
 
-      await compileComponent();
+      await compileComponent(lastCompletedTask);
+
       expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
       expect(contactTypesService.getTypeId.callCount).to.equal(2);
       expect(contactTypesService.isLeafPlaceType.callCount).to.equal(2);
@@ -544,7 +545,7 @@ describe('TasksGroupComponent', () => {
 
     it('should log error when getting tasks fails', async (async () => {
       const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
+      const lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
       const contact = { _id: 'the_contact', type: 'person', parent: { _id: 'clinic', parent: { _id: 'hc' } } };
       const clinic = { _id: 'clinic', type: 'clinic', parent: { _id: 'hc' } };
       const healthCenter = { _id: 'hc', type: 'health_center' };
@@ -570,7 +571,8 @@ describe('TasksGroupComponent', () => {
         Failed: 4,
       });
 
-      await compileComponent();
+      await compileComponent(lastCompletedTask);
+
       expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
       expect(contactTypesService.getTypeId.callCount).to.equal(2);
       expect(contactTypesService.isLeafPlaceType.callCount).to.equal(2);
@@ -583,32 +585,6 @@ describe('TasksGroupComponent', () => {
       expect(navigationCancel.callCount).to.equal(0);
 
       expect(telemetryService.record.callCount).to.equal(0);
-    }));
-  });
-
-  describe('isHouseHoldTask', () => {
-    it('should return falsy when no tasks are defined', async(async () => {
-      await compileComponent();
-      component.tasks = [];
-
-      expect(component.isHouseHoldTask('id')).to.equal(undefined);
-    }));
-
-    it('should return falsy task is not found', async(async () => {
-      await compileComponent();
-      component.tasks = [
-        { emission: { _id: 'a' } },
-        { emission: { _id: 'b' } },
-        { emission: { _id: 'c' } },
-        { emission: { _id: 'd' } },
-      ];
-
-      expect(component.isHouseHoldTask('id')).to.equal(undefined);
-      expect(component.isHouseHoldTask('other')).to.equal(undefined);
-    }));
-
-    it('should return truthy when task is found', async(async () => {
-
     }));
   });
 
@@ -627,8 +603,10 @@ describe('TasksGroupComponent', () => {
 
       component.tasks = null;
       expect(component.canDeactivate('')).to.equal(true);
+
       component.tasks = [];
       expect(component.canDeactivate('')).to.equal(true);
+
       expect(navigationCancel.callCount).to.equal(0);
     });
 
@@ -636,7 +614,6 @@ describe('TasksGroupComponent', () => {
       component.tasks = [{ _id: 'a' }];
       store.overrideSelector(Selectors.getCancelCallback, null);
       store.overrideSelector(Selectors.getPreventNavigation, true);
-      store.refreshState();
       store.refreshState();
 
       expect(component.canDeactivate('')).to.equal(true);
@@ -690,7 +667,7 @@ describe('TasksGroupComponent', () => {
       ]);
     });
 
-    it('should return false when emission id is not part of household tasks', () => {
+    it('should return false when emission id is not part of group tasks', () => {
       component.tasks = [
         { emission: { _id: 'emission1' } },
         { emission: { _id: 'emission2' } },

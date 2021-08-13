@@ -231,16 +231,16 @@ describe('GlobalEffects', () => {
 
       it('when navigation is prevented and user confirms modal without route', async(async () => {
         store.overrideSelector(Selectors.getNavigation, { cancelCallback, preventNavigation: true });
-        modalService.show.rejects();
+        modalService.show.resolves();
         actions$ = of(GlobalActionsList.navigationCancel(null));
         effects.navigationCancel.subscribe();
 
         expect(cancelCallback.callCount).to.equal(0);
         expect(router.navigate.callCount).to.equal(0);
 
-        await Promise.resolve(); // wait for modal confirm
+        await nextTick(); // wait for modal confirm
 
-        expect(cancelCallback.callCount).to.equal(0);
+        expect(cancelCallback.callCount).to.equal(1);
         expect(router.navigate.callCount).to.equal(0);
         expect(modalService.show.callCount).to.equal(1);
         expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);

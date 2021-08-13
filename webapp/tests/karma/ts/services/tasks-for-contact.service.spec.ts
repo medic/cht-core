@@ -5,6 +5,7 @@ import sinon from 'sinon';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 
 describe('TasksForContact service', () => {
 
@@ -12,6 +13,7 @@ describe('TasksForContact service', () => {
   let fetchTaskDocsFor;
   let rulesEngineIsEnabled;
   let contactTypesService;
+  let lineageModelGeneratorService;
   let service: TasksForContactService;
 
   const docId = 'dockyMcDocface';
@@ -25,6 +27,8 @@ describe('TasksForContact service', () => {
     contactTypesService = {
       getLeafPlaceTypes: sinon.stub().resolves([CLINIC_TYPE]),
       isLeafPlaceType: sinon.stub().returns(false),
+      getTypeId: sinon.stub().callsFake(c => c.type),
+      getTypeById: sinon.stub().callsFake((types, type) => types.find(t => t.id === type.id)),
     };
     contactTypesService.isLeafPlaceType.withArgs([CLINIC_TYPE], CLINIC_TYPE.id).returns(true);
     rulesEngineService = {
@@ -32,11 +36,13 @@ describe('TasksForContact service', () => {
       fetchTaskDocsFor,
       fetchTasksBreakdown: sinon.stub(),
     };
+    lineageModelGeneratorService = { contact: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: RulesEngineService, useValue: rulesEngineService },
+        { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
       ],
     });
 
@@ -123,7 +129,7 @@ describe('TasksForContact service', () => {
       expect(rulesEngineService.fetchTasksBreakdown.callCount).to.equal(0);
     });
 
-    it('should return undefined when type is not a leaf type or person type', async () => {
+    it('should return undefined when type is not a leaf place type or person type', async () => {
       expect(await service.getTasksBreakdown({ type: HEALTH_CENTER_TYPE })).to.equal(undefined);
       expect(rulesEngineService.fetchTasksBreakdown.callCount).to.equal(0);
     });
@@ -154,6 +160,93 @@ describe('TasksForContact service', () => {
       expect(await service.getTasksBreakdown(model)).to.deep.equal(tasksBreakdown);
       expect(rulesEngineService.fetchTasksBreakdown.callCount).to.equal(1);
       expect(rulesEngineService.fetchTasksBreakdown.args[0]).to.deep.equal([['person1', 'person2', 'person3', docId]]);
+    });
+  });
+
+  describe('getLeafTypePlaceParent', () => {
+    it('should return false for no contact', async () => {
+      expect(await service.getLeafTypePlaceParent(false)).to.equal(false);
+      expect(lineageModelGeneratorService.contact.callCount).to.equal(0);
+    });
+
+    it('should return false if no doc or no lineage is returned', async () => {
+      lineageModelGeneratorService.contact.resolves({});
+      expect(await service.getLeafTypePlaceParent('contactId')).to.equal(false);
+      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
+      expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal(['contactId', { hydrate: false }]);
+    });
+
+    it('should return main doc if is a leaf type place', async () => {
+      lineageModelGeneratorService.contact.resolves({
+        doc: { _id: 'theclinic', type: 'clinic' },
+        lineage: [{ _id: 'thehc', type: 'health_center' }],
+      });
+      expect(await service.getLeafTypePlaceParent('theclinic')).to.deep.equal({
+        doc: { _id: 'theclinic', type: 'clinic' },
+        type: CLINIC_TYPE,
+      });
+      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
+      expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal(['theclinic', { hydrate: false }]);
+    });
+
+    it('should return lineage doc leaf type place ', async () => {
+      lineageModelGeneratorService.contact.resolves({
+        doc: { _id: 'theperson', type: 'person' },
+        lineage: [{ _id: 'theclinic', type: 'clinic' }, { _id: 'thehc', type: 'health_center' }],
+      });
+      expect(await service.getLeafTypePlaceParent('theperson')).to.deep.equal({
+        doc: { _id: 'theclinic', type: 'clinic' },
+        type: CLINIC_TYPE,
+      });
+      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
+      expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal(['theperson', { hydrate: false }]);
+    });
+
+    it('should return false if no leaf type place is found', async () => {
+      lineageModelGeneratorService.contact.resolves({
+        doc: { _id: 'theperson', type: 'person' },
+        lineage: [{ _id: 'thehc', type: 'health_center' }, { _id: 'thedc', type: 'district' }],
+      });
+      expect(await service.getLeafTypePlaceParent('theperson')).to.equal(false);
+      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
+      expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal(['theperson', { hydrate: false }]);
+    });
+
+    it('should throw an error if getting lineage fails', async () => {
+      lineageModelGeneratorService.contact.rejects({ error: 'omg' });
+
+      try {
+        expect(await service.getLeafTypePlaceParent('id')).to.equal(false);
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ error: 'omg' });
+      }
+    });
+  });
+
+  describe('getIdsForTasks', () => {
+    it('should only return main contact if of person type', () => {
+      const model = {
+        doc: { _id: 'contact' },
+        type: { person: true },
+        children: [
+          { type: { person: false }, contacts: [{ id: 'child1' }, { id: 'child2' }] },
+          { type: { person: true }, contacts: [{ id: 'child3' }, { id: 'child4' }] },
+        ],
+      };
+      expect(service.getIdsForTasks(model)).to.deep.equal(['contact']);
+    });
+
+    it('should return main contact and child person contacts if of place type', () => {
+      const model = {
+        doc: { _id: 'contact' },
+        type: { person: false },
+        children: [
+          { type: { person: false }, contacts: [{ id: 'child1' }, { id: 'child2' }] },
+          { type: { person: true }, contacts: [{ id: 'child3' }, { id: 'child4' }] },
+        ],
+      };
+      expect(service.getIdsForTasks(model)).to.have.deep.members(['contact', 'child3', 'child4']);
     });
   });
 });

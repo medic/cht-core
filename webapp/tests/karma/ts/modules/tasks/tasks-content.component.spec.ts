@@ -17,6 +17,7 @@ import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { TasksActions } from '@mm-actions/tasks';
+import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 
 describe('TasksContentComponent', () => {
   let tasks;
@@ -29,6 +30,7 @@ describe('TasksContentComponent', () => {
   let geolocationService;
   let enketoService;
   let router;
+  let tasksForContactService;
 
   let compileComponent;
   let component:TasksContentComponent;
@@ -43,6 +45,7 @@ describe('TasksContentComponent', () => {
     geolocationService = { init: sinon.stub() };
     enketoService = { render, unload: sinon.stub(), save: sinon.stub() };
     router = { navigate: sinon.stub() };
+    tasksForContactService = { getLeafTypePlaceParent: sinon.stub().resolves() };
 
     const mockedSelectors = [
       { selector: Selectors.getTasksLoaded, value: true },
@@ -66,6 +69,7 @@ describe('TasksContentComponent', () => {
         { provide: TelemetryService, useValue: { record: sinon.stub() }},
         { provide: GeolocationService, useValue: geolocationService },
         { provide: Router, useValue: router },
+        { provide: TasksForContactService, useValue: tasksForContactService },
       ],
     });
 
@@ -467,10 +471,12 @@ describe('TasksContentComponent', () => {
       expect(enketoService.render.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'add', '']]);
+      expect(tasksForContactService.getLeafTypePlaceParent.callCount).to.equal(0);
     });
 
     it('should render form when action type is report', async () => {
       const form = { _id: 'myform', title: 'My Form' };
+      const action = { type: 'report', form: 'myform', content: { contact: { _id: 'my_contact' } } };
       xmlFormsService.get.resolves(form);
       await compileComponent([]);
 
@@ -478,7 +484,7 @@ describe('TasksContentComponent', () => {
       sinon.stub(GlobalActions.prototype, 'setEnketoError');
       store.refreshState();
 
-      await component.performAction({ type: 'report', form: 'myform', content: { my: 'content' } });
+      await component.performAction({ ...action });
 
       expect(xmlFormsService.get.callCount).to.equal(1);
       expect(xmlFormsService.get.args[0]).to.deep.equal(['myform']);
@@ -488,6 +494,10 @@ describe('TasksContentComponent', () => {
         { _id: 'myform', title: 'My Form' },
         { my: 'content' },
       ]);
+
+      expect(tasksForContactService.getLeafTypePlaceParent.callCount).to.equal(1);
+      expect(tasksForContactService.getLeafTypePlaceParent.args[0]).to.deep.equal(['my_contact']);
+
       const markFormEdited = enketoService.render.args[0][3];
       const resetFormError = enketoService.render.args[0][4];
 

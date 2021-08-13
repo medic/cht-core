@@ -13,6 +13,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { DbService } from '@mm-services/db.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 
 @Component({
   templateUrl: './tasks-content.component.html'
@@ -29,6 +30,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     private geolocationService:GeolocationService,
     private dbService:DbService,
     private router:Router,
+    private tasksForContactService:TasksForContactService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.tasksActions = new TasksActions(store);
@@ -229,6 +231,21 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
+  private preloadTaskGroupContact(action) {
+    this.tasksActions.setTaskGroupContactLoading(true);
+    return this.tasksForContactService
+      .getLeafTypePlaceParent(action?.content?.contact?._id)
+      .then(contact => {
+        this.tasksActions.setTaskGroupContact(contact);
+        this.tasksActions.setTaskGroupContactLoading(false);
+      })
+      .catch(err => {
+        console.error('Error when loading task group contact', err);
+        this.tasksActions.setTaskGroupContact(null);
+        this.tasksActions.setTaskGroupContactLoading(false);
+      });
+  }
+
   performAction(action, skipDetails?) {
     if (!action) {
       return;
@@ -275,7 +292,8 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
           this.contentError = true;
           this.loadingForm = false;
           console.error('Error loading form.', err);
-        });
+        })
+        .then(() => this.preloadTaskGroupContact(action));
     }
 
     if (action.type === 'contact') {
@@ -284,7 +302,6 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       } else {
         this.router.navigate(['/contacts', 'add', action.content?.type || '']);
       }
-
     }
   }
 

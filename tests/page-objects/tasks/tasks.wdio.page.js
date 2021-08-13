@@ -1,5 +1,3 @@
-const chai = require('chai');
-
 const taskListSelector = '#tasks-list';
 const taskFormSelector = '#task-report';
 const tasksGroupSelector = '#tasks-group .item-content';
@@ -7,15 +5,8 @@ const formTitleSelector = `${taskFormSelector} h3#form-title`;
 const noSelectedTaskSelector = '.empty-selection';
 
 const tasksList = () => $(taskListSelector);
-
-
-const getTaskById = (emissionId) => {
-  return $(`${taskListSelector} li[data-record-id="${emissionId}"`);
-};
-
-const getTasks = () => {
-  return $$(`${taskListSelector} li`);
-};
+const getTaskById = (emissionId) => $(`${taskListSelector} li[data-record-id="${emissionId}"`);
+const getTasks = () => $$(`${taskListSelector} li`);
 
 const getContactNameAndFormTitle = async (taskElement) => {
   const contactName = await (await taskElement.$('h4 span')).getText();
@@ -47,7 +38,10 @@ const goToTasksTab = async () => {
 
 const waitForTaskContentLoaded = async (name) => {
   await (await $(formTitleSelector)).waitForDisplayed();
-  chai.expect(await (await $(`${formTitleSelector}`)).getText()).to.equal(name);
+  await browser.waitUntil(async () => {
+    const formTitle = await (await $(`${formTitleSelector}`)).getText();
+    return formTitle === name;
+  }, { timeout: 2000 });
 };
 
 const submitTask = async () => {
@@ -57,16 +51,14 @@ const submitTask = async () => {
 };
 
 const waitForTasksGroupLoaded = async () => {
-  const tasksGroupPage = await $(tasksGroupSelector);
-  await tasksGroupPage.waitForDisplayed();
-  const title = await (await $(`${tasksGroupSelector} .action-header h3`)).getText();
-  chai.expect(title).to.equal('Other household tasks');
+  await (await $(tasksGroupSelector)).waitForDisplayed();
+  await browser.waitUntil(async () => {
+    const pageTitle = await (await $(`${tasksGroupSelector} .action-header h3`)).getText();
+    return pageTitle === 'Other household tasks';
+  }, { timeout: 2000 });
 };
 
-const getTasksInGroup = () => {
-  return $$(`${tasksGroupSelector} li`);
-};
-
+const getTasksInGroup = () => $$(`${tasksGroupSelector} li`);
 const noSelectedTask = () => $(noSelectedTaskSelector);
 
 module.exports = {
