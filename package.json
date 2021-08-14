@@ -19,7 +19,7 @@
     "wdio-standard-local": "npm run wdio-setup && wdio run ./tests/wdio-standard.conf.js",
     "e2e-integration": "mocha --config tests/integration/.mocharc.js ",
     "wdio": "wdio run ./tests/wdio.conf.js",
-    "wdio-standard": "wdio run ./tests/wdio-standard.conf.js",
+    "wdio-standard": "wdio run ./tests/wdio-standard.conf.js"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^10.0.1",
