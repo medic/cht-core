@@ -139,7 +139,7 @@ This script can work without connectivity after the initial boot.  However, it n
 127.0.0.1   127-0-0-1.my.local-ip.co
 ```
 
-_**NOTE**_ - You need connectivity on the initial boot of the VM to connect to `staging.dev.medicmobile.org` to download the base version of the CHT. Subsequent boots do not require connectivity as long as you do not run `destroy`.
+_**NOTE**_ - You need connectivity on the initial boot of the VM to connect to `staging.dev.medicmobile.org` to download the base version of the CHT. As well, certificates for `*.my.local-ip.co` are downloaded. Subsequent boots do not require connectivity as long as you do not run `destroy`.
 
 ### Port conflicts
 
@@ -149,7 +149,7 @@ Medic recommends setting up unique project names and unique ports for each proje
 
 ### Slow downloads and wait periods
 
-During testing on an Internet connection with high latency (>1000ms) and packet loss, this script had trouble booting the CHT instance because it was taking too long to download the assets from staging.dev.medicmobile.org.  Each version is about 38MB.  
+During testing on an Internet connection with high latency (>1000ms) and packet loss, this script had trouble booting the CHT instance because it was taking too long to download the assets from `staging.dev.medicmobile.org`.  Each version is about 38MB.  
 
 To account for this, the wait time is multiplied times the boot iteration for each time it reboots.  It starts at 100 seconds and then 200, 300, 400 up to the fifth time it will wait 500 seconds. 
 
