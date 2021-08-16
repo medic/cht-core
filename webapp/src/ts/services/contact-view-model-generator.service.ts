@@ -145,9 +145,9 @@ export class ContactViewModelGeneratorService {
     return _groupBy(children, child => this.contactTypesService.getTypeId(child.doc));
   }
 
-  private addPrimaryContact(doc, children, { hydrate=true }={}) {
+  private addPrimaryContact(doc, children) {
     const contactId = doc && doc.contact && doc.contact._id;
-    if (!contactId || !hydrate) {
+    if (!contactId) {
       return children;
     }
 
@@ -253,7 +253,7 @@ export class ContactViewModelGeneratorService {
         return this
           .getChildren(newModel, types, options)
           .then(children => this.setChildrenMutedState(model, children))
-          .then(children => this.addPrimaryContact(model.doc, children, options))
+          .then(children => this.addPrimaryContact(model.doc, children))
           .then(children => this.groupChildrenByType(children))
           .then(groups => this.buildChildModels(groups, types))
           .then(childModels => this.markDeceased(childModels))

@@ -28,7 +28,7 @@ describe('TasksForContact service', () => {
       getLeafPlaceTypes: sinon.stub().resolves([CLINIC_TYPE]),
       isLeafPlaceType: sinon.stub().returns(false),
       getTypeId: sinon.stub().callsFake(c => c.type),
-      getTypeById: sinon.stub().callsFake((types, type) => types.find(t => t.id === type.id)),
+      getTypeById: sinon.stub().callsFake((types, typeId) => types.find(t => t.id === typeId)),
     };
     contactTypesService.isLeafPlaceType.withArgs([CLINIC_TYPE], CLINIC_TYPE.id).returns(true);
     rulesEngineService = {

@@ -58,6 +58,7 @@ const _tasksReducer = createReducer(
     taskGroup: {
       ...state.taskGroup,
       contact,
+      loadingContact: false,
     },
   })),
 

@@ -241,7 +241,6 @@ describe('Tasks group landing page', () => {
 
       await tasksPage.waitForTaskContentLoaded('Home Visit');
       await tasksPage.submitTask();
-
       // tasks group is displayed again
       await tasksPage.waitForTasksGroupLoaded();
       const secondGroupTasks = await tasksPage.getTasksInGroup();
@@ -312,6 +311,18 @@ describe('Tasks group landing page', () => {
       await lastTask.click();
 
       await tasksPage.waitForTaskContentLoaded('Place Home Visit');
+      await tasksPage.submitTask();
+
+      const emptySelection = await tasksPage.noSelectedTask();
+      await (emptySelection).waitForDisplayed();
+      await commonPage.waitForLoaderToDisappear(emptySelection);
+      chai.expect(await emptySelection.getText()).to.equal('No task selected');
+    });
+
+    it('should not show page when submitting task for contact with no leaf type place in lineage', async () => {
+      const task = await tasksPage.getTaskByContactAndForm('Bob', 'person_create');
+      await task.click();
+      await tasksPage.waitForTaskContentLoaded('Home Visit');
       await tasksPage.submitTask();
 
       const emptySelection = await tasksPage.noSelectedTask();

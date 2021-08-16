@@ -477,11 +477,14 @@ describe('TasksContentComponent', () => {
     it('should render form when action type is report', async () => {
       const form = { _id: 'myform', title: 'My Form' };
       const action = { type: 'report', form: 'myform', content: { contact: { _id: 'my_contact' } } };
-      xmlFormsService.get.resolves(form);
+      xmlFormsService.get.resolves({ ...form });
+      tasksForContactService.getLeafTypePlaceParent.resolves({ any: 'model' });
       await compileComponent([]);
 
       sinon.resetHistory();
       sinon.stub(GlobalActions.prototype, 'setEnketoError');
+      sinon.stub(TasksActions.prototype, 'setTaskGroupContact');
+      sinon.stub(TasksActions.prototype, 'setTaskGroupContactLoading');
       store.refreshState();
 
       await component.performAction({ ...action });
@@ -491,12 +494,18 @@ describe('TasksContentComponent', () => {
       expect(enketoService.render.callCount).to.equal(1);
       expect(enketoService.render.args[0]).to.deep.include.members([
         '#task-report',
-        { _id: 'myform', title: 'My Form' },
-        { my: 'content' },
+        { ...form },
+        { ...action.content },
       ]);
 
       expect(tasksForContactService.getLeafTypePlaceParent.callCount).to.equal(1);
       expect(tasksForContactService.getLeafTypePlaceParent.args[0]).to.deep.equal(['my_contact']);
+      expect((<any>TasksActions.prototype.setTaskGroupContactLoading).callCount).to.equal(1);
+      expect((<any>TasksActions.prototype.setTaskGroupContactLoading).args[0]).to.deep.equal([true]);
+      await Promise.resolve();
+      expect((<any>TasksActions.prototype.setTaskGroupContact).callCount).to.equal(1);
+      expect((<any>TasksActions.prototype.setTaskGroupContact).args[0]).to.deep.equal([{ any: 'model' }]);
+      expect((<any>TasksActions.prototype.setTaskGroupContactLoading).callCount).to.equal(1);
 
       const markFormEdited = enketoService.render.args[0][3];
       const resetFormError = enketoService.render.args[0][4];
@@ -521,6 +530,45 @@ describe('TasksContentComponent', () => {
       resetFormError();
 
       expect((<any>GlobalActions.prototype.setEnketoError).callCount).to.equal(1);
+    });
+
+    it('should catch contact preloading errors', async () => {
+      const form = { _id: 'myform', title: 'My Form' };
+      const action = { type: 'report', form: 'myform', content: { contact: { _id: 'the_contact' } } };
+      xmlFormsService.get.resolves({ ...form });
+      tasksForContactService.getLeafTypePlaceParent.rejects({ some: 'error' });
+      await compileComponent([]);
+
+      sinon.resetHistory();
+      sinon.stub(TasksActions.prototype, 'setTaskGroupContact');
+      sinon.stub(TasksActions.prototype, 'setTaskGroupContactLoading');
+      sinon.stub(GlobalActions.prototype, 'setEnketoError');
+      sinon.stub();
+      store.refreshState();
+
+      await component.performAction({ ...action });
+
+      expect(xmlFormsService.get.callCount).to.equal(1);
+      expect(xmlFormsService.get.args[0]).to.deep.equal(['myform']);
+      expect(enketoService.render.callCount).to.equal(1);
+      expect(enketoService.render.args[0]).to.deep.include.members([
+        '#task-report',
+        { ...form },
+        { ...action.content },
+      ]);
+
+      expect(tasksForContactService.getLeafTypePlaceParent.callCount).to.equal(1);
+      expect(tasksForContactService.getLeafTypePlaceParent.args[0]).to.deep.equal(['the_contact']);
+      expect((<any>TasksActions.prototype.setTaskGroupContactLoading).callCount).to.equal(1);
+      expect((<any>TasksActions.prototype.setTaskGroupContactLoading).args[0]).to.deep.equal([true]);
+      await Promise.resolve();
+      expect((<any>TasksActions.prototype.setTaskGroupContact).callCount).to.equal(1);
+      expect((<any>TasksActions.prototype.setTaskGroupContactLoading).callCount).to.equal(1);
+      expect((<any>TasksActions.prototype.setTaskGroupContact).args[0]).to.deep.equal([null]);
+
+      expect(setEnketoEditedStatus.callCount).to.equal(1);
+      expect(setEnketoEditedStatus.args[0]).to.deep.equal([false]);
+      expect((<any>GlobalActions.prototype.setEnketoError).callCount).to.equal(0);
     });
   });
 

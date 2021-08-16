@@ -88,17 +88,14 @@ export class TasksForContactService {
       });
   }
 
-  getTasksBreakdown(model) {
-    return this
-      .areTasksEnabled(model.type)
-      .then(enabled => {
-        if (!enabled) {
-          return;
-        }
+  async getTasksBreakdown(model) {
+    const enabled = await this.areTasksEnabled(model.type);
+    if (!enabled) {
+      return;
+    }
 
-        const contactIds = this.getIdsForTasks(model);
-        return this.rulesEngineService.fetchTasksBreakdown(contactIds);
-      });
+    const contactIds = this.getIdsForTasks(model);
+    return this.rulesEngineService.fetchTasksBreakdown(contactIds);
   }
 
   async getLeafTypePlaceParent(contactId) {
@@ -116,7 +113,6 @@ export class TasksForContactService {
       const typeId = this.contactTypesService.getTypeId(contact);
       if (this.contactTypesService.isLeafPlaceType(leafPlaceTypes, typeId)) {
         const type = this.contactTypesService.getTypeById(leafPlaceTypes, typeId);
-        console.log(typeId, leafPlaceTypes, typeId);
         return { doc: contact, type: type };
       }
     }

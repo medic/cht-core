@@ -8,11 +8,9 @@ import { GlobalActions } from '@mm-actions/global';
 import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
 import { TranslateService } from '@mm-services/translate.service';
-import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
-
 
 @Component({
   templateUrl: './tasks-group.component.html'
@@ -26,7 +24,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
 
   subscription = new Subscription();
 
-  private tasksList;
+  private allTasks;
   private contactModel;
   private lastCompletedTask;
   private taskGroupContact;
@@ -39,7 +37,6 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
 
   constructor(
     private router:Router,
-    private lineageModelGeneratorService:LineageModelGeneratorService,
     private contactTypesService:ContactTypesService,
     private store:Store,
     private translateService:TranslateService,
@@ -117,8 +114,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
       loadingContact,
       tasksList,
     ]) => {
-      console.warn('task list refreshed');
-      this.tasksList = tasksList;
+      this.allTasks = tasksList;
       this.lastCompletedTask = lastCompletedTask;
       this.taskGroupContact = contact;
 
@@ -135,10 +131,10 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
     return task?.owner;
   }
 
-  private cherryPickTasks(contactIds:Array<string>) {
-    return this.tasksList.filter(task =>
+  private cherryPickTasks(contactIds) {
+    return this.allTasks?.filter(task =>
       task._id !== this.lastCompletedTask._id && // don't display the task we already completed
-      contactIds.includes(this.getTaskOwner(task))
+      contactIds?.includes(this.getTaskOwner(task))
     );
   }
 
@@ -146,7 +142,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
   Only loads the contact's children once, no matter how may times the function is called
   */
   private async loadContactModel() {
-    if (this.contactModel && this.contactModel.children) {
+    if (this.contactModel?.getChildren$) {
       return await this.contactModel.getChildren$;
     }
 
@@ -154,7 +150,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const getChildren$ = this.contactViewModelGeneratorService.loadChildren(this.taskGroupContact, { hydrate: false });
+    const getChildren$ = this.contactViewModelGeneratorService.loadChildren(this.taskGroupContact);
     this.contactModel = {
       ...this.taskGroupContact,
       getChildren$,
@@ -171,8 +167,13 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
       }
 
       const idsForTasks = this.tasksForContactService.getIdsForTasks(this.contactModel);
+      if (!idsForTasks || !idsForTasks.length) {
+        this.navigationCancel();
+        return;
+      }
+
       const filteredTasks = this.cherryPickTasks(idsForTasks);
-      console.log(JSON.stringify(filteredTasks, null, 2));
+      this.recordTaskCountTelemetry(this.contactModel);
       if (!filteredTasks || !filteredTasks.length) {
         this.navigationCancel(true);
         return;
@@ -181,7 +182,6 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
       this.setNavigation(true);
       this.tasks = filteredTasks;
       this.globalActions.setLoadingContent(false);
-      this.recordTaskCountTelemetry(this.contactModel);
     } catch (err) {
       console.error('Error loading tasks group', err);
       this.contentError = true;
@@ -199,7 +199,11 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
       this.telemetryRecorded = true;
       const taskCounts = await this.tasksForContactService.getTasksBreakdown(contactModel);
       let allTasksCount = 0;
-      Object.keys(taskCounts).forEach(state => allTasksCount += taskCounts[state]);
+      Object.keys(taskCounts).forEach(state => {
+        // when cherry picking, we might exclude the last completed task, if still present in the list
+        const count = state === 'Ready' ? this.tasks.length : taskCounts[state];
+        allTasksCount += count;
+      });
 
       this.telemetryService.record('tasks:group:all-tasks', allTasksCount);
       this.telemetryService.record('tasks:group:cancelled', taskCounts.Cancelled);
@@ -218,15 +222,11 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
     });
   }
 
-  isGroupTask(emissionId) {
+  private isGroupTask(emissionId) {
     return Array.isArray(this.tasks) && this.tasks.find((task:any) => task?._id === emissionId);
   }
 
   canDeactivate(nextUrl) {
-    console.log('can deactivate called');
-    console.log(JSON.stringify(this.tasks, null, 2));
-    console.log(JSON.stringify(this.preventNavigation, null, 2));
-    console.log(JSON.stringify(this.lastCompletedTask, null, 2));
     if (!this.tasks || !this.tasks.length || !this.cancelCallback || !this.preventNavigation) {
       return true;
     }
@@ -247,5 +247,9 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
     if (segments && segments.length === 2 && segments[0]?.path === 'tasks') {
       return segments[1]?.path;
     }
+  }
+
+  listTrackBy(index, task) {
+    return task?._id;
   }
 }

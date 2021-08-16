@@ -72,7 +72,6 @@ export class TelemetryService {
   }
 
   private storeIt(db, key, value) {
-    console.warn('telemetry ' + key + ' ' + value);
     return db.post({
       key: key,
       value: value,

@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, async } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
@@ -10,12 +10,16 @@ import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TasksActions} from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
-import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 import { TasksGroupComponent } from '@mm-modules/tasks/tasks-group.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
+import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
+import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
+import { SettingsService } from '@mm-services/settings.service';
+
+const nextTick = () => new Promise(r => setTimeout(r));
 
 describe('TasksGroupComponent', () => {
   let component:TasksGroupComponent;
@@ -27,7 +31,6 @@ describe('TasksGroupComponent', () => {
   let store;
   let contactTypesService;
   let contactViewModelGeneratorService;
-  let lineageModelGeneratorService;
   let telemetryService;
   let tasksForContactService;
 
@@ -40,17 +43,11 @@ describe('TasksGroupComponent', () => {
       getTypeId: sinon.stub(),
       isLeafPlaceType: sinon.stub(),
     };
-    contactViewModelGeneratorService = {
-      getContact: sinon.stub(),
-      loadChildren: sinon.stub(),
-    };
-    lineageModelGeneratorService = {
-      contact: sinon.stub().resolves({}),
-    };
+    contactViewModelGeneratorService = { loadChildren: sinon.stub().resolves() };
     telemetryService = { record: sinon.stub() };
     tasksForContactService = {
-      get: sinon.stub(),
-      getTasksBreakdown: sinon.stub(),
+      getIdsForTasks: sinon.stub(),
+      getTasksBreakdown: sinon.stub().resolves({}),
     };
 
     TestBed.configureTestingModule({
@@ -58,20 +55,24 @@ describe('TasksGroupComponent', () => {
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         RouterTestingModule,
       ],
-      declarations: [ TasksGroupComponent, NavigationComponent, ],
+      declarations: [ TasksGroupComponent, NavigationComponent, ContentRowListItemComponent, TaskDueDatePipe ],
       providers: [
         provideMockStore({ selectors: mockedSelectors }),
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: ContactViewModelGeneratorService, useValue: contactViewModelGeneratorService },
-        { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
         { provide: TelemetryService, useValue: telemetryService },
         { provide: TasksForContactService, useValue: tasksForContactService },
+        { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) }}, // used by TaskDueDatePipe
       ],
     });
 
     store = TestBed.inject(MockStore);
-    compileComponent = (lastCompletedTask, tasks, contact) => {
+    compileComponent = (lastCompletedTask?, tasks?, contact?, loadingContact?) => {
       store.overrideSelector(Selectors.getLastCompletedTask, lastCompletedTask);
+      store.overrideSelector(Selectors.getTasksList, tasks);
+      store.overrideSelector(Selectors.getTaskGroupContact, contact);
+      store.overrideSelector(Selectors.getTaskGroupLoadingContact, loadingContact);
+
       return TestBed.compileComponents().then(() => {
         fixture = TestBed.createComponent(TasksGroupComponent);
 
@@ -106,7 +107,7 @@ describe('TasksGroupComponent', () => {
     expect(setShowContent.callCount).to.equal(1);
     expect(setLoadingContent.args[0]).to.deep.equal([false]);
     expect(clearTaskGroup.callCount).to.equal(1);
-    expect(clearTaskGroup.args[0]).to.deep.equal([null]);
+    expect(clearTaskGroup.args[0]).to.deep.equal([]);
   });
 
   describe('ngOnInit', () => {
@@ -132,6 +133,7 @@ describe('TasksGroupComponent', () => {
       expect(setTitle.args).to.deep.equal([['tasks.group.title']]);
       expect(setPreventNavigation.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(0);
+      expect(contactTypesService.getLeafPlaceTypes.callCount).to.equal(1);
 
       cancelCallback();
 
@@ -141,451 +143,430 @@ describe('TasksGroupComponent', () => {
       expect(router.navigate.args[0]).to.deep.equal([['/tasks']]);
     });
 
-    it('should only load group tasks once', async () => {
-      const lastCompletedTask = {
-        actions: [{
-          content: { contact: { _id: 'the_contact' } },
-        }],
+
+    it('should only load contact children once', async () => {
+      const lastCompletedTask = { _id: 'b' };
+      const tasks = [
+        { _id: 'a', owner: 'a' },
+        { _id: 'b', owner: 'the_contact', },
+        { _id: 'c', owner: 'a' },
+        { _id: 'd', owner: 'a' },
+      ];
+      const contactModel = {
+        doc: { _id: 'contact', type: 'clinic' },
+        type: { id: 'clinic' },
       };
-      await compileComponent(lastCompletedTask);
+      await compileComponent(lastCompletedTask, tasks);
 
       expect(contactTypesService.getLeafPlaceTypes.callCount).to.equal(1);
-      store.overrideSelector(Selectors.getLoadingContent, true);
+      store.overrideSelector(Selectors.getLoadingContent, true); // nothing happens
       store.refreshState();
-
       await Promise.resolve();
 
       expect(contactTypesService.getLeafPlaceTypes.callCount).to.equal(1);
-      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
-    });
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(0);
 
-    describe('when lastCompletedTask is malformed', () => {
-      let navigationCancel;
-      beforeEach(() => {
-        navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      });
+      store.overrideSelector(Selectors.getTaskGroupLoadingContact, false);
+      store.overrideSelector(Selectors.getTaskGroupContact, contactModel);
+      store.refreshState();
+      await Promise.resolve();
 
-      it('with no actions', async (async () => {
-        await compileComponent({});
+      expect(contactTypesService.getLeafPlaceTypes.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.loadChildren.args[0]).to.deep.equal([
+        {
+          doc: { _id: 'contact', type: 'clinic' },
+          type: { id: 'clinic' },
+        },
+      ]);
 
-        expect(lineageModelGeneratorService.contact.callCount).to.equal(0);
-        expect(navigationCancel.callCount).to.equal(1);
-      }));
+      store.overrideSelector(Selectors.getTaskGroupLoadingContact, false);
+      store.overrideSelector(Selectors.getTaskGroupContact, contactModel);
+      store.refreshState();
+      await Promise.resolve();
 
-      it('with action, with no content', async( async () => {
-        await compileComponent({ actions: {} });
-
-        expect(lineageModelGeneratorService.contact.callCount).to.equal(0);
-        expect(navigationCancel.callCount).to.equal(1);
-      }));
-
-      it('with action, with no contact', async(async () => {
-        await compileComponent({ actions: { content: {} } });
-
-        expect(lineageModelGeneratorService.contact.callCount).to.equal(0);
-        expect(navigationCancel.callCount).to.equal(1);
-      }));
-
-      it('with action, with no contact id', async(async () => {
-        await compileComponent({ actions: { content: { contact: { } } } });
-
-        expect(lineageModelGeneratorService.contact.callCount).to.equal(0);
-        expect(navigationCancel.callCount).to.equal(1);
-      }));
+      expect(contactTypesService.getLeafPlaceTypes.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
     });
   });
 
-  describe('getTasks', () => {
-    it('should redirect to tasks page when lastCompletedTask is not defined', async(async () => {
-      const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      await compileComponent();
+  describe('loadGroupTasks', () => {
+    beforeEach(() => {
+      sinon.stub(GlobalActions.prototype, 'navigationCancel');
+      sinon.stub(GlobalActions.prototype, 'setNavigation');
+      sinon.stub(GlobalActions.prototype, 'setLoadingContent');
+    });
 
-      expect(lineageModelGeneratorService.contact.callCount).to.equal(0);
-      expect(navigationCancel.callCount).to.equal(1);
-    }));
-
-    it('should redirect to tasks page when leaf type place was not found in task owner lineage', async(async () => {
-      const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      const lastCompletedTask = { actions: [{ content: { contact: { _id: 'contact' } } }] };
-      const contact = { _id: 'the_contact', type: 'health_center', parent: { _id: 'district' } };
-      const district = { _id: 'district', type: 'district_hospital' };
-      const leafPlaceTypes = [{ id: 'clinic' }];
-
-      contactTypesService.getLeafPlaceTypes.resolves(leafPlaceTypes);
-      contactTypesService.getTypeId.callsFake(c => c.type);
-      contactTypesService.isLeafPlaceType.returns(false);
-      lineageModelGeneratorService.contact.resolves({ doc: contact, lineage: [district] });
-
-      await compileComponent(lastCompletedTask);
-
-      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
-      expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal(['contact']);
-
-      expect(contactTypesService.getTypeId.callCount).to.equal(2);
-      expect(contactTypesService.getTypeId.args).to.deep.equal([[contact], [district]]);
-      expect(contactTypesService.isLeafPlaceType.callCount).to.equal(2);
-      expect(contactTypesService.isLeafPlaceType.args).to.deep.equal([
-        [leafPlaceTypes, 'health_center'],
-        [leafPlaceTypes, 'district_hospital'],
-      ]);
-      expect(contactViewModelGeneratorService.getContact.callCount).to.equal(0);
-      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(0);
-      expect(navigationCancel.callCount).to.equal(1);
-      expect(component.tasks).to.deep.equal([]);
-    }));
-
-    it('should redirect to tasks page when there are no tasks to display, should record telemetry', async(async () => {
-      const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      const lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
-      const contact = { _id: 'the_contact', type: 'person', parent: { _id: 'clinic' } };
-      const clinic = { _id: 'clinic', type: 'clinic' };
-      const leafPlaceTypes = [{ id: 'clinic' }];
-      const contactModel = {
-        type: { _id: 'clinic' },
-        doc: clinic,
-      };
-
-      contactTypesService.getLeafPlaceTypes.resolves(leafPlaceTypes);
-      contactTypesService.getTypeId.callsFake(c => c.type);
-      contactTypesService.isLeafPlaceType
-        .withArgs(leafPlaceTypes, 'person').returns(false)
-        .withArgs(leafPlaceTypes, 'clinic').returns(true);
-      lineageModelGeneratorService.contact.resolves({ doc: contact, lineage: [clinic] });
-      contactViewModelGeneratorService.getContact.resolves(contactModel);
-      contactViewModelGeneratorService.loadChildren.resolves({ some: 'children' });
-      tasksForContactService.get.resolves([]);
+    it('should wait until contact is no longer loading to set tasks', async () => {
+      const lastCompletedTask = { _id: 'b' };
+      const tasks = [
+        { _id: 'a', owner: 'a', title: 'type1' },
+        { _id: 'b', owner: 'the_contact', title: 'type2' },
+        { _id: 'c', owner: 'b', title: 'type1' },
+        { _id: 'd', owner: 'c', title: 'type3' },
+      ];
+      contactViewModelGeneratorService.loadChildren.resolves(['the', 'children']);
+      tasksForContactService.getIdsForTasks.returns(['the_contact', 'a', 'b']);
       tasksForContactService.getTasksBreakdown.resolves({
-        Ready: 0,
+        Ready: 3,
         Cancelled: 2,
         Draft: 12,
         Failed: 3,
       });
 
-      await compileComponent(lastCompletedTask);
+      await compileComponent(lastCompletedTask, tasks, null, true);
 
-      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
-      expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal([contact._id]);
+      await nextTick();
 
-      expect(contactTypesService.getTypeId.callCount).to.equal(2);
-      expect(contactTypesService.getTypeId.args).to.deep.equal([[contact], [clinic]]);
-      expect(contactTypesService.isLeafPlaceType.callCount).to.equal(2);
-      expect(contactTypesService.isLeafPlaceType.args).to.deep.equal([
-        [leafPlaceTypes, 'person'],
-        [leafPlaceTypes, 'clinic'],
-      ]);
-
-      expect(contactViewModelGeneratorService.getContact.callCount).to.equal(1);
-      expect(contactViewModelGeneratorService.getContact.args[0]).to.deep.equal([clinic._id]);
-      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
-      expect(contactViewModelGeneratorService.loadChildren.args[0]).to.deep.equal([contactModel]);
-      expect(contactModel).to.deep.equal({
-        type: { _id: 'clinic' },
-        doc: clinic,
-        children: { some: 'children' },
-      });
-      expect(tasksForContactService.get.callCount).to.equal(1);
-      expect(tasksForContactService.getTasksBreakdown.callCount).to.equal(1);
-
-      expect(navigationCancel.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(0);
+      expect(tasksForContactService.getIdsForTasks.callCount).to.equal(0);
       expect(component.tasks).to.deep.equal([]);
 
-      await Promise.resolve();
+      expect((<any>GlobalActions.prototype.navigationCancel).callCount).to.equal(0);
+      expect((<any>GlobalActions.prototype.setNavigation).callCount).to.equal(1);
+      expect((<any>GlobalActions.prototype.setLoadingContent).callCount).to.equal(1);
 
-      expect(telemetryService.record.callCount).to.equal(3);
-      expect(telemetryService.record.args).to.deep.equal([
-        ['tasks:group:all-tasks', 17 ],
-        ['tasks:group:cancelled', 2 ],
-        ['tasks:group:ready', 0],
-      ]);
-    }));
-
-    it('should display tasks for correct place when lastCompletedTask owner is a person contact', async(async () => {
-      const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      const lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
-      const contact = { _id: 'the_contact', type: 'person', parent: { _id: 'clinic', parent: { _id: 'hc' } } };
-      const clinic = { _id: 'clinic', type: 'clinic', parent: { _id: 'hc' } };
-      const healthCenter = { _id: 'hc', type: 'health_center' };
-      const leafPlaceTypes = [{ id: 'clinic' }];
       const contactModel = {
-        type: { _id: 'clinic' },
-        doc: clinic,
+        doc: { _id: 'contact' },
+        type: { id: 'clinic' },
       };
+      store.overrideSelector(Selectors.getTaskGroupContact, { ...contactModel });
+      store.refreshState();
 
-      contactTypesService.getLeafPlaceTypes.resolves(leafPlaceTypes);
-      contactTypesService.getTypeId.callsFake(c => c.type);
-      contactTypesService.isLeafPlaceType
-        .withArgs(leafPlaceTypes, 'person').returns(false)
-        .withArgs(leafPlaceTypes, 'clinic').returns(true);
-      lineageModelGeneratorService.contact.resolves({ doc: contact, lineage: [clinic, healthCenter] });
-      contactViewModelGeneratorService.getContact.resolves(contactModel);
-      contactViewModelGeneratorService.loadChildren.resolves({ some: 'children' });
-      tasksForContactService.get.resolves([
-        { _id: 'task1', title: 'a' },
-        { _id: 'task2', title: 'a' },
-        { _id: 'task3', title: 'b' },
-      ]);
-      tasksForContactService.getTasksBreakdown.resolves({
-        Ready: 3,
-        Cancelled: 2,
-        Draft: 12,
-        Failed: 4,
-      });
+      await nextTick();
 
-      await compileComponent(lastCompletedTask);
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(0);
+      expect(tasksForContactService.getIdsForTasks.callCount).to.equal(0);
+      expect(component.tasks).to.deep.equal([]);
+      expect((<any>GlobalActions.prototype.navigationCancel).callCount).to.equal(0);
+      expect((<any>GlobalActions.prototype.setNavigation).callCount).to.equal(1);
+      expect((<any>GlobalActions.prototype.setLoadingContent).callCount).to.equal(1);
 
-      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
-      expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal([contact._id]);
+      store.overrideSelector(Selectors.getTaskGroupLoadingContact, false);
+      store.refreshState();
+      await nextTick();
+      fixture.detectChanges();
+      await fixture.whenStable();
 
-      expect(contactTypesService.getTypeId.callCount).to.equal(2);
-      expect(contactTypesService.getTypeId.args).to.deep.equal([[contact], [clinic]]);
-      expect(contactTypesService.isLeafPlaceType.callCount).to.equal(2);
-      expect(contactTypesService.isLeafPlaceType.args).to.deep.equal([
-        [leafPlaceTypes, 'person'],
-        [leafPlaceTypes, 'clinic'],
-      ]);
-      expect(contactViewModelGeneratorService.getContact.callCount).to.equal(1);
-      expect(contactViewModelGeneratorService.getContact.args[0]).to.deep.equal([clinic._id]);
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
-      expect(contactViewModelGeneratorService.loadChildren.args[0]).to.deep.equal([contactModel]);
-      expect(contactModel).to.deep.equal({
-        type: { _id: 'clinic' },
-        doc: clinic,
-        children: { some: 'children' },
-      });
-      expect(tasksForContactService.get.callCount).to.equal(1);
-      expect(tasksForContactService.getTasksBreakdown.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.loadChildren.args[0]).to.deep.equal([ { ...contactModel } ]);
+      expect(tasksForContactService.getIdsForTasks.callCount).to.equal(1);
+      expect(tasksForContactService.getIdsForTasks.args[0]).excluding('getChildren$').to.deep.equal([
+        {
+          ...contactModel,
+          children: ['the', 'children'],
+        },
+      ]);
       expect(component.tasks).to.deep.equal([
-        { _id: 'task1', title: 'a' },
-        { _id: 'task2', title: 'a' },
-        { _id: 'task3', title: 'b' },
+        { _id: 'a', owner: 'a', title: 'type1' },
+        { _id: 'c', owner: 'b', title: 'type1' },
       ]);
 
-      await Promise.resolve();
+      expect((<any>GlobalActions.prototype.navigationCancel).callCount).to.equal(0);
+      expect((<any>GlobalActions.prototype.setNavigation).callCount).to.equal(2);
+      expect((<any>GlobalActions.prototype.setNavigation).args[1][0].preventNavigation).to.equal(true);
+      expect((<any>GlobalActions.prototype.setLoadingContent).callCount).to.equal(2);
+      expect((<any>GlobalActions.prototype.setLoadingContent).args[1]).to.deep.equal([false]);
 
-      expect(telemetryService.record.callCount).to.equal(5);
-      expect(telemetryService.record.args).to.deep.equal([
-        ['tasks:group:all-tasks', 21 ],
-        ['tasks:group:cancelled', 2 ],
-        ['tasks:group:ready', 3],
-        ['tasks:group:ready:a', 2],
-        ['tasks:group:ready:b', 1],
-      ]);
-      expect(navigationCancel.callCount).to.equal(0);
-    }));
-
-    it('should display tasks for the correct place when lastCompletedTask owner is a place contact', async(async () => {
-      const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      const lastCompletedTask = { actions: [{ content: { contact: { _id: 'clinic' } } }] };
-      const clinic = { _id: 'clinic', type: 'clinic', parent: { _id: 'hc' } };
-      const healthCenter = { _id: 'hc', type: 'health_center' };
-      const leafPlaceTypes = [{ id: 'clinic' }];
-      const contactModel = {
-        type: { _id: 'clinic' },
-        doc: clinic,
-      };
-
-      contactTypesService.getLeafPlaceTypes.resolves(leafPlaceTypes);
-      contactTypesService.getTypeId.callsFake(c => c.type);
-      contactTypesService.isLeafPlaceType
-        .withArgs(leafPlaceTypes, 'person').returns(false)
-        .withArgs(leafPlaceTypes, 'clinic').returns(true);
-      lineageModelGeneratorService.contact.resolves({ doc: clinic, lineage: [healthCenter] });
-      contactViewModelGeneratorService.getContact.resolves(contactModel);
-      contactViewModelGeneratorService.loadChildren.resolves({ some: 'children' });
-      tasksForContactService.get.resolves([
-        { _id: 'task1', title: 'a' },
-        { _id: 'task2', title: 'b' },
-      ]);
-      tasksForContactService.getTasksBreakdown.resolves({
-        Ready: 2,
-        Cancelled: 2,
-        Draft: 12,
-        Failed: 4,
-      });
-
-      await compileComponent(lastCompletedTask);
-
-      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
-      expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal([clinic._id]);
-
-      expect(contactTypesService.getTypeId.callCount).to.equal(1);
-      expect(contactTypesService.getTypeId.args).to.deep.equal([[clinic]]);
-      expect(contactTypesService.isLeafPlaceType.callCount).to.equal(1);
-      expect(contactTypesService.isLeafPlaceType.args).to.deep.equal([
-        [leafPlaceTypes, 'clinic'],
-      ]);
-      expect(contactViewModelGeneratorService.getContact.callCount).to.equal(1);
-      expect(contactViewModelGeneratorService.getContact.args[0]).to.deep.equal([clinic._id]);
-      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
-      expect(contactViewModelGeneratorService.loadChildren.args[0]).to.deep.equal([contactModel]);
-      expect(contactModel).to.deep.equal({
-        type: { _id: 'clinic' },
-        doc: clinic,
-        children: { some: 'children' },
-      });
-      expect(tasksForContactService.get.callCount).to.equal(1);
       expect(tasksForContactService.getTasksBreakdown.callCount).to.equal(1);
-      expect(component.tasks).to.deep.equal([
-        { _id: 'task1', title: 'a' },
-        { _id: 'task2', title: 'b' },
-      ]);
-
-      await Promise.resolve();
-
-      expect(telemetryService.record.callCount).to.equal(5);
+      expect(telemetryService.record.callCount).to.equal(4);
       expect(telemetryService.record.args).to.deep.equal([
-        ['tasks:group:all-tasks', 20 ],
+        ['tasks:group:all-tasks', 19 ],
         ['tasks:group:cancelled', 2 ],
         ['tasks:group:ready', 2],
-        ['tasks:group:ready:a', 1],
-        ['tasks:group:ready:b', 1],
+        ['tasks:group:ready:type1', 2],
       ]);
-      expect(navigationCancel.callCount).to.equal(0);
-    }));
+    });
 
-    it('should log error when getting task owner lineage fails', async (async () => {
-      const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      const lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
-      const contact = { _id: 'the_contact', type: 'person', parent: { _id: 'clinic', parent: { _id: 'hc' } } };
-      const leafPlaceTypes = [{ id: 'clinic' }];
-
-      contactTypesService.getLeafPlaceTypes.resolves(leafPlaceTypes);
-      contactTypesService.getTypeId.callsFake(c => c.type);
-      contactTypesService.isLeafPlaceType
-        .withArgs(leafPlaceTypes, 'person').returns(false)
-        .withArgs(leafPlaceTypes, 'clinic').returns(true);
-      lineageModelGeneratorService.contact.rejects({ error: 'boom' });
-
-      await compileComponent(lastCompletedTask);
-
-      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
-      expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal([contact._id]);
-
-      expect(contactTypesService.getTypeId.callCount).to.equal(0);
-      expect(contactTypesService.isLeafPlaceType.callCount).to.equal(0);
-      expect(contactViewModelGeneratorService.getContact.callCount).to.equal(0);
+    it('should work with no loaded contact and not loading', async () => {
+      const lastCompletedTask = { _id: 'b' };
+      const tasks = [
+        { _id: 'a', owner: 'a' },
+        { _id: 'b', owner: 'the_contact', },
+        { _id: 'c', owner: 'b' },
+        { _id: 'd', owner: 'c' },
+      ];
+      await compileComponent(lastCompletedTask, tasks, null, false);
+      await nextTick();
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(0);
-      expect(tasksForContactService.get.callCount).to.equal(0);
+      expect(tasksForContactService.getIdsForTasks.callCount).to.equal(0);
+      expect((<any>GlobalActions.prototype.navigationCancel).callCount).to.equal(1);
 
-      expect(component.tasks).to.deep.equal([]);
-      expect(component.contentError).to.equal(true);
-      expect(navigationCancel.callCount).to.equal(0);
-
+      expect(tasksForContactService.getTasksBreakdown.callCount).to.equal(0);
       expect(telemetryService.record.callCount).to.equal(0);
-    }));
+    });
 
-    it('should log error when getting place model fails', async (async () => {
-      const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      const lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
-      const contact = { _id: 'the_contact', type: 'person', parent: { _id: 'clinic', parent: { _id: 'hc' } } };
-      const clinic = { _id: 'clinic', type: 'clinic', parent: { _id: 'hc' } };
-      const healthCenter = { _id: 'hc', type: 'health_center' };
-      const leafPlaceTypes = [{ id: 'clinic' }];
+    it('should redirect when contact is finished loading and no contact is found', async () => {
+      const lastCompletedTask = { _id: 'b' };
+      const tasks = [
+        { _id: 'a', owner: 'a' },
+        { _id: 'b', owner: 'the_contact', },
+        { _id: 'c', owner: 'b' },
+        { _id: 'd', owner: 'c' },
+      ];
+      await compileComponent(lastCompletedTask, tasks, null, true);
+      await nextTick();
 
-      contactTypesService.getLeafPlaceTypes.resolves(leafPlaceTypes);
-      contactTypesService.getTypeId.callsFake(c => c.type);
-      contactTypesService.isLeafPlaceType
-        .withArgs(leafPlaceTypes, 'person').returns(false)
-        .withArgs(leafPlaceTypes, 'clinic').returns(true);
-      lineageModelGeneratorService.contact.resolves({ doc: contact, lineage: [clinic, healthCenter] });
-      contactViewModelGeneratorService.getContact.rejects({ err: 'omg' });
-
-      await compileComponent(lastCompletedTask);
-
-      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
-      expect(contactTypesService.getTypeId.callCount).to.equal(2);
-      expect(contactTypesService.isLeafPlaceType.callCount).to.equal(2);
-      expect(contactViewModelGeneratorService.getContact.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(0);
-      expect(tasksForContactService.get.callCount).to.equal(0);
+      expect(tasksForContactService.getIdsForTasks.callCount).to.equal(0);
+      expect((<any>GlobalActions.prototype.navigationCancel).callCount).to.equal(0);
 
-      expect(component.tasks).to.deep.equal([]);
-      expect(component.contentError).to.equal(true);
-      expect(navigationCancel.callCount).to.equal(0);
+      store.overrideSelector(Selectors.getTaskGroupLoadingContact, false);
+      store.refreshState();
+      await nextTick();
 
-      expect(telemetryService.record.callCount).to.equal(0);
-    }));
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(0);
+      expect(tasksForContactService.getIdsForTasks.callCount).to.equal(0);
+      expect((<any>GlobalActions.prototype.navigationCancel).callCount).to.equal(1);
+    });
 
-    it('should log error when getting place model children fails', async (async () => {
-      const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      const lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
-      const contact = { _id: 'the_contact', type: 'person', parent: { _id: 'clinic', parent: { _id: 'hc' } } };
-      const clinic = { _id: 'clinic', type: 'clinic', parent: { _id: 'hc' } };
-      const healthCenter = { _id: 'hc', type: 'health_center' };
-      const leafPlaceTypes = [{ id: 'clinic' }];
-      const contactModel = {
-        type: { _id: 'clinic' },
-        doc: clinic,
-      };
+    it('should redirect when no contact ids are returned (malformed contact)', async () => {
+      tasksForContactService.getIdsForTasks.returns([]);
 
-      contactTypesService.getLeafPlaceTypes.resolves(leafPlaceTypes);
-      contactTypesService.getTypeId.callsFake(c => c.type);
-      contactTypesService.isLeafPlaceType
-        .withArgs(leafPlaceTypes, 'person').returns(false)
-        .withArgs(leafPlaceTypes, 'clinic').returns(true);
-      lineageModelGeneratorService.contact.resolves({ doc: contact, lineage: [clinic, healthCenter] });
-      contactViewModelGeneratorService.getContact.resolves(contactModel);
-      contactViewModelGeneratorService.loadChildren.rejects({ some: 'error' });
+      const lastCompletedTask = { _id: 'b' };
+      const tasks = [
+        { _id: 'a', owner: 'a' },
+        { _id: 'b', owner: 'the_contact', },
+        { _id: 'c', owner: 'b' },
+        { _id: 'd', owner: 'c' },
+      ];
+      const contact = 'not an object';
+      await compileComponent(lastCompletedTask, tasks, contact, false);
+      await nextTick();
 
-      await compileComponent(lastCompletedTask);
-
-      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
-      expect(contactTypesService.getTypeId.callCount).to.equal(2);
-      expect(contactTypesService.isLeafPlaceType.callCount).to.equal(2);
-      expect(contactViewModelGeneratorService.getContact.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
-      expect(tasksForContactService.get.callCount).to.equal(0);
-
+      expect(tasksForContactService.getIdsForTasks.callCount).to.equal(1);
       expect(component.tasks).to.deep.equal([]);
-      expect(component.contentError).to.equal(true);
-      expect(navigationCancel.callCount).to.equal(0);
 
+      expect((<any>GlobalActions.prototype.navigationCancel).callCount).to.equal(1);
+
+      expect(tasksForContactService.getTasksBreakdown.callCount).to.equal(0);
       expect(telemetryService.record.callCount).to.equal(0);
-    }));
+    });
 
-    it('should log error when getting tasks fails', async (async () => {
-      const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
-      const lastCompletedTask = { actions: [{ content: { contact: { _id: 'the_contact' } } }] };
-      const contact = { _id: 'the_contact', type: 'person', parent: { _id: 'clinic', parent: { _id: 'hc' } } };
-      const clinic = { _id: 'clinic', type: 'clinic', parent: { _id: 'hc' } };
-      const healthCenter = { _id: 'hc', type: 'health_center' };
-      const leafPlaceTypes = [{ id: 'clinic' }];
-      const contactModel = {
-        type: { _id: 'clinic' },
-        doc: clinic,
-      };
-
-      contactTypesService.getLeafPlaceTypes.resolves(leafPlaceTypes);
-      contactTypesService.getTypeId.callsFake(c => c.type);
-      contactTypesService.isLeafPlaceType
-        .withArgs(leafPlaceTypes, 'person').returns(false)
-        .withArgs(leafPlaceTypes, 'clinic').returns(true);
-      lineageModelGeneratorService.contact.resolves({ doc: contact, lineage: [clinic, healthCenter] });
-      contactViewModelGeneratorService.getContact.resolves(contactModel);
-      contactViewModelGeneratorService.loadChildren.resolves({ some: 'children' });
-      tasksForContactService.get.rejects({ err: true });
+    it('should redirect when there are no tasks to display and record telemetry', async () => {
       tasksForContactService.getTasksBreakdown.resolves({
-        Ready: 3,
-        Cancelled: 2,
-        Draft: 12,
-        Failed: 4,
+        Ready: 1,
+        Cancelled: 10,
+        Draft: 10,
+        Failed: 300,
+      });
+      tasksForContactService.getIdsForTasks.returns(['ct', 'other']);
+      const lastCompletedTask = { _id: 'b' };
+      const tasks = [
+        { _id: 'a', owner: 'a' },
+        { _id: 'b', owner: 'ct', },
+        { _id: 'c', owner: 'b' },
+        { _id: 'd', owner: 'c' },
+      ];
+      const contact = { doc: { _id: 'ct' } };
+      await compileComponent(lastCompletedTask, tasks, contact, false);
+      await nextTick();
+
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+      expect(tasksForContactService.getIdsForTasks.callCount).to.equal(1);
+
+      expect((<any>GlobalActions.prototype.navigationCancel).callCount).to.equal(1);
+
+      await nextTick();
+
+      expect(tasksForContactService.getTasksBreakdown.callCount).to.equal(1);
+      expect(telemetryService.record.callCount).to.deep.equal(3);
+      expect(telemetryService.record.args).to.deep.equal([
+        ['tasks:group:all-tasks', 320],
+        ['tasks:group:cancelled', 10],
+        ['tasks:group:ready', 0],
+      ]);
+    });
+
+    it('should redirect when no contact ids are returned (malformed contact)', async () => {
+      tasksForContactService.getIdsForTasks.returns([]);
+
+      const lastCompletedTask = { _id: 'b' };
+      const tasks = [
+        { _id: 'a', owner: 'a' },
+        { _id: 'b', owner: 'the_contact', },
+        { _id: 'c', owner: 'b' },
+        { _id: 'd', owner: 'c' },
+      ];
+      const contact = 'not an object';
+      await compileComponent(lastCompletedTask, tasks, contact, false);
+      await nextTick();
+
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+      expect(tasksForContactService.getIdsForTasks.callCount).to.equal(1);
+      expect(component.tasks).to.deep.equal([]);
+
+      expect((<any>GlobalActions.prototype.navigationCancel).callCount).to.equal(1);
+
+      expect(tasksForContactService.getTasksBreakdown.callCount).to.equal(0);
+      expect(telemetryService.record.callCount).to.equal(0);
+    });
+
+    it('should exclude last completed task from cherry picked task list and filter tasks by owner', async () => {
+      tasksForContactService.getTasksBreakdown.resolves({
+        Ready: 6,
+        Cancelled: 3,
+        Draft: 4,
+        Failed: 10,
       });
 
-      await compileComponent(lastCompletedTask);
+      tasksForContactService.getIdsForTasks.returns(['a', 'b', 'c']);
+      contactViewModelGeneratorService.loadChildren.returns({ some: 'children' });
+      const tasks = [
+        { _id: 'em1', owner: 'a', title: 'title1' },
+        { _id: 'em2', owner: 'b', title: 'title1' },
+        { _id: 'em3', owner: 'c', title: 'title1' },
+        { _id: 'em4', owner: 'd', title: 'title1' },
+        { _id: 'em5', owner: 'e', title: 'title1' },
+        { _id: 'em6', owner: 'a', title: 'title2' },
+        { _id: 'em7', owner: 'b', title: 'title2' },
+        { _id: 'em8', owner: 'c', title: 'title2' },
+        { _id: 'em9', owner: 'd', title: 'title2' },
+        { _id: 'em10', owner: 'e', title: 'title2' },
+      ];
+      const lastCompletedTask = { _id: 'em3' };
+      const contactModel = { doc: { _id: 'c' }, type: { id: 'clinic' } };
+      await compileComponent(lastCompletedTask, tasks, contactModel, false);
 
-      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
-      expect(contactTypesService.getTypeId.callCount).to.equal(2);
-      expect(contactTypesService.isLeafPlaceType.callCount).to.equal(2);
-      expect(contactViewModelGeneratorService.getContact.callCount).to.equal(1);
+      await nextTick();
+
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
-      expect(tasksForContactService.get.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.loadChildren.args[0]).to.deep.equal([ { ...contactModel } ]);
+      expect(tasksForContactService.getIdsForTasks.callCount).to.equal(1);
+      expect(component.tasks).to.deep.equal([
+        { _id: 'em1', owner: 'a', title: 'title1' },
+        { _id: 'em2', owner: 'b', title: 'title1' },
+        { _id: 'em6', owner: 'a', title: 'title2' },
+        { _id: 'em7', owner: 'b', title: 'title2' },
+        { _id: 'em8', owner: 'c', title: 'title2' },
+      ]);
+      expect((<any>GlobalActions.prototype.setLoadingContent).callCount).to.equal(2);
+      expect((<any>GlobalActions.prototype.setLoadingContent).args[1]).to.deep.equal([false]);
+
+      expect((<any>GlobalActions.prototype.navigationCancel).callCount).to.equal(0);
+
+      expect(tasksForContactService.getTasksBreakdown.callCount).to.equal(1);
+      expect(tasksForContactService.getTasksBreakdown.args[0]).excluding('getChildren$').to.deep.equal([{
+        ...contactModel,
+        children: { some: 'children' },
+      }]);
+      expect(telemetryService.record.callCount).to.equal(5);
+      expect(telemetryService.record.args).to.deep.equal([
+        ['tasks:group:all-tasks', 22],
+        ['tasks:group:cancelled', 3],
+        ['tasks:group:ready', 5],
+        ['tasks:group:ready:title1', 2],
+        ['tasks:group:ready:title2', 3],
+      ]);
+    });
+
+    it('should update cherry picked tasks when tasks are refreshed, but only record telemetry once', async () => {
+      tasksForContactService.getTasksBreakdown.resolves({
+        Ready: 5,
+        Cancelled: 9,
+        Draft: 1,
+        Failed: 22,
+      });
+
+      tasksForContactService.getIdsForTasks.returns(['contact1', 'contact2']);
+      contactViewModelGeneratorService.loadChildren.returns('children');
+      const tasks = [
+        { _id: 'em1', owner: 'contact1', title: 'type1' },
+        { _id: 'em2', owner: 'contact3', title: 'type2' },
+        { _id: 'em3', owner: 'contact2', title: 'type3' },
+        { _id: 'em4', owner: 'contact5', title: 'type4' },
+        { _id: 'em5', owner: 'contact6', title: 'type5' },
+        { _id: 'em6', owner: 'contact1', title: 'type6' },
+        { _id: 'em7', owner: 'contact3', title: 'type7' },
+        { _id: 'em8', owner: 'contact2', title: 'type8' },
+        { _id: 'em9', owner: 'contact2', title: 'type9' },
+      ];
+      const lastCompletedTask = { _id: 'em3' };
+      const contactModel = { doc: { _id: 'contact1' }, type: { id: 'clinic' } };
+      await compileComponent(lastCompletedTask, tasks, contactModel, false);
+
+      await nextTick();
+
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+      expect(tasksForContactService.getIdsForTasks.callCount).to.equal(1);
+      expect(component.tasks).to.deep.equal([
+        { _id: 'em1', owner: 'contact1', title: 'type1' },
+        { _id: 'em6', owner: 'contact1', title: 'type6' },
+        { _id: 'em8', owner: 'contact2', title: 'type8' },
+        { _id: 'em9', owner: 'contact2', title: 'type9' },
+      ]);
+
+      const nextTasks = [
+        { _id: 'em11', owner: 'contact1', title: 'type1' },
+        { _id: 'em12', owner: 'contact3', title: 'type2' },
+        { _id: 'em13', owner: 'contact4', title: 'type3' },
+        { _id: 'em14', owner: 'contact2', title: 'type4' },
+        { _id: 'em15', owner: 'contact5', title: 'type5' },
+      ];
+
+      store.overrideSelector(Selectors.getTasksList, nextTasks);
+      store.refreshState();
+      await nextTick();
+
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+      expect(tasksForContactService.getIdsForTasks.callCount).to.equal(2);
+      expect(component.tasks).to.deep.equal([
+        { _id: 'em11', owner: 'contact1', title: 'type1' },
+        { _id: 'em14', owner: 'contact2', title: 'type4' },
+      ]);
+
+      await nextTick();
+
+      // telemetry only reporded once
+      expect(tasksForContactService.getTasksBreakdown.callCount).to.equal(1);
+      expect(tasksForContactService.getTasksBreakdown.args[0]).excluding('getChildren$').to.deep.equal([{
+        ...contactModel,
+        children: 'children',
+      }]);
+      expect(telemetryService.record.callCount).to.equal(7);
+      expect(telemetryService.record.args).to.deep.equal([
+        ['tasks:group:all-tasks', 36],
+        ['tasks:group:cancelled', 9],
+        ['tasks:group:ready', 4],
+        ['tasks:group:ready:type1', 1],
+        ['tasks:group:ready:type6', 1],
+        ['tasks:group:ready:type8', 1],
+        ['tasks:group:ready:type9', 1],
+      ]);
+    });
+
+    it('should handle errors while loading children', async () => {
+      const lastCompletedTask = { _id: 'em1' };
+      const contact = { doc: { _id: 'clinic' } };
+      const tasks = [{ _id: 'em1' }, { _id: 'em2' }];
+
+      contactViewModelGeneratorService.loadChildren.rejects({ err: 'omg' });
+      await compileComponent(lastCompletedTask, tasks, contact, false);
 
       expect(component.tasks).to.deep.equal([]);
       expect(component.contentError).to.equal(true);
-      expect(navigationCancel.callCount).to.equal(0);
-
+      expect((<any>GlobalActions.prototype.navigationCancel).callCount).to.equal(0);
+      expect(tasksForContactService.getTasksBreakdown.callCount).to.equal(0);
       expect(telemetryService.record.callCount).to.equal(0);
-    }));
+      expect(tasksForContactService.getIdsForTasks.callCount).to.equal(0);
+    });
+
+    it('should handle errors while getting ids for tasks', async () => {
+      const lastCompletedTask = { _id: 'em1' };
+      const contact = { doc: { _id: 'clinic' } };
+      const tasks = [{ _id: 'em1' }, { _id: 'em2' }];
+
+      contactViewModelGeneratorService.loadChildren.resolves(['children']);
+      tasksForContactService.getIdsForTasks.throws({ some: 'error' });
+      await compileComponent(lastCompletedTask, tasks, contact, false);
+
+      expect(component.tasks).to.deep.equal([]);
+      expect(component.contentError).to.equal(true);
+      expect((<any>GlobalActions.prototype.navigationCancel).callCount).to.equal(0);
+      expect(tasksForContactService.getTasksBreakdown.callCount).to.equal(0);
+      expect(telemetryService.record.callCount).to.equal(0);
+    });
   });
 
   describe('canDeactivate', () => {
@@ -633,11 +614,10 @@ describe('TasksGroupComponent', () => {
     it('should return true when emission id is part of current tasks', () => {
       component.tasks = [
         undefined,
-        { no: 'emission' },
-        { no: 'emissionid', emission: {} },
-        { emission: { _id: 'emission1' } },
-        { emission: { _id: 'emission2' } },
-        { emission: { _id: 'emission3' } },
+        { noid: 'emission' },
+        { _id: 'emission1' },
+        { _id: 'emission2' },
+        { _id: 'emission3' },
       ];
       store.overrideSelector(Selectors.getCancelCallback, sinon.stub());
       store.overrideSelector(Selectors.getPreventNavigation, true);
@@ -669,9 +649,9 @@ describe('TasksGroupComponent', () => {
 
     it('should return false when emission id is not part of group tasks', () => {
       component.tasks = [
-        { emission: { _id: 'emission1' } },
-        { emission: { _id: 'emission2' } },
-        { emission: { _id: 'emission3' } },
+        { _id: 'emission1' },
+        { _id: 'emission2' },
+        { _id: 'emission3' },
       ];
       store.overrideSelector(Selectors.getCancelCallback, sinon.stub());
       store.overrideSelector(Selectors.getPreventNavigation, true);
@@ -687,6 +667,15 @@ describe('TasksGroupComponent', () => {
         ['/tasks/emission6'],
         ['/tasks/emission7'],
       ]);
+    });
+  });
+
+  describe('listTrackBy', () => {
+    it('should return task id', () => {
+      expect(component.listTrackBy(10, { _id: 'aaa' })).to.equal('aaa');
+    });
+    it('should nullcheck', () => {
+      expect(component.listTrackBy(0, false)).to.equal(undefined);
     });
   });
 });

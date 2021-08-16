@@ -105,7 +105,11 @@ const state = {
     tasksList: [{ _id: 'task1' }, { _id: 'task2' }],
     loaded: 'are tasks loaded?',
     selected: { _id: 'selected task' },
-    lastCompletedTask: { _id: 'last completed task' },
+    taskGroup: {
+      lastCompletedTask: { _id: 'last completed task' },
+      contact: { the: 'contact' },
+      loadingContact: 'loading task group contact'
+    },
   },
 };
 const clonedState = cloneDeep(state);
@@ -430,7 +434,21 @@ describe('Selectors', () => {
     });
 
     it('should getLastCompletedTask', () => {
-      expect(Selectors.getLastCompletedTask(state)).to.deep.equal(clonedState.tasks.lastCompletedTask);
+      expect(Selectors.getLastCompletedTask(state)).to.deep.equal(clonedState.tasks.taskGroup.lastCompletedTask);
+      const alternativeState = { tasks: { taskGroup: {} } };
+      expect(Selectors.getLastCompletedTask(alternativeState)).to.equal(undefined);
+    });
+
+    it('should getTaskGroupContact', () => {
+      expect(Selectors.getTaskGroupContact(state)).to.deep.equal(clonedState.tasks.taskGroup.contact);
+      const alternativeState = { tasks: { taskGroup: {} } };
+      expect(Selectors.getTaskGroupContact(alternativeState)).to.equal(undefined);
+    });
+
+    it('should getTaskGroupLoadingContact', () => {
+      expect(Selectors.getTaskGroupLoadingContact(state)).to.deep.equal(clonedState.tasks.taskGroup.loadingContact);
+      const alternativeState = { tasks: { taskGroup: {} } };
+      expect(Selectors.getTaskGroupLoadingContact(alternativeState)).to.equal(undefined);
     });
   });
 });

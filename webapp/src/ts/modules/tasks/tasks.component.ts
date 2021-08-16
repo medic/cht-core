@@ -161,6 +161,6 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   listTrackBy(index, task) {
-    return task._id;
+    return task?._id;
   }
 }

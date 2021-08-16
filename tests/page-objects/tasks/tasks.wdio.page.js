@@ -45,9 +45,12 @@ const waitForTaskContentLoaded = async (name) => {
 };
 
 const submitTask = async () => {
+  const emissionId = (await browser.getUrl()).split('/').slice(-1)[0];
+  const taskLi = await getTaskById(emissionId);
   const submitButton = await $(`${taskFormSelector} button.btn.submit`);
   await submitButton.waitForDisplayed();
   await submitButton.click();
+  await taskLi.waitForDisplayed({ reverse: true });
 };
 
 const waitForTasksGroupLoaded = async () => {

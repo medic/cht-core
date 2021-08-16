@@ -19,7 +19,7 @@
             </div>
           </div>
           <ul>
-            <mm-content-row *ngFor="let task of tasks"
+            <mm-content-row *ngFor="let task of tasks; trackBy: listTrackBy"
                             [id]="task._id"
                             [route]="['/', 'tasks', task._id]"
                             [icon]="task.icon"

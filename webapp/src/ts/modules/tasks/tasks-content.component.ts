@@ -237,12 +237,10 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       .getLeafTypePlaceParent(action?.content?.contact?._id)
       .then(contact => {
         this.tasksActions.setTaskGroupContact(contact);
-        this.tasksActions.setTaskGroupContactLoading(false);
       })
       .catch(err => {
         console.error('Error when loading task group contact', err);
         this.tasksActions.setTaskGroupContact(null);
-        this.tasksActions.setTaskGroupContactLoading(false);
       });
   }
 
