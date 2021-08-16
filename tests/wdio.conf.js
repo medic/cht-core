@@ -216,7 +216,6 @@ const baseConfig = {
    * @param {Array.<String>} specs List of spec file paths that are to be run
    */
   // beforeSession: function (config, capabilities, specs) {
-
   // },
   /**
    * Gets executed before test execution begins. At this point you can access to all global
@@ -231,20 +230,17 @@ const baseConfig = {
     await browser.cdp('Log', 'enable');
     await browser.cdp('Runtime', 'enable');
     browser.on('Runtime.consoleAPICalled', (data) => {
-      if (data &&(data.type === 'error' || data.type ==='warning' )) {
-        const logEntry = `log Event: ${JSON.stringify(data.args)}\n`;
-        console.log(`~~~~~ log event ~~~~~`);
-        console.log(logEntry);
-        console.log(`~~~~~ log event end ~~~~~`);
+      if (data && (data.type === 'error' || data.type === 'warning')) {
+        const logEntry = `[${data.type}] Console Api Event: ${JSON.stringify(data.args)}\n`;
         fs.appendFileSync(browserLogPath, logEntry);
       }
     });
     browser.on('Log.entryAdded', (params) => {
-      const entry = params.entry;
-      console.log(`~~~~~~ log occrued ~~~~~`);
-      console.log(`~~~~~~ ${params} ~~~~~`);
-      const logEntry = `[${entry.level}]: ${entry.source} ${entry.text} url: ${entry.url} at ${entry.timestamp}\n`;
-      fs.appendFileSync(browserLogPath, logEntry);
+      if(params && params.entry) {
+        const entry = params.entry;
+        const logEntry = `[${entry.level}]: ${entry.source} ${entry.text} url: ${entry.url} at ${entry.timestamp}\n`;
+        fs.appendFileSync(browserLogPath, logEntry);
+      }
     });
   },
   /**
@@ -266,7 +262,6 @@ const baseConfig = {
   beforeTest: (test) => {
     testTile = test.title;
     const title = `~~~~~~~~~~~~~ ${testTile} ~~~~~~~~~~~~~~~~~~~~~~\n`;
-    // const path = browserLogPath(testTile);
     fs.appendFileSync(browserLogPath, title);
   },
   /**
