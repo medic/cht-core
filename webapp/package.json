@@ -32,11 +32,11 @@
     "bikram-sambat-bootstrap": "^1.5.0",
     "bootstrap": "^3.4.1",
     "bootstrap-daterangepicker": "^2.1.30",
-    "enketo-core": "4.41.6",
+    "enketo-core": "^5.18.1",
     "font-awesome": "^4.7.0",
     "google-libphonenumber": "^3.2.19",
     "gsm": "^0.1.4",
-    "jquery": "3.2.x",
+    "jquery": "^3.6.0",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
     "messageformat": "^2.3.0",
@@ -60,7 +60,7 @@
     "zone.js": "^0.11.4"
   },
   "resolutions": {
-    "**/jquery": "3.2.x",
+    "**/jquery": "^3.6.0",
     "**/pouchdb-browser": "^7.2.2",
     "**/moment": "^2.26.2"
   },
