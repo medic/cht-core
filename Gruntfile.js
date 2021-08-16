@@ -1097,8 +1097,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-webdriver', 'Run e2e tests using webdriverIO', [
     'exec:e2e-servers',
-    'exec:wdio-run',
-    'exec:e2e-servers',
     'exec:wdio-standard-run'
   ]);
 
