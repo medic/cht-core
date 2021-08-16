@@ -1,9 +1,9 @@
 const fs = require('fs');
 const feedBackDocs = async (testName = 'allLogs') => {
-  const feedBackDocs = await browser.executeAsync(feedBackDocsScript);
-  if (feedBackDocs && feedBackDocs.flat().length > 0) {
-    fs.writeFileSync(`./tests/logs/feedbackDocs-${testName}.txt`, JSON.stringify(feedBackDocs, null, 2));
-    return true;
+  const feedBackDocs = await browser.executeAsync(feedBackDocsScript).flat();
+  if (feedBackDocs && feedBackDocs.length > 0) {
+    fs.writeFileSync(`./tests/logs/feedbackDocs-${testName}.json`, JSON.stringify(feedBackDocs, null, 2));
+    return feedBackDocs.map(doc => doc.id);
   }
 };
 

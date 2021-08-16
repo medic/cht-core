@@ -13,6 +13,7 @@ const getBrowserLogFilePath = (specs) => {
 };
 const browserLogPath = path.join(__dirname, 'logs', 'browser.console.log');
 const browserUtils = require('./utils/browser');
+const existingFeedBackDocIds = [];
 
 const baseConfig = {
   //
@@ -268,11 +269,13 @@ const baseConfig = {
    */
   afterTest: async (test, context, { passed }) => {
     const feedBackDocs = await browserUtils.feedBackDocs(`${test.parent} ${test.title}`);
-    if(feedBackDocs){
+    const newDocs = feedBackDocs.some(doc => existingFeedBackDocIds.indexOf(doc) >= 0);
+    if(newDocs){
       if(passed){
         context.test.callback(new Error('Feedback docs were generated during the test.'));
       }
       passed = false;
+      existingFeedBackDocIds.push(feedBackDocs);
     }
     if (passed === false) {
       await browser.takeScreenshot();
