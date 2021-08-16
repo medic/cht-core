@@ -509,13 +509,13 @@ module.exports = function(grunt) {
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
-      'wdio-run': {
+      'wdio-run-default': {
         cmd: [
           'npm run wdio'
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
-      'wdio-standard-run': {
+      'wdio-run-standard': {
         cmd: [
           'npm run wdio-standard'
         ].join(' && '),
@@ -1095,9 +1095,14 @@ module.exports = function(grunt) {
     'protractor:e2e-cht-release-tests'
   ]);
 
-  grunt.registerTask('ci-webdriver', 'Run e2e tests using webdriverIO', [
+  grunt.registerTask('ci-webdriver-default', 'Run e2e tests using webdriverIO for default config', [
     'exec:e2e-servers',
-    'exec:wdio-standard-run'
+    'exec:wdio-run-default'
+  ]);
+
+  grunt.registerTask('ci-webdriver-standard', 'Run e2e tests using webdriverIO for standard config', [
+    'exec:e2e-servers',
+    'exec:wdio-run-standard'
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
