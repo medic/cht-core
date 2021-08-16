@@ -243,8 +243,10 @@ const baseConfig = {
   afterTest: async function (test, context, { passed }) {
     const feedBackDocs = await browserUtils.feedBackDocs(`${test.parent} ${test.title}`);
     if(feedBackDocs){
+      if(passed){
+        context.test.callback(new Error('Feedback docs were generated during the test.'));
+      }
       passed = false;
-      context.test.callback(new Error('Feedback docs were generated during the test.'));
     }
     if (passed === false) {
       await browser.takeScreenshot();
