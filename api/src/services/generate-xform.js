@@ -15,7 +15,7 @@ const JAVAROSA_SRC = / src="jr:\/\//gi;
 const MEDIA_SRC_ATTR = ' data-media-src="';
 
 const FORM_STYLESHEET = path.join(__dirname, '../xsl/openrosa2html5form.xsl');
-const MODEL_STYLESHEET = path.join(__dirname, '../../node_modules/enketo-xslt/xsl/openrosa2xmlmodel.xsl');
+const MODEL_STYLESHEET = path.join(__dirname, '../../node_modules/enketo-transformer/src/xsl/openrosa2xmlmodel.xsl');
 
 const transform = (formXml, stylesheet) => {
   return new Promise((resolve, reject) => {
