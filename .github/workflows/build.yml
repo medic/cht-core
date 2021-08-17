@@ -99,6 +99,9 @@ jobs:
     name: e2e Integration Tests for Node version ${{ matrix.node-version }}
     runs-on: ubuntu-18.04
 
+    env: 
+      MARKET_URL: https://staging.dev.medicmobile.org
+
     strategy:
       matrix:
         node-version: [8.x, 10.x, 12.x]
@@ -119,7 +122,6 @@ jobs:
         echo "TEST_SUITE=integration" >> $GITHUB_ENV
     - name: Set UPLOARD_URL var
       run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
           echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
           echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
       if:  ${{ !env.MARKET_URL }}
@@ -176,6 +178,9 @@ jobs:
     name: e2e Tests for Node version ${{ matrix.node-version }}
     runs-on: ubuntu-18.04
 
+    env: 
+      MARKET_URL: https://staging.dev.medicmobile.org
+
     strategy:
       matrix:
         node-version: [8.x, 10.x, 12.x]
@@ -196,7 +201,6 @@ jobs:
         echo "TEST_SUITE=integration" >> $GITHUB_ENV
     - name: Set UPLOARD_URL var
       run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
           echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
           echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
       if:  ${{ !env.MARKET_URL }}
@@ -256,6 +260,9 @@ jobs:
     strategy:
       matrix:
         node-version: [8.x, 10.x, 12.x]
+    
+    env: 
+      MARKET_URL: https://staging.dev.medicmobile.org
 
     steps:
     - name: Get Docker Hub username
@@ -273,7 +280,6 @@ jobs:
         echo "TEST_SUITE=integration" >> $GITHUB_ENV
     - name: Set UPLOARD_URL var
       run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
           echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
           echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
       if:  ${{ !env.MARKET_URL }}
@@ -330,11 +336,13 @@ jobs:
     name: Publish branch build
     runs-on: ubuntu-18.04
 
+    env: 
+      MARKET_URL: https://staging.dev.medicmobile.org
+
     steps:
     - uses: actions/checkout@v2
     - name: Set MARKET_URL var for external users
       run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
           echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
           echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
       if:  ${{ !env.MARKET_URL }}
@@ -360,6 +368,9 @@ jobs:
     strategy:
       matrix:
         node-version: [12.x]
+    
+    env: 
+      MARKET_URL: https://staging.dev.medicmobile.org
 
     steps:
     - name: Get Docker Hub username
@@ -377,7 +388,6 @@ jobs:
         echo "TEST_SUITE=integration" >> $GITHUB_ENV
     - name: Set MARKET_URL var for external users
       run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
           echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
           echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
       if:  ${{ !env.MARKET_URL }}
@@ -433,7 +443,9 @@ jobs:
     strategy:
       matrix:
         node-version: [12.x]
-        config-type: [default, standard]
+
+    env: 
+      MARKET_URL: https://staging.dev.medicmobile.org
 
     steps:
     - name: Get Docker Hub username
@@ -451,7 +463,6 @@ jobs:
         echo "TEST_SUITE=integration" >> $GITHUB_ENV
     - name: Set MARKET_URL var for external users
       run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
           echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
           echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
       if:  ${{ !env.MARKET_URL }}
