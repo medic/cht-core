@@ -326,7 +326,7 @@ jobs:
   #     if: ${{ failure() }}
 
   publish:
-    needs: [test-e2e, test-mobile, standard-config-tests, default-config-tests]
+    needs: [wdio-tests]
     name: Publish branch build
     runs-on: ubuntu-18.04
 
