@@ -51,7 +51,7 @@
     "@wdio/spec-reporter": "^7.7.3",
     "allure-commandline": "^2.13.8",
     "angular-jsdoc": "^1.5.1",
-    "angular-mocks": "^1.7.9",
+    "angular-mocks": "^1.8.2",
     "autoprefixer": "^9.8.6",
     "browserify-ngannotate": "^2.0.0",
     "bundlesize": "^0.18.1",
