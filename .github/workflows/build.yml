@@ -436,8 +436,6 @@ jobs:
         config-type: [default, standard]
 
     steps:
-    - name: Grunt Install
-      run: npm install -g grunt-cli
     - name: Get Docker Hub username
       id: get-docker-hub-username
       run: echo '::set-output name=dockerhub_username::${{ secrets.DOCKERHUB_USERNAME }}'
