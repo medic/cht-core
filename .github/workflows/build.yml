@@ -465,8 +465,6 @@ jobs:
         echo "HORTI_BUILDS_SERVER=${MARKET_URL}/${BUILDS_SERVER}"
         echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
         echo "COUCH_URL=${COUCH_URL}"
-    - name: Curl Couch_url
-      run: curl ${COUCH_URL}
     - name: horti setup
       run: |
         echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
