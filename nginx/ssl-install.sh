@@ -2,6 +2,14 @@
 
 set -e
 
+SSL_CERT_FILE_PATH=${SSL_CERT_FILE_PATH:-"/etc/nginx/private/cert.pem"}
+SSL_KEY_FILE_PATH=${SSL_KEY_FILE_PATH:-"/etc/nginx/private/key.pem"}
+# set acme.sh path for tests to pass
+
+
+welcome_message(){
+  echo "Running SSL certificate checks">&2
+}
 
 # sets variables required to create a self signed certificate
 set_environment_variables_if_not_set(){
@@ -40,23 +48,15 @@ create_self_signed_ssl_certificate()
 
   mkdir -p /etc/nginx/private
   set_environment_variables_if_not_set
-
-  local path="/etc/nginx/private"
-
-  if [ -f "$path/key.pem" -a -f "$path/cert.pem" ]; then
-    echo 'Certificate and key already exist; not creating' >&2
-    return 0
-  fi
-
   openssl req -x509 -nodes -newkey rsa:4096 \
-    -keyout "$path/key.pem" -out "$path/cert.pem" -days 365 \
+    -keyout $SSL_KEY_FILE_PATH -out $SSL_CERT_FILE_PATH -days 365 \
     -subj "/emailAddress=$EMAIL/C=$COUNTRY/ST=$STATE/L=$LOCALITY/O=$ORGANISATION/OU=$DEPARTMENT/CN=$COMMON_NAME"
 
   return "$?"
 }
 
 generate_self_signed_cert(){
-  if [ -f /etc/nginx/private/cert.pem -a -f /etc/nginx/private/key.pem ]; then
+  if [ -f $SSL_CERT_FILE_PATH -a -f $SSL_KEY_FILE_PATH ]; then
         echo "self signed SSL cert already exists." >&2
     else
         create_self_signed_ssl_certificate \
@@ -67,38 +67,46 @@ generate_self_signed_cert(){
  generate_certificate_auto(){
 
   if [ -z "$COMMON_NAME" ]; then
-  echo "Mandatory COMMON_NAME variable not set. Please provide the domain for which to generate the ssl certificate from let's encrpty " >&2
+  echo "Mandatory COMMON_NAME variable not set. Please provide the domain for which to generate the ssl certificate from let's encrypt" >&2
   exit 1
   fi
 
-  if [ -f /etc/nginx/private/cert.pem -a -f /etc/nginx/private/key.pem ]; then
+  if [ -z "$EMAIL" ]; then
+  echo "Mandatory EMAIL variable not set. Please provide the domain for which to generate the ssl certificate from let's encrypt" >&2
+  exit 1
+  fi
+
+  if [ -f $SSL_CERT_FILE_PATH -a -f $SSL_KEY_FILE_PATH ]; then
         echo "SSL cert already exists." >&2
-  elif [ ! -f /etc/nginx/private/cert.pem -a ! -f /etc/nginx/private/key.pem ]; then
+  elif [ ! -f $SSL_CERT_FILE_PATH -a ! -f $SSL_KEY_FILE_PATH ]; then
         mkdir -p /etc/nginx/private
         curl https://get.acme.sh | sh -s email=$EMAIL
+
+        # add acme.sh to path
+        export PATH="/root/.acme.sh/:$PATH"
         if [ ! -d /root/.acme.sh/${COMMON_NAME} ]; then
-            /root/.acme.sh/acme.sh --issue -d ${COMMON_NAME} --standalone
+            acme.sh --issue -d ${COMMON_NAME} --standalone
         fi
-        /root/.acme.sh/acme.sh --install-cert -d ${COMMON_NAME} \
-            --key-file /etc/nginx/private/key.pem \
-            --fullchain-file /etc/nginx/private/cert.pem
+        acme.sh --install-cert -d ${COMMON_NAME} \
+            --key-file $SSL_KEY_FILE_PATH \
+            --fullchain-file $SSL_CERT_FILE_PATH
         echo "SSL Cert installed." >&2
   fi
 }
 
 ensure_own_cert_exits(){
 
-  if [ ! -f /etc/nginx/private/cert.pem -a ! -f /etc/nginx/private/key.pem ]; then
-  echo "Please provide add your certificate (/etc/nginx/private/cert.pem) and key (/etc/nginx/private/key.pem) in the /etc/nginx/private/ directory"
+  if [ ! -f $SSL_CERT_FILE_PATH -a ! -f $SSL_KEY_FILE_PATH ]; then
+  echo "Please provide add your certificate ($SSL_CERT_FILE_PATH) and key ($SSL_KEY_FILE_PATH) in the /etc/nginx/private/ directory"
   exit 1
   fi
 
-  echo "SSL certificates exist." >&2
+  echo "SSL certificate exists." >&2
 
 }
 
-
-# Decide certificate mode and launch nginx
+select_ssl_certificate_mode(){
+  # Decide certificate mode and launch nginx
 
 case $CERTIFICATE_MODE in
 
@@ -115,10 +123,22 @@ case $CERTIFICATE_MODE in
     ;;
 
   *)
-   echo "ssl certificate mode unknown or not set. Please set a proper ssl sertificate mode in the CERTIFICATE_MODE variable "
+   echo "ssl certificate mode unknown or not set. Please set a proper ssl sertificate mode in the CERTIFICATE_MODE variable"
    exit 1
     ;;
 esac
 
+}
 
+main (){
+welcome_message
+select_ssl_certificate_mode
 echo "Launching Nginx" >&2
+}
+
+# if no arguments are provided run the main method
+if [ $# -eq 0 ]; then
+   main
+else # run the requested argument.
+ "$@"
+fi

@@ -1,0 +1,12 @@
+[submodule "nginx/tests/test_helper/bats-shell-mock"]
+	path = nginx/tests/test_helper/bats-shell-mock
+	url = https://github.com/capitalone/bash_shell_mock
+[submodule "nginx/tests/test_helper/bats-assert"]
+	path = nginx/tests/test_helper/bats-assert
+	url = https://github.com/bats-core/bats-assert.git
+[submodule "nginx/tests/test_helper/bats-support"]
+	path = nginx/tests/test_helper/bats-support
+	url = https://github.com/bats-core/bats-support.git
+[submodule "nginx/tests/bats"]
+	path = nginx/tests/bats
+	url = https://github.com/bats-core/bats-core.git
