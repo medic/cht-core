@@ -6,9 +6,9 @@ module.exports = {
     alias: {
       'enketo-config': 'src/js/enketo/config.json',
       'widgets': 'src/js/enketo/widgets',
-      './xpath-evaluator-binding': 'src/js/enketo/OpenrosaXpathEvaluatorBinding',
+      'enketo/xpath-evaluator-binding': 'src/js/enketo/OpenrosaXpathEvaluatorBinding',
       'extended-xpath': 'node_modules/openrosa-xpath-evaluator/src/extended-xpath',
-      'openrosa-xpath-extensions': 'node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
+      'openrosa-extensions': 'node_modules/openrosa-xpath-evaluator/src/openrosa-extensions',
       // translator for enketo's internal i18n
       'translator': 'src/js/enketo/translator',
       // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream
