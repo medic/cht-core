@@ -456,7 +456,7 @@ const prepServices = async (config) => {
     // correct logs for testing
     await listenForApi();
     console.log('Horti booted API, rebooting under our logging structure');
-    await rpn.post('http://localhost:31337/all/restart');
+    // await rpn.post('http://localhost:31337/all/restart');
   } else {
     // Locally we just need to start them and can do so straight away
     await rpn.post('http://localhost:31337/all/start');
