@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -28,7 +28,7 @@ describe('Reports Filters Component', () => {
   let fixture: ComponentFixture<ReportsFiltersComponent>;
   let searchFiltersService;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     searchFiltersService = { init: sinon.stub(), destroy: sinon.stub() };
     return TestBed
       .configureTestingModule({

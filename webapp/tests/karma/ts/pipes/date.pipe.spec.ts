@@ -1,4 +1,4 @@
-import { async, TestBed } from '@angular/core/testing';
+import { TestBed, waitForAsync } from '@angular/core/testing';
 import { assert, expect } from 'chai';
 import sinon from 'sinon';
 import * as moment from 'moment';
@@ -358,7 +358,7 @@ describe('date pipes rendering', () => {
         expect(fixture.nativeElement.querySelector('.state').innerText).to.equal(expected);
       });
 
-      it('when task', async(async () => {
+      it('when task', waitForAsync(async () => {
         const task = {
           state: 'pending'
         };
