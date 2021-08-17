@@ -1,0 +1,28 @@
+version: '3.7'
+
+# For more information on how to use this docker compose file see our docs page:
+#   https://docs.communityhealthtoolkit.org/apps/guides/hosting/self-hosting/
+
+services:
+  couch:
+    image: couchdb:2.3.1
+    working_dir: /srv
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=pass
+      
+  horti:
+    image: ubuntu:18.04
+    ports:
+      - "5988:5988"
+    environment:
+      - COUCH=http://admin:pass@couch:5984
+      - COUCH_URL=http://admin:pass@couch:5984/medic-test
+      - COUCH_NODE_NAME=nonode@nohost
+      - HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER
+      - BUILD=test-medic:medic:$TRAVIS_BUILD_NUMBER
+    depends_on:
+      - couch
+    command: /horti_entry.sh
+    volumes:
+     - "./horti_entry.sh://horti_entry.sh"
