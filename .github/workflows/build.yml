@@ -443,6 +443,7 @@ jobs:
     strategy:
       matrix:
         node-version: [12.x]
+        config-type: [default, standard]
 
     env: 
       MARKET_URL: https://staging.dev.medicmobile.org
