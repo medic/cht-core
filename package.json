@@ -82,7 +82,7 @@
     "grunt-env": "^1.0.1",
     "grunt-exec": "^3.0.0",
     "grunt-jsdoc": "^2.4.1",
-    "grunt-karma": "^4.0.0",
+    "grunt-karma": "^4.0.2",
     "grunt-mocha-test": "^0.13.3",
     "grunt-notify": "^0.4.5",
     "grunt-optimize-js": "^0.6.0",
