@@ -426,6 +426,7 @@ jobs:
   #     if: ${{ failure() }}
 
   wdio-tests:
+    timeout-minutes: 10
     needs: build
     name: wdio tests for ${{ matrix.config-type }}
     runs-on: ubuntu-18.04
@@ -473,7 +474,7 @@ jobs:
     - name: Test it!
       run: node --stack_size=10000 `which grunt` ci-webdriver-${{ matrix.config-type }}
     - name: Dump Couch logs
-      run: docker logs couch > tests/logs/couch.log 2>&1
+      run: docker-compose -f scripts/travis/horti-compose.yml logs > tests/logs/couch.log 2>&1
       if: ${{ always() }}
     - name: Archive Results
       uses: actions/upload-artifact@v2
