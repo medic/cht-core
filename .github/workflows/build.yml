@@ -325,31 +325,31 @@ jobs:
   #         tests/logs
   #     if: ${{ failure() }}
 
-  publish:
-    needs: [wdio-tests]
-    name: Publish branch build
-    runs-on: ubuntu-18.04
+  # publish:
+  #   needs: [wdio-tests]
+  #   name: Publish branch build
+  #   runs-on: ubuntu-18.04
 
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set MARKET_URL var for external users
-      run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
-          echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
-          echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
-      if:  ${{ !env.MARKET_URL }}
-    - name: Get branch name
-      uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
-    - name: Set Travis Vars
-      run: |
-        echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "TRAVIS_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
-    - name: Publish
-      if: ${{ github.event_name != 'pull_request' }}
-      run: |
-        cd scripts/travis
-        npm ci
-        node ./publish.js
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: Set MARKET_URL var for external users
+  #     run: |
+  #         echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
+  #         echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
+  #         echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
+  #     if:  ${{ !env.MARKET_URL }}
+  #   - name: Get branch name
+  #     uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
+  #   - name: Set Travis Vars
+  #     run: |
+  #       echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
+  #       echo "TRAVIS_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+  #   - name: Publish
+  #     if: ${{ github.event_name != 'pull_request' }}
+  #     run: |
+  #       cd scripts/travis
+  #       npm ci
+  #       node ./publish.js
 
 
   # test-cht-default:
@@ -436,6 +436,8 @@ jobs:
         config-type: [default, standard]
 
     steps:
+    - name: Grunt Install
+      run: npm install -g grunt-cli
     - name: Get Docker Hub username
       id: get-docker-hub-username
       run: echo '::set-output name=dockerhub_username::${{ secrets.DOCKERHUB_USERNAME }}'
@@ -460,8 +462,6 @@ jobs:
       run: mkdir tests/logs
     - name: npm CI
       run: npm ci
-    - name: Grunt Install
-      run: npm install -g grunt-cli
     - name: Echo Vars
       run: |
         echo "HORTI_BUILDS_SERVER=${MARKET_URL}/${BUILDS_SERVER}"
