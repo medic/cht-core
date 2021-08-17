@@ -122,7 +122,7 @@ export class EnketoService {
     return this.getAttachment(doc._id, this.xmlFormsService.findXFormAttachmentName(doc));
   }
 
-  private transformXml(form, language) {
+  private transformXml(form) {
     return Promise
       .all([
         this.getAttachment(form._id, this.HTML_ATTACHMENT_NAME),
@@ -135,24 +135,7 @@ export class EnketoService {
           $element.text(this.translateService.instant('enketo.' + $element.attr('data-i18n')));
         });
 
-        // TODO remove this when our enketo-core dependency is updated as the latest
-        //      version uses the language passed to the constructor
-        const languages = $html.find('#form-languages option');
-        if (languages.length > 1) { // TODO how do we detect a non-localized form?
-          // for localized forms, change language to user's language
-          $html
-            .find('[lang]')
-            .removeClass('active')
-            .filter('[lang="' + language + '"], [lang=""]')
-            .filter((idx, element) => {
-              // localized forms can support a short and long version for labels
-              // Enketo takes this into account when switching languages
-              // https://opendatakit.github.io/xforms-spec/#languages
-              return !$(element).hasClass('or-form-short') ||
-                ($(element).hasClass('or-form-short') && $(element).siblings( '.or-form-long' ).length === 0 );
-            })
-            .addClass( 'active' );
-        }
+        $html.find('#form-languages').remove();
 
         const hasContactSummary = $(model).find('> instance[id="contact-summary"]').length === 1;
         return {
@@ -269,7 +252,7 @@ export class EnketoService {
       });
   }
 
-  private getEnketoOptions(doc, instanceData) {
+  private getEnketoForm(wrapper, doc, instanceData) {
     return Promise
       .all([
         this.enketoPrepopulationDataService.get(doc.model, instanceData),
@@ -277,33 +260,28 @@ export class EnketoService {
         this.languageService.get()
       ])
       .then(([ instanceStr, contactSummary, language ]) => {
-        const options:any = {
+        const data:any = {
           modelStr: doc.model,
-          instanceStr: instanceStr,
-          language: language
+          instanceStr: instanceStr
         };
         if (contactSummary) {
-          options.external = [ contactSummary ];
+          data.external = [ contactSummary ];
         }
-        return options;
+        const form = wrapper.find('form').first()[0];// TODO This does not seem good.
+        return new window.EnketoForm(form, data, { language });
       });
   }
 
   private renderFromXmls(xmlFormContext: XmlFormContext) {
     const { doc, instanceData, titleKey, wrapper } = xmlFormContext;
-    wrapper
-      .find('.form-footer')
-      .addClass('end')
-      .find('.previous-page,.next-page')
-      .addClass('disabled');
 
     const formContainer = wrapper.find('.container').first();
     formContainer.html(doc.html.get(0));
 
     return this
-      .getEnketoOptions(doc, instanceData)
-      .then((options) => {
-        this.currentForm = new window.EnketoForm(wrapper.find('form').first(), options);
+      .getEnketoForm(wrapper, doc, instanceData)
+      .then((form) => {
+        this.currentForm = form;
         const loadErrors = this.currentForm.init();
         if (loadErrors?.length) {
           return Promise.reject(new Error(JSON.stringify(loadErrors)));
@@ -320,8 +298,9 @@ export class EnketoService {
         window.history.replaceState({ enketo_page_number: 0 }, '');
         this.overrideNavigationButtons(this.currentForm, wrapper);
         this.addPopStateHandler(this.currentForm, wrapper);
+        // this.addDynamicUrlListener(); // TODO figure out if we need this new URL listener code...
         this.forceRecalculate(this.currentForm);
-
+        this.setupNavButtons(wrapper, 0);
         return this.currentForm;
       });
   }
@@ -356,11 +335,16 @@ export class EnketoService {
       .find('.btn.next-page')
       .off('.pagemode')
       .on('click.pagemode',() => {
+
         form.pages
-          .next()
-          .then((newPageIndex) => {
-            if(typeof newPageIndex === 'number') {
-              window.history.pushState({ enketo_page_number: newPageIndex }, '');
+          ._next()
+          .then((valid) => {
+            if(valid) {
+              const currentIndex = form.pages._getCurrentIndex();
+              if(typeof currentIndex === 'number') {
+                window.history.pushState({ enketo_page_number: currentIndex }, '');
+              }
+              this.setupNavButtons($wrapper, currentIndex);
             }
             this.forceRecalculate(form);
           });
@@ -381,16 +365,9 @@ export class EnketoService {
     $(window).on('popstate.enketo-pagemode', (event:any) => {
       if(event.originalEvent &&
         event.originalEvent.state &&
-        typeof event.originalEvent.state.enketo_page_number === 'number') {
-        const targetPage = event.originalEvent.state.enketo_page_number;
-
-        if ($wrapper.find('.container').not(':empty')) {
-          const pages = form.pages;
-          const activePages = pages.getAllActive();
-          if (activePages) {
-            pages.flipTo(activePages[targetPage], targetPage);
-          }
-        }
+        typeof event.originalEvent.state.enketo_page_number === 'number' &&
+        $wrapper.find('.container').not(':empty')) {
+        form.pages._prev();
       }
     });
   }
@@ -425,31 +402,29 @@ export class EnketoService {
       valuechangeListener,
     } = formContext;
 
-    return this.languageService.get().then(language => {
-      const $selector = $(selector);
-      return this
-        .transformXml(formDoc, language)
-        .then(doc => {
-          this.replaceJavarosaMediaWithLoaders(formDoc, doc.html);
-          const xmlFormContext: XmlFormContext = {
-            doc,
-            wrapper: $selector,
-            instanceData,
-            titleKey,
-          };
-          return this.renderFromXmls(xmlFormContext);
-        })
-        .then((form) => {
-          const formContainer = $selector.find('.container').first();
-          this.replaceMediaLoaders(formContainer, formDoc);
-          this.registerAddrepeatListener($selector, formDoc);
-          this.registerEditedListener($selector, editedListener);
-          this.registerValuechangeListener($selector, valuechangeListener);
+    const $selector = $(selector);
+    return this
+      .transformXml(formDoc)
+      .then(doc => {
+        this.replaceJavarosaMediaWithLoaders(formDoc, doc.html);
+        const xmlFormContext: XmlFormContext = {
+          doc,
+          wrapper: $selector,
+          instanceData,
+          titleKey,
+        };
+        return this.renderFromXmls(xmlFormContext);
+      })
+      .then((form) => {
+        const formContainer = $selector.find('.container').first();
+        this.replaceMediaLoaders(formContainer, formDoc);
+        this.registerAddrepeatListener($selector, formDoc);
+        this.registerEditedListener($selector, editedListener);
+        this.registerValuechangeListener($selector, valuechangeListener);
 
-          window.CHTCore.debugFormModel = () => form.model.getStr();
-          return form;
-        });
-    });
+        window.CHTCore.debugFormModel = () => form.model.getStr();
+        return form;
+      });
   }
 
   render(selector, form, instanceData, editedListener, valuechangeListener) {
@@ -687,6 +662,23 @@ export class EnketoService {
     // Force forms to update jr:itext references in output fields that contain
     // calculated values.  ref #4111
     form.output.update();
+  }
+
+  private setupNavButtons($wrapper, currentIndex) {
+    if(this.currentForm.pages) {
+      const lastIndex = this.currentForm.pages.activePages.length - 1;
+      const footer = $wrapper.find('.form-footer');
+      footer.removeClass('end');
+      footer.find('.previous-page, .next-page').removeClass('disabled');
+
+      if (currentIndex >= lastIndex) {
+        footer.addClass('end');
+        footer.find('.next-page').addClass('disabled');
+      }
+      if (currentIndex === 0) {
+        footer.find('.previous-page').addClass('disabled');
+      }
+    }
   }
 
   private saveGeo(geoHandle, docs) {
