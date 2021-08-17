@@ -426,7 +426,7 @@ jobs:
   #     if: ${{ failure() }}
 
   wdio-tests:
-    timeout-minutes: 10
+    timeout-minutes: 7
     needs: build
     name: wdio tests for ${{ matrix.config-type }}
     runs-on: ubuntu-18.04
