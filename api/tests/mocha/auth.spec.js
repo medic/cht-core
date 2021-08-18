@@ -184,6 +184,10 @@ describe('Auth', () => {
       chai.expect(auth.isOnlineOnly({ roles: ['national_admin'] })).to.equal(true);
     });
 
+    it('should check for "mm-online" role', () => {
+      chai.expect(auth.isOnlineOnly({ roles: ['mm-online'] })).to.equal(true);
+    });
+
     it('checks for "admin" and "national_admin" roles', () => {
       sinon.stub(config, 'get').withArgs('roles').returns({
         district_admin: { offline: true }
@@ -215,7 +219,7 @@ describe('Auth', () => {
       chai.expect(auth.isOffline(['role1', 'role2'])).to.equal(true);
     });
 
-    it('should return true when at least one role is offline', () => {
+    it('should return true when at least one role is offline and no mm-online role', () => {
       sinon.stub(config, 'get').withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
       chai.expect(auth.isOffline(['roleA'])).to.equal(true);
       chai.expect(auth.isOffline(['roleA', 'random'])).to.equal(true);
@@ -223,10 +227,11 @@ describe('Auth', () => {
       chai.expect(auth.isOffline(['roleA', 'roleB', 'random'])).to.equal(true);
     });
 
-    it('should return false when none of the configured roles are offline', () => {
+    it('should return false when none of the configured roles are offline or user has mm-online role', () => {
       sinon.stub(config, 'get').withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
       chai.expect(auth.isOffline(['roleB'])).to.equal(false);
       chai.expect(auth.isOffline(['roleB', 'roleC'])).to.equal(false);
+      chai.expect(auth.isOffline(['roleA', 'mm-online'])).to.equal(false);
     });
   });
 

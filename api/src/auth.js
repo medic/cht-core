@@ -4,6 +4,7 @@ const _ = require('lodash');
 const db = require('./db');
 const environment = require('./environment');
 const config = require('./config');
+const ONLINE_ROLE = 'mm-online';
 
 const get = (path, headers) => {
   const dbUrl = url.parse(environment.serverUrl);
@@ -59,6 +60,7 @@ module.exports = {
   isOnlineOnly: userCtx => {
     return hasRole(userCtx, '_admin') ||
            hasRole(userCtx, 'national_admin') || // kept for backwards compatibility
+           hasRole(userCtx, ONLINE_ROLE) ||
            !module.exports.isOffline(userCtx.roles);
   },
 
@@ -66,8 +68,8 @@ module.exports = {
     const configured = config.get('roles') || {};
     const configuredRole = roles.some(role => configured[role]);
     return !isDbAdmin({ roles }) &&
-           !configuredRole ||
-           roles.some(role => configured[role] && configured[role].offline);
+           !hasRole({ roles }, ONLINE_ROLE) &&
+           (!configuredRole || roles.some(role => configured[role] && configured[role].offline));
   },
 
   hasAllPermissions: (userCtx, permissions) => {
@@ -198,4 +200,5 @@ module.exports = {
   },
 
   isDbAdmin: isDbAdmin,
+  ONLINE_ROLE: ONLINE_ROLE,
 };
