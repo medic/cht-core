@@ -227,11 +227,10 @@ describe('Auth', () => {
       chai.expect(auth.isOffline(['roleA', 'roleB', 'random'])).to.equal(true);
     });
 
-    it('should return false when none of the configured roles are offline or user has mm-online role', () => {
+    it('should return false when none of the configured roles are offline', () => {
       sinon.stub(config, 'get').withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
       chai.expect(auth.isOffline(['roleB'])).to.equal(false);
       chai.expect(auth.isOffline(['roleB', 'roleC'])).to.equal(false);
-      chai.expect(auth.isOffline(['roleA', 'mm-online'])).to.equal(false);
     });
   });
 

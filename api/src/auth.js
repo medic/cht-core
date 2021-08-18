@@ -68,7 +68,6 @@ module.exports = {
     const configured = config.get('roles') || {};
     const configuredRole = roles.some(role => configured[role]);
     return !isDbAdmin({ roles }) &&
-           !hasRole({ roles }, ONLINE_ROLE) &&
            (!configuredRole || roles.some(role => configured[role] && configured[role].offline));
   },
 
