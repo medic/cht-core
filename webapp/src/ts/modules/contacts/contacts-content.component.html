@@ -32,7 +32,7 @@
           </div>
 
           <div class="loader" *ngIf="contactsLoadingSummary"></div>
-          <div class="row flex grid" *ngIf="!contactsLoadingSummary">
+          <div class="row flex grid" id="contact_summary" *ngIf="!contactsLoadingSummary">
             <div class="col col-xs-12 col-sm-{{field.width || 12}}" *ngFor="let field of selectedContact?.summary?.fields">
               <div class="cell {{field.label | lowercase}}">
                 <span *ngIf="field.icon" class="field-icon" [innerHTML]="field.icon | resourceIcon"></span>

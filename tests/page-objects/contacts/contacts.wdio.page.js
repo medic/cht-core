@@ -3,8 +3,8 @@ const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
+const contentRows = () => $$(contentRowSelector);
 const contentRowsText = () => $$(`${contentRowSelector} .heading h4 span`);
-const rowByText = async (text) => (await contentRow()).$(`span=${text}`);
 const reportFilterSelector = '.card.reports .table-filter a';
 const reportRowSelector = '#reports-list .content-row';
 const reportRow = () => $(reportRowSelector);
@@ -23,6 +23,7 @@ const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
 const contactSexField = () => $('[data-name="/data/contact/sex"][value="female"]');
 const personName = () => $('[name="/data/person/name"]');
 const personSexField = () => $('[data-name="/data/person/sex"][value="female"]');
+const personPhoneField = () => $('input.ignore[type="tel"]');
 const topContact = () => $('#contacts-list > ul > li:nth-child(1) > a > div.content > div > h4 > span');
 const name = () => $('.children h4 span');
 const externalIdField = (place) => $(`[name="/data/${place}/external_id"]`);
@@ -31,15 +32,24 @@ const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][v
 const contactCard = () => $('.card h2');
 const contactCardIcon = (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`);
 const rhsPeopleListSelector = () => $$('[test-id="person"] h4 span');
+const contactSummaryContainer = () => $('#contact_summary');
+const editContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
   await (await searchButton()).click();
 };
 
-const selectLHSRowByText = async (text) => {
-  await search(text);
-  await (await rowByText(text)).click();
+const selectLHSRowByText = async (text, executeSearch= true) => {
+  if (executeSearch) {
+    await search(text);
+  }
+  await browser.waitUntil(async () => (await contentRows()).length);
+  for (const row of await contentRows()) {
+    if ((await row.getText()) === text) {
+      return await row.click();
+    }
+  }
 };
 
 const getReportFiltersText = async () => {
@@ -69,16 +79,52 @@ const addPlace = async (type, placeName , contactName ) => {
   await (await contactCard()).waitForDisplayed();
 };
 
-const addPerson = async (name, dob = '2000-01-01') => {
+const addPerson = async (name, params = {}) => {
+  const { dob='2000-01-01', phone } = params;
   await (await actionResourceIcon('person')).click();
   await (await personName()).addValue(name);
   await (await dateOfBirthField()).addValue(dob);
   await (await personName()).click(); // blur the datepicker field so the sex field is visible
+  if (phone) {
+    await (await personPhoneField()).addValue(phone);
+  }
   await (await personSexField()).click();
   await (await notes('person')).addValue('some person notes');
   await (await genericForm.submitButton()).click();
   await (await contactCardIcon('person')).waitForDisplayed();
   return (await contactCard()).getText();
+};
+
+const editPerson = async (name, updatedName) => {
+  await selectLHSRowByText(name);
+  await waitForContactLoaded();
+  await (await editContactButton()).click();
+
+  await (await genericForm.nextPage());
+
+  await (await personName()).clearValue();
+  await (await personName()).addValue(updatedName);
+
+  await (await genericForm.submitButton()).click();
+  await waitForContactLoaded();
+  return (await contactCard()).getText();
+};
+
+const waitForContactLoaded = async () => {
+  await (await contactCard()).waitForDisplayed();
+  await (await contactSummaryContainer()).waitForDisplayed();
+};
+
+const getContactSummaryField = async (fieldName) => {
+  await (await contactSummaryContainer()).waitForDisplayed();
+  const fields = await (await contactSummaryContainer()).$$('.cell');
+  for (const field of fields) {
+    const classNames = (await field.getAttribute('class')).split(' ');
+    if (classNames.includes(fieldName)) {
+      const fieldValue = await field.$('p');
+      return await fieldValue.getText();
+    }
+  }
 };
 
 const getPrimaryContactName = async () => {
@@ -116,5 +162,8 @@ module.exports = {
   topContact,
   getPrimaryContactName,
   getAllReportsText,
-  getAllRHSPeopleNames
+  getAllRHSPeopleNames,
+  waitForContactLoaded,
+  editPerson,
+  getContactSummaryField,
 };
