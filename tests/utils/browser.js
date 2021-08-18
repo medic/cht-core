@@ -1,9 +1,11 @@
 const fs = require('fs');
-const feedBackDocs = async (testName = 'allLogs') => {
-  const feedBackDocs = await browser.executeAsync(feedBackDocsScript).flat();
-  if (feedBackDocs && feedBackDocs.length > 0) {
-    fs.writeFileSync(`./tests/logs/feedbackDocs-${testName}.json`, JSON.stringify(feedBackDocs, null, 2));
-    return feedBackDocs.map(doc => doc.id);
+const feedBackDocs = async (testName = 'allLogs', existingDocIds = []) => {
+  const feedBackDocs = await browser.executeAsync(feedBackDocsScript);
+  const flattened = feedBackDocs.flat();
+  const newDocIds = flattened.map(doc => existingDocIds.indexOf(doc.id) === -1);
+  if (newDocIds && newDocIds.length > 0) {
+    fs.writeFileSync(`./tests/logs/feedbackDocs-${testName}.json`, JSON.stringify(flattened, null, 2));
+    return flattened.map(doc => doc.id);
   }
 };
 
