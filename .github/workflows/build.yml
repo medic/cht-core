@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        grunt-cmd: [exec:test-config-standard, exec:test-config-default]
+        grunt-cmd: [ 'exec:test-config-standard', 'exec:test-config-default']
 
     steps:
     - uses: actions/checkout@v2
