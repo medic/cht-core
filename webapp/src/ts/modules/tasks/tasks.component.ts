@@ -109,6 +109,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.tasksActions.setTasksLoaded(false);
     this.tasksActions.setSelectedTask(null);
     this.globalActions.unsetSelected();
+    this.tasksActions.clearTaskGroup();
   }
 
   refreshTaskList() {

@@ -98,6 +98,6 @@ module.exports = {
   goToBase,
   closeTour,
   hideSnackbar,
-  waitForLoaders
+  waitForLoaders,
   waitForLoaderToDisappear,
 };

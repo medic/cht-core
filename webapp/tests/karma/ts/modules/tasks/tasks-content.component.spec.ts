@@ -22,6 +22,7 @@ import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 describe('TasksContentComponent', () => {
   let tasks;
   let setEnketoEditedStatus;
+
   let render;
   let get;
   let xmlFormsService;
@@ -111,6 +112,13 @@ describe('TasksContentComponent', () => {
     component.ngOnDestroy();
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
     expect(geoHandle.cancel.callCount).to.equal(1);
+  });
+
+  it('should clear last completed task when loaded', async () => {
+    const setLastCompletedTask = sinon.stub(TasksActions.prototype, 'setLastCompletedTask');
+    await compileComponent();
+    expect(setLastCompletedTask.callCount).to.equal(1);
+    expect(setLastCompletedTask.args[0]).to.deep.equal([null]);
   });
 
   it('loads form when task has one action and no fields (without hydration)', async () => {

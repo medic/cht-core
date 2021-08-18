@@ -143,7 +143,6 @@ describe('TasksGroupComponent', () => {
       expect(router.navigate.args[0]).to.deep.equal([['/tasks']]);
     });
 
-
     it('should only load contact children once', async () => {
       const lastCompletedTask = { _id: 'b' };
       const tasks = [
@@ -195,6 +194,25 @@ describe('TasksGroupComponent', () => {
       sinon.stub(GlobalActions.prototype, 'navigationCancel');
       sinon.stub(GlobalActions.prototype, 'setNavigation');
       sinon.stub(GlobalActions.prototype, 'setLoadingContent');
+    });
+
+    it('should redirect if last completed task is not set', async () => {
+      const tasks = [
+        { _id: 'a', owner: 'a', title: 'type1' },
+        { _id: 'b', owner: 'the_contact', title: 'type2' },
+        { _id: 'c', owner: 'b', title: 'type1' },
+        { _id: 'd', owner: 'c', title: 'type3' },
+      ];
+      await compileComponent(null, tasks, { }, false);
+
+      await nextTick();
+
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(0);
+      expect(tasksForContactService.getIdsForTasks.callCount).to.equal(0);
+
+      expect((<any>GlobalActions.prototype.navigationCancel).callCount).to.equal(1);
+      expect((<any>GlobalActions.prototype.setNavigation).callCount).to.equal(1);
+      expect((<any>GlobalActions.prototype.setLoadingContent).callCount).to.equal(1);
     });
 
     it('should wait until contact is no longer loading to set tasks', async () => {

@@ -84,6 +84,7 @@ describe('TasksComponent', () => {
 
     const setTasksList = sinon.stub(TasksActions.prototype, 'setTasksList');
     const setTasksLoaded = sinon.stub(TasksActions.prototype, 'setTasksLoaded');
+    const clearTaskGroup = sinon.stub(TasksActions.prototype, 'clearTaskGroup');
     const spySubscriptionsUnsubscribe = sinon.spy(component.subscription, 'unsubscribe');
 
     component.ngOnDestroy();
@@ -93,6 +94,7 @@ describe('TasksComponent', () => {
     expect(setTasksList.args[0]).to.deep.equal([[]]);
     expect(setTasksLoaded.callCount).to.equal(1);
     expect(setTasksLoaded.args[0]).to.deep.equal([false]);
+    expect(clearTaskGroup.callCount).to.equal(1);
   });
 
   it('initial state before resolving tasks', async () => {

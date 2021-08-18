@@ -65,6 +65,8 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     this.form = null;
     this.formId = null;
     this.resetFormError();
+
+    this.tasksActions.setLastCompletedTask(null);
   }
 
   ngOnDestroy() {

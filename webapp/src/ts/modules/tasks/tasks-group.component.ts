@@ -159,6 +159,11 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
   }
 
   private async loadGroupTasks() {
+    if (!this.lastCompletedTask) {
+      this.navigationCancel();
+      return;
+    }
+
     try {
       await this.loadContactModel();
       if (!this.contactModel) {
