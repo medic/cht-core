@@ -24,6 +24,7 @@ echo '[medic] setting max_http_request_size'
 curl -X PUT --data '"4294967296"' "$COUCH/_node/_local/_config/httpd/max_http_request_size"
 
 echo Installing Horti
-/usr/bin/npm install -g horticulturalist
+mkdir -p > /tests/logs/
+/usr/bin/npm install -g horticulturalist 
 echo Starting Horti
-horti --local --install=$BUILD
+horti --local --install=$BUILD > /tests/logs/horti.log
