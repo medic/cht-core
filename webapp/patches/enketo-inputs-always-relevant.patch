@@ -1,0 +1,14 @@
+*** unpatched	2021-08-18 15:06:53.161968277 -0500
+--- patched 	2021-08-18 15:04:22.093000000 -0500
+***************
+*** 662,667 ****
+--- 662,670 ----
+          const path = that.input.getName( node );
+          let target;
+
++         // /inputs is ALWAYS relevant #4875
++         if(/\/inputs$/.test(path)) return;
++
+          /*
+           * Copied from relevant.js:
+           *
