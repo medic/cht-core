@@ -92,6 +92,7 @@
               [muted]="child.doc.muted"
               [displayMuted]="true"
               [valid]="true"
+              [attr.test-id]="group?.type?.person ? 'person' : 'place'"
             ></mm-content-row>
           </ng-container>
         </ul>
