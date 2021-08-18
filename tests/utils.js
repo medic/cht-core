@@ -881,7 +881,7 @@ module.exports = {
    * @returns {Object} that contains the promise to resolve when logs lines are matched and a cancel function
    */
   waitForLogs: (logFilename, ...regex) => {
-    const name = constants.IS_TRAVIS ? 'horit.log' : logFilename;
+    const name = constants.IS_TRAVIS ? 'horti.log' : logFilename;
     const tail = new Tail(`./tests/logs/${name}`);
     let timeout;
     const promise = new Promise((resolve, reject) => {
