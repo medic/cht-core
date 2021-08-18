@@ -1,9 +1,10 @@
 #!/bin/bash
 
 apt-get update
-apt-get install -y curl
+apt-get install -y curl -q
 echo Installing Node
-curl -sL "https://deb.nodesource.com/setup_$NODE_VERSION.x" | bash -
+echo "https://deb.nodesource.com/setup_$NODE_VERSION"
+curl -sL "https://deb.nodesource.com/setup_$NODE_VERSION" | bash -
 apt-get install -y nodejs
 echo Node install finished
 node -v
@@ -25,6 +26,6 @@ curl -X PUT --data '"4294967296"' "$COUCH/_node/_local/_config/httpd/max_http_re
 
 echo Installing Horti
 mkdir -p > /tests/logs/
-/usr/bin/npm install -g horticulturalist 
+npm install -g horticulturalist 
 echo Starting Horti
 horti --local --install=$BUILD > /tests/logs/horti.log

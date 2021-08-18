@@ -30,3 +30,4 @@ services:
     volumes:
      - "./horti_entry.sh://horti_entry.sh"
      - "../../tests/logs/:/tests/logs/"
+     
