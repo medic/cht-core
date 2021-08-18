@@ -148,7 +148,10 @@ describe('Users Controller', () => {
           role: 'some_role',
           facility_id: 'some_facility_id'
         };
-        auth.isOffline.returns(true);
+        auth.isOnlineOnly
+          .withArgs(userCtx).returns(true)
+          .withArgs({ roles: ['some_role'] }).returns(false);
+
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: ['some_role'], facility_id: req.query.facility_id },
@@ -184,7 +187,10 @@ describe('Users Controller', () => {
           facility_id: 'some_facility_id',
           contact_id: 'some_contact_id'
         };
-        auth.isOffline.returns(true);
+        auth.isOnlineOnly
+          .withArgs(userCtx).returns(true)
+          .withArgs({ roles: ['some_role'] }).returns(false);
+
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: ['some_role'], facility_id: req.query.facility_id, contact_id: 'some_contact_id' },
@@ -217,7 +223,7 @@ describe('Users Controller', () => {
           role: 'some_role',
           facility_id: 'some_facility_id'
         };
-        auth.isOffline.returns(true);
+        auth.isOnlineOnly.returns(false);
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: ['some_role'], facility_id: req.query.facility_id },
@@ -240,7 +246,7 @@ describe('Users Controller', () => {
           role: 'some_role',
           facility_id: 'some_facility_id'
         };
-        auth.isOffline.returns(true);
+        auth.isOnlineOnly.returns(false);
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: [req.query.role], facility_id: req.query.facility_id },
@@ -264,7 +270,10 @@ describe('Users Controller', () => {
           role: JSON.stringify(['role1', 'role2']),
           facility_id: 'some_facility_id'
         };
-        auth.isOffline.returns(true);
+        auth.isOnlineOnly
+          .withArgs(userCtx).returns(true)
+          .withArgs({ roles: ['role1', 'role2'] }).returns(false);
+
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: ['role1', 'role2'], facility_id: req.query.facility_id },
@@ -308,7 +317,10 @@ describe('Users Controller', () => {
           authorization.getAuthorizationContext.callsFake(userCtx => Promise.resolve({ userCtx }));
           authorization.getAllowedDocIds.resolves(['1', '2', '3']);
           sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(['1', '2', '3']);
-          auth.isOffline.returns(true);
+          auth.isOnlineOnly
+            .returns(false)
+            .withArgs(userCtx).returns(true);
+
           auth.hasAllPermissions.returns(true);
           serverUtils.error.resolves();
         });
@@ -320,6 +332,9 @@ describe('Users Controller', () => {
               facility_id: 'some_facility_id'
             };
             return controller.info(req, res).then(() => {
+              console.log(scenario);
+              console.log(JSON.stringify(auth.isOnlineOnly.args, null, 2));
+              console.log(JSON.stringify(res.json.args, null, 2));
               if (scenario.fail) {
                 chai.expect(serverUtils.error.callCount).to.equal(1);
                 chai.expect(serverUtils.error.args[0][0].code).to.deep.equal(400);
