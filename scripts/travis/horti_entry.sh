@@ -3,7 +3,7 @@
 apt-get update
 apt-get install -y curl
 echo Installing Node
-curl -sL "https://deb.nodesource.com/setup_$NODE.x" | bash -
+curl -sL "https://deb.nodesource.com/setup_$NODE_VERSION.x" | bash -
 apt-get install -y nodejs
 echo Node install finished
 node -v

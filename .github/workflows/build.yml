@@ -428,7 +428,7 @@ jobs:
   wdio-tests:
     timeout-minutes: 7
     needs: build
-    name: wdio tests for ${{ matrix.config-type }}
+    name: wdio tests for ${{ matrix.config-type }} on node ${{ matrix.node-version }}
     runs-on: ubuntu-18.04
     env:
       NODE: ${{ matrix.node-version }}
@@ -481,7 +481,7 @@ jobs:
     - name: Archive Results
       uses: actions/upload-artifact@v2
       with:
-        name: WDIO Results Artifact ${{ matrix.node-version }}
+        name: WDIO Results Artifact ${{ matrix.config-type }} Node ${{ matrix.node-version }}
         path: |
           allure-results
           allure-report
