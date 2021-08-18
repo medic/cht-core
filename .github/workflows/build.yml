@@ -7,7 +7,8 @@ env:
   COUCH_NODE_NAME: nonode@nohost
   BUILDS_SERVER: _couch/builds_testing
   STAGING_SERVER: _couch/builds
-  MARKET_URL: ${{ secrets.MARKET_URL }}
+  AUTH_MARKET_URL: ${{ secrets.MARKET_URL }}
+  MARKET_URL: https://staging.dev.medicmobile.org
 
 jobs:
   build:
@@ -26,7 +27,7 @@ jobs:
       if: steps.get-docker-hub-username.outputs.dockerhub_username
     - name: Set MARKET_URL var for external users
       run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
+          echo "AUTH_MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
           echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
           echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
       if:  ${{ !env.MARKET_URL }}
@@ -98,9 +99,6 @@ jobs:
     needs: build
     name: e2e Integration Tests for Node version ${{ matrix.node-version }}
     runs-on: ubuntu-18.04
-
-    env: 
-      MARKET_URL: https://staging.dev.medicmobile.org
 
     strategy:
       matrix:
@@ -177,9 +175,6 @@ jobs:
     needs: build
     name: e2e Tests for Node version ${{ matrix.node-version }}
     runs-on: ubuntu-18.04
-
-    env: 
-      MARKET_URL: https://staging.dev.medicmobile.org
 
     strategy:
       matrix:
@@ -260,9 +255,6 @@ jobs:
     strategy:
       matrix:
         node-version: [8.x, 10.x, 12.x]
-    
-    env: 
-      MARKET_URL: https://staging.dev.medicmobile.org
 
     steps:
     - name: Get Docker Hub username
@@ -336,9 +328,6 @@ jobs:
     name: Publish branch build
     runs-on: ubuntu-18.04
 
-    env: 
-      MARKET_URL: https://staging.dev.medicmobile.org
-
     steps:
     - uses: actions/checkout@v2
     - name: Set MARKET_URL var for external users
@@ -368,9 +357,6 @@ jobs:
     strategy:
       matrix:
         node-version: [12.x]
-    
-    env: 
-      MARKET_URL: https://staging.dev.medicmobile.org
 
     steps:
     - name: Get Docker Hub username
@@ -444,9 +430,6 @@ jobs:
       matrix:
         node-version: [12.x]
         config-type: [default, standard]
-
-    env: 
-      MARKET_URL: https://staging.dev.medicmobile.org
 
     steps:
     - name: Get Docker Hub username

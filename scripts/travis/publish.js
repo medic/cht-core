@@ -2,7 +2,7 @@
  * Publish the ddoc from the testing db to staging.
  */
 const {
-  MARKET_URL,
+  AUTH_MARKET_URL,
   TRAVIS_BUILD_NUMBER,
   BUILDS_SERVER,
   STAGING_SERVER,
@@ -18,8 +18,8 @@ if (!releaseName) {
   process.exit(0);
 }
 
-const testingDb = new PouchDB(`${MARKET_URL}/${BUILDS_SERVER}`);
-const stagingDb = new PouchDB(`${MARKET_URL}/${STAGING_SERVER}`);
+const testingDb = new PouchDB(`${AUTH_MARKET_URL}/${BUILDS_SERVER}`);
+const stagingDb = new PouchDB(`${AUTH_MARKET_URL}/${STAGING_SERVER}`);
 
 const testingDocId = `medic:medic:test-${TRAVIS_BUILD_NUMBER}`;
 const stagingDocId = `medic:medic:${releaseName}`;
