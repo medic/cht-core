@@ -49,4 +49,34 @@ describe('medic-xpath-extensions', function() {
       assert.equal(medicXpathExtensions.toISOLocalString(date), '1975-08-19T15:15:30.000-01:00');
     });
   });
+
+  describe('#difference-in-months', function() {
+    [
+      [ '2015-10-01', '2015-10-01', 0, ],
+      [ '2015-09-01', '2015-10-01', 1, ],
+      [ '2015-09-02', '2015-10-01', 0, ],
+      [ '2015-10-01', '2015-11-01', 1, ],
+      [ '2015-10-02', '2015-11-01', 0, ],
+      [ '2014-10-01', '2015-10-01', 12, ],
+      [ '2014-10-02', '2015-10-01', 11, ],
+      [ '2015-10-01', '2014-10-01', -12, ],
+    ].forEach(function(example) {
+      const d1 = { t:'str', v:example[0] };
+      const d2 = { t:'str', v:example[1] };
+      const expectedDifference = example[2];
+
+      it('should report difference between ' + d1 + ' and ' + d2 + ' as ' + expectedDifference, function() {
+        assert.equal(func['difference-in-months'](d1, d2).v, expectedDifference);
+      });
+    });
+
+    it('should return an empty string when the difference cannot be calculated', function() {
+      // given
+      const d1 = { t:'str', v:'nonsense' };
+      const d2 = { t:'str', v:'2015-09-22' };
+
+      // expect
+      assert.equal(func['difference-in-months'](d1, d2).v, '');
+    });
+  });
 });
