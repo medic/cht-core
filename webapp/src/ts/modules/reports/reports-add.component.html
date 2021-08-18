@@ -11,7 +11,7 @@
 
   <div class="col-sm-8 item-content" [hidden]="loadingContent || contentError">
     <div class="body">
-      <mm-enketo formId="report-form" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()"></mm-enketo>
+      <mm-enketo id="report-form" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()"></mm-enketo>
     </div>
   </div>
 </div>
