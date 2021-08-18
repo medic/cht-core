@@ -63,7 +63,7 @@ describe('Create Person Under Area', async () => {
     await commonPage.closeTour();
 
     await commonPage.goToPeople();
-    const rows = await contactPage.getAllContactText();
+    const rows = await contactPage.getAllLHSContactsNames();
     // Only one row will be displayed: for HealthCenter
     expect(rows.length).toEqual(1);
     expect(rows[0]).toEqual(healthCenter2.name);
