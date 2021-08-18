@@ -11,6 +11,7 @@ const ALLURE_OUTPUT = 'allure-results';
 const browserLogPath = path.join(__dirname, 'logs', 'browser.console.log');
 const browserUtils = require('./utils/browser');
 const existingFeedBackDocIds = [];
+const logLevels = ['error','warning','debug'];
 let testTile;
 
 const baseConfig = {
@@ -230,7 +231,7 @@ const baseConfig = {
     await browser.cdp('Log', 'enable');
     await browser.cdp('Runtime', 'enable');
     browser.on('Runtime.consoleAPICalled', (data) => {
-      if (data && (data.type === 'error' || data.type === 'warning')) {
+      if (data && logLevels.indexOf(data.type) >= 0) {
         const logEntry = `[${data.type}] Console Api Event: ${JSON.stringify(data.args)}\n`;
         fs.appendFileSync(browserLogPath, logEntry);
       }
