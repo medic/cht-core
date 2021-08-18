@@ -26,4 +26,4 @@ services:
     command: /horti_entry.sh
     volumes:
      - "./horti_entry.sh://horti_entry.sh"
-     - "../../tests/logs/:/tests/logs/horti.log"
+     - "../../tests/logs/:/tests/logs/"
