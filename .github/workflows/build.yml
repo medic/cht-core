@@ -425,10 +425,10 @@ jobs:
   #         tests/logs
   #     if: ${{ failure() }}
 
-  wdio-tests:
-    timeout-minutes: 7
+  tests:
+    timeout-minutes: 60
     needs: build
-    name: wdio tests for ${{ matrix.config-type }} on node ${{ matrix.node-version }}
+    name: e2e tests for ${{ matrix.grunt-cmd }} on node ${{ matrix.node-version }}
     runs-on: ubuntu-18.04
     env:
       NODE: ${{ matrix.node-version }}
@@ -436,7 +436,7 @@ jobs:
     strategy:
       matrix:
         node-version: [8.x, 10.x, 12.x]
-        config-type: [default, standard]
+        grunt-cmd: [ci-webdriver-default, ci-webdriver-standard, ci-e2e-integration, ci-e2e, ci-e2e-mobile ci-e2e-cht]
 
     steps:
     - name: Get Docker Hub username
@@ -472,16 +472,15 @@ jobs:
       run: |
         echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
         docker-compose -f scripts/travis/horti-compose.yml up -d &&
-        sh scripts/e2e/wait_for_response_code.sh 5988 200 api
     - name: Test it!
-      run: node --stack_size=10000 `which grunt` ci-webdriver-${{ matrix.config-type }}
+      run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
     - name: Dump Couch logs
       run: docker-compose -f scripts/travis/horti-compose.yml logs > tests/logs/couch.log 2>&1
       if: ${{ always() }}
     - name: Archive Results
       uses: actions/upload-artifact@v2
       with:
-        name: WDIO Results Artifact ${{ matrix.config-type }} Node ${{ matrix.node-version }}
+        name: Results Artifact ${{ matrix.grunt-cmd }} Node ${{ matrix.node-version }}
         path: |
           allure-results
           allure-report
