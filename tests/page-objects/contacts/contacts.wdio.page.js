@@ -30,6 +30,7 @@ const notes = (place) => $(`[name="/data/${place}/notes"]`);
 const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][value="false"]`);
 const contactCard = () => $('.card h2');
 const contactCardIcon = (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`);
+const rhsPeopleListSelector = () => $$('[test-id="person"] h4 span');
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
@@ -98,6 +99,11 @@ const getAllReportsText = async () => {
   return getTextForElements(reportRowsText);
 };
 
+const getAllRHSPeopleNames = async () => {
+  await (await name()).waitForDisplayed();
+  return getTextForElements(rhsPeopleListSelector);
+};
+
 module.exports = {
   selectLHSRowByText,
   reportFilters,
@@ -109,5 +115,6 @@ module.exports = {
   addPlace,
   topContact,
   getPrimaryContactName,
-  getAllReportsText
+  getAllReportsText,
+  getAllRHSPeopleNames,
 };

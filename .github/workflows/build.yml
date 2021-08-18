@@ -427,12 +427,13 @@ jobs:
 
   wdio-tests:
     needs: build
-    name: wdio tests
+    name: wdio tests for ${{ matrix.config-type }}
     runs-on: ubuntu-18.04
 
     strategy:
       matrix:
         node-version: [12.x]
+        config-type: [default, standard]
 
     steps:
     - name: Get Docker Hub username
@@ -485,7 +486,7 @@ jobs:
         echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
         COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
     - name: Test it!
-      run: node --stack_size=10000 `which grunt` ci-webdriver
+      run: node --stack_size=10000 `which grunt` ci-webdriver-${{ matrix.config-type }}
     - name: Dump Couch logs
       run: docker logs couch > tests/logs/couch.log 2>&1
       if: ${{ always() }}
