@@ -103,7 +103,6 @@ describe('Contacts content component', () => {
       { selector: Selectors.getContactsLoadingSummary, value: false },
       { selector: Selectors.getSelectedContactDoc, value: selectedContact.doc },
       { selector: Selectors.getSelectedContactChildren, value: null },
-      { selector: Selectors.getFilters, value: {} },
     ];
     activatedRoute = { params: of({ id: 'load contact' }), snapshot: { params: { id: 'load contact'} } };
     router = { navigate: sinon.stub() };
@@ -177,21 +176,9 @@ describe('Contacts content component', () => {
     expect(selectContact.args[0][0]).to.equal('load contact');
   }));
 
-  it(`should not load the user's home place when a search term exists`, fakeAsync(() => {
+  it(`should load the user's home place when a param id not set`, fakeAsync(() => {
     const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
     store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
-    store.overrideSelector(Selectors.getFilters, { search: 'text' });
-    component.ngOnInit();
-    flush();
-
-    expect(selectContact.callCount).to.equal(1);
-    expect(selectContact.args[0][0]).to.equal('load contact');
-  }));
-
-  it(`should load the user's home place when a param id not set and no search term exists`, fakeAsync(() => {
-    const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
-    store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
-    store.overrideSelector(Selectors.getFilters, undefined);
     activatedRoute.params = of({});
     activatedRoute.snapshot.params = {};
     component.ngOnInit();
@@ -408,7 +395,6 @@ describe('Contacts content component', () => {
     it('should enable edit when user is not online only and facility is not home place ', fakeAsync(() => {
       sinon.resetHistory();
       sessionService.isOnlineOnly.returns(false);
-
       component.userSettings = { facility_id: 'district-9' };
       store.overrideSelector(Selectors.getSelectedContact, {
         doc: { _id: 'district-123', phone: '123', muted: true },

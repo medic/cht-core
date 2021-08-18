@@ -45,9 +45,8 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   reportsTimeWindowMonths;
   tasksTimeWindowWeeks;
   userSettings;
-  private settings;
-  private childTypesBySelectedContact = [];
-  private filters;
+  settings;
+  childTypesBySelectedContact = [];
   canDeleteContact = false; // this disables the "Delete" button until children load
 
   filteredTasks = [];
@@ -100,12 +99,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.store.select(Selectors.getUserFacilityId)
       .pipe(first(id => id !== null))
       .subscribe((userFacilityId) => {
-        const shouldDisplayHomePlace = userFacilityId &&
-          !this.filters?.search &&
-          !this.route.snapshot.params.id &&
-          !this.responsiveService.isMobile();
-
-        if (shouldDisplayHomePlace) {
+        if (userFacilityId && !this.route.snapshot.params.id && !this.responsiveService.isMobile()) {
           this.contactsActions.selectContact(userFacilityId);
         }
       });
@@ -118,14 +112,12 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getLoadingSelectedContactReports),
       this.store.select(Selectors.getContactsLoadingSummary),
-      this.store.select(Selectors.getFilters),
     ).subscribe(([
       selectedContact,
       forms,
       loadingContent,
       loadingSelectedContactReports,
       contactsLoadingSummary,
-      filters,
     ]) => {
       if (this.selectedContact?._id !== selectedContact?._id) {
         // reset view when selected contact changes
@@ -136,7 +128,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       this.forms = forms;
       this.loadingSelectedContactReports = loadingSelectedContactReports;
       this.contactsLoadingSummary = contactsLoadingSummary;
-      this.filters = filters;
     });
     this.subscription.add(reduxSubscription);
 

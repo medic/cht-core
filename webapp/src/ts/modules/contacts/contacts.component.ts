@@ -414,7 +414,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
   search() {
     if (this.filters.search && !this.enketoEdited) {
-      this.router.navigate(['/contacts']);
+      this.router.navigate(['contacts']);
       this.contactsActions.clearSelection();
     }
 
