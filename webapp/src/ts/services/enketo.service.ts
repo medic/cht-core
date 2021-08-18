@@ -135,7 +135,9 @@ export class EnketoService {
           $element.text(this.translateService.instant('enketo.' + $element.attr('data-i18n')));
         });
 
-        $html.find('#form-languages').remove();
+        // Cannot actually remove the #form-languages dropdown or Enketo will ignore our override language that we
+        // provide when constructing the EnketoForm.
+        $html.find('#form-languages').hide();
 
         const hasContactSummary = $(model).find('> instance[id="contact-summary"]').length === 1;
         return {
@@ -267,7 +269,7 @@ export class EnketoService {
         if (contactSummary) {
           data.external = [ contactSummary ];
         }
-        const form = wrapper.find('form').first()[0];// TODO This does not seem good.
+        const form = wrapper.find('form')[0];
         return new window.EnketoForm(form, data, { language });
       });
   }
