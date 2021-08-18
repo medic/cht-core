@@ -10,7 +10,7 @@ const {
   TRAVIS_BRANCH,
   COUCH_URL,
   COUCH_NODE_NAME,
-  AUTH_MARKET_URL,
+  MARKET_URL,
   STAGING_SERVER,
   BUILDS_SERVER,
   TRAVIS_BUILD_NUMBER,
@@ -136,7 +136,7 @@ module.exports = function(grunt) {
         files: [
           {
             src: 'build/ddocs/medic.json',
-            dest: `${AUTH_MARKET_URL}/${STAGING_SERVER}`,
+            dest: `${MARKET_URL}/${STAGING_SERVER}`,
           },
         ],
       },
@@ -144,7 +144,7 @@ module.exports = function(grunt) {
         files: [
           {
             src: 'build/ddocs/medic.json',
-            dest: `${AUTH_MARKET_URL}/${BUILDS_SERVER}`,
+            dest: `${MARKET_URL}/${BUILDS_SERVER}`,
           },
         ],
       }

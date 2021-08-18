@@ -7,8 +7,7 @@ env:
   COUCH_NODE_NAME: nonode@nohost
   BUILDS_SERVER: _couch/builds_testing
   STAGING_SERVER: _couch/builds
-  AUTH_MARKET_URL: ${{ secrets.MARKET_URL }}
-  MARKET_URL: https://staging.dev.medicmobile.org
+  MARKET_URL: ${{ secrets.AUTH_MARKET_URL }}
 
 jobs:
   build:
@@ -27,7 +26,7 @@ jobs:
       if: steps.get-docker-hub-username.outputs.dockerhub_username
     - name: Set MARKET_URL var for external users
       run: |
-          echo "AUTH_MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
+          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
           echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
           echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
       if:  ${{ !env.MARKET_URL }}
