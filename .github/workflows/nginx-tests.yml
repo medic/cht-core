@@ -1,0 +1,54 @@
+name: Run tests on nginx docker image and publish
+
+on: [push]
+
+jobs:
+  build-test-cht-postgres:
+    name: Build and test cht-nginx
+    runs-on: ubuntu-20.04
+
+
+
+    steps:
+      - name: Get Docker Hub Username
+        id: get-docker-hub-username
+        run: echo '::set-output name=dockerhub_username::${{ secrets.CI_DOCKER_USERNAME }}'
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.CI_DOCKER_USERNAME }}
+          password: ${{ secrets.CI_DOCKER_PASSWORD }}
+        if: steps.get-docker-hub-username.outputs.dockerhub_username
+
+      - name: Checkout branch
+        uses: actions/checkout@v2
+
+      - name: Add necessary submodules
+        run: git submodule update --init
+
+      - name: Build
+        run: docker build nginx/  -t cht-nginx-test --target test_nginx
+
+      - name: Test
+        run: docker run cht-nginx-test ./tests/bats/bin/bats  tests/tests.bats
+
+      - name: Get Metadata
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: medicmobile/cht-nginx
+          labels: |
+            org.opencontainers.image.title=cht-nginx
+            org.opencontainers.image.description= Custom Nginx image used with the CHT
+            org.opencontainers.image.vendor=Medic
+          flavor: |
+            latest=auto
+      - name: Build and Publish to Docker Hub
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push:  ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/arch-v3-nginx' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          target:  cht-nginx

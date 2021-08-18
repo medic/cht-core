@@ -4,6 +4,7 @@ services:
         container_name: cht-nginx
         build:
             context: .
+            target: ${BUILD_TARGET:-base_nginx}
         environment:
             CERTIFICATE_MODE: "${CERTIFICATE_MODE:-AUTO_GENERATE}"
             COMMON_NAME: "${COMMON_NAME:-test-nginx.dev.medicmobile.org}"

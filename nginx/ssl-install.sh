@@ -4,7 +4,6 @@ set -e
 
 SSL_CERT_FILE_PATH=${SSL_CERT_FILE_PATH:-"/etc/nginx/private/cert.pem"}
 SSL_KEY_FILE_PATH=${SSL_KEY_FILE_PATH:-"/etc/nginx/private/key.pem"}
-# set acme.sh path for tests to pass
 
 
 welcome_message(){

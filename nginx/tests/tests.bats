@@ -71,7 +71,7 @@ teardown()
     export CERTIFICATE_MODE="SELF_SIGNED"
     export COMMON_NAME="test.dev.medic.org"
     run ssl-install.sh  main
-    assert_output  --partial "Generating a 4096 bit RSA private key"
+    assert_output  --partial "RSA private key"
     assert_output  --partial "Launching Nginx"
 }
 
@@ -109,17 +109,5 @@ teardown()
     rm -rf $SSL_CERT_FILE_PATH
     rm -rf $SSL_CERT_FILE_PATH
     assert_output  --partial "SSL cert already exists."
-    assert_output  --partial "Launching Nginx"
-}
-
-
-@test "SSL certificate auto generation succeeds if all pre-requsites are met" {
-    export CERTIFICATE_MODE="AUTO_GENERATE"
-    export COMMON_NAME="test.dev.medic.org"
-    export EMAIL="test@medic.org"
-    shellmock_expect curl --status 0 --type partial
-    shellmock_expect acme.sh --status 0 --type partial
-    run ssl-install.sh  main
-    assert_output  --partial "SSL Cert installed."
     assert_output  --partial "Launching Nginx"
 }

@@ -14,10 +14,12 @@ COPY mime.types /etc/nginx/mime.types
 
 # test build
 FROM base_nginx as test_nginx
-WORKDIR /tests
-COPY nginx/tests /tests/
-RUN git submodule update --init
-RUN npm i -g grunt-cli
+RUN apk add bash
+WORKDIR /app
+#add symbolic link to script for easy access by tests
+RUN ln -s /docker-entrypoint.d/ssl-install.sh /app/ssl-install.sh
+RUN mkdir tests
+COPY tests tests
 
 # Final
 FROM base_nginx AS cht-nginx
