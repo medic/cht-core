@@ -207,7 +207,6 @@ export class DBSyncService {
         local.replicate.from(remote),
       ]))
       .then(([ push, pull ]) => {
-
         telemetryEntry.recordSuccess({ push, pull });
       })
       .catch(err => {
