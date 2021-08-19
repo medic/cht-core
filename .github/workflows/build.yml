@@ -1,4 +1,4 @@
-name: Build cht-core and test against node versions
+name: Build cht-core and test against node versio
 
 on: [push, pull_request]
 
