@@ -29,7 +29,7 @@ get_lan_ip() {
     fi
     lanInterface=$(ip r | grep $subnet | grep default | head -n1 | cut -d' ' -f 5)
     lanAddress=$(ip a s "$lanInterface" | awk '/inet /{gsub(/\/.*/,"");print $2}' | head -n1)
-    if [ -z $lanAddress ]; then
+    if [ -z "$lanAddress" ]; then
       lanAddress=127.0.0.1
     fi
   fi
@@ -58,13 +58,18 @@ required_apps_installed(){
 port_open(){
   ip=$1
   port=$2
+  # todo - macos prints this on screen. nothing should be shown (like on ubuntu)
+  # Connection to 127.0.0.1 port 8443 [tcp/pcsync-https] succeeded!
   nc -z "$ip" "$port"
   echo $?
 }
 
 has_self_signed_cert() {
-  # todo - when thoere's no connectivity, this fails w/ DNS
+  # todo - when there's no connectivity, this fails w/ DNS
   # curl: (6) Could not resolve host: 127-0-0-1.my.local-ip.co
+
+  # todo - macos returns this error some times
+  # curl: (35) LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to 127-0-0-1.my.local-ip.co:8443
   url=$1
   curl --insecure -vvI "$url" 2>&1 | grep -c "self signed certificate"
 }
@@ -77,6 +82,9 @@ cht_healthy(){
   if [ "$portIsOpen" = "0" ]; then
     # todo - when thoere's no connectivity, this fails w/ DNS
     # curl: (6) Could not resolve host: 127-0-0-1.my.local-ip.co
+
+    # todo - macos returns this error some times
+    # curl: (35) LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to 127-0-0-1.my.local-ip.co:8443
     http_code=$(curl -k --silent --show-error --head "$chtUrl" --write-out '%{http_code}' | tail -n1)
     if [ "$http_code" != "200" ]; then
       echo "CHT is returning $http_code instead of 200."
@@ -88,18 +96,18 @@ cht_healthy(){
 
 validate_env_file(){
   envFile=$1
-  if [ ! -f "$envFile" ]; then
-    echo "File not found: $envFile"
-  fi
-
-  # TODO- maybe grep for env vars we're expecting? Blindly including
-  # is a bit promiscuous
-  # shellcheck disable=SC1090
-  . "${envFile}"
-  if [ -z "$COMPOSE_PROJECT_NAME" ] || [ -z "$CHT_HTTP" ] || [ -z "$CHT_HTTPS" ]; then
-    echo "Missing env value in file: COMPOSE_PROJECT_NAME, CHT_HTTP or CHT_HTTPS"
-  elif [[ "$COMPOSE_PROJECT_NAME" =~ [A-Z] ]];then
-    echo "COMPOSE_PROJECT_NAME can not have upper case: $COMPOSE_PROJECT_NAME"
+  if [ ! -f "$envFile" ] || [[ ! "$(file $envFile)" == *"ASCII text"* ]]; then
+    echo "File not found or not a text file: $envFile"
+  else
+    # TODO- maybe grep for env vars we're expecting? Blindly including
+    # is a bit promiscuous
+    # shellcheck disable=SC1090
+    . "${envFile}"
+    if [ -z "$COMPOSE_PROJECT_NAME" ] || [ -z "$CHT_HTTP" ] || [ -z "$CHT_HTTPS" ]; then
+      echo "Missing env value in file: COMPOSE_PROJECT_NAME, CHT_HTTP or CHT_HTTPS"
+    elif [[ "$COMPOSE_PROJECT_NAME" =~ [A-Z] ]];then
+      echo "COMPOSE_PROJECT_NAME can not have upper case: $COMPOSE_PROJECT_NAME"
+    fi
   fi
 }
 
@@ -117,6 +125,7 @@ get_running_container_count(){
 }
 
 get_global_running_container_count(){
+  # shellcheck disable=SC1083
   if [ "$( docker ps --format={{.Names}} | wc -l )" -gt 0 ]; then
     docker ps --format={{.Names}} | wc -l
   else
@@ -132,6 +141,29 @@ volume_exists(){
   else
     echo "1"
   fi
+}
+
+get_images_count(){
+  images="$1"
+  result=0
+  IFS=' ' read -ra imagesArray <<< "$images"
+  for image in "${imagesArray[@]}"
+  do
+    image=$(echo $image | cut -f1 -d':')
+    if [ "$( docker image ls | grep -c "${image}" )" -eq 1 ]; then
+        (( result++ ))
+    fi
+  done
+  echo "$result"
+}
+
+pull_images(){
+  images="$1"
+  IFS=' ' read -ra imagesArray <<< "$images"
+  for image in "${imagesArray[@]}"
+  do
+    docker image pull "${image}" >/dev/null 2>&1
+  done
 }
 
 get_docker_compose_yml_path(){
@@ -153,9 +185,9 @@ docker_up_or_restart(){
   composeFile=$2
 
   # haproxy never starts on first "up" call, so you know, call it twice ;)
-  docker-compose --env-file ${envFile} -f ${composeFile} down >/dev/null 2>&1
-  docker-compose --env-file ${envFile} -f ${composeFile} up -d >/dev/null 2>&1
-  docker-compose --env-file ${envFile} -f ${composeFile} up -d >/dev/null 2>&1
+  docker-compose --env-file "${envFile}" -f "${composeFile}" down >/dev/null 2>&1
+  docker-compose --env-file "${envFile}" -f "${composeFile}" up -d >/dev/null 2>&1
+  docker-compose --env-file "${envFile}" -f "${composeFile}" up -d >/dev/null 2>&1
 }
 
 install_local_ip_cert(){
@@ -170,7 +202,7 @@ install_local_ip_cert(){
 docker_down(){
   envFile=$1
   composeFile=$2
-  docker-compose --env-file ${envFile} -f ${composeFile} down >/dev/null 2>&1
+  docker-compose --env-file "${envFile}" -f "${composeFile}" down >/dev/null 2>&1
 }
 
 docker_destroy(){
@@ -187,7 +219,7 @@ docker_destroy(){
 
 get_cht_version() {
   url=$1
-  urlWithPassAndPath="https://medic:password@$(echo $url | cut -c 9-9999)/medic/_design/medic "
+  urlWithPassAndPath="https://medic:password@$(echo "$url" | cut -c 9-9999)/medic/_design/medic "
   # todo - as of 20.04, ubuntu still doesn't actually ship with JQ default :(
   # todo - or maybe just download it for them per https://unix.stackexchange.com/a/649872 ?
   #         but would this work on macos? oh - looks like yes!?
@@ -197,9 +229,19 @@ get_cht_version() {
     echo "NA (jq not installed)"
   else
     url=$1
-    urlWithPassAndPath="https://medic:password@$(echo $url | cut -c 9-9999)/medic/_design/medic "
+    urlWithPassAndPath="https://medic:password@$(echo "$url" | cut -c 9-9999)/medic/_design/medic "
     version=$(curl -sk "$urlWithPassAndPath"|jq .build_info.base_version | tr -d '"')
     echo "$version"
+  fi
+}
+
+get_load_avg() {
+  # "system_profiler" exists only on MacOS, if it's not here, then run linux style command for
+  # load avg.  Otherwise use MacOS style command
+  if [ -n "$(required_apps_installed "system_profiler")" ];then
+    awk '{print  $1 " " $2 " " $3 }' < /proc/loadavg
+  else
+    sysctl -n vm.loadavg
   fi
 }
 
@@ -211,6 +253,7 @@ main (){
     window "CHT Docker Helper - WARNING - Missing or invalid .env File" "red" "100%"
     append "$validEnv"
     endwin
+    set -e
     return 0
   else
     # shellcheck disable=SC1090
@@ -220,10 +263,11 @@ main (){
   # after valid env file is loaded, let's set all our constants
   declare -r APP_STRING="docker;docker-compose;nc;curl;tr;awk;grep;cut"
   declare -r MAX_REBOOTS=5
-  declare -r DEFAULT_SLEEP=$((100 * $((reboot_count + 1))))
+  declare -r DEFAULT_SLEEP=$((60 * $((reboot_count + 1))))
   declare -r MEDIC_OS="${COMPOSE_PROJECT_NAME}_medic-os_1"
   declare -r HAPROXY="${COMPOSE_PROJECT_NAME}_haproxy_1"
   declare -r ALL_CONTAINERS="${MEDIC_OS} ${HAPROXY}"
+  declare -r ALL_IMAGES="medicmobile/medic-os:cht-3.9.0-rc.2 medicmobile/haproxy:rc-1.17"
 
   # with constants set, let's ensure all the apps are present, exit if not
   appStatus=$(required_apps_installed "$APP_STRING")
@@ -232,17 +276,20 @@ main (){
     append "Install before proceeding:"
     append "$appStatus"
     endwin
+    set -e
     return 0
   fi
 
   # do all the various checks of stuffs
   volumeCount=$(volume_exists "$COMPOSE_PROJECT_NAME")
   containerCount=$(get_running_container_count "$ALL_CONTAINERS")
+  imageCount=$(get_images_count "$ALL_IMAGES")
   globalContainerCount=$(get_global_running_container_count)
   lanAddress=$(get_lan_ip)
   chtUrl=$(get_local_ip_url "$lanAddress")
   health=$(cht_healthy "$lanAddress" "$CHT_HTTPS" "$chtUrl")
   dockerComposePath=$(get_docker_compose_yml_path)
+  loadAvg=$(get_load_avg)
   chtVersion="NA"
 
   # if we're exiting, call down or destroy and quit proper
@@ -281,21 +328,22 @@ main (){
     endwin
     exitNext=$docker_action
     return 0
-  elif [ -z $docker_action ] || [ $docker_action != "up" ] || [ $docker_action = "" ]; then
+  elif [ -z "$docker_action" ] || [ "$docker_action" != "up" ] || [ "$docker_action" = "" ]; then
     date
     set -e
     exit 0
   fi
 
   # todo - add CHT version as info displayed
-  window "CHT Docker Helper: PROJECT ${COMPOSE_PROJECT_NAME}" "green" "100%"
+  window "CHT Docker Helper: ${COMPOSE_PROJECT_NAME}" "green" "100%"
+  append_tabbed "CHT Health|${overAllHealth} - ${chtVersion}" 2 "|"
   append_tabbed "CHT URL|${chtUrl}" 2 "|"
   append_tabbed "FAUXTON URL|${chtUrl}/_utils/" 2 "|"
   append_tabbed "" 2 "|"
-  append_tabbed "CHT Health|${overAllHealth}" 2 "|"
-  append_tabbed "CHT Version|${chtVersion}" 2 "|"
-  append_tabbed "Project Running Containers|${containerCount} of 2" 2 "|"
-  append_tabbed "Global Running Containers|${globalContainerCount}" 2 "|"
+  append_tabbed "Project Containers|${containerCount} of 2" 2 "|"
+  append_tabbed "Global Containers / Medic Images|${globalContainerCount} / ${imageCount}" 2 "|"
+  append_tabbed "Global load Average|${loadAvg}" 2 "|"
+  append_tabbed "" 2 "|"
   append_tabbed "Last Action|${last_action}" 2 "|"
   endwin
 
@@ -307,27 +355,37 @@ main (){
     return 0
   fi
 
+  if [[ "$imageCount" -lt 2 ]] && [[ "$sleepFor" = 0 ]]; then
+    sleepFor=$DEFAULT_SLEEP
+    last_action="Downloading Docker Hub images"
+    pull_images "$ALL_IMAGES" &
+    (( reboot_count++ ))
+
+    # todo - figure a way to catch the images being downloaded and reset sleepFor=0?
+  fi
+
   if [[ "$volumeCount" = 0 ]] && [[ "$reboot_count" = 0 ]]; then
     sleepFor=$DEFAULT_SLEEP
-    last_action="First run of \"docker-compose up\""
+    last_action="First run of \"up\""
     docker_up_or_restart "$envFile" "$dockerComposePath" &
     (( reboot_count++ ))
   fi
 
   if [[ "$containerCount" != 2 ]] && [[ "$reboot_count" != "$MAX_REBOOTS" ]] && [[ "$sleepFor" = 0 ]]; then
     sleepFor=$DEFAULT_SLEEP
-    last_action="Running \"docker-compose down\" then  \"docker-compose up\""
+    last_action="Running \"down\" then  \"up\""
     docker_up_or_restart "$envFile" "$dockerComposePath" &
     (( reboot_count++ ))
   fi
 
   if [ -n "$health" ] && [[ "$sleepFor" = 0 ]] && [[ "$reboot_count" != "$MAX_REBOOTS" ]]; then
     sleepFor=$DEFAULT_SLEEP
-    last_action="Running \"docker-compose down\" then  \"docker-compose up\""
+    last_action="Running \"down\" then  \"up\""
     docker_up_or_restart "$envFile" "$dockerComposePath"  &
     (( reboot_count++ ))
   fi
 
+  # todo - sometimes when we're in sleep, you can't "ctrl + c" to quit for some reason?
   if [[ "$sleepFor" > 0 ]] && [ -n "$health" ]; then
     window "Attempt number $reboot_count / $MAX_REBOOTS to boot $COMPOSE_PROJECT_NAME" "yellow" "100%"
     append "Waiting $sleepFor..."
@@ -339,6 +397,8 @@ main (){
     window "Reboot max met: $MAX_REBOOTS reboots" "red" "100%"
     append "Please try running docker helper script again"
     endwin
+    set -e
+    return 0
   fi
 
   # show health status
@@ -365,7 +425,7 @@ main (){
   last_action=" :) "
 
   # if we're here, we're happy! Show happy sign and exit next iteration via exitNext
-  window "Successfully started project ${COMPOSE_PROJECT_NAME} " "green" "100%"
+  window "Successfully started ${COMPOSE_PROJECT_NAME} " "green" "100%"
   append "login: medic"
   append "password: password"
   append ""
@@ -375,4 +435,4 @@ main (){
 
 }
 
-main_loop -t 1.0 $@
+main_loop -t .5 $@

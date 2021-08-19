@@ -9,16 +9,16 @@ main (){
 
   window "Containers" "green" "100%"
   containersCount=$(docker ps | wc -l)
-  if [[ $containersCount > 1 ]];then
+  if [[ $containersCount -gt 1 ]];then
     append_tabbed "NAME|STATUS|STATE|IP" 4 "|"
 
     containers=$(docker ps | awk '{if(NR>1) print $NF}')
     for container in $containers
     do
       upSince=$(docker ps  --format='{{.Status}}' -f="name=$container")
-      status=$(docker ps  --format='{{.State}}'  -f="name=$container")
-      ip=$(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'  $container)
-      append_tabbed "$container|$upSince|$status|$ip" 4 "|"
+      status2=$(docker ps  --format='{{.State}}'  -f="name=$container")
+      ip=$(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'  "$container")
+      append_tabbed "$container|$upSince|$status2|$ip" 4 "|"
     done
   else
     append "No containers running"
@@ -34,6 +34,11 @@ main (){
 
   col_right
   move_up
+
+  window "Medic Images" "green" "50%"
+  dockerImg=$(docker image ls --format 'table {{.Repository}}:{{.Tag}}\t' --filter 'reference=medicmobile/*')
+  append "$dockerImg"
+  endwin
 
   window "volumes" "green" "50%"
   dockerVol=$(docker volume ls --format 'table {{.Name}}\t')
