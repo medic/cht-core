@@ -28,10 +28,9 @@ describe('monitoring', () => {
       const usersInfo = await getInfo('_users');
 
       const result = await utils.request({ path: '/api/v1/monitoring' });
-      expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation']).to.deep.equal({
+      expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation','node']).to.deep.equal({
         version: {
           app: await getAppVersion(),
-          // node: process.version,
           couchdb: await getCouchDBVersion(),
         },
         couchdb: {
@@ -101,10 +100,9 @@ describe('monitoring', () => {
       const usersInfo = await getInfo('_users');
 
       const result = await utils.request({ path: '/api/v2/monitoring' });
-      expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation']).to.deep.equal({
+      expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation','node']).to.deep.equal({
         version: {
           app: await getAppVersion(),
-          // node: process.version,
           couchdb: await getCouchDBVersion(),
         },
         couchdb: {
