@@ -14,13 +14,13 @@ Please do not use this script for production hosting. See [Medic's "Hosting" sec
 
 ### OS 
 
-The main requirement is Ubuntu OS and this script has only been tested on Ubuntu.  It likely will work on Windows WSL2.  It will not work on MacOS as it's missing the `ip` command.
+This script has been heavily tested on Ubuntu and should work very well there.  It has been lightly tested on WSL2 on Windows 10 and MacOS - both should likely work as well.
 
 ### Software
 
 The script will check and require these commands. All but the first two should be installed by default on Ubuntu:
 
-* docker
+* docker (At least version 20.x)
 * docker-compose
 * nc
 * curl
