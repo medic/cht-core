@@ -568,12 +568,6 @@ describe('transitions', () => {
         infodoc = infos.find(info => info.doc_id === doc._id);
         expectTransitions(infodoc, 'default_responses', 'update_clinics', 'death_reporting');
 
-        //mute
-        doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute');
-        infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses', 'update_clinics');
-        chai.expect(infodoc.transitions.muting).to.equal(undefined);
-
         chai.expect(child1.length).to.equal(1);
         chai.expect(child1[0].doc.patient_id).to.equal('child1');
         chai.expect(child1[0].doc.parent._id).to.equal('clinic2');
@@ -581,11 +575,18 @@ describe('transitions', () => {
 
         chai.expect(person3.date_of_death).to.be.ok;
 
+        //mute
+        doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute');
+        infodoc = infos.find(info => info.doc_id === doc._id);
         if (person4._rev !== contactsRevs.find(result => result.id === person4._id).rev) {
           // if the rev changed, it means that Sentinel was super fast to process muting while we ran assertions
           chai.expect(person4.muted).to.be.ok;
+          expectTransitions(infodoc, 'default_responses', 'update_clinics', 'muting');
         } else {
           chai.expect(person4.muted).to.equal(undefined);
+
+          expectTransitions(infodoc, 'default_responses', 'update_clinics');
+          chai.expect(infodoc.transitions.muting).to.equal(undefined);
         }
       })
       .then(() => sentinelUtils.waitForSentinel(ids))
