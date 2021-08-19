@@ -332,9 +332,6 @@ describe('Users Controller', () => {
               facility_id: 'some_facility_id'
             };
             return controller.info(req, res).then(() => {
-              console.log(scenario);
-              console.log(JSON.stringify(auth.isOnlineOnly.args, null, 2));
-              console.log(JSON.stringify(res.json.args, null, 2));
               if (scenario.fail) {
                 chai.expect(serverUtils.error.callCount).to.equal(1);
                 chai.expect(serverUtils.error.args[0][0].code).to.deep.equal(400);
