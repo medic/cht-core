@@ -27,7 +27,13 @@ services:
 
   medic-api:
     container_name: medic-api
-    image: medicmobile/medic-api:3.10.0-010520-test4
+    image: medic-api
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    volumes:
+      - medic-data:/srv
+    working_dir: /srv
     environment:
       COUCHDB_SERVICE_NAME: couchdb
       COUCH_NODE_NAME: "couchdb@127.0.0.1"
@@ -44,7 +50,13 @@ services:
 
   medic-api-helper:
     container_name: medic-api-helper
-    image: medicmobile/medic-api-helper:3.10.0-010321-test1
+    image: medic-api-helper
+    build:
+      context: .
+      dockerfile: api/Dockerfile.helper
+    volumes:
+      - medic-data:/srv
+    working_dir: /srv
     environment:
       COUCHDB_SERVICE_NAME: couchdb
       COUCH_NODE_NAME: "couchdb@127.0.0.1"
@@ -60,7 +72,10 @@ services:
 
   medic-sentinel:
     container_name: medic-sentinel
-    image: medicmobile/medic-sentinel:3.10.0-011020-test1
+    image: medic-sentinel
+    build:
+      context: .
+      dockerfile: sentinel/Dockerfile
     environment:
       COUCHDB_SERVICE_NAME: couchdb
       COUCH_NODE_NAME: "couchdb@127.0.0.1"
@@ -93,7 +108,7 @@ services:
 
   haproxy:
     container_name: haproxy
-    image: medicmobile/haproxy:rc-1.18
+    image: medicmobile/haproxy:rc-1.17
     environment:
       COUCHDB_USER: ${COUCHDB_USER}
       COUCHDB_PASSWoRD: ${COUCHDB_PASSWORD}
