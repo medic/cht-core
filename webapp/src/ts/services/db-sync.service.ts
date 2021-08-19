@@ -202,11 +202,16 @@ export class DBSyncService {
     return local
       .info()
       .then(info => currentSeq = info.update_seq)
-      .then(() => {
-        return local
-          .sync(remote)
-          .on('complete', (info) => telemetryEntry.recordSuccess(info))
-          .on('error', (err) => telemetryEntry.recordFailure(err, this.knownOnlineState));
+      .then(() => Promise.all([
+        local.replicate.to(remote),
+        local.replicate.from(remote),
+      ]))
+      .then(([ push, pull ]) => {
+
+        telemetryEntry.recordSuccess({ push, pull });
+      })
+      .catch(err => {
+        telemetryEntry.recordFailure(err, this.knownOnlineState);
       })
       .then(() => this.ngZone.runOutsideAngular(() => purger.writePurgeMetaCheckpoint(local, currentSeq)));
   }

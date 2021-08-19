@@ -17,9 +17,11 @@ describe('DBSync service', () => {
   let from;
   let isOnlineOnly;
   let userCtx;
-  let sync;
-  let syncResult;
-  let recursiveOnSync;
+
+  let metaTo;
+  let metaToResult;
+  let metaFrom;
+  let metaFromResult;
   let hasAuth;
   let recursiveOnTo;
   let recursiveOnFrom;
@@ -67,16 +69,12 @@ describe('DBSync service', () => {
     from.returns({ on: recursiveOnFrom });
     isOnlineOnly = sinon.stub();
     userCtx = sinon.stub();
-    sync = sinon.stub();
-    sync.events = {};
-    syncResult = Promise.resolve();
-    recursiveOnSync = sinon.stub().callsFake((event, fn) => {
-      sync.events[event] = fn;
-      const promise = syncResult;
-      promise.on = recursiveOnSync;
-      return promise;
-    });
-    sync.returns({ on: recursiveOnSync });
+
+    metaToResult = {};
+    metaFromResult = {};
+    metaTo = sinon.stub().resolves(metaToResult);
+    metaFrom = sinon.stub().resolves(metaFromResult);
+
     hasAuth = sinon.stub();
     dbSyncRetry = sinon.stub();
     rulesEngine = { monitorExternalChanges: sinon.stub() };
@@ -87,7 +85,7 @@ describe('DBSync service', () => {
       info: sinon.stub().resolves({ update_seq: 99 }),
     };
     localMetaDb = {
-      sync,
+      replicate: { to: metaTo, from: metaFrom },
       info: sinon.stub().resolves({}),
       get: sinon.stub().resolves({}),
       put: sinon.stub(),
@@ -351,6 +349,8 @@ describe('DBSync service', () => {
         let toResolve;
         replicationResultFrom = new Promise((resolve, reject) => fromReject = reject);
         replicationResultTo = new Promise(resolve => toResolve = resolve);
+        metaFromResult.docs_read = 13;
+        metaToResult.docs_read = 12;
 
         const syncResult = service.sync();
         await Promise.resolve();
@@ -368,7 +368,8 @@ describe('DBSync service', () => {
           expect(from.callCount).to.equal(1);
           expect(to.callCount).to.equal(1);
 
-          expect(telemetryService.record.callCount).to.equal(7);
+          console.log(JSON.stringify(telemetryService.record.args, null, 2));
+          expect(telemetryService.record.callCount).to.equal(9);
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:medic:from:failure', 2000],
             ['replication:medic:from:ms-since-last-replicated-date', 800],
@@ -378,6 +379,10 @@ describe('DBSync service', () => {
             ['replication:medic:to:success', 3000],
             ['replication:medic:to:ms-since-last-replicated-date', 800],
             ['replication:medic:to:docs', 32],
+            ['replication:meta:to:docs', 32],
+
+            ['replication:meta:sync:success', 3000],
+            ['replication:meta:sync:docs', 25],
           ]);
         });
       });
@@ -819,7 +824,7 @@ describe('DBSync service', () => {
       });
     });
 
-    describe('sync meta', () => {
+    describe('replicate meta', () => {
       beforeEach(() => {
         hasAuth.resolves(true);
         isOnlineOnly.returns(false);
@@ -829,9 +834,10 @@ describe('DBSync service', () => {
         return service.sync().then(() => {
           expect(db.withArgs({ meta: true }).callCount).to.equal(1);
           expect(db.withArgs({ meta: true, remote: true }).callCount).to.equal(1);
-          expect(localMetaDb.sync.callCount).to.equal(1);
-          expect(localMetaDb.sync.args[0][0]).to.equal(remoteMetaDb);
-          expect(localMetaDb.sync.args[0][1]).to.equal(undefined);
+          expect(localMetaDb.replicate.from.callCount).to.equal(1);
+          expect(localMetaDb.replicate.from.args[0]).to.equal([remoteMetaDb]);
+          expect(localMetaDb.replicate.to.callCount).to.equal(1);
+          expect(localMetaDb.replicate.to.args[0]).to.equal([remoteMetaDb]);
         });
       });
 
@@ -849,16 +855,18 @@ describe('DBSync service', () => {
       });
 
       it('should record telemetry when successful', async () => {
-        let syncResolve;
-        syncResult = new Promise(resolve => syncResolve = resolve);
+        let metaToResolve;
+        let metaFromResolve;
+        metaToResult = new Promise(resolve => metaToResolve = resolve);
+        metaFromResult = new Promise(resolve => metaFromResolve = resolve);
 
         const syncCall = service.sync();
         clock.tick(1000);
         await Promise.resolve();
         await Promise.resolve();
 
-        sync.events['complete']({ pull: { docs_read: 100 }, push: { docs_read: 32 } });
-        syncResolve();
+        metaToResolve({ docs_read: 100 });
+        metaFromResolve({ docs_read: 32 });
 
         await syncCall;
 
@@ -872,16 +880,18 @@ describe('DBSync service', () => {
       });
 
       it('should record telemetry when failed because "server" was offline', async () => {
-        let syncResolve;
-        syncResult = new Promise(resolve => syncResolve = resolve);
+        let metaToResolve;
+        let metaFromResolve;
+        metaToResult = new Promise(resolve => metaToResolve = resolve);
+        metaFromResult = new Promise(resolve => metaFromResolve = resolve);
 
         const syncCall = service.sync();
         clock.tick(1000);
         await Promise.resolve();
         await Promise.resolve();
 
-        sync.events['error']({ message: 'Failed to fetch', result: { docs_read: 0 } });
-        syncResolve();
+        metaToResolve.rejects({ message: 'Failed to fetch', result: { docs_read: 0 } });
+        metaFromResolve.resolves({ docs_read: 100 });
 
         await syncCall;
 
@@ -896,8 +906,10 @@ describe('DBSync service', () => {
       });
 
       it('should record telemetry when failed because "client" was offline', async () => {
-        let syncResolve;
-        syncResult = new Promise(resolve => syncResolve = resolve);
+        let metaToResolve;
+        let metaFromResolve;
+        metaToResult = new Promise(resolve => metaToResolve = resolve);
+        metaFromResult = new Promise(resolve => metaFromResolve = resolve);
         service.setOnlineStatus(false);
 
         const syncCall = service.sync(true);
@@ -905,8 +917,8 @@ describe('DBSync service', () => {
         await Promise.resolve();
         await Promise.resolve();
 
-        sync.events['error']({ message: 'Failed to fetch', result: { docs_read: 13 } });
-        syncResolve();
+        metaToResolve.resolves({ docs_read: 200 });
+        metaFromResolve.rejetcs({ message: 'Failed to fetch', result: { docs_read: 13 } });
 
         await syncCall;
 
