@@ -3,8 +3,8 @@ const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
-const contentRowsText = () => $$(`${contentRowSelector} .heading h4 span`);
-const rowByText = async (text) => (await contentRow()).$(`span=${text}`);
+const contentRows = () => $$(contentRowSelector);
+const contactName = () => $$(`${contentRowSelector} .heading h4 span`);
 const reportFilterSelector = '.card.reports .table-filter a';
 const reportRowSelector = '#reports-list .content-row';
 const reportRow = () => $(reportRowSelector);
@@ -31,15 +31,24 @@ const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][v
 const contactCard = () => $('.card h2');
 const contactCardIcon = (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`);
 const rhsPeopleListSelector = () => $$('[test-id="person"] h4 span');
+const contactSummaryContainer = () => $('#contact_summary');
+const emptySelection = () => $('contacts-content .empty-selection');
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
   await (await searchButton()).click();
 };
 
-const selectLHSRowByText = async (text) => {
-  await search(text);
-  await (await rowByText(text)).click();
+const selectLHSRowByText = async (text, executeSearch= true) => {
+  if (executeSearch) {
+    await search(text);
+  }
+  await browser.waitUntil(async () => (await contentRows()).length);
+  for (const row of await contentRows()) {
+    if ((await row.getText()) === text) {
+      return await row.click();
+    }
+  }
 };
 
 const getReportFiltersText = async () => {
@@ -50,6 +59,15 @@ const getReportFiltersText = async () => {
 const getReportTaskFiltersText = async () => {
   await (await taskFilter()).waitForDisplayed();
   return await Promise.all((await taskFilters()).map(filter => filter.getText()));
+};
+
+const waitForContactLoaded = async () => {
+  await (await contactCard()).waitForDisplayed();
+  await (await contactSummaryContainer()).waitForDisplayed();
+};
+
+const waitForContactUnloaded = async () => {
+  await (await emptySelection()).waitForDisplayed();
 };
 
 const addPlace = async (type, placeName , contactName ) => {
@@ -85,9 +103,9 @@ const getPrimaryContactName = async () => {
   return (await name()).getText();
 };
 
-const getAllContactText = async () => {
+const getAllLHSContactsNames = async () => {
   await (await contentRow()).waitForDisplayed();
-  return getTextForElements(contentRowsText);
+  return getTextForElements(contactName);
 };
 
 const getTextForElements = async (elements) => {
@@ -110,11 +128,14 @@ module.exports = {
   getReportFiltersText,
   getReportTaskFiltersText,
   contactList,
-  getAllContactText,
+  getAllLHSContactsNames,
   addPerson,
   addPlace,
   topContact,
   getPrimaryContactName,
   getAllReportsText,
   getAllRHSPeopleNames,
+  waitForContactLoaded,
+  waitForContactUnloaded,
+  contactCard,
 };
