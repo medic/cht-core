@@ -164,4 +164,4 @@ jobs:
           allure-results
           allure-report
           tests/logs
-      if: ${{ always() }}
+      if: ${{ failure() }}
