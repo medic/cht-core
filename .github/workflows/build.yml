@@ -114,7 +114,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [8.x, 10.x, 12.x]
+        node-version: ['8.x', '10.x', '12.x']
         grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-e2e-cht']
 
     steps:
@@ -150,7 +150,7 @@ jobs:
     - name: horti setup
       run: |
         echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
-        docker-compose -f scripts/travis/horti-compose.yml up -d &&
+        docker-compose -f scripts/travis/horti-compose.yml up -d 
     - name: Test it!
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
     - name: Dump Couch logs
