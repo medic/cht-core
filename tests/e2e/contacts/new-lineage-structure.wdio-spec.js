@@ -65,6 +65,5 @@ describe('Create new lineage structure', () => {
     const updatedName = 'Paul Atreides';
     chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
     chai.expect(await contactPage.getContactSummaryField('person.field.phone')).to.equal(phone);
-
   });
 });

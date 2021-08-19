@@ -117,14 +117,8 @@ const waitForContactLoaded = async () => {
 
 const getContactSummaryField = async (fieldName) => {
   await (await contactSummaryContainer()).waitForDisplayed();
-  const fields = await (await contactSummaryContainer()).$$('.cell');
-  for (const field of fields) {
-    const classNames = (await field.getAttribute('class')).split(' ');
-    if (classNames.includes(fieldName)) {
-      const fieldValue = await field.$('p');
-      return await fieldValue.getText();
-    }
-  }
+  const field = await (await contactSummaryContainer()).$(`.cell.${fieldName.replace(/\./g, '\\.')}`);
+  return await (await field.$('p')).getText();
 };
 
 const getPrimaryContactName = async () => {
