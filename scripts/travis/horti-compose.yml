@@ -19,6 +19,7 @@ services:
     image: ubuntu:18.04
     ports:
       - "5988:5988"
+      - "31337:31337"
     environment:
       - COUCH=http://admin:pass@couch:5984
       - COUCH_URL=http://admin:pass@couch:5984/medic-test
@@ -30,6 +31,7 @@ services:
       - couch
     command: /horti_entry.sh
     volumes:
-     - "./horti_entry.sh://horti_entry.sh"
+     - "./horti_entry.sh:/horti_entry.sh"
      - "../../tests/logs/:/tests/logs/"
+     - "../../:/cht-core"
      
