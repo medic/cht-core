@@ -134,7 +134,6 @@ app.use(
     // runs with a bunch of defaults: https://github.com/helmetjs/helmet
     hpkp: false, // explicitly block dangerous header
     contentSecurityPolicy: {
-      loose: true,
       directives: {
         defaultSrc: [`'none'`],
         fontSrc: [`'self'`],
