@@ -5,7 +5,7 @@ export const Actions = {
   setTasksList: createSingleValueAction('SET_TASKS_LIST', 'tasks'),
   setTasksLoaded: createSingleValueAction('SET_TASKS_LOADED', 'loaded'),
   setSelectedTask: createSingleValueAction('SET_SELECTED_TASK', 'selected'),
-  setLastCompletedTask: createSingleValueAction('SET_LAST_COMPLETED_TASK', 'task'),
+  setLastSubmittedTask: createSingleValueAction('SET_LAST_SUBMITTED_TASK', 'task'),
   setTaskGroupContact: createSingleValueAction('SET_TASK_GROUP_CONTACT', 'contact'),
   setTaskGroupContactLoading: createSingleValueAction('SET_TASK_GROUP_CONTACT_LOADING', 'loading'),
   setTaskGroup: createSingleValueAction('SET_TASK_GROUP', 'taskGroup'),
@@ -27,8 +27,8 @@ export class TasksActions {
     return this.store.dispatch(Actions.setSelectedTask(selected));
   }
 
-  setLastCompletedTask(task) {
-    return this.store.dispatch(Actions.setLastCompletedTask(task));
+  setLastSubmittedTask(task) {
+    return this.store.dispatch(Actions.setLastSubmittedTask(task));
   }
 
   setTaskGroupContact(contact) {

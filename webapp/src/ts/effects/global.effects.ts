@@ -62,7 +62,7 @@ export class GlobalEffects {
 
   private showModal({ cancelTranslationKey, recordTelemetry }) {
     const modalInitialState = {
-      translationKey: cancelTranslationKey,
+      messageTranslationKey: cancelTranslationKey,
       telemetryEntry: recordTelemetry,
     };
 

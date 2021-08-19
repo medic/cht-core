@@ -46,7 +46,7 @@ describe('TasksContentComponent', () => {
     geolocationService = { init: sinon.stub() };
     enketoService = { render, unload: sinon.stub(), save: sinon.stub() };
     router = { navigate: sinon.stub() };
-    tasksForContactService = { getLeafTypePlaceParent: sinon.stub().resolves() };
+    tasksForContactService = { getLeafPlaceAncestor: sinon.stub().resolves() };
 
     const mockedSelectors = [
       { selector: Selectors.getTasksLoaded, value: true },
@@ -115,10 +115,10 @@ describe('TasksContentComponent', () => {
   });
 
   it('should clear last completed task when loaded', async () => {
-    const setLastCompletedTask = sinon.stub(TasksActions.prototype, 'setLastCompletedTask');
+    const setLastSubmittedTask = sinon.stub(TasksActions.prototype, 'setLastSubmittedTask');
     await compileComponent();
-    expect(setLastCompletedTask.callCount).to.equal(1);
-    expect(setLastCompletedTask.args[0]).to.deep.equal([null]);
+    expect(setLastSubmittedTask.callCount).to.equal(1);
+    expect(setLastSubmittedTask.args[0]).to.deep.equal([null]);
   });
 
   it('loads form when task has one action and no fields (without hydration)', async () => {
@@ -479,14 +479,14 @@ describe('TasksContentComponent', () => {
       expect(enketoService.render.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'add', '']]);
-      expect(tasksForContactService.getLeafTypePlaceParent.callCount).to.equal(0);
+      expect(tasksForContactService.getLeafPlaceAncestor.callCount).to.equal(0);
     });
 
     it('should render form when action type is report', async () => {
       const form = { _id: 'myform', title: 'My Form' };
       const action = { type: 'report', form: 'myform', content: { contact: { _id: 'my_contact' } } };
       xmlFormsService.get.resolves({ ...form });
-      tasksForContactService.getLeafTypePlaceParent.resolves({ any: 'model' });
+      tasksForContactService.getLeafPlaceAncestor.resolves({ any: 'model' });
       await compileComponent([]);
 
       sinon.resetHistory();
@@ -506,8 +506,8 @@ describe('TasksContentComponent', () => {
         { ...action.content },
       ]);
 
-      expect(tasksForContactService.getLeafTypePlaceParent.callCount).to.equal(1);
-      expect(tasksForContactService.getLeafTypePlaceParent.args[0]).to.deep.equal(['my_contact']);
+      expect(tasksForContactService.getLeafPlaceAncestor.callCount).to.equal(1);
+      expect(tasksForContactService.getLeafPlaceAncestor.args[0]).to.deep.equal(['my_contact']);
       expect((<any>TasksActions.prototype.setTaskGroupContactLoading).callCount).to.equal(1);
       expect((<any>TasksActions.prototype.setTaskGroupContactLoading).args[0]).to.deep.equal([true]);
       await Promise.resolve();
@@ -544,7 +544,7 @@ describe('TasksContentComponent', () => {
       const form = { _id: 'myform', title: 'My Form' };
       const action = { type: 'report', form: 'myform', content: { contact: { _id: 'the_contact' } } };
       xmlFormsService.get.resolves({ ...form });
-      tasksForContactService.getLeafTypePlaceParent.rejects({ some: 'error' });
+      tasksForContactService.getLeafPlaceAncestor.rejects({ some: 'error' });
       await compileComponent([]);
 
       sinon.resetHistory();
@@ -565,8 +565,8 @@ describe('TasksContentComponent', () => {
         { ...action.content },
       ]);
 
-      expect(tasksForContactService.getLeafTypePlaceParent.callCount).to.equal(1);
-      expect(tasksForContactService.getLeafTypePlaceParent.args[0]).to.deep.equal(['the_contact']);
+      expect(tasksForContactService.getLeafPlaceAncestor.callCount).to.equal(1);
+      expect(tasksForContactService.getLeafPlaceAncestor.args[0]).to.deep.equal(['the_contact']);
       expect((<any>TasksActions.prototype.setTaskGroupContactLoading).callCount).to.equal(1);
       expect((<any>TasksActions.prototype.setTaskGroupContactLoading).args[0]).to.deep.equal([true]);
       await Promise.resolve();
@@ -585,14 +585,14 @@ describe('TasksContentComponent', () => {
     let setEnketoSavingStatus;
     let unsetSelected;
     let clearNavigation;
-    let setLastCompletedTask;
+    let setLastSubmittedTask;
 
     beforeEach(() => {
       setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
       setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
       unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
       clearNavigation = sinon.stub(GlobalActions.prototype, 'clearNavigation');
-      setLastCompletedTask = sinon.stub(TasksActions.prototype, 'setLastCompletedTask');
+      setLastSubmittedTask = sinon.stub(TasksActions.prototype, 'setLastSubmittedTask');
     });
 
     it('should do nothing if already saving', async () => {
@@ -639,7 +639,7 @@ describe('TasksContentComponent', () => {
       expect(clearNavigation.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(0);
       expect(unsetSelected.callCount).to.equal(0);
-      expect(setLastCompletedTask.callCount).to.equal(0);
+      expect(setLastSubmittedTask.callCount).to.equal(0);
 
       expect(consoleErrorMock.callCount).to.equal(1);
       expect(consoleErrorMock.args[0][0]).to.equal('Error submitting form data: ');
@@ -682,8 +682,8 @@ describe('TasksContentComponent', () => {
 
       expect(setEnketoError.callCount).to.equal(0);
       expect(unsetSelected.callCount).to.equal(1);
-      expect(setLastCompletedTask.callCount).to.equal(1);
-      expect(setLastCompletedTask.args[0]).to.deep.equal([component.selectedTask]);
+      expect(setLastSubmittedTask.callCount).to.equal(1);
+      expect(setLastSubmittedTask.args[0]).to.deep.equal([component.selectedTask]);
     });
   });
 

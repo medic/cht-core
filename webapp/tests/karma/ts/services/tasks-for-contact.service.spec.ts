@@ -163,15 +163,15 @@ describe('TasksForContact service', () => {
     });
   });
 
-  describe('getLeafTypePlaceParent', () => {
+  describe('getLeafPlaceAncestor', () => {
     it('should return false for no contact', async () => {
-      expect(await service.getLeafTypePlaceParent(false)).to.equal(false);
+      expect(await service.getLeafPlaceAncestor(false)).to.equal(false);
       expect(lineageModelGeneratorService.contact.callCount).to.equal(0);
     });
 
     it('should return false if no doc or no lineage is returned', async () => {
       lineageModelGeneratorService.contact.resolves({});
-      expect(await service.getLeafTypePlaceParent('contactId')).to.equal(false);
+      expect(await service.getLeafPlaceAncestor('contactId')).to.equal(false);
       expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
       expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal(['contactId', { hydrate: false }]);
     });
@@ -181,7 +181,7 @@ describe('TasksForContact service', () => {
         doc: { _id: 'theclinic', type: 'clinic' },
         lineage: [{ _id: 'thehc', type: 'health_center' }],
       });
-      expect(await service.getLeafTypePlaceParent('theclinic')).to.deep.equal({
+      expect(await service.getLeafPlaceAncestor('theclinic')).to.deep.equal({
         doc: { _id: 'theclinic', type: 'clinic' },
         type: CLINIC_TYPE,
       });
@@ -194,7 +194,7 @@ describe('TasksForContact service', () => {
         doc: { _id: 'theperson', type: 'person' },
         lineage: [{ _id: 'theclinic', type: 'clinic' }, { _id: 'thehc', type: 'health_center' }],
       });
-      expect(await service.getLeafTypePlaceParent('theperson')).to.deep.equal({
+      expect(await service.getLeafPlaceAncestor('theperson')).to.deep.equal({
         doc: { _id: 'theclinic', type: 'clinic' },
         type: CLINIC_TYPE,
       });
@@ -207,7 +207,7 @@ describe('TasksForContact service', () => {
         doc: { _id: 'theperson', type: 'person' },
         lineage: [{ _id: 'thehc', type: 'health_center' }, { _id: 'thedc', type: 'district' }],
       });
-      expect(await service.getLeafTypePlaceParent('theperson')).to.equal(false);
+      expect(await service.getLeafPlaceAncestor('theperson')).to.equal(false);
       expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
       expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal(['theperson', { hydrate: false }]);
     });
@@ -216,7 +216,7 @@ describe('TasksForContact service', () => {
       lineageModelGeneratorService.contact.rejects({ error: 'omg' });
 
       try {
-        expect(await service.getLeafTypePlaceParent('id')).to.equal(false);
+        expect(await service.getLeafPlaceAncestor('id')).to.equal(false);
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ error: 'omg' });

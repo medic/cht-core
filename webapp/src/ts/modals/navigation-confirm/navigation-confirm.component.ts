@@ -10,7 +10,7 @@ import { TelemetryService } from '@mm-services/telemetry.service';
 })
 export class NavigationConfirmComponent extends MmModalAbstract {
   static id = 'navigation-confirm-modal';
-  translationKey;
+  messageTranslationKey;
   telemetryEntry;
 
   constructor(
@@ -35,7 +35,7 @@ export class NavigationConfirmComponent extends MmModalAbstract {
       return;
     }
 
-    const telemetryKey = `${this.telemetryEntry}${confirm?'confirm':'reject'}`;
+    const telemetryKey = `${this.telemetryEntry}${confirm ? 'confirm' : 'reject'}`;
     this.telemetryService.record(telemetryKey);
   }
 }

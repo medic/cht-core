@@ -1,7 +1,7 @@
 import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
-import { PRIMARY_OUTLET, Router } from '@angular/router';
+import { Router } from '@angular/router';
 
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -26,7 +26,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
 
   private allTasks;
   private contactModel;
-  private lastCompletedTask;
+  private lastSubmittedTask;
   private taskGroupContact;
   private telemetryRecorded;
 
@@ -34,6 +34,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
   loadingContent;
   contentError;
   errorTranslationKey = 'tasks.group.error';
+  navigationTab = 'tasks';
 
   constructor(
     private router:Router,
@@ -104,18 +105,18 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
     });
 
     const lastTaskSubscription = combineLatest(
-      this.store.select(Selectors.getLastCompletedTask),
+      this.store.select(Selectors.getLastSubmittedTask),
       this.store.select(Selectors.getTaskGroupContact),
       this.store.select(Selectors.getTaskGroupLoadingContact),
       this.store.select(Selectors.getTasksList),
     ).subscribe(([
-      lastCompletedTask,
+      lastSubmittedTask,
       contact,
       loadingContact,
       tasksList,
     ]) => {
       this.allTasks = tasksList;
-      this.lastCompletedTask = lastCompletedTask;
+      this.lastSubmittedTask = lastSubmittedTask;
       this.taskGroupContact = contact;
 
       if (!loadingContact) {
@@ -133,7 +134,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
 
   private cherryPickTasks(contactIds) {
     return this.allTasks?.filter(task =>
-      task._id !== this.lastCompletedTask._id && // don't display the task we already completed
+      task._id !== this.lastSubmittedTask._id && // don't display the task we already completed
       contactIds?.includes(this.getTaskOwner(task))
     );
   }
@@ -159,7 +160,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
   }
 
   private async loadGroupTasks() {
-    if (!this.lastCompletedTask) {
+    if (!this.lastSubmittedTask) {
       this.navigationCancel();
       return;
     }
@@ -221,9 +222,11 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
           breakdownByTitle[title] = 1;
         }
       });
-      Object.keys(breakdownByTitle).forEach(title => {
-        this.telemetryService.record(`tasks:group:ready:${title}`, breakdownByTitle[title]);
-      });
+      Object
+        .keys(breakdownByTitle)
+        .forEach(title => {
+          this.telemetryService.record(`tasks:group:ready:${title}`, breakdownByTitle[title]);
+        });
     });
   }
 
@@ -236,7 +239,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
       return true;
     }
 
-    const emissionId = this.getEmissionIdFromUrl(nextUrl);
+    const emissionId = this.getEmissionIdFromNavigation();
     if (emissionId && this.isGroupTask(emissionId)) {
       return true;
     }
@@ -245,12 +248,11 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  private getEmissionIdFromUrl(url) {
-    const tree = this.router.parseUrl(url);
-    // https://angular.io/api/router/UrlTree#example
-    const segments = tree.root.children[PRIMARY_OUTLET].segments;
-    if (segments && segments.length === 2 && segments[0]?.path === 'tasks') {
-      return segments[1]?.path;
+  private getEmissionIdFromNavigation() {
+    const currentNavigation = this.router.getCurrentNavigation();
+    const state = currentNavigation?.extras?.state;
+    if (state?.tab === this.navigationTab) {
+      return state.id;
     }
   }
 

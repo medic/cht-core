@@ -101,7 +101,9 @@ module.exports = {
    */
   fetchTasksBreakdown: (provider, contactIds) => {
     const tasksByState = Object.assign({}, TaskStates.states);
-    Object.keys(tasksByState).forEach(state => tasksByState[state] = 0);
+    Object
+      .keys(tasksByState)
+      .forEach(state => tasksByState[state] = 0);
 
     if (!rulesEmitter.isEnabled() || !wireupOptions.enableTasks) {
       return Promise.resolve(tasksByState);

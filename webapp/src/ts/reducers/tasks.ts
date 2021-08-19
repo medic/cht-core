@@ -8,7 +8,7 @@ const initialState = {
   selected: null,
   loaded: false,
   taskGroup: {
-    lastCompletedTask: null,
+    lastSubmittedTask: null,
     contact: null,
     loadingContact: null,
   },
@@ -45,11 +45,11 @@ const _tasksReducer = createReducer(
 
   on(Actions.setSelectedTask, (state, { payload: { selected } }) => ({ ...state, selected })),
 
-  on(Actions.setLastCompletedTask, (state, { payload: { task } }) => ({
+  on(Actions.setLastSubmittedTask, (state, { payload: { task } }) => ({
     ...state,
     taskGroup: {
       ...state.taskGroup,
-      lastCompletedTask: task
+      lastSubmittedTask: task
     },
   })),
 
@@ -73,7 +73,7 @@ const _tasksReducer = createReducer(
   on(Actions.setTaskGroup, (state, { payload: { taskGroup } }) => ({
     ...state,
     taskGroup: {
-      lastCompletedTask: taskGroup.lastCompletedTask || state.taskGroup.lastCompletedTask,
+      lastSubmittedTask: taskGroup.lastSubmittedTask || state.taskGroup.lastSubmittedTask,
       contact: taskGroup.contact || state.taskGroup.contact,
       loadingContact: taskGroup.loadingContact || state.taskGroup.loadingContact,
     },

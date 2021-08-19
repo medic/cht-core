@@ -41,7 +41,7 @@ describe('GlobalEffects', () => {
       navigate: sinon.stub(),
     };
 
-    initialModalState = { initialState: { translationKey: undefined, telemetryEntry: undefined } };
+    initialModalState = { initialState: { messageTranslationKey: undefined, telemetryEntry: undefined } };
     cancelCallback = sinon.stub();
 
     TestBed.configureTestingModule({
@@ -267,7 +267,7 @@ describe('GlobalEffects', () => {
         expect(modalService.show.callCount).to.equal(1);
         expect(modalService.show.args[0][1]).to.deep.equal({
           initialState: {
-            translationKey: 'somekey',
+            messageTranslationKey: 'somekey',
             telemetryEntry: undefined,
           },
         });
@@ -297,7 +297,7 @@ describe('GlobalEffects', () => {
           NavigationConfirmComponent,
           {
             initialState: {
-              translationKey: 'somekey',
+              messageTranslationKey: 'somekey',
               telemetryEntry: 'someEntry',
             },
           },

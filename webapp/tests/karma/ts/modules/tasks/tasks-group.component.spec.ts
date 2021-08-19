@@ -36,7 +36,7 @@ describe('TasksGroupComponent', () => {
 
   beforeEach(() => {
     const mockedSelectors = [
-      { selector: Selectors.getLastCompletedTask, value: null },
+      { selector: Selectors.getLastSubmittedTask, value: null },
     ];
     contactTypesService = {
       getLeafPlaceTypes: sinon.stub(),
@@ -67,8 +67,8 @@ describe('TasksGroupComponent', () => {
     });
 
     store = TestBed.inject(MockStore);
-    compileComponent = (lastCompletedTask?, tasks?, contact?, loadingContact?) => {
-      store.overrideSelector(Selectors.getLastCompletedTask, lastCompletedTask);
+    compileComponent = (lastSubmittedTask?, tasks?, contact?, loadingContact?) => {
+      store.overrideSelector(Selectors.getLastSubmittedTask, lastSubmittedTask);
       store.overrideSelector(Selectors.getTasksList, tasks);
       store.overrideSelector(Selectors.getTaskGroupContact, contact);
       store.overrideSelector(Selectors.getTaskGroupLoadingContact, loadingContact);
@@ -79,6 +79,7 @@ describe('TasksGroupComponent', () => {
         // don't mock the whole routing module, in order to test that the route tree is computed correctly
         router = TestBed.inject(Router);
         sinon.stub(router, 'navigate');
+        sinon.stub(router, 'getCurrentNavigation');
 
         component = fixture.componentInstance;
         fixture.detectChanges();
@@ -144,7 +145,7 @@ describe('TasksGroupComponent', () => {
     });
 
     it('should only load contact children once', async () => {
-      const lastCompletedTask = { _id: 'b' };
+      const lastSubmittedTask = { _id: 'b' };
       const tasks = [
         { _id: 'a', owner: 'a' },
         { _id: 'b', owner: 'the_contact', },
@@ -155,7 +156,7 @@ describe('TasksGroupComponent', () => {
         doc: { _id: 'contact', type: 'clinic' },
         type: { id: 'clinic' },
       };
-      await compileComponent(lastCompletedTask, tasks);
+      await compileComponent(lastSubmittedTask, tasks);
 
       expect(contactTypesService.getLeafPlaceTypes.callCount).to.equal(1);
       store.overrideSelector(Selectors.getLoadingContent, true); // nothing happens
@@ -216,7 +217,7 @@ describe('TasksGroupComponent', () => {
     });
 
     it('should wait until contact is no longer loading to set tasks', async () => {
-      const lastCompletedTask = { _id: 'b' };
+      const lastSubmittedTask = { _id: 'b' };
       const tasks = [
         { _id: 'a', owner: 'a', title: 'type1' },
         { _id: 'b', owner: 'the_contact', title: 'type2' },
@@ -232,7 +233,7 @@ describe('TasksGroupComponent', () => {
         Failed: 3,
       });
 
-      await compileComponent(lastCompletedTask, tasks, null, true);
+      await compileComponent(lastSubmittedTask, tasks, null, true);
 
       await nextTick();
 
@@ -297,14 +298,14 @@ describe('TasksGroupComponent', () => {
     });
 
     it('should work with no loaded contact and not loading', async () => {
-      const lastCompletedTask = { _id: 'b' };
+      const lastSubmittedTask = { _id: 'b' };
       const tasks = [
         { _id: 'a', owner: 'a' },
         { _id: 'b', owner: 'the_contact', },
         { _id: 'c', owner: 'b' },
         { _id: 'd', owner: 'c' },
       ];
-      await compileComponent(lastCompletedTask, tasks, null, false);
+      await compileComponent(lastSubmittedTask, tasks, null, false);
       await nextTick();
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(0);
       expect(tasksForContactService.getIdsForTasks.callCount).to.equal(0);
@@ -315,14 +316,14 @@ describe('TasksGroupComponent', () => {
     });
 
     it('should redirect when contact is finished loading and no contact is found', async () => {
-      const lastCompletedTask = { _id: 'b' };
+      const lastSubmittedTask = { _id: 'b' };
       const tasks = [
         { _id: 'a', owner: 'a' },
         { _id: 'b', owner: 'the_contact', },
         { _id: 'c', owner: 'b' },
         { _id: 'd', owner: 'c' },
       ];
-      await compileComponent(lastCompletedTask, tasks, null, true);
+      await compileComponent(lastSubmittedTask, tasks, null, true);
       await nextTick();
 
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(0);
@@ -341,7 +342,7 @@ describe('TasksGroupComponent', () => {
     it('should redirect when no contact ids are returned (malformed contact)', async () => {
       tasksForContactService.getIdsForTasks.returns([]);
 
-      const lastCompletedTask = { _id: 'b' };
+      const lastSubmittedTask = { _id: 'b' };
       const tasks = [
         { _id: 'a', owner: 'a' },
         { _id: 'b', owner: 'the_contact', },
@@ -349,7 +350,7 @@ describe('TasksGroupComponent', () => {
         { _id: 'd', owner: 'c' },
       ];
       const contact = 'not an object';
-      await compileComponent(lastCompletedTask, tasks, contact, false);
+      await compileComponent(lastSubmittedTask, tasks, contact, false);
       await nextTick();
 
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
@@ -370,7 +371,7 @@ describe('TasksGroupComponent', () => {
         Failed: 300,
       });
       tasksForContactService.getIdsForTasks.returns(['ct', 'other']);
-      const lastCompletedTask = { _id: 'b' };
+      const lastSubmittedTask = { _id: 'b' };
       const tasks = [
         { _id: 'a', owner: 'a' },
         { _id: 'b', owner: 'ct', },
@@ -378,7 +379,7 @@ describe('TasksGroupComponent', () => {
         { _id: 'd', owner: 'c' },
       ];
       const contact = { doc: { _id: 'ct' } };
-      await compileComponent(lastCompletedTask, tasks, contact, false);
+      await compileComponent(lastSubmittedTask, tasks, contact, false);
       await nextTick();
 
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
@@ -400,7 +401,7 @@ describe('TasksGroupComponent', () => {
     it('should redirect when no contact ids are returned (malformed contact)', async () => {
       tasksForContactService.getIdsForTasks.returns([]);
 
-      const lastCompletedTask = { _id: 'b' };
+      const lastSubmittedTask = { _id: 'b' };
       const tasks = [
         { _id: 'a', owner: 'a' },
         { _id: 'b', owner: 'the_contact', },
@@ -408,7 +409,7 @@ describe('TasksGroupComponent', () => {
         { _id: 'd', owner: 'c' },
       ];
       const contact = 'not an object';
-      await compileComponent(lastCompletedTask, tasks, contact, false);
+      await compileComponent(lastSubmittedTask, tasks, contact, false);
       await nextTick();
 
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
@@ -443,9 +444,9 @@ describe('TasksGroupComponent', () => {
         { _id: 'em9', owner: 'd', title: 'title2' },
         { _id: 'em10', owner: 'e', title: 'title2' },
       ];
-      const lastCompletedTask = { _id: 'em3' };
+      const lastSubmittedTask = { _id: 'em3' };
       const contactModel = { doc: { _id: 'c' }, type: { id: 'clinic' } };
-      await compileComponent(lastCompletedTask, tasks, contactModel, false);
+      await compileComponent(lastSubmittedTask, tasks, contactModel, false);
 
       await nextTick();
 
@@ -500,9 +501,9 @@ describe('TasksGroupComponent', () => {
         { _id: 'em8', owner: 'contact2', title: 'type8' },
         { _id: 'em9', owner: 'contact2', title: 'type9' },
       ];
-      const lastCompletedTask = { _id: 'em3' };
+      const lastSubmittedTask = { _id: 'em3' };
       const contactModel = { doc: { _id: 'contact1' }, type: { id: 'clinic' } };
-      await compileComponent(lastCompletedTask, tasks, contactModel, false);
+      await compileComponent(lastSubmittedTask, tasks, contactModel, false);
 
       await nextTick();
 
@@ -555,12 +556,12 @@ describe('TasksGroupComponent', () => {
     });
 
     it('should handle errors while loading children', async () => {
-      const lastCompletedTask = { _id: 'em1' };
+      const lastSubmittedTask = { _id: 'em1' };
       const contact = { doc: { _id: 'clinic' } };
       const tasks = [{ _id: 'em1' }, { _id: 'em2' }];
 
       contactViewModelGeneratorService.loadChildren.rejects({ err: 'omg' });
-      await compileComponent(lastCompletedTask, tasks, contact, false);
+      await compileComponent(lastSubmittedTask, tasks, contact, false);
 
       expect(component.tasks).to.deep.equal([]);
       expect(component.contentError).to.equal(true);
@@ -571,13 +572,13 @@ describe('TasksGroupComponent', () => {
     });
 
     it('should handle errors while getting ids for tasks', async () => {
-      const lastCompletedTask = { _id: 'em1' };
+      const lastSubmittedTask = { _id: 'em1' };
       const contact = { doc: { _id: 'clinic' } };
       const tasks = [{ _id: 'em1' }, { _id: 'em2' }];
 
       contactViewModelGeneratorService.loadChildren.resolves(['children']);
       tasksForContactService.getIdsForTasks.throws({ some: 'error' });
-      await compileComponent(lastCompletedTask, tasks, contact, false);
+      await compileComponent(lastSubmittedTask, tasks, contact, false);
 
       expect(component.tasks).to.deep.equal([]);
       expect(component.contentError).to.equal(true);
@@ -641,8 +642,11 @@ describe('TasksGroupComponent', () => {
       store.overrideSelector(Selectors.getPreventNavigation, true);
       store.refreshState();
 
+      router.getCurrentNavigation.returns({ extras: { state: { tab: 'tasks', id: 'emission1' } } });
       expect(component.canDeactivate('/tasks/emission1')).to.equal(true);
+      router.getCurrentNavigation.returns({ extras: { state: { tab: 'tasks', id: 'emission2' } } });
       expect(component.canDeactivate('/tasks/emission2')).to.equal(true);
+      router.getCurrentNavigation.returns({ extras: { state: { tab: 'tasks', id: 'emission3' } } });
       expect(component.canDeactivate('/tasks/emission3')).to.equal(true);
       expect(navigationCancel.callCount).to.equal(0);
     });
@@ -653,8 +657,11 @@ describe('TasksGroupComponent', () => {
       store.overrideSelector(Selectors.getPreventNavigation, true);
       store.refreshState();
 
+      router.getCurrentNavigation.returns({ extras: { state: {} } });
       expect(component.canDeactivate('/reports')).to.equal(false);
+      router.getCurrentNavigation.returns(undefined);
       expect(component.canDeactivate('/reports/test')).to.equal(false);
+      router.getCurrentNavigation.returns({ extras: false });
       expect(component.canDeactivate('/contacts/test')).to.equal(false);
 
       expect(navigationCancel.callCount).to.equal(3);

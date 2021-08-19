@@ -21,7 +21,8 @@
           <ul>
             <mm-content-row *ngFor="let task of tasks; trackBy: listTrackBy"
                             [id]="task._id"
-                            [route]="['/', 'tasks', task._id]"
+                            [route]="['/', navigationTab, task._id]"
+                            [tab]="navigationTab"
                             [icon]="task.icon"
                             [date]="task.dueDate"
                             [overdue]="task.overdue"

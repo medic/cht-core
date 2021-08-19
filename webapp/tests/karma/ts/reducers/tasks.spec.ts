@@ -18,7 +18,7 @@ describe('Tasks reducer', () => {
         selected: null,
         loaded: false,
         taskGroup: {
-          lastCompletedTask: null,
+          lastSubmittedTask: null,
           contact: null,
           loadingContact: null,
         },
@@ -68,7 +68,7 @@ describe('Tasks reducer', () => {
         selected: null,
         loaded: true,
         taskGroup: {
-          lastCompletedTask: null,
+          lastSubmittedTask: null,
           contact: null,
           loadingContact: null,
         },
@@ -118,7 +118,7 @@ describe('Tasks reducer', () => {
         selected: selected,
         loaded: false,
         taskGroup: {
-          lastCompletedTask: null,
+          lastSubmittedTask: null,
           contact: null,
           loadingContact: null,
         },
@@ -176,7 +176,7 @@ describe('Tasks reducer', () => {
         selected: null,
         loaded: false,
         taskGroup: {
-          lastCompletedTask: null,
+          lastSubmittedTask: null,
           contact: null,
           loadingContact: null,
         },
@@ -236,7 +236,7 @@ describe('Tasks reducer', () => {
         selected: null,
         loaded: false,
         taskGroup: {
-          lastCompletedTask: null,
+          lastSubmittedTask: null,
           contact: null,
           loadingContact: null,
         },
@@ -255,10 +255,10 @@ describe('Tasks reducer', () => {
     });
   });
 
-  describe('setLastCompletedTask', () => {
+  describe('setLastSubmittedTask', () => {
     it('should work on empty state', () => {
       const task = { _id: 'task_id', due: '22', field: 1 };
-      state = tasksReducer(state, Actions.setLastCompletedTask(task));
+      state = tasksReducer(state, Actions.setLastSubmittedTask(task));
       expect(state).to.deep.equal({
         tasksList: [],
         selected: null,
@@ -266,7 +266,7 @@ describe('Tasks reducer', () => {
         taskGroup: {
           contact: null,
           loadingContact: null,
-          lastCompletedTask: task,
+          lastSubmittedTask: task,
         },
       });
     });
@@ -282,11 +282,11 @@ describe('Tasks reducer', () => {
         taskGroup: {
           contact: { _id: 'contact' },
           loadingContact: false,
-          lastCompletedTask: { _id: 'othertask' },
+          lastSubmittedTask: { _id: 'othertask' },
         },
       };
       const task = { _id: 'task_id2', due: '33', field: 2 };
-      state = tasksReducer(state, Actions.setLastCompletedTask(task));
+      state = tasksReducer(state, Actions.setLastSubmittedTask(task));
       expect(state).to.deep.equal({
         tasksList: [
           { _id: 'task1', dueDate: 22, state: 'Ready' },
@@ -297,7 +297,7 @@ describe('Tasks reducer', () => {
         taskGroup: {
           contact: { _id: 'contact' },
           loadingContact: false,
-          lastCompletedTask: task,
+          lastSubmittedTask: task,
         },
       });
     });
@@ -313,11 +313,11 @@ describe('Tasks reducer', () => {
         taskGroup: {
           contact: null,
           loadingContact: true,
-          lastCompletedTask: { _id: 'othertask' },
+          lastSubmittedTask: { _id: 'othertask' },
         },
       };
 
-      state = tasksReducer(state, Actions.setLastCompletedTask(null));
+      state = tasksReducer(state, Actions.setLastSubmittedTask(null));
       expect(state).to.deep.equal({
         selected: { _id: 'task_id', due: '22', field: 1 },
         tasksList: [
@@ -328,7 +328,7 @@ describe('Tasks reducer', () => {
         taskGroup: {
           contact: null,
           loadingContact: true,
-          lastCompletedTask: null,
+          lastSubmittedTask: null,
         },
       });
     });
@@ -345,7 +345,7 @@ describe('Tasks reducer', () => {
         taskGroup: {
           contact: contact,
           loadingContact: false,
-          lastCompletedTask: null,
+          lastSubmittedTask: null,
         },
       });
     });
@@ -361,7 +361,7 @@ describe('Tasks reducer', () => {
         taskGroup: {
           contact: null,
           loadingContact: true,
-          lastCompletedTask: { _id: 'othertask' },
+          lastSubmittedTask: { _id: 'othertask' },
         },
       };
       const contact = { _id: 'contact2', type: 'clinic' };
@@ -376,7 +376,7 @@ describe('Tasks reducer', () => {
         taskGroup: {
           contact: { _id: 'contact2', type: 'clinic' },
           loadingContact: false,
-          lastCompletedTask: { _id: 'othertask' },
+          lastSubmittedTask: { _id: 'othertask' },
         },
       });
     });
@@ -392,7 +392,7 @@ describe('Tasks reducer', () => {
         taskGroup: {
           contact: { _id: 'somecontact' },
           loadingContact: true,
-          lastCompletedTask: { _id: 'othertask' },
+          lastSubmittedTask: { _id: 'othertask' },
         },
       };
 
@@ -407,7 +407,7 @@ describe('Tasks reducer', () => {
         taskGroup: {
           contact: null,
           loadingContact: false,
-          lastCompletedTask: { _id: 'othertask' },
+          lastSubmittedTask: { _id: 'othertask' },
         },
       });
     });
@@ -423,7 +423,7 @@ describe('Tasks reducer', () => {
         taskGroup: {
           contact: null,
           loadingContact: true,
-          lastCompletedTask: null,
+          lastSubmittedTask: null,
         },
       });
     });
@@ -439,7 +439,7 @@ describe('Tasks reducer', () => {
         taskGroup: {
           contact: { _id: 'contact2', type: 'clinic' },
           loadingContact: true,
-          lastCompletedTask: { _id: 'othertask' },
+          lastSubmittedTask: { _id: 'othertask' },
         },
       };
       state = tasksReducer(state, Actions.setTaskGroupContactLoading(false));
@@ -453,7 +453,7 @@ describe('Tasks reducer', () => {
         taskGroup: {
           contact: { _id: 'contact2', type: 'clinic' },
           loadingContact: false,
-          lastCompletedTask: { _id: 'othertask' },
+          lastSubmittedTask: { _id: 'othertask' },
         },
       });
     });
@@ -469,7 +469,7 @@ describe('Tasks reducer', () => {
         taskGroup: {
           contact: null,
           loadingContact: null,
-          lastCompletedTask: null,
+          lastSubmittedTask: null,
         },
       });
     });
@@ -485,7 +485,7 @@ describe('Tasks reducer', () => {
         taskGroup: {
           contact: { _id: 'contact2', type: 'clinic' },
           loadingContact: true,
-          lastCompletedTask: { _id: 'othertask' },
+          lastSubmittedTask: { _id: 'othertask' },
         },
       };
       state = tasksReducer(state, Actions.clearTaskGroup());
@@ -499,7 +499,7 @@ describe('Tasks reducer', () => {
         taskGroup: {
           contact: null,
           loadingContact: null,
-          lastCompletedTask: null,
+          lastSubmittedTask: null,
         },
       });
     });

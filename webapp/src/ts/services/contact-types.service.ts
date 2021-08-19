@@ -105,7 +105,7 @@ export class ContactTypesService {
   }
 
   isLeafPlaceType(types, typeId) {
-    if (!typeId || !types || !types.length) {
+    if (!typeId || !types?.length) {
       return false;
     }
     return !!types.find((type:ContactType) => type?.id === typeId);

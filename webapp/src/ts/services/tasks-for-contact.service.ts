@@ -98,7 +98,7 @@ export class TasksForContactService {
     return this.rulesEngineService.fetchTasksBreakdown(contactIds);
   }
 
-  async getLeafTypePlaceParent(contactId) {
+  async getLeafPlaceAncestor(contactId) {
     if (!contactId) {
       return false;
     }
@@ -109,13 +109,17 @@ export class TasksForContactService {
     }
 
     const leafPlaceTypes = await this.leafPlaceTypes$;
-    for (const contact of [doc, ...lineage]) {
+    const leafPlace = [doc, ...lineage].find(contact => {
       const typeId = this.contactTypesService.getTypeId(contact);
-      if (this.contactTypesService.isLeafPlaceType(leafPlaceTypes, typeId)) {
-        const type = this.contactTypesService.getTypeById(leafPlaceTypes, typeId);
-        return { doc: contact, type: type };
-      }
+      return this.contactTypesService.isLeafPlaceType(leafPlaceTypes, typeId);
+    });
+
+    if (!leafPlace) {
+      return false;
     }
-    return false;
+
+    const typeId = this.contactTypesService.getTypeId(leafPlace);
+    const type = this.contactTypesService.getTypeById(leafPlaceTypes, typeId);
+    return { doc: leafPlace, type };
   }
 }

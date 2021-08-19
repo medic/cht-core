@@ -408,6 +408,23 @@ describe('pouchdb provider', () => {
         { id: readyTaskForPlace._id, key: ['owner', 'all', 'place'], value: { state: 'Ready' } },
       ]);
     });
+
+    it('should return tasks_by_contact for no provided contacts', async () => {
+      const rowsByOwner = await pouchdbProvider(db).allTaskRowsByOwner([]);
+      chai.expect(rowsByOwner).excludingEvery('_rev').to.deep.equal([]);
+    });
+
+    it('should throw errors', async () => {
+      const circular = { a: 'test' };
+      circular.a = circular;
+      try {
+        await pouchdbProvider(db).allTaskRowsByOwner([circular]);
+        chai.expect.fail('should have thrown');
+      } catch (err) {
+        chai.expect(err.message).to.equal('Maximum call stack size exceeded');
+        chai.expect(err).to.be.an.instanceof(RangeError);
+      }
+    });
   });
 
   describe('allTaskRows', () => {
