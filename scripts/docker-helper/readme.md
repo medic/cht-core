@@ -4,7 +4,7 @@
 
 These scripts help start CHT instances using `docker-compose` to develop CHT apps on:
 
-![](helper.png?8.12.21a)
+![The cht-docker-compose.sh script showing the URL and version of the CHT instance as well as number of containers launched, global contianer count, medic images downloaded count and OS load average. Finally a "Successfully started my_first_project" message is shown and denotes the login is "medic" and the password is "password".](helper.png?8.12.21a "Screenshot of cht-docker-compose.sh script in terminal")
 
 This document is a placeholder while this beta version is out for testing.  These documents should and need to be moved to the [docs site](https://docs.communityhealthtoolkit.org/) when this script leaves beta.
 
