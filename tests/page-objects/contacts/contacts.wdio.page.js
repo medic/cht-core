@@ -23,6 +23,7 @@ const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
 const contactSexField = () => $('[data-name="/data/contact/sex"][value="female"]');
 const personName = () => $('[name="/data/person/name"]');
 const personSexField = () => $('[data-name="/data/person/sex"][value="female"]');
+const personPhoneField = () => $('input.ignore[type="tel"]');
 const topContact = () => $('#contacts-list > ul > li:nth-child(1) > a > div.content > div > h4 > span');
 const name = () => $('.children h4 span');
 const externalIdField = (place) => $(`[name="/data/${place}/external_id"]`);
@@ -117,11 +118,6 @@ const editPerson = async (name, updatedName) => {
   await (await genericForm.submitButton()).click();
   await waitForContactLoaded();
   return (await contactCard()).getText();
-};
-
-const waitForContactLoaded = async () => {
-  await (await contactCard()).waitForDisplayed();
-  await (await contactSummaryContainer()).waitForDisplayed();
 };
 
 const getContactSummaryField = async (fieldName) => {
