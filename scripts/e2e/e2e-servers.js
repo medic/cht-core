@@ -82,7 +82,7 @@ const stopServer = (serviceName) => new Promise(res => {
   delete processes[serviceName];
 });
 
-if(!fs.existsSync('tests/logs')) {
+if (!fs.existsSync('tests/logs')) {
   fs.mkdirSync('tests/logs');
 }
 
@@ -120,6 +120,10 @@ app.post('/:server/:action', (req, res) => {
   }
 
   return p.then(() => res.status(200).end());
+});
+
+app.get('/isRunning', (req, res) => {
+  res.send('We are running');
 });
 
 app.post('/die', (req, res) => {
