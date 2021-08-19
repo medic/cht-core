@@ -5,9 +5,9 @@ on: [push, pull_request]
 env:
   COUCH_URL: http://admin:pass@localhost:5984/medic-test
   COUCH_NODE_NAME: nonode@nohost
-  BUILDS_SERVER: ${{ secrets.MARKET_URL && '_couch/builds_testing' || '_couch/builds_external' }}
-  STAGING_SERVER: ${{ secrets.MARKET_URL && '_couch/builds' || '_couch/builds_external' }} 
-  MARKET_URL: ${{ secrets.MARKET_URL || 'https://staging.dev.medicmobile.org' }}
+  BUILDS_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_testing' || '_couch/builds_external' }}
+  STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }} 
+  MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
 
 jobs:
   build:
