@@ -151,12 +151,12 @@ jobs:
       run: |
         echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
         docker-compose -f scripts/travis/horti-compose.yml up -d 
+        sh scripts/e2e/wait_for_response_code.sh 4988 200 api
     - name: Test it!
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
     - name: Dump Couch logs
       run: | 
         docker-compose -f scripts/travis/horti-compose.yml logs > tests/logs/couch.log 2>&1 
-        sh scripts/e2e/wait_for_response_code.sh 4988 200 api
       if: ${{ always() }}
     - name: Archive Results
       uses: actions/upload-artifact@v2
