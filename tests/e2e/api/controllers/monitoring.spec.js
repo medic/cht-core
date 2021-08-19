@@ -31,7 +31,7 @@ describe('monitoring', () => {
       expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation']).to.deep.equal({
         version: {
           app: await getAppVersion(),
-          node: process.version,
+          // node: process.version,
           couchdb: await getCouchDBVersion(),
         },
         couchdb: {
@@ -104,7 +104,7 @@ describe('monitoring', () => {
       expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation']).to.deep.equal({
         version: {
           app: await getAppVersion(),
-          node: process.version,
+          // node: process.version,
           couchdb: await getCouchDBVersion(),
         },
         couchdb: {
