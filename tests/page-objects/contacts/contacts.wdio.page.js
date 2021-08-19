@@ -4,7 +4,7 @@ const searchButton = () => $('#search');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
 const contentRows = () => $$(contentRowSelector);
-const contentRowsText = () => $$(`${contentRowSelector} .heading h4 span`);
+const contactName = () => $$(`${contentRowSelector} .heading h4 span`);
 const reportFilterSelector = '.card.reports .table-filter a';
 const reportRowSelector = '#reports-list .content-row';
 const reportRow = () => $(reportRowSelector);
@@ -23,7 +23,6 @@ const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
 const contactSexField = () => $('[data-name="/data/contact/sex"][value="female"]');
 const personName = () => $('[name="/data/person/name"]');
 const personSexField = () => $('[data-name="/data/person/sex"][value="female"]');
-const personPhoneField = () => $('input.ignore[type="tel"]');
 const topContact = () => $('#contacts-list > ul > li:nth-child(1) > a > div.content > div > h4 > span');
 const name = () => $('.children h4 span');
 const externalIdField = (place) => $(`[name="/data/${place}/external_id"]`);
@@ -33,6 +32,7 @@ const contactCard = () => $('.card h2');
 const contactCardIcon = (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`);
 const rhsPeopleListSelector = () => $$('[test-id="person"] h4 span');
 const contactSummaryContainer = () => $('#contact_summary');
+const emptySelection = () => $('contacts-content .empty-selection');
 const editContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
 
 const search = async (query) => {
@@ -60,6 +60,15 @@ const getReportFiltersText = async () => {
 const getReportTaskFiltersText = async () => {
   await (await taskFilter()).waitForDisplayed();
   return await Promise.all((await taskFilters()).map(filter => filter.getText()));
+};
+
+const waitForContactLoaded = async () => {
+  await (await contactCard()).waitForDisplayed();
+  await (await contactSummaryContainer()).waitForDisplayed();
+};
+
+const waitForContactUnloaded = async () => {
+  await (await emptySelection()).waitForDisplayed();
 };
 
 const addPlace = async (type, placeName , contactName ) => {
@@ -125,9 +134,9 @@ const getPrimaryContactName = async () => {
   return (await name()).getText();
 };
 
-const getAllContactText = async () => {
+const getAllLHSContactsNames = async () => {
   await (await contentRow()).waitForDisplayed();
-  return getTextForElements(contentRowsText);
+  return getTextForElements(contactName);
 };
 
 const getTextForElements = async (elements) => {
@@ -150,7 +159,7 @@ module.exports = {
   getReportFiltersText,
   getReportTaskFiltersText,
   contactList,
-  getAllContactText,
+  getAllLHSContactsNames,
   addPerson,
   addPlace,
   topContact,
@@ -158,6 +167,8 @@ module.exports = {
   getAllReportsText,
   getAllRHSPeopleNames,
   waitForContactLoaded,
+  waitForContactUnloaded,
+  contactCard,
   editPerson,
   getContactSummaryField,
 };
