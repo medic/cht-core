@@ -149,8 +149,7 @@ get_images_count(){
   IFS=' ' read -ra imagesArray <<< "$images"
   for image in "${imagesArray[@]}"
   do
-    image=$(echo $image | cut -f1 -d':')
-    if [ "$( docker image ls | grep -c "${image}" )" -eq 1 ]; then
+    if [ "$( docker image ls --format {{.Repository}}:{{.Tag}} | grep -c "${image}" )" -eq 1 ]; then
         (( result++ ))
     fi
   done
@@ -336,7 +335,7 @@ main (){
 
   # todo - add CHT version as info displayed
   window "CHT Docker Helper: ${COMPOSE_PROJECT_NAME}" "green" "100%"
-  append_tabbed "CHT Health|${overAllHealth} - ${chtVersion}" 2 "|"
+  append_tabbed "CHT Health - Version|${overAllHealth} - ${chtVersion}" 2 "|"
   append_tabbed "CHT URL|${chtUrl}" 2 "|"
   append_tabbed "FAUXTON URL|${chtUrl}/_utils/" 2 "|"
   append_tabbed "" 2 "|"
@@ -361,7 +360,7 @@ main (){
     pull_images "$ALL_IMAGES" &
     (( reboot_count++ ))
 
-    # todo - figure a way to catch the images being downloaded and reset sleepFor=0?
+    # todo - figure a way to catch the images being successfully downloaded and reset sleepFor=0?
   fi
 
   if [[ "$volumeCount" = 0 ]] && [[ "$reboot_count" = 0 ]]; then
