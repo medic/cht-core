@@ -439,7 +439,7 @@ module.exports = function(grunt) {
         exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
       'e2e-servers': {
-        cmd: 'node ./scripts/e2e/e2e-servers.js &'
+        cmd: `${TRAVIS_BUILD_NUMBER ? 'docker exec -d horti node /cht-core/scripts/e2e/e2e-servers.js' :'node ./scripts/e2e/e2e-servers.js &'}`
       },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',

@@ -35,7 +35,7 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
 
     let server;
     if (constants.IS_TRAVIS) {
-      server = spawn('docker exec horti horti-svc-start', [
+      server = spawn('horti-svc-start', [
         `${require('os').homedir()}/.horticulturalist/deployments`,
         `medic-${serviceName}`
       ]);
@@ -69,7 +69,7 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
 
 const stopServer = (serviceName) => new Promise(res => {
   if (constants.IS_TRAVIS) {
-    const pid = spawn('docker exec horti horti-svc-stop', [
+    const pid = spawn('horti-svc-stop', [
       `medic-${serviceName}`
     ]);
 
