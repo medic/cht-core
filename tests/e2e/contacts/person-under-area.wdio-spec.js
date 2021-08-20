@@ -50,7 +50,7 @@ describe('Create Person Under Area', async () => {
   });
 
   afterEach(async () => {
-    await utils.revertDb([], true);
+    await utils.revertDb([], 'api');
   });
 
   it('create person under area should only see children', async () => {

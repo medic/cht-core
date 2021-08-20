@@ -2,12 +2,13 @@ const commonElements = require('../../page-objects/common/common.wdio.page');
 const utils = require('../../utils');
 const sentinelUtils = require('../sentinel/utils');
 const loginPage = require('../../page-objects/login/login.wdio.page');
+const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 const chai = require('chai');
 const uuid = require('uuid/v4');
 
 /* global window */
 
-describe('db-sync-filter', () => {
+describe('db-sync', () => {
   const restrictedUserName = uuid();
   const restrictedPass = uuid();
   const restrictedFacilityId = uuid();
@@ -125,7 +126,7 @@ describe('db-sync-filter', () => {
     },
     {
       _id: report3,
-      form: 'form_type_2',
+      form: 'form_type_3',
       type: 'data_record',
       content_type: 'xml',
       reported_date: Date.now(),
@@ -251,7 +252,7 @@ describe('db-sync-filter', () => {
     const docIds = [
       'resources',
       'service-worker-meta',
-      'form:pregnancy',
+      'form:contact:person:edit',
       'messages-en',
     ];
     const serverRevs = await getServerRevs(docIds);
@@ -291,6 +292,55 @@ describe('db-sync-filter', () => {
     chai.expect(result.rows[0]).to.deep.equal({
       key: '_design/test',
       error: 'not_found',
+    });
+  });
+
+  describe('meta db replication', () => {
+    const createMetaDoc = async (doc) => {
+      const { err, result } = await browser.executeAsync((doc, callback) => {
+        const db = window.CHTCore.DB.get({ meta: true });
+        return db
+          .put(doc)
+          .then(result => callback({ result }))
+          .catch(err => callback({ err }));
+      }, doc);
+
+      if (err) {
+        throw err;
+      }
+
+      return result;
+    };
+
+    it('should replicate meta db up', async () => {
+      const localDoc = { _id: uuid(), extra: 'value' };
+      const { rev } = await createMetaDoc(localDoc);
+      localDoc._rev = rev;
+
+      await browser.refresh(); // meta databases sync every 30 minutes
+      await (await commonElements.analyticsTab()).waitForDisplayed();
+      await commonElements.sync();
+
+      const [ remoteDoc ] = await utils.getMetaDocs(restrictedUserName, [localDoc._id]);
+      chai.expect(remoteDoc).to.deep.equal(localDoc);
+    });
+
+    it('should replicate meta db down', async () => {
+      await browser.refresh(); // meta databases sync every 30 minutes
+      await commonElements.sync();
+      chai.expect(await reportsPage.getUnreadCount()).to.equal('2');
+
+      const readReport = { _id: `read:report:${report3}` };
+      await utils.saveMetaDocs(restrictedUserName, [readReport]);
+
+      await browser.refresh(); // meta databases sync every 30 minutes
+      await (await commonElements.analyticsTab()).waitForDisplayed();
+      await commonElements.sync();
+
+      await commonElements.goToReports();
+      await (await reportsPage.reportList()).waitForDisplayed();
+
+      chai.expect(await reportsPage.getUnreadCount()).to.equal('1');
     });
   });
 });
