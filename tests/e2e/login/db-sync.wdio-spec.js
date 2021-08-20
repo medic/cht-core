@@ -200,7 +200,6 @@ describe('db-sync', () => {
       body: restrictedUser
     });
     await sentinelUtils.waitForSentinel();
-    await browser.pause(1000);
     await loginPage.login(restrictedUserName, restrictedPass);
     await (await commonElements.analyticsTab()).waitForDisplayed();
   });
@@ -330,7 +329,7 @@ describe('db-sync', () => {
       await commonElements.sync();
       chai.expect(await reportsPage.getUnreadCount()).to.equal('2');
 
-      const readReport = { _id: `read:report:${report3}` };
+      const readReport = { _id: `read:report:${report2}` };
       await utils.saveMetaDocs(restrictedUserName, [readReport]);
 
       await browser.refresh(); // meta databases sync every 30 minutes
@@ -340,7 +339,7 @@ describe('db-sync', () => {
       await commonElements.goToReports();
       await (await reportsPage.reportList()).waitForDisplayed();
 
-      chai.expect(await reportsPage.getUnreadCount()).to.equal('1');
+      await browser.waitUntil(async () => await reportsPage.getUnreadCount() === '1');
     });
   });
 });
