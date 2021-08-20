@@ -15,6 +15,11 @@
 # shellcheck disable=SC2046
 . $(dirname $0)/simple_curses.sh
 
+# todo maybe check to see if docker is running? avoid this error:
+# Error response from daemon: dial unix docker.raw.sock: connect: connection refused
+
+# todo MacOS doesn't print simple curses screens at  full width and is stuck at ~80 chars wide?
+
 get_lan_ip() {
   ipInstalled=$(required_apps_installed "ip")
   if [ -n "$ipInstalled" ]; then
@@ -240,7 +245,9 @@ get_load_avg() {
   if [ -n "$(required_apps_installed "system_profiler")" ];then
     awk '{print  $1 " " $2 " " $3 }' < /proc/loadavg
   else
-    sysctl -n vm.loadavg
+    avg=$(sysctl -n vm.loadavg)
+    # replace { and } in the output to match linux's output
+    echo "${avg//[\}\{]/}"
   fi
 }
 
@@ -260,7 +267,7 @@ main (){
   fi
 
   # after valid env file is loaded, let's set all our constants
-  declare -r APP_STRING="docker;docker-compose;nc;curl;tr;awk;grep;cut"
+  declare -r APP_STRING="docker;docker-compose;grep;head;cut;tr;nc;curl;file;wc;awk"
   declare -r MAX_REBOOTS=5
   declare -r DEFAULT_SLEEP=$((60 * $((reboot_count + 1))))
   declare -r MEDIC_OS="${COMPOSE_PROJECT_NAME}_medic-os_1"
@@ -322,13 +329,12 @@ main (){
 
   # display only action so this paints on bash screen. next loop we'll quit and show nothing new
   if [ "$docker_action" = "destroy" ] || [ "$docker_action" = "down" ]; then
-    window "${docker_action}ing project ${COMPOSE_PROJECT_NAME} " "red" "100%"
+    window "${docker_action}ing ${COMPOSE_PROJECT_NAME} " "red" "100%"
     append "Please wait... "
     endwin
     exitNext=$docker_action
     return 0
   elif [ -z "$docker_action" ] || [ "$docker_action" != "up" ] || [ "$docker_action" = "" ]; then
-    date
     set -e
     exit 0
   fi
@@ -384,7 +390,6 @@ main (){
     (( reboot_count++ ))
   fi
 
-  # todo - sometimes when we're in sleep, you can't "ctrl + c" to quit for some reason?
   if [[ "$sleepFor" > 0 ]] && [ -n "$health" ]; then
     window "Attempt number $reboot_count / $MAX_REBOOTS to boot $COMPOSE_PROJECT_NAME" "yellow" "100%"
     append "Waiting $sleepFor..."

@@ -21,7 +21,7 @@ This script has been heavily tested on Ubuntu and should work very well there.  
 The script will check and require these commands. All but the first two should be installed by default on Ubuntu:
 
 * docker (At least version 20.x)
-* docker-compose
+* docker-compose  (At least version 1.27)
 * nc
 * curl
 * tr
