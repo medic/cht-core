@@ -317,7 +317,6 @@ describe('db-sync', () => {
       localDoc._rev = rev;
 
       await browser.refresh(); // meta databases sync every 30 minutes
-      await (await commonElements.analyticsTab()).waitForDisplayed();
       await commonElements.sync();
 
       const [ remoteDoc ] = await utils.getMetaDocs(restrictedUserName, [localDoc._id]);
@@ -332,10 +331,10 @@ describe('db-sync', () => {
       const readReport = { _id: `read:report:${report2}` };
       await utils.saveMetaDocs(restrictedUserName, [readReport]);
 
-      await browser.refresh(); // meta databases sync every 30 minutes
-      await (await commonElements.analyticsTab()).waitForDisplayed();
+      await browser.refresh(); // meta databases sync every 30 minutes   
       await commonElements.sync();
 
+      // if the test fails, it helps to see which reports are read or not in the failpic
       await commonElements.goToReports();
       await (await reportsPage.reportList()).waitForDisplayed();
 
