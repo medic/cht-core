@@ -38,8 +38,8 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
     let server;
     if (constants.IS_TRAVIS) {
       console.log('travis start');
-      const path = '/root/.horticulturalist/deployments/horti-svc-start';
-      server = spawn(path, [
+      server = spawn('horti-svc-start', [
+        `${require('os').homedir()}/.horticulturalist/deployments`,
         `medic-${serviceName}`
       ]);
       console.log('travis start 1');
@@ -78,7 +78,7 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
 
 const stopServer = (serviceName) => new Promise(res => {
   if (constants.IS_TRAVIS) {
-    const path = '/root/.horticulturalist/deployments/horti-svc-stop';
+    const path = '/usr/bin/horti-svc-stop';
     const pid = spawn(path, [
       `medic-${serviceName}`
     ]);
