@@ -33,6 +33,7 @@
     "morgan": "^1.10.0",
     "mustache": "^4.2.0",
     "node-cache": "^5.1.2",
+    "node-html-parser": "^1.2.14",
     "object-path": "^0.11.5",
     "openrosa-formlist": "github:medic/openrosa-formlist#sax",
     "pass-stream": "^1.0.0",

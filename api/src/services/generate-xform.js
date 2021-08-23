@@ -4,11 +4,11 @@
  */
 const childProcess = require('child_process');
 const path = require('path');
+const htmlParser = require('node-html-parser');
 const logger = require('../logger');
 const db = require('../db');
 const formsService = require('./forms');
 
-const FORM_ROOT_OPEN = '<root xmlns:xf="http://www.w3.org/2002/xforms" xmlns:orx="http://openrosa.org/xforms" xmlns:enk="http://enketo.org/xforms" xmlns:kb="http://kobotoolbox.org/xforms" xmlns:esri="http://esri.com/xforms" xmlns:oc="http://openclinica.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">';
 const MODEL_ROOT_OPEN = '<root xmlns="http://www.w3.org/2002/xforms" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema">';
 const ROOT_CLOSE = '</root>';
 const JAVAROSA_SRC = / src="jr:\/\//gi;
@@ -47,33 +47,90 @@ const transform = (formXml, stylesheet) => {
   });
 };
 
-const removeLast = (haystack, needle) => {
-  const index = haystack.lastIndexOf(needle);
-  if (index === -1) {
-    return haystack;
-  }
-  return haystack.slice(0, index) + haystack.slice(index + needle.length);
+const replaceMarkdown = html => {
+  return html
+    // headings
+    .replace(/\n# (.*)\n/gm, '<h1>$1</h1>')
+    .replace(/\n## (.*)\n/gm, '<h2>$1</h2>')
+    .replace(/\n### (.*)\n/gm, '<h3>$1</h3>')
+    .replace(/\n#### (.*)\n/gm, '<h4>$1</h4>')
+    .replace(/\n##### (.*)\n/gm, '<h5>$1</h5>')
+
+    // font styles
+    .replace(/__([^\s]([^_]*[^\s])?)__/gm, '<strong>$1</strong>')
+    .replace(/\*\*([^\s]([^*]*[^\s])?)\*\*/gm, '<strong>$1</strong>')
+    .replace(/\s_([^_\s]([^_]*[^_\s])?)_/gm, ' <em>$1</em>')
+    .replace(/\*([^*\s]([^*]*[^*\s])?)\*/gm, '<em>$1</em>')
+
+    // urls containing tags
+    .replace(
+      /\[([^\]]*)\]\(([^)]*<[^>]*>[^)]*)\)/gm,
+      '<a href="#" target="_blank" rel="noopener noreferrer" class="dynamic-url">' +
+      '$1<span class="url hidden">$2</span>' +
+      '</a>'
+    )
+
+    // plain urls
+    .replace(/\[([^\]]*)\]\(([^)]+)\)/gm, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+
+    // new lines
+    .replace(/\n/gm, '<br />')
+
+    // convert embedded html
+    .replace(/&lt;([\s\S]*?)&gt;/gm, '<$1>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, '\'');
 };
 
-const removeRootNode = (string, node) => {
-  return removeLast(string.replace(node, ''), ROOT_CLOSE);
+// inspired by enketo/enketo-transformer
+const replaceAllMarkdown = formString => {
+
+  const form = htmlParser.parse(formString).querySelector('form');
+  const replacements = {};
+
+  const questions = form.querySelectorAll('span.question-label');
+  const hints = form.querySelectorAll('span.or-hint');
+  const spans = questions.concat(hints);
+  spans.forEach((span, i) => {
+    const original = span.innerHTML;
+    const rendered = replaceMarkdown(original);
+    if (rendered && original !== rendered) {
+      const key = `~~~${i}~~~`;
+      replacements[key] = rendered;
+      span.set_content(key);
+    }
+  });
+
+  let result = form.toString();
+  Object.keys(replacements).forEach(key => {
+    const replacement = replacements[key];
+    if (replacement) {
+      result = result.replace(key, replacement);
+    }
+  });
+  return result;
 };
 
 const generateForm = formXml => {
   return transform(formXml, FORM_STYLESHEET).then(form => {
+    form = replaceAllMarkdown(form);
     // rename the media src attributes so the browser doesn't try and
     // request them, instead leaving it to custom code in the Enketo
     // service to load them asynchronously
-    form = form.replace(JAVAROSA_SRC, MEDIA_SRC_ATTR);
-    // remove the root node leaving just the HTML to be rendered
-    return removeRootNode(form, FORM_ROOT_OPEN);
+    return form.replace(JAVAROSA_SRC, MEDIA_SRC_ATTR);
   });
 };
 
 const generateModel = formXml => {
   return transform(formXml, MODEL_STYLESHEET).then(model => {
     // remove the root node leaving just the model
-    return removeRootNode(model, MODEL_ROOT_OPEN);
+    model = model.replace(MODEL_ROOT_OPEN, '');
+    const index = model.lastIndexOf(ROOT_CLOSE);
+    if (index === -1) {
+      return model;
+    }
+    return model.slice(0, index) + model.slice(index + ROOT_CLOSE.length);
   });
 };
 
@@ -116,7 +173,7 @@ const updateAttachments = (accumulator, doc) => {
       return results;
     }
     logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
-    return module.exports.generate(form.data.toString()).then(result => {
+    return generate(form.data.toString()).then(result => {
       results.push(result);
       return results;
     });
