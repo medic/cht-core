@@ -13,7 +13,6 @@
     require( 'enketo-core/src/widget/file/filepicker' ),
     require( 'enketo-core/src/widget/datetime/datetimepicker-extended' ),
     require( 'enketo-core/src/widget/horizontal-choices/horizontalchoices' ),
-    require( './widgets/notewidget' ),
     require( './widgets/countdown-widget' ),
     require( './widgets/db-object-widget' ),
     require( './widgets/phone-widget' ),
