@@ -890,13 +890,12 @@ module.exports = {
    * @returns {Object} that contains the promise to resolve when logs lines are matched and a cancel function
    */
   waitForLogs: (logFilename, ...regex) => {
-    const name = constants.IS_TRAVIS ? 'horti.log' : logFilename;
-    const tail = new Tail(`./tests/logs/${name}`);
+    const tail = new Tail(`./tests/logs/${logFilename}`);
     let timeout;
     const promise = new Promise((resolve, reject) => {
       timeout = setTimeout(() => {
         tail.unwatch();
-        reject({ message: 'timeout exceeded' });
+        reject({ message: 'Timed out looking for details in log files.' });
       }, 2000);
 
       tail.on('line', data => {
