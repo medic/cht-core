@@ -9,13 +9,7 @@ exports.mochaHooks = {
   },
 
   afterAll:async () => {
-    try {
-      await request.post('http://localhost:31337/die');
-    } catch (e) {
-      console.error('an error occured');
-      console.error(JSON.stringify(e));
-    }
-
+    await request.post('http://localhost:31337/die');
     console.log('Test done. Signing off ...');
   }
 };
