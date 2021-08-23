@@ -9,9 +9,9 @@ module.exports={
     'tests/integration/**/*.js',
   ],
 
-  timeout: 300*1000, //'API takes a litle long to start up'
+  timeout: 135*1000, //'API takes a litle long to start up'
   reporter: 'spec',
   require: [ 'tests/integration/hooks.js' ],
-  captureFile: 'tests/logs/e2e-integration-results.txt',
+  captureFile: 'tests/results/results.txt',
   exit:true,
 };
