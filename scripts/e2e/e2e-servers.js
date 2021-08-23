@@ -26,13 +26,15 @@ const processes = {};
 
 const startServer = (serviceName, append) => new Promise((resolve, reject) => {
   if (processes[serviceName]) {
+    console.log('travis already running 1');
     console.warn(serviceName, 'is already running');
     return resolve();
   }
 
   try {
+    console.log('travis write stream 1');
     const logStream = fs.createWriteStream(`tests/logs/${serviceName}.e2e.log`, { flags: append ? 'a' : 'w' });
-
+    console.log('travis write stream 2');
     let server;
     if (constants.IS_TRAVIS) {
       console.log('travis start');
