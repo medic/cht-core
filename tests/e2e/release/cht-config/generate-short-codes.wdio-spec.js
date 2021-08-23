@@ -44,7 +44,7 @@ describe('generating short codes', async function () {
 
   after(async function() {await utils.revertDb([], true)});
 
-  it('create case ID', function ()  {
+  it('create case ID', async function ()  {
     await utils.request({
       method: 'POST',
       path: '/api/v2/records',
