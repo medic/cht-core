@@ -123,7 +123,7 @@ app.post('/:server/:action', (req, res) => {
 });
 
 app.get('/isRunning', (req, res) => {
-  res.send('We are running').end();
+  res.send('We are running');
 });
 
 app.post('/die', (req, res) => {
