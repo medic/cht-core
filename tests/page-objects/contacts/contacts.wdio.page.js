@@ -23,6 +23,7 @@ const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
 const contactSexField = () => $('[data-name="/data/contact/sex"][value="female"]');
 const personName = () => $('[name="/data/person/name"]');
 const personSexField = () => $('[data-name="/data/person/sex"][value="female"]');
+const personPhoneField = () => $('input.ignore[type="tel"]');
 const topContact = () => $('#contacts-list > ul > li:nth-child(1) > a > div.content > div > h4 > span');
 const name = () => $('.children h4 span');
 const externalIdField = (place) => $(`[name="/data/${place}/external_id"]`);
@@ -33,6 +34,7 @@ const contactCardIcon = (name) => $(`.card .heading .resource-icon[title="medic-
 const rhsPeopleListSelector = () => $$('[test-id="person"] h4 span');
 const contactSummaryContainer = () => $('#contact_summary');
 const emptySelection = () => $('contacts-content .empty-selection');
+const editContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
@@ -87,16 +89,41 @@ const addPlace = async (type, placeName , contactName ) => {
   await (await contactCard()).waitForDisplayed();
 };
 
-const addPerson = async (name, dob = '2000-01-01') => {
+const addPerson = async (name, params = {}) => {
+  const { dob='2000-01-01', phone } = params;
   await (await actionResourceIcon('person')).click();
   await (await personName()).addValue(name);
   await (await dateOfBirthField()).addValue(dob);
   await (await personName()).click(); // blur the datepicker field so the sex field is visible
+  if (phone) {
+    await (await personPhoneField()).addValue(phone);
+  }
   await (await personSexField()).click();
   await (await notes('person')).addValue('some person notes');
   await (await genericForm.submitButton()).click();
   await (await contactCardIcon('person')).waitForDisplayed();
   return (await contactCard()).getText();
+};
+
+const editPerson = async (name, updatedName) => {
+  await selectLHSRowByText(name);
+  await waitForContactLoaded();
+  await (await editContactButton()).click();
+
+  await (await genericForm.nextPage());
+
+  await (await personName()).clearValue();
+  await (await personName()).addValue(updatedName);
+
+  await (await genericForm.submitButton()).click();
+  await waitForContactLoaded();
+  return (await contactCard()).getText();
+};
+
+const getContactSummaryField = async (fieldName) => {
+  await (await contactSummaryContainer()).waitForDisplayed();
+  const field = await (await contactSummaryContainer()).$(`.cell.${fieldName.replace(/\./g, '\\.')}`);
+  return await (await field.$('p')).getText();
 };
 
 const getPrimaryContactName = async () => {
@@ -138,4 +165,6 @@ module.exports = {
   waitForContactLoaded,
   waitForContactUnloaded,
   contactCard,
+  editPerson,
+  getContactSummaryField,
 };

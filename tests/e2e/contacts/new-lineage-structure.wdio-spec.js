@@ -1,4 +1,5 @@
 const faker = require('faker');
+const chai = require('chai');
 
 const contactPage = require('../../page-objects/contacts/contacts.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
@@ -34,22 +35,35 @@ describe('Create new lineage structure', () => {
   it('Create new health center', async () => {
     await contactPage.addPlace('district_hospital', centerName, centerContact);
     await sentinelUtils.waitForSentinel(); // prevent stale element references
-    expect(await contactPage.getPrimaryContactName()).toBe(centerContact);
+    chai.expect(await contactPage.getPrimaryContactName()).to.equal(centerContact);
   });
 
   it('Create new area', async () => {
     await contactPage.addPlace('health_center', area, areaContact);
     await sentinelUtils.waitForSentinel(); // prevent stale element references
-    expect(await contactPage.getPrimaryContactName()).toBe(areaContact);
+    chai.expect(await contactPage.getPrimaryContactName()).to.equal(areaContact);
   });
 
   it('Create new household', async () => {
     await contactPage.addPlace('clinic', household, householdContact);
     await sentinelUtils.waitForSentinel(); // prevent stale element references
-    expect(await contactPage.getPrimaryContactName()).toBe(householdContact);
+    chai.expect(await contactPage.getPrimaryContactName()).to.equal(householdContact);
   });
 
   it('Create new person', async () => {
-    expect(await contactPage.addPerson('James')).toBe('James');
+    chai.expect(await contactPage.addPerson('James')).to.equal('James');
+  });
+
+  it('should edit a person with a phone number', async () => {
+    await contactPage.selectLHSRowByText(centerName);
+
+    const name = 'Padishah Emperor';
+    const phone = '+40755789789';
+    chai.expect(await contactPage.addPerson(name, { phone })).to.equal(name);
+    chai.expect(await contactPage.getContactSummaryField('person.field.phone')).to.equal(phone);
+
+    const updatedName = 'Paul Atreides';
+    chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
+    chai.expect(await contactPage.getContactSummaryField('person.field.phone')).to.equal(phone);
   });
 });
