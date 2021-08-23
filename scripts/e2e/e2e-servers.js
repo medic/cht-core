@@ -134,6 +134,9 @@ app.post('/die', (req, res) => {
   ]).then(() => {
     res.status(200).end();
     process.exit(0);
+  }).catch((err) => {
+    console.log('an err occurred');
+    console.log(err);
   });
 });
 
