@@ -135,10 +135,6 @@ export class EnketoService {
           $element.text(this.translateService.instant('enketo.' + $element.attr('data-i18n')));
         });
 
-        // Cannot actually remove the #form-languages dropdown or Enketo will ignore our override language that we
-        // provide when constructing the EnketoForm.
-        $html.find('#form-languages').hide();
-
         const hasContactSummary = $(model).find('> instance[id="contact-summary"]').length === 1;
         return {
           html: $html,
