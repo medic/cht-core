@@ -8,8 +8,16 @@ const getDoc = () => {
 };
 
 describe('Settings API', () => {
+  console.log(this.timeout);
   before(async () => await utils.updateSettings({}, true));
-  after(async () => await utils.revertSettings(true));
+  after(async () => {
+  try {
+    await utils.revertSettings(true)
+  } catch(e)
+  {
+    console.log('mocha after hook error');
+    console.log(e)
+  }});
 
   describe('old api', () => {
 
