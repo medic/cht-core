@@ -19,7 +19,7 @@ const contact = personFactory.build(
 
 const docs = [...places, contact];
 
-describe('generating short codes', async function () {
+describe('generating short codes', () => {
   const forms = {
     'CASEID': {
       'meta': { 'code': 'CASEID', 'icon': 'icon-healthcare', 'translation_key': 'Case Id Form' },
@@ -35,16 +35,16 @@ describe('generating short codes', async function () {
     update_clinics: true, registration: true
   };
 
-  before(async function () {
+  before(async () => {
     await utils.saveDocs(docs);
     await utils.updateSettings({forms, registrations, transitions}, true);
 
     await loginPage.cookieLogin();
   });
 
-  after(async function() {await utils.revertDb([], true)});
+  after(async () => await utils.revertDb([], true));
 
-  it('create case ID', async function ()  {
+  it('create case ID', async () => {
     await utils.request({
       method: 'POST',
       path: '/api/v2/records',
