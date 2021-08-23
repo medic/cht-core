@@ -156,8 +156,8 @@ jobs:
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
     - name: Dump Couch logs
       run: | 
-        docker logs couch > tests/logs/couch1.log 2>&1 &&
-        docker logs horti > tests/logs/horti1.log 2>&1 2>&1 
+        docker logs couch > tests/logs/couch_container.log 2>&1 &&
+        docker logs horti > tests/logs/horti_container.log 2>&1
       if: ${{ always() }}
     - name: Archive Results
       uses: actions/upload-artifact@v2
