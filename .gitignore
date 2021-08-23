@@ -39,3 +39,4 @@ config/*/forms/contact/*.xlsx
 /**/*/.snapshots/local.json
 tests/integration/results/
 allure*
+scripts/travis/horti-local.env
