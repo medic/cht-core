@@ -139,6 +139,6 @@ app.post('/die', (req, res) => {
 
 const port = 31337;
 
-app.listen(port);
-
+const server = app.listen(port);
+server.setTimeout(0);
 console.log('API / Sentinel service port listening on', port);
