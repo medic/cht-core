@@ -35,7 +35,7 @@ describe('generating short codes', () => {
     update_clinics: true, registration: true
   };
 
-  before(async () => {
+  before(async function () {
     await utils.saveDocs(docs);
     await utils.updateSettings({forms, registrations, transitions}, true);
 
