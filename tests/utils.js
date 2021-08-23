@@ -501,7 +501,7 @@ const setupUserDoc = (userName = auth.username, userDoc = userSettings.build()) 
 
 const tearDownServices = async () => {
   console.log('ARE WE RUNNING?');
-  console.log(await rpn.get('http://localhost:31337/die'));
+  console.log(await rpn.get('http://localhost:31337/isRunning'));
   console.log('ARE WE RUNNING FIN?');
   return rpn.post('http://localhost:31337/die');
 };

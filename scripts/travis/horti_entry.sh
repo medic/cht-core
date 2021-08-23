@@ -32,5 +32,6 @@ echo Installing Horti
 npm install -g horticulturalist 
 echo Check e2e servers is running
 curl http://localhost:31337/isRunning
-echo Starting Horti
+echo 
+echo 'Starting Horti'
 horti --local --install=$BUILD > /tests/logs/horti.log
