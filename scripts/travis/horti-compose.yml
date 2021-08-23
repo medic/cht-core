@@ -27,6 +27,7 @@ services:
       - HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER
       - BUILD=medic:medic:test-$TRAVIS_BUILD_NUMBER
       - NODE_VERSION=$NODE
+      - TEST_SUITE=integration
     depends_on:
       - couch
     command: /horti_entry.sh
