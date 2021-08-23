@@ -110,7 +110,9 @@ Treat the migration as if you were writing a brand new e2e suite. Not everything
 
 Each spec file runs independently. There is no need to manage browser state between spec files. 
 
+### Saving artifacts
 
+Github actions will artifact all files in tests/logs. This is the directory any logs, results, images, etc... should save to if you want to review them if a build fails. 
 
 ### Glossary 
 
