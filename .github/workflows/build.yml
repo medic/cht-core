@@ -7,7 +7,8 @@ env:
   COUCH_NODE_NAME: nonode@nohost
   BUILDS_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_testing' || '_couch/builds_external' }}
   STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }} 
-  MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
+  MARKET_URL: 'https://staging.dev.medicmobile.org' 
+  MARKET_URL_WRITE: ${{ secrets.AUTH_MARKET_URL }}
 
 jobs:
   build:
@@ -50,7 +51,7 @@ jobs:
         node --stack_size=10000 `which grunt` ci-compile-github
     - name: Publish for testing
       run: |
-        node --stack_size=10000 `which grunt` publish-for-testing
+        MARKET_URL=$MARKET_URL_WRITE node --stack_size=10000 `which grunt` publish-for-testing
 
   default-config-tests:
     needs: build
@@ -319,7 +320,7 @@ jobs:
       run: |
         cd scripts/travis
         npm ci
-        node ./publish.js
+        MARKET_URL=$MARKET_URL_WRITE node ./publish.js
 
 
   test-cht-default:
