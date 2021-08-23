@@ -35,10 +35,12 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
 
     let server;
     if (constants.IS_TRAVIS) {
+      console.log('travis start');
       const path = '/root/.horticulturalist/deployments/horti-svc-start';
       server = spawn(path, [
         `medic-${serviceName}`
       ]);
+      console.log('travis start 1');
     } else {
       // runs your local checked out api / sentinel
       server = fork(`server.js`, {
@@ -54,15 +56,20 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
         },
       });
     }
-
+    console.log('travis start 2');
     const writeToLogStream = data => writeToStream(logStream, data);
+    console.log('travis start 3');
     server.stdout.on('data', writeToLogStream);
+    console.log('travis start 4');
     server.stderr.on('data', writeToLogStream);
+    console.log('travis start 5');
     server.on('close', code => writeToLogStream(`${serviceName} process exited with code ${code}`));
 
     processes[serviceName] = server;
     resolve();
   } catch (err) {
+    console.log('travis start err');
+    console.log(err);
     reject(err);
   }
 });
@@ -94,7 +101,7 @@ const started = {
   sentinel: false,
 };
 
-app.post('/:server/:action', (req, res) => {
+app.post('/:server/:action', (req, res, next) => {
   const { server, action } = req.params;
   let p = Promise.resolve();
 
@@ -112,11 +119,11 @@ app.post('/:server/:action', (req, res) => {
   if (['start', 'restart'].includes(action)) {
     if (['api', 'all'].includes(server)) {
       console.log('Starting API...');
-      p = p.then(() => startServer('api', started.api)).then(() => started.api = true);
+      p = p.then(() => startServer('api', started.api)).then(() => started.api = true).catch(next);
     }
     if (['sentinel', 'all'].includes(server)) {
       console.log('Starting Sentinel...');
-      p = p.then(() => startServer('sentinel', started.sentinel)).then(() => started.sentinel = true);
+      p = p.then(() => startServer('sentinel', started.sentinel)).then(() => started.sentinel = true).catch(next);
     }
   }
 
