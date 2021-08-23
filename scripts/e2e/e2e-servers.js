@@ -35,8 +35,8 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
 
     let server;
     if (constants.IS_TRAVIS) {
-      server = spawn('horti-svc-start', [
-        `/root/.horticulturalist/deployments`,
+      const path = '/root/.horticulturalist/deployments.horti-svc-start';
+      server = spawn(path, [
         `medic-${serviceName}`
       ]);
     } else {
@@ -69,7 +69,8 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
 
 const stopServer = (serviceName) => new Promise(res => {
   if (constants.IS_TRAVIS) {
-    const pid = spawn('/root/.horticulturalist/deployments/horti-svc-stop', [
+    const path = '/root/.horticulturalist/deployments.horti-svc-stop';
+    const pid = spawn(path, [
       `medic-${serviceName}`
     ]);
 
@@ -126,7 +127,7 @@ app.get('/isRunning', (req, res) => {
   res.send('We are running');
 });
 
-app.post('/die', (req, res) => {
+app.post('/die', (req, res, next) => {
   console.log('Killing API / Sentinel service port');
   Promise.all([
     () => stopServer('api'),
@@ -134,10 +135,7 @@ app.post('/die', (req, res) => {
   ]).then(() => {
     res.status(200).end();
     process.exit(0);
-  }).catch((err) => {
-    console.log('an err occurred');
-    console.log(err);
-  });
+  }).catch(next);
 });
 
 const port = 31337;
