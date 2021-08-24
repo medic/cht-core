@@ -1,11 +1,12 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const chai = require('chai');
+const constants = require('../../../constants');
 
 const outboundConfig = (port) => ({
   working: {
     destination: {
-      base_url: `http://127.0.0.1:${port}`,
+      base_url: `http://${constants.MOCK_HOST}:${port}`,
       path: '/test-working'
     },
     mapping: {
@@ -15,7 +16,7 @@ const outboundConfig = (port) => ({
   },
   broken: {
     destination: {
-      base_url: `http://127.0.0.1:${port}`,
+      base_url: `http://${constants.MOCK_HOST}:${port}`,
       path: '/test-broken'
     },
     mapping: {

@@ -3,6 +3,7 @@ const IS_TRAVIS = !!process.env.TEST_SUITE;
 const COUCH_HOST = 'localhost';
 const COUCH_PORT = IS_TRAVIS ? 5984 : 4984;
 const API_PORT = IS_TRAVIS ? 5988 : 4988;
+const MOCK_HOST = IS_TRAVIS ? process.env.DOCKER_GATEWAY  : '127.0.0.1';
 
 module.exports = {
   IS_TRAVIS: IS_TRAVIS,
@@ -33,5 +34,6 @@ module.exports = {
     type: 'person',
     reported_date: 1541679811408,
   },
-  BASE_URL: `http://${COUCH_HOST}:${API_PORT}/`
+  BASE_URL: `http://${COUCH_HOST}:${API_PORT}/`,
+  MOCK_HOST
 };

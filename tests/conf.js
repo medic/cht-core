@@ -5,6 +5,7 @@ chai.use(require('chai-shallow-deep-equal'));
 // so the .to.have.members will display the array members when assertions fail instead of [ Array(6) ]
 chai.config.truncateThreshold = 0;
 chai.use(require('chai-exclude'));
+const { execSync } = require('child_process');
 
 const baseConfig = {
   params:{
@@ -46,6 +47,11 @@ const baseConfig = {
   },
   allScriptsTimeout: 120 * 1000,
   beforeLaunch: function() {
+    const dockerNetwork = JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
+    process.env.DOCKER_GATEWAY = dockerNetwork[0].Gateway;
+    console.log('docker network is!!!!!!');
+    console.log(process.env.DOCKER_GATEWAY);
+    console.log(dockerNetwork);
     process.on('uncaughtException', function() {
       utils.reporter.jasmineDone();
       utils.reporter.afterLaunch();
