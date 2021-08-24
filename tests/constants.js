@@ -1,9 +1,10 @@
 const IS_TRAVIS = !!process.env.TEST_SUITE;
-
+const { execSync } = require('child_process');
 const COUCH_HOST = 'localhost';
 const COUCH_PORT = IS_TRAVIS ? 5984 : 4984;
 const API_PORT = IS_TRAVIS ? 5988 : 4988;
-const MOCK_HOST = IS_TRAVIS ? process.env.DOCKER_GATEWAY  : '127.0.0.1';
+const dockerNetwork = JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
+const MOCK_HOST = IS_TRAVIS ? dockerNetwork[0].Gateway : '127.0.0.1';
 
 module.exports = {
   IS_TRAVIS: IS_TRAVIS,
