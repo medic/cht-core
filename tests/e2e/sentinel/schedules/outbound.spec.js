@@ -1,12 +1,11 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const chai = require('chai');
-const constants = require('../../../constants');
 
 const outboundConfig = (port) => ({
   working: {
     destination: {
-      base_url: `http://${constants.MOCK_HOST}:${port}`,
+      base_url: `http://${utils.dockerGateway()}:${port}`,
       path: '/test-working'
     },
     mapping: {
@@ -16,7 +15,7 @@ const outboundConfig = (port) => ({
   },
   broken: {
     destination: {
-      base_url: `http://${constants.MOCK_HOST}:${port}`,
+      base_url: `http://${utils.dockerGateway()}:${port}`,
       path: '/test-broken'
     },
     mapping: {
@@ -87,7 +86,7 @@ describe('Outbound', () => {
 
   it('should find existing outbound tasks and execute them, leaving them if the send was unsuccessful', () => {
     console.log('docker network is!!!!!!');
-    console.log(constants.MOCK_HOST);
+    console.log(utils.dockerGateway());
     return utils
       .updateSettings({ outbound: outboundConfig(server.address().port) }, true)
       .then(() => utils.stopSentinel())

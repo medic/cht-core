@@ -527,7 +527,13 @@ const parseCookieResponse = (cookieString) => {
   });
 };
 
+const dockerGateway = () => {
+  const dockerNetwork = JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
+  return constants.IS_TRAVIS ? dockerNetwork[0].Gateway : '127.0.0.1';
+};
+
 module.exports = {
+  dockerGateway,
   parseCookieResponse,
   deprecated,
   db: db,
