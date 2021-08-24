@@ -21,7 +21,7 @@ describe('Create new lineage structure', () => {
   });
 
   after(async () => {
-    await utils.revertDb([], 'api');
+    await utils.revertDb([], true);
   });
 
   afterEach(async () => {

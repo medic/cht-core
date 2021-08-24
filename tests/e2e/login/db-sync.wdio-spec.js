@@ -205,7 +205,7 @@ describe('db-sync', () => {
   });
 
   after(async () => {
-    await utils.revertDb([], 'api');
+    await utils.revertDb([], true);
     await utils.deleteUsers([restrictedUserName]);
   });
 
@@ -331,7 +331,7 @@ describe('db-sync', () => {
       const readReport = { _id: `read:report:${report2}` };
       await utils.saveMetaDocs(restrictedUserName, [readReport]);
 
-      await browser.refresh(); // meta databases sync every 30 minutes   
+      await browser.refresh(); // meta databases sync every 30 minutes
       await commonElements.sync();
 
       // if the test fails, it helps to see which reports are read or not in the failpic
