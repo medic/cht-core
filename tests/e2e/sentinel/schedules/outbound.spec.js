@@ -86,6 +86,8 @@ describe('Outbound', () => {
   afterEach(() => utils.revertDb().then(() => wipeTasks()));
 
   it('should find existing outbound tasks and execute them, leaving them if the send was unsuccessful', () => {
+    console.log('docker network is!!!!!!');
+    console.log(constants.MOCK_HOST);
     return utils
       .updateSettings({ outbound: outboundConfig(server.address().port) }, true)
       .then(() => utils.stopSentinel())
