@@ -7,8 +7,8 @@ env:
   COUCH_NODE_NAME: nonode@nohost
   BUILDS_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_testing' || '_couch/builds_external' }}
   STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }} 
-  MARKET_URL: 'https://staging.dev.medicmobile.org' 
-  MARKET_URL_WRITE: ${{ secrets.AUTH_MARKET_URL }}
+  MARKET_URL_READ: 'https://staging.dev.medicmobile.org' 
+  MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
 
 jobs:
   build:
@@ -51,7 +51,7 @@ jobs:
         node --stack_size=10000 `which grunt` ci-compile-github
     - name: Publish for testing
       run: |
-        MARKET_URL=$MARKET_URL_WRITE node --stack_size=10000 `which grunt` publish-for-testing
+        node --stack_size=10000 `which grunt` publish-for-testing
 
   default-config-tests:
     needs: build
@@ -137,15 +137,15 @@ jobs:
       run: ./scripts/travis/couch-config
     - name: Echo Vars
       run: |
-        echo "HORTI_BUILDS_SERVER=${MARKET_URL}/${BUILDS_SERVER}"
+        echo "HORTI_BUILDS_SERVER=${MARKET_URL_READ}/${BUILDS_SERVER}"
         echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
         echo "COUCH_URL=${COUCH_URL}"
     - name: Curl Couch_url
       run: curl ${COUCH_URL}
     - name: horti setup
       run: |
-        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
-        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
+        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
+        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
     - name: Run e2e-integration tests
       run: node --stack_size=10000 `which grunt` ci-e2e-integration
     - name: Dump Couch logs
@@ -208,15 +208,15 @@ jobs:
       run: ./scripts/travis/couch-config
     - name: Echo Vars
       run: |
-        echo "HORTI_BUILDS_SERVER=${MARKET_URL}/${BUILDS_SERVER}"
+        echo "HORTI_BUILDS_SERVER=${MARKET_URL_READ}/${BUILDS_SERVER}"
         echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
         echo "COUCH_URL=${COUCH_URL}"
     - name: Curl Couch_url
       run: curl ${COUCH_URL}
     - name: horti setup
       run: |
-        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
-        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
+        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
+        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
     - name: Test it!
       run: node --stack_size=10000 `which grunt` ci-e2e
     - name: Dump Couch logs
@@ -279,15 +279,15 @@ jobs:
       run: ./scripts/travis/couch-config
     - name: Echo Vars
       run: |
-        echo "HORTI_BUILDS_SERVER=${MARKET_URL}/${BUILDS_SERVER}"
+        echo "HORTI_BUILDS_SERVER=${MARKET_URL_READ}/${BUILDS_SERVER}"
         echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
         echo "COUCH_URL=${COUCH_URL}"
     - name: Curl Couch_url
       run: curl ${COUCH_URL}
     - name: horti setup
       run: |
-        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
-        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
+        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
+        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
     - name: Mobile Emulation!
       run: node --stack_size=10000 `which grunt` ci-e2e-mobile
     - name: Dump Couch logs
@@ -320,7 +320,7 @@ jobs:
       run: |
         cd scripts/travis
         npm ci
-        MARKET_URL=$MARKET_URL_WRITE node ./publish.js
+        node ./publish.js
 
 
   test-cht-default:
@@ -367,15 +367,15 @@ jobs:
       run: ./scripts/travis/couch-config
     - name: Echo Vars
       run: |
-        echo "HORTI_BUILDS_SERVER=${MARKET_URL}/${BUILDS_SERVER}"
+        echo "HORTI_BUILDS_SERVER=${MARKET_URL_READ}/${BUILDS_SERVER}"
         echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
         echo "COUCH_URL=${COUCH_URL}"
     - name: Curl Couch_url
       run: curl ${COUCH_URL}
     - name: horti setup
       run: |
-        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
-        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
+        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
+        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
     - name: Test it!
       run: node --stack_size=10000 `which grunt` ci-e2e-cht
     - name: Dump Couch logs
@@ -435,15 +435,15 @@ jobs:
       run: ./scripts/travis/couch-config
     - name: Echo Vars
       run: |
-        echo "HORTI_BUILDS_SERVER=${MARKET_URL}/${BUILDS_SERVER}"
+        echo "HORTI_BUILDS_SERVER=${MARKET_URL_READ}/${BUILDS_SERVER}"
         echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
         echo "COUCH_URL=${COUCH_URL}"
     - name: Curl Couch_url
       run: curl ${COUCH_URL}
     - name: horti setup
       run: |
-        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
-        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
+        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
+        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
     - name: Test it!
       run: node --stack_size=10000 `which grunt` ci-webdriver-${{ matrix.config-type }}
     - name: Dump Couch logs
