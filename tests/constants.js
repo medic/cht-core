@@ -3,7 +3,7 @@ const IS_TRAVIS = !!process.env.TEST_SUITE;
 const COUCH_HOST = 'localhost';
 const COUCH_PORT = IS_TRAVIS ? 5984 : 4984;
 const API_PORT = IS_TRAVIS ? 5988 : 4988;
-const API_HOST = IS_TRAVIS ? 'horti' : 'localhost';
+
 
 module.exports = {
   IS_TRAVIS: IS_TRAVIS,
@@ -12,7 +12,7 @@ module.exports = {
   // intentionally different from the dev api instance to avoid
   // port collisions
   API_PORT,
-  API_HOST,
+  API_HOST: 'localhost',
 
   // connection information for the couchdb instance
   // locally we spin up a different CouchDB for e2e tests
