@@ -40,9 +40,11 @@ const baseConfig = {
     }
   },
   jasmineNodeOpts: {
+    defaultTimeoutInterval: 120 * 1000,
     // makes default jasmine reporter not display dots for every spec
     print: () => {}
   },
+  allScriptsTimeout: 120 * 1000,
   beforeLaunch: function() {
     process.on('uncaughtException', function() {
       utils.reporter.jasmineDone();
