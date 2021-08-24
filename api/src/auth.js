@@ -4,6 +4,10 @@ const _ = require('lodash');
 const db = require('./db');
 const environment = require('./environment');
 const config = require('./config');
+/**
+ * this role is used in webapp bootstrap and session service to mainly determine whether the user should
+ * replicate or not, without requiring access to server settings.
+ */
 const ONLINE_ROLE = 'mm-online';
 const DB_ADMIN_ROLE = '_admin';
 
