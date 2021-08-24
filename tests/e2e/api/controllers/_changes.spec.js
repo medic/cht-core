@@ -27,7 +27,7 @@ const assertChangeIds = function (changes) {
   //  * filter out translation documents and other expected documents
   changes = changes.filter(change => {
     return !isFormOrTranslation(change.id) &&
-           !DEFAULT_EXPECTED.includes(change.id);
+      !DEFAULT_EXPECTED.includes(change.id);
   });
   const expectedIds = Array.prototype.slice.call(arguments, 1);
   const changeIds = _.uniq(getIds(changes));
@@ -234,7 +234,7 @@ const getCurrentSeq = () => {
 };
 
 describe('changes handler', () => {
-
+  let originalTimeout;
   const DOCS_TO_KEEP = [
     'PARENT_PLACE',
     /^messages-/,
@@ -257,8 +257,15 @@ describe('changes handler', () => {
       .then(() => utils.deleteUsers(users, true))
       .then(done));
 
-  beforeEach(() => getCurrentSeq());
-  afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
+  beforeEach(async () => {
+    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
+    await getCurrentSeq();
+  });
+  afterEach(async () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    await utils.revertDb(DOCS_TO_KEEP, true);
+  });
 
   describe('requests', () => {
     it('should allow DB admins to POST to _changes', () => {
@@ -427,7 +434,7 @@ describe('changes handler', () => {
       const options = {
         hostname: constants.COUCH_HOST,
         port: constants.COUCH_PORT,
-        auth: auth.username+ ':' + auth.password,
+        auth: auth.username + ':' + auth.password,
         path: '/'
       };
 
@@ -539,7 +546,7 @@ describe('changes handler', () => {
         utils.saveDocs(allowedBob),
         utils.saveDocs(allowedSteve),
       ])
-        .then(([ bobsChanges, stevesChanges ]) => {
+        .then(([bobsChanges, stevesChanges]) => {
           assertChangeIds(bobsChanges, ...getIds(allowedBob));
           assertChangeIds(stevesChanges, ...getIds(allowedSteve));
         });
@@ -547,15 +554,15 @@ describe('changes handler', () => {
 
     it('returns newly added docs', () => {
       const newDocs = [
-        {_id: 'new_allowed_contact', place_id: '12345', parent: {_id: 'fixture:bobville'}, type: 'clinic'},
-        {_id: 'new_denied_contact', place_id: '88888', parent: {_id: 'fixture:steveville'}, type: 'clinic'},
+        { _id: 'new_allowed_contact', place_id: '12345', parent: { _id: 'fixture:bobville' }, type: 'clinic' },
+        { _id: 'new_denied_contact', place_id: '88888', parent: { _id: 'fixture:steveville' }, type: 'clinic' },
         {
           _id: 'new_allowed_report',
           type: 'data_record',
           reported_date: 1,
           place_id: '12345',
           form: 'some-form',
-          contact: {_id: 'fixture:bobville'}
+          contact: { _id: 'fixture:bobville' }
         },
         {
           _id: 'new_denied_report',
@@ -563,7 +570,7 @@ describe('changes handler', () => {
           reported_date: 1,
           place_id: '88888',
           form: 'some-form',
-          contact: {_id: 'fixture:steveville'}
+          contact: { _id: 'fixture:steveville' }
         }
       ];
       const newIds = ['new_allowed_contact', 'new_allowed_report'];
@@ -592,7 +599,7 @@ describe('changes handler', () => {
           // we delay the settings update request to make sure it happens AFTER the longpoll feeds have been created
           utils.delayPromise(() => utils.updateSettings(settingsUpdates, true), 300)
         ])
-        .then(([ stevesChanges, bobsChanges ]) => {
+        .then(([stevesChanges, bobsChanges]) => {
           chai.expect(stevesChanges.results.length).to.equal(1);
           chai.expect(bobsChanges.results.length).to.equal(1);
           chai.expect(bobsChanges.results[0].id).to.equal('settings');
@@ -604,15 +611,15 @@ describe('changes handler', () => {
 
     it('returns newly added docs when in restart mode', () => {
       const newDocs = [
-        {_id: 'new_allowed_contact_bis', place_id: '123456', parent: {_id: 'fixture:bobville'}, type: 'clinic'},
-        {_id: 'new_denied_contact_bis', place_id: '888888', parent: {_id: 'fixture:steveville'}, type: 'clinic'},
+        { _id: 'new_allowed_contact_bis', place_id: '123456', parent: { _id: 'fixture:bobville' }, type: 'clinic' },
+        { _id: 'new_denied_contact_bis', place_id: '888888', parent: { _id: 'fixture:steveville' }, type: 'clinic' },
         {
           _id: 'new_allowed_report_bis',
           type: 'data_record',
           reported_date: 1,
           place_id: '123456',
           form: 'some-form',
-          contact: {_id: 'fixture:bobville'}
+          contact: { _id: 'fixture:bobville' }
         },
         {
           _id: 'new_denied_report_bis',
@@ -620,7 +627,7 @@ describe('changes handler', () => {
           reported_date: 1,
           place_id: '888888',
           form: 'some-form',
-          contact: {_id: 'fixture:steveville'}
+          contact: { _id: 'fixture:steveville' }
         }
       ];
       const newIds = ['new_allowed_contact_bis', 'new_allowed_report_bis'];
@@ -659,7 +666,7 @@ describe('changes handler', () => {
             utils.saveDoc(Object.assign(stevesUser, { facility_id: 'fixture:bobville' })),
           ]);
         })
-        .then(([ changes ]) => {
+        .then(([changes]) => {
           assertChangeIds(changes, 'org.couchdb.user:steve', ...getIds(allowedSteve));
           return requestChanges('steve', { since: currentSeq });
         })
@@ -693,11 +700,11 @@ describe('changes handler', () => {
           utils.request({ path: '/_users/org.couchdb.user:steve' }),
           utils.getDoc('org.couchdb.user:steve')
         ]))
-        .then(([ user, medicUser ]) => Promise.all([
+        .then(([user, medicUser]) => Promise.all([
           requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
           utils.delayPromise(() => updateSteve(user, medicUser), 500),
         ]))
-        .then(([ changes ]) => {
+        .then(([changes]) => {
           const bobvilleIds = getIds(allowedBob);
           const stevevilleIds = getIds(allowedSteve);
           const changeIds = getIds(changes.results);
@@ -732,7 +739,7 @@ describe('changes handler', () => {
           utils.saveDocs(allowedDocs),
           utils.saveDocs(deniedDocs),
         ])
-        .then(([ allowedDocsResult, deniedDocsResult ]) => {
+        .then(([allowedDocsResult, deniedDocsResult]) => {
           allowedDocsResult.forEach((doc, idx) => allowedDocs[idx]._rev = doc.rev);
           deniedDocsResult.forEach((doc, idx) => deniedDocs[idx]._rev = doc.rev);
           return getCurrentSeq();
@@ -742,7 +749,7 @@ describe('changes handler', () => {
           utils.saveDocs(deniedDocs.map(doc => Object.assign(doc, { _deleted: true }))),
           utils.saveDocs(allowedDocs.map(doc => Object.assign(doc, { _deleted: true })))
         ]))
-        .then(([ changes ]) => {
+        .then(([changes]) => {
           assertChangeIds(changes, ...getIds(allowedDocs));
           changes.results.forEach(change => chai.expect(change.deleted).to.equal(true));
         });
@@ -758,7 +765,7 @@ describe('changes handler', () => {
           utils.saveDocs(allowedDocs),
           utils.saveDocs(deniedDocs)
         ])
-        .then(([ allowedDocsResult, deniedDocsResult ]) => {
+        .then(([allowedDocsResult, deniedDocsResult]) => {
           allowedDocsResult.forEach((doc, idx) => allowedDocs[idx]._rev = doc.rev);
           deniedDocsResult.forEach((doc, idx) => deniedDocs[idx]._rev = doc.rev);
           return requestChanges('steve');
@@ -800,7 +807,7 @@ describe('changes handler', () => {
           utils.saveDocs(allowedBob),
           utils.saveDocs(allowedSteve)
         ])
-        .then(([ allowedBobResult, allowedSteveResult ]) => {
+        .then(([allowedBobResult, allowedSteveResult]) => {
           allowedBobResult.forEach((doc, idx) => allowedBob[idx]._rev = doc.rev);
           allowedSteveResult.forEach((doc, idx) => allowedSteve[idx]._rev = doc.rev);
           return Promise.all([
@@ -808,7 +815,7 @@ describe('changes handler', () => {
             requestChanges('steve')
           ]);
         })
-        .then(([ bobsChanges, stevesChanges ]) => {
+        .then(([bobsChanges, stevesChanges]) => {
           bobsSeq = bobsChanges.last_seq;
           stevesSeq = stevesChanges.last_seq;
           return Promise.all([
@@ -820,7 +827,7 @@ describe('changes handler', () => {
           consumeChanges('bob', [], bobsSeq),
           consumeChanges('steve', [], stevesSeq),
         ]))
-        .then(([ bobsChanges, stevesChanges ]) => {
+        .then(([bobsChanges, stevesChanges]) => {
           assertChangeIds(bobsChanges, ...getIds(allowedBob));
           assertChangeIds(stevesChanges, ...getIds(allowedSteve));
         });
@@ -925,8 +932,8 @@ describe('changes handler', () => {
           chai.expect(changes[0]).to.include({ id: contact._id, deleted: true });
           chai.expect(changes[0].changes[0].rev).to.equal(contact._rev);
 
-          delete(contact._rev);
-          delete(contact._deleted);
+          delete (contact._rev);
+          delete (contact._deleted);
           return utils.saveDoc(contact);
         })
         .then(result => {
@@ -957,7 +964,7 @@ describe('changes handler', () => {
           getChangesForIds('bob', ids, true, currentSeq, 4),
           promiseChain
         ]))
-        .then(([ changes ]) => {
+        .then(([changes]) => {
           chai.expect(ids).to.have.members(_.uniq(getIds(changes)));
           chai.expect(changes.every(change => change.seq)).to.equal(true);
         });
@@ -965,9 +972,9 @@ describe('changes handler', () => {
   });
 
   it('should filter the changes to relevant ones', () =>
-    utils.saveDoc({ type:'clinic', parent:{ _id:'nowhere' } })
-      .then(() => utils.saveDoc({ type:'clinic', _id:'very-relevant', parent:{ _id:'fixture:bobville' } }))
-      .then(() => utils.saveDoc({ type:'clinic', parent:{ _id:'irrelevant-place' } }))
+    utils.saveDoc({ type: 'clinic', parent: { _id: 'nowhere' } })
+      .then(() => utils.saveDoc({ type: 'clinic', _id: 'very-relevant', parent: { _id: 'fixture:bobville' } }))
+      .then(() => utils.saveDoc({ type: 'clinic', parent: { _id: 'irrelevant-place' } }))
       .then(() => requestChanges('bob'))
       .then(changes =>
         assertChangeIds(changes,
@@ -980,8 +987,8 @@ describe('changes handler', () => {
     describe('can_view_unallocated_data_records permission', () => {
 
       it('should be supplied if user has this perm and district_admins_access_unallocated_messages is enabled', () =>
-        utils.updateSettings({district_admins_access_unallocated_messages: true}, true)
-          .then(() => utils.saveDoc({ _id:'unallocated_report', type:'data_record' }))
+        utils.updateSettings({ district_admins_access_unallocated_messages: true }, true)
+          .then(() => utils.saveDoc({ _id: 'unallocated_report', type: 'data_record' }))
           .then(() => requestChanges('bob'))
           .then(changes =>
             assertChangeIds(changes,
@@ -991,16 +998,16 @@ describe('changes handler', () => {
               'unallocated_report')));
 
       it('should not be supplied if user has perm but district_admins_access_unallocated_messages is disabled', () =>
-        utils.saveDoc({ _id:'unallocated_report', type:'data_record' })
+        utils.saveDoc({ _id: 'unallocated_report', type: 'data_record' })
           .then(() => requestChanges('bob'))
-          .then(changes  =>
+          .then(changes =>
             assertChangeIds(changes,
               'org.couchdb.user:bob',
               'fixture:user:bob',
               'fixture:bobville')));
 
       it('should NOT be supplied for a user without can_view_unallocated_data_records permission', () =>
-        utils.saveDoc({ _id:'unallocated_report', type:'data_record' })
+        utils.saveDoc({ _id: 'unallocated_report', type: 'data_record' })
           .then(() => requestChanges('clare')) // She does not have the correct role
           .then(changes =>
             assertChangeIds(changes,
@@ -1012,11 +1019,11 @@ describe('changes handler', () => {
   describe('replication depth', () => {
 
     it('should show contacts to a user only if they are within the configured depth', () =>
-      utils.updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]}, true)
-        .then(() => utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } }))
+      utils.updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }] }, true)
+        .then(() => utils.saveDoc({ _id: 'should-be-visible', type: 'clinic', parent: { _id: 'fixture:chwville' } }))
         .then(() => utils.saveDoc({
-          _id:'should-be-hidden', reported_date: 1, type:'person',
-          parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } }
+          _id: 'should-be-hidden', reported_date: 1, type: 'person',
+          parent: { _id: 'should-be-visible', parent: { _id: 'fixture:chwville' } }
         }))
         .then(() => requestChanges('chw'))
         .then(changes =>
@@ -1029,14 +1036,14 @@ describe('changes handler', () => {
     it('should correspond to the largest number for any role the user has', () =>
       utils.updateSettings({
         replication_depth: [
-          { role:'district_admin', depth:1 },
-          { role:'analytics', depth:2 },
+          { role: 'district_admin', depth: 1 },
+          { role: 'analytics', depth: 2 },
         ]
       }, true)
-        .then(() => utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } }))
+        .then(() => utils.saveDoc({ _id: 'should-be-visible', type: 'clinic', parent: { _id: 'fixture:chwville' } }))
         .then(() => utils.saveDoc({
-          _id:'should-be-visible-too', reported_date: 1, type:'person',
-          parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } }
+          _id: 'should-be-visible-too', reported_date: 1, type: 'person',
+          parent: { _id: 'should-be-visible', parent: { _id: 'fixture:chwville' } }
         }))
         .then(() => requestChanges('chw'))
         .then(changes =>
@@ -1048,10 +1055,10 @@ describe('changes handler', () => {
             'should-be-visible-too')));
 
     it('should have no effect if not configured', () =>
-      utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } })
+      utils.saveDoc({ _id: 'should-be-visible', type: 'clinic', parent: { _id: 'fixture:chwville' } })
         .then(() => utils.saveDoc({
-          _id:'should-also-be-visible', reported_date: 1, type:'person',
-          parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } }
+          _id: 'should-also-be-visible', reported_date: 1, type: 'person',
+          parent: { _id: 'should-be-visible', parent: { _id: 'fixture:chwville' } }
         }))
         .then(() => requestChanges('chw'))
         .then(changes =>
@@ -1250,13 +1257,21 @@ describe('changes handler', () => {
           _id: 'clinic_patient',
           type: 'person',
           reported_date: 1,
-          parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+          parent: {
+            _id: 'fixture:chwville',
+            parent: {
+              _id: 'fixture:chw-bossville',
+              parent: {
+                _id: parentPlace._id
+              }
+            }
+          }
         };
         const healthCenterPatient = {
           _id: 'health_center_patient',
           type: 'person',
           reported_date: 1,
-          parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+          parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
         };
         return utils.saveDocs([patient, healthCenterPatient]);
       });
@@ -1270,7 +1285,15 @@ describe('changes handler', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
-            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+            parent: {
+              _id: 'fixture:chwville',
+              parent: {
+                _id: 'fixture:chw-bossville',
+                parent: {
+                  _id: parentPlace._id
+                }
+              }
+            }
           }
         };
         const clinicReport2 = {
@@ -1281,18 +1304,26 @@ describe('changes handler', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
-            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+            parent: {
+              _id: 'fixture:chwville',
+              parent: {
+                _id: 'fixture:chw-bossville',
+                parent: {
+                  _id: parentPlace._id
+                }
+              }
+            }
           }
         };
         const healthCenterReport = {
           _id: 'health_center_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'health_center_patient', needs_signoff: ''},
+          fields: { patient_id: 'health_center_patient', needs_signoff: '' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw-boss',
-            parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
           }
         };
         const bobReport = {
@@ -1303,20 +1334,20 @@ describe('changes handler', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:bob',
-            parent: { _id:'fixture:bobville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id } }
           }
         };
 
         return utils
-          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]}, true)
-          .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
+          .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }] }, true)
+          .then(() => utils.saveDocs([clinicReport, clinicReport2, healthCenterReport, bobReport]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
             requestChanges('chw-boss'), // chw-boss > chw-bossville > parent_place
             requestChanges('supervisor'), // supervisor > parent_place
             requestChanges('bob'), // bob > bobbille > parent_place
           ]))
-          .then(([ chwChanges, chwBossChanges, supervisorChanges, bobChanges ]) => {
+          .then(([chwChanges, chwBossChanges, supervisorChanges, bobChanges]) => {
             assertChangeIds(chwChanges,
               'org.couchdb.user:chw',
               'fixture:user:chw',
@@ -1360,7 +1391,15 @@ describe('changes handler', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
-            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+            parent: {
+              _id: 'fixture:chwville',
+              parent: {
+                _id: 'fixture:chw-bossville',
+                parent: {
+                  _id: parentPlace._id
+                }
+              }
+            }
           }
         };
         const clinicReport2 = {
@@ -1371,18 +1410,26 @@ describe('changes handler', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
-            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+            parent: {
+              _id: 'fixture:chwville',
+              parent: {
+                _id: 'fixture:chw-bossville',
+                parent: {
+                  _id: parentPlace._id
+                }
+              }
+            }
           }
         };
         const healthCenterReport = {
           _id: 'health_center_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'health_center_patient', needs_signoff: 'YES!'},
+          fields: { patient_id: 'health_center_patient', needs_signoff: 'YES!' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw-boss',
-            parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
           }
         };
         const bobReport = {
@@ -1393,20 +1440,20 @@ describe('changes handler', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:bob',
-            parent: { _id:'fixture:bobville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id } }
           }
         };
 
         return utils
-          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]}, true)
-          .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
+          .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }] }, true)
+          .then(() => utils.saveDocs([clinicReport, clinicReport2, healthCenterReport, bobReport]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
             requestChanges('chw-boss'), // chw-boss > chw-bossville > parent_place
             requestChanges('supervisor'), // supervisor > parent_place
             requestChanges('bob'), // bob > bobbille > parent_place
           ]))
-          .then(([ chwChanges, chwBossChanges, supervisorChanges, bobChanges ]) => {
+          .then(([chwChanges, chwBossChanges, supervisorChanges, bobChanges]) => {
             assertChangeIds(chwChanges,
               'org.couchdb.user:chw',
               'fixture:user:chw',
@@ -1455,7 +1502,15 @@ describe('changes handler', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
-            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+            parent: {
+              _id: 'fixture:chwville',
+              parent: {
+                _id: 'fixture:chw-bossville',
+                parent: {
+                  _id: parentPlace._id
+                }
+              }
+            }
           }
         };
         const clinicReport2 = {
@@ -1466,18 +1521,26 @@ describe('changes handler', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
-            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+            parent: {
+              _id: 'fixture:chwville',
+              parent: {
+                _id: 'fixture:chw-bossville',
+                parent: {
+                  _id: parentPlace._id
+                }
+              }
+            }
           }
         };
         const healthCenterReport = {
           _id: 'health_center_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'health_center_patient', needs_signoff: 'YES!'},
+          fields: { patient_id: 'health_center_patient', needs_signoff: 'YES!' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw-boss',
-            parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
           }
         };
         const bobReport = {
@@ -1488,20 +1551,20 @@ describe('changes handler', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:bob',
-            parent: { _id:'fixture:bobville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id } }
           }
         };
 
         return utils
-          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1, report_depth: 0 }]}, true)
-          .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
+          .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }] }, true)
+          .then(() => utils.saveDocs([clinicReport, clinicReport2, healthCenterReport, bobReport]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
             requestChanges('chw-boss'), // chw-boss > chw-bossville > parent_place
             requestChanges('supervisor'), // supervisor > parent_place
             requestChanges('bob'), // bob > bobville > parent_place
           ]))
-          .then(([ chwChanges, chwBossChanges, supervisorChanges, bobChanges ]) => {
+          .then(([chwChanges, chwBossChanges, supervisorChanges, bobChanges]) => {
             assertChangeIds(chwChanges,
               'org.couchdb.user:chw',
               'fixture:user:chw',
@@ -1598,7 +1661,7 @@ describe('changes handler', () => {
   it('should update the feed when the doc is updated', () => {
     let seq_number;
 
-    return utils.saveDoc({ _id:'visible', type:'clinic', parent: { _id:'fixture:chwville' } })
+    return utils.saveDoc({ _id: 'visible', type: 'clinic', parent: { _id: 'fixture:chwville' } })
       .then(() => requestChanges('chw'))
       .then(changes => {
         seq_number = changes.last_seq;
