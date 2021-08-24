@@ -23,6 +23,7 @@ let originalSettings;
 const originalTranslations = {};
 let e2eDebug;
 const hasModal = () => element(by.css('#update-available')).isPresent();
+const { execSync } = require('child_process');
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
