@@ -83,7 +83,7 @@ const getInfoUserCtx = req => {
   }
 
   const roles = getRoles(req);
-  if (auth.isOnlineOnly({ roles })) {
+  if (auth.hasOnlineRole(roles)) {
     throw { code: 400, reason: 'Provided role is not offline' };
   }
 

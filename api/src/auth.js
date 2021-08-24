@@ -5,6 +5,7 @@ const db = require('./db');
 const environment = require('./environment');
 const config = require('./config');
 const ONLINE_ROLE = 'mm-online';
+const DB_ADMIN_ROLE = '_admin';
 
 const get = (path, headers) => {
   const dbUrl = url.parse(environment.serverUrl);
@@ -25,7 +26,7 @@ const hasRole = (userCtx, role) => {
   return _.includes(userCtx && userCtx.roles, role);
 };
 
-const isDbAdmin = userCtx => hasRole(userCtx, '_admin');
+const isDbAdmin = userCtx => hasRole(userCtx, DB_ADMIN_ROLE);
 
 const hasPermission = (userCtx, permission) => {
   const roles = config.get('permissions')[permission];
@@ -57,11 +58,22 @@ const getFacilityId = (req, userCtx) => {
 };
 
 module.exports = {
+  hasOnlineRole: roles => {
+    if (!Array.isArray(roles) || !roles.length) {
+      return false;
+    }
+
+    const onlineRoles = [
+      DB_ADMIN_ROLE,
+      ONLINE_ROLE,
+      'national_admin', // kept for backwards compatibility
+    ];
+    return roles.some(role => onlineRoles.includes(role)) ||
+           !module.exports.isOffline(roles);
+  },
+
   isOnlineOnly: userCtx => {
-    return hasRole(userCtx, '_admin') ||
-           hasRole(userCtx, 'national_admin') || // kept for backwards compatibility
-           hasRole(userCtx, ONLINE_ROLE) ||
-           !module.exports.isOffline(userCtx.roles);
+    return userCtx && module.exports.hasOnlineRole(userCtx.roles);
   },
 
   isOffline: roles => {

@@ -174,6 +174,47 @@ describe('Auth', () => {
 
   });
 
+  describe('hasOnlineRole', () => {
+    it('should return false with bad params', () => {
+      chai.expect(auth.hasOnlineRole()).to.equal(false);
+      chai.expect(auth.hasOnlineRole(false)).to.equal(false);
+      chai.expect(auth.hasOnlineRole(undefined)).to.equal(false);
+      chai.expect(auth.hasOnlineRole('string')).to.equal(false);
+      chai.expect(auth.hasOnlineRole({ ob: 'ject' })).to.equal(false);
+      chai.expect(auth.hasOnlineRole([])).to.equal(false);
+    });
+
+    it('should return false when no online role was found', () => {
+      const scenarios = [
+        ['some_role'],
+        ['one_role', 'district_manager', 'admin'],
+        ['one_role', 'not_district_admin', 'not_admin'],
+      ];
+      scenarios.forEach(roles => {
+        const message = `hasOnlineRole failed for ${roles}`;
+        chai.expect(auth.hasOnlineRole(roles)).to.equal(false, message);
+      });
+    });
+
+    it('should return true when online role is found', () => {
+      const scenarios = [
+        ['_admin'],
+        ['_admin', 'other_role'],
+        ['chw', '_admin'],
+        ['not_chw', 'national_admin'],
+        ['random', 'national_admin'],
+        ['national_admin'],
+        ['mm-online'],
+        ['mm-online', 'other'],
+        ['not-mm-online', 'mm-online'],
+      ];
+      scenarios.forEach(roles => {
+        const message = `hasOnlineRole failed for ${roles}`;
+        chai.expect(auth.hasOnlineRole(roles)).to.equal(true, message);
+      });
+    });
+  });
+
   describe('isOnlineOnly', () => {
 
     it('checks for "admin" role', () => {
