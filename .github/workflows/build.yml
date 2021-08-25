@@ -140,6 +140,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Create logs directory
       run: mkdir tests/logs
+    - name: Install pyxform
+      run:  python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
     - name: Install cht-conf
       run:  npm install -g cht-conf
     - name: npm CI
