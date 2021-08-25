@@ -140,6 +140,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Create logs directory
       run: mkdir tests/logs
+    - name: Install cht-conf
+      run:  npm install -g cht-conf
     - name: npm CI
       run: npm ci
     - name: Echo Vars
