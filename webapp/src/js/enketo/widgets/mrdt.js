@@ -1,10 +1,11 @@
 {
   'use strict';
-  const Widget = require('enketo-core/src/js/Widget');
+  const Widget = require( 'enketo-core/src/js/widget' ).default;
   const $ = require( 'jquery' );
   require('enketo-core/src/js/plugins');
 
   const pluginName = 'mrdtwidget';
+  const mainSelector = '.or-appearance-mrdt-verify';
 
   /**
      * @constructor
@@ -14,7 +15,7 @@
      */
   function Mrdtwidget( element, options ) {
     this.namespace = pluginName;
-    Widget.call( this, element, options );
+    Object.assign( this, new Widget( element, options ) );
     this._init();
   }
 
@@ -26,7 +27,7 @@
 
   Mrdtwidget.prototype._init = function() {
     const self = this;
-    const $el = $( this.element );
+    const $el = $( this.element ).parent( mainSelector );
     const $input = $el.find( 'input' );
 
     // we need to make it a textarea because text inputs strip out the
@@ -91,8 +92,8 @@
     } );
   };
 
-  module.exports = {
-    'name': pluginName,
-    'selector': '.or-appearance-mrdt-verify',
-  };
+  Mrdtwidget.selector = `${mainSelector} input`;
+  Mrdtwidget.condition = function() { return true; };
+
+  module.exports = Mrdtwidget;
 }

@@ -33,7 +33,7 @@ module.exports = {
   },
 
   fillPrimaryTel: async () => {
-    const primaryTelField = element(by.css('[name="/data/ephemeral_phone/phone1"]'));
+    const primaryTelField = element(by.css('.ignore[type="tel"]'));
     await helper.waitUntilReadyNative(primaryTelField);
     await primaryTelField.clear().sendKeys('+13125551212');
   },

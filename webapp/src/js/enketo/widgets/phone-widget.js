@@ -121,9 +121,8 @@
     } );
   };
 
-  module.exports = {
-    'name': pluginName,
-    'selector': 'input[type="tel"]',
-    'widget': PhoneWidget
-  };
+  PhoneWidget.selector = 'input[type="tel"]';
+  PhoneWidget.condition = function() { return true; };
+
+  module.exports = PhoneWidget;
 }

@@ -15,7 +15,7 @@
  */
 {
   'use strict';
-  const Widget = require( 'enketo-core/src/js/Widget' );
+  const Widget = require( 'enketo-core/src/js/widget' ).default;
   const $ = require( 'jquery' );
   require( 'enketo-core/src/js/plugins' );
 
@@ -43,7 +43,7 @@
 
   function Androiddatepicker( element, options ) {
     this.namespace = pluginName;
-    Widget.call( this, element, options );
+    Object.assign( this, new Widget( element, options ) );
     this._init();
   }
 
@@ -108,8 +108,8 @@
     } );
   };
 
-  module.exports = {
-    'name': pluginName,
-    'selector': 'input[type=date]'
-  };
+  Androiddatepicker.selector = 'input[type=date]';
+  Androiddatepicker.condition = Widget.condition;
+
+  module.exports = Androiddatepicker;
 }
