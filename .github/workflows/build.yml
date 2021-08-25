@@ -25,12 +25,6 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
       if: steps.get-docker-hub-username.outputs.dockerhub_username
-    - name: Set MARKET_URL var for external users
-      run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
-          echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
-          echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
-      if:  ${{ !env.MARKET_URL }}
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
     - name: Set Travis Vars
@@ -87,12 +81,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set MARKET_URL var for external users
-      run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
-          echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
-          echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
-      if:  ${{ !env.MARKET_URL }}
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
     - name: Set Travis Vars
