@@ -329,9 +329,11 @@ describe('changes handler', () => {
           timer = new Date().getTime();
 
           if (options.timeout) {
-            console.log('timeout!!!!!!!!!');
             // have to manually abort this, sending a `heartbeat` disables the `timeout` mechanism in CouchDB
-            setTimeout(() => req.abort(), options.timeout);
+            setTimeout(() => { 
+              console.log('timeout!!!!!!!!!');
+              req.abort();
+            } , options.timeout);
           }
 
         });
