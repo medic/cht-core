@@ -301,21 +301,15 @@ describe('changes handler', () => {
 
         return new Promise((resolve, reject) => {
           const req = http.request(options, res => {
-            console.log('options are');
-            console.log(JSON.stringify(options));
-            console.log('options are end');
             res.setEncoding('utf8');
             let body = '';
             res.on('data', chunk => {
-              console.log('data!');
-              console.log(body);
               body += chunk;
               const oldTimer = timer;
               timer = new Date().getTime();
               heartbeats.push({ chunk, interval: timer - oldTimer });
             });
             res.on('end', () => {
-              console.log('end!!!!!!!!!');
               resolve({ body, heartbeats });
             });
           });
@@ -330,10 +324,7 @@ describe('changes handler', () => {
 
           if (options.timeout) {
             // have to manually abort this, sending a `heartbeat` disables the `timeout` mechanism in CouchDB
-            setTimeout(() => { 
-              console.log('timeout!!!!!!!!!');
-              req.abort();
-            } , options.timeout);
+            setTimeout(() => req.abort(), options.timeout);
           }
 
         });
@@ -349,35 +340,34 @@ describe('changes handler', () => {
               query: { since },
               timeout: 11000 // 5 heartbeats
             }),
-            // heartRateMonitor({ // online user longpoll _changes
-            //   path: '/' + constants.DB_NAME + '/_changes',
-            //   auth: `manager:${password}`,
-            //   query: { since },
-            //   timeout: 11000 // 5 heartbeats
-            // }),
-            // heartRateMonitor({ // offline user longpoll _changes
-            //   path: '/' + constants.DB_NAME + '/_changes',
-            //   auth: `bob:${password}`,
-            //   // heartbeats are set to minimum 5 seconds in our changes controller!
-            //   query: { since, timeout: 21000, heartbeat: 5000 } // 4 heartbeats
-            // }),
-            // heartRateMonitor({ // online meta longpoll _changes
-            //   path: '/medic-user-manager-meta/_changes',
-            //   query: { since },
-            //   auth: `manager:${password}`,
-            //   timeout: 11000 // 5 heartbeats
-            // }),
-            // heartRateMonitor({ // offline meta longpoll _changes
-            //   path: '/medic-user-bob-meta/_changes',
-            //   query: { since },
-            //   auth: `bob:${password}`,
-            //   timeout: 11000 // 5 heartbeats
-            // }),
+            heartRateMonitor({ // online user longpoll _changes
+              path: '/' + constants.DB_NAME + '/_changes',
+              auth: `manager:${password}`,
+              query: { since },
+              timeout: 11000 // 5 heartbeats
+            }),
+            heartRateMonitor({ // offline user longpoll _changes
+              path: '/' + constants.DB_NAME + '/_changes',
+              auth: `bob:${password}`,
+              // heartbeats are set to minimum 5 seconds in our changes controller!
+              query: { since, timeout: 21000, heartbeat: 5000 } // 4 heartbeats
+            }),
+            heartRateMonitor({ // online meta longpoll _changes
+              path: '/medic-user-manager-meta/_changes',
+              query: { since },
+              auth: `manager:${password}`,
+              timeout: 11000 // 5 heartbeats
+            }),
+            heartRateMonitor({ // offline meta longpoll _changes
+              path: '/medic-user-bob-meta/_changes',
+              query: { since },
+              auth: `bob:${password}`,
+              timeout: 11000 // 5 heartbeats
+            }),
           ]);
         })
         .then(results => {
           // admin _changes
-          console.log('expect 1');
           chai.expect(results[0].heartbeats.length).to.equal(6);
           results[0].heartbeats.forEach((heartbeat, idx) => {
             chai.expect(heartbeat.chunk).to.equal(idx ? '\n' : '{"results":[\n');
@@ -386,7 +376,6 @@ describe('changes handler', () => {
           });
           chai.expect(results[0].body).to.equal('{"results":[\n\n\n\n\n\n');
 
-          console.log('expect 2');
           // online user _changes
           chai.expect(results[1].heartbeats.length).to.equal(6);
           results[1].heartbeats.forEach((heartbeat, idx) => {
@@ -394,7 +383,7 @@ describe('changes handler', () => {
             chai.expect(parseInt(heartbeat.interval / 1000)).to.be.below(3);
           });
           chai.expect(results[1].body).to.equal('{"results":[\n\n\n\n\n\n');
-          console.log('expect 3');
+
           // offline user _changes
           // `last_seq` doesn't necessarily match the `since` we requested
           chai.expect(results[2].body.startsWith('\n\n\n\n{"results":[],"last_seq":')).to.equal(true);
@@ -408,7 +397,6 @@ describe('changes handler', () => {
             chai.expect(parseInt(heartbeat.interval / 1000)).to.be.below(6);
           });
 
-          console.log('expect 4');
           // online user meta _changes
           chai.expect(results[3].heartbeats.length).to.equal(6);
           results[3].heartbeats.forEach((heartbeat, idx) => {
@@ -417,7 +405,6 @@ describe('changes handler', () => {
           });
           chai.expect(results[3].body).to.equal('{"results":[\n\n\n\n\n\n');
 
-          console.log('expect 5');
           // ofline user meta _changes
           chai.expect(results[4].heartbeats.length).to.equal(6);
           results[4].heartbeats.forEach((heartbeat, idx) => {
