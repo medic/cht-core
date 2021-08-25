@@ -375,6 +375,7 @@ describe('changes handler', () => {
         })
         .then(results => {
           // admin _changes
+          console.log('expect 1');
           chai.expect(results[0].heartbeats.length).to.equal(6);
           results[0].heartbeats.forEach((heartbeat, idx) => {
             chai.expect(heartbeat.chunk).to.equal(idx ? '\n' : '{"results":[\n');
@@ -383,6 +384,7 @@ describe('changes handler', () => {
           });
           chai.expect(results[0].body).to.equal('{"results":[\n\n\n\n\n\n');
 
+          console.log('expect 2');
           // online user _changes
           chai.expect(results[1].heartbeats.length).to.equal(6);
           results[1].heartbeats.forEach((heartbeat, idx) => {
@@ -390,7 +392,7 @@ describe('changes handler', () => {
             chai.expect(parseInt(heartbeat.interval / 1000)).to.be.below(3);
           });
           chai.expect(results[1].body).to.equal('{"results":[\n\n\n\n\n\n');
-
+          console.log('expect 3');
           // offline user _changes
           // `last_seq` doesn't necessarily match the `since` we requested
           chai.expect(results[2].body.startsWith('\n\n\n\n{"results":[],"last_seq":')).to.equal(true);
@@ -404,6 +406,7 @@ describe('changes handler', () => {
             chai.expect(parseInt(heartbeat.interval / 1000)).to.be.below(6);
           });
 
+          console.log('expect 4');
           // online user meta _changes
           chai.expect(results[3].heartbeats.length).to.equal(6);
           results[3].heartbeats.forEach((heartbeat, idx) => {
@@ -412,6 +415,7 @@ describe('changes handler', () => {
           });
           chai.expect(results[3].body).to.equal('{"results":[\n\n\n\n\n\n');
 
+          console.log('expect 5');
           // ofline user meta _changes
           chai.expect(results[4].heartbeats.length).to.equal(6);
           results[4].heartbeats.forEach((heartbeat, idx) => {
