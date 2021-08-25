@@ -5,9 +5,10 @@ on: [push, pull_request]
 env:
   COUCH_URL: http://admin:pass@localhost:5984/medic-test
   COUCH_NODE_NAME: nonode@nohost
-  BUILDS_SERVER: _couch/builds_testing
-  STAGING_SERVER: _couch/builds
-  MARKET_URL: ${{ secrets.MARKET_URL }}
+  BUILDS_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_testing' || '_couch/builds_external' }}
+  STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }} 
+  MARKET_URL_READ: 'https://staging.dev.medicmobile.org' 
+  MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
 
 jobs:
   build:
@@ -131,12 +132,6 @@ jobs:
       run: |
         echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
         echo "TEST_SUITE=integration" >> $GITHUB_ENV
-    - name: Set MARKET_URL var for external users
-      run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
-          echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
-          echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
-      if:  ${{ !env.MARKET_URL }}
     - name: Use Node.js 12.x
       uses: actions/setup-node@v1
       with:
@@ -150,14 +145,9 @@ jobs:
       run:  npm install -g cht-conf
     - name: npm CI
       run: npm ci
-    - name: Echo Vars
-      run: |
-        echo "HORTI_BUILDS_SERVER=${MARKET_URL}/${BUILDS_SERVER}"
-        echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
-        echo "COUCH_URL=${COUCH_URL}"
     - name: horti setup
       run: |
-        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
+        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
         docker-compose -f scripts/travis/horti-compose.yml up -d 
         sh scripts/e2e/wait_for_response_code.sh 4988 200 api
     - name: Test it!
