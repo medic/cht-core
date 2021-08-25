@@ -168,7 +168,7 @@ const baseConfig = {
   // See the full list at http://mochajs.org/
   mochaOpts: {
     ui: 'bdd',
-    timeout: 300 * 1000,
+    timeout: 70000,
   },
   //
   // =====

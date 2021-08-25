@@ -40,11 +40,9 @@ const baseConfig = {
     }
   },
   jasmineNodeOpts: {
-    defaultTimeoutInterval: 120 * 1000,
     // makes default jasmine reporter not display dots for every spec
     print: () => {}
   },
-  allScriptsTimeout: 120 * 1000,
   beforeLaunch: function() {
     process.on('uncaughtException', function() {
       utils.reporter.jasmineDone();
@@ -65,7 +63,7 @@ const baseConfig = {
     const config = await browser.getProcessedConfig();
 
     // wait for startup to complete
-    await browser.driver.wait(utils.prepServices(config), 300 * 1000, 'API took too long to start up');
+    await browser.driver.wait(utils.prepServices(config), 135 * 1000, 'API took too long to start up');
 
     afterEach(() => {
       return utils.saveBrowserLogs();
