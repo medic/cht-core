@@ -1,6 +1,6 @@
 {
   'use strict';
-  const Widget = require( 'enketo-core/src/js/Widget' );
+  const Widget = require( 'enketo-core/src/js/widget' ).default;
   const $ = require( 'jquery' );
   require( 'enketo-core/src/js/plugins' );
   const bikram_sambat_bs = require( 'bikram-sambat-bootstrap' );
@@ -9,7 +9,7 @@
 
   function Bikramsambatdatepicker( element, options ) {
     this.namespace = pluginName;
-    Widget.call( this, element, options );
+    Object.assign( this, new Widget( element, options ) );
     this._init();
   }
 
@@ -74,10 +74,10 @@
     } );
   };
 
-  module.exports = {
-    'name': pluginName,
-    'selector': 'input[type=date]'
-  };
+  Bikramsambatdatepicker.selector = 'input[type=date]';
+  Bikramsambatdatepicker.condition = function() { return true; };
+
+  module.exports = Bikramsambatdatepicker;
 }
 
 const TEMPLATE =

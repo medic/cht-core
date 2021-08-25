@@ -4,8 +4,9 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 module.exports = {
   resolve: {
     alias: {
+      // TODO I think this need to be updated to enketo/config and we need to change to a config.js file...
       'enketo-config': 'src/js/enketo/config.json',
-      'widgets': 'src/js/enketo/widgets',
+      'enketo/widgets': 'src/js/enketo/widgets',
       'enketo/xpath-evaluator-binding': 'src/js/enketo/OpenrosaXpathEvaluatorBinding',
       'extended-xpath': 'node_modules/openrosa-xpath-evaluator/src/extended-xpath',
       'openrosa-extensions': 'node_modules/openrosa-xpath-evaluator/src/openrosa-extensions',

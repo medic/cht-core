@@ -1,6 +1,6 @@
 {
   'use strict';
-  const Widget = require('enketo-core/src/js/Widget');
+  const Widget = require( 'enketo-core/src/js/widget' ).default;
   const $ = require( 'jquery' );
   require('enketo-core/src/js/plugins');
 
@@ -14,7 +14,7 @@
      */
   function Simprintswidget( element, options ) {
     this.namespace = pluginName;
-    Widget.call( this, element, options );
+    Object.assign( this, new Widget( element, options ) );
     this._init();
   }
 
@@ -73,8 +73,8 @@
     } );
   };
 
-  module.exports = {
-    'name': pluginName,
-    'selector': '.or-appearance-simprints-reg',
-  };
+  Simprintswidget.selector = '.or-appearance-simprints-reg';
+  Simprintswidget.condition = function() { return true; };
+
+  module.exports = Simprintswidget;
 }

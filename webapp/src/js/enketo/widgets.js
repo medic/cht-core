@@ -11,8 +11,8 @@
     require( 'enketo-core/src/widget/date/datepicker-extended' ),
     require( 'enketo-core/src/widget/time/timepicker-extended' ),
     require( 'enketo-core/src/widget/file/filepicker' ),
-    require( 'enketo-core/src/widget/datetime/datetimepicker-extended' ),
-    require( 'enketo-core/src/widget/horizontal-choices/horizontalchoices' ),
+    require('./widgets/datepicker-widget'),
+    // // require( 'enketo-core/src/widget/horizontal-choices/horizontalchoices' ), // TODO fix me
     require( './widgets/countdown-widget' ),
     require( './widgets/db-object-widget' ),
     require( './widgets/phone-widget' ),
