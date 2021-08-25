@@ -32,6 +32,7 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
 
   try {
     const logStream = fs.createWriteStream(`tests/logs/${serviceName}.e2e.log`, { flags: append ? 'a' : 'w' });
+
     let server;
     if (constants.IS_TRAVIS) {
       server = spawn('horti-svc-start', [
@@ -53,6 +54,7 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
         },
       });
     }
+
     const writeToLogStream = data => writeToStream(logStream, data);
     server.stdout.on('data', writeToLogStream);
     server.stderr.on('data', writeToLogStream);
@@ -67,8 +69,7 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
 
 const stopServer = (serviceName) => new Promise(res => {
   if (constants.IS_TRAVIS) {
-    const path = '/usr/bin/horti-svc-stop';
-    const pid = spawn(path, [
+    const pid = spawn('horti-svc-stop', [
       `medic-${serviceName}`
     ]);
 
@@ -81,7 +82,7 @@ const stopServer = (serviceName) => new Promise(res => {
   delete processes[serviceName];
 });
 
-if (!fs.existsSync('tests/logs')) {
+if(!fs.existsSync('tests/logs')) {
   fs.mkdirSync('tests/logs');
 }
 
@@ -92,7 +93,7 @@ const started = {
   sentinel: false,
 };
 
-app.post('/:server/:action', (req, res, ) => {
+app.post('/:server/:action', (req, res) => {
   const { server, action } = req.params;
   let p = Promise.resolve();
 
@@ -120,7 +121,6 @@ app.post('/:server/:action', (req, res, ) => {
 
   return p.then(() => res.status(200).end());
 });
-
 
 app.post('/die', (req, res) => {
   console.log('Killing API / Sentinel service port');
