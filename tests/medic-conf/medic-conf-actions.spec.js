@@ -12,7 +12,7 @@ describe('cht-conf actions tests', () => {
   const runCommand = async (action) => {
 
     try {
-      const { stdout, stderr }  = await exec(`cht-conf --url=${url} ${action} --force`, { cwd: 'config/default' });
+      const { stdout, stderr }  = await exec(`cht --url=${url} ${action} --force`, { cwd: 'config/default' });
       console.log('stderr');
       console.log(stderr);
       console.log('stderr end');
