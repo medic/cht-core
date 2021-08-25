@@ -137,6 +137,10 @@ jobs:
           echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
           echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
       if:  ${{ !env.MARKET_URL }}
+    - name: Use Node.js 12.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
     - uses: actions/checkout@v2
     - name: Create logs directory
       run: mkdir tests/logs
