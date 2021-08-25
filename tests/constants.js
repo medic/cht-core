@@ -4,7 +4,6 @@ const COUCH_HOST = 'localhost';
 const COUCH_PORT = IS_TRAVIS ? 5984 : 4984;
 const API_PORT = IS_TRAVIS ? 5988 : 4988;
 
-
 module.exports = {
   IS_TRAVIS: IS_TRAVIS,
 
