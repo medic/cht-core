@@ -15,7 +15,9 @@ const baseConfig = {
   exclude: ['**/*wdio-spec.js'],
   suites: {
     web: [
-      'e2e/api/controllers/_changes.spec.js'
+      'e2e/!(cht)/**/*.js',
+      'e2e/*.js',
+      'medic-conf/**/*.js'
     ],
     cht: [
       'e2e/cht/*.spec.js'
