@@ -308,7 +308,7 @@ describe('changes handler', () => {
             let body = '';
             res.on('data', chunk => {
               console.log('data!');
-              console.log(chunk);
+              console.log(body);
               body += chunk;
               const oldTimer = timer;
               timer = new Date().getTime();
@@ -347,30 +347,30 @@ describe('changes handler', () => {
               query: { since },
               timeout: 11000 // 5 heartbeats
             }),
-            heartRateMonitor({ // online user longpoll _changes
-              path: '/' + constants.DB_NAME + '/_changes',
-              auth: `manager:${password}`,
-              query: { since },
-              timeout: 11000 // 5 heartbeats
-            }),
-            heartRateMonitor({ // offline user longpoll _changes
-              path: '/' + constants.DB_NAME + '/_changes',
-              auth: `bob:${password}`,
-              // heartbeats are set to minimum 5 seconds in our changes controller!
-              query: { since, timeout: 21000, heartbeat: 5000 } // 4 heartbeats
-            }),
-            heartRateMonitor({ // online meta longpoll _changes
-              path: '/medic-user-manager-meta/_changes',
-              query: { since },
-              auth: `manager:${password}`,
-              timeout: 11000 // 5 heartbeats
-            }),
-            heartRateMonitor({ // offline meta longpoll _changes
-              path: '/medic-user-bob-meta/_changes',
-              query: { since },
-              auth: `bob:${password}`,
-              timeout: 11000 // 5 heartbeats
-            }),
+            // heartRateMonitor({ // online user longpoll _changes
+            //   path: '/' + constants.DB_NAME + '/_changes',
+            //   auth: `manager:${password}`,
+            //   query: { since },
+            //   timeout: 11000 // 5 heartbeats
+            // }),
+            // heartRateMonitor({ // offline user longpoll _changes
+            //   path: '/' + constants.DB_NAME + '/_changes',
+            //   auth: `bob:${password}`,
+            //   // heartbeats are set to minimum 5 seconds in our changes controller!
+            //   query: { since, timeout: 21000, heartbeat: 5000 } // 4 heartbeats
+            // }),
+            // heartRateMonitor({ // online meta longpoll _changes
+            //   path: '/medic-user-manager-meta/_changes',
+            //   query: { since },
+            //   auth: `manager:${password}`,
+            //   timeout: 11000 // 5 heartbeats
+            // }),
+            // heartRateMonitor({ // offline meta longpoll _changes
+            //   path: '/medic-user-bob-meta/_changes',
+            //   query: { since },
+            //   auth: `bob:${password}`,
+            //   timeout: 11000 // 5 heartbeats
+            // }),
           ]);
         })
         .then(results => {
