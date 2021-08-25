@@ -301,6 +301,9 @@ describe('changes handler', () => {
 
         return new Promise((resolve, reject) => {
           const req = http.request(options, res => {
+            console.log('options are');
+            console.log(JSON.stringify(options));
+            console.log('options are end');
             res.setEncoding('utf8');
             let body = '';
             res.on('data', chunk => {
