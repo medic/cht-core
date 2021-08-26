@@ -5,7 +5,7 @@ const chai = require('chai');
 const outboundConfig = (port) => ({
   working: {
     destination: {
-      base_url: `http://${utils.dockerGateway()}:${port}`,
+      base_url: utils.hostURL(server.address().port),
       path: '/test-working'
     },
     mapping: {
@@ -15,7 +15,7 @@ const outboundConfig = (port) => ({
   },
   broken: {
     destination: {
-      base_url: `http://${utils.dockerGateway()}:${port}`,
+      base_url: utils.hostURL(server.address().port),
       path: '/test-broken'
     },
     mapping: {

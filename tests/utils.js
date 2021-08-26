@@ -520,12 +520,20 @@ const parseCookieResponse = (cookieString) => {
 };
 
 const dockerGateway = () => {
-  const dockerNetwork = JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
-  return constants.IS_CI ? dockerNetwork[0].Gateway : 'localhost';
+  return JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
+  
+};
+
+const hostURL = (port = 80) => {
+  const gateway = dockerGateway();
+  const host = gateway && gateway[0] && gateway[0].Gateway ? gateway[0].Gateway : 'localhost';
+  const url = new URL(`http://${host}`);
+  url.port = port;
+  return url.href;
 };
 
 module.exports = {
-  dockerGateway,
+  hostURL,
   parseCookieResponse,
   deprecated,
   db: db,
