@@ -449,7 +449,7 @@ const saveBrowserLogs = () => {
 
 
 const prepServices = async (config) => {
-  if (constants.IS_TRAVIS) {
+  if (constants.IS_CI) {
     console.log('On travis, waiting for horti to first boot api');
     // Travis' horti will be installing and then deploying api and sentinel, and those logs are
     // getting pushed into horti.log Once horti has bootstrapped we want to restart everything so
@@ -521,7 +521,7 @@ const parseCookieResponse = (cookieString) => {
 
 const dockerGateway = () => {
   const dockerNetwork = JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
-  return constants.IS_TRAVIS ? dockerNetwork[0].Gateway : 'localhost';
+  return constants.IS_CI ? dockerNetwork[0].Gateway : 'localhost';
 };
 
 module.exports = {

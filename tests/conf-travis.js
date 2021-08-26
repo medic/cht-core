@@ -94,7 +94,7 @@ const runAndLog = (msg, func) => {
 
 const prepServices = () => {
   let apiReady;
-  if (constants.IS_TRAVIS) {
+  if (constants.IS_CI) {
     console.log('On travis, waiting for horti to first boot api');
     // Travis' horti will be installing and then deploying api and sentinel, and those logs are
     // getting pushed into horti.log Once horti has bootstrapped we want to restart everything so
