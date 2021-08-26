@@ -6,19 +6,20 @@ const placeFactory = require('../../factories/cht/contacts/place');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const contactPage = require('../../page-objects/contacts/contacts.wdio.page');
 const sentinelUtils = require('../sentinel/utils');
+const chai = require('chai');
 
 const formId = 'CASEID';
 const formTitle = 'Case Id Form';
 
 const places = placeFactory.generateHierarchy();
-const hcId = places.find(x => x.type === 'health_center')._id;
+const hcId = places.find(p => p.type === 'health_center')._id;
 
 const user = userFactory.build({ place: hcId });
 
 const forms = {
-  'CASEID': {
-    'meta': { 'code': formId, 'icon': 'icon-healthcare', 'translation_key': formTitle },
-    'fields': {}
+  CASEID: {
+    meta: { code: formId, icon: 'icon-healthcare', translation_key: formTitle },
+    fields: {}
   }
 };
 
@@ -56,7 +57,7 @@ describe('Link SMS to patient without passing id', () => {
     await commonPage.waitForLoaders();
     const allRHSReports = await contactPage.getAllRHSReportsNames();
 
-    expect([formTitle].sort()).toEqual(allRHSReports.sort());
+    chai.expect([formTitle]).to.have.members(allRHSReports);
   });
 });
 
