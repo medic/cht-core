@@ -4,9 +4,11 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 module.exports = {
   resolve: {
     alias: {
+      // TODO Do we also need mapping for enketo/translator, enketo/dialog? Probably only if we have custom impls.
       'enketo/config': 'src/js/enketo/config.js',
       'enketo/widgets': 'src/js/enketo/widgets',
       'enketo/xpath-evaluator-binding': 'src/js/enketo/OpenrosaXpathEvaluatorBinding',
+      'enketo/file-manager': 'src/js/enketo/file-manager',
       'extended-xpath': 'node_modules/openrosa-xpath-evaluator/src/extended-xpath',
       'openrosa-extensions': 'node_modules/openrosa-xpath-evaluator/src/openrosa-extensions',
       // translator for enketo's internal i18n
