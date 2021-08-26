@@ -12,7 +12,7 @@ They live in the `tests` directories of each app. Run them with grunt: `grunt un
 
 ## Integration tests
 
-[Travis](https://travis-ci.org/github/medic/cht-core) runs `grunt ci` every time some new code is pushed to github.
+[Github Actions](https://github.com/medic/cht-core/actions) runs `grunt ci` every time some new code is pushed to github.
 
 # End to End Testing 
 ## Stack overview

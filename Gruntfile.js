@@ -478,7 +478,7 @@ module.exports = function(grunt) {
         'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
         'echo "Missing required env var.  Check that all are set: ' +
         'COUCH_URL, COUCH_NODE_NAME" && exit 1; fi',
-      'check-version': `node scripts/travis/check-versions.js`,
+      'check-version': `node scripts/ci/check-versions.js`,
       'undo-patches': {
         cmd: function() {
           const modulesToPatch = [

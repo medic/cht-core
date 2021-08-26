@@ -37,7 +37,7 @@ jobs:
       with:
         node-version: 12.x
     - name: Couch Start
-      run: ./scripts/travis/couch-start
+      run: ./scripts/ci/couch-start
     - name: Create logs directory
       run: mkdir tests/logs
     - name: npm CI
@@ -45,7 +45,7 @@ jobs:
     - name: Grunt Install
       run: npm install -g grunt-cli
     - name: Configure Couch
-      run: ./scripts/travis/couch-config
+      run: ./scripts/ci/couch-config
     - name: Grunt CI-Compile
       run: |
         node --stack_size=10000 `which grunt` ci-compile-github
@@ -90,7 +90,7 @@ jobs:
     - name: Publish
       if: ${{ github.event_name != 'pull_request' }}
       run: |
-        cd scripts/travis
+        cd scripts/ci
         npm ci
         node ./publish.js
 
@@ -136,7 +136,7 @@ jobs:
     - name: horti setup
       run: |
         echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
-        docker-compose -f scripts/travis/horti-compose.yml up -d 
+        docker-compose -f scripts/ci/horti-compose.yml up -d 
         sh scripts/e2e/wait_for_response_code.sh 4988 200 api
     - name: Test it!
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
