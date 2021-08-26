@@ -27,7 +27,7 @@ services:
       - COUCH_URL=http://admin:pass@couch:5984/medic-test
       - COUCH_NODE_NAME=nonode@nohost
       - HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER
-      - BUILD=medic:medic:test-$TRAVIS_BUILD_NUMBER
+      - BUILD=medic:medic:test-$BUILD_NUMBER
       - NODE_VERSION=$NODE
       - TEST_SUITE=integration
     depends_on:

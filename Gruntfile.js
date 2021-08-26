@@ -13,7 +13,7 @@ const {
   MARKET_URL,
   STAGING_SERVER,
   BUILDS_SERVER,
-  TRAVIS_BUILD_NUMBER,
+  BUILD_NUMBER,
   CI,
 } = process.env;
 
@@ -84,7 +84,7 @@ module.exports = function(grunt) {
         replacements: [
           {
             from: '"_id": "_design/medic"',
-            to: `"_id": "medic:medic:test-${TRAVIS_BUILD_NUMBER}"`,
+            to: `"_id": "medic:medic:test-${BUILD_NUMBER}"`,
           },
         ],
       },
@@ -379,7 +379,7 @@ module.exports = function(grunt) {
           } else {
             version = packageJson.version;
             if (TRAVIS_BRANCH === 'master') {
-              version += `-alpha.${TRAVIS_BUILD_NUMBER}`;
+              version += `-alpha.${BUILD_NUMBER}`;
             }
           }
           return `echo "${version}" > build/ddocs/medic/version`;
@@ -439,7 +439,7 @@ module.exports = function(grunt) {
         exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
       'e2e-servers': {
-        cmd: `${TRAVIS_BUILD_NUMBER ? 'echo running on travis' :'node ./scripts/e2e/e2e-servers.js &'}`
+        cmd: `${BUILD_NUMBER ? 'echo running on travis' :'node ./scripts/e2e/e2e-servers.js &'}`
       },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
@@ -587,10 +587,10 @@ module.exports = function(grunt) {
       },
       'build-webapp': {
         cmd: () => {
-          const configuration = TRAVIS_BUILD_NUMBER ? 'production' : 'development';
+          const configuration = BUILD_NUMBER ? 'production' : 'development';
           return [
             `cd webapp`,
-            `../node_modules/.bin/ng build --configuration=${configuration} --progress=${TRAVIS_BUILD_NUMBER ? 'false' : 'true'}`,
+            `../node_modules/.bin/ng build --configuration=${configuration} --progress=${BUILD_NUMBER ? 'false' : 'true'}`,
             `../node_modules/.bin/ngc`,
             'cd ../',
           ].join(' && ');
@@ -599,7 +599,7 @@ module.exports = function(grunt) {
       },
       'watch-webapp': {
         cmd: () => {
-          const configuration = TRAVIS_BUILD_NUMBER ? 'production' : 'development';
+          const configuration = BUILD_NUMBER ? 'production' : 'development';
           return `
             cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true &
             cd ../
@@ -611,7 +611,7 @@ module.exports = function(grunt) {
         cmd: () => {
           return [
             'cd webapp',
-            `../node_modules/.bin/ng test webapp --watch=false --progress=${TRAVIS_BUILD_NUMBER ? 'false' : 'true'}`,
+            `../node_modules/.bin/ng test webapp --watch=false --progress=${BUILD_NUMBER ? 'false' : 'true'}`,
             'cd ../',
           ].join(' && ');
         },

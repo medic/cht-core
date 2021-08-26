@@ -29,8 +29,8 @@ jobs:
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
     - name: Set Travis Vars
       run: |
-        echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "TRAVIS_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+        echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
+        echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
     - uses: actions/checkout@v2
     - name: Use Node.js 12.x
       uses: actions/setup-node@v1
@@ -85,8 +85,8 @@ jobs:
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
     - name: Set Travis Vars
       run: |
-        echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "TRAVIS_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+        echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
+        echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
     - name: Publish
       if: ${{ github.event_name != 'pull_request' }}
       run: |
@@ -118,7 +118,7 @@ jobs:
       if: steps.get-docker-hub-username.outputs.dockerhub_username
     - name: Set Travis Vars
       run: |
-        echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
+        echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
         echo "TEST_SUITE=integration" >> $GITHUB_ENV
     - name: Use Node.js 12.x
       uses: actions/setup-node@v1
