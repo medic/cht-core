@@ -26,7 +26,7 @@ module.exports = [
           return false;
         }
         const testId = getField(report, 'test-reference.test_id');
-        return getField(reportDoc, 'test_id') === testId;
+        return getField(reportDoc, 'test-information.test_id') === testId;
       });
 
       if (!captureReport) {
@@ -43,10 +43,28 @@ module.exports = [
         type: 'report',
         form: 'covid19:rdt:capture',
         modifyContent: function(content, contact, report) {
-          content.test_id = getField(report, 'test-reference.test_id');
-          // eslint-disable-next-line no-console
-          console.warn('getField(report, \'patient_uuid\')', getField(report, 'patient_uuid'));
           content.patient_uuid = getField(report, 'patient_uuid');
+          content['test-information'] = {
+            case_id: getField(report, 'test-reference.case_id'),
+            administrator_id: getField(report, 'test-reference.administrator_id'),
+            administrator_name: getField(report, 'test-reference.administrator_name'),
+            test_id: getField(report, 'test-reference.test_id'),
+            facility_id: getField(report, 'test-reference.facility_id'),
+            facility_name: getField(report, 'test-reference.facility_name') ||
+              getField(report, 'test-reference.other_facility_name'),
+            facility_address: getField(report, 'test-reference.facility_address') ||
+              getField(report, 'test-reference.other_facility_address') ,
+            facility_test_setting: getField(report, 'test-reference.other_facility_test_setting'),
+            other_test_setting: getField(report, 'test-reference.other_test_setting'),
+            gps: getField(report, 'test-reference.gps'),
+            test_reason: getField(report, 'test-reference.test_reason'),
+            symptoms: getField(report, 'test-reference.symptoms'),
+            days_since_symptoms_began: getField(report, 'test-reference.days_since_symptoms_began'),
+            specimen_type: getField(report, 'test-reference.specimen_type'),
+            specimen_type_other: getField(report, 'test-reference.specimen_type_other'),
+            rdt_lot: getField(report, 'test-reference.rdt_lot'),
+            additional_notes: getField(report, 'test-reference.additional_notes'),
+          };
         }
       }
     ],
