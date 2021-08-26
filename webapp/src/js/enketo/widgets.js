@@ -1,9 +1,4 @@
 {
-  const fileManager = require( 'enketo-core/src/js/file-manager' );
-  fileManager.isTooLarge = function( file ) {
-    return file && file.size > 32 * 1024;
-  };
-
   const widgets = [
     require( 'enketo-core/src/widget/geo/geopicker' ),
     require( 'enketo-core/src/widget/table/tablewidget' ),
@@ -11,8 +6,8 @@
     require( 'enketo-core/src/widget/date/datepicker-extended' ),
     require( 'enketo-core/src/widget/time/timepicker-extended' ),
     require( 'enketo-core/src/widget/file/filepicker' ),
-    require('./widgets/datepicker-widget'),
-    // // require( 'enketo-core/src/widget/horizontal-choices/horizontalchoices' ), // TODO fix me
+    require( './widgets/datepicker-widget' ),
+    require( './widgets/horizontal-choices' ),
     require( './widgets/countdown-widget' ),
     require( './widgets/db-object-widget' ),
     require( './widgets/phone-widget' ),
