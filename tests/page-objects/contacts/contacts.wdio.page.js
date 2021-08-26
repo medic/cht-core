@@ -32,6 +32,9 @@ const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][v
 const contactCard = () => $('.card h2');
 const contactCardIcon = (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`);
 const rhsPeopleListSelector = () => $$('[test-id="person"] h4 span');
+const rhsReportListSelector = '[test-id="report"] h4 span';
+const rhsReportListElement = () => $(rhsReportListSelector);
+const rhsReportElementList = () => $$(rhsReportListSelector);
 const contactSummaryContainer = () => $('#contact_summary');
 const emptySelection = () => $('contacts-content .empty-selection');
 const editContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
@@ -149,6 +152,11 @@ const getAllRHSPeopleNames = async () => {
   return getTextForElements(rhsPeopleListSelector);
 };
 
+const getAllRHSReportsNames = async () => {
+  await (await rhsReportListElement()).waitForDisplayed();
+  return getTextForElements(rhsReportElementList);
+};
+
 module.exports = {
   selectLHSRowByText,
   reportFilters,
@@ -167,4 +175,5 @@ module.exports = {
   contactCard,
   editPerson,
   getContactSummaryField,
+  getAllRHSReportsNames
 };
