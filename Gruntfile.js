@@ -7,7 +7,7 @@ const path = require('path');
 
 const {
   TRAVIS_TAG,
-  TRAVIS_BRANCH,
+  BRANCH,
   COUCH_URL,
   COUCH_NODE_NAME,
   MARKET_URL,
@@ -17,7 +17,7 @@ const {
   CI,
 } = process.env;
 
-const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
+const releaseName = TRAVIS_TAG || BRANCH || 'local-development';
 const ESLINT_COMMAND = './node_modules/.bin/eslint --color';
 
 const couchConfig = (() => {
@@ -378,7 +378,7 @@ module.exports = function(grunt) {
             version = TRAVIS_TAG;
           } else {
             version = packageJson.version;
-            if (TRAVIS_BRANCH === 'master') {
+            if (BRANCH === 'master') {
               version += `-alpha.${BUILD_NUMBER}`;
             }
           }
@@ -735,7 +735,7 @@ module.exports = function(grunt) {
       },
       'e2e-mobile-tests': {
         options: {
-          configFile: TRAVIS_TAG || TRAVIS_BRANCH?'tests/conf-travis.js':'tests/conf.js',
+          configFile: TRAVIS_TAG || BRANCH?'tests/conf-travis.js':'tests/conf.js',
           args: {
             suite: 'mobile',
             capabilities: {
