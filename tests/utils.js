@@ -450,8 +450,8 @@ const saveBrowserLogs = () => {
 
 const prepServices = async (config) => {
   if (constants.IS_CI) {
-    console.log('On travis, waiting for horti to first boot api');
-    // Travis' horti will be installing and then deploying api and sentinel, and those logs are
+    console.log('On CI, waiting for horti to first boot api');
+    // CI' horti will be installing and then deploying api and sentinel, and those logs are
     // getting pushed into horti.log Once horti has bootstrapped we want to restart everything so
     // that the service processes get restarted with their logs separated and pointing to the
     // correct logs for testing

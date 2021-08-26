@@ -505,7 +505,7 @@ module.exports = function(grunt) {
         cmd: [
           'cd config/standard',
           'npm ci',
-          'npm run travis'
+          'npm run ci'
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
@@ -525,7 +525,7 @@ module.exports = function(grunt) {
         cmd: [
           'cd config/default',
           'npm ci',
-          'npm run travis'
+          'npm run test'
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
@@ -735,7 +735,7 @@ module.exports = function(grunt) {
       },
       'e2e-mobile-tests': {
         options: {
-          configFile: TRAVIS_TAG || BRANCH?'tests/conf-travis.js':'tests/conf.js',
+          configFile: 'tests/conf.js',
           args: {
             suite: 'mobile',
             capabilities: {
