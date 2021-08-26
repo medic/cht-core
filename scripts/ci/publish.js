@@ -6,10 +6,10 @@ const {
   BUILD_NUMBER,
   BUILDS_SERVER,
   STAGING_SERVER,
-  TRAVIS_TAG,
+  TAG,
   BRANCH
 } = process.env;
-const releaseName = TRAVIS_TAG || BRANCH;
+const releaseName = TAG || BRANCH;
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 

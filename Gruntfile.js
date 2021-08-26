@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 
 const {
-  TRAVIS_TAG,
+  TAG,
   BRANCH,
   COUCH_URL,
   COUCH_NODE_NAME,
@@ -17,7 +17,7 @@ const {
   CI,
 } = process.env;
 
-const releaseName = TRAVIS_TAG || BRANCH || 'local-development';
+const releaseName = TAG || BRANCH || 'local-development';
 const ESLINT_COMMAND = './node_modules/.bin/eslint --color';
 
 const couchConfig = (() => {
@@ -374,8 +374,8 @@ module.exports = function(grunt) {
       'set-ddoc-version': {
         cmd: () => {
           let version;
-          if (TRAVIS_TAG) {
-            version = TRAVIS_TAG;
+          if (TAG) {
+            version = TAG;
           } else {
             version = packageJson.version;
             if (BRANCH === 'master') {
@@ -439,7 +439,7 @@ module.exports = function(grunt) {
         exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
       'e2e-servers': {
-        cmd: `${BUILD_NUMBER ? 'echo running on travis' :'node ./scripts/e2e/e2e-servers.js &'}`
+        cmd: `${BUILD_NUMBER ? 'echo running in CI' :'node ./scripts/e2e/e2e-servers.js &'}`
       },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
