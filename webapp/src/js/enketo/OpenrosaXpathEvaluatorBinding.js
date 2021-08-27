@@ -1,27 +1,51 @@
-const ExtendedXpathEvaluator = require('extended-xpath');
+const ExtendedXPathEvaluator = require('extended-xpath');
 const openrosaExtensions = require('openrosa-extensions');
 const medicExtensions = require('./medic-xpath-extensions');
-const translator = require('./translator');
+const XPR = require('node_modules/openrosa-xpath-evaluator/src/xpr');
+const {asString, asBoolean, asNumber} = require('node_modules/openrosa-xpath-evaluator/src/utils/xpath-cast');
 
-module.exports = function() {
-  // re-implement XPathJS ourselves!
-  const evaluator = new XPathEvaluator();
-  this.xml.jsCreateExpression = function() {
-    return evaluator.createExpression.apply( evaluator, arguments );
+const cast = {
+  string: asString,
+  boolean: asBoolean,
+  number: asNumber,
+};
+
+module.exports = function( ) {
+  const ore = openrosaExtensions();
+  ore.func = Object.assign(ore.func, medicExtensions.func);
+  ore.process = Object.assign(ore.process, medicExtensions.process);
+  const evaluator = new ExtendedXPathEvaluator(new XPathEvaluator(), ore);
+
+  evaluator.customXPathFunction = {
+    add: (name, { fn, args:_args, ret }) => {
+      if(Object.prototype.hasOwnProperty.call(ore.func, name)) {
+        throw new Error(`There is already a function with the name: '${name}'`);
+      }
+
+      const argTypes = _args.map(a => a.t);
+      const allowedArgTypes = Object.keys(cast);
+      const unsupportedArgTypes = argTypes.filter(t => !allowedArgTypes.includes(t));
+      if(unsupportedArgTypes.length) {
+        const quoted = unsupportedArgTypes.map(t => `'${t}'`);
+        throw new Error(`Unsupported arg type(s): ${quoted.join(',')}`);
+      }
+
+      const allowedRetTypes = Object.keys(XPR);
+      if(!allowedRetTypes.includes(ret)) {
+        throw new Error(`Unsupported return type: '${ret}'`);
+      }
+
+      ore.func[name] = (...args) => {
+        if(args.length !== argTypes.length) {
+          throw new Error(`Function "${name}" expected ${argTypes.length} arg(s), but got ${args.length}`);
+        }
+
+        const convertedArgs = argTypes.map((type, idx) => cast[type](args[idx]));
+        return XPR[ret](fn(...convertedArgs));
+      };
+    },
   };
-  this.xml.jsCreateNSResolver = function() {
-    return evaluator.createNSResolver.apply( evaluator, arguments );
-  };
-  this.xml.jsEvaluate = function(e, contextPath, namespaceResolver, resultType, result) {
-    const extensions = openrosaExtensions(translator.t);
-    extensions.func = Object.assign(extensions.func, medicExtensions.func);
-    extensions.process = Object.assign(extensions.process, medicExtensions.process);
-    const evaluator = new ExtendedXpathEvaluator(contextPath.ownerDocument, extensions);
-    return evaluator.evaluate(e, contextPath, namespaceResolver, resultType, result);
-  };
-  window.JsXPathException =
-            window.JsXPathExpression =
-            window.JsXPathNSResolver =
-            window.JsXPathResult =
-            window.JsXPathNamespace = true;
+
+  this.xml.jsEvaluate = evaluator.evaluate;
+  return evaluator;
 };
