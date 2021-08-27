@@ -18,46 +18,33 @@
    * @param {(boolean|{touch: boolean, repeat: boolean})} options options
    * @param {*=} e     event
    */
-  function Dbobjectwidget(element, options) {
-    this.namespace = pluginName;
-    Object.assign(this, new Widget(element, options));
-    this._init();
+  class Dbobjectwidget extends Widget {
+    _init() {
+      construct(this.element);
+    }
   }
 
-  //copy the prototype functions from the Widget super class
-  Dbobjectwidget.prototype = Object.create(Widget.prototype);
-
-  //ensure the constructor is the new one
-  Dbobjectwidget.prototype.constructor = Dbobjectwidget;
-
-  Dbobjectwidget.prototype._init = function () {
-    construct(this.element);
-  };
-
   function construct(element) {
-
-    const $question = $(element).parent(mainSelector);
-    let $textInput = $question.find('input');
-
-    const disabled = $textInput.prop('readonly');
-    const relevant = $textInput.attr('data-relevant');
-    const name = $textInput.attr('name');
-
-    if (relevant) {
-      $textInput.removeAttr('data-relevant disabled');
-      $question.attr('data-relevant', relevant);
-      $question.attr('disabled', disabled);
-      $question.attr('name', name);
-    }
-
     // timeout needed to let setting the value complete before rendering
-    setTimeout(function () {
+    setTimeout(function() {
+      const $question = $( element );
+
       const Select2Search = window.CHTCore.Select2Search;
 
+      let $textInput = $question.find('input');
+
       const value = $textInput.val();
-      $textInput.replaceWith($textInput[0].outerHTML
-        .replace(/^<input /, '<select ')
-        .replace(/<\/input>/, '</select>'));
+      const disabled = $textInput.prop('readonly');
+      const relevant = $textInput.attr('data-relevant');
+      const name = $textInput.attr('name');
+
+      if (relevant) {
+        $textInput.removeAttr('data-relevant disabled');
+        $question.attr('data-relevant', relevant);
+        $question.attr('disabled', disabled);
+        $question.attr('name', name);
+      }
+      $textInput.replaceWith($textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
       $textInput = $question.find('select');
       const preSelectedOption = $('<option></option>')
         .attr('value', value)
