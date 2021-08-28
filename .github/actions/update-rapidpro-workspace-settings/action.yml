@@ -32,7 +32,6 @@ inputs:
   group:
     description: The UUID of the contact group to update in app-settings (optional).
     required: true
-    default: ''
 
   flows:
     description: The list of flows for your workspace.
