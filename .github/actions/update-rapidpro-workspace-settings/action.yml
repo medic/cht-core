@@ -9,6 +9,10 @@ inputs:
     description: The hostname of the instance to receive the configuration.
     required: true
 
+  couch_node_name:
+    description: The name of your CouchDB's node.
+    required: true
+
   username:
     description: The username of an administrator account on the instance at "inputs.hostname". This user will make the deployment.
     required: true
@@ -62,7 +66,7 @@ runs:
 
   - name: update-medic-credentials
     run: |
-        curl -X PUT https://${{ inputs.username }}:${{ inputs.password }}@${{ inputs.hostname }}/_node/couchdb@127.0.0.1/_config/medic-credentials/${{ inputs.value_key }} -d '"${{ inputs.token }}"'
+        curl -X PUT https://${{ inputs.username }}:${{ inputs.password }}@${{ inputs.hostname }}/_node/${{ inputs.couch_node_name }}/_config/medic-credentials/${{ inputs.value_key }} -d '"${{ inputs.token }}"'
     shell: bash
 
   - name: update-app-settings
