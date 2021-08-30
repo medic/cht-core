@@ -28,9 +28,9 @@ const xml = `<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w
       <bind nodeset="/data/my_weight"/>
       <bind nodeset="/data/my_age"/>
       <bind nodeset="/data/my_sex"/>
-      <bind nodeset="/data/hfa" type="string" calculate="z-score('height-for-age', ../my_sex, ../my_age, ../my_height)" readonly="true()"/>
-      <bind nodeset="/data/wfa" type="string" calculate="z-score('weight-for-age', ../my_sex, ../my_age, ../my_weight)" readonly="true()"/>
-      <bind nodeset="/data/wfh" type="string" calculate="z-score('weight-for-height', ../my_sex, ../my_height, ../my_weight)" readonly="true()"/>
+      <bind nodeset="/data/hfa" type="string" calculate="z-score('height-for-age', string(../my_sex), number(../my_age), number(../my_height))" readonly="true()"/>
+      <bind nodeset="/data/wfa" type="string" calculate="z-score('weight-for-age', string(../my_sex), number(../my_age), number(../my_weight))" readonly="true()"/>
+      <bind nodeset="/data/wfh" type="string" calculate="z-score('weight-for-height', string(../my_sex), number(../my_height), number(../my_weight))" readonly="true()"/>
     </model>
   </h:head>
 
