@@ -38,6 +38,8 @@ const rhsReportElementList = () => $$(rhsReportListSelector);
 const contactSummaryContainer = () => $('#contact_summary');
 const emptySelection = () => $('contacts-content .empty-selection');
 const editContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
+const deleteContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-trash-o');
+const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
@@ -123,6 +125,14 @@ const editPerson = async (name, updatedName) => {
   return (await contactCard()).getText();
 };
 
+const deletePerson = async (name) => {
+  await selectLHSRowByText(name);
+  await waitForContactLoaded();
+  await (await deleteContactButton()).click();
+  await (await deleteConfirmationModalButton()).waitForDisplayed();
+  await (await deleteConfirmationModalButton()).click();
+};
+
 const getContactSummaryField = async (fieldName) => {
   await (await contactSummaryContainer()).waitForDisplayed();
   const field = await (await contactSummaryContainer()).$(`.cell.${fieldName.replace(/\./g, '\\.')}`);
@@ -175,5 +185,6 @@ module.exports = {
   contactCard,
   editPerson,
   getContactSummaryField,
-  getAllRHSReportsNames
+  getAllRHSReportsNames,
+  deletePerson
 };
