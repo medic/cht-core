@@ -7,7 +7,7 @@ env:
   COUCH_NODE_NAME: nonode@nohost
   BUILDS_SERVER: _couch/builds_testing
   STAGING_SERVER: _couch/builds
-  MARKET_URL: ${{ secrets.MARKET_URL }}
+  MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
 
 jobs:
   build:
