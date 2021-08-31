@@ -1,51 +1,42 @@
-const ExtendedXPathEvaluator = require('extended-xpath');
+const ExtendedXpathEvaluator = require('extended-xpath');
 const openrosaExtensions = require('openrosa-extensions');
 const medicExtensions = require('./medic-xpath-extensions');
-const XPR = require('node_modules/openrosa-xpath-evaluator/src/xpr');
-const {asString, asBoolean, asNumber} = require('node_modules/openrosa-xpath-evaluator/src/utils/xpath-cast');
-
-const cast = {
-  string: asString,
-  boolean: asBoolean,
-  number: asNumber,
-};
+const translator = require('./translator');
 
 module.exports = function( ) {
-  const ore = openrosaExtensions();
+  const ore = openrosaExtensions(translator.t);
   ore.func = Object.assign(ore.func, medicExtensions.func);
   ore.process = Object.assign(ore.process, medicExtensions.process);
-  const evaluator = new ExtendedXPathEvaluator(new XPathEvaluator(), ore);
+  const wrappedXpathEvaluator = new XPathEvaluator();
 
-  evaluator.customXPathFunction = {
-    add: (name, { fn, args:_args, ret }) => {
-      if(Object.prototype.hasOwnProperty.call(ore.func, name)) {
-        throw new Error(`There is already a function with the name: '${name}'`);
-      }
+  const evaluator = new ExtendedXpathEvaluator(wrappedXpathEvaluator, ore);
 
-      const argTypes = _args.map(a => a.t);
-      const allowedArgTypes = Object.keys(cast);
-      const unsupportedArgTypes = argTypes.filter(t => !allowedArgTypes.includes(t));
-      if(unsupportedArgTypes.length) {
-        const quoted = unsupportedArgTypes.map(t => `'${t}'`);
-        throw new Error(`Unsupported arg type(s): ${quoted.join(',')}`);
-      }
-
-      const allowedRetTypes = Object.keys(XPR);
-      if(!allowedRetTypes.includes(ret)) {
-        throw new Error(`Unsupported return type: '${ret}'`);
-      }
-
-      ore.func[name] = (...args) => {
-        if(args.length !== argTypes.length) {
-          throw new Error(`Function "${name}" expected ${argTypes.length} arg(s), but got ${args.length}`);
-        }
-
-        const convertedArgs = argTypes.map((type, idx) => cast[type](args[idx]));
-        return XPR[ret](fn(...convertedArgs));
-      };
-    },
+  this.xml.jsCreateExpression = function() {
+    return evaluator.createExpression.apply( evaluator, arguments );
+  };
+  this.xml.jsCreateNSResolver = function() {
+    return evaluator.createNSResolver.apply( evaluator, arguments );
   };
 
-  this.xml.jsEvaluate = evaluator.evaluate;
+  this.xml.jsEvaluate = function(e, contextPath, namespaceResolver, resultType, result) {
+    wrappedXpathEvaluator.evaluate = (v) => {
+      // Node requests (i.e. result types greater than 3 (BOOLEAN)
+      // should be processed unaltered, as they are passed this
+      // way from the ExtendedXpathEvaluator.  For anything else,
+      // we will be ask for the most appropriate result type, and
+      // handle as best we can.
+      const wrappedResultType = resultType > XPathResult.BOOLEAN_TYPE ? resultType : XPathResult.ANY_TYPE;
+      const doc = contextPath.ownerDocument;
+      return doc.evaluate(v, contextPath, namespaceResolver, wrappedResultType, result);
+    };
+    return evaluator.evaluate(e, contextPath, namespaceResolver, resultType, result);
+  };
+
+  window.JsXPathException =
+    window.JsXPathExpression =
+    window.JsXPathNSResolver =
+    window.JsXPathResult =
+    window.JsXPathNamespace = true;
+
   return evaluator;
 };
