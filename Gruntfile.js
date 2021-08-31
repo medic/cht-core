@@ -472,7 +472,9 @@ module.exports = function(grunt) {
       },
       'start-webdriver-ci': {
         cmd:
-          'scripts/e2e/start_webdriver.sh'
+          'mkdir -p tests/logs && ' +
+          'docker run -d -p 4444:4444 --shm-size=2g selenium/standalone-chrome:latest && ' +
+          'until nc -z localhost 4444; do sleep 1; done',
       },
       'check-env-vars':
         'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
