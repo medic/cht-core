@@ -14,7 +14,6 @@ const {
   STAGING_SERVER,
   BUILDS_SERVER,
   BUILD_NUMBER,
-  CI,
 } = process.env;
 
 const releaseName = TAG || BRANCH || 'local-development';
@@ -466,14 +465,7 @@ module.exports = function(grunt) {
       'start-webdriver': {
         cmd:
           'mkdir -p tests/logs && ' +
-          './node_modules/.bin/webdriver-manager update && ' +
-          './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
-          'until nc -z localhost 4444; do sleep 1; done',
-      },
-      'start-webdriver-ci': {
-        cmd:
-          'mkdir -p tests/logs && ' +
-          'docker run -d -p 4444:4444 --shm-size=2g selenium/standalone-chrome:latest && ' +
+          'docker run -d -p 4444:4444 -v /dev/shm:/dev/shm selenium/standalone-chrome:3.141.59-yttrium > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
       },
       'check-env-vars':
@@ -952,7 +944,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
-    CI ? 'exec:start-webdriver-ci' : 'exec:start-webdriver',
+    'exec:start-webdriver',
   ]);
 
   // Test tasks
