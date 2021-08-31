@@ -10,7 +10,7 @@
     "test": "npm run eslint && npm run test-contact-summary && npm run test-unit",
     "test-contact-summary": "medic-contact-summary-test . test/contact-summary",
     "test-unit": "mocha --reporter progress test/*.spec.js",
-    "travis": "./test/check-app-settings-is-committed && npm test"
+    "ci": "./test/check-app-settings-is-committed && npm test"
   },
   "devDependencies": {
     "@medic/contact-summary-testing": "^2.0.1",

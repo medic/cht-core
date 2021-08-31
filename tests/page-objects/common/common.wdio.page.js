@@ -1,13 +1,14 @@
 const hamburgerMenu = () => $('#header-dropdown-link');
-const logoutButton =  () => $('.fa-power-off');
+const logoutButton = () => $('.fa-power-off');
 const messagesTab = () => $('#messages-tab');
-const analyticsTab =  () => $('#analytics-tab');
+const analyticsTab = () => $('#analytics-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const contactsPage = require('../contacts/contacts.wdio.page');
 const reportsPage = require('../reports/reports.wdio.page');
 const modal = require('./modal.wdio.page');
+const loaders = () => $$('.container-fluid .loader');
 
 const navigateToLogoutModal = async () => {
   await (await hamburgerMenu()).click();
@@ -39,8 +40,8 @@ const goToReports = async () => {
   await (await reportsPage.reportList()).waitForDisplayed();
 };
 
-const goToPeople = async () => {
-  await browser.url('/#/contacts');
+const goToPeople = async (contactId = '') => {
+  await browser.url(`/#/contacts/${contactId}`);
   await (await contactsPage.contactList()).waitForDisplayed();
 };
 
@@ -69,6 +70,12 @@ const hideSnackbar = () => {
   });
 };
 
+const waitForLoaders = async () => {
+  await browser.waitUntil(async () => {
+    return (await loaders()).map((loader) => loader.isDisplayed()).length === 0;
+  });
+};
+
 module.exports = {
   logout,
   logoutButton,
@@ -83,4 +90,5 @@ module.exports = {
   goToBase,
   closeTour,
   hideSnackbar,
+  waitForLoaders
 };

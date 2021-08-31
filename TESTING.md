@@ -12,7 +12,7 @@ They live in the `tests` directories of each app. Run them with grunt: `grunt un
 
 ## Integration tests
 
-[Travis](https://travis-ci.org/github/medic/cht-core) runs `grunt ci` every time some new code is pushed to github.
+[Github Actions](https://github.com/medic/cht-core/actions) runs `grunt ci` every time some new code is pushed to github.
 
 # End to End Testing 
 ## Stack overview
@@ -110,6 +110,13 @@ Treat the migration as if you were writing a brand new e2e suite. Not everything
 
 Each spec file runs independently. There is no need to manage browser state between spec files. 
 
+### Saving artifacts
+
+Github actions will artifact all files in tests/logs. This is the directory any logs, results, images, etc... should save to if you want to review them if a build fails. 
+
+### Test Architecture
+
+Our github actions spin up an ubuntu-18.04 machine. Installs software and then launches Couchdb and Horticulturalist in a docker container. This is needed to run our applications in the specific node versions we support while allowing our test code to run in versions of node it they support. This creates a paradigm to keep in mind when writing tests. Tests run on the ubuntu machine. Any test code that starts a server or runs an executable is running outside of the horti container. The ports are exposed for all our services and horti has access to the cht-core root via a volume. Horti can also talk to the host by getting the gateway of the docker network. 
 
 
 ### Glossary 

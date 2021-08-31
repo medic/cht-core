@@ -8,10 +8,11 @@ const url = require('../utils').getInstanceUrl();
 const actions = ['compile-app-settings','backup-app-settings','convert-app-forms','convert-contact-forms',
   'backup-all-forms','upload-app-forms','upload-contact-forms', 'upload-resources','upload-custom-translations'];
 
-describe('Medic-conf actions tests', () => {
+describe('cht-conf actions tests', () => {
   const runCommand = async (action) => {
+
     try {
-      const { stdout } = await exec(`medic-conf --url=${url} ${action} --force`, { cwd: 'config/default' });
+      const { stdout }  = await exec(`cht --url=${url} ${action} --force`, { cwd: 'config/default' });
       return stdout;
     } catch (err) {
       return err.stdout;
