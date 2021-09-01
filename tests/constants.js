@@ -4,6 +4,24 @@ const COUCH_HOST = 'localhost';
 const COUCH_PORT = IS_CI ? 5984 : 4984;
 const API_PORT = IS_CI ? 5988 : 4988;
 
+//Use host IP address for docker/selenium
+const { networkInterfaces } = require('os');
+const nets = networkInterfaces();
+const results = Object.create(null);
+
+for (const name of Object.keys(nets)) {
+  for (const net of nets[name]) {
+    // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+    if (net.family === 'IPv4' && !net.internal) {
+      if (!results[name]) {
+        results[name] = [];
+      }
+      results[name].push(net.address);
+    }
+  }
+}
+const address = Object.values(results)[0][0];
+
 module.exports = {
   IS_CI: IS_CI,
 
@@ -11,7 +29,7 @@ module.exports = {
   // intentionally different from the dev api instance to avoid
   // port collisions
   API_PORT,
-  API_HOST: 'localhost',
+  API_HOST: IS_CI ? address: 'localhost',
 
   // connection information for the couchdb instance
   // locally we spin up a different CouchDB for e2e tests

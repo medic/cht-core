@@ -473,7 +473,7 @@ module.exports = function(grunt) {
       'start-webdriver-ci': {
         cmd:
           'mkdir -p tests/logs && ' +
-          'docker run -d -p 4444:4444 --shm-size=2g selenium/standalone-chrome:latest && > tests/logs/webdriver.log & ' +
+          'docker run -d -p 4444:4444 --shm-size=2g selenium/standalone-chrome:latest > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
       },
       'check-env-vars':
