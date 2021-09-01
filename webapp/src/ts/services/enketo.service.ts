@@ -296,7 +296,7 @@ export class EnketoService {
         window.history.replaceState({ enketo_page_number: 0 }, '');
         this.overrideNavigationButtons(this.currentForm, wrapper);
         this.addPopStateHandler(this.currentForm, wrapper);
-        // this.addDynamicUrlListener(); // TODO figure out if we need this new URL listener code...
+        this.addDynamicUrlListener(); // TODO figure out if we need this new URL listener code...
         this.forceRecalculate(this.currentForm);
         this.setupNavButtons(wrapper, 0);
         return this.currentForm;
@@ -687,6 +687,18 @@ export class EnketoService {
     }
   }
 
+  private dynamicUrlHandler() {
+    window.location.href = $(this).find('.url').text();
+  }
+
+  private addDynamicUrlListener() {
+    $(document.body).on('click', '.enketo a.dynamic-url', this.dynamicUrlHandler);
+  }
+
+  private removeDynamicUrlListener() {
+    $(document.body).off('click', '.enketo a.dynamic-url', this.dynamicUrlHandler);
+  }
+
   private saveGeo(geoHandle, docs) {
     if (!geoHandle) {
       return docs;
@@ -743,6 +755,7 @@ export class EnketoService {
 
   unload(form) {
     $(window).off('.enketo-pagemode');
+    this.removeDynamicUrlListener();
     if (form) {
       form.resetView();
     }
