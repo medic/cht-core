@@ -7,8 +7,13 @@ const commonElements = require('../../page-objects/common/common.po');
 const addedUser = 'fulltester' + new Date().getTime();
 const fullName = 'Bede Ngaruko';
 
-
-describe('Add user  : ', () => {
+/**
+ * Test Case Migrated to Wdio: add-user.wdio-spec.js
+ * Keeping Protractor tests with Skip option (prefixing "x")
+ * Once entire migration is done, come back and remove all protractor tests
+ * This helps in identifying which all tests have been migrated
+ */
+xdescribe('Add user  : ', () => {
 
   afterAll(() => commonElements.goToMessagesNative());
 
