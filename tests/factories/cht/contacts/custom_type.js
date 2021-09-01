@@ -1,4 +1,6 @@
 const Factory = require('rosie').Factory;
+const fs = require('fs');
+const xmlPath = `${__dirname}/../../../../demo-forms/custom_contacts/forms/contact/ngo-create.xml`;
 
 const custom_type_doctor = {
   id: 'doctor',
@@ -85,16 +87,17 @@ const custom_type_doctor = {
 
 const customType = () => {
   return new Factory()
-    .attr('id', 'ngo')
-    .attr('name_key', 'contact.type.ngo')
-    .attr('group_key', 'contact.type.ngo.plural')
-    .attr('create_key', 'contact.type.ngo.new')
-    .attr('edit_key', 'contact.type.ngo.edit')
+    .option('name', 'ngo')
+    .attr('id', ['name'], (name) => name)
+    .attr('name_key', ['name'], (name) => `contact.type.${name}`)
+    .attr('group_key', ['name'], (name) => `contact.type.${name}.plural`)
+    .attr('create_key', ['name'], (name) => `contact.type.${name}.new`)
+    .attr('edit_key', ['name'], (name) => `contact.type.${name}.edit`)
     .attr('primary_contact_key', '')
-    .attr('parents', '')
-    .attr('icon', 'medic-district-hospital' )
-    .attr('create_form', 'form:contact:ngo:create')
-    .attr('edit_form', 'form:contact:ngo:edit' )
+    .attr('parents', [])
+    .attr('icon', 'medic-district-hospital')
+    .attr('create_form', ['name'], (name) => `form:contact:${name}:create`)
+    .attr('edit_form', ['name'], (name) => `form:contact:${name}:edit`)
     .attr('person', false);
 };
 
@@ -105,10 +108,37 @@ const customTypes = () => {
   return types;
 };
 
+const translationKeys = (types) => {
+  const typeTranslations = {};
+  types.forEach((type) => {
+    typeTranslations[type.name_key] = type.id;
+    typeTranslations[type.group_key] = `${type.id} Plural`;
+    typeTranslations[type.create_key] = `Add ${type.id}`;
+    typeTranslations[type.edit_key] = `Edit ${type.id}`;
+  });
+  return typeTranslations;
+};
 
-
+const formsForTypes = (types, xml = xmlPath) => {
+  return types.map((type) => {
+    return {
+      _id: `form:contact:${type.id}:create`,
+      internalId: `contact:${type.id}:create`,
+      title: `${type.id} form`,
+      type: 'form',
+      _attachments: {
+        xml: {
+          content_type: 'application/octet-stream',
+          data: Buffer.from(fs.readFileSync(xml)).toString('base64'),
+        }
+      }
+    };
+  });
+};
 
 module.exports = {
   customType,
-  customTypes
+  customTypes,
+  translationKeys,
+  formsForTypes
 };
