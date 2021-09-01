@@ -108,7 +108,7 @@ module.exports = {
     const datePicker = await element(by.xpath(
       `//*[@data-itext-id="/delivery/delivery_outcome/delivery_date:label"]/..//*[@placeholder="yyyy-mm-dd"]`));
     await datePicker.click();
-    await datePicker.sendKeys(deliveryDate).sendKeys(protractor.Key.ENTER);
+    await datePicker.sendKeys(deliveryDate).sendKeys(protractor.Key.TAB);
   },
 
   //Delivery Place
@@ -126,7 +126,7 @@ module.exports = {
     const basePath = `(//*[@class="repeat-number"])[${deadBabyIndex}]/..//`;
     const dateOfDeathPicker = await element(by.xpath(`${basePath}*[@placeholder="yyyy-mm-dd"]`));
     await dateOfDeathPicker.click();
-    await dateOfDeathPicker.sendKeys('').sendKeys(protractor.Key.ENTER);
+    await dateOfDeathPicker.sendKeys('').sendKeys(protractor.Key.TAB);
 
     const placeOfDeathRadio = await element(by.xpath(`${basePath}*[@value="health_facility"]`));
     await placeOfDeathRadio.click();
