@@ -68,7 +68,7 @@
         </translation>
       </itext>
       <instance>
-        <covid19-rdt-capture delimiter="#" id="covid19:rdt:capture" prefix="J1!covid19:rdt:capture!" version="2021-09-02_01-08">
+        <covid19-rdt-capture delimiter="#" id="covid19:rdt:capture" prefix="J1!covid19:rdt:capture!" version="2021-09-02_06-09">
           <inputs tag="hidden">
             <source>user</source>
             <contact>
@@ -95,7 +95,7 @@
             </contact>
           </inputs>
           <test-information tag="hidden">
-            <case_id/>
+            <session_id/>
             <administrator_id/>
             <administrator_name/>
             <test_id/>
@@ -184,7 +184,7 @@
       <bind nodeset="/covid19-rdt-capture/inputs/contact/parent/parent/_id" type="string"/>
       <bind nodeset="/covid19-rdt-capture/inputs/contact/parent/parent/name" type="string"/>
       <bind nodeset="/covid19-rdt-capture/inputs/contact/parent/parent/address" type="string"/>
-      <bind nodeset="/covid19-rdt-capture/test-information/case_id" type="string"/>
+      <bind nodeset="/covid19-rdt-capture/test-information/session_id" type="string"/>
       <bind nodeset="/covid19-rdt-capture/test-information/administrator_id" type="string"/>
       <bind nodeset="/covid19-rdt-capture/test-information/administrator_name" type="string"/>
       <bind nodeset="/covid19-rdt-capture/test-information/test_id" type="string"/>
