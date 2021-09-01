@@ -42,6 +42,7 @@ const deleteContactButton = () => $('.action-container .right-pane .actions .mm-
 const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
 
 const leftAddPlace = () => $('.dropup a[mmauth="can_create_places"]');
+const rightAddPlace = () => $('span[test-id="rhs_add_place"] a');
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
@@ -189,5 +190,6 @@ module.exports = {
   getContactSummaryField,
   getAllRHSReportsNames,
   deletePerson,
-  leftAddPlace
+  leftAddPlace,
+  rightAddPlace
 };

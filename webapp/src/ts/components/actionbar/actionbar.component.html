@@ -56,7 +56,7 @@
       </div>
 
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'contacts'">
-        <div class="actions dropup" mmAuth [mmAuthAny]="[ actionBar?.left?.childPlaces && 'can_create_places' ]">
+        <div test-id='create_places' class="actions dropup" mmAuth [mmAuthAny]="[ actionBar?.left?.childPlaces && 'can_create_places' ]">
           <a *ngIf="actionBar?.left?.childPlaces?.length > 1"
              mmAuth="can_create_places"
              class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle"
@@ -195,7 +195,7 @@
             </ul>
           </span>
 
-          <span *ngFor="let group of actionBar?.right?.childTypes" mmAuth="{{ group.permission }}">
+          <span test-id= "rhs_add_place" *ngFor="let group of actionBar?.right?.childTypes" mmAuth="{{ group.permission }}">
             <ng-container *ngIf="group.types?.length > 1">
               <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown">
                 <span class="fa-stack">
