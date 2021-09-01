@@ -1,4 +1,5 @@
 const utils = require('../../utils');
+const faker = require('faker');
 const chai = require('chai');
 const usersAdminPage = require('../../page-objects/admin/user.wdio.page');
 const placeFactory = require('../../factories/cht/contacts/place');
@@ -7,7 +8,7 @@ const personFactory = require('../../factories/cht/contacts/person');
 
 const onlineUserRole = 'Program Officer';
 const offlineUserRole = 'CHW';
-const username = 'jack_test';
+const username = faker.name.firstName().toLocaleLowerCase();
 const password = 'Jacktest@123';
 const incorrectpassword = 'Passwor';
 const places = placeFactory.generateHierarchy();
