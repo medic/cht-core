@@ -46,8 +46,8 @@ module.exports = [
           content.patient_uuid = getField(report, 'patient_uuid');
           content['test-information'] = {
             case_id: getField(report, 'test-reference.case_id'),
-            administrator_id: getField(report, 'test-reference.administrator_id'),
-            administrator_name: getField(report, 'test-reference.administrator_name'),
+            administrator_id: getField(report, 'inputs.user.contact_id'),
+            administrator_name: getField(report, 'inputs.user.name'),
             test_id: getField(report, 'test-reference.test_id'),
             facility_id: getField(report, 'test-reference.facility_id'),
             facility_name: getField(report, 'test-reference.facility_name') ||

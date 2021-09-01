@@ -8,17 +8,8 @@
           <text id="/covid19-rdt-capture/capture/preview-output/note_results_expired:label">
             <value>⚠ WARNING: The rapid diagnostic test has expired!</value>
           </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_image:hint">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_image:jr:constraintMsg">
-            <value>-</value>
-          </text>
           <text id="/covid19-rdt-capture/capture/preview-output/preview_image:label">
             <value>Image</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_result:jr:constraintMsg">
-            <value>-</value>
           </text>
           <text id="/covid19-rdt-capture/capture/preview-output/preview_result:label">
             <value>Results</value>
@@ -74,581 +65,10 @@
           <text id="/covid19-rdt-capture/repeat-test/repeat_test_reason_other:label">
             <value>Specify other</value>
           </text>
-          <text id="/covid19-rdt-capture/repeat-test:label">
-            <value>Repeat test</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary/case_id_text:label">
-            <value>Case ID</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary/patient_name_text:label">
-            <value>Patient name</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary/patient_uuid_text:label">
-            <value>Patient Medic ID</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary/rdt_lot_text:label">
-            <value>RDT batch number</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary/test_id_text:label">
-            <value>Test ID</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary:label">
-            <value>Summary</value>
-          </text>
-        </translation>
-        <translation lang="fr">
-          <text id="/covid19-rdt-capture/capture/preview-output/note_results_expired:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_image:hint">
-            <value>hidden</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_image:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_image:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_result:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_result:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_status:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_test_profile:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_time_expired:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_time_read:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_time_started:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/rdt_loinc_code:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/rdt_loinc_long_common_name:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/results_expired:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/syndrome_test_type:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/action:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-inputs/rdt_session_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-inputs:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_test_profile:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_resolved:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/note_instructions_provision:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/address:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/date_of_birth:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/first_name:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/last_name:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/name:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/parent/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/parent/address:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/parent/name:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/parent/parent/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/parent/parent/address:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/parent/parent/name:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/parent/parent:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/parent:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/phone:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/phone_alternate:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/sex:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/source:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/patient_uuid:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test/no:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test/yes:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test_reason/indeterminate:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test_reason/invalid:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test_reason/lost:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test_reason/other:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test_reason:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test_reason_other:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/additional_notes:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/administrator_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/administrator_name:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/case_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/days_since_symptoms_began:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/facility_address:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/facility_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/facility_name:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/facility_test_setting:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/gps:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/other_test_setting:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/rdt_lot:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/specimen_type:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/specimen_type_other:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/symptoms:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/test_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/test_reason:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary/case_id_text:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary/patient_name_text:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary/patient_uuid_text:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary/rdt_lot_text:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary/test_id_text:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary:label">
-            <value>-</value>
-          </text>
-        </translation>
-        <translation lang="sw">
-          <text id="/covid19-rdt-capture/capture/preview-output/note_results_expired:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_image:hint">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_image:jr:constraintMsg">
-            <value><output value=" /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped "/></value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_image:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_result:jr:constraintMsg">
-            <value>if(<output value=" /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2 "/>='sars_cov2_pos', 'Positive', if(<output value=" /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2 "/>='sars_cov2_neg', 'Negative', 'Invalid result'))</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_result:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_status:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_test_profile:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_time_expired:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_time_read:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/preview_time_started:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/rdt_loinc_code:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/rdt_loinc_long_common_name:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/results_expired:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output/syndrome_test_type:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/preview-output:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/action:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-inputs/rdt_session_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-inputs:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_test_profile:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_resolved:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture/note_instructions_provision:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture/rdtoolkit-capture:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/capture:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/address:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/date_of_birth:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/first_name:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/last_name:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/name:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/parent/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/parent/address:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/parent/name:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/parent/parent/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/parent/parent/address:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/parent/parent/name:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/parent/parent:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/parent:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/phone:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/phone_alternate:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact/sex:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/contact:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs/source:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/inputs:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/patient_uuid:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test/no:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test/yes:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test_reason/indeterminate:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test_reason/invalid:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test_reason/lost:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test_reason/other:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test_reason:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test/repeat_test_reason_other:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/repeat-test:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/additional_notes:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/administrator_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/administrator_name:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/case_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/days_since_symptoms_began:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/facility_address:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/facility_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/facility_name:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/facility_test_setting:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/gps:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/other_test_setting:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/rdt_lot:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/specimen_type:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/specimen_type_other:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/symptoms:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/test_id:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information/test_reason:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-information:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary/case_id_text:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary/patient_name_text:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary/patient_uuid_text:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary/rdt_lot_text:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary/test_id_text:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-capture/test-summary:label">
-            <value>-</value>
-          </text>
         </translation>
       </itext>
       <instance>
-        <covid19-rdt-capture id="covid19:rdt:capture" prefix="J1!covid19:rdt:capture!" delimiter="#" version="2021-08-26_22-06">
+        <covid19-rdt-capture id="covid19:rdt:capture" prefix="J1!covid19:rdt:capture!" delimiter="#" version="2021-09-01_14-58">
           <inputs tag="hidden">
             <source>user</source>
             <contact>
@@ -693,13 +113,6 @@
             <rdt_lot/>
             <additional_notes/>
           </test-information>
-          <test-summary>
-            <case_id_text/>
-            <test_id_text/>
-            <rdt_lot_text/>
-            <patient_uuid_text/>
-            <patient_name_text/>
-          </test-summary>
           <capture>
             <rdtoolkit-capture tag="hidden">
               <action>org.rdtoolkit.action.Capture</action>
@@ -753,6 +166,7 @@
         </covid19-rdt-capture>
       </instance>
       <instance id="contact-summary"/>
+      <bind nodeset="/covid19-rdt-capture/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/covid19-rdt-capture/inputs/source" type="string"/>
       <bind nodeset="/covid19-rdt-capture/inputs/contact/_id" type="db:person"/>
       <bind nodeset="/covid19-rdt-capture/inputs/contact/patient_id" type="string"/>
@@ -787,32 +201,27 @@
       <bind nodeset="/covid19-rdt-capture/test-information/specimen_type_other" type="string"/>
       <bind nodeset="/covid19-rdt-capture/test-information/rdt_lot" type="string"/>
       <bind nodeset="/covid19-rdt-capture/test-information/additional_notes" type="string"/>
-      <bind nodeset="/covid19-rdt-capture/test-summary/case_id_text" type="string" calculate="../../test-information/case_id" readonly="true()"/>
-      <bind nodeset="/covid19-rdt-capture/test-summary/test_id_text" type="string" calculate="../../test-information/test_id" readonly="true()"/>
-      <bind nodeset="/covid19-rdt-capture/test-summary/rdt_lot_text" type="string" calculate="../../test-information/rdt_lot" readonly="true()"/>
-      <bind nodeset="/covid19-rdt-capture/test-summary/patient_uuid_text" type="string" calculate="../../inputs/contact/_id" readonly="true()"/>
-      <bind nodeset="/covid19-rdt-capture/test-summary/patient_name_text" type="string" calculate="../../inputs/contact/name" readonly="true()"/>
       <bind nodeset="/covid19-rdt-capture/capture/rdtoolkit-capture/action" type="string"/>
       <bind nodeset="/covid19-rdt-capture/capture/rdtoolkit-capture/note_instructions_provision" readonly="true()" type="string"/>
       <bind nodeset="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-inputs/rdt_session_id" type="string" calculate="../../../../test-information/test_id"/>
-      <bind nodeset="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state" type="string"/>
+      <bind nodeset="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state" type="string" required="true()"/>
       <bind nodeset="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started" type="string"/>
       <bind nodeset="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_resolved" type="string"/>
       <bind nodeset="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired" type="string"/>
       <bind nodeset="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_test_profile" type="string"/>
       <bind nodeset="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read" type="string"/>
       <bind nodeset="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped" type="string"/>
-      <bind nodeset="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2" type="string"/>
+      <bind nodeset="/covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2" type="string" required="true()"/>
       <bind nodeset="/covid19-rdt-capture/capture/preview-output" relevant=" /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state  != ''"/>
-      <bind nodeset="/covid19-rdt-capture/capture/preview-output/preview_test_profile" type="string" calculate=" /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_test_profile " readonly="true()"/>
-      <bind nodeset="/covid19-rdt-capture/capture/preview-output/preview_status" type="string" calculate="if( /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state  = 'QUEUED', 'COMPLETED',  /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state )" readonly="true()"/>
-      <bind nodeset="/covid19-rdt-capture/capture/preview-output/preview_time_started" type="string" calculate="format-date-time(parse-timestamp-to-date( /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started ), &quot;%e %b, %Y at %H:%M:%S&quot;)" readonly="true()"/>
-      <bind nodeset="/covid19-rdt-capture/capture/preview-output/preview_time_read" type="string" calculate="format-date-time(parse-timestamp-to-date( /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read ), &quot;%e %b, %Y at %H:%M:%S&quot;)" readonly="true()"/>
-      <bind nodeset="/covid19-rdt-capture/capture/preview-output/preview_time_expired" type="string" calculate="format-date-time(parse-timestamp-to-date( /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired ), &quot;%e %b, %Y at %H:%M:%S&quot;)" readonly="true()"/>
+      <bind nodeset="/covid19-rdt-capture/capture/preview-output/preview_test_profile" type="string" readonly="true()" required="true()" calculate=" /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_test_profile "/>
+      <bind nodeset="/covid19-rdt-capture/capture/preview-output/preview_status" type="string" readonly="true()" required="true()" calculate="if( /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state  = 'QUEUED', 'COMPLETED',  /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state )"/>
+      <bind nodeset="/covid19-rdt-capture/capture/preview-output/preview_time_started" type="string" readonly="true()" calculate="format-date-time(parse-timestamp-to-date( /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started ), &quot;%e %b, %Y at %H:%M:%S&quot;)"/>
+      <bind nodeset="/covid19-rdt-capture/capture/preview-output/preview_time_read" type="string" readonly="true()" calculate="format-date-time(parse-timestamp-to-date( /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read ), &quot;%e %b, %Y at %H:%M:%S&quot;)"/>
+      <bind nodeset="/covid19-rdt-capture/capture/preview-output/preview_time_expired" type="string" readonly="true()" calculate="format-date-time(parse-timestamp-to-date( /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired ), &quot;%e %b, %Y at %H:%M:%S&quot;)"/>
       <bind nodeset="/covid19-rdt-capture/capture/preview-output/results_expired" type="string" calculate="if( /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read  &gt;  /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired , 'TRUE', 'FALSE')"/>
       <bind nodeset="/covid19-rdt-capture/capture/preview-output/note_results_expired" readonly="true()" type="string" relevant=" /covid19-rdt-capture/capture/preview-output/results_expired  ='TRUE'"/>
-      <bind nodeset="/covid19-rdt-capture/capture/preview-output/preview_result" type="string" readonly="true()" jr:constraintMsg="jr:itext('/covid19-rdt-capture/capture/preview-output/preview_result:jr:constraintMsg')" calculate="if( /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2 ='sars_cov2_pos', 'Positive', if( /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2 ='sars_cov2_neg', 'Negative', 'Invalid result'))"/>
-      <bind nodeset="/covid19-rdt-capture/capture/preview-output/preview_image" type="string" jr:constraintMsg="jr:itext('/covid19-rdt-capture/capture/preview-output/preview_image:jr:constraintMsg')" calculate=" /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped "/>
+      <bind nodeset="/covid19-rdt-capture/capture/preview-output/preview_result" type="string" readonly="true()" required="true()" calculate="if( /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2 ='sars_cov2_pos', 'Positive', if( /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2 ='sars_cov2_neg', 'Negative', 'Invalid result'))"/>
+      <bind nodeset="/covid19-rdt-capture/capture/preview-output/preview_image" type="string" calculate=" /covid19-rdt-capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped "/>
       <bind nodeset="/covid19-rdt-capture/capture/preview-output/syndrome_test_type" type="string"/>
       <bind nodeset="/covid19-rdt-capture/capture/preview-output/rdt_loinc_code" type="string"/>
       <bind nodeset="/covid19-rdt-capture/capture/preview-output/rdt_loinc_long_common_name" type="string"/>
@@ -835,24 +244,6 @@
       </group>
     </group>
     <group ref="/covid19-rdt-capture/test-information"/>
-    <group appearance="field-list" ref="/covid19-rdt-capture/test-summary">
-      <label ref="jr:itext('/covid19-rdt-capture/test-summary:label')"/>
-      <input ref="/covid19-rdt-capture/test-summary/case_id_text">
-        <label ref="jr:itext('/covid19-rdt-capture/test-summary/case_id_text:label')"/>
-      </input>
-      <input ref="/covid19-rdt-capture/test-summary/test_id_text">
-        <label ref="jr:itext('/covid19-rdt-capture/test-summary/test_id_text:label')"/>
-      </input>
-      <input ref="/covid19-rdt-capture/test-summary/rdt_lot_text">
-        <label ref="jr:itext('/covid19-rdt-capture/test-summary/rdt_lot_text:label')"/>
-      </input>
-      <input ref="/covid19-rdt-capture/test-summary/patient_uuid_text">
-        <label ref="jr:itext('/covid19-rdt-capture/test-summary/patient_uuid_text:label')"/>
-      </input>
-      <input ref="/covid19-rdt-capture/test-summary/patient_name_text">
-        <label ref="jr:itext('/covid19-rdt-capture/test-summary/patient_name_text:label')"/>
-      </input>
-    </group>
     <group appearance="field-list" ref="/covid19-rdt-capture/capture">
       <group appearance="android-app-launcher" ref="/covid19-rdt-capture/capture/rdtoolkit-capture">
         <input appearance="hidden" ref="/covid19-rdt-capture/capture/rdtoolkit-capture/action"/>
@@ -906,12 +297,10 @@
         </input>
         <input appearance="display-base64-image" ref="/covid19-rdt-capture/capture/preview-output/preview_image">
           <label ref="jr:itext('/covid19-rdt-capture/capture/preview-output/preview_image:label')"/>
-          <hint ref="jr:itext('/covid19-rdt-capture/capture/preview-output/preview_image:hint')"/>
         </input>
       </group>
     </group>
     <group appearance="field-list" ref="/covid19-rdt-capture/repeat-test">
-      <label ref="jr:itext('/covid19-rdt-capture/repeat-test:label')"/>
       <select1 ref="/covid19-rdt-capture/repeat-test/repeat_test">
         <label ref="jr:itext('/covid19-rdt-capture/repeat-test/repeat_test:label')"/>
         <item>
