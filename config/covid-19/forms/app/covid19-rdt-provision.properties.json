@@ -1,8 +1,9 @@
 {
   "icon": "icon-follow-up",
-  "title": "RDT Covid-19",
+  "title": "RDT Covid-19 - Provision",
   "context": {
     "person": true,
-    "place": false
+    "place": false,
+    "expression": "contact.type === 'person'"
   }
 }
