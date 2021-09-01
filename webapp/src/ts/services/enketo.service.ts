@@ -354,6 +354,7 @@ export class EnketoService {
       .off('.pagemode')
       .on('click.pagemode', () => {
         window.history.back();
+        this.setupNavButtons($wrapper, form.pages._getCurrentIndex() - 1);
         this.forceRecalculate(form);
         return false;
       });
