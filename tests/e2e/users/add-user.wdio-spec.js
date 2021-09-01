@@ -28,7 +28,10 @@ describe('User Test Cases ->', () => {
   before(async () => {
     await utils.saveDocs(docs);
     await loginPage.cookieLogin();
+  });
 
+  after(async () => {
+    await utils.revertDb([], true);
   });
 
   beforeEach(async () => {
@@ -43,6 +46,7 @@ describe('User Test Cases ->', () => {
         person.name, password);
       await usersAdminPage.saveUser();
       chai.expect(await usersAdminPage.getAllUsernames()).to.contain.members([username]);
+      await utils.deleteUsers([{ username: username }]);
     });
   });
 
