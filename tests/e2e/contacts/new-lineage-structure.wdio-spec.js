@@ -74,7 +74,7 @@ describe('Create new lineage structure', () => {
     chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
   });
 
-  xit('should delete the primary contact of health facility', async () => {
+  it('should delete the primary contact of health facility', async () => {
     await contactPage.selectLHSRowByText(area);
     await contactPage.deletePerson(centerContact);
     chai.expect(await contactPage.getAllRHSPeopleNames()).to.not.have.members([centerContact]);
