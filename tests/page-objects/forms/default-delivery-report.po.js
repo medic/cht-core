@@ -2,6 +2,7 @@ const utils = require('../../utils');
 const helper = require('../../helper');
 const fs = require('fs');
 const { element, by } = require('protractor');
+const moment = require('moment');
 
 const xml = fs.readFileSync(`${__dirname}/../../../config/default/forms/app/delivery.xml`, 'utf8');
 
@@ -126,7 +127,7 @@ module.exports = {
     const basePath = `(//*[@class="repeat-number"])[${deadBabyIndex}]/..//`;
     const dateOfDeathPicker = await element(by.xpath(`${basePath}*[@placeholder="yyyy-mm-dd"]`));
     await dateOfDeathPicker.click();
-    await dateOfDeathPicker.sendKeys('').sendKeys(protractor.Key.TAB);
+    await dateOfDeathPicker.sendKeys(moment().format('YYYY-MM-DD')).sendKeys(protractor.Key.TAB);
 
     const placeOfDeathRadio = await element(by.xpath(`${basePath}*[@value="health_facility"]`));
     await placeOfDeathRadio.click();

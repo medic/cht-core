@@ -5,6 +5,7 @@ const utils = require('../../utils');
 const userData = require('../../page-objects/forms/data/user.po.data');
 const _ = require('lodash');
 const { assert } = require('chai');
+const moment = require('moment');
 
 describe('Submit Default Delivery Report', () => {
   const { userContactDoc, docs } = userData;
@@ -41,8 +42,7 @@ describe('Submit Default Delivery Report', () => {
     await deliveryReport.selectBabiesDeliveredButton();
     await deliveryReport.enterNoOfBabiesDelivered(6);
     await deliveryReport.selectBabiesAliveButton(3);
-
-    await deliveryReport.enterDeliveryDate('');
+    await deliveryReport.enterDeliveryDate(moment().format('YYYY-MM-DD'));
 
     await deliveryReport.selectDeliveryPlaceButton();
     await deliveryReport.selectDeliveryMethod();
