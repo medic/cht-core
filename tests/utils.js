@@ -1017,4 +1017,5 @@ module.exports = {
   },
 
   runAndLogApiStartupMessage: runAndLogApiStartupMessage,
+  findDistrictHospitalFromPlaces: (places) => places.find((place) => place.type === 'district_hospital')
 };
