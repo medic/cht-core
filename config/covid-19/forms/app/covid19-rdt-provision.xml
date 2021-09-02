@@ -21,7 +21,7 @@
             <value>-</value>
           </text>
           <text id="/covid19-rdt-provision/provision/note_continue_1:label">
-            <value>✓ RDT Provisioned!</value>
+            <value>✓ RDT provisioned!</value>
           </text>
           <text id="/covid19-rdt-provision/provision/note_continue_2:label">
             <value>Click "Next" to continue.</value>
@@ -74,9 +74,6 @@
           </text>
           <text id="/covid19-rdt-provision/summary/summary_test_name:label">
             <value><output value=" /covid19-rdt-provision/summary/rdt_loinc_long_common_name "/></value>
-          </text>
-          <text id="/covid19-rdt-provision/test-reference/case_id:label">
-            <value>Case ID</value>
           </text>
           <text id="/covid19-rdt-provision/test-reference/days_since_symptoms_began:jr:constraintMsg">
             <value>Number of days should be between 1 and 200</value>
@@ -131,6 +128,9 @@
           </text>
           <text id="/covid19-rdt-provision/test-reference/other_test_setting:label">
             <value>Specify other</value>
+          </text>
+          <text id="/covid19-rdt-provision/test-reference/session_id:label">
+            <value>Session ID</value>
           </text>
           <text id="/covid19-rdt-provision/test-reference/symptoms/anxiety:label">
             <value>Anxiety</value>
@@ -446,9 +446,6 @@
           <text id="/covid19-rdt-provision/summary:label">
             <value>-</value>
           </text>
-          <text id="/covid19-rdt-provision/test-reference/case_id:label">
-            <value>-</value>
-          </text>
           <text id="/covid19-rdt-provision/test-reference/days_since_symptoms_began:jr:constraintMsg">
             <value>-</value>
           </text>
@@ -501,6 +498,9 @@
             <value>-</value>
           </text>
           <text id="/covid19-rdt-provision/test-reference/other_test_setting:label">
+            <value>-</value>
+          </text>
+          <text id="/covid19-rdt-provision/test-reference/session_id:label">
             <value>-</value>
           </text>
           <text id="/covid19-rdt-provision/test-reference/symptoms/anxiety:label">
@@ -596,7 +596,7 @@
         </translation>
       </itext>
       <instance>
-        <covid19-rdt-provision id="covid19_rdt_provision" prefix="J1!covid19_rdt_provision!" delimiter="#" version="2021-09-02_22-12">
+        <covid19-rdt-provision id="covid19_rdt_provision" prefix="J1!covid19_rdt_provision!" delimiter="#" version="2021-09-02_23-04">
           <inputs>
             <meta>
               <location>
@@ -643,7 +643,7 @@
           <age/>
           <preview_time_expired>0</preview_time_expired>
           <test-reference>
-            <case_id/>
+            <session_id/>
             <test_id/>
             <facility_id/>
             <facility_name/>
@@ -732,7 +732,7 @@
       <bind nodeset="/covid19-rdt-provision/inputs/contact/parent/parent/name" type="string"/>
       <bind nodeset="/covid19-rdt-provision/inputs/contact/parent/parent/address" type="string"/>
       <bind nodeset="/covid19-rdt-provision/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
-      <bind nodeset="/covid19-rdt-provision/patient_name" type="string" calculate="../inputs/contact/name" jr:constraintMsg="jr:itext('/covid19-rdt-provision/patient_name:jr:constraintMsg')"/>
+      <bind nodeset="/covid19-rdt-provision/patient_name" type="string" jr:constraintMsg="jr:itext('/covid19-rdt-provision/patient_name:jr:constraintMsg')" calculate="../inputs/contact/name"/>
       <bind nodeset="/covid19-rdt-provision/patient_age_in_years" type="string" calculate="floor( difference-in-months(  /covid19-rdt-provision/inputs/contact/date_of_birth , today() ) div 12 )"/>
       <bind nodeset="/covid19-rdt-provision/patient_age_in_months" type="string" calculate="difference-in-months(  /covid19-rdt-provision/inputs/contact/date_of_birth , today() )"/>
       <bind nodeset="/covid19-rdt-provision/patient_age_in_days" type="string" calculate="floor(decimal-date-time(today()) - decimal-date-time( /covid19-rdt-provision/inputs/contact/date_of_birth ) )"/>
@@ -742,7 +742,7 @@ if( /covid19-rdt-provision/patient_age_in_months  &lt; 12,
 concat( /covid19-rdt-provision/patient_age_in_months , ' months old'), 
 concat( /covid19-rdt-provision/patient_age_in_years , ' years old')))"/>
       <bind nodeset="/covid19-rdt-provision/preview_time_expired" type="string" calculate="format-date-time(parse-timestamp-to-date( /covid19-rdt-provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_expired ), &quot;%H:%M:%S on %e %b, %Y&quot;)"/>
-      <bind nodeset="/covid19-rdt-provision/test-reference/case_id" type="string" required="true()" calculate="coalesce(., uuid())"/>
+      <bind nodeset="/covid19-rdt-provision/test-reference/session_id" type="string" required="true()" calculate="coalesce(., uuid())"/>
       <bind nodeset="/covid19-rdt-provision/test-reference/test_id" type="string" required="true()" calculate="coalesce(., uuid())"/>
       <bind nodeset="/covid19-rdt-provision/test-reference/facility_id" type="string" calculate="if(../../inputs/contact/parent/parent/_id != '', ../../inputs/contact/parent/parent/_id, ../../inputs/contact/parent/_id)"/>
       <bind nodeset="/covid19-rdt-provision/test-reference/facility_name" type="string" calculate="if(../../inputs/contact/parent/parent/_id != '', ../../inputs/contact/parent/parent/name, ../../inputs/contact/parent/name)"/>
@@ -754,7 +754,7 @@ concat( /covid19-rdt-provision/patient_age_in_years , ' years old')))"/>
       <bind nodeset="/covid19-rdt-provision/test-reference/other_test_setting" type="string" relevant="(selected(../other_facility_test_setting , 'community_other') or selected(../other_facility_test_setting , 'healthcare_other'))"/>
       <bind nodeset="/covid19-rdt-provision/test-reference/test_reason" type="select"/>
       <bind nodeset="/covid19-rdt-provision/test-reference/symptoms" type="select"/>
-      <bind nodeset="/covid19-rdt-provision/test-reference/days_since_symptoms_began" type="int" constraint=". &amp;gt;= 1 and . &amp;lt;= 200" relevant="../symptoms != ''" jr:constraintMsg="jr:itext('/covid19-rdt-provision/test-reference/days_since_symptoms_began:jr:constraintMsg')"/>
+      <bind nodeset="/covid19-rdt-provision/test-reference/days_since_symptoms_began" type="int" jr:constraintMsg="jr:itext('/covid19-rdt-provision/test-reference/days_since_symptoms_began:jr:constraintMsg')" constraint=". &amp;gt;= 1 and . &amp;lt;= 200" relevant="../symptoms != ''"/>
       <bind nodeset="/covid19-rdt-provision/spec-lot/specimen_type" type="select1"/>
       <bind nodeset="/covid19-rdt-provision/spec-lot/specimen_type_other" type="string" relevant="selected(../specimen_type, 'other')"/>
       <bind nodeset="/covid19-rdt-provision/spec-lot/rdt_lot" type="string"/>

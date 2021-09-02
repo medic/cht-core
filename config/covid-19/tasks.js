@@ -45,7 +45,7 @@ module.exports = [
         modifyContent: function(content, contact, report) {
           content.patient_uuid = getField(report, 'patient_uuid');
           content['test-information'] = {
-            case_id: getField(report, 'test-reference.case_id'),
+            session_id: getField(report, 'test-reference.session_id'),
             administrator_id: getField(report, 'inputs.user.contact_id'),
             administrator_name: getField(report, 'inputs.user.name'),
             test_id: getField(report, 'test-reference.test_id'),
