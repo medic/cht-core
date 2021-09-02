@@ -12,7 +12,7 @@ module.exports = [
     icon: 'icon-follow-up',
     title: 'task.covid19.capture.title',
     appliesTo: 'reports',
-    appliesToType: ['covid19:rdt:provision'],
+    appliesToType: ['covid19_rdt_provision'],
     appliesIf: (contact, report) => {
       return !!getField(report, 'test-reference.test_id');
     },
@@ -22,7 +22,7 @@ module.exports = [
       }
 
       const captureReport = contact.reports.find(reportDoc => {
-        if (reportDoc.form !== 'covid19:rdt:capture') {
+        if (reportDoc.form !== 'covid19_rdt_capture') {
           return false;
         }
         const testId = getField(report, 'test-reference.test_id');
@@ -36,12 +36,12 @@ module.exports = [
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);
       const endTime = addDays(dueDate, event.end + 1).getTime();
 
-      return isFormArraySubmittedInWindow(contact.reports, ['covid19:rdt:capture'], startTime, endTime);
+      return isFormArraySubmittedInWindow(contact.reports, ['covid19_rdt_capture'], startTime, endTime);
     },
     actions: [
       {
         type: 'report',
-        form: 'covid19:rdt:capture',
+        form: 'covid19_rdt_capture',
         modifyContent: function(content, contact, report) {
           content.patient_uuid = getField(report, 'patient_uuid');
           content['test-information'] = {
@@ -56,14 +56,14 @@ module.exports = [
               getField(report, 'test-reference.other_facility_address') ,
             facility_test_setting: getField(report, 'test-reference.other_facility_test_setting'),
             other_test_setting: getField(report, 'test-reference.other_test_setting'),
-            gps: getField(report, 'test-reference.gps'),
             test_reason: getField(report, 'test-reference.test_reason'),
             symptoms: getField(report, 'test-reference.symptoms'),
             days_since_symptoms_began: getField(report, 'test-reference.days_since_symptoms_began'),
-            specimen_type: getField(report, 'test-reference.specimen_type'),
-            specimen_type_other: getField(report, 'test-reference.specimen_type_other'),
-            rdt_lot: getField(report, 'test-reference.rdt_lot'),
-            additional_notes: getField(report, 'test-reference.additional_notes'),
+            specimen_type: getField(report, 'spec-lot.specimen_type'),
+            specimen_type_other: getField(report, 'spec-lot.specimen_type_other'),
+            rdt_lot: getField(report, 'spec-lot.rdt_lot'),
+            rdt_lot_expiry_date: getField(report, 'spec-lot.rdt_lot_expiry_date'),
+            additional_notes: getField(report, 'spec-lot.additional_notes'),
           };
         }
       }
@@ -83,7 +83,7 @@ module.exports = [
     icon: 'icon-follow-up',
     title: 'task.covid19.repeat.title',
     appliesTo: 'reports',
-    appliesToType: ['covid19:rdt:capture'],
+    appliesToType: ['covid19_rdt_capture'],
     appliesIf: (contact, report) => {
       return getField(report, 'repeat-test.repeat_test') === 'yes';
     },
@@ -93,7 +93,7 @@ module.exports = [
       }
 
       const provisionReport = contact.reports.find(reportDoc => {
-        if (reportDoc.form !== 'covid19:rdt:provision') {
+        if (reportDoc.form !== 'covid19_rdt_provision') {
           return false;
         }
         return getField(reportDoc, 'patient_uuid') === getField(report, 'patient_uuid');
@@ -106,12 +106,12 @@ module.exports = [
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);
       const endTime = addDays(dueDate, event.end + 1).getTime();
 
-      return isFormArraySubmittedInWindow(contact.reports, ['covid19:rdt:provision'], startTime, endTime);
+      return isFormArraySubmittedInWindow(contact.reports, ['covid19_rdt_provision'], startTime, endTime);
     },
     actions: [
       {
         type: 'report',
-        form: 'covid19:rdt:provision',
+        form: 'covid19_rdt_provision',
         modifyContent: function(content, contact, report) {
           content.patient_uuid = getField(report, 'patient_uuid');
         }
