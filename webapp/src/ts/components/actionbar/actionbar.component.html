@@ -195,14 +195,14 @@
             </ul>
           </span>
 
-          <span test-id= "rhs_add_place" *ngFor="let group of actionBar?.right?.childTypes" mmAuth="{{ group.permission }}">
+          <span test-id= "rhs_add_contact" *ngFor="let group of actionBar?.right?.childTypes" mmAuth="{{ group.permission }}">
             <ng-container *ngIf="group.types?.length > 1">
               <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown">
                 <span class="fa-stack">
                   <i class="fa {{ group.menu_icon }}"></i>
                   <i class="fa fa-plus fa-stack-1x"></i>
                 </span>
-                <p>{{ group.menu_key | translate}}</p>
+                <p attr.test-key="{{group.menu_key}}">{{ group.menu_key | translate}}</p>
               </a>
               <ul class="dropdown-menu mm-dropdown-menu with-icon">
                 <li *ngFor="let type of group.types; trackBy: trackById">
@@ -222,7 +222,7 @@
                 <i [innerHTML]="group.types[0]?.icon | resourceIcon"></i>
                 <i class="fa fa-plus fa-stack-1x"></i>
               </span>
-              <p>{{ group.types[0]?.create_key | translate}}</p>
+              <p attr.test-key="{{group.types[0]?.create_key}}">{{ group.types[0]?.create_key | translate}}</p>
             </a>
           </span>
 

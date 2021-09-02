@@ -24,67 +24,6 @@ const custom_type_doctor = {
 
 };
 
-// const customTypes = [
-//   {
-//     id: 'ngo',
-//     name_key: 'contact.type.ngo',
-//     group_key: 'contact.type.ngo.plural',
-//     create_key: 'contact.type.ngo.new',
-//     edit_key: 'contact.type.ngo.edit',
-//     icon: 'medic - district - hospital',
-//     create_form: 'form: contact: ngo: create',
-//     edit_form: 'form: contact: ngo: edit'
-//   },
-//   {
-//     id: 'office',
-//     name_key: 'contact.type.office',
-//     group_key: 'contact.type.office.plural',
-//     create_key: 'contact.type.office.new',
-//     edit_key: 'contact.type.place.edit',
-//     icon: 'medic - district - hospital',
-//     create_form: 'form: contact: office: create',
-//     edit_form: 'form: contact: office: edit',
-//     parents: [
-//       'ngo',
-//       'district_hospital'
-//     ]
-//   },
-//   {
-//     id: 'family',
-//     name_key: 'contact.type.family',
-//     group_key: 'contact.type.family.plural',
-//     create_key: 'contact.type.family.new',
-//     edit_key: 'contact.type.place.edit',
-//     icon: 'medic - district - hospital',
-//     create_form: 'form: contact: family: create',
-//     edit_form: 'form: contact: family: edit',
-//     parents: [
-//       'health_center',
-//       'office'
-//     ]
-//   },
-//   {
-//     id: 'doctor',
-//     name_key: 'contact.type.doctor',
-//     group_key: 'contact.type.doctor.plural',
-//     create_key: 'contact.type.doctor.new',
-//     edit_key: 'contact.type.doctor.edit',
-//     primary_contact_key: 'clinic.field.contact',
-//     parents: [
-//       'district_hospital',
-//       'health_center',
-//       'clinic',
-//       'ngo',
-//       'office',
-//       'family'
-//     ],
-//     icon: 'medic-person',
-//     create_form: 'form:contact:doctor:create',
-//     edit_form: 'form:contact:doctor:edit',
-//     person: true
-//   }];
-
-
 const customType = () => {
   return new Factory()
     .option('name', 'ngo')
