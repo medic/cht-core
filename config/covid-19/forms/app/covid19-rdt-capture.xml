@@ -68,7 +68,7 @@
         </translation>
       </itext>
       <instance>
-        <covid19-rdt-capture delimiter="#" id="covid19:rdt:capture" prefix="J1!covid19:rdt:capture!" version="2021-09-02_06-09">
+        <covid19-rdt-capture delimiter="#" id="covid19:rdt:capture" prefix="J1!covid19:rdt:capture!" version="2021-09-02_11-00">
           <inputs tag="hidden">
             <source>user</source>
             <contact>

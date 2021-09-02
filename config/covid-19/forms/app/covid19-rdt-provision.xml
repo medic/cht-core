@@ -20,6 +20,9 @@
           <text id="/covid19-rdt-provision/patient_name:jr:constraintMsg">
             <value>-</value>
           </text>
+          <text id="/covid19-rdt-provision/provision/note_continue:label">
+            <value>RDT Provisioned. Click "Next" to continue.</value>
+          </text>
           <text id="/covid19-rdt-provision/provision/rdtoolkit-provision/note_instructions_provision:label">
             <value>Click on "Launch app" to provision a Covid-19 rapid diagnostic test to this patient.</value>
           </text>
@@ -64,7 +67,7 @@
 <output value=" /covid19-rdt-provision/inputs/contact/sex "/>
 <output value=" /covid19-rdt-provision/age "/></value></text>
           <text id="/covid19-rdt-provision/summary/summary_test_expire:label">
-            <value>Results expire at <output value=" /covid19-rdt-provision/summary/preview_time_expired "/> - be sure to complete the task before this time.</value>
+            <value>Results expire at <output value=" /covid19-rdt-provision/preview_time_expired "/> - be sure to complete the task before this time.</value>
           </text>
           <text id="/covid19-rdt-provision/summary/summary_test_name:label">
             <value><output value=" /covid19-rdt-provision/summary/rdt_loinc_long_common_name "/></value>
@@ -311,6 +314,12 @@
           <text id="/covid19-rdt-provision/patient_uuid:label">
             <value>-</value>
           </text>
+          <text id="/covid19-rdt-provision/preview_time_expired:label">
+            <value>-</value>
+          </text>
+          <text id="/covid19-rdt-provision/provision/note_continue:label">
+            <value>-</value>
+          </text>
           <text id="/covid19-rdt-provision/provision/rdtoolkit-provision/action:label">
             <value>-</value>
           </text>
@@ -399,9 +408,6 @@
             <value>-</value>
           </text>
           <text id="/covid19-rdt-provision/spec-lot:label">
-            <value>-</value>
-          </text>
-          <text id="/covid19-rdt-provision/summary/preview_time_expired:label">
             <value>-</value>
           </text>
           <text id="/covid19-rdt-provision/summary/rdt_loinc_code:label">
@@ -584,7 +590,7 @@
         </translation>
       </itext>
       <instance>
-        <covid19-rdt-provision delimiter="#" id="covid19:rdt:provision" prefix="J1!covid19:rdt:provision!" version="2021-09-02_06-17">
+        <covid19-rdt-provision delimiter="#" id="covid19:rdt:provision" prefix="J1!covid19:rdt:provision!" version="2021-09-02_11-44">
           <inputs>
             <meta>
               <location>
@@ -628,6 +634,7 @@
           <patient_age_in_months/>
           <patient_age_in_days/>
           <age/>
+          <preview_time_expired>0</preview_time_expired>
           <test-reference>
             <case_id/>
             <test_id/>
@@ -676,12 +683,12 @@
                 </rdt_session_bundle>
               </android-app-outputs>
             </rdtoolkit-provision>
+            <note_continue/>
           </provision>
           <summary>
             <syndrome_test_type>COVID-19</syndrome_test_type>
             <rdt_loinc_code>94558-4</rdt_loinc_code>
             <rdt_loinc_long_common_name>SARS-CoV-2 (COVID-19) Ag [Presence] in Respiratory specimen by Rapid immunoassay</rdt_loinc_long_common_name>
-            <preview_time_expired/>
             <summary_header/>
             <summary_details/>
             <summary_name/>
@@ -726,6 +733,7 @@ concat( /covid19-rdt-provision/patient_age_in_days , ' days old'),
 if( /covid19-rdt-provision/patient_age_in_months  &lt; 12, 
 concat( /covid19-rdt-provision/patient_age_in_months , ' months old'), 
 concat( /covid19-rdt-provision/patient_age_in_years , ' years old')))" nodeset="/covid19-rdt-provision/age" type="string"/>
+      <bind calculate="format-date-time(parse-timestamp-to-date( /covid19-rdt-provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_expired ), &quot;%H:%M:%S on %e %b, %Y&quot;)" nodeset="/covid19-rdt-provision/preview_time_expired" type="string"/>
       <bind calculate="coalesce(., uuid())" nodeset="/covid19-rdt-provision/test-reference/case_id" required="true()" type="string"/>
       <bind calculate="coalesce(., uuid())" nodeset="/covid19-rdt-provision/test-reference/test_id" required="true()" type="string"/>
       <bind calculate="if(../../inputs/contact/parent/parent/_id != '', ../../inputs/contact/parent/parent/_id, ../../inputs/contact/parent/_id)" nodeset="/covid19-rdt-provision/test-reference/facility_id" type="string"/>
@@ -745,7 +753,7 @@ concat( /covid19-rdt-provision/patient_age_in_years , ' years old')))" nodeset="
       <bind nodeset="/covid19-rdt-provision/spec-lot/rdt_lot_expiry_date" type="date"/>
       <bind nodeset="/covid19-rdt-provision/spec-lot/additional_notes" type="string"/>
       <bind nodeset="/covid19-rdt-provision/provision/rdtoolkit-provision/action" type="string"/>
-      <bind nodeset="/covid19-rdt-provision/provision/rdtoolkit-provision/note_instructions_provision" readonly="true()" type="string"/>
+      <bind nodeset="/covid19-rdt-provision/provision/rdtoolkit-provision/note_instructions_provision" readonly="true()" relevant="string-length( /covid19-rdt-provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_state ) = 0" type="string"/>
       <bind calculate=" /covid19-rdt-provision/test-reference/test_id " nodeset="/covid19-rdt-provision/provision/rdtoolkit-provision/android-app-inputs/rdt_session_id" type="string"/>
       <bind nodeset="/covid19-rdt-provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_classifier_mode" type="string"/>
       <bind nodeset="/covid19-rdt-provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_session_type" type="string"/>
@@ -759,11 +767,11 @@ concat( /covid19-rdt-provision/patient_age_in_years , ' years old')))" nodeset="
       <bind nodeset="/covid19-rdt-provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_resolved" type="string"/>
       <bind nodeset="/covid19-rdt-provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_expired" type="string"/>
       <bind nodeset="/covid19-rdt-provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_test_profile" type="string"/>
+      <bind nodeset="/covid19-rdt-provision/provision/note_continue" readonly="true()" relevant="string-length( /covid19-rdt-provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_state ) &gt; 0" type="string"/>
       <bind nodeset="/covid19-rdt-provision/summary" relevant=" /covid19-rdt-provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_state  != ''"/>
       <bind nodeset="/covid19-rdt-provision/summary/syndrome_test_type" required="true()" type="string"/>
       <bind nodeset="/covid19-rdt-provision/summary/rdt_loinc_code" required="true()" type="string"/>
       <bind nodeset="/covid19-rdt-provision/summary/rdt_loinc_long_common_name" required="true()" type="string"/>
-      <bind calculate="format-date-time(parse-timestamp-to-date( /covid19-rdt-provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_expired ), &quot;%H:%M:%S on %e %b, %Y&quot;)" nodeset="/covid19-rdt-provision/summary/preview_time_expired" type="string"/>
       <bind nodeset="/covid19-rdt-provision/summary/summary_header" readonly="true()" type="string"/>
       <bind nodeset="/covid19-rdt-provision/summary/summary_details" readonly="true()" type="string"/>
       <bind nodeset="/covid19-rdt-provision/summary/summary_name" readonly="true()" type="string"/>
@@ -1007,6 +1015,9 @@ concat( /covid19-rdt-provision/patient_age_in_years , ' years old')))" nodeset="
           </group>
         </group>
       </group>
+      <input ref="/covid19-rdt-provision/provision/note_continue">
+        <label ref="jr:itext('/covid19-rdt-provision/provision/note_continue:label')"/>
+      </input>
     </group>
     <group appearance="field-list summary" ref="/covid19-rdt-provision/summary">
       <input appearance="h2" ref="/covid19-rdt-provision/summary/summary_header">
