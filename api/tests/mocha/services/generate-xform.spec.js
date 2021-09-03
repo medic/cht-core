@@ -72,7 +72,7 @@ describe('generate-xform service', () => {
 
     it('replaces multimedia src elements', () => runTest('multimedia'));
 
-    it('correctly replaces models with nested "</root>" - #5971', () => runTest('nested-root'));
+    it('correctly handles models with nested "</root>" - #5971', () => runTest('nested-root'));
 
     it('replaces markdown elements', () => runTest('markdown'));
 

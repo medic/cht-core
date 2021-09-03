@@ -7,22 +7,12 @@ const db = require('../db');
 const formsService = require('./forms');
 const transformer = require('enketo-transformer');
 
-const MODEL_ROOT_OPEN = '<root xmlns="http://www.w3.org/2002/xforms" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema">';
-const ROOT_CLOSE = '</root>';
 const JAVAROSA_SRC = / src="jr:\/\//gi;
 const MEDIA_SRC_ATTR = ' data-media-src="';
 
 const transform = (formXml) => {
   return transformer.transform( {
-    // required string of XForm
     xform: formXml,
-    // optional string, to add theme if no theme is defined in the XForm
-    // theme: 'sometheme',
-    // optional map, to replace jr://..../myfile.png URLs
-    // media: {
-    //   'myfile.png' : '/path/to/somefile.png',
-    //   'myfile.mp3' : '/another/path/to/2.mp3'
-    // },
     // optional preprocess function that transforms the XForm (as libXMLJs object) to
     // e.g. correct incompatible XForm syntax before Enketo's transformation takes place
     // preprocess: doc => doc,
@@ -34,19 +24,6 @@ const transform = (formXml) => {
     });
 };
 
-const generateForm = form => {
-  return form.replace(JAVAROSA_SRC, MEDIA_SRC_ATTR);
-};
-
-const generateModel = model => {
-  model = model.replace(MODEL_ROOT_OPEN, '');
-  const index = model.lastIndexOf(ROOT_CLOSE);
-  if (index === -1) {
-    return model;
-  }
-  return model.slice(0, index) + model.slice(index + ROOT_CLOSE.length);
-};
-
 const getEnketoForm = doc => {
   const collect = doc.context && doc.context.collect;
   return !collect && formsService.getXFormAttachment(doc);
@@ -55,8 +32,8 @@ const getEnketoForm = doc => {
 const generate = formXml => {
   return transform(formXml)
     .then((formData) => ({
-      form: generateForm(formData.form),
-      model: generateModel(formData.model)
+      form: formData.form.replace(JAVAROSA_SRC, MEDIA_SRC_ATTR),
+      model: formData.model
     }));
 };
 
