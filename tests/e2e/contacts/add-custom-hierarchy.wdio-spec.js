@@ -124,6 +124,7 @@ describe('Creating custom places', () => {
       .build({ name: 'lowlvl', type: 'contact', contact_type: customLowLevel.id, parent: { _id: topLevel._id } });
     await utils.saveDocs([topLevel, midLevel, lowLevel]);
     await commonPage.goToPeople(topLevel._id);
+    await commonPage.waitForLoaders();
     const displayedListOfContacts = await contactsPage.allContactsList();
     const expected = [
       {
