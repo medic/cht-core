@@ -287,15 +287,16 @@ module.exports = function(grunt) {
       },
       'libraries-to-patch': {
         expand: true,
-        cwd: 'webapp/node_modules',
         src: [
-          'bootstrap-daterangepicker/**',
-          'enketo-core/**',
-          'font-awesome/**',
-          'messageformat/**',
-          'moment/**'
+          'webapp/node_modules/bootstrap-daterangepicker/**',
+          'webapp/node_modules/enketo-core/**',
+          'webapp/node_modules/font-awesome/**',
+          'webapp/node_modules/messageformat/**',
+          'webapp/node_modules/moment/**',
+          'webapp/node_modules/pouchdb-browser/**',
+          'api/node_modules/enketo-transformer/**'
         ],
-        dest: 'webapp/node_modules_backup',
+        rename: (dest, src) => src.replace('node_modules', 'node_modules_backup'),
       },
     },
     exec: {
@@ -481,16 +482,17 @@ module.exports = function(grunt) {
       'check-version': `node scripts/ci/check-versions.js`,
       'undo-patches': {
         cmd: function() {
-          const modulesToPatch = [
+          const webappModulesToPatch = [
             'bootstrap-daterangepicker',
             'enketo-core',
             'font-awesome',
             'moment',
             'pouchdb-browser',
           ];
-          return modulesToPatch.map(module => {
-            const backupPath = 'webapp/node_modules_backup/' + module;
-            const modulePath = 'webapp/node_modules/' + module;
+          const apiModulesToPatch = ['enketo-transformer'];
+          const restoreFromBackup = (subDirectory, module) => {
+            const backupPath = `${subDirectory}/node_modules_backup/${module}`;
+            const modulePath = `${subDirectory}/node_modules/${module}`;
             return `
               [ -d ${backupPath} ] &&
               rm -rf ${modulePath} &&
@@ -498,7 +500,10 @@ module.exports = function(grunt) {
               echo "Module restored: ${module}" ||
               echo "No restore required for: ${module}"
             `;
-          }).join(' && ');
+          };
+          const undoWebappPatches = webappModulesToPatch.map(module => restoreFromBackup('webapp', module));
+          const undoApiPatches = apiModulesToPatch.map(module => restoreFromBackup('api', module));
+          return undoWebappPatches.concat(undoApiPatches).join(' && ');
         },
       },
       'test-config-standard': {
@@ -566,6 +571,10 @@ module.exports = function(grunt) {
             // patch pouchdb to catch unhandled rejections
             // https://github.com/medic/cht-core/issues/6626
             'patch webapp/node_modules/pouchdb-browser/lib/index.js < webapp/patches/pouchdb-unhandled-rejection.patch',
+
+            // patch enketo xsl to allow custom xml_type values
+            // https://github.com/enketo/enketo-transformer/issues/121
+            'patch api/node_modules/enketo-transformer/src/xsl/openrosa2html5form.xsl < api/patches/enketo-openrosa2html5form.patch',
           ];
           return patches.join(' && ');
         },

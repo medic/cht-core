@@ -1,6 +1,4 @@
-
-  <model>
-    <instance>
+<model><instance>
         <delivery xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" delimiter="#" id="delivery" prefix="J1!delivery!" version="2019-09-04 07:45:50">
           <inputs>
             <meta>
@@ -269,9 +267,7 @@
             <instanceID/>
           </meta>
         </delivery>
-      </instance>
-    <instance id="contact-summary"/>
-    <instance id="yes_no">
+      </instance><instance id="contact-summary"/><instance id="yes_no">
         <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
           <item>
             <itextId>static_instance-yes_no-0</itextId>
@@ -282,8 +278,7 @@
             <name>no</name>
           </item>
         </root>
-      </instance>
-    <instance id="modes">
+      </instance><instance id="modes">
         <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
           <item>
             <itextId>static_instance-modes-0</itextId>
@@ -294,8 +289,7 @@
             <name>cesarean</name>
           </item>
         </root>
-      </instance>
-    <instance id="conductors">
+      </instance><instance id="conductors">
         <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
           <item>
             <itextId>static_instance-conductors-0</itextId>
@@ -310,8 +304,7 @@
             <name>other</name>
           </item>
         </root>
-      </instance>
-    <instance id="life_conditions_woman">
+      </instance><instance id="life_conditions_woman">
         <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
           <item>
             <itextId>static_instance-life_conditions_woman-0</itextId>
@@ -326,8 +319,7 @@
             <name>deceased</name>
           </item>
         </root>
-      </instance>
-    <instance id="life_conditions_baby">
+      </instance><instance id="life_conditions_baby">
         <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
           <item>
             <itextId>static_instance-life_conditions_baby-0</itextId>
@@ -338,8 +330,7 @@
             <name>alive_unwell</name>
           </item>
         </root>
-      </instance>
-    <instance id="places">
+      </instance><instance id="places">
         <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
           <item>
             <itextId>static_instance-places-0</itextId>
@@ -354,8 +345,7 @@
             <name>other</name>
           </item>
         </root>
-      </instance>
-    <instance id="babies_delivered">
+      </instance><instance id="babies_delivered">
         <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
           <item>
             <itextId>static_instance-babies_delivered-0</itextId>
@@ -374,8 +364,7 @@
             <name>other</name>
           </item>
         </root>
-      </instance>
-    <instance id="babies_alive">
+      </instance><instance id="babies_alive">
         <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
           <item>
             <itextId>static_instance-babies_alive-0</itextId>
@@ -403,8 +392,7 @@
             <count>4</count>
           </item>
         </root>
-      </instance>
-    <instance id="male_female">
+      </instance><instance id="male_female">
         <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
           <item>
             <itextId>static_instance-male_female-0</itextId>
@@ -415,8 +403,7 @@
             <name>female</name>
           </item>
         </root>
-      </instance>
-    <instance id="knows_weight">
+      </instance><instance id="knows_weight">
         <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
           <item>
             <itextId>static_instance-knows_weight-0</itextId>
@@ -427,8 +414,7 @@
             <name>yes</name>
           </item>
         </root>
-      </instance>
-    <instance id="knows_length">
+      </instance><instance id="knows_length">
         <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
           <item>
             <itextId>static_instance-knows_length-0</itextId>
@@ -439,8 +425,7 @@
             <name>yes</name>
           </item>
         </root>
-      </instance>
-    <instance id="vaccines">
+      </instance><instance id="vaccines">
         <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
           <item>
             <itextId>static_instance-vaccines-0</itextId>
@@ -459,8 +444,7 @@
             <name>none</name>
           </item>
         </root>
-      </instance>
-    <instance id="pnc_visits">
+      </instance><instance id="pnc_visits">
         <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
           <item>
             <itextId>static_instance-pnc_visits-0</itextId>
@@ -488,22 +472,18 @@
             <count>0</count>
           </item>
         </root>
-      </instance>
-    <instance id="translate_woman_label">
+      </instance><instance id="translate_woman_label">
         <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
           <item>
             <itextId>static_instance-translate_woman_label-0</itextId>
             <name>woman</name>
           </item>
         </root>
-      </instance>
-    <instance id="translate_woman_start_label">
+      </instance><instance id="translate_woman_start_label">
         <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
           <item>
             <itextId>static_instance-translate_woman_start_label-0</itextId>
             <name>woman-start</name>
           </item>
-        </root>
-      </instance>
-  </model>
-
+        
+      </instance></model>

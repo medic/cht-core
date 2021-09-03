@@ -1,0 +1,23 @@
+*** openrosa2html5form_orig.xsl	2021-09-02 13:57:08.376018619 -0500
+--- openrosa2html5form.xsl	2021-09-02 13:53:25.339784432 -0500
+***************
+*** 1793,1802 ****
+              <xsl:when test="$xml_type = 'barcode' or $xml_type = 'geopoint' or $xml_type = 'geotrace' or $xml_type = 'geoshape'" >
+                  <xsl:value-of select="string('text')" />
+              </xsl:when>
+!             <xsl:otherwise>
+!                 <xsl:value-of select="$error"/>
+!                 <xsl:message terminate="no">ERROR: Unsupported data type '<xsl:value-of select="$xml_type"/>' found.</xsl:message>
+!             </xsl:otherwise>
+          </xsl:choose>
+      </xsl:template>
+  </xsl:stylesheet>
+--- 1793,1800 ----
+              <xsl:when test="$xml_type = 'barcode' or $xml_type = 'geopoint' or $xml_type = 'geotrace' or $xml_type = 'geoshape'" >
+                  <xsl:value-of select="string('text')" />
+              </xsl:when>
+!             <xsl:when test="$xml_type = 'tel'">tel</xsl:when>
+!             <xsl:otherwise>text</xsl:otherwise>
+          </xsl:choose>
+      </xsl:template>
+  </xsl:stylesheet>

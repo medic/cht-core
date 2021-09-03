@@ -2,136 +2,49 @@
  * XForm generation service
  * @module generate-xform
  */
-const childProcess = require('child_process');
-const path = require('path');
-const htmlParser = require('node-html-parser');
 const logger = require('../logger');
 const db = require('../db');
 const formsService = require('./forms');
+const transformer = require('enketo-transformer');
 
 const MODEL_ROOT_OPEN = '<root xmlns="http://www.w3.org/2002/xforms" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema">';
 const ROOT_CLOSE = '</root>';
 const JAVAROSA_SRC = / src="jr:\/\//gi;
 const MEDIA_SRC_ATTR = ' data-media-src="';
 
-const FORM_STYLESHEET = path.join(__dirname, '../xsl/openrosa2html5form.xsl');
-const MODEL_STYLESHEET = path.join(__dirname, '../../node_modules/enketo-transformer/src/xsl/openrosa2xmlmodel.xsl');
-
-const transform = (formXml, stylesheet) => {
-  return new Promise((resolve, reject) => {
-    const xsltproc = childProcess.spawn('xsltproc', [ stylesheet, '-' ]);
-    let stdout = '';
-    let stderr = '';
-    xsltproc.stdout.on('data', data => stdout += data);
-    xsltproc.stderr.on('data', data => stderr += data);
-    xsltproc.stdin.setEncoding('utf-8');
-    xsltproc.stdin.write(formXml);
-    xsltproc.stdin.end();
-    xsltproc.on('close', (code, signal) => {
-      if (code !== 0 || signal || stderr.length) {
-        let errorMsg = `Error transforming xml. xsltproc returned code "${code}", and signal "${signal}"`;
-        if (stderr.length) {
-          errorMsg += '. xsltproc stderr output:\n' + stderr;
-        }
-        return reject(new Error(errorMsg));
-      }
-      if (!stdout) {
-        return reject(new Error(`Error transforming xml. xsltproc returned no error but no output.`));
-      }
-      resolve(stdout);
-    });
-    xsltproc.on('error', err => {
+const transform = (formXml) => {
+  return transformer.transform( {
+    // required string of XForm
+    xform: formXml,
+    // optional string, to add theme if no theme is defined in the XForm
+    // theme: 'sometheme',
+    // optional map, to replace jr://..../myfile.png URLs
+    // media: {
+    //   'myfile.png' : '/path/to/somefile.png',
+    //   'myfile.mp3' : '/another/path/to/2.mp3'
+    // },
+    // optional preprocess function that transforms the XForm (as libXMLJs object) to
+    // e.g. correct incompatible XForm syntax before Enketo's transformation takes place
+    // preprocess: doc => doc,
+    // TODO Might be able to replace some existing transform logic here if libXMLJs is better...
+  } )
+    .catch(err => {
       logger.error(err);
-      return reject(new Error('Child process errored attempting to transform xml'));
+      return Promise.reject(new Error(`Error attempting to transform xml: ${err}`));
     });
-  });
 };
 
-const replaceMarkdown = html => {
-  return html
-    // headings
-    .replace(/\n# (.*)\n/gm, '<h1>$1</h1>')
-    .replace(/\n## (.*)\n/gm, '<h2>$1</h2>')
-    .replace(/\n### (.*)\n/gm, '<h3>$1</h3>')
-    .replace(/\n#### (.*)\n/gm, '<h4>$1</h4>')
-    .replace(/\n##### (.*)\n/gm, '<h5>$1</h5>')
-
-    // font styles
-    .replace(/__([^\s]([^_]*[^\s])?)__/gm, '<strong>$1</strong>')
-    .replace(/\*\*([^\s]([^*]*[^\s])?)\*\*/gm, '<strong>$1</strong>')
-    .replace(/\s_([^_\s]([^_]*[^_\s])?)_/gm, ' <em>$1</em>')
-    .replace(/\*([^*\s]([^*]*[^*\s])?)\*/gm, '<em>$1</em>')
-
-    // urls containing tags
-    .replace(
-      /\[([^\]]*)\]\(([^)]*<[^>]*>[^)]*)\)/gm,
-      '<a href="#" target="_blank" rel="noopener noreferrer" class="dynamic-url">' +
-      '$1<span class="url hidden">$2</span>' +
-      '</a>'
-    )
-
-    // plain urls
-    .replace(/\[([^\]]*)\]\(([^)]+)\)/gm, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-
-    // new lines
-    .replace(/\n/gm, '<br />')
-
-    // convert embedded html
-    .replace(/&lt;([\s\S]*?)&gt;/gm, '<$1>')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, '\'');
+const generateForm = form => {
+  return form.replace(JAVAROSA_SRC, MEDIA_SRC_ATTR);
 };
 
-// inspired by enketo/enketo-transformer
-const replaceAllMarkdown = formString => {
-
-  const form = htmlParser.parse(formString).querySelector('form');
-  const replacements = {};
-
-  const questions = form.querySelectorAll('span.question-label');
-  const hints = form.querySelectorAll('span.or-hint');
-  const spans = questions.concat(hints);
-  spans.forEach((span, i) => {
-    const original = span.innerHTML;
-    const rendered = replaceMarkdown(original);
-    if (rendered && original !== rendered) {
-      const key = `~~~${i}~~~`;
-      replacements[key] = rendered;
-      span.set_content(key);
-    }
-  });
-
-  let result = form.toString();
-  Object.keys(replacements).forEach(key => {
-    const replacement = replacements[key];
-    if (replacement) {
-      result = result.replace(key, replacement);
-    }
-  });
-  return result;
-};
-
-const generateForm = formXml => {
-  return transform(formXml, FORM_STYLESHEET).then(form => {
-    form = replaceAllMarkdown(form);
-    // rename the media src attributes so the browser doesn't try and
-    // request them, instead leaving it to custom code in the Enketo
-    // service to load them asynchronously
-    return form.replace(JAVAROSA_SRC, MEDIA_SRC_ATTR);
-  });
-};
-
-const generateModel = formXml => {
-  return transform(formXml, MODEL_STYLESHEET).then(model => {
-    // remove the root node leaving just the model
-    model = model.replace(MODEL_ROOT_OPEN, '');
-    const index = model.lastIndexOf(ROOT_CLOSE);
-    if (index === -1) {
-      return model;
-    }
-    return model.slice(0, index) + model.slice(index + ROOT_CLOSE.length);
-  });
+const generateModel = model => {
+  model = model.replace(MODEL_ROOT_OPEN, '');
+  const index = model.lastIndexOf(ROOT_CLOSE);
+  if (index === -1) {
+    return model;
+  }
+  return model.slice(0, index) + model.slice(index + ROOT_CLOSE.length);
 };
 
 const getEnketoForm = doc => {
@@ -140,8 +53,11 @@ const getEnketoForm = doc => {
 };
 
 const generate = formXml => {
-  return Promise.all([ generateForm(formXml), generateModel(formXml) ])
-    .then(([ form, model ]) => ({ form, model }));
+  return transform(formXml)
+    .then((formData) => ({
+      form: generateForm(formData.form),
+      model: generateModel(formData.model)
+    }));
 };
 
 const updateAttachment = (doc, updated, name, type) => {
@@ -243,5 +159,4 @@ module.exports = {
    *          the stylesheet rules defined (XSL transformations)
    */
   generate
-
 };
