@@ -10,17 +10,21 @@ const addPerson = 'Add person';
 let translations;
 let forms;
 
-// Custom Top level
+//Custom Hierarchy
+// customTopLevel -> person1
+//    customMidLevel -> childPlaceToCustomTopLevel
+//        customLowLevel -> firstChildPlaceToTopLevel, secondChildPlaceToTopLevel
+//        customParentWithMultiplePersons -> person2, person3
+// secondTopLevel
+
 const customTopLevel = customTypeFactory.customType().build();
 const secondTopLevel = customTypeFactory.customType().build({}, { name: 'second-top-level' });
 const customMidLevel = customTypeFactory.customType().build({ parents: [customTopLevel.id] }, { name: 'mid-level' });
 const customLowLevel = customTypeFactory.customType().build({ parents: [customMidLevel.id] }, { name: 'low-level' });
 
-// Custom child with parent set to cutomTopLevel to test RHS
-const childPlaceToCustomTopLevel = customTypeFactory.customType()
+const childPlaceToCustomMidLevel = customTypeFactory.customType()
   .build({ parents: [customMidLevel.id] }, { name: 'doctor-office' });
 
-// Custom parent with multiple place childs
 const firstChildPlaceToTopLevel = customTypeFactory.customType()
   .build({ parents: [customLowLevel.id] }, { name: 'first-child' });
 
@@ -43,7 +47,7 @@ describe('Creating custom places', () => {
       customTopLevel,
       customMidLevel,
       customLowLevel,
-      childPlaceToCustomTopLevel,
+      childPlaceToCustomMidLevel,
       firstChildPlaceToTopLevel,
       secondChildPlaceToTopLevel,
       customParentWithMultiplePersons,
@@ -120,7 +124,16 @@ describe('Creating custom places', () => {
       .build({ name: 'lowlvl', type: 'contact', contact_type: customLowLevel.id, parent: { _id: topLevel._id } });
     await utils.saveDocs([topLevel, midLevel, lowLevel]);
     await commonPage.goToPeople(topLevel._id);
-    const out = await contactsPage.getListOfContactsByType();
-    await expect(out).toHaveText(addPerson);
+    const displayedListOfContacts = await contactsPage.allContactsList();
+    const expected = [
+      {
+        heading: 'low-level Plural',
+        contactNames: ['lowlvl']
+      },
+      {
+        heading: 'mid-level Plural',
+        contactNames: ['midLevel']
+      }];
+    expect(displayedListOfContacts).toEqual(expected);
   });
 });
