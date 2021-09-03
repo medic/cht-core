@@ -174,12 +174,12 @@ const getAllRHSReportsNames = async () => {
   return getTextForElements(rhsReportElementList);
 };
 
-const getListOfContactsByType = async () => {
+const allContactsList = async () => {
   const parentCards = await contactCards();
   return Promise.all(parentCards.map(async (parent) => {
     return {
-      heading: await parent.getText(),
-      cardText: await Promise.all((await parent.$$('.children h4 span')).map(filter => filter.getText()))
+      heading: await(await parent.$('h3')).getText(),
+      contactNames: await Promise.all((await parent.$$('.children h4 span')).map(filter => filter.getText()))
     };
   }));
 };
@@ -210,5 +210,5 @@ module.exports = {
   rightAddPlaces,
   rightAddPersons,
   rightAddPerson,
-  getListOfContactsByType
+  allContactsList
 };
