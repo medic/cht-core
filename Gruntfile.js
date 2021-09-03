@@ -61,6 +61,20 @@ const linkSharedLibs = dir => {
   ].join(' && ');
 };
 
+const webappModulesToPatch = [
+  'bootstrap-daterangepicker',
+  'enketo-core',
+  'font-awesome',
+  'moment',
+  'pouchdb-browser',
+];
+const apiModulesToPatch = ['enketo-transformer'];
+const apiPatches = [
+  // patch enketo xsl to allow custom xml_type values
+  // https://github.com/enketo/enketo-transformer/issues/121
+  'patch api/node_modules/enketo-transformer/src/xsl/openrosa2html5form.xsl < api/patches/enketo-openrosa2html5form.patch'
+];
+
 module.exports = function(grunt) {
   'use strict';
 
@@ -288,13 +302,8 @@ module.exports = function(grunt) {
       'libraries-to-patch': {
         expand: true,
         src: [
-          'webapp/node_modules/bootstrap-daterangepicker/**',
-          'webapp/node_modules/enketo-core/**',
-          'webapp/node_modules/font-awesome/**',
-          'webapp/node_modules/messageformat/**',
-          'webapp/node_modules/moment/**',
-          'webapp/node_modules/pouchdb-browser/**',
-          'api/node_modules/enketo-transformer/**'
+          ...(webappModulesToPatch.map(module => `'webapp/node_modules/${module}/**'`)),
+          ...(apiModulesToPatch.map(module => `'api/node_modules/${module}/**'`)),
         ],
         rename: (dest, src) => src.replace('node_modules', 'node_modules_backup'),
       },
@@ -347,6 +356,9 @@ module.exports = function(grunt) {
             [
               `cd ${module}`,
               `npm ci --production`,
+              'cd ../',
+              ...('api' === module ? apiPatches : []), // Have to re-apply the patches after running `npm ci`
+              `cd ${module}`,
               `${copySharedLibs}`,
               `npm dedupe`,
               `npm pack`,
@@ -482,14 +494,6 @@ module.exports = function(grunt) {
       'check-version': `node scripts/ci/check-versions.js`,
       'undo-patches': {
         cmd: function() {
-          const webappModulesToPatch = [
-            'bootstrap-daterangepicker',
-            'enketo-core',
-            'font-awesome',
-            'moment',
-            'pouchdb-browser',
-          ];
-          const apiModulesToPatch = ['enketo-transformer'];
           const restoreFromBackup = (subDirectory, module) => {
             const backupPath = `${subDirectory}/node_modules_backup/${module}`;
             const modulePath = `${subDirectory}/node_modules/${module}`;
@@ -501,9 +505,9 @@ module.exports = function(grunt) {
               echo "No restore required for: ${module}"
             `;
           };
-          const undoWebappPatches = webappModulesToPatch.map(module => restoreFromBackup('webapp', module));
-          const undoApiPatches = apiModulesToPatch.map(module => restoreFromBackup('api', module));
-          return undoWebappPatches.concat(undoApiPatches).join(' && ');
+          return webappModulesToPatch.map(module => restoreFromBackup('webapp', module))
+            .concat(apiModulesToPatch.map(module => restoreFromBackup('api', module)))
+            .join(' && ');
         },
       },
       'test-config-standard': {
@@ -572,9 +576,8 @@ module.exports = function(grunt) {
             // https://github.com/medic/cht-core/issues/6626
             'patch webapp/node_modules/pouchdb-browser/lib/index.js < webapp/patches/pouchdb-unhandled-rejection.patch',
 
-            // patch enketo xsl to allow custom xml_type values
-            // https://github.com/enketo/enketo-transformer/issues/121
-            'patch api/node_modules/enketo-transformer/src/xsl/openrosa2html5form.xsl < api/patches/enketo-openrosa2html5form.patch',
+            // patches for api
+            ...apiPatches
           ];
           return patches.join(' && ');
         },

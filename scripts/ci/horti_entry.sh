@@ -8,7 +8,6 @@ curl -sL "https://deb.nodesource.com/setup_$NODE_VERSION" | bash -
 apt-get install -y nodejs
 echo Node install finished
 node -v
-apt-get install -y xsltproc
 # Create couchdb system tables (this has to be done manually on couchdb 2.0)
 curl -X PUT "$COUCH/{_users,_replicator,_global_changes,_metadata,admins,medic-test}"
 

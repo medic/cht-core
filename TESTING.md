@@ -64,6 +64,8 @@ Adding a test identifier a good option for cases where a CSS selector would othe
 ## Debugging
 Documented here are two ways to run individual tests and have your IDE break on the specific test.
 
+> When debugging it can be helpful to disable the headless browser mode so that you can see the browser window as the tests run. To do this, remove `--headless` from the [tests/conf.js](tests/conf.js) file for the Protractor tests and the [tests/wdio.conf.js](tests/wdio.conf.js) file for the WebdriverID tests.
+
 ### Visual Studio Code
 
 #### Setting up Vscode for e2e debugging. 

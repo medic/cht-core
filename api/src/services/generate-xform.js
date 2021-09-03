@@ -10,14 +10,8 @@ const transformer = require('enketo-transformer');
 const JAVAROSA_SRC = / src="jr:\/\//gi;
 const MEDIA_SRC_ATTR = ' data-media-src="';
 
-const transform = (formXml) => {
-  return transformer.transform( {
-    xform: formXml,
-    // optional preprocess function that transforms the XForm (as libXMLJs object) to
-    // e.g. correct incompatible XForm syntax before Enketo's transformation takes place
-    // preprocess: doc => doc,
-    // TODO Might be able to replace some existing transform logic here if libXMLJs is better...
-  } )
+const transform = (xform) => {
+  return transformer.transform({ xform })
     .catch(err => {
       logger.error(err);
       return Promise.reject(new Error(`Error attempting to transform xml: ${err}`));
