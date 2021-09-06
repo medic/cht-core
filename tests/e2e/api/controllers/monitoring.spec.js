@@ -18,7 +18,7 @@ const getUpdateSeq = (info) => parseInt(info.update_seq.split('-')[0]);
 
 describe('monitoring', () => {
   beforeEach(() => sentinelUtils.waitForSentinel());
-  afterEach(() => utils.afterEach());
+  afterEach(() => utils.revertDb([], true));
 
   describe('v1', () => {
     it('should return empty values for empty db', async () => {
