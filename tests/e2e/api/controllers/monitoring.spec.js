@@ -2,6 +2,7 @@ const chai = require('chai');
 const chaiExclude = require('chai-exclude');
 chai.use(chaiExclude);
 const utils = require('../../../utils');
+const auth = require('../../../auth')();
 const sentinelUtils = require('../../sentinel/utils');
 
 const getAppVersion = async () => {
@@ -18,6 +19,15 @@ const getInfo = (db) => utils.request({ path: `/${db}` });
 const getUpdateSeq = (info) => parseInt(info.update_seq.split('-')[0]);
 
 describe('monitoring', () => {
+  before(async () => {
+    const opts = {
+      path: '/medic/login',
+      body: { user: auth.username, password: auth.password },
+      method: 'POST',
+      simple: false,
+    };
+    await utils.request(opts);
+  });
   beforeEach(() => sentinelUtils.waitForSentinel());
   afterEach(() => utils.revertDb([], true));
 
