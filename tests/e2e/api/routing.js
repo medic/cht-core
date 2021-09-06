@@ -81,7 +81,7 @@ describe('routing', () => {
 
   after(() =>
     utils
-      .revertDb()
+      .revertDb([], true)
       .then(() => utils.deleteUsers(users))
   );
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
@@ -566,7 +566,7 @@ describe('routing', () => {
         results.forEach((result, idx) => {
           if (idx === 0) {
             // online user request
-            expect(result.statusCode).toBeFalsy();
+            expect(result.statusCode).to.be.undefined;
           } else {
             // offline user requests
             expect(result.statusCode).to.equal(403);
@@ -660,9 +660,9 @@ describe('routing', () => {
         utils.requestOnTestDb(_.defaults({ path: '/', json: false }, offlineRequestOptions)),
         utils.requestOnMedicDb(_.defaults({ path: '/_design/medic/_rewrite' }, offlineRequestOptions))
       ]).then(results => {
-        expect(results[0].includes('This loads as an empty page')).toBe(true); // the dummy page that clears appcache
-        expect(results[1].includes('DOCTYPE html')).toBe(true);
-        expect(results[2].includes('This loads as an empty page')).toBe(true);
+        expect(results[0].includes('This loads as an empty page')).to.be.true; // the dummy page that clears appcache
+        expect(results[1].includes('DOCTYPE html')).to.be.true;
+        expect(results[2].includes('This loads as an empty page')).to.be.true;
       });
     });
 
@@ -846,7 +846,7 @@ describe('routing', () => {
           return utils.requestOnMedicDb(_.defaults(updateMedicParams, onlineRequestOptions));
         })
         .then(response => {
-          expect(response.success).toBe(true);
+          expect(response.success).to.be.true;
         })
         .then(() => {
           const params = {
@@ -857,7 +857,7 @@ describe('routing', () => {
           return utils.requestOnTestDb(_.defaults(params, onlineRequestOptions));
         })
         .then(response => {
-          expect(response.success).toBe(true);
+          expect(response.success).to.be.true;
         })
         .then(() => {
           const params = {
