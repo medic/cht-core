@@ -97,7 +97,7 @@ describe('monitoring', () => {
           count: 0,
         },
         connected_users: {
-          count: 1,
+          count: 0, //not logged in browser
         },
       });
     });
