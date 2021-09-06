@@ -1,5 +1,6 @@
-const { expect } = require('chai');
-
+const chai = require('chai');
+const chaiExclude = require('chai-exclude');
+chai.use(chaiExclude);
 const utils = require('../../../utils');
 const sentinelUtils = require('../../sentinel/utils');
 
@@ -28,7 +29,7 @@ describe('monitoring', () => {
       const usersInfo = await getInfo('_users');
 
       const result = await utils.request({ path: '/api/v1/monitoring' });
-      expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation','node']).to.deep.equal({
+      chai.expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation','node']).to.deep.equal({
         version: {
           app: await getAppVersion(),
           couchdb: await getCouchDBVersion(),
@@ -100,7 +101,7 @@ describe('monitoring', () => {
       const usersInfo = await getInfo('_users');
 
       const result = await utils.request({ path: '/api/v2/monitoring' });
-      expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation','node']).to.deep.equal({
+      chai.expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation','node']).to.deep.equal({
         version: {
           app: await getAppVersion(),
           couchdb: await getCouchDBVersion(),
