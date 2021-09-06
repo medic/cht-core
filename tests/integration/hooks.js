@@ -16,8 +16,8 @@ exports.mochaHooks = {
     console.log('Starting services......');
     await utils.prepServices({suite:'web'});
     console.log('Services started');
-    // await login();
-    // await utils.setupUserDoc();
+    await login();
+    await utils.setupUserDoc();
   },
 
   afterAll:async () => {
