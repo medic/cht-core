@@ -1,6 +1,8 @@
 const chai = require('chai');
 const utils = require('../../../utils');
 const _ = require('lodash');
+const chaiExclude = require('chai-exclude');
+chai.use(chaiExclude);
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -156,8 +158,15 @@ const hydrate = doc => {
 };
 
 describe('Contacts by phone API', () => {
-  beforeAll(done => utils.saveDocs(contacts).then(() => utils.createUsers(users).then(done)));
-  afterAll(done => utils.deleteUsers(users).then(() => utils.revertDb()).then(done));
+  before(async () => {
+    await utils.saveDocs(contacts);
+    await utils.createUsers(users);
+  });
+
+  after(async () => {
+    await utils.deleteUsers(users);
+    await utils.revertDb([], true);
+  });
 
   beforeEach(() => {
     offlineRequestOptions = { path: '/api/v1/contacts-by-phone', auth: { username: 'offline', password }, };
