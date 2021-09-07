@@ -422,7 +422,7 @@ describe('changes handler', () => {
     let bobsIds;
     let stevesIds;
 
-    before(done => {
+    before(() => {
       const options = {
         hostname: constants.COUCH_HOST,
         port: constants.COUCH_PORT,
@@ -437,21 +437,20 @@ describe('changes handler', () => {
           try {
             body = JSON.parse(body);
             shouldBatchChangesRequests = semver.lte(couchVersionForBatching, body.version);
-            done();
           } catch (e) {
-            done(e);
+            console.log(e);
           }
         });
       });
 
-      req.on('error', e => done(e));
+      req.on('error', e => e);
       req.end();
     });
 
-    beforeEach(done => {
+    beforeEach(async () => {
       bobsIds = ['org.couchdb.user:bob', 'fixture:user:bob', 'fixture:bobville'];
       stevesIds = ['org.couchdb.user:steve', 'fixture:user:steve', 'fixture:steveville'];
-      return getCurrentSeq().then(done);
+      await getCurrentSeq();
     });
 
     it('should successfully fully replicate (with or without limit)', () => {
