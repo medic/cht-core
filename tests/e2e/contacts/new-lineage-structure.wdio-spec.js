@@ -1,4 +1,3 @@
-const faker = require('faker');
 const chai = require('chai');
 
 const contactPage = require('../../page-objects/contacts/contacts.wdio.page');
@@ -7,12 +6,12 @@ const commonPage = require('../../page-objects/common/common.wdio.page');
 const utils = require('../../utils');
 const sentinelUtils = require('../sentinel/utils');
 
-const centerName = faker.address.city();
-const centerContact = faker.name.findName();
-const area = faker.address.city();
-const areaContact = faker.name.findName();
-const household = faker.address.city();
-const householdContact = faker.name.findName();
+const centerName = 'Franklin';
+const centerContact = 'Center Contact';
+const area = 'Georgia';
+const areaContact = 'Area Contact';
+const household = 'Barbados';
+const householdContact = 'House Contact';
 
 describe('Create new lineage structure', () => {
   before(async () => {
