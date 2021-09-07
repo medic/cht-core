@@ -11,20 +11,13 @@ describe('medic-xpath-extensions', function() {
     done();
   });
 
-  describe('now() and today()', function() {
-    it('should have the same implementation', function() {
-      assert.equal(func.today, func.now);
-      assert.equal(func.now, func.today);
-    });
-  });
-
-  describe('now()', function() {
+  describe('today()', function() {
     it('returns a result of type `date`', function() {
-      assert.equal(func.now().t, 'date');
+      assert.equal(func.today().t, 'date');
     });
 
     it('returns a value which is instance of Date', function() {
-      assert.ok(func.now().v instanceof Date);
+      assert.ok(func.today().v instanceof Date);
     });
   });
 
@@ -59,7 +52,7 @@ describe('medic-xpath-extensions', function() {
       [ '2015-10-02', '2015-11-01', 0, ],
       [ '2014-10-01', '2015-10-01', 12, ],
       [ '2014-10-02', '2015-10-01', 11, ],
-      [ '2015-10-01', '2014-10-01', -12, ],
+      [ '2015-10-01T00:00:00.000', '2014-10-01T11:11:11.111', -12, ],
     ].forEach(function(example) {
       const d1 = { t:'str', v:example[0] };
       const d2 = { t:'str', v:example[1] };
@@ -70,13 +63,39 @@ describe('medic-xpath-extensions', function() {
       });
     });
 
-    it('should return an empty string when the difference cannot be calculated', function() {
-      // given
-      const d1 = { t:'str', v:'nonsense' };
-      const d2 = { t:'str', v:'2015-09-22' };
+    it('should report difference between date objects', function() {
+      const d1 = { t:'date', v:new Date('2015-09-22') };
+      const d2 = { t:'date', v:new Date('2014-09-22') };
 
-      // expect
-      assert.equal(func['difference-in-months'](d1, d2).v, '');
+      assert.equal(func['difference-in-months'](d1, d2).v, -12);
+    });
+
+    it('should report difference between day counts', function() {
+      const num1 = { t:'num', v:10 };
+      const num2 = { t:'num', v:50 };
+      const str1 = { t:'str', v:'10' };
+      const str2 = { t:'str', v:'50' };
+
+      assert.equal(func['difference-in-months'](num1, str2).v, 1);
+      assert.equal(func['difference-in-months'](str1, num2).v, 1);
+    });
+
+    it('should report difference between element arrays', function() {
+      const d1 = { t:'arr', v:[{ textContent: '2015-09-22' }] };
+      const d2 = { t:'arr', v:[{ textContent: '2014-09-22' }] };
+
+      assert.equal(func['difference-in-months'](d1, d2).v, -12);
+    });
+
+    it('should return an empty string when the difference cannot be calculated', function() {
+      const invalidStr = { t:'str', v:'nonsense' };
+      const bool = { t:'bool', v:true };
+      const nonsense = { t:'nonsense', v:'2015-09-22' };
+      const valid = { t:'str', v:'2015-09-22' };
+
+      assert.equal(func['difference-in-months'](invalidStr, valid).v, '');
+      assert.equal(func['difference-in-months'](valid, bool).v, '');
+      assert.equal(func['difference-in-months'](nonsense, valid).v, '');
     });
   });
 });

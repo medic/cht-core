@@ -1,15 +1,11 @@
+const moment = require('moment');
+
+const DATE_STRING = /^\d\d\d\d-\d{1,2}-\d{1,2}(?:T\d\d:\d\d:\d\d\.?\d?\d?(?:Z|[+-]\d\d:\d\d)|.*)?$/;
 const RAW_NUMBER = /^(-?[0-9]+)(\.[0-9]+)?$/;
-const DATE_STRING = /^\d\d\d\d-\d{1,2}-\d{1,2}(?:T\d\d:\d\d:\d\d(?:Z|[+-]\d\d:\d\d))?$/;
 const XPR = {
-  boolean: function(val) { return { t:'bool', v:val }; },
-  number: function(val) { return { t:'num', v:val }; },
-  string: function(val) { return { t:'str', v:val }; },
-  date: function(val) {
-    if(!(val instanceof Date)) {
-      throw new Error('Cannot create date from ' + val + ' (' + (typeof val) + ')');
-    }
-    return { t:'date', v:val };
-  }
+  number:  v => ({ t:'num',  v }),
+  string:  v => ({ t:'str',  v }),
+  date:    v => ({ t:'date', v }),
 };
 
 let zscoreUtil;
@@ -31,8 +27,6 @@ const getValue = function(resultObject) {
 
   return resultObject.v;
 };
-
-const now_and_today = function() { return { t: 'date', v: new Date() }; };
 
 const toISOLocalString = function(date) {
   if (date.toString() === 'Invalid Date') {
@@ -64,30 +58,44 @@ const getTimezoneOffsetAsTime = function(date) {
   return direction + hours + ':' + minutes;
 };
 
-const str = (r) => {
+const asString = (r) => {
   return r.t === 'arr' ?
-    r.v.length ? r.v[0].toString() : '' :
+    r.v.length ? r.v[0].textContent || '' : '' :
     r.v.toString();
 };
 
-const date = (it) => {
-  if(it.v instanceof Date) {
-    return new Date(it.v);
-  }
-
-  it = str(it);
-  if(RAW_NUMBER.test(it)) {
+// Copied from https://github.com/enketo/openrosa-xpath-evaluator/blob/master/src/openrosa-extensions.js
+const asDate = (r) => {
+  let temp;
+  const dateSinceUnixEpoch = (days) => {
     // Create a date at 00:00:00 1st Jan 1970 _in the current timezone_
-    const temp = new Date(1970, 0, 1);
-    temp.setDate(1 + parseInt(it, 10));
-    return temp;
-  } else if(DATE_STRING.test(it)) {
-    const t = it.indexOf('T');
-    if(t !== -1) {
-      it = it.substring(0, t);
+    const date = new Date(1970, 0, 1);
+    date.setDate(1 + days);
+    return date;
+  };
+  switch(r.t) {
+  case 'bool': return new Date(NaN);
+  case 'date': return r.v;
+  case 'num':  return dateSinceUnixEpoch(r.v);
+  case 'arr':
+  default:
+    r = asString(r);
+    if(RAW_NUMBER.test(r)) {
+      return dateSinceUnixEpoch(parseInt(r, 10));
+    } else if(DATE_STRING.test(r)) {
+      temp = r.indexOf('T');
+      if(temp !== -1) {
+        r = r.substring(0, temp);
+      }
+      temp = r.split('-');
+      if(moment({ year: temp[0], month: temp[1], day: temp[2] }).isValid()) {
+        const zeroPad = (n, len) => n.padStart(len || 2, '0');
+        const time = `${zeroPad(temp[0])}-${zeroPad(temp[1])}-${zeroPad(temp[2])}`+
+          'T00:00:00.000' + getTimezoneOffsetAsTime(new Date(r));
+        return new Date(time);
+      }
     }
-    const dateValues = it.split('-');
-    return new Date(dateValues[0], dateValues[1]-1, dateValues[2]);
+    return new Date(r);
   }
 };
 
@@ -98,23 +106,26 @@ module.exports = {
     zscoreUtil = _zscoreUtil;
   },
   func: {
-    now: now_and_today,
-    today: now_and_today,
+    today: function() {
+      return XPR.date(new Date());
+    },
     'z-score': function() {
       const args = Array.from(arguments).map(function(arg) {
         return getValue(arg);
       });
       const result = zscoreUtil.apply(null, args);
       if (!result) {
-        return { t: 'str', v: '' };
+        return XPR.string('');
       }
-      return { t: 'num', v: result };
+      return XPR.number(result);
     },
     'difference-in-months': function(d1, d2) {
-      d1 = date(d1);
-      d2 = date(d2);
+      d1 = asDate(d1);
+      d2 = asDate(d2);
 
-      if(!d1 || !d2) {
+      const isValidDate = (d) => d instanceof Date && !isNaN(d);
+
+      if(!d1 || !d2 || !isValidDate(d1) || !isValidDate(d2)) {
         return XPR.string('');
       }
 
