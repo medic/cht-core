@@ -326,32 +326,24 @@ describe('Users API', () => {
     let expectedNbrDocs = nbrOfflineDocs + 4;
     let docsForAll;
 
-    before(done => {
-      return utils
-        .saveDoc(parentPlace)
-        .then(() => utils.createUsers(users))
-        .then(() => {
-          const docs = Array.from(Array(nbrOfflineDocs), () => ({
-            _id: `random_contact_${uuid()}`,
-            type: `clinic`,
-            parent: { _id: 'fixture:offline' }
-          }));
-          return utils.saveDocs(docs);
-        })
-        .then(() => utils.requestOnTestDb('/_design/medic/_view/docs_by_replication_key?key="_all"'))
-        .then(resp => {
-          docsForAll = resp.rows.length + 2; // _design/medic-client + org.couchdb.user:doc
-          expectedNbrDocs += resp.rows.length;
-        })
-        .then(done);
+    before(async () => {
+      await utils.saveDoc(parentPlace);
+      await utils.createUsers(users);
+      const docs = Array.from(Array(nbrOfflineDocs), () => ({
+        _id: `random_contact_${uuid()}`,
+        type: `clinic`,
+        parent: { _id: 'fixture:offline' }
+      }));
+      await utils.saveDocs(docs);
+      const resp = await utils.requestOnTestDb('/_design/medic/_view/docs_by_replication_key?key="_all"');
+      docsForAll = resp.rows.length + 2; // _design/medic-client + org.couchdb.user:doc
+      expectedNbrDocs += resp.rows.length;
     });
 
-    after(done =>
-      utils
-        .revertDb([], true)
-        .then(() => utils.deleteUsers(users))
-        .then(done)
-    );
+    after(async () => {
+      await utils.revertDb([], true);
+      await utils.deleteUsers(users);
+    });
 
     beforeEach(() => {
       offlineRequestOptions = {
@@ -413,7 +405,7 @@ describe('Users API', () => {
         .request(onlineRequestOptions)
         .then(resp => chai.expect(resp).to.equal('should have thrown'))
         .catch(err => {
-          chai.expect(err.statusCode).toEqual(400);
+          chai.expect(err.statusCode).to.equal(400);
         });
     });
 
@@ -427,7 +419,7 @@ describe('Users API', () => {
         .request(onlineRequestOptions)
         .then(resp => chai.expect(resp).to.equal('should have thrown'))
         .catch(err => {
-          chai.expect(err.statusCode).toEqual(400);
+          chai.expect(err.statusCode).to.equal(400);
         });
     });
 

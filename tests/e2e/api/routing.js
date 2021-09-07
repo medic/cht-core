@@ -73,17 +73,16 @@ const DOCS_TO_KEEP = [
 ];
 
 describe('routing', () => {
-  before(() => {
-    return utils
-      .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users));
+  before(async () => {
+    await utils.saveDoc(parentPlace);
+    await utils.createUsers(users);
   });
 
-  after(() =>
-    utils
-      .revertDb([], true)
-      .then(() => utils.deleteUsers(users))
-  );
+  after(async () => {
+    await utils.revertDb([], true);
+    await utils.deleteUsers(users);
+  });
+
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
 
   describe('unauthenticated routing', () => {
@@ -885,8 +884,8 @@ describe('routing', () => {
         .then(settings => {
           expect(settings.settings.test_api_v0).to.equal('my value 2');
           expect(settings.settings.medic_api_v0).to.equal('my value 1');
-          expect(settings.settings.test_api_v0_offline).not.to.be.defined;
-          expect(settings.settings.medic_api_v0_offline).not.to.be.defined;
+          expect(settings.settings.test_api_v0_offline).to.be.undefined;
+          expect(settings.settings.medic_api_v0_offline).to.be.undefined;
         });
     });
   });
