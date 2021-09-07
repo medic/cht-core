@@ -16,7 +16,7 @@ const baseConfig = {
   suites: {
     web: [
       //'e2e/!(cht)/**/*.js',
-      'e2e/api/controllers/monitoring.spec.js',
+      'e2e/login/privacy-policy.spec.js',
       //'cht-conf/**/*.js'
     ],
     cht: [
