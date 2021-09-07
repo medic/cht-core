@@ -1,32 +1,32 @@
 
 function getField(report, fieldPath) {
-  return ['fields', ...(fieldPath || '').split('.')]
+  const parts = (fieldPath || '').split('.');
+
+  return ['fields', ...parts]
     .reduce((prev, fieldName) => {
-      if (prev === undefined) { return undefined; }
+      if (prev === undefined) {
+        return undefined;
+      }
       return prev[fieldName];
     }, report);
 }
 
 function isFormArraySubmittedInWindow(reports, formArray, start, end, count) {
-  let found = false;
-  let reportCount = 0;
-  reports.forEach(function (report) {
-    if (formArray.includes(report.form)) {
-      if (report.reported_date >= start && report.reported_date <= end) {
-        found = true;
-        if (count) {
-          reportCount++;
-        }
-      }
-    }
+  const reportsFound = (reports || []).filter(report => {
+    return (formArray || []).includes(report.form)
+      && report.reported_date >= start
+      && report.reported_date <= end;
   });
 
-  if (count) { return reportCount >= count; }
-  return found;
+  if (count) {
+    return reportsFound.length >= count;
+  }
+
+  return !!reportsFound.length;
 }
 
-function getTimeForMidnight(d) {
-  const date = new Date(d);
+function getTimeForMidnight(originalDate) {
+  const date = new Date(originalDate);
   date.setHours(0);
   date.setMinutes(0);
   date.setSeconds(0);
