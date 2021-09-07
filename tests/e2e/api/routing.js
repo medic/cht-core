@@ -885,8 +885,8 @@ describe('routing', () => {
         .then(settings => {
           expect(settings.settings.test_api_v0).to.equal('my value 2');
           expect(settings.settings.medic_api_v0).to.equal('my value 1');
-          expect(settings.settings.test_api_v0_offline).not.toBeDefined();
-          expect(settings.settings.medic_api_v0_offline).not.toBeDefined();
+          expect(settings.settings.test_api_v0_offline).not.to.be.defined;
+          expect(settings.settings.medic_api_v0_offline).not.to.be.defined;
         });
     });
   });
