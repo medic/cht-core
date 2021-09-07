@@ -164,7 +164,7 @@ describe('db-doc handler', () => {
 
   after(() =>
     utils
-      .revertDb()
+      .revertDb([], true)
       .then(() => utils.deleteUsers(users)));
 
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
