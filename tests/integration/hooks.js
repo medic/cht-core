@@ -1,23 +1,11 @@
 const utils = require('../utils');
-const auth = require('../auth')();
 const request = require('request-promise-native');
-const login = async (username = auth.username, password = auth.password) => {
-  const opts = {
-    path: '/medic/login',
-    body: { user: username, password: password },
-    method: 'POST',
-    simple: false,
-  };
-  await utils.request(opts);
-  await utils.setupUserDoc();
-};
 
 exports.mochaHooks = {
   beforeAll: async ()=> {
     console.log('Starting services......');
     await utils.prepServices({suite:'web'});
     console.log('Services started');
-    await login();
   },
 
   afterAll:async () => {
