@@ -4,9 +4,9 @@ const utils = require('../../../utils');
 
 describe('Import Records', () => {
 
-  afterAll(() => utils.deleteAllDocs().then(() => utils.revertSettings()));
+  after(() => utils.deleteAllDocs().then(() => utils.revertSettings(true)));
 
-  beforeAll(() => utils.updateSettings({
+  before(() => utils.updateSettings({
     forms: {
       'TEST': {
         'meta':{

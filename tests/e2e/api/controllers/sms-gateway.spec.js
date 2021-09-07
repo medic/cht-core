@@ -1,3 +1,4 @@
+const chai = require('chai');
 const testUtils = require('../../../utils');
 const gatewayApiUtils = require('../../../gateway-api.utils');
 const api = gatewayApiUtils.api;
@@ -14,7 +15,7 @@ describe('/sms', function() {
       return api.get()
         .then(response => {
           // then
-          expect(response['medic-gateway']).toBe(true);
+          chai.expect(response['medic-gateway']).to.be.true;
         });
     });
 
@@ -22,7 +23,7 @@ describe('/sms', function() {
 
   describe('POST', function() {
 
-    afterAll(() => testUtils.revertDb());
+    after(() => testUtils.revertDb([], true));
 
     afterEach(gatewayApiUtils.cleanUp);
 
@@ -191,7 +192,7 @@ describe('/sms', function() {
 const assert = {
 
   response: (expected) => {
-    return response => expect(response).toEqual(expected);
+    return response => chai.expect(response).to.deep.equal(expected);
   },
 
   messageInDb: (...contents) => {
