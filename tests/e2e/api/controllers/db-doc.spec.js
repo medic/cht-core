@@ -155,14 +155,14 @@ const reportForPatient = (patientUuid, username, fields = [], needs_signoff = fa
 };
 
 describe('db-doc handler', () => {
-  beforeAll(() => {
+  before(() => {
     return utils
       .saveDoc(parentPlace)
       .then(() => utils.createUsers(users))
       .then(() => utils.saveDocs([...clinics, ...patients]));
   });
 
-  afterAll(() =>
+  after(() =>
     utils
       .revertDb()
       .then(() => utils.deleteUsers(users)));
@@ -566,7 +566,7 @@ describe('db-doc handler', () => {
       const patientsToDeleteIds = patientsToDelete.map(doc => doc._id);
       const submittersToDeleteIds = submittersToDelete.map(doc => doc._id);
 
-      beforeAll(() => sUtils.waitForSentinel());
+      before(() => sUtils.waitForSentinel());
 
       beforeEach(() => {
         patientsToDelete.forEach(doc => delete doc._rev);

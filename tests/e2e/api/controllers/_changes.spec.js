@@ -242,20 +242,19 @@ describe('changes handler', () => {
     /^org.couchdb.user/,
   ];
 
-  beforeAll(() => {
+  before(() => {
     // Bootstrap users
     return utils
       .saveDoc(parentPlace)
       .then(() => utils.createUsers(users, true));
   });
 
-  afterAll(done =>
+  after( async () => {
     // Clean up like normal
-    utils
-      .revertDb()
-      // And also revert users we created in before
-      .then(() => utils.deleteUsers(users, true))
-      .then(done));
+    await utils.revertDb([], true);// And also revert users we created in before
+    await utils.deleteUsers(users, true);
+  });
+
 
   beforeEach(() => getCurrentSeq());
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
@@ -423,7 +422,7 @@ describe('changes handler', () => {
     let bobsIds;
     let stevesIds;
 
-    beforeAll(done => {
+    before(done => {
       const options = {
         hostname: constants.COUCH_HOST,
         port: constants.COUCH_PORT,
