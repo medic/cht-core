@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
     <h:title>RDT Covid-19 - Capture</h:title>
     <model>
@@ -84,7 +84,7 @@
         </translation>
       </itext>
       <instance>
-        <covid19_rdt_capture id="covid19_rdt_capture" prefix="J1!covid19_rdt_capture!" delimiter="#" version="2021-09-07_11-57">
+        <covid19_rdt_capture delimiter="#" id="covid19_rdt_capture" prefix="J1!covid19_rdt_capture!" version="2021-09-08_06-22">
           <inputs tag="hidden">
             <source>user</source>
             <contact>
@@ -210,16 +210,16 @@
       <bind nodeset="/covid19_rdt_capture/inputs/contact/parent/parent/_id" type="string"/>
       <bind nodeset="/covid19_rdt_capture/inputs/contact/parent/parent/name" type="string"/>
       <bind nodeset="/covid19_rdt_capture/inputs/contact/parent/parent/address" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
-      <bind nodeset="/covid19_rdt_capture/patient_name" type="string" calculate="../inputs/contact/name"/>
-      <bind nodeset="/covid19_rdt_capture/patient_age_in_years" type="string" calculate="floor( difference-in-months(  /covid19_rdt_capture/inputs/contact/date_of_birth , today() ) div 12 )"/>
-      <bind nodeset="/covid19_rdt_capture/patient_age_in_months" type="string" calculate="difference-in-months(  /covid19_rdt_capture/inputs/contact/date_of_birth , today() )"/>
-      <bind nodeset="/covid19_rdt_capture/patient_age_in_days" type="string" calculate="floor(decimal-date-time(today()) - decimal-date-time( /covid19_rdt_capture/inputs/contact/date_of_birth ) )"/>
-      <bind nodeset="/covid19_rdt_capture/age" type="string" calculate="if( /covid19_rdt_capture/patient_age_in_days  &lt; 31, 
+      <bind calculate="../inputs/contact/_id" nodeset="/covid19_rdt_capture/patient_uuid" type="string"/>
+      <bind calculate="../inputs/contact/name" nodeset="/covid19_rdt_capture/patient_name" type="string"/>
+      <bind calculate="floor( difference-in-months(  /covid19_rdt_capture/inputs/contact/date_of_birth , today() ) div 12 )" nodeset="/covid19_rdt_capture/patient_age_in_years" type="string"/>
+      <bind calculate="difference-in-months(  /covid19_rdt_capture/inputs/contact/date_of_birth , today() )" nodeset="/covid19_rdt_capture/patient_age_in_months" type="string"/>
+      <bind calculate="floor(decimal-date-time(today()) - decimal-date-time( /covid19_rdt_capture/inputs/contact/date_of_birth ) )" nodeset="/covid19_rdt_capture/patient_age_in_days" type="string"/>
+      <bind calculate="if( /covid19_rdt_capture/patient_age_in_days  &lt; 31, 
 concat( /covid19_rdt_capture/patient_age_in_days , ' days old'),
 if( /covid19_rdt_capture/patient_age_in_months  &lt; 12, 
 concat( /covid19_rdt_capture/patient_age_in_months , ' months old'), 
-concat( /covid19_rdt_capture/patient_age_in_years , ' years old')))"/>
+concat( /covid19_rdt_capture/patient_age_in_years , ' years old')))" nodeset="/covid19_rdt_capture/age" type="string"/>
       <bind nodeset="/covid19_rdt_capture/test-information/session_id" type="string"/>
       <bind nodeset="/covid19_rdt_capture/test-information/administrator_id" type="string"/>
       <bind nodeset="/covid19_rdt_capture/test-information/administrator_name" type="string"/>
@@ -239,7 +239,7 @@ concat( /covid19_rdt_capture/patient_age_in_years , ' years old')))"/>
       <bind nodeset="/covid19_rdt_capture/test-information/additional_notes" type="string"/>
       <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/action" type="string"/>
       <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/note_instructions_provision" readonly="true()" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-inputs/rdt_session_id" type="string" calculate="../../../../test-information/test_id"/>
+      <bind calculate="../../../../test-information/test_id" nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-inputs/rdt_session_id" type="string"/>
       <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state" type="string"/>
       <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started" type="string"/>
       <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_resolved" type="string"/>
@@ -248,28 +248,28 @@ concat( /covid19_rdt_capture/patient_age_in_years , ' years old')))"/>
       <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read" type="string"/>
       <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped" type="string"/>
       <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/preview_session_state" type="string" calculate="if( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state  = 'QUEUED', 'COMPLETED',  /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state )" required="true()" readonly="true()"/>
-      <bind nodeset="/covid19_rdt_capture/capture/note_continue_1" readonly="true()" type="string" relevant=" /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read  != ''"/>
-      <bind nodeset="/covid19_rdt_capture/capture/note_continue_2" readonly="true()" type="string" relevant=" /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read  != ''"/>
-      <bind nodeset="/covid19_rdt_capture/repeat-test/repeat_test" type="select1" required="true()"/>
-      <bind nodeset="/covid19_rdt_capture/repeat-test/repeat_test_reason" type="select1" relevant="selected(../repeat_test , 'yes')"/>
-      <bind nodeset="/covid19_rdt_capture/repeat-test/repeat_test_reason_other" type="string" relevant="selected(../repeat_test_reason , 'other')"/>
+      <bind calculate="if( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state  = 'QUEUED', 'COMPLETED',  /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state )" nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/preview_session_state" readonly="true()" required="true()" type="string"/>
+      <bind nodeset="/covid19_rdt_capture/capture/note_continue_1" readonly="true()" relevant=" /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read  != ''" type="string"/>
+      <bind nodeset="/covid19_rdt_capture/capture/note_continue_2" readonly="true()" relevant=" /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read  != ''" type="string"/>
+      <bind nodeset="/covid19_rdt_capture/repeat-test/repeat_test" required="true()" type="select1"/>
+      <bind nodeset="/covid19_rdt_capture/repeat-test/repeat_test_reason" relevant="selected(../repeat_test , 'yes')" type="select1"/>
+      <bind nodeset="/covid19_rdt_capture/repeat-test/repeat_test_reason_other" relevant="selected(../repeat_test_reason , 'other')" type="string"/>
       <bind nodeset="/covid19_rdt_capture/summary" relevant=" /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state  != ''"/>
-      <bind nodeset="/covid19_rdt_capture/summary/time_started" type="string" calculate="format-date-time(parse-timestamp-to-date( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started ), &quot;%e %b, %Y at %H:%M:%S&quot;)"/>
-      <bind nodeset="/covid19_rdt_capture/summary/time_read" type="string" calculate="format-date-time(parse-timestamp-to-date( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read ), &quot;%e %b, %Y at %H:%M:%S&quot;)"/>
-      <bind nodeset="/covid19_rdt_capture/summary/time_expired" type="string" calculate="format-date-time(parse-timestamp-to-date( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired ), &quot;%e %b, %Y at %H:%M:%S&quot;)"/>
-      <bind nodeset="/covid19_rdt_capture/summary/results_expired" type="string" calculate="if( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read  &gt;  /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired , 'TRUE', 'FALSE')"/>
-      <bind nodeset="/covid19_rdt_capture/summary/result" type="string" calculate="if( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2 ='sars_cov2_pos', 'Positive', if( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2 ='sars_cov2_neg', 'Negative', 'Invalid result'))"/>
+      <bind calculate="format-date-time(parse-timestamp-to-date( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started ), &quot;%e %b, %Y at %H:%M:%S&quot;)" nodeset="/covid19_rdt_capture/summary/time_started" type="string"/>
+      <bind calculate="format-date-time(parse-timestamp-to-date( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read ), &quot;%e %b, %Y at %H:%M:%S&quot;)" nodeset="/covid19_rdt_capture/summary/time_read" type="string"/>
+      <bind calculate="format-date-time(parse-timestamp-to-date( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired ), &quot;%e %b, %Y at %H:%M:%S&quot;)" nodeset="/covid19_rdt_capture/summary/time_expired" type="string"/>
+      <bind calculate="if( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read  &gt;  /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired , 'TRUE', 'FALSE')" nodeset="/covid19_rdt_capture/summary/results_expired" type="string"/>
+      <bind calculate="if( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2 ='sars_cov2_pos', 'Positive', if( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2 ='sars_cov2_neg', 'Negative', 'Invalid result'))" nodeset="/covid19_rdt_capture/summary/result" type="string"/>
       <bind nodeset="/covid19_rdt_capture/summary/summary_header" readonly="true()" type="string"/>
       <bind nodeset="/covid19_rdt_capture/summary/summary_details" readonly="true()" type="string"/>
       <bind nodeset="/covid19_rdt_capture/summary/summary_name" readonly="true()" type="string"/>
       <bind nodeset="/covid19_rdt_capture/summary/summary_info" readonly="true()" type="string"/>
       <bind nodeset="/covid19_rdt_capture/summary/summary_rdt_loinc_long_common_name" readonly="true()" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/summary/summary_results_expired" readonly="true()" type="string" relevant=" /covid19_rdt_capture/summary/results_expired  ='FALSE'"/>
-      <bind nodeset="/covid19_rdt_capture/summary/summary_results_expired_2" readonly="true()" type="string" relevant=" /covid19_rdt_capture/summary/results_expired  ='FALSE'"/>
+      <bind nodeset="/covid19_rdt_capture/summary/summary_results_expired" readonly="true()" relevant=" /covid19_rdt_capture/summary/results_expired  ='FALSE'" type="string"/>
+      <bind nodeset="/covid19_rdt_capture/summary/summary_results_expired_2" readonly="true()" relevant=" /covid19_rdt_capture/summary/results_expired  ='FALSE'" type="string"/>
       <bind nodeset="/covid19_rdt_capture/summary/summary_results" readonly="true()" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/summary/summary_image" type="string" calculate=" /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped "/>
-      <bind nodeset="/covid19_rdt_capture/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+      <bind calculate=" /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped " nodeset="/covid19_rdt_capture/summary/summary_image" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/covid19_rdt_capture/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body class="pages">
