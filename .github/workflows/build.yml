@@ -6,8 +6,8 @@ env:
   COUCH_URL: http://admin:pass@localhost:5984/medic-test
   COUCH_NODE_NAME: nonode@nohost
   BUILDS_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_testing' || '_couch/builds_external' }}
-  STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }} 
-  MARKET_URL_READ: 'https://staging.dev.medicmobile.org' 
+  STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }}
+  MARKET_URL_READ: 'https://staging.dev.medicmobile.org'
   MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
 
 jobs:
@@ -104,7 +104,7 @@ jobs:
     strategy:
       matrix:
         node-version: ['8.x', '10.x', '12.x']
-        grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-e2e-cht']
+        grunt-cmd: ['ci-e2e-integration', 'ci-e2e']
 
     steps:
     - name: Get Docker Hub username
@@ -136,12 +136,12 @@ jobs:
     - name: horti setup
       run: |
         echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
-        docker-compose -f scripts/ci/horti-compose.yml up -d 
+        docker-compose -f scripts/ci/horti-compose.yml up -d
         sh scripts/e2e/wait_for_response_code.sh 4988 200 api
     - name: Test it!
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
     - name: Dump Couch logs
-      run: | 
+      run: |
         docker logs couch > tests/logs/couch_container.log 2>&1 &&
         docker logs horti > tests/logs/horti_container.log 2>&1
       if: ${{ always() }}

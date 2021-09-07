@@ -154,7 +154,8 @@ const reportForPatient = (patientUuid, username, fields = [], needs_signoff = fa
   return report;
 };
 
-describe('db-doc handler', () => {
+// eslint-disable-next-line no-only-tests/no-only-tests
+describe.only('db-doc handler', () => {
   before(() => {
     return utils
       .saveDoc(parentPlace)
@@ -167,7 +168,7 @@ describe('db-doc handler', () => {
       .revertDb([], true)
       .then(() => utils.deleteUsers(users)));
 
-  afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
+  afterEach(utils.revertDb(DOCS_TO_KEEP, true));
 
   beforeEach(() => {
     offlineRequestOptions = { auth: { username: 'offline', password }, };
@@ -566,11 +567,9 @@ describe('db-doc handler', () => {
       const patientsToDeleteIds = patientsToDelete.map(doc => doc._id);
       const submittersToDeleteIds = submittersToDelete.map(doc => doc._id);
 
-      before(() => sUtils.waitForSentinel());
+      before(sUtils.waitForSentinel);
 
-      beforeEach(() => {
-        patientsToDelete.forEach(doc => delete doc._rev);
-      });
+      beforeEach(patientsToDelete.forEach(doc => delete doc._rev));
 
       it('reports about deleted patients and deleted patients', () => {
         const reportScenarios = [
