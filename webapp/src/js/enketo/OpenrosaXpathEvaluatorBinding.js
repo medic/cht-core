@@ -11,13 +11,6 @@ module.exports = function( ) {
 
   const evaluator = new ExtendedXpathEvaluator(wrappedXpathEvaluator, ore);
 
-  this.xml.jsCreateExpression = function() {
-    return evaluator.createExpression.apply( evaluator, arguments );
-  };
-  this.xml.jsCreateNSResolver = function() {
-    return evaluator.createNSResolver.apply( evaluator, arguments );
-  };
-
   this.xml.jsEvaluate = function(e, contextPath, namespaceResolver, resultType, result) {
     wrappedXpathEvaluator.evaluate = (v) => {
       // Node requests (i.e. result types greater than 3 (BOOLEAN)
@@ -31,12 +24,6 @@ module.exports = function( ) {
     };
     return evaluator.evaluate(e, contextPath, namespaceResolver, resultType, result);
   };
-
-  window.JsXPathException =
-    window.JsXPathExpression =
-    window.JsXPathNSResolver =
-    window.JsXPathResult =
-    window.JsXPathNamespace = true;
 
   return evaluator;
 };
