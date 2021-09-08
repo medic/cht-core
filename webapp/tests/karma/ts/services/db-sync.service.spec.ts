@@ -863,12 +863,14 @@ describe('DBSync service', () => {
       it('should sync meta dbs only once if sync is called twice', async () => {
         await service.sync();
         expectSyncMetaCall(1);
-        expect(localMetaDb.sync.callCount).to.equal(1);
-        expect(localMetaDb.sync.args[0][0]).to.equal(remoteMetaDb);
-        expect(localMetaDb.sync.args[0][1]).to.equal(undefined);
+        expect(localMetaDb.replicate.from.callCount).to.equal(1);
+        expect(localMetaDb.replicate.from.args[0]).to.deep.equal([remoteMetaDb]);
+        expect(localMetaDb.replicate.to.callCount).to.equal(1);
+        expect(localMetaDb.replicate.to.args[0]).to.deep.equal([remoteMetaDb]);
+
         await service.sync();
         expectSyncMetaCall(1);
-        expect(localMetaDb.sync.callCount).to.equal(1);
+        expect(localMetaDb.replicate.from.callCount).to.equal(1);
       });
 
       it('should sync meta dbs twice if sync is called twice with force flag', async () => {
@@ -876,7 +878,7 @@ describe('DBSync service', () => {
         expectSyncMetaCall(1);
         await service.sync(true);
         expectSyncMetaCall(2);
-        expect(localMetaDb.sync.callCount).to.equal(2);
+        expect(localMetaDb.replicate.from.callCount).to.equal(2);
       });
 
       it('should write purge log with the current seq after syncing', () => {
