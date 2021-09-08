@@ -52,4 +52,9 @@ module.exports = function (config) {
     test: /enketo-xml\/.*\.xml$/i,
     use: 'raw-loader',
   });
+
+  config.buildWebpack.webpackConfig.resolve.fallback = {
+    path: false,
+    fs: false,
+  };
 };
