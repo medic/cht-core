@@ -31,7 +31,7 @@ const getLogoutMessage = async () => {
 const goToBase = async () => {
   await browser.url('/');
 
-  await (await analyticsTab()).waitForDisplayed();
+  await (await analyticsTab()).waitForDisplayed({timeout:60000}); //offline users take too long to sync
   await (await messagesTab()).waitForDisplayed();
 };
 
