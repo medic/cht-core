@@ -213,7 +213,7 @@
         </translation>
       </itext>
       <instance>
-        <covid19_rdt_provision id="covid19_rdt_provision" prefix="J1!covid19_rdt_provision!" delimiter="#" version="2021-09-08_20-18">
+        <covid19_rdt_provision id="covid19_rdt_provision" prefix="J1!covid19_rdt_provision!" delimiter="#" version="2021-09-08_23-22">
           <inputs>
             <meta>
               <location>
@@ -372,7 +372,7 @@ concat( /covid19_rdt_provision/patient_age_in_years , ' years old')))"/>
       <bind nodeset="/covid19_rdt_provision/test-reference/other_test_setting" type="string" relevant="(selected(../other_facility_test_setting , 'community_other') or selected(../other_facility_test_setting , 'healthcare_other'))"/>
       <bind nodeset="/covid19_rdt_provision/test-reference/test_reason" type="select"/>
       <bind nodeset="/covid19_rdt_provision/test-reference/symptoms" type="select"/>
-      <bind nodeset="/covid19_rdt_provision/test-reference/days_since_symptoms_began" type="int" constraint=". &amp;gt;= 1 and . &amp;lt;= 200" jr:constraintMsg="jr:itext('/covid19_rdt_provision/test-reference/days_since_symptoms_began:jr:constraintMsg')" relevant="../symptoms != ''"/>
+      <bind nodeset="/covid19_rdt_provision/test-reference/days_since_symptoms_began" type="int" constraint=". &amp;gt;= 1 and . &amp;lt;= 200" relevant="../symptoms != ''" jr:constraintMsg="jr:itext('/covid19_rdt_provision/test-reference/days_since_symptoms_began:jr:constraintMsg')"/>
       <bind nodeset="/covid19_rdt_provision/spec-lot/specimen_type" type="select1"/>
       <bind nodeset="/covid19_rdt_provision/spec-lot/specimen_type_other" type="string" relevant="selected(../specimen_type, 'other')"/>
       <bind nodeset="/covid19_rdt_provision/spec-lot/rdt_lot" type="string"/>
