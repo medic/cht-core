@@ -1,5 +1,7 @@
 const hamburgerMenu = () => $('#header-dropdown-link');
-const logoutButton = () => $('.fa-power-off');
+const hamburgerMenuItemSelector = '#header-dropdown li';
+const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
+const syncButton = () => $(`${hamburgerMenuItemSelector} a:not(.disabled) .fa-refresh`);
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
@@ -9,9 +11,21 @@ const contactsPage = require('../contacts/contacts.wdio.page');
 const reportsPage = require('../reports/reports.wdio.page');
 const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
+const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
+const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
+
+const isHamburgerMenuOpen = async () => {
+  return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
+};
+
+const openHamburgerMenu = async () => {
+  if (!(await isHamburgerMenuOpen())) {
+    await (await hamburgerMenu()).click();
+  }
+};
 
 const navigateToLogoutModal = async () => {
-  await (await hamburgerMenu()).click();
+  await openHamburgerMenu();
   await (await logoutButton()).click();
   await (await modal.body()).waitForDisplayed();
 };
@@ -76,6 +90,25 @@ const waitForLoaders = async () => {
   });
 };
 
+const sync = async () => {
+  await openHamburgerMenu();
+  await (await syncButton()).click();
+  await openHamburgerMenu();
+  await (await syncSuccess()).waitForDisplayed();
+  // sync status sometimes lies when multiple changes are fired in quick succession
+  await (await syncButton()).click();
+  await openHamburgerMenu();
+  await (await syncSuccess()).waitForDisplayed();
+};
+
+const closeReloadModal = async () => {
+  await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist());
+  // wait for the animation to complete
+  await browser.pause(500);
+  await (await reloadModalCancel()).click();
+  await browser.pause(500);
+};
+
 module.exports = {
   logout,
   logoutButton,
@@ -90,5 +123,7 @@ module.exports = {
   goToBase,
   closeTour,
   hideSnackbar,
-  waitForLoaders
+  waitForLoaders,
+  sync,
+  closeReloadModal,
 };

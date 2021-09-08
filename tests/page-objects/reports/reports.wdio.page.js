@@ -7,6 +7,13 @@ const submitterPlace = () => $('.position a');
 const submitterPhone = () => $('.sender .phone');
 const submitterName = () => $('.sender .name');
 const firstReport = () => $(`${reportListID} li:first-child`);
+const unreadCount = () => $('#reports-tab .mm-badge');
+
+// warning: the unread element is not displayed when there are no unread reports
+const getUnreadCount = async () => {
+  await browser.waitUntil(async () => await (await unreadCount()).waitForDisplayed());
+  return await (await unreadCount()).getText();
+};
 
 module.exports = {
   reportList,
@@ -15,5 +22,6 @@ module.exports = {
   submitterPhone,
   submitterPlace,
   selectedCaseId,
-  selectedCaseIdLabel
+  selectedCaseIdLabel,
+  getUnreadCount,
 };

@@ -5,6 +5,9 @@ const constants = require('./constants');
 const utils = require('./utils');
 const path = require('path');
 
+const chai = require('chai');
+chai.use(require('chai-exclude'));
+
 const ALLURE_OUTPUT = 'allure-results';
 const getSpecName = (specs) => specs[0].split('/').slice(-1)[0].split('.wdio-spec')[0];
 const getBrowserLogFilePath = (specs) => {
