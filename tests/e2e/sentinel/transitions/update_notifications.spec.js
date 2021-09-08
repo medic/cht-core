@@ -40,9 +40,9 @@ const contacts = [
 
 
 describe('update_notifications', () => {
-  beforeEach(done => utils.saveDocs(contacts).then(done));
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb([], true).then(done));
+  beforeEach(() => utils.saveDocs(contacts));
+  after(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb([], true));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
@@ -70,7 +70,7 @@ describe('update_notifications', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        expect(Object.keys(info.transitions).length).to.equal(0);
       });
   });
 
@@ -101,7 +101,7 @@ describe('update_notifications', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        expect(Object.keys(info.transitions).length).to.equal(0);
       });
   });
 
@@ -165,33 +165,33 @@ describe('update_notifications', () => {
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.update_notifications).toBeDefined();
-        expect(infos[0].transitions.update_notifications.ok).toBe(true);
+        expect(infos[0].transitions).to.be.defined;
+        expect(infos[0].transitions.update_notifications).to.be.defined;
+        expect(infos[0].transitions.update_notifications.ok).to.equal(true);
 
-        expect(infos[1].transitions).toBeDefined();
-        expect(infos[1].transitions.update_notifications).toBeDefined();
-        expect(infos[1].transitions.update_notifications.ok).toBe(true);
+        expect(infos[1].transitions).to.be.defined;
+        expect(infos[1].transitions.update_notifications).to.be.defined;
+        expect(infos[1].transitions.update_notifications.ok).to.equal(true);
       })
       .then(() => utils.getDocs([doc1._id, doc2._id]))
       .then(updated => {
-        expect(updated[0].tasks).toBeDefined();
-        expect(updated[0].tasks.length).toEqual(1);
-        expect(updated[0].tasks[0].messages[0].message).toEqual('Patient not found');
-        expect(updated[0].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[0].tasks).to.be.defined;
+        expect(updated[0].tasks.length).to.equal(1);
+        expect(updated[0].tasks[0].messages[0].message).to.equal('Patient not found');
+        expect(updated[0].tasks[0].messages[0].to).to.equal('12345');
 
-        expect(updated[0].errors).toBeDefined();
-        expect(updated[0].errors.length).toEqual(1);
-        expect(updated[0].errors[0].message).toEqual('Patient not found');
+        expect(updated[0].errors).to.be.defined;
+        expect(updated[0].errors.length).to.equal(1);
+        expect(updated[0].errors[0].message).to.equal('Patient not found');
 
-        expect(updated[1].tasks).toBeDefined();
-        expect(updated[1].tasks.length).toEqual(1);
-        expect(updated[1].tasks[0].messages[0].message).toEqual('Patient id incorrect');
-        expect(updated[1].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[1].tasks).to.be.defined;
+        expect(updated[1].tasks.length).to.equal(1);
+        expect(updated[1].tasks[0].messages[0].message).to.equal('Patient id incorrect');
+        expect(updated[1].tasks[0].messages[0].to).to.equal('12345');
 
-        expect(updated[1].errors).toBeDefined();
-        expect(updated[1].errors.length).toEqual(1);
-        expect(updated[1].errors[0].message).toEqual('Patient id incorrect');
+        expect(updated[1].errors).to.be.defined;
+        expect(updated[1].errors.length).to.equal(1);
+        expect(updated[1].errors[0].message).to.equal('Patient id incorrect');
       });
   });
 
@@ -272,97 +272,97 @@ describe('update_notifications', () => {
       .then(() => sentinelUtils.waitForSentinel(mute1._id))
       .then(() => sentinelUtils.getInfoDocs([mute1._id, 'person', 'clinic']))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.update_notifications).toBeDefined();
-        expect(infos[0].transitions.update_notifications.ok).toBe(true);
+        expect(infos[0].transitions).to.be.defined;
+        expect(infos[0].transitions.update_notifications).to.be.defined;
+        expect(infos[0].transitions.update_notifications.ok).to.equal(true);
 
-        expect(infos[1].muting_history).toBeDefined();
-        expect(infos[1].muting_history.length).toEqual(1);
-        expect(infos[1].muting_history[0].muted).toEqual(true);
-        expect(infos[1].muting_history[0].report_id).toEqual(mute1._id);
+        expect(infos[1].muting_history).to.be.defined;
+        expect(infos[1].muting_history.length).to.equal(1);
+        expect(infos[1].muting_history[0].muted).to.equal(true);
+        expect(infos[1].muting_history[0].report_id).to.equal(mute1._id);
         muteTime = infos[1].muting_history[0].date;
 
-        expect(infos[2].muting_history).not.toBeDefined();
+        expect(infos[2].muting_history).to.be.undefined;
       })
       .then(() => utils.getDocs([mute1._id, 'person', 'clinic']))
       .then(updated => {
-        expect(updated[0].tasks).toBeDefined();
-        expect(updated[0].tasks.length).toEqual(1);
-        expect(updated[0].tasks[0].messages[0].message).toEqual('Contact muted');
-        expect(updated[0].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[0].tasks).to.be.defined;
+        expect(updated[0].tasks.length).to.equal(1);
+        expect(updated[0].tasks[0].messages[0].message).to.equal('Contact muted');
+        expect(updated[0].tasks[0].messages[0].to).to.equal('12345');
 
-        expect(updated[1].muted).toEqual(muteTime);
+        expect(updated[1].muted).to.equal(muteTime);
 
-        expect(updated[2].muted).not.toBeDefined();
+        expect(updated[2].muted).to.be.undefined;
       })
       .then(() => utils.saveDoc(mute2))
       .then(() => sentinelUtils.waitForSentinel(mute2._id))
       .then(() => sentinelUtils.getInfoDocs([mute2._id, 'person', 'clinic']))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.update_notifications).toBeDefined();
-        expect(infos[0].transitions.update_notifications.ok).toBe(true);
+        expect(infos[0].transitions).to.be.defined;
+        expect(infos[0].transitions.update_notifications).to.be.defined;
+        expect(infos[0].transitions.update_notifications.ok).to.equal(true);
 
-        expect(infos[1].muting_history).toBeDefined();
-        expect(infos[1].muting_history.length).toEqual(1);
-        expect(infos[1].muting_history[0].date).toEqual(muteTime);
+        expect(infos[1].muting_history).to.be.defined;
+        expect(infos[1].muting_history.length).to.equal(1);
+        expect(infos[1].muting_history[0].date).to.equal(muteTime);
 
-        expect(infos[2].muting_history).not.toBeDefined();
+        expect(infos[2].muting_history).to.be.undefined;
       })
       .then(() => utils.getDocs([mute2._id, 'person', 'clinic']))
       .then(updated => {
-        expect(updated[0].tasks).toBeDefined();
-        expect(updated[0].tasks.length).toEqual(1);
-        expect(updated[0].tasks[0].messages[0].message).toEqual('Contact muted');
-        expect(updated[0].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[0].tasks).to.be.defined;
+        expect(updated[0].tasks.length).to.equal(1);
+        expect(updated[0].tasks[0].messages[0].message).to.equal('Contact muted');
+        expect(updated[0].tasks[0].messages[0].to).to.equal('12345');
 
-        expect(updated[1].muted).toEqual(muteTime);
+        expect(updated[1].muted).to.equal(muteTime);
 
-        expect(updated[2].muted).not.toBeDefined();
+        expect(updated[2].muted).to.be.undefined;
       })
       .then(() => utils.saveDoc(unmute1))
       .then(() => sentinelUtils.waitForSentinel(unmute1._id))
       .then(() => sentinelUtils.getInfoDocs([unmute1._id, 'person']))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.update_notifications).toBeDefined();
-        expect(infos[0].transitions.update_notifications.ok).toBe(true);
+        expect(infos[0].transitions).to.be.defined;
+        expect(infos[0].transitions.update_notifications).to.be.defined;
+        expect(infos[0].transitions.update_notifications.ok).to.equal(true);
 
-        expect(infos[1].muting_history).toBeDefined();
-        expect(infos[1].muting_history.length).toEqual(2);
-        expect(infos[1].muting_history[1].muted).toEqual(false);
-        expect(infos[1].muting_history[1].report_id).toEqual(unmute1._id);
+        expect(infos[1].muting_history).to.be.defined;
+        expect(infos[1].muting_history.length).to.equal(2);
+        expect(infos[1].muting_history[1].muted).to.equal(false);
+        expect(infos[1].muting_history[1].report_id).to.equal(unmute1._id);
         unmuteTime = infos[1].muting_history[1].date;
       })
       .then(() => utils.getDocs([unmute1._id, 'person']))
       .then(updated => {
-        expect(updated[0].tasks).toBeDefined();
-        expect(updated[0].tasks.length).toEqual(1);
-        expect(updated[0].tasks[0].messages[0].message).toEqual('Contact unmuted');
-        expect(updated[0].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[0].tasks).to.be.defined;
+        expect(updated[0].tasks.length).to.equal(1);
+        expect(updated[0].tasks[0].messages[0].message).to.equal('Contact unmuted');
+        expect(updated[0].tasks[0].messages[0].to).to.equal('12345');
 
-        expect(updated[1].muted).not.toBeDefined();
+        expect(updated[1].muted).to.be.undefined;
       })
       .then(() => utils.saveDoc(unmute2))
       .then(() => sentinelUtils.waitForSentinel(unmute2._id))
       .then(() => sentinelUtils.getInfoDocs([unmute2._id, 'person']))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.update_notifications).toBeDefined();
-        expect(infos[0].transitions.update_notifications.ok).toBe(true);
+        expect(infos[0].transitions).to.be.defined;
+        expect(infos[0].transitions.update_notifications).to.be.defined;
+        expect(infos[0].transitions.update_notifications.ok).to.equal(true);
 
-        expect(infos[1].muting_history).toBeDefined();
-        expect(infos[1].muting_history.length).toEqual(2);
-        expect(infos[1].muting_history[1].date).toEqual(unmuteTime);
+        expect(infos[1].muting_history).to.be.defined;
+        expect(infos[1].muting_history.length).to.equal(2);
+        expect(infos[1].muting_history[1].date).to.equal(unmuteTime);
       })
       .then(() => utils.getDocs([unmute2._id, 'person']))
       .then(updated => {
-        expect(updated[0].tasks).toBeDefined();
-        expect(updated[0].tasks.length).toEqual(1);
-        expect(updated[0].tasks[0].messages[0].message).toEqual('Contact unmuted');
-        expect(updated[0].tasks[0].messages[0].to).toEqual('12345');
+        expect(updated[0].tasks).to.be.defined;
+        expect(updated[0].tasks.length).to.equal(1);
+        expect(updated[0].tasks[0].messages[0].message).to.equal('Contact unmuted');
+        expect(updated[0].tasks[0].messages[0].to).to.equal('12345');
 
-        expect(updated[1].muted).not.toBeDefined();
+        expect(updated[1].muted).to.be.undefined;
       });
   });
 });

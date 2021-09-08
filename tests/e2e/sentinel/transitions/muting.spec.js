@@ -101,9 +101,9 @@ const getMutingRev = (infoDoc) => {
 };
 
 describe('muting', () => {
-  beforeEach(done => utils.saveDocs(contacts).then(done));
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb([], true).then(done));
+  beforeEach(() => utils.saveDocs(contacts));
+  after(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb([], true));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {

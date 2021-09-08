@@ -4,8 +4,8 @@ const sentinelUtils = require('../utils');
 const uuid = require('uuid');
 
 describe('generate_patient_id_on_people', () => {
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb([], true).then(done));
+  after(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb([], true));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
@@ -24,7 +24,7 @@ describe('generate_patient_id_on_people', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        expect(Object.keys(info.transitions).length).to.equal(0);
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
@@ -77,11 +77,11 @@ describe('generate_patient_id_on_people', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        expect(Object.keys(info.transitions).length).to.equal(0);
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
-        expect(person.patient_id).toEqual('1234');
+        expect(person.patient_id).to.equal('1234');
       });
   });
 
@@ -102,13 +102,13 @@ describe('generate_patient_id_on_people', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toBeDefined();
-        expect(info.transitions.generate_patient_id_on_people).toBeDefined();
-        expect(info.transitions.generate_patient_id_on_people.ok).toEqual(true);
+        expect(info.transitions).to.be.defined;
+        expect(info.transitions.generate_patient_id_on_people).to.be.defined;
+        expect(info.transitions.generate_patient_id_on_people.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
-        expect(person.patient_id).toBeDefined();
+        expect(person.patient_id).to.be.defined;
       });
   });
 

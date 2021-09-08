@@ -203,13 +203,13 @@ const assertReminder = ({ form, reminder, place, message }) => {
 const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
 
 describe('reminders', () => {
-  beforeAll(() => {
+  before(() => {
     return utils
       .updateSettings({ transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig }, 'sentinel')
       .then(() => utils.saveDocs(contacts));
   });
 
-  afterAll(() => utils.revertDb());
+  after(() => utils.revertDb([], true));
 
   it('should create reminders', () => {
     let reminder1Date;

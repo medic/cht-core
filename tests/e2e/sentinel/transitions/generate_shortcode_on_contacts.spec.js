@@ -4,8 +4,8 @@ const sentinelUtils = require('../utils');
 const uuid = require('uuid');
 
 describe('generate_shortcode_on_contacts', () => {
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb([], true).then(done));
+  after(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb([], true));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
@@ -24,7 +24,7 @@ describe('generate_shortcode_on_contacts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        expect(Object.keys(info.transitions).length).to.equal(0);
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
@@ -58,8 +58,8 @@ describe('generate_shortcode_on_contacts', () => {
       .then(() => sentinelUtils.waitForSentinel([contact._id, report._id]))
       .then(() => sentinelUtils.getInfoDocs([contact._id, report._id]))
       .then(([ contactInfo, reportInfo ]) => {
-        expect(Object.keys(contactInfo.transitions).length).toEqual(0);
-        expect(Object.keys(reportInfo.transitions).length).toEqual(0);
+        expect(Object.keys(contactInfo.transitions).length).to.equal(0);
+        expect(Object.keys(reportInfo.transitions).length).to.equal(0);
       })
       .then(() => utils.getDocs([contact._id, report._id]))
       .then(([contact, report]) => {
@@ -115,11 +115,11 @@ describe('generate_shortcode_on_contacts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        expect(Object.keys(info.transitions).length).to.equal(0);
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
-        expect(person.patient_id).toEqual('1234');
+        expect(person.patient_id).to.equal('1234');
       });
   });
 
@@ -141,11 +141,11 @@ describe('generate_shortcode_on_contacts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        expect(Object.keys(info.transitions).length).to.equal(0);
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
-        expect(person.place_id).toEqual('1234');
+        expect(person.place_id).to.equal('1234');
       });
   });
 
@@ -166,13 +166,13 @@ describe('generate_shortcode_on_contacts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toBeDefined();
-        expect(info.transitions.generate_shortcode_on_contacts).toBeDefined();
-        expect(info.transitions.generate_shortcode_on_contacts.ok).toEqual(true);
+        expect(info.transitions).to.be.defined;
+        expect(info.transitions.generate_shortcode_on_contacts).to.be.defined;
+        expect(info.transitions.generate_shortcode_on_contacts.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
-        expect(person.patient_id).toBeDefined();
+        expect(person.patient_id).to.be.defined;
       });
   });
 

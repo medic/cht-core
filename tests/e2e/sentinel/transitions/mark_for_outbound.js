@@ -76,7 +76,7 @@ const wipeTasks = () => getTasks()
 
 describe('mark_for_outbound', () => {
   afterEach(() => Promise.all([utils.revertSettings(true), wipeTasks()]));
-  afterAll(() => utils.revertDb());
+  after(() => utils.revertDb([], true));
 
   describe('when external server is up', () => {
     beforeEach(() => startMockApp());

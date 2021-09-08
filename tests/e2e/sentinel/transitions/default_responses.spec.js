@@ -3,8 +3,8 @@ const sentinelUtils = require('../utils');
 const uuid = require('uuid');
 
 describe('default_responses', () => {
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb([], true).then(done));
+  after(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb([], true));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
@@ -27,7 +27,7 @@ describe('default_responses', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        expect(Object.keys(info.transitions).length).to.equal(0);
       });
   });
 
@@ -55,16 +55,16 @@ describe('default_responses', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toBeDefined();
-        expect(info.transitions.default_responses).toBeDefined();
-        expect(info.transitions.default_responses.ok).toBe(true);
+        expect(info.transitions).to.be.defined;
+        expect(info.transitions.default_responses).to.be.defined;
+        expect(info.transitions.default_responses.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
-        expect(updated.tasks).toBeDefined();
-        expect(updated.tasks.length).toEqual(1);
-        expect(updated.tasks[0].messages[0].to).toEqual(doc.from);
-        expect(updated.tasks[0].state).toEqual('pending');
+        expect(updated.tasks).to.be.defined;
+        expect(updated.tasks.length).to.equal(1);
+        expect(updated.tasks[0].messages[0].to).to.equal(doc.from);
+        expect(updated.tasks[0].state).to.equal('pending');
       });
   });
 
@@ -93,16 +93,16 @@ describe('default_responses', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toBeDefined();
-        expect(info.transitions.default_responses).toBeDefined();
-        expect(info.transitions.default_responses.ok).toBe(true);
+        expect(info.transitions).to.be.defined;
+        expect(info.transitions.default_responses).to.be.defined;
+        expect(info.transitions.default_responses.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
-        expect(updated.tasks).toBeDefined();
-        expect(updated.tasks.length).toEqual(1);
-        expect(updated.tasks[0].messages[0].to).toEqual(doc.from);
-        expect(updated.tasks[0].state).toEqual('pending');
+        expect(updated.tasks).to.be.defined;
+        expect(updated.tasks.length).to.equal(1);
+        expect(updated.tasks[0].messages[0].to).to.equal(doc.from);
+        expect(updated.tasks[0].state).to.equal('pending');
       });
   });
 
@@ -131,16 +131,16 @@ describe('default_responses', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toBeDefined();
-        expect(info.transitions.default_responses).toBeDefined();
-        expect(info.transitions.default_responses.ok).toBe(true);
+        expect(info.transitions).to.be.defined;
+        expect(info.transitions.default_responses).to.be.defined;
+        expect(info.transitions.default_responses.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
-        expect(updated.tasks).toBeDefined();
-        expect(updated.tasks.length).toEqual(1);
-        expect(updated.tasks[0].messages[0].to).toEqual(doc.from);
-        expect(updated.tasks[0].state).toEqual('pending');
+        expect(updated.tasks).to.be.defined;
+        expect(updated.tasks.length).to.equal(1);
+        expect(updated.tasks[0].messages[0].to).to.equal(doc.from);
+        expect(updated.tasks[0].state).to.equal('pending');
       });
   });
 });

@@ -369,20 +369,18 @@ const getChangeIds = changes => changes.map(change => change.id);
 const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
 
 describe('server side purge', () => {
-  beforeAll(done => {
+  before(() => {
     return utils
       .saveDocs([...docs, ...tasks, ...targets])
-      .then(() => utils.createUsers(users))
-      .then(() => done());
+      .then(() => utils.createUsers(users));
   });
-  afterAll(done =>
+  after(() =>
     utils
-      .revertDb()
+      .revertDb([], true)
       .then(() => sentinelUtils.deletePurgeDbs())
-      .then(() => utils.deleteUsers(users))
-      .then(() => done()));
+      .then(() => utils.deleteUsers(users)));
 
-  afterEach(done => utils.revertSettings().then(done));
+  afterEach(() => utils.revertSettings());
 
   it('should purge correct docs', () => {
     let seq;

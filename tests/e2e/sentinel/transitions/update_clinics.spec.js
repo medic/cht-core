@@ -3,8 +3,8 @@ const sentinelUtils = require('../utils');
 const uuid = require('uuid');
 
 describe('update_clinics', () => {
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb([], true).then(done));
+  after(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb([], true));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {transitions: {update_clinics: false}};
@@ -30,11 +30,11 @@ describe('update_clinics', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        expect(Object.keys(info.transitions).length).to.equal(0);
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
-        expect(updated.contact).not.toBeDefined();
+        expect(updated.contact).to.be.undefined;
       });
   });
 
@@ -69,21 +69,21 @@ describe('update_clinics', () => {
       .then(() => sentinelUtils.waitForSentinel(doc1._id))
       .then(() => sentinelUtils.getInfoDoc(doc1._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        expect(Object.keys(info.transitions).length).to.equal(0);
       })
       .then(() => utils.getDoc(doc1._id))
       .then(updated => {
-        expect(updated.contact).not.toBeDefined();
+        expect(updated.contact).to.be.undefined;
       })
       .then(() => utils.saveDoc(doc2))
       .then(() => sentinelUtils.waitForSentinel(doc2._id))
       .then(() => sentinelUtils.getInfoDoc(doc2._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        expect(Object.keys(info.transitions).length).to.equal(0);
       })
       .then(() => utils.getDoc(doc2._id))
       .then(updated => {
-        expect(updated.contact).toEqual({ _id: 'some_other_contact' });
+        expect(updated.contact).to.equal({ _id: 'some_other_contact' });
       });
   });
 
@@ -115,13 +115,13 @@ describe('update_clinics', () => {
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
       .then(infos => {
-        expect(Object.keys(infos[0].transitions).length).toEqual(0);
-        expect(Object.keys(infos[1].transitions).length).toEqual(0);
+        expect(Object.keys(infos[0].transitions).length).to.equal(0);
+        expect(Object.keys(infos[1].transitions).length).to.equal(0);
       })
       .then(() => utils.getDocs([doc1._id, doc2._id]))
       .then(updated => {
-        expect(updated[0].contact).not.toBeDefined();
-        expect(updated[1].contact).not.toBeDefined();
+        expect(updated[0].contact).to.be.undefined;
+        expect(updated[1].contact).to.be.undefined;
       });
   });
 
@@ -172,29 +172,29 @@ describe('update_clinics', () => {
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id]))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.update_clinics.ok).toEqual(true);
-        expect(infos[1].transitions).toBeDefined();
-        expect(infos[1].transitions.update_clinics.ok).toEqual(true);
+        expect(infos[0].transitions).to.be.defined;
+        expect(infos[0].transitions.update_clinics.ok).to.equal(true);
+        expect(infos[1].transitions).to.be.defined;
+        expect(infos[1].transitions.update_clinics.ok).to.equal(true);
 
-        expect(Object.keys(infos[2].transitions).length).toEqual(0);
+        expect(Object.keys(infos[2].transitions).length).to.equal(0);
       })
       .then(() => utils.getDocs([doc1._id, doc2._id, doc3._id]))
       .then(updated => {
-        expect(updated[0].contact).not.toBeDefined();
-        expect(updated[0].errors.length).toEqual(1);
-        expect(updated[0].tasks.length).toEqual(1);
-        expect(updated[0].tasks[0].messages[0].to).toEqual('12345');
-        expect(updated[0].tasks[0].messages[0].message).toEqual('Facility not found.');
-        expect(updated[0].errors[0].code).toEqual('sys.facility_not_found');
+        expect(updated[0].contact).to.be.undefined;
+        expect(updated[0].errors.length).to.equal(1);
+        expect(updated[0].tasks.length).to.equal(1);
+        expect(updated[0].tasks[0].messages[0].to).to.equal('12345');
+        expect(updated[0].tasks[0].messages[0].message).to.equal('Facility not found.');
+        expect(updated[0].errors[0].code).to.equal('sys.facility_not_found');
 
-        expect(updated[1].contact).not.toBeDefined();
-        expect(updated[1].errors.length).toEqual(1);
-        expect(updated[1].errors[0].code).toEqual('sys.facility_not_found');
-        expect(updated[1].tasks).not.toBeDefined();
+        expect(updated[1].contact).to.be.undefined;
+        expect(updated[1].errors.length).to.equal(1);
+        expect(updated[1].errors[0].code).to.equal('sys.facility_not_found');
+        expect(updated[1].tasks).to.be.undefined;
 
-        expect(updated[2].contact).not.toBeDefined();
-        expect(updated[2].errors).not.toBeDefined();
+        expect(updated[2].contact).to.be.undefined;
+        expect(updated[2].errors).to.be.undefined;
       });
 
   });
@@ -268,16 +268,16 @@ describe('update_clinics', () => {
       .then(() => sentinelUtils.waitForSentinel(docIds))
       .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.update_clinics).toBeDefined();
-        expect(infos[0].transitions.update_clinics.ok).toEqual(true);
+        expect(infos[0].transitions).to.be.defined;
+        expect(infos[0].transitions.update_clinics).to.be.defined;
+        expect(infos[0].transitions.update_clinics.ok).to.equal(true);
       })
       .then(() => utils.getDocs(docIds))
       .then(updated => {
-        expect(updated[0].contact).toEqual({ _id: 'person' });
-        expect(updated[1].contact).toEqual({ _id: 'person' });
-        expect(updated[2].contact).toEqual({ _id: 'person2' });
-        expect(updated[3].contact).toEqual({ _id: 'person_with_contact_type' });
+        expect(updated[0].contact).to.equal({ _id: 'person' });
+        expect(updated[1].contact).to.equal({ _id: 'person' });
+        expect(updated[2].contact).to.equal({ _id: 'person2' });
+        expect(updated[3].contact).to.equal({ _id: 'person_with_contact_type' });
       });
   });
 });

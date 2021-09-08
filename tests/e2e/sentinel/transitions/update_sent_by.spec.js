@@ -3,8 +3,8 @@ const sentinelUtils = require('../utils');
 const uuid = require('uuid');
 
 describe('update_sent_by', () => {
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb([], true).then(done));
+  after(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb([], true));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
@@ -24,7 +24,7 @@ describe('update_sent_by', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        expect(Object.keys(info.transitions).length).to.equal(0);
       });
   });
 
@@ -75,10 +75,10 @@ describe('update_sent_by', () => {
       .then(() => sentinelUtils.waitForSentinel([report1._id, report2._id, report3._id, report4._id]))
       .then(() => sentinelUtils.getInfoDocs([report1._id, report2._id, report3._id, report4._id]))
       .then(infos => {
-        expect(Object.keys(infos[0].transitions).length).toEqual(0);
-        expect(Object.keys(infos[1].transitions).length).toEqual(0);
-        expect(Object.keys(infos[2].transitions).length).toEqual(0);
-        expect(Object.keys(infos[3].transitions).length).toEqual(0);
+        expect(Object.keys(infos[0].transitions).length).to.equal(0);
+        expect(Object.keys(infos[1].transitions).length).to.equal(0);
+        expect(Object.keys(infos[2].transitions).length).to.equal(0);
+        expect(Object.keys(infos[3].transitions).length).to.equal(0);
       });
   });
 
@@ -118,12 +118,12 @@ describe('update_sent_by', () => {
       .then(() => sentinelUtils.waitForSentinel(report._id))
       .then(() => sentinelUtils.getInfoDoc(report._id))
       .then(info => {
-        expect(info.transitions).toBeDefined();
-        expect(info.transitions.update_sent_by.ok).toEqual(true);
+        expect(info.transitions).to.be.defined;
+        expect(info.transitions.update_sent_by.ok).to.equal(true);
       })
       .then(() => utils.getDoc(report._id))
       .then(updated => {
-        expect(updated.sent_by).toEqual('alpha');
+        expect(updated.sent_by).to.equal('alpha');
       });
   });
 });

@@ -94,8 +94,8 @@ const getContactsByReference = shortcodes => {
 const getIds = docs => docs.map(doc => doc._id);
 
 describe('registration', () => {
-  beforeAll(() => utils.saveDocs(contacts));
-  afterAll(() => utils.revertDb());
+  before(() => utils.saveDocs(contacts));
+  after(() => utils.revertDb([], true));
   afterEach(() => utils.revertDb(getIds(contacts), true));
 
   it('should be skipped when transition is disabled', () => {

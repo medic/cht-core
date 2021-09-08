@@ -317,12 +317,12 @@ const translations = {
 const ids = reports.map(report => report._id);
 
 describe('Due Tasks', () => {
-  beforeAll(() => utils
+  before(() => utils
     .saveDocs(contacts)
     .then(() => utils.addTranslations('test', translations))
     .then(() => utils.updateSettings(settings, 'sentinel'))
   );
-  afterAll(() => utils.revertDb());
+  after(() => utils.revertDb([], true));
 
   it('should process scheduled messages correctly', () => {
     return sentinelUtils

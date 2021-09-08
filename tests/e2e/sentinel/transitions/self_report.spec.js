@@ -24,9 +24,9 @@ const translations = {
 };
 
 describe('self_report', () => {
-  beforeAll(() => utils.saveDocs(contacts).then(() => utils.addTranslations('test', translations)));
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
+  before(() => utils.saveDocs(contacts).then(() => utils.addTranslations('test', translations)));
+  after(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb(contacts.map(c => c._id), true));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {

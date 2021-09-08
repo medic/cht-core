@@ -18,7 +18,7 @@ const userReadDocs = [
 ];
 
 describe('Background cleanup', () => {
-  afterEach(() => utils.revertDb().then(() => utils.deleteUsers([user], true)));
+  afterEach(() => utils.revertDb([], true).then(() => utils.deleteUsers([user], true)));
 
   it('processes a batch of outstanding deletes ', () => {
     // Create then delete a doc
