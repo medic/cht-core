@@ -6,8 +6,6 @@
   const phoneNumber = require('@medic/phone-number');
   require( 'enketo-core/src/js/plugins' );
 
-  const pluginName = 'phonewidget';
-
   // Set up enketo validation for `phone` input type
   FormModel.prototype.types.tel = {
     validate: function( fieldValue ) {
@@ -90,21 +88,6 @@
     // so that the "invalid value" error can display.
     return phoneNumber.normalize( settings, value ) || value;
   }
-
-  $.fn[ pluginName ] = function( options, event ) {
-    return this.each( function() {
-      const $this = $( this );
-      let data = $this.data( pluginName );
-
-      options = options || {};
-
-      if ( !data && typeof options === 'object' ) {
-        $this.data( pluginName, ( data = new PhoneWidget( this, options, event ) ) );
-      } else if ( data && typeof options === 'string' ) {
-        data[ options ]( this );
-      }
-    } );
-  };
 
   module.exports = PhoneWidget;
 }

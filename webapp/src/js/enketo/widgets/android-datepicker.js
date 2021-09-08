@@ -19,8 +19,6 @@
   const $ = require( 'jquery' );
   require( 'enketo-core/src/js/plugins' );
 
-  const pluginName = 'androiddatepicker';
-
   /**
      * Work around a bug in some versions of Android Browser and Android WebView
      * which cause datepickers to fail to re-display after they have been
@@ -80,21 +78,6 @@
         });
     }
   }
-
-  $.fn[ pluginName ] = function( options, event ) {
-    return this.each( function() {
-      const $this = $( this );
-      let data = $this.data( pluginName );
-
-      options = options || {};
-
-      if ( !data && typeof options === 'object' ) {
-        $this.data( pluginName, ( data = new Androiddatepicker( this, options, event ) ) );
-      } else if ( data && typeof options === 'string' ) {
-        data[ options ]( this );
-      }
-    } );
-  };
 
   module.exports = Androiddatepicker;
 }

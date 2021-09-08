@@ -4,8 +4,6 @@
   const $ = require( 'jquery' );
   require('enketo-core/src/js/plugins');
 
-  const pluginName = 'simprintswidget';
-
   /**
      * @extends Widget
      */
@@ -46,21 +44,6 @@
       } );
     }
   }
-
-  $.fn[ pluginName ] = function( options, event ) {
-    return this.each( function() {
-      const $this = $( this );
-      let data = $this.data( pluginName );
-
-      options = options || {};
-
-      if ( !data && typeof options === 'object' ) {
-        $this.data( pluginName, ( data = new Simprintswidget( this, options, event ) ) );
-      } else if ( data && typeof options === 'string' ) {
-        data[ options ]( this );
-      }
-    } );
-  };
 
   module.exports = Simprintswidget;
 }

@@ -20,8 +20,6 @@
   const $ = require( 'jquery' );
   require( 'enketo-core/src/js/plugins' );
 
-  const pluginName = 'timerwidget';
-
   const DIM = 320;
   const DEFAULT_TIME = 60;
 
@@ -44,21 +42,6 @@
       new TimerAnimation(canvas[0], DIM, DIM, parseInt($el.val()) || DEFAULT_TIME);
     }
   }
-
-  $.fn[ pluginName ] = function( options, event ) {
-    return this.each( function() {
-      const $this = $( this );
-      let data = $this.data( pluginName );
-
-      options = options || {};
-
-      if ( !data && typeof options === 'object' ) {
-        $this.data( pluginName, ( data = new Timerwidget( this, options, event ) ) );
-      } else if ( data && typeof options === 'string' ) {
-        data[ options ]( this );
-      }
-    } );
-  };
 
   module.exports = Timerwidget;
 }

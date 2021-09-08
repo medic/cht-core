@@ -7,7 +7,6 @@
 
   require('enketo-core/src/js/plugins');
 
-  const pluginName = 'dbobjectwidget';
   const mainSelector = '.or-appearance-db-object,.or-appearance-select-contact';
 
   /**
@@ -121,22 +120,6 @@
       // Non-existant nodes are undefined
       if (typeof node.getVal() !== 'undefined') {
         node.setVal(value);
-      }
-    });
-  };
-
-  // TODO Need to figure out if we still need this block.
-  $.fn[pluginName] = function (options, event) {
-    return this.each(function () {
-      const $this = $(this);
-      let data = $this.data(pluginName);
-
-      options = options || {};
-
-      if (!data && typeof options === 'object') {
-        $this.data(pluginName, (data = new Dbobjectwidget(this, options, event)));
-      } else if (data && typeof options === 'string') {
-        data[options](this);
       }
     });
   };

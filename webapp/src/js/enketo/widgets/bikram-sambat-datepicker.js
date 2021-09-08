@@ -5,8 +5,6 @@
   require( 'enketo-core/src/js/plugins' );
   const bikram_sambat_bs = require( 'bikram-sambat-bootstrap' );
 
-  const pluginName = 'bikramsambatdatepicker';
-
   class Bikramsambatdatepicker extends Widget {
     static get selector() {
       return 'input[type=date]';
@@ -50,21 +48,6 @@
         });
     }
   }
-
-  $.fn[ pluginName ] = function( options, event ) {
-    return this.each( function() {
-      const $this = $( this );
-      let data = $this.data( pluginName );
-
-      options = options || {};
-
-      if ( !data && typeof options === 'object' ) {
-        $this.data( pluginName, ( data = new Bikramsambatdatepicker( this, options, event ) ) );
-      } else if ( data && typeof options === 'string' ) {
-        data[ options ]( this );
-      }
-    } );
-  };
 
   module.exports = Bikramsambatdatepicker;
 }
