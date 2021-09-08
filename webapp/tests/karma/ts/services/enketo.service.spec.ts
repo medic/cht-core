@@ -256,6 +256,25 @@ describe('Enketo service', () => {
       });
     });
 
+    it('passes users language to Enketo', () => {
+      const data = '<data><patient_id>123</patient_id></data>';
+      UserContact.resolves({ contact_id: '123' });
+      dbGetAttachment
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves('my model');
+      enketoInit.returns([]);
+      FileReader.utf8
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves('my model');
+      EnketoPrepopulationData.resolves(data);
+      Language.resolves('sw');
+      return service.render($('<div></div>'), mockEnketoDoc('myform'), data).then(() => {
+        expect(Language.callCount).to.equal(1);
+        expect(EnketoForm.callCount).to.equal(1);
+        expect(EnketoForm.args[0][2].language).to.equal('sw');
+      });
+    });
+
     it('passes xml instance data through to Enketo', () => {
       const data = '<data><patient_id>123</patient_id></data>';
       UserContact.resolves({ contact_id: '123' });
