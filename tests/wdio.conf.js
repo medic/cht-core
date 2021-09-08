@@ -5,6 +5,9 @@ const constants = require('./constants');
 const utils = require('./utils');
 const path = require('path');
 
+const chai = require('chai');
+chai.use(require('chai-exclude'));
+
 const ALLURE_OUTPUT = 'allure-results';
 const getSpecName = (specs) => specs[0].split('/').slice(-1)[0].split('.wdio-spec')[0];
 const getBrowserLogFilePath = (specs) => {
@@ -12,6 +15,8 @@ const getBrowserLogFilePath = (specs) => {
   return path.join(__dirname, 'logs', 'browser.' + specName + '.log');
 };
 const browserLogPath = path.join(__dirname, 'logs', 'browser.console.log');
+const browserUtils = require('./utils/browser');
+const existingFeedBackDocIds = [];
 
 const baseConfig = {
   //
@@ -266,6 +271,14 @@ const baseConfig = {
    * Function to be executed after a test (in Mocha/Jasmine).
    */
   afterTest: async (test, context, { passed }) => {
+    const feedBackDocs = await browserUtils.feedBackDocs(`${test.parent} ${test.title}`,existingFeedBackDocIds);
+    existingFeedBackDocIds.push(feedBackDocs);
+    if(feedBackDocs){
+      if(passed){
+        context.test.callback(new Error('Feedback docs were generated during the test.'));
+      }
+      passed = false;
+    }
     if (passed === false) {
       await browser.takeScreenshot();
     }

@@ -269,7 +269,7 @@ describe('RapidPro SMS Gateway', () => {
       settings = {
         sms: {
           outgoing_service: 'rapidpro',
-          rapidpro: { url: `http://localhost:${server.address().port}` },
+          rapidpro: { url: utils.hostURL(server.address().port) },
         }
       };
       reportWithTasks = {

@@ -23,6 +23,7 @@ const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
 const contactSexField = () => $('[data-name="/data/contact/sex"][value="female"]');
 const personName = () => $('[name="/data/person/name"]');
 const personSexField = () => $('[data-name="/data/person/sex"][value="female"]');
+const personPhoneField = () => $('input.ignore[type="tel"]');
 const topContact = () => $('#contacts-list > ul > li:nth-child(1) > a > div.content > div > h4 > span');
 const name = () => $('.children h4 span');
 const externalIdField = (place) => $(`[name="/data/${place}/external_id"]`);
@@ -31,8 +32,21 @@ const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][v
 const contactCard = () => $('.card h2');
 const contactCardIcon = (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`);
 const rhsPeopleListSelector = () => $$('[test-id="person"] h4 span');
+const rhsReportListSelector = '[test-id="report"] h4 span';
+const rhsReportListElement = () => $(rhsReportListSelector);
+const rhsReportElementList = () => $$(rhsReportListSelector);
 const contactSummaryContainer = () => $('#contact_summary');
 const emptySelection = () => $('contacts-content .empty-selection');
+const editContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
+const deleteContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-trash-o');
+const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
+
+const leftAddPlace = () => $('.dropup a[mmauth="can_create_places"]');
+const rightAddPlace = () => $('span[test-id="rhs_add_contact"] a');
+const rightAddPlaces = () => $('span[test-id="rhs_add_contact"] p[test-key="Add place"]');
+const rightAddPersons = () => $('span[test-id="rhs_add_contact"] p[test-key="Add person"]');
+const rightAddPerson = (create_key) => $(`span[test-id="rhs_add_contact"] p[test-key="${create_key}"]`);
+const contactCards = () => $$('.card.children');
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
@@ -87,16 +101,49 @@ const addPlace = async (type, placeName , contactName ) => {
   await (await contactCard()).waitForDisplayed();
 };
 
-const addPerson = async (name, dob = '2000-01-01') => {
+const addPerson = async (name, params = {}) => {
+  const { dob='2000-01-01', phone } = params;
   await (await actionResourceIcon('person')).click();
   await (await personName()).addValue(name);
   await (await dateOfBirthField()).addValue(dob);
   await (await personName()).click(); // blur the datepicker field so the sex field is visible
+  if (phone) {
+    await (await personPhoneField()).addValue(phone);
+  }
   await (await personSexField()).click();
   await (await notes('person')).addValue('some person notes');
   await (await genericForm.submitButton()).click();
   await (await contactCardIcon('person')).waitForDisplayed();
   return (await contactCard()).getText();
+};
+
+const editPerson = async (name, updatedName) => {
+  await selectLHSRowByText(name);
+  await waitForContactLoaded();
+  await (await editContactButton()).click();
+
+  await (await genericForm.nextPage());
+
+  await (await personName()).clearValue();
+  await (await personName()).addValue(updatedName);
+
+  await (await genericForm.submitButton()).click();
+  await waitForContactLoaded();
+  return (await contactCard()).getText();
+};
+
+const deletePerson = async (name) => {
+  await selectLHSRowByText(name);
+  await waitForContactLoaded();
+  await (await deleteContactButton()).click();
+  await (await deleteConfirmationModalButton()).waitForDisplayed();
+  await (await deleteConfirmationModalButton()).click();
+};
+
+const getContactSummaryField = async (fieldName) => {
+  await (await contactSummaryContainer()).waitForDisplayed();
+  const field = await (await contactSummaryContainer()).$(`.cell.${fieldName.replace(/\./g, '\\.')}`);
+  return await (await field.$('p')).getText();
 };
 
 const getPrimaryContactName = async () => {
@@ -122,6 +169,22 @@ const getAllRHSPeopleNames = async () => {
   return getTextForElements(rhsPeopleListSelector);
 };
 
+const getAllRHSReportsNames = async () => {
+  await (await rhsReportListElement()).waitForDisplayed();
+  return getTextForElements(rhsReportElementList);
+};
+
+const allContactsList = async () => {
+  const parentCards = await contactCards();
+  return Promise.all(parentCards.map(async (parent) => {
+    return {
+      heading: await(await parent.$('h3')).getText(),
+      contactNames: await Promise.all((await parent.$$('.children h4 span')).map(filter => filter.getText()))
+    };
+  }));
+};
+
+
 module.exports = {
   selectLHSRowByText,
   reportFilters,
@@ -138,4 +201,14 @@ module.exports = {
   waitForContactLoaded,
   waitForContactUnloaded,
   contactCard,
+  editPerson,
+  getContactSummaryField,
+  getAllRHSReportsNames,
+  deletePerson,
+  leftAddPlace,
+  rightAddPlace,
+  rightAddPlaces,
+  rightAddPersons,
+  rightAddPerson,
+  allContactsList
 };

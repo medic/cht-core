@@ -160,7 +160,11 @@ app.use(
           // Explicitly allow the telemetry script setting startupTimes
           `'sha256-B5cfIVb4/wnv2ixHP03bHeMXZDszDL610YG5wdDq/Tc='`,
           // AngularJS and several dependencies require this
-          `'unsafe-eval'`
+          `'unsafe-eval'`,
+          // Allow Enketo onsubmit form attribute
+          // https://github.com/medic/cht-core/issues/6988
+          `'unsafe-hashes'`,
+          `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
         ],
         styleSrc: [
           `'self'`,

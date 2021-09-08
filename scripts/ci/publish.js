@@ -3,13 +3,13 @@
  */
 const {
   MARKET_URL,
-  TRAVIS_BUILD_NUMBER,
+  BUILD_NUMBER,
   BUILDS_SERVER,
   STAGING_SERVER,
-  TRAVIS_TAG,
-  TRAVIS_BRANCH
+  TAG,
+  BRANCH
 } = process.env;
-const releaseName = TRAVIS_TAG || TRAVIS_BRANCH;
+const releaseName = TAG || BRANCH;
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 
@@ -21,7 +21,7 @@ if (!releaseName) {
 const testingDb = new PouchDB(`${MARKET_URL}/${BUILDS_SERVER}`);
 const stagingDb = new PouchDB(`${MARKET_URL}/${STAGING_SERVER}`);
 
-const testingDocId = `medic:medic:test-${TRAVIS_BUILD_NUMBER}`;
+const testingDocId = `medic:medic:test-${BUILD_NUMBER}`;
 const stagingDocId = `medic:medic:${releaseName}`;
 
 const get = () => {
