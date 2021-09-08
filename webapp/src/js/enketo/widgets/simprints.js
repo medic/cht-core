@@ -7,56 +7,45 @@
   const pluginName = 'simprintswidget';
 
   /**
-     * @constructor
-     * @param {Element} element [description]
-     * @param {(boolean|{touch: boolean, repeat: boolean})} options options
-     * @param {*=} e     event
+     * @extends Widget
      */
-  function Simprintswidget( element, options ) {
-    this.namespace = pluginName;
-    Object.assign( this, new Widget( element, options ) );
-    this._init();
-  }
-
-  //copy the prototype functions from the Widget super class
-  Simprintswidget.prototype = Object.create( Widget.prototype );
-
-  //ensure the constructor is the new one
-  Simprintswidget.prototype.constructor = Simprintswidget;
-
-  Simprintswidget.prototype._init = function() {
-    const $el = $( this.element );
-    const $input = $el.find( 'input' );
-    $input.attr( 'disabled', true );
-    const $translate = window.CHTCore.Translate;
-    // todo migrate when simprints are migrated
-    //const service = angularServices.get( 'Simprints' );
-    const service = {
-      enabled: () => {},
-      register: () => Promise.resolve(),
-    };
-
-    if ( !service.enabled() ) {
-      $translate.get( 'simprints.disabled' ).then(function( label ) {
-        $el.append( '<p>' + label + '</p>' );
-      });
-      return;
+  class Simprintswidget extends Widget {
+    static get selector() {
+      return '.or-appearance-simprints-reg';
     }
 
-    $el.on( 'click', '.btn.simprints-register', function() {
-      service.register().then( function(simprintsId) {
-        $input.val( simprintsId ).trigger( 'change' );
+    _init() {
+      const $el = $( this.element );
+      const $input = $el.find( 'input' );
+      $input.attr( 'disabled', true );
+      const $translate = window.CHTCore.Translate;
+      // todo migrate when simprints are migrated
+      //const service = angularServices.get( 'Simprints' );
+      const service = {
+        enabled: () => {},
+        register: () => Promise.resolve(),
+      };
+
+      if ( !service.enabled() ) {
+        $translate.get( 'simprints.disabled' ).then(function( label ) {
+          $el.append( '<p>' + label + '</p>' );
+        });
+        return;
+      }
+
+      $el.on( 'click', '.btn.simprints-register', function() {
+        service.register().then( function(simprintsId) {
+          $input.val( simprintsId ).trigger( 'change' );
+        } );
       } );
-    } );
 
-    $translate.get( 'simprints.register' ).then( function( label ) {
-      $el.append( '<div><a class="btn btn-default simprints-register">' +
-        '<img src="/img/simprints.png" width="20" height="20"/> ' + label + '</a>' +
-      '</div>' );
-    } );
-  };
-
-  Simprintswidget.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
+      $translate.get( 'simprints.register' ).then( function( label ) {
+        $el.append( '<div><a class="btn btn-default simprints-register">' +
+          '<img src="/img/simprints.png" width="20" height="20"/> ' + label + '</a>' +
+          '</div>' );
+      } );
+    }
+  }
 
   $.fn[ pluginName ] = function( options, event ) {
     return this.each( function() {
@@ -72,9 +61,6 @@
       }
     } );
   };
-
-  Simprintswidget.selector = '.or-appearance-simprints-reg';
-  Simprintswidget.condition = function() { return true; };
 
   module.exports = Simprintswidget;
 }

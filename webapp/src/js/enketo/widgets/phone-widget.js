@@ -45,51 +45,36 @@
   /**
      * Allows validated phonenumber entry.
      *
-     * @constructor
-     * @param {Element} element [description]
-     * @param {(boolean|{touch: boolean, repeat: boolean})} options options
-     * @param {*=} e     event
+     * @extends Widget
      */
+  class PhoneWidget extends Widget {
+    static get selector() {
+      return 'input[type="tel"]';
+    }
 
-  function PhoneWidget( element, options, Settings ) {
-    if(element) {
-      this.namespace = pluginName;
-      Object.assign( this, new Widget( element, options ) );
-      if (!Settings) {
-        Settings = window.CHTCore.Settings;
-      }
-      this._init(Settings);
+    _init() {
+      const $input = $( this.element );
+
+      // Add a proxy input field, which will send its input, formatted, to the real input field.
+      // TODO(estellecomment): format the visible field onBlur to user-friendly format.
+      const $proxyInput = $input.clone();
+      $proxyInput.addClass('ignore');
+      $proxyInput.removeAttr('data-relevant');
+      $proxyInput.removeAttr('name');
+      $input.before( $proxyInput );
+      $proxyInput.val( $input.val() );
+
+      $input.hide();
+
+      // TODO(estellecomment): move this to a catch clause, when settings aren't found.
+      formatAndCopy( $proxyInput, $input, {} );
+
+      this.builtPromise = window.CHTCore.Settings.get()
+        .then( function( settings ) {
+          formatAndCopy( $proxyInput, $input, settings );
+        } );
     }
   }
-
-  //copy the prototype functions from the Widget super class
-  PhoneWidget.prototype = Object.create( Widget.prototype );
-
-  //ensure the constructor is the new one
-  PhoneWidget.prototype.constructor = PhoneWidget;
-
-  PhoneWidget.prototype._init = function( Settings ) {
-    const $input = $( this.element );
-
-    // Add a proxy input field, which will send its input, formatted, to the real input field.
-    // TODO(estellecomment): format the visible field onBlur to user-friendly format.
-    const $proxyInput = $input.clone();
-    $proxyInput.addClass('ignore');
-    $proxyInput.removeAttr('data-relevant');
-    $proxyInput.removeAttr('name');
-    $input.before( $proxyInput );
-    $proxyInput.val( $input.val() );
-
-    $input.hide();
-
-    // TODO(estellecomment): move this to a catch clause, when settings aren't found.
-    formatAndCopy( $proxyInput, $input, {} );
-
-    this.builtPromise = Settings.get()
-      .then( function( settings ) {
-        formatAndCopy( $proxyInput, $input, settings );
-      } );
-  };
 
   function formatAndCopy( $from, $to, settings ) {
     $from.change( function() {
@@ -103,8 +88,6 @@
     // so that the "invalid value" error can display.
     return phoneNumber.normalize( settings, value ) || value;
   }
-
-  PhoneWidget.prototype.destroy = function( /* element */) {};
 
   $.fn[ pluginName ] = function( options, event ) {
     return this.each( function() {
@@ -120,9 +103,6 @@
       }
     } );
   };
-
-  PhoneWidget.selector = 'input[type="tel"]';
-  PhoneWidget.condition = function() { return true; };
 
   module.exports = PhoneWidget;
 }

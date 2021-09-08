@@ -13,14 +13,19 @@
   /**
    * Allows drop-down selectors for db objects.
    *
-   * @constructor
-   * @param {Element} element [description]
-   * @param {(boolean|{touch: boolean, repeat: boolean})} options options
-   * @param {*=} e     event
+   * @extends Widget
    */
   class Dbobjectwidget extends Widget {
+    static get selector() {
+      return `${mainSelector} input[type=text]`;
+    }
+
     _init() {
       construct(this.element);
+    }
+
+    list() {
+      return true;
     }
   }
 
@@ -120,42 +125,7 @@
     });
   };
 
-  /** TODO I don't think there is a destroy function any more...
-   * This function, implemented on all enketo widgets, is only called when
-   * cloning repeated sections of a form.  It's actually called on the cloned
-   * copy of a question, and for some reason for this widget needs to destroy
-   * and then re-create the select2.
-   * @see https://github.com/medic/medic/issues/3487
-   */
-  Dbobjectwidget.prototype.destroy = function (element) {
-    deconstruct(element);
-    construct(element);
-  };
-
-  /** Reverse the select2 setup steps performed in construct() */
-  function deconstruct(element) {
-    const $question = $(element).parent(mainSelector);
-
-    $question.find('.select2-container').remove();
-
-    const $selectInput = $question.find('select');
-
-    // At this stage in construct(), the select2 jquery plugin is
-    // initialised.  To reverse this, we would call:
-    //     $selectInput.data( 'select2' ).destroy();
-    // However, calling this here would destroy the select2 for the original
-    // widget, so -do not do it-.
-
-    $selectInput.off('change.dbobjectwidget');
-
-    $selectInput.find('option').remove();
-
-    const replacementHtml = $selectInput[0].outerHTML
-      .replace(/^<select /, '<input ')
-      .replace(/<\/select>/, '</input>');
-    $selectInput.replaceWith(replacementHtml);
-  }
-
+  // TODO Need to figure out if we still need this block.
   $.fn[pluginName] = function (options, event) {
     return this.each(function () {
       const $this = $(this);
@@ -169,12 +139,6 @@
         data[options](this);
       }
     });
-  };
-
-  Dbobjectwidget.selector = `${mainSelector} input[type=text]`;
-  Dbobjectwidget.condition = Widget.condition;
-  Dbobjectwidget.list = function () {
-    return true;
   };
 
   module.exports = Dbobjectwidget;

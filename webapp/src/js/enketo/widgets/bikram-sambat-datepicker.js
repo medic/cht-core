@@ -7,57 +7,49 @@
 
   const pluginName = 'bikramsambatdatepicker';
 
-  function Bikramsambatdatepicker( element, options ) {
-    this.namespace = pluginName;
-    Object.assign( this, new Widget( element, options ) );
-    this._init();
+  class Bikramsambatdatepicker extends Widget {
+    static get selector() {
+      return 'input[type=date]';
+    }
+
+    _init() {
+      const el = this.element;
+
+      window.CHTCore.Language
+        .get()
+        .then( function( language ) {
+          const $el = $( el );
+
+          // Here we support the appearance="bikram-sambat" attribute as
+          // well to maintain compatibility with collect.
+          if ( language.indexOf( 'ne' ) !== 0 &&
+            $el.parent('.or-appearance-bikram-sambat').length === 0) {
+            return;
+          }
+
+          const $parent = $el.parent();
+          const $realDateInput = $parent.children( 'input[type=date]' );
+          const initialVal = $realDateInput.val();
+
+          // Remove datepicker-extended widget:
+          $parent.children( '.widget.date' ).remove();
+          // Hide standard date input (datepicker-extended may not have removed it
+          // previously due to badSamsung bug).
+          $realDateInput.hide();
+
+          $parent.append( TEMPLATE );
+
+          bikram_sambat_bs.initListeners( $parent, $realDateInput );
+
+          if ( initialVal ) {
+            bikram_sambat_bs.setDate_greg_text(
+              $parent.children( '.bikram-sambat-input-group' ),
+              $realDateInput,
+              initialVal );
+          }
+        });
+    }
   }
-
-  //copy the prototype functions from the Widget super class
-  Bikramsambatdatepicker.prototype = Object.create( Widget.prototype );
-
-  //ensure the constructor is the new one
-  Bikramsambatdatepicker.prototype.constructor = Bikramsambatdatepicker;
-
-  Bikramsambatdatepicker.prototype._init = function() {
-    const el = this.element;
-
-    window.CHTCore.Language
-      .get()
-      .then( function( language ) {
-        const $el = $( el );
-
-        // Here we support the appearance="bikram-sambat" attribute as
-        // well to maintain compatibility with collect.
-        if ( language.indexOf( 'ne' ) !== 0 &&
-                        $el.parent('.or-appearance-bikram-sambat').length === 0) {
-          return;
-        }
-
-        const $parent = $el.parent();
-        const $realDateInput = $parent.children( 'input[type=date]' );
-        const initialVal = $realDateInput.val();
-
-        // Remove datepicker-extended widget:
-        $parent.children( '.widget.date' ).remove();
-        // Hide standard date input (datepicker-extended may not have removed it
-        // previously due to badSamsung bug).
-        $realDateInput.hide();
-
-        $parent.append( TEMPLATE );
-
-        bikram_sambat_bs.initListeners( $parent, $realDateInput );
-
-        if ( initialVal ) {
-          bikram_sambat_bs.setDate_greg_text(
-            $parent.children( '.bikram-sambat-input-group' ),
-            $realDateInput,
-            initialVal );
-        }
-      });
-  };
-
-  Bikramsambatdatepicker.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
 
   $.fn[ pluginName ] = function( options, event ) {
     return this.each( function() {
@@ -73,9 +65,6 @@
       }
     } );
   };
-
-  Bikramsambatdatepicker.selector = 'input[type=date]';
-  Bikramsambatdatepicker.condition = function() { return true; };
 
   module.exports = Bikramsambatdatepicker;
 }
