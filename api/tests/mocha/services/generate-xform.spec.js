@@ -1,7 +1,7 @@
 const { promisify } = require('util');
 const readFile = promisify(require('fs').readFile);
 const { join } = require('path');
-const { expect } = require('chai');
+const { assert, expect } = require('chai');
 const sinon = require('sinon');
 const childProcess = require('child_process');
 const db = require('../../../src/db');
@@ -45,13 +45,17 @@ describe('generate-xform service', () => {
       });
     };
 
-    const runTest = (dirname, err) => {
+    const runTest = (dirname, err, writeErr) => {
+      const writeStub = sinon.stub();
+      if (writeErr) {
+        writeStub.throws(writeErr);
+      }
       const spawned = {
         stdout: { on: sinon.stub() },
         stderr: { on: sinon.stub() },
         stdin: {
           setEncoding: sinon.stub(),
-          write: sinon.stub(),
+          write: writeStub,
           end: sinon.stub()
         },
         on: sinon.stub()
@@ -62,7 +66,7 @@ describe('generate-xform service', () => {
         if (err) {
           spawned.stderr.on.args[0][1](err);
           spawned.on.args[0][1](100);
-        } else {
+        } else if (!writeErr) {
           // child process outputs then closes with code 0
           spawned.stdout.on.args[0][1](files.givenForm);
           spawned.on.args[0][1](0);
@@ -82,16 +86,36 @@ describe('generate-xform service', () => {
 
     it('correctly replaces models with nested "</root>" - #5971', () => runTest('nested-root'));
 
-    it('errors if child process errors', done => {
-      runTest('simple', 'some error')
-        .then(() => done(new Error('expected error to be thrown')))
-        .catch(err => {
-          expect(err.message).to.equal(
-            'Error transforming xml. xsltproc returned code "100", and signal "undefined". ' +
-            'xsltproc stderr output:\nsome error'
-          );
-          done();
-        });
+    it('errors if child process errors', async () => {
+      try {
+        await runTest('simple', 'some error');
+        assert.fail('expected error to be thrown');
+      } catch (err) {
+        expect(err.message).to.equal(
+          'Error transforming xml. xsltproc returned code "100", and signal "undefined". ' +
+          'xsltproc stderr output:\nsome error'
+        );
+      }
+    });
+
+    it('errors if xsltproc command not found', async () => {
+      try {
+        const err = new Error('Command xsltproc not found');
+        err.code = 'EPIPE';
+        await runTest('simple', null, err);
+        assert.fail('expected error to be thrown');
+      } catch (err) {
+        expect(err.message).to.equal('Command xsltproc not found');
+      }
+    });
+
+    it('errors if xsltproc raises unknown exception', async () => {
+      try {
+        await runTest('simple', null, new Error());
+        assert.fail('expected error to be thrown');
+      } catch (err) {
+        expect(err.message).to.equal('Unknown error calling xsltproc');
+      }
     });
   });
 

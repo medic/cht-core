@@ -16,17 +16,27 @@ const MEDIA_SRC_ATTR = ' data-media-src="';
 
 const FORM_STYLESHEET = path.join(__dirname, '../xsl/openrosa2html5form.xsl');
 const MODEL_STYLESHEET = path.join(__dirname, '../../node_modules/enketo-xslt/xsl/openrosa2xmlmodel.xsl');
+const XSLTPROC_CMD = 'xsltproc';
 
 const transform = (formXml, stylesheet) => {
   return new Promise((resolve, reject) => {
-    const xsltproc = childProcess.spawn('xsltproc', [ stylesheet, '-' ]);
+    const xsltproc = childProcess.spawn(XSLTPROC_CMD, [ stylesheet, '-' ]);
     let stdout = '';
     let stderr = '';
     xsltproc.stdout.on('data', data => stdout += data);
     xsltproc.stderr.on('data', data => stderr += data);
     xsltproc.stdin.setEncoding('utf-8');
-    xsltproc.stdin.write(formXml);
-    xsltproc.stdin.end();
+    try {
+      xsltproc.stdin.write(formXml);
+    } catch (err) {
+      if (err.code === 'EPIPE') {
+        return reject(new Error(`Command ${XSLTPROC_CMD} not found`));
+      }
+      logger.error(err);
+      return reject(new Error(`Unknown error calling ${XSLTPROC_CMD}`));
+    } finally {
+      xsltproc.stdin.end();
+    }
     xsltproc.on('close', (code, signal) => {
       if (code !== 0 || signal || stderr.length) {
         let errorMsg = `Error transforming xml. xsltproc returned code "${code}", and signal "${signal}"`;
