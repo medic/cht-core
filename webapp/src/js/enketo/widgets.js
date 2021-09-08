@@ -7,7 +7,6 @@
     require( 'enketo-core/src/widget/columns/columns' ).default,
     require( 'enketo-core/src/widget/file/filepicker' ).default,
     require( 'enketo-core/src/widget/date/datepicker-extended' ).default,
-    require( './widgets/horizontal-choices' ),
     require( './widgets/countdown-widget' ),
     require( './widgets/db-object-widget' ),
     require( './widgets/phone-widget' ),
