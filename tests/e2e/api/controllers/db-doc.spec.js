@@ -566,7 +566,7 @@ describe('db-doc handler', () => {
       const patientsToDeleteIds = patientsToDelete.map(doc => doc._id);
       const submittersToDeleteIds = submittersToDelete.map(doc => doc._id);
 
-      before(sentinelUtils.waitForSentinel);
+      before(sentinelUtils.waitForSentinel());
 
       beforeEach(() => {
         patientsToDelete.forEach(doc => delete doc._rev);
