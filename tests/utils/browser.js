@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const fs = require('fs');
 const feedBackDocs = async (testName = 'allLogs', existingDocIds = []) => {
   const feedBackDocs = await browser.executeAsync(feedBackDocsScript);
@@ -24,6 +25,18 @@ const feedBackDocsScript = async (done) => {
   })));
 };
 
+const serviceWorkerActivated = () => {
+  return browser.execute(() => window.navigator &&
+    window.navigator.serviceWorker &&
+    window.navigator.serviceWorker.controller &&
+    window.navigator.serviceWorker.controller.state === 'activated' &&
+    window.navigator.serviceWorker.controller.scriptURL &&
+    window.navigator.serviceWorker.controller.scriptURL.includes('service-worker.js'));
+
+};
+
+
 module.exports = {
-  feedBackDocs
+  feedBackDocs,
+  serviceWorkerActivated
 };

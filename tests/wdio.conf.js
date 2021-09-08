@@ -44,7 +44,7 @@ const baseConfig = {
   // will be called from there.
   //
   specs: [
-    './tests/e2e/**/*.wdio-spec.js'
+    'tests/e2e/login/login-logout.wdio-spec.js'
   ],
   // Patterns to exclude.
   exclude: [
@@ -232,6 +232,7 @@ const baseConfig = {
    */
   before: async function () {
     await browser.url('/');
+    await browser.waitUntil(browserUtils.serviceWorkerActivated);
   },
   /**
    * Runs before a WebdriverIO command gets executed.
