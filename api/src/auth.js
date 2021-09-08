@@ -72,8 +72,7 @@ module.exports = {
       ONLINE_ROLE,
       'national_admin', // kept for backwards compatibility
     ];
-    return roles.some(role => onlineRoles.includes(role)) ||
-           !module.exports.isOffline(roles);
+    return roles.some(role => onlineRoles.includes(role));
   },
 
   isOnlineOnly: userCtx => {

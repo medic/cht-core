@@ -219,35 +219,30 @@ describe('Auth', () => {
 
     it('checks for "admin" role', () => {
       chai.expect(auth.isOnlineOnly({ roles: ['_admin'] })).to.equal(true);
+      chai.expect(auth.isOnlineOnly({ roles: ['_admin', 'some_role'] })).to.equal(true);
     });
 
     it('checks "national_admin" role', () => {
       chai.expect(auth.isOnlineOnly({ roles: ['national_admin'] })).to.equal(true);
+      chai.expect(auth.isOnlineOnly({ roles: ['national_admin', 'chw'] })).to.equal(true);
     });
 
     it('should check for "mm-online" role', () => {
       chai.expect(auth.isOnlineOnly({ roles: ['mm-online'] })).to.equal(true);
+      chai.expect(auth.isOnlineOnly({ roles: ['mm-online', 'offline'] })).to.equal(true);
     });
 
-    it('checks for "admin" and "national_admin" roles', () => {
-      sinon.stub(config, 'get').withArgs('roles').returns({
-        district_admin: { offline: true }
-      });
+    it('should return false for non-admin roles', () => {
+      sinon.stub(config, 'get');
+
       chai.expect(auth.isOnlineOnly({ roles: ['district_admin'] })).to.equal(false);
-    });
-
-    it('should check configured roles', () => {
-      sinon.stub(config, 'get').withArgs('roles').returns({
-        roleA: { offline: true },
-        roleB: { offline: false },
-        roleC: { }
-      });
-
       chai.expect(auth.isOnlineOnly({ roles: ['roleA'] })).to.equal(false);
       chai.expect(auth.isOnlineOnly({ roles: ['roleA', 'roleB'] })).to.equal(false);
       chai.expect(auth.isOnlineOnly({ roles: ['roleA', 'roleB', 'roleC'] })).to.equal(false);
-      chai.expect(auth.isOnlineOnly({ roles: ['roleB', 'roleC'] })).to.equal(true);
-      chai.expect(auth.isOnlineOnly({ roles: ['roleB'] })).to.equal(true);
+      chai.expect(auth.isOnlineOnly({ roles: ['roleB', 'roleC'] })).to.equal(false);
+      chai.expect(auth.isOnlineOnly({ roles: ['roleB'] })).to.equal(false);
+
+      chai.expect(config.get.callCount).to.equal(0);
     });
 
   });
