@@ -100,12 +100,12 @@ describe('generate-xform service', () => {
 
     it('errors if xsltproc command not found', async () => {
       try {
-        const err = new Error('Command xsltproc not found');
+        const err = new Error('Error: write EPIPE');
         err.code = 'EPIPE';
         await runTest('simple', null, err);
         assert.fail('expected error to be thrown');
       } catch (err) {
-        expect(err.message).to.equal('Command xsltproc not found');
+        expect(err.message).to.equal('Error: write EPIPE');
       }
     });
 
