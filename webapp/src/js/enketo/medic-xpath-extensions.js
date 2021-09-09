@@ -1,4 +1,6 @@
 let zscoreUtil;
+let toBikramSambat;
+let moment;
 
 const isObject = (value) => {
   const type = typeof value;
@@ -53,8 +55,10 @@ const getTimezoneOffsetAsTime = function(date) {
 module.exports = {
   getTimezoneOffsetAsTime: getTimezoneOffsetAsTime,
   toISOLocalString: toISOLocalString,
-  init: function(_zscoreUtil) {
+  init: function(_zscoreUtil, _toBikramSambat, _moment) {
     zscoreUtil = _zscoreUtil;
+    toBikramSambat = _toBikramSambat;
+    moment = _moment;
   },
   func: {
     now: now_and_today,
@@ -68,6 +72,17 @@ module.exports = {
         return { t: 'str', v: '' };
       }
       return { t: 'num', v: result };
+    },
+    'to-bikram-sambat': function () {
+      const args = Array.from(arguments).map((arg) => getValue(arg));
+      if (!args[0]) {
+        return { t: 'str', v: '' };
+      }
+
+      const date = moment(args[0]);
+      const convertedDate = toBikramSambat(date);
+
+      return { t: 'str', v: convertedDate };
     }
   },
   process: {

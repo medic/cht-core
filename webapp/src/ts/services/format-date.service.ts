@@ -1,9 +1,11 @@
 import * as moment from 'moment';
 import { Injectable } from '@angular/core';
 import { RelativeTimeKey } from 'moment';
+import { toBik_text } from 'bikram-sambat';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { LanguageService } from '@mm-services/language.service';
 
 @Injectable({
   providedIn: 'root',
@@ -12,6 +14,7 @@ export class FormatDateService {
   constructor(
     private translateService:TranslateService,
     private settingsService:SettingsService,
+    private languageService:LanguageService,
   ) {
   }
 
@@ -24,6 +27,9 @@ export class FormatDateService {
         if (typeof res.task_day_limit !== 'undefined') {
           this.config.taskDayLimit = res.task_day_limit;
         }
+        if (typeof res.useBikramSambat !== 'undefined') {
+          this.config.useBikramSambat = res.useBikramSambat;
+        }
       })
       .catch((err) => {
         console.error('Error fetching settings', err);
@@ -35,6 +41,7 @@ export class FormatDateService {
     datetime: 'DD-MMM-YYYY HH:mm:ss',
     time: moment.localeData().longDateFormat('LT'),
     taskDayLimit: 4,
+    useBikramSambat: true,
     ageBreaks: [
       { unit: 'years', key: { singular: 'y', plural: 'yy' }, min: 1 },
       { unit: 'months', key: { singular: 'M', plural: 'MM' }, min: 1 },
@@ -43,6 +50,16 @@ export class FormatDateService {
   }
 
   private format(date, key) {
+    const language = this.languageService.getSync();
+    if (language === 'ne' && this.config.useBikramSambat) {
+      const bkDate = toBik_text(moment(date));
+      if (key === 'datetime') {
+        //return bkDate + to_non_euro.devanagari(moment(date).format('hh:mm:ss a'));
+        //console.log(this.config.time, moment(date).format(this.config.time), moment(date).format('hh:mm:ss a'));
+        return bkDate + ' ' + moment(date).format('hh:mm:ss a');
+      }
+      return bkDate;
+    }
     return moment(date).format(this.config[key]);
   }
 

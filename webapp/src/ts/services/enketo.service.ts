@@ -3,6 +3,8 @@ import { v4 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import { Store } from '@ngrx/store';
 import type JQuery from 'jquery';
+import { toBik_text } from 'bikram-sambat';
+import * as moment from 'moment';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
@@ -71,7 +73,7 @@ export class EnketoService {
     return this.zScoreService
       .getScoreUtil()
       .then((zscoreUtil) => {
-        medicXpathExtensions.init(zscoreUtil);
+        medicXpathExtensions.init(zscoreUtil, toBik_text, moment);
       })
       .catch((err) => {
         console.error('Error initialising zscore util', err);

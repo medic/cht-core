@@ -10,18 +10,32 @@ const localeCookieKey = 'locale';
 @Injectable({
   providedIn: 'root'
 })
-export class SetLanguageCookieService {
+export class LanguageCookieService {
   constructor(
     private cookieService:CookieService
   ) {
   }
 
+  private language;
+  private setLanguageCache(value) {
+    this.language = value;
+  }
+
+  get() {
+    if (this.language) {
+      return this.language;
+    }
+
+    this.setLanguageCache(this.cookieService.get(localeCookieKey));
+    return this.language;
+  }
   /**
    * Set the language for the current session.
    * @param value the language code, eg. 'en', 'es' ...
    */
   set(value) {
     this.cookieService.set(localeCookieKey, value, 365, '/');
+    this.setLanguageCache(value);
     return value;
   }
 }
@@ -32,7 +46,7 @@ export class SetLanguageCookieService {
 export class SetLanguageService {
   constructor(
     private ngxTranslateService:NgxTranslateService,
-    private setLanguageCookieService:SetLanguageCookieService,
+    private languageCookieService:LanguageCookieService,
   ) {
   }
 
@@ -48,7 +62,7 @@ export class SetLanguageService {
     await this.ngxTranslateService.use(code).toPromise();
 
     if (setLanguageCookie !== false) {
-      this.setLanguageCookieService.set(code);
+      this.languageCookieService.set(code);
     }
   }
 }
@@ -60,7 +74,7 @@ export class SetLanguageService {
 export class LanguageService {
   constructor(
     private cookieService:CookieService,
-    private setLanguageCookieService:SetLanguageCookieService,
+    private languageCookieService:LanguageCookieService,
     private settingsService:SettingsService,
   ) {
   }
@@ -76,13 +90,17 @@ export class LanguageService {
   }
 
   get() {
-    const cookieVal = this.cookieService.get(localeCookieKey);
+    const cookieVal = this.getSync();
     if (cookieVal) {
       return Promise.resolve(cookieVal);
     }
 
     return this
       .fetchLocale()
-      .then(locale => this.setLanguageCookieService.set(locale));
+      .then(locale => this.languageCookieService.set(locale));
+  }
+
+  getSync() {
+    return this.languageCookieService.get();
   }
 }
