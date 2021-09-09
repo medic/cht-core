@@ -6,6 +6,7 @@ module.exports={
   asyncOnly:true,
   spec: [
     'tests/e2e/api/**/*.js',
+    'tests/integration/**/*.js'
   ],
 
   timeout: 135*1000, //'API takes a litle long to start up'
