@@ -45,6 +45,10 @@ const goToPeople = async (contactId = '') => {
   await (await contactsPage.contactList()).waitForDisplayed();
 };
 
+const goToAnalytics = async () => {
+  await (await analyticsTab()).click();
+};
+
 const closeTour = async () => {
   const closeButton = await $('#tour-select a.btn.cancel');
   try {
@@ -90,5 +94,6 @@ module.exports = {
   goToBase,
   closeTour,
   hideSnackbar,
-  waitForLoaders
+  waitForLoaders,
+  goToAnalytics
 };

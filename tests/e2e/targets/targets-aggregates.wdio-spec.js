@@ -1,31 +1,15 @@
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const utils = require('../../utils');
-const personFactory = require('../../factories/cht/contacts/person');
 const place = require('../../factories/cht/contacts/place');
 const userFactory = require('../../factories/cht/users/users');
 const places = place.generateHierarchy();
-const healthCenter = places.find((place) => place.type === 'health_center');
 const clinic = places.find((place) => place.type === 'clinic');
 const analyticsPage = require('../../page-objects/analytics/analytics.wdio.page.js');
 
-healthCenter.name = 'HC_' + Date.now();
-
-const contact = personFactory.build({
-  name: 'contact_' + Date.now(),
-  parent: {
-    _id: clinic._id,
-    parent: clinic.parent
-  },
-  phone: '+254712345670'
-});
-
 const supervisor = userFactory.build({
-  username: 'supervisor_' + Date.now(),
-  place: clinic._id,
-  contact: contact,
-  knwn:true,
-  language:'en',
+  place:clinic._id,
+  known:true,
   roles: ['chw_supervisor']
 });
 
@@ -61,12 +45,12 @@ describe('Aggregates', () => {
 
   after(async () => {
     await utils.deleteAllDocs();
+    await utils.deleteUsers([supervisor]);
     await utils.revertDb([], true);
   });
 
   it('Supervisor Can view aggregates link', async () => {
-    await commonPage.closeTour();
-    await (await commonPage.analyticsTab()).click();
+    await (await commonPage.goToAnalytics());
     expect(await (await analyticsPage.analytics())[1].getText()).toBe('Target aggregates');
   });
 
@@ -78,8 +62,8 @@ describe('Aggregates', () => {
 
   it('Supervisor Can view aggregate Details', async () => {
     await (await analyticsPage.targetAggregatesItems())[0].click();
-    expect(await (await analyticsPage.aggregateHeading()).getText()).toBe('New pregnancies');
-    expect(await (await analyticsPage.aggregateLabel()).getText()).toBe('CHWs meeting goal');
-    expect(await (await analyticsPage.aggregateSummary()).getText()).toBe('0 of 0');
+    expect(await analyticsPage.aggregateHeading()).toHaveText('New pregnancies');
+    expect(await analyticsPage.aggregateLabel()).toHaveText('CHWs meeting goal');
+    expect(await analyticsPage.aggregateSummary()).toHaveText('0 of 0');
   });
 });
