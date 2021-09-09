@@ -34,7 +34,7 @@ const transform = (formXml, stylesheet) => {
           new Error(`Unable to continue execution, check that '${XSLTPROC_CMD}' command is available.`));
       }
       logger.error(err);
-      return reject(new Error(`Unknown error calling ${XSLTPROC_CMD}`));
+      return reject(new Error(`Unknown Error: An error occurred when executing '${XSLTPROC_CMD}' command`));
     } finally {
       xsltproc.stdin.end();
     }
