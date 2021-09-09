@@ -434,12 +434,8 @@ describe('changes handler', () => {
         let body = '';
         res.on('data', data => body += data);
         res.on('end', () => {
-          try {
-            body = JSON.parse(body);
-            shouldBatchChangesRequests = semver.lte(couchVersionForBatching, body.version);
-          } catch (e) {
-            console.log(e);
-          }
+          body = JSON.parse(body);
+          shouldBatchChangesRequests = semver.lte(couchVersionForBatching, body.version);
         });
       });
 
