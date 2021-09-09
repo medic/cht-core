@@ -30,6 +30,24 @@ describe('generate-xform service', () => {
 
   describe('generate', () => {
 
+    let spawned;
+
+    beforeEach(() => {
+      // The base for a successful spawned process
+      spawned = {
+        stdout: { on: sinon.stub() },
+        stderr: { on: sinon.stub() },
+        stdin: {
+          setEncoding: sinon.stub(),
+          write: sinon.stub(),
+          end: sinon.stub()
+        },
+        on: sinon.stub()
+      };
+    });
+
+    afterEach(sinon.restore);
+
     const read = (dirname, filename) => {
       return readFile(join(__dirname, 'xforms', dirname, filename), 'utf8');
     };
@@ -45,28 +63,14 @@ describe('generate-xform service', () => {
       });
     };
 
-    const runTest = (dirname, err, writeErr) => {
-      const writeStub = sinon.stub();
-      if (writeErr) {
-        writeStub.throws(writeErr);
-      }
-      const spawned = {
-        stdout: { on: sinon.stub() },
-        stderr: { on: sinon.stub() },
-        stdin: {
-          setEncoding: sinon.stub(),
-          write: writeStub,
-          end: sinon.stub()
-        },
-        on: sinon.stub()
-      };
+    const runTest = (dirname, spawned, err, successClose = true) => {
       sinon.stub(childProcess, 'spawn').returns(spawned);
       return setup(dirname).then(files => {
         const generate = service.generate(files.xform);
         if (err) {
           spawned.stderr.on.args[0][1](err);
           spawned.on.args[0][1](100);
-        } else if (!writeErr) {
+        } else if (successClose) {
           // child process outputs then closes with code 0
           spawned.stdout.on.args[0][1](files.givenForm);
           spawned.on.args[0][1](0);
@@ -80,15 +84,15 @@ describe('generate-xform service', () => {
       });
     };
 
-    it('generates form and model', () => runTest('simple'));
+    it('generates form and model', () => runTest('simple', spawned));
 
-    it('replaces multimedia src elements', () => runTest('multimedia'));
+    it('replaces multimedia src elements', () => runTest('multimedia', spawned));
 
-    it('correctly replaces models with nested "</root>" - #5971', () => runTest('nested-root'));
+    it('correctly replaces models with nested "</root>" - #5971', () => runTest('nested-root', spawned));
 
     it('errors if child process errors', async () => {
       try {
-        await runTest('simple', 'some error');
+        await runTest('simple', spawned, 'some error');
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
@@ -100,21 +104,43 @@ describe('generate-xform service', () => {
 
     it('errors if xsltproc command not found', async () => {
       try {
-        const err = new Error('Error: write EPIPE');
-        err.code = 'EPIPE';
-        await runTest('simple', null, err);
+        const writeErr = new Error('Error: write EPIPE');
+        writeErr.code = 'EPIPE';
+        const spawnedEpipe = {
+          stdout: { on: sinon.stub() },
+          stderr: { on: sinon.stub() },
+          stdin: {
+            setEncoding: sinon.stub(),
+            write: sinon.stub().throws(writeErr),
+            end: sinon.stub()
+          },
+          on: sinon.stub()
+        };
+        await runTest('simple', spawnedEpipe, null, false);
         assert.fail('expected error to be thrown');
       } catch (err) {
-        expect(err.message).to.equal('Error: write EPIPE');
+        expect(err.message).to.equal(
+          'Unable to continue execution, check that \'xsltproc\' command is available.');
       }
     });
 
     it('errors if xsltproc raises unknown exception', async () => {
       try {
-        await runTest('simple', null, new Error());
+        const spawnedUnknownWriteErr = {
+          stdout: { on: sinon.stub() },
+          stderr: { on: sinon.stub() },
+          stdin: {
+            setEncoding: sinon.stub(),
+            write: sinon.stub().throws('mystery error'),
+            end: sinon.stub()
+          },
+          on: sinon.stub()
+        };
+        await runTest('simple', spawnedUnknownWriteErr, null, false);
         assert.fail('expected error to be thrown');
       } catch (err) {
-        expect(err.message).to.equal('Unknown error calling xsltproc');
+        expect(err.message).to.equal(
+          'Unknown Error: An error occurred when executing \'xsltproc\' command');
       }
     });
   });
