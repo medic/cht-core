@@ -1,6 +1,7 @@
 const utils = require('../../utils');
 const sentinelUtils = require('./utils');
 const uuid = require('uuid');
+const { expect } = require('chai');
 
 const NBR_DOCS = 300;
 
@@ -56,18 +57,9 @@ const report = {
   reported_date: new Date().getTime()
 };
 
-let originalTimeout;
-
 describe('Sentinel queue drain', () => {
-  before(() => {
-    //originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-    //jasmine.DEFAULT_TIMEOUT_INTERVAL = 300000;
-    return utils.saveDocs(contacts);
-  });
-  after(() => {
-    //jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-    return utils.revertDb([], true);
-  });
+  before(() => utils.saveDocs(contacts));
+  after(() => utils.revertDb([], true));
   afterEach(() => utils.revertDb(contacts.map(c => c._id), true));
 
   it('should drain queue, processing every doc', () => {
@@ -102,9 +94,7 @@ describe('Sentinel queue drain', () => {
       .then(() => utils.getDocs(ids))
       .then(updated => {
         updated.forEach(doc => {
-          expect(doc.contact).to.be.defined;
-          expect(doc.contact._id).to.equal('chw');
-          expect(doc.tasks).to.be.defined;
+          expect(doc.contact).to.have.property('_id', 'chw');
           expect(doc.tasks.length).to.equal(1);
           expect(doc.tasks[0].messages[0].to).to.equal('phone1');
         });
@@ -112,10 +102,7 @@ describe('Sentinel queue drain', () => {
       .then(() => sentinelUtils.getInfoDocs(ids))
       .then(infos => {
         infos.forEach(info => {
-          expect(info.transitions).to.be.defined;
-          expect(info.transitions.default_responses).to.be.defined;
           expect(info.transitions.default_responses.ok).to.equal(true);
-          expect(info.transitions.update_clinics).to.be.defined;
           expect(info.transitions.update_clinics.ok).to.equal(true);
         });
       })
@@ -128,8 +115,8 @@ describe('Sentinel queue drain', () => {
       .then(tombstones => {
         tombstones.forEach(tombstone => {
           expect(tombstone.type).to.equal('tombstone');
-          expect(tombstone.tombstone).to.be.defined;
+          expect(tombstone.tombstone).to.have.propeperty('type', 'data_record');
         });
       });
-  });
+  }).timeout(300000);
 });
