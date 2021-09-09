@@ -24,6 +24,7 @@ process
   const translations = require('./src/translations');
   const serverUtils = require('./src/server-utils');
   const uploadDefaultDocs = require('./src/upload-default-docs');
+  const generateServiceWorker = require('./src/generate-service-worker');
   const apiPort = process.env.API_PORT || 5988;
 
   try
@@ -47,6 +48,10 @@ process
     logger.info('Extracting initial documents…');
     await uploadDefaultDocs.run();
     logger.info('Extracting initial documents completed successfully');
+
+    logger.info('Generating service worker');
+    await generateServiceWorker.run();
+    logger.info('Service worker generated successfully');
 
     logger.info('Loading configuration…');
     await config.load();

@@ -10,7 +10,7 @@ const BUNDLED_DDOCS = [
   { attachmentId: 'ddocs/logs.json', targetDb: db.medicLogs },
 ];
 const SERVICEWORKER_ATTACHMENT_NAME = 'js/service-worker.js';
-const SWMETA_DOC_ID = 'service-worker-meta';
+
 const SERVER_DDOC_ID = '_design/medic';
 const CLIENT_DDOC_ID = '_design/medic-client';
 
@@ -114,7 +114,7 @@ const extractFromCompiledDocs = (bundle, deployInfo) => {
 // To this end, copy the hash of service-worker.js and store it in a new doc (SWMETA_DOC_ID) which replicates to
 // clients.
 // The intention is that when this doc changes, clients will refresh their cache.
-const extractServiceWorkerMetaDoc = ddoc => {
+/*const extractServiceWorkerMetaDoc = ddoc => {
   const attachment = ddoc._attachments && ddoc._attachments[SERVICEWORKER_ATTACHMENT_NAME];
   const attachmentDigest = attachment && attachment.digest;
   if (!attachmentDigest) {
@@ -141,7 +141,7 @@ const extractServiceWorkerMetaDoc = ddoc => {
         return db.medic.put(doc);
       }
     });
-};
+};*/
 
 const extractDdocs = deployInfo => {
   return Promise.all(BUNDLED_DDOCS.map(bundle => extractFromCompiledDocs(bundle, deployInfo)));
@@ -151,8 +151,7 @@ module.exports = {
   run: () => {
     return db.medic.get(SERVER_DDOC_ID).then(ddoc => {
       environment.setDeployInfo(ddoc.deploy_info);
-      return extractDdocs(ddoc.deploy_info)
-        .then(() => extractServiceWorkerMetaDoc(ddoc));
+      return extractDdocs(ddoc.deploy_info);
     });
   }
 };

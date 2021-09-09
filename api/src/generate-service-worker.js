@@ -1,20 +1,16 @@
 const swPrecache = require('sw-precache');
 const path = require('path');
 
-function registerServiceWorkerTasks(grunt) {
-  grunt.registerMultiTask('generate-service-worker', function() {
-    const done = this.async();
-    writeServiceWorkerFile(this.data)
-      .then(done)
-      .catch(error => {
-        grunt.fail.warn(error);
-        done();
-      });
-  });
-}
+const environment = require('./environment');
+const db = require('./db');
+
+const SWMETA_DOC_ID = 'service-worker-meta';
 
 // Use the swPrecache library to generate a service-worker script
-function writeServiceWorkerFile({staticDirectoryPath, apiSrcDirectoryPath, scriptOutputPath}) {
+const writeServiceWorkerFile = () => {
+  const staticDirectoryPath = environment.getExtractedResourcesPath();
+  const apiSrcDirectoryPath = __dirname;
+  const scriptOutputPath = path.join(staticDirectoryPath, 'js', 'service-worker.js');
   const config = {
     cacheId: 'cache',
     claimsClient: true,
@@ -39,7 +35,7 @@ function writeServiceWorkerFile({staticDirectoryPath, apiSrcDirectoryPath, scrip
       '/medic/login': [path.join(apiSrcDirectoryPath, 'templates/login', 'index.html')],
       '/medic/_design/medic/_rewrite/': [path.join(apiSrcDirectoryPath, 'public', 'appcache-upgrade.html')],
     },
-    ignoreUrlParametersMatching: [/redirect/],
+    ignoreUrlParametersMatching: [/redirect/, /username/],
     stripPrefixMulti: {
       [staticDirectoryPath]: '',
       [path.join(apiSrcDirectoryPath, 'public')]: '',
@@ -49,6 +45,25 @@ function writeServiceWorkerFile({staticDirectoryPath, apiSrcDirectoryPath, scrip
   };
 
   return swPrecache.write(scriptOutputPath, config);
-}
+};
 
-module.exports = registerServiceWorkerTasks;
+const writeServiceWorkerMetaDoc = () => {
+  return db.medic
+    .get(SWMETA_DOC_ID)
+    .catch(err => {
+      if (err.status === 404) {
+        return { _id: SWMETA_DOC_ID };
+      }
+      throw err;
+    })
+    .then((doc) => {
+      doc.generated_at = new Date().getTime();
+      return db.medic.put(doc);
+    });
+};
+
+module.exports = {
+  run: () => {
+    return writeServiceWorkerFile().then(() => writeServiceWorkerMetaDoc());
+  },
+};

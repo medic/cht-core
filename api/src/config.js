@@ -9,6 +9,7 @@ const settingsService = require('./services/settings');
 const translations = require('./translations');
 const translationUtils = require('@medic/translation-utils');
 const viewMapUtils = require('@medic/view-map-utils');
+const generateServiceWorker = require('./generate-service-worker');
 
 const translationCache = {};
 let settings = {};
@@ -159,10 +160,13 @@ module.exports = {
             logger.error('Something went wrong trying to extract ddocs: %o', err);
             process.exit(1);
           });
-          resourceExtraction.run().catch(err => {
-            logger.error('Something went wrong trying to extract resources: %o', err);
-            process.exit(1);
-          });
+          resourceExtraction
+            .run()
+            .then(() => generateServiceWorker.run())
+            .catch(err => {
+              logger.error('Something went wrong trying to extract resources: %o', err);
+              process.exit(1);
+            });
           loadViewMaps();
         } else if (change.id === 'settings') {
           logger.info('Detected settings change - reloading');
@@ -175,11 +179,17 @@ module.exports = {
             .then(() => logger.debug('Settings updated'));
         } else if (change.id.startsWith('messages-')) {
           logger.info('Detected translations change - reloading');
-          return loadTranslations().then(() => initTransitionLib());
+          return loadTranslations()
+            .then(() => initTransitionLib())
+            .then(() => generateServiceWorker.run());
         } else if (change.id.startsWith('form:')) {
           logger.info('Detected form change - generating attachments');
           generateXform.update(change.id).catch(err => {
             logger.error('Failed to update xform: %o', err);
+          });
+        } else if (change.id.startsWith('branding')) {
+          generateServiceWorker.run().catch(err => {
+            logger.error('Failed to generate service worker: %o', err);
           });
         }
       })
