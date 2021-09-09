@@ -48,40 +48,34 @@
      * @extends Widget
      */
   class PhoneWidget extends Widget {
-    constructor( element, options, Settings ) {
+    constructor( element, options, Settings = window.CHTCore.Settings ) {
       super(element, options);
-      if ( !Settings ) {
-        Settings = window.CHTCore.Settings;
-      }
-      construct(element, Settings);
+
+      const $input = $( this.element );
+
+      // Add a proxy input field, which will send its input, formatted, to the real input field.
+      // TODO(estellecomment): format the visible field onBlur to user-friendly format.
+      const $proxyInput = $input.clone();
+      $proxyInput.addClass('ignore');
+      $proxyInput.removeAttr('data-relevant');
+      $proxyInput.removeAttr('name');
+      $input.before( $proxyInput );
+      $proxyInput.val( $input.val() );
+
+      $input.hide();
+
+      // TODO(estellecomment): move this to a catch clause, when settings aren't found.
+      formatAndCopy( $proxyInput, $input, {} );
+
+      return Settings.get()
+        .then( function( settings ) {
+          formatAndCopy( $proxyInput, $input, settings );
+        } );
     }
 
     static get selector() {
       return 'input[type="tel"]';
     }
-  }
-
-  function construct(element, Settings) {
-    const $input = $( element );
-
-    // Add a proxy input field, which will send its input, formatted, to the real input field.
-    // TODO(estellecomment): format the visible field onBlur to user-friendly format.
-    const $proxyInput = $input.clone();
-    $proxyInput.addClass('ignore');
-    $proxyInput.removeAttr('data-relevant');
-    $proxyInput.removeAttr('name');
-    $input.before( $proxyInput );
-    $proxyInput.val( $input.val() );
-
-    $input.hide();
-
-    // TODO(estellecomment): move this to a catch clause, when settings aren't found.
-    formatAndCopy( $proxyInput, $input, {} );
-
-    this.builtPromise = Settings.get()
-      .then( function( settings ) {
-        formatAndCopy( $proxyInput, $input, settings );
-      } );
   }
 
   function formatAndCopy( $from, $to, settings ) {
