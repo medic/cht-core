@@ -380,7 +380,7 @@ describe('server side purge', () => {
       .then(() => sentinelUtils.deletePurgeDbs())
       .then(() => utils.deleteUsers(users)));
 
-  afterEach(() => utils.revertSettings());
+  afterEach(() => utils.revertSettings(true));
 
   it('should purge correct docs', () => {
     let seq;
