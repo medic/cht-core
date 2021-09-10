@@ -11,7 +11,6 @@ import { PhonePipe } from '@mm-pipes/phone.pipe';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
 
-
 describe('Parse provider', () => {
   let provider:ParseProvider;
   let pipesService;
@@ -162,6 +161,7 @@ describe('Parse provider', () => {
   describe('with pipes', () => {
     let translateService;
     let settingsService;
+    let languageService;
 
     let formatDateService;
     let relativeDateService;
@@ -180,11 +180,12 @@ describe('Parse provider', () => {
           default_country_code: 'RO',
         }),
       };
+      languageService = { getSync: sinon.stub().returns('en') };
       sanitizer = {
         bypassSecurityTrustHtml: sinon.stub().returnsArg(0),
       };
 
-      formatDateService = new FormatDateService(translateService, settingsService);
+      formatDateService = new FormatDateService(translateService, settingsService, languageService);
       relativeDateService = new RelativeDateService(formatDateService);
 
       pipesService = {
