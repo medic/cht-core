@@ -4,6 +4,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { TranslateService as NgxTranslateService } from '@ngx-translate/core';
 
 import { SettingsService } from '@mm-services/settings.service';
+import { FormatDateService } from '@mm-services/format-date.service';
 
 const localeCookieKey = 'locale';
 
@@ -47,6 +48,7 @@ export class SetLanguageService {
   constructor(
     private ngxTranslateService:NgxTranslateService,
     private languageCookieService:LanguageCookieService,
+    private formatDateService:FormatDateService,
   ) {
   }
 
@@ -58,6 +60,7 @@ export class SetLanguageService {
 
   async set(code, setLanguageCookie?) {
     moment.locale([ code, 'en' ]);
+    this.formatDateService.init();
     this.setDatepickerLanguage(code);
     await this.ngxTranslateService.use(code).toPromise();
 

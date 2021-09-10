@@ -16,9 +16,29 @@ export class FormatDateService {
     private settingsService:SettingsService,
     private languageService:LanguageService,
   ) {
+    this.initConfig();
+  }
+
+  private config;
+
+  private initConfig() {
+    this.config = {
+      date: 'DD-MMM-YYYY',
+      datetime: 'DD-MMM-YYYY HH:mm:ss',
+      time: moment.localeData().longDateFormat('LT'),
+      longTime: moment.localeData().longDateFormat('LTS'),
+      taskDayLimit: 4,
+      useBikramSambat: true,
+      ageBreaks: [
+        { unit: 'years', key: { singular: 'y', plural: 'yy' }, min: 1 },
+        { unit: 'months', key: { singular: 'M', plural: 'MM' }, min: 1 },
+        { unit: 'days', key: { singular: 'd', plural: 'dd' }, min: 0 }
+      ]
+    };
   }
 
   init() {
+    this.initConfig();
     this.settingsService
       .get()
       .then((res:any) => {
@@ -36,31 +56,25 @@ export class FormatDateService {
       });
   }
 
-  private readonly config = {
-    date: 'DD-MMM-YYYY',
-    datetime: 'DD-MMM-YYYY HH:mm:ss',
-    time: moment.localeData().longDateFormat('LT'),
-    taskDayLimit: 4,
-    useBikramSambat: true,
-    ageBreaks: [
-      { unit: 'years', key: { singular: 'y', plural: 'yy' }, min: 1 },
-      { unit: 'months', key: { singular: 'M', plural: 'MM' }, min: 1 },
-      { unit: 'days', key: { singular: 'd', plural: 'dd' }, min: 0 }
-    ]
-  }
-
   private format(date, key) {
     const language = this.languageService.getSync();
-    if (language === 'ne' && this.config.useBikramSambat) {
-      const bkDate = toBik_text(moment(date));
-      if (key === 'datetime') {
-        //return bkDate + to_non_euro.devanagari(moment(date).format('hh:mm:ss a'));
-        //console.log(this.config.time, moment(date).format(this.config.time), moment(date).format('hh:mm:ss a'));
-        return bkDate + ' ' + moment(date).format('hh:mm:ss a');
-      }
+    if (language !== 'ne' || !this.config.useBikramSambat) {
+      return moment(date).format(this.config[key]);
+    }
+
+    if (key === 'time') {
+      return moment(date).format(this.config[key]);
+    }
+
+    const bkDate = toBik_text(moment(date));
+    if (key === 'date') {
       return bkDate;
     }
-    return moment(date).format(this.config[key]);
+
+    if (key === 'datetime') {
+      // inspired from Nepali moment LLLL long date format: dddd, D MMMM YYYY, Aको h:mm बजे
+      return `${bkDate}, ${moment(date).format(this.config.longTime)}`;
+    }
   }
 
   private getDateDiff(date, options) {
