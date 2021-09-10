@@ -447,6 +447,14 @@ const saveBrowserLogs = () => {
     });
 };
 
+const currentAppVersions = async () => {
+  const monitorResp =  await request({
+    path: '/api/v2/monitoring',
+  });
+  console.log(monitorResp);
+  return monitorResp.version.app;
+};
+
 
 const prepServices = async (config) => {
   if (constants.IS_CI) {
@@ -464,6 +472,21 @@ const prepServices = async (config) => {
   }
 
   await listenForApi();
+
+  if (constants.UPGRADE) {
+    const body = `{"build":{"namespace":"medic","application":"medic","version":${constants.UPGRADE}}}`;
+    console.log(`upgrading to ${body}`);
+    await request({
+      path: '/api/v1/upgrade',
+      method: 'POST',
+      body: body
+    });
+    while(currentAppVersions() !== constants.UPGRADE){
+      console.log();
+      console.log('waiting for upgrade');
+    }
+  }
+
   if (config && config.suite === 'web') {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
   }
@@ -521,7 +544,7 @@ const parseCookieResponse = (cookieString) => {
 
 const dockerGateway = () => {
   return JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
-  
+
 };
 
 const hostURL = (port = 80) => {
@@ -663,7 +686,7 @@ module.exports = {
   },
 
   getDoc: (id, rev) => {
-    const params = { };
+    const params = {};
     if (rev) {
       params.rev = rev;
     }

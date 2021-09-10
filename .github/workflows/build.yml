@@ -133,6 +133,8 @@ jobs:
       run:  npm install -g cht-conf
     - name: npm CI
       run: npm ci
+    - name: Set TAG var
+      run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
     - name: horti setup
       run: |
         echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
