@@ -1,6 +1,7 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const uuid = require('uuid');
+const { expect } = require('chai');
 
 
 const contacts = [
@@ -361,17 +362,11 @@ describe('accept_patient_reports', () => {
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
       .then(infos => {
-        expect(infos[0].transitions).to.be.defined;
-        expect(infos[0].transitions.accept_patient_reports).to.be.defined;
         expect(infos[0].transitions.accept_patient_reports.ok).to.equal(true);
-
-        expect(infos[1].transitions).to.be.defined;
-        expect(infos[1].transitions.accept_patient_reports).to.be.defined;
         expect(infos[1].transitions.accept_patient_reports.ok).to.equal(true);
       })
       .then(() => utils.getDocs([doc1._id, doc2._id]))
       .then(updated => {
-        expect(updated[0].tasks).to.be.defined;
         expect(updated[0].tasks.length).to.equal(2);
 
         expect(updated[0].tasks[0].messages[0].message).to.equal('message_1');
@@ -385,7 +380,6 @@ describe('accept_patient_reports', () => {
         expect(updated[0].errors).to.be.undefined;
         expect(updated[0].registration_id).to.be.undefined;
 
-        expect(updated[1].tasks).to.be.defined;
         expect(updated[1].tasks.length).to.equal(3);
 
         expect(updated[1].tasks[0].messages[0].message).to.equal('message_1');
@@ -513,8 +507,6 @@ describe('accept_patient_reports', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.accept_patient_reports).to.be.defined;
         expect(info.transitions.accept_patient_reports.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc._id))
@@ -631,8 +623,6 @@ describe('accept_patient_reports', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.accept_patient_reports).to.be.defined;
         expect(info.transitions.accept_patient_reports.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc._id))
@@ -748,8 +738,6 @@ describe('accept_patient_reports', () => {
       .then(() => sentinelUtils.waitForSentinel(doc1._id))
       .then(() => sentinelUtils.getInfoDoc(doc1._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.accept_patient_reports).to.be.defined;
         expect(info.transitions.accept_patient_reports.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc1._id))
@@ -761,8 +749,6 @@ describe('accept_patient_reports', () => {
       .then(() => sentinelUtils.waitForSentinel(doc2._id))
       .then(() => sentinelUtils.getInfoDoc(doc2._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.accept_patient_reports).to.be.defined;
         expect(info.transitions.accept_patient_reports.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc2._id))
@@ -1027,11 +1013,11 @@ describe('accept_patient_reports', () => {
         expect(updated[1].scheduled_tasks.find(task => task.id === 4 && task.group === 'b').state).to.equal('sent');
         expect(updated[1].scheduled_tasks.find(task => task.id === 5 && task.group === 'b').state).to.equal('muted');
 
-        expect(updated[2].scheduled_tasks).to.equal(registrations[2].scheduled_tasks); // were not updated
-        expect(updated[3].scheduled_tasks).to.equal(registrations[3].scheduled_tasks); // were not updated
+        expect(updated[2].scheduled_tasks).to.deep.equal(registrations[2].scheduled_tasks); // were not updated
+        expect(updated[3].scheduled_tasks).to.deep.equal(registrations[3].scheduled_tasks); // were not updated
 
-        expect(updated[4].scheduled_tasks).to.equal(registrations[4].scheduled_tasks); // were not updated
-        expect(updated[5].scheduled_tasks).to.equal(registrations[5].scheduled_tasks); // were not updated
+        expect(updated[4].scheduled_tasks).to.deep.equal(registrations[4].scheduled_tasks); // were not updated
+        expect(updated[5].scheduled_tasks).to.deep.equal(registrations[5].scheduled_tasks); // were not updated
       })
       .then(() => utils.saveDoc(silence2Patient2))
       .then(() => sentinelUtils.waitForSentinel(silence2Patient2._id))
@@ -1051,8 +1037,8 @@ describe('accept_patient_reports', () => {
         expect(updated[3].scheduled_tasks.find(task => task.id === 2 && task.group === 'b').state).to.equal('cleared');
         expect(updated[3].scheduled_tasks.find(task => task.id === 3 && task.group === 'b').state).to.equal('sent');
 
-        expect(updated[4].scheduled_tasks).to.equal(registrations[4].scheduled_tasks); // were not updated
-        expect(updated[5].scheduled_tasks).to.equal(registrations[5].scheduled_tasks); // were not updated
+        expect(updated[4].scheduled_tasks).to.deep.equal(registrations[4].scheduled_tasks); // were not updated
+        expect(updated[5].scheduled_tasks).to.deep.equal(registrations[5].scheduled_tasks); // were not updated
       })
       .then(() => utils.saveDoc(silence2Clinic))
       .then(() => sentinelUtils.waitForSentinel(silence2Clinic._id))
