@@ -1000,12 +1000,14 @@ describe('accept_patient_reports', () => {
         expect(updated[0].scheduled_tasks.find(task => task.id === 4).state).to.equal('sent');
         expect(updated[0].scheduled_tasks.find(task => task.id === 5).state).to.equal('muted');
 
-        expect(updated[1].scheduled_tasks.find(task => task.id === 1 && task.group === 'a').state).to.equal('scheduled');
+        expect(updated[1].scheduled_tasks.find(task => task.id === 1 && task.group === 'a').state)
+          .to.equal('scheduled');
         expect(updated[1].scheduled_tasks.find(task => task.id === 2 && task.group === 'a').state).to.equal('cleared');
         expect(updated[1].scheduled_tasks.find(task => task.id === 3 && task.group === 'a').state).to.equal('cleared');
         expect(updated[1].scheduled_tasks.find(task => task.id === 4 && task.group === 'a').state).to.equal('cleared');
         expect(updated[1].scheduled_tasks.find(task => task.id === 5 && task.group === 'a').state).to.equal('cleared');
-        expect(updated[1].scheduled_tasks.find(task => task.id === 6 && task.group === 'a').state).to.equal('delivered');
+        expect(updated[1].scheduled_tasks.find(task => task.id === 6 && task.group === 'a').state)
+          .to.equal('delivered');
 
         expect(updated[1].scheduled_tasks.find(task => task.id === 1 && task.group === 'b').state).to.equal('pending');
         expect(updated[1].scheduled_tasks.find(task => task.id === 2 && task.group === 'b').state).to.equal('cleared');
@@ -1029,7 +1031,8 @@ describe('accept_patient_reports', () => {
         expect(updated[2].scheduled_tasks.find(task => task.id === 4).state).to.equal('cleared');
         expect(updated[2].scheduled_tasks.find(task => task.id === 5).state).to.equal('sent');
 
-        expect(updated[3].scheduled_tasks.find(task => task.id === 1 && task.group === 'a').state).to.equal('scheduled');
+        expect(updated[3].scheduled_tasks.find(task => task.id === 1 && task.group === 'a').state)
+          .to.equal('scheduled');
         expect(updated[3].scheduled_tasks.find(task => task.id === 2 && task.group === 'a').state).to.equal('cleared');
         expect(updated[3].scheduled_tasks.find(task => task.id === 3 && task.group === 'a').state).to.equal('cleared');
 
@@ -1050,7 +1053,8 @@ describe('accept_patient_reports', () => {
         expect(updated[4].scheduled_tasks.find(task => task.id === 4).state).to.equal('cleared');
         expect(updated[4].scheduled_tasks.find(task => task.id === 5).state).to.equal('sent');
 
-        expect(updated[5].scheduled_tasks.find(task => task.id === 1 && task.group === 'a').state).to.equal('scheduled');
+        expect(updated[5].scheduled_tasks.find(task => task.id === 1 && task.group === 'a').state)
+          .to.equal('scheduled');
         expect(updated[5].scheduled_tasks.find(task => task.id === 2 && task.group === 'a').state).to.equal('cleared');
         expect(updated[5].scheduled_tasks.find(task => task.id === 3 && task.group === 'a').state).to.equal('cleared');
 
