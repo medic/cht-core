@@ -115,7 +115,7 @@ describe('Sentinel queue drain', () => {
       .then(tombstones => {
         tombstones.forEach(tombstone => {
           expect(tombstone.type).to.equal('tombstone');
-          expect(tombstone.tombstone).to.have.propeperty('type', 'data_record');
+          expect(tombstone.tombstone).to.have.property('type', 'data_record');
         });
       });
   }).timeout(300000);
