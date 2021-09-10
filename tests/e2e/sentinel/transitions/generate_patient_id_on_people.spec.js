@@ -2,6 +2,7 @@ const chai = require('chai');
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const uuid = require('uuid');
+const { expect } = require('chai');
 
 describe('generate_patient_id_on_people', () => {
   after(() => utils.revertDb([], true));
@@ -102,13 +103,11 @@ describe('generate_patient_id_on_people', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.generate_patient_id_on_people).to.be.defined;
         expect(info.transitions.generate_patient_id_on_people.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
-        expect(person.patient_id).to.be.defined;
+        expect(person.patient_id).to.be.a('string');
       });
   });
 
