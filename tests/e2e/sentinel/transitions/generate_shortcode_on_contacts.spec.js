@@ -1,4 +1,4 @@
-const chai = require('chai');
+const { expect } = require('chai');
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const uuid = require('uuid');
@@ -28,8 +28,8 @@ describe('generate_shortcode_on_contacts', () => {
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
-        chai.expect(person.patient_id).to.equal(undefined);
-        chai.expect(person.place_id).to.equal(undefined);
+        expect(person.patient_id).to.equal(undefined);
+        expect(person.place_id).to.equal(undefined);
       });
   });
 
@@ -63,11 +63,11 @@ describe('generate_shortcode_on_contacts', () => {
       })
       .then(() => utils.getDocs([contact._id, report._id]))
       .then(([contact, report]) => {
-        chai.expect(contact.patient_id).to.equal(undefined);
-        chai.expect(contact.place_id).to.equal(undefined);
+        expect(contact.patient_id).to.equal(undefined);
+        expect(contact.place_id).to.equal(undefined);
 
-        chai.expect(report.patient_id).to.equal(undefined);
-        chai.expect(report.place_id).to.equal(undefined);
+        expect(report.patient_id).to.equal(undefined);
+        expect(report.place_id).to.equal(undefined);
       });
   });
 
@@ -88,12 +88,12 @@ describe('generate_shortcode_on_contacts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(info).to.deep.nested.include({ 'transitions.generate_shortcode_on_contacts.ok' : true });
+        expect(info).to.deep.nested.include({ 'transitions.generate_shortcode_on_contacts.ok' : true });
       })
       .then(() => utils.getDoc(doc._id))
       .then(place => {
-        chai.expect(place.patient_id).to.equal(undefined);
-        chai.expect(place.place_id).not.to.equal(undefined);
+        expect(place.patient_id).to.equal(undefined);
+        expect(place.place_id).not.to.equal(undefined);
       });
   });
 
@@ -166,13 +166,11 @@ describe('generate_shortcode_on_contacts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.generate_shortcode_on_contacts).to.be.defined;
         expect(info.transitions.generate_shortcode_on_contacts.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
-        expect(person.patient_id).to.be.defined;
+        expect(person.patient_id).to.be.a('string');
       });
   });
 
@@ -193,11 +191,11 @@ describe('generate_shortcode_on_contacts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(info).to.deep.nested.include({ 'transitions.generate_shortcode_on_contacts.ok': true });
+        expect(info).to.deep.nested.include({ 'transitions.generate_shortcode_on_contacts.ok': true });
       })
       .then(() => utils.getDoc(doc._id))
       .then(place => {
-        chai.expect(place.place_id).to.be.ok;
+        expect(place.place_id).to.be.ok;
       });
   });
 });
