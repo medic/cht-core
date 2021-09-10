@@ -30,6 +30,7 @@ services:
       - BUILD=medic:medic:test-$BUILD_NUMBER
       - NODE_VERSION=$NODE
       - TEST_SUITE=integration
+      - TAG=$TAG
     depends_on:
       - couch
     command: /horti_entry.sh
