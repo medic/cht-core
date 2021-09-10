@@ -6,7 +6,7 @@ module.exports={
   fullTrace: true,
   asyncOnly:true,
   spec: [
-    //'tests/integration/**/*.js',
+    'tests/integration/**/*.js',
     'tests/e2e/sentinel/**/*.js',
   ],
 
