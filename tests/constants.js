@@ -1,4 +1,5 @@
 const IS_CI = !!process.env.TEST_SUITE;
+const TAG = process.env.TAG;
 
 const COUCH_HOST = 'localhost';
 const COUCH_PORT = IS_CI ? 5984 : 4984;
@@ -6,7 +7,7 @@ const API_PORT = IS_CI ? 5988 : 4988;
 
 module.exports = {
   IS_CI: IS_CI,
-
+  UPGRADE: IS_CI && TAG  ? TAG : null,
   // connection information for the test api instance which is
   // intentionally different from the dev api instance to avoid
   // port collisions
