@@ -1,6 +1,7 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const uuid = require('uuid');
+const { expect } = require('chai');
 
 const contacts = [
   {
@@ -203,13 +204,9 @@ describe('update_scheduled_reports', () => {
       .then(() => sentinelUtils.waitForSentinel([ doc1._id, doc2._id, doc3._id, doc4._id ]))
       .then(() => sentinelUtils.getInfoDocs([ doc1._id, doc2._id, doc3._id, doc4._id ]))
       .then(infos => {
-        expect(infos[0].transitions).to.be.defined;
         expect(infos[0].transitions.update_scheduled_reports.ok).to.equal(true);
-        expect(infos[1].transitions).to.be.defined;
         expect(infos[1].transitions.update_scheduled_reports.ok).to.equal(true);
-        expect(infos[2].transitions).to.be.defined;
         expect(infos[2].transitions.update_scheduled_reports.ok).to.equal(true);
-        expect(infos[3].transitions).to.be.defined;
         expect(infos[3].transitions.update_scheduled_reports.ok).to.equal(true);
       });
   });
@@ -301,9 +298,9 @@ describe('update_scheduled_reports', () => {
         const duplicates = infos.slice(0, 3);
         expect(duplicates.filter(info => info).length).to.equal(1);
 
-        expect(infos[3].transitions).to.be.defined;
+        expect(infos[3].transitions).to.not.be.undefined;
         expect(infos[3].transitions.update_scheduled_reports.ok).to.equal(true);
-        expect(infos[4].transitions).to.be.defined;
+        expect(infos[4].transitions).to.not.be.undefined;
         expect(infos[4].transitions.update_scheduled_reports.ok).to.equal(true);
       });
   });

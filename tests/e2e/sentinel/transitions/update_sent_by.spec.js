@@ -1,6 +1,7 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const uuid = require('uuid');
+const { expect } = require('chai');
 
 describe('update_sent_by', () => {
   after(() => utils.revertDb([], true));
@@ -118,7 +119,6 @@ describe('update_sent_by', () => {
       .then(() => sentinelUtils.waitForSentinel(report._id))
       .then(() => sentinelUtils.getInfoDoc(report._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
         expect(info.transitions.update_sent_by.ok).to.equal(true);
       })
       .then(() => utils.getDoc(report._id))

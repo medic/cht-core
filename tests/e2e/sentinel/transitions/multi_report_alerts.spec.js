@@ -1,6 +1,7 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const uuid = require('uuid');
+const { expect } = require('chai');
 
 const contact = {
   _id: 'person',
@@ -110,13 +111,10 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.multi_report_alerts).to.be.defined;
         expect(info.transitions.multi_report_alerts.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
-        expect(updated.tasks).to.be.defined;
         expect(updated.tasks.length).to.equal(1);
         expect(updated.tasks[0].messages[0].message).to.equal('multi_report_message');
         expect(updated.tasks[0].messages[0].to).to.equal('0123456789');
@@ -186,13 +184,10 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc2._id))
       .then(() => sentinelUtils.getInfoDoc(doc2._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.multi_report_alerts).to.be.defined;
         expect(info.transitions.multi_report_alerts.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc2._id))
       .then(updated => {
-        expect(updated.tasks).to.be.defined;
         expect(updated.tasks.length).to.equal(2);
 
         expect(updated.tasks[0].messages[0].message).to.equal('multi_report_message');
@@ -257,13 +252,10 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc2._id))
       .then(() => sentinelUtils.getInfoDoc(doc2._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.multi_report_alerts).to.be.defined;
         expect(info.transitions.multi_report_alerts.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc2._id))
       .then(updated => {
-        expect(updated.tasks).to.be.defined;
         expect(updated.tasks.length).to.equal(2);
 
         expect(updated.tasks[0].messages[0].message).to.equal('multi_report_magic');
@@ -411,8 +403,6 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc_unknown._id))
       .then(() => sentinelUtils.getInfoDoc(doc_unknown._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.update_clinics).to.be.defined;
         expect(info.transitions.multi_report_alerts).to.be.undefined;
       })
       .then(() => utils.getDoc(doc_unknown._id))
@@ -423,8 +413,6 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc_unknown2._id))
       .then(() => sentinelUtils.getInfoDoc(doc_unknown2._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.update_clinics).to.be.defined;
         expect(info.transitions.multi_report_alerts).to.be.undefined;
       })
       .then(() => utils.getDoc(doc_unknown2._id))
@@ -446,13 +434,11 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc2._id))
       .then(() => sentinelUtils.getInfoDoc(doc2._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.multi_report_alerts).to.be.defined;
         expect(info.transitions.multi_report_alerts.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc2._id))
       .then(updated => {
-        expect(updated.tasks).to.be.defined;
+
         expect(updated.tasks.length).to.equal(2);
 
         expect(updated.tasks[0].messages[0].message).to.equal('multi_report_message');
@@ -541,8 +527,7 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc_unknown._id))
       .then(() => sentinelUtils.getInfoDoc(doc_unknown._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.update_clinics).to.be.defined;
+        expect(info.transitions.update_clinics).to.not.be.undefined;
         expect(info.transitions.multi_report_alerts).to.be.undefined;
       })
       .then(() => utils.getDoc(doc_unknown._id))
@@ -553,8 +538,8 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc_unknown2._id))
       .then(() => sentinelUtils.getInfoDoc(doc_unknown2._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.update_clinics).to.be.defined;
+        expect(info.transitions).to.not.be.undefined;
+        expect(info.transitions.update_clinics).to.not.be.undefined;
         expect(info.transitions.multi_report_alerts).to.be.undefined;
       })
       .then(() => utils.getDoc(doc_unknown2._id))
@@ -576,13 +561,13 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc2._id))
       .then(() => sentinelUtils.getInfoDoc(doc2._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.multi_report_alerts).to.be.defined;
+        expect(info.transitions).to.not.be.undefined;
+        expect(info.transitions.multi_report_alerts).to.not.be.undefined;
         expect(info.transitions.multi_report_alerts.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc2._id))
       .then(updated => {
-        expect(updated.tasks).to.be.defined;
+
         expect(updated.tasks.length).to.equal(2);
 
         expect(updated.tasks[0].messages[0].message).to.equal('multi_report_message');
@@ -597,8 +582,8 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc3._id))
       .then(() => sentinelUtils.getInfoDoc(doc3._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.multi_report_alerts).to.be.defined;
+        expect(info.transitions).to.not.be.undefined;
+        expect(info.transitions.multi_report_alerts).to.not.be.undefined;
         expect(info.transitions.multi_report_alerts.ok).to.equal(true);
       });
   });

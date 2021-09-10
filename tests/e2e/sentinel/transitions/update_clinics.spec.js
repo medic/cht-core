@@ -1,6 +1,7 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const uuid = require('uuid');
+const { expect } = require('chai');
 
 describe('update_clinics', () => {
   after(() => utils.revertDb([], true));
@@ -172,9 +173,9 @@ describe('update_clinics', () => {
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id]))
       .then(infos => {
-        expect(infos[0].transitions).to.be.defined;
+        expect(infos[0].transitions).to.not.be.undefined;
         expect(infos[0].transitions.update_clinics.ok).to.equal(true);
-        expect(infos[1].transitions).to.be.defined;
+        expect(infos[1].transitions).to.not.be.undefined;
         expect(infos[1].transitions.update_clinics.ok).to.equal(true);
 
         expect(Object.keys(infos[2].transitions).length).to.equal(0);
@@ -268,8 +269,8 @@ describe('update_clinics', () => {
       .then(() => sentinelUtils.waitForSentinel(docIds))
       .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
-        expect(infos[0].transitions).to.be.defined;
-        expect(infos[0].transitions.update_clinics).to.be.defined;
+        expect(infos[0].transitions).to.not.be.undefined;
+        expect(infos[0].transitions.update_clinics).to.not.be.undefined;
         expect(infos[0].transitions.update_clinics.ok).to.equal(true);
       })
       .then(() => utils.getDocs(docIds))

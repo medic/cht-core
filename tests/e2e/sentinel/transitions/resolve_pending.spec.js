@@ -1,7 +1,7 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const uuid = require('uuid');
-const expect = require('chai');
+const { expect } = require('chai');
 
 describe('resolve_pending', () => {
   after(() => utils.revertDb([], true));
@@ -104,8 +104,8 @@ describe('resolve_pending', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).to.be.defined;
-        expect(info.transitions.resolve_pending).to.be.defined;
+        expect(info.transitions).to.not.be.undefined;
+        expect(info.transitions.resolve_pending).to.not.be.undefined;
         expect(info.transitions.resolve_pending.ok).to.equal(true);
       })
       .then(() => utils.getDoc(doc._id))

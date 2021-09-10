@@ -1,6 +1,7 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const uuid = require('uuid');
+const { expect } = require('chai');
 
 const contacts = [
   {
@@ -165,31 +166,31 @@ describe('update_notifications', () => {
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
       .then(infos => {
-        expect(infos[0].transitions).to.be.defined;
-        expect(infos[0].transitions.update_notifications).to.be.defined;
+        expect(infos[0].transitions).to.not.be.undefined;
+        expect(infos[0].transitions.update_notifications).to.not.be.undefined;
         expect(infos[0].transitions.update_notifications.ok).to.equal(true);
 
-        expect(infos[1].transitions).to.be.defined;
-        expect(infos[1].transitions.update_notifications).to.be.defined;
+        expect(infos[1].transitions).to.not.be.undefined;
+        expect(infos[1].transitions.update_notifications).to.not.be.undefined;
         expect(infos[1].transitions.update_notifications.ok).to.equal(true);
       })
       .then(() => utils.getDocs([doc1._id, doc2._id]))
       .then(updated => {
-        expect(updated[0].tasks).to.be.defined;
+        expect(updated[0].tasks).to.not.be.undefined;
         expect(updated[0].tasks.length).to.equal(1);
         expect(updated[0].tasks[0].messages[0].message).to.equal('Patient not found');
         expect(updated[0].tasks[0].messages[0].to).to.equal('12345');
 
-        expect(updated[0].errors).to.be.defined;
+        expect(updated[0].errors).to.not.be.undefined;
         expect(updated[0].errors.length).to.equal(1);
         expect(updated[0].errors[0].message).to.equal('Patient not found');
 
-        expect(updated[1].tasks).to.be.defined;
+        expect(updated[1].tasks).to.not.be.undefined;
         expect(updated[1].tasks.length).to.equal(1);
         expect(updated[1].tasks[0].messages[0].message).to.equal('Patient id incorrect');
         expect(updated[1].tasks[0].messages[0].to).to.equal('12345');
 
-        expect(updated[1].errors).to.be.defined;
+        expect(updated[1].errors).to.not.be.undefined;
         expect(updated[1].errors.length).to.equal(1);
         expect(updated[1].errors[0].message).to.equal('Patient id incorrect');
       });
@@ -272,11 +273,11 @@ describe('update_notifications', () => {
       .then(() => sentinelUtils.waitForSentinel(mute1._id))
       .then(() => sentinelUtils.getInfoDocs([mute1._id, 'person', 'clinic']))
       .then(infos => {
-        expect(infos[0].transitions).to.be.defined;
-        expect(infos[0].transitions.update_notifications).to.be.defined;
+        expect(infos[0].transitions).to.not.be.undefined;
+        expect(infos[0].transitions.update_notifications).to.not.be.undefined;
         expect(infos[0].transitions.update_notifications.ok).to.equal(true);
 
-        expect(infos[1].muting_history).to.be.defined;
+        expect(infos[1].muting_history).to.not.be.undefined;
         expect(infos[1].muting_history.length).to.equal(1);
         expect(infos[1].muting_history[0].muted).to.equal(true);
         expect(infos[1].muting_history[0].report_id).to.equal(mute1._id);
@@ -286,7 +287,7 @@ describe('update_notifications', () => {
       })
       .then(() => utils.getDocs([mute1._id, 'person', 'clinic']))
       .then(updated => {
-        expect(updated[0].tasks).to.be.defined;
+        expect(updated[0].tasks).to.not.be.undefined;
         expect(updated[0].tasks.length).to.equal(1);
         expect(updated[0].tasks[0].messages[0].message).to.equal('Contact muted');
         expect(updated[0].tasks[0].messages[0].to).to.equal('12345');
@@ -299,11 +300,11 @@ describe('update_notifications', () => {
       .then(() => sentinelUtils.waitForSentinel(mute2._id))
       .then(() => sentinelUtils.getInfoDocs([mute2._id, 'person', 'clinic']))
       .then(infos => {
-        expect(infos[0].transitions).to.be.defined;
-        expect(infos[0].transitions.update_notifications).to.be.defined;
+        expect(infos[0].transitions).to.not.be.undefined;
+        expect(infos[0].transitions.update_notifications).to.not.be.undefined;
         expect(infos[0].transitions.update_notifications.ok).to.equal(true);
 
-        expect(infos[1].muting_history).to.be.defined;
+        expect(infos[1].muting_history).to.not.be.undefined;
         expect(infos[1].muting_history.length).to.equal(1);
         expect(infos[1].muting_history[0].date).to.equal(muteTime);
 
@@ -311,7 +312,7 @@ describe('update_notifications', () => {
       })
       .then(() => utils.getDocs([mute2._id, 'person', 'clinic']))
       .then(updated => {
-        expect(updated[0].tasks).to.be.defined;
+        expect(updated[0].tasks).to.not.be.undefined;
         expect(updated[0].tasks.length).to.equal(1);
         expect(updated[0].tasks[0].messages[0].message).to.equal('Contact muted');
         expect(updated[0].tasks[0].messages[0].to).to.equal('12345');
@@ -324,11 +325,11 @@ describe('update_notifications', () => {
       .then(() => sentinelUtils.waitForSentinel(unmute1._id))
       .then(() => sentinelUtils.getInfoDocs([unmute1._id, 'person']))
       .then(infos => {
-        expect(infos[0].transitions).to.be.defined;
-        expect(infos[0].transitions.update_notifications).to.be.defined;
+        expect(infos[0].transitions).to.not.be.undefined;
+        expect(infos[0].transitions.update_notifications).to.not.be.undefined;
         expect(infos[0].transitions.update_notifications.ok).to.equal(true);
 
-        expect(infos[1].muting_history).to.be.defined;
+        expect(infos[1].muting_history).to.not.be.undefined;
         expect(infos[1].muting_history.length).to.equal(2);
         expect(infos[1].muting_history[1].muted).to.equal(false);
         expect(infos[1].muting_history[1].report_id).to.equal(unmute1._id);
@@ -336,7 +337,7 @@ describe('update_notifications', () => {
       })
       .then(() => utils.getDocs([unmute1._id, 'person']))
       .then(updated => {
-        expect(updated[0].tasks).to.be.defined;
+        expect(updated[0].tasks).to.not.be.undefined;
         expect(updated[0].tasks.length).to.equal(1);
         expect(updated[0].tasks[0].messages[0].message).to.equal('Contact unmuted');
         expect(updated[0].tasks[0].messages[0].to).to.equal('12345');
@@ -347,17 +348,17 @@ describe('update_notifications', () => {
       .then(() => sentinelUtils.waitForSentinel(unmute2._id))
       .then(() => sentinelUtils.getInfoDocs([unmute2._id, 'person']))
       .then(infos => {
-        expect(infos[0].transitions).to.be.defined;
-        expect(infos[0].transitions.update_notifications).to.be.defined;
+        expect(infos[0].transitions).to.not.be.undefined;
+        expect(infos[0].transitions.update_notifications).to.not.be.undefined;
         expect(infos[0].transitions.update_notifications.ok).to.equal(true);
 
-        expect(infos[1].muting_history).to.be.defined;
+        expect(infos[1].muting_history).to.not.be.undefined;
         expect(infos[1].muting_history.length).to.equal(2);
         expect(infos[1].muting_history[1].date).to.equal(unmuteTime);
       })
       .then(() => utils.getDocs([unmute2._id, 'person']))
       .then(updated => {
-        expect(updated[0].tasks).to.be.defined;
+        expect(updated[0].tasks).to.not.be.undefined;
         expect(updated[0].tasks.length).to.equal(1);
         expect(updated[0].tasks[0].messages[0].message).to.equal('Contact unmuted');
         expect(updated[0].tasks[0].messages[0].to).to.equal('12345');
