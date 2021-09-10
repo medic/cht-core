@@ -1,7 +1,7 @@
 import * as moment from 'moment';
 import { Injectable } from '@angular/core';
 import { RelativeTimeKey } from 'moment';
-import { toBik_text } from 'bikram-sambat';
+import { toBik_text as toBikranSambatText } from 'bikram-sambat';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { TranslateService } from '@mm-services/translate.service';
@@ -56,25 +56,31 @@ export class FormatDateService {
       });
   }
 
-  private format(date, key) {
-    const language = this.languageService.getSync();
-    if (language !== 'ne' || !this.config.useBikramSambat) {
-      return moment(date).format(this.config[key]);
-    }
-
+  private displayBikramSambatDate(momentDate, key) {
     if (key === 'time') {
-      return moment(date).format(this.config[key]);
+      return momentDate.format(this.config[key]);
     }
 
-    const bkDate = toBik_text(moment(date));
+    const bkDate = toBikranSambatText(momentDate);
     if (key === 'date') {
       return bkDate;
     }
 
     if (key === 'datetime') {
-      // inspired from Nepali moment LLLL long date format: dddd, D MMMM YYYY, Aको h:mm बजे
-      return `${bkDate}, ${moment(date).format(this.config.longTime)}`;
+      // inspired from Nepali moment locale LLLL long date format: dddd, D MMMM YYYY, Aको h:mm बजे
+      return `${bkDate}, ${momentDate.format(this.config.longTime)}`;
     }
+  }
+
+  private format(date, key) {
+    const momentDate = moment(date);
+    const language = this.languageService.getSync();
+
+    if (language === 'ne' && this.config.useBikramSambat) {
+      return this.displayBikramSambatDate(momentDate, key);
+    }
+
+    return momentDate.format(this.config[key]);
   }
 
   private getDateDiff(date, options) {
