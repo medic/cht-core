@@ -84,7 +84,7 @@ describe('update_clinics', () => {
       })
       .then(() => utils.getDoc(doc2._id))
       .then(updated => {
-        expect(updated.contact).to.equal({ _id: 'some_other_contact' });
+        expect(updated.contact).to.deep.equal({ _id: 'some_other_contact' });
       });
   });
 
@@ -275,10 +275,10 @@ describe('update_clinics', () => {
       })
       .then(() => utils.getDocs(docIds))
       .then(updated => {
-        expect(updated[0].contact).to.equal({ _id: 'person' });
-        expect(updated[1].contact).to.equal({ _id: 'person' });
-        expect(updated[2].contact).to.equal({ _id: 'person2' });
-        expect(updated[3].contact).to.equal({ _id: 'person_with_contact_type' });
+        expect(updated[0].contact).to.deep.equal({ _id: 'person' });
+        expect(updated[1].contact).to.deep.equal({ _id: 'person' });
+        expect(updated[2].contact).to.deep.equal({ _id: 'person2' });
+        expect(updated[3].contact).to.deep.equal({ _id: 'person_with_contact_type' });
       });
   });
 });
