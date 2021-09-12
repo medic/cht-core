@@ -73,7 +73,7 @@ const wipeTasks = () => {
   });
 };
 
-describe.skip('Outbound', () => {
+describe('Outbound', () => {
   before(() => {
     server = destinationApp.listen();
   });
