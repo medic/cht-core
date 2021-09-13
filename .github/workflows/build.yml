@@ -120,6 +120,9 @@ jobs:
       run: |
         echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
         echo "TEST_SUITE=integration" >> $GITHUB_ENV
+    - name: Is Tag Build
+      run: echo "IS_TAG=TRUE" >> $GITHUB_ENV
+      if: startsWith(github.ref, 'refs/tags/')
     - name: Use Node.js 12.x
       uses: actions/setup-node@v1
       with:
@@ -133,8 +136,6 @@ jobs:
       run:  npm install -g cht-conf
     - name: npm CI
       run: npm ci
-    - name: Set TAG var
-      run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
     - name: Horti Setup
       run: |
         echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
@@ -143,10 +144,10 @@ jobs:
     # Restarting horti to install on a different builds server. Used for installing the current release then installing the beta. 
     - name: Horti Restart
       run: |
-        echo "RESTART=yes COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
-        docker-compose -f scripts/ci/horti-compose.yml up -d 
+        docker stop horti
+        RESTART=yes docker-compose -f scripts/ci/horti-compose.yml up -d 
         sh scripts/e2e/wait_for_response_code.sh 5988 200 api
-      if: ${{ env.TAG }}
+      if: startsWith(github.ref, 'refs/tags/')
     - name: Test it!
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
     - name: Dump Couch logs
