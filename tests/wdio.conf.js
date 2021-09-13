@@ -186,7 +186,7 @@ const baseConfig = {
    * @param {Object} config wdio configuration object
    * @param {Array.<Object>} capabilities list of capabilities details
    */
-  onPrepare: async function (config) {
+  onPrepare: async function () {
     // delete all previous test
     if (fs.existsSync(ALLURE_OUTPUT)) {
       const files = fs.readdirSync(ALLURE_OUTPUT) || [];
@@ -200,7 +200,7 @@ const baseConfig = {
     if (fs.existsSync(browserLogPath)) {
       fs.unlinkSync(browserLogPath);
     }
-    await utils.prepServices(config);
+    await utils.prepServices();
   },
   /**
    * Gets executed before a worker process is spawned and can be used to initialise specific service
@@ -252,7 +252,7 @@ const baseConfig = {
   beforeTest: async (test) => {
     await browser.execute(`
       console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-      console.log("~~~~~~~~~~~~~~~~~~~ ${test.title} ~~~~~~~~~~~~~~~~~~~~");     
+      console.log("~~~~~~~~~~~~~~~~~~~ ${test.title} ~~~~~~~~~~~~~~~~~~~~");
     `);
   },
   /**

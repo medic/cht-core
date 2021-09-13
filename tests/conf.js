@@ -60,10 +60,8 @@ const baseConfig = {
     jasmine.getEnv().addReporter(utils.currentSpecReporter);
 
     browser.waitForAngularEnabled(false);
-    const config = await browser.getProcessedConfig();
-
     // wait for startup to complete
-    await browser.driver.wait(utils.prepServices(config), 135 * 1000, 'API took too long to start up');
+    await browser.driver.wait(utils.prepServices(true), 135 * 1000, 'API took too long to start up');
 
     afterEach(() => {
       return utils.saveBrowserLogs();
