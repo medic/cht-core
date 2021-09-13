@@ -21,6 +21,7 @@ describe('Db Service', () => {
   let pouchResponse;
   let runOutsideAngular;
   let runInsideAngular;
+  const sandbox = sinon.createSandbox();
 
   const getService = () => {
     TestBed.configureTestingModule({
@@ -36,47 +37,47 @@ describe('Db Service', () => {
 
   beforeEach(waitForAsync(() => {
     sessionService = {
-      userCtx: sinon.stub(),
-      isOnlineOnly: sinon.stub(),
+      userCtx: sandbox.stub(),
+      isOnlineOnly: sandbox.stub(),
     };
     locationService = {};
 
     originalPouchDB = window.PouchDB;
     pouchResponse = {
       id: 'hello',
-      destroy: sinon.stub(),
-      put: sinon.stub(),
-      post: sinon.stub(),
-      get: sinon.stub(),
-      remove: sinon.stub(),
-      bulkDocs: sinon.stub(),
-      bulkGet: sinon.stub(),
-      allDocs: sinon.stub(),
-      putAttachment: sinon.stub(),
-      getAttachment: sinon.stub(),
-      removeAttachment: sinon.stub(),
-      query: sinon.stub(),
-      viewCleanup: sinon.stub(),
-      info: sinon.stub(),
-      compact: sinon.stub(),
-      revsDiff: sinon.stub(),
-      changes: sinon.stub(),
-      sync: sinon.stub(),
+      destroy: sandbox.stub(),
+      put: sandbox.stub(),
+      post: sandbox.stub(),
+      get: sandbox.stub(),
+      remove: sandbox.stub(),
+      bulkDocs: sandbox.stub(),
+      bulkGet: sandbox.stub(),
+      allDocs: sandbox.stub(),
+      putAttachment: sandbox.stub(),
+      getAttachment: sandbox.stub(),
+      removeAttachment: sandbox.stub(),
+      query: sandbox.stub(),
+      viewCleanup: sandbox.stub(),
+      info: sandbox.stub(),
+      compact: sandbox.stub(),
+      revsDiff: sandbox.stub(),
+      changes: sandbox.stub(),
+      sync: sandbox.stub(),
       replicate: {
-        from: sinon.stub(),
-        to: sinon.stub(),
+        from: sandbox.stub(),
+        to: sandbox.stub(),
       },
     };
 
-    pouchDB = sinon.stub().returns({ ...pouchResponse });
+    pouchDB = sandbox.stub().returns({ ...pouchResponse });
     window.PouchDB = pouchDB;
 
-    runOutsideAngular = sinon.stub(NgZone.prototype, 'runOutsideAngular').callsArg(0);
-    runInsideAngular = sinon.stub(NgZone.prototype, 'run').callsArg(0);
+    runOutsideAngular = sandbox.stub(NgZone.prototype, 'runOutsideAngular').callsArg(0);
+    runInsideAngular = sandbox.stub(NgZone.prototype, 'run').callsArg(0);
   }));
 
   afterEach(() => {
-    sinon.restore();
+    sandbox.restore();
     window.PouchDB = originalPouchDB;
   });
 
@@ -310,17 +311,17 @@ describe('Db Service', () => {
     for (const method in methods) {
       if (methods[method]) {
         it(`should stub ${method}`, fakeAsync(() => {
-          const stubbedMethod = sinon.stub(window.PouchDB.prototype, method);
+          const stubbedMethod = sandbox.stub(window.PouchDB.prototype, method);
           getService();
           const db = service.get();
 
           expect(stubbedMethod.callCount).to.equal(0);
 
-          methods[method].forEach((args) => {
-            sinon.resetHistory();
+          methods[method].forEach(({ args }) => {
+            sandbox.resetHistory();
             db[method](...args);
             expect(stubbedMethod.callCount).to.equal(1);
-            expect(stubbedMethod.args[0]).to.deep.equal([args]);
+            expect(stubbedMethod.args[0]).to.deep.equal(args);
             expect(runOutsideAngular.callCount).to.equal(1);
           });
         }));
@@ -328,7 +329,7 @@ describe('Db Service', () => {
     }
 
     it('should work with a resolving promise', fakeAsync(async () => {
-      sinon.stub(window.PouchDB.prototype, 'get').resolves({ the: 'thing' });
+      sandbox.stub(window.PouchDB.prototype, 'get').resolves({ the: 'thing' });
       getService();
       const db = service.get();
 
@@ -337,7 +338,7 @@ describe('Db Service', () => {
     }));
 
     it('should work with a rejecting promise', fakeAsync(async () => {
-      sinon.stub(window.PouchDB.prototype, 'get').rejects({ code: 404 });
+      sandbox.stub(window.PouchDB.prototype, 'get').rejects({ code: 404 });
 
       getService();
       const db = service.get();
@@ -354,11 +355,11 @@ describe('Db Service', () => {
       // because of how complex the Changes PouchDB object is, these are integration tests, not unit tests
       it('should call with correct params', fakeAsync(() => {
         const options = { live: false, include_docs: false, since: '123' };
-        const changesSpy = sinon.spy(window.PouchDB.prototype, 'changes');
+        const changesSpy = sandbox.spy(window.PouchDB.prototype, 'changes');
 
         getService();
         const db = service.get();
-        sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
+        sandbox.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
 
         // can't use await, changes doesn't return a promise
         // it returns an event emitter with an attached `then` property!
@@ -373,7 +374,7 @@ describe('Db Service', () => {
 
       it('should return full results', fakeAsync(async () => {
         const options = { live: false, include_docs: true };
-        const changesSpy = sinon.spy(window.PouchDB.prototype, 'changes');
+        const changesSpy = sandbox.spy(window.PouchDB.prototype, 'changes');
 
         getService();
         const db = service.get();
@@ -381,8 +382,8 @@ describe('Db Service', () => {
         await db.put({ _id: uuidv4() });
         const allDocs = (await db.allDocs({ include_docs: true })).rows;
         const info = await db.info();
-        sinon.resetHistory();
-        sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
+        sandbox.resetHistory();
+        sandbox.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
 
         // can't use await, changes doesn't return a promise
         // it returns an event emitter with an attached `then` property!
@@ -405,17 +406,17 @@ describe('Db Service', () => {
       }));
 
       it('should attach "on" events and run them in the zone', fakeAsync(async () => {
-        const changesSpy = sinon.spy(window.PouchDB.prototype, 'changes');
+        const changesSpy = sandbox.spy(window.PouchDB.prototype, 'changes');
 
         getService();
         const db = service.get();
         await db.put({ _id: uuidv4() });
         await db.put({ _id: uuidv4() });
-        sinon.resetHistory();
+        sandbox.resetHistory();
 
-        const onChange = sinon.stub();
-        const onComplete = sinon.stub();
-        sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
+        const onChange = sandbox.stub();
+        const onComplete = sandbox.stub();
+        sandbox.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
 
         // can't use await, changes doesn't return a promise
         // it returns an event emitter with an attached `then` property!
@@ -437,7 +438,7 @@ describe('Db Service', () => {
       }));
 
       it('should correctly bind catch', fakeAsync(async () => {
-        const changesSpy = sinon.spy(window.PouchDB.prototype, 'changes');
+        const changesSpy = sandbox.spy(window.PouchDB.prototype, 'changes');
         const opts = {
           live: false,
           filter: () => {
@@ -447,8 +448,8 @@ describe('Db Service', () => {
 
         getService();
         const db = service.get();
-        const onError = sinon.stub();
-        sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
+        const onError = sandbox.stub();
+        sandbox.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
 
         return db
           .changes(opts)
@@ -472,14 +473,14 @@ describe('Db Service', () => {
       // because of how complex the Sync PouchDB object is, these are integration tests, not unit tests
       it('should call with correct params', fakeAsync(() => {
         const options = { live: false, since: '123' };
-        const syncSpy = sinon.spy(window.PouchDB.prototype, 'sync');
+        const syncSpy = sandbox.spy(window.PouchDB.prototype, 'sync');
         const target = window.PouchDB(`db-${uuidv4()}`);
 
         getService();
         const db = service.get();
 
-        sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
-        sinon.resetHistory();
+        sandbox.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
+        sandbox.resetHistory();
 
         // can't use await, sync doesn't return a promise
         // it returns an event emitter with an attached `then` property!
@@ -508,7 +509,7 @@ describe('Db Service', () => {
 
       it('should do a full sync', fakeAsync(async () => {
         const options = { live: false };
-        const syncSpy = sinon.spy(window.PouchDB.prototype, 'sync');
+        const syncSpy = sandbox.spy(window.PouchDB.prototype, 'sync');
         const target = window.PouchDB(`db-${uuidv4()}`);
 
         getService();
@@ -518,8 +519,8 @@ describe('Db Service', () => {
         const allDocs = (await db.allDocs()).rows;
         const info = await db.info();
 
-        sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
-        sinon.resetHistory();
+        sandbox.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
+        sandbox.resetHistory();
 
         // can't use await, sync doesn't return a promise
         // it returns an event emitter with an attached `then` property!
@@ -553,18 +554,18 @@ describe('Db Service', () => {
       }));
 
       it('should attach "on" events and run them in the zone', fakeAsync(async () => {
-        const syncSpy = sinon.spy(window.PouchDB.prototype, 'sync');
+        const syncSpy = sandbox.spy(window.PouchDB.prototype, 'sync');
         const target = window.PouchDB(`db-${uuidv4()}`);
 
         getService();
         const db = service.get();
         await db.put({ _id: uuidv4() });
         await db.put({ _id: uuidv4() });
-        sinon.resetHistory();
+        sandbox.resetHistory();
 
-        const onChange = sinon.stub();
-        const onComplete = sinon.stub();
-        sinon.stub(NgZone, 'isInAngularZone').returns(true);
+        const onChange = sandbox.stub();
+        const onComplete = sandbox.stub();
+        sandbox.stub(NgZone, 'isInAngularZone').returns(true);
 
         const batchSize = 50;
 
@@ -595,11 +596,11 @@ describe('Db Service', () => {
 
         getService();
         const db = service.get();
-        const onError = sinon.stub();
-        const onComplete = sinon.stub();
+        const onError = sandbox.stub();
+        const onComplete = sandbox.stub();
         await target.bulkDocs([{ _id: uuidv4() }]);
-        sinon.stub(target, 'allDocs').rejects({ status: 400, name: 'forbidden' });
-        sinon.stub(NgZone, 'isInAngularZone').returns(true);
+        sandbox.stub(target, 'allDocs').rejects({ status: 400, name: 'forbidden' });
+        sandbox.stub(NgZone, 'isInAngularZone').returns(true);
 
         return db
           .sync(target, opts)
@@ -623,8 +624,8 @@ describe('Db Service', () => {
 
           getService();
           const db = service.get();
-          sinon.stub(NgZone, 'isInAngularZone').returns(true);
-          sinon.resetHistory();
+          sandbox.stub(NgZone, 'isInAngularZone').returns(true);
+          sandbox.resetHistory();
 
           // can't use await, replicate doesn't return a promise
           // it returns an event emitter with an attached `then` property!
@@ -650,8 +651,8 @@ describe('Db Service', () => {
           await db.put({ _id: uuidv4() });
           const allDocs = (await db.allDocs()).rows;
           const info = await db.info();
-          sinon.stub(NgZone, 'isInAngularZone').returns(true);
-          sinon.resetHistory();
+          sandbox.stub(NgZone, 'isInAngularZone').returns(true);
+          sandbox.resetHistory();
 
           // can't use await, replicate doesn't return a promise
           // it returns an event emitter with an attached `then` property!
@@ -676,11 +677,11 @@ describe('Db Service', () => {
           const db = service.get();
           await db.put({ _id: uuidv4() });
           await db.put({ _id: uuidv4() });
-          sinon.resetHistory();
+          sandbox.resetHistory();
 
-          const onChange = sinon.stub();
-          const onComplete = sinon.stub();
-          sinon.stub(NgZone, 'isInAngularZone').returns(true);
+          const onChange = sandbox.stub();
+          const onComplete = sandbox.stub();
+          sandbox.stub(NgZone, 'isInAngularZone').returns(true);
           const batchSize = 50;
 
           // can't use await, replicate doesn't return a promise
@@ -702,9 +703,9 @@ describe('Db Service', () => {
 
           getService();
           const db = service.get();
-          const onError = sinon.stub();
-          sinon.stub(NgZone, 'isInAngularZone').returns(true);
-          sinon.stub(target, 'revsDiff').rejects({ code: 400 });
+          const onError = sandbox.stub();
+          sandbox.stub(NgZone, 'isInAngularZone').returns(true);
+          sandbox.stub(target, 'revsDiff').rejects({ code: 400 });
 
           return db
             .replicate.to(target, opts)
@@ -731,7 +732,7 @@ describe('Db Service', () => {
 
           getService();
           const db = service.get();
-          sinon.stub(NgZone, 'isInAngularZone').returns(true);
+          sandbox.stub(NgZone, 'isInAngularZone').returns(true);
 
           // can't use await, replicate doesn't return a promise
           // it returns an event emitter with an attached `then` property!
@@ -757,7 +758,7 @@ describe('Db Service', () => {
           await target.bulkDocs([{ _id: uuidv4() }, { _id: uuidv4() }]);
           const allDocs = (await target.allDocs()).rows;
           const info = await target.info();
-          sinon.stub(NgZone, 'isInAngularZone').returns(true);
+          sandbox.stub(NgZone, 'isInAngularZone').returns(true);
 
           // can't use await, replicate doesn't return a promise
           // it returns an event emitter with an attached `then` property!
@@ -782,9 +783,9 @@ describe('Db Service', () => {
           const db = service.get();
           await target.bulkDocs([{ _id: uuidv4() }, { _id: uuidv4() }]);
 
-          const onChange = sinon.stub();
-          const onComplete = sinon.stub();
-          sinon.stub(NgZone, 'isInAngularZone').returns(true);
+          const onChange = sandbox.stub();
+          const onComplete = sandbox.stub();
+          sandbox.stub(NgZone, 'isInAngularZone').returns(true);
           const batchSize = 50;
 
           // can't use await, replicate doesn't return a promise
@@ -806,10 +807,10 @@ describe('Db Service', () => {
 
           getService();
           const db = service.get();
-          const onError = sinon.stub();
+          const onError = sandbox.stub();
           await target.bulkDocs([{ _id: uuidv4() }, { _id: uuidv4() }]);
-          sinon.stub(target, 'allDocs').rejects({ code: 400 });
-          sinon.stub(NgZone, 'isInAngularZone').returns(true);
+          sandbox.stub(target, 'allDocs').rejects({ code: 400 });
+          sandbox.stub(NgZone, 'isInAngularZone').returns(true);
 
           // can't use await, replicate doesn't return a promise
           // it returns an event emitter with an attached `then` property!
