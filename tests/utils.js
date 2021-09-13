@@ -474,7 +474,7 @@ const prepServices = async (config) => {
   await listenForApi();
 
   if (constants.UPGRADE) {
-    const body = `{"build":{"namespace":"medic","application":"medic","version":${constants.UPGRADE}}}`;
+    const body = `{"build":{"namespace":"medic","application":"medic","version":"${constants.UPGRADE}"}}`;
     console.log(`upgrading to ${body}`);
     await request({
       path: '/api/v1/upgrade',
