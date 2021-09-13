@@ -34,8 +34,8 @@ echo Check e2e servers is running
 # curl http://localhost:31337/isRunning
 env
 echo restart is $RESTART
-echo tag is $TAG
-if [ -n "$TAG"  ] && [ -z "$RESTART" ]; then
+echo tag is $IS_TAG
+if [ -n "$IS_TAG"  ] && [ -z "$RESTART" ]; then
     echo 'Setting vars for tag'
     UPGRADE=$BUILD
     HORTI_BUILDS_SERVER=$DEFAULT_BUILDS_URL

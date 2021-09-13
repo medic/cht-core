@@ -30,7 +30,7 @@ services:
       - BUILD=medic:medic:test-$BUILD_NUMBER
       - NODE_VERSION=$NODE
       - TEST_SUITE=integration
-      - TAG=$TAG
+      - IS_TAG=$IS_TAG
       - DEFAULT_BUILDS_URL=https://staging.dev.medicmobile.org/_couch/builds
       - RESTART=$RESTART
     depends_on:
