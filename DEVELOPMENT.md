@@ -180,6 +180,12 @@ Follow the steps below to use an Android device with a development build of your
 1. Assuming your IP is `192.168.0.3`, start `nginx-local-ip` to connect to:
     * The CHT API running via `grunt` or `horti`, execute `APP_URL=http://192.168.0.3:5988 docker-compose up` and then access it at [https://192-168-0-3.my.local-ip.co/](https://192-168-0-3.my.local-ip.co/)
     * The CHT API running via `docker`, the ports are remapped, so execute `HTTP=8080 HTTPS=8443 APP_URL=https://192.168.0.3 docker-compose up` and then access it at [https://192-168-0-3.my.local-ip.co:8443/](https://192-168-0-3.my.local-ip.co:8443/)
+1. The HTTP/HTTPS ports (`80`/`443`) and your local webapp port (e.g. `5988`) need to be accessible from the LAN and not blocked by your firewall. If you are using the UFW firewall (in a Linux environment) you can allow traffic on these ports _just from your local LAN_ with the following commands:
+
+```.sh
+$ sudo ufw allow proto tcp from 192.168.0.0/24 to any port 80,443,5988
+$ sudo ufw allow proto tcp from any to 192.168.0.0/24 port 80,443,5988
+```
 
 ### Remote Proxies
 
