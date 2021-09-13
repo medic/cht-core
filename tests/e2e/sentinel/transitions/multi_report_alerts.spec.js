@@ -44,7 +44,7 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).to.equal(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -77,7 +77,7 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).to.equal(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -111,11 +111,11 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions.multi_report_alerts.ok).to.equal(true);
+        expect(info.transitions.multi_report_alerts.ok).to.be.true;
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
-        expect(updated.tasks.length).to.equal(1);
+        expect(updated.tasks).to.have.lengthOf(1);
         expect(updated.tasks[0].messages[0].message).to.equal('multi_report_message');
         expect(updated.tasks[0].messages[0].to).to.equal('0123456789');
         expect(updated.tasks[0].state).to.equal('pending');
@@ -174,7 +174,7 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).to.equal(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
@@ -184,11 +184,11 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc2._id))
       .then(() => sentinelUtils.getInfoDoc(doc2._id))
       .then(info => {
-        expect(info.transitions.multi_report_alerts.ok).to.equal(true);
+        expect(info.transitions.multi_report_alerts.ok).to.be.true;
       })
       .then(() => utils.getDoc(doc2._id))
       .then(updated => {
-        expect(updated.tasks.length).to.equal(2);
+        expect(updated.tasks).to.have.lengthOf(2);
 
         expect(updated.tasks[0].messages[0].message).to.equal('multi_report_message');
         expect(updated.tasks[0].messages[0].to).to.equal('+256 41 9867538');
@@ -242,7 +242,7 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).to.equal(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
@@ -252,11 +252,11 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc2._id))
       .then(() => sentinelUtils.getInfoDoc(doc2._id))
       .then(info => {
-        expect(info.transitions.multi_report_alerts.ok).to.equal(true);
+        expect(info.transitions.multi_report_alerts.ok).to.be.true;
       })
       .then(() => utils.getDoc(doc2._id))
       .then(updated => {
-        expect(updated.tasks.length).to.equal(2);
+        expect(updated.tasks).to.have.lengthOf(2);
 
         expect(updated.tasks[0].messages[0].message).to.equal('multi_report_magic');
         expect(updated.tasks[0].messages[0].to).to.equal('+256 41 9867530');
@@ -307,7 +307,7 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).to.equal(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
@@ -317,7 +317,7 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc2._id))
       .then(() => sentinelUtils.getInfoDoc(doc2._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).to.equal(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       })
       .then(() => utils.getDoc(doc2._id))
       .then(updated => {
@@ -407,7 +407,7 @@ describe('multi_report_alerts', () => {
       })
       .then(() => utils.getDoc(doc_unknown._id))
       .then(updated => {
-        expect(updated.tasks.length).to.equal(1);
+        expect(updated.tasks).to.have.lengthOf(1);
       })
       .then(() => utils.saveDoc(doc_unknown2))
       .then(() => sentinelUtils.waitForSentinel(doc_unknown2._id))
@@ -417,13 +417,13 @@ describe('multi_report_alerts', () => {
       })
       .then(() => utils.getDoc(doc_unknown2._id))
       .then(updated => {
-        expect(updated.tasks.length).to.equal(1);
+        expect(updated.tasks).to.have.lengthOf(1);
       })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions.update_clinics.ok).to.equal(true);
+        expect(info.transitions.update_clinics.ok).to.be.true;
         expect(info.transitions.multi_report_alerts).to.be.undefined;
       })
       .then(() => utils.getDoc(doc._id))
@@ -434,12 +434,12 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc2._id))
       .then(() => sentinelUtils.getInfoDoc(doc2._id))
       .then(info => {
-        expect(info.transitions.multi_report_alerts.ok).to.equal(true);
+        expect(info.transitions.multi_report_alerts.ok).to.be.true;
       })
       .then(() => utils.getDoc(doc2._id))
       .then(updated => {
 
-        expect(updated.tasks.length).to.equal(2);
+        expect(updated.tasks).to.have.lengthOf(2);
 
         expect(updated.tasks[0].messages[0].message).to.equal('multi_report_message');
         expect(updated.tasks[0].messages[0].to).to.equal('+251 11 551 2133');
@@ -532,7 +532,7 @@ describe('multi_report_alerts', () => {
       })
       .then(() => utils.getDoc(doc_unknown._id))
       .then(updated => {
-        expect(updated.tasks.length).to.equal(1);
+        expect(updated.tasks).to.have.lengthOf(1);
       })
       .then(() => utils.saveDoc(doc_unknown2))
       .then(() => sentinelUtils.waitForSentinel(doc_unknown2._id))
@@ -544,13 +544,13 @@ describe('multi_report_alerts', () => {
       })
       .then(() => utils.getDoc(doc_unknown2._id))
       .then(updated => {
-        expect(updated.tasks.length).to.equal(1);
+        expect(updated.tasks).to.have.lengthOf(1);
       })
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions.update_clinics.ok).to.equal(true);
+        expect(info.transitions.update_clinics.ok).to.be.true;
         expect(info.transitions.multi_report_alerts).to.be.undefined;
       })
       .then(() => utils.getDoc(doc._id))
@@ -563,12 +563,12 @@ describe('multi_report_alerts', () => {
       .then(info => {
         expect(info.transitions).to.not.be.undefined;
         expect(info.transitions.multi_report_alerts).to.not.be.undefined;
-        expect(info.transitions.multi_report_alerts.ok).to.equal(true);
+        expect(info.transitions.multi_report_alerts.ok).to.be.true;
       })
       .then(() => utils.getDoc(doc2._id))
       .then(updated => {
 
-        expect(updated.tasks.length).to.equal(2);
+        expect(updated.tasks).to.have.lengthOf(2);
 
         expect(updated.tasks[0].messages[0].message).to.equal('multi_report_message');
         expect(updated.tasks[0].messages[0].to).to.equal('+251 11 551 2133');
@@ -584,7 +584,7 @@ describe('multi_report_alerts', () => {
       .then(info => {
         expect(info.transitions).to.not.be.undefined;
         expect(info.transitions.multi_report_alerts).to.not.be.undefined;
-        expect(info.transitions.multi_report_alerts.ok).to.equal(true);
+        expect(info.transitions.multi_report_alerts.ok).to.be.true;
       });
   });
 });

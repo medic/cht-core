@@ -83,7 +83,7 @@ describe('accept_patient_reports', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).to.equal(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -112,7 +112,7 @@ describe('accept_patient_reports', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).to.equal(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -245,36 +245,36 @@ describe('accept_patient_reports', () => {
       })
       .then(() => utils.getDocs(ids))
       .then(updated => {
-        expect(updated[0].tasks.length).to.equal(1);
+        expect(updated[0].tasks).to.have.lengthOf(1);
         expect(updated[0].tasks[0].messages[0].message).to.equal('Patient not found');
         expect(updated[0].tasks[0].messages[0].to).to.equal('+phone');
         expect(updated[0].tasks[0].state).to.equal('pending');
 
-        expect(updated[0].errors.length).to.equal(1);
+        expect(updated[0].errors).to.have.lengthOf(1);
         expect(updated[0].errors[0].code).to.equal('registration_not_found');
 
-        expect(updated[1].tasks.length).to.equal(1);
+        expect(updated[1].tasks).to.have.lengthOf(1);
         expect(updated[1].tasks[0].messages[0].message).to.equal('Patient id incorrect');
         expect(updated[1].tasks[0].messages[0].to).to.equal('+phone');
         expect(updated[1].tasks[0].state).to.equal('pending');
 
-        expect(updated[1].errors.length).to.equal(1);
+        expect(updated[1].errors).to.have.lengthOf(1);
         expect(updated[1].errors[0].message).to.equal('Patient id incorrect');
 
-        expect(updated[2].tasks.length).to.equal(1);
+        expect(updated[2].tasks).to.have.lengthOf(1);
         expect(updated[2].tasks[0].messages[0].message).to.equal('Place not found');
         expect(updated[2].tasks[0].messages[0].to).to.equal('+phone');
         expect(updated[2].tasks[0].state).to.equal('pending');
 
-        expect(updated[2].errors.length).to.equal(1);
+        expect(updated[2].errors).to.have.lengthOf(1);
         expect(updated[2].errors[0].code).to.equal('registration_not_found');
 
-        expect(updated[3].tasks.length).to.equal(1);
+        expect(updated[3].tasks).to.have.lengthOf(1);
         expect(updated[3].tasks[0].messages[0].message).to.equal('Place id incorrect');
         expect(updated[3].tasks[0].messages[0].to).to.equal('+phone');
         expect(updated[3].tasks[0].state).to.equal('pending');
 
-        expect(updated[3].errors.length).to.equal(1);
+        expect(updated[3].errors).to.have.lengthOf(1);
         expect(updated[3].errors[0].message).to.equal('Place id incorrect');
       });
   });
@@ -362,12 +362,12 @@ describe('accept_patient_reports', () => {
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
       .then(infos => {
-        expect(infos[0].transitions.accept_patient_reports.ok).to.equal(true);
-        expect(infos[1].transitions.accept_patient_reports.ok).to.equal(true);
+        expect(infos[0].transitions.accept_patient_reports.ok).to.be.true;
+        expect(infos[1].transitions.accept_patient_reports.ok).to.be.true;
       })
       .then(() => utils.getDocs([doc1._id, doc2._id]))
       .then(updated => {
-        expect(updated[0].tasks.length).to.equal(2);
+        expect(updated[0].tasks).to.have.lengthOf(2);
 
         expect(updated[0].tasks[0].messages[0].message).to.equal('message_1');
         expect(updated[0].tasks[0].messages[0].to).to.equal('+phone');
@@ -380,7 +380,7 @@ describe('accept_patient_reports', () => {
         expect(updated[0].errors).to.be.undefined;
         expect(updated[0].registration_id).to.be.undefined;
 
-        expect(updated[1].tasks.length).to.equal(3);
+        expect(updated[1].tasks).to.have.lengthOf(3);
 
         expect(updated[1].tasks[0].messages[0].message).to.equal('message_1');
         expect(updated[1].tasks[0].messages[0].to).to.equal('+phone2');
@@ -507,7 +507,7 @@ describe('accept_patient_reports', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions.accept_patient_reports.ok).to.equal(true);
+        expect(info.transitions.accept_patient_reports.ok).to.be.true;
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
@@ -623,7 +623,7 @@ describe('accept_patient_reports', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions.accept_patient_reports.ok).to.equal(true);
+        expect(info.transitions.accept_patient_reports.ok).to.be.true;
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
@@ -738,7 +738,7 @@ describe('accept_patient_reports', () => {
       .then(() => sentinelUtils.waitForSentinel(doc1._id))
       .then(() => sentinelUtils.getInfoDoc(doc1._id))
       .then(info => {
-        expect(info.transitions.accept_patient_reports.ok).to.equal(true);
+        expect(info.transitions.accept_patient_reports.ok).to.be.true;
       })
       .then(() => utils.getDoc(doc1._id))
       .then(updated => {
@@ -749,7 +749,7 @@ describe('accept_patient_reports', () => {
       .then(() => sentinelUtils.waitForSentinel(doc2._id))
       .then(() => sentinelUtils.getInfoDoc(doc2._id))
       .then(info => {
-        expect(info.transitions.accept_patient_reports.ok).to.equal(true);
+        expect(info.transitions.accept_patient_reports.ok).to.be.true;
       })
       .then(() => utils.getDoc(doc2._id))
       .then(updated => {
@@ -988,7 +988,7 @@ describe('accept_patient_reports', () => {
       .then(() => utils.getDocs(registrationIds))
       .then(updated => {
         // none of the scheduled tasks should be cleared
-        expect(updated.every(doc => !doc.scheduled_tasks.find(task => task.state === 'cleared'))).to.equal(true);
+        expect(updated.every(doc => !doc.scheduled_tasks.find(task => task.state === 'cleared'))).to.be.true;
       })
       .then(() => utils.saveDoc(silence1Patient))
       .then(() => sentinelUtils.waitForSentinel(silence1Patient._id))
@@ -1068,14 +1068,14 @@ describe('accept_patient_reports', () => {
       .then(updated => {
         const getScheduledTasks = (doc) => doc.scheduled_tasks.filter(task => task.state === 'scheduled');
         // this should have cleared everything that is left
-        expect(getScheduledTasks(updated[0]).length).to.equal(0); // patient subject
-        expect(getScheduledTasks(updated[1]).length).to.equal(0); // patient subject
+        expect(getScheduledTasks(updated[0])).to.be.empty; // patient subject
+        expect(getScheduledTasks(updated[1])).to.be.empty; // patient subject
 
-        expect(getScheduledTasks(updated[2]).length).to.equal(1); // patient2 subject
-        expect(getScheduledTasks(updated[3]).length).to.equal(1); // patient2 subject
+        expect(getScheduledTasks(updated[2])).to.have.lengthOf(1); // patient2 subject
+        expect(getScheduledTasks(updated[3])).to.have.lengthOf(1); // patient2 subject
 
-        expect(getScheduledTasks(updated[4]).length).to.equal(0); // the_clinic subject
-        expect(getScheduledTasks(updated[5]).length).to.equal(0); // the_clinic subject
+        expect(getScheduledTasks(updated[4])).to.be.empty; // the_clinic subject
+        expect(getScheduledTasks(updated[5])).to.be.empty; // the_clinic subject
       });
   });
 });

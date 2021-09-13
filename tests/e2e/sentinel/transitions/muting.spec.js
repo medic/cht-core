@@ -76,7 +76,7 @@ const extraContacts = [
 const notToday = 36 * 24 * 60 * 60 * 1000;
 
 const expectSameState = (original, updated) => {
-  chai.expect(original.scheduled_tasks.length).to.equal(
+  chai.expect(original.scheduled_tasks).to.have.lengthOf(
     updated.scheduled_tasks.length,
     `length not equal ${original._id}`
   );
@@ -89,7 +89,7 @@ const expectSameState = (original, updated) => {
 };
 
 const expectStates = (updated, ...states) => {
-  chai.expect(updated.scheduled_tasks.length).to.equal(states.length);
+  chai.expect(updated.scheduled_tasks).to.have.lengthOf(states.length);
   updated.scheduled_tasks.forEach((task, i) => {
     chai.expect(task.state).to.equal(states[i], `state not equal ${updated._id}, task ${i}`);
   });
@@ -135,7 +135,7 @@ describe('muting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(Object.keys(info.transitions).length).to.equal(0);
+        chai.expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -169,7 +169,7 @@ describe('muting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(Object.keys(info.transitions).length).to.equal(0);
+        chai.expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -243,32 +243,32 @@ describe('muting', () => {
       .then(infos => {
         chai.expect(infos[0].transitions).to.be.ok;
         chai.expect(infos[0].transitions.muting).to.be.ok;
-        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
+        chai.expect(infos[0].transitions.muting.ok).to.be.true;
 
         chai.expect(infos[1].transitions).to.be.ok;
         chai.expect(infos[1].transitions.muting).to.be.ok;
-        chai.expect(infos[1].transitions.muting.ok).to.equal(true);
+        chai.expect(infos[1].transitions.muting.ok).to.be.true;
       })
       .then(() => utils.getDocs([doc1._id, doc2._id]))
       .then(updated => {
         chai.expect(updated[0].tasks).to.be.ok;
-        chai.expect(updated[0].tasks.length).to.equal(1);
+        chai.expect(updated[0].tasks).to.have.lengthOf(1);
         chai.expect(updated[0].tasks[0].messages[0].message).to.equal('Contact not found');
         chai.expect(updated[0].tasks[0].messages[0].to).to.equal('+444999');
         chai.expect(updated[0].tasks[0].state).to.equal('pending');
 
         chai.expect(updated[0].errors).to.be.ok;
-        chai.expect(updated[0].errors.length).to.equal(1);
+        chai.expect(updated[0].errors).to.have.lengthOf(1);
         chai.expect(updated[0].errors[0].message).to.equal('Contact not found');
 
         chai.expect(updated[1].tasks).to.be.ok;
-        chai.expect(updated[1].tasks.length).to.equal(1);
+        chai.expect(updated[1].tasks).to.have.lengthOf(1);
         chai.expect(updated[1].tasks[0].messages[0].message).to.equal('somefield id incorrect');
         chai.expect(updated[1].tasks[0].messages[0].to).to.equal('+444999');
         chai.expect(updated[1].tasks[0].state).to.equal('pending');
 
         chai.expect(updated[1].errors).to.be.ok;
-        chai.expect(updated[1].errors.length).to.equal(1);
+        chai.expect(updated[1].errors).to.have.lengthOf(1);
         chai.expect(updated[1].errors[0].message).to.equal('somefield id incorrect');
       });
   });
@@ -380,11 +380,11 @@ describe('muting', () => {
       .then(infos => {
         chai.expect(infos[0].transitions).to.be.ok;
         chai.expect(infos[0].transitions.muting).to.be.ok;
-        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
+        chai.expect(infos[0].transitions.muting.ok).to.be.true;
 
         chai.expect(infos[1].muting_history).to.be.ok;
-        chai.expect(infos[1].muting_history.length).to.equal(1);
-        chai.expect(infos[1].muting_history[0].muted).to.equal(true);
+        chai.expect(infos[1].muting_history).to.have.lengthOf(1);
+        chai.expect(infos[1].muting_history[0].muted).to.be.true;
         chai.expect(infos[1].muting_history[0].report_id).to.equal(mute1._id);
         muteTime = infos[1].muting_history[0].date;
 
@@ -394,7 +394,7 @@ describe('muting', () => {
       .then(() => utils.getDocs([mute1._id, 'person', 'person2', 'clinic']))
       .then(updated => {
         chai.expect(updated[0].tasks).to.be.ok;
-        chai.expect(updated[0].tasks.length).to.equal(1);
+        chai.expect(updated[0].tasks).to.have.lengthOf(1);
         chai.expect(updated[0].tasks[0].messages[0].message).to.equal('Contact muted');
         chai.expect(updated[0].tasks[0].messages[0].to).to.equal('+444999');
         chai.expect(updated[0].tasks[0].state).to.equal('pending');
@@ -410,16 +410,16 @@ describe('muting', () => {
       .then(infos => {
         chai.expect(infos[0].transitions).to.be.ok;
         chai.expect(infos[0].transitions.muting).to.be.ok;
-        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
+        chai.expect(infos[0].transitions.muting.ok).to.be.true;
 
         chai.expect(infos[1].muting_history).to.be.ok;
-        chai.expect(infos[1].muting_history.length).to.equal(1);
+        chai.expect(infos[1].muting_history).to.have.lengthOf(1);
         chai.expect(infos[1].muting_history[0].date).to.equal(muteTime);
       })
       .then(() => utils.getDocs([mute2._id, 'person']))
       .then(updated => {
         chai.expect(updated[0].tasks).to.be.ok;
-        chai.expect(updated[0].tasks.length).to.equal(1);
+        chai.expect(updated[0].tasks).to.have.lengthOf(1);
         chai.expect(updated[0].tasks[0].messages[0].message).to.equal('Contact already muted');
         chai.expect(updated[0].tasks[0].messages[0].to).to.equal('+444999');
         chai.expect(updated[0].tasks[0].state).to.equal('pending');
@@ -432,18 +432,18 @@ describe('muting', () => {
       .then(infos => {
         chai.expect(infos[0].transitions).to.be.ok;
         chai.expect(infos[0].transitions.muting).to.be.ok;
-        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
+        chai.expect(infos[0].transitions.muting.ok).to.be.true;
 
         chai.expect(infos[1].muting_history).to.be.ok;
-        chai.expect(infos[1].muting_history.length).to.equal(2);
-        chai.expect(infos[1].muting_history[1].muted).to.equal(false);
+        chai.expect(infos[1].muting_history).to.have.lengthOf(2);
+        chai.expect(infos[1].muting_history[1].muted).to.be.false;
         chai.expect(infos[1].muting_history[1].report_id).to.equal(unmute1._id);
         unmuteTime = infos[1].muting_history[1].date;
       })
       .then(() => utils.getDocs([unmute1._id, 'person']))
       .then(updated => {
         chai.expect(updated[0].tasks).to.be.ok;
-        chai.expect(updated[0].tasks.length).to.equal(1);
+        chai.expect(updated[0].tasks).to.have.lengthOf(1);
         chai.expect(updated[0].tasks[0].messages[0].message).to.equal('Contact unmuted');
         chai.expect(updated[0].tasks[0].messages[0].to).to.equal('+444999');
         chai.expect(updated[0].tasks[0].state).to.equal('pending');
@@ -456,16 +456,16 @@ describe('muting', () => {
       .then(infos => {
         chai.expect(infos[0].transitions).to.be.ok;
         chai.expect(infos[0].transitions.muting).to.be.ok;
-        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
+        chai.expect(infos[0].transitions.muting.ok).to.be.true;
 
         chai.expect(infos[1].muting_history).to.be.ok;
-        chai.expect(infos[1].muting_history.length).to.equal(2);
+        chai.expect(infos[1].muting_history).to.have.lengthOf(2);
         chai.expect(infos[1].muting_history[1].date).to.equal(unmuteTime);
       })
       .then(() => utils.getDocs([unmute2._id, 'person']))
       .then(updated => {
         chai.expect(updated[0].tasks).to.be.ok;
-        chai.expect(updated[0].tasks.length).to.equal(1);
+        chai.expect(updated[0].tasks).to.have.lengthOf(1);
         chai.expect(updated[0].tasks[0].messages[0].message).to.equal('Contact already unmuted');
         chai.expect(updated[0].tasks[0].messages[0].to).to.equal('+444999');
         chai.expect(updated[0].tasks[0].state).to.equal('pending');
@@ -523,16 +523,16 @@ describe('muting', () => {
       .then(infos => {
         chai.expect(infos[0].transitions).to.be.ok;
         chai.expect(infos[0].transitions.muting).to.be.ok;
-        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
+        chai.expect(infos[0].transitions.muting.ok).to.be.true;
 
         chai.expect(infos[1].muting_history).to.be.ok;
-        chai.expect(infos[1].muting_history.length).to.equal(1);
-        chai.expect(infos[1].muting_history[0].muted).to.equal(true);
+        chai.expect(infos[1].muting_history).to.have.lengthOf(1);
+        chai.expect(infos[1].muting_history[0].muted).to.be.true;
         chai.expect(infos[1].muting_history[0].report_id).to.equal(mute._id);
         muteTime = infos[1].muting_history[0].date;
 
         chai.expect(infos[2].muting_history).to.be.ok;
-        chai.expect(infos[2].muting_history.length).to.equal(1);
+        chai.expect(infos[2].muting_history).to.have.lengthOf(1);
 
         chai.expect(infos[2].muting_history[0]).to.deep.equal({
           muted: true,
@@ -557,26 +557,26 @@ describe('muting', () => {
       .then(infos => {
         chai.expect(infos[0].transitions).to.be.ok;
         chai.expect(infos[0].transitions.muting).to.be.ok;
-        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
+        chai.expect(infos[0].transitions.muting.ok).to.be.true;
 
         chai.expect(infos[1].muting_history).to.be.ok;
-        chai.expect(infos[1].muting_history.length).to.equal(2);
+        chai.expect(infos[1].muting_history).to.have.lengthOf(2);
         chai.expect(infos[1].muting_history[0]).to.deep.equal({
           muted: true,
           report_id: mute._id,
           date: muteTime
         });
-        chai.expect(infos[1].muting_history[1].muted).to.equal(false);
+        chai.expect(infos[1].muting_history[1].muted).to.be.false;
         chai.expect(infos[1].muting_history[1].report_id).to.equal(unmute._id);
 
         chai.expect(infos[2].muting_history).to.be.ok;
-        chai.expect(infos[2].muting_history.length).to.equal(2);
+        chai.expect(infos[2].muting_history).to.have.lengthOf(2);
         chai.expect(infos[2].muting_history[0]).to.deep.equal({
           muted: true,
           report_id: mute._id,
           date: muteTime
         });
-        chai.expect(infos[2].muting_history[1].muted).to.equal(false);
+        chai.expect(infos[2].muting_history[1].muted).to.be.false;
         chai.expect(infos[2].muting_history[1].report_id).to.equal(unmute._id);
 
         chai.expect(infos[3].muting_history).not.to.be.ok;
@@ -645,8 +645,8 @@ describe('muting', () => {
         chai.expect(clinicInfo.muting_history).to.be.undefined;
 
         chai.expect(personInfo.muting_history).to.be.ok;
-        chai.expect(personInfo.muting_history.length).to.equal(1);
-        chai.expect(personInfo.muting_history[0].muted).to.equal(true);
+        chai.expect(personInfo.muting_history).to.have.lengthOf(1);
+        chai.expect(personInfo.muting_history[0].muted).to.be.true;
         chai.expect(personInfo.muting_history[0].report_id).to.equal(mutePerson._id);
         personMuteTime = personInfo.muting_history[0].date;
 
@@ -666,13 +666,13 @@ describe('muting', () => {
         chai.expect(muteClinicInfo.transitions.muting).to.be.ok;
 
         chai.expect(clinicInfo.muting_history).to.be.ok;
-        chai.expect(clinicInfo.muting_history.length).to.equal(1);
-        chai.expect(clinicInfo.muting_history[0].muted).to.equal(true);
+        chai.expect(clinicInfo.muting_history).to.have.lengthOf(1);
+        chai.expect(clinicInfo.muting_history[0].muted).to.be.true;
         chai.expect(clinicInfo.muting_history[0].report_id).to.equal(muteClinic._id);
         clinicMuteTime = clinicInfo.muting_history[0].date;
 
         chai.expect(personInfo.muting_history).to.be.ok;
-        chai.expect(personInfo.muting_history.length).to.equal(2);
+        chai.expect(personInfo.muting_history).to.have.lengthOf(2);
         chai.expect(personInfo.muting_history[1]).to.deep.equal({
           muted: true,
           report_id: muteClinic._id,
@@ -680,7 +680,7 @@ describe('muting', () => {
         });
 
         chai.expect(person3Info.muting_history).to.be.ok;
-        chai.expect(person3Info.muting_history.length).to.equal(1);
+        chai.expect(person3Info.muting_history).to.have.lengthOf(1);
         chai.expect(person3Info.muting_history[0]).to.deep.equal({
           muted: true,
           report_id: muteClinic._id,
@@ -758,11 +758,11 @@ describe('muting', () => {
       .then(infos => {
         chai.expect(infos[0].transitions).to.be.ok;
         chai.expect(infos[0].transitions.muting).to.be.ok;
-        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
+        chai.expect(infos[0].transitions.muting.ok).to.be.true;
 
         chai.expect(infos[1].muting_history).to.be.ok;
-        chai.expect(infos[1].muting_history.length).to.equal(1);
-        chai.expect(infos[1].muting_history[0].muted).to.equal(true);
+        chai.expect(infos[1].muting_history).to.have.lengthOf(1);
+        chai.expect(infos[1].muting_history[0].muted).to.be.true;
         chai.expect(infos[1].muting_history[0].report_id).to.equal(mute._id);
         mutePersonTime = infos[1].muting_history[0].date;
 
@@ -781,10 +781,10 @@ describe('muting', () => {
       .then(infos => {
         chai.expect(infos[0].transitions).to.be.ok;
         chai.expect(infos[0].transitions.muting).to.be.ok;
-        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
+        chai.expect(infos[0].transitions.muting.ok).to.be.true;
 
         chai.expect(infos[1].muting_history).to.be.ok;
-        chai.expect(infos[1].muting_history.length).to.equal(2);
+        chai.expect(infos[1].muting_history).to.have.lengthOf(2);
         chai.expect(infos[1].muting_history[0]).to.deep.equal({
           muted: true,
           date: mutePersonTime,
@@ -792,8 +792,8 @@ describe('muting', () => {
         });
 
         chai.expect(infos[2].muting_history).to.be.ok;
-        chai.expect(infos[2].muting_history.length).to.equal(1);
-        chai.expect(infos[2].muting_history[0].muted).to.equal(true);
+        chai.expect(infos[2].muting_history).to.have.lengthOf(1);
+        chai.expect(infos[2].muting_history[0].muted).to.be.true;
         chai.expect(infos[2].muting_history[0].report_id).to.equal(muteHC._id);
         muteHCTime = infos[2].muting_history[0].date;
 
@@ -804,7 +804,7 @@ describe('muting', () => {
         });
 
         chai.expect(infos[3].muting_history).to.be.ok;
-        chai.expect(infos[3].muting_history.length).to.equal(1);
+        chai.expect(infos[3].muting_history).to.have.lengthOf(1);
         chai.expect(infos[3].muting_history[0]).to.deep.equal({
           muted: true,
           date: muteHCTime,
@@ -826,21 +826,21 @@ describe('muting', () => {
       .then(infos => {
         chai.expect(infos[0].transitions).to.be.ok;
         chai.expect(infos[0].transitions.muting).to.be.ok;
-        chai.expect(infos[0].transitions.muting.ok).to.equal(true);
+        chai.expect(infos[0].transitions.muting.ok).to.be.true;
 
         chai.expect(infos[1].muting_history).to.be.ok;
-        chai.expect(infos[1].muting_history.length).to.equal(3);
-        chai.expect(infos[1].muting_history[2].muted).to.equal(false);
+        chai.expect(infos[1].muting_history).to.have.lengthOf(3);
+        chai.expect(infos[1].muting_history[2].muted).to.be.false;
         chai.expect(infos[1].muting_history[2].report_id).to.equal(unmute._id);
 
         chai.expect(infos[2].muting_history).to.be.ok;
-        chai.expect(infos[2].muting_history.length).to.equal(2);
-        chai.expect(infos[2].muting_history[1].muted).to.equal(false);
+        chai.expect(infos[2].muting_history).to.have.lengthOf(2);
+        chai.expect(infos[2].muting_history[1].muted).to.be.false;
         chai.expect(infos[2].muting_history[1].report_id).to.equal(unmute._id);
 
         chai.expect(infos[3].muting_history).to.be.ok;
-        chai.expect(infos[3].muting_history.length).to.equal(2);
-        chai.expect(infos[3].muting_history[1].muted).to.equal(false);
+        chai.expect(infos[3].muting_history).to.have.lengthOf(2);
+        chai.expect(infos[3].muting_history[1].muted).to.be.false;
         chai.expect(infos[3].muting_history[1].report_id).to.equal(unmute._id);
 
         chai.expect(infos[4].muting_history).not.to.be.ok;
@@ -905,15 +905,15 @@ describe('muting', () => {
       .then(([infoPerson, infoPersonWithContactType]) => {
         chai.expect(infoPerson.transitions).to.be.ok;
         chai.expect(infoPerson.transitions.muting).to.be.ok;
-        chai.expect(infoPerson.transitions.muting.ok).to.equal(true);
+        chai.expect(infoPerson.transitions.muting.ok).to.be.true;
 
         chai.expect(infoPerson.muting_history).to.be.ok;
-        chai.expect(infoPerson.muting_history.length).to.equal(1);
-        chai.expect(infoPerson.muting_history[0].muted).to.equal(true);
+        chai.expect(infoPerson.muting_history).to.have.lengthOf(1);
+        chai.expect(infoPerson.muting_history[0].muted).to.be.true;
         chai.expect(infoPerson.muting_history[0].report_id).to.equal(mute._id);
 
-        chai.expect(infoPersonWithContactType.transitions.muting.ok).to.equal(true);
-        chai.expect(infoPersonWithContactType.muting_history.length).to.equal(1);
+        chai.expect(infoPersonWithContactType.transitions.muting.ok).to.be.true;
+        chai.expect(infoPersonWithContactType.muting_history).to.have.lengthOf(1);
         chai.expect(infoPersonWithContactType.muting_history[0].report_id).to.equal(mute._id);
       })
       .then(() => utils.getDocs([person._id, personWithContactType._id]))
@@ -1277,9 +1277,9 @@ describe('muting', () => {
         .then(([updatedContact, infodoc]) => {
           chai.expect(new Date(updatedContact.muted)).to.be.greaterThan(now);
           chai.expect(updatedContact.muting_history.last_update).to.equal('server_side');
-          chai.expect(updatedContact.muting_history.server_side.muted).to.equal(true);
+          chai.expect(updatedContact.muting_history.server_side.muted).to.be.true;
 
-          chai.expect(infodoc.transitions.muting.ok).to.equal(true);
+          chai.expect(infodoc.transitions.muting.ok).to.be.true;
           chai.expect(infodoc.muting_history).to.deep.equal([
             { muted: true, date: updatedContact.muted, report_id: 'report3' },
           ]);
@@ -1362,11 +1362,11 @@ describe('muting', () => {
         .then(updatedContact => {
           chai.expect(updatedContact.muted).to.be.undefined;
           chai.expect(updatedContact.muting_history.last_update).to.equal('server_side');
-          chai.expect(updatedContact.muting_history.server_side.muted).to.equal(false);
+          chai.expect(updatedContact.muting_history.server_side.muted).to.be.false;
         })
         .then(() => sentinelUtils.getInfoDoc(contact._id))
         .then(infodoc => {
-          chai.expect(infodoc.transitions.muting.ok).to.equal(true);
+          chai.expect(infodoc.transitions.muting.ok).to.be.true;
         })
         .then(() => utils.getDocs(reportIds))
         .then(updatedReports => {
@@ -1525,30 +1525,30 @@ describe('muting', () => {
           const findMutingHistoryForReport = (history, reportId) => history.find(item => item.report_id === reportId);
 
           chai.expect(updatedClinic.muted).to.be.undefined;
-          chai.expect(updatedClinic.muting_history.server_side.muted).to.equal(false);
+          chai.expect(updatedClinic.muting_history.server_side.muted).to.be.false;
           chai.expect(updatedClinic.muting_history.last_update).to.equal('server_side');
-          chai.expect(findMutingHistoryForReport(clinicInfo.muting_history, 'mutes_clinic').muted).to.equal(true);
+          chai.expect(findMutingHistoryForReport(clinicInfo.muting_history, 'mutes_clinic').muted).to.be.true;
           chai.expect(
             findMutingHistoryForReport(clinicInfo.muting_history, 'unmutes_new_person').muted
-          ).to.equal(false);
+          ).to.be.false;
 
           chai.expect(updatedPerson.muted).to.be.ok;
-          chai.expect(updatedPerson.muting_history.server_side.muted).to.equal(true);
+          chai.expect(updatedPerson.muting_history.server_side.muted).to.be.true;
           chai.expect(updatedPerson.muting_history.last_update).to.equal('server_side');
           chai.expect(
             findMutingHistoryForReport(personInfo.muting_history, 'unmutes_new_person').muted
-          ).to.equal(false);
+          ).to.be.false;
           chai.expect(
             findMutingHistoryForReport(personInfo.muting_history, 'mutes_person_again').muted
-          ).to.equal(true);
+          ).to.be.true;
 
           chai.expect(updatedNewPerson.muted).to.be.undefined;
-          chai.expect(updatedNewPerson.muting_history.server_side.muted).to.equal(false);
+          chai.expect(updatedNewPerson.muting_history.server_side.muted).to.be.false;
           chai.expect(updatedNewPerson.muting_history.last_update).to.equal('server_side');
-          chai.expect(findMutingHistoryForReport(newPersonInfo.muting_history, 'mutes_clinic').muted).to.equal(true);
+          chai.expect(findMutingHistoryForReport(newPersonInfo.muting_history, 'mutes_clinic').muted).to.be.true;
           chai.expect(
             findMutingHistoryForReport(newPersonInfo.muting_history, 'unmutes_new_person').muted
-          ).to.equal(false);
+          ).to.be.false;
         })
         // muting won't run again if the replayed docs get updated!
         .then(() => utils.getDoc('mutes_clinic'))
@@ -1745,35 +1745,35 @@ describe('muting', () => {
           const findMutingHistoryForReport = (history, reportId) => history.find(item => item.report_id === reportId);
 
           chai.expect(updatedClinic.muted).to.be.undefined;
-          chai.expect(updatedClinic.muting_history.server_side.muted).to.equal(false);
+          chai.expect(updatedClinic.muting_history.server_side.muted).to.be.false;
           chai.expect(updatedClinic.muting_history.last_update).to.equal('server_side');
           chai.expect(
             findMutingHistoryForReport(clinicInfo.muting_history, 'unmutes_new_person_replay').muted
-          ).to.equal(false);
+          ).to.be.false;
 
           chai.expect(updatedPerson.muted).to.be.ok;
-          chai.expect(updatedPerson.muting_history.server_side.muted).to.equal(true);
+          chai.expect(updatedPerson.muting_history.server_side.muted).to.be.true;
           chai.expect(updatedPerson.muting_history.last_update).to.equal('server_side');
           chai.expect(
             findMutingHistoryForReport(personInfo.muting_history, 'mutes_person_again_replay').muted
-          ).to.equal(true);
+          ).to.be.true;
 
           chai.expect(updatedNewPerson.muted).to.be.undefined;
-          chai.expect(updatedNewPerson.muting_history.server_side.muted).to.equal(false);
+          chai.expect(updatedNewPerson.muting_history.server_side.muted).to.be.false;
           chai.expect(updatedNewPerson.muting_history.last_update).to.equal('server_side');
           chai.expect(
             findMutingHistoryForReport(newPersonInfo.muting_history, 'unmutes_new_person_replay').muted
-          ).to.equal(false);
+          ).to.be.false;
 
           // tasks are added to reports
           const [updatedMutesPerson, updatedUnmutesNewPerson, updatedMutesPersonAgain] = updatedReports;
-          chai.expect(updatedMutesPerson.tasks.length).to.equal(1);
+          chai.expect(updatedMutesPerson.tasks).to.have.lengthOf(1);
           chai.expect(updatedMutesPerson.tasks[0].messages[0].message).to.equal('Contact muted');
 
-          chai.expect(updatedUnmutesNewPerson.tasks.length).to.equal(1);
+          chai.expect(updatedUnmutesNewPerson.tasks).to.have.lengthOf(1);
           chai.expect(updatedUnmutesNewPerson.tasks[0].messages[0].message).to.equal('Contact unmuted');
 
-          chai.expect(updatedMutesPersonAgain.tasks.length).to.equal(1);
+          chai.expect(updatedMutesPersonAgain.tasks).to.have.lengthOf(1);
           chai.expect(updatedMutesPersonAgain.tasks[0].messages[0].message).to.equal('Contact muted');
 
         })
@@ -1789,9 +1789,9 @@ describe('muting', () => {
 
           // tasks are not duplicated on replayed reports
           const [updatedMutesPerson, updatedUnmutesNewPerson, updatedMutesPersonAgain] = updatedReports;
-          chai.expect(updatedMutesPerson.tasks.length).to.equal(1);
-          chai.expect(updatedUnmutesNewPerson.tasks.length).to.equal(1);
-          chai.expect(updatedMutesPersonAgain.tasks.length).to.equal(1);
+          chai.expect(updatedMutesPerson.tasks).to.have.lengthOf(1);
+          chai.expect(updatedUnmutesNewPerson.tasks).to.have.lengthOf(1);
+          chai.expect(updatedMutesPersonAgain.tasks).to.have.lengthOf(1);
         })
         .then(() => sentinelUtils.getInfoDocs(reportIds))
         .then(([mutesPersonInfo, unmutesNewPersonInfo, mutesPersonAgainInfo]) => {

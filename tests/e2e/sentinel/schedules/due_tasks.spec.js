@@ -349,7 +349,7 @@ describe('Due Tasks', () => {
           'scheduled_tasks[1].state': 'scheduled',
           'scheduled_tasks[2].state': 'other_than_scheduled',
         });
-        chai.expect(updatedReports[1].scheduled_tasks.every(task => !task.messages)).to.equal(true);
+        chai.expect(updatedReports[1].scheduled_tasks.every(task => !task.messages)).to.be.true;
 
         // report 3 should have been edited
         chai.expect(updatedReports[2]).to.deep.nested.include({

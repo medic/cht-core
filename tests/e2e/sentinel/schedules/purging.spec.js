@@ -653,7 +653,7 @@ describe('server side purge', () => {
       .then(() => writePurgeCheckpoint('user1'))
       .then(() => requestPurges('user1'))
       .then(purgedDocs => {
-        chai.expect(purgedDocs.purged_ids.length).to.equal(0);
+        chai.expect(purgedDocs.purged_ids).to.be.empty;
       });
   });
 
@@ -674,7 +674,7 @@ describe('server side purge', () => {
       .then(() => utils.request(opts))
       .then(() => Promise.all([ requestPurgeInfo('user1'),  requestPurges('user1')]))
       .then(([ info, purgedDocs ]) => {
-        chai.expect(info).to.equal(false);
+        chai.expect(info).to.be.false;
         chai.expect(purgedDocs).to.deep.equal({});
       })
       .then(() => sentinelUtils.getPurgeDbs())

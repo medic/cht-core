@@ -24,7 +24,7 @@ describe('resolve_pending', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).to.equal(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -42,7 +42,7 @@ describe('resolve_pending', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).to.equal(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -106,29 +106,29 @@ describe('resolve_pending', () => {
       .then(info => {
         expect(info.transitions).to.not.be.undefined;
         expect(info.transitions.resolve_pending).to.not.be.undefined;
-        expect(info.transitions.resolve_pending.ok).to.equal(true);
+        expect(info.transitions.resolve_pending.ok).to.be.true;
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
-        expect(updated.tasks.length).to.equal(2);
+        expect(updated.tasks).to.have.lengthOf(2);
         expect(updated.tasks[0].state).to.equal('sent');
-        expect(updated.tasks[0].state_history.length).to.equal(2);
+        expect(updated.tasks[0].state_history).to.have.lengthOf(2);
         expect(updated.tasks[0].state_history[0].state).to.equal('pending');
         expect(updated.tasks[0].state_history[1].state).to.equal('sent');
 
         expect(updated.tasks[1].state).to.equal('sent');
-        expect(updated.tasks[1].state_history.length).to.equal(2);
+        expect(updated.tasks[1].state_history).to.have.lengthOf(2);
         expect(updated.tasks[1].state_history[0].state).to.equal('pending');
         expect(updated.tasks[1].state_history[1].state).to.equal('sent');
 
-        expect(updated.scheduled_tasks.length).to.equal(2);
+        expect(updated.scheduled_tasks).to.have.lengthOf(2);
         expect(updated.scheduled_tasks[0].state).to.equal('sent');
-        expect(updated.scheduled_tasks[0].state_history.length).to.equal(2);
+        expect(updated.scheduled_tasks[0].state_history).to.have.lengthOf(2);
         expect(updated.scheduled_tasks[0].state_history[0].state).to.equal('pending');
         expect(updated.scheduled_tasks[0].state_history[1].state).to.equal('sent');
 
         expect(updated.scheduled_tasks[1].state).to.equal('random');
-        expect(updated.scheduled_tasks[1].state_history.length).to.equal(1);
+        expect(updated.scheduled_tasks[1].state_history).to.have.lengthOf(1);
         expect(updated.scheduled_tasks[1].state_history[0].state).to.equal('pending');
       });
   });

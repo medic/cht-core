@@ -25,7 +25,7 @@ describe('generate_patient_id_on_people', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).to.equal(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
@@ -78,7 +78,7 @@ describe('generate_patient_id_on_people', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).to.equal(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
@@ -103,7 +103,7 @@ describe('generate_patient_id_on_people', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions.generate_patient_id_on_people.ok).to.equal(true);
+        expect(info.transitions.generate_patient_id_on_people.ok).to.be.true;
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {

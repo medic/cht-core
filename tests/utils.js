@@ -464,7 +464,7 @@ const prepServices = async (config) => {
   }
 
   await listenForApi();
-  if (config && config.suite === 'web') {
+  if (config && config.suite === 'web' || config.suite === 'mocha') {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);

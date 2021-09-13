@@ -28,7 +28,7 @@ describe('default_responses', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).to.equal(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -56,11 +56,11 @@ describe('default_responses', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions.default_responses.ok).to.equal(true);
+        expect(info.transitions.default_responses.ok).to.be.true;
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
-        expect(updated.tasks.length).to.equal(1);
+        expect(updated.tasks).to.have.lengthOf(1);
         expect(updated.tasks[0].messages[0].to).to.equal(doc.from);
         expect(updated.tasks[0].state).to.equal('pending');
       });
@@ -91,11 +91,11 @@ describe('default_responses', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions.default_responses.ok).to.equal(true);
+        expect(info.transitions.default_responses.ok).to.be.true;
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
-        expect(updated.tasks.length).to.equal(1);
+        expect(updated.tasks).to.have.lengthOf(1);
         expect(updated.tasks[0].messages[0].to).to.equal(doc.from);
         expect(updated.tasks[0].state).to.equal('pending');
       });
@@ -126,11 +126,11 @@ describe('default_responses', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions.default_responses.ok).to.equal(true);
+        expect(info.transitions.default_responses.ok).to.be.true;
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
-        expect(updated.tasks.length).to.equal(1);
+        expect(updated.tasks).to.have.lengthOf(1);
         expect(updated.tasks[0].messages[0].to).to.equal(doc.from);
         expect(updated.tasks[0].state).to.equal('pending');
       });

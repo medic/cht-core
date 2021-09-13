@@ -95,15 +95,15 @@ describe('Sentinel queue drain', () => {
       .then(updated => {
         updated.forEach(doc => {
           expect(doc.contact).to.have.property('_id', 'chw');
-          expect(doc.tasks.length).to.equal(1);
+          expect(doc.tasks).to.have.lengthOf(1);
           expect(doc.tasks[0].messages[0].to).to.equal('phone1');
         });
       })
       .then(() => sentinelUtils.getInfoDocs(ids))
       .then(infos => {
         infos.forEach(info => {
-          expect(info.transitions.default_responses.ok).to.equal(true);
-          expect(info.transitions.update_clinics.ok).to.equal(true);
+          expect(info.transitions.default_responses.ok).to.be.true;
+          expect(info.transitions.update_clinics.ok).to.be.true;
         });
       })
       .then(() => utils.deleteDocs(ids))

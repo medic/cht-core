@@ -24,7 +24,7 @@ describe('generate_shortcode_on_contacts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).to.equal(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
@@ -58,8 +58,8 @@ describe('generate_shortcode_on_contacts', () => {
       .then(() => sentinelUtils.waitForSentinel([contact._id, report._id]))
       .then(() => sentinelUtils.getInfoDocs([contact._id, report._id]))
       .then(([ contactInfo, reportInfo ]) => {
-        expect(Object.keys(contactInfo.transitions).length).to.equal(0);
-        expect(Object.keys(reportInfo.transitions).length).to.equal(0);
+        expect(Object.keys(contactInfo.transitions)).to.be.empty;
+        expect(Object.keys(reportInfo.transitions)).to.be.empty;
       })
       .then(() => utils.getDocs([contact._id, report._id]))
       .then(([contact, report]) => {
@@ -115,7 +115,7 @@ describe('generate_shortcode_on_contacts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).to.equal(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
@@ -141,7 +141,7 @@ describe('generate_shortcode_on_contacts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).to.equal(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
@@ -166,7 +166,7 @@ describe('generate_shortcode_on_contacts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions.generate_shortcode_on_contacts.ok).to.equal(true);
+        expect(info.transitions.generate_shortcode_on_contacts.ok).to.be.true;
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {

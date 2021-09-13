@@ -187,7 +187,7 @@ const assertReminder = ({ form, reminder, place, message }) => {
     form: form,
     type: 'reminder'
   });
-  chai.expect(reminder.tasks.length).to.equal(1);
+  chai.expect(reminder.tasks).to.have.lengthOf(1);
   chai.expect(reminder.tasks[0]).to.deep.include({
     state: 'pending',
     form: form,
@@ -219,9 +219,9 @@ describe('reminders', () => {
     return restartSentinel()
       .then(() => getReminderLogs(2))
       .then(({ rows: reminderLogs }) => {
-        chai.expect(reminderLogs[0].id.startsWith('reminderlog:FORM1:')).to.equal(true);
+        chai.expect(reminderLogs[0].id.startsWith('reminderlog:FORM1:')).to.be.true;
         chai.expect(reminderLogs[0].doc.reminder).to.deep.equal(remindersConfig[0]);
-        chai.expect(reminderLogs[1].id.startsWith('reminderlog:FORM2:')).to.equal(true);
+        chai.expect(reminderLogs[1].id.startsWith('reminderlog:FORM2:')).to.be.true;
         chai.expect(reminderLogs[1].doc.reminder).to.deep.equal(remindersConfig[1]);
 
         reminder1Date = reminderLogs[0].id.split(':')[2];
@@ -281,13 +281,13 @@ describe('reminders', () => {
         // Only the 2nd reminder ran. Because reminders are executed in a series, we know that 1st reminder was skipped
         // once we get a log for the 2nd reminder. It's just a hack because we have no way of knowing that the
         // "scheduler" code has completed.
-        chai.expect(reminderLogs.length).to.equal(3);
+        chai.expect(reminderLogs).to.have.lengthOf(3);
         chai.expect(reminderLogs[0].id).to.equal(`reminderlog:FORM1:${reminder1Date}`);
-        chai.expect(reminderLogs[0].value.rev.startsWith('1-')).to.equal(true);
+        chai.expect(reminderLogs[0].value.rev.startsWith('1-')).to.be.true;
         chai.expect(reminderLogs[1].id).to.equal(`reminderlog:FORM2:${reminder2Date}`);
-        chai.expect(reminderLogs[1].value.rev.startsWith('1-')).to.equal(true);
+        chai.expect(reminderLogs[1].value.rev.startsWith('1-')).to.be.true;
 
-        chai.expect(reminderLogs[2].id.startsWith('reminderlog:FORM2:')).to.equal(true);
+        chai.expect(reminderLogs[2].id.startsWith('reminderlog:FORM2:')).to.be.true;
         chai.expect(reminderLogs[2].doc.reminder).to.deep.equal(remindersConfig[1]);
         reminder2Date2 = reminderLogs[2].id.split(':')[2];
       })
@@ -322,12 +322,12 @@ describe('reminders', () => {
         });
 
         // all reminders are on 1st rev
-        chai.expect(reminderDocs.every(doc => doc._rev.startsWith('1-'))).to.equal(true);
+        chai.expect(reminderDocs.every(doc => doc._rev.startsWith('1-'))).to.be.true;
       })
       .then(() => utils.request({ path: '/api/sms', method: 'POST', headers: { 'Content-Type': 'application/json' } }))
       .then(smsMessages => {
         // 6 reminders have 6 messages
-        chai.expect(smsMessages.messages.length).to.equal(6);
+        chai.expect(smsMessages.messages).to.have.lengthOf(6);
         const messagesByPhone = {};
         smsMessages.messages.forEach(message => {
           messagesByPhone[message.to] = messagesByPhone[message.to] || [];
@@ -336,7 +336,7 @@ describe('reminders', () => {
         Object.keys(messagesByPhone).forEach(phone => {
           const contact = contacts.find(c => c.phone === phone);
           const place = contacts.find(c => c.contact && c.contact._id === contact._id);
-          chai.expect(messagesByPhone[phone].length).to.equal(3);
+          chai.expect(messagesByPhone[phone]).to.have.lengthOf(3);
           chai.expect(messagesByPhone[phone]).to.have.members([
             `something do should ${place.name}`,
             `something do should ${place.name}`,
@@ -349,10 +349,10 @@ describe('reminders', () => {
         const reminderDocs = result.rows.map(row => row.doc);
         // every doc should still have exactly one task
         reminderDocs.forEach(reminderDoc => {
-          chai.expect(reminderDoc.tasks.length).to.equal(1);
-          chai.expect(reminderDoc._rev.startsWith('2-')).to.equal(true);
+          chai.expect(reminderDoc.tasks).to.have.lengthOf(1);
+          chai.expect(reminderDoc._rev.startsWith('2-')).to.be.true;
           chai.expect(reminderDoc.tasks[0].state).to.equal('forwarded-to-gateway');
-          chai.expect(reminderDoc.tasks[0].state_history.length).to.equal(2);
+          chai.expect(reminderDoc.tasks[0].state_history).to.have.lengthOf(2);
         });
       })
       .then(() => {
@@ -381,9 +381,9 @@ describe('reminders', () => {
       .then(() => restartSentinel())
       .then(() => getReminderLogs(4))
       .then(({ rows: reminderLogs }) => {
-        chai.expect(reminderLogs.length).to.equal(4);
-        reminderLogs.forEach(log => chai.expect(log.doc._rev.startsWith('1-')).to.equal(true));
-        chai.expect(reminderLogs.filter(log => log.id.startsWith('reminderlog:FORM2:')).length).to.equal(3);
+        chai.expect(reminderLogs).to.have.lengthOf(4);
+        reminderLogs.forEach(log => chai.expect(log.doc._rev.startsWith('1-')).to.be.true);
+        chai.expect(reminderLogs.filter(log => log.id.startsWith('reminderlog:FORM2:'))).to.have.lengthOf(3);
         chai.expect(reminderLogs[3].doc.reminder).to.deep.equal(remindersConfig[1]);
         reminder2Date3 = reminderLogs[3].id.split(':')[2];
       })
