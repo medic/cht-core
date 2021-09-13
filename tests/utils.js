@@ -520,11 +520,15 @@ const parseCookieResponse = (cookieString) => {
 };
 
 const dockerGateway = () => {
-  try {
-    return JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
-  } catch (error) {
-    error.message;
-  }
+if (!constants.IS_CI) {
+  return;
+}
+try {
+  return JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
+} catch (error) {
+  console.log('docker network inspect failed. NOTE this error is not relevant if running outside of docker');
+  console.log(error.message);
+}
 };
 
 const hostURL = (port = 80) => {
