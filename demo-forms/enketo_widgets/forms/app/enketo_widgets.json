@@ -1,0 +1,13 @@
+{
+  "title": [
+    {
+      "locale": "en",
+      "content": "Enketo Widgets"
+    }
+  ],
+  "context": {
+    "place": true,
+    "person": true,
+    "expression": true
+  }
+}
