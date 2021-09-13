@@ -931,7 +931,7 @@ module.exports = {
       timeout = setTimeout(() => {
         tail.unwatch();
         reject({ message: 'Timed out looking for details in log files.' });
-      }, 3000);
+      }, 6000);
 
       tail.on('line', data => {
         if (regex.find(r => r.test(data))) {
