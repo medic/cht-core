@@ -135,11 +135,18 @@ jobs:
       run: npm ci
     - name: Set TAG var
       run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-    - name: horti setup
+    - name: Horti Setup
       run: |
         echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
         docker-compose -f scripts/ci/horti-compose.yml up -d 
-        sh scripts/e2e/wait_for_response_code.sh 4988 200 api
+        sh scripts/e2e/wait_for_response_code.sh 5988 200 api
+    # Restarting horti to install on a different builds server. Used for installing the current release then installing the beta. 
+    - name: Horti Restart
+      run: |
+        echo "RESTART=yes COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
+        docker-compose -f scripts/ci/horti-compose.yml up -d 
+        sh scripts/e2e/wait_for_response_code.sh 5988 200 api
+      if: ${{ env.TAG }}
     - name: Test it!
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
     - name: Dump Couch logs

@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.9'
 
 # For more information on how to use this docker compose file see our docs page:
 #   https://docs.communityhealthtoolkit.org/apps/guides/hosting/self-hosting/
@@ -31,6 +31,8 @@ services:
       - NODE_VERSION=$NODE
       - TEST_SUITE=integration
       - TAG=$TAG
+      - DEFAULT_BUILDS_URL=https://staging.dev.medicmobile.org/_couch/builds
+      - RESTART=$RESTART
     depends_on:
       - couch
     command: /horti_entry.sh
