@@ -24,6 +24,9 @@ export class FormatDateService {
         if (typeof res.task_day_limit !== 'undefined') {
           this.config.taskDayLimit = res.task_day_limit;
         }
+        if (typeof res.task_days_overdue !== 'undefined') {
+          this.config.taskDaysOverdue = res.task_days_overdue;
+        }
       })
       .catch((err) => {
         console.error('Error fetching settings', err);
@@ -35,6 +38,7 @@ export class FormatDateService {
     datetime: 'DD-MMM-YYYY HH:mm:ss',
     time: moment.localeData().longDateFormat('LT'),
     taskDayLimit: 4,
+    taskDaysOverdue: false,
     ageBreaks: [
       { unit: 'years', key: { singular: 'y', plural: 'yy' }, min: 1 },
       { unit: 'months', key: { singular: 'M', plural: 'MM' }, min: 1 },
@@ -60,6 +64,10 @@ export class FormatDateService {
   }
 
   private getTaskDueDate(given) {
+    if (this.config.taskDaysOverdue) {
+      return this.relativeDate(given, { suffix: true, humanize: true });
+    }
+
     const date = moment(given).startOf('day');
     const today = moment().startOf('day');
     const diff = date.diff(today, 'days');
