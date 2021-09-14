@@ -413,5 +413,5 @@ describe('reminders', () => {
           message: 'something do should leaf1'
         });
       });
-  }).timeout(300000);
+  });
 });
