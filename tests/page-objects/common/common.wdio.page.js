@@ -54,9 +54,11 @@ const goToReports = async () => {
   await (await reportsPage.reportList()).waitForDisplayed();
 };
 
-const goToPeople = async (contactId = '') => {
+const goToPeople = async (contactId = '', shouldLoad = true) => {
   await browser.url(`/#/contacts/${contactId}`);
-  await (await contactsPage.contactList()).waitForDisplayed();
+  if (shouldLoad) {
+    await (await contactsPage.contactList()).waitForDisplayed();
+  }
 };
 
 const closeTour = async () => {
@@ -71,6 +73,12 @@ const closeTour = async () => {
     // there might not be a tour, show a warning
     console.warn('Tour modal has not appeared after 2 seconds');
   }
+};
+
+const waitForLoaderToDisappear = async (element) => {
+  const loaderSelector = '.loader';
+  const loader = await (element ? element.$(loaderSelector) : $(loaderSelector));
+  await loader.waitForDisplayed({ reverse: true });
 };
 
 const hideSnackbar = () => {
@@ -126,4 +134,5 @@ module.exports = {
   waitForLoaders,
   sync,
   closeReloadModal,
+  waitForLoaderToDisappear,
 };
