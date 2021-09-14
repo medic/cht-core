@@ -49,10 +49,6 @@ process
     await uploadDefaultDocs.run();
     logger.info('Extracting initial documents completed successfully');
 
-    logger.info('Generating service worker');
-    await generateServiceWorker.run();
-    logger.info('Service worker generated successfully');
-
     logger.info('Loading configuration…');
     await config.load();
     logger.info('Configuration loaded successfully');
@@ -61,6 +57,10 @@ process
     logger.info('Merging translations…');
     await translations.run();
     logger.info('Translations merged successfully');
+
+    logger.info('Generating service worker');
+    await generateServiceWorker.run();
+    logger.info('Service worker generated successfully');
 
     logger.info('Running db migrations…');
     await migrations.run();

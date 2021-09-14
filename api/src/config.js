@@ -153,20 +153,26 @@ module.exports = {
       .on('change', change => {
         if (change.id === '_design/medic') {
           logger.info('Detected ddoc change - reloading');
-          translations.run().catch(err => {
-            logger.error('Failed to update translation docs: %o', err);
-          });
-          ddocExtraction.run().catch(err => {
-            logger.error('Something went wrong trying to extract ddocs: %o', err);
-            process.exit(1);
-          });
-          resourceExtraction
+          translations
             .run()
-            .then(() => generateServiceWorker.run())
+            .catch(err => {
+              logger.error('Failed to update translation docs: %o', err);
+            })
+            .then(() => ddocExtraction.run())
+            .catch(err => {
+              logger.error('Something went wrong trying to extract ddocs: %o', err);
+              process.exit(1);
+            })
+            .then(() => resourceExtraction.run())
             .catch(err => {
               logger.error('Something went wrong trying to extract resources: %o', err);
               process.exit(1);
+            })
+            .then(() => generateServiceWorker.run())
+            .catch(err => {
+              logger.error('Something went wrong trying to generate service worker: %o', err);
             });
+
           loadViewMaps();
         } else if (change.id === 'settings') {
           logger.info('Detected settings change - reloading');

@@ -103,6 +103,7 @@ const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
 };
 
 const render = (page, req, branding, extras = {}) => {
+  const acceptLanguageHeader = req && req.headers && req.headers['accept-language'];
   return Promise
     .all([
       getTemplate(page),
@@ -113,7 +114,7 @@ const render = (page, req, branding, extras = {}) => {
         {
           branding: branding,
           locales: locales,
-          defaultLocale: getBestLocaleCode(req.headers['accept-language'], locales, config.get('locale')),
+          defaultLocale: getBestLocaleCode(acceptLanguageHeader, locales, config.get('locale')),
           translations: getTranslationsString(page)
         },
         extras
@@ -176,7 +177,7 @@ const setCookies = (req, res, sessionRes) => {
         .then(() => {
           if (auth.isDbAdmin(userCtx)) {
             return users.createAdmin(userCtx);
-          }      
+          }
         })
         .then(() => {
           const selectedLocale = req.body.locale
@@ -281,10 +282,14 @@ const loginByToken = (req, res) => {
     });
 };
 
+const renderLogin = (req) => {
+  return getBranding().then(branding => render('login', req, branding));
+};
+
 module.exports = {
+  renderLogin,
   get: (req, res, next) => {
-    return getBranding()
-      .then(branding => render('login', req, branding))
+    return renderLogin(req)
       .then(body => {
         res.setHeader(
           'Link',

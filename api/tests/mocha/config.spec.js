@@ -8,8 +8,10 @@ const ddocExtraction = require('../../src/ddoc-extraction');
 const resourceExtraction = require('../../src/resource-extraction');
 const settingsService = require('../../src/services/settings');
 const translations = require('../../src/translations');
+const generateServiceWorker = require('../../src/generate-service-worker');
 const viewMapUtils = require('@medic/view-map-utils');
 
+const nextTick = () => new Promise(r => setTimeout(r));
 let on;
 
 describe('Config', () => {
@@ -26,6 +28,7 @@ describe('Config', () => {
     sinon.stub(translations, 'run').resolves();
     sinon.stub(settingsService, 'get').resolves();
     sinon.stub(settingsService, 'update').resolves();
+    sinon.stub(generateServiceWorker, 'run').resolves();
     sinon.stub(environment, 'getExtractedResourcesPath')
       .returns(path.resolve(__dirname, './../../../build/ddocs/medic/_attachments'));
   });
@@ -119,16 +122,19 @@ describe('Config', () => {
       chai.expect(db.medic.get.callCount).to.equal(0);
     });
 
-    it('reloads settings, runs translations and ddoc extraction when _design/medic is updated', () => {
+    it('reloads settings, runs translations, ddoc extraction and generates sw when _design/medic is updated', () => {
       config.listen();
       const change = { id: '_design/medic' };
       const changeCallback = on.args[0][1];
       changeCallback(change);
-      chai.expect(translations.run.callCount).to.equal(1);
-      chai.expect(ddocExtraction.run.callCount).to.equal(1);
-      chai.expect(resourceExtraction.run.callCount).to.equal(1);
-      chai.expect(db.medic.get.callCount).to.equal(1);
-      chai.expect(db.medic.get.args[0][0]).to.equal('_design/medic');
+      return nextTick().then(() => {
+        chai.expect(translations.run.callCount).to.equal(1);
+        chai.expect(ddocExtraction.run.callCount).to.equal(1);
+        chai.expect(resourceExtraction.run.callCount).to.equal(1);
+        chai.expect(generateServiceWorker.run.callCount).to.equal(1);
+        chai.expect(db.medic.get.callCount).to.equal(1);
+        chai.expect(db.medic.get.args[0][0]).to.equal('_design/medic');
+      });
     });
 
     it('reloads translations when translations are updated', () => {
@@ -137,20 +143,23 @@ describe('Config', () => {
       const change = { id: 'messages-test' };
       const changeCallback = on.args[0][1];
       changeCallback(change);
-      chai.expect(translations.run.callCount).to.equal(0);
-      chai.expect(ddocExtraction.run.callCount).to.equal(0);
-      chai.expect(resourceExtraction.run.callCount).to.equal(0);
-      chai.expect(db.medic.get.callCount).to.equal(0);
+      return nextTick().then(() => {
+        chai.expect(translations.run.callCount).to.equal(0);
+        chai.expect(ddocExtraction.run.callCount).to.equal(0);
+        chai.expect(resourceExtraction.run.callCount).to.equal(0);
+        chai.expect(generateServiceWorker.run.callCount).to.equal(1);
+        chai.expect(db.medic.get.callCount).to.equal(0);
 
-      chai.expect(db.medic.query.callCount).to.equal(1);
-      chai
-        .expect(
-          db.medic.query.withArgs('medic-client/doc_by_type', {
-            key: ['translations', true],
-            include_docs: true,
-          }).callCount
-        )
-        .to.equal(1);
+        chai.expect(db.medic.query.callCount).to.equal(1);
+        chai
+          .expect(
+            db.medic.query.withArgs('medic-client/doc_by_type', {
+              key: ['translations', true],
+              include_docs: true,
+            }).callCount
+          )
+          .to.equal(1);
+      });
     });
   });
 

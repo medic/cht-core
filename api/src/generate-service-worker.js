@@ -6,11 +6,18 @@ const db = require('./db');
 
 const SWMETA_DOC_ID = 'service-worker-meta';
 
+const getLoginPageContents = () => {
+  // avoid circular dependency
+  const loginController = require('./controllers/login');
+  return loginController.renderLogin();
+};
+
 // Use the swPrecache library to generate a service-worker script
-const writeServiceWorkerFile = () => {
+const writeServiceWorkerFile = async () => {
   const staticDirectoryPath = environment.getExtractedResourcesPath();
   const apiSrcDirectoryPath = __dirname;
   const scriptOutputPath = path.join(staticDirectoryPath, 'js', 'service-worker.js');
+
   const config = {
     cacheId: 'cache',
     claimsClient: true,
@@ -32,7 +39,7 @@ const writeServiceWorkerFile = () => {
     ],
     dynamicUrlToDependencies: {
       '/': [path.join(staticDirectoryPath, 'index.html')], // Webapp's entry point
-      '/medic/login': [path.join(apiSrcDirectoryPath, 'templates/login', 'index.html')],
+      '/medic/login': await getLoginPageContents(),
       '/medic/_design/medic/_rewrite/': [path.join(apiSrcDirectoryPath, 'public', 'appcache-upgrade.html')],
     },
     ignoreUrlParametersMatching: [/redirect/, /username/],
