@@ -10,7 +10,6 @@ const tokenLogin = require('./token-login');
 const moment = require('moment');
 
 const USER_PREFIX = 'org.couchdb.user:';
-const ONLINE_ROLE = 'mm-online';
 const DOC_IDS_WARN_LIMIT = 10000;
 
 const PASSWORD_MINIMUM_LENGTH = 8;
@@ -334,7 +333,7 @@ const getSettingsUpdates = (username, data) => {
     settings.roles = getRoles(data.type);
   }
   if (settings.roles) {
-    const index = settings.roles.indexOf(ONLINE_ROLE);
+    const index = settings.roles.indexOf(auth.ONLINE_ROLE);
     if (auth.isOffline(settings.roles)) {
       if (index !== -1) {
         // remove the online role
@@ -342,7 +341,7 @@ const getSettingsUpdates = (username, data) => {
       }
     } else if (index === -1) {
       // add the online role
-      settings.roles.push(ONLINE_ROLE);
+      settings.roles.push(auth.ONLINE_ROLE);
     }
   }
   if (data.place) {
@@ -374,7 +373,7 @@ const getUserUpdates = (username, data) => {
     user.roles = getRoles(data.type);
   }
   if (user.roles && !auth.isOffline(user.roles)) {
-    user.roles.push(ONLINE_ROLE);
+    user.roles.push(auth.ONLINE_ROLE);
   }
   if (data.place) {
     user.facility_id = getDocID(data.place);

@@ -118,7 +118,7 @@ describe('Users API', () => {
       })
         .then(() => utils.getDoc(getUserId(username)))
         .then(doc => {
-          expect(doc.facility_id).toBe(newPlaceId);
+          chai.expect(doc.facility_id).to.equal(newPlaceId);
         }));
 
     it('401s if a user without the right permissions attempts to modify someone else', () =>
@@ -132,7 +132,7 @@ describe('Users API', () => {
       })
         .then(() => fail('You should get a 401 in this situation'))
         .catch(err => {
-          expect(err.responseBody.error).toBe('You do not have permissions to modify this person');
+          chai.expect(err.responseBody.error).to.equal('You do not have permissions to modify this person');
         }));
 
     it('Errors if a user edits themselves but attempts to change their roles', () =>
@@ -146,7 +146,7 @@ describe('Users API', () => {
       })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
-          expect(err.responseBody.error).toBe('unauthorized');
+          chai.expect(err.responseBody.error).to.equal('unauthorized');
         }));
 
     it('Allows for users to modify themselves with a cookie', () =>
@@ -163,7 +163,7 @@ describe('Users API', () => {
       })
         .then(() => utils.getDoc(getUserId(username)))
         .then(doc => {
-          expect(doc.fullname).toBe('Awesome Guy');
+          chai.expect(doc.fullname).to.equal('Awesome Guy');
         }));
 
     it('Does not allow users to update their password with only a cookie', () =>
@@ -180,7 +180,7 @@ describe('Users API', () => {
       })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
-          expect(err.responseBody.error).toBe('You must authenticate with Basic Auth to modify your password');
+          chai.expect(err.responseBody.error).to.equal('You must authenticate with Basic Auth to modify your password');
         }));
 
     it('Does allow users to update their password with a cookie and also basic auth', () =>
@@ -316,7 +316,22 @@ describe('Users API', () => {
           name: 'OnlineUser'
         },
         roles: ['national_admin']
-      }
+      },
+      {
+        username: 'offlineonline',
+        password: password,
+        place: {
+          _id: 'fixture:offlineonline',
+          type: 'health_center',
+          name: 'Online place',
+          parent: 'PARENT_PLACE'
+        },
+        contact: {
+          _id: 'fixture:user:offlineonline',
+          name: 'OnlineUser'
+        },
+        roles: ['district_admin', 'mm-online']
+      },
     ];
 
     let offlineRequestOptions;
@@ -369,15 +384,53 @@ describe('Users API', () => {
 
     it('should return correct number of allowed docs for offline users', () => {
       return utils.request(offlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+        chai.expect(resp).to.deep.equal({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
       });
     });
 
     it('should return correct number of allowed docs when requested by online user', () => {
       onlineRequestOptions.path += '?role=district_admin&facility_id=fixture:offline';
       return utils.request(onlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+        chai.expect(resp).to.deep.equal({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
       });
+    });
+
+    it('auth should check for mm-online role when requesting other user docs', () => {
+      const requestOptions = {
+        path: '/api/v1/users-info?role=district_admin&facility_id=fixture:offline',
+        auth: { username: 'offlineonline', password },
+        method: 'GET'
+      };
+
+      return utils
+        .request(requestOptions)
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(err => {
+          // online users require the "can_update_users" permission to be able to access this endpoint
+          chai.expect(err.error).to.deep.equal({
+            code: 403,
+            error: 'Insufficient privileges',
+          });
+        });
+    });
+
+    it('auth should check for mm-online role when requesting with missing params', () => {
+      const requestOptions = {
+        path: '/api/v1/users-info',
+        auth: { username: 'offlineonline', password },
+        method: 'GET'
+      };
+
+      return utils
+        .request(requestOptions)
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(err => {
+          // online users require the "can_update_users" permission to be able to access this endpoint
+          chai.expect(err.error).to.deep.equal({
+            code: 403,
+            error: 'Insufficient privileges',
+          });
+        });
     });
 
     it('should return correct number of allowed docs when requested by online user for an array of roles', () => {
@@ -387,7 +440,7 @@ describe('Users API', () => {
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
       return utils.request(onlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+        chai.expect(resp).to.deep.equal({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
       });
     });
 
@@ -398,7 +451,7 @@ describe('Users API', () => {
       };
       offlineRequestOptions.path += '?' + querystring.stringify(params);
       return utils.request(offlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+        chai.expect(resp).to.deep.equal({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
       });
     });
 
@@ -411,9 +464,9 @@ describe('Users API', () => {
       onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
       return utils
         .request(onlineRequestOptions)
-        .then(resp => expect(resp).toEqual('should have thrown'))
+        .then(resp => chai.expect(resp).to.equal('should have thrown'))
         .catch(err => {
-          expect(err.statusCode).toEqual(400);
+          chai.expect(err.statusCode).to.equal(400);
         });
     });
 
@@ -425,9 +478,9 @@ describe('Users API', () => {
       onlineRequestOptions.path += '?' + querystring.stringify(params);
       return utils
         .request(onlineRequestOptions)
-        .then(resp => expect(resp).toEqual('should have thrown'))
+        .then(resp => chai.expect(resp).to.equal('should have thrown'))
         .catch(err => {
-          expect(err.statusCode).toEqual(400);
+          chai.expect(err.statusCode).to.equal(400);
         });
     });
 
@@ -441,7 +494,7 @@ describe('Users API', () => {
       return utils
         .request(onlineRequestOptions)
         .then(resp => {
-          expect(resp).toEqual({ total_docs: docsForAll, warn: false, limit: 10000 });
+          chai.expect(resp).to.deep.equal({ total_docs: docsForAll, warn: false, limit: 10000 });
         });
     });
   });
