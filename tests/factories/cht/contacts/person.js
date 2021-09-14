@@ -21,7 +21,8 @@ const ephemeral_dob = {
 };
 
 
-module.exports = new Factory().sequence('_id', uuid.v4)
+module.exports = new Factory()
+  .sequence('_id', uuid.v4)
   .attr('parent', parent)
   .attr('type', 'person')
   .attr('name', 'Mary Smith')

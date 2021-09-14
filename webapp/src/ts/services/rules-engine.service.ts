@@ -377,6 +377,19 @@ export class RulesEngineService implements OnDestroy {
       .then(taskDocs => this.translateTaskDocs(taskDocs));
   }
 
+  fetchTasksBreakdown(contactIds?) {
+    return this.ngZone.runOutsideAngular(() => this._fetchTasksBreakdown(contactIds));
+  }
+
+  private _fetchTasksBreakdown(contactIds?) {
+    const telemetryEntryName = contactIds ?
+      'rules-engine:tasks-breakdown:some-contacts' : 'rules-engine:tasks-breakdown:all-contacts';
+    const telemetryData = this.telemetryEntry(telemetryEntryName, true);
+    return this.initialized
+      .then(() => this.rulesEngineCore.fetchTasksBreakdown(contactIds))
+      .then(telemetryData.passThrough);
+  }
+
   fetchTargets() {
     return this.ngZone.runOutsideAngular(() => this._fetchTargets());
   }

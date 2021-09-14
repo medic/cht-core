@@ -1,33 +1,33 @@
-import { CanDeactivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
+import { CanDeactivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { Injectable } from '@angular/core';
-import { Store } from '@ngrx/store';
 
-import { GlobalActions } from '@mm-actions/global';
 import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
+import { TasksGroupComponent } from '@mm-modules/tasks/tasks-group.component';
 
 @Injectable({
   providedIn: 'root'
 })
-export class TasksRouteGuardProvider implements CanDeactivate<TasksContentComponent> {
-  private globalActions;
-  constructor(
-    private router:Router,
-    private store:Store,
-  ) {
-    this.globalActions = new GlobalActions(store);
-  }
-
+export class TasksContentRouteGuardProvider implements CanDeactivate<TasksContentComponent> {
   canDeactivate(
     component:TasksContentComponent,
     currentRoute:ActivatedRouteSnapshot,
     currentState:RouterStateSnapshot,
     nextState:RouterStateSnapshot,
   ) {
-    if (!component.enketoEdited || !component.cancelCallback) {
-      return true;
-    }
+    return component.canDeactivate(nextState.url);
+  }
+}
 
-    this.globalActions.navigationCancel(nextState.url);
-    return false;
+@Injectable({
+  providedIn: 'root'
+})
+export class TasksGroupRouteGuardProvider implements CanDeactivate<TasksGroupComponent> {
+  canDeactivate(
+    component:TasksGroupComponent,
+    currentRoute:ActivatedRouteSnapshot,
+    currentState:RouterStateSnapshot,
+    nextState:RouterStateSnapshot,
+  ) {
+    return component.canDeactivate(nextState.url);
   }
 }
