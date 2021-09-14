@@ -144,6 +144,7 @@ jobs:
     # Restarting horti to install on a different builds server. Used for installing the current release then installing the beta. 
     - name: Horti Restart
       run: |
+        sleep 120
         docker stop horti
         docker logs horti > tests/logs/horti_before_recreate_container.log 2>&1
         RESTART=yes docker-compose -f scripts/ci/horti-compose.yml up -d 
@@ -165,4 +166,4 @@ jobs:
           allure-report
           tests/logs
           tests/results/
-      # if: ${{ failure() }}
+      if: ${{ always() }}
