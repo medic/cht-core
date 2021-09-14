@@ -46,6 +46,7 @@ describe('date pipes', () => {
     formatDateService = {
       age: momentDate => `${momentDate.year() - 1970} years`,
       date: d => `${d.toISOString().split('T')[0]}`,
+      dayMonth: d => moment(d).format('D MMM'),
       datetime: d => `${d.toISOString()}`,
       relative: (d:number) => `${Math.floor((d - TEST_DATE.valueOf()) / 86400000)} days`,
     };
@@ -110,7 +111,7 @@ describe('date pipes', () => {
 
   describe('dayMonth', () => {
     it('should return nicely-formatted output', () => {
-      const pipe = new DayMonthPipe(sanitizer);
+      const pipe = new DayMonthPipe(sanitizer, formatDateService);
       assert.equal(pipe.transform(TEST_DATE), '<span>2 Jan</span>');
     });
   });

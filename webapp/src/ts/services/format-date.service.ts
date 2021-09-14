@@ -1,7 +1,7 @@
 import * as moment from 'moment';
 import { Injectable } from '@angular/core';
 import { RelativeTimeKey } from 'moment';
-import { toBik_text as toBikranSambatText } from 'bikram-sambat';
+import { toBik_text as toBikranSambatText, toBik as toBikramSambat } from 'bikram-sambat';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { TranslateService } from '@mm-services/translate.service';
@@ -25,6 +25,7 @@ export class FormatDateService {
     this.config = {
       date: 'DD-MMM-YYYY',
       datetime: 'DD-MMM-YYYY HH:mm:ss',
+      dayMonth: 'D MMM',
       time: moment.localeData().longDateFormat('LT'),
       longTime: moment.localeData().longDateFormat('LTS'),
       taskDayLimit: 4,
@@ -61,14 +62,19 @@ export class FormatDateService {
       return momentDate.format(this.config[key]);
     }
 
-    const bkDate = toBikranSambatText(momentDate);
+    if (key === 'dayMonth') {
+      const bkDate = toBikramSambat(momentDate);
+      return moment(bkDate).format(this.config[key]);
+    }
+
+    const bkDateText = toBikranSambatText(momentDate);
     if (key === 'date') {
-      return bkDate;
+      return bkDateText;
     }
 
     if (key === 'datetime') {
       // inspired from Nepali moment locale LLLL long date format: dddd, D MMMM YYYY, Aको h:mm बजे
-      return `${bkDate}, ${momentDate.format(this.config.longTime)}`;
+      return `${bkDateText}, ${momentDate.format(this.config.longTime)}`;
     }
   }
 
@@ -137,6 +143,10 @@ export class FormatDateService {
 
   datetime(date) {
     return this.format(date, 'datetime');
+  }
+
+  dayMonth(date) {
+    return this.format(date, 'dayMonth');
   }
 
   relative(date, options:any = {}) {
