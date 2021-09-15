@@ -20,7 +20,12 @@ const state = {
     forms: ['these', 'are', 'some', 'forms'],
     filters: { some: 'filters' },
     isAdmin: 'is it an admin',
-    cancelCallback: function() {},
+    navigation: {
+      cancelCallback: function() {},
+      preventNavigation: 'prevent',
+      cancelTranslationKey: 'cancel key',
+      recordTelemetry: 'telemetry entry',
+    },
     title: 'the title',
     privacyPolicyAccepted: 'has accepted policy',
     showPrivacyPolicy: 'show policy',
@@ -31,6 +36,7 @@ const state = {
       edited: 'is edited',
       saving: 'is saving',
       error: 'has error',
+      form: 'is form',
     }
   },
   services: {
@@ -99,6 +105,11 @@ const state = {
     tasksList: [{ _id: 'task1' }, { _id: 'task2' }],
     loaded: 'are tasks loaded?',
     selected: { _id: 'selected task' },
+    taskGroup: {
+      lastSubmittedTask: { _id: 'last submitted task' },
+      contact: { the: 'contact' },
+      loadingContact: 'loading task group contact'
+    },
   },
 };
 const clonedState = cloneDeep(state);
@@ -171,7 +182,15 @@ describe('Selectors', () => {
     });
 
     it('should getCancelCallback', () => {
-      expect(Selectors.getCancelCallback(state)).to.deep.equal(clonedState.global.cancelCallback);
+      expect(Selectors.getCancelCallback(state)).to.deep.equal(clonedState.global.navigation.cancelCallback);
+    });
+
+    it('should getNavigation', () => {
+      expect(Selectors.getNavigation(state)).to.deep.equal(clonedState.global.navigation);
+    });
+
+    it('should getPreventNavigation', () => {
+      expect(Selectors.getPreventNavigation(state)).to.deep.equal(clonedState.global.navigation.preventNavigation);
     });
 
     it('should getTitle', () => {
@@ -208,6 +227,10 @@ describe('Selectors', () => {
 
     it('should getEnketoSavingStatus', () => {
       expect(Selectors.getEnketoSavingStatus(state)).to.equal(clonedState.global.enketoStatus.saving);
+    });
+
+    it('should getEnketoForm', () => {
+      expect(Selectors.getEnketoForm(state)).to.equal(clonedState.global.enketoStatus.form);
     });
 
     it('should getEnketoError', () => {
@@ -408,6 +431,24 @@ describe('Selectors', () => {
 
     it('should null check tasks state', () => {
       expect(Selectors.getSelectedTask({})).to.equal(undefined);
+    });
+
+    it('should getLastSubmittedTask', () => {
+      expect(Selectors.getLastSubmittedTask(state)).to.deep.equal(clonedState.tasks.taskGroup.lastSubmittedTask);
+      const alternativeState = { tasks: { taskGroup: {} } };
+      expect(Selectors.getLastSubmittedTask(alternativeState)).to.equal(undefined);
+    });
+
+    it('should getTaskGroupContact', () => {
+      expect(Selectors.getTaskGroupContact(state)).to.deep.equal(clonedState.tasks.taskGroup.contact);
+      const alternativeState = { tasks: { taskGroup: {} } };
+      expect(Selectors.getTaskGroupContact(alternativeState)).to.equal(undefined);
+    });
+
+    it('should getTaskGroupLoadingContact', () => {
+      expect(Selectors.getTaskGroupLoadingContact(state)).to.deep.equal(clonedState.tasks.taskGroup.loadingContact);
+      const alternativeState = { tasks: { taskGroup: {} } };
+      expect(Selectors.getTaskGroupLoadingContact(alternativeState)).to.equal(undefined);
     });
   });
 });

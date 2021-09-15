@@ -118,7 +118,7 @@ describe('Users API', () => {
       })
         .then(() => utils.getDoc(getUserId(username)))
         .then(doc => {
-          chai.expect(doc.facility_id).to.deep.equal(newPlaceId);
+          chai.expect(doc.facility_id).to.equal(newPlaceId);
         }));
 
     it('401s if a user without the right permissions attempts to modify someone else', () =>
@@ -316,7 +316,22 @@ describe('Users API', () => {
           name: 'OnlineUser'
         },
         roles: ['national_admin']
-      }
+      },
+      {
+        username: 'offlineonline',
+        password: password,
+        place: {
+          _id: 'fixture:offlineonline',
+          type: 'health_center',
+          name: 'Online place',
+          parent: 'PARENT_PLACE'
+        },
+        contact: {
+          _id: 'fixture:user:offlineonline',
+          name: 'OnlineUser'
+        },
+        roles: ['district_admin', 'mm-online']
+      },
     ];
 
     let offlineRequestOptions;
@@ -370,6 +385,44 @@ describe('Users API', () => {
       return utils.request(onlineRequestOptions).then(resp => {
         chai.expect(resp).to.deep.equal({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
       });
+    });
+
+    it('auth should check for mm-online role when requesting other user docs', () => {
+      const requestOptions = {
+        path: '/api/v1/users-info?role=district_admin&facility_id=fixture:offline',
+        auth: { username: 'offlineonline', password },
+        method: 'GET'
+      };
+
+      return utils
+        .request(requestOptions)
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(err => {
+          // online users require the "can_update_users" permission to be able to access this endpoint
+          chai.expect(err.error).to.deep.equal({
+            code: 403,
+            error: 'Insufficient privileges',
+          });
+        });
+    });
+
+    it('auth should check for mm-online role when requesting with missing params', () => {
+      const requestOptions = {
+        path: '/api/v1/users-info',
+        auth: { username: 'offlineonline', password },
+        method: 'GET'
+      };
+
+      return utils
+        .request(requestOptions)
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(err => {
+          // online users require the "can_update_users" permission to be able to access this endpoint
+          chai.expect(err.error).to.deep.equal({
+            code: 403,
+            error: 'Insufficient privileges',
+          });
+        });
     });
 
     it('should return correct number of allowed docs when requested by online user for an array of roles', () => {

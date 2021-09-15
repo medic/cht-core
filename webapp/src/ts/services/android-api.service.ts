@@ -1,5 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 
+import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SessionService } from '@mm-services/session.service';
@@ -18,6 +19,7 @@ import { NavigationService } from '@mm-services/navigation.service';
 export class AndroidApiService {
 
   constructor(
+    private androidAppLauncherService:AndroidAppLauncherService,
     private geolocationService:GeolocationService,
     private mrdtService:MRDTService,
     private sessionService:SessionService,
@@ -241,6 +243,10 @@ export class AndroidApiService {
     this.geolocationService.permissionRequestResolved();
   }
 
+  resolveCHTExternalAppResponse(response) {
+    this.androidAppLauncherService.resolveAndroidAppResponse(response);
+  }
+
   v1 = {
     back: () => this.runInZone('back'),
     logout: () => this.runInZone('logout'),
@@ -249,5 +255,6 @@ export class AndroidApiService {
     simprintsResponse: (...args) => this.runInZone('simprintsResponse', args),
     smsStatusUpdate: (...args) => this.runInZone('smsStatusUpdate', args),
     locationPermissionRequestResolved: () => this.runInZone('locationPermissionRequestResolve'),
+    resolveCHTExternalAppResponse: (...args) => this.runInZone('resolveCHTExternalAppResponse', args),
   };
 }

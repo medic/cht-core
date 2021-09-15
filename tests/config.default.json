@@ -93,6 +93,7 @@
     "can_create_places": [],
     "can_view_tasks": [],
     "can_view_tasks_tab": [],
+    "can_view_tasks_group": [],
     "can_configure": ["national_admin"],
     "can_view_messages": ["national_admin", "district_admin"],
     "can_view_messages_tab": ["national_admin", "district_admin"],

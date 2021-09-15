@@ -18,7 +18,7 @@ describe('Users Controller', () => {
     sinon.stub(authorization, 'getAuthorizationContext');
     sinon.stub(authorization, 'getAllowedDocIds');
     sinon.stub(auth, 'isOnlineOnly');
-    sinon.stub(auth, 'isOffline');
+    sinon.stub(auth, 'hasOnlineRole');
     sinon.stub(auth, 'hasAllPermissions');
     sinon.stub(serverUtils, 'error');
   });
@@ -134,12 +134,15 @@ describe('Users Controller', () => {
           role: 'some_role',
           facility_id: 'some_facility_id'
         };
-        auth.isOffline.returns(false);
+        auth.isOnlineOnly.returns(true);
+        auth.hasOnlineRole.returns(true);
         auth.hasAllPermissions.returns(true);
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(1);
           chai.expect(serverUtils.error.args[0])
             .to.deep.equal([{ code: 400, reason: 'Provided role is not offline' }, req, res]);
+          chai.expect(auth.hasOnlineRole.callCount).to.equal(1);
+          chai.expect(auth.hasOnlineRole.args[0]).to.deep.equal([['some_role']]);
         });
       });
 
@@ -148,7 +151,8 @@ describe('Users Controller', () => {
           role: 'some_role',
           facility_id: 'some_facility_id'
         };
-        auth.isOffline.returns(true);
+        auth.isOnlineOnly.returns(true);
+        auth.hasOnlineRole.returns(false);
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: ['some_role'], facility_id: req.query.facility_id },
@@ -175,6 +179,11 @@ describe('Users Controller', () => {
           chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([['some_role'], docIds]);
           chai.expect(res.json.callCount).to.equal(1);
           chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 7, warn: false, limit: 10000 }]);
+
+          chai.expect(auth.isOnlineOnly.callCount).to.equal(1);
+          chai.expect(auth.isOnlineOnly.args[0]).to.deep.equal([userCtx]);
+          chai.expect(auth.hasOnlineRole.callCount).to.equal(1);
+          chai.expect(auth.hasOnlineRole.args[0]).to.deep.equal([['some_role']]);
         });
       });
 
@@ -184,7 +193,8 @@ describe('Users Controller', () => {
           facility_id: 'some_facility_id',
           contact_id: 'some_contact_id'
         };
-        auth.isOffline.returns(true);
+        auth.isOnlineOnly.returns(true);
+        auth.hasOnlineRole.returns(false);
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: ['some_role'], facility_id: req.query.facility_id, contact_id: 'some_contact_id' },
@@ -217,7 +227,8 @@ describe('Users Controller', () => {
           role: 'some_role',
           facility_id: 'some_facility_id'
         };
-        auth.isOffline.returns(true);
+        auth.isOnlineOnly.returns(true);
+        auth.hasOnlineRole.returns(false);
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: ['some_role'], facility_id: req.query.facility_id },
@@ -240,7 +251,8 @@ describe('Users Controller', () => {
           role: 'some_role',
           facility_id: 'some_facility_id'
         };
-        auth.isOffline.returns(true);
+        auth.isOnlineOnly.returns(true);
+        auth.hasOnlineRole.returns(false);
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: [req.query.role], facility_id: req.query.facility_id },
@@ -264,7 +276,8 @@ describe('Users Controller', () => {
           role: JSON.stringify(['role1', 'role2']),
           facility_id: 'some_facility_id'
         };
-        auth.isOffline.returns(true);
+        auth.isOnlineOnly.returns(true);
+        auth.hasOnlineRole.returns(false);
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: ['role1', 'role2'], facility_id: req.query.facility_id },
@@ -286,6 +299,11 @@ describe('Users Controller', () => {
           chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([['role1', 'role2'], docIds]);
           chai.expect(res.json.callCount).to.equal(1);
           chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 1000, warn: false, limit: 10000 }]);
+
+          chai.expect(auth.isOnlineOnly.callCount).to.equal(1);
+          chai.expect(auth.isOnlineOnly.args[0]).to.deep.equal([userCtx]);
+          chai.expect(auth.hasOnlineRole.callCount).to.equal(1);
+          chai.expect(auth.hasOnlineRole.args[0]).to.deep.equal([['role1', 'role2']]);
         });
       });
 
@@ -308,7 +326,8 @@ describe('Users Controller', () => {
           authorization.getAuthorizationContext.callsFake(userCtx => Promise.resolve({ userCtx }));
           authorization.getAllowedDocIds.resolves(['1', '2', '3']);
           sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(['1', '2', '3']);
-          auth.isOffline.returns(true);
+          auth.isOnlineOnly.returns(true);
+          auth.hasOnlineRole.returns(false);
           auth.hasAllPermissions.returns(true);
           serverUtils.error.resolves();
         });

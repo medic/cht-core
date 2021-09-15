@@ -82,7 +82,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: ['--headless', '--disable-gpu', '--enable-logging']
+      args: ['--headless', '--disable-gpu', '--enable-logging', '--deny-permission-prompts']
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs

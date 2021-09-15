@@ -130,6 +130,25 @@ describe('LineageModelGenerator service', () => {
       });
     });
 
+    it('should skip lineage contact hydration if requested', () => {
+      const contact = { _id: 'a', _rev: '1', contact: { _id: 'x' } };
+      const parent = { _id: 'b', _rev: '1', contact: { _id: 'd' } };
+      const grandparent = { _id: 'c', _rev: '1', contact: { _id: 'e' } };
+      dbQuery.resolves({
+        rows: [
+          { doc: contact },
+          { doc: parent },
+          { doc: grandparent }
+        ] });
+
+      return service.contact('a', { hydrate: false }).then(model => {
+        expect(dbAllDocs.callCount).to.equal(0);
+        expect(model.doc.contact).to.deep.equal({ _id: 'x' });
+        expect(model.lineage[0].contact).to.deep.equal({ _id: 'd' });
+        expect(model.lineage[1].contact).to.deep.equal({ _id: 'e' });
+      });
+    });
+
     it('merges lineage when merge passed', () => {
       const contact = { _id: 'a', name: '1', parent: { _id: 'b', parent: { _id: 'c' } } };
       const parent = { _id: 'b', name: '2' };
