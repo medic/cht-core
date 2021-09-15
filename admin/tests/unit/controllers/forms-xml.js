@@ -6,6 +6,14 @@ describe('FormsXmlCtrl controller', () => {
   let scope;
   let rootScope;
   let db;
+  let utf8Stub;
+
+  const nextTick = () => new Promise(r => setTimeout(r));
+  const digest = () => {
+    return nextTick()
+      .then(() => rootScope.$digest())
+      .then(() => nextTick());
+  };
 
   afterEach(() => {
     KarmaUtils.restore(
@@ -33,7 +41,7 @@ describe('FormsXmlCtrl controller', () => {
         put: sinon.stub().resolves()
       };
       createController = (xmlContent, metaContent, validateFormStub) => {
-        const utf8Stub = sinon.stub();
+        utf8Stub = sinon.stub().resolves();
         utf8Stub.withArgs('file.xml').resolves(xmlContent || '');
         utf8Stub.withArgs('file.json').resolves(metaContent || '{}');
         return $controller('FormsXmlCtrl', {
@@ -44,6 +52,7 @@ describe('FormsXmlCtrl controller', () => {
           DB: () => db,
           AddAttachment: sinon.stub().resolves(),
           FileReader: { utf8: utf8Stub },
+          JsonParse: JSON.parse,
           ValidateForm: validateFormStub || sinon.stub().resolves({ok:true})
         });
       };
@@ -97,90 +106,80 @@ describe('FormsXmlCtrl controller', () => {
       expectStatusError('Upload failed: JSON meta file not found');
     });
 
-    it('should fail if no <meta><instanceID/></meta> node found', (done) => {
+    it('should fail if no <meta><instanceID/></meta> node found', () => {
       mockFormUploader(['file.xml']);
       mockMetaUploader(['file.json']);
       createController();
-      scope.upload();
-      setTimeout(() => {
-        rootScope.$digest();
-        setTimeout(() => {
+      return scope
+        .upload()
+        .then(() => digest())
+        .then(() => {
           expectStatusError(
             'Upload failed: No &lt;meta&gt;&lt;instanceID/&gt;&lt;/meta&gt; ' +
             'node found for first child of &lt;instance&gt; element.');
-          done();
         });
-      });
     });
 
-    it('should fail if No ID attribute found', (done) => {
+    it('should fail if No ID attribute found', () => {
       mockFormUploader(['file.xml']);
       mockMetaUploader(['file.json']);
       createController('<instance><data><meta><instanceID/></meta></data></instance>');
-      scope.upload();
-      setTimeout(() => {
-        rootScope.$digest();
-        setTimeout(() => {
+      return scope
+        .upload()
+        .then(() => digest())
+        .then(() => {
           expectStatusError(
             'Upload failed: No ID attribute found for first child of &lt;instance&gt; element.');
-          done();
         });
-      });
     });
 
-    it('should fail if internalId property in the Meta file does not match formId', (done) => {
+    it('should fail if internalId property in the Meta file does not match formId', () => {
       mockFormUploader(['file.xml']);
       mockMetaUploader(['file.json']);
       createController(
         '<instance><data id="contact:clinic:edit"><meta><instanceID/></meta></data></instance>',
         '{"internalId":"another:id"}');
-      scope.upload();
-      setTimeout(() => {
-        rootScope.$digest();
-        setTimeout(() => {
+      return scope
+        .upload()
+        .then(() => digest())
+        .then(() => {
           expectStatusError(
             'Upload failed: The internalId property in the meta file will be overwritten ' +
             'by the ID attribute on the first child of &lt;instance&gt; element in the XML. ' +
             'Remove this property from the meta file and try again.'
           );
-          done();
         });
-      });
     });
 
-    it('should fail if invalid XML', (done) => {
+    it('should fail if invalid XML', () => {
       mockFormUploader(['file.xml']);
       mockMetaUploader(['file.json']);
       createController(
         '<instance><data id="contact:clinic:edit"><meta////><instanceID/></meta></data></instance>',
         '{"internalId":"contact:clinic:edit"}');
-      scope.upload();
-      setTimeout(() => {
-        rootScope.$digest();
-        setTimeout(() => {
+      return scope
+        .upload()
+        .then(() => digest())
+        .then(() => {
           expectStatusError('Upload failed: Invalid XML');
-          done();
         });
-      });
     });
 
-    it('should fail if invalid Meta', (done) => {
+    it('should fail if invalid Meta', () => {
       mockFormUploader(['file.xml']);
       mockMetaUploader(['file.json']);
       createController(
         '<instance><data id="contact:clinic:edit"><meta/><instanceID/></meta></data></instance>',
         'not a valid JSON file');
-      scope.upload();
-      setTimeout(() => {
-        rootScope.$digest();
-        setTimeout(() => {
+      return scope
+        .upload()
+        .then(() => digest())
+        .then(() => {
           expectStatusError('Upload failed: Unexpected token o in JSON at position 1');
-          done();
         });
-      });
     });
 
-    it('should fail if ValidateForm fails', (done) => {
+    it('should fail if ValidateForm fails', () => {
       mockFormUploader(['file.xml']);
       mockMetaUploader(['file.json']);
       createController(
@@ -188,35 +187,30 @@ describe('FormsXmlCtrl controller', () => {
         '{"internalId":"contact:clinic:edit"}',
         sinon.stub().rejects(new Error('Error validating form - wrong content'))
       );
-      scope.upload();
-      setTimeout(() => {
-        rootScope.$digest();
-        setTimeout(() => {
+      return scope
+        .upload()
+        .then(() => digest())
+        .then(() => {
           expectStatusError('Upload failed: Error validating form - wrong content');
-          done();
         });
-      });
     });
 
-    it('should succeed if XML and Meta files are right', (done) => {
+    it('should succeed if XML and Meta files are right', () => {
       mockFormUploader(['file.xml']);
       mockMetaUploader(['file.json']);
       createController(
         '<instance><data id="contact:clinic:edit"><meta><instanceID/></meta></data></instance>');
-      scope.upload();
-      setTimeout(() => {
-        rootScope.$digest();
-        setTimeout(() => {
+      return scope
+        .upload()
+        .then(() => digest())
+        .then(() => {
           chai.expect(scope.status).to.deep.equal({
             uploading: false,
             error: false,
             success: true,
             errorMessage: null
           });
-          done();
         });
-      });
     });
-
   });
 });
