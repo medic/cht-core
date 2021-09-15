@@ -69,7 +69,7 @@ export class FormatDateService {
     const diff = date.diff(today, 'days');
 
     if (diff <= 0) {
-      if (!this.config.taskDaysOverdue || diff === 0) {
+      if (diff === 0 || !this.config.taskDaysOverdue) {
         return this.translateService.instant('task.overdue');
       }
 
@@ -80,7 +80,7 @@ export class FormatDateService {
       return this.translateService.instant('task.days.left', { DAYS: diff });
     }
 
-    return  '';
+    return '';
   }
 
   private relativeDate(date, options) {
