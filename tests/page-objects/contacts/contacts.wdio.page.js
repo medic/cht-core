@@ -41,6 +41,13 @@ const editContactButton = () => $('.action-container .right-pane .actions .mm-ic
 const deleteContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-trash-o');
 const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
 
+const leftAddPlace = () => $('.dropup a[mmauth="can_create_places"]');
+const rightAddPlace = () => $('span[test-id="rhs_add_contact"] a');
+const rightAddPlaces = () => $('span[test-id="rhs_add_contact"] p[test-key="Add place"]');
+const rightAddPersons = () => $('span[test-id="rhs_add_contact"] p[test-key="Add person"]');
+const rightAddPerson = (create_key) => $(`span[test-id="rhs_add_contact"] p[test-key="${create_key}"]`);
+const contactCards = () => $$('.card.children');
+
 const search = async (query) => {
   await (await searchBox()).setValue(query);
   await (await searchButton()).click();
@@ -167,6 +174,17 @@ const getAllRHSReportsNames = async () => {
   return getTextForElements(rhsReportElementList);
 };
 
+const allContactsList = async () => {
+  const parentCards = await contactCards();
+  return Promise.all(parentCards.map(async (parent) => {
+    return {
+      heading: await(await parent.$('h3')).getText(),
+      contactNames: await Promise.all((await parent.$$('.children h4 span')).map(filter => filter.getText()))
+    };
+  }));
+};
+
+
 module.exports = {
   selectLHSRowByText,
   reportFilters,
@@ -186,5 +204,11 @@ module.exports = {
   editPerson,
   getContactSummaryField,
   getAllRHSReportsNames,
-  deletePerson
+  deletePerson,
+  leftAddPlace,
+  rightAddPlace,
+  rightAddPlaces,
+  rightAddPersons,
+  rightAddPerson,
+  allContactsList
 };

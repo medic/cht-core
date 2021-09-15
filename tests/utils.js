@@ -624,7 +624,6 @@ module.exports = {
       path: '/', // so audit picks this up
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Content-Length': JSON.stringify(doc).length,
       },
       body: doc,
@@ -641,9 +640,25 @@ module.exports = {
       .then(results => {
         if (results.find(r => !r.ok)) {
           throw Error(JSON.stringify(results, null, 2));
-        } else {
-          return results;
         }
+        return results;
+      });
+  },
+
+  saveMetaDocs: (user, docs) => {
+    const options = {
+      userName: user,
+      method: 'POST',
+      body: { docs: docs },
+      path: '/_bulk_docs',
+    };
+    return module.exports
+      .requestOnTestMetaDb(options)
+      .then(results => {
+        if (results.find(r => !r.ok)) {
+          throw Error(JSON.stringify(results, null, 2));
+        }
+        return results;
       });
   },
 
@@ -666,11 +681,22 @@ module.exports = {
         path: `/_all_docs?include_docs=true`,
         method: 'POST',
         body: { keys: ids || [] },
-        headers: { 'content-type': 'application/json' },
       })
       .then(response => {
         return fullResponse ? response : response.rows.map(row => row.doc);
       });
+  },
+
+  getMetaDocs: (user, ids, fullResponse = false) => {
+    const options = {
+      userName: user,
+      method: 'POST',
+      body: { keys: ids || [] },
+      path: '/_all_docs?include_docs=true',
+    };
+    return module.exports
+      .requestOnTestMetaDb(options)
+      .then(response => fullResponse ? response : response.rows.map(row => row.doc));
   },
 
   deleteDoc: id => {
@@ -1017,4 +1043,5 @@ module.exports = {
   },
 
   runAndLogApiStartupMessage: runAndLogApiStartupMessage,
+  findDistrictHospitalFromPlaces: (places) => places.find((place) => place.type === 'district_hospital')
 };

@@ -5,6 +5,9 @@ const constants = require('./constants');
 const utils = require('./utils');
 const path = require('path');
 
+const chai = require('chai');
+chai.use(require('chai-exclude'));
+
 const ALLURE_OUTPUT = 'allure-results';
 const getSpecName = (specs) => specs[0].split('/').slice(-1)[0].split('.wdio-spec')[0];
 const getBrowserLogFilePath = (specs) => {
@@ -79,7 +82,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: ['--headless', '--disable-gpu', '--enable-logging']
+      args: ['--headless', '--disable-gpu', '--enable-logging', '--deny-permission-prompts']
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs

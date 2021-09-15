@@ -107,7 +107,9 @@ export class TasksComponent implements OnInit, OnDestroy {
 
     this.tasksActions.setTasksList([]);
     this.tasksActions.setTasksLoaded(false);
+    this.tasksActions.setSelectedTask(null);
     this.globalActions.unsetSelected();
+    this.tasksActions.clearTaskGroup();
   }
 
   refreshTaskList() {
@@ -120,6 +122,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
       emission.date = new Date(dueDate.valueOf());
       emission.overdue = dueDate.isBefore(moment());
+      emission.owner = taskDoc.owner;
 
       return emission;
     });
@@ -159,6 +162,6 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   listTrackBy(index, task) {
-    return task._id;
+    return task?._id;
   }
 }

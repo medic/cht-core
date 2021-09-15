@@ -7,10 +7,16 @@ const initialState = {
     left: {},
     right: {}
   },
-  cancelCallback: null,
+  navigation: {
+    cancelCallback: null,
+    preventNavigation: null,
+    cancelTranslationKey: null,
+    recordTelemetry: null,
+  },
   currentTab: null,
   snapshotData: null,
   enketoStatus: {
+    form: false,
     edited: false,
     saving: false,
     error: null
@@ -148,9 +154,10 @@ const _globalReducer = createReducer(
   on(Actions.setEnketoStatus, (state, { payload: { enketoStatus } }) => {
     return {
       ...state,
-      enketoStatus: { ...state.enketoStatus, ...enketoStatus },
+      enketoStatus: { ...state.enketoStatus, ...enketoStatus, form: true },
     };
   }),
+  on(Actions.clearEnketoStatus, state => ({ ...state, enketoStatus: { ...initialState.enketoStatus } })),
   on(Actions.setPrivacyPolicyAccepted, (state, { payload: { accepted } }) => {
     return { ...state, privacyPolicyAccepted: accepted };
   }),
@@ -158,7 +165,35 @@ const _globalReducer = createReducer(
     return { ...state, showPrivacyPolicy: show };
   }),
   on(Actions.setCancelCallback, (state, { payload: { cancelCallback } }) => {
-    return { ...state, cancelCallback };
+    return {
+      ...state,
+      navigation: {
+        ...state.navigation,
+        cancelCallback,
+      },
+    };
+  }),
+  on(Actions.setNavigation, (state, { payload }) => {
+    const { cancelCallback, preventNavigation, cancelTranslationKey, recordTelemetry } = payload;
+    return {
+      ...state,
+      navigation: {
+        ...state.navigation,
+        cancelCallback,
+        preventNavigation,
+        cancelTranslationKey,
+        recordTelemetry,
+      }
+    };
+  }),
+  on(Actions.setPreventNavigation, (state, { payload: { preventNavigation } }) => {
+    return {
+      ...state,
+      navigation: {
+        ...state.navigation,
+        preventNavigation,
+      },
+    };
   }),
   on(Actions.setLoadingSubActionBar, (state, { payload: { loading } }) => {
     return { ...state, loadingSubActionBar: loading };
