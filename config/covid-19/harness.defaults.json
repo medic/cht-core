@@ -1,0 +1,88 @@
+{
+  "coreVersion": "3.11.0",
+  "user": "chw_area_contact_id",
+  "subject": "patient_id",
+  "ownedBySubject": true,
+
+  "docs": [
+    {
+      "_id": "chw_area_contact_id",
+      "name": "CHW",
+      "type": "person",
+      "role": "chw",
+      "is_active": true,
+      "reported_date": 1550559625153,
+      "parent": {
+        "_id": "chw_area_id",
+        "parent": {
+          "_id": "supervisor_area_id"
+        }
+      }
+    },
+    {
+      "_id": "patient_id",
+      "type": "person",
+      "name": "Patient Name",
+      "role": "patient",
+      "date_of_birth": "1970-07-09",
+      "sex": "female",
+      "reported_date": 1550762498368,
+      "parent": {
+        "_id": "family_id",
+        "parent": {
+          "_id": "chw_area_id",
+          "parent": {
+            "_id": "supervisor_area_id"
+          }
+        }
+      }
+    },
+    {
+      "_id": "chw_area_id",
+      "type": "health_center",
+      "parent": {
+        "_id": "supervisor_area_id"
+      },
+      "contact": {
+        "_id": "chw_area_contact_id",
+        "parent": {
+          "_id": "chw_area_id",
+          "parent": {
+            "_id": "district_id"
+          }
+        }
+      }
+    },
+    {
+      "_id": "supervisor_area_id",
+      "type": "district_hospital"
+    },
+    {
+      "_id": "family_id",
+      "type": "clinic",
+      "parent": {
+        "_id": "chw_area_id",
+        "parent": {
+          "_id": "supervisor_area_id"
+        }
+      },
+      "contact": {
+        "_id": "family_head_id"
+      }
+    },
+    {
+      "_id": "family_head_id",
+      "name": "CHP Area 001 Contact",
+      "type": "person",
+      "parent": {
+        "_id": "family_id",
+        "parent": {
+          "_id": "chw_area_id",
+          "parent": {
+            "_id": "supervisor_area_id"
+          }
+        }
+      }
+    }
+  ]
+}
