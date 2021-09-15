@@ -13,6 +13,7 @@ describe('FormatDate service', () => {
   let translateInstant;
   let relativeTime;
   let pastFuture;
+  let settingsService;
 
   const LONG_DATE_FORMAT = 'h:mm A';
 
@@ -20,6 +21,7 @@ describe('FormatDate service', () => {
     relativeTime = sinon.stub();
     pastFuture = sinon.stub();
     translateInstant = sinon.stub();
+    settingsService = { get: sinon.stub() };
     // @ts-ignore
     sinon.stub(moment, 'localeData').returns({
       relativeTime,
@@ -28,7 +30,7 @@ describe('FormatDate service', () => {
     });
     TestBed.configureTestingModule({
       providers: [
-        { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) } },
+        { provide: SettingsService, useValue: settingsService },
         { provide: TranslateService, useValue: { instant: translateInstant } },
       ]
     });
@@ -225,5 +227,46 @@ describe('FormatDate service', () => {
       expect(translateInstant.callCount).to.equal(0);
     });
 
+    it('should return "due" when due in the past by default', () => {
+      translateInstant.returns('due');
+      const actual = service.relative(moment().subtract(4, 'days'), { task: true });
+      expect(actual).to.equal('due');
+      expect(translateInstant.args[0][0]).to.equal('task.overdue');
+    });
+
+    it('should return "due" when due in the past by when task_days_overdue is undefined', async () => {
+      settingsService.get.resolves({ });
+      translateInstant.returns('due');
+      await service.init();
+
+      const actual = service.relative(moment().subtract(4, 'days'), { task: true });
+      expect(actual).to.equal('due');
+      expect(translateInstant.args[0][0]).to.equal('task.overdue');
+    });
+
+    it('should return "due" when due in the past by when task_days_overdue is false', async () => {
+      settingsService.get.resolves({ task_days_overdue: false });
+      translateInstant.returns('due');
+      await service.init();
+
+      const actual = service.relative(moment().subtract(4, 'days'), { task: true });
+      expect(actual).to.equal('due');
+      expect(translateInstant.args[0][0]).to.equal('task.overdue');
+    });
+
+    it('should return days ago when due in the past by when task_days_overdue is true', async () => {
+      settingsService.get.resolves({ task_days_overdue: true });
+      pastFuture.returns('4 days ago');
+      relativeTime.returns('something');
+      await service.init();
+
+      const actual = service.relative(moment().subtract(4, 'days'), { task: true });
+      expect(actual).to.equal('4 days ago');
+      expect(relativeTime.callCount).to.equal(1);
+      expect(relativeTime.args[0]).to.deep.equal([4, true, 'dd', false]);
+      expect(pastFuture.callCount).to.equal(1);
+      expect(pastFuture.args[0]).to.deep.equal([-4, 'something']);
+      expect(translateInstant.callCount).to.equal(0);
+    });
   });
 });

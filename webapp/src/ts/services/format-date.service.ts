@@ -16,7 +16,7 @@ export class FormatDateService {
   }
 
   init() {
-    this.settingsService
+    return this.settingsService
       .get()
       .then((res:any) => {
         this.config.date = res.date_format;
@@ -64,20 +64,23 @@ export class FormatDateService {
   }
 
   private getTaskDueDate(given) {
-    if (this.config.taskDaysOverdue) {
-      return this.relativeDate(given, { suffix: true, humanize: true });
-    }
-
     const date = moment(given).startOf('day');
     const today = moment().startOf('day');
     const diff = date.diff(today, 'days');
+
     if (diff <= 0) {
-      return this.translateService.instant('task.overdue');
+      if (!this.config.taskDaysOverdue || diff === 0) {
+        return this.translateService.instant('task.overdue');
+      }
+
+      return this.relativeDate(given, { suffix: true, humanize: true });
     }
+
     if (diff <= this.config.taskDayLimit) {
       return this.translateService.instant('task.days.left', { DAYS: diff });
     }
-    return '';
+
+    return  '';
   }
 
   private relativeDate(date, options) {

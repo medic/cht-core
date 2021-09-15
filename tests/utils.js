@@ -521,7 +521,6 @@ const parseCookieResponse = (cookieString) => {
 
 const dockerGateway = () => {
   return JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
-  
 };
 
 const hostURL = (port = 80) => {
