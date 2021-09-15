@@ -16,7 +16,7 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 const db = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`, { auth });
 const sentinel = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-sentinel`, { auth });
 const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-logs`, { auth });
-let browserLogStream;
+
 const userSettings = require('./factories/cht/users/user-settings');
 
 let originalSettings;
@@ -384,56 +384,15 @@ const waitForSettingsUpdateLogs = (type) => {
   );
 };
 
-const apiRetry = () => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(listenForApi());
-    }, 1000);
-  });
-};
 
-const listenForApi = async () => {
-  console.log('Checking API');
-  try {
-    await request({ path: '/api/info' });
-    console.log('API is up');
-  } catch (err) {
-    console.log('API check failed, trying again in 1 second');
-    console.log(err.message);
-    await apiRetry();
-  }
-};
 
-const runAndLogApiStartupMessage = (msg, func) => {
-  console.log(`API startup: ${msg}`);
-  return func();
-};
+
 
 const getLoginUrl = () => {
   const redirectUrl = encodeURIComponent(
     `/${constants.DB_NAME}/_design/${constants.MAIN_DDOC_NAME}/_rewrite/#/messages`
   );
   return `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login?redirect=${redirectUrl}`;
-};
-
-const saveBrowserLogs = () => {
-  // wdio also writes in this file
-  if (!browserLogStream) {
-    browserLogStream = fs.createWriteStream(__dirname + '/../tests/logs/browser.console.log');
-  }
-
-  return browser
-    .manage()
-    .logs()
-    .get('browser')
-    .then(logs => {
-      const currentSpec = jasmine.currentSpec.fullName;
-      browserLogStream.write(`\n~~~~~~~~~~~ ${currentSpec} ~~~~~~~~~~~~~~~~~~~~~\n\n`);
-      logs
-        .map(log => `[${log.level.name_}] ${log.message}\n`)
-        .forEach(log => browserLogStream.write(log));
-      browserLogStream.write('\n~~~~~~~~~~~~~~~~~~~~~\n\n');
-    });
 };
 
 const protractorLogin = async (browser, timeout = 20) => {
@@ -464,12 +423,9 @@ const setupUserDoc = (userName = auth.username, userDoc = userSettings.build()) 
       return module.exports.saveDoc(finalDoc);
     });
 };
-
-
 const tearDownServices = () => {
   return rpn.post('http://localhost:31337/die');
 };
-
 const parseCookieResponse = (cookieString) => {
   return cookieString.map((cookie) => {
     const cookieObject = {};
@@ -801,12 +757,6 @@ module.exports = {
       });
   },
 
-  countOf: count => {
-    return c => {
-      return c === count;
-    };
-  },
-
   getCouchUrl: () =>
     `http://${auth.username}:${auth.password}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`,
 
@@ -998,14 +948,10 @@ module.exports = {
 
   setupUser: setupUser,
   protractorLogin: protractorLogin,
-
-  saveBrowserLogs: saveBrowserLogs,
   tearDownServices,
   endSession: async (exitCode) => {
     await tearDownServices();
     return module.exports.reporter.afterLaunch(exitCode);
   },
-
-  runAndLogApiStartupMessage: runAndLogApiStartupMessage,
   findDistrictHospitalFromPlaces: (places) => places.find((place) => place.type === 'district_hospital')
 };

@@ -1,5 +1,7 @@
 const utils = require('./utils');
 const chai = require('chai');
+const environment = require('./utils/environment');
+const browserUtils = require('./utils/browser');
 chai.use(require('chai-exclude'));
 chai.use(require('chai-shallow-deep-equal'));
 // so the .to.have.members will display the array members when assertions fail instead of [ Array(6) ]
@@ -63,13 +65,14 @@ const baseConfig = {
     const config = await browser.getProcessedConfig();
 
     // wait for startup to complete
-    await browser.driver.wait(utils.prepServices(config), 135 * 1000, 'API took too long to start up');
+    await browser.driver.wait(environment.prepServices(config), 135 * 1000, 'API took too long to start up');
 
     afterEach(() => {
-      return utils.saveBrowserLogs();
+      return browserUtils.saveBrowserLogs();
     });
 
-    return utils.protractorLogin(browser).then(() => utils.runAndLogApiStartupMessage('User setup', utils.setupUser));
+    return utils.protractorLogin(browser).then(() => 
+      environment.runAndLogApiStartupMessage('User setup', utils.setupUser));
   }
 };
 

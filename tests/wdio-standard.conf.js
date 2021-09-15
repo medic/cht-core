@@ -1,6 +1,6 @@
 const wdioBaseConfig = require('./wdio.conf');
 const _ = require('lodash');
-const utils = require('./utils');
+const environment = require('./utils/environment');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const constants = require('./constants');
@@ -15,7 +15,7 @@ const standardConfig = _.merge(wdioBaseConfig.config, {
   ],
 
   onPrepare: async function (config) {
-    await utils.prepServices(config);
+    await environment.prepServices(config);
     await uploadStandardConfig();
   },
 });
