@@ -409,17 +409,6 @@ const runAndLogApiStartupMessage = (msg, func) => {
   return func();
 };
 
-const setupSettings = () => {
-  const defaultAppSettings = getDefaultSettings();
-  defaultAppSettings.transitions = {};
-
-  return request({
-    path: '/api/v1/settings?replace=1',
-    method: 'PUT',
-    body: defaultAppSettings
-  });
-};
-
 const getLoginUrl = () => {
   const redirectUrl = encodeURIComponent(
     `/${constants.DB_NAME}/_design/${constants.MAIN_DDOC_NAME}/_rewrite/#/messages`
@@ -445,29 +434,6 @@ const saveBrowserLogs = () => {
         .forEach(log => browserLogStream.write(log));
       browserLogStream.write('\n~~~~~~~~~~~~~~~~~~~~~\n\n');
     });
-};
-
-
-const prepServices = async (config) => {
-  if (constants.IS_CI) {
-    console.log('On CI, waiting for horti to first boot api');
-    // CI' horti will be installing and then deploying api and sentinel, and those logs are
-    // getting pushed into horti.log Once horti has bootstrapped we want to restart everything so
-    // that the service processes get restarted with their logs separated and pointing to the
-    // correct logs for testing
-    await listenForApi();
-    console.log('Horti booted API, rebooting under our logging structure');
-    await rpn.post('http://localhost:31337/all/restart');
-  } else {
-    // Locally we just need to start them and can do so straight away
-    await rpn.post('http://localhost:31337/all/start');
-  }
-
-  await listenForApi();
-  if (config && config.suite === 'web') {
-    await runAndLogApiStartupMessage('Settings setup', setupSettings);
-  }
-  await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
 };
 
 const protractorLogin = async (browser, timeout = 20) => {
@@ -1029,8 +995,6 @@ module.exports = {
   },
 
   getSettings: () => module.exports.getDoc('settings').then(settings => settings.settings),
-
-  prepServices: prepServices,
 
   setupUser: setupUser,
   protractorLogin: protractorLogin,
