@@ -8,7 +8,7 @@ const clinic = places.find((place) => place.type === 'clinic');
 const analyticsPage = require('../../page-objects/analytics/analytics.wdio.page.js');
 
 const supervisor = userFactory.build({
-  name:'user_22',
+  username:'user_22',
   place:clinic._id,
   known:true,
   roles: ['chw_supervisor']
