@@ -92,7 +92,7 @@ describe('mark_for_outbound', () => {
           test: {
             relevant_to: 'doc.type === "data_record" && doc.form === "test"',
             destination: {
-              base_url: `http://localhost:${server.address().port}`,
+              base_url: utils.hostURL(server.address().port),
               path: WORKING_ENDPOINT
             },
             mapping: {
@@ -141,7 +141,7 @@ describe('mark_for_outbound', () => {
           test: {
             relevant_to: 'doc.type === "data_record" && doc.form === "test"',
             destination: {
-              base_url: `http://localhost:${server.address().port}`,
+              base_url: utils.hostURL(server.address().port),
               path: WORKING_ENDPOINT
             },
             mapping: {
@@ -206,7 +206,7 @@ describe('mark_for_outbound', () => {
           test: {
             relevant_to: 'doc.type === "data_record" && doc.hello === "there"',
             destination: {
-              base_url: `http://localhost:${server.address().port}`,
+              base_url: utils.hostURL(server.address().port),
               path: WORKING_ENDPOINT
             },
             mapping: {
@@ -277,7 +277,7 @@ describe('mark_for_outbound', () => {
           test: {
             relevant_to: 'doc.type === "data_record" && doc.form === "test"',
             destination: {
-              base_url: `http://localhost:${server.address().port}`,
+              base_url: utils.hostURL(server.address().port),
               path: BROKEN_ENDPOINT
             },
             mapping: {
@@ -439,7 +439,7 @@ describe('mark_for_outbound', () => {
           test: {
             relevant_to: 'doc.type === "data_record" && doc.form === "test"',
             destination: {
-              base_url: `http://localhost:${server.address().port}`,
+              base_url: utils.hostURL(server.address().port),
               path: WORKING_ENDPOINT
             },
             mapping: {
@@ -472,7 +472,7 @@ describe('mark_for_outbound', () => {
           test: {
             relevant_to: 'doc.type === "data_record" && doc.form === "test"',
             destination: {
-              base_url: `http://localhost:${server.address().port}`,
+              base_url: utils.hostURL(server.address().port),
               path: BROKEN_ENDPOINT
             },
             mapping: {
@@ -505,7 +505,7 @@ describe('mark_for_outbound', () => {
           test: {
             relevant_to: 'doc.type === "data_record" && doc.form === "test"',
             destination: {
-              base_url: `http://localhost:${server.address().port}`,
+              base_url: utils.hostURL(server.address().port),
               path: WORKING_ENDPOINT
             },
             mapping: {

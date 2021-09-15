@@ -97,6 +97,6 @@ testingBuilds()
   .then(branchBuilds)
   .then(betaBuilds)
   .catch(err => {
-    console.error(`Error deleting old travis builds: "${err.message}"`);
+    console.error(`Error deleting old CI builds: "${err.message}"`);
     process.exit(1);
   });

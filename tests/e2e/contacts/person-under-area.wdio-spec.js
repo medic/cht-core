@@ -6,7 +6,7 @@ const utils = require('../../utils');
 const placeFactory = require('../../factories/cht/contacts/place');
 const personFactory = require('../../factories/cht/contacts/person');
 const places = placeFactory.generateHierarchy(); // This generates ['district_hospital', 'health_center', 'clinic']
-const district_hospital = places.find((place) => place.type === 'district_hospital');
+const districtHospital = utils.findDistrictHospitalFromPlaces(places);
 
 const username = 'jack_test';
 const password = 'Jacktest@123';
@@ -16,7 +16,7 @@ const healthCenter2 = placeFactory.place().build({
   name: 'HealthCenter-2',
   type: 'health_center',
   parent: {
-    _id: district_hospital._id,
+    _id: districtHospital._id,
     parent: {
       _id: ''
     }
@@ -59,9 +59,11 @@ describe('Create Person Under Area', async () => {
     await usersAdminPage.inputAddUserFields(username, 'Jack', 'CHW', healthCenter2.name, person2.name, password);
     await usersAdminPage.saveUser();
     await usersAdminPage.logout();
-    await loginPage.cookieLogin(username, password, false, 50000); //Page takes lot of time to load for a new User
+    await loginPage.login(username, password);
+    await commonPage.closeTour();
+
     await commonPage.goToPeople();
-    const rows = await contactPage.getAllContactText();
+    const rows = await contactPage.getAllLHSContactsNames();
     // Only one row will be displayed: for HealthCenter
     expect(rows.length).toEqual(1);
     expect(rows[0]).toEqual(healthCenter2.name);

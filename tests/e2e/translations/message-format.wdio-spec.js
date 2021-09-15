@@ -21,7 +21,7 @@ describe('MessageFormat', () => {
 
   it('should display plurals correctly', async () => {
     await commonPage.goToPeople();
-    await contactElements.selectLHSRowByText(district_hospital.name);
+    await contactElements.selectLHSRowByText(district_hospital.name, false);
 
     const reportsFilter = await contactElements.getReportFiltersText();
     expect(reportsFilter.sort()).toEqual(['3 months', '6 months', 'View all'].sort());

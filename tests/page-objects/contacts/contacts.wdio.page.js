@@ -3,8 +3,8 @@ const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
-const contentRowsText = () => $$(`${contentRowSelector} .heading h4 span`);
-const rowByText = async (text) => (await contentRow()).$(`span=${text}`);
+const contentRows = () => $$(contentRowSelector);
+const contactName = () => $$(`${contentRowSelector} .heading h4 span`);
 const reportFilterSelector = '.card.reports .table-filter a';
 const reportRowSelector = '#reports-list .content-row';
 const reportRow = () => $(reportRowSelector);
@@ -18,28 +18,51 @@ const contactList = () => $('#contacts-list');
 const newPlaceName = () => $('[name="/data/init/custom_place_name"]');
 const newPrimaryContactName = () => $('[name="/data/contact/name"]');
 const newPrimaryContactButton = () => $('[name="/data/init/create_new_person"][value="new_person"]');
-const resourceIcon = (name) => $(`[title="medic-${name}"]`);
+const actionResourceIcon = (name) => $(`.actions.dropup .mm-icon .resource-icon[title="medic-${name}"]`);
 const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
 const contactSexField = () => $('[data-name="/data/contact/sex"][value="female"]');
 const personName = () => $('[name="/data/person/name"]');
 const personSexField = () => $('[data-name="/data/person/sex"][value="female"]');
+const personPhoneField = () => $('input.ignore[type="tel"]');
 const topContact = () => $('#contacts-list > ul > li:nth-child(1) > a > div.content > div > h4 > span');
 const name = () => $('.children h4 span');
 const externalIdField = (place) => $(`[name="/data/${place}/external_id"]`);
 const notes = (place) => $(`[name="/data/${place}/notes"]`);
 const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][value="false"]`);
-const contactCard = () =>$('.card h2');
-const personIcon = () => $('[title="medic-person"]');
+const contactCard = () => $('.card h2');
+const contactCardIcon = (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`);
+const rhsPeopleListSelector = () => $$('[test-id="person"] h4 span');
+const rhsReportListSelector = '[test-id="report"] h4 span';
+const rhsReportListElement = () => $(rhsReportListSelector);
+const rhsReportElementList = () => $$(rhsReportListSelector);
+const contactSummaryContainer = () => $('#contact_summary');
+const emptySelection = () => $('contacts-content .empty-selection');
+const editContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
+const deleteContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-trash-o');
+const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
 
+const leftAddPlace = () => $('.dropup a[mmauth="can_create_places"]');
+const rightAddPlace = () => $('span[test-id="rhs_add_contact"] a');
+const rightAddPlaces = () => $('span[test-id="rhs_add_contact"] p[test-key="Add place"]');
+const rightAddPersons = () => $('span[test-id="rhs_add_contact"] p[test-key="Add person"]');
+const rightAddPerson = (create_key) => $(`span[test-id="rhs_add_contact"] p[test-key="${create_key}"]`);
+const contactCards = () => $$('.card.children');
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
   await (await searchButton()).click();
 };
 
-const selectLHSRowByText = async (text) => {
-  await search(text);
-  await (await rowByText(text)).click();
+const selectLHSRowByText = async (text, executeSearch= true) => {
+  if (executeSearch) {
+    await search(text);
+  }
+  await browser.waitUntil(async () => (await contentRows()).length);
+  for (const row of await contentRows()) {
+    if ((await row.getText()) === text) {
+      return await row.click();
+    }
+  }
 };
 
 const getReportFiltersText = async () => {
@@ -49,12 +72,21 @@ const getReportFiltersText = async () => {
 
 const getReportTaskFiltersText = async () => {
   await (await taskFilter()).waitForDisplayed();
-  const blah = await Promise.all((await taskFilters()).map(filter => filter.getText()));
-  return blah;
+  return await Promise.all((await taskFilters()).map(filter => filter.getText()));
+};
+
+const waitForContactLoaded = async () => {
+  await (await contactCard()).waitForDisplayed();
+  await (await contactSummaryContainer()).waitForDisplayed();
+};
+
+const waitForContactUnloaded = async () => {
+  await (await emptySelection()).waitForDisplayed();
 };
 
 const addPlace = async (type, placeName , contactName ) => {
-  await (await resourceIcon(type.replace('_','-'))).click();
+  const dashedType = type.replace('_','-');
+  await (await actionResourceIcon(dashedType)).click();
   await (await newPrimaryContactButton()).click();
   await (await newPrimaryContactName()).addValue(contactName);
   await (await dateOfBirthField()).addValue('2000-01-01');
@@ -65,28 +97,62 @@ const addPlace = async (type, placeName , contactName ) => {
   await (await externalIdField(type)).addValue('1234457');
   await (await notes(type)).addValue(`Some ${type} notes`);
   await (await genericForm.submitButton()).click();
+  await (await contactCardIcon(dashedType)).waitForDisplayed();
   await (await contactCard()).waitForDisplayed();
 };
 
-const addPerson = async (name, dob = '2000-01-01') => {
-  await (await resourceIcon('person')).click();
+const addPerson = async (name, params = {}) => {
+  const { dob='2000-01-01', phone } = params;
+  await (await actionResourceIcon('person')).click();
   await (await personName()).addValue(name);
   await (await dateOfBirthField()).addValue(dob);
   await (await personName()).click(); // blur the datepicker field so the sex field is visible
+  if (phone) {
+    await (await personPhoneField()).addValue(phone);
+  }
   await (await personSexField()).click();
   await (await notes('person')).addValue('some person notes');
   await (await genericForm.submitButton()).click();
-  await (await personIcon()).waitForDisplayed();
+  await (await contactCardIcon('person')).waitForDisplayed();
   return (await contactCard()).getText();
+};
+
+const editPerson = async (name, updatedName) => {
+  await selectLHSRowByText(name);
+  await waitForContactLoaded();
+  await (await editContactButton()).click();
+
+  await (await genericForm.nextPage());
+
+  await (await personName()).clearValue();
+  await (await personName()).addValue(updatedName);
+
+  await (await genericForm.submitButton()).click();
+  await waitForContactLoaded();
+  return (await contactCard()).getText();
+};
+
+const deletePerson = async (name) => {
+  await selectLHSRowByText(name);
+  await waitForContactLoaded();
+  await (await deleteContactButton()).click();
+  await (await deleteConfirmationModalButton()).waitForDisplayed();
+  await (await deleteConfirmationModalButton()).click();
+};
+
+const getContactSummaryField = async (fieldName) => {
+  await (await contactSummaryContainer()).waitForDisplayed();
+  const field = await (await contactSummaryContainer()).$(`.cell.${fieldName.replace(/\./g, '\\.')}`);
+  return await (await field.$('p')).getText();
 };
 
 const getPrimaryContactName = async () => {
   return (await name()).getText();
 };
 
-const getAllContactText = async () => {
+const getAllLHSContactsNames = async () => {
   await (await contentRow()).waitForDisplayed();
-  return getTextForElements(contentRowsText);
+  return getTextForElements(contactName);
 };
 
 const getTextForElements = async (elements) => {
@@ -98,16 +164,51 @@ const getAllReportsText = async () => {
   return getTextForElements(reportRowsText);
 };
 
+const getAllRHSPeopleNames = async () => {
+  await (await name()).waitForDisplayed();
+  return getTextForElements(rhsPeopleListSelector);
+};
+
+const getAllRHSReportsNames = async () => {
+  await (await rhsReportListElement()).waitForDisplayed();
+  return getTextForElements(rhsReportElementList);
+};
+
+const allContactsList = async () => {
+  const parentCards = await contactCards();
+  return Promise.all(parentCards.map(async (parent) => {
+    return {
+      heading: await(await parent.$('h3')).getText(),
+      contactNames: await Promise.all((await parent.$$('.children h4 span')).map(filter => filter.getText()))
+    };
+  }));
+};
+
+
 module.exports = {
   selectLHSRowByText,
   reportFilters,
   getReportFiltersText,
   getReportTaskFiltersText,
   contactList,
-  getAllContactText,
+  getAllLHSContactsNames,
   addPerson,
   addPlace,
   topContact,
   getPrimaryContactName,
-  getAllReportsText
+  getAllReportsText,
+  getAllRHSPeopleNames,
+  waitForContactLoaded,
+  waitForContactUnloaded,
+  contactCard,
+  editPerson,
+  getContactSummaryField,
+  getAllRHSReportsNames,
+  deletePerson,
+  leftAddPlace,
+  rightAddPlace,
+  rightAddPlaces,
+  rightAddPersons,
+  rightAddPerson,
+  allContactsList
 };

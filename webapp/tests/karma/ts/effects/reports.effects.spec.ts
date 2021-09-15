@@ -1,7 +1,7 @@
 import { provideMockActions } from '@ngrx/effects/testing';
 import { async, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
-import { Observable, of } from 'rxjs';
+import { concat, Observable, of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { Action } from '@ngrx/store';
@@ -137,6 +137,29 @@ describe('Reports effects', () => {
       expect(reportViewModelGeneratorService.get.args[0]).to.deep.equal(['myreport']);
       expect(setSelected.callCount).to.equal(1);
       expect(setSelected.args[0]).to.deep.equal([{ _id: 'myreport', model: 'yes' }]);
+      expect(unsetSelected.callCount).to.equal(0);
+    });
+
+    it('should set report when a new report is selected while still loading an initial report', async () => {
+      const setLoadingShowContent = sinon.stub(GlobalActions.prototype, 'setLoadingShowContent');
+      const setSelected = sinon.stub(ReportsActions.prototype, 'setSelected');
+      const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+      reportViewModelGeneratorService.get.onFirstCall().resolves({_id: 'reportID0', model: true});
+      reportViewModelGeneratorService.get.onSecondCall().resolves({_id: 'reportID1', model: true});
+
+      // Two report selection observables are emitted, one right after the other
+      actions$ = of(ReportActionList.selectReport({id: 'reportID0', silent: true}),
+        ReportActionList.selectReport({id: 'reportID1', silent: true}));
+      await effects.selectReport.toPromise();
+
+      expect(setLoadingShowContent.callCount).to.equal(0);
+
+      // The first action starts then gets canceled because the second starts
+      expect(reportViewModelGeneratorService.get.callCount).to.equal(2);
+      expect(reportViewModelGeneratorService.get.args).to.deep.equal([['reportID0'], ['reportID1']]);
+      expect(setSelected.callCount).to.equal(1);
+      expect(setSelected.args).to.deep.equal([[{_id: 'reportID1', model: true}]]);
+
       expect(unsetSelected.callCount).to.equal(0);
     });
 
@@ -822,23 +845,26 @@ describe('Reports effects', () => {
   });
 
   describe('verifyReport', () => {
+    let setFirstSelectedReportDocProperty;
+    let setFirstSelectedReportFormattedProperty;
+
     beforeEach(() => {
-      sinon
-        .stub(ReportsActions.prototype, 'setFirstSelectedReportDocProperty')
-        .callsFake(props => {
-          store
-            .select(Selectors.getSelectedReports)
-            .pipe(take(1))
-            .subscribe(selectedReports => {
-              selectedReports[0] = {
-                ...selectedReports[0],
-                doc: { ...selectedReports[0].doc, ...props },
-              };
-              store.overrideSelector(Selectors.getSelectedReports, selectedReports);
-              store.refreshState();
-            });
-        });
-      sinon.stub(ReportsActions.prototype, 'setFirstSelectedReportFormattedProperty');
+      setFirstSelectedReportDocProperty = sinon.stub(ReportsActions.prototype, 'setFirstSelectedReportDocProperty');
+      setFirstSelectedReportDocProperty.callsFake(props => {
+        store
+          .select(Selectors.getSelectedReports)
+          .pipe(take(1))
+          .subscribe(selectedReports => {
+            selectedReports[0] = {
+              ...selectedReports[0],
+              doc: { ...selectedReports[0].doc, ...props },
+            };
+            store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+            store.refreshState();
+          });
+      });
+      setFirstSelectedReportFormattedProperty = sinon
+        .stub(ReportsActions.prototype, 'setFirstSelectedReportFormattedProperty');
       sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
     });
 
@@ -883,6 +909,98 @@ describe('Reports effects', () => {
         verified: false,
         verified_date: 1000,
       }]);
+    }));
+
+    it('should allow selecting a different report while completing verification', fakeAsync(() => {
+      const selectedReports = [{
+        _id: 'report',
+        doc: {
+          _id: 'report',
+          _rev: 2,
+          contact: { _id: 'contact', name: 'name', parent: { _id: 'parent', type: 'clinic' } },
+        },
+      }];
+      authService.has.resolves(true);
+      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.refreshState();
+
+      sinon.stub(Date, 'now').returns(1000); // using faketimers breaks fakeAsync's tick :(
+      // Getting the report from the db causes a new report to be selected
+      dbService.get.callsFake(() => {
+        actions$ = concat(actions$, of(ReportActionList.selectReport({id: 'report1', silent: false})));
+        return Promise.resolve({ _id: 'report', _rev: 3 });
+      });
+      // Updating the report causes it to be re-selected
+      dbService.put.callsFake(() => {
+        actions$ = concat(actions$, of(ReportActionList.selectReport({id: 'report', silent: false})));
+      });
+
+      const setSelected = sinon.stub(ReportsActions.prototype, 'setSelected');
+      // Update the selected report when setSelected is called
+      setSelected.callsFake(data => {
+        const { _id } = data;
+        store.overrideSelector(Selectors.getSelectedReports, [{ _id }]);
+        store.refreshState();
+      });
+      reportViewModelGeneratorService.get.withArgs('report').resolves({_id: 'report', model: true});
+      reportViewModelGeneratorService.get.withArgs('report1').resolves({_id: 'report1', model: true});
+      reportViewModelGeneratorService.get.withArgs('report2').resolves({_id: 'report2', model: true});
+
+      // Assert that properties are only set on report (not report1 or report2)
+      setFirstSelectedReportDocProperty.callsFake(props => {
+        store
+          .select(Selectors.getSelectedReports)
+          .pipe(take(1))
+          .subscribe(selectedReports => {
+            expect(selectedReports[0]._id).to.equal('report');
+            selectedReports[0] = {
+              ...selectedReports[0],
+              doc: { ...selectedReports[0].doc, ...props },
+            };
+            store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+            store.refreshState();
+          });
+      });
+      setFirstSelectedReportFormattedProperty.callsFake(() => {
+        store
+          .select(Selectors.getSelectedReports)
+          .pipe(take(1))
+          .subscribe(selectedReports => {
+            expect(selectedReports[0]._id).to.equal('report');
+          });
+      });
+
+      // Trigger report verification
+      actions$ = of(ReportActionList.verifyReport(false));
+      effects.verifyReport.subscribe();
+      tick();
+
+      // Change the selected report before the re-selection from the verification has completed
+      actions$ = concat(actions$, of(ReportActionList.selectReport({id: 'report2', silent: false})));
+      effects.selectReport.subscribe();
+      tick();
+
+      expect(dbService.put.callCount).to.equal(1);
+      expect(dbService.put.args[0]).to.deep.equal([{
+        _id: 'report',
+        _rev: 3,
+        contact: { _id: 'contact', parent: { _id: 'parent' } },
+        verified: false,
+        verified_date: 1000,
+      }]);
+
+      // The first select action starts then gets canceled because the second starts
+      expect(reportViewModelGeneratorService.get.callCount).to.equal(3);
+      expect(reportViewModelGeneratorService.get.args).to.deep.equal([['report1'], ['report'], ['report2']]);
+      expect(setSelected.callCount).to.equal(1);
+      expect(setSelected.args).to.deep.equal([[{_id: 'report2', model: true}]]);
+
+      // Make sure we only end up setting the data we expect onto the report
+      expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(3);
+      expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).args[2]).to.deep.equal([{ _rev: 3 }]);
+      expect((<any>ReportsActions.prototype.setFirstSelectedReportFormattedProperty).callCount).to.equal(1);
+      expect((<any>ReportsActions.prototype.setFirstSelectedReportFormattedProperty).args[0]).to.deep.equal(
+        [{ oldVerified: undefined, verified: false }]);
     }));
 
     it('should launch modal with correct params on invalid', fakeAsync(() => {
