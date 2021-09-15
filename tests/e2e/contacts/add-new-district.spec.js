@@ -5,7 +5,6 @@ const utils = require('../../utils');
 
 describe('Add new district tests : ', () => {
   afterEach(utils.afterEach);
-  afterAll(utils.afterEach);
 
   it('should add new district with a new person', async () => {
     await commonElements.goToPeople();
