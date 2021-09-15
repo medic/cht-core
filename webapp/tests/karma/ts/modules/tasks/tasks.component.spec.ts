@@ -84,6 +84,7 @@ describe('TasksComponent', () => {
 
     const setTasksList = sinon.stub(TasksActions.prototype, 'setTasksList');
     const setTasksLoaded = sinon.stub(TasksActions.prototype, 'setTasksLoaded');
+    const clearTaskGroup = sinon.stub(TasksActions.prototype, 'clearTaskGroup');
     const spySubscriptionsUnsubscribe = sinon.spy(component.subscription, 'unsubscribe');
 
     component.ngOnDestroy();
@@ -93,6 +94,7 @@ describe('TasksComponent', () => {
     expect(setTasksList.args[0]).to.deep.equal([[]]);
     expect(setTasksLoaded.callCount).to.equal(1);
     expect(setTasksLoaded.args[0]).to.deep.equal([false]);
+    expect(clearTaskGroup.callCount).to.equal(1);
   });
 
   it('initial state before resolving tasks', async () => {
@@ -144,8 +146,8 @@ describe('TasksComponent', () => {
     const pastDate = now.clone().subtract(3, 'days');
     clock = sinon.useFakeTimers(now.valueOf());
     const taskDocs = [
-      { _id: '1', emission: { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD') }},
-      { _id: '2', emission: { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD') }},
+      { _id: '1', emission: { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD') }, owner: 'a' },
+      { _id: '2', emission: { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD') }, owner: 'b' },
     ];
     rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
 
@@ -159,8 +161,20 @@ describe('TasksComponent', () => {
     expect(component.hasTasks).to.be.true;
     expect(!!component.error).to.be.false;
     const expectedTasks = [
-      { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD'), overdue: false, date: new Date(futureDate.valueOf()) },
-      { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD'), overdue: true, date: new Date(pastDate.valueOf()) },
+      {
+        _id: 'e1',
+        dueDate: futureDate.format('YYYY-MM-DD'),
+        overdue: false,
+        date: new Date(futureDate.valueOf()),
+        owner: 'a',
+      },
+      {
+        _id: 'e2',
+        dueDate: pastDate.format('YYYY-MM-DD'),
+        overdue: true,
+        date: new Date(pastDate.valueOf()),
+        owner: 'b',
+      },
     ];
     expect((<any>TasksActions.prototype.setTasksList).args).to.deep.eq([[expectedTasks]]);
   });
@@ -255,4 +269,13 @@ describe('TasksComponent', () => {
     expect(telemetryService.record.args[1][0]).to.equal('tasks:refresh');
     expect((<any>TasksActions.prototype.setTasksLoaded).callCount).to.equal(1);
   }));
+
+  describe('listTrackBy', () => {
+    it('should return task id', () => {
+      expect(component.listTrackBy(10, { _id: 'aaa' })).to.equal('aaa');
+    });
+    it('should nullcheck', () => {
+      expect(component.listTrackBy(0, false)).to.equal(undefined);
+    });
+  });
 });

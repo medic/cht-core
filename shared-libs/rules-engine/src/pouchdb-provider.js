@@ -18,6 +18,7 @@ const docsOf = (query) => {
   });
 };
 
+const rowsOf = (query) => query.then(result => uniqBy(result.rows, 'id'));
 
 const medicPouchProvider = db => {
   const self = {
@@ -92,6 +93,20 @@ const medicPouchProvider = db => {
     tasksByRelation: (contactIds, prefix) => {
       const keys = contactIds.map(contactId => `${prefix}-${contactId}`);
       return docsOf(db.query('medic-client/tasks_by_contact', { keys, include_docs: true }));
+    },
+
+    allTaskRowsByOwner: (contactIds) => {
+      const keys = contactIds.map(contactId => (['owner', 'all', contactId]));
+      return rowsOf(db.query('medic-client/tasks_by_contact', { keys }));
+    },
+
+    allTaskRows: () => {
+      const options = {
+        startkey: ['owner', 'all'],
+        endkey: ['owner', 'all', '\ufff0'],
+      };
+
+      return rowsOf(db.query('medic-client/tasks_by_contact', options));
     },
 
     taskDataFor: (contactIds, userSettingsDoc) => {
