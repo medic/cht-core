@@ -16,7 +16,8 @@
     "chai": "^4.2.0",
     "cht-conf": "^3.7.0",
     "medic-conf-test-harness": "^2.1.2",
-    "mocha": "^8.3.2"
+    "mocha": "^8.3.2",
+    "rosie": "^2.1.0"
   },
   "dependencies": {}
 }
