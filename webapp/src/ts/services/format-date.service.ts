@@ -73,7 +73,7 @@ export class FormatDateService {
         return this.translateService.instant('task.overdue');
       }
 
-      return this.relativeDate(given, { suffix: true, humanize: true });
+      return this.translateService.instant('task.overdue.days', { DAYS: Math.abs(diff) });
     }
 
     if (diff <= this.config.taskDayLimit) {

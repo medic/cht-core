@@ -102,9 +102,28 @@ describe('Task list due dates', () => {
       { contactName: 'Bob', formTitle: 'person_create_2', dueDateText: '2 days left', overdue: false },
       { contactName: 'Bob', formTitle: 'person_create_1', dueDateText: '1 day left', overdue: false },
       { contactName: 'Bob', formTitle: 'person_create_0', dueDateText: 'Due today', overdue: true },
-      { contactName: 'Bob', formTitle: 'person_create_overdue_1', dueDateText: 'yesterday', overdue: true },
-      { contactName: 'Bob', formTitle: 'person_create_overdue_2', dueDateText: '2 days ago', overdue: true },
-      { contactName: 'Bob', formTitle: 'person_create_overdue_5', dueDateText: '5 days ago', overdue: true },
+      { contactName: 'Bob', formTitle: 'person_create_overdue_1', dueDateText: 'Due yesterday', overdue: true },
+      { contactName: 'Bob', formTitle: 'person_create_overdue_2', dueDateText: 'Due 2 days ago', overdue: true },
+      { contactName: 'Bob', formTitle: 'person_create_overdue_5', dueDateText: 'Due 5 days ago', overdue: true },
+    ]);
+  });
+
+  it('should display correct due dates with taskDaysOverdue setting and simple translation', async () => {
+    await utils.addTranslations('en', { 'task.overdue.days': 'Late' });
+    await updateSettings({ task_days_overdue: true });
+
+    await tasksPage.goToTasksTab();
+    const infos = await getTasksInfos(await tasksPage.getTasks());
+
+    chai.expect(infos).to.have.deep.members([
+      { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false },
+      { contactName: 'Bob', formTitle: 'person_create_5', dueDateText: '', overdue: false },
+      { contactName: 'Bob', formTitle: 'person_create_2', dueDateText: '2 days left', overdue: false },
+      { contactName: 'Bob', formTitle: 'person_create_1', dueDateText: '1 day left', overdue: false },
+      { contactName: 'Bob', formTitle: 'person_create_0', dueDateText: 'Due today', overdue: true },
+      { contactName: 'Bob', formTitle: 'person_create_overdue_1', dueDateText: 'Late', overdue: true },
+      { contactName: 'Bob', formTitle: 'person_create_overdue_2', dueDateText: 'Late', overdue: true },
+      { contactName: 'Bob', formTitle: 'person_create_overdue_5', dueDateText: 'Late', overdue: true },
     ]);
   });
 });
