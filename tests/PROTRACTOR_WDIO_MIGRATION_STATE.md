@@ -20,9 +20,9 @@
 |e2e/navigation/hamburger-menu.js	|	|	|	|	|
 |e2e/release/cht-config/contact-create.specs.js	|	|	|	|	|
 |e2e/release/cht-config/contact-edit.specs.js	|	|	|	|	|
-|e2e/transitions/message_duplicates.spec.js	|	|	|	|	|
-|e2e/transitions/public_form_transitions.spec.js	|	|	|	|	|
-|e2e/transitions/sms_workflows.spec.js	|	|	|	|	|
+|e2e/transitions/message_duplicates.spec.js	|Done	|	Bede|https://github.com/medic/cht-core/pull/7316	| Does not need browser	|
+|e2e/transitions/public_form_transitions.spec.js	|Done	|	Bede|https://github.com/medic/cht-core/pull/7316	| Does not need browser	|
+|e2e/transitions/sms_workflows.spec.js	|Done	|	Bede|https://github.com/medic/cht-core/pull/7316	| Does not need browser	|
 |e2e/translations/incorrect-locale.spec.js	|	|	|	|	|
 |e2e/translations/new-language.spec.js	|	|	|	|	|
 |e2e/africas-talking.js	|	|	|	|	|
