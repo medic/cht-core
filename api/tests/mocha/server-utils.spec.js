@@ -12,7 +12,8 @@ const res = {
   end: () => {},
   json: () => {},
   redirect: () => {},
-  status: () => {}
+  status: () => {},
+  setHeader: () => {},
 };
 
 let originalDb;
@@ -46,9 +47,14 @@ describe('Server utils', () => {
     });
 
     it('calls notLoggedIn when given 401 error', () => {
-      const notLoggedIn = sinon.stub(serverUtils, 'notLoggedIn');
+      sinon.stub(serverUtils, 'notLoggedIn');
+      sinon.spy(serverUtils, 'serverError');
+      sinon.stub(res, 'end');
       serverUtils.error({ code: 401 }, req, res);
-      chai.expect(notLoggedIn.callCount).to.equal(1);
+      chai.expect(serverUtils.notLoggedIn.callCount).to.equal(1);
+      chai.expect(serverUtils.notLoggedIn.args[0]).to.deep.equal([req, res, undefined]);
+      chai.expect(serverUtils.serverError.callCount).to.equal(0);
+      chai.expect(res.end.callCount).to.equal(0);
     });
 
     it('function handles 503 errors - #3821', () => {
@@ -132,33 +138,44 @@ describe('Server utils', () => {
 
     it('redirects to login page for human user', () => {
       const redirect = sinon.stub(res, 'redirect');
+      sinon.stub(res, 'setHeader');
       req.url = 'someurl';
       req.headers = { 'user-agent': 'Mozilla/1.0' };
       serverUtils.notLoggedIn(req, res);
       chai.expect(redirect.callCount).to.equal(1);
       chai.expect(redirect.args[0][0]).to.equal(302);
       chai.expect(redirect.args[0][1]).to.equal('/medic/login?redirect=someurl');
+      chai.expect(res.setHeader.callCount).to.equal(1);
+      chai.expect(res.setHeader.args[0]).to.deep.equal(['logout-authorization', 'CHT-Core API']);
     });
 
     it('returns 401 for medic-collect', () => {
       const writeHead = sinon.stub(res, 'writeHead');
+      sinon.stub(res, 'setHeader');
       req.url = 'someurl';
       req.headers = { 'user-agent': null };
       serverUtils.notLoggedIn(req, res);
       chai.expect(writeHead.callCount).to.equal(1);
       chai.expect(writeHead.args[0][0]).to.equal(401);
+
+      chai.expect(res.setHeader.callCount).to.equal(1);
+      chai.expect(res.setHeader.args[0]).to.deep.equal(['logout-authorization', 'CHT-Core API']);
     });
 
     it('shows prompt if requested', () => {
       const writeHead = sinon.stub(res, 'writeHead');
+      sinon.stub(res, 'setHeader');
       const end = sinon.stub(res, 'end');
       serverUtils.notLoggedIn(req, res, true);
       chai.expect(writeHead.callCount).to.equal(1);
       chai.expect(writeHead.args[0][0]).to.equal(401);
       chai.expect(writeHead.args[0][1]['Content-Type']).to.equal('text/plain');
-      chai.expect(writeHead.args[0][1]['WWW-Authenticate']).to.equal('Basic realm="Medic Mobile Web Services"');
+      chai.expect(writeHead.args[0][1]['WWW-Authenticate']).to.equal('Basic realm="Medic Web Services"');
       chai.expect(end.callCount).to.equal(1);
       chai.expect(end.args[0][0]).to.equal('not logged in');
+
+      chai.expect(res.setHeader.callCount).to.equal(1);
+      chai.expect(res.setHeader.args[0]).to.deep.equal(['logout-authorization', 'CHT-Core API']);
     });
 
     it('responds with JSON if requested', () => {
@@ -166,6 +183,7 @@ describe('Server utils', () => {
       const json = sinon.stub(res, 'json');
       const get = sinon.stub(req, 'get');
       get.returns('application/json');
+      sinon.stub(res, 'setHeader');
       serverUtils.notLoggedIn(req, res);
       chai.expect(get.callCount).to.equal(1);
       chai.expect(get.args[0][0]).to.equal('Accept');
@@ -174,6 +192,9 @@ describe('Server utils', () => {
       chai.expect(json.callCount).to.equal(1);
       chai.expect(json.args[0][0].error).to.equal('unauthorized');
       chai.expect(json.args[0][0].code).to.equal(401);
+
+      chai.expect(res.setHeader.callCount).to.equal(1);
+      chai.expect(res.setHeader.args[0]).to.deep.equal(['logout-authorization', 'CHT-Core API']);
     });
 
   });

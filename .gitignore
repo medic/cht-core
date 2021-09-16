@@ -31,5 +31,11 @@ config/*/backups/*
 config/*/json_docs/*
 config/*/upload-docs.*
 config/*/users.csv
+config/*/forms/contact/*.xlsx
+!config/*/forms/contact/PLACE_TYPE-create.xlsx
+!config/*/forms/contact/PLACE_TYPE-edit.xlsx
+!config/*/forms/contact/person-create.xlsx
+!config/*/forms/contact/person-edit.xlsx
 /**/*/.snapshots/local.json
+tests/integration/results/
 allure*

@@ -3,7 +3,6 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store, select } from '@ngrx/store';
 import { of } from 'rxjs';
 import { exhaustMap, withLatestFrom } from 'rxjs/operators';
-import { TranslateService } from '@ngx-translate/core';
 
 import { Actions as ContactActionList, ContactsActions } from '@mm-actions/contacts';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
@@ -13,6 +12,7 @@ import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Injectable()
 export class ContactsEffects {
@@ -59,12 +59,16 @@ export class ContactsEffects {
 
         const loadContact = this
           .loadContact(id)
-          .then(() => this.loadChildren(userFacilityId))
-          .then(() => this.loadReports(forms))
-          .then(() => this.loadTargetDoc())
-          .then(() => this.loadContactSummary())
-          .then(() => this.loadTasks())
+          .then(() => this.loadChildren(id, userFacilityId))
+          .then(() => this.loadReports(id, forms))
+          .then(() => this.loadTargetDoc(id))
+          .then(() => this.loadContactSummary(id))
+          .then(() => this.loadTasks(id))
           .catch(err => {
+            // If the selected contact has changed, just stop loading this one
+            if (err.code === 'SELECTED_CONTACT_CHANGED') {
+              return of();
+            }
             if (err.code === 404 && !silent) {
               this.globalActions.setSnackbarContent(this.translateService.instant('error.404.title'));
             }
@@ -96,46 +100,62 @@ export class ContactsEffects {
       });
   }
 
-  private loadChildren(userFacilityId) {
-    const getChildPlaces = userFacilityId !== this.selectedContact?._id;
+  private verifySelectedContactNotChanged(id) {
+    return this.selectedContact?._id !== id ? Promise.reject({code: 'SELECTED_CONTACT_CHANGED'}) : Promise.resolve();
+  }
+
+  private loadChildren(contactId, userFacilityId) {
+    const getChildPlaces = userFacilityId !== contactId;
     return this.contactViewModelGeneratorService
-      .loadChildren(this.selectedContact, { getChildPlaces })
+      .loadChildren(this.selectedContact, {getChildPlaces})
       .then(children => {
-        this.contactsActions.receiveSelectedContactChildren(children);
+        return this
+          .verifySelectedContactNotChanged(contactId)
+          .then(() => this.contactsActions.receiveSelectedContactChildren(children));
       });
   }
 
-  private loadReports(forms) {
+  private loadReports(contactId, forms) {
     return this.contactViewModelGeneratorService
       .loadReports(this.selectedContact, forms)
       .then(reports => {
-        return this.contactsActions.receiveSelectedContactReports(reports);
+        return this
+          .verifySelectedContactNotChanged(contactId)
+          .then(() => this.contactsActions.receiveSelectedContactReports(reports));
       });
   }
 
-  private loadTargetDoc() {
+  private loadTargetDoc(contactId) {
     return this.targetAggregateService
       .getCurrentTargetDoc(this.selectedContact)
       .then(targetDoc => {
-        this.contactsActions.receiveSelectedContactTargetDoc(targetDoc);
+        return this
+          .verifySelectedContactNotChanged(contactId)
+          .then(() => this.contactsActions.receiveSelectedContactTargetDoc(targetDoc));
       });
   }
 
-  private loadTasks() {
+  private loadTasks(contactId) {
     return this.tasksForContactService
       .get(this.selectedContact)
       .then(tasks => {
-        this.contactsActions.updateSelectedContactsTasks(tasks);
+        return this
+          .verifySelectedContactNotChanged(contactId)
+          .then(() => this.contactsActions.updateSelectedContactsTasks(tasks));
       });
   }
 
-  private loadContactSummary() {
+  private loadContactSummary(contactId) {
     const selected = this.selectedContact;
     return this.contactSummaryService
       .get(selected.doc, selected.reports, selected.lineage, selected.targetDoc)
       .then(summary => {
-        this.contactsActions.setContactsLoadingSummary(false);
-        return this.contactsActions.updateSelectedContactSummary(summary);
+        return this
+          .verifySelectedContactNotChanged(contactId)
+          .then(() => {
+            this.contactsActions.setContactsLoadingSummary(false);
+            return this.contactsActions.updateSelectedContactSummary(summary);
+          });
       });
   }
 }

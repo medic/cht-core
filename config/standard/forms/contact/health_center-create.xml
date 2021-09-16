@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>New Health Center</h:title>
     <model>
@@ -1131,7 +1131,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:health_center:create" prefix="J1!contact:health_center:create!" version="2019-03-03_08-22">
+        <data id="contact:health_center:create" prefix="J1!contact:health_center:create!" delimiter="#" version="2019-03-03_08-22">
           <inputs>
             <meta>
               <location>
@@ -1200,42 +1200,42 @@
       <bind nodeset="/data/inputs/user/contact_id" type="string"/>
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
       <bind nodeset="/data/inputs/user/name" type="string"/>
-      <bind nodeset="/data/init/create_new_person" required="true()" type="select1"/>
-      <bind nodeset="/data/init/select_person" relevant="selected( /data/init/create_new_person ,'old_person')" required="true()" type="db:person"/>
+      <bind nodeset="/data/init/create_new_person" type="select1" required="true()"/>
+      <bind nodeset="/data/init/select_person" type="db:person" required="true()" relevant="selected( /data/init/create_new_person ,'old_person')"/>
       <bind nodeset="/data/init/name" type="string"/>
-      <bind calculate="coalesce(../name, ../../contact/name)" nodeset="/data/init/contact_name" type="string"/>
-      <bind nodeset="/data/init/custom_place_name" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/health_center/is_name_generated , 'false') or selected( /data/health_center/is_name_generated , 'no')" required="true()" type="string"/>
+      <bind nodeset="/data/init/contact_name" type="string" calculate="coalesce(../name, ../../contact/name)"/>
+      <bind nodeset="/data/init/custom_place_name" type="string" required="true()" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/health_center/is_name_generated , 'false') or selected( /data/health_center/is_name_generated , 'no')"/>
       <bind nodeset="/data/init/place_type" type="select1"/>
-      <bind calculate="jr:choice-name( /data/init/place_type ,' /data/init/place_type ')" nodeset="/data/init/place_type_translation" type="string"/>
+      <bind nodeset="/data/init/place_type_translation" type="string" calculate="jr:choice-name( /data/init/place_type ,' /data/init/place_type ')"/>
       <bind nodeset="/data/init/generated_name" type="select1"/>
-      <bind calculate="jr:choice-name( /data/init/generated_name ,' /data/init/generated_name ')" nodeset="/data/init/generated_name_translation" type="string"/>
+      <bind nodeset="/data/init/generated_name_translation" type="string" calculate="jr:choice-name( /data/init/generated_name ,' /data/init/generated_name ')"/>
       <bind nodeset="/data/contact" relevant="selected( /data/init/create_new_person ,'new_person')"/>
       <bind nodeset="/data/contact/parent" type="string"/>
       <bind nodeset="/data/contact/type" type="string"/>
-      <bind nodeset="/data/contact/name" required="true()" type="string"/>
-      <bind constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" nodeset="/data/contact/phone" type="tel"/>
-      <bind constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" nodeset="/data/contact/phone_alternate" type="tel"/>
+      <bind nodeset="/data/contact/name" type="string" required="true()"/>
+      <bind nodeset="/data/contact/phone" type="tel" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" constraint="true()"/>
+      <bind nodeset="/data/contact/phone_alternate" type="tel" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" constraint="true()"/>
       <bind nodeset="/data/contact/role" type="select1"/>
-      <bind nodeset="/data/contact/role_other" relevant="selected(  /data/contact/role ,'other')" required="true()" type="string"/>
+      <bind nodeset="/data/contact/role_other" type="string" required="true()" relevant="selected(  /data/contact/role ,'other')"/>
       <bind nodeset="/data/contact/external_id" type="string"/>
       <bind nodeset="/data/contact/notes" type="string"/>
-      <bind calculate="../../../inputs/user/name" nodeset="/data/contact/meta/created_by" type="string"/>
-      <bind calculate="../../../inputs/user/contact_id" nodeset="/data/contact/meta/created_by_person_uuid" type="string"/>
-      <bind calculate="../../../inputs/user/facility_id" nodeset="/data/contact/meta/created_by_place_uuid" type="string"/>
+      <bind nodeset="/data/contact/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
+      <bind nodeset="/data/contact/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
+      <bind nodeset="/data/contact/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
       <bind nodeset="/data/health_center/parent" type="string"/>
       <bind nodeset="/data/health_center/type" type="string"/>
-      <bind nodeset="/data/health_center/is_name_generated" relevant="not(selected( /data/init/create_new_person ,'none'))" required="true()" type="select1"/>
-      <bind calculate="if( ( selected( /data/health_center/is_name_generated , 'true') or selected( /data/health_center/is_name_generated , 'yes') ),  /data/init/generated_name_translation ,  /data/init/custom_place_name )" nodeset="/data/health_center/name" required="true()" type="string"/>
+      <bind nodeset="/data/health_center/is_name_generated" type="select1" required="true()" relevant="not(selected( /data/init/create_new_person ,'none'))"/>
+      <bind nodeset="/data/health_center/name" type="string" calculate="if( ( selected( /data/health_center/is_name_generated , 'true') or selected( /data/health_center/is_name_generated , 'yes') ),  /data/init/generated_name_translation ,  /data/init/custom_place_name )" required="true()"/>
       <bind nodeset="/data/health_center/external_id" type="string"/>
-      <bind nodeset="/data/health_center/use_cases" relevant="../type = 'health_center'" type="select"/>
-      <bind nodeset="/data/health_center/vaccines" relevant="../type = 'health_center' and selected( /data/health_center/use_cases ,'imm')" type="select"/>
+      <bind nodeset="/data/health_center/use_cases" type="select" relevant="../type = 'health_center'"/>
+      <bind nodeset="/data/health_center/vaccines" type="select" relevant="../type = 'health_center' and selected( /data/health_center/use_cases ,'imm')"/>
       <bind nodeset="/data/health_center/notes" type="string"/>
-      <bind calculate="if(selected( /data/init/create_new_person ,'none'), &quot;&quot;, coalesce( /data/init/select_person ,&quot;NEW&quot;))" nodeset="/data/health_center/contact" type="string"/>
-      <bind calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))" nodeset="/data/health_center/geolocation" type="string"/>
-      <bind calculate="../../../inputs/user/name" nodeset="/data/health_center/meta/created_by" type="string"/>
-      <bind calculate="../../../inputs/user/contact_id" nodeset="/data/health_center/meta/created_by_person_uuid" type="string"/>
-      <bind calculate="../../../inputs/user/facility_id" nodeset="/data/health_center/meta/created_by_place_uuid" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/data/health_center/contact" type="string" calculate="if(selected( /data/init/create_new_person ,'none'), &quot;&quot;, coalesce( /data/init/select_person ,&quot;NEW&quot;))"/>
+      <bind nodeset="/data/health_center/geolocation" type="string" calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))"/>
+      <bind nodeset="/data/health_center/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
+      <bind nodeset="/data/health_center/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
+      <bind nodeset="/data/health_center/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">

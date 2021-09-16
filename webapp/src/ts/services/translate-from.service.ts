@@ -18,13 +18,13 @@
  */
 import * as _ from 'lodash-es';
 import { Injectable } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateService as NgxTranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TranslateFromService {
-  constructor(private translateService:TranslateService) {
+  constructor(private ngxTranslateService:NgxTranslateService) {
   }
 
   private getLabel(labels, locale) {
@@ -55,7 +55,7 @@ export class TranslateFromService {
     if (!labels) {
       return;
     }
-    const label = this.getLabel(labels, this.translateService.currentLang);
+    const label = this.getLabel(labels, this.ngxTranslateService.currentLang);
     if (!scope || !label || label.indexOf('{{') === -1) {
       return label;
     }

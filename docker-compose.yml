@@ -1,5 +1,8 @@
 version: '3.7'
 
+# For more information on how to use this docker compose file see our docs page:
+#   https://docs.communityhealthtoolkit.org/apps/guides/hosting/self-hosting/
+
 services:
   medic-os:
     container_name: medic-os
@@ -7,8 +10,8 @@ services:
     volumes:
       - medic-data:/srv
     ports:
-     - 80:80
-     - 443:443
+      - "${CHT_HTTP:-80}:80"
+      - "${CHT_HTTPS:-443}:443"
     working_dir: /srv
     depends_on:
       - haproxy
@@ -16,7 +19,7 @@ services:
       - medic-net
     environment:
       - DOCKER_NETWORK_NAME=haproxy
-      - DOCKER_COUCHDB_ADMIN_PASSWORD=password
+      - DOCKER_COUCHDB_ADMIN_PASSWORD=${DOCKER_COUCHDB_ADMIN_PASSWORD:-password}
 
   haproxy:
     container_name: haproxy
@@ -25,7 +28,7 @@ services:
       - medic-data:/srv
     environment:
       - COUCHDB_HOST=medic-os
-      - HA_PASSWORD=password
+      - HA_PASSWORD=${DOCKER_COUCHDB_ADMIN_PASSWORD:-password}
     networks:
       - medic-net
 

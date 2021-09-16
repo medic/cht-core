@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { isEqual as _isEqual } from 'lodash-es';
 
@@ -16,6 +15,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { EnketoService } from '@mm-services/enketo.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 
 @Component({
@@ -114,7 +114,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       };
       this.globalActions.setCancelCallback(cancelCallback.bind({}, this.router, this.routeSnapshot));
     } else {
-      this.globalActions.clearCancelCallback();
+      this.globalActions.clearNavigation();
     }
   }
 
@@ -242,7 +242,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     // for Angular behavior
     // see https://github.com/medic/cht-core/issues/2198#issuecomment-210202785 for AngularJS behavior
     this.enketoService.unload(this.form);
-    this.globalActions.clearCancelCallback();
+    this.globalActions.clearNavigation();
+    this.globalActions.clearEnketoStatus();
   }
 
   private getSelected() {
@@ -316,7 +317,6 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
         console.error('Error submitting form data: ', err);
         this.translateService
           .get('error.report.save')
-          .toPromise()
           .then(msg => {
             this.globalActions.setEnketoError(msg);
           });

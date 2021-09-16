@@ -24,12 +24,23 @@ describe('Auth', () => {
 
     it('returns error when not logged in', () => {
       environment.serverUrl = 'http://abc.com';
-      const get = sinon.stub(request, 'get').resolves();
+      const get = sinon.stub(request, 'get').rejects({ statusCode: 401 });
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0].url).to.equal('http://abc.com/_session');
         chai.expect(err.message).to.equal('Not logged in');
         chai.expect(err.code).to.equal(401);
+      });
+    });
+
+    it('returns error with incomplete session', () => {
+      environment.serverUrl = 'http://abc.com';
+      const get = sinon.stub(request, 'get').resolves();
+      return auth.check({ }).catch(err => {
+        chai.expect(get.callCount).to.equal(1);
+        chai.expect(get.args[0][0].url).to.equal('http://abc.com/_session');
+        chai.expect(err.message).to.equal('Failed to authenticate');
+        chai.expect(err.code).to.equal(500);
       });
     });
 
@@ -38,19 +49,18 @@ describe('Auth', () => {
       const get = sinon.stub(request, 'get').resolves({ roles: [] });
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
-        chai.expect(err.message).to.equal('Not logged in');
-        chai.expect(err.code).to.equal(401);
+        chai.expect(err.message).to.equal('Failed to authenticate');
+        chai.expect(err.code).to.equal(500);
       });
     });
 
     it('returns error when request errors', () => {
       environment.serverUrl = 'http://abc.com';
-      const get = sinon.stub(request, 'get').rejects('boom');
+      const get = sinon.stub(request, 'get').rejects({ error: 'boom' });
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0].url).to.equal('http://abc.com/_session');
-        chai.expect(err.message).to.equal('Not logged in');
-        chai.expect(err.code).to.equal(401);
+        chai.expect(err).to.deep.equal({ error: 'boom' });
       });
     });
 
@@ -164,35 +174,75 @@ describe('Auth', () => {
 
   });
 
+  describe('hasOnlineRole', () => {
+    it('should return false with bad params', () => {
+      chai.expect(auth.hasOnlineRole()).to.equal(false);
+      chai.expect(auth.hasOnlineRole(false)).to.equal(false);
+      chai.expect(auth.hasOnlineRole(undefined)).to.equal(false);
+      chai.expect(auth.hasOnlineRole('string')).to.equal(false);
+      chai.expect(auth.hasOnlineRole({ ob: 'ject' })).to.equal(false);
+      chai.expect(auth.hasOnlineRole([])).to.equal(false);
+    });
+
+    it('should return false when no online role was found', () => {
+      const scenarios = [
+        ['some_role'],
+        ['one_role', 'district_manager', 'admin'],
+        ['one_role', 'not_district_admin', 'not_admin'],
+      ];
+      scenarios.forEach(roles => {
+        const message = `hasOnlineRole failed for ${roles}`;
+        chai.expect(auth.hasOnlineRole(roles)).to.equal(false, message);
+      });
+    });
+
+    it('should return true when online role is found', () => {
+      const scenarios = [
+        ['_admin'],
+        ['_admin', 'other_role'],
+        ['chw', '_admin'],
+        ['not_chw', 'national_admin'],
+        ['random', 'national_admin'],
+        ['national_admin'],
+        ['mm-online'],
+        ['mm-online', 'other'],
+        ['not-mm-online', 'mm-online'],
+      ];
+      scenarios.forEach(roles => {
+        const message = `hasOnlineRole failed for ${roles}`;
+        chai.expect(auth.hasOnlineRole(roles)).to.equal(true, message);
+      });
+    });
+  });
+
   describe('isOnlineOnly', () => {
 
     it('checks for "admin" role', () => {
       chai.expect(auth.isOnlineOnly({ roles: ['_admin'] })).to.equal(true);
+      chai.expect(auth.isOnlineOnly({ roles: ['_admin', 'some_role'] })).to.equal(true);
     });
 
     it('checks "national_admin" role', () => {
       chai.expect(auth.isOnlineOnly({ roles: ['national_admin'] })).to.equal(true);
+      chai.expect(auth.isOnlineOnly({ roles: ['national_admin', 'chw'] })).to.equal(true);
     });
 
-    it('checks for "admin" and "national_admin" roles', () => {
-      sinon.stub(config, 'get').withArgs('roles').returns({
-        district_admin: { offline: true }
-      });
+    it('should check for "mm-online" role', () => {
+      chai.expect(auth.isOnlineOnly({ roles: ['mm-online'] })).to.equal(true);
+      chai.expect(auth.isOnlineOnly({ roles: ['mm-online', 'offline'] })).to.equal(true);
+    });
+
+    it('should return false for non-admin roles', () => {
+      sinon.stub(config, 'get');
+
       chai.expect(auth.isOnlineOnly({ roles: ['district_admin'] })).to.equal(false);
-    });
-
-    it('should check configured roles', () => {
-      sinon.stub(config, 'get').withArgs('roles').returns({
-        roleA: { offline: true },
-        roleB: { offline: false },
-        roleC: { }
-      });
-
       chai.expect(auth.isOnlineOnly({ roles: ['roleA'] })).to.equal(false);
       chai.expect(auth.isOnlineOnly({ roles: ['roleA', 'roleB'] })).to.equal(false);
       chai.expect(auth.isOnlineOnly({ roles: ['roleA', 'roleB', 'roleC'] })).to.equal(false);
-      chai.expect(auth.isOnlineOnly({ roles: ['roleB', 'roleC'] })).to.equal(true);
-      chai.expect(auth.isOnlineOnly({ roles: ['roleB'] })).to.equal(true);
+      chai.expect(auth.isOnlineOnly({ roles: ['roleB', 'roleC'] })).to.equal(false);
+      chai.expect(auth.isOnlineOnly({ roles: ['roleB'] })).to.equal(false);
+
+      chai.expect(config.get.callCount).to.equal(0);
     });
 
   });
@@ -205,7 +255,7 @@ describe('Auth', () => {
       chai.expect(auth.isOffline(['role1', 'role2'])).to.equal(true);
     });
 
-    it('should return true when at least one role is offline', () => {
+    it('should return true when at least one role is offline and no mm-online role', () => {
       sinon.stub(config, 'get').withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
       chai.expect(auth.isOffline(['roleA'])).to.equal(true);
       chai.expect(auth.isOffline(['roleA', 'random'])).to.equal(true);

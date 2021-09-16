@@ -9,9 +9,7 @@ import {
   AfterViewChecked
 } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { from } from 'rxjs';
 import { flatten as _flatten, sortBy as _sortBy } from 'lodash-es';
-import { TranslateService } from '@ngx-translate/core';
 
 import { GlobalActions } from '@mm-actions/global';
 import {
@@ -21,6 +19,7 @@ import {
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 import { SessionService } from '@mm-services/session.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Component({
   selector: 'mm-facility-filter',
@@ -173,7 +172,7 @@ export class FacilityFilterComponent implements OnInit, AbstractFilter, AfterVie
 
   itemLabel(facility) {
     if (facility.doc && facility.doc.name) {
-      return from([facility.doc.name]);
+      return Promise.resolve(facility.doc.name);
     }
 
     return this.translateService.get(this.isOnlineOnly ? 'place.deleted' : 'place.unavailable');

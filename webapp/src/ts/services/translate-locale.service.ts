@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateService as NgxTranslateService } from '@ngx-translate/core';
 import { map, take, shareReplay } from 'rxjs/operators';
 
 @Injectable({
@@ -7,14 +7,14 @@ import { map, take, shareReplay } from 'rxjs/operators';
 })
 export class TranslateLocaleService {
   constructor(
-    private translateService:TranslateService,
+    private ngxTranslateService:NgxTranslateService,
   ) {
   }
 
   private loadingTranslations = {};
 
   private loadTranslations(locale) {
-    return this.translateService
+    return this.ngxTranslateService
       .currentLoader
       .getTranslation(locale)
       .pipe(
@@ -24,7 +24,7 @@ export class TranslateLocaleService {
   }
 
   private getTranslation(locale) {
-    if (this.translateService.translations[locale]) {
+    if (this.ngxTranslateService.translations[locale]) {
       return;
     }
 
@@ -35,13 +35,13 @@ export class TranslateLocaleService {
     const loadingTranslations = this.loadTranslations(locale);
     const translationsCompiled = loadingTranslations
       .pipe(
-        map((res) => this.translateService.compiler.compileTranslations(res, locale)),
+        map((res) => this.ngxTranslateService.compiler.compileTranslations(res, locale)),
         shareReplay(1),
         take(1),
       );
     translationsCompiled.subscribe((res) => {
-      this.translateService.translations[locale] = res;
-      this.translateService.addLangs(Object.keys(this.translateService.translations));
+      this.ngxTranslateService.translations[locale] = res;
+      this.ngxTranslateService.addLangs(Object.keys(this.ngxTranslateService.translations));
       delete this.loadingTranslations[locale];
     });
     this.loadingTranslations[locale] = translationsCompiled;
@@ -53,21 +53,21 @@ export class TranslateLocaleService {
     this.getTranslation(locale);
 
     if (skipInterpolation) {
-      return this.translateService.translations[locale] && this.translateService.translations[locale][key];
+      return this.ngxTranslateService.translations[locale] && this.ngxTranslateService.translations[locale][key];
     }
 
-    return this.translateService.getParsedResult(this.translateService.translations[locale], key, params);
+    return this.ngxTranslateService.getParsedResult(this.ngxTranslateService.translations[locale], key, params);
   }
 
   reloadLang(locale, hotReload = false) {
-    if (!this.translateService.translations[locale]) {
+    if (!this.ngxTranslateService.translations[locale]) {
       // don't "reload" languages we haven't already loaded
       return;
     }
 
     if (!hotReload) {
       // reloading "secondary" languages
-      this.translateService.resetLang(locale);
+      this.ngxTranslateService.resetLang(locale);
       this.getTranslation(locale);
       return;
     }
@@ -77,7 +77,7 @@ export class TranslateLocaleService {
     // the 2nd method (set) is a poorer choice, as it requires setting a translation key + value
     // https://github.com/ngx-translate/core/issues/874
     this.loadTranslations(locale).subscribe(rawTranslations => {
-      this.translateService.setTranslation(locale, rawTranslations);
+      this.ngxTranslateService.setTranslation(locale, rawTranslations);
     });
   }
 }

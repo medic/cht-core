@@ -12,7 +12,6 @@ import { ContactsActions } from '@mm-actions/contacts';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
-import { TranslateService } from '@ngx-translate/core';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted.component';
@@ -22,6 +21,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { SessionService } from '@mm-services/session.service';
+import { TranslateService } from '@mm-services/translate.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 
@@ -45,8 +45,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   reportsTimeWindowMonths;
   tasksTimeWindowWeeks;
   userSettings;
-  settings;
-  childTypesBySelectedContact = [];
+  private settings;
+  private childTypesBySelectedContact = [];
+  private filters;
   canDeleteContact = false; // this disables the "Delete" button until children load
 
   filteredTasks = [];
@@ -99,7 +100,12 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.store.select(Selectors.getUserFacilityId)
       .pipe(first(id => id !== null))
       .subscribe((userFacilityId) => {
-        if (userFacilityId && !this.route.snapshot.params.id && !this.responsiveService.isMobile()) {
+        const shouldDisplayHomePlace = userFacilityId &&
+          !this.filters?.search &&
+          !this.route.snapshot.params.id &&
+          !this.responsiveService.isMobile();
+
+        if (shouldDisplayHomePlace) {
           this.contactsActions.selectContact(userFacilityId);
         }
       });
@@ -112,12 +118,14 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getLoadingSelectedContactReports),
       this.store.select(Selectors.getContactsLoadingSummary),
+      this.store.select(Selectors.getFilters),
     ).subscribe(([
       selectedContact,
       forms,
       loadingContent,
       loadingSelectedContactReports,
       contactsLoadingSummary,
+      filters,
     ]) => {
       if (this.selectedContact?._id !== selectedContact?._id) {
         // reset view when selected contact changes
@@ -128,6 +136,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       this.forms = forms;
       this.loadingSelectedContactReports = loadingSelectedContactReports;
       this.contactsLoadingSummary = contactsLoadingSummary;
+      this.filters = filters;
     });
     this.subscription.add(reduxSubscription);
 
@@ -185,7 +194,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     const routeSubscription =  this.route.params.subscribe((params) => {
       if (params.id) {
         this.contactsActions.selectContact(this.route.snapshot.params.id);
-        this.globalActions.clearCancelCallback();
+        this.globalActions.clearNavigation();
 
         $('.tooltip').remove();
       } else {

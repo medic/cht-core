@@ -100,7 +100,7 @@ describe('Reports Content Component', () => {
     it('should react correctly when route has id param', () => {
       const callback = activatedRoute.params.subscribe.args[0][0];
       const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
-      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
+      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearNavigation');
       const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
       activatedRoute.snapshot.params = { id: 'someID' };
 
@@ -114,7 +114,7 @@ describe('Reports Content Component', () => {
     it('should react correctly when route does not have id param', () => {
       const callback = activatedRoute.params.subscribe.args[0][0];
       const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
-      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
+      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearNavigation');
       const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
       activatedRoute.snapshot.params = { id: 'someID' };
 
@@ -164,12 +164,29 @@ describe('Reports Content Component', () => {
       expect(removeSelectedReport.args[0]).to.deep.equal(['reportID']);
     });
 
-    it('callback should handle report updates', () => {
+    it('callback should handle report updates when not routing to any report', () => {
       const callback = changesService.subscribe.args[0][0].callback;
       const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
       callback({ id: 'reportID' });
       expect(selectReport.callCount).to.equal(1);
       expect(selectReport.args[0]).to.deep.equal([ 'reportID', { silent: true } ]);
+    });
+
+    it('callback should handle report updates when routing to updated report', () => {
+      activatedRoute.snapshot.params = { id: 'reportID' };
+      const callback = changesService.subscribe.args[0][0].callback;
+      const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
+      callback({ id: 'reportID' });
+      expect(selectReport.callCount).to.equal(1);
+      expect(selectReport.args[0]).to.deep.equal([ 'reportID', { silent: true } ]);
+    });
+
+    it('callback should ignore report updates when routing to different report', () => {
+      activatedRoute.snapshot.params = { id: 'differentReportID' };
+      const callback = changesService.subscribe.args[0][0].callback;
+      const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
+      callback({ id: 'reportID' });
+      expect(selectReport.callCount).to.equal(0);
     });
   });
 

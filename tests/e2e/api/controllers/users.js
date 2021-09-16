@@ -49,7 +49,7 @@ describe('Users API', () => {
 
     ];
 
-    beforeAll(() =>
+    before(() =>
       utils.request({
         path: '/_users',
         method: 'POST',
@@ -95,7 +95,7 @@ describe('Users API', () => {
           req.end();
         })));
 
-    afterAll(() =>
+    after(() =>
       utils.request(`/_users/${getUserId(username)}`)
         .then(({_rev}) => utils.request({
           path: `/_users/${getUserId(username)}`,
@@ -106,7 +106,7 @@ describe('Users API', () => {
             _deleted: true
           }
         }))
-        .then(() => utils.revertDb()));
+        .then(() => utils.revertDb([], true)));
 
     it('Allows for admin users to modify someone', () =>
       utils.request({
@@ -316,7 +316,22 @@ describe('Users API', () => {
           name: 'OnlineUser'
         },
         roles: ['national_admin']
-      }
+      },
+      {
+        username: 'offlineonline',
+        password: password,
+        place: {
+          _id: 'fixture:offlineonline',
+          type: 'health_center',
+          name: 'Online place',
+          parent: 'PARENT_PLACE'
+        },
+        contact: {
+          _id: 'fixture:user:offlineonline',
+          name: 'OnlineUser'
+        },
+        roles: ['district_admin', 'mm-online']
+      },
     ];
 
     let offlineRequestOptions;
@@ -327,38 +342,29 @@ describe('Users API', () => {
     let expectedNbrDocs = nbrOfflineDocs + 4;
     let docsForAll;
 
-    beforeAll(done => {
-      return utils
-        .saveDoc(parentPlace)
-        .then(() => utils.createUsers(users))
-        .then(() => {
-          const docs = Array.from(Array(nbrOfflineDocs), () => ({
-            _id: `random_contact_${uuid()}`,
-            type: `clinic`,
-            parent: { _id: 'fixture:offline' }
-          }));
-          docs.push(...Array.from(Array(nbrTasks), () => ({
-            _id: `task~org.couchdb.user:offline~${uuid()}`,
-            type: 'task',
-            user: 'org.couchdb.user:offline'
-          })));
-
-          return utils.saveDocs(docs);
-        })
-        .then(() => utils.requestOnTestDb('/_design/medic/_view/docs_by_replication_key?key="_all"'))
-        .then(resp => {
-          docsForAll = resp.rows.length + 2; // _design/medic-client + org.couchdb.user:doc
-          expectedNbrDocs += resp.rows.length;
-        })
-        .then(done);
+    before(async () => {
+      await utils.saveDoc(parentPlace);
+      await utils.createUsers(users);
+      const docs = Array.from(Array(nbrOfflineDocs), () => ({
+        _id: `random_contact_${uuid()}`,
+        type: `clinic`,
+        parent: { _id: 'fixture:offline' }
+      }));
+      docs.push(...Array.from(Array(nbrTasks), () => ({
+        _id: `task~org.couchdb.user:offline~${uuid()}`,
+        type: 'task',
+        user: 'org.couchdb.user:offline'
+      })));
+      await utils.saveDocs(docs);
+      const resp = await utils.requestOnTestDb('/_design/medic/_view/docs_by_replication_key?key="_all"');
+      docsForAll = resp.rows.length + 2; // _design/medic-client + org.couchdb.user:doc
+      expectedNbrDocs += resp.rows.length;
     });
 
-    afterAll(done =>
-      utils
-        .revertDb()
-        .then(() => utils.deleteUsers(users))
-        .then(done)
-    );
+    after(async () => {
+      await utils.revertDb([], true);
+      await utils.deleteUsers(users);
+    });
 
     beforeEach(() => {
       offlineRequestOptions = {
@@ -375,16 +381,14 @@ describe('Users API', () => {
     });
 
     it('should return correct number of allowed docs for offline users', () => {
-      return utils
-        .request(offlineRequestOptions)
-        .then(resp => {
-          chai.expect(resp).to.deep.equal({
-            total_docs: expectedNbrDocs + nbrTasks,
-            warn_docs: expectedNbrDocs,
-            warn: false,
-            limit: 10000
-          });
+      return utils.request(offlineRequestOptions).then(resp => {
+        chai.expect(resp).to.deep.equal({
+          total_docs: expectedNbrDocs + nbrTasks,
+          warn_docs: expectedNbrDocs,
+          warn: false,
+          limit: 10000
         });
+      });
     });
 
     it('should return correct number of allowed docs when requested by online user', () => {
@@ -397,6 +401,44 @@ describe('Users API', () => {
           limit: 10000
         });
       });
+    });
+
+    it('auth should check for mm-online role when requesting other user docs', () => {
+      const requestOptions = {
+        path: '/api/v1/users-info?role=district_admin&facility_id=fixture:offline',
+        auth: { username: 'offlineonline', password },
+        method: 'GET'
+      };
+
+      return utils
+        .request(requestOptions)
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(err => {
+          // online users require the "can_update_users" permission to be able to access this endpoint
+          chai.expect(err.error).to.deep.equal({
+            code: 403,
+            error: 'Insufficient privileges',
+          });
+        });
+    });
+
+    it('auth should check for mm-online role when requesting with missing params', () => {
+      const requestOptions = {
+        path: '/api/v1/users-info',
+        auth: { username: 'offlineonline', password },
+        method: 'GET'
+      };
+
+      return utils
+        .request(requestOptions)
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(err => {
+          // online users require the "can_update_users" permission to be able to access this endpoint
+          chai.expect(err.error).to.deep.equal({
+            code: 403,
+            error: 'Insufficient privileges',
+          });
+        });
     });
 
     it('should return correct number of allowed docs when requested by online user for an array of roles', () => {
@@ -440,9 +482,9 @@ describe('Users API', () => {
       onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
       return utils
         .request(onlineRequestOptions)
-        .then(resp => chai.expect(resp).to.deep.equal('should have thrown'))
+        .then(resp => chai.expect(resp).to.equal('should have thrown'))
         .catch(err => {
-          chai.expect(err.statusCode).to.deep.equal(400);
+          chai.expect(err.statusCode).to.equal(400);
         });
     });
 
@@ -454,9 +496,9 @@ describe('Users API', () => {
       onlineRequestOptions.path += '?' + querystring.stringify(params);
       return utils
         .request(onlineRequestOptions)
-        .then(resp => chai.expect(resp).to.deep.equal('should have thrown'))
+        .then(resp => chai.expect(resp).to.equal('should have thrown'))
         .catch(err => {
-          chai.expect(err.statusCode).to.deep.equal(400);
+          chai.expect(err.statusCode).to.equal(400);
         });
     });
 
@@ -493,8 +535,8 @@ describe('Users API', () => {
       name: 'Big Parent Hostpital'
     };
 
-    beforeAll(() => utils.saveDoc(parentPlace));
-    afterAll(() => utils.revertDb());
+    before(() => utils.saveDoc(parentPlace));
+    after(() => utils.revertDb([], true));
 
     beforeEach(() => {
       user = {

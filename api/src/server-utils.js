@@ -3,13 +3,15 @@ const path = require('path');
 const environment = require('./environment');
 const isClientHuman = require('./is-client-human');
 const logger = require('./logger');
-const MEDIC_BASIC_AUTH = 'Basic realm="Medic Mobile Web Services"';
+const MEDIC_BASIC_AUTH = 'Basic realm="Medic Web Services"';
 
 const wantsJSON = req => req.get('Accept') === 'application/json';
 
 const writeJSON = (res, code, error, details) => {
-  res.status(code);
-  res.json({ code, error, details });
+  if (!res.headersSent && !res.ended) {
+    res.status(code);
+    res.json({ code, error, details });
+  }
 };
 
 const respond = (req, res, code, message, details) => {
@@ -72,6 +74,10 @@ module.exports = {
    * an authentication error.
    */
   notLoggedIn: (req, res, showPrompt) => {
+    if (!res.headersSent) {
+      res.setHeader('logout-authorization', 'CHT-Core API');
+    }
+
     if (showPrompt) {
       // api access - basic auth allowed
       promptForBasicAuth(res);

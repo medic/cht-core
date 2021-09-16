@@ -142,6 +142,6 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
       heading: 'the translated title',
     });
     expect(translateService.instant.callCount).to.equal(1);
-    expect(translateService.instant.args[0]).to.deep.equal(['analytics.target.aggregates']);
+    expect(translateService.instant.args[0]).to.deep.equal(['analytics.target.aggregates', undefined]);
   }));
 });

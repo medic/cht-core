@@ -12,13 +12,13 @@ They live in the `tests` directories of each app. Run them with grunt: `grunt un
 
 ## Integration tests
 
-[Travis](https://travis-ci.org/github/medic/cht-core) runs `grunt ci` every time some new code is pushed to github.
+[Github Actions](https://github.com/medic/cht-core/actions) runs `grunt ci` every time some new code is pushed to github.
 
 # End to End Testing 
 ## Stack overview
 
 ### Requirements
-Follow the guide [DEVELOPMENT.md](DEVELOPMENT.MD)
+Follow the guide [DEVELOPMENT.md](DEVELOPMENT.md)
 JDK installed for Selenium.
 Docker to run couchdb.
 
@@ -97,8 +97,28 @@ Documented here are two ways to run individual tests and have your IDE break on 
 1. Optionally set the Protractor options to `--capabilities.chromeOptions.args=start-maximized --jasmine.DEFAULT_TIMEOUT_INTERVAL=120000`.
 1. Select the radio button for Test.
 1. Enter the path to the Test file Ex: `<cht-core-repo>/tests/e2e/login/login.specs.js`.
-1. Enter the test name. This is a bit of a chore. IntelliJ will automatically add the regex flags for begins(`^`) of line and end of line(`$`). Protractor presents the name for matching as the Describe description followed by the It description. To run the login test for should have a title you would need to put this as your matcher. `Login tests : should have a title`. An alternative would be to select Test File and run the entire file. You can add an `x` in front of `it` to disable the ones you do not need. EX: `xit('should login`)
+1. Enter the test name. This is a bit of a chore. IntelliJ will automatically add the regex flags for begins(`^`) of line and end of line(`$`). Protractor presents the name for matching as the Describe description followed by the It description. To run the login test for should have a title you would need to put this as your matcher. `Login tests : should have a title`. An alternative would be to select Test File and run the entire file. You can add an `x` in front of `it` to disable the ones you do not need. EX: `xit('should login')`.
 1. Click ok.
 1. Click the run configuration dropdown and select the protractor config. 
 1. In a terminal run `grunt e2e-deploy`   NOTE: This has to happen each time you run. 
 1. Click debug button in IntelliJ.
+
+
+## Migration To Webdriver IO
+
+Treat the migration as if you were writing a brand new e2e suite. Not everything we have in the protractor suite needs a 1 to 1 migration. The implicit waits seem to work better in wdio
+
+Each spec file runs independently. There is no need to manage browser state between spec files. 
+
+### Saving artifacts
+
+Github actions will artifact all files in tests/logs. This is the directory any logs, results, images, etc... should save to if you want to review them if a build fails. 
+
+### Test Architecture
+
+Our github actions spin up an ubuntu-18.04 machine. Installs software and then launches Couchdb and Horticulturalist in a docker container. This is needed to run our applications in the specific node versions we support while allowing our test code to run in versions of node it they support. This creates a paradigm to keep in mind when writing tests. Tests run on the ubuntu machine. Any test code that starts a server or runs an executable is running outside of the horti container. The ports are exposed for all our services and horti has access to the cht-core root via a volume. Horti can also talk to the host by getting the gateway of the docker network. 
+
+
+### Glossary 
+
+wdio = WebdriverIo

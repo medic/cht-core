@@ -12,17 +12,17 @@ const baseConfig = {
   },
   SELENIUM_PROMISE_MANAGER: false,
   seleniumAddress: 'http://localhost:4444/wd/hub',
+  exclude: ['**/*wdio-spec.js', 'e2e/api/**/*.js', 'e2e/sentinel/**/*.js'],
   suites: {
     web: [
       'e2e/!(cht)/**/*.js',
-      'e2e/*.js',
-      'mobile/**/*.js',
-      'medic-conf/**/*.js'
+      'e2e/**/*.js',
+      'cht-conf/**/*.js'
     ],
     cht: [
       'e2e/cht/*.spec.js'
     ],
-    mobile: [],
+    mobile: ['mobile/**/*.js'],
     // performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',
@@ -60,9 +60,9 @@ const baseConfig = {
     jasmine.getEnv().addReporter(utils.currentSpecReporter);
 
     browser.waitForAngularEnabled(false);
-
     // wait for startup to complete
-    await browser.driver.wait(utils.prepServices(), 135 * 1000, 'API took too long to start up');
+    const config = await browser.getProcessedConfig();
+    await browser.driver.wait(utils.prepServices(config.suite === 'web'), 135 * 1000, 'API took too long to start up');
 
     afterEach(() => {
       return utils.saveBrowserLogs();

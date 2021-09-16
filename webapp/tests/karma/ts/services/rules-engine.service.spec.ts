@@ -16,6 +16,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { RulesEngineCoreFactoryService, RulesEngineService } from '@mm-services/rules-engine.service';
 import { PipesService } from '@mm-services/pipes.service';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 describe('RulesEngineService', () => {
   let service: RulesEngineService;
@@ -30,6 +31,7 @@ describe('RulesEngineService', () => {
   let translateFromService;
   let rulesEngineCoreStubs;
   let pipesService;
+  let chtScriptApiService;
   let clock;
 
   let fetchTasksFor;
@@ -72,6 +74,12 @@ describe('RulesEngineService', () => {
     type: 'user-settings',
     roles: [],
   };
+  const chtScriptApi = {
+    v1: {
+      hasPermissions: sinon.stub(),
+      hasAnyPermission: sinon.stub()
+    }
+  };
   const expectedRulesConfig = {
     rules: 'rules',
     taskSchedules: ['schedules'],
@@ -81,7 +89,11 @@ describe('RulesEngineService', () => {
     contact: userContactDoc,
     user: userSettingsDoc,
     monthStartDate: 1,
+    chtScriptApi
   };
+
+  const realSetTimeout = setTimeout;
+  const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
 
   beforeEach(() => {
     authService = { has: sinon.stub().resolves(true) };
@@ -97,6 +109,7 @@ describe('RulesEngineService', () => {
       pipesMap: new Map(),
       getPipeNameVsIsPureMap: PipesService.prototype.getPipeNameVsIsPureMap
     };
+    chtScriptApiService = { getApi: sinon.stub().returns(chtScriptApi) };
 
     fetchTasksResult = () => Promise.resolve();
     fetchTasksFor = sinon.stub();
@@ -132,6 +145,7 @@ describe('RulesEngineService', () => {
       updateEmissionsFor: sinon.stub().resolves(true),
       rulesConfigChange: sinon.stub().returns(true),
       getDirtyContacts: sinon.stub().returns([]),
+      fetchTasksBreakdown: sinon.stub(),
     };
     const rulesEngineCoreFactory= { get: () => rulesEngineCoreStubs };
 
@@ -152,7 +166,8 @@ describe('RulesEngineService', () => {
         { provide: ChangesService, useValue: changesService },
         { provide: TranslateFromService, useValue: translateFromService },
         { provide: RulesEngineCoreFactoryService, useValue: rulesEngineCoreFactory },
-        { provide: PipesService, useValue: pipesService }
+        { provide: PipesService, useValue: pipesService },
+        { provide: CHTScriptApiService, useValue: chtScriptApiService }
       ]
     });
   });
@@ -459,6 +474,30 @@ describe('RulesEngineService', () => {
     expect(telemetryService.record.args[2][0]).to.equal('rules-engine:tasks:some-contacts');
   });
 
+  it('fetchTaskDocsFor() should not crash with empty priority label', async () => {
+    const taskDoc = JSON.parse(JSON.stringify(sampleTaskDoc));
+    taskDoc.emission.priorityLabel = '';
+    const contactIds = ['a', 'b', 'c'];
+    fetchTasksResult = sinon.stub().resolves([taskDoc]);
+    rulesEngineCoreStubs.getDirtyContacts.returns(['a', 'b']);
+    service = TestBed.inject(RulesEngineService);
+
+    const actual = await service.fetchTaskDocsFor(contactIds);
+
+    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
+    expect(rulesEngineCoreStubs.fetchTasksFor.args[0][0]).to.eq(contactIds);
+    expect(actual.length).to.eq(1);
+    expect(actual[0]).to.nested.include({
+      _id: 'taskdoc',
+      'emission.title': 'translate.this',
+      'emission.priorityLabel': '',
+      'emission.other': true,
+    });
+    expect(telemetryService.record.callCount).to.equal(3);
+    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 2]);
+    expect(telemetryService.record.args[2][0]).to.equal('rules-engine:tasks:some-contacts');
+  });
+
   it('fetchTargets() should send correct range to Rules Engine Core when getting targets', async () => {
     fetchTargetsResult = sinon.stub().resolves([]);
     service = TestBed.inject(RulesEngineService);
@@ -529,8 +568,6 @@ describe('RulesEngineService', () => {
   });
 
   it('should record correct telemetry data with emitted events', async () => {
-    const realSetTimeout = setTimeout;
-    const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
     clock = sinon.useFakeTimers(1000);
     let fetchTargetResultPromise;
     const fetchTasksResultPromise = [];
@@ -594,8 +631,6 @@ describe('RulesEngineService', () => {
 
   it('should record correct telemetry data for disabled actions', async () => {
     authService.has.withArgs('can_view_tasks').resolves(false);
-    const realSetTimeout = setTimeout;
-    const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
     clock = sinon.useFakeTimers(1000);
     fetchTargetsResult = sinon.stub().resolves([]);
     fetchTasksResult = sinon.stub().resolves([]);
@@ -628,5 +663,75 @@ describe('RulesEngineService', () => {
     expect(telemetryService.record.args[6]).to.deep.equal(['rules-engine:targets', 0]);
     expect(telemetryService.record.args[7]).to.deep.equal(['rules-engine:tasks:all-contacts', 0]);
     expect(telemetryService.record.args[8]).to.deep.equal(['rules-engine:tasks:some-contacts', 0]);
+  });
+
+  describe('fetchTasksBreakdown', () => {
+    it('should send correct params to Rules Engine Core', async () => {
+      rulesEngineCoreStubs.fetchTasksBreakdown.resolves({});
+      service = TestBed.inject(RulesEngineService);
+
+      expect(await service.fetchTasksBreakdown()).to.deep.eq({});
+      expect(rulesEngineCoreStubs.fetchTasksBreakdown.callCount).to.eq(1);
+      expect(rulesEngineCoreStubs.fetchTasksBreakdown.args[0]).to.deep.equal([undefined]);
+
+      expect(await service.fetchTasksBreakdown(['a', 'b'])).to.deep.eq({});
+      expect(rulesEngineCoreStubs.fetchTasksBreakdown.callCount).to.eq(2);
+      expect(rulesEngineCoreStubs.fetchTasksBreakdown.args[1]).to.deep.equal([['a', 'b']]);
+    });
+
+    it('should return results from rulesEngineCore and record telemetry without contactIds', async () => {
+      const result = {
+        Completed: 10,
+        Ready: 2,
+        Failed: 22,
+      };
+
+      clock = sinon.useFakeTimers(1000);
+      let fetchTasksBreakdownResult;
+      rulesEngineCoreStubs.fetchTasksBreakdown.callsFake(() => new Promise(r => fetchTasksBreakdownResult = r));
+      service = TestBed.inject(RulesEngineService);
+      const promise = service.fetchTasksBreakdown();
+
+      await service.isEnabled(); // resolve initialize
+
+      clock.tick(3000);
+      fetchTasksBreakdownResult({ ...result });
+
+      expect(await promise).to.deep.equal(result);
+
+      expect(rulesEngineCoreStubs.fetchTasksBreakdown.callCount).to.equal(1);
+      expect(rulesEngineCoreStubs.fetchTasksBreakdown.args[0]).to.deep.equal([undefined]);
+      expect(telemetryService.record.callCount).to.equal(2);
+      expect(telemetryService.record.args[0]).to.deep.equal(['rules-engine:initialize', 0]);
+      expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks-breakdown:all-contacts', 3000]);
+    });
+
+    it('should return results from rulesEngineCore and record telemetry with contacts', async () => {
+      const result = {
+        Failed: 10,
+        Ready: 2,
+        Draft: 7,
+      };
+
+      clock = sinon.useFakeTimers(1000);
+      let fetchTasksBreakdownResult;
+      rulesEngineCoreStubs.fetchTasksBreakdown.callsFake(() => new Promise(r => fetchTasksBreakdownResult = r));
+      service = TestBed.inject(RulesEngineService);
+      const promise = service.fetchTasksBreakdown(['c1', 'c2', 'c3']);
+
+      await service.isEnabled(); // resolve initialize
+
+      clock.tick(2569);
+      fetchTasksBreakdownResult({ ...result });
+
+      expect(await promise).to.deep.equal(result);
+
+      expect(rulesEngineCoreStubs.fetchTasksBreakdown.callCount).to.equal(1);
+      expect(rulesEngineCoreStubs.fetchTasksBreakdown.args[0]).to.deep.equal([['c1', 'c2', 'c3']]);
+
+      expect(telemetryService.record.callCount).to.equal(2);
+      expect(telemetryService.record.args[0]).to.deep.equal(['rules-engine:initialize', 0]);
+      expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks-breakdown:some-contacts', 2569]);
+    });
   });
 });

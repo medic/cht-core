@@ -14,8 +14,12 @@
   "scripts": {
     "test": "grunt eslint && grunt unit && grunt test-api-integration && grunt e2e",
     "webdriver": "webdriver-manager update && webdriver-manager start",
-    "wdio-local": "rm -rf _results_ allure-report && grunt e2e-env-setup && wdio run ./tests/webdriver-e2e/wdio.conf.js",
-    "wdio": "wdio run ./tests/webdriver-e2e/wdio.conf.js"
+    "wdio-setup": "rm -rf allure-results allure-report && grunt e2e-env-setup", 
+    "wdio-local": "npm run wdio-setup && wdio run ./tests/wdio.conf.js",
+    "wdio-standard-local": "npm run wdio-setup && wdio run ./tests/wdio-standard.conf.js",
+    "e2e-integration": "mocha --config tests/integration/.mocharc.js ",
+    "wdio": "wdio run ./tests/wdio.conf.js",
+    "wdio-standard": "wdio run ./tests/wdio-standard.conf.js"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^10.0.1",
@@ -64,6 +68,7 @@
     "eslint-plugin-no-only-tests": "^2.5.0",
     "eslint-plugin-promise": "^4.3.1",
     "express": "^4.17.1",
+    "faker": "^5.5.3",
     "flat": "^5.0.2",
     "grunt": "^1.3.0",
     "grunt-angular-templates": "^1.2.0",

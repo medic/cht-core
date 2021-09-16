@@ -52,7 +52,8 @@ const submit = function(e) {
 
 const requestTokenLogin = (retry = 20) => {
   const url = document.getElementById('tokenLogin').action;
-  request('POST', url, '', xmlhttp => {
+  const payload = JSON.stringify({ locale: selectedLocale });
+  request('POST', url, payload, xmlhttp => {
     let response = {};
     try {
       response = JSON.parse(xmlhttp.responseText);

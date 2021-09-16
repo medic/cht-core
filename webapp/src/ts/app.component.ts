@@ -2,7 +2,6 @@ import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/ro
 import * as moment from 'moment';
 import { Component, NgZone, OnInit, HostListener } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
 import { combineLatest } from 'rxjs';
 
@@ -41,6 +40,10 @@ import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-m
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TransitionsService } from '@mm-services/transitions.service';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { TranslateService } from '@mm-services/translate.service';
+import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
+import { AnalyticsActions } from '@mm-actions/analytics';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -71,6 +74,7 @@ const SYNC_STATUS = {
 })
 export class AppComponent implements OnInit {
   private globalActions;
+  private analyticsActions;
   setupPromise;
   translationsLoaded;
 
@@ -120,8 +124,11 @@ export class AppComponent implements OnInit {
     private telemetryService:TelemetryService,
     private transitionsService:TransitionsService,
     private ngZone:NgZone,
+    private chtScriptApiService: CHTScriptApiService,
+    private analyticsModulesService: AnalyticsModulesService,
   ) {
     this.globalActions = new GlobalActions(store);
+    this.analyticsActions = new AnalyticsActions(store);
 
     moment.locale(['en']);
 
@@ -194,7 +201,8 @@ export class AppComponent implements OnInit {
       return dbFetch
         .apply(dbFetch, args)
         .then((response) => {
-          if (response.status === 401) {
+          // ignore 401 that could come through other channels than CHT API
+          if (response.status === 401 && response.headers?.get('logout-authorization') === 'CHT-Core API') {
             this.showSessionExpired();
             setTimeout(() => {
               console.info('Redirect to login after 1 minute of inactivity');
@@ -259,6 +267,7 @@ export class AppComponent implements OnInit {
     // initialisation tasks that can occur after the UI has been rendered
     this.setupPromise = this.sessionService
       .init()
+      .then(() => this.chtScriptApiService.isInitialized())
       .then(() => this.checkPrivacyPolicy())
       .then(() => this.initRulesEngine())
       .then(() => this.initTransitions())
@@ -279,6 +288,7 @@ export class AppComponent implements OnInit {
     this.requestPersistentStorage();
     this.startWealthQuintiles();
     this.enableTooltips();
+    this.initAnalyticsModules();
   }
 
   private initTransitions() {
@@ -638,5 +648,14 @@ export class AppComponent implements OnInit {
   private stopWatchingChanges() {
     // avoid Failed to fetch errors being logged when the browser window is reloaded
     this.changesService.killWatchers();
+  }
+
+  private async initAnalyticsModules() {
+    try {
+      const modules = await this.analyticsModulesService.get();
+      this.analyticsActions.setAnalyticsModules(modules);
+    } catch (error) {
+      console.error('Error while initializing analytics modules', error);
+    }
   }
 }
