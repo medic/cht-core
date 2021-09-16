@@ -289,7 +289,7 @@ describe('Users Controller', () => {
           role: 'some_role',
           facility_id: 'some_facility_id'
         };
-        auth.isOffline.returns(true);
+        auth.isOnlineOnly.returns(false);
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: ['some_role'], facility_id: req.query.facility_id },
