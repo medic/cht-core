@@ -448,7 +448,7 @@ const saveBrowserLogs = () => {
 };
 
 
-const prepServices = async (config) => {
+const prepServices = async (defaultSettings) => {
   if (constants.IS_CI) {
     console.log('On CI, waiting for horti to first boot api');
     // CI' horti will be installing and then deploying api and sentinel, and those logs are
@@ -464,7 +464,7 @@ const prepServices = async (config) => {
   }
 
   await listenForApi();
-  if (config && config.suite === 'web') {
+  if (defaultSettings) {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
@@ -520,7 +520,15 @@ const parseCookieResponse = (cookieString) => {
 };
 
 const dockerGateway = () => {
-  return JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
+  if (!constants.IS_CI) {
+    return;
+  }
+  try {
+    return JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
+  } catch (error) {
+    console.log('docker network inspect failed. NOTE this error is not relevant if running outside of docker');
+    console.log(error.message);
+  }
 };
 
 const hostURL = (port = 80) => {
@@ -927,7 +935,7 @@ module.exports = {
       timeout = setTimeout(() => {
         tail.unwatch();
         reject({ message: 'Timed out looking for details in log files.' });
-      }, 2000);
+      }, 6000);
 
       tail.on('line', data => {
         if (regex.find(r => r.test(data))) {

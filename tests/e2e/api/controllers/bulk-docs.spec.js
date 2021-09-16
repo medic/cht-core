@@ -1,4 +1,6 @@
 const chai = require('chai');
+const chaiExclude = require('chai-exclude');
+chai.use(chaiExclude);
 const _ = require('lodash');
 const utils = require('../../../utils');
 const sUtils = require('../../sentinel/utils');
@@ -66,16 +68,16 @@ const DOCS_TO_KEEP = [
 ];
 
 describe('bulk-docs handler', () => {
-  beforeAll(() => {
+  before(() => {
     return utils
       .saveDoc(parentPlace)
       .then(() => sUtils.waitForSentinel())
       .then(() => utils.createUsers(users));
   });
 
-  afterAll(() =>
+  after(() =>
     utils
-      .revertDb()
+      .revertDb([], true)
       .then(() => utils.deleteUsers(users)));
 
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));

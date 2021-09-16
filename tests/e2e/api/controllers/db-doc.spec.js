@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const chai = require('chai');
 const utils = require('../../../utils');
-const sUtils = require('../../sentinel/utils');
+const sentinelUtils = require('../../sentinel/utils');
 const constants = require('../../../constants');
 const uuid = require('uuid');
 
@@ -155,16 +155,16 @@ const reportForPatient = (patientUuid, username, fields = [], needs_signoff = fa
 };
 
 describe('db-doc handler', () => {
-  beforeAll(() => {
+  before(() => {
     return utils
       .saveDoc(parentPlace)
       .then(() => utils.createUsers(users))
       .then(() => utils.saveDocs([...clinics, ...patients]));
   });
 
-  afterAll(() =>
+  after(() =>
     utils
-      .revertDb()
+      .revertDb([], true)
       .then(() => utils.deleteUsers(users)));
 
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
@@ -566,7 +566,7 @@ describe('db-doc handler', () => {
       const patientsToDeleteIds = patientsToDelete.map(doc => doc._id);
       const submittersToDeleteIds = submittersToDelete.map(doc => doc._id);
 
-      beforeAll(() => sUtils.waitForSentinel());
+      before(() => sentinelUtils.waitForSentinel());
 
       beforeEach(() => {
         patientsToDelete.forEach(doc => delete doc._rev);
@@ -640,7 +640,7 @@ describe('db-doc handler', () => {
           .saveDocs([...patientsToDelete, ...docs, ...submittersToDelete])
           .then(() => utils.deleteDocs(patientsToDeleteIds)) // delete subjects
           .then(results => results.forEach((result, idx) => patientsToDelete[idx]._rev = result.rev))
-          .then(() => sUtils.waitForSentinel(patientsToDeleteIds))
+          .then(() => sentinelUtils.waitForSentinel(patientsToDeleteIds))
           .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(
             _.defaults({ path: `/${patient._id}?rev=${patient._rev}` }, offlineRequestOptions)
           ).catch(err => err))))
@@ -668,7 +668,7 @@ describe('db-doc handler', () => {
             });
           })
           .then(() => utils.deleteDocs(submittersToDeleteIds)) // delete submitters
-          .then(() => sUtils.waitForSentinel(submittersToDeleteIds))
+          .then(() => sentinelUtils.waitForSentinel(submittersToDeleteIds))
           .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
             _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
           ).catch(err => err))))
@@ -684,7 +684,7 @@ describe('db-doc handler', () => {
           })
           .then(() => utils.deleteDocs(docs.map(doc => doc._id))) // delete reports
           .then(results => results.forEach((result, idx) => docs[idx]._rev = result.rev))
-          .then(() => sUtils.waitForSentinel(docs.map(doc => doc._id)))
+          .then(() => sentinelUtils.waitForSentinel(docs.map(doc => doc._id)))
           .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
             _.defaults({ path: `/${scenario.doc._id}?rev=${scenario.doc._rev}` }, offlineRequestOptions)
           ).catch(err => err))))
@@ -792,7 +792,7 @@ describe('db-doc handler', () => {
           })
           .then(() => utils.deleteDocs(patientsToDeleteIds)) // delete subjects
           .then(results => results.forEach((result, idx) => patientsToDelete[idx]._rev = result.rev))
-          .then(() => sUtils.waitForSentinel(patientsToDeleteIds))
+          .then(() => sentinelUtils.waitForSentinel(patientsToDeleteIds))
           .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(
             _.defaults({ path: `/${patient._id}?rev=${patient._rev}` }, offlineRequestOptions)
           ).catch(err => err))))
@@ -816,7 +816,7 @@ describe('db-doc handler', () => {
             });
           })
           .then(() => utils.deleteDocs(submittersToDeleteIds)) // delete submitters
-          .then(() => sUtils.waitForSentinel(submittersToDeleteIds))
+          .then(() => sentinelUtils.waitForSentinel(submittersToDeleteIds))
           .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
             _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
           ).catch(err => err))))
@@ -832,7 +832,7 @@ describe('db-doc handler', () => {
           })
           .then(() => utils.deleteDocs(docs.map(doc => doc._id))) // delete reports
           .then(results => results.forEach((result, idx) => docs[idx]._rev = result.rev))
-          .then(() => sUtils.waitForSentinel(docs.map(doc => doc._id)))
+          .then(() => sentinelUtils.waitForSentinel(docs.map(doc => doc._id)))
           .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
             _.defaults({ path: `/${scenario.doc._id}?rev=${scenario.doc._rev}` }, offlineRequestOptions)
           ).catch(err => err))))
@@ -1294,7 +1294,7 @@ describe('db-doc handler', () => {
           chai.expect(denied.statusCode).to.deep.equal(404);
 
           const ids = ['allowed_doc_post', 'denied_doc_post'];
-          return sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
+          return sentinelUtils.waitForSentinel(ids).then(() => sentinelUtils.getInfoDocs(ids));
         }).then(([allowedInfo, deniedInfo]) => {
           chai.expect(allowedInfo).to.be.ok;
           chai.expect(deniedInfo).to.be.undefined;
@@ -1533,7 +1533,7 @@ describe('db-doc handler', () => {
 
           const ids = ['a_put_1', 'a_put_2', 'd_put_1', 'd_put_2', 'n_put_1', 'n_put_2'];
 
-          return sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
+          return sentinelUtils.waitForSentinel(ids).then(() => sentinelUtils.getInfoDocs(ids));
         }).then(([a1, a2, d1, d2, n1, n2]) => {
           chai.expect(a1._rev.substring(0, 2)).to.equal('3-');
           chai.expect(a2._rev.substring(0, 2)).to.equal('2-');

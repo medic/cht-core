@@ -1,12 +1,13 @@
 module.exports={
-  'allow-uncaught': false,
-  'async-only': false,
+  allowUncaught: true,
   color: true,
   checkLeaks: true,
   fullTrace: true,
   asyncOnly:true,
   spec: [
+    'tests/e2e/api/**/*.js',
     'tests/integration/**/*.js',
+    'tests/e2e/sentinel/**/*.js',
   ],
 
   timeout: 135*1000, //'API takes a litle long to start up'
