@@ -66,6 +66,12 @@ const writeServiceWorkerMetaDoc = () => {
     .then((doc) => {
       doc.generated_at = new Date().getTime();
       return db.medic.put(doc);
+    })
+    .catch(err => {
+      // ignore conflicts
+      if (err.status !== 409) {
+        throw err;
+      }
     });
 };
 

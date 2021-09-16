@@ -9,8 +9,6 @@ const BUNDLED_DDOCS = [
   { attachmentId: 'ddocs/users-meta.json', targetDb: db.medicUsersMeta },
   { attachmentId: 'ddocs/logs.json', targetDb: db.medicLogs },
 ];
-const SERVICEWORKER_ATTACHMENT_NAME = 'js/service-worker.js';
-
 const SERVER_DDOC_ID = '_design/medic';
 const CLIENT_DDOC_ID = '_design/medic-client';
 
@@ -107,41 +105,6 @@ const extractFromCompiledDocs = (bundle, deployInfo) => {
     });
 
 };
-
-// We need client-side logic to trigger a service worker update when a cached resource changes.
-// Since service-worker.js contains a hash of every cached resource, watching it for changes is sufficient to detect a
-// required update.
-// To this end, copy the hash of service-worker.js and store it in a new doc (SWMETA_DOC_ID) which replicates to
-// clients.
-// The intention is that when this doc changes, clients will refresh their cache.
-/*const extractServiceWorkerMetaDoc = ddoc => {
-  const attachment = ddoc._attachments && ddoc._attachments[SERVICEWORKER_ATTACHMENT_NAME];
-  const attachmentDigest = attachment && attachment.digest;
-  if (!attachmentDigest) {
-    return;
-  }
-
-  return db.medic
-    .get(SWMETA_DOC_ID)
-    .then(doc => {
-      if (doc.digest !== attachmentDigest) {
-        doc.digest = attachmentDigest;
-        return doc;
-      }
-    })
-    .catch(err => {
-      if (err.status === 404) {
-        return { _id: SWMETA_DOC_ID, digest: attachmentDigest };
-      }
-      throw err;
-    })
-    .then(doc => {
-      if (doc) {
-        logger.info('Updating service worker meta doc');
-        return db.medic.put(doc);
-      }
-    });
-};*/
 
 const extractDdocs = deployInfo => {
   return Promise.all(BUNDLED_DDOCS.map(bundle => extractFromCompiledDocs(bundle, deployInfo)));

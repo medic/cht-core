@@ -325,12 +325,6 @@ describe('DDoc extraction', () => {
       _rev: '2',
       views: { doc_by_valid: { map: 'function() { return true; }' } }
     };
-    const appcache = {
-      _id: 'appcache',
-      _rev: '5',
-      digest: 'md5-JRYByZdYixaFg3a4L6X0pw=='
-    };
-
     const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/medic.json')
@@ -382,11 +376,6 @@ describe('DDoc extraction', () => {
       _rev: '2',
       deploy_info: { version: 1 },
       views: { doc_by_valid: { map: 'function() { return true; }' } }
-    };
-    const appcache = {
-      _id: 'appcache',
-      _rev: '5',
-      digest: 'md5-JRYByZdYixaFg3a4L6X0pw=='
     };
 
     const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
@@ -441,11 +430,6 @@ describe('DDoc extraction', () => {
       deploy_info: { version: 2 },
       views: { doc_by_valid: { map: 'function() { return true; }' } }
     };
-    const appcache = {
-      _id: 'appcache',
-      _rev: '5',
-      digest: 'md5-JRYByZdYixaFg3a4L6X0pw=='
-    };
 
     const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
     const getDdocAttachment = getAttachment
@@ -489,11 +473,6 @@ describe('DDoc extraction', () => {
       _id: '_design/medic-client',
       _rev: '2',
       views: { doc_by_valid: { map: 'function() { return true; }' } }
-    };
-    const appcache = {
-      _id: 'appcache',
-      _rev: '5',
-      digest: 'md5-JRYByZdYixaFg3a4L6X0pw=='
     };
 
     const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
@@ -539,11 +518,6 @@ describe('DDoc extraction', () => {
       _id: '_design/medic-client',
       _rev: '2',
       views: { doc_by_valid: { map: 'function() { return true; }' } }
-    };
-    const appcache = {
-      _id: 'appcache',
-      _rev: '5',
-      digest: 'md5-JRYByZdYixaFg3a4L6X0pw=='
     };
 
     const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
@@ -595,11 +569,6 @@ describe('DDoc extraction', () => {
       _rev: '2',
       views: { doc_by_valid: { map: 'function() { return true; }' } }
     };
-    const appcache = {
-      _id: 'appcache',
-      _rev: '5',
-      digest: 'md5-JRYByZdYixaFg3a4L6X0pw=='
-    };
 
     const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
     const getDdocAttachment = getAttachment
@@ -644,11 +613,6 @@ describe('DDoc extraction', () => {
           stub: true
         }
       }
-    };
-    const appcache = {
-      _id: 'appcache',
-      _rev: '5',
-      digest: 'md5-JRYByZdYixaFg3a4L6X0pw=='
     };
 
     const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
