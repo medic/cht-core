@@ -49,7 +49,7 @@ describe('Users API', () => {
 
     ];
 
-    beforeAll(() =>
+    before(() =>
       utils.request({
         path: '/_users',
         method: 'POST',
@@ -95,7 +95,7 @@ describe('Users API', () => {
           req.end();
         })));
 
-    afterAll(() =>
+    after(() =>
       utils.request(`/_users/${getUserId(username)}`)
         .then(({_rev}) => utils.request({
           path: `/_users/${getUserId(username)}`,
@@ -106,7 +106,7 @@ describe('Users API', () => {
             _deleted: true
           }
         }))
-        .then(() => utils.revertDb()));
+        .then(() => utils.revertDb([], true)));
 
     it('Allows for admin users to modify someone', () =>
       utils.request({
@@ -341,32 +341,24 @@ describe('Users API', () => {
     let expectedNbrDocs = nbrOfflineDocs + 4;
     let docsForAll;
 
-    beforeAll(done => {
-      return utils
-        .saveDoc(parentPlace)
-        .then(() => utils.createUsers(users))
-        .then(() => {
-          const docs = Array.from(Array(nbrOfflineDocs), () => ({
-            _id: `random_contact_${uuid()}`,
-            type: `clinic`,
-            parent: { _id: 'fixture:offline' }
-          }));
-          return utils.saveDocs(docs);
-        })
-        .then(() => utils.requestOnTestDb('/_design/medic/_view/docs_by_replication_key?key="_all"'))
-        .then(resp => {
-          docsForAll = resp.rows.length + 2; // _design/medic-client + org.couchdb.user:doc
-          expectedNbrDocs += resp.rows.length;
-        })
-        .then(done);
+    before(async () => {
+      await utils.saveDoc(parentPlace);
+      await utils.createUsers(users);
+      const docs = Array.from(Array(nbrOfflineDocs), () => ({
+        _id: `random_contact_${uuid()}`,
+        type: `clinic`,
+        parent: { _id: 'fixture:offline' }
+      }));
+      await utils.saveDocs(docs);
+      const resp = await utils.requestOnTestDb('/_design/medic/_view/docs_by_replication_key?key="_all"');
+      docsForAll = resp.rows.length + 2; // _design/medic-client + org.couchdb.user:doc
+      expectedNbrDocs += resp.rows.length;
     });
 
-    afterAll(done =>
-      utils
-        .revertDb()
-        .then(() => utils.deleteUsers(users))
-        .then(done)
-    );
+    after(async () => {
+      await utils.revertDb([], true);
+      await utils.deleteUsers(users);
+    });
 
     beforeEach(() => {
       offlineRequestOptions = {
@@ -517,8 +509,8 @@ describe('Users API', () => {
       name: 'Big Parent Hostpital'
     };
 
-    beforeAll(() => utils.saveDoc(parentPlace));
-    afterAll(() => utils.revertDb());
+    before(() => utils.saveDoc(parentPlace));
+    after(() => utils.revertDb([], true));
 
     beforeEach(() => {
       user = {
