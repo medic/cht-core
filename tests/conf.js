@@ -12,12 +12,12 @@ const baseConfig = {
   },
   SELENIUM_PROMISE_MANAGER: false,
   seleniumAddress: 'http://localhost:4444/wd/hub',
-  exclude: ['**/*wdio-spec.js','e2e/sentinel/**/*.js'],
+  exclude: ['**/*wdio-spec.js', 'e2e/api/**/*.js', 'e2e/sentinel/**/*.js'],
   suites: {
     web: [
       'e2e/!(cht)/**/*.js',
-      'e2e/*.js',
-      'medic-conf/**/*.js'
+      'e2e/**/*.js',
+      'cht-conf/**/*.js'
     ],
     cht: [
       'e2e/cht/*.spec.js'

@@ -1,11 +1,11 @@
 module.exports={
   allowUncaught: true,
-  'async-only': false,
   color: true,
   checkLeaks: true,
   fullTrace: true,
   asyncOnly:true,
   spec: [
+    'tests/e2e/api/**/*.js',
     'tests/integration/**/*.js',
     'tests/e2e/sentinel/**/*.js',
   ],
