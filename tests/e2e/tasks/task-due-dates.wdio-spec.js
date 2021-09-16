@@ -120,7 +120,7 @@ describe('Task list due dates', () => {
       { contactName: 'Bob', formTitle: 'person_create_5', dueDateText: '', overdue: false },
       { contactName: 'Bob', formTitle: 'person_create_2', dueDateText: '2 days left', overdue: false },
       { contactName: 'Bob', formTitle: 'person_create_1', dueDateText: '1 day left', overdue: false },
-      { contactName: 'Bob', formTitle: 'person_create_0', dueDateText: 'Due today', overdue: true },
+      { contactName: 'Bob', formTitle: 'person_create_0', dueDateText: 'Late', overdue: true },
       { contactName: 'Bob', formTitle: 'person_create_overdue_1', dueDateText: 'Late', overdue: true },
       { contactName: 'Bob', formTitle: 'person_create_overdue_2', dueDateText: 'Late', overdue: true },
       { contactName: 'Bob', formTitle: 'person_create_overdue_5', dueDateText: 'Late', overdue: true },
