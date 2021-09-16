@@ -260,7 +260,7 @@ describe('FormatDate service', () => {
       await service.init();
 
       expect(service.relative(moment(), { task: true })).to.equal('due');
-      expect(translateInstant.args[1]).to.deep.equal(['task.overdue', undefined]);
+      expect(translateInstant.args[1]).to.deep.equal(['task.overdue.days', { DAYS: 0 }]);
 
       expect(translateInstant.callCount).to.equal(2);
     });

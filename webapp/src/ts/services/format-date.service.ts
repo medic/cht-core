@@ -69,11 +69,11 @@ export class FormatDateService {
     const diff = date.diff(today, 'days');
 
     if (diff <= 0) {
-      if (diff === 0 || !this.config.taskDaysOverdue) {
-        return this.translateService.instant('task.overdue');
+      if (this.config.taskDaysOverdue) {
+        return this.translateService.instant('task.overdue.days', { DAYS: Math.abs(diff) });
       }
 
-      return this.translateService.instant('task.overdue.days', { DAYS: Math.abs(diff) });
+      return this.translateService.instant('task.overdue');
     }
 
     if (diff <= this.config.taskDayLimit) {
