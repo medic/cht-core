@@ -2,7 +2,7 @@ const utils = require('../../utils');
 const sentinelUtils = require('../sentinel/utils');
 
 const chai = require('chai');
-const commonPo = require('../../page-objects/common/common.po');
+//const commonPo = require('../../page-objects/common/common.po');
 
 const contacts = [
   {
@@ -111,7 +111,7 @@ const processReportsAndSettings = async (reports, settings) => {
 
 describe('SMS workflows', () => {
   beforeAll(async () => {
-    await commonPo.goToPeople();
+    //await commonPo.goToPeople();
     await utils.saveDocs(contacts);
   });
 
