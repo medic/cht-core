@@ -3,9 +3,9 @@
 |Test File	|Status	|Owner	|Pull Request Link	|Notes	|
 |---	|---	|---	|---	|---	|
 |e2e/client-side-transitions/muting.js	|	|	|	|	|
-|e2e/contacts/add-new-district.spec.js	|	|	|	|	|
-|e2e/contacts/add-new-health-center.spec.js	|	|	|	|	|
-|e2e/contacts/add-new-person.spec.js	|	|	|	|	|
+|e2e/contacts/add-new-district.spec.js	|Done	|	|	|Already covered in new-lineage-spec|
+|e2e/contacts/add-new-health-center.spec.js	|Done	|	|	|Already covered in new-lineage-spec	|
+|e2e/contacts/add-new-person.spec.js	|Done	|	|	|Already covered in new-lineage-spec	|
 |e2e/forms/add-family-form.specs.js	|	|	|	|	|
 |e2e/forms/forms-against-muted-contacts.spec.js	|	|	|	|	|
 |e2e/forms/submit-default-delivery-form.specs.js	|	|	|	|	|
@@ -16,8 +16,8 @@
 |e2e/login/privacy-policy.spec.js	|	|	|	|	|
 |e2e/login/purge.spec.js	|	|	|	|	|
 |e2e/login/token-login.spec.js	|	|	|	|	|
-|e2e/navigation/common.specs.js	|	|	|	|	|
-|e2e/navigation/hamburger-menu.js	|	|	|	|	|
+|e2e/navigation/common.specs.js	|Done	|	|	|	|
+|e2e/navigation/hamburger-menu.js	|Done	|	|	|	|
 |e2e/release/cht-config/contact-create.specs.js	|	|	|	|	|
 |e2e/release/cht-config/contact-edit.specs.js	|	|	|	|	|
 |e2e/transitions/message_duplicates.spec.js	|Done	|	Bede|https://github.com/medic/cht-core/pull/7316	| Does not need browser	|
