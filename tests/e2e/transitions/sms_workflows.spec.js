@@ -2,6 +2,7 @@ const utils = require('../../utils');
 const sentinelUtils = require('../sentinel/utils');
 
 const chai = require('chai');
+chai.use(require('chai-exclude'));
 //const commonPo = require('../../page-objects/common/common.po');
 
 const contacts = [
@@ -110,14 +111,14 @@ const processReportsAndSettings = async (reports, settings) => {
 };
 
 describe('SMS workflows', () => {
-  beforeAll(async () => {
+  before(async () => {
     //await commonPo.goToPeople();
     await utils.saveDocs(contacts);
   });
 
-  afterAll(() => utils.revertDb());
+  after(() => utils.revertDb([], true));
 
-  afterEach(() => utils.revertDb(contacts.map(c => c._id)));
+  afterEach(() => utils.revertDb(contacts.map(c => c._id), true));
 
   describe('mapping recipients', () => {
     it('should correctly map parent for patient', async () => {

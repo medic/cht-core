@@ -274,12 +274,12 @@ const chw1Lineage = { _id: contacts[3]._id,  parent: contacts[3].parent };
 const chw2Lineage = { _id: contacts[4]._id,  parent: contacts[4].parent };
 
 describe('Transitions public_form', () => {
-  beforeAll(async () => {
+  before(async () => {
     await utils.saveDocs(contacts);
     await sentinelUtils.waitForSentinel();
   });
   beforeEach(async () => await utils.saveDocs(patients));
-  afterAll(async () => await utils.revertDb());
+  after(async () => await utils.revertDb([], true));
   afterEach(async () => await utils.revertDb(contacts.map(c => c._id), true));
 
   it('when false, reports from unknwon sources should not be accepted', async () => {
