@@ -107,11 +107,14 @@ describe('generate-xform service', () => {
         const writeErr = new Error('Error: write EPIPE');
         writeErr.code = 'EPIPE';
         const spawnedEpipe = {
-          ...spawned,
+          stdout: { on: sinon.stub() },
+          stderr: { on: sinon.stub() },
           stdin: {
-            ...spawned.stdin,
+            setEncoding: sinon.stub(),
             write: sinon.stub().throws(writeErr),
-          }
+            end: sinon.stub()
+          },
+          on: sinon.stub()
         };
         await runTest('simple', spawnedEpipe, null, false);
         assert.fail('expected error to be thrown');
@@ -124,11 +127,14 @@ describe('generate-xform service', () => {
     it('should fail when xsltproc raises unknown exception', async () => {
       try {
         const spawnedUnknownWriteErr = {
-          ...spawned,
+          stdout: { on: sinon.stub() },
+          stderr: { on: sinon.stub() },
           stdin: {
-            ...spawned.stdin,
+            setEncoding: sinon.stub(),
             write: sinon.stub().throws('mystery error'),
-          }
+            end: sinon.stub()
+          },
+          on: sinon.stub()
         };
         await runTest('simple', spawnedUnknownWriteErr, null, false);
         assert.fail('expected error to be thrown');
