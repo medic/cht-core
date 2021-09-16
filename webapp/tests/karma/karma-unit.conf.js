@@ -40,8 +40,13 @@ module.exports = function (config) {
       terminal: true,
     },
     coverageReporter: {
-      reporters: [ 'html', 'lcovonly', 'text-summary' ],
+      reporters: [
+        { type: 'html' },
+        { type: 'lcovonly', file: 'lcov.info' },
+        { type: 'text-summary' },
+      ],
       dir: path.join(__dirname, 'coverage'),
+      subdir: '.',
       fixWebpackSourcePaths: true,
       skipFilesWithNoCoverage: true,
     },
