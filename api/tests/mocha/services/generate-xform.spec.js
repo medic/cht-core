@@ -84,9 +84,9 @@ describe('generate-xform service', () => {
       });
     };
 
-    it('should generates form and model', () => runTest('simple', spawned));
+    it('should generate form and model', () => runTest('simple', spawned));
 
-    it('should replaces multimedia src elements', () => runTest('multimedia', spawned));
+    it('should replace multimedia src elements', () => runTest('multimedia', spawned));
 
     it('should correctly replaces models with nested "</root>" - #5971', () => runTest('nested-root', spawned));
 
