@@ -13,7 +13,7 @@ const sUtils = require('./sentinel/utils');
 const delayedInfoDocsOf = ids => sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
 
 describe('infodocs', () => {
-  afterEach(utils.afterEach);
+  afterEach(() => utils.revertDb([], true));
 
   const singleDocTest = method => {
     const doc = {
