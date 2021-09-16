@@ -142,6 +142,7 @@ jobs:
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
     - name: Dump Couch logs
       run: | 
+        docker inspect horti | jq .[0].State > tests/logs/horti-state.log 2>&1 &&
         docker logs couch > tests/logs/couch_container.log 2>&1 &&
         docker logs horti > tests/logs/horti_container.log 2>&1
       if: ${{ always() }}
