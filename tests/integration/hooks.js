@@ -4,7 +4,7 @@ const request = require('request-promise-native');
 exports.mochaHooks = {
   beforeAll: async ()=> {
     console.log('Starting services......');
-    await utils.prepServices({suite:'web'});
+    await utils.prepServices(true);
     console.log('Services started');
   },
 

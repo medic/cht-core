@@ -14,8 +14,8 @@ const standardConfig = _.merge(wdioBaseConfig.config, {
     './tests/e2e/**/*.standard-wdio-spec.js'
   ],
 
-  onPrepare: async function (config) {
-    await utils.prepServices(config);
+  onPrepare: async function () {
+    await utils.prepServices();
     await uploadStandardConfig();
   },
 });
