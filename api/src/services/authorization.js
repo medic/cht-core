@@ -452,47 +452,80 @@ const groupViewResultsById = (authorizationContext, viewResults) => {
   return _.groupBy(viewResults.rows, 'id');
 };
 
+const isTaskDoc = (row) => row.value && row.value.type === 'task';
+
 // casting everything to string to insure that comparisons are against the same type to avoid 5 > 'a' || 5 < 'a'
 const prepareForSortedSearch = array => array.map(element => String(element)).sort();
 const sortedIncludes = (sortedArray, element) => _.sortedIndexOf(sortedArray, String(element)) !== -1;
 
-const getAllowedDocIds = (feed, { includeTombstones = true } = {}) => {
-  return db.medic.query('medic/docs_by_replication_key', { keys: feed.subjectIds }).then(results => {
-    const validatedIds = [MEDIC_CLIENT_DDOC, getUserSettingsId(feed.userCtx.name)];
-    const tombstoneIds = [];
-    const viewResultsById = groupViewResultsById(feed, results);
+const getDocsByReplicationKey = (authorizationContext) => {
+  return db.medic.query('medic/docs_by_replication_key', { keys: authorizationContext.subjectIds }).then(results => {
+    const viewResultsById = groupViewResultsById(authorizationContext, results);
 
     // leverage binary search when looking up subjects
-    const sortedSubjects = prepareForSortedSearch(feed.subjectIds);
+    const sortedSubjects = prepareForSortedSearch(authorizationContext.subjectIds);
+
+    const docsByReplicationKey = [];
 
     results.rows.forEach(row => {
       const { key: subject, value: { submitter, private } = {} } = row;
-      if (isSensitive(feed.userCtx, subject, submitter, private, () => sortedIncludes(sortedSubjects, submitter))) {
+      const allowedSubmitter = () => sortedIncludes(sortedSubjects, submitter);
+      if (isSensitive(authorizationContext.userCtx, subject, submitter, private, allowedSubmitter)) {
         return;
       }
 
       if (tombstoneUtils.isTombstoneId(row.id)) {
-        return includeTombstones && tombstoneIds.push(row.id);
+        docsByReplicationKey.push(row);
+        return;
       }
 
-      if (isAllowedDepth(feed, viewResultsById[row.id])) {
-        validatedIds.push(row.id);
+      if (isAllowedDepth(authorizationContext, viewResultsById[row.id])) {
+        docsByReplicationKey.push(row);
       }
     });
 
-    if (tombstoneIds.length) {
-      // only include tombstones if the winning rev of the document is deleted
-      // if a doc appears in the view results, it means that the winning rev is not deleted
-      const sortedValidatedIds = prepareForSortedSearch(validatedIds);
-      tombstoneIds.forEach(tombstoneId => {
-        const docId = tombstoneUtils.extractStub(tombstoneId).id;
-        if (!sortedIncludes(sortedValidatedIds, docId)) {
-          validatedIds.push(tombstoneId);
-        }
-      });
+    return docsByReplicationKey;
+  });
+};
+
+const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTombstones = true, includeTasks = true } = {}) => {
+  const validatedIds = [MEDIC_CLIENT_DDOC, getUserSettingsId(authCtx.userCtx.name)];
+  const tombstoneIds = [];
+
+  if (!docsByReplicationKey || !docsByReplicationKey.length) {
+    return validatedIds;
+  }
+
+  docsByReplicationKey.forEach(row => {
+    if (isTaskDoc(row) && !includeTasks) {
+      return;
     }
 
-    return _.uniq(validatedIds);
+    if (tombstoneUtils.isTombstoneId(row.id)) {
+      return includeTombstones && tombstoneIds.push(row.id);
+    }
+
+    validatedIds.push(row.id);
+  });
+
+  if (tombstoneIds.length) {
+    // only include tombstones if the winning rev of the document is deleted
+    // if a doc appears in the view results, it means that the winning rev is not deleted
+    const sortedValidatedIds = prepareForSortedSearch(validatedIds);
+    tombstoneIds.forEach(tombstoneId => {
+      const docId = tombstoneUtils.extractStub(tombstoneId).id;
+      if (!sortedIncludes(sortedValidatedIds, docId)) {
+        validatedIds.push(tombstoneId);
+      }
+    });
+  }
+
+  return _.uniq(validatedIds);
+};
+
+const getAllowedDocIds = (authorizationContext, { includeTombstones = true, includeTasks = true } = {}) => {
+  return getDocsByReplicationKey(authorizationContext).then(docsByReplicationKey => {
+    return filterAllowedDocIds(authorizationContext, docsByReplicationKey, { includeTombstones, includeTasks });
   });
 };
 
@@ -521,6 +554,8 @@ module.exports = {
   getViewResults: getViewResults,
   getAuthorizationContext: getAuthorizationContext,
   getAllowedDocIds: getAllowedDocIds,
+  getDocsByReplicationKey: getDocsByReplicationKey,
+  filterAllowedDocIds: filterAllowedDocIds,
   excludeTombstoneIds: excludeTombstoneIds,
   convertTombstoneIds: convertTombstoneIds,
   alwaysAllowCreate: alwaysAllowCreate,
