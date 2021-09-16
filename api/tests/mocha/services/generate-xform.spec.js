@@ -102,19 +102,16 @@ describe('generate-xform service', () => {
       }
     });
 
-    it('errors if xsltproc command not found', async () => {
+    it('should fail when xsltproc command not found', async () => {
       try {
         const writeErr = new Error('Error: write EPIPE');
         writeErr.code = 'EPIPE';
         const spawnedEpipe = {
-          stdout: { on: sinon.stub() },
-          stderr: { on: sinon.stub() },
+          ...spawned,
           stdin: {
-            setEncoding: sinon.stub(),
+            ...spawned.stdin,
             write: sinon.stub().throws(writeErr),
-            end: sinon.stub()
-          },
-          on: sinon.stub()
+          }
         };
         await runTest('simple', spawnedEpipe, null, false);
         assert.fail('expected error to be thrown');
@@ -124,17 +121,14 @@ describe('generate-xform service', () => {
       }
     });
 
-    it('errors if xsltproc raises unknown exception', async () => {
+    it('should fail when xsltproc raises unknown exception', async () => {
       try {
         const spawnedUnknownWriteErr = {
-          stdout: { on: sinon.stub() },
-          stderr: { on: sinon.stub() },
+          ...spawned,
           stdin: {
-            setEncoding: sinon.stub(),
+            ...spawned.stdin,
             write: sinon.stub().throws('mystery error'),
-            end: sinon.stub()
-          },
-          on: sinon.stub()
+          }
         };
         await runTest('simple', spawnedUnknownWriteErr, null, false);
         assert.fail('expected error to be thrown');

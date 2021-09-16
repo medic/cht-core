@@ -30,8 +30,8 @@ const transform = (formXml, stylesheet) => {
       xsltproc.stdin.write(formXml);
     } catch (err) {
       if (err.code === 'EPIPE') {
-        return reject(
-          new Error(`Unable to continue execution, check that '${XSLTPROC_CMD}' command is available.`));
+        const errMsg = `Unable to continue execution, check that '${XSLTPROC_CMD}' command is available.`;
+        return reject(new Error(errMsg));
       }
       logger.error(err);
       return reject(new Error(`Unknown Error: An error occurred when executing '${XSLTPROC_CMD}' command`));
