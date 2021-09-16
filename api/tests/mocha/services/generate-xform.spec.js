@@ -84,13 +84,13 @@ describe('generate-xform service', () => {
       });
     };
 
-    it('generates form and model', () => runTest('simple', spawned));
+    it('should generates form and model', () => runTest('simple', spawned));
 
-    it('replaces multimedia src elements', () => runTest('multimedia', spawned));
+    it('should replaces multimedia src elements', () => runTest('multimedia', spawned));
 
-    it('correctly replaces models with nested "</root>" - #5971', () => runTest('nested-root', spawned));
+    it('should correctly replaces models with nested "</root>" - #5971', () => runTest('nested-root', spawned));
 
-    it('errors if child process errors', async () => {
+    it('should fail when child process errors', async () => {
       try {
         await runTest('simple', spawned, 'some error');
         assert.fail('expected error to be thrown');
@@ -147,7 +147,7 @@ describe('generate-xform service', () => {
 
   describe('update', () => {
 
-    it('errors if no form found', done => {
+    it('should fail when no form found', done => {
       sinon.stub(db.medic, 'get').rejects('boom');
       service.update('form:missing')
         .then(() => done(new Error('expected error to be thrown')))
@@ -159,7 +159,7 @@ describe('generate-xform service', () => {
         });
     });
 
-    it('does nothing if doc does not have form attachment', () => {
+    it('should do nothing when doc does not have form attachment', () => {
       sinon.stub(db.medic, 'get').resolves({ _attachments: { image: {} } });
       sinon.stub(db.medic, 'put');
       return service.update('form:exists').then(() => {
@@ -168,7 +168,7 @@ describe('generate-xform service', () => {
       });
     });
 
-    it('does nothing if the attachments are up to date', () => {
+    it('should do nothing when the attachments are up to date', () => {
       const formXml = '<my-xml/>';
       const currentForm = '<html/>';
       const currentModel = '<xml/>';
@@ -186,7 +186,7 @@ describe('generate-xform service', () => {
       });
     });
 
-    it('updates doc if attachments do not exist', () => {
+    it('should update doc when attachments do not exist', () => {
       const formXml = '<my-xml/>';
       const newForm = '<html><title>Hello</title></html>';
       const newModel = '<instance><multimedia/></instance>';
@@ -201,7 +201,7 @@ describe('generate-xform service', () => {
       });
     });
 
-    it('updates doc if attachments have changed', () => {
+    it('should update doc when attachments have changed', () => {
       const formXml = '<my-xml/>';
       const currentForm = '<html/>';
       const newForm = '<html><title>Hello</title></html>';
@@ -238,7 +238,7 @@ describe('generate-xform service', () => {
       }
     };
 
-    it('handles no forms', () => {
+    it('should handle no forms', () => {
       sinon.stub(db.medic, 'query').resolves({ rows: [] });
       sinon.stub(db.medic, 'bulkDocs');
       return service.updateAll().then(() => {
@@ -247,7 +247,7 @@ describe('generate-xform service', () => {
       });
     });
 
-    it('ignores json forms', () => {
+    it('should ignore json forms', () => {
       sinon.stub(db.medic, 'query').resolves({ rows: [ JSON_FORM_ROW ] });
       sinon.stub(db.medic, 'bulkDocs');
       return service.updateAll().then(() => {
@@ -256,7 +256,7 @@ describe('generate-xform service', () => {
       });
     });
 
-    it('ignores collect forms', () => {
+    it('should ignore collect forms', () => {
       sinon.stub(db.medic, 'query').resolves({ rows: [ COLLECT_FORM_ROW ] });
       sinon.stub(db.medic, 'bulkDocs');
       return service.updateAll().then(() => {
@@ -265,7 +265,7 @@ describe('generate-xform service', () => {
       });
     });
 
-    it('does nothing if no forms have changed', () => {
+    it('should do nothing when no forms have changed', () => {
       const formXml = '<my-xml/>';
       const currentForm = '<html/>';
       const currentModel = '<xml/>';
@@ -284,7 +284,7 @@ describe('generate-xform service', () => {
       });
     });
 
-    it('throws if not all updated successfully', done => {
+    it('should throw when not all updated successfully', done => {
       const formXml = '<my-xml/>';
       const currentForm = '<html/>';
       const newForm = '<html><title>Hello</title></html>';
@@ -312,7 +312,7 @@ describe('generate-xform service', () => {
         });
     });
 
-    it('saves all updated forms', () => {
+    it('should save all updated forms', () => {
       const formXml = '<my-xml/>';
       const currentForm = '<html/>';
       const newForm = '<html><title>Hello</title></html>';
