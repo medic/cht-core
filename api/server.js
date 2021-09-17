@@ -1,6 +1,7 @@
 const environment = require('./src/environment');
 const serverChecks = require('@medic/server-checks');
 const logger = require('./src/logger');
+const generateServiceWorker = require('./src/generate-service-worker');
 
 process
   .on('unhandledRejection', reason => {
@@ -58,13 +59,13 @@ process
     await translations.run();
     logger.info('Translations merged successfully');
 
-    logger.info('Generating service worker');
-    await generateServiceWorker.run();
-    logger.info('Service worker generated successfully');
-
     logger.info('Running db migrations…');
     await migrations.run();
     logger.info('Database migrations completed successfully');
+
+    logger.info('Generating service worker');
+    await generateServiceWorker.run();
+    logger.info('Service worker generated successfully');
 
     logger.info('Updating xforms…');
     await generateXform.updateAll();
