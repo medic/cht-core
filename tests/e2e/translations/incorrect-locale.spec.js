@@ -49,7 +49,8 @@ describe('Incorrect locale', () => {
     // wait for language to load
     await browser.wait(
       async () => await commonElements.getReportsButtonLabel().getText() === 'HilReports',
-      2000
+      2000,
+      'Translations for Hil were not applied'
     );
 
     // we have correct language!
