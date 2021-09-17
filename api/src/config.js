@@ -131,10 +131,7 @@ const handleDdocChange = () => {
       logger.error('Something went wrong trying to extract resources: %o', err);
       process.exit(1);
     })
-    .then(() => generateServiceWorker.run())
-    .catch(err => {
-      logger.error('Something went wrong trying to generate service worker: %o', err);
-    });
+    .then(() => regenerateServiceWorker());
 };
 
 const handleSettingsChange = () => {
@@ -152,7 +149,7 @@ const handleTranslationsChange = () => {
   logger.info('Detected translations change - reloading');
   return loadTranslations()
     .then(() => initTransitionLib())
-    .then(() => generateServiceWorker.run());
+    .then(() => regenerateServiceWorker());
 };
 
 const handleFormChange = (change) => {
@@ -163,8 +160,13 @@ const handleFormChange = (change) => {
 };
 
 const handleBrandingChanges = () => {
+  return regenerateServiceWorker();
+};
+
+const regenerateServiceWorker = () => {
   return generateServiceWorker.run().catch(err => {
     logger.error('Failed to generate service worker: %o', err);
+    process.exit(1);
   });
 };
 

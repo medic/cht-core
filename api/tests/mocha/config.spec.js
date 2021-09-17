@@ -137,7 +137,7 @@ describe('Config', () => {
       });
     });
 
-    it('reloads translations when translations are updated', () => {
+    it('reloads translations and generates sw when translations are updated', () => {
       config.listen();
       db.medic.query.resolves({ rows: [] });
       const change = { id: 'messages-test' };
@@ -159,6 +159,20 @@ describe('Config', () => {
             }).callCount
           )
           .to.equal(1);
+      });
+    });
+
+    it('reloads generates sw when branding is updated', () => {
+      config.listen();
+      const change = { id: 'branding' };
+      const changeCallback = on.args[0][1];
+      changeCallback(change);
+      return nextTick().then(() => {
+        chai.expect(generateServiceWorker.run.callCount).to.equal(1);
+
+        chai.expect(translations.run.callCount).to.equal(0);
+        chai.expect(ddocExtraction.run.callCount).to.equal(0);
+        chai.expect(resourceExtraction.run.callCount).to.equal(0);
       });
     });
   });
