@@ -30,9 +30,9 @@ echo Creating logs dir
 mkdir -p > /tests/logs/
 echo Installing Horti
 npm install -g horticulturalist 
-echo restart is $RESTART
+echo INSTALL_LATEST is $INSTALL_LATEST
 echo tag is $IS_TAG
-if [ -n "$IS_TAG"  ] && [ -z "$RESTART" ]; then
+if [ -n "$IS_TAG"  ] && [ -z "$INSTALL_LATEST" ]; then
     echo 'Setting vars for tag'
     UPGRADE=$BUILD
     HORTI_BUILDS_SERVER=$DEFAULT_BUILDS_URL
