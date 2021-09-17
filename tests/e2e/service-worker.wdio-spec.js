@@ -222,6 +222,4 @@ describe('Service worker cache', () => {
       await unregisterServiceWorkerAndWipeAllCaches();
     }
   });
-
-
 });
