@@ -4,8 +4,7 @@ const { expect } = require('chai');
 
 let fakeRegisterFunc;
 
-const executeSwLifecycle = (registration, update = true) => {
-  update && setTimeout(() => registration.onupdatefound(), 1);
+const executeSwLifecycle = (registration) => {
   setTimeout(() => registration.installing.onstatechange(), 2);
 };
 
@@ -46,20 +45,6 @@ describe('Bootstrap Service worker registration (swRegister.js)', () => {
     });
 
     executeSwLifecycle(registration);
-    return promise;
-  });
-
-  it('should resolve when no update event is triggered', () => {
-    const registration = { installing: { state: 'activated' } };
-    fakeRegisterFunc.resolves(registration);
-
-    const callback = sinon.stub();
-    const promise = swRegister(callback).then(actual => {
-      expect(actual).to.be.an('object');
-      expect(callback.callCount).to.eq(1);
-    });
-
-    executeSwLifecycle(registration, false);
     return promise;
   });
 

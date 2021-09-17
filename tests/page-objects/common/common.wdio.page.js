@@ -142,15 +142,20 @@ const waitForLoaders = async () => {
   });
 };
 
-const sync = async () => {
+const syncAndWaitForSuccess = async () => {
   await openHamburgerMenu();
   await (await syncButton()).click();
   await openHamburgerMenu();
   await (await syncSuccess()).waitForDisplayed();
+};
+
+const sync = async (expectReload) => {
+  await syncAndWaitForSuccess();
+  if (expectReload) {
+    await closeReloadModal();
+  }
   // sync status sometimes lies when multiple changes are fired in quick succession
-  await (await syncButton()).click();
-  await openHamburgerMenu();
-  await (await syncSuccess()).waitForDisplayed();
+  await syncAndWaitForSuccess();
 };
 
 const closeReloadModal = async () => {
@@ -179,7 +184,7 @@ const openAboutMenu = async () => {
 const openConfigurationWizardAndFetchProperties = async () => {
   await (await $('i.fa-list-ol')).click();
   await (await $('#guided-setup')).waitForDisplayed();
-  
+
   return {
     modelTitle: await (await $('#guided-setup .modal-header > h2')).getText(),
     defaultCountryCode: await (await $('#select2-default-country-code-setup-container')).getText(),
@@ -230,5 +235,5 @@ module.exports = {
   openUserSettingsAndFetchProperties,
   openReportBugAndFetchProperties,
   openAppManagement,
-  waitForLoaderToDisappear 
+  waitForLoaderToDisappear
 };

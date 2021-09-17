@@ -1,12 +1,13 @@
 const { expect } = require('chai');
 const URL = require('url');
 const utils = require('../utils');
+const loginPage = require('../page-objects/login/login.wdio.page');
+const commonPage = require('../page-objects/common/common.wdio.page');
 
 /* global caches fetch Response navigator */
 
 const getCachedRequests = async () => {
-  const cacheDetails = await browser.executeAsyncScript(async () => {
-    const callback = arguments[arguments.length - 1];
+  const cacheDetails = await browser.executeAsync(async (callback) => {
     const cacheNames = await caches.keys();
     const cache = await caches.open(cacheNames[0]);
     const cachedRequests = await cache.keys();
@@ -22,8 +23,7 @@ const getCachedRequests = async () => {
   return { name: cacheDetails.name, urls };
 };
 
-const stubAllCachedRequests = () => browser.executeAsyncScript(async () => {
-  const callback = arguments[arguments.length - 1];
+const stubAllCachedRequests = () => browser.executeAsync(async (callback) => {
   const cacheNames = await caches.keys();
   const cache = await caches.open(cacheNames[0]);
   const cachedRequests = await cache.keys();
@@ -31,8 +31,7 @@ const stubAllCachedRequests = () => browser.executeAsyncScript(async () => {
   callback();
 });
 
-const doFetch = (path, headers) => browser.executeAsyncScript(async (innerPath, innerHeaders) => {
-  const callback = arguments[arguments.length - 1];
+const doFetch = (path, headers) => browser.executeAsync(async (innerPath, innerHeaders, callback) => {
   const result = await fetch(innerPath, { headers: innerHeaders });
   callback({
     body: await result.text(),
@@ -41,20 +40,53 @@ const doFetch = (path, headers) => browser.executeAsyncScript(async (innerPath, 
   });
 }, path, headers);
 
-const unregisterServiceWorkerAndWipeAllCaches = () => browser.executeAsyncScript(async () => {
-  const callback = arguments[arguments.length - 1];
-
+const unregisterServiceWorkerAndWipeAllCaches = () => browser.executeAsync(async (callback) => {
   const registrations = await navigator.serviceWorker.getRegistrations();
   registrations.forEach(registration => registration.unregister());
 
   const cacheNames = await caches.keys();
-  cacheNames.forEach(async (name) => await caches.delete(name));
+  for (const name of cacheNames) {
+    await caches.delete(name);
+  }
 
   callback();
 });
 
+const district = {
+  _id: 'fixture:district',
+  type: 'district_hospital',
+  name: 'District',
+  place_id: 'district',
+  reported_date: new Date().getTime(),
+};
+
+const chw = {
+  username: 'bob',
+  password: 'medic.123',
+  place: 'fixture:district',
+  contact: { _id: 'fixture:user:bob', name: 'Bob' },
+  roles: ['chw'],
+};
+
+const login = async () => {
+  await browser.throttle('online');
+  await loginPage.login(chw.username, chw.password);
+  await (await commonPage.analyticsTab()).waitForDisplayed();
+};
+
 describe('Service worker cache', () => {
-  afterEach(utils.afterEach);
+  before(async () => {
+    await utils.saveDoc(district);
+    await utils.createUsers([chw]);
+
+    await login();
+    await commonPage.closeTour();
+  });
+
+  after(async () => {
+    await utils.deleteUsers([chw]);
+    await utils.revertDb([], true);
+  });
 
   it('confirm initial list of cached resources', async () => {
     const cacheDetails = await getCachedRequests();
@@ -90,6 +122,64 @@ describe('Service worker cache', () => {
     ]);
   });
 
+  it('branding updates trigger login page refresh', async () => {
+    const branding = await utils.getDoc('branding');
+    branding.title = 'Not Medic';
+    await utils.saveDoc(branding);
+    await utils.waitForLogs('api.e2e.log', /Service worker updated successfully/);
+
+    await commonPage.sync(true);
+    await browser.throttle('offline'); // make sure we load the login page from cache
+    await commonPage.logout();
+    expect(await browser.getTitle()).to.equal('Not Medic');
+
+    await login();
+  });
+
+  it('login page translation updates trigger login page refresh', async () => {
+    await utils.addTranslations('en', {
+      'User Name': 'NotUsername',
+      'login': 'NotLogin',
+    });
+    await utils.waitForLogs('api.e2e.log', /Service worker updated successfully/);
+
+    await commonPage.sync(true);
+    await browser.throttle('offline'); // make sure we load the login page from cache
+    await commonPage.logout();
+
+    expect(await (await loginPage.labelForUser()).getText()).to.equal('NotUsername');
+    expect(await (await loginPage.loginButton()).getText()).to.equal('NotLogin');
+
+    await login();
+  });
+
+  it('adding new languages triggers login page refresh', async () => {
+    await utils.addTranslations('ro', {
+      'User Name': 'Utilizator',
+      'Password': 'Parola',
+      'login': 'Autentificare',
+    });
+    await utils.waitForLogs('api.e2e.log', /Service worker updated successfully/);
+
+    await commonPage.sync(true);
+    await commonPage.logout();
+
+    await loginPage.changeLanguage('ro', 'Utilizator');
+
+    expect(await (await loginPage.labelForUser()).getText()).to.equal('Utilizator');
+    expect(await (await loginPage.loginButton()).getText()).to.equal('Autentificare');
+    expect(await (await loginPage.labelForPassword()).getText()).to.equal('Parola');
+
+    await login();
+  });
+
+  it('should load the page while offline', async () => {
+    await browser.throttle('offline');
+    await browser.refresh();
+    await (await commonPage.analyticsTab()).waitForDisplayed();
+    await browser.throttle('online');
+  });
+
   it('confirm fetch yields cached result', async () => {
     const expectCachedState = async (expectCached, path, headers = {}) => {
       const result = await doFetch(path, headers);
@@ -102,19 +192,20 @@ describe('Service worker cache', () => {
 
       await expectCachedState(true, '/');
       await expectCachedState(true, '/', {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;' +
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*!/!*;' +
         'q=0.8,application/signed-exchange;v=b3'
       });
 
       await expectCachedState(true, '/medic/login');
       await expectCachedState(true, '/medic/login', {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;' +
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*!/!*;' +
         'q=0.8,application/signed-exchange;v=b3'
       });
+      await expectCachedState(true, '/medic/login?redirect=place&username=user');
 
       await expectCachedState(true, '/medic/_design/medic/_rewrite/');
       await expectCachedState(true, '/medic/_design/medic/_rewrite/', {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;' +
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*!/!*;' +
         'q=0.8,application/signed-exchange;v=b3'
       });
 
@@ -131,4 +222,6 @@ describe('Service worker cache', () => {
       await unregisterServiceWorkerAndWipeAllCaches();
     }
   });
+
+
 });

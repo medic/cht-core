@@ -65,4 +65,7 @@ module.exports = {
   cookieLogin,
   getAllLocales: () => getLanguage('.locale'),
   changeLanguage,
+  labelForUser,
+  loginButton,
+  labelForPassword,
 };

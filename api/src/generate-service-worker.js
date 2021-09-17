@@ -3,6 +3,7 @@ const path = require('path');
 
 const environment = require('./environment');
 const db = require('./db');
+const logger = require('./logger');
 
 const SWMETA_DOC_ID = 'service-worker-meta';
 
@@ -72,6 +73,9 @@ const writeServiceWorkerMetaDoc = () => {
       if (err.status !== 409) {
         throw err;
       }
+    })
+    .then(() => {
+      logger.info('Service worker updated successfully');
     });
 };
 
