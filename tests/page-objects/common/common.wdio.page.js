@@ -4,6 +4,7 @@ const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
 const syncButton = () => $(`${hamburgerMenuItemSelector} a:not(.disabled) .fa-refresh`);
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
+const taskTab = () => $('#tasks-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
@@ -16,6 +17,34 @@ const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)'
 
 const isHamburgerMenuOpen = async () => {
   return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
+};
+
+const isMessagesListPresent = () => {
+  return isElementByIdPresent('message-list');
+};
+
+const isTasksListPresent = () => {
+  return isElementByIdPresent('tasks-list');
+};
+
+const isReportsListPresent = () => {
+  return isElementByIdPresent('reports-list');
+};
+
+const isPeopleListPresent = () => {
+  return isElementByIdPresent('contacts-list');
+};
+
+const isTargetMenuItemPresent = async () => {
+  return await (await $(`=Target`)).isExisting();
+};
+
+const isTargetAggregatesMenuItemPresent = async () => {
+  return await (await $(`=Target aggregates`)).isExisting();
+};
+
+const isElementByIdPresent = async (elementId) => {
+  return await (await $(`#${elementId}`)).isExisting();
 };
 
 const openHamburgerMenu = async () => {
@@ -59,6 +88,21 @@ const goToPeople = async (contactId = '', shouldLoad = true) => {
   if (shouldLoad) {
     await (await contactsPage.contactList()).waitForDisplayed();
   }
+};
+
+const goToMessages = async () => {
+  await browser.url(`/#/messages`);
+  await (await messagesTab()).waitForDisplayed();
+};
+
+const goToTasks = async () => {
+  await browser.url(`/#/tasks`);
+  await (await taskTab()).waitForDisplayed();
+};
+
+const goToAnalytics = async () => {
+  await browser.url(`/#/analytics`);
+  await (await analyticsTab()).waitForDisplayed();
 };
 
 const closeTour = async () => {
@@ -117,6 +161,43 @@ const closeReloadModal = async () => {
   await browser.pause(500);
 };
 
+const openReportBugAndFetchProperties = async () => {
+  await (await $('i.fa-bug')).click();
+  await (await $('#feedback')).waitForDisplayed();
+  return {
+    modalHeader: await (await $('#feedback .modal-header > h2')).getText(),
+    modelCancelButtonText: await (await $('.btn.cancel')).getText(),
+    modelSubmitButtonText: await (await $('.btn-primary')).getText()
+  };
+};
+
+const openAboutMenu = async () => {
+  await (await $('i.fa-question')).click();
+  await (await $('.btn-primary=Reload')).waitForDisplayed();
+};
+
+const openConfigurationWizardAndFetchProperties = async () => {
+  await (await $('i.fa-list-ol')).click();
+  await (await $('#guided-setup')).waitForDisplayed();
+  
+  return {
+    modelTitle: await (await $('#guided-setup .modal-header > h2')).getText(),
+    defaultCountryCode: await (await $('#select2-default-country-code-setup-container')).getText(),
+    modelFinishButtonText: await (await $('#guided-setup .modal-footer>a:nth-of-type(2)')).getText()
+  };
+};
+
+const openUserSettingsAndFetchProperties  = async () => {
+  await (await $('=User settings')).click();
+  await (await $('=Update password')).waitForDisplayed();
+  await (await $('=Edit user profile')).waitForDisplayed();
+};
+
+const openAppManagement = async () => {
+  await (await $('i.fa-cog')).click();
+  await (await $('.navbar-brand')).waitForDisplayed();
+};
+
 module.exports = {
   logout,
   logoutButton,
@@ -134,5 +215,20 @@ module.exports = {
   waitForLoaders,
   sync,
   closeReloadModal,
-  waitForLoaderToDisappear,
+  goToMessages,
+  goToTasks,
+  goToAnalytics,
+  isMessagesListPresent,
+  isTasksListPresent,
+  isPeopleListPresent,
+  isReportsListPresent,
+  openConfigurationWizardAndFetchProperties,
+  isTargetMenuItemPresent,
+  isTargetAggregatesMenuItemPresent,
+  openHamburgerMenu,
+  openAboutMenu,
+  openUserSettingsAndFetchProperties,
+  openReportBugAndFetchProperties,
+  openAppManagement,
+  waitForLoaderToDisappear 
 };

@@ -337,6 +337,7 @@ describe('Users API', () => {
     let offlineRequestOptions;
     let onlineRequestOptions;
     const nbrOfflineDocs = 30;
+    const nbrTasks = 20;
     // _design/medic-client + org.couchdb.user:offline + fixture:offline + OfflineUser
     let expectedNbrDocs = nbrOfflineDocs + 4;
     let docsForAll;
@@ -349,6 +350,11 @@ describe('Users API', () => {
         type: `clinic`,
         parent: { _id: 'fixture:offline' }
       }));
+      docs.push(...Array.from(Array(nbrTasks), () => ({
+        _id: `task~org.couchdb.user:offline~${uuid()}`,
+        type: 'task',
+        user: 'org.couchdb.user:offline'
+      })));
       await utils.saveDocs(docs);
       const resp = await utils.requestOnTestDb('/_design/medic/_view/docs_by_replication_key?key="_all"');
       docsForAll = resp.rows.length + 2; // _design/medic-client + org.couchdb.user:doc
@@ -376,14 +382,24 @@ describe('Users API', () => {
 
     it('should return correct number of allowed docs for offline users', () => {
       return utils.request(offlineRequestOptions).then(resp => {
-        chai.expect(resp).to.deep.equal({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+        chai.expect(resp).to.deep.equal({
+          total_docs: expectedNbrDocs + nbrTasks,
+          warn_docs: expectedNbrDocs,
+          warn: false,
+          limit: 10000
+        });
       });
     });
 
     it('should return correct number of allowed docs when requested by online user', () => {
       onlineRequestOptions.path += '?role=district_admin&facility_id=fixture:offline';
       return utils.request(onlineRequestOptions).then(resp => {
-        chai.expect(resp).to.deep.equal({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+        chai.expect(resp).to.deep.equal({
+          total_docs: expectedNbrDocs,
+          warn_docs: expectedNbrDocs,
+          warn: false,
+          limit: 10000
+        });
       });
     });
 
@@ -432,7 +448,12 @@ describe('Users API', () => {
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
       return utils.request(onlineRequestOptions).then(resp => {
-        chai.expect(resp).to.deep.equal({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+        chai.expect(resp).to.deep.equal({
+          total_docs: expectedNbrDocs,
+          warn_docs: expectedNbrDocs,
+          warn: false,
+          limit: 10000
+        });
       });
     });
 
@@ -443,7 +464,12 @@ describe('Users API', () => {
       };
       offlineRequestOptions.path += '?' + querystring.stringify(params);
       return utils.request(offlineRequestOptions).then(resp => {
-        chai.expect(resp).to.deep.equal({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+        chai.expect(resp).to.deep.equal({
+          total_docs: expectedNbrDocs + nbrTasks,
+          warn_docs: expectedNbrDocs,
+          warn: false,
+          limit: 10000
+        });
       });
     });
 
@@ -486,7 +512,7 @@ describe('Users API', () => {
       return utils
         .request(onlineRequestOptions)
         .then(resp => {
-          chai.expect(resp).to.deep.equal({ total_docs: docsForAll, warn: false, limit: 10000 });
+          chai.expect(resp).to.deep.equal({ total_docs: docsForAll, warn_docs: docsForAll, warn: false, limit: 10000 });
         });
     });
   });
