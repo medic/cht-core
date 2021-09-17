@@ -133,6 +133,9 @@ jobs:
       run:  npm install -g cht-conf
     - name: npm CI
       run: npm ci
+    - name: Should Install Latest
+      run: echo "IS_TAG=TRUE" >> $GITHUB_ENV
+      if: startsWith(github.ref, 'refs/tags/')
     - name: Horti Setup
       run: |
         echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
@@ -140,9 +143,6 @@ jobs:
         sh scripts/e2e/wait_for_response_code.sh 5988 200 api
     # Restarting horti to install on a different builds server.
     # Used for installing the current release then installing the beta. 
-    - name: Should Install Latest
-      run: echo "IS_TAG=TRUE" >> $GITHUB_ENV
-      if: startsWith(github.ref, 'refs/tags/')
     - name: Install Latest Build After Installing Latest In Previous Startup
       run: |
         cp tests/logs/horti.log tests/logs/horti_first_run.log
