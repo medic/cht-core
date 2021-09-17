@@ -76,7 +76,7 @@ const wipeTasks = () => getTasks()
 
 describe('mark_for_outbound', () => {
   afterEach(() => Promise.all([utils.revertSettings(true), wipeTasks()]));
-  afterAll(() => utils.revertDb());
+  after(() => utils.revertDb([], true));
 
   describe('when external server is up', () => {
     beforeEach(() => startMockApp());
@@ -109,12 +109,12 @@ describe('mark_for_outbound', () => {
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
         .then(tasks => {
-          expect(tasks.length).to.equal(0);
+          expect(tasks).to.be.empty;
         })
         .then(() => utils.getDoc(report._id))
         .then(report => {
-          expect(brokenEndpointRequests.length).to.equal(0);
-          expect(workingEndpointRequests.length).to.equal(1);
+          expect(brokenEndpointRequests).to.be.empty;
+          expect(workingEndpointRequests).to.have.lengthOf(1);
           expect(workingEndpointRequests[0]).to.deep.equal({
             id: report._id,
             rev: report._rev
@@ -159,12 +159,12 @@ describe('mark_for_outbound', () => {
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
         .then(tasks => {
-          expect(tasks.length).to.equal(0);
+          expect(tasks).to.be.empty;
         })
         .then(() => utils.getDoc(report._id))
         .then(report => {
-          expect(brokenEndpointRequests.length).to.equal(0);
-          expect(workingEndpointRequests.length).to.equal(1);
+          expect(brokenEndpointRequests).to.be.empty;
+          expect(workingEndpointRequests).to.have.lengthOf(1);
           expect(workingEndpointRequests[0]).to.deep.equal({
             id: report._id,
             form: report.form
@@ -178,9 +178,9 @@ describe('mark_for_outbound', () => {
         .then(getTasks)
         .then(tasks => {
           // And confirm that there are no new writes to the external service
-          expect(tasks.length).to.equal(0);
-          expect(brokenEndpointRequests.length).to.equal(0);
-          expect(workingEndpointRequests.length).to.equal(1);
+          expect(tasks).to.be.empty;
+          expect(brokenEndpointRequests).to.be.empty;
+          expect(workingEndpointRequests).to.have.lengthOf(1);
         })
         .then(() => sentinelUtils.getInfoDoc(report._id))
         .then(infoDoc => {
@@ -190,7 +190,7 @@ describe('mark_for_outbound', () => {
             'completed_tasks[0].type': 'outbound',
             'completed_tasks[0].name': 'test'
           });
-          expect(infoDoc.completed_tasks.length).to.equal(1);
+          expect(infoDoc.completed_tasks).to.have.lengthOf(1);
         });
     });
 
@@ -224,14 +224,14 @@ describe('mark_for_outbound', () => {
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
         .then(tasks => {
-          expect(tasks.length).to.equal(0);
+          expect(tasks).to.be.empty;
         })
         .then(() => utils.getDoc(report._id))
         .then(result => {
           report = result;
 
-          expect(brokenEndpointRequests.length).to.equal(0);
-          expect(workingEndpointRequests.length).to.equal(1);
+          expect(brokenEndpointRequests).to.be.empty;
+          expect(workingEndpointRequests).to.have.lengthOf(1);
           expect(workingEndpointRequests[0]).to.deep.equal({
             id: report._id,
             form: report.form
@@ -245,9 +245,9 @@ describe('mark_for_outbound', () => {
         .then(getTasks)
         .then(tasks => {
           // And confirm that it got sent again
-          expect(tasks.length).to.equal(0);
-          expect(brokenEndpointRequests.length).to.equal(0);
-          expect(workingEndpointRequests.length).to.equal(2);
+          expect(tasks).to.be.empty;
+          expect(brokenEndpointRequests).to.be.empty;
+          expect(workingEndpointRequests).to.have.lengthOf(2);
           expect(workingEndpointRequests[1]).to.deep.equal({
             id: report._id,
             form: 'we changed the form'
@@ -263,7 +263,7 @@ describe('mark_for_outbound', () => {
             'completed_tasks[1].type': 'outbound',
             'completed_tasks[1].name': 'test'
           });
-          expect(infoDoc.completed_tasks.length).to.equal(2);
+          expect(infoDoc.completed_tasks).to.have.lengthOf(2);
         });
     });
 
@@ -294,7 +294,7 @@ describe('mark_for_outbound', () => {
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
         .then(tasks => {
-          expect(tasks.length).to.equal(1);
+          expect(tasks).to.have.lengthOf(1);
           expect(tasks[0]).to.include({
             _id: `task:outbound:${report._id}`,
             type: 'task:outbound',
@@ -304,8 +304,8 @@ describe('mark_for_outbound', () => {
         })
         .then(() => utils.getDoc(report._id))
         .then(report => {
-          expect(workingEndpointRequests.length).to.equal(0);
-          expect(brokenEndpointRequests.length).to.equal(1);
+          expect(workingEndpointRequests).to.be.empty;
+          expect(brokenEndpointRequests).to.have.lengthOf(1);
           expect(brokenEndpointRequests[0]).to.deep.equal({
             id: report._id,
             rev: report._rev
@@ -329,7 +329,7 @@ describe('mark_for_outbound', () => {
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
         .then(tasks => {
-          expect(tasks.length).to.equal(0);
+          expect(tasks).to.be.empty;
         });
     });
 
@@ -352,7 +352,7 @@ describe('mark_for_outbound', () => {
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
         .then(tasks => {
-          expect(tasks.length).to.equal(0);
+          expect(tasks).to.be.empty;
         });
     });
 
@@ -375,7 +375,7 @@ describe('mark_for_outbound', () => {
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
         .then(tasks => {
-          expect(tasks.length).to.equal(1);
+          expect(tasks).to.have.lengthOf(1);
           expect(tasks[0]).to.include({
             _id: `task:outbound:${report._id}`,
             type: 'task:outbound',
@@ -406,7 +406,7 @@ describe('mark_for_outbound', () => {
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(getTasks)
         .then(tasks => {
-          expect(tasks.length).to.equal(1);
+          expect(tasks).to.have.lengthOf(1);
           expect(tasks[0].queue).to.deep.equal(['test']);
         })
         .then(() => utils.getDoc(report._id))
@@ -417,7 +417,7 @@ describe('mark_for_outbound', () => {
         })
         .then(getTasks)
         .then(tasks => {
-          expect(tasks.length).to.equal(1);
+          expect(tasks).to.have.lengthOf(1);
           expect(tasks[0].queue).to.deep.equal(['test']);
         });
     });
@@ -458,7 +458,7 @@ describe('mark_for_outbound', () => {
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(() => collect())
         .then(logs => {
-          expect(logs.length).to.equal(1);
+          expect(logs).to.have.lengthOf(1);
         });
     });
 
@@ -491,7 +491,7 @@ describe('mark_for_outbound', () => {
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(() => collect())
         .then(logs => {
-          expect(logs.length).to.equal(2);
+          expect(logs).to.have.lengthOf(2);
         });
     });
 
@@ -525,7 +525,7 @@ describe('mark_for_outbound', () => {
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(() => collect())
         .then(logs => {
-          expect(logs.length).to.equal(1);
+          expect(logs).to.have.lengthOf(1);
         });
     });
   });

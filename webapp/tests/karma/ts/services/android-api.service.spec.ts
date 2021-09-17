@@ -9,6 +9,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SimprintsService } from '@mm-services/simprints.service';
 import { NavigationService } from '@mm-services/navigation.service';
+import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.service';
 
 describe('AndroidApi service', () => {
 
@@ -19,6 +20,7 @@ describe('AndroidApi service', () => {
   let simprintsService;
   let consoleErrorMock;
   let navigationService;
+  let androidAppLauncherService;
 
   beforeEach(() => {
     sessionService = {
@@ -46,6 +48,10 @@ describe('AndroidApi service', () => {
       goToPrimaryTab: sinon.stub(),
     };
 
+    androidAppLauncherService = {
+      resolveAndroidAppResponse: sinon.stub()
+    };
+
     consoleErrorMock = sinon.stub(console, 'error');
 
     TestBed.configureTestingModule({
@@ -55,6 +61,7 @@ describe('AndroidApi service', () => {
         { provide: SimprintsService, useValue: simprintsService },
         { provide: MRDTService, useValue: mrdtService },
         { provide: NavigationService, useValue: navigationService },
+        { provide: AndroidAppLauncherService, useValue: androidAppLauncherService },
       ],
     });
 
@@ -271,6 +278,21 @@ describe('AndroidApi service', () => {
         ' status=a_status,' +
         ' detail=a_detail'
       ]);
+    });
+  });
+
+  describe('Android App Launcher', () => {
+    it('should process response after launching android app', () => {
+      const response = {
+        status: 'located',
+        person: { name: 'Jack', dateOfBirth: '13/05/1995' }
+      };
+
+      service.resolveCHTExternalAppResponse(response);
+
+      expect(androidAppLauncherService.resolveAndroidAppResponse.callCount).to.equal(1);
+      expect(androidAppLauncherService.resolveAndroidAppResponse.args[0]).to.have.members([response]);
+      expect(consoleErrorMock.callCount).to.equal(0);
     });
   });
 });
