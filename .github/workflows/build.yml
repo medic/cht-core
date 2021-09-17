@@ -1,6 +1,14 @@
 name: Build cht-core and test against node versions
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
 
 env:
   COUCH_URL: http://admin:pass@localhost:5984/medic-test
