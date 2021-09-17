@@ -29,6 +29,7 @@ module.exports = {
       // the builder throws an error if the paths are not resolved
       '../../../build/images/layers.png': 'src/img/layers.png',
       '../../../build/images/layers-2x.png': 'src/img/layers.png',
+      'node-forge': '',
     }
   },
   plugins: [
