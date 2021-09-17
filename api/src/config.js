@@ -11,6 +11,8 @@ const translationUtils = require('@medic/translation-utils');
 const viewMapUtils = require('@medic/view-map-utils');
 const generateServiceWorker = require('./generate-service-worker');
 
+const MEDIC_DDOC_ID = '_design/medic';
+
 const translationCache = {};
 let settings = {};
 let transitionsLib;
@@ -97,7 +99,7 @@ const loadTranslations = () => {
 };
 
 const loadViewMaps = () => {
-  db.medic.get('_design/medic', function(err, ddoc) {
+  db.medic.get(MEDIC_DDOC_ID, function(err, ddoc) {
     if (err) {
       logger.error('Error loading view maps for medic ddoc: %o', err);
       return;
@@ -107,6 +109,62 @@ const loadViewMaps = () => {
       'docs_by_replication_key',
       'contacts_by_depth'
     );
+  });
+};
+
+const handleDdocChange = () => {
+  logger.info('Detected ddoc change - reloading');
+  loadViewMaps();
+
+  return translations
+    .run()
+    .catch(err => {
+      logger.error('Failed to update translation docs: %o', err);
+    })
+    .then(() => ddocExtraction.run())
+    .catch(err => {
+      logger.error('Something went wrong trying to extract ddocs: %o', err);
+      process.exit(1);
+    })
+    .then(() => resourceExtraction.run())
+    .catch(err => {
+      logger.error('Something went wrong trying to extract resources: %o', err);
+      process.exit(1);
+    })
+    .then(() => generateServiceWorker.run())
+    .catch(err => {
+      logger.error('Something went wrong trying to generate service worker: %o', err);
+    });
+};
+
+const handleSettingsChange = () => {
+  logger.info('Detected settings change - reloading');
+  return loadSettings()
+    .catch(err => {
+      logger.error('Failed to reload settings: %o', err);
+      process.exit(1);
+    })
+    .then(() => initTransitionLib())
+    .then(() => logger.debug('Settings updated'));
+};
+
+const handleTranslationsChange = () => {
+  logger.info('Detected translations change - reloading');
+  return loadTranslations()
+    .then(() => initTransitionLib())
+    .then(() => generateServiceWorker.run());
+};
+
+const handleFormChange = (change) => {
+  logger.info('Detected form change - generating attachments');
+  return generateXform.update(change.id).catch(err => {
+    logger.error('Failed to update xform: %o', err);
+  });
+};
+
+const handleBrandingChanges = () => {
+  return generateServiceWorker.run().catch(err => {
+    logger.error('Failed to generate service worker: %o', err);
   });
 };
 
@@ -151,52 +209,24 @@ module.exports = {
     db.medic
       .changes({ live: true, since: 'now', return_docs: false })
       .on('change', change => {
-        if (change.id === '_design/medic') {
-          logger.info('Detected ddoc change - reloading');
-          translations
-            .run()
-            .catch(err => {
-              logger.error('Failed to update translation docs: %o', err);
-            })
-            .then(() => ddocExtraction.run())
-            .catch(err => {
-              logger.error('Something went wrong trying to extract ddocs: %o', err);
-              process.exit(1);
-            })
-            .then(() => resourceExtraction.run())
-            .catch(err => {
-              logger.error('Something went wrong trying to extract resources: %o', err);
-              process.exit(1);
-            })
-            .then(() => generateServiceWorker.run())
-            .catch(err => {
-              logger.error('Something went wrong trying to generate service worker: %o', err);
-            });
+        if (change.id === MEDIC_DDOC_ID) {
+          return handleDdocChange();
+        }
 
-          loadViewMaps();
-        } else if (change.id === 'settings') {
-          logger.info('Detected settings change - reloading');
-          loadSettings()
-            .catch(err => {
-              logger.error('Failed to reload settings: %o', err);
-              process.exit(1);
-            })
-            .then(() => initTransitionLib())
-            .then(() => logger.debug('Settings updated'));
-        } else if (change.id.startsWith('messages-')) {
-          logger.info('Detected translations change - reloading');
-          return loadTranslations()
-            .then(() => initTransitionLib())
-            .then(() => generateServiceWorker.run());
-        } else if (change.id.startsWith('form:')) {
-          logger.info('Detected form change - generating attachments');
-          generateXform.update(change.id).catch(err => {
-            logger.error('Failed to update xform: %o', err);
-          });
-        } else if (change.id.startsWith('branding')) {
-          generateServiceWorker.run().catch(err => {
-            logger.error('Failed to generate service worker: %o', err);
-          });
+        if (change.id === settingsService.SETTINGS_DOC_ID) {
+          return handleSettingsChange();
+        }
+
+        if (change.id.startsWith('messages-')) {
+          return handleTranslationsChange();
+        }
+
+        if (change.id.startsWith('form:')) {
+          return handleFormChange(change);
+        }
+
+        if (change.id === 'branding') {
+          return handleBrandingChanges();
         }
       })
       .on('error', err => {

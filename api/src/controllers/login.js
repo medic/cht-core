@@ -288,6 +288,7 @@ const renderLogin = (req) => {
 
 module.exports = {
   renderLogin,
+
   get: (req, res, next) => {
     return renderLogin(req)
       .then(body => {
@@ -348,12 +349,5 @@ module.exports = {
         }
         next(err);
       });
-  },
-
-  // exposed for testing
-  _safePath: getRedirectUrl,
-  _reset: () => {
-    templates.login.content = null;
-    templates.tokenLogin.content = null;
   },
 };
