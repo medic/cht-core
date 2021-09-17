@@ -1,7 +1,6 @@
 const environment = require('./src/environment');
 const serverChecks = require('@medic/server-checks');
 const logger = require('./src/logger');
-const generateServiceWorker = require('./src/generate-service-worker');
 
 process
   .on('unhandledRejection', reason => {
