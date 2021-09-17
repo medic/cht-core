@@ -14,7 +14,7 @@
   "scripts": {
     "test": "grunt eslint && grunt unit && grunt test-api-integration && grunt e2e",
     "webdriver": "webdriver-manager update && webdriver-manager start",
-    "wdio-setup": "rm -rf allure-results allure-report && grunt e2e-env-setup", 
+    "wdio-setup": "rm -rf allure-results allure-report && grunt e2e-env-setup",
     "wdio-local": "npm run wdio-setup && wdio run ./tests/wdio.conf.js",
     "wdio-standard-local": "npm run wdio-setup && wdio run ./tests/wdio-standard.conf.js",
     "e2e-integration": "mocha --config tests/integration/.mocharc.js ",
@@ -119,7 +119,6 @@
     "rosie": "^2.1.0",
     "semver": "^7.3.5",
     "sinon": "^8.1.1",
-    "sw-precache": "^5.2.1",
     "tail": "^2.2.2",
     "time-grunt": "^2.0.0",
     "typescript": "^3.9.9",
