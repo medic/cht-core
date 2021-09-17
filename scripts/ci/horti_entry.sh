@@ -30,8 +30,18 @@ echo Creating logs dir
 mkdir -p > /tests/logs/
 echo Installing Horti
 npm install -g horticulturalist 
-echo Check e2e servers is running
-curl http://localhost:31337/isRunning
-echo 
+echo INSTALL_LATEST is $INSTALL_LATEST
+echo tag is $IS_TAG
+if [ -n "$IS_TAG"  ] && [ -z "$INSTALL_LATEST" ]; then
+    echo 'Setting vars for tag'
+    UPGRADE=$BUILD
+    HORTI_BUILDS_SERVER=$DEFAULT_BUILDS_URL
+    BUILD='@medic:medic:release'
+fi
+
+echo 'Horti Env Vars'
+echo Build server url $HORTI_BUILDS_SERVER
+echo Upgrade var $UPGRADE
+echo Build var $BUILD
 echo 'Starting Horti'
 horti --local --install=$BUILD > /tests/logs/horti.log
