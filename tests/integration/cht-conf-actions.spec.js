@@ -8,7 +8,7 @@ const utils = require('../utils');
 const actions = ['compile-app-settings','backup-app-settings','convert-app-forms','convert-contact-forms',
   'backup-all-forms','upload-app-forms','upload-contact-forms', 'upload-resources','upload-custom-translations'];
 
-describe('cht-conf actions tests', () => {
+describe.skip('cht-conf actions tests', () => {
   before(() => utils.revertDb([], true));
   const runCommand = async (action) => {
     try {
