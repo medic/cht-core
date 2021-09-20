@@ -6,7 +6,7 @@ const commonPage = require('../page-objects/common/common.wdio.page');
 
 /* global caches fetch Response navigator */
 
-const getCachedRequests = async () => {
+const getCachedRequests = async (raw) => {
   const cacheDetails = await browser.executeAsync(async (callback) => {
     const cacheNames = await caches.keys();
     const cache = await caches.open(cacheNames[0]);
@@ -17,6 +17,10 @@ const getCachedRequests = async () => {
       requests: cachedRequestSummary,
     });
   });
+
+  if (raw) {
+    return cacheDetails;
+  }
 
   const urls = cacheDetails.requests.map(request => URL.parse(request.url).pathname);
   urls.sort();
@@ -74,6 +78,8 @@ const login = async () => {
   await (await commonPage.analyticsTab()).waitForDisplayed();
 };
 
+const SW_SUCCESSFULL_REGEX = /Service worker generated successfully/;
+
 describe('Service worker cache', () => {
   before(async () => {
     await utils.saveDoc(district);
@@ -123,10 +129,11 @@ describe('Service worker cache', () => {
   });
 
   it('branding updates trigger login page refresh', async () => {
+    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFULL_REGEX);
     const branding = await utils.getDoc('branding');
     branding.title = 'Not Medic';
     await utils.saveDoc(branding);
-    await utils.waitForLogs('api.e2e.log', /Service worker updated successfully/);
+    await waitForLogs.promise;
 
     await commonPage.sync(true);
     await browser.throttle('offline'); // make sure we load the login page from cache
@@ -137,11 +144,12 @@ describe('Service worker cache', () => {
   });
 
   it('login page translation updates trigger login page refresh', async () => {
+    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFULL_REGEX);
     await utils.addTranslations('en', {
       'User Name': 'NotUsername',
       'login': 'NotLogin',
     });
-    await utils.waitForLogs('api.e2e.log', /Service worker updated successfully/);
+    await waitForLogs.promise;
 
     await commonPage.sync(true);
     await browser.throttle('offline'); // make sure we load the login page from cache
@@ -153,13 +161,33 @@ describe('Service worker cache', () => {
     await login();
   });
 
+  it('other translation update do not trigger a refresh', async () => {
+    const cacheDetails = await getCachedRequests(true);
+
+    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFULL_REGEX);
+    await utils.addTranslations('en', {
+      'ran': 'dom',
+      'some': 'thing',
+    });
+    await waitForLogs.promise;
+    await commonPage.sync(false);
+
+    const updatedCacheDetails = await getCachedRequests(true);
+
+    // login page has the same hash
+    const initial = cacheDetails.requests.find(request => request.url.startsWith('/medic/login'));
+    const updated = updatedCacheDetails.requests.find(request => request.url.startsWith('/medic/login'));
+    expect(initial).to.deep.equal(updated);
+  });
+
   it('adding new languages triggers login page refresh', async () => {
+    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFULL_REGEX);
     await utils.addTranslations('ro', {
       'User Name': 'Utilizator',
       'Password': 'Parola',
       'login': 'Autentificare',
     });
-    await utils.waitForLogs('api.e2e.log', /Service worker updated successfully/);
+    await waitForLogs.promise;
 
     await commonPage.sync(true);
     await commonPage.logout();
