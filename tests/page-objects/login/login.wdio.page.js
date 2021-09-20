@@ -7,11 +7,12 @@ const passwordField = () => $('#password');
 const labelForUser = () => $('label[for="user"]');
 const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
+const localeByName = (locale) => $(`.locale[name="${locale}"]`);
 
-
-const login = async (username, password) => {
+const login = async (username, password, locale) => {
   await (await userField()).setValue(username);
   await (await passwordField()).setValue(password);
+  await changeLocale(locale);
   await (await loginButton()).click();
 };
 
@@ -46,7 +47,7 @@ const changeLocale = async locale => {
   if (!locale) {
     return;
   }
-  return (await $(`.locale[name="${locale}"]`)).click();
+  return (await localeByName(locale)).click();
 };
 
 const changeLanguage = async (languageCode, userTranslation) => {
