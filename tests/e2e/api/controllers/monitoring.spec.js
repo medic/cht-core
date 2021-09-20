@@ -1,5 +1,6 @@
-const { expect } = require('chai');
-
+const chai = require('chai');
+const chaiExclude = require('chai-exclude');
+chai.use(chaiExclude);
 const utils = require('../../../utils');
 const sentinelUtils = require('../../sentinel/utils');
 
@@ -18,7 +19,7 @@ const getUpdateSeq = (info) => parseInt(info.update_seq.split('-')[0]);
 
 describe('monitoring', () => {
   beforeEach(() => sentinelUtils.waitForSentinel());
-  afterEach(() => utils.afterEach());
+  afterEach(() => utils.revertDb([], true));
 
   describe('v1', () => {
     it('should return empty values for empty db', async () => {
@@ -28,10 +29,9 @@ describe('monitoring', () => {
       const usersInfo = await getInfo('_users');
 
       const result = await utils.request({ path: '/api/v1/monitoring' });
-      expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation']).to.deep.equal({
+      chai.expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation','node']).to.deep.equal({
         version: {
           app: await getAppVersion(),
-          node: process.version,
           couchdb: await getCouchDBVersion(),
         },
         couchdb: {
@@ -87,7 +87,7 @@ describe('monitoring', () => {
           count: 0,
         },
         connected_users: {
-          count: 1,
+          count: 0, //not logged in browser
         },
       });
     });
@@ -101,10 +101,9 @@ describe('monitoring', () => {
       const usersInfo = await getInfo('_users');
 
       const result = await utils.request({ path: '/api/v2/monitoring' });
-      expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation']).to.deep.equal({
+      chai.expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation','node']).to.deep.equal({
         version: {
           app: await getAppVersion(),
-          node: process.version,
           couchdb: await getCouchDBVersion(),
         },
         couchdb: {
@@ -186,7 +185,7 @@ describe('monitoring', () => {
           count: 0,
         },
         connected_users: {
-          count: 1,
+          count: 0,
         },
       });
     });

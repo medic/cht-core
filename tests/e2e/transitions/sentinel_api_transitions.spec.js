@@ -320,14 +320,17 @@ const isUntransitionedDoc = doc => {
          !doc.patient_id;
 };
 
+const contactsRevs = [];
+
 describe('transitions', () => {
-  beforeAll(() => {
+  before(() => {
     return utils
       .saveDocs(contacts)
+      .then((results) => contactsRevs.push(...results))
       .then(() => sentinelUtils.waitForSentinel());
   });
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
+  after(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb(contacts.map(c => c._id), true));
 
   it('should run all sync transitions and all async transitions', () => {
     const settings = {
@@ -577,7 +580,13 @@ describe('transitions', () => {
         chai.expect(child1[0].doc.name).to.equal('Child name');
 
         chai.expect(person3.date_of_death).to.be.ok;
-        chai.expect(person4.muted).to.equal(undefined);
+
+        if (person4._rev !== contactsRevs.find(result => result.id === person4._id).rev) {
+          // if the rev changed, it means that Sentinel was super fast to process muting while we ran assertions
+          chai.expect(person4.muted).to.be.ok;
+        } else {
+          chai.expect(person4.muted).to.equal(undefined);
+        }
       })
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => Promise.all([
@@ -695,7 +704,7 @@ describe('transitions', () => {
         utils.getDocs(ids)
       ]))
       .then(([infos, updatedDocs]) => {
-        infos.forEach(info => expect(!info));
+        infos.forEach(info => chai.expect(!info));
         chai.expect(updatedDocs.every(isUntransitionedDoc)).to.equal(true);
       })
       .then(() => getDocByPatientId('child1'))

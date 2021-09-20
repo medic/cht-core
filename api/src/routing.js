@@ -160,7 +160,11 @@ app.use(
           // Explicitly allow the telemetry script setting startupTimes
           `'sha256-B5cfIVb4/wnv2ixHP03bHeMXZDszDL610YG5wdDq/Tc='`,
           // AngularJS and several dependencies require this
-          `'unsafe-eval'`
+          `'unsafe-eval'`,
+          // Allow Enketo onsubmit form attribute
+          // https://github.com/medic/cht-core/issues/6988
+          `'unsafe-hashes'`,
+          `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
         ],
         styleSrc: [
           `'self'`,
@@ -388,7 +392,7 @@ app.get('/api/v1/users', users.get);
 app.postJson('/api/v1/users', users.create);
 app.postJson('/api/v1/users/:username', users.update);
 app.delete('/api/v1/users/:username', users.delete);
-app.get('/api/v1/users-info', authorization.getUserSettings, users.info);
+app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getUserSettings, users.info);
 
 app.postJson('/api/v1/places', function(req, res) {
   auth

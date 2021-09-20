@@ -6,18 +6,18 @@ const fs = require('fs');
 const path = require('path');
 
 const {
-  TRAVIS_TAG,
-  TRAVIS_BRANCH,
+  TAG,
+  BRANCH,
   COUCH_URL,
   COUCH_NODE_NAME,
   MARKET_URL,
   STAGING_SERVER,
   BUILDS_SERVER,
-  TRAVIS_BUILD_NUMBER,
+  BUILD_NUMBER,
   CI,
 } = process.env;
 
-const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
+const releaseName = TAG || BRANCH || 'local-development';
 const ESLINT_COMMAND = './node_modules/.bin/eslint --color';
 
 const couchConfig = (() => {
@@ -84,7 +84,7 @@ module.exports = function(grunt) {
         replacements: [
           {
             from: '"_id": "_design/medic"',
-            to: `"_id": "medic:medic:test-${TRAVIS_BUILD_NUMBER}"`,
+            to: `"_id": "medic:medic:test-${BUILD_NUMBER}"`,
           },
         ],
       },
@@ -175,7 +175,7 @@ module.exports = function(grunt) {
     uglify: {
       options: {
         banner:
-          '/*! Medic Mobile <%= grunt.template.today("yyyy-mm-dd") %> */\n',
+          '/*! Medic <%= grunt.template.today("yyyy-mm-dd") %> */\n',
       },
       web: {
         files: {
@@ -374,12 +374,12 @@ module.exports = function(grunt) {
       'set-ddoc-version': {
         cmd: () => {
           let version;
-          if (TRAVIS_TAG) {
-            version = TRAVIS_TAG;
+          if (TAG) {
+            version = TAG;
           } else {
             version = packageJson.version;
-            if (TRAVIS_BRANCH === 'master') {
-              version += `-alpha.${TRAVIS_BUILD_NUMBER}`;
+            if (BRANCH === 'master') {
+              version += `-alpha.${BUILD_NUMBER}`;
             }
           }
           return `echo "${version}" > build/ddocs/medic/version`;
@@ -439,7 +439,7 @@ module.exports = function(grunt) {
         exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
       'e2e-servers': {
-        cmd: 'node ./scripts/e2e/e2e-servers.js &'
+        cmd: `${BUILD_NUMBER ? 'echo running in CI' :'node ./scripts/e2e/e2e-servers.js &'}`
       },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
@@ -466,8 +466,8 @@ module.exports = function(grunt) {
       'start-webdriver': {
         cmd:
           'mkdir -p tests/logs && ' +
-          './node_modules/.bin/webdriver-manager update --versions.chrome 90.0.4430.24 && ' +
-          './node_modules/.bin/webdriver-manager start --versions.chrome 90.0.4430.24 > tests/logs/webdriver.log & ' +
+          './node_modules/.bin/webdriver-manager update && ' +
+          './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
       },
       'start-webdriver-ci': {
@@ -478,7 +478,7 @@ module.exports = function(grunt) {
         'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
         'echo "Missing required env var.  Check that all are set: ' +
         'COUCH_URL, COUCH_NODE_NAME" && exit 1; fi',
-      'check-version': `node scripts/travis/check-versions.js`,
+      'check-version': `node scripts/ci/check-versions.js`,
       'undo-patches': {
         cmd: function() {
           const modulesToPatch = [
@@ -505,13 +505,19 @@ module.exports = function(grunt) {
         cmd: [
           'cd config/standard',
           'npm ci',
-          'npm run travis'
+          'npm run ci'
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
-      'wdio-run': {
+      'wdio-run-default': {
         cmd: [
           'npm run wdio'
+        ].join(' && '),
+        stdio: 'inherit', // enable colors!
+      },
+      'wdio-run-standard': {
+        cmd: [
+          'npm run wdio-standard'
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
@@ -519,7 +525,7 @@ module.exports = function(grunt) {
         cmd: [
           'cd config/default',
           'npm ci',
-          'npm run travis'
+          'npm run test'
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
@@ -581,10 +587,10 @@ module.exports = function(grunt) {
       },
       'build-webapp': {
         cmd: () => {
-          const configuration = TRAVIS_BUILD_NUMBER ? 'production' : 'development';
+          const configuration = BUILD_NUMBER ? 'production' : 'development';
           return [
             `cd webapp`,
-            `../node_modules/.bin/ng build --configuration=${configuration} --progress=${TRAVIS_BUILD_NUMBER ? 'false' : 'true'}`,
+            `../node_modules/.bin/ng build --configuration=${configuration} --progress=${BUILD_NUMBER ? 'false' : 'true'}`,
             `../node_modules/.bin/ngc`,
             'cd ../',
           ].join(' && ');
@@ -593,7 +599,7 @@ module.exports = function(grunt) {
       },
       'watch-webapp': {
         cmd: () => {
-          const configuration = TRAVIS_BUILD_NUMBER ? 'production' : 'development';
+          const configuration = BUILD_NUMBER ? 'production' : 'development';
           return `
             cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true &
             cd ../
@@ -605,7 +611,7 @@ module.exports = function(grunt) {
         cmd: () => {
           return [
             'cd webapp',
-            `../node_modules/.bin/ng test webapp --watch=false --progress=${TRAVIS_BUILD_NUMBER ? 'false' : 'true'}`,
+            `../node_modules/.bin/ng test webapp --watch=false --progress=${BUILD_NUMBER ? 'false' : 'true'}`,
             'cd ../',
           ].join(' && ');
         },
@@ -698,7 +704,7 @@ module.exports = function(grunt) {
     notify: {
       deployed: {
         options: {
-          title: 'Medic Mobile',
+          title: 'Medic',
           message: 'Deployed successfully',
         },
       },
@@ -729,7 +735,7 @@ module.exports = function(grunt) {
       },
       'e2e-mobile-tests': {
         options: {
-          configFile: TRAVIS_TAG || TRAVIS_BRANCH?'tests/conf-travis.js':'tests/conf.js',
+          configFile: 'tests/conf.js',
           args: {
             suite: 'mobile',
             capabilities: {
@@ -982,7 +988,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('e2e-integration', 'Deploy app for testing', [
-    'exec:e2e-env-setup',
+    'e2e-env-setup',
     'exec:e2e-integration'
   ]);
 
@@ -1072,6 +1078,11 @@ module.exports = function(grunt) {
     'protractor:e2e-web-tests',
     //'protractor:e2e-mobile-tests',
   ]);
+  grunt.registerTask('ci-e2e-mobile', 'Run e2e tests for CI', [
+    'start-webdriver',
+    'exec:e2e-servers',
+    'protractor:e2e-mobile-tests',
+  ]);
 
   grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
     'exec:e2e-servers',
@@ -1084,9 +1095,14 @@ module.exports = function(grunt) {
     'protractor:e2e-cht-release-tests'
   ]);
 
-  grunt.registerTask('ci-webdriver', 'Run e2e tests using webdriverIO', [
+  grunt.registerTask('ci-webdriver-default', 'Run e2e tests using webdriverIO for default config', [
     'exec:e2e-servers',
-    'exec:wdio-run'
+    'exec:wdio-run-default'
+  ]);
+
+  grunt.registerTask('ci-webdriver-standard', 'Run e2e tests using webdriverIO for standard config', [
+    'exec:e2e-servers',
+    'exec:wdio-run-standard'
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [

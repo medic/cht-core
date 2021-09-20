@@ -225,11 +225,12 @@ describe('ContactsEdit component', () => {
       expect(contactTypesService.get.callCount).to.equal(1);
       expect(enketoService.renderContactForm.callCount).to.equal(1);
 
-      expect(enketoService.renderContactForm.args[0]).to.deep.include.ordered.members([
-        '#contact-form',
-        { _id: 'random_create', the: 'form' },
-        { random: { type: 'contact', contact_type: 'random', parent: '' } },
-      ]);
+      expect(enketoService.renderContactForm.args[0][0]).to.deep.include({
+        selector: '#contact-form',
+        formDoc: { _id: 'random_create', the: 'form' },
+        instanceData: { random: { type: 'contact', contact_type: 'random', parent: '' } },
+        titleKey: 'random',
+      });
 
       routeSnapshot = { params: { type: 'other' } };
       route.params.next({ type: 'other' });
@@ -240,11 +241,12 @@ describe('ContactsEdit component', () => {
       expect(dbGet.callCount).to.equal(2);
       expect(contactTypesService.get.callCount).to.equal(2);
       expect(enketoService.renderContactForm.callCount).to.equal(2);
-      expect(enketoService.renderContactForm.args[1]).to.deep.include.ordered.members([
-        '#contact-form',
-        { _id: 'other_create' },
-        { other: { type: 'contact', contact_type: 'other', parent: '' } },
-      ]);
+      expect(enketoService.renderContactForm.args[1][0]).to.deep.include({
+        selector: '#contact-form',
+        formDoc: { _id: 'other_create' },
+        instanceData: { other: { type: 'contact', contact_type: 'other', parent: '' } },
+        titleKey: 'other_key',
+      });
     }));
   });
 
@@ -317,11 +319,12 @@ describe('ContactsEdit component', () => {
           docId: null,
         });
         expect(enketoService.renderContactForm.callCount).to.equal(1);
-        expect(enketoService.renderContactForm.args[0]).to.deep.include.ordered.members([
-          '#contact-form',
-          { _id: 'clinic_create_form_id', the: 'form' },
-          { clinic: { type: 'contact', contact_type: 'clinic', parent: 'the_district' } },
-        ]);
+        expect(enketoService.renderContactForm.args[0][0]).to.deep.include({
+          selector: '#contact-form',
+          formDoc: { _id: 'clinic_create_form_id', the: 'form' },
+          instanceData: { clinic: { type: 'contact', contact_type: 'clinic', parent: 'the_district' } },
+          titleKey: 'clinic_create_key',
+        });
         expect(component.contentError).to.equal(false);
       });
 
@@ -347,11 +350,12 @@ describe('ContactsEdit component', () => {
           docId: null,
         });
         expect(enketoService.renderContactForm.callCount).to.equal(1);
-        expect(enketoService.renderContactForm.args[0]).to.deep.include.ordered.members([
-          '#contact-form',
-          { _id: 'district_create_form_id', the: 'form' },
-          { district_hospital: { type: 'contact', contact_type: 'district_hospital', parent: '' } },
-        ]);
+        expect(enketoService.renderContactForm.args[0][0]).to.deep.include({
+          selector: '#contact-form',
+          formDoc: { _id: 'district_create_form_id', the: 'form' },
+          instanceData: { district_hospital: { type: 'contact', contact_type: 'district_hospital', parent: '' } },
+          titleKey: 'district_create_key',
+        });
         expect(component.contentError).to.equal(false);
       });
     });
@@ -446,11 +450,12 @@ describe('ContactsEdit component', () => {
         expect(dbGet.callCount).to.equal(1);
         expect(dbGet.args[0]).to.deep.equal(['patient_edit_form']);
         expect(enketoService.renderContactForm.callCount).to.equal(1);
-        expect(enketoService.renderContactForm.args[0]).to.deep.include.ordered.members([
-          '#contact-form',
-          { _id: 'patient_edit_form', form: true },
-          { patient: { type: 'patient', _id: 'the_patient' } },
-        ]);
+        expect(enketoService.renderContactForm.args[0][0]).to.deep.include({
+          selector: '#contact-form',
+          formDoc: { _id: 'patient_edit_form', form: true },
+          instanceData: { patient: { type: 'patient', _id: 'the_patient' } },
+          titleKey: 'patient_edit_key',
+        });
         expect(component.enketoContact).to.deep.equal({
           docId: 'the_patient',
           formInstance: undefined,
@@ -481,11 +486,12 @@ describe('ContactsEdit component', () => {
         expect(dbGet.callCount).to.equal(1);
         expect(dbGet.args[0]).to.deep.equal(['a_clinic_type_create_form']);
         expect(enketoService.renderContactForm.callCount).to.equal(1);
-        expect(enketoService.renderContactForm.args[0]).to.deep.include.ordered.members([
-          '#contact-form',
-          { _id: 'a_clinic_type_create_form', data: true },
-          { a_clinic_type: { type: 'contact', contact_type: 'a_clinic_type', _id: 'the_clinic' } },
-        ]);
+        expect(enketoService.renderContactForm.args[0][0]).to.deep.include({
+          selector: '#contact-form',
+          formDoc: { _id: 'a_clinic_type_create_form', data: true },
+          instanceData: { a_clinic_type: { type: 'contact', contact_type: 'a_clinic_type', _id: 'the_clinic' } },
+          titleKey: 'edit_key',
+        });
         expect(component.enketoContact).to.deep.equal({
           docId: 'the_clinic',
           formInstance: undefined,
@@ -519,11 +525,12 @@ describe('ContactsEdit component', () => {
         expect(dbGet.callCount).to.equal(1);
         expect(dbGet.args[0]).to.deep.equal(['the correct_edit_form']);
         expect(enketoService.renderContactForm.callCount).to.equal(1);
-        expect(enketoService.renderContactForm.args[0]).to.deep.include.ordered.members([
-          '#contact-form',
-          { _id: 'the correct_edit_form', data: true },
-          { 'the correct type': { type: 'clinic', contact_type: 'a_clinic_type', _id: 'the_clinic' } },
-        ]);
+        expect(enketoService.renderContactForm.args[0][0]).to.deep.include({
+          selector: '#contact-form',
+          formDoc: { _id: 'the correct_edit_form', data: true },
+          instanceData: { 'the correct type': { type: 'clinic', contact_type: 'a_clinic_type', _id: 'the_clinic' } },
+          titleKey: 'edit_key',
+        });
         expect(component.enketoContact).to.deep.equal({
           docId: 'the_clinic',
           formInstance: undefined,

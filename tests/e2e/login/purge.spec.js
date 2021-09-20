@@ -199,9 +199,9 @@ describe('Purging on login', () => {
 
   let originalTimeout;
   beforeAll(async () => {
-    await commonElements.goToMessagesNative();
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
+    await commonElements.goToMessagesNative();
     await utils.saveDocs(initialReports.concat(initialDocs));
     await utils.request({
       path: `/_users/org.couchdb.user:${restrictedUserName}`,
@@ -216,10 +216,10 @@ describe('Purging on login', () => {
 
   afterAll(async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    await utils.revertDb([], 'api');
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
     await utils.deleteUsers([restrictedUserName]);
-    await utils.revertDb();
     await sentinelUtils.deletePurgeDbs();
     await commonElements.calmNative();
   });

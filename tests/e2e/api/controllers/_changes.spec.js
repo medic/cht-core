@@ -255,20 +255,19 @@ describe('changes handler', () => {
     /^org.couchdb.user/,
   ];
 
-  beforeAll(() => {
+  before(() => {
     // Bootstrap users
     return utils
       .saveDoc(parentPlace)
       .then(() => utils.createUsers(users, true));
   });
 
-  afterAll(done =>
+  after( async () => {
     // Clean up like normal
-    utils
-      .revertDb()
-      // And also revert users we created in before
-      .then(() => utils.deleteUsers(users, true))
-      .then(done));
+    await utils.revertDb([], true);// And also revert users we created in before
+    await utils.deleteUsers(users, true);
+  });
+
 
   beforeEach(() => getCurrentSeq());
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
@@ -436,7 +435,7 @@ describe('changes handler', () => {
     let bobsIds;
     let stevesIds;
 
-    beforeAll(done => {
+    before(() => {
       const options = {
         hostname: constants.COUCH_HOST,
         port: constants.COUCH_PORT,
@@ -448,24 +447,19 @@ describe('changes handler', () => {
         let body = '';
         res.on('data', data => body += data);
         res.on('end', () => {
-          try {
-            body = JSON.parse(body);
-            shouldBatchChangesRequests = semver.lte(couchVersionForBatching, body.version);
-            done();
-          } catch (e) {
-            done(e);
-          }
+          body = JSON.parse(body);
+          shouldBatchChangesRequests = semver.lte(couchVersionForBatching, body.version);
         });
       });
 
-      req.on('error', e => done(e));
+      req.on('error', e => e);
       req.end();
     });
 
-    beforeEach(done => {
+    beforeEach(async () => {
       bobsIds = ['org.couchdb.user:bob', 'fixture:user:bob', 'fixture:bobville'];
       stevesIds = ['org.couchdb.user:steve', 'fixture:user:steve', 'fixture:steveville'];
-      return getCurrentSeq().then(done);
+      await getCurrentSeq();
     });
 
     it('should successfully fully replicate (with or without limit)', () => {

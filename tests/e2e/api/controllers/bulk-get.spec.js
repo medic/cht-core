@@ -2,6 +2,8 @@ const chai = require('chai');
 const _ = require('lodash');
 const utils = require('../../../utils');
 const constants = require('../../../constants');
+const chaiExclude = require('chai-exclude');
+chai.use(chaiExclude);
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -70,15 +72,15 @@ const DOCS_TO_KEEP = [
 ];
 
 describe('bulk-get handler', () => {
-  beforeAll(() => {
+  before(() => {
     return utils
       .saveDoc(parentPlace)
       .then(() => utils.createUsers(users));
   });
 
-  afterAll(() =>
+  after(() =>
     utils
-      .revertDb()
+      .revertDb([], true)
       .then(() => utils.deleteUsers(users))
   );
 

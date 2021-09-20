@@ -4,16 +4,13 @@ import { Actions } from '@mm-actions/analytics';
 
 const initialState = {
   selected: null,
-  analyticsModules: []
+  analyticsModules: null
 };
 
 const _analyticsReducer = createReducer(
   initialState,
-  on(Actions.setSelectedAnalytics, (state, { payload: { selected } }) => {
-    return { ...state, selected };
-  }),
   on(Actions.setAnalyticsModules, (state, { payload: { analyticsModules } }) => {
-    return { ...state, analyticsModules };
+    return { ...state, analyticsModules: analyticsModules || [] };
   }),
 );
 

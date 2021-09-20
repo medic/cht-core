@@ -4,6 +4,12 @@ const _ = require('lodash');
 const db = require('./db');
 const environment = require('./environment');
 const config = require('./config');
+/**
+ * this role is used in webapp bootstrap and session service to mainly determine whether the user should
+ * replicate or not, without requiring access to server settings.
+ */
+const ONLINE_ROLE = 'mm-online';
+const DB_ADMIN_ROLE = '_admin';
 
 const get = (path, headers) => {
   const dbUrl = url.parse(environment.serverUrl);
@@ -24,7 +30,7 @@ const hasRole = (userCtx, role) => {
   return _.includes(userCtx && userCtx.roles, role);
 };
 
-const isDbAdmin = userCtx => hasRole(userCtx, '_admin');
+const isDbAdmin = userCtx => hasRole(userCtx, DB_ADMIN_ROLE);
 
 const hasPermission = (userCtx, permission) => {
   const roles = config.get('permissions')[permission];
@@ -76,18 +82,28 @@ const hydrateUserSettings = (userSettings) => {
 };
 
 module.exports = {
+  hasOnlineRole: roles => {
+    if (!Array.isArray(roles) || !roles.length) {
+      return false;
+    }
+
+    const onlineRoles = [
+      DB_ADMIN_ROLE,
+      ONLINE_ROLE,
+      'national_admin', // kept for backwards compatibility
+    ];
+    return roles.some(role => onlineRoles.includes(role));
+  },
+
   isOnlineOnly: userCtx => {
-    return hasRole(userCtx, '_admin') ||
-           hasRole(userCtx, 'national_admin') || // kept for backwards compatibility
-           !module.exports.isOffline(userCtx.roles);
+    return userCtx && module.exports.hasOnlineRole(userCtx.roles);
   },
 
   isOffline: roles => {
     const configured = config.get('roles') || {};
     const configuredRole = roles.some(role => configured[role]);
     return !isDbAdmin({ roles }) &&
-           !configuredRole ||
-           roles.some(role => configured[role] && configured[role].offline);
+           (!configuredRole || roles.some(role => configured[role] && configured[role].offline));
   },
 
   hasAllPermissions: (userCtx, permissions) => {
@@ -218,4 +234,5 @@ module.exports = {
   },
 
   isDbAdmin: isDbAdmin,
+  ONLINE_ROLE: ONLINE_ROLE,
 };

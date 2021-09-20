@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>Nutrition Screening (Collect)</h:title>
     <model>
       <itext>
-        <translation default="true()" lang="English (en)">
+        <translation lang="English (en)" default="true()">
           <text id="/g/id:jr:constraintMsg">
             <value>Medic ID should have between 5 and 13 digits</value>
           </text>
@@ -17,7 +17,7 @@
         </translation>
       </itext>
       <instance>
-        <g delimiter="#" id="g" prefix="J1!g!" version="2019-02-06 13-17">
+        <g id="g" prefix="J1!g!" delimiter="#" version="2019-02-06 13-17">
           <id/>
           <severity/>
           <meta tag="hidden">
@@ -25,9 +25,9 @@
           </meta>
         </g>
       </instance>
-      <bind constraint="regex(., '[0-9]{5,13}')" jr:constraintMsg="jr:itext('/g/id:jr:constraintMsg')" nodeset="/g/id" required="true()" type="string"/>
-      <bind nodeset="/g/severity" required="true()" type="select1"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/g/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/g/id" type="string" jr:constraintMsg="jr:itext('/g/id:jr:constraintMsg')" required="true()" constraint="regex(., '[0-9]{5,13}')"/>
+      <bind nodeset="/g/severity" type="select1" required="true()"/>
+      <bind nodeset="/g/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body>

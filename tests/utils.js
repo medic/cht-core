@@ -16,15 +16,14 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 const db = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`, { auth });
 const sentinel = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-sentinel`, { auth });
 const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-logs`, { auth });
-const browserLogStream = fs.createWriteStream(
-  __dirname + '/../tests/logs/browser.console.log'
-);
+let browserLogStream;
 const userSettings = require('./factories/cht/users/user-settings');
 
 let originalSettings;
 const originalTranslations = {};
 let e2eDebug;
 const hasModal = () => element(by.css('#update-available')).isPresent();
+const { execSync } = require('child_process');
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
@@ -262,7 +261,7 @@ const revertDb = async (except, ignoreRefresh) => {
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
-  
+
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || hasModal)) {
     watcher && watcher.cancel();
@@ -429,6 +428,11 @@ const getLoginUrl = () => {
 };
 
 const saveBrowserLogs = () => {
+  // wdio also writes in this file
+  if (!browserLogStream) {
+    browserLogStream = fs.createWriteStream(__dirname + '/../tests/logs/browser.console.log');
+  }
+
   return browser
     .manage()
     .logs()
@@ -444,10 +448,10 @@ const saveBrowserLogs = () => {
 };
 
 
-const prepServices = async (config) => {
-  if (constants.IS_TRAVIS) {
-    console.log('On travis, waiting for horti to first boot api');
-    // Travis' horti will be installing and then deploying api and sentinel, and those logs are
+const prepServices = async (defaultSettings) => {
+  if (constants.IS_CI) {
+    console.log('On CI, waiting for horti to first boot api');
+    // CI' horti will be installing and then deploying api and sentinel, and those logs are
     // getting pushed into horti.log Once horti has bootstrapped we want to restart everything so
     // that the service processes get restarted with their logs separated and pointing to the
     // correct logs for testing
@@ -460,7 +464,7 @@ const prepServices = async (config) => {
   }
 
   await listenForApi();
-  if (config && config.suite === 'web') {
+  if (defaultSettings) {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
@@ -515,7 +519,28 @@ const parseCookieResponse = (cookieString) => {
   });
 };
 
+const dockerGateway = () => {
+  if (!constants.IS_CI) {
+    return;
+  }
+  try {
+    return JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
+  } catch (error) {
+    console.log('docker network inspect failed. NOTE this error is not relevant if running outside of docker');
+    console.log(error.message);
+  }
+};
+
+const hostURL = (port = 80) => {
+  const gateway = dockerGateway();
+  const host = gateway && gateway[0] && gateway[0].Gateway ? gateway[0].Gateway : 'localhost';
+  const url = new URL(`http://${host}`);
+  url.port = port;
+  return url.href;
+};
+
 module.exports = {
+  hostURL,
   parseCookieResponse,
   deprecated,
   db: db,
@@ -606,7 +631,6 @@ module.exports = {
       path: '/', // so audit picks this up
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Content-Length': JSON.stringify(doc).length,
       },
       body: doc,
@@ -623,9 +647,25 @@ module.exports = {
       .then(results => {
         if (results.find(r => !r.ok)) {
           throw Error(JSON.stringify(results, null, 2));
-        } else {
-          return results;
         }
+        return results;
+      });
+  },
+
+  saveMetaDocs: (user, docs) => {
+    const options = {
+      userName: user,
+      method: 'POST',
+      body: { docs: docs },
+      path: '/_bulk_docs',
+    };
+    return module.exports
+      .requestOnTestMetaDb(options)
+      .then(results => {
+        if (results.find(r => !r.ok)) {
+          throw Error(JSON.stringify(results, null, 2));
+        }
+        return results;
       });
   },
 
@@ -648,11 +688,22 @@ module.exports = {
         path: `/_all_docs?include_docs=true`,
         method: 'POST',
         body: { keys: ids || [] },
-        headers: { 'content-type': 'application/json' },
       })
       .then(response => {
         return fullResponse ? response : response.rows.map(row => row.doc);
       });
+  },
+
+  getMetaDocs: (user, ids, fullResponse = false) => {
+    const options = {
+      userName: user,
+      method: 'POST',
+      body: { keys: ids || [] },
+      path: '/_all_docs?include_docs=true',
+    };
+    return module.exports
+      .requestOnTestMetaDb(options)
+      .then(response => fullResponse ? response : response.rows.map(row => row.doc));
   },
 
   deleteDoc: id => {
@@ -883,8 +934,8 @@ module.exports = {
     const promise = new Promise((resolve, reject) => {
       timeout = setTimeout(() => {
         tail.unwatch();
-        reject({ message: 'timeout exceeded' });
-      }, 2000);
+        reject({ message: 'Timed out looking for details in log files.' });
+      }, 6000);
 
       tail.on('line', data => {
         if (regex.find(r => r.test(data))) {
@@ -999,4 +1050,5 @@ module.exports = {
   },
 
   runAndLogApiStartupMessage: runAndLogApiStartupMessage,
+  findDistrictHospitalFromPlaces: (places) => places.find((place) => place.type === 'district_hospital')
 };
