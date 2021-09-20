@@ -1,18 +1,18 @@
 const {expect} = require('chai');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
-const utils = require('../utils');
+const url = require('../utils').getInstanceUrl();
 
 //Not all actions tested here due to missing forms and config
 //[convert-collect-forms , upload-collect-form, upload-branding, upload-partners, upload-privacy-policies]
 const actions = ['compile-app-settings','backup-app-settings','convert-app-forms','convert-contact-forms',
   'backup-all-forms','upload-app-forms','upload-contact-forms', 'upload-resources','upload-custom-translations'];
 
-describe.skip('cht-conf actions tests', () => {
-  before(() => utils.revertDb([], true));
+describe('cht-conf actions tests', () => {
   const runCommand = async (action) => {
+
     try {
-      const { stdout } = await exec(`cht --url=${utils.getInstanceUrl()} ${action} --force`, { cwd: 'config/default' });
+      const { stdout }  = await exec(`cht --url=${url} ${action} --force`, { cwd: 'config/default' });
       return stdout;
     } catch (err) {
       return err.stdout;
