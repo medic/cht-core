@@ -1,23 +1,24 @@
-const helper = require('../../helper');
+// const helper = require('../../helper');
 const utils = require('../../utils');
-const commonElements = require('../common/common.po');
+// const commonElements = require('../common/common.wdio.page.js');
+const privacyWrapper = () => $('#privacy-policy-wrapper');
+const pivbtn = async () => (await privacyWrapper()).$('.btn');
+const privacyConfig = () => $('.privacy-policy.configuration');
 
-const getPrivacyPolicyFromPage = async () => {
-  await browser.get(utils.getBaseUrl() + 'privacy-policy');
-  const privacyPolicyContainer = element(by.css('.privacy-policy.configuration'));
-  await helper.waitElementToBeVisibleNative(privacyPolicyContainer);
-  return helper.getTextFromElementNative(privacyPolicyContainer);
+const goToPrivacyPolicyConfig = async () => {
+  await browser.url(utils.getBaseUrl() + 'privacy-policy');
+  const privacyPolicyContainer = await privacyConfig();
+  await privacyPolicyContainer.waitForDisplayed();
+  return privacyPolicyContainer.getText();
 };
 
 const getPrivacyPolicyFromOverlay = async () => {
-  await helper.waitElementToPresentNative(element(by.css('#privacy-policy-wrapper')));
-  return helper.getTextFromElementNative(element(by.css('#privacy-policy-wrapper .html-content')));
+  (await privacyWrapper()).waitForDisplayed();
+  return (await privacyWrapper()).getText();
 };
 
 const acceptPrivacyPolicy = async () => {
-  const acceptButton = element(by.css('#privacy-policy-wrapper .btn'));
-  await helper.clickElementNative(acceptButton);
-  await commonElements.calmNative();
+  return (await pivbtn()).click();
 };
 
 const updatePrivacyPolicy = async (docId, policyKey, policyText) => {
@@ -31,8 +32,10 @@ const updatePrivacyPolicy = async (docId, policyKey, policyText) => {
 };
 
 module.exports = {
-  getPrivacyPolicyFromPage,
+  goToPrivacyPolicyConfig,
   getPrivacyPolicyFromOverlay,
   acceptPrivacyPolicy,
   updatePrivacyPolicy,
+  privacyWrapper,
+  privacyConfig
 };
