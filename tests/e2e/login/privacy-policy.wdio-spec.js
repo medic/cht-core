@@ -2,132 +2,74 @@ const commonElements = require('../../page-objects/common/common.wdio.page.js');
 const utils = require('../../utils');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const privacyPolicyPage = require('../../page-objects/privacy-policy/privacy-policy.po');
+const userFactory = require('../../factories/cht/users/users');
+const privacyPolicyFactory = require('../../factories/cht/settings/privacy-policy');
+const placeFactory = require('../../factories/cht/contacts/place');
 
 describe('Privacy policy', () => {
-  const password = 'Sup3rSecret!';
-  const PARENT_PLACE = {
-    _id: 'PARENT_PLACE',
-    type: 'district_hospital',
-    name: 'PARENT_PLACE'
-  };
-  const offlineUser = {
-    username: 'offline',
-    password: password,
-    place: {
-      _id: 'fixture:offline',
-      type: 'health_center',
-      name: 'offline',
-      parent: 'PARENT_PLACE'
-    },
-    contact: {
-      _id: 'fixture:user:offline',
-      name: 'Offline'
-    },
-    roles: ['chw'],
-    known: true
-  };
-  const onlineUser = {
+  const englishTexts = privacyPolicyFactory.english;
+  const frenchTexts = privacyPolicyFactory.french;
+  const offlineUser = userFactory.build();
+  const onlineUser = userFactory.build({
     username: 'online',
-    password: password,
+    roles: ['program_officer'],
     place: {
-      _id: 'fixture:online',
+      _id: 'hc2',
       type: 'health_center',
-      name: 'online',
-      parent: 'PARENT_PLACE'
+      name: 'Health Center 2',
+      parent: 'dist1'
     },
     contact: {
-      _id: 'fixture:user:online',
-      name: 'Offline'
-    },
-    known: true,
-    roles: ['program_officer']
-  };
-
-  const privacyPolicyInEnglish = `
-    <div>
-      <h1>English Privacy Policy</h1>
-      <p>More markup</p>
-    </div>
-  `;
-
-  const privacyPolicyInFrench = `
-    <div>
-      <h1>Politique de confidentialité en Francais</h1>
-      <p>Plus de markup</p>
-    </div>
-  `;
-
-  const privacyPolicies = {
-    _id: 'privacy-policies',
-    privacy_policies: {
-      en: 'en.attachment',
-      fr: 'fr.html',
-    },
-    _attachments: {
-      'en.attachment': {
-        content_type: 'text/html',
-        data: Buffer.from(privacyPolicyInEnglish).toString('base64'),
-      },
-      'fr.html': {
-        content_type: 'text/html',
-        data: Buffer.from(privacyPolicyInFrench).toString('base64'),
-      }
+      _id: 'fixture:user:onlineuser',
+      name: 'onlineuser'
     }
-  };
-
-  before(async () => {
-    await utils.saveDocs([privacyPolicies, PARENT_PLACE]);
   });
 
-  afterEach(async () => {
-    await utils.revertDb(['privacy-policies', 'PARENT_PLACE'], true);
+  const parent = placeFactory.place().build({_id:'dist1',type:'district_hospital'});
+
+  before(async () => {
+    await utils.saveDocs([parent, privacyPolicyFactory.privacyPolicy().build()]);
+    await utils.createUsers([ onlineUser, offlineUser]);
   });
 
   after(async () => { await utils.revertDb([], 'api'); });
 
   describe('for an online user', () => {
-    afterEach(async () => {
-      await utils.deleteUsers([onlineUser]);
-    });
-
     it('should show the correct privacy policy on login', async () => {
-      await utils.createUsers([onlineUser]);
-
       // After first login, check that privacy policy was prompted to user
-      await loginPage.login('online', password);
-      await browser.waitUntil(async () => { 
+      await loginPage.login(onlineUser.username, onlineUser.password);
+      await browser.waitUntil(async () => {
         const wrapperText = await (await privacyPolicyPage.privacyWrapper()).getText();
-        return wrapperText.includes('English Privacy Policy') && wrapperText.includes('More markup'); 
-      });
-      // expect(await privacyPolicyPage.getPrivacyPolicyFromOverlay()).toEqual('English Privacy Policy\nMore markup');
+        return wrapperText.includes(englishTexts.header) && wrapperText.includes(englishTexts.paragraph);
+      }, 'Timed out waiting for English Online Privacy Policy to Display');
 
       // After accepting, no privacy policy on next load
       await privacyPolicyPage.acceptPrivacyPolicy();
       await browser.url('/');
-      
+      expect(await privacyPolicyPage.privacyWrapper()).not.toBeDisplayed();
+
       // Check display when loading privacy policy page
       await privacyPolicyPage.goToPrivacyPolicyConfig();
-      await browser.waitUntil(async () => { 
+      await browser.waitUntil(async () => {
         const wrapperText = await (await privacyPolicyPage.privacyConfig()).getText();
-        return wrapperText.includes('English Privacy Policy') && wrapperText.includes('More markup'); 
-      },'Timed out waiting for english online privacy to display');
+        return wrapperText.includes(englishTexts.header) && wrapperText.includes(englishTexts.paragraph);
+      }, 'Timed out waiting for english online privacy to display');
 
       // No privacy policy on 2nd login
       await browser.reloadSession();
       await browser.url('/');
-      await loginPage.login('online', password);
+      await loginPage.login(onlineUser.username, onlineUser.password);
       expect(await privacyPolicyPage.privacyWrapper()).not.toBeDisplayed();
-      
+
 
       // After login in french, check that privacy policy was prompted to user again
       await browser.reloadSession();
       await browser.url('/');
-      await loginPage.login('online', password,'fr');
-      await browser.waitUntil(async () => { 
+      await loginPage.login(onlineUser.username, onlineUser.password, 'fr');
+      await browser.waitUntil(async () => {
         const wrapperText = await (await privacyPolicyPage.privacyWrapper()).getText();
-        return wrapperText.includes('Politique de confidentialité en Francais') 
-          && wrapperText.includes('Plus de markup'); 
-      }, 'Timed out waiting for french offline privacy to display');
+        return wrapperText.includes(frenchTexts.header) && wrapperText.includes(frenchTexts.paragraph);
+      }, 'Timed out waiting for french online privacy to display');
       await privacyPolicyPage.acceptPrivacyPolicy();
     });
   });
@@ -144,21 +86,16 @@ describe('Privacy policy', () => {
         console.log('Check if the test failed because of a conflict on this doc:');
         console.log(JSON.stringify(userDoc, null, 2));
       }
-      await utils.deleteUsers([offlineUser]);
     });
 
     xit('should show the correct privacy policy on login', async () => {
-      const frenchPolicyText = 'Politique de confidentialité en Francais\nPlus de markup';
-      await utils.createUsers([offlineUser]);
-
       // After first login in french, check that privacy policy was prompted to user
       await browser.reloadSession();
       await browser.url('/');
-      await loginPage.login('offline', password,'fr');
-      await browser.waitUntil(async () => { 
+      await loginPage.login(offlineUser.username, offlineUser.password, 'fr');
+      await browser.waitUntil(async () => {
         const wrapperText = await (await privacyPolicyPage.privacyWrapper()).getText();
-        return wrapperText.includes('Politique de confidentialité en Francais') 
-          && wrapperText.includes('Plus de markup'); 
+        return wrapperText.includes(frenchTexts.header) && wrapperText.includes(frenchTexts.paragraph);
       }, 'Timed out waiting for french offline privacy to display');
 
       // After accepting, no privacy policy on next load
@@ -171,11 +108,10 @@ describe('Privacy policy', () => {
 
       // Check display when loading privacy policy page
       await privacyPolicyPage.goToPrivacyPolicyConfig();
-      await browser.waitUntil(async () => { 
+      await browser.waitUntil(async () => {
         const wrapperText = await (await privacyPolicyPage.privacyConfig()).getText();
-        return wrapperText.includes('Politique de confidentialité en Francais') 
-          && wrapperText.includes('Plus de markup'); 
-      }, 'Timed out waiting for french offline privacy to display');
+        return wrapperText.includes(frenchTexts.header) && wrapperText.includes(frenchTexts.paragraph);
+      }, 'Timed out waiting for english online privacy to display');
 
       // Update privacy policies
       const newPolicyText = 'Cette text est totalement different c`est fois!';
@@ -184,10 +120,11 @@ describe('Privacy policy', () => {
       await browser.refresh();
 
       // Privacy policy updated
-      await browser.waitUntil(async () => { 
+      await browser.waitUntil(async () => {
         const wrapperText = await (await privacyPolicyPage.privacyWrapper()).getText();
-        return wrapperText.includes(newPolicyText); 
-      }, 'Timed out waiting for new offline text');
+        return wrapperText.includes(newPolicyText);
+      }, 'Timed out waiting for new offline french text');
     });
+    passed = true;
   });
 });
