@@ -142,15 +142,20 @@ const waitForLoaders = async () => {
   });
 };
 
-const sync = async () => {
+const syncAndWaitForSuccess = async () => {
   await openHamburgerMenu();
   await (await syncButton()).click();
   await openHamburgerMenu();
   await (await syncSuccess()).waitForDisplayed();
+};
+
+const sync = async (expectReload) => {
+  await syncAndWaitForSuccess();
+  if (expectReload) {
+    await closeReloadModal();
+  }
   // sync status sometimes lies when multiple changes are fired in quick succession
-  await (await syncButton()).click();
-  await openHamburgerMenu();
-  await (await syncSuccess()).waitForDisplayed();
+  await syncAndWaitForSuccess();
 };
 
 const closeReloadModal = async () => {

@@ -149,7 +149,8 @@ const supervisor = {
 const getTaskNamesAndTitles = async (tasks) => {
   const tasksNamesAndTitles = [];
   for (const task of tasks) {
-    tasksNamesAndTitles.push(await tasksPage.getContactNameAndFormTitle(task));
+    const { contactName, formTitle } = await tasksPage.getTaskInfo(task);
+    tasksNamesAndTitles.push({ contactName, formTitle });
   }
   return tasksNamesAndTitles;
 };
@@ -232,7 +233,7 @@ describe('Tasks group landing page', () => {
       // clicking on one of the tasks in the group opens the task
       const groupTasks = await tasksPage.getTasksInGroup();
       for (const task of groupTasks) {
-        const info = await tasksPage.getContactNameAndFormTitle(task);
+        const info = await tasksPage.getTaskInfo(task);
         if (info.contactName === 'Julius Caesar') {
           await task.click();
           break;
