@@ -16,7 +16,7 @@ describe('cht-conf actions tests', () => {
       return stdout;
     } catch (err) {
       return err.stdout;
-    }
+    } 
   };
 
   it('should execute  upload-app-settings', async () => {
