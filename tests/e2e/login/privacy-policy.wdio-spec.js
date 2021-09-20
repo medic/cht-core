@@ -23,7 +23,8 @@ describe('Privacy policy', () => {
       _id: 'fixture:user:offline',
       name: 'Offline'
     },
-    roles: ['program_officer']
+    roles: ['chw'],
+    known: true
   };
   const onlineUser = {
     username: 'online',
@@ -109,7 +110,7 @@ describe('Privacy policy', () => {
       await browser.waitUntil(async () => { 
         const wrapperText = await (await privacyPolicyPage.privacyConfig()).getText();
         return wrapperText.includes('English Privacy Policy') && wrapperText.includes('More markup'); 
-      });
+      },'Timed out waiting for english online privacy to display');
 
       // No privacy policy on 2nd login
       await browser.reloadSession();
@@ -126,11 +127,14 @@ describe('Privacy policy', () => {
         const wrapperText = await (await privacyPolicyPage.privacyWrapper()).getText();
         return wrapperText.includes('Politique de confidentialité en Francais') 
           && wrapperText.includes('Plus de markup'); 
-      });
+      }, 'Timed out waiting for french offline privacy to display');
       await privacyPolicyPage.acceptPrivacyPolicy();
     });
   });
 
+
+  // WDIO currently cannot log in offline users because of service worker race condition
+  // https://github.com/medic/cht-core/issues/7242
   xdescribe('for a french offline user', () => {
     let passed = false;
     afterEach(async () => {
@@ -148,31 +152,42 @@ describe('Privacy policy', () => {
       await utils.createUsers([offlineUser]);
 
       // After first login in french, check that privacy policy was prompted to user
-      await commonElements.goToLoginPageNative();
-      await loginPage.loginNative('offline', password, false, 'fr');
-      expect(await privacyPolicyPage.getPrivacyPolicyFromOverlay()).toEqual(frenchPolicyText);
+      await browser.reloadSession();
+      await browser.url('/');
+      await loginPage.login('offline', password,'fr');
+      await browser.waitUntil(async () => { 
+        const wrapperText = await (await privacyPolicyPage.privacyWrapper()).getText();
+        return wrapperText.includes('Politique de confidentialité en Francais') 
+          && wrapperText.includes('Plus de markup'); 
+      }, 'Timed out waiting for french offline privacy to display');
 
       // After accepting, no privacy policy on next load
       await privacyPolicyPage.acceptPrivacyPolicy();
-      await utils.closeTour();
-      await commonElements.syncNative();
+      await commonElements.sync();
 
-      await utils.resetBrowser();
-      await commonElements.calmNative();
+      await browser.reloadSession();
+      await browser.url('/');
+      expect(await privacyPolicyPage.privacyWrapper()).not.toBeDisplayed();
 
       // Check display when loading privacy policy page
-      expect(await privacyPolicyPage.getPrivacyPolicyFromPage()).toEqual(frenchPolicyText);
+      await privacyPolicyPage.goToPrivacyPolicyConfig();
+      await browser.waitUntil(async () => { 
+        const wrapperText = await (await privacyPolicyPage.privacyConfig()).getText();
+        return wrapperText.includes('Politique de confidentialité en Francais') 
+          && wrapperText.includes('Plus de markup'); 
+      }, 'Timed out waiting for french offline privacy to display');
 
       // Update privacy policies
       const newPolicyText = 'Cette text est totalement different c`est fois!';
       await privacyPolicyPage.updatePrivacyPolicy('privacy-policies', 'fr_attachment', newPolicyText);
-      await commonElements.syncNative();
-      await browser.driver.navigate().refresh();
+      await commonElements.sync();
+      await browser.refresh();
 
       // Privacy policy updated
-      expect(await privacyPolicyPage.getPrivacyPolicyFromOverlay()).toEqual(newPolicyText);
-      await privacyPolicyPage.acceptPrivacyPolicy();
-      passed = true;
+      await browser.waitUntil(async () => { 
+        const wrapperText = await (await privacyPolicyPage.privacyWrapper()).getText();
+        return wrapperText.includes(newPolicyText); 
+      }, 'Timed out waiting for new offline text');
     });
   });
 });
