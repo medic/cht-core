@@ -29,6 +29,9 @@ module.exports = {
       // the builder throws an error if the paths are not resolved
       '../../../build/images/layers.png': 'src/img/layers.png',
       '../../../build/images/layers-2x.png': 'src/img/layers.png',
+      // Exclude the node-forge dependency from the bundle. This breaks the `digest` xForm function from
+      // openrosa-xpath-evaluator, but keeping it in adds 72.51KB to the bundle size.
+      // https://github.com/medic/cht-core/issues/7324
       'node-forge': '',
     }
   },
