@@ -69,7 +69,7 @@ describe('CheckDateService', () => {
   it('handles empty response', async () => {
     const check = service.check(true);
     const res = httpMock.expectOne(matchInfoEndpoint);
-    res.flush('', { headers: { 'Date': 'xxx' } });
+    res.flush('', { headers: { Date: 'xxx' } });
 
     await check;
     expect(modal.show.callCount).to.equal(0);
@@ -81,7 +81,7 @@ describe('CheckDateService', () => {
     responseDate.setMinutes(responseDate.getMinutes() - 5);
     const check = service.check(true);
     const res = httpMock.expectOne(matchInfoEndpoint);
-    res.flush('', { headers: { 'Date': responseDate.toISOString() } });
+    res.flush('', { headers: { Date: responseDate.toISOString() } });
 
     await check;
     expect(modal.show.callCount).to.equal(0);
@@ -94,7 +94,7 @@ describe('CheckDateService', () => {
     responseDate.setHours(responseDate.getHours() - 1);
     const check = service.check(true);
     const res = httpMock.expectOne(matchInfoEndpoint);
-    res.flush('', { headers: { 'Date': responseDate.toISOString() } });
+    res.flush('', { headers: { Date: responseDate.toISOString() } });
 
     await check;
     expect(modal.show.callCount).to.equal(1);
@@ -112,7 +112,7 @@ describe('CheckDateService', () => {
     responseDate.setHours(responseDate.getHours() - 5);
     const check = service.check();
     const res = httpMock.expectOne(matchInfoEndpoint);
-    res.flush('', { headers: { 'Date': responseDate.toISOString() } });
+    res.flush('', { headers: { Date: responseDate.toISOString() } });
 
     await check;
     expect(modal.show.callCount).to.equal(0);
@@ -153,7 +153,7 @@ describe('CheckDateService', () => {
       responseDate.setHours(responseDate.getHours() + 3);
       const check4 = service.check(true);
       const res4 = httpMock.expectOne(matchInfoEndpoint);
-      res4.flush('', { headers: { 'Date': responseDate.toISOString() } });
+      res4.flush('', { headers: { Date: responseDate.toISOString() } });
 
       await check4;
       expect(modal.show.callCount).to.equal(1);
@@ -199,7 +199,7 @@ describe('CheckDateService', () => {
       responseDate.setMinutes(responseDate.getMinutes() + 3);
       const check4 = service.check(true);
       const res4 = httpMock.expectOne(matchInfoEndpoint);
-      res4.flush('', { headers: { 'Date': responseDate.toISOString() } });
+      res4.flush('', { headers: { Date: responseDate.toISOString() } });
 
       await check4;
       expect(modal.show.callCount).to.equal(0);
