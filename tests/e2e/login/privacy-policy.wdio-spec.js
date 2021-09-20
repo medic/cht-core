@@ -1,7 +1,6 @@
-const auth = require('../../auth')();
-const commonElements = require('../../page-objects/common/common.po.js');
+const commonElements = require('../../page-objects/common/common.wdio.page.js');
 const utils = require('../../utils');
-const loginPage = require('../../page-objects/login/login.po.js');
+const loginPage = require('../../page-objects/login/login.wdio.page');
 const privacyPolicyPage = require('../../page-objects/privacy-policy/privacy-policy.po');
 
 describe('Privacy policy', () => {
@@ -24,7 +23,7 @@ describe('Privacy policy', () => {
       _id: 'fixture:user:offline',
       name: 'Offline'
     },
-    roles: ['district_admin']
+    roles: ['program_officer']
   };
   const onlineUser = {
     username: 'online',
@@ -39,7 +38,8 @@ describe('Privacy policy', () => {
       _id: 'fixture:user:online',
       name: 'Offline'
     },
-    roles: ['national_admin']
+    known: true,
+    roles: ['program_officer']
   };
 
   const privacyPolicyInEnglish = `
@@ -74,7 +74,7 @@ describe('Privacy policy', () => {
     }
   };
 
-  beforeAll(async () => {
+  before(async () => {
     await utils.saveDocs([privacyPolicies, PARENT_PLACE]);
   });
 
@@ -82,12 +82,7 @@ describe('Privacy policy', () => {
     await utils.revertDb(['privacy-policies', 'PARENT_PLACE'], true);
   });
 
-  afterAll(async () => {
-    await utils.revertDb([], 'api');
-    await commonElements.goToLoginPageNative();
-    await loginPage.loginNative(auth.username, auth.password);
-    await commonElements.calmNative();
-  });
+  after(async () => { await utils.revertDb([], 'api'); });
 
   describe('for an online user', () => {
     afterEach(async () => {
@@ -98,35 +93,45 @@ describe('Privacy policy', () => {
       await utils.createUsers([onlineUser]);
 
       // After first login, check that privacy policy was prompted to user
-      await commonElements.goToLoginPageNative();
-      await loginPage.loginNative('online', password);
-      expect(await privacyPolicyPage.getPrivacyPolicyFromOverlay()).toEqual('English Privacy Policy\nMore markup');
+      await loginPage.login('online', password);
+      await browser.waitUntil(async () => { 
+        const wrapperText = await (await privacyPolicyPage.privacyWrapper()).getText();
+        return wrapperText.includes('English Privacy Policy') && wrapperText.includes('More markup'); 
+      });
+      // expect(await privacyPolicyPage.getPrivacyPolicyFromOverlay()).toEqual('English Privacy Policy\nMore markup');
 
       // After accepting, no privacy policy on next load
       await privacyPolicyPage.acceptPrivacyPolicy();
-      await utils.closeTour();
-
-      await utils.resetBrowser();
-      await commonElements.calmNative();
-
+      await browser.url('/');
+      
       // Check display when loading privacy policy page
-      expect(await privacyPolicyPage.getPrivacyPolicyFromPage()).toEqual('English Privacy Policy\nMore markup');
+      await privacyPolicyPage.goToPrivacyPolicyConfig();
+      await browser.waitUntil(async () => { 
+        const wrapperText = await (await privacyPolicyPage.privacyConfig()).getText();
+        return wrapperText.includes('English Privacy Policy') && wrapperText.includes('More markup'); 
+      });
 
       // No privacy policy on 2nd login
-      await commonElements.goToLoginPageNative();
-      await loginPage.loginNative('online', password);
-      await commonElements.calmNative();
+      await browser.reloadSession();
+      await browser.url('/');
+      await loginPage.login('online', password);
+      expect(await privacyPolicyPage.privacyWrapper()).not.toBeDisplayed();
+      
 
       // After login in french, check that privacy policy was prompted to user again
-      await commonElements.goToLoginPageNative();
-      await loginPage.loginNative('online', password, false, 'fr');
-      const contentFr = await privacyPolicyPage.getPrivacyPolicyFromOverlay();
-      expect(contentFr).toEqual('Politique de confidentialité en Francais\nPlus de markup');
+      await browser.reloadSession();
+      await browser.url('/');
+      await loginPage.login('online', password,'fr');
+      await browser.waitUntil(async () => { 
+        const wrapperText = await (await privacyPolicyPage.privacyWrapper()).getText();
+        return wrapperText.includes('Politique de confidentialité en Francais') 
+          && wrapperText.includes('Plus de markup'); 
+      });
       await privacyPolicyPage.acceptPrivacyPolicy();
     });
   });
 
-  describe('for a french offline user', () => {
+  xdescribe('for a french offline user', () => {
     let passed = false;
     afterEach(async () => {
       if (!passed) {
@@ -138,7 +143,7 @@ describe('Privacy policy', () => {
       await utils.deleteUsers([offlineUser]);
     });
 
-    it('should show the correct privacy policy on login', async () => {
+    xit('should show the correct privacy policy on login', async () => {
       const frenchPolicyText = 'Politique de confidentialité en Francais\nPlus de markup';
       await utils.createUsers([offlineUser]);
 
