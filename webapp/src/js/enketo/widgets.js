@@ -20,6 +20,7 @@
     require( 'enketo-core/src/widget/select-mobile/selectpicker' ).default,
     require( 'enketo-core/src/widget/analog-scale/analog-scalepicker' ).default,
     require( 'enketo-core/src/widget/textarea/textarea' ).default,
+    require( 'enketo-core/src/widget/select-autocomplete/autocomplete' ).default,
     require( './widgets/countdown-widget' ),
     require( './widgets/db-object-widget' ),
     require( './widgets/phone-widget' ),
