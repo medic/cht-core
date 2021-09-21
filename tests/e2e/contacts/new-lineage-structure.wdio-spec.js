@@ -7,7 +7,7 @@ const commonPage = require('../../page-objects/common/common.wdio.page');
 const utils = require('../../utils');
 const sentinelUtils = require('../sentinel/utils');
 
-faker.seed(555);
+faker.seed(16);
 const centerName = faker.address.city();
 const centerContact = faker.name.findName();
 const area = faker.address.city();
