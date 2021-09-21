@@ -20,7 +20,7 @@ const db = utils.db;
  *   - can submit form responses
  */
 describe('medic-collect', () => {
-  beforeAll(() =>
+  before(() =>
     Promise.all([
       saveFormToDb({
         type: 'form',
@@ -35,7 +35,7 @@ describe('medic-collect', () => {
       }),
     ]));
 
-  afterAll(() => utils.revertDb());
+  after(() => utils.revertDb([], true));
 
   describe('without User-Agent header', () => {
     it('is prompted for auth details if not supplied', () => {
