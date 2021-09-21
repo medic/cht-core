@@ -11,7 +11,7 @@ const runCommand = async (action, dirPath) => {
     const { stdout } = await exec(`${chtConfPath} --url=${url} ${action} --force --debug`, { cwd: dirPath });
     return stdout;
   } catch (err) {
-    return err.stdout;
+    throw err.stderr || err.message;
   }
 };
 
