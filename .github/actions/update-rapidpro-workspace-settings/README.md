@@ -1,7 +1,7 @@
-# update-rapidpro-workspace-settings Shared GitHub Action
+# dynamic-rapidpro-workspace Shared GitHub Action
 The `update-rapidpro-workspace-settings` is a parameterised reusable GitHub action that updates app-settings prior to compiling and uploading to a running CHT instance.
 
-This can be executed jointly with the deployment Github action.
+This can be executed jointly with other Github actions like [deploy-with-medic-conf](https://github.com/medic/cht-core/tree/master/.github/actions/deploy-with-medic-conf).
 
 ## CHT App Requirements
 * medic-conf@3.3 or above
@@ -24,12 +24,12 @@ jobs:
         directory: 'my_app_folder'
         hostname: myapp.staging.company.org
         couch_node_name: myapp.couchdb.node.name
-        username: ${{ secrets.CHT_STAGING_USERNAME }}
-        password: ${{ secrets.CHT_STAGING_PASSWORD }}
-        url: my.rapidpro.workspace.url
-        token: ${{ secrets.RAPIDPRO_STAGING_TOKEN }}
+        couch_username: ${{ secrets.CHT_STAGING_USERNAME }}
+        couch_password: ${{ secrets.CHT_STAGING_PASSWORD }}
+        rp_hostname: my.rapidpro.workspace.url
+        rp_api_token: ${{ secrets.RAPIDPRO_STAGING_TOKEN }}
         value_key: medic.credentials.key
-        group: ${{ secrets.RAPIDPRO_STAGING_GROUP }}
+        rp_contact_group: ${{ secrets.RAPIDPRO_STAGING_GROUP }}
         flows: ${{ secrets.RAPIDPRO_STAGING_FLOWS }}
         write_patient_state_flow: ${{ secrets.RAPIDPRO_STAGING_WRITE_PATIENT_STATE_FLOW }}
 ```
