@@ -37,7 +37,7 @@ const transform = (formXml, stylesheet) => {
     xsltproc.stdout.on('data', data => stdout += data);
     xsltproc.stderr.on('data', data => stderr += data);
     xsltproc.stdin.setEncoding('utf-8');
-    xsltproc.stdin.on('error', (err) => {
+    xsltproc.stdin.on('error', err => {
       // Errors related with spawned process and stdin are handled here on OSX
       return stdinErrorHandler(xsltproc, err, reject);
     });
