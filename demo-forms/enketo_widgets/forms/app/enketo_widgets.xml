@@ -110,9 +110,7 @@ The decimal number you entered was <output value=" /enketo_widgets/number_widget
           <text id="/enketo_widgets/intro:label">
             <value>This form showcases the different available _widgets_. 
 
-The hints explain how these widgets were created. The form logo was added by simply uploading a file called *form_logo.png* as part of the form media.
-
-The XLS Form source is [here](https://docs.google.com/spreadsheet/ccc?key=0Al3Mw5sknZoPdEpPa29tamFCc1o2bmFVR3RaemlSRXc&amp;usp=sharing).</value>
+The hints explain how these widgets were created.</value>
           </text>
           <text id="/enketo_widgets/media_widgets/annotate:label">
             <value>Annotate image widget</value>
@@ -544,16 +542,16 @@ The XLS Form source is [here](https://docs.google.com/spreadsheet/ccc?key=0Al3Mw
             <value>option d</value>
           </text>
           <text id="static_instance-list1-0">
-            <value>kingfisher</value>
             <value form="image">jr://images/kingfisher.png</value>
+            <value>kingfisher</value>
           </text>
           <text id="static_instance-list1-1">
-            <value>pigeon</value>
             <value form="image">jr://images/pigeon.png</value>
+            <value>pigeon</value>
           </text>
           <text id="static_instance-list1-2">
-            <value>nuthatch</value>
             <value form="image">jr://images/nuthatch.png</value>
+            <value>nuthatch</value>
           </text>
           <text id="static_instance-list2-0">
             <value>option 1</value>
@@ -621,7 +619,7 @@ The XLS Form source is [here](https://docs.google.com/spreadsheet/ccc?key=0Al3Mw
         </translation>
       </itext>
       <instance>
-        <enketo_widgets id="enketo_widgets" prefix="J1!enketo_widgets!" delimiter="#" version="2021-09-14 00:00:00">
+        <enketo_widgets id="enketo_widgets" prefix="J1!enketo_widgets!" delimiter="#" version="2021-09-21 00:00:00">
           <intro/>
           <text_widgets>
             <text/>
@@ -922,33 +920,33 @@ The XLS Form source is [here](https://docs.google.com/spreadsheet/ccc?key=0Al3Mw
         <root>
           <item>
             <itextId>static_instance-cities-0</itextId>
-            <country>nl</country>
             <name>ams</name>
+            <country>nl</country>
           </item>
           <item>
             <itextId>static_instance-cities-1</itextId>
-            <country>usa</country>
             <name>den</name>
+            <country>usa</country>
           </item>
           <item>
             <itextId>static_instance-cities-2</itextId>
-            <country>usa</country>
             <name>nyc</name>
+            <country>usa</country>
           </item>
           <item>
             <itextId>static_instance-cities-3</itextId>
-            <country>usa</country>
             <name>la</name>
+            <country>usa</country>
           </item>
           <item>
             <itextId>static_instance-cities-4</itextId>
-            <country>nl</country>
             <name>rot</name>
+            <country>nl</country>
           </item>
           <item>
             <itextId>static_instance-cities-5</itextId>
-            <country>nl</country>
             <name>dro</name>
+            <country>nl</country>
           </item>
         </root>
       </instance>
@@ -956,57 +954,57 @@ The XLS Form source is [here](https://docs.google.com/spreadsheet/ccc?key=0Al3Mw
         <root>
           <item>
             <itextId>static_instance-neighborhoods-0</itextId>
-            <city>nyc</city>
             <country>usa</country>
             <name>bronx</name>
+            <city>nyc</city>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-1</itextId>
-            <city>nyc</city>
             <country>usa</country>
             <name>harlem</name>
+            <city>nyc</city>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-2</itextId>
-            <city>la</city>
             <country>usa</country>
             <name>belair</name>
+            <city>la</city>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-3</itextId>
-            <city>ams</city>
             <country>nl</country>
             <name>wes</name>
+            <city>ams</city>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-4</itextId>
-            <city>den</city>
             <country>usa</country>
             <name>parkhill</name>
+            <city>den</city>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-5</itextId>
-            <city>rot</city>
             <country>nl</country>
             <name>haven</name>
+            <city>rot</city>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-6</itextId>
-            <city>ams</city>
             <country>nl</country>
             <name>dam</name>
+            <city>ams</city>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-7</itextId>
-            <city>rot</city>
             <country>nl</country>
             <name>centrum</name>
+            <city>rot</city>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-8</itextId>
-            <city>dro</city>
             <country>nl</country>
             <name>havendr</name>
+            <city>dro</city>
           </item>
         </root>
       </instance>

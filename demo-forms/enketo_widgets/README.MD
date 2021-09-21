@@ -1,5 +1,6 @@
-# Applying Sample Custom Contact Types
+# Enketo Widgets Demo Form
 
+This form can be used to test the various supported Enketo widgets. It contains a sub-set of the Enketo widgets showcased [here](https://enke.to/x/widgets).
 
 1. Download the current JSON settings file from your instance.  This is found under the hamburger menu in the upper right under "App Management" -> "Backup app code" -> "Download current settings".  The resulting file will be named `settings_YEAR-MONTH-DAY.json`. We'll now refer to this as the `app_settings.json` file, as that's what it's called when using `medic-conf`. 
 1. Edit the `app_settings.json` file and replace the existing `contact_types` JSON with the contents of [contact_types.json](contact_types.json).  Use care to ensure the JSON file is still valid.  If the JSON isn't valid, you will see a red "Upload failed" below the upload button.
