@@ -34,7 +34,7 @@ describe('generate service worker', () => {
     sinon.restore();
   });
 
-  it('should generate the service worker file and update the service worker doc', () => {
+  it('should generate the service worker file and update the service worker meta doc', () => {
     loginController.renderLogin.resolves('loginpage html');
     swPrecache.write.resolves();
     db.medic.get.resolves({ _id: 'service-worker-meta' });
@@ -92,7 +92,7 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should not update the meta doc if the service worker has no changes', () => {
+  it('should not update the service worker meta doc if the service-worker file is not changed', () => {
     getServiceWorkerHash.onCall(0).resolves('same');
     getServiceWorkerHash.onCall(1).resolves('same');
 
@@ -104,7 +104,7 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should update the meta doc if initial request to hash fails', () => {
+  it('should update the meta doc if the request to hash the old service worker file contents fails', () => {
     getServiceWorkerHash.onCall(0).resolves(undefined);
     getServiceWorkerHash.onCall(1).resolves('same');
     db.medic.get.resolves({ _id: 'service-worker-meta' });
@@ -123,7 +123,7 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should update the meta doc if updated request to hash fails', () => {
+  it('should update the meta doc if the request to hash the new service worker file fails', () => {
     getServiceWorkerHash.onCall(0).resolves('thing');
     getServiceWorkerHash.onCall(1).resolves(undefined);
     db.medic.get.resolves({ _id: 'service-worker-meta' });
@@ -142,7 +142,7 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should update the meta doc if both requests to hash fail', () => {
+  it('should update the meta doc if hashing both old and new service worker files fail', () => {
     getServiceWorkerHash.onCall(0).resolves(undefined);
     getServiceWorkerHash.onCall(1).resolves(undefined);
     db.medic.get.resolves({ _id: 'service-worker-meta' });

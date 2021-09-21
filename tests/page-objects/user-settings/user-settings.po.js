@@ -7,6 +7,7 @@ module.exports = {
     await helper.waitUntilReadyNative(module.exports.configurationSection());
     const link = module.exports.configurationSection().all(by.css('.btn-link')).last();
     await link.click();
+    // modals have an animation and the click might land somewhere else
     await browser.sleep(500);
   },
 

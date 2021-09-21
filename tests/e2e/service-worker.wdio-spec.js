@@ -161,7 +161,7 @@ describe('Service worker cache', () => {
     await login();
   });
 
-  it('other translation update do not trigger a refresh', async () => {
+  it('other translation updates do not trigger a login page refresh', async () => {
     const cacheDetails = await getCachedRequests(true);
 
     const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFULL_REGEX);

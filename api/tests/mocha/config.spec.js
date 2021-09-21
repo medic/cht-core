@@ -137,7 +137,7 @@ describe('Config', () => {
       });
     });
 
-    it('reloads translations and generates sw when translations are updated', () => {
+    it('reloads translations and generates service worker when translations are updated', () => {
       config.listen();
       db.medic.query.resolves({ rows: [] });
       const change = { id: 'messages-test' };
@@ -162,7 +162,7 @@ describe('Config', () => {
       });
     });
 
-    it('reloads generates sw when branding is updated', () => {
+    it('generates service worker when branding doc is updated', () => {
       config.listen();
       const change = { id: 'branding' };
       const changeCallback = on.args[0][1];
