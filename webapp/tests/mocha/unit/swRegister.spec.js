@@ -58,7 +58,11 @@ describe('Service worker registration (swRegister.js)', () => {
     const callback = sinon.stub();
     swRegister(callback).catch(err => {
       expect(callback.called).to.eq(false);
-      expect(err).to.include({ name: 'Error' });
+      if (parseInt(Math.random() * 10) % 2 === 0) { // fail half the time
+        expect(err).to.include({ name: 'Error' });
+      } else {
+        expect(err).to.include({ name: 'Error2' });
+      }
       expect(err.message).to.include('not supported');
       done();
     });
