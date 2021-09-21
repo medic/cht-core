@@ -40,7 +40,8 @@ describe('generate-xform service', () => {
         stdin: {
           setEncoding: sinon.stub(),
           write: sinon.stub(),
-          end: sinon.stub()
+          end: sinon.stub(),
+          on: sinon.stub(),
         },
         on: sinon.stub()
       };
@@ -63,12 +64,15 @@ describe('generate-xform service', () => {
       });
     };
 
-    const runTest = (dirname, spawned, err, successClose = true) => {
+    const runTest = (dirname, spawned, stdErr, errIn, successClose = true) => {
       sinon.stub(childProcess, 'spawn').returns(spawned);
       return setup(dirname).then(files => {
         const generate = service.generate(files.xform);
-        if (err) {
-          spawned.stderr.on.args[0][1](err);
+        if (stdErr) {
+          spawned.stderr.on.args[0][1](stdErr);
+          spawned.on.args[0][1](100);
+        } else if (errIn) {
+          spawned.stdin.on.args[0][1](errIn);
           spawned.on.args[0][1](100);
         } else if (successClose) {
           // child process outputs then closes with code 0
@@ -112,15 +116,38 @@ describe('generate-xform service', () => {
           stdin: {
             setEncoding: sinon.stub(),
             write: sinon.stub().throws(writeErr),
-            end: sinon.stub()
+            end: sinon.stub(),
+            on: sinon.stub(),
           },
           on: sinon.stub()
         };
-        await runTest('simple', spawnedEpipe, null, false);
+        await runTest('simple', spawnedEpipe, null, null, false);
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
           'Unable to continue execution, check that \'xsltproc\' command is available.');
+      }
+    });
+
+    it('should fail when xsltproc command not found also in OSX', async () => {
+      try {
+        const writeErr = new Error('Error: unknown');
+        const spawnedEpipe = {
+          stdout: { on: sinon.stub() },
+          stderr: { on: sinon.stub() },
+          stdin: {
+            setEncoding: sinon.stub(),
+            write: sinon.stub(),
+            end: sinon.stub(),
+            on: sinon.stub()
+          },
+          on: sinon.stub()
+        };
+        await runTest('simple', spawnedEpipe, null, writeErr, null, false);
+        assert.fail('expected error to be thrown');
+      } catch (err) {
+        expect(err.message).to.equal(
+          'Unknown Error: An error occurred when executing \'xsltproc\' command');
       }
     });
 
@@ -132,11 +159,12 @@ describe('generate-xform service', () => {
           stdin: {
             setEncoding: sinon.stub(),
             write: sinon.stub().throws('mystery error'),
-            end: sinon.stub()
+            end: sinon.stub(),
+            on: sinon.stub(),
           },
           on: sinon.stub()
         };
-        await runTest('simple', spawnedUnknownWriteErr, null, false);
+        await runTest('simple', spawnedUnknownWriteErr, null, null, false);
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
