@@ -29,4 +29,4 @@ See [custom_contacts](custom_contacts/README.MD) for sample forms and config for
 
 ### Enketo Widgets
 
-
+See [enketo_widgets](enketo_widgets/README.MD) for a sample of the various supported Enketo widgets.

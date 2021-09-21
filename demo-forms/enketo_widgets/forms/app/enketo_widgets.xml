@@ -112,23 +112,14 @@ The decimal number you entered was <output value=" /enketo_widgets/number_widget
 
 The hints explain how these widgets were created.</value>
           </text>
-          <text id="/enketo_widgets/media_widgets/annotate:label">
-            <value>Annotate image widget</value>
-          </text>
           <text id="/enketo_widgets/media_widgets/audio:label">
             <value>Audio widget</value>
-          </text>
-          <text id="/enketo_widgets/media_widgets/draw:label">
-            <value>Draw widget</value>
           </text>
           <text id="/enketo_widgets/media_widgets/file:label">
             <value>File widget (any type)</value>
           </text>
           <text id="/enketo_widgets/media_widgets/image:label">
             <value>Image widget</value>
-          </text>
-          <text id="/enketo_widgets/media_widgets/signature:label">
-            <value>Signature widget</value>
           </text>
           <text id="/enketo_widgets/media_widgets/video:label">
             <value>Video widget</value>
@@ -166,8 +157,26 @@ The hints explain how these widgets were created.</value>
           <text id="/enketo_widgets/range_widgets:label">
             <value>Range widgets</value>
           </text>
+          <text id="/enketo_widgets/select_widgets/grid_2_columns/a:label">
+            <value form="image">jr://images/a.png</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/grid_2_columns/b:label">
+            <value form="image">jr://images/b.png</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/grid_2_columns/c:label">
+            <value form="image">jr://images/c.png</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/grid_2_columns/d:label">
+            <value form="image">jr://images/d.png</value>
+          </text>
           <text id="/enketo_widgets/select_widgets/grid_2_columns:label">
             <value>Fixed number of columns (2), and no buttons</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/grid_test/a:label">
+            <value form="image">jr://images/a.png</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/grid_test/b:label">
+            <value form="image">jr://images/b.png</value>
           </text>
           <text id="/enketo_widgets/select_widgets/grid_test:label">
             <value>No buttons</value>
@@ -175,11 +184,29 @@ The hints explain how these widgets were created.</value>
           <text id="/enketo_widgets/select_widgets/happy_sad_table/generated_table_list_label_51:label">
             <value>Table with image labels (alternative method)</value>
           </text>
+          <text id="/enketo_widgets/select_widgets/happy_sad_table/happy_sad_brian/happy:label">
+            <value form="image">jr://images/happy.png</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/happy_sad_table/happy_sad_brian/sad:label">
+            <value form="image">jr://images/sad.png</value>
+          </text>
           <text id="/enketo_widgets/select_widgets/happy_sad_table/happy_sad_brian:label">
             <value>Brian</value>
           </text>
+          <text id="/enketo_widgets/select_widgets/happy_sad_table/happy_sad_michael/happy:label">
+            <value form="image">jr://images/happy.png</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/happy_sad_table/happy_sad_michael/sad:label">
+            <value form="image">jr://images/sad.png</value>
+          </text>
           <text id="/enketo_widgets/select_widgets/happy_sad_table/happy_sad_michael:label">
             <value>Michael</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/happy_sad_table/reserved_name_for_field_list_labels_52/happy:label">
+            <value form="image">jr://images/happy.png</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/happy_sad_table/reserved_name_for_field_list_labels_52/sad:label">
+            <value form="image">jr://images/sad.png</value>
           </text>
           <text id="/enketo_widgets/select_widgets/select/a:label">
             <value>option a</value>
@@ -472,6 +499,24 @@ The hints explain how these widgets were created.</value>
           <text id="/enketo_widgets/text_widgets:label">
             <value>Text widgets</value>
           </text>
+          <text id="static_instance-a_b-0">
+            <value form="image">jr://images/a.png</value>
+          </text>
+          <text id="static_instance-a_b-1">
+            <value form="image">jr://images/b.png</value>
+          </text>
+          <text id="static_instance-a_b_c_d-0">
+            <value form="image">jr://images/a.png</value>
+          </text>
+          <text id="static_instance-a_b_c_d-1">
+            <value form="image">jr://images/b.png</value>
+          </text>
+          <text id="static_instance-a_b_c_d-2">
+            <value form="image">jr://images/c.png</value>
+          </text>
+          <text id="static_instance-a_b_c_d-3">
+            <value form="image">jr://images/d.png</value>
+          </text>
           <text id="static_instance-agree5-0">
             <value>strongly disagree</value>
           </text>
@@ -511,6 +556,12 @@ The hints explain how these widgets were created.</value>
           <text id="static_instance-countries-1">
             <value>United States</value>
           </text>
+          <text id="static_instance-happy_sad-0">
+            <value form="image">jr://images/happy.png</value>
+          </text>
+          <text id="static_instance-happy_sad-1">
+            <value form="image">jr://images/sad.png</value>
+          </text>
           <text id="static_instance-holiday-0">
             <value>Mexico</value>
           </text>
@@ -542,16 +593,16 @@ The hints explain how these widgets were created.</value>
             <value>option d</value>
           </text>
           <text id="static_instance-list1-0">
-            <value form="image">jr://images/kingfisher.png</value>
             <value>kingfisher</value>
+            <value form="image">jr://images/kingfisher.png</value>
           </text>
           <text id="static_instance-list1-1">
-            <value form="image">jr://images/pigeon.png</value>
             <value>pigeon</value>
+            <value form="image">jr://images/pigeon.png</value>
           </text>
           <text id="static_instance-list1-2">
-            <value form="image">jr://images/nuthatch.png</value>
             <value>nuthatch</value>
+            <value form="image">jr://images/nuthatch.png</value>
           </text>
           <text id="static_instance-list2-0">
             <value>option 1</value>
@@ -698,9 +749,6 @@ The hints explain how these widgets were created.</value>
           </geopoint_widgets>
           <media_widgets>
             <image/>
-            <draw/>
-            <signature/>
-            <annotate/>
             <audio/>
             <video/>
             <file/>
@@ -954,56 +1002,56 @@ The hints explain how these widgets were created.</value>
         <root>
           <item>
             <itextId>static_instance-neighborhoods-0</itextId>
-            <country>usa</country>
             <name>bronx</name>
+            <country>usa</country>
             <city>nyc</city>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-1</itextId>
-            <country>usa</country>
             <name>harlem</name>
+            <country>usa</country>
             <city>nyc</city>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-2</itextId>
-            <country>usa</country>
             <name>belair</name>
+            <country>usa</country>
             <city>la</city>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-3</itextId>
-            <country>nl</country>
             <name>wes</name>
+            <country>nl</country>
             <city>ams</city>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-4</itextId>
-            <country>usa</country>
             <name>parkhill</name>
+            <country>usa</country>
             <city>den</city>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-5</itextId>
-            <country>nl</country>
             <name>haven</name>
+            <country>nl</country>
             <city>rot</city>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-6</itextId>
-            <country>nl</country>
             <name>dam</name>
+            <country>nl</country>
             <city>ams</city>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-7</itextId>
-            <country>nl</country>
             <name>centrum</name>
+            <country>nl</country>
             <city>rot</city>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-8</itextId>
-            <country>nl</country>
             <name>havendr</name>
+            <country>nl</country>
             <city>dro</city>
           </item>
         </root>
@@ -1061,9 +1109,6 @@ The hints explain how these widgets were created.</value>
       <bind nodeset="/enketo_widgets/geopoint_widgets/geotrace" type="geotrace"/>
       <bind nodeset="/enketo_widgets/geopoint_widgets/geoshape" type="geoshape"/>
       <bind nodeset="/enketo_widgets/media_widgets/image" type="binary"/>
-      <bind nodeset="/enketo_widgets/media_widgets/draw" type="binary"/>
-      <bind nodeset="/enketo_widgets/media_widgets/signature" type="binary"/>
-      <bind nodeset="/enketo_widgets/media_widgets/annotate" type="binary"/>
       <bind nodeset="/enketo_widgets/media_widgets/audio" type="binary"/>
       <bind nodeset="/enketo_widgets/media_widgets/video" type="binary"/>
       <bind nodeset="/enketo_widgets/media_widgets/file" type="binary"/>
@@ -1681,18 +1726,6 @@ The hints explain how these widgets were created.</value>
       <upload mediatype="image/*" ref="/enketo_widgets/media_widgets/image">
         <label ref="jr:itext('/enketo_widgets/media_widgets/image:label')"/>
         <hint>Select an image or take a photo (type=image)</hint>
-      </upload>
-      <upload mediatype="image/*" appearance="draw" ref="/enketo_widgets/media_widgets/draw">
-        <label ref="jr:itext('/enketo_widgets/media_widgets/draw:label')"/>
-        <hint>Make a drawing (type=image, appearance=draw)</hint>
-      </upload>
-      <upload mediatype="image/*" appearance="signature" ref="/enketo_widgets/media_widgets/signature">
-        <label ref="jr:itext('/enketo_widgets/media_widgets/signature:label')"/>
-        <hint>Add a signature (type=image, appearance=signature)</hint>
-      </upload>
-      <upload mediatype="image/*" appearance="annotate" ref="/enketo_widgets/media_widgets/annotate">
-        <label ref="jr:itext('/enketo_widgets/media_widgets/annotate:label')"/>
-        <hint>Upload and annotate an image (type=image, appearance=annotate)</hint>
       </upload>
       <upload mediatype="audio/*" ref="/enketo_widgets/media_widgets/audio">
         <label ref="jr:itext('/enketo_widgets/media_widgets/audio:label')"/>
