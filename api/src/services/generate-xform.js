@@ -38,14 +38,14 @@ const transform = (formXml, stylesheet) => {
     xsltproc.stderr.on('data', data => stderr += data);
     xsltproc.stdin.setEncoding('utf-8');
     xsltproc.stdin.on('error', err => {
-      // Errors related with spawned process and stdin are handled here on OSX
+      // Errors related with spawned processes and stdin are handled here on OSX
       return stdinErrorHandler(xsltproc, err, reject);
     });
     try {
       xsltproc.stdin.write(formXml);
       xsltproc.stdin.end();
     } catch (err) {
-      // Errors related with spawned process and stdin are handled here on *nix
+      // Errors related with spawned processes and stdin are handled here on *nix
       return stdinErrorHandler(xsltproc, err, reject);
     }
     xsltproc.on('close', (code, signal) => {
