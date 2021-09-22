@@ -13,13 +13,16 @@ describe('FormatDate service', () => {
   let translateInstant;
   let relativeTime;
   let pastFuture;
+  let settingsService;
 
   const LONG_DATE_FORMAT = 'h:mm A';
+  const DATETIME_FORMAT = 'DD-MMM-YYYY HH:mm:ss';
 
   beforeEach(() => {
     relativeTime = sinon.stub();
     pastFuture = sinon.stub();
     translateInstant = sinon.stub();
+    settingsService = { get: sinon.stub() };
     // @ts-ignore
     sinon.stub(moment, 'localeData').returns({
       relativeTime,
@@ -28,7 +31,7 @@ describe('FormatDate service', () => {
     });
     TestBed.configureTestingModule({
       providers: [
-        { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) } },
+        { provide: SettingsService, useValue: settingsService },
         { provide: TranslateService, useValue: { instant: translateInstant } },
       ]
     });
@@ -39,6 +42,30 @@ describe('FormatDate service', () => {
   afterEach(() => {
     sinon.restore();
   });
+
+  describe('init', () => {
+    it('should load settings', async () => {
+      settingsService.get.resolves({ date_format: 'Y-M-D' });
+      await service.init();
+
+      expect(settingsService.get.callCount).to.equal(1);
+
+      const now = moment();
+      expect(service.date(now)).to.equal(now.format('Y-M-D'));
+    });
+
+    it('should catch settings loading errors', async () => {
+      settingsService.get.rejects({ some: 'error' });
+      await service.init();
+
+      expect(settingsService.get.callCount).to.equal(1);
+
+      const now = moment();
+      expect(service.date(now)).to.equal(now.format('DD-MMM-YYYY'));
+    });
+  });
+
+
 
   describe('age', () => {
 
@@ -195,35 +222,130 @@ describe('FormatDate service', () => {
     });
   });
 
+  describe('datetime', () => {
+    it('should return formatted datetime', () => {
+      const now = moment();
+      const formatted = now.format(DATETIME_FORMAT);
+      expect(service.datetime(now)).to.equal(formatted);
+    });
+
+    it('should return formatted datetime depending on settings', async () => {
+      const newFormat = 'D-M-Y';
+      settingsService.get.resolves({ reported_date_format: newFormat });
+      await service.init();
+
+      const now = moment();
+      const formatted = now.format(newFormat);
+      expect(service.datetime(now)).to.equal(formatted);
+    });
+  });
+
   describe('task due date', () => {
 
     it('returns "due" when due yesterday', () => {
       translateInstant.returns('due');
       const actual = service.relative(moment().subtract(1, 'days'), { task: true });
       expect(actual).to.equal('due');
-      expect(translateInstant.args[0][0]).to.equal('task.overdue');
+      expect(translateInstant.callCount).to.equal(1);
+      expect(translateInstant.args[0]).to.deep.equal(['task.overdue', undefined]);
     });
 
-    it('returns "due" when due today', () => {
+    it('returns "due" when due today', async () => {
       translateInstant.returns('due');
       const actual = service.relative(moment(), { task: true });
       expect(actual).to.equal('due');
-      expect(translateInstant.args[0][0]).to.equal('task.overdue');
+      expect(translateInstant.args[0]).to.deep.equal(['task.overdue', undefined]);
+
+      settingsService.get.resolves({ task_days_overdue: true });
+      await service.init();
+
+      expect(service.relative(moment(), { task: true })).to.equal('due');
+      expect(translateInstant.args[1]).to.deep.equal(['task.overdue.days', { DAYS: 0 }]);
+
+      expect(translateInstant.callCount).to.equal(2);
     });
 
-    it('returns "1 day left" when in 1 day', () => {
+    it('returns "1 day left" when in 1 day', async () => {
       translateInstant.returns('1 day left');
       const actual = service.relative(moment().add(1, 'days'), { task: true });
       expect(actual).to.equal('1 day left');
-      expect(translateInstant.args[0][0]).to.equal('task.days.left');
-      expect(translateInstant.args[0][1]).to.deep.equal({ DAYS: 1 });
+      expect(translateInstant.args[0]).to.deep.equal(['task.days.left', { DAYS: 1 }]);
+
+      settingsService.get.resolves({ task_days_overdue: true });
+      await service.init();
+      expect(service.relative(moment().add(1, 'days'), { task: true })).to.equal('1 day left');
+      expect(translateInstant.args[1]).to.deep.equal(['task.days.left', { DAYS: 1 }]);
     });
 
-    it('returns empty string when due in 5 days', () => {
+    it('returns empty string when due in 5 days', async () => {
       const actual = service.relative(moment().add(5, 'days'), { task: true });
       expect(actual).to.equal('');
       expect(translateInstant.callCount).to.equal(0);
+
+      settingsService.get.resolves({ task_days_overdue: true });
+      await service.init();
+
+      expect(service.relative(moment().add(5, 'days'), { task: true })).to.equal('');
+      expect(translateInstant.callCount).to.equal(0);
     });
 
+    it('should return "5 days left" when task_day_limit is increased', async () => {
+      settingsService.get.resolves({ task_day_limit: 7 });
+      const inFiveDays = moment().add(5, 'days');
+      translateInstant.returns('5 days left');
+
+      await service.init();
+      expect(service.relative(inFiveDays, { task: true })).to.equal('5 days left');
+      expect(translateInstant.callCount).to.equal(1);
+      expect(translateInstant.args[0]).to.deep.equal(['task.days.left', { DAYS: 5 }]);
+
+      settingsService.get.resolves({ task_day_limit: 7, task_days_overdue: true });
+
+      await service.init();
+      expect(service.relative(inFiveDays, { task: true })).to.equal('5 days left');
+      expect(translateInstant.callCount).to.equal(2);
+      expect(translateInstant.args[1]).to.deep.equal(['task.days.left', { DAYS: 5 }]);
+    });
+
+    it('should return "due" when due in the past by default', () => {
+      translateInstant.returns('due');
+      const actual = service.relative(moment().subtract(4, 'days'), { task: true });
+      expect(actual).to.equal('due');
+      expect(translateInstant.callCount).to.equal(1);
+      expect(translateInstant.args[0]).to.deep.equal(['task.overdue', undefined]);
+    });
+
+    it('should return "due" when due in the past by when task_days_overdue is undefined', async () => {
+      settingsService.get.resolves({ });
+      translateInstant.returns('due');
+      await service.init();
+
+      const actual = service.relative(moment().subtract(4, 'days'), { task: true });
+      expect(actual).to.equal('due');
+      expect(translateInstant.callCount).to.equal(1);
+      expect(translateInstant.args[0]).to.deep.equal(['task.overdue', undefined]);
+    });
+
+    it('should return "due" when due in the past by when task_days_overdue is false', async () => {
+      settingsService.get.resolves({ task_days_overdue: false });
+      translateInstant.returns('due');
+      await service.init();
+
+      const actual = service.relative(moment().subtract(4, 'days'), { task: true });
+      expect(actual).to.equal('due');
+      expect(translateInstant.callCount).to.equal(1);
+      expect(translateInstant.args[0]).to.deep.equal(['task.overdue', undefined]);
+    });
+
+    it('should return days ago when due in the past by when task_days_overdue is true', async () => {
+      settingsService.get.resolves({ task_days_overdue: true });
+      translateInstant.returns('Due 4 days ago');
+      await service.init();
+
+      const actual = service.relative(moment().subtract(4, 'days'), { task: true });
+      expect(actual).to.equal('Due 4 days ago');
+      expect(translateInstant.callCount).to.equal(1);
+      expect(translateInstant.args[0]).to.deep.equal(['task.overdue.days', { DAYS: 4 }]);
+    });
   });
 });

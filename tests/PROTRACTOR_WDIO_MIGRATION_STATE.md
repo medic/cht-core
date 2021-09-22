@@ -30,7 +30,7 @@
 |e2e/concatenate-xpath-strings.spec.js	|	|	|	|	|
 |e2e/contact-summary.js	|	|	|	|	|
 |e2e/create-meta-db.js	|	|	|	|	|
-|e2e/infodocs.js	|	|	|	|	|
+|e2e/infodocs.js	|Done	| Bede	|https://github.com/medic/cht-core/pull/7318	|	|
 |e2e/rapidpro.spec.js	|	|	|	|	|
 |e2e/registration-by-sms.js	|	|	|	|	|
 |e2e/report-date-filter.js	|	|	|	|	|
@@ -42,7 +42,7 @@
 |e2e/cht/pregnancy.spec.js	|	|	|	|	|
 |mobile/common/common.specs.js	|	|	|	|	|
 |mobile/content-security-policy.specs.js	|	|	|	|	|
-|mobile/docs-by-replication-key-view.js	|	|	|	|	|
+|mobile/docs-by-replication-key-view.js	|Done	|Bede	|https://github.com/medic/cht-core/pull/7318	|	|
 |mobile/login/login.specs.js	|	|	|	|	|
-|mobile/medic-collect.specs.js	|	|	|	|	|
-|mobile/service-worker.specs.js	|	|	|	|	|
+|mobile/medic-collect.specs.js	| Done	|Bede	|https://github.com/medic/cht-core/pull/7318	|	|
+|mobile/service-worker.specs.js	|Done	|Bede	|https://github.com/medic/cht-core/pull/7318	|	|

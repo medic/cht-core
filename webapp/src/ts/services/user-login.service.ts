@@ -23,7 +23,7 @@ export class UserLoginService {
 
     const headers: any = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Accept: 'application/json',
     };
 
     const data = JSON.stringify({

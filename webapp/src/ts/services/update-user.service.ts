@@ -28,7 +28,7 @@ export class UpdateUserService {
 
     const headers: any = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Accept: 'application/json',
     };
 
     if (basicAuthUser) {

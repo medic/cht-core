@@ -87,34 +87,34 @@ describe('Parse provider', () => {
 
     it('should process methods correctly', () => {
       const userContactDoc:any = {
-        'name': 'Hanry',
-        'phone': '+61466661112',
-        'contact_type': 'chp',
-        'type': 'person',
-        'reported_date': 1602853017680,
-        'parent': {
-          'name': 'Sushi Roll Clinic',
-          'type': 'district_hospital',
-          'reported_date': 1602852999338,
-          'place_id': '40046',
-          'contact': {
-            'name': 'Hanry',
-            'phone': '+61466661112',
-            'contact_type': 'chp',
-            'type': 'person',
-            'reported_date': 1602853017680,
-            'parent': {
-              '_id': 'dcf86fe98aa9fe2ddb207e4483006f69'
+        name: 'Hanry',
+        phone: '+61466661112',
+        contact_type: 'chp',
+        type: 'person',
+        reported_date: 1602853017680,
+        parent: {
+          name: 'Sushi Roll Clinic',
+          type: 'district_hospital',
+          reported_date: 1602852999338,
+          place_id: '40046',
+          contact: {
+            name: 'Hanry',
+            phone: '+61466661112',
+            contact_type: 'chp',
+            type: 'person',
+            reported_date: 1602853017680,
+            parent: {
+              _id: 'dcf86fe98aa9fe2ddb207e4483006f69'
             },
-            'patient_id': '57848',
-            '_id': 'dcf86fe98aa9fe2ddb207e44830078b0',
+            patient_id: '57848',
+            _id: 'dcf86fe98aa9fe2ddb207e44830078b0',
           },
-          'parent': {
-            '_id': 'dcf86fe98aa9fe2ddb207e4483006f69',
+          parent: {
+            _id: 'dcf86fe98aa9fe2ddb207e4483006f69',
           },
-          '_id': 'dcf86fe98aa9fe2ddb207e4483006f69',
+          _id: 'dcf86fe98aa9fe2ddb207e4483006f69',
         },
-        'patient_id': '57848',
+        patient_id: '57848',
       };
       const expression = '(user.parent.use_cases && user.parent.use_cases.split(" ").indexOf("pnc") !== -1) ' +
         '|| (user.parent.parent.use_cases && user.parent.parent.use_cases.split(" ").indexOf("pnc") !== -1)';
