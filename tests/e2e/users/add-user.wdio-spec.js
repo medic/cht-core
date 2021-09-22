@@ -30,10 +30,6 @@ describe('User Test Cases ->', () => {
     await loginPage.cookieLogin();
   });
 
-  after(async () => {
-    await utils.revertDb([], true);
-  });
-
   beforeEach(async () => {
     await usersAdminPage.goToAdminUser();
     await usersAdminPage.openAddUserDialog();
