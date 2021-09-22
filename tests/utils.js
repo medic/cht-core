@@ -281,6 +281,7 @@ const getCreatedUsers = async () => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   const adminUserId = COUCH_USER_ID_PREFIX + auth.username;
   const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
   return users.rows.filter(user => user.id !== adminUserId)
@@ -299,8 +300,13 @@ const getCreatedUsers = async () => {
 >>>>>>> add revertdb to after hook in wdio.conf
 =======
   const users = await request({ path: '/_users/_all_docs'});
+=======
+  const users = await request({ path: '/_users/_all_docs' });
+>>>>>>> delete users after each test
   if (users && users.rows) {
-    return users.rows.filter(user => !(user.id === '_design/_auth' || user.id === 'org.couchdb.user:admin'));
+    const filterUsers = users.rows.filter(user =>
+      !(user.id === '_design/_auth' || user.id === 'org.couchdb.user:admin'));
+    return filterUsers.map((user) => { return { ...user, username: user.id.replace('org.couchdb.user:', '') }; });
   }
   return [];
 >>>>>>> add revertdb to after hook in wdio.conf
