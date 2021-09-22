@@ -21,7 +21,7 @@ const XSLTPROC_CMD = 'xsltproc';
 const processErrorHandler = function (xsltproc, err, reject) {
   xsltproc.stdin.end();
   if (err.code === 'EPIPE'                                                    // Node v10-12-14
-      || (err.code === 'ENOENT' && err.syscall === `spawn ${XSLTPROC_CMD}`)   // Node v8,v16
+      || (err.code === 'ENOENT' && err.syscall === `spawn ${XSLTPROC_CMD}`)   // Node v8,v16+
   ) {
     const errMsg = `Unable to continue execution, check that '${XSLTPROC_CMD}' command is available.`;
     logger.error(errMsg);
