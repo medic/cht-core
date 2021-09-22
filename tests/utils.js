@@ -278,10 +278,18 @@ const revertDb = async (except, ignoreRefresh) => {
 };
 
 const getCreatedUsers = async () => {
+<<<<<<< HEAD
   const adminUserId = COUCH_USER_ID_PREFIX + auth.username;
   const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
   return users.rows.filter(user => user.id !== adminUserId)
     .map((user) => { return { ...user, username: user.id.replace(COUCH_USER_ID_PREFIX, '') }; });
+=======
+  const users = await request({ path: '/_users/_all_docs'});
+  if (users && users.rows) {
+    return users.rows.filter(user => !(user.id === '_design/_auth' || user.id === 'org.couchdb.user:admin'));
+  }
+  return [];
+>>>>>>> add revertdb to after hook in wdio.conf
 };
 
 const deleteUsers = async (users, meta = false) => {
@@ -1060,11 +1068,7 @@ module.exports = {
 
   runAndLogApiStartupMessage: runAndLogApiStartupMessage,
   findDistrictHospitalFromPlaces: (places) => places.find((place) => place.type === 'district_hospital'),
-<<<<<<< HEAD
-
   apiLogFile: 'api.e2e.log',
   sentinelLogFile: 'sentinel.e2e.log',
-=======
->>>>>>> add revertdb to after hook in wdio.conf
   getCreatedUsers
 };
