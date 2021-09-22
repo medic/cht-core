@@ -8,7 +8,7 @@ import { AsyncPipe } from '@angular/common';
 
 import {
   AgePipe,
-  AutoreplyPipe,
+  AutoreplyPipe, DateOfDeathPipe,
   DayMonthPipe,
   FullDatePipe,
   RelativeDatePipe,
@@ -21,6 +21,7 @@ import {
 import { RelativeDateService } from '@mm-services/relative-date.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { ofType } from '@ngrx/effects';
 
 
 describe('date pipes', () => {
@@ -97,6 +98,11 @@ describe('date pipes', () => {
         '</span>';
       assert.equal(pipe.transform(TEST_DATE), expected);
     });
+
+    it('should work with no age', () => {
+      const pipe = new AgePipe(formatDateService, relativeDateService, sanitizer);
+      assert.equal(pipe.transform(undefined), '<span></span>');
+    });
   });
 
   describe('autoreply', () => {
@@ -106,6 +112,11 @@ describe('date pipes', () => {
         '<span class="autoreply" title="MESSAGE"><span class="autoreply-content">autoreply</span></span>&nbsp</span>';
       const actual = await pipe.transform(TEST_TASK);
       assert.equal(actual, expected);
+    });
+
+    it('should return empty string when no task', async () => {
+      const pipe = new AutoreplyPipe(translateService, formatDateService, relativeDateService, sanitizer);
+      assert.equal(await pipe.transform(undefined), '');
     });
   });
 
@@ -142,6 +153,12 @@ describe('date pipes', () => {
         '</span>';
       assert.equal(pipe.transform(TEST_DATE), expected);
     });
+
+    it('should return raw output when requested', () => {
+      relativeDateService.getRelativeDate.returns('0 days');
+      const pipe = new RelativeDatePipe(sanitizer, formatDateService, relativeDateService);
+      assert.equal(pipe.transform(TEST_DATE, true), '0 days');
+    });
   });
 
   describe('relativeDay', () => {
@@ -157,6 +174,17 @@ describe('date pipes', () => {
         '</span>' +
         '</span>';
       assert.equal(pipe.transform(TEST_DATE), expected);
+    });
+
+    it('should return raw output when requested', () => {
+      relativeDateService.getRelativeDate.returns('0 days');
+      const pipe = new RelativeDayPipe(sanitizer, formatDateService, relativeDateService);
+      assert.equal(pipe.transform(TEST_DATE, true), '0 days');
+    });
+
+    it('should return undefined with raw output and no date', () => {
+      const pipe = new RelativeDayPipe(sanitizer, formatDateService, relativeDateService);
+      assert.equal(pipe.transform(undefined, true), undefined);
     });
   });
 
@@ -183,6 +211,27 @@ describe('date pipes', () => {
     });
   });
 
+  describe('DateOfDeathPipe', () => {
+    it('should return empty string for no date of death', () => {
+      const pipe = new DateOfDeathPipe(translateService, formatDateService, relativeDateService, sanitizer);
+      assert.equal(pipe.transform(undefined), '');
+    });
+
+    it('should return nicely formatted output', () => {
+      relativeDateService.getRelativeDate.returns('sometime in the past');
+
+      const pipe = new DateOfDeathPipe(translateService, formatDateService, relativeDateService, sanitizer);
+      const expected = 'contact.deceased.date.prefix&nbsp;' +
+      '<span class="relative-date future" title="2046-01-02">' +
+        '<span class="relative-date-content update-relative-date" data-date-options="someOptions">' +
+        'sometime in the past' +
+        '</span>' +
+      '</span>';
+      assert.equal(pipe.transform(TEST_DATE), expected);
+    });
+  });
+
+
   describe('weeksPregnant', () => {
     const pipe = new WeeksPregnantPipe();
     it('adds class for full term', () => {
@@ -191,10 +240,19 @@ describe('date pipes', () => {
       assert.equal(pipe.transform(weeks), expected);
     });
 
-
     it('adds class for approximate dates', () => {
       const weeks = { number: 37, approximate: true };
       const expected = '<span class="weeks-pregnant upcoming-edd approximate">37</span>';
+      assert.equal(pipe.transform(weeks), expected);
+    });
+
+    it('should return empty string when no weeks', () => {
+      assert.equal(pipe.transform(0), '');
+    });
+
+    it('should with late end and no approximate', () => {
+      const weeks = { number: 12 };
+      const expected = '<span>12</span>';
       assert.equal(pipe.transform(weeks), expected);
     });
   });

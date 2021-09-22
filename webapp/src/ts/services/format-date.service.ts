@@ -38,7 +38,6 @@ export class FormatDateService {
     };
   }
 
-
   init() {
     this.initConfig();
     return this.settingsService
@@ -52,8 +51,8 @@ export class FormatDateService {
         if (typeof res.task_days_overdue !== 'undefined') {
           this.config.taskDaysOverdue = res.task_days_overdue;
         }
-        if (typeof res.useBikramSambat !== 'undefined') {
-          this.config.useBikramSambat = res.useBikramSambat;
+        if (typeof res.use_bikram_sambat !== 'undefined') {
+          this.config.useBikramSambat = res.use_bikram_sambat;
         }
       })
       .catch((err) => {
@@ -68,6 +67,7 @@ export class FormatDateService {
     const bkDateText = toBikranSambatText(momentDate);
     if (key === 'dayMonth') {
       // bikram-sambat library has no support to return "pieces" of the date
+      // todo change this once we publish bikram-sambat to return an Object
       const [day, month] = bkDateText.split(/\s/);
       return `${day} ${month}`;
     }
@@ -76,10 +76,9 @@ export class FormatDateService {
       return bkDateText;
     }
 
-    if (key === 'datetime') {
-      // inspired from Nepali moment locale LLLL long date format: dddd, D MMMM YYYY, Aको h:mm बजे
-      return `${bkDateText}, ${momentDate.format(this.config.longTime)}`;
-    }
+    // key = 'datetime'
+    // inspired from Nepali moment locale LLLL long date format: dddd, D MMMM YYYY, Aको h:mm बजे
+    return `${bkDateText}, ${momentDate.format(this.config.longTime)}`;
   }
 
   private format(date, key) {

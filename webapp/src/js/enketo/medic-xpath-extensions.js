@@ -62,6 +62,17 @@ const parseTimestampToDate = (value) => {
   return { t:'date', v: new Date(timestamp) };
 };
 
+const convertToBikramSambat = (value) => {
+  if (!value) {
+    return { t: 'str', v: '' };
+  }
+
+  const date = moment(value);
+  const convertedDate = toBikramSambat(date);
+
+  return { t: 'str', v: convertedDate };
+};
+
 module.exports = {
   getTimezoneOffsetAsTime: getTimezoneOffsetAsTime,
   toISOLocalString: toISOLocalString,
@@ -83,17 +94,7 @@ module.exports = {
       }
       return { t: 'num', v: result };
     },
-    'to-bikram-sambat': function () {
-      const args = Array.from(arguments).map((arg) => getValue(arg));
-      if (!args[0]) {
-        return { t: 'str', v: '' };
-      }
-
-      const date = moment(args[0]);
-      const convertedDate = toBikramSambat(date);
-
-      return { t: 'str', v: convertedDate };
-    },
+    'to-bikram-sambat': convertToBikramSambat,
     'parse-timestamp-to-date': parseTimestampToDate, // Function name convention of XForm
   },
   process: {
