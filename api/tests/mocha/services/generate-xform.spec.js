@@ -243,6 +243,7 @@ describe('generate-xform service', () => {
           'Unknown Error: An error occurred when executing \'xsltproc\' command');
       }
     });
+
   });
 
   describe('update', () => {
