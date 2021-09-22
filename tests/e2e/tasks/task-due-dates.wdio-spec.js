@@ -65,7 +65,6 @@ describe('Task list due dates', () => {
 
   after(async () => {
     await utils.deleteUsers([ chw ]);
-    await utils.revertDb([], true);
   });
 
   afterEach(async () => {

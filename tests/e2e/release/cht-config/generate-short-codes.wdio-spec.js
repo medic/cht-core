@@ -42,8 +42,6 @@ describe('generating short codes', () => {
     await loginPage.cookieLogin();
   });
 
-  after(async () => await utils.revertDb([], true));
-
   it('create case ID', async () => {
     await utils.request({
       method: 'POST',
