@@ -275,6 +275,14 @@ const revertDb = async (except, ignoreRefresh) => {
   await setUserContactDoc();
 };
 
+const getCreatedUsers = async () => {
+  const users = await request({ path: '/_users/_all_docs'});
+  if (users && users.rows) {
+    return users.rows.filter(user => !(user.id === '_design/_auth' || user.id === 'org.couchdb.user:admin'));
+  }
+  return [];
+};
+
 const deleteUsers = async (users, meta = false) => {
   const usernames = users.map(user => `org.couchdb.user:${user.username}`);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
@@ -1054,4 +1062,5 @@ module.exports = {
 
   apiLogFile: 'api.e2e.log',
   sentinelLogFile: 'sentinel.e2e.log',
+  getCreatedUsers
 };

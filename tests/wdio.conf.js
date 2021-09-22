@@ -45,6 +45,7 @@ const baseConfig = {
   //
   specs: [
     './tests/e2e/**/*.wdio-spec.js'
+    // './tests/e2e/login/privacy-policy.wdio-spec.js'
   ],
   // Patterns to exclude.
   exclude: [
@@ -307,8 +308,11 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {Array.<String>} specs List of spec file paths that ran
    */
-  // after: function (result, capabilities, specs) {
-  // },
+  after: async () => {
+    const users = await utils.getCreatedUsers();
+    await utils.deleteUsers(users);
+    await utils.revertDb([],true);
+  },
   /**
    * Gets executed right after terminating the webdriver session.
    * @param {Object} config wdio configuration object

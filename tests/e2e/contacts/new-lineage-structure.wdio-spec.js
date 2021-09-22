@@ -20,10 +20,6 @@ describe('Create new lineage structure', () => {
     await commonPage.goToPeople();
   });
 
-  after(async () => {
-    await utils.revertDb([], true);
-  });
-
   afterEach(async () => {
     // https://github.com/medic/cht-core/issues/7244
     // avoid race conditions by not starting next test until all changes were processed by Sentinel
