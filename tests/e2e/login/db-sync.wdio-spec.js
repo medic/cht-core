@@ -205,7 +205,6 @@ describe('db-sync', () => {
   });
 
   after(async () => {
-    await utils.revertDb([], true);
     await utils.deleteUsers([restrictedUserName]);
   });
 
