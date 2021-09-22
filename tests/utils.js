@@ -276,9 +276,11 @@ const revertDb = async (except, ignoreRefresh) => {
 };
 
 const getCreatedUsers = async () => {
-  const users = await request({ path: '/_users/_all_docs'});
+  const users = await request({ path: '/_users/_all_docs' });
   if (users && users.rows) {
-    return users.rows.filter(user => !(user.id === '_design/_auth' || user.id === 'org.couchdb.user:admin'));
+    const filterUsers = users.rows.filter(user =>
+      !(user.id === '_design/_auth' || user.id === 'org.couchdb.user:admin'));
+    return filterUsers.map((user) => { return { ...user, username: user.id.replace('org.couchdb.user:', '') }; });
   }
   return [];
 };
@@ -678,7 +680,7 @@ module.exports = {
   },
 
   getDoc: (id, rev) => {
-    const params = { };
+    const params = {};
     if (rev) {
       params.rev = rev;
     }

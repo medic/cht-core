@@ -33,7 +33,7 @@ const transitions = {
 
 const self_report = [{ form: formId }];
 
-const docs = [...places, user];
+const docs = [...places];
 
 describe('Link SMS to patient without passing id', () => {
   before(async () => {
@@ -43,6 +43,7 @@ describe('Link SMS to patient without passing id', () => {
   });
 
   it('Send SMS without patient_id and report created under person', async () => {
+    await utils.createUsers([user]);
     await sentinelUtils.waitForSentinel();
     await gatewayApiUtils.api.postMessage({
       id: 'some-message-id',
