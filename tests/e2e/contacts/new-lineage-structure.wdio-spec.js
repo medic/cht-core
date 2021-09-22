@@ -3,7 +3,6 @@ const chai = require('chai');
 const contactPage = require('../../page-objects/contacts/contacts.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
-const utils = require('../../utils');
 const sentinelUtils = require('../sentinel/utils');
 
 const centerName = 'Franklin';
