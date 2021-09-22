@@ -73,13 +73,13 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 12.x
-    - name: Grunt Install
     - uses: actions/cache@v1
       with:
         path: ~/.npm
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-node-
+    - name: Grunt Install
       run: npm install -g grunt-cli
     - name: NPM
       run: npm ci
@@ -141,13 +141,13 @@ jobs:
       run: mkdir tests/logs
     - name: Install pyxform
       run:  python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-    - name: Install cht-conf
     - uses: actions/cache@v1
       with:
         path: ~/.npm
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-node-
+    - name: Install cht-conf
       run:  npm install -g cht-conf
     - name: npm CI
       run: npm ci
