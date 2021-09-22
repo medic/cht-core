@@ -52,6 +52,16 @@ const getTimezoneOffsetAsTime = function(date) {
   return direction + hours + ':' + minutes;
 };
 
+const parseTimestampToDate = (value) => {
+  const timestamp = parseInt(getValue(value));
+
+  if (isNaN(timestamp)) {
+    return { t: 'str', v: '' };
+  }
+
+  return { t:'date', v: new Date(timestamp) };
+};
+
 module.exports = {
   getTimezoneOffsetAsTime: getTimezoneOffsetAsTime,
   toISOLocalString: toISOLocalString,
@@ -83,7 +93,8 @@ module.exports = {
       const convertedDate = toBikramSambat(date);
 
       return { t: 'str', v: convertedDate };
-    }
+    },
+    'parse-timestamp-to-date': parseTimestampToDate, // Function name convention of XForm
   },
   process: {
     toExternalResult: function(r) {

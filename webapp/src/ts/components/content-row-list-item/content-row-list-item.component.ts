@@ -10,6 +10,8 @@ export class ContentRowListItemComponent {
   @Input() id;
   // string: (optional) the name of the route to link to
   @Input() route;
+  // string: (optional) the name of the tab to use as router link state
+  @Input() tab;
   // boolean: (optional) whether to mark this row read
   @Input() read;
   // string: (optional) the id of the resource icon to render

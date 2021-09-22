@@ -1,11 +1,12 @@
 const { expect } = require('chai');
 const URL = require('url');
+const loginWdioPage = require('../page-objects/login/login.wdio.page');
 const utils = require('../utils');
 
 /* global caches fetch Response navigator */
 
 const getCachedRequests = async () => {
-  const cacheDetails = await browser.executeAsyncScript(async () => {
+  const cacheDetails = await browser.executeAsync(async () => {
     const callback = arguments[arguments.length - 1];
     const cacheNames = await caches.keys();
     const cache = await caches.open(cacheNames[0]);
@@ -22,7 +23,7 @@ const getCachedRequests = async () => {
   return { name: cacheDetails.name, urls };
 };
 
-const stubAllCachedRequests = () => browser.executeAsyncScript(async () => {
+const stubAllCachedRequests = () => browser.executeAsync(async () => {
   const callback = arguments[arguments.length - 1];
   const cacheNames = await caches.keys();
   const cache = await caches.open(cacheNames[0]);
@@ -31,7 +32,7 @@ const stubAllCachedRequests = () => browser.executeAsyncScript(async () => {
   callback();
 });
 
-const doFetch = (path, headers) => browser.executeAsyncScript(async (innerPath, innerHeaders) => {
+const doFetch = (path, headers) => browser.executeAsync(async (innerPath, innerHeaders) => {
   const callback = arguments[arguments.length - 1];
   const result = await fetch(innerPath, { headers: innerHeaders });
   callback({
@@ -41,7 +42,7 @@ const doFetch = (path, headers) => browser.executeAsyncScript(async (innerPath, 
   });
 }, path, headers);
 
-const unregisterServiceWorkerAndWipeAllCaches = () => browser.executeAsyncScript(async () => {
+const unregisterServiceWorkerAndWipeAllCaches = () => browser.executeAsync(async () => {
   const callback = arguments[arguments.length - 1];
 
   const registrations = await navigator.serviceWorker.getRegistrations();
@@ -54,7 +55,8 @@ const unregisterServiceWorkerAndWipeAllCaches = () => browser.executeAsyncScript
 });
 
 describe('Service worker cache', () => {
-  afterEach(utils.afterEach);
+  before(() => loginWdioPage.cookieLogin());
+  after(() => utils.revertDb([], true));
 
   it('confirm initial list of cached resources', async () => {
     const cacheDetails = await getCachedRequests();

@@ -20,7 +20,6 @@ export class FormatDateService {
   }
 
   private config;
-
   private initConfig() {
     this.config = {
       date: 'DD-MMM-YYYY',
@@ -29,6 +28,7 @@ export class FormatDateService {
       time: moment.localeData().longDateFormat('LT'),
       longTime: moment.localeData().longDateFormat('LTS'),
       taskDayLimit: 4,
+      taskDaysOverdue: false,
       useBikramSambat: true,
       ageBreaks: [
         { unit: 'years', key: { singular: 'y', plural: 'yy' }, min: 1 },
@@ -38,15 +38,19 @@ export class FormatDateService {
     };
   }
 
+
   init() {
     this.initConfig();
-    this.settingsService
+    return this.settingsService
       .get()
       .then((res:any) => {
         this.config.date = res.date_format;
         this.config.datetime = res.reported_date_format;
         if (typeof res.task_day_limit !== 'undefined') {
           this.config.taskDayLimit = res.task_day_limit;
+        }
+        if (typeof res.task_days_overdue !== 'undefined') {
+          this.config.taskDaysOverdue = res.task_days_overdue;
         }
         if (typeof res.useBikramSambat !== 'undefined') {
           this.config.useBikramSambat = res.useBikramSambat;
@@ -56,7 +60,6 @@ export class FormatDateService {
         console.error('Error fetching settings', err);
       });
   }
-
   private displayBikramSambatDate(momentDate, key) {
     if (key === 'time') {
       return momentDate.format(this.config[key]);
@@ -107,12 +110,19 @@ export class FormatDateService {
     const date = moment(given).startOf('day');
     const today = moment().startOf('day');
     const diff = date.diff(today, 'days');
+
     if (diff <= 0) {
+      if (this.config.taskDaysOverdue) {
+        return this.translateService.instant('task.overdue.days', { DAYS: Math.abs(diff) });
+      }
+
       return this.translateService.instant('task.overdue');
     }
+
     if (diff <= this.config.taskDayLimit) {
       return this.translateService.instant('task.days.left', { DAYS: diff });
     }
+
     return '';
   }
 

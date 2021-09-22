@@ -46,7 +46,9 @@ import { reducers } from '@mm-reducers/index';
 
 const logger = reducer => {
   // default, no options
-  return storeLogger()(reducer);
+  return storeLogger({
+    collapsed: true,
+  })(reducer);
 };
 const metaReducers = environment.production ? [] : [logger];
 

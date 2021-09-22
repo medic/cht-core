@@ -35,10 +35,18 @@ module.exports = db => {
     /**
      * Refreshes all rules documents for a set of contacts and returns their task documents
      *
-     * @param {string[]} contactIds An array of contact ids. If undefined, all contacts are
+     * @param {string[]} contactIds An array of contact ids. If undefined, returns tasks for all contacts
      * @returns {Promise<Object[]>} All the fresh task docs owned by contactIds
      */
     fetchTasksFor: contactIds => wireupToProvider.fetchTasksFor(provider, contactIds),
+
+    /**
+     * Returns a breakdown of tasks by state and title for the provided list of contacts
+     *
+     * @param {string[]} contactIds An array of contact ids. If undefined, returns breakdown for all contacts
+     * @returns {Promise<Object>} The breakdown of tasks counts by state and title
+     */
+    fetchTasksBreakdown: contactIds => wireupToProvider.fetchTasksBreakdown(provider, contactIds),
 
     /**
      * Refreshes all rules documents and returns the latest target document

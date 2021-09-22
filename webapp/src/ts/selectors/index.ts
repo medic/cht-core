@@ -8,6 +8,7 @@ const getContactsState = (state) => state.contacts || {};
 const getSelectedContact = (state) => getContactsState(state).selected;
 
 const getEnketoStatus = state => getGlobalState(state).enketoStatus;
+const getNavigation = state => getGlobalState(state).navigation;
 const getAnalyticsState = (state) => state.analytics || {};
 const getTargetAggregatesState = (state) => state.targetAggregates || {};
 const getTasksState = state => state.tasks || {};
@@ -29,7 +30,6 @@ export const Selectors = {
   getForms: createSelector(getGlobalState, (globalState) => globalState.forms),
   getFilters: createSelector(getGlobalState, (globalState) => globalState.filters),
   getIsAdmin: createSelector(getGlobalState, (globalState) => globalState.isAdmin),
-  getCancelCallback: createSelector(getGlobalState, (globalState) => globalState.cancelCallback),
   getTitle: createSelector(getGlobalState, (globalState) => globalState.title),
   getPrivacyPolicyAccepted: createSelector(getGlobalState, (globalState) => globalState.privacyPolicyAccepted),
   getShowPrivacyPolicy: createSelector(getGlobalState, (globalState) => globalState.showPrivacyPolicy),
@@ -42,6 +42,12 @@ export const Selectors = {
   getEnketoEditedStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus?.edited),
   getEnketoSavingStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus?.saving),
   getEnketoError: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus?.error),
+  getEnketoForm: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus?.form),
+
+  //navigation
+  getNavigation: createSelector(getNavigation, (navigationState) => navigationState),
+  getCancelCallback: createSelector(getNavigation, (navState) => navState?.cancelCallback),
+  getPreventNavigation: createSelector(getNavigation, (navState) => navState?.preventNavigation),
 
   // services
   getLastChangedDoc: createSelector(getServicesState, (servicesState) => servicesState.lastChangedDoc),
@@ -122,4 +128,7 @@ export const Selectors = {
   getTasksList: createSelector(getTasksState, (tasksState) => tasksState.tasksList),
   getTasksLoaded: createSelector(getTasksState, (tasksState) => tasksState.loaded),
   getSelectedTask: createSelector(getTasksState, (tasksState) => tasksState.selected),
+  getLastSubmittedTask: createSelector(getTasksState, (tasksState) => tasksState.taskGroup?.lastSubmittedTask),
+  getTaskGroupContact: createSelector(getTasksState, (tasksState) => tasksState.taskGroup?.contact),
+  getTaskGroupLoadingContact: createSelector(getTasksState, (tasksState) => tasksState.taskGroup?.loadingContact),
 };
