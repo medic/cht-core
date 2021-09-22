@@ -97,10 +97,6 @@ describe('Test Reports Search Functionality', async () => {
     await commonPage.goToReports();
   });
 
-  after(async () => {
-    await utils.revertDb([], true);
-  });
-
   it('search by NON empty string should display results with contains match and then clears', async () => {
     // Waiting for initial load
     await contactPage.getAllReportsText();
