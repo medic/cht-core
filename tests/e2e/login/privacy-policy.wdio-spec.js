@@ -32,8 +32,6 @@ describe('Privacy policy', () => {
     await utils.createUsers([ onlineUser, offlineUser]);
   });
 
-  after(async () => { await utils.revertDb([], 'api'); });
-
   describe('for an online user', () => {
     it('should show the correct privacy policy on login', async () => {
       // After first login, check that privacy policy was prompted to user
