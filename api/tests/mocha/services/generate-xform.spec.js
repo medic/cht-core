@@ -110,7 +110,7 @@ describe('generate-xform service', () => {
 
     it('should fail when xsltproc command not found in Node v8 and v16+', async () => {
       try {
-        const errOn = new Error('Error: unknown');
+        const errOn = new Error('Error: ENOENT');
         errOn.code = 'ENOENT';
         errOn.syscall = 'spawn xsltproc';
         const spawnedEpipe = {
@@ -180,7 +180,7 @@ describe('generate-xform service', () => {
 
     it('should fail when xsltproc command not found in Node v14', async () => {
       try {
-        const errOn = new Error('Error: unknown');
+        const errOn = new Error('Error: some EPIPE');
         errOn.code = 'EPIPE';
         const spawnedEpipe = {
           stdout: { on: sinon.stub() },
@@ -201,7 +201,7 @@ describe('generate-xform service', () => {
       }
     });
 
-    it('should fail when xsltproc raises write error', async () => {
+    it('should fail when xsltproc raises unknown write error', async () => {
       try {
         const writeErr = new Error('Error: unknown');
         const spawnedEpipe = {
@@ -223,7 +223,7 @@ describe('generate-xform service', () => {
       }
     });
 
-    it('should fail when xsltproc raises stdin write exception', async () => {
+    it('should fail when xsltproc raises unknown exception', async () => {
       try {
         const spawnedUnknownWriteErr = {
           stdout: { on: sinon.stub() },

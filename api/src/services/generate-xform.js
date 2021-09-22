@@ -18,7 +18,7 @@ const FORM_STYLESHEET = path.join(__dirname, '../xsl/openrosa2html5form.xsl');
 const MODEL_STYLESHEET = path.join(__dirname, '../../node_modules/enketo-xslt/xsl/openrosa2xmlmodel.xsl');
 const XSLTPROC_CMD = 'xsltproc';
 
-const processErrorHandler = function (xsltproc, err, reject) {
+const processErrorHandler = (xsltproc, err, reject) => {
   xsltproc.stdin.end();
   if (err.code === 'EPIPE'                                                    // Node v10-12-14
       || (err.code === 'ENOENT' && err.syscall === `spawn ${XSLTPROC_CMD}`)   // Node v8,v16+
