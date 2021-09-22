@@ -18,9 +18,11 @@ const FORM_STYLESHEET = path.join(__dirname, '../xsl/openrosa2html5form.xsl');
 const MODEL_STYLESHEET = path.join(__dirname, '../../node_modules/enketo-xslt/xsl/openrosa2xmlmodel.xsl');
 const XSLTPROC_CMD = 'xsltproc';
 
-const stdinErrorHandler = function (xsltproc, err, reject) {
+const processErrorHandler = function (xsltproc, err, reject) {
   xsltproc.stdin.end();
-  if (err.code === 'EPIPE') {
+  if (err.code === 'EPIPE'                                                    // Node v10-12-14
+      || (err.code === 'ENOENT' && err.syscall === `spawn ${XSLTPROC_CMD}`)   // Node v8,v16
+  ) {
     const errMsg = `Unable to continue execution, check that '${XSLTPROC_CMD}' command is available.`;
     logger.error(errMsg);
     return reject(new Error(errMsg));
@@ -38,15 +40,15 @@ const transform = (formXml, stylesheet) => {
     xsltproc.stderr.on('data', data => stderr += data);
     xsltproc.stdin.setEncoding('utf-8');
     xsltproc.stdin.on('error', err => {
-      // Errors related with spawned processes and stdin are handled here on OSX
-      return stdinErrorHandler(xsltproc, err, reject);
+      // Errors related with spawned processes and stdin are handled here on Node v10
+      return processErrorHandler(xsltproc, err, reject);
     });
     try {
       xsltproc.stdin.write(formXml);
       xsltproc.stdin.end();
     } catch (err) {
-      // Errors related with spawned processes and stdin are handled here on *nix
-      return stdinErrorHandler(xsltproc, err, reject);
+      // Errors related with spawned processes and stdin are handled here on Node v12
+      return processErrorHandler(xsltproc, err, reject);
     }
     xsltproc.on('close', (code, signal) => {
       if (code !== 0 || signal || stderr.length) {
@@ -62,8 +64,8 @@ const transform = (formXml, stylesheet) => {
       resolve(stdout);
     });
     xsltproc.on('error', err => {
-      logger.error(err);
-      return reject(new Error('Child process errored attempting to transform xml'));
+      // Errors related with spawned processes are handled here on Node v8, v14, v16+
+      return processErrorHandler(xsltproc, err, reject);
     });
   });
 };
