@@ -25,11 +25,11 @@ describe('Privacy policy', () => {
     }
   });
 
-  const parent = placeFactory.place().build({_id:'dist1',type:'district_hospital'});
+  const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
 
   before(async () => {
     await utils.saveDocs([parent, privacyPolicyFactory.privacyPolicy().build()]);
-    await utils.createUsers([ onlineUser, offlineUser]);
+    await utils.createUsers([onlineUser, offlineUser]);
   });
 
   describe('for an online user', () => {
@@ -44,7 +44,8 @@ describe('Privacy policy', () => {
       // After accepting, no privacy policy on next load
       await privacyPolicyPage.acceptPrivacyPolicy();
       await browser.url('/');
-      expect(await privacyPolicyPage.privacyWrapper()).not.toBeDisplayed();
+      await expect(await privacyPolicyPage.privacyWrapper()).not.toBeDisplayed();
+      await expect(await commonElements.messagesTab()).toBeDisplayed();
 
       // Check display when loading privacy policy page
       await privacyPolicyPage.goToPrivacyPolicyConfig();
@@ -57,7 +58,8 @@ describe('Privacy policy', () => {
       await browser.reloadSession();
       await browser.url('/');
       await loginPage.login(onlineUser.username, onlineUser.password);
-      expect(await privacyPolicyPage.privacyWrapper()).not.toBeDisplayed();
+      await expect(await privacyPolicyPage.privacyWrapper()).not.toBeDisplayed();
+      await expect(await commonElements.messagesTab()).toBeDisplayed();
 
 
       // After login in french, check that privacy policy was prompted to user again
@@ -100,9 +102,8 @@ describe('Privacy policy', () => {
       await privacyPolicyPage.acceptPrivacyPolicy();
       await commonElements.sync();
 
-      await browser.reloadSession();
       await browser.url('/');
-      expect(await privacyPolicyPage.privacyWrapper()).not.toBeDisplayed();
+      await expect(await privacyPolicyPage.privacyWrapper()).not.toBeDisplayed();
 
       // Check display when loading privacy policy page
       await privacyPolicyPage.goToPrivacyPolicyConfig();
@@ -113,7 +114,7 @@ describe('Privacy policy', () => {
 
       // Update privacy policies
       const newPolicyText = 'Cette text est totalement different c`est fois!';
-      await privacyPolicyPage.updatePrivacyPolicy('privacy-policies', 'fr_attachment', newPolicyText);
+      await privacyPolicyPage.updatePrivacyPolicy('privacy-policies', 'fr', 'fr_attachment', newPolicyText);
       await commonElements.sync();
       await browser.refresh();
 
