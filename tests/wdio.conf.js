@@ -45,7 +45,6 @@ const baseConfig = {
   //
   specs: [
     './tests/e2e/**/*.wdio-spec.js'
-    // './tests/e2e/login/privacy-policy.wdio-spec.js'
   ],
   // Patterns to exclude.
   exclude: [
