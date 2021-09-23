@@ -3,6 +3,7 @@ const helper = require('../../helper');
 const commonElements = require('../../page-objects/common/common.po.js');
 const userSettingsElements = require('../../page-objects/user-settings/user-settings.po');
 const contactElements = require('../../page-objects/contacts/contacts.po');
+const { browser } = require('protractor');
 
 describe('Incorrect locale', () => {
 
@@ -48,6 +49,7 @@ describe('Incorrect locale', () => {
     await helper.clickElementNative(userSettingsElements.getSubmitButton());
 
     // wait for language to load
+    await browser.refresh();
     await browser.wait(
       async () => await commonElements.getReportsButtonLabel().getText() === 'HilReports',
       2000,
