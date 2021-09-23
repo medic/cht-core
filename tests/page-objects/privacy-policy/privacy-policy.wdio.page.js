@@ -5,9 +5,7 @@ const privacyConfig = () => $('.privacy-policy.configuration');
 
 const goToPrivacyPolicyConfig = async () => {
   await browser.url(utils.getBaseUrl() + 'privacy-policy');
-  const privacyPolicyContainer = await privacyConfig();
-  await privacyPolicyContainer.waitForDisplayed();
-  return privacyPolicyContainer.getText();
+  await (await privacyConfig()).waitForDisplayed();
 };
 
 const getPrivacyPolicyFromOverlay = async () => {
