@@ -45,7 +45,6 @@ const baseConfig = {
   //
   specs: [
     './tests/e2e/**/*.wdio-spec.js'
-    // './tests/e2e/login/privacy-policy.wdio-spec.js'
   ],
   // Patterns to exclude.
   exclude: [
@@ -309,6 +308,7 @@ const baseConfig = {
    * @param {Array.<String>} specs List of spec file paths that ran
    */
   after: async () => {
+    // Replaces After hook in test file with a common clean up
     const users = await utils.getCreatedUsers();
     if (users.length) {
       await utils.deleteUsers(users);
