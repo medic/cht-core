@@ -15,6 +15,7 @@ const {
   BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
+  MEDIC_API_RESOURCE_PATH,
 } = process.env;
 
 const releaseName = TAG || BRANCH || 'local-development';
@@ -334,8 +335,8 @@ module.exports = function(grunt) {
       'eslint-sw': {
         cmd: () => {
           const defaultLocation = path.join(__dirname, 'api', 'extracted-resources');
-          //const destination = BUILD_NUMBER ? '/tmp/extracted-resources' : defaultLocation;
-          return `${ESLINT_COMMAND} -c ./.eslintrc ${defaultLocation}/js/service-worker.js`;
+          const destination = BUILD_NUMBER ? MEDIC_API_RESOURCE_PATH : defaultLocation;
+          return `${ESLINT_COMMAND} -c ./.eslintrc ${destination}/js/service-worker.js`;
         }
       },
       'pack-node-modules': {
