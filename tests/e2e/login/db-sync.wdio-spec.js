@@ -204,10 +204,6 @@ describe('db-sync', () => {
     await (await commonElements.analyticsTab()).waitForDisplayed();
   });
 
-  after(async () => {
-    await utils.deleteUsers([restrictedUserName]);
-  });
-
   it('should not filter allowed docs', async () => {
     await updateDoc(report1, { extra: '1' });
     await updateDoc(report2, { extra: '2' });
