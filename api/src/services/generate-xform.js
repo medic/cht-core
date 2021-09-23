@@ -20,7 +20,7 @@ const XSLTPROC_CMD = 'xsltproc';
 
 const processErrorHandler = (xsltproc, err, reject) => {
   xsltproc.stdin.end();
-  if (err.code === 'EPIPE'                                                    // Node v10-12-14
+  if (err.code === 'EPIPE'                                                    // Node v10,v12,v14
       || (err.code === 'ENOENT' && err.syscall === `spawn ${XSLTPROC_CMD}`)   // Node v8,v16+
   ) {
     const errMsg = `Unable to continue execution, check that '${XSLTPROC_CMD}' command is available.`;
@@ -64,7 +64,7 @@ const transform = (formXml, stylesheet) => {
       resolve(stdout);
     });
     xsltproc.on('error', err => {
-      // Errors related with spawned processes are handled here on Node v8, v14, v16+
+      // Errors related with spawned processes are handled here on Node v8,v14,v16+
       return processErrorHandler(xsltproc, err, reject);
     });
   });
