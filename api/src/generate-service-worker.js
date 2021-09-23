@@ -12,6 +12,7 @@ const apiSrcDirectoryPath = __dirname;
 
 const staticDirectoryPath = environment.getExtractedResourcesPath();
 const scriptOutputPath = path.join(staticDirectoryPath, 'js', 'service-worker.js');
+console.log(scriptOutputPath);
 
 /**
  * Generates a sha1 of the existent service worker file.
