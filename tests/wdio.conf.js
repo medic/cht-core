@@ -272,10 +272,10 @@ const baseConfig = {
    * Function to be executed after a test (in Mocha/Jasmine).
    */
   afterTest: async (test, context, { passed }) => {
-    const feedBackDocs = await browserUtils.feedBackDocs(`${test.parent} ${test.title}`,existingFeedBackDocIds);
+    const feedBackDocs = await browserUtils.feedBackDocs(`${test.parent} ${test.title}`, existingFeedBackDocIds);
     existingFeedBackDocIds.push(feedBackDocs);
-    if(feedBackDocs){
-      if(passed){
+    if (feedBackDocs) {
+      if (passed) {
         context.test.callback(new Error('Feedback docs were generated during the test.'));
       }
       passed = false;
@@ -310,8 +310,10 @@ const baseConfig = {
    */
   after: async () => {
     const users = await utils.getCreatedUsers();
-    await utils.deleteUsers(users);
-    await utils.revertDb([],true);
+    if (users.length) {
+      await utils.deleteUsers(users);
+    }
+    await utils.revertDb([], true);
   },
   /**
    * Gets executed right after terminating the webdriver session.
