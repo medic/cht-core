@@ -578,7 +578,7 @@ module.exports = function(grunt) {
       'audit-whitelist': { cmd: 'git diff $(cat .auditignore | git hash-object -w --stdin) $(node ./scripts/audit-all.js | git hash-object -w --stdin) --word-diff --exit-code' },
       'build-config': {
         cmd: () => {
-          const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
+          const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/index.js');
           const configPath = path.resolve('./config/default');
           const buildPath = path.resolve('./build/ddocs/medic/_attachments/default-docs');
           const actions = ['upload-app-settings', 'upload-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-resources', 'upload-custom-translations'];
