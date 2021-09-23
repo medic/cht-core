@@ -87,6 +87,7 @@ const goToPeople = async (contactId = '', shouldLoad = true) => {
   await browser.url(`/#/contacts/${contactId}`);
   if (shouldLoad) {
     await (await contactsPage.contactList()).waitForDisplayed();
+    await waitForLoaders();
   }
 };
 
@@ -184,7 +185,7 @@ const openAboutMenu = async () => {
 const openConfigurationWizardAndFetchProperties = async () => {
   await (await $('i.fa-list-ol')).click();
   await (await $('#guided-setup')).waitForDisplayed();
-  
+
   return {
     modelTitle: await (await $('#guided-setup .modal-header > h2')).getText(),
     defaultCountryCode: await (await $('#select2-default-country-code-setup-container')).getText(),
@@ -235,5 +236,5 @@ module.exports = {
   openUserSettingsAndFetchProperties,
   openReportBugAndFetchProperties,
   openAppManagement,
-  waitForLoaderToDisappear 
+  waitForLoaderToDisappear
 };

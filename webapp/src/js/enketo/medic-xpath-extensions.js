@@ -63,12 +63,12 @@ const parseTimestampToDate = (value) => {
 };
 
 const convertToBikramSambat = (value) => {
-  if (!value) {
+  const date = getValue(value);
+  if (!date) {
     return { t: 'str', v: '' };
   }
 
-  const date = moment(value);
-  const convertedDate = toBikramSambat(date);
+  const convertedDate = toBikramSambat(moment(date));
 
   return { t: 'str', v: convertedDate };
 };

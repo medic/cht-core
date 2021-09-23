@@ -140,7 +140,13 @@ export class FormatDateService {
     }
     const quantity = Math.abs(diff.quantity);
     const key = quantity === 1 ? diff.key.singular : diff.key.plural;
-    const output = moment.localeData().relativeTime(quantity, true, <RelativeTimeKey>key, diff.quantity > 0);
+    const formattedQuantity = moment().format(String(quantity));
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    // postformatting is not applied to relativeTime.
+    // ts-ignore is because relativeTime should receive a number as the first param
+    // https://github.com/moment/moment/issues/5935
+    const output = moment.localeData().relativeTime(formattedQuantity, true, <RelativeTimeKey>key, diff.quantity > 0);
     if (options.suffix) {
       return moment.localeData().pastFuture(diff.quantity, output);
     }
