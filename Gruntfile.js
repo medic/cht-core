@@ -1079,6 +1079,7 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
     'exec:e2e-servers',
     'exec:e2e-integration',
+    'exec:eslint-sw',
   ]);
 
   grunt.registerTask('ci-e2e-cht', 'Run e2e tests for CI', [
