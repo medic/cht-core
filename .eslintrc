@@ -6,13 +6,13 @@
   "plugins": ["promise"],
   "overrides": [
     {
-      "files": [ "Gruntfile.js", "grunt/service-worker.js" ],
+      "files": [ "Gruntfile.js" ],
       "env": {
         "node": true
       }
     },
     {
-      "files": [ "build/ddocs/medic/_attachments/js/service-worker.js" ],
+      "files": [ "**/js/service-worker.js" ],
       "rules": {
         "max-len": "off",
         "no-console": "off",

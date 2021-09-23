@@ -331,6 +331,13 @@ module.exports = function(grunt) {
         },
         stdio: 'inherit', // enable colors!
       },
+      'eslint-sw': {
+        cmd: () => {
+          const defaultLocation = path.join(__dirname, 'api', 'extracted-resources');
+          const destination = BUILD_NUMBER ? '/tmp/extracted-resources' : defaultLocation;
+          return `${ESLINT_COMMAND} -c ./.eslintrc ${destination}/js/service-worker.js`;
+        }
+      },
       'pack-node-modules': {
         cmd: ['api', 'sentinel']
           .map(module =>
@@ -387,7 +394,7 @@ module.exports = function(grunt) {
       },
       'api-dev': {
         cmd:
-          'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "api/extracted-resources/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
+          'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9240 --ignore "api/extracted-resources/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
       },
       'sentinel-dev': {
         cmd:
@@ -973,7 +980,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('e2e-integration', 'Deploy app for testing', [
     'e2e-env-setup',
-    'exec:e2e-integration'
+    'exec:e2e-integration',
+    'exec:eslint-sw',
   ]);
 
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
