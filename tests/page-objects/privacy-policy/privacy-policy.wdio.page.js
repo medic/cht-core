@@ -1,8 +1,6 @@
-// const helper = require('../../helper');
 const utils = require('../../utils');
-// const commonElements = require('../common/common.wdio.page.js');
 const privacyWrapper = () => $('#privacy-policy-wrapper');
-const pivbtn = async () => (await privacyWrapper()).$('.btn');
+const privacyAccept = async () => (await privacyWrapper()).$('.btn');
 const privacyConfig = () => $('.privacy-policy.configuration');
 
 const goToPrivacyPolicyConfig = async () => {
@@ -18,7 +16,7 @@ const getPrivacyPolicyFromOverlay = async () => {
 };
 
 const acceptPrivacyPolicy = async () => {
-  return (await pivbtn()).click();
+  return (await privacyAccept()).click();
 };
 
 const updatePrivacyPolicy = async (docId, policyKey, policyText) => {
