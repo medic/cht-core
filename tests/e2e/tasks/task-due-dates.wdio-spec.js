@@ -63,10 +63,6 @@ describe('Task list due dates', () => {
     await (await commonPage.analyticsTab()).waitForDisplayed();
   });
 
-  after(async () => {
-    await utils.deleteUsers([ chw ]);
-  });
-
   afterEach(async () => {
     await utils.revertSettings(true);
   });
