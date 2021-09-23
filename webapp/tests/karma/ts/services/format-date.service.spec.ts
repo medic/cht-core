@@ -105,9 +105,7 @@ describe('FormatDate service', () => {
       relativeTime.returns('5 years old');
       const actual = service.age(moment().subtract(5, 'years'));
       expect(actual).to.equal('5 years old');
-      expect(relativeTime.args[0][0]).to.equal(5);     // quantity
-      expect(relativeTime.args[0][1]).to.equal(true);  // without suffix
-      expect(relativeTime.args[0][2]).to.equal('yy');  // translation key for "years"
+      expect(relativeTime.args[0]).to.deep.equal(['5', true, 'yy', false]);
     });
 
     it('rounds down', () => {
@@ -115,7 +113,7 @@ describe('FormatDate service', () => {
       const dob = moment().subtract(5, 'years').subtract(11, 'months').subtract(25, 'days');
       const actual = service.age(dob);
       expect(actual).to.equal('5 years old');
-      expect(relativeTime.args[0]).to.deep.equal([5, true, 'yy', false]);
+      expect(relativeTime.args[0]).to.deep.equal(['5', true, 'yy', false]);
     });
 
     it('shows months when less than 2 years old', () => {
@@ -123,7 +121,7 @@ describe('FormatDate service', () => {
       const dob = moment().subtract(16, 'months').subtract(25, 'days');
       const actual = service.age(dob);
       expect(actual).to.equal('16 months');
-      expect(relativeTime.args[0]).to.deep.equal([16, true, 'MM', false]);
+      expect(relativeTime.args[0]).to.deep.equal(['16', true, 'MM', false]);
     });
 
     it('shows days when less than 2 months old', () => {
@@ -131,7 +129,7 @@ describe('FormatDate service', () => {
       const dob = moment().subtract(50, 'days');
       const actual = service.age(dob);
       expect(actual).to.equal('50 days');
-      expect(relativeTime.args[0]).to.deep.equal([50, true, 'dd', false]);
+      expect(relativeTime.args[0]).to.deep.equal(['50', true, 'dd', false]);
     });
 
     it('shows singular when one day old', () => {
@@ -139,7 +137,7 @@ describe('FormatDate service', () => {
       const dob = moment().subtract(1, 'days');
       const actual = service.age(dob);
       expect(actual).to.equal('1 day');
-      expect(relativeTime.args[0]).to.deep.equal([1, true, 'd', false]);
+      expect(relativeTime.args[0]).to.deep.equal(['1', true, 'd', false]);
     });
 
     it('shows zero days old when just born', () => {
@@ -147,7 +145,7 @@ describe('FormatDate service', () => {
       const dob = moment();
       const actual = service.age(dob);
       expect(actual).to.equal('0 days');
-      expect(relativeTime.args[0]).to.deep.equal([0, true, 'dd', false]);
+      expect(relativeTime.args[0]).to.deep.equal(['0', true, 'dd', false]);
     });
 
     it('calculates age at death if known', () => {
@@ -156,7 +154,7 @@ describe('FormatDate service', () => {
       const dod = moment().subtract(20, 'years');
       const actual = service.age(dob, { end: dod });
       expect(actual).to.equal('100 years');
-      expect(relativeTime.args[0]).to.deep.equal([100, true, 'yy', false]);
+      expect(relativeTime.args[0]).to.deep.equal(['100', true, 'yy', false]);
     });
 
   });
@@ -188,7 +186,7 @@ describe('FormatDate service', () => {
       const date = moment().add(2, 'days').startOf('day').add(1, 'hours');
       const actual = service.relative(date, { withoutTime: true });
       expect(actual).to.equal('in 2 days');
-      expect(relativeTime.args[0]).to.deep.equal([2, true, 'dd', true]);
+      expect(relativeTime.args[0]).to.deep.equal(['2', true, 'dd', true]);
       expect(pastFuture.args[0]).to.deep.equal([2, '2 days']);
     });
 
@@ -198,7 +196,7 @@ describe('FormatDate service', () => {
       const date = moment().subtract(2, 'days').startOf('day').add(1, 'hours');
       const actual = service.relative(date, { withoutTime: true });
       expect(actual).to.equal('2 days ago');
-      expect(relativeTime.args[0]).to.deep.equal([2, true, 'dd', false]);
+      expect(relativeTime.args[0]).to.deep.equal(['2', true, 'dd', false]);
       expect(pastFuture.args[0]).to.deep.equal([-2, '2 days']);
     });
 

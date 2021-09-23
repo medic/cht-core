@@ -21,7 +21,6 @@ import {
 import { RelativeDateService } from '@mm-services/relative-date.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { ofType } from '@ngrx/effects';
 
 
 describe('date pipes', () => {
