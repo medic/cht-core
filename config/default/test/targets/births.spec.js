@@ -2,7 +2,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const moment = require('moment');
 const sinon = require('sinon');
-const TestRunner = require('medic-conf-test-harness');
+const TestRunner = require('cht-conf-test-harness');
 const { newbornBaby } = require('../contacts');
 const harness = new TestRunner({
   subject: newbornBaby,

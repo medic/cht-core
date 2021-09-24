@@ -3,7 +3,7 @@ const { assert } = require('chai');
 const path = require('path');
 const sinon = require('sinon');
 
-const TestHarness = require('medic-conf-test-harness');
+const TestHarness = require('cht-conf-test-harness');
 const now = 1469358731456;
 const MS_IN_DAY = 24*60*60*1000;  // 1 day in ms
 const MAX_DAYS_IN_PREGNANCY = 44*7;  // 44 weeks

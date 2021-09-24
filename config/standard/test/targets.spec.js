@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const { assert } = chai;
 chai.use(require('chai-exclude'));
 
-const TestHarness = require('medic-conf-test-harness');
+const TestHarness = require('cht-conf-test-harness');
 const now = 1469358731456;
 
 let reportIdCounter;
