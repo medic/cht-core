@@ -58,7 +58,7 @@
     "chai": "^4.3.4",
     "chai-exclude": "^2.0.3",
     "chai-shallow-deep-equal": "^1.4.6",
-    "cht-conf": "^3.8.0",
+    "cht-conf": "^3.7.0",
     "eslint": "^6.8.0",
     "eslint-plugin-angular": "^4.0.1",
     "eslint-plugin-async": "^0.1.1",
