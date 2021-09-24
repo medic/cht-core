@@ -152,14 +152,21 @@ const syncAndWaitForSuccess = async () => {
 const sync = async (expectReload) => {
   await syncAndWaitForSuccess();
   if (expectReload) {
-    await closeReloadModal();
+    expectReload = false;
+    await closeReloadModal().catch(() => {
+      console.warn('Timed out while waiting for the reload modal to appear');
+      expectReload = true;
+    });
   }
   // sync status sometimes lies when multiple changes are fired in quick succession
   await syncAndWaitForSuccess();
+  if (expectReload) {
+    await closeReloadModal();
+  }
 };
 
 const closeReloadModal = async () => {
-  await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist());
+  await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist({ timeout: 2000 }));
   // wait for the animation to complete
   await browser.pause(500);
   await (await reloadModalCancel()).click();
