@@ -108,7 +108,7 @@ The decimal number you entered was <output value=" /enketo_widgets/number_widget
             <value>Geo widgets</value>
           </text>
           <text id="/enketo_widgets/intro:label">
-            <value>This form showcases the different available _widgets_. 
+            <value>This form showcases the different available Enketo _widgets_. 
 
 The hints explain how these widgets were created.</value>
           </text>
@@ -181,7 +181,7 @@ The hints explain how these widgets were created.</value>
           <text id="/enketo_widgets/select_widgets/grid_test:label">
             <value>No buttons</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/happy_sad_table/generated_table_list_label_51:label">
+          <text id="/enketo_widgets/select_widgets/happy_sad_table/generated_table_list_label_50:label">
             <value>Table with image labels (alternative method)</value>
           </text>
           <text id="/enketo_widgets/select_widgets/happy_sad_table/happy_sad_brian/happy:label">
@@ -202,10 +202,10 @@ The hints explain how these widgets were created.</value>
           <text id="/enketo_widgets/select_widgets/happy_sad_table/happy_sad_michael:label">
             <value>Michael</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/happy_sad_table/reserved_name_for_field_list_labels_52/happy:label">
+          <text id="/enketo_widgets/select_widgets/happy_sad_table/reserved_name_for_field_list_labels_51/happy:label">
             <value form="image">jr://images/happy.png</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/happy_sad_table/reserved_name_for_field_list_labels_52/sad:label">
+          <text id="/enketo_widgets/select_widgets/happy_sad_table/reserved_name_for_field_list_labels_51/sad:label">
             <value form="image">jr://images/sad.png</value>
           </text>
           <text id="/enketo_widgets/select_widgets/select/a:label">
@@ -430,19 +430,19 @@ The hints explain how these widgets were created.</value>
           <text id="/enketo_widgets/select_widgets/table_list_test/table_list_test_label:label">
             <value>Table</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/table_list_test2/generated_table_list_label_47:label">
+          <text id="/enketo_widgets/select_widgets/table_list_test2/generated_table_list_label_46:label">
             <value>Table (alternative method)</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_48/dk:label">
+          <text id="/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_47/dk:label">
             <value>Don't Know</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_48/na:label">
+          <text id="/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_47/na:label">
             <value>Not Applicable</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_48/no:label">
+          <text id="/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_47/no:label">
             <value>No</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_48/yes:label">
+          <text id="/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_47/yes:label">
             <value>Yes</value>
           </text>
           <text id="/enketo_widgets/select_widgets/table_list_test2/table_list_3/dk:label">
@@ -480,9 +480,6 @@ The hints explain how these widgets were created.</value>
           </text>
           <text id="/enketo_widgets/select_widgets:label">
             <value>Select widgets</value>
-          </text>
-          <text id="/enketo_widgets/text_widgets/barcode:label">
-            <value>Barcode widget</value>
           </text>
           <text id="/enketo_widgets/text_widgets/long_text:label">
             <value>Multiline Text widget in enketo (in ODK collect this a normal text field)</value>
@@ -593,16 +590,16 @@ The hints explain how these widgets were created.</value>
             <value>option d</value>
           </text>
           <text id="static_instance-list1-0">
-            <value>kingfisher</value>
             <value form="image">jr://images/kingfisher.png</value>
+            <value>kingfisher</value>
           </text>
           <text id="static_instance-list1-1">
-            <value>pigeon</value>
             <value form="image">jr://images/pigeon.png</value>
+            <value>pigeon</value>
           </text>
           <text id="static_instance-list1-2">
-            <value>nuthatch</value>
             <value form="image">jr://images/nuthatch.png</value>
+            <value>nuthatch</value>
           </text>
           <text id="static_instance-list2-0">
             <value>option 1</value>
@@ -670,13 +667,12 @@ The hints explain how these widgets were created.</value>
         </translation>
       </itext>
       <instance>
-        <enketo_widgets id="enketo_widgets" prefix="J1!enketo_widgets!" delimiter="#" version="2021-09-21 00:00:00">
+        <enketo_widgets id="enketo_widgets" prefix="J1!enketo_widgets!" delimiter="#" version="2021-09-24 00:00:00">
           <intro/>
           <text_widgets>
             <text/>
             <phone/>
             <long_text/>
-            <barcode/>
             <url>https://enketo.org</url>
           </text_widgets>
           <number_widgets>
@@ -717,14 +713,14 @@ The hints explain how these widgets were created.</value>
               <table_list_2/>
             </table_list_test>
             <table_list_test2>
-              <generated_table_list_label_47/>
-              <reserved_name_for_field_list_labels_48/>
+              <generated_table_list_label_46/>
+              <reserved_name_for_field_list_labels_47/>
               <table_list_3/>
               <table_list_4/>
             </table_list_test2>
             <happy_sad_table>
-              <generated_table_list_label_51/>
-              <reserved_name_for_field_list_labels_52/>
+              <generated_table_list_label_50/>
+              <reserved_name_for_field_list_labels_51/>
               <happy_sad_brian/>
               <happy_sad_michael/>
             </happy_sad_table>
@@ -968,33 +964,33 @@ The hints explain how these widgets were created.</value>
         <root>
           <item>
             <itextId>static_instance-cities-0</itextId>
-            <name>ams</name>
             <country>nl</country>
+            <name>ams</name>
           </item>
           <item>
             <itextId>static_instance-cities-1</itextId>
-            <name>den</name>
             <country>usa</country>
+            <name>den</name>
           </item>
           <item>
             <itextId>static_instance-cities-2</itextId>
-            <name>nyc</name>
             <country>usa</country>
+            <name>nyc</name>
           </item>
           <item>
             <itextId>static_instance-cities-3</itextId>
-            <name>la</name>
             <country>usa</country>
+            <name>la</name>
           </item>
           <item>
             <itextId>static_instance-cities-4</itextId>
-            <name>rot</name>
             <country>nl</country>
+            <name>rot</name>
           </item>
           <item>
             <itextId>static_instance-cities-5</itextId>
-            <name>dro</name>
             <country>nl</country>
+            <name>dro</name>
           </item>
         </root>
       </instance>
@@ -1002,57 +998,57 @@ The hints explain how these widgets were created.</value>
         <root>
           <item>
             <itextId>static_instance-neighborhoods-0</itextId>
-            <name>bronx</name>
             <country>usa</country>
             <city>nyc</city>
+            <name>bronx</name>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-1</itextId>
-            <name>harlem</name>
             <country>usa</country>
             <city>nyc</city>
+            <name>harlem</name>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-2</itextId>
-            <name>belair</name>
             <country>usa</country>
             <city>la</city>
+            <name>belair</name>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-3</itextId>
-            <name>wes</name>
             <country>nl</country>
             <city>ams</city>
+            <name>wes</name>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-4</itextId>
-            <name>parkhill</name>
             <country>usa</country>
             <city>den</city>
+            <name>parkhill</name>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-5</itextId>
-            <name>haven</name>
             <country>nl</country>
             <city>rot</city>
+            <name>haven</name>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-6</itextId>
-            <name>dam</name>
             <country>nl</country>
             <city>ams</city>
+            <name>dam</name>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-7</itextId>
-            <name>centrum</name>
             <country>nl</country>
             <city>rot</city>
+            <name>centrum</name>
           </item>
           <item>
             <itextId>static_instance-neighborhoods-8</itextId>
-            <name>havendr</name>
             <country>nl</country>
             <city>dro</city>
+            <name>havendr</name>
           </item>
         </root>
       </instance>
@@ -1060,7 +1056,6 @@ The hints explain how these widgets were created.</value>
       <bind nodeset="/enketo_widgets/text_widgets/text" type="string"/>
       <bind nodeset="/enketo_widgets/text_widgets/phone" type="string"/>
       <bind nodeset="/enketo_widgets/text_widgets/long_text" type="string"/>
-      <bind nodeset="/enketo_widgets/text_widgets/barcode" type="barcode"/>
       <bind nodeset="/enketo_widgets/text_widgets/url" type="string" readonly="true()"/>
       <bind nodeset="/enketo_widgets/number_widgets/int" type="int" constraint=". &lt; 10"/>
       <bind nodeset="/enketo_widgets/number_widgets/decimal" type="decimal" constraint=". &gt; 10.51 and . &lt; 18.39"/>
@@ -1090,12 +1085,12 @@ The hints explain how these widgets were created.</value>
       <bind nodeset="/enketo_widgets/select_widgets/table_list_test/table_list_test_label" type="select1"/>
       <bind nodeset="/enketo_widgets/select_widgets/table_list_test/table_list_1" type="select1"/>
       <bind nodeset="/enketo_widgets/select_widgets/table_list_test/table_list_2" type="select1"/>
-      <bind nodeset="/enketo_widgets/select_widgets/table_list_test2/generated_table_list_label_47" readonly="true()" type="string"/>
-      <bind nodeset="/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_48" type="select1"/>
+      <bind nodeset="/enketo_widgets/select_widgets/table_list_test2/generated_table_list_label_46" readonly="true()" type="string"/>
+      <bind nodeset="/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_47" type="select1"/>
       <bind nodeset="/enketo_widgets/select_widgets/table_list_test2/table_list_3" type="select1"/>
       <bind nodeset="/enketo_widgets/select_widgets/table_list_test2/table_list_4" type="select1"/>
-      <bind nodeset="/enketo_widgets/select_widgets/happy_sad_table/generated_table_list_label_51" readonly="true()" type="string"/>
-      <bind nodeset="/enketo_widgets/select_widgets/happy_sad_table/reserved_name_for_field_list_labels_52" type="select"/>
+      <bind nodeset="/enketo_widgets/select_widgets/happy_sad_table/generated_table_list_label_50" readonly="true()" type="string"/>
+      <bind nodeset="/enketo_widgets/select_widgets/happy_sad_table/reserved_name_for_field_list_labels_51" type="select"/>
       <bind nodeset="/enketo_widgets/select_widgets/happy_sad_table/happy_sad_brian" type="select"/>
       <bind nodeset="/enketo_widgets/select_widgets/happy_sad_table/happy_sad_michael" type="select"/>
       <bind nodeset="/enketo_widgets/cascading_widgets/group1/country" type="select1"/>
@@ -1136,10 +1131,6 @@ The hints explain how these widgets were created.</value>
       <input appearance="multiline" ref="/enketo_widgets/text_widgets/long_text">
         <label ref="jr:itext('/enketo_widgets/text_widgets/long_text:label')"/>
         <hint>Can be multiple lines (type=text, appearance=multiline)</hint>
-      </input>
-      <input ref="/enketo_widgets/text_widgets/barcode">
-        <label ref="jr:itext('/enketo_widgets/text_widgets/barcode:label')"/>
-        <hint>Scans multi-format 1d/2d barcodes. In enketo it allows manual entry (type=barcode)</hint>
       </input>
       <input appearance="url" ref="/enketo_widgets/text_widgets/url">
         <label ref="jr:itext('/enketo_widgets/text_widgets/url:label')"/>
@@ -1442,7 +1433,7 @@ The hints explain how these widgets were created.</value>
       </select1>
       <select1 appearance="no-buttons" ref="/enketo_widgets/select_widgets/grid_test">
         <label ref="jr:itext('/enketo_widgets/select_widgets/grid_test:label')"/>
-        <hint>Make sure to put a.jpg and b.jpg in the form-media folder to see images here. (type=select_one, appearance=no-buttons)</hint>
+        <hint>Make sure to put a.png and b.png in the impages folder to see images here. (type=select_one, appearance=no-buttons)</hint>
         <item>
           <label ref="jr:itext('/enketo_widgets/select_widgets/grid_test/a:label')"/>
           <value>a</value>
@@ -1536,25 +1527,25 @@ The hints explain how these widgets were created.</value>
         </select1>
       </group>
       <group appearance="field-list" ref="/enketo_widgets/select_widgets/table_list_test2">
-        <input ref="/enketo_widgets/select_widgets/table_list_test2/generated_table_list_label_47">
-          <label ref="jr:itext('/enketo_widgets/select_widgets/table_list_test2/generated_table_list_label_47:label')"/>
+        <input ref="/enketo_widgets/select_widgets/table_list_test2/generated_table_list_label_46">
+          <label ref="jr:itext('/enketo_widgets/select_widgets/table_list_test2/generated_table_list_label_46:label')"/>
         </input>
-        <select1 appearance="label" ref="/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_48">
+        <select1 appearance="label" ref="/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_47">
           <label></label>
           <item>
-            <label ref="jr:itext('/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_48/yes:label')"/>
+            <label ref="jr:itext('/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_47/yes:label')"/>
             <value>yes</value>
           </item>
           <item>
-            <label ref="jr:itext('/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_48/no:label')"/>
+            <label ref="jr:itext('/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_47/no:label')"/>
             <value>no</value>
           </item>
           <item>
-            <label ref="jr:itext('/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_48/dk:label')"/>
+            <label ref="jr:itext('/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_47/dk:label')"/>
             <value>dk</value>
           </item>
           <item>
-            <label ref="jr:itext('/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_48/na:label')"/>
+            <label ref="jr:itext('/enketo_widgets/select_widgets/table_list_test2/reserved_name_for_field_list_labels_47/na:label')"/>
             <value>na</value>
           </item>
         </select1>
@@ -1600,17 +1591,17 @@ The hints explain how these widgets were created.</value>
         </select1>
       </group>
       <group appearance="field-list" ref="/enketo_widgets/select_widgets/happy_sad_table">
-        <input ref="/enketo_widgets/select_widgets/happy_sad_table/generated_table_list_label_51">
-          <label ref="jr:itext('/enketo_widgets/select_widgets/happy_sad_table/generated_table_list_label_51:label')"/>
+        <input ref="/enketo_widgets/select_widgets/happy_sad_table/generated_table_list_label_50">
+          <label ref="jr:itext('/enketo_widgets/select_widgets/happy_sad_table/generated_table_list_label_50:label')"/>
         </input>
-        <select appearance="label" ref="/enketo_widgets/select_widgets/happy_sad_table/reserved_name_for_field_list_labels_52">
+        <select appearance="label" ref="/enketo_widgets/select_widgets/happy_sad_table/reserved_name_for_field_list_labels_51">
           <label></label>
           <item>
-            <label ref="jr:itext('/enketo_widgets/select_widgets/happy_sad_table/reserved_name_for_field_list_labels_52/happy:label')"/>
+            <label ref="jr:itext('/enketo_widgets/select_widgets/happy_sad_table/reserved_name_for_field_list_labels_51/happy:label')"/>
             <value>happy</value>
           </item>
           <item>
-            <label ref="jr:itext('/enketo_widgets/select_widgets/happy_sad_table/reserved_name_for_field_list_labels_52/sad:label')"/>
+            <label ref="jr:itext('/enketo_widgets/select_widgets/happy_sad_table/reserved_name_for_field_list_labels_51/sad:label')"/>
             <value>sad</value>
           </item>
         </select>
