@@ -5,13 +5,12 @@ const path = require('path');
 
 const saveServiceWorkerContents = async () => {
   // this is silly
-  // Because the service worker is generated at runtime we need to have API running and responding to get the service
-  // worker content. We also need to treat this as an E2E test, since results could differ based on node version,
-  // so this should run against all suites.
-  // To run on all supported node versions, we boot API via horticulturalist in a container, and API saves
-  // extracted resources within the container, the actual service worker file is not easy to get without docker cli.
-  // Local tests don't boot API in docker, and the file is saved in a completely different place.
-  // So yes, I'm saving the output of the service-worker API request in a file, so I run eslint over it later.
+  // Because the service worker is generated at runtime, we need to have API booted to generate the file.
+  // We also need to treat linting the service-worker asn an E2E test, since results could differ based on node version.
+  // To run on all supported node versions, we boot API via horticulturalist in a Docker container, API saves
+  // extracted resources within the container, the actual service worker file is accessible without Docker cli.
+  // Local tests don't boot API in Docker, and the service worker file is saved in a different place.
+  // So yes, I'm saving the output of the service-worker API request, so I run eslint over this file later.
   // Newer versions of eslint offer an API run run linting directly from JS, but we're on an older version, with a
   // clunky API. I also wanted to avoid introducing more code that needs maintaining and updating.
   // A wise man once said that if you need more than 100 words to justify your code, you're doing something wrong.
