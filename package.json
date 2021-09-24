@@ -78,7 +78,7 @@
     "grunt-contrib-cssmin": "^3.0.0",
     "grunt-contrib-less": "^2.1.0",
     "grunt-contrib-uglify-es": "^3.3.0",
-    "grunt-contrib-watch": "github:scdf/grunt-contrib-watch#v1.0.0-fix_dirs_firing",
+    "grunt-contrib-watch": "^1.0.0",
     "grunt-couch": "^1.5.1",
     "grunt-env": "^1.0.1",
     "grunt-exec": "^3.0.0",
