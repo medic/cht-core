@@ -43,10 +43,16 @@ const getServiceWorkerHash = () => {
   });
 };
 
-const getLoginPageContents = () => {
+const getLoginPageContents = async () => {
   // avoid circular dependency
   const loginController = require('./controllers/login');
-  return loginController.renderLogin();
+  try {
+    return await loginController.renderLogin();
+  } catch (err) {
+    logger.error('Error rendering login page %o', err);
+    // default to returning the file
+    return [path.join(apiSrcDirectoryPath, 'templates/login', 'index.html')];
+  }
 };
 
 // Use the swPrecache library to generate a service-worker script
@@ -87,26 +93,15 @@ const writeServiceWorkerFile = async () => {
   return swPrecache.write(scriptOutputPath, config);
 };
 
-const getSwMetaDoc = () => {
-  return db.medic
-    .get(SWMETA_DOC_ID)
-    .catch(err => {
-      if (err.status === 404) {
-        return { _id: SWMETA_DOC_ID };
-      }
-      throw err;
-    });
-};
-
-const saveSwMetaDoc = (doc) => {
-  return db.medic
-    .put(doc)
-    .catch(err => {
-      // ignore conflicts
-      if (err.status !== 409) {
-        throw err;
-      }
-    });
+const getSwMetaDoc = async () => {
+  try {
+    return await db.medic.get(SWMETA_DOC_ID);
+  } catch (err) {
+    if (err.status === 404) {
+      return { _id: SWMETA_DOC_ID };
+    }
+    throw err;
+  }
 };
 
 // We need client-side logic to trigger a service worker update when a cached resource changes.
@@ -115,10 +110,17 @@ const saveSwMetaDoc = (doc) => {
 // To this end, create a new doc (SWMETA_DOC_ID) which replicates to clients.
 // The intention is that when this doc changes, clients will refresh their cache.
 const writeServiceWorkerMetaDoc = async (hash) => {
-  const doc = await getSwMetaDoc();
-  doc.generated_at = new Date().getTime();
-  doc.hash = hash;
-  await saveSwMetaDoc(doc);
+  try {
+    const doc = await getSwMetaDoc();
+    doc.generated_at = new Date().getTime();
+    doc.hash = hash;
+    await db.medic.put(doc);
+  } catch (err) {
+    // don't log conflicts
+    if (err.status !== 409) {
+      logger.error('Error while saving service worker meta doc %o', err);
+    }
+  }
 };
 
 module.exports = {

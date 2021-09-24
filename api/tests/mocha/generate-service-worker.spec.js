@@ -7,12 +7,14 @@ const rewire = require('rewire');
 
 const db = require('../../src/db');
 const env = require('../../src/environment');
+const logger = require('../../src/logger');
 const loginController = require('../../src/controllers/login');
 
 describe('generate service worker', () => {
   let clock;
   let getServiceWorkerHash;
   let generateServiceWorker;
+  const apiPath = path.join(__dirname, '../../src');
 
   beforeEach(() => {
     sinon.stub(env, 'getExtractedResourcesPath').returns('/tmp/');
@@ -39,7 +41,6 @@ describe('generate service worker', () => {
     swPrecache.write.resolves();
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.resolves();
-    const apiPath = path.join(__dirname, '../../src');
     clock.tick(2500);
 
     return generateServiceWorker.run().then(() => {
@@ -161,17 +162,59 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should throw an error when rendering the login page fails', () => {
+  it('should default to caching the template file if rendering login fails', () => {
     loginController.renderLogin.rejects({ some: 'error' });
-    return generateServiceWorker
-      .run()
-      .then(() => chai.expect.fail('should have thrown'))
-      .catch(err => {
-        chai.expect(err).to.deep.equal({ some: 'error' });
-        chai.expect(swPrecache.write.callCount).to.equal(0);
-        chai.expect(db.medic.get.callCount).to.equal(0);
-        chai.expect(db.medic.put.callCount).to.equal(0);
-      });
+    db.medic.get.resolves({ _id: 'service-worker-meta' });
+    db.medic.put.resolves();
+
+    return generateServiceWorker.run().then(() => {
+      chai.expect(loginController.renderLogin.callCount).to.equal(1);
+
+      chai.expect(swPrecache.write.callCount).to.deep.equal(1);
+      chai.expect(swPrecache.write.args[0]).to.deep.equal([
+        '/tmp/js/service-worker.js',
+        {
+          cacheId: 'cache',
+          claimsClient: true,
+          skipWaiting: true,
+          directoryIndex: false,
+          handleFetch: true,
+          staticFileGlobs: [
+            '/tmp/{audio,img}/*',
+            '/tmp/manifest.json',
+            '/tmp/*.js',
+            '/tmp/*.css',
+            '/tmp/fontawesome-webfont.woff2',
+            '/tmp/fonts/enketo-icons-v2.woff',
+            '/tmp/fonts/NotoSans-Bold.ttf',
+            '/tmp/fonts/NotoSans-Regular.ttf',
+            path.join(apiPath, 'public/login/*.{css,js}'),
+          ],
+          dynamicUrlToDependencies: {
+            '/': ['/tmp/index.html'], // Webapp's entry point
+            '/medic/login': [path.join(apiPath, 'templates/login', 'index.html')],
+            '/medic/_design/medic/_rewrite/': [path.join(apiPath, 'public/appcache-upgrade.html')],
+          },
+          ignoreUrlParametersMatching: [/redirect/, /username/],
+          stripPrefixMulti: {
+            ['/tmp/']: '',
+            [path.join(apiPath, 'public')]: '',
+          },
+          maximumFileSizeToCacheInBytes: 1048576 * 30,
+          verbose: true,
+        },
+      ]);
+
+      chai.expect(db.medic.get.callCount).to.equal(1);
+      chai.expect(db.medic.get.args[0]).to.deep.equal(['service-worker-meta']);
+      chai.expect(db.medic.put.callCount).to.equal(1);
+      chai.expect(db.medic.put.args[0]).to.deep.equal([{
+        _id: 'service-worker-meta',
+        hash: 'second',
+        generated_at: 0,
+      }]);
+      chai.expect(getServiceWorkerHash.callCount).to.equal(2);
+    });
   });
 
   it('should throw error when generating the service worker fails', () => {
@@ -192,10 +235,12 @@ describe('generate service worker', () => {
   it('should handle sw doc get 404s', () => {
     db.medic.get.rejects({ status: 404 });
     db.medic.put.resolves();
+    sinon.stub(logger, 'error');
     loginController.renderLogin.resolves('aaa');
     swPrecache.write.resolves();
 
     return generateServiceWorker.run().then(() => {
+      chai.expect(logger.error.callCount).to.equal(0);
       chai.expect(db.medic.get.callCount).to.equal(1);
       chai.expect(db.medic.put.callCount).to.equal(1);
       chai.expect(db.medic.put.args[0]).to.deep.equal([{
@@ -218,32 +263,28 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should throw other db get errors', () => {
+  it('should log other db get errors', () => {
     db.medic.get.rejects({ status: 500 });
     loginController.renderLogin.resolves('aaa');
     swPrecache.write.resolves();
+    sinon.stub(logger, 'error');
 
-    return generateServiceWorker
-      .run()
-      .then(() => chai.expect.fail('should have thrown'))
-      .catch(err => {
-        chai.expect(err).to.deep.equal({ status: 500 });
-        chai.expect(db.medic.put.callCount).to.equal(0);
-      });
+    return generateServiceWorker.run().then(() => {
+      chai.expect(logger.error.args[0][1]).to.deep.equal({ status: 500 });
+      chai.expect(db.medic.put.callCount).to.equal(0);
+    });
   });
 
-  it('should throw other db put errors', () => {
+  it('should log other db put errors', () => {
     db.medic.get.resolves({});
     db.medic.put.rejects({ status: 502 });
     loginController.renderLogin.resolves('aaa');
     swPrecache.write.resolves();
+    sinon.stub(logger, 'error');
 
-    return generateServiceWorker
-      .run()
-      .then(() => chai.expect.fail('should have thrown'))
-      .catch(err => {
-        chai.expect(err).to.deep.equal({ status: 502 });
-      });
+    return generateServiceWorker.run().then(() => {
+      chai.expect(logger.error.args[0][1]).to.deep.equal({ status: 502 });
+    });
   });
 
   describe('getServiceWorkerHash', () => {
