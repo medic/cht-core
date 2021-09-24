@@ -331,17 +331,17 @@ export class EnketoService {
     $wrapper
       .find('.btn.next-page')
       .off('.pagemode')
-      .on('click.pagemode',() => {
-
+      .on('click.pagemode', () => {
         form.pages
           ._next()
-          .then((valid) => {
-            if(valid) {
+          .then(valid => {
+            if (valid) {
               const currentIndex = form.pages._getCurrentIndex();
-              if(typeof currentIndex === 'number') {
+              if (typeof currentIndex === 'number') {
                 window.history.pushState({ enketo_page_number: currentIndex }, '');
               }
               this.setupNavButtons($wrapper, currentIndex);
+              this.pauseMultimedia($wrapper);
             }
             this.forceRecalculate(form);
           });
@@ -355,8 +355,15 @@ export class EnketoService {
         window.history.back();
         this.setupNavButtons($wrapper, form.pages._getCurrentIndex() - 1);
         this.forceRecalculate(form);
+        this.pauseMultimedia($wrapper);
         return false;
       });
+  }
+
+  private pauseMultimedia($wrapper) {
+    $wrapper
+      .find('audio, video')
+      .each((idx, element) => element.pause());
   }
 
   private addPopStateHandler(form, $wrapper) {
@@ -671,7 +678,7 @@ export class EnketoService {
   }
 
   private setupNavButtons($wrapper, currentIndex) {
-    if(this.currentForm.pages) {
+    if(this.currentForm?.pages) {
       const lastIndex = this.currentForm.pages.activePages.length - 1;
       const footer = $wrapper.find('.form-footer');
       footer.removeClass('end');

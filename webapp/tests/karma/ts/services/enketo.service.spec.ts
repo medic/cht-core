@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, flush, TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
@@ -1541,5 +1541,103 @@ describe('Enketo service', () => {
       expect(service.setFormTitle.callCount).to.be.equal(1);
       expect(service.setFormTitle.args[0][1]).to.be.equal('translated sentence New Area');
     });
+  });
+
+  describe('multimedia', () => {
+    let overrideNavigationButtonsStub;
+    let pauseStubs;
+    let form;
+    let $form;
+    let $nextBtn;
+    let $prevBtn;
+    let originalJQueryFind;
+
+    before(() => {
+      $nextBtn = $('<button class="btn next-page"></button>');
+      $prevBtn = $('<button class="btn previous-page"></button>');
+      originalJQueryFind = $.fn.find;
+      overrideNavigationButtonsStub = sinon
+        .stub(EnketoService.prototype, <any>'overrideNavigationButtons')
+        .callThrough();
+
+      form = {
+        calc: { update: sinon.stub() },
+        output: { update: sinon.stub() },
+        pages: {
+          _next: sinon.stub(),
+          _getCurrentIndex: sinon.stub()
+        }
+      };
+    });
+
+    beforeEach(() => {
+      $form = $(`<div></div>`);
+      $form
+        .append($nextBtn)
+        .append($prevBtn);
+
+      pauseStubs = [];
+      sinon
+        .stub($.fn, 'find')
+        .callsFake(selector => {
+          const result = originalJQueryFind.call($form, selector);
+
+          result.each((idx, element) => {
+            if (element.pause) {
+              pauseStubs.push(sinon.stub(element, 'pause'));
+            }
+          });
+
+          return result;
+        });
+    });
+
+    after(() => $.fn.find = originalJQueryFind);
+
+    it('should pause the multimedia when going to the previous page', fakeAsync(() => {
+      $form.prepend('<video></video><audio></audio>');
+      overrideNavigationButtonsStub.call(service, form, $form);
+
+      $prevBtn.trigger('click.pagemode');
+      flush();
+
+      expect(pauseStubs.length).to.equal(2);
+      expect(pauseStubs[0].callCount).to.equal(1);
+      expect(pauseStubs[1].callCount).to.equal(1);
+    }));
+
+    it('should pause the multimedia when going to the next page', fakeAsync(() => {
+      form.pages._next.resolves(true);
+      $form.prepend('<video></video><audio></audio>');
+      overrideNavigationButtonsStub.call(service, form, $form);
+
+      $nextBtn.trigger('click.pagemode');
+      flush();
+
+      expect(pauseStubs.length).to.equal(2);
+      expect(pauseStubs[0].callCount).to.equal(1);
+      expect(pauseStubs[1].callCount).to.equal(1);
+    }));
+
+    it('should not pause the multimedia when trying to go to the next page and form is invalid', fakeAsync(() => {
+      form.pages._next.resolves(false);
+      $form.prepend('<video></video><audio></audio>');
+      overrideNavigationButtonsStub.call(service, form, $form);
+
+      $nextBtn.trigger('click.pagemode');
+      flush();
+
+      expect(pauseStubs.length).to.equal(0);
+    }));
+
+    it('should not call pause function when there isnt video and audio in the form wrapper', fakeAsync(() => {
+      overrideNavigationButtonsStub.call(service, form, $form);
+
+      $prevBtn.trigger('click.pagemode');
+      $nextBtn.trigger('click.pagemode');
+      flush();
+
+      expect(pauseStubs.length).to.equal(0);
+    }));
   });
 });
