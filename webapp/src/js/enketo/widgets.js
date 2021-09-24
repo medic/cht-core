@@ -29,6 +29,8 @@
     require( './widgets/bikram-sambat-datepicker' ),
     require( './widgets/simprints' ),
     require( './widgets/mrdt' ),
+    require( './widgets/android-app-launcher' ),
+    require( './widgets/display-base64-image' ),
     require( './widgets/dynamic-url' ),
   ];
 

@@ -1,6 +1,6 @@
 const { assert } = require('chai');
 const utils = require('../utils');
-const sUtils = require('./sentinel/utils');
+const sentinelUtils = require('../e2e/sentinel/utils');
 
 //
 // NB: using sentinel processing to delay the reading of infodocs is not guaranteed to be successful
@@ -10,10 +10,10 @@ const sUtils = require('./sentinel/utils');
 // process.
 //
 /* eslint-disable no-console */
-const delayedInfoDocsOf = ids => sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
+const delayedInfoDocsOf = ids => sentinelUtils.waitForSentinel(ids).then(() => sentinelUtils.getInfoDocs(ids));
 
 describe('infodocs', () => {
-  afterEach(utils.afterEach);
+  afterEach(() => utils.revertDb([], true));
 
   const singleDocTest = method => {
     const doc = {

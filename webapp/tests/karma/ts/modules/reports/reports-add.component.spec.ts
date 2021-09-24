@@ -114,7 +114,7 @@ describe('Reports Add Component', () => {
     it('should set cancel callback when route loads a new report', () => {
       route.snapshot.params = { formId: 'some_form' };
       const setCancelCallback = sinon.stub(GlobalActions.prototype, 'setCancelCallback');
-      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
+      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearNavigation');
       component.ngOnInit();
       expect(setCancelCallback.callCount).to.equal(1);
       expect(clearCancelCallback.callCount).to.equal(0);
@@ -128,7 +128,7 @@ describe('Reports Add Component', () => {
     it('should set cancel callback when route loads an existent report', () => {
       route.snapshot.params = { reportId: 'report_id' };
       const setCancelCallback = sinon.stub(GlobalActions.prototype, 'setCancelCallback');
-      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
+      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearNavigation');
       component.ngOnInit();
       expect(setCancelCallback.callCount).to.equal(1);
       expect(clearCancelCallback.callCount).to.equal(0);
@@ -142,7 +142,7 @@ describe('Reports Add Component', () => {
     it('should clear cancel callback when no params', () => {
       route.snapshot.params = { };
       const setCancelCallback = sinon.stub(GlobalActions.prototype, 'setCancelCallback');
-      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
+      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearNavigation');
       component.ngOnInit();
       expect(clearCancelCallback.callCount).to.equal(1);
       expect(setCancelCallback.callCount).to.deep.equal(0);

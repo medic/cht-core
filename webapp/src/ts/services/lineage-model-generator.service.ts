@@ -45,10 +45,10 @@ export class LineageModelGeneratorService {
    * contact model, or if merge is true the doc with the
    * lineage inline.
    */
-  private _contact(id, { merge=false }={}) {
+  private _contact(id, { merge=false, hydrate=true }={}) {
     return this
       .get(id)
-      .then((docs) => this.hydrate(docs))
+      .then((docs) => hydrate ? this.hydrate(docs) : docs)
       .then((docs) => {
         // the first row is the contact
         const doc = docs.shift();

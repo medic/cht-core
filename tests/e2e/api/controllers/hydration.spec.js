@@ -1,6 +1,8 @@
 const chai = require('chai');
 const utils = require('../../../utils');
 const _ = require('lodash');
+const chaiExclude = require('chai-exclude');
+chai.use(chaiExclude);
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -244,8 +246,15 @@ const hydrateReport = doc => {
 };
 
 describe('Hydration API', () => {
-  beforeAll(done => utils.saveDocs(docs).then(() => utils.createUsers(users).then(done)));
-  afterAll(done => utils.deleteUsers(users).then(() => utils.revertDb()).then(done));
+  before(async () => {
+    await utils.saveDocs(docs);
+    await utils.createUsers(users).then();
+  });
+
+  after(async () =>  {
+    await utils.deleteUsers(users);
+    await utils.revertDb([], true);
+  });
 
   beforeEach(() => {
     offlineRequestOptions = { path: '/api/v1/hydrate', auth: { username: 'offline', password }, };

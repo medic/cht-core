@@ -1,6 +1,7 @@
 const utils = require('../../utils');
 const sentinelUtils = require('./utils');
 const uuid = require('uuid');
+const { expect } = require('chai');
 
 const NBR_DOCS = 300;
 
@@ -56,19 +57,10 @@ const report = {
   reported_date: new Date().getTime()
 };
 
-let originalTimeout;
-
 describe('Sentinel queue drain', () => {
-  beforeAll(() => {
-    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 300000;
-    return utils.saveDocs(contacts);
-  });
-  afterAll(() => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-    return utils.revertDb();
-  });
-  afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
+  before(() => utils.saveDocs(contacts));
+  after(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb(contacts.map(c => c._id), true));
 
   it('should drain queue, processing every doc', () => {
     // This test takes 40s on my machine and it would be nice to know what's going on
@@ -102,21 +94,16 @@ describe('Sentinel queue drain', () => {
       .then(() => utils.getDocs(ids))
       .then(updated => {
         updated.forEach(doc => {
-          expect(doc.contact).toBeDefined();
-          expect(doc.contact._id).toEqual('chw');
-          expect(doc.tasks).toBeDefined();
-          expect(doc.tasks.length).toEqual(1);
-          expect(doc.tasks[0].messages[0].to).toEqual('phone1');
+          expect(doc.contact).to.have.property('_id', 'chw');
+          expect(doc.tasks).to.have.lengthOf(1);
+          expect(doc.tasks[0].messages[0].to).to.equal('phone1');
         });
       })
       .then(() => sentinelUtils.getInfoDocs(ids))
       .then(infos => {
         infos.forEach(info => {
-          expect(info.transitions).toBeDefined();
-          expect(info.transitions.default_responses).toBeDefined();
-          expect(info.transitions.default_responses.ok).toBe(true);
-          expect(info.transitions.update_clinics).toBeDefined();
-          expect(info.transitions.update_clinics.ok).toBe(true);
+          expect(info.transitions.default_responses.ok).to.be.true;
+          expect(info.transitions.update_clinics.ok).to.be.true;
         });
       })
       .then(() => utils.deleteDocs(ids))
@@ -127,8 +114,8 @@ describe('Sentinel queue drain', () => {
       .then(() => utils.getDocs(tombstonesIds))
       .then(tombstones => {
         tombstones.forEach(tombstone => {
-          expect(tombstone.type).toEqual('tombstone');
-          expect(tombstone.tombstone).toBeDefined();
+          expect(tombstone.type).to.equal('tombstone');
+          expect(tombstone.tombstone).to.have.property('type', 'data_record');
         });
       });
   });

@@ -7,5 +7,5 @@
   (onCancel)="cancel()"
   (onSubmit)="submit()"
 >
-  <p>{{'confirm.destructive.navigation.forms' | translate}}</p>
+  <p>{{ (messageTranslationKey || 'confirm.destructive.navigation.forms') | translate }}</p>
 </mm-modal>

@@ -340,7 +340,7 @@ angular
           if (resp.data.warn) {
             return $q.reject({
               key: 'configuration.user.replication.limit.exceeded',
-              params: { total_docs: resp.data.total_docs, limit: resp.data.limit },
+              params: { total_docs: resp.data.warn_docs, limit: resp.data.limit },
               severity: 'warning'
             });
           }

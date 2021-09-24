@@ -16,17 +16,38 @@ const MEDIA_SRC_ATTR = ' data-media-src="';
 
 const FORM_STYLESHEET = path.join(__dirname, '../xsl/openrosa2html5form.xsl');
 const MODEL_STYLESHEET = path.join(__dirname, '../../node_modules/enketo-transformer/src/xsl/openrosa2xmlmodel.xsl');
+const XSLTPROC_CMD = 'xsltproc';
+
+const stdinErrorHandler = function (xsltproc, err, reject) {
+  xsltproc.stdin.end();
+  if (err.code === 'EPIPE') {
+    const errMsg = `Unable to continue execution, check that '${XSLTPROC_CMD}' command is available.`;
+    logger.error(errMsg);
+    return reject(new Error(errMsg));
+  }
+  logger.error(err);
+  return reject(new Error(`Unknown Error: An error occurred when executing '${XSLTPROC_CMD}' command`));
+};
 
 const transform = (formXml, stylesheet) => {
   return new Promise((resolve, reject) => {
-    const xsltproc = childProcess.spawn('xsltproc', [ stylesheet, '-' ]);
+    const xsltproc = childProcess.spawn(XSLTPROC_CMD, [ stylesheet, '-' ]);
     let stdout = '';
     let stderr = '';
     xsltproc.stdout.on('data', data => stdout += data);
     xsltproc.stderr.on('data', data => stderr += data);
     xsltproc.stdin.setEncoding('utf-8');
-    xsltproc.stdin.write(formXml);
-    xsltproc.stdin.end();
+    xsltproc.stdin.on('error', err => {
+      // Errors related with spawned processes and stdin are handled here on OSX
+      return stdinErrorHandler(xsltproc, err, reject);
+    });
+    try {
+      xsltproc.stdin.write(formXml);
+      xsltproc.stdin.end();
+    } catch (err) {
+      // Errors related with spawned processes and stdin are handled here on *nix
+      return stdinErrorHandler(xsltproc, err, reject);
+    }
     xsltproc.on('close', (code, signal) => {
       if (code !== 0 || signal || stderr.length) {
         let errorMsg = `Error transforming xml. xsltproc returned code "${code}", and signal "${signal}"`;

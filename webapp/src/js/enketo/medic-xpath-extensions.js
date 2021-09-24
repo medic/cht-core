@@ -58,6 +58,16 @@ const getTimezoneOffsetAsTime = function(date) {
   return direction + hours + ':' + minutes;
 };
 
+const parseTimestampToDate = (value) => {
+  const timestamp = parseInt(getValue(value));
+
+  if (isNaN(timestamp)) {
+    return XPR.string('');
+  }
+
+  return XPR.date(new Date(timestamp));
+};
+
 const asString = (r) => {
   return r.t === 'arr' ?
     r.v.length ? r.v[0].textContent || '' : '' :
@@ -119,6 +129,7 @@ module.exports = {
       }
       return XPR.number(result);
     },
+    'parse-timestamp-to-date': parseTimestampToDate, // Function name convention of XForm,
     'difference-in-months': function(d1, d2) {
       d1 = asDate(d1);
       d2 = asDate(d2);

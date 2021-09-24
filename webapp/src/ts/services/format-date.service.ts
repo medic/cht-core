@@ -16,13 +16,16 @@ export class FormatDateService {
   }
 
   init() {
-    this.settingsService
+    return this.settingsService
       .get()
       .then((res:any) => {
         this.config.date = res.date_format;
         this.config.datetime = res.reported_date_format;
         if (typeof res.task_day_limit !== 'undefined') {
           this.config.taskDayLimit = res.task_day_limit;
+        }
+        if (typeof res.task_days_overdue !== 'undefined') {
+          this.config.taskDaysOverdue = res.task_days_overdue;
         }
       })
       .catch((err) => {
@@ -35,6 +38,7 @@ export class FormatDateService {
     datetime: 'DD-MMM-YYYY HH:mm:ss',
     time: moment.localeData().longDateFormat('LT'),
     taskDayLimit: 4,
+    taskDaysOverdue: false,
     ageBreaks: [
       { unit: 'years', key: { singular: 'y', plural: 'yy' }, min: 1 },
       { unit: 'months', key: { singular: 'M', plural: 'MM' }, min: 1 },
@@ -63,12 +67,19 @@ export class FormatDateService {
     const date = moment(given).startOf('day');
     const today = moment().startOf('day');
     const diff = date.diff(today, 'days');
+
     if (diff <= 0) {
+      if (this.config.taskDaysOverdue) {
+        return this.translateService.instant('task.overdue.days', { DAYS: Math.abs(diff) });
+      }
+
       return this.translateService.instant('task.overdue');
     }
+
     if (diff <= this.config.taskDayLimit) {
       return this.translateService.instant('task.days.left', { DAYS: diff });
     }
+
     return '';
   }
 

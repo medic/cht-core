@@ -269,7 +269,7 @@ export class DBSyncService {
       return Promise.resolve();
     }
 
-    if (!this.intervalPromises.meta) {
+    if (!this.intervalPromises.meta || force) {
       this.intervalPromises.meta = setInterval(this.syncMeta.bind(this), META_SYNC_INTERVAL);
       this.syncMeta();
     }
