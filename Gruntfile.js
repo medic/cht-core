@@ -331,14 +331,7 @@ module.exports = function(grunt) {
         },
         stdio: 'inherit', // enable colors!
       },
-      'eslint-sw': {
-        cmd: () => {
-          const localPath = path.join(__dirname, 'api', 'extracted-resources');
-          const ciPath = path.join('/', 'root', '.horticulturalist', 'deployments', 'medic-api', 'current', 'extracted-resources');
-          const copyResources = BUILD_NUMBER ? `cp -r ${ciPath} ${localPath} && `: '';
-          return `${copyResources} ${ESLINT_COMMAND} -c ./.eslintrc ${localPath}/js/service-worker.js`;
-        }
-      },
+      'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
       'pack-node-modules': {
         cmd: ['api', 'sentinel']
           .map(module =>
@@ -982,7 +975,7 @@ module.exports = function(grunt) {
   grunt.registerTask('e2e-integration', 'Deploy app for testing', [
     'e2e-env-setup',
     'exec:e2e-integration',
-    'exec:eslint-sw',
+    'exec:eslint-sw'
   ]);
 
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
