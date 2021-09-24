@@ -333,8 +333,9 @@ module.exports = function(grunt) {
       },
       'eslint-sw': {
         cmd: () => {
-          const defaultLocation = path.join(__dirname, 'api', 'extracted-resources');
-          const destination = BUILD_NUMBER ? '/tmp/extracted-resources' : defaultLocation;
+          const localPath = path.join(__dirname, 'api', 'extracted-resources');
+          const ciPath = path.join('root', '.horticulturalist', 'deployments', 'medic-api', 'current', 'extracted-resources');
+          const destination = BUILD_NUMBER ? ciPath : localPath;
           return `${ESLINT_COMMAND} -c ./.eslintrc ${destination}/js/service-worker.js`;
         }
       },

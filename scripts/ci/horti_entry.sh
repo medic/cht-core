@@ -38,7 +38,6 @@ if [ -n "$IS_TAG"  ] && [ -z "$INSTALL_LATEST" ]; then
     HORTI_BUILDS_SERVER=$DEFAULT_BUILDS_URL
     BUILD='@medic:medic:release'
 fi
-MEDIC_API_RESOURCE_PATH="/tmp/extracted-resources"
 echo 'Horti Env Vars'
 echo Build server url $HORTI_BUILDS_SERVER
 echo Upgrade var $UPGRADE
