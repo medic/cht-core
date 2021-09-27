@@ -49,7 +49,6 @@ describe('Incorrect locale', () => {
     await helper.clickElementNative(userSettingsElements.getSubmitButton());    
 
     // wait for language to load
-    await browser.refresh();
     await browser.wait(
       async () => await helper.getTextFromElementNative(commonElements.getReportsButtonLabel()) === 'HilReports',
       5 * 1000,
