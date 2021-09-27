@@ -130,7 +130,7 @@ describe('Standard Configuration Tasks', () => {
 
     it('should have a clinic visit task', async () => {
       // given
-      harness.pushMockedReport(fixtures.reports.delivery());
+      harness.pushMockedDoc(fixtures.reports.delivery());
 
       // when
       const tasks = await harness.getTasks({ resolved: true });
@@ -157,7 +157,7 @@ describe('Standard Configuration Tasks', () => {
         'form': 'postnatal_visit',
         'reported_date': tomorrow,
       };
-      harness.pushMockedReport(fixtures.reports.delivery(), pncVisitAppReport);
+      harness.pushMockedDoc(fixtures.reports.delivery(), pncVisitAppReport);
 
       // when
       return harness.getTasks({ resolved: true })
@@ -181,7 +181,7 @@ describe('Standard Configuration Tasks', () => {
         'form': 'M',
         'reported_date': tomorrow,
       };
-      harness.pushMockedReport(fixtures.reports.delivery(), pncVisitSMSReport);
+      harness.pushMockedDoc(fixtures.reports.delivery(), pncVisitSMSReport);
 
       // when
       return harness.getTasks({ resolved: true })
@@ -205,7 +205,7 @@ describe('Standard Configuration Tasks', () => {
       const flagReport = fixtures.reports.flag();
       flagReport.reported_date = daysAgo(4);
 
-      harness.pushMockedReport(deliveryReport, flagReport);
+      harness.pushMockedDoc(deliveryReport, flagReport);
 
       // when
       return harness.getTasks({ resolved: true })
@@ -236,7 +236,7 @@ describe('Standard Configuration Tasks', () => {
           if (postnatalTaskDays.includes(day)) {
             it(`should have 'postnatal-missing-visit' visit task`, () => {
               // given
-              harness.pushMockedReport(
+              harness.pushMockedDoc(
                   backdatedReport('d', day-ageInDaysWhenRegistered));
 
               // when
@@ -256,7 +256,7 @@ describe('Standard Configuration Tasks', () => {
           } else {
             it(`should not have 'postnatal-missing-visit' visit task`, () => {
               // given
-              harness.pushMockedReport(
+              harness.pushMockedDoc(
                   backdatedReport('d', day - ageInDaysWhenRegistered));
 
 
@@ -313,7 +313,7 @@ describe('Standard Configuration Tasks', () => {
       const flagReport = fixtures.reports.flag();
       flagReport.reported_date = daysAgo(4);
 
-      harness.pushMockedReport(pregnancyReport, flagReport);
+      harness.pushMockedDoc(pregnancyReport, flagReport);
 
       // when
       return harness.getTasks()
@@ -337,7 +337,7 @@ describe('Standard Configuration Tasks', () => {
       const flagReport = fixtures.reports.flag();
       flagReport.reported_date = daysAgo(4);
 
-      harness.pushMockedReport(pregnancyReport, flagReport);
+      harness.pushMockedDoc(pregnancyReport, flagReport);
 
       // when
       return harness.getTasks({ resolved: true })
@@ -359,7 +359,7 @@ describe('Standard Configuration Tasks', () => {
       const flagReport = fixtures.reports.flag();
       flagReport.reported_date = daysAgo(4);
 
-      harness.pushMockedReport(
+      harness.pushMockedDoc(
         pregnancyReport,
         deliveryReport,
         flagReport
@@ -389,7 +389,7 @@ describe('Standard Configuration Tasks', () => {
         if (pregnancyTaskDays.includes(day)) {
           it('should have "pregnancy-missing-visit" visit task', () => {
             // given
-            harness.pushMockedReport(backdatedReport('p', day));
+            harness.pushMockedDoc(backdatedReport('p', day));
 
             // when
             return harness.getTasks({ resolved: true })
@@ -408,7 +408,7 @@ describe('Standard Configuration Tasks', () => {
         } else {
           it('should not have "pregnancy-missing-visit" visit task', () => {
             // given
-            harness.pushMockedReport(backdatedReport('p', day));
+            harness.pushMockedDoc(backdatedReport('p', day));
 
             // when
             return harness.getTasks({ resolved: true })
@@ -421,7 +421,7 @@ describe('Standard Configuration Tasks', () => {
         if (deliveryTaskDays.includes(day)) {
           it('should have "pregnancy-missing-birth" visit task', () => {
             // given
-            harness.pushMockedReport(backdatedReport('p', day));
+            harness.pushMockedDoc(backdatedReport('p', day));
 
             // when
             return harness.getTasks({ resolved: true })
@@ -440,7 +440,7 @@ describe('Standard Configuration Tasks', () => {
         } else {
           it('should not have "pregnancy-missing-birth" visit task', () => {
             // given
-            harness.pushMockedReport(backdatedReport('p', day));
+            harness.pushMockedDoc(backdatedReport('p', day));
 
             // when
             return harness.getTasks({ resolved: true })
@@ -487,7 +487,7 @@ describe('Standard Configuration Tasks', () => {
         if (immunizationTaskDays.includes(day)) {
           it('should have "immunization-missing-visit" visit task', () => {
             // given
-            harness.pushMockedReport(backdatedReport('cw', day - ageInDaysWhenRegistered));
+            harness.pushMockedDoc(backdatedReport('cw', day - ageInDaysWhenRegistered));
 
             // when
             return harness.getTasks({ now, resolved: true })
@@ -515,7 +515,7 @@ describe('Standard Configuration Tasks', () => {
               patient_id: patient._id,
               reported_date: now,
             };
-            harness.pushMockedReport(
+            harness.pushMockedDoc(
                 backdatedReport('cw', dayOffset),
                 immVisitReport);
 
@@ -535,7 +535,7 @@ describe('Standard Configuration Tasks', () => {
         } else {
           it('should not have "immunization-missing-visit" visit task', () => {
             // given
-            harness.pushMockedReport(
+            harness.pushMockedDoc(
                 backdatedReport('cw', day - ageInDaysWhenRegistered));
 
             // when
@@ -553,7 +553,7 @@ describe('Standard Configuration Tasks', () => {
 
     it('should raise nutrition screening task for G form with severity 2', function(){
 
-      harness.pushMockedReport(fixtures.reports.g_with_severity_2());
+      harness.pushMockedDoc(fixtures.reports.g_with_severity_2());
 
       return harness.getTasks({ resolved: true })
         .then(tasks => {
@@ -569,7 +569,7 @@ describe('Standard Configuration Tasks', () => {
 
     it('should raise nutrition screening task for G form with severity 3', function(){
 
-      harness.pushMockedReport(fixtures.reports.g_with_severity_3());
+      harness.pushMockedDoc(fixtures.reports.g_with_severity_3());
 
       return harness.getTasks({ resolved: true })
         .then(tasks => {
@@ -585,7 +585,7 @@ describe('Standard Configuration Tasks', () => {
 
     it('should raise nutrition follow up task', function(){
 
-      harness.pushMockedReport(fixtures.reports.nutrition_screening());
+      harness.pushMockedDoc(fixtures.reports.nutrition_screening());
 
       return harness.getTasks({ resolved: true })
         .then(tasks => {
@@ -600,7 +600,7 @@ describe('Standard Configuration Tasks', () => {
 
     it('should raise death confirmation task from CHW death report', function(){
 
-      harness.pushMockedReport(fixtures.reports.dr());
+      harness.pushMockedDoc(fixtures.reports.dr());
 
       return harness.getTasks({ resolved: true })
         .then(tasks => {
@@ -615,7 +615,7 @@ describe('Standard Configuration Tasks', () => {
     });
 
     it('should raise death confirmation task from nutrition followup death exit', function(){
-      harness.pushMockedReport(fixtures.reports.nutrition_exit_dead());
+      harness.pushMockedDoc(fixtures.reports.nutrition_exit_dead());
 
       return harness.getTasks({ resolved: true })
         .then(tasks => {
