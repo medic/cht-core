@@ -22,7 +22,8 @@ const getValue = function(resultObject) {
 
   // input fields, evaluated as `UNORDERED_NODE_ITERATOR_TYPE`, are received as arrays with one element
   if (resultObject.t === 'arr' && resultObject.v.length) {
-    return asString(resultObject);
+    // return asString(resultObject);
+    return resultObject.v[0];
   }
 
   return resultObject.v;
