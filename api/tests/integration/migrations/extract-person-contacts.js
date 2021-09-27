@@ -6,7 +6,7 @@ const ANY_STRING = /^.*$/;
 const ANY_NUMBER = /^[0-9]+(\\.[0-9]*)?$/;
 
 const environment = require('../../../src/environment');
-const config = require('../../../src/config');
+const configuration = require('../../../src/services/configuration');
 
 const settings = {
   contact_types: [
@@ -228,7 +228,7 @@ describe('extract-person-contacts migration', function() {
 
     await utils.initDb([clinic, healthCenter, districtHospital]);
     await utils.initSettings(settings);
-    await config.load();
+    await configuration.load();
     await utils.runMigration('extract-person-contacts');
     await utils.assertDb([districtHospitalFixed, districtHospitalContact,
       healthCenterFixed, healthCenterContact,
@@ -247,7 +247,7 @@ describe('extract-person-contacts migration', function() {
       },
     }, ])
       .then(() => utils.initSettings(settings))
-      .then(() => config.load())
+      .then(() => configuration.load())
       .then(function() {
 
         // when
@@ -293,7 +293,7 @@ describe('extract-person-contacts migration', function() {
       },
     }, ])
       .then(() => utils.initSettings(settings))
-      .then(() => config.load())
+      .then(() => configuration.load())
       .then(function() {
 
         // when
@@ -351,7 +351,7 @@ describe('extract-person-contacts migration', function() {
         }
       }])
         .then(() => utils.initSettings(settings))
-        .then(() => config.load())
+        .then(() => configuration.load())
         .then(function() {
 
           // when
@@ -388,7 +388,7 @@ describe('extract-person-contacts migration', function() {
         }
       }])
         .then(() => utils.initSettings(settings))
-        .then(() => config.load())
+        .then(() => configuration.load())
         .then(function() {
           return utils.runMigration('extract-person-contacts');
         })

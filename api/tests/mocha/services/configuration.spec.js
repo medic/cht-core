@@ -16,6 +16,10 @@ const configuration = require('../../../src/services/configuration');
 
 const nextTick = () => new Promise(r => setTimeout(r));
 let on;
+const emitChange = (change) => {
+  const changeCallback = on.args[0][1];
+  changeCallback(change);
+};
 
 describe('Configuration', () => {
   beforeEach(() => {
@@ -117,8 +121,11 @@ describe('Configuration', () => {
   });
 
   describe('listen', () => {
-    it('initializes the Continuous changes feed', () => {
+    beforeEach(() => {
       configuration.listen();
+    });
+
+    it('initializes the Continuous changes feed', () => {
       chai.expect(db.medic.changes.callCount).to.equal(1);
       chai
         .expect(db.medic.changes.args[0])
@@ -126,110 +133,230 @@ describe('Configuration', () => {
     });
 
     it('does nothing for irrelevant change', () => {
-      configuration.listen();
-      const change = { id: 'someDoc' };
+      emitChange({ id: 'someDoc' });
       on.callCount.should.equal(2);
-      const changeCallback = on.args[0][1];
 
-      changeCallback(change);
       chai.expect(db.medic.query.callCount).to.equal(0);
       chai.expect(db.medic.get.callCount).to.equal(0);
     });
 
-    it('reloads settings, runs translations, ddoc extraction and generates sw when _design/medic is updated', () => {
-      settingsService.update.resolves();
-      ddocExtraction.run.resolves();
-      resourceExtraction.run.resolves();
-      translations.run.resolves();
-      generateServiceWorker.run.resolves();
+    describe('ddoc changes', () => {
+      it('reloads settings, runs translations, ddoc extraction and generates sw', () => {
+        settingsService.update.resolves();
+        ddocExtraction.run.resolves();
+        resourceExtraction.run.resolves();
+        translations.run.resolves();
+        generateServiceWorker.run.resolves();
+        db.medic.get.resolves();
 
-      configuration.listen();
-      db.medic.get.resolves();
-      const change = { id: '_design/medic' };
-      const changeCallback = on.args[0][1];
-      changeCallback(change);
-      return nextTick().then(() => {
-        chai.expect(translations.run.callCount).to.equal(1);
-        chai.expect(ddocExtraction.run.callCount).to.equal(1);
-        chai.expect(resourceExtraction.run.callCount).to.equal(1);
-        chai.expect(generateServiceWorker.run.callCount).to.equal(1);
-        chai.expect(db.medic.get.callCount).to.equal(1);
-        chai.expect(db.medic.get.args[0]).to.deep.equal(['_design/medic']);
+        emitChange({ id: '_design/medic' });
+
+        return nextTick().then(() => {
+          chai.expect(translations.run.callCount).to.equal(1);
+          chai.expect(ddocExtraction.run.callCount).to.equal(1);
+          chai.expect(resourceExtraction.run.callCount).to.equal(1);
+          chai.expect(generateServiceWorker.run.callCount).to.equal(1);
+          chai.expect(db.medic.get.callCount).to.equal(1);
+          chai.expect(db.medic.get.args[0]).to.deep.equal(['_design/medic']);
+          chai.expect(viewMapUtils.loadViewMaps.callCount).to.equal(1);
+        });
+      });
+
+      it('should catch translations errors', () => {
+        translations.run.rejects();
+        settingsService.update.resolves();
+        ddocExtraction.run.resolves();
+        resourceExtraction.run.resolves();
+        generateServiceWorker.run.resolves();
+        db.medic.get.resolves();
+
+        emitChange({ id: '_design/medic' });
+
+        return nextTick().then(() => {
+          chai.expect(translations.run.callCount).to.equal(1);
+          chai.expect(ddocExtraction.run.callCount).to.equal(1);
+          chai.expect(resourceExtraction.run.callCount).to.equal(1);
+          chai.expect(generateServiceWorker.run.callCount).to.equal(1);
+          chai.expect(db.medic.get.callCount).to.equal(1);
+        });
+      });
+
+      it('should stop execution when ddocExtraction fails', () => {
+        translations.run.resolves();
+        settingsService.update.resolves();
+        ddocExtraction.run.rejects();
+        resourceExtraction.run.resolves();
+        generateServiceWorker.run.resolves();
+        db.medic.get.resolves();
+        sinon.stub(process, 'exit');
+
+        emitChange({ id: '_design/medic' });
+
+        return nextTick().then(() => {
+          chai.expect(process.exit.callCount).to.deep.equal(1);
+        });
+      });
+
+      it('should stop execution when resource extraction fails', () => {
+        translations.run.resolves();
+        settingsService.update.resolves();
+        ddocExtraction.run.resolves();
+        resourceExtraction.run.rejects();
+        generateServiceWorker.run.resolves();
+        db.medic.get.resolves();
+        sinon.stub(process, 'exit');
+
+        emitChange({ id: '_design/medic' });
+
+        return nextTick().then(() => {
+          chai.expect(process.exit.callCount).to.deep.equal(1);
+        });
+      });
+
+      it('should stop execution when updating the service worker fails', () => {
+        translations.run.resolves();
+        settingsService.update.resolves();
+        ddocExtraction.run.resolves();
+        resourceExtraction.run.resolves();
+        generateServiceWorker.run.rejects();
+        db.medic.get.resolves();
+        sinon.stub(process, 'exit');
+
+        emitChange({ id: '_design/medic' });
+
+        return nextTick().then(() => {
+          chai.expect(process.exit.callCount).to.deep.equal(1);
+        });
       });
     });
 
-    it('reloads translations and generates service worker when translations are updated', () => {
-      translations.run.resolves();
-      generateServiceWorker.run.resolves();
+    describe('translationsChanges', () => {
+      it('reloads translations and generates service worker when translations are updated', () => {
+        translations.run.resolves();
+        generateServiceWorker.run.resolves();
+        db.medic.query.resolves({ rows: [] });
 
-      configuration.listen();
-      db.medic.query.resolves({ rows: [] });
-      const change = { id: 'messages-test' };
-      const changeCallback = on.args[0][1];
-      changeCallback(change);
-      return nextTick().then(() => {
-        chai.expect(translations.run.callCount).to.equal(0);
-        chai.expect(ddocExtraction.run.callCount).to.equal(0);
-        chai.expect(resourceExtraction.run.callCount).to.equal(0);
-        chai.expect(generateServiceWorker.run.callCount).to.equal(1);
-        chai.expect(db.medic.get.callCount).to.equal(0);
+        emitChange({ id: 'messages-test' });
 
-        chai.expect(db.medic.query.callCount).to.equal(1);
-        chai
-          .expect(
-            db.medic.query.withArgs('medic-client/doc_by_type', {
-              key: ['translations', true],
-              include_docs: true,
-            }).callCount
-          )
-          .to.equal(1);
+        return nextTick().then(() => {
+          chai.expect(translations.run.callCount).to.equal(0);
+          chai.expect(ddocExtraction.run.callCount).to.equal(0);
+          chai.expect(resourceExtraction.run.callCount).to.equal(0);
+          chai.expect(generateServiceWorker.run.callCount).to.equal(1);
+          chai.expect(db.medic.get.callCount).to.equal(0);
+
+          chai.expect(db.medic.query.callCount).to.equal(1);
+          chai.expect(db.medic.query.args[0]).to.deep.equal([
+            'medic-client/doc_by_type',
+            { key: ['translations', true], include_docs: true },
+          ]);
+        });
+      });
+
+      it('should catch translations errors', () => {
+        translations.run.rejects();
+        generateServiceWorker.run.resolves();
+        db.medic.query.resolves({ rows: [] });
+
+        emitChange({ id: 'messages-test' });
+
+        return nextTick().then(() => {
+          chai.expect(generateServiceWorker.run.callCount).to.equal(1);
+          chai.expect(db.medic.get.callCount).to.equal(0);
+        });
+      });
+
+      it('should terminate process on service worker errors', () => {
+        translations.run.resolves();
+        generateServiceWorker.run.rejects();
+        db.medic.query.resolves({ rows: [] });
+        sinon.stub(process, 'exit');
+
+        emitChange({ id: 'messages-test' });
+
+        return nextTick().then(() => {
+          chai.expect(process.exit.callCount).to.equal(1);
+        });
       });
     });
 
-    it('generates service worker when branding doc is updated', () => {
-      generateServiceWorker.run.resolves();
+    describe('branding changes', () => {
+      it('generates service worker when branding doc is updated', () => {
+        generateServiceWorker.run.resolves();
 
-      configuration.listen();
-      const change = { id: 'branding' };
-      const changeCallback = on.args[0][1];
-      changeCallback(change);
-      return nextTick().then(() => {
-        chai.expect(generateServiceWorker.run.callCount).to.equal(1);
+        emitChange({ id: 'branding' });
 
-        chai.expect(translations.run.callCount).to.equal(0);
-        chai.expect(ddocExtraction.run.callCount).to.equal(0);
-        chai.expect(resourceExtraction.run.callCount).to.equal(0);
+        return nextTick().then(() => {
+          chai.expect(generateServiceWorker.run.callCount).to.equal(1);
+
+          chai.expect(translations.run.callCount).to.equal(0);
+          chai.expect(ddocExtraction.run.callCount).to.equal(0);
+          chai.expect(resourceExtraction.run.callCount).to.equal(0);
+        });
+      });
+
+      it('should terminate process on service worker errors', () => {
+        generateServiceWorker.run.rejects();
+        sinon.stub(process, 'exit');
+
+        emitChange({ id: 'branding' });
+
+        return nextTick().then(() => {
+          chai.expect(process.exit.callCount).to.equal(1);
+        });
       });
     });
 
-    it('reloads settings and transitions library when settings doc is updated', () => {
-      configuration.listen();
-      settingsService.update.resolves();
-      settingsService.get.resolves({ settings: 'yes' });
+    describe('settings changes', () => {
+      it('reloads settings settings doc is updated', () => {
+        settingsService.update.resolves();
+        settingsService.get.resolves({ settings: 'yes' });
 
-      const change = { id: 'settings' };
-      const changeCallback = on.args[0][1];
-      changeCallback(change);
+        emitChange({ id: 'settings' });
 
-      return nextTick().then(() => {
-        chai.expect(settingsService.update.callCount).to.equal(1);
-        chai.expect(settingsService.get.callCount).to.equal(1);
-        chai.expect(config.set.callCount).to.equal(1);
-        chai.expect(config.set.args[0]).to.deep.equal([{ settings: 'yes' }]);
+        return nextTick().then(() => {
+          chai.expect(settingsService.update.callCount).to.equal(1);
+          chai.expect(settingsService.get.callCount).to.equal(1);
+          chai.expect(config.set.callCount).to.equal(1);
+          chai.expect(config.set.args[0]).to.deep.equal([{ settings: 'yes' }]);
+        });
+      });
+
+      it('should terminate process on settings load errors', () => {
+        settingsService.update.resolves();
+        settingsService.get.rejects();
+        sinon.stub(process, 'exit');
+        emitChange({ id: 'settings' });
+
+        return nextTick().then(() => {
+          chai.expect(process.exit.callCount).to.equal(1);
+        });
       });
     });
 
-    it('handles xform changes', () => {
-      configuration.listen();
-      sinon.stub(generateXform, 'update').resolves();
-      const change = { id: 'form:something:something' };
-      const changeCallback = on.args[0][1];
-      changeCallback(change);
+    describe('form changes', () => {
+      it('handles xform changes', () => {
+        sinon.stub(generateXform, 'update').resolves();
 
-      return nextTick().then(() => {
-        chai.expect(generateXform.update.callCount).to.equal(1);
-        chai.expect(generateXform.update.args[0]).to.deep.equal(['form:something:something']);
+        emitChange({ id: 'form:something:something' });
+
+        return nextTick().then(() => {
+          chai.expect(generateXform.update.callCount).to.equal(1);
+          chai.expect(generateXform.update.args[0]).to.deep.equal(['form:something:something']);
+        });
+      });
+
+      it('should not terminate the process on form gen errors', () => {
+        sinon.stub(generateXform, 'update').rejects();
+
+        emitChange({ id: 'form:id' });
+
+        return nextTick().then(() => {
+          chai.expect(generateXform.update.callCount).to.equal(1);
+          chai.expect(generateXform.update.args[0]).to.deep.equal(['form:id']);
+        });
       });
     });
+
   });
 });
