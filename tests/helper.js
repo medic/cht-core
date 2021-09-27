@@ -1,4 +1,5 @@
 const fs = require('fs');
+const { browser } = require('protractor');
 const utils = require('./utils');
 const EC = protractor.ExpectedConditions;
 
@@ -48,7 +49,7 @@ module.exports = {
     await handleUpdateModalNative();
     try {
       const msg = `First attempt to click failed. Element is ${element.locator()}`;
-      await browser.wait(EC.elementToBeClickable(element),12000, msg);
+      await browser.wait(EC.elementToBeClickable(element), 12000, msg);
       await element.click();
     } catch (err) {
       await browser.sleep(1000);
@@ -182,13 +183,13 @@ module.exports = {
       .manage()
       .logs()
       .get('browser')
-      .then(function(browserLogs) {
-        browserLogs.forEach(function(log) {
+      .then(function (browserLogs) {
+        browserLogs.forEach(function (log) {
           if (log.level.value > 900) {
             fs.appendFile(
               `tests/results/${spec}-logs.txt`,
               `\r\n Console errors: ${log.message}\r\n`,
-              function(err) {
+              function (err) {
                 if (err) {
                   throw err;
                 }
@@ -232,6 +233,9 @@ module.exports = {
   },
 
   selectDropdownByValue: async (element, value) => {
+    await browser.wait(async () => await element.all(by.css(`option`)).count() > 1, 1000,
+      'Timed out waiting for options to be greater than 1'
+    );
     const options = await element.all(by.css(`option[value="${value}"]`));
     if (options[0]) {
       await options[0].click();
@@ -284,14 +288,14 @@ module.exports = {
           .then(presenceOfElement => !presenceOfElement);
       },
       timeout,
-      'waitElementToDisappear timed out looking for '  + locator
+      'waitElementToDisappear timed out looking for ' + locator
     );
   },
 
   waitElementToDisappearNative: async (elm, timeout) => {
     const locator = elm.locator();
     timeout = timeout || 15000;
-    await browser.wait(EC.invisibilityOf(elm),timeout, `waitElementToDisappear timed out looking for ${locator}`);
+    await browser.wait(EC.invisibilityOf(elm), timeout, `waitElementToDisappear timed out looking for ${locator}`);
   },
 
   waitElementToPresent: (elm, timeout) => {
