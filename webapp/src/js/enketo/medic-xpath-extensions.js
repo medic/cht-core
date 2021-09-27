@@ -1,4 +1,5 @@
 const moment = require('moment');
+const { isNil } = require('lodash');
 
 const DATE_STRING = /^\d\d\d\d-\d{1,2}-\d{1,2}(?:T\d\d:\d\d:\d\d\.?\d?\d?(?:Z|[+-]\d\d:\d\d)|.*)?$/;
 const RAW_NUMBER = /^(-?[0-9]+)(\.[0-9]+)?$/;
@@ -22,8 +23,7 @@ const getValue = function(resultObject) {
 
   // input fields, evaluated as `UNORDERED_NODE_ITERATOR_TYPE`, are received as arrays with one element
   if (resultObject.t === 'arr' && resultObject.v.length) {
-    // return asString(resultObject);
-    return resultObject.v[0];
+    return isNaN(resultObject.v[0]) ? asString(resultObject) : resultObject.v[0];
   }
 
   return resultObject.v;
@@ -71,7 +71,7 @@ const parseTimestampToDate = (value) => {
 
 const asString = (r) => {
   return r.t === 'arr' ?
-    r.v.length ? r.v[0].textContent || '' : '' :
+    r.v.length && !isNil(r.v[0]) ? r.v[0].textContent || '' : '' :
     r.v.toString();
 };
 
