@@ -684,7 +684,7 @@ describe('Standard Configuration Targets', () => {
       describe('healthy birth', () => {
         it('should not emit a target instance if no PNC visits have been made', () => {
           // given
-          harness.pushMockedReport(
+          harness.pushMockedDoc(
             adultWithReports(homeBirth(aWeekAgo)));
 
           // when
@@ -754,7 +754,7 @@ describe('Standard Configuration Targets', () => {
         });
         it('should emit a target instance if a PNC visit has been made', () => {
           // given
-          harness.pushMockedReport(
+          harness.pushMockedDoc(
             adultWithReports(
               homeBirth(aWeekAgo),
               pncVisit(today)));
@@ -826,7 +826,7 @@ describe('Standard Configuration Targets', () => {
         });
         it('should emit a target instance if more than one PNC visit has been made', () => {
           // given
-          harness.pushMockedReport(
+          harness.pushMockedDoc(
             adultWithReports(
               homeBirth(aMonthAgo),
               pncVisit(aWeekAgo),
@@ -907,7 +907,7 @@ describe('Standard Configuration Targets', () => {
       describe('non-healthy birth', () => {
         it('should not emit a target instance', () => {
           // given
-          harness.pushMockedReport(
+          harness.pushMockedDoc(
             adultWithReports(nonHealthyHomeBirth(aWeekAgo)));
 
           // when
@@ -1855,7 +1855,7 @@ describe('Standard Configuration Targets', () => {
     for (const report of reports) {
       report.patient_id = contact._id;
     }
-    harness.pushMockedReport(...reports);
+    harness.pushMockedDoc(...reports);
   }
 
   //> DATES
