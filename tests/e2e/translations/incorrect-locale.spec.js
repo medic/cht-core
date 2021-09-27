@@ -44,7 +44,9 @@ describe('Incorrect locale', () => {
     await userSettingsElements.openEditSettings();
 
     // change language
-    await helper.selectDropdownByValue(userSettingsElements.getLanguageField(), 'hil');
+    const langDropdown = userSettingsElements.getLanguageField();
+    await helper.clickElementNative(langDropdown);
+    await helper.selectDropdownByValue(langDropdown, 'hil');
     await helper.clickElementNative(userSettingsElements.getSubmitButton());
 
     // wait for language to load
