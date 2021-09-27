@@ -303,8 +303,7 @@ const getDocByPatientId = patientId => {
 };
 
 const expectTransitions = (infodoc, ...transitions) => {
-  chai.expect(infodoc.transitions).to.be.an('object');
-  chai.expect(Object.keys(infodoc.transitions).length).to.equal(transitions.length);
+  chai.expect(infodoc.transitions).to.be.an('object').that.has.all.keys(transitions);
   transitions.forEach(transition => {
     chai.expect(infodoc.transitions[transition]).to.be.an('object');
     chai.expect(infodoc.transitions[transition].ok).to.equal(true);
