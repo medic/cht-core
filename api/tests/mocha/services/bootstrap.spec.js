@@ -12,7 +12,7 @@ const translations = require('../../../src/translations');
 const generateServiceWorker = require('../../../src/generate-service-worker');
 const generateXform = require('../../../src/services/generate-xform');
 const config = require('../../../src/config');
-const configuration = require('../../../src/services/configuration');
+const bootstrap = require('../../../src/services/bootstrap');
 
 const nextTick = () => new Promise(r => setTimeout(r));
 let on;
@@ -54,7 +54,7 @@ describe('Configuration', () => {
       db.medic.get.withArgs('_design/medic').resolves({ _id: '_design/medic' });
       db.medic.query.resolves({ rows: [] });
 
-      return configuration.load().then(() => {
+      return bootstrap.load().then(() => {
         chai.expect(db.medic.get.callCount).to.equal(1);
         chai.expect(db.medic.get.args[0][0]).to.equal('_design/medic');
         chai.expect(viewMapUtils.loadViewMaps.callCount).to.equal(1);
@@ -88,7 +88,7 @@ describe('Configuration', () => {
       db.medic.get.withArgs('_design/medic').resolves({ _id: '_design/medic' });
       db.medic.query.rejects('errors nooo');
 
-      return configuration.load().then(() => {
+      return bootstrap.load().then(() => {
         chai.expect(settingsService.get.callCount).to.equal(1);
         chai.expect(settingsService.update.callCount).to.equal(1);
 
@@ -111,7 +111,7 @@ describe('Configuration', () => {
         ]
       });
 
-      return configuration
+      return bootstrap
         .load()
         .then(() => chai.expect.fail('should have crashed'))
         .catch((err) => {
@@ -122,7 +122,7 @@ describe('Configuration', () => {
 
   describe('listen', () => {
     beforeEach(() => {
-      configuration.listen();
+      bootstrap.listen();
     });
 
     it('initializes the Continuous changes feed', () => {
