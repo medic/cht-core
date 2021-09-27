@@ -294,7 +294,7 @@ describe('generate service worker', () => {
       generateServiceWorker = rewire('../../src/generate-service-worker');
       getServiceWorkerHash = generateServiceWorker.__get__('getServiceWorkerHash');
 
-      sinon.stub(fs, 'existsSync');
+      sinon.stub(fs, 'access');
       sinon.stub(fs, 'createReadStream');
 
       listeners = {};
@@ -308,71 +308,81 @@ describe('generate service worker', () => {
     });
 
     it('should return undefined if the file is not found', () => {
-      fs.existsSync.returns(false);
+      fs.access.callsArgWith(1, { error: true });
 
       return getServiceWorkerHash().then((result) => {
         chai.expect(result).to.equal(undefined);
-        chai.expect(fs.existsSync.callCount).to.equal(1);
-        chai.expect(fs.existsSync.args[0]).to.deep.equal(['/tmp/js/service-worker.js']);
+        chai.expect(fs.access.callCount).to.equal(1);
+        chai.expect(fs.access.args[0][0]).to.equal('/tmp/js/service-worker.js');
         chai.expect(fs.createReadStream.callCount).to.equal(0);
       });
     });
 
     it('should return the sha1 hash of the current service-worker file', () => {
-      fs.existsSync.returns(true);
+      fs.access.callsArgWith(1, undefined);
       fs.createReadStream.returns(stream);
 
       const getHash = getServiceWorkerHash();
 
-      chai.expect(fs.createReadStream.callCount).to.equal(1);
-      chai.expect(fs.createReadStream.args[0]).to.deep.equal(['/tmp/js/service-worker.js']);
-      chai.expect(stream.setEncoding.callCount).to.equal(1);
-      chai.expect(stream.setEncoding.args[0]).to.deep.equal(['utf8']);
+      return Promise
+        .resolve()
+        .then(() => {
+          chai.expect(fs.createReadStream.callCount).to.equal(1);
+          chai.expect(fs.createReadStream.args[0]).to.deep.equal(['/tmp/js/service-worker.js']);
+          chai.expect(stream.setEncoding.callCount).to.equal(1);
+          chai.expect(stream.setEncoding.args[0]).to.deep.equal(['utf8']);
 
-      chai.expect(Object.keys(listeners)).to.deep.equal(['data', 'end', 'error']);
-      chai.expect(listeners.data).to.be.a('function');
-      chai.expect(listeners.end).to.be.a('function');
-      chai.expect(listeners.error).to.be.a('function');
+          chai.expect(Object.keys(listeners)).to.deep.equal(['data', 'end', 'error']);
+          chai.expect(listeners.data).to.be.a('function');
+          chai.expect(listeners.end).to.be.a('function');
+          chai.expect(listeners.error).to.be.a('function');
 
-      listeners.data('0');
-      listeners.data('1');
-      listeners.data('2');
-      listeners.end();
+          listeners.data('0');
+          listeners.data('1');
+          listeners.data('2');
+          listeners.end();
 
-      return getHash.then(hash => {
-        chai.expect(hash).to.equal('c4a2d99bc28d236098a095277b7eb0718d6be068');
-      });
+          return getHash;
+        })
+        .then(hash => {
+          chai.expect(hash).to.equal('c4a2d99bc28d236098a095277b7eb0718d6be068');
+        });
     });
 
     it('should return undefined on stream read error', () => {
-      fs.existsSync.returns(true);
+      fs.access.callsArgWith(1, undefined);
       fs.createReadStream.returns(stream);
 
       const getHash = getServiceWorkerHash();
 
-      chai.expect(fs.createReadStream.callCount).to.equal(1);
-      chai.expect(fs.createReadStream.args[0]).to.deep.equal(['/tmp/js/service-worker.js']);
-      chai.expect(stream.setEncoding.callCount).to.equal(1);
-      chai.expect(stream.setEncoding.args[0]).to.deep.equal(['utf8']);
+      return Promise
+        .resolve()
+        .then(() => {
+          chai.expect(fs.createReadStream.callCount).to.equal(1);
+          chai.expect(fs.createReadStream.args[0]).to.deep.equal(['/tmp/js/service-worker.js']);
+          chai.expect(stream.setEncoding.callCount).to.equal(1);
+          chai.expect(stream.setEncoding.args[0]).to.deep.equal(['utf8']);
 
-      chai.expect(Object.keys(listeners)).to.deep.equal(['data', 'end', 'error']);
-      chai.expect(listeners.data).to.be.a('function');
-      chai.expect(listeners.end).to.be.a('function');
-      chai.expect(listeners.error).to.be.a('function');
+          chai.expect(Object.keys(listeners)).to.deep.equal(['data', 'end', 'error']);
+          chai.expect(listeners.data).to.be.a('function');
+          chai.expect(listeners.end).to.be.a('function');
+          chai.expect(listeners.error).to.be.a('function');
 
-      listeners.data('0');
-      listeners.data('1');
-      listeners.data('2');
-      listeners.error({ some: 'error' });
-      listeners.end();
+          listeners.data('0');
+          listeners.data('1');
+          listeners.data('2');
+          listeners.error({ some: 'error' });
+          listeners.end();
 
-      return getHash.then(hash => {
-        chai.expect(hash).to.equal(undefined);
-      });
+          return getHash;
+        })
+        .then(hash => {
+          chai.expect(hash).to.equal(undefined);
+        });
     });
 
     it('should return undefined when other error happens', () => {
-      fs.existsSync.returns(true);
+      fs.access.callsArgWith(1, false);
       fs.createReadStream.returns(stream);
       stream.setEncoding.throws(new Error('boom'));
 

@@ -16,7 +16,7 @@ process
 (async () => {
 
   const app = require('./src/routing');
-  const config = require('./src/config');
+  const configuration = require('./src/services/configuration');
   const migrations = require('./src/migrations');
   const ddocExtraction = require('./src/ddoc-extraction');
   const generateXform = require('./src/services/generate-xform');
@@ -50,9 +50,9 @@ process
     logger.info('Extracting initial documents completed successfully');
 
     logger.info('Loading configuration…');
-    await config.load();
+    await configuration.load();
     logger.info('Configuration loaded successfully');
-    await config.listen();
+    configuration.listen();
 
     logger.info('Merging translations…');
     await translations.run();

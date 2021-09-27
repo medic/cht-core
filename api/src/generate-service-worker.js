@@ -6,12 +6,17 @@ const crypto = require('crypto');
 const environment = require('./environment');
 const db = require('./db');
 const logger = require('./logger');
+const loginController = require('./controllers/login');
 
 const SWMETA_DOC_ID = 'service-worker-meta';
 const apiSrcDirectoryPath = __dirname;
 
 const staticDirectoryPath = environment.getExtractedResourcesPath();
 const scriptOutputPath = path.join(staticDirectoryPath, 'js', 'service-worker.js');
+
+const fsExists = (path) => new Promise((resolve) => {
+  fs.access(path, (err) => resolve(!err));
+});
 
 /**
  * Generates a sha1 of the existent service worker file.
@@ -20,13 +25,13 @@ const scriptOutputPath = path.join(staticDirectoryPath, 'js', 'service-worker.js
  * If any error occurs when generating the hash, it returns undefined.
  * @return {Promise<string|undefined>}
  */
-const getServiceWorkerHash = () => {
+const getServiceWorkerHash = async () => {
+  if (!await fsExists(scriptOutputPath)) {
+    return;
+  }
+
   return new Promise((resolve) => {
     try {
-      if (!fs.existsSync(scriptOutputPath)) {
-        return resolve();
-      }
-
       const hash = crypto.createHash('sha1');
       const stream = fs.createReadStream(scriptOutputPath);
       stream.setEncoding('utf8');
@@ -44,8 +49,6 @@ const getServiceWorkerHash = () => {
 };
 
 const getLoginPageContents = async () => {
-  // avoid circular dependency
-  const loginController = require('./controllers/login');
   try {
     return await loginController.renderLogin();
   } catch (err) {
