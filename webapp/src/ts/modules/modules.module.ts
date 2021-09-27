@@ -13,10 +13,6 @@ import { AboutComponent } from './about/about.component';
 import { ConfigurationUserComponent } from './configuration-user/configuration-user.component';
 import { ErrorComponent } from './error/error.component';
 import { AnalyticsComponent } from './analytics/analytics.component';
-import { ReportsComponent } from './reports/reports.component';
-import { ReportsContentComponent } from './reports/reports-content.component';
-import { ReportsAddComponent } from '@mm-modules/reports/reports-add.component';
-import { ReportsFiltersComponent } from '@mm-modules/reports/reports-filters.component';
 import { ComponentsModule } from '../components/components.module';
 import { MessagesComponent } from './messages/messages.component';
 import { ContactsComponent } from './contacts/contacts.component';
@@ -44,12 +40,8 @@ import { TestingComponent } from './testing/testing.component';
     ConfigurationUserComponent,
     ErrorComponent,
     AnalyticsComponent,
-    ReportsComponent,
-    ReportsAddComponent,
-    ReportsContentComponent,
     MessagesComponent,
     ContactsComponent,
-    ReportsFiltersComponent,
     ContactsContentComponent,
     ContactsFiltersComponent,
     ContactsDeceasedComponent,
@@ -83,7 +75,6 @@ import { TestingComponent } from './testing/testing.component';
     ConfigurationUserComponent,
     ErrorComponent,
     AnalyticsComponent,
-    ReportsComponent,
     MessagesComponent,
     ContactsComponent,
     PrivacyPolicyComponent,

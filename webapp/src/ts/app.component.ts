@@ -150,15 +150,6 @@ export class AppComponent implements OnInit {
   }
 
   private setupRouter() {
-    const getTab = (snapshot) => {
-      let tab;
-      do {
-        tab = snapshot.data.tab;
-        snapshot = snapshot.parent;
-      } while (!tab && snapshot?.parent);
-      return tab;
-    };
-
     this.router.events.subscribe((event:RouterEvent) => {
       // close all select2 menus on navigation
       // https://github.com/medic/cht-core/issues/2927
@@ -167,7 +158,7 @@ export class AppComponent implements OnInit {
       }
 
       if (event instanceof ActivationEnd) {
-        const tab = getTab(event.snapshot);
+        const tab = event.snapshot.routeConfig.path;
         if (tab !== this.currentTab) {
           this.tourService.endCurrent();
           this.globalActions.setCurrentTab(tab);
