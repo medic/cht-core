@@ -152,17 +152,10 @@ const syncAndWaitForSuccess = async () => {
 const sync = async (expectReload) => {
   await syncAndWaitForSuccess();
   if (expectReload) {
-    expectReload = false;
-    await closeReloadModal().catch(() => {
-      console.warn('Timed out while waiting for the reload modal to appear');
-      expectReload = true;
-    });
+    await closeReloadModal();
   }
   // sync status sometimes lies when multiple changes are fired in quick succession
   await syncAndWaitForSuccess();
-  if (expectReload) {
-    await closeReloadModal();
-  }
 };
 
 const closeReloadModal = async () => {
