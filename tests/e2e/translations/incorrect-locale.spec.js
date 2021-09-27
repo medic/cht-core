@@ -7,7 +7,7 @@ const { browser } = require('protractor');
 
 describe('Incorrect locale', () => {
 
-  const createLanguage = () =>  utils.addTranslations('hil', {
+  const createLanguage = () => utils.addTranslations('hil', {
     'n.month': '{MONTHS, plural, =1{1 luna} other{# luni}}',
     'n.week': '{WEEKS, plural, =1{1 saptamana} other{# saptamani}}',
     'reports.none.n.months':
@@ -36,7 +36,7 @@ describe('Incorrect locale', () => {
     await utils.afterEach();
   });
 
-  it('should work with incorrect locale',async () => {
+  it('should work with incorrect locale', async () => {
     await commonElements.openMenuNative();
     await commonElements.checkUserSettings();
 
@@ -50,8 +50,8 @@ describe('Incorrect locale', () => {
     // wait for language to load
     await browser.refresh();
     await browser.wait(
-      async () => await commonElements.getReportsButtonLabel().getText() === 'HilReports',
-      2000,
+      async () => await helper.getTextFromElementNative(commonElements.getReportsButtonLabel()) === 'HilReports',
+      5 * 1000,
       'Translations for Hil were not applied'
     );
 
