@@ -133,7 +133,7 @@ describe('Standard Configuration Tasks', () => {
       harness.pushMockedDoc(fixtures.reports.delivery());
 
       // when
-      const tasks = await harness.getTasks({ resolved: true });
+      const tasks = await harness.getTasks();
       // then
       assert.equal(tasks.length, 1);
 
@@ -160,7 +160,7 @@ describe('Standard Configuration Tasks', () => {
       harness.pushMockedDoc(fixtures.reports.delivery(), pncVisitAppReport);
 
       // when
-      return harness.getTasks({ resolved: true })
+      return harness.getTasks()
         .then(tasks => {
 
           // then
@@ -184,7 +184,7 @@ describe('Standard Configuration Tasks', () => {
       harness.pushMockedDoc(fixtures.reports.delivery(), pncVisitSMSReport);
 
       // when
-      return harness.getTasks({ resolved: true })
+      return harness.getTasks()
         .then(tasks => {
 
           // then
@@ -208,7 +208,7 @@ describe('Standard Configuration Tasks', () => {
       harness.pushMockedDoc(deliveryReport, flagReport);
 
       // when
-      return harness.getTasks({ resolved: true })
+      return harness.getTasks()
         .then(tasks => {
 
           // then
@@ -240,7 +240,7 @@ describe('Standard Configuration Tasks', () => {
                   backdatedReport('d', day-ageInDaysWhenRegistered));
 
               // when
-              return harness.getTasks({ resolved: true })
+              return harness.getTasks()
                 .then(tasks => {
 
                   // then
@@ -261,7 +261,7 @@ describe('Standard Configuration Tasks', () => {
 
 
               // when
-              return harness.getTasks({ resolved: true })
+              return harness.getTasks()
                 .then(tasks => {
 
                   // then
@@ -340,7 +340,7 @@ describe('Standard Configuration Tasks', () => {
       harness.pushMockedDoc(pregnancyReport, flagReport);
 
       // when
-      return harness.getTasks({ resolved: true })
+      return harness.getTasks()
         .then(tasks => {
 
           // then
@@ -366,7 +366,7 @@ describe('Standard Configuration Tasks', () => {
       );
 
       // when
-      return harness.getTasks({ resolved: true })
+      return harness.getTasks()
         .then(tasks => {
 
           // then
@@ -392,7 +392,7 @@ describe('Standard Configuration Tasks', () => {
             harness.pushMockedDoc(backdatedReport('p', day));
 
             // when
-            return harness.getTasks({ resolved: true })
+            return harness.getTasks()
               .then(tasks => {
 
                 // then
@@ -411,7 +411,7 @@ describe('Standard Configuration Tasks', () => {
             harness.pushMockedDoc(backdatedReport('p', day));
 
             // when
-            return harness.getTasks({ resolved: true })
+            return harness.getTasks()
               .then(tasks =>
 
                 // then
@@ -424,7 +424,7 @@ describe('Standard Configuration Tasks', () => {
             harness.pushMockedDoc(backdatedReport('p', day));
 
             // when
-            return harness.getTasks({ resolved: true })
+            return harness.getTasks()
               .then(tasks => {
 
                 // then
@@ -443,7 +443,7 @@ describe('Standard Configuration Tasks', () => {
             harness.pushMockedDoc(backdatedReport('p', day));
 
             // when
-            return harness.getTasks({ resolved: true })
+            return harness.getTasks()
               .then(tasks =>
 
                 // then
@@ -520,7 +520,7 @@ describe('Standard Configuration Tasks', () => {
                 immVisitReport);
 
             // when
-            const tasks = await harness.getTasks({ resolved: true });
+            const tasks = await harness.getTasks();
             // then
             assert.equal(tasks.length, 1);
 
@@ -539,7 +539,7 @@ describe('Standard Configuration Tasks', () => {
                 backdatedReport('cw', day - ageInDaysWhenRegistered));
 
             // when
-            return harness.getTasks({ resolved: true })
+            return harness.getTasks()
 
               // then
               .then(tasks => assert.equal(tasks.length, 0));
@@ -555,7 +555,7 @@ describe('Standard Configuration Tasks', () => {
 
       harness.pushMockedDoc(fixtures.reports.g_with_severity_2());
 
-      return harness.getTasks({ resolved: true })
+      return harness.getTasks()
         .then(tasks => {
 
           const task = tasks[0];
@@ -571,7 +571,7 @@ describe('Standard Configuration Tasks', () => {
 
       harness.pushMockedDoc(fixtures.reports.g_with_severity_3());
 
-      return harness.getTasks({ resolved: true })
+      return harness.getTasks()
         .then(tasks => {
 
           const task = tasks[0];
@@ -587,7 +587,7 @@ describe('Standard Configuration Tasks', () => {
 
       harness.pushMockedDoc(fixtures.reports.nutrition_screening());
 
-      return harness.getTasks({ resolved: true })
+      return harness.getTasks()
         .then(tasks => {
           const task = tasks[0];
 
@@ -602,7 +602,7 @@ describe('Standard Configuration Tasks', () => {
 
       harness.pushMockedDoc(fixtures.reports.dr());
 
-      return harness.getTasks({ resolved: true })
+      return harness.getTasks()
         .then(tasks => {
 
           const task = tasks[0];
@@ -617,7 +617,7 @@ describe('Standard Configuration Tasks', () => {
     it('should raise death confirmation task from nutrition followup death exit', function(){
       harness.pushMockedDoc(fixtures.reports.nutrition_exit_dead());
 
-      return harness.getTasks({ resolved: true })
+      return harness.getTasks()
         .then(tasks => {
           const task = tasks[0];
 
