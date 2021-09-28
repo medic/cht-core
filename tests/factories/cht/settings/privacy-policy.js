@@ -8,8 +8,8 @@ const privacyPolicyHtml = ({ header, paragraph }) => {
 `;
 };
 
-const english = { header: 'English Privacy Policy', paragraph: 'More markup' };
-const french = { header: 'Politique de confidentialité en Francais', paragraph: 'Plus de markup' };
+const english = { header: 'English Privacy Policy', paragraph: 'More markup', language: 'English' };
+const french = { header: 'Politique de confidentialité en Francais', paragraph: 'Plus de markup', language: 'French' };
 const privacyPolicyInFrench = privacyPolicyHtml(french);
 const privacyPolicyInEnglish = privacyPolicyHtml(english);
 
@@ -22,11 +22,13 @@ const privacyPolicy = () => {
     .attr('_attachments', {
       'en.attachment': {
         content_type: 'text/html',
-        data: Buffer.from(privacyPolicyInEnglish).toString('base64')
+        data: Buffer.from(privacyPolicyInEnglish).toString('base64'),
+        digest: 'en_digest'
       },
       'fr.html': {
         content_type: 'text/html',
         data: Buffer.from(privacyPolicyInFrench).toString('base64'),
+        digest: 'fr_digest'
       }
     });
 };
