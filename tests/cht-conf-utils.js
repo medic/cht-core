@@ -90,6 +90,7 @@ const compileAndUploadAppForms = async (formsDir) => {
 };
 
 module.exports = {
+  runCommand,
   compileNoolsConfig,
   initializeConfigDir,
   compileAndUploadAppForms,
