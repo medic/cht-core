@@ -132,7 +132,12 @@ module.exports = {
     await writeServiceWorkerFile();
     const updatedHash = await getServiceWorkerHash();
 
-    if (!initialHash || !updatedHash || initialHash !== updatedHash) {
+    if (!updatedHash) {
+      logger.warn('Service worker meta file not updated.');
+      return;
+    }
+
+    if (!initialHash || initialHash !== updatedHash) {
       await writeServiceWorkerMetaDoc(updatedHash);
     }
     logger.info('Service worker generated successfully');

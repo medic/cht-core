@@ -124,7 +124,7 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should update the meta doc if the request to hash the new service worker file fails', () => {
+  it('should not update the meta doc if the request to hash the new service worker file fails', () => {
     getServiceWorkerHash.onCall(0).resolves('thing');
     getServiceWorkerHash.onCall(1).resolves(undefined);
     db.medic.get.resolves({ _id: 'service-worker-meta' });
@@ -133,17 +133,12 @@ describe('generate service worker', () => {
     return generateServiceWorker.run().then(() => {
       chai.expect(loginController.renderLogin.callCount).to.equal(1);
       chai.expect(swPrecache.write.callCount).to.deep.equal(1);
-      chai.expect(db.medic.get.callCount).to.equal(1);
-      chai.expect(db.medic.put.callCount).to.equal(1);
-      chai.expect(db.medic.put.args[0]).to.deep.equal([{
-        _id: 'service-worker-meta',
-        hash: undefined,
-        generated_at: 0,
-      }]);
+      chai.expect(db.medic.get.callCount).to.equal(0);
+      chai.expect(db.medic.put.callCount).to.equal(0);
     });
   });
 
-  it('should update the meta doc if hashing both old and new service worker files fail', () => {
+  it('should not update the meta doc if hashing both old and new service worker files fail', () => {
     getServiceWorkerHash.onCall(0).resolves(undefined);
     getServiceWorkerHash.onCall(1).resolves(undefined);
     db.medic.get.resolves({ _id: 'service-worker-meta' });
@@ -152,13 +147,8 @@ describe('generate service worker', () => {
     return generateServiceWorker.run().then(() => {
       chai.expect(loginController.renderLogin.callCount).to.equal(1);
       chai.expect(swPrecache.write.callCount).to.deep.equal(1);
-      chai.expect(db.medic.get.callCount).to.equal(1);
-      chai.expect(db.medic.put.callCount).to.equal(1);
-      chai.expect(db.medic.put.args[0]).to.deep.equal([{
-        _id: 'service-worker-meta',
-        hash: undefined,
-        generated_at: 0,
-      }]);
+      chai.expect(db.medic.get.callCount).to.equal(0);
+      chai.expect(db.medic.put.callCount).to.equal(0);
     });
   });
 

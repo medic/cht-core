@@ -12,7 +12,7 @@ const translations = require('../../../src/translations');
 const generateServiceWorker = require('../../../src/generate-service-worker');
 const generateXform = require('../../../src/services/generate-xform');
 const config = require('../../../src/config');
-const bootstrap = require('../../../src/services/bootstrap');
+const bootstrap = require('../../../src/services/config-watcher');
 
 const nextTick = () => new Promise(r => setTimeout(r));
 let on;
