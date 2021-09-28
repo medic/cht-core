@@ -5,8 +5,6 @@ on:
     - cron:  '0 3 * * *' # Run every day at 3am
 
 env:
-  BUILDS_SERVER: _couch/builds_testing
-  STAGING_SERVER: _couch/builds
   MARKET_URL: ${{ secrets.AUTH_MARKET_URL }}
 
 jobs:
