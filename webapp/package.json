@@ -13,7 +13,7 @@
     "os": false
   },
   "engines": {
-    "node": ">=8.11.0",
+    "node": ">=12.14.0",
     "npm": ">=6.4.1"
   },
   "dependencies": {
