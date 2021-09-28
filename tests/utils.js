@@ -281,7 +281,7 @@ const getCreatedUsers = async () => {
   const adminUserId = COUCH_USER_ID_PREFIX + auth.username;
   const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
   return users.rows.filter(user => user.id !== adminUserId)
-    .map((user) => { return { ...user, username: user.id.replace(COUCH_USER_ID_PREFIX, '') }; });
+    .map((user) => ({ ...user, username: user.id.replace(COUCH_USER_ID_PREFIX, '') }));
 };
 
 const deleteUsers = async (users, meta = false) => {
@@ -679,7 +679,7 @@ module.exports = {
   },
 
   getDoc: (id, rev) => {
-    const params = { };
+    const params = {};
     if (rev) {
       params.rev = rev;
     }
