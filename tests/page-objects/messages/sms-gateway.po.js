@@ -1,6 +1,6 @@
 const utils = require('../../utils');
-const commonElements = require('../common/common.po');
-const messagePo = require('../messages/messages.po');
+const commonElements = require('../common/common.wdio.page');
+const messagePo = require('../../page-objects/messages/messages.wdio.page');
 const reportsPo = require('../reports/reports.po');
 const helper = require('../../helper');
 const { browser, element } = require('protractor');
@@ -27,17 +27,6 @@ const getTaskState = async element => {
 };
 
 module.exports = {
-
-  showMessageList :  async () => {
-    await utils.resetBrowser();
-    await helper.clickElementNative(element(by.id('messages-tab')));
-
-    // LHS
-    await helper.waitElementToPresentNative(messagePo.messageByIndex(1));
-    await browser.waitForAngular();
-    await helper.waitElementToBeVisibleNative(messagePo.messageByIndex(1));
-  },
-
   messageHeading: (index) => messagePo.messageByIndex(index).element(by.css('.heading h4')),
   messageSummary: (index) => messagePo.messageByIndex(index).element(by.css('.summary p')),
   
