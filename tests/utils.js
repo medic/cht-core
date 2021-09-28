@@ -24,6 +24,8 @@ const originalTranslations = {};
 let e2eDebug;
 const hasModal = () => element(by.css('#update-available')).isPresent();
 const { execSync } = require('child_process');
+const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
+
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
@@ -275,8 +277,15 @@ const revertDb = async (except, ignoreRefresh) => {
   await setUserContactDoc();
 };
 
+const getCreatedUsers = async () => {
+  const adminUserId = COUCH_USER_ID_PREFIX + auth.username;
+  const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
+  return users.rows.filter(user => user.id !== adminUserId)
+    .map((user) => { return { ...user, username: user.id.replace(COUCH_USER_ID_PREFIX, '') }; });
+};
+
 const deleteUsers = async (users, meta = false) => {
-  const usernames = users.map(user => `org.couchdb.user:${user.username}`);
+  const usernames = users.map(user => COUCH_USER_ID_PREFIX + user.username);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
   const medicDocs = await request({
     path: `/${constants.DB_NAME}/_all_docs`,
@@ -492,7 +501,7 @@ const setupUser = () => {
 };
 
 const setupUserDoc = (userName = auth.username, userDoc = userSettings.build()) => {
-  return module.exports.getDoc('org.couchdb.user:' + userName)
+  return module.exports.getDoc(COUCH_USER_ID_PREFIX + userName)
     .then(doc => {
       const finalDoc = Object.assign(doc, userDoc);
       return module.exports.saveDoc(finalDoc);
@@ -871,6 +880,7 @@ module.exports = {
   // @param {Boolean} meta - if true, deletes meta db-s as well, default true
   // @return {Promise}
   deleteUsers: deleteUsers,
+  getCreatedUsers,
 
   // Creates users - optionally also creating their meta dbs
   // @param {Array} users - list of users to be created
