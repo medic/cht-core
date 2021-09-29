@@ -8,7 +8,8 @@ import { AsyncPipe } from '@angular/common';
 
 import {
   AgePipe,
-  AutoreplyPipe, DateOfDeathPipe,
+  AutoreplyPipe,
+  DateOfDeathPipe,
   DayMonthPipe,
   FullDatePipe,
   RelativeDatePipe,
