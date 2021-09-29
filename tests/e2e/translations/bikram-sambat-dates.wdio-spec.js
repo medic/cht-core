@@ -33,7 +33,6 @@ const getReports = async () => {
 
 const setExistentReportDates = async (dates) => {
   const reports = await getReports();
-  console.log(reports);
   dates.forEach((date, idx) => reports[idx].reported_date = moment(date).valueOf());
   return utils.saveDocs(reports);
 };
