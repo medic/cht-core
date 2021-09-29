@@ -125,9 +125,9 @@ describe('Bikram Sambat date display', () => {
     await setLanguage(NEPALI_LOCALE_CODE);
 
     const date = '2010-01-01';
-    const bkDate = bikramSambat.toBik_text(date);
-    // todo change this when lib is updated
-    const [ bkDay, bkMonth ] = bkDate.split(' ');
+    const bkDateText = bikramSambat.toBik_text(date);
+    const bkDate = bikramSambat.toBik(date);
+    const { day: bkDay, month: bkMonth } = bikramSambat.toDev(bkDate.year, bkDate.month, bkDate.day);
 
     const contact = {
       _id: 'george_bush',
@@ -154,12 +154,12 @@ describe('Bikram Sambat date display', () => {
     expect(await contactsPage.getContactSummaryField('dayMonth')).to.equal(`${bkDay} ${bkMonth}`);
     expect(await contactsPage.getContactSummaryField('relativeDate')).to.equal(relativeDateSuffix);
     expect(await contactsPage.getContactSummaryField('relativeDay')).to.equal(relativeDateLocaleSuffix);
-    expect(await contactsPage.getContactSummaryField('simpleDate')).to.equal(bkDate);
+    expect(await contactsPage.getContactSummaryField('simpleDate')).to.equal(bkDateText);
     expect(await contactsPage.getContactSummaryField('simpleDateTime')).to.equal(
-      `${bkDate}, ${moment(date).format('LTS')}`
+      `${bkDateText}, ${moment(date).format('LTS')}`
     );
     expect(await contactsPage.getContactSummaryField('fullDate')).to.equal(
-      `${relativeDateSuffix}\n${bkDate}, ${moment(date).format('LTS')}`
+      `${relativeDateSuffix}\n${bkDateText}, ${moment(date).format('LTS')}`
     );
   });
 });
