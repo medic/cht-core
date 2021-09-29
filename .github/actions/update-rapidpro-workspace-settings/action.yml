@@ -55,31 +55,5 @@ outputs:
     value: ${{ steps.generate-flows-js.outputs }}
 
 runs:
-  using: 'composite'
-  steps:
-  - name: install dependencies
-    run: |
-        sudo wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
-        sudo chmod +x jq-linux64
-        sudo mv jq-linux64 $(which jq)
-    shell: bash
-
-  - name: update-medic-credentials
-    run: |
-        curl -X PUT https://${{ inputs.couch_username }}:${{ inputs.couch_password }}@${{ inputs.hostname }}/_node/${{ inputs.couch_node_name }}/_config/medic-credentials/${{ inputs.value_key }} -d '"${{ inputs.rp_api_token }}"'
-    shell: bash
-
-  - name: update-app-settings
-    run: |
-        jq 'walk(if type == "object" and has("base_url") then .base_url = "${{ inputs.rp_hostname }}" else . end) | walk(if type == "object" and has("value_key") then .value_key = "${{ inputs.value_key }}" else . end) | walk(if type == "object" and has("flow") then .flow.expr = "${{ inputs.write_patient_state_flow }}" else . end) | walk(if type == "object" and has("groups") then .groups.expr = "[${{ inputs.rp_contact_group }}]" else . end)' app_settings.json > app_settings.json.tmp && cp app_settings.json.tmp app_settings.json && rm app_settings.json.tmp
-        sed -i "s/\b${{ inputs.write_patient_state_flow }}\b/'${{ inputs.write_patient_state_flow }}'/g" app_settings.json
-        sed -i "s/\b${{ inputs.rp_contact_group }}\b/'${{ inputs.rp_contact_group }}'/g" app_settings.json
-    shell: bash
-    working-directory: ${{ inputs.directory }}
-
-  - name: generate-flows-js
-    run: |
-        : > ./flows.js
-        echo -e "module.exports = ${{ inputs.rp_flows }};" > ./flows.js
-    shell: bash
-    working-directory: ${{ inputs.directory }}
+  using: 'node12'
+  main: 'dist/index.js'
