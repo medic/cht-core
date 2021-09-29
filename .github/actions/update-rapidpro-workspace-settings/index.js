@@ -48,7 +48,7 @@ try {
   const flows_file_name = `${codeRepository}/flows.js`;
   const options = {
     files: codeRepository+'/app_settings.json',
-    from: [regex(search(appSettings, 'base_url')), regex(search(appSettings, 'value_key')), search(appSettings, 'groups').expr, search(appSettings, 'flow').expr],
+    from: [regex(search(appSettings, 'base_url')), regex(search(appSettings, 'value_key')), search(appSettings, 'groups').expr, regex(search(appSettings, 'flow').expr)],
     to: [rp_hostname, value_key, `['${rp_contact_group}']`, `'${write_patient_state_flow}'`]
   };
 
