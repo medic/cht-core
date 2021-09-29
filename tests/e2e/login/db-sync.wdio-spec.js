@@ -200,7 +200,7 @@ describe('db-sync', () => {
       body: restrictedUser
     });
     await sentinelUtils.waitForSentinel();
-    await loginPage.login(restrictedUserName, restrictedPass);
+    await loginPage.login({ username: restrictedUserName, password: restrictedPass });
     await (await commonElements.analyticsTab()).waitForDisplayed();
   });
 
