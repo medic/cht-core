@@ -1,7 +1,7 @@
 import * as moment from 'moment';
 import { Injectable } from '@angular/core';
 import { RelativeTimeKey } from 'moment';
-import { toBik_text as toBikranSambatText } from 'bikram-sambat';
+import { toBik_text as toBikramSambatText, toBik as toBikramSambat, toDev as toDevanagari } from 'bikram-sambat';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { TranslateService } from '@mm-services/translate.service';
@@ -64,14 +64,13 @@ export class FormatDateService {
       return momentDate.format(this.config[key]);
     }
 
-    const bkDateText = toBikranSambatText(momentDate);
     if (key === 'dayMonth') {
-      // bikram-sambat library has no support to return "pieces" of the date
-      // todo change this once we publish bikram-sambat to return an Object
-      const [day, month] = bkDateText.split(/\s/);
-      return `${day} ${month}`;
+      const bikDate = toBikramSambat(momentDate);
+      const devanagariDate = toDevanagari(bikDate.year, bikDate.month, bikDate.day);
+      return `${devanagariDate.day} ${devanagariDate.month}`;
     }
 
+    const bkDateText = toBikramSambatText(momentDate);
     if (key === 'date') {
       return bkDateText;
     }

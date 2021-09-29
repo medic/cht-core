@@ -340,15 +340,17 @@ describe('FormatDate service', () => {
       expect(service.dayMonth(now)).to.equal(formatted);
     });
 
-    // todo update this test once bikram sambat library is updated
     it('should return bikram sambat day month when language is nepali', () => {
       languageService.getSync.returns('ne');
-      sinon.stub(BikramSambat, 'toBik_text').returns('bkday bkmonth bkyear');
+      sinon.stub(BikramSambat, 'toBik').returns({ year: 'bkyear', month: 'bkmonth', day: 'bkday' });
+      sinon.stub(BikramSambat, 'toDev').returns({ year: 'devyear', month: 'devmonth', day: 'devday' });
 
       const now = moment();
-      expect(service.dayMonth(now)).to.equal('bkday bkmonth');
-      expect(BikramSambat.toBik_text.callCount).to.equal(1);
-      expect(BikramSambat.toBik_text.args[0]).to.deep.equal([now]);
+      expect(service.dayMonth(now)).to.equal('devday devmonth');
+      expect(BikramSambat.toBik.callCount).to.equal(1);
+      expect(BikramSambat.toBik.args[0]).to.deep.equal([now]);
+      expect(BikramSambat.toDev.callCount).to.equal(1);
+      expect(BikramSambat.toDev.args[0]).to.deep.equal(['bkyear', 'bkmonth', 'bkday']);
     });
 
     it('should return formatted day month when language is nepali and not showing Bikram Sambat dates', async () => {

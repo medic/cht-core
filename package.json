@@ -53,7 +53,7 @@
     "angular-jsdoc": "^1.5.1",
     "angular-mocks": "^1.7.9",
     "autoprefixer": "^9.8.6",
-    "bikram-sambat": "^1.6.0",
+    "bikram-sambat": "^1.7.0",
     "browserify-ngannotate": "^2.0.0",
     "bundlesize": "^0.18.1",
     "chai": "^4.3.4",
