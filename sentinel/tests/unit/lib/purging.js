@@ -511,6 +511,104 @@ describe('ServerSidePurge', () => {
       });
     });
 
+    it('should decrease contacts batch size if the maximum number of reports is received', () => {
+      sinon.stub(request, 'get');
+      const contacts = Array.from({ length: 1500 }).map((_, idx) => ({
+        id: idx,
+        key: `key${idx}`,
+        doc: { id: idx },
+      }));
+
+      request.get.onCall(0).resolves({ rows: contacts.slice(0, 1000) });
+      request.get.onCall(1).resolves({ rows: contacts.slice(0, 500) });
+      request.get.onCall(2).resolves({ rows: contacts.slice(0, 250) });
+      request.get.onCall(3).resolves({ rows: contacts.slice(250, 500) });
+      request.get.onCall(4).resolves({ rows: contacts.slice(500, 750) });
+      request.get.onCall(5).resolves({ rows: contacts.slice(750, 1000) });
+      request.get.onCall(6).resolves({ rows: contacts.slice(1000, 1250) });
+      request.get.onCall(7).resolves({ rows: contacts.slice(1250, 1500) });
+      request.get.onCall(8).resolves({ rows: contacts.slice(1500, 1500) });
+
+      const reports = Array.from({ length: 12000 }).map((_, idx) => ({
+        id: idx,
+        key: `key${idx}`,
+        doc: { id: idx },
+      }));
+      sinon.stub(db.medic, 'query');
+      db.medic.query.onCall(0).resolves({ rows: reports });
+      db.medic.query.onCall(1).resolves({ rows: reports });
+      db.medic.query.onCall(2).resolves({ rows: reports.slice(0, 2000) });
+      db.medic.query.onCall(3).resolves({ rows: reports.slice(2000, 4000) });
+      db.medic.query.onCall(4).resolves({ rows: reports.slice(4000, 6000) });
+      db.medic.query.onCall(5).resolves({ rows: reports.slice(6000, 8000) });
+      db.medic.query.onCall(6).resolves({ rows: reports.slice(8000, 10000) });
+      db.medic.query.onCall(7).resolves({ rows: reports.slice(10000, 12000) });
+      db.medic.query.onCall(8).resolves({ rows: [] });
+
+      const purgeDbChanges = sinon.stub().resolves({ results: [] });
+      sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
+
+      const expectedParams = (limit, id = '') => ([
+        'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
+        {
+          qs: {
+            limit: limit,
+            start_key: JSON.stringify(id ? `key${id}` : ''),
+            startkey_docid: id,
+            include_docs: true,
+          },
+          json: true
+        }
+      ]);
+
+      return service.__get__('batchedContactsPurge')(roles, purgeFn).then(() => {
+        chai.expect(request.get.callCount).to.equal(9);
+
+        chai.expect(request.get.args[0]).to.deep.equal(expectedParams(1000));
+        chai.expect(request.get.args[1]).to.deep.equal(expectedParams(500));
+        chai.expect(request.get.args[2]).to.deep.equal(expectedParams(250));
+        chai.expect(request.get.args[3]).to.deep.equal(expectedParams(250, 249));
+        chai.expect(request.get.args[4]).to.deep.equal(expectedParams(250, 499));
+        chai.expect(request.get.args[5]).to.deep.equal(expectedParams(250, 749));
+        chai.expect(request.get.args[6]).to.deep.equal(expectedParams(250, 999));
+        chai.expect(request.get.args[7]).to.deep.equal(expectedParams(250, 1249));
+        chai.expect(request.get.args[8]).to.deep.equal(expectedParams(250, 1499));
+
+        chai.expect(db.medic.query.callCount).to.equal(9);
+
+      });
+    });
+
+    it('should throw error if report limit reached with contacts batch size = 1', () => {
+      const contacts = Array.from({ length: 1001 }).map((_, idx) => ({ id: idx, key: `key${idx}`, doc: { id: idx }}));
+      const reports = Array.from({ length: 12000 }).map((_, idx) => ({ id: idx, key: `key${idx}`, doc: { id: idx }}));
+
+      sinon.stub(request, 'get').callsFake((_, { qs }) => Promise.resolve({ rows: contacts.slice(0, qs.limit)}));
+      sinon.stub(db.medic, 'query').resolves({ rows: reports });
+
+      return service
+        .__get__('batchedContactsPurge')(roles, purgeFn)
+        .then(() => chai.expect.fail())
+        .catch((err) => {
+          chai.expect(err).to.deep.equal({
+            code: 'max_size_reached',
+            message: `Purging aborted. Too many reports for contact "0"`,
+          });
+
+          chai.expect(request.get.callCount).to.equal(10);
+          chai.expect(request.get.args[0][1].qs.limit).to.equal(1000);
+          chai.expect(request.get.args[1][1].qs.limit).to.equal(500);
+          chai.expect(request.get.args[2][1].qs.limit).to.equal(250);
+          chai.expect(request.get.args[3][1].qs.limit).to.equal(125);
+          chai.expect(request.get.args[4][1].qs.limit).to.equal(62);
+          chai.expect(request.get.args[5][1].qs.limit).to.equal(31);
+          chai.expect(request.get.args[6][1].qs.limit).to.equal(15);
+          chai.expect(request.get.args[7][1].qs.limit).to.equal(7);
+          chai.expect(request.get.args[8][1].qs.limit).to.equal(3);
+          chai.expect(request.get.args[9][1].qs.limit).to.equal(1);
+        });
+    });
+
     it('should set correct start_key and startkey_docid when last result is a tombstone', () => {
       sinon.stub(request, 'get');
       request.get.onCall(0).resolves({ rows: [
@@ -643,7 +741,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2', 'f4', 's4'], include_docs: true }
+          { keys: ['first', 'f1', 's1', 'f2', 'f4', 's4'], include_docs: true, limit: 10000 }
         ]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
@@ -800,7 +898,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2', 'f3', 'f4', 's4'], include_docs: true }
+          { keys: ['first', 'f1', 's1', 'f2', 'f3', 'f4', 's4'], include_docs: true, limit: 10000 }
         ]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
@@ -902,7 +1000,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2', 's2'], include_docs: true }
+          { keys: ['first', 'f1', 's1', 'f2', 's2'], include_docs: true, limit: 10000 }
         ]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
@@ -997,7 +1095,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2'], include_docs: true }
+          { keys: ['first', 'f1', 's1', 'f2'], include_docs: true, limit: 10000 }
         ]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
@@ -1311,7 +1409,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2'], include_docs: true }
+          { keys: ['first', 'f1', 's1', 'f2'], include_docs: true, limit: 10000 }
         ]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
@@ -1434,7 +1532,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
           {
             qs: {
-              limit: 1000,
+              limit: 10000,
               key: JSON.stringify('_unassigned'),
               startkey_docid: '',
               include_docs: true
@@ -1471,7 +1569,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
           {
             qs: {
-              limit: 1000,
+              limit: 10000,
               key: JSON.stringify('_unassigned'),
               startkey_docid: '',
               include_docs: true
@@ -1483,7 +1581,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
           {
             qs: {
-              limit: 1000,
+              limit: 10000,
               key: JSON.stringify('_unassigned'),
               startkey_docid: 'r3',
               include_docs: true
@@ -1495,7 +1593,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
           {
             qs: {
-              limit: 1000,
+              limit: 10000,
               key: JSON.stringify('_unassigned'),
               startkey_docid: 'r5',
               include_docs: true
@@ -1747,7 +1845,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
           {
             qs: {
-              limit: 1000,
+              limit: 10000,
               end_key: JSON.stringify(getDaysAgo(60)),
               start_key: JSON.stringify(''),
               startkey_docid: '',
@@ -1786,7 +1884,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
           {
             qs: {
-              limit: 1000,
+              limit: 10000,
               end_key: JSON.stringify(getDaysAgo(60)),
               start_key: JSON.stringify(''),
               startkey_docid: '',
@@ -1798,7 +1896,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
           {
             qs: {
-              limit: 1000,
+              limit: 10000,
               end_key: JSON.stringify(getDaysAgo(60)),
               start_key: JSON.stringify(getDaysAgo(98)),
               startkey_docid: 'task3',
@@ -1810,7 +1908,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
           {
             qs: {
-              limit: 1000,
+              limit: 10000,
               end_key: JSON.stringify(getDaysAgo(60)),
               start_key: JSON.stringify(getDaysAgo(65)),
               startkey_docid: 'task5',
@@ -1922,7 +2020,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_all_docs',
           {
             qs: {
-              limit: 1000,
+              limit: 10000,
               start_key: JSON.stringify('target~'),
               end_key: JSON.stringify('target~2019-09~'),
             },
@@ -1963,7 +2061,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_all_docs',
           {
             qs: {
-              limit: 1000,
+              limit: 10000,
               start_key: JSON.stringify('target~'),
               end_key: JSON.stringify('target~2019-08~'),
             },
@@ -1974,7 +2072,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_all_docs',
           {
             qs: {
-              limit: 1000,
+              limit: 10000,
               start_key: JSON.stringify('target~2019~05~three'),
               end_key: JSON.stringify('target~2019-08~'),
             },
@@ -1985,7 +2083,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_all_docs',
           {
             qs: {
-              limit: 1000,
+              limit: 10000,
               start_key: JSON.stringify('target~2019~06~two'),
               end_key: JSON.stringify('target~2019-08~'),
             },
