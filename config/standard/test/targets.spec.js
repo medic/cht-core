@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const { assert } = chai;
 chai.use(require('chai-exclude'));
 
-const TestHarness = require('cht-conf-test-harness');
+const TestHarness = require('medic-conf-test-harness');
 const now = 1469358731456;
 
 let reportIdCounter;
@@ -684,7 +684,7 @@ describe('Standard Configuration Targets', () => {
       describe('healthy birth', () => {
         it('should not emit a target instance if no PNC visits have been made', () => {
           // given
-          harness.pushMockedDoc(
+          harness.pushMockedReport(
             adultWithReports(homeBirth(aWeekAgo)));
 
           // when
@@ -754,7 +754,7 @@ describe('Standard Configuration Targets', () => {
         });
         it('should emit a target instance if a PNC visit has been made', () => {
           // given
-          harness.pushMockedDoc(
+          harness.pushMockedReport(
             adultWithReports(
               homeBirth(aWeekAgo),
               pncVisit(today)));
@@ -826,7 +826,7 @@ describe('Standard Configuration Targets', () => {
         });
         it('should emit a target instance if more than one PNC visit has been made', () => {
           // given
-          harness.pushMockedDoc(
+          harness.pushMockedReport(
             adultWithReports(
               homeBirth(aMonthAgo),
               pncVisit(aWeekAgo),
@@ -907,7 +907,7 @@ describe('Standard Configuration Targets', () => {
       describe('non-healthy birth', () => {
         it('should not emit a target instance', () => {
           // given
-          harness.pushMockedDoc(
+          harness.pushMockedReport(
             adultWithReports(nonHealthyHomeBirth(aWeekAgo)));
 
           // when
@@ -1855,7 +1855,7 @@ describe('Standard Configuration Targets', () => {
     for (const report of reports) {
       report.patient_id = contact._id;
     }
-    harness.pushMockedDoc(...reports);
+    harness.pushMockedReport(...reports);
   }
 
   //> DATES
