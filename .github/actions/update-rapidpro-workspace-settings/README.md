@@ -1,7 +1,29 @@
 # dynamic-rapidpro-workspace Shared GitHub Action
-The `update-rapidpro-workspace-settings` is a parameterised reusable GitHub action that updates app-settings prior to compiling and uploading to a running CHT instance.
+The `update-rapidpro-workspace-settings` is a parameterised reusable GitHub action that updates app-settings prior to compiling and uploading to a running CHT app.
 
-This can be executed jointly with other Github actions like [deploy-with-medic-conf](https://github.com/medic/cht-core/tree/master/.github/actions/deploy-with-medic-conf).
+### Background
+This action is relevant for CHT apps that have either [outbound](https://docs.communityhealthtoolkit.org/apps/reference/app-settings/outbound/) integrations with RapidPro or logic that requires RapidPro workspace data GUIDs.
+Normally, you would want to a staging deployment use the staging workspace and a production deployment to use the corresponding production workspace. This action automates the process of updating `app_settings.json` to use relevant UUIDs.
+
+### How it works
+1. It adds the configured `value_key` to CouchDB’s config storage to securely store the [credentials](https://docs.communityhealthtoolkit.org/apps/reference/app-settings/outbound/#credentials).
+2. This action automatically updates the following details in outbound modules:
+   - `base_url` and `value_key`
+   - contact group UUID, if using the [groups endpoint](https://rapidpro.app.medicmobile.org/api/v2/groups). Note that the action was tested with one group.
+   - flow UUID, if using the [flow starts endpoint](https://rapidpro.app.medicmobile.org/api/v2/flow_starts). Note that the action was tested with one flow in two modules.
+3. It replaces contents of a file, `flows.js`, in the project repository with flow UUIDs obtained from RapidPro workspace through the API. To extract the UUIDs, you can simply use the API explorer, under `/api/v2/flows.json`. A sample `flows.js` would be as follows:
+
+```
+const RAPIDPRO_FLOWS = {
+  sample_flow_1_uuid: '3f6a48d3-703a-493b-bb10-f4a38a442cda',
+  sample_flow_2_uuid: '064107cf-9bc5-4042-a657-825fdb5a92a4',
+  ...
+};
+
+module.exports = RAPIDPRO_FLOWS;
+```
+
+> **This action can be executed jointly with other Github actions like [deploy-with-medic-conf](https://github.com/medic/cht-core/tree/master/.github/actions/deploy-with-medic-conf).**
 
 ## CHT App Requirements
 * medic-conf@3.3 or above
