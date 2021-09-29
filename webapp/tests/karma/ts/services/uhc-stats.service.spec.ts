@@ -210,7 +210,7 @@ describe('UHCStats Service', () => {
     expect(localDb.query.callCount).to.equal(1);
     expect(localDb.query.args[0]).to.have.deep.members([
       'medic-client/contacts_by_last_visited',
-      { group: true, 'reduce': true, key: '3c' }
+      { group: true, reduce: true, key: '3c' }
     ]);
   });
 
@@ -244,7 +244,7 @@ describe('UHCStats Service', () => {
     expect(localDb.query.callCount).to.equal(1);
     expect(localDb.query.args[0]).to.have.deep.members([
       'medic-client/contacts_by_last_visited',
-      { group: true, 'reduce': true, key: '2b' }
+      { group: true, reduce: true, key: '2b' }
     ]);
   });
 
@@ -284,7 +284,7 @@ describe('UHCStats Service', () => {
     expect(localDb.query.callCount).to.equal(2);
     expect(localDb.query.args[0]).to.have.deep.members([
       'medic-client/contacts_by_last_visited',
-      { group: true, 'reduce': true, key: '3c' }
+      { group: true, reduce: true, key: '3c' }
     ]);
     expect(localDb.query.args[1]).to.have.deep.members([
       'medic-client/visits_by_date',

@@ -1,6 +1,6 @@
 {
   "name": "medic",
-  "version": "3.12.0",
+  "version": "3.13.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "repository": {
@@ -14,7 +14,7 @@
   "scripts": {
     "test": "grunt eslint && grunt unit && grunt test-api-integration && grunt e2e",
     "webdriver": "webdriver-manager update && webdriver-manager start",
-    "wdio-setup": "rm -rf allure-results allure-report && grunt e2e-env-setup", 
+    "wdio-setup": "rm -rf allure-results allure-report && grunt e2e-env-setup",
     "wdio-local": "npm run wdio-setup && wdio run ./tests/wdio.conf.js",
     "wdio-standard-local": "npm run wdio-setup && wdio run ./tests/wdio-standard.conf.js",
     "e2e-integration": "mocha --config tests/integration/.mocharc.js ",
@@ -107,23 +107,23 @@
     "moment": "^2.29.1",
     "moment-locales-webpack-plugin": "^1.2.0",
     "node-sass": "^4.14.1",
-    "nodemon": "^2.0.7",
+    "nodemon": "^2.0.12",
     "pouchdb-adapter-http": "^7.2.2",
     "pouchdb-core": "^7.2.2",
     "pouchdb-mapreduce": "^7.2.2",
     "protractor": "^7.0.0",
     "protractor-jasmine2-screenshot-reporter": "^0.5.0",
     "request": "^2.88.2",
-    "request-promise-native": "^1.0.8",
+    "request-promise-native": "^1.0.9",
     "rewire": "^5.0.0",
     "rosie": "^2.1.0",
     "semver": "^7.3.5",
     "sinon": "^8.1.1",
     "sw-precache": "^5.2.1",
-    "tail": "^2.2.2",
+    "tail": "^2.2.3",
     "time-grunt": "^2.0.0",
-    "typescript": "^3.9.9",
-    "webpack-bundle-analyzer": "^4.4.1"
+    "typescript": "^3.9.10",
+    "webpack-bundle-analyzer": "^4.4.2"
   },
   "bundlesize": [
     {

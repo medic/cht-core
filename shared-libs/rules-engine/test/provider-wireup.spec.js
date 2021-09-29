@@ -1112,4 +1112,129 @@ describe('provider-wireup integration tests', () => {
       chai.expect(listeners[3].running.callCount).to.equal(0);
     });
   });
+
+  describe('fetchTasksBreakdown', () => {
+    beforeEach(async () => {
+      await db.bulkDocs([
+        {
+          _id: 'cancelledTask1',
+          type: 'task',
+          owner: 'patient',
+          state: 'Cancelled',
+        },
+        {
+          _id: 'cancelledTask2',
+          type: 'task',
+          owner: 'patient',
+          state: 'Cancelled',
+        },
+        {
+          _id: 'completedTask',
+          type: 'task',
+          requester: 'patient',
+          owner: 'patient',
+          state: 'Completed',
+        },
+        {
+          _id: 'readyTask1',
+          type: 'task',
+          requester: 'patient',
+          owner: 'patient',
+          state: 'Ready',
+        },
+        {
+          _id: 'readyTask2',
+          type: 'task',
+          requester: 'patient',
+          owner: 'patient',
+          state: 'Ready',
+        },
+        {
+          _id: 'draftTask1',
+          type: 'task',
+          requester: 'patient',
+          owner: 'patient',
+          state: 'Draft',
+        },
+        {
+          _id: 'draftTask2',
+          type: 'task',
+          requester: 'patient',
+          owner: 'patient',
+          state: 'Draft',
+        },
+        {
+          _id: 'draftTaskHeadless',
+          type: 'task',
+          owner: 'headless',
+          state: 'Draft',
+        },
+        {
+          _id: 'readyTaskHeadless',
+          type: 'task',
+          owner: 'headless',
+          state: 'Ready',
+        },
+        {
+          _id: 'failedTaskHeadless',
+          type: 'task',
+          owner: 'headless',
+          state: 'Failed',
+        },
+      ]);
+    });
+
+    it('should return a zero sum object if tasks are not enabled', async () => {
+      sinon.stub(rulesEmitter, 'isEnabled').returns(false);
+
+      expect(await wireup.fetchTasksBreakdown()).to.deep.equal({
+        Cancelled: 0,
+        Ready: 0,
+        Draft: 0,
+        Completed: 0,
+        Failed: 0,
+      });
+
+      rulesEmitter.isEnabled.returns(true);
+      await wireup.initialize(provider, { enableTasks: false });
+
+      expect(await wireup.fetchTasksBreakdown()).to.deep.equal({
+        Cancelled: 0,
+        Ready: 0,
+        Draft: 0,
+        Completed: 0,
+        Failed: 0,
+      });
+
+      expect(db.query.callCount).to.equal(0);
+    });
+
+    it('should get tasks breakdown by owner when contact ids are provided', async () => {
+      sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
+      const rules = noolsPartnerTemplate('', { });
+      const settings = { rules, enableTasks: true };
+      await wireup.initialize(provider, settings, {});
+      expect(await wireup.fetchTasksBreakdown(provider, ['patient'])).to.deep.equal({
+        Cancelled: 2,
+        Ready: 2,
+        Draft: 2,
+        Completed: 1,
+        Failed: 0,
+      });
+    });
+
+    it('should get all tasks breakdown when no contact ids are provided', async () => {
+      sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
+      const rules = noolsPartnerTemplate('', { });
+      const settings = { rules, enableTasks: true };
+      await wireup.initialize(provider, settings, {});
+      expect(await wireup.fetchTasksBreakdown(provider)).to.deep.equal({
+        Cancelled: 2,
+        Ready: 3,
+        Draft: 3,
+        Completed: 1,
+        Failed: 1,
+      });
+    });
+  });
 });

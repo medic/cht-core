@@ -1,13 +1,14 @@
-const auth = require('../../auth')();
-const commonElements = require('../../page-objects/common/common.po.js');
+const commonElements = require('../../page-objects/common/common.wdio.page');
 const utils = require('../../utils');
-const loginPage = require('../../page-objects/login/login.po.js');
+const sentinelUtils = require('../sentinel/utils');
+const loginPage = require('../../page-objects/login/login.wdio.page');
+const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 const chai = require('chai');
 const uuid = require('uuid/v4');
 
 /* global window */
 
-describe('db-sync-filter', () => {
+describe('db-sync', () => {
   const restrictedUserName = uuid();
   const restrictedPass = uuid();
   const restrictedFacilityId = uuid();
@@ -22,12 +23,7 @@ describe('db-sync-filter', () => {
     name: restrictedUserName,
     password: restrictedPass,
     facility_id: restrictedFacilityId,
-    roles: [
-      'district-manager',
-      'kujua_user',
-      'data_entry',
-      'district_admin'
-    ]
+    roles: [ 'chw' ]
   };
 
   const initialDocs = [
@@ -36,12 +32,7 @@ describe('db-sync-filter', () => {
       language: 'en',
       known: true,
       type: 'user-settings',
-      roles: [
-        'district-manager',
-        'kujua_user',
-        'data_entry',
-        'district_admin'
-      ],
+      roles: [ 'chw' ],
       facility_id: restrictedFacilityId,
       contact_id: restrictedContactId,
       name: restrictedUserName
@@ -135,7 +126,7 @@ describe('db-sync-filter', () => {
     },
     {
       _id: report3,
-      form: 'form_type_2',
+      form: 'form_type_3',
       type: 'data_record',
       content_type: 'xml',
       reported_date: Date.now(),
@@ -156,9 +147,8 @@ describe('db-sync-filter', () => {
     },
   ];
 
-  const updateDoc = (docId, changes, overwrite) => {
-    return browser.executeAsyncScript((docId, changes, overwrite) => {
-      const callback = arguments[arguments.length - 1];
+  const updateDoc = async (docId, changes, overwrite = false) => {
+    const { err, result } = await browser.executeAsync((docId, changes, overwrite, callback) => {
       const db = window.CHTCore.DB.get();
       return db
         .get(docId)
@@ -170,20 +160,31 @@ describe('db-sync-filter', () => {
           Object.assign(doc, changes);
           return db.put(doc);
         })
-        .then(result => callback(result))
-        .catch(err => callback(err));
+        .then(result => callback({ result }))
+        .catch(err => callback({ err }));
     }, docId, changes, overwrite);
+
+    if (err) {
+      throw err;
+    }
+
+    return result;
   };
 
-  const createDoc = (doc) => {
-    return browser.executeAsyncScript((doc) => {
-      const callback = arguments[arguments.length - 1];
+  const createDoc = async (doc) => {
+    const { err, result } = await browser.executeAsync((doc, callback) => {
       const db = window.CHTCore.DB.get();
       return db
         .put(doc)
-        .then(result => callback(result))
-        .catch(err => callback(err));
+        .then(result => callback({ result }))
+        .catch(err => callback({ err }));
     }, doc);
+
+    if (err) {
+      throw err;
+    }
+
+    return result;
   };
 
   const getServerRevs = async (docIds) => {
@@ -191,26 +192,16 @@ describe('db-sync-filter', () => {
     return result.rows;
   };
 
-  beforeAll(async () => {
-    await commonElements.goToMessagesNative();
+  before(async () => {
     await utils.saveDocs([...initialDocs, ...initialReports]);
     await utils.request({
       path: `/_users/org.couchdb.user:${restrictedUserName}`,
       method: 'PUT',
       body: restrictedUser
     });
-    await utils.resetBrowser();
-    await commonElements.goToLoginPageNative();
-    await loginPage.loginNative(restrictedUserName, restrictedPass);
-    await commonElements.calmNative();
-  });
-
-  afterAll(async () => {
-    await utils.revertDb([], 'api');
-    await commonElements.goToLoginPageNative();
-    await loginPage.loginNative(auth.username, auth.password);
-    await utils.deleteUsers([restrictedUserName]);
-    await commonElements.calmNative();
+    await sentinelUtils.waitForSentinel();
+    await loginPage.login(restrictedUserName, restrictedPass);
+    await (await commonElements.analyticsTab()).waitForDisplayed();
   });
 
   it('should not filter allowed docs', async () => {
@@ -218,9 +209,10 @@ describe('db-sync-filter', () => {
     await updateDoc(report2, { extra: '2' });
     await updateDoc(patientId, { extra: '3' });
     const newReport = { ...initialReports[0], _id: uuid(), extra: '4' };
-    await createDoc(newReport);
+    const { rev } = await createDoc(newReport);
+    newReport._rev = rev;
 
-    await commonElements.syncNative();
+    await commonElements.sync();
 
     // docs were successfully synced to the server
     const [
@@ -229,16 +221,17 @@ describe('db-sync-filter', () => {
       updatedPatient,
       updatedNewReport,
     ] = await utils.getDocs([report1, report2, patientId, newReport._id]);
+
     chai.expect(updatedReport1.extra).to.equal('1');
     chai.expect(updatedReport2.extra).to.equal('2');
     chai.expect(updatedPatient.extra).to.equal('3');
-    chai.expect(updatedNewReport).excludingEvery('_rev').to.deep.equal(newReport);
+    chai.expect(updatedNewReport).to.deep.equal(newReport);
   });
 
   it('should not filter deletes', async () => {
     await updateDoc(report1, { _deleted: true });
 
-    await commonElements.syncNative();
+    await commonElements.sync();
 
     const result = await utils.getDocs([report1], true);
     chai.expect(result.rows[0]).excludingEvery('rev').to.deep.equal({
@@ -253,7 +246,7 @@ describe('db-sync-filter', () => {
     const docIds = [
       'resources',
       'service-worker-meta',
-      'form:pregnancy',
+      'form:contact:person:edit',
       'messages-en',
     ];
     const serverRevs = await getServerRevs(docIds);
@@ -261,7 +254,7 @@ describe('db-sync-filter', () => {
       await updateDoc(docId, { something: 'random' });
     }
 
-    await commonElements.syncNative();
+    await commonElements.sync();
 
     const updatedServerRevs = await getServerRevs(docIds);
     chai.expect(serverRevs).to.deep.equal(updatedServerRevs);
@@ -270,7 +263,7 @@ describe('db-sync-filter', () => {
   it('should filter locally purged docs', async () => {
     const { rev:localRev } = await updateDoc(report3, { _deleted: true, purged: true }, true);
 
-    await commonElements.syncNative();
+    await commonElements.sync();
 
     const serverReport = await utils.getDoc(report3);
     chai.expect(serverReport).excludingEvery('_rev').to.deep.equal(initialReports[2]);
@@ -284,9 +277,8 @@ describe('db-sync-filter', () => {
     const serverRevs = await getServerRevs(['_design/medic-client']);
     await updateDoc('_design/medic-client', { something: 'random' });
     // updating the ddoc will throw the "upgrade" popup, ignore it!
-    await utils.closeReloadModal();
-
-    await commonElements.syncNative();
+    await commonElements.closeReloadModal();
+    await commonElements.sync();
 
     const updatedServerRevs = await getServerRevs(['_design/medic-client']);
     chai.expect(serverRevs).to.deep.equal(updatedServerRevs);
@@ -294,6 +286,54 @@ describe('db-sync-filter', () => {
     chai.expect(result.rows[0]).to.deep.equal({
       key: '_design/test',
       error: 'not_found',
+    });
+  });
+
+  describe('meta db replication', () => {
+    const createMetaDoc = async (doc) => {
+      const { err, result } = await browser.executeAsync((doc, callback) => {
+        const db = window.CHTCore.DB.get({ meta: true });
+        return db
+          .put(doc)
+          .then(result => callback({ result }))
+          .catch(err => callback({ err }));
+      }, doc);
+
+      if (err) {
+        throw err;
+      }
+
+      return result;
+    };
+
+    it('should replicate meta db up', async () => {
+      const localDoc = { _id: uuid(), extra: 'value' };
+      const { rev } = await createMetaDoc(localDoc);
+      localDoc._rev = rev;
+
+      await browser.refresh(); // meta databases sync every 30 minutes
+      await commonElements.sync();
+
+      const [ remoteDoc ] = await utils.getMetaDocs(restrictedUserName, [localDoc._id]);
+      chai.expect(remoteDoc).to.deep.equal(localDoc);
+    });
+
+    it('should replicate meta db down', async () => {
+      await browser.refresh(); // meta databases sync every 30 minutes
+      await commonElements.sync();
+      chai.expect(await reportsPage.getUnreadCount()).to.equal('2');
+
+      const readReport = { _id: `read:report:${report2}` };
+      await utils.saveMetaDocs(restrictedUserName, [readReport]);
+
+      await browser.refresh(); // meta databases sync every 30 minutes
+      await commonElements.sync();
+
+      // if the test fails, it helps to see which reports are read or not in the failpic
+      await commonElements.goToReports();
+      await (await reportsPage.reportList()).waitForDisplayed();
+
+      await browser.waitUntil(async () => await reportsPage.getUnreadCount() === '1');
     });
   });
 });

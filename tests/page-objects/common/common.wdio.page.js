@@ -1,7 +1,10 @@
 const hamburgerMenu = () => $('#header-dropdown-link');
-const logoutButton = () => $('.fa-power-off');
+const hamburgerMenuItemSelector = '#header-dropdown li';
+const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
+const syncButton = () => $(`${hamburgerMenuItemSelector} a:not(.disabled) .fa-refresh`);
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
+const taskTab = () => $('#tasks-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
@@ -9,9 +12,49 @@ const contactsPage = require('../contacts/contacts.wdio.page');
 const reportsPage = require('../reports/reports.wdio.page');
 const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
+const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
+const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
+
+const isHamburgerMenuOpen = async () => {
+  return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
+};
+
+const isMessagesListPresent = () => {
+  return isElementByIdPresent('message-list');
+};
+
+const isTasksListPresent = () => {
+  return isElementByIdPresent('tasks-list');
+};
+
+const isReportsListPresent = () => {
+  return isElementByIdPresent('reports-list');
+};
+
+const isPeopleListPresent = () => {
+  return isElementByIdPresent('contacts-list');
+};
+
+const isTargetMenuItemPresent = async () => {
+  return await (await $(`=Target`)).isExisting();
+};
+
+const isTargetAggregatesMenuItemPresent = async () => {
+  return await (await $(`=Target aggregates`)).isExisting();
+};
+
+const isElementByIdPresent = async (elementId) => {
+  return await (await $(`#${elementId}`)).isExisting();
+};
+
+const openHamburgerMenu = async () => {
+  if (!(await isHamburgerMenuOpen())) {
+    await (await hamburgerMenu()).click();
+  }
+};
 
 const navigateToLogoutModal = async () => {
-  await (await hamburgerMenu()).click();
+  await openHamburgerMenu();
   await (await logoutButton()).click();
   await (await modal.body()).waitForDisplayed();
 };
@@ -40,9 +83,26 @@ const goToReports = async () => {
   await (await reportsPage.reportList()).waitForDisplayed();
 };
 
-const goToPeople = async (contactId = '') => {
+const goToPeople = async (contactId = '', shouldLoad = true) => {
   await browser.url(`/#/contacts/${contactId}`);
-  await (await contactsPage.contactList()).waitForDisplayed();
+  if (shouldLoad) {
+    await (await contactsPage.contactList()).waitForDisplayed();
+  }
+};
+
+const goToMessages = async () => {
+  await browser.url(`/#/messages`);
+  await (await messagesTab()).waitForDisplayed();
+};
+
+const goToTasks = async () => {
+  await browser.url(`/#/tasks`);
+  await (await taskTab()).waitForDisplayed();
+};
+
+const goToAnalytics = async () => {
+  await browser.url(`/#/analytics`);
+  await (await analyticsTab()).waitForDisplayed();
 };
 
 const closeTour = async () => {
@@ -57,6 +117,12 @@ const closeTour = async () => {
     // there might not be a tour, show a warning
     console.warn('Tour modal has not appeared after 2 seconds');
   }
+};
+
+const waitForLoaderToDisappear = async (element) => {
+  const loaderSelector = '.loader';
+  const loader = await (element ? element.$(loaderSelector) : $(loaderSelector));
+  await loader.waitForDisplayed({ reverse: true });
 };
 
 const hideSnackbar = () => {
@@ -76,6 +142,67 @@ const waitForLoaders = async () => {
   });
 };
 
+const syncAndWaitForSuccess = async () => {
+  await openHamburgerMenu();
+  await (await syncButton()).click();
+  await openHamburgerMenu();
+  await (await syncSuccess()).waitForDisplayed();
+};
+
+const sync = async (expectReload) => {
+  await syncAndWaitForSuccess();
+  if (expectReload) {
+    await closeReloadModal();
+  }
+  // sync status sometimes lies when multiple changes are fired in quick succession
+  await syncAndWaitForSuccess();
+};
+
+const closeReloadModal = async () => {
+  await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist());
+  // wait for the animation to complete
+  await browser.pause(500);
+  await (await reloadModalCancel()).click();
+  await browser.pause(500);
+};
+
+const openReportBugAndFetchProperties = async () => {
+  await (await $('i.fa-bug')).click();
+  await (await $('#feedback')).waitForDisplayed();
+  return {
+    modalHeader: await (await $('#feedback .modal-header > h2')).getText(),
+    modelCancelButtonText: await (await $('.btn.cancel')).getText(),
+    modelSubmitButtonText: await (await $('.btn-primary')).getText()
+  };
+};
+
+const openAboutMenu = async () => {
+  await (await $('i.fa-question')).click();
+  await (await $('.btn-primary=Reload')).waitForDisplayed();
+};
+
+const openConfigurationWizardAndFetchProperties = async () => {
+  await (await $('i.fa-list-ol')).click();
+  await (await $('#guided-setup')).waitForDisplayed();
+  
+  return {
+    modelTitle: await (await $('#guided-setup .modal-header > h2')).getText(),
+    defaultCountryCode: await (await $('#select2-default-country-code-setup-container')).getText(),
+    modelFinishButtonText: await (await $('#guided-setup .modal-footer>a:nth-of-type(2)')).getText()
+  };
+};
+
+const openUserSettingsAndFetchProperties  = async () => {
+  await (await $('=User settings')).click();
+  await (await $('=Update password')).waitForDisplayed();
+  await (await $('=Edit user profile')).waitForDisplayed();
+};
+
+const openAppManagement = async () => {
+  await (await $('i.fa-cog')).click();
+  await (await $('.navbar-brand')).waitForDisplayed();
+};
+
 module.exports = {
   logout,
   logoutButton,
@@ -90,5 +217,23 @@ module.exports = {
   goToBase,
   closeTour,
   hideSnackbar,
-  waitForLoaders
+  waitForLoaders,
+  sync,
+  closeReloadModal,
+  goToMessages,
+  goToTasks,
+  goToAnalytics,
+  isMessagesListPresent,
+  isTasksListPresent,
+  isPeopleListPresent,
+  isReportsListPresent,
+  openConfigurationWizardAndFetchProperties,
+  isTargetMenuItemPresent,
+  isTargetAggregatesMenuItemPresent,
+  openHamburgerMenu,
+  openAboutMenu,
+  openUserSettingsAndFetchProperties,
+  openReportBugAndFetchProperties,
+  openAppManagement,
+  waitForLoaderToDisappear 
 };

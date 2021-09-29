@@ -74,15 +74,15 @@ const wipeTasks = () => {
 };
 
 describe('Outbound', () => {
-  beforeAll(() => {
+  before(() => {
     server = destinationApp.listen();
   });
 
-  afterAll(() => {
+  after(() => {
     server.close();
   });
 
-  afterEach(() => utils.revertDb().then(() => wipeTasks()));
+  afterEach(() => utils.revertDb([], true).then(() => wipeTasks()));
 
   it('should find existing outbound tasks and execute them, leaving them if the send was unsuccessful', () => {
     return utils
@@ -94,8 +94,8 @@ describe('Outbound', () => {
       .then(() => console.log('Waiting for schedules'))
       .then(() => waitForPushes())
       .then(() => {
-        chai.expect(inboxes.working.length).to.equal(2);
-        chai.expect(inboxes.broken.length).to.equal(1);
+        chai.expect(inboxes.working).to.have.lengthOf(2);
+        chai.expect(inboxes.broken).to.have.lengthOf(1);
 
         chai.expect(inboxes.working).to.have.deep.members([
           {id: 'test-aaa'},
@@ -108,7 +108,7 @@ describe('Outbound', () => {
       })
       .then(() => utils.sentinelDb.allDocs({ keys: tasks.map(task => task._id), include_docs: true }))
       .then(tasksResult => {
-        chai.expect(tasksResult.rows.length).to.equal(2);
+        chai.expect(tasksResult.rows).to.have.lengthOf(2);
         chai.expect(tasksResult.rows[0].doc).to.deep.equal({
           _id: `task:outbound:test-aaa`,
           _rev: tasksResult.rows[0].doc._rev,
@@ -116,7 +116,7 @@ describe('Outbound', () => {
           doc_id: 'test-aaa',
           queue: ['broken'],
         });
-        chai.expect(tasksResult.rows[1].value.deleted).to.equal(true);
+        chai.expect(tasksResult.rows[1].value.deleted).to.be.true;
       })
       .then(checkInfoDocs);
   });
@@ -124,7 +124,7 @@ describe('Outbound', () => {
   const checkInfoDocs = (retry = 10) =>
     sentinelUtils.getInfoDocs(docs.map(doc => doc._id))
       .then(infoDocs => {
-        chai.expect(infoDocs.length).to.equal(2);
+        chai.expect(infoDocs).to.have.lengthOf(2);
         chai.expect(infoDocs[0]).to.nested.include({
           _id: 'test-aaa-info',
           type: 'info',

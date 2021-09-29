@@ -122,6 +122,8 @@ module.exports = {
 
   getDisplayWindow,
 
+  states: States,
+
   isTimely: (taskEmission, timestamp) => {
     const { endDate } = getDisplayWindow(taskEmission);
     return endDate > moment(timestamp).add(-TIMELY_WHEN_NEWER_THAN_DAYS, 'days').format(formatString);
