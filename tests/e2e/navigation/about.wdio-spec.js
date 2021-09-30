@@ -12,7 +12,7 @@ describe('About page' , async () => {
 
   it('should open the about page', async () => {
     await commonPage.goToAboutPage();
-    chai.expect(await (await aboutPage.userName()).getText()).to.equal('admin');
+    await (await aboutPage.userName()).waitForDisplayed();
   });
 
   it('should display partners', async () => {

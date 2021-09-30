@@ -1,4 +1,4 @@
-const userName = async () => await (await $('dt=User name')).nextElement();
+const userName = () => $('dt=User name');
 const partners = () => $('.partners');
 
 const getPartnerImage = async (name) => {
