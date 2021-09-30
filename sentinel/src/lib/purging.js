@@ -12,8 +12,8 @@ const TASK_EXPIRATION_PERIOD = 60; // days
 const TARGET_EXPIRATION_PERIOD = 6; // months
 
 let contactsBatchSize = 1000;
-const MAX_REPORTS_BATCH = 10000;
-const MAX_REPORTS_REACHED = 'max_size_reached';
+const MAX_BATCH_SIZE = 10000;
+const MAX_BATCH_SIZE_REACHED = 'max_size_reached';
 
 const purgeDbs = {};
 let currentlyPurging = false;
@@ -345,13 +345,13 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
         assignContactToGroups(row, groups, subjectIds);
       });
 
-      const opts = { keys: subjectIds, include_docs: true, limit: MAX_REPORTS_BATCH };
+      const opts = { keys: subjectIds, include_docs: true, limit: MAX_BATCH_SIZE };
       return db.medic.query('medic/docs_by_replication_key', opts);
     })
     .then(result => {
-      if (result.rows.length >= MAX_REPORTS_BATCH) {
+      if (result.rows.length >= MAX_BATCH_SIZE) {
         return Promise.reject({
-          code: MAX_REPORTS_REACHED,
+          code: MAX_BATCH_SIZE_REACHED,
           message: `Purging aborted. Too many reports for contact "${nextKeyDocId}"`,
         });
       }
@@ -368,7 +368,7 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
     })
     .then(() => nextKey && batchedContactsPurge(roles, purgeFn, nextKey, nextKeyDocId))
     .catch(err => {
-      if (err && err.code === MAX_REPORTS_REACHED && contactsBatchSize > 1) {
+      if (err && err.code === MAX_BATCH_SIZE_REACHED && contactsBatchSize > 1) {
         contactsBatchSize = Math.floor(contactsBatchSize / 2);
         logger.warn(`Too many reports to process. Decreasing batch size to ${contactsBatchSize}`);
         return batchedContactsPurge(roles, purgeFn, startKey, startKeyDocId);
@@ -382,7 +382,7 @@ const batchedUnallocatedPurge = (roles, purgeFn) => {
   const type = 'unallocated';
   const url = `${db.couchUrl}/_design/medic/_view/docs_by_replication_key`;
   const getQueryParams = (startKeyDocId) => ({
-    limit: MAX_REPORTS_BATCH,
+    limit: MAX_BATCH_SIZE,
     key: JSON.stringify('_unassigned'),
     startkey_docid: startKeyDocId,
     include_docs: true
@@ -417,7 +417,7 @@ const batchedTasksPurge = (roles) => {
   const maximumEmissionEndDate = moment().subtract(TASK_EXPIRATION_PERIOD, 'days').format('YYYY-MM-DD');
 
   const getQueryParams = (startKeyDocId, startKey) => ({
-    limit: MAX_REPORTS_BATCH,
+    limit: MAX_BATCH_SIZE,
     end_key: JSON.stringify(maximumEmissionEndDate),
     start_key: JSON.stringify(startKey),
     startkey_docid: startKeyDocId,
@@ -443,7 +443,7 @@ const batchedTargetsPurge = (roles) => {
 
   const lastAllowedReportingIntervalTag = moment().subtract(TARGET_EXPIRATION_PERIOD, 'months').format('YYYY-MM');
   const getQueryParams = (startKeyDocId) => ({
-    limit: MAX_REPORTS_BATCH,
+    limit: MAX_BATCH_SIZE,
     start_key: JSON.stringify(startKeyDocId),
     end_key: JSON.stringify(`target~${lastAllowedReportingIntervalTag}~`),
   });
