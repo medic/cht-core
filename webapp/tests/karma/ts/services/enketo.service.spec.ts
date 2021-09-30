@@ -1576,7 +1576,7 @@ describe('Enketo service', () => {
         .append($nextBtn)
         .append($prevBtn);
 
-      pauseStubs = [];
+      pauseStubs = {};
       sinon
         .stub($.fn, 'find')
         .callsFake(selector => {
@@ -1584,7 +1584,7 @@ describe('Enketo service', () => {
 
           result.each((idx, element) => {
             if (element.pause) {
-              pauseStubs.push(sinon.stub(element, 'pause'));
+              pauseStubs[element.id] = sinon.stub(element, 'pause');
             }
           });
 
@@ -1595,39 +1595,42 @@ describe('Enketo service', () => {
     after(() => $.fn.find = originalJQueryFind);
 
     it('should pause the multimedia when going to the previous page', fakeAsync(() => {
-      $form.prepend('<video></video><audio></audio>');
+      $form.prepend('<video id="video"></video><audio id="audio"></audio>');
       overrideNavigationButtonsStub.call(service, form, $form);
 
       $prevBtn.trigger('click.pagemode');
       flush();
 
-      expect(pauseStubs.length).to.equal(2);
-      expect(pauseStubs[0].callCount).to.equal(1);
-      expect(pauseStubs[1].callCount).to.equal(1);
+      expect(pauseStubs.video).to.not.be.undefined;
+      expect(pauseStubs.video.calledOnce).to.be.true;
+      expect(pauseStubs.audio).to.not.be.undefined;
+      expect(pauseStubs.audio.calledOnce).to.be.true;
     }));
 
     it('should pause the multimedia when going to the next page', fakeAsync(() => {
       form.pages._next.resolves(true);
-      $form.prepend('<video></video><audio></audio>');
+      $form.prepend('<video id="video"></video><audio id="audio"></audio>');
       overrideNavigationButtonsStub.call(service, form, $form);
 
       $nextBtn.trigger('click.pagemode');
       flush();
 
-      expect(pauseStubs.length).to.equal(2);
-      expect(pauseStubs[0].callCount).to.equal(1);
-      expect(pauseStubs[1].callCount).to.equal(1);
+      expect(pauseStubs.video).to.not.be.undefined;
+      expect(pauseStubs.video.calledOnce).to.be.true;
+      expect(pauseStubs.audio).to.not.be.undefined;
+      expect(pauseStubs.audio.calledOnce).to.be.true;
     }));
 
     it('should not pause the multimedia when trying to go to the next page and form is invalid', fakeAsync(() => {
       form.pages._next.resolves(false);
-      $form.prepend('<video></video><audio></audio>');
+      $form.prepend('<video id="video"></video><audio id="audio"></audio>');
       overrideNavigationButtonsStub.call(service, form, $form);
 
       $nextBtn.trigger('click.pagemode');
       flush();
 
-      expect(pauseStubs.length).to.equal(0);
+      expect(pauseStubs.video).to.be.undefined;
+      expect(pauseStubs.audio).to.be.undefined;
     }));
 
     it('should not call pause function when there isnt video and audio in the form wrapper', fakeAsync(() => {
@@ -1637,7 +1640,8 @@ describe('Enketo service', () => {
       $nextBtn.trigger('click.pagemode');
       flush();
 
-      expect(pauseStubs.length).to.equal(0);
+      expect(pauseStubs.video).to.be.undefined;
+      expect(pauseStubs.audio).to.be.undefined;
     }));
   });
 });

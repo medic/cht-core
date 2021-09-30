@@ -360,6 +360,7 @@ export class EnketoService {
       });
   }
 
+  // This code can be removed once this issue is fixed: https://github.com/enketo/enketo-core/issues/816
   private pauseMultimedia($wrapper) {
     $wrapper
       .find('audio, video')
