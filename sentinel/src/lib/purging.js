@@ -469,7 +469,7 @@ const batchedPurge = (type, uri, getQueryParams, purgeCallback, roles, startKeyD
   const docIds = [];
   const rolesHashes = Object.keys(roles);
 
-  logger.debug(`Starting ${type} purge batch with id ${startKeyDocId}`);
+  logger.info(`Starting ${type} purge batch with id ${startKeyDocId}`);
   // using `rpn` because PouchDB doesn't support `start_key_doc_id`
   return request
     .get(uri, { qs: getQueryParams(startKeyDocId, startKey), json: true })
