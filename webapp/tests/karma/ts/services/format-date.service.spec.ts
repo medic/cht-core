@@ -242,18 +242,6 @@ describe('FormatDate service', () => {
       const actual = service.time(now);
       expect(actual).to.equal(time);
     });
-
-    it('should return the time when language is Nepali and not using useBikramSambat dates', async () => {
-      languageService.getSync.returns('ne');
-      settingsService.get.resolves({ use_bikram_sambat: false });
-
-      await service.init();
-
-      const now = moment();
-      const time = now.format(TIME_FORMAT);
-      const actual = service.time(now);
-      expect(actual).to.equal(time);
-    });
   });
 
   describe('datetime', () => {
@@ -283,16 +271,6 @@ describe('FormatDate service', () => {
       expect(BikramSambat.toBik_text.callCount).to.equal(1);
       expect(BikramSambat.toBik_text.args[0]).to.deep.equal([now]);
     });
-
-    it('should return formatted datetime when language is nepali and not showing Bikram Sambat dates', async () => {
-      settingsService.get.resolves({ use_bikram_sambat: false, reported_date_format: DATETIME_FORMAT });
-      languageService.getSync.returns('ne');
-      await service.init();
-
-      const now = moment();
-      const formatted = now.format(DATETIME_FORMAT);
-      expect(service.datetime(now)).to.equal(formatted);
-    });
   });
 
   describe('date', () => {
@@ -321,16 +299,6 @@ describe('FormatDate service', () => {
       expect(BikramSambat.toBik_text.callCount).to.equal(1);
       expect(BikramSambat.toBik_text.args[0]).to.deep.equal([now]);
     });
-
-    it('should return formatted date when language is nepali and not showing Bikram Sambat dates', async () => {
-      settingsService.get.resolves({ use_bikram_sambat: false, date_format: DATE_FORMAT });
-      languageService.getSync.returns('ne');
-      await service.init();
-
-      const now = moment();
-      const formatted = now.format(DATE_FORMAT);
-      expect(service.date(now)).to.equal(formatted);
-    });
   });
 
   describe('dayMonth', () => {
@@ -351,16 +319,6 @@ describe('FormatDate service', () => {
       expect(BikramSambat.toBik.args[0]).to.deep.equal([now]);
       expect(BikramSambat.toDev.callCount).to.equal(1);
       expect(BikramSambat.toDev.args[0]).to.deep.equal(['bkyear', 'bkmonth', 'bkday']);
-    });
-
-    it('should return formatted day month when language is nepali and not showing Bikram Sambat dates', async () => {
-      settingsService.get.resolves({ use_bikram_sambat: false });
-      languageService.getSync.returns('ne');
-      await service.init();
-
-      const now = moment();
-      const formatted = now.format(DAY_MONTH);
-      expect(service.dayMonth(now)).to.equal(formatted);
     });
   });
 

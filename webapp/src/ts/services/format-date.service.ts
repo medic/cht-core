@@ -29,7 +29,6 @@ export class FormatDateService {
       longTime: moment.localeData().longDateFormat('LTS'),
       taskDayLimit: 4,
       taskDaysOverdue: false,
-      useBikramSambat: true,
       ageBreaks: [
         { unit: 'years', key: { singular: 'y', plural: 'yy' }, min: 1 },
         { unit: 'months', key: { singular: 'M', plural: 'MM' }, min: 1 },
@@ -50,9 +49,6 @@ export class FormatDateService {
         }
         if (typeof res.task_days_overdue !== 'undefined') {
           this.config.taskDaysOverdue = res.task_days_overdue;
-        }
-        if (typeof res.use_bikram_sambat !== 'undefined') {
-          this.config.useBikramSambat = res.use_bikram_sambat;
         }
       })
       .catch((err) => {
@@ -84,7 +80,7 @@ export class FormatDateService {
     const momentDate = moment(date);
     const language = this.languageService.getSync();
 
-    if (language === 'ne' && this.config.useBikramSambat) {
+    if (language === 'ne') {
       return this.displayBikramSambatDate(momentDate, key);
     }
 
