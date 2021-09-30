@@ -370,7 +370,7 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
     .catch(err => {
       if (err && err.code === MAX_BATCH_SIZE_REACHED && contactsBatchSize > 1) {
         contactsBatchSize = Math.floor(contactsBatchSize / 2);
-        logger.warn(`Too many reports to process. Decreasing batch size to ${contactsBatchSize}`);
+        logger.warn(`Too many reports to process. Decreasing contacts batch size to ${contactsBatchSize}`);
         return batchedContactsPurge(roles, purgeFn, startKey, startKeyDocId);
       }
 
@@ -469,7 +469,7 @@ const batchedPurge = (type, uri, getQueryParams, purgeCallback, roles, startKeyD
   const docIds = [];
   const rolesHashes = Object.keys(roles);
 
-  logger.info(`Starting ${type} purge batch with id ${startKeyDocId}`);
+  logger.info(`Starting "${type}" purge batch with id "${startKeyDocId}"`);
   // using `rpn` because PouchDB doesn't support `start_key_doc_id`
   return request
     .get(uri, { qs: getQueryParams(startKeyDocId, startKey), json: true })
