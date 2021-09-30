@@ -24,6 +24,7 @@ import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
 import { SafeHtmlPipe } from '@mm-pipes/safe-html.pipe';
 import { PhonePipe } from '@mm-pipes/phone.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
+import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 
 @Injectable({
   providedIn: 'root'
@@ -57,6 +58,7 @@ export class PipesService {
     private phonePipe:PhonePipe,
     private translateFromPipe:TranslateFromPipe,
     private datePipe:DatePipe,
+    private localizeNumberPipe:LocalizeNumberPipe,
   ) {
     this.pipesMap.set('resourceIcon', this.resourceIconPipe);
     this.pipesMap.set('headerLogo', this.headerLogoPipe);
@@ -83,6 +85,7 @@ export class PipesService {
     this.pipesMap.set('safeHtml', this.safeHtmlPipe);
     this.pipesMap.set('translateFrom', this.translateFromPipe);
     this.pipesMap.set('date', this.datePipe);
+    this.pipesMap.set('localizeNumber', this.localizeNumberPipe);
   }
 
   transform(pipe, value?, ...params) {

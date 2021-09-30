@@ -1,5 +1,11 @@
 // eslint-disable-next-line no-undef
 const date = contact.reported_date;
+// eslint-disable-next-line no-undef
+const phone = contact.phone;
+// eslint-disable-next-line no-undef
+const field = contact.field;
+// eslint-disable-next-line no-undef
+const another = contact.another;
 
 const fields = [
   { appliesToType: 'person', label: 'dateOfDeath', value: date, width: 4, filter: 'dateOfDeath' },
@@ -10,6 +16,10 @@ const fields = [
   { appliesToType: 'person', label: 'simpleDate', value: date, width: 4, filter: 'simpleDate' },
   { appliesToType: 'person', label: 'simpleDateTime', value: date, width: 4, filter: 'simpleDateTime' },
   { appliesToType: 'person', label: 'fullDate', value: date, width: 4, filter: 'fullDate' },
+
+  { appliesToType: 'person', label: 'phone', value: phone, width: 4, filter: 'localizeNumber' },
+  { appliesToType: 'person', label: 'field', value: field, width: 4, filter: 'localizeNumber' },
+  { appliesToType: 'person', label: 'another', value: another, width: 4 },
 ];
 
 module.exports = {

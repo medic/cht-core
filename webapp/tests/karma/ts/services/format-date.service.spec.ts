@@ -30,7 +30,7 @@ describe('FormatDate service', () => {
     pastFuture = sinon.stub();
     translateInstant = sinon.stub();
     settingsService = { get: sinon.stub() };
-    languageService = { getSync: sinon.stub() };
+    languageService = { useDevanagariScript: sinon.stub() };
 
     longDateFormat = sinon.stub();
     longDateFormat.withArgs(sinon.match.same('LTS')).returns(LONG_TIME_FORMAT);
@@ -105,7 +105,7 @@ describe('FormatDate service', () => {
       relativeTime.returns('5 years old');
       const actual = service.age(moment().subtract(5, 'years'));
       expect(actual).to.equal('5 years old');
-      expect(relativeTime.args[0]).to.deep.equal(['5', true, 'yy', false]);
+      expect(relativeTime.args[0]).to.deep.equal([5, true, 'yy', false]);
     });
 
     it('rounds down', () => {
@@ -113,7 +113,7 @@ describe('FormatDate service', () => {
       const dob = moment().subtract(5, 'years').subtract(11, 'months').subtract(25, 'days');
       const actual = service.age(dob);
       expect(actual).to.equal('5 years old');
-      expect(relativeTime.args[0]).to.deep.equal(['5', true, 'yy', false]);
+      expect(relativeTime.args[0]).to.deep.equal([5, true, 'yy', false]);
     });
 
     it('shows months when less than 2 years old', () => {
@@ -121,7 +121,7 @@ describe('FormatDate service', () => {
       const dob = moment().subtract(16, 'months').subtract(25, 'days');
       const actual = service.age(dob);
       expect(actual).to.equal('16 months');
-      expect(relativeTime.args[0]).to.deep.equal(['16', true, 'MM', false]);
+      expect(relativeTime.args[0]).to.deep.equal([16, true, 'MM', false]);
     });
 
     it('shows days when less than 2 months old', () => {
@@ -129,7 +129,7 @@ describe('FormatDate service', () => {
       const dob = moment().subtract(50, 'days');
       const actual = service.age(dob);
       expect(actual).to.equal('50 days');
-      expect(relativeTime.args[0]).to.deep.equal(['50', true, 'dd', false]);
+      expect(relativeTime.args[0]).to.deep.equal([50, true, 'dd', false]);
     });
 
     it('shows singular when one day old', () => {
@@ -137,7 +137,7 @@ describe('FormatDate service', () => {
       const dob = moment().subtract(1, 'days');
       const actual = service.age(dob);
       expect(actual).to.equal('1 day');
-      expect(relativeTime.args[0]).to.deep.equal(['1', true, 'd', false]);
+      expect(relativeTime.args[0]).to.deep.equal([1, true, 'd', false]);
     });
 
     it('shows zero days old when just born', () => {
@@ -145,7 +145,7 @@ describe('FormatDate service', () => {
       const dob = moment();
       const actual = service.age(dob);
       expect(actual).to.equal('0 days');
-      expect(relativeTime.args[0]).to.deep.equal(['0', true, 'dd', false]);
+      expect(relativeTime.args[0]).to.deep.equal([0, true, 'dd', false]);
     });
 
     it('calculates age at death if known', () => {
@@ -154,7 +154,7 @@ describe('FormatDate service', () => {
       const dod = moment().subtract(20, 'years');
       const actual = service.age(dob, { end: dod });
       expect(actual).to.equal('100 years');
-      expect(relativeTime.args[0]).to.deep.equal(['100', true, 'yy', false]);
+      expect(relativeTime.args[0]).to.deep.equal([100, true, 'yy', false]);
     });
 
   });
@@ -186,7 +186,7 @@ describe('FormatDate service', () => {
       const date = moment().add(2, 'days').startOf('day').add(1, 'hours');
       const actual = service.relative(date, { withoutTime: true });
       expect(actual).to.equal('in 2 days');
-      expect(relativeTime.args[0]).to.deep.equal(['2', true, 'dd', true]);
+      expect(relativeTime.args[0]).to.deep.equal([2, true, 'dd', true]);
       expect(pastFuture.args[0]).to.deep.equal([2, '2 days']);
     });
 
@@ -196,7 +196,7 @@ describe('FormatDate service', () => {
       const date = moment().subtract(2, 'days').startOf('day').add(1, 'hours');
       const actual = service.relative(date, { withoutTime: true });
       expect(actual).to.equal('2 days ago');
-      expect(relativeTime.args[0]).to.deep.equal(['2', true, 'dd', false]);
+      expect(relativeTime.args[0]).to.deep.equal([2, true, 'dd', false]);
       expect(pastFuture.args[0]).to.deep.equal([-2, '2 days']);
     });
 
@@ -223,6 +223,10 @@ describe('FormatDate service', () => {
       expect(actual).to.equal('in 5 hours');
     });
 
+    it('should transform to ', () => {
+
+    });
+
   });
 
   describe('time', () => {
@@ -231,11 +235,11 @@ describe('FormatDate service', () => {
       const time = now.format(TIME_FORMAT);
       const actual = service.time(now);
       expect(actual).to.equal(time);
-      expect(languageService.getSync.callCount).to.equal(1);
+      expect(languageService.useDevanagariScript.callCount).to.equal(1);
     });
 
     it('should return the time when language is Nepali and using useBikramSambat dates', () => {
-      languageService.getSync.returns('ne');
+      languageService.useDevanagariScript.returns(true);
 
       const now = moment();
       const time = now.format(TIME_FORMAT);
@@ -262,7 +266,7 @@ describe('FormatDate service', () => {
     });
 
     it('should return bikram sambat date when language is nepali', () => {
-      languageService.getSync.returns('ne');
+      languageService.useDevanagariScript.returns(true);
       sinon.stub(BikramSambat, 'toBik_text').returns('bk date');
 
       const now = moment();
@@ -291,7 +295,7 @@ describe('FormatDate service', () => {
     });
 
     it('should return bikram sambat date when language is nepali', () => {
-      languageService.getSync.returns('ne');
+      languageService.useDevanagariScript.returns(true);
       sinon.stub(BikramSambat, 'toBik_text').returns('bk converted date');
 
       const now = moment();
@@ -309,7 +313,7 @@ describe('FormatDate service', () => {
     });
 
     it('should return bikram sambat day month when language is nepali', () => {
-      languageService.getSync.returns('ne');
+      languageService.useDevanagariScript.returns(true);
       sinon.stub(BikramSambat, 'toBik').returns({ year: 'bkyear', month: 'bkmonth', day: 'bkday' });
       sinon.stub(BikramSambat, 'toDev').returns({ year: 'devyear', month: 'devmonth', day: 'devday' });
 

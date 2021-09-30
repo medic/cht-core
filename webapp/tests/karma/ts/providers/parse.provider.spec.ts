@@ -162,6 +162,7 @@ describe('Parse provider', () => {
     let translateService;
     let settingsService;
     let languageService;
+    let formatNumberService;
 
     let formatDateService;
     let relativeDateService;
@@ -180,12 +181,18 @@ describe('Parse provider', () => {
           default_country_code: 'RO',
         }),
       };
-      languageService = { getSync: sinon.stub().returns('en') };
+      languageService = { useDevanagariScript: sinon.stub().returns(false) };
+      formatNumberService = { localize: sinon.stub().returnsArg(0) };
       sanitizer = {
         bypassSecurityTrustHtml: sinon.stub().returnsArg(0),
       };
 
-      formatDateService = new FormatDateService(translateService, settingsService, languageService);
+      formatDateService = new FormatDateService(
+        translateService,
+        settingsService,
+        languageService,
+        formatNumberService
+      );
       relativeDateService = new RelativeDateService(formatDateService);
 
       pipesService = {

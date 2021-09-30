@@ -1,5 +1,6 @@
 const path = require('path');
 const bikramSambat = require('bikram-sambat');
+const { devanagari } = require('eurodigit/src/to_non_euro');
 const moment = require('moment');
 const { expect } = require('chai');
 
@@ -134,6 +135,9 @@ describe('Bikram Sambat date display', () => {
       type: 'person',
       reported_date: moment(date).valueOf(),
       parent: { _id: 'hospital' },
+      phone: '+40755456456',
+      field: 'text 0123456789',
+      another: 'other text 0123456789',
     };
 
     await utils.saveDoc(contact);
@@ -142,7 +146,7 @@ describe('Bikram Sambat date display', () => {
     moment.locale(NEPALI_LOCALE_CODE);
     const years = moment().diff(date, 'years');
     const relativeDateSuffix = moment(date).fromNow(false);
-    const relativeDateLocale = moment.localeData().relativeTime(moment().format(String(years)), true, 'yy', false);
+    const relativeDateLocale = moment.localeData().relativeTime(devanagari(years), true, 'yy', false);
     const relativeDateLocaleSuffix = moment.localeData().pastFuture(years * -1, relativeDateLocale);
 
     // space between prefix and the date is &nbsp;
@@ -160,5 +164,8 @@ describe('Bikram Sambat date display', () => {
     expect(await contactsPage.getContactSummaryField('fullDate')).to.equal(
       `${relativeDateSuffix}\n${bkDateText}, ${moment(date).format('LTS')}`
     );
+    expect(await contactsPage.getContactSummaryField('phone')).to.equal('+४०७५५४५६४५६');
+    expect(await contactsPage.getContactSummaryField('field')).to.equal('text ०१२३४५६७८९');
+    expect(await contactsPage.getContactSummaryField('another')).to.equal('other text 0123456789');
   });
 });

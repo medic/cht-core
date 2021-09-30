@@ -83,6 +83,7 @@ export class LanguageService {
   }
 
   private readonly DEFAULT_LOCALE = 'en';
+  private readonly NEPALI_LOCALE = 'ne';
 
   private async fetchLocale() {
     const settings = await this.settingsService.get();
@@ -90,7 +91,7 @@ export class LanguageService {
   }
 
   async get() {
-    const cookieVal = this.getSync();
+    const cookieVal = this.languageCookieService.get();
     if (cookieVal) {
       return cookieVal;
     }
@@ -99,7 +100,12 @@ export class LanguageService {
     return this.languageCookieService.set(locale);
   }
 
-  getSync() {
-    return this.languageCookieService.get();
+  useDevanagariScript() {
+    const language = this.languageCookieService.get();
+    if (language === this.NEPALI_LOCALE) {
+      return true;
+    }
+
+    return false;
   }
 }

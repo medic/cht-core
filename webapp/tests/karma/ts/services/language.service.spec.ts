@@ -179,15 +179,25 @@ describe('Language services', () => {
       });
     });
 
-    describe('getSync', () => {
-      it('should return cookie value', () => {
-        const locale = 'the locale';
-        languageCookieService.get.returns(locale);
+    describe('useDevanagariScript', () => {
+      it('should return true for ne', () => {
+        languageCookieService.get.returns('ne');
 
-        expect(languageService.getSync()).to.equal(locale);
+        expect(languageService.useDevanagariScript()).to.equal(true);
         expect(languageCookieService.get.callCount).to.equal(1);
         expect(settingsService.get.callCount).to.equal(0);
         expect(languageCookieService.set.callCount).to.equal(0);
+      });
+
+      it('should return false for anything else', () => {
+        languageCookieService.get.returns('en');
+        expect(languageService.useDevanagariScript()).to.equal(false);
+        languageCookieService.get.returns('es');
+        expect(languageService.useDevanagariScript()).to.equal(false);
+        languageCookieService.get.returns('sw');
+        expect(languageService.useDevanagariScript()).to.equal(false);
+        languageCookieService.get.returns('how to write exclusion tests????');
+        expect(languageService.useDevanagariScript()).to.equal(false);
       });
     });
   });

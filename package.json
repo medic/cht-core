@@ -151,5 +151,8 @@
       "path": "./build/ddocs/medic/_attachments/styles.css",
       "maxSize": "70 kB"
     }
-  ]
+  ],
+  "dependencies": {
+    "eurodigit": "^3.1.3"
+  }
 }

@@ -1,11 +1,12 @@
 import * as moment from 'moment';
 import { Injectable } from '@angular/core';
 import { RelativeTimeKey } from 'moment';
-import { toBik_text as toBikramSambatText, toBik as toBikramSambat, toDev as toDevanagari } from 'bikram-sambat';
+import { toBik_text as toBikramSambatText, toBik as toBikramSambat, toDev as toDevanagariDate } from 'bikram-sambat';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { LanguageService } from '@mm-services/language.service';
+import { FormatNumberService } from '@mm-services/format-number.service';
 
 @Injectable({
   providedIn: 'root',
@@ -15,6 +16,7 @@ export class FormatDateService {
     private translateService:TranslateService,
     private settingsService:SettingsService,
     private languageService:LanguageService,
+    private formatNumberService:FormatNumberService,
   ) {
     this.initConfig();
   }
@@ -62,7 +64,7 @@ export class FormatDateService {
 
     if (key === 'dayMonth') {
       const bikDate = toBikramSambat(momentDate);
-      const devanagariDate = toDevanagari(bikDate.year, bikDate.month, bikDate.day);
+      const devanagariDate = toDevanagariDate(bikDate.year, bikDate.month, bikDate.day);
       return `${devanagariDate.day} ${devanagariDate.month}`;
     }
 
@@ -78,9 +80,8 @@ export class FormatDateService {
 
   private format(date, key) {
     const momentDate = moment(date);
-    const language = this.languageService.getSync();
 
-    if (language === 'ne') {
+    if (this.languageService.useDevanagariScript()) {
       return this.displayBikramSambatDate(momentDate, key);
     }
 
@@ -135,13 +136,10 @@ export class FormatDateService {
     }
     const quantity = Math.abs(diff.quantity);
     const key = quantity === 1 ? diff.key.singular : diff.key.plural;
-    const formattedQuantity = moment().format(String(quantity));
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     // postformatting is not applied to relativeTime.
-    // ts-ignore is because relativeTime should receive a number as the first param
     // https://github.com/moment/moment/issues/5935
-    const output = moment.localeData().relativeTime(formattedQuantity, true, <RelativeTimeKey>key, diff.quantity > 0);
+    const localizedQuantity = this.formatNumberService.localize(quantity);
+    const output = moment.localeData().relativeTime(localizedQuantity, true, <RelativeTimeKey>key, diff.quantity > 0);
     if (options.suffix) {
       return moment.localeData().pastFuture(diff.quantity, output);
     }
