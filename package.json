@@ -68,6 +68,7 @@
     "eslint-plugin-json": "^2.1.2",
     "eslint-plugin-no-only-tests": "^2.5.0",
     "eslint-plugin-promise": "^4.3.1",
+    "eurodigit": "^3.1.3",
     "express": "^4.17.1",
     "faker": "^5.5.3",
     "flat": "^5.0.2",
@@ -152,7 +153,5 @@
       "maxSize": "70 kB"
     }
   ],
-  "dependencies": {
-    "eurodigit": "^3.1.3"
-  }
+  "dependencies": {}
 }

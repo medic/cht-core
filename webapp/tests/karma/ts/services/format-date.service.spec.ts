@@ -222,11 +222,6 @@ describe('FormatDate service', () => {
       const actual = service.relative(moment().add(5, 'hours'));
       expect(actual).to.equal('in 5 hours');
     });
-
-    it('should transform to ', () => {
-
-    });
-
   });
 
   describe('time', () => {
