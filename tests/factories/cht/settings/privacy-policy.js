@@ -13,28 +13,36 @@ const french = { header: 'Politique de confidentialité en Francais', paragraph:
 const privacyPolicyInFrench = privacyPolicyHtml(french);
 const privacyPolicyInEnglish = privacyPolicyHtml(english);
 
-
+const attachments = [
+  {
+    key: 'en.attachment',
+    text: privacyPolicyInEnglish
+  },
+  {
+    key: 'fr.html',
+    text: privacyPolicyInFrench
+  }
+];
 
 const privacyPolicy = () => {
   return new Factory()
     .attr('_id', 'privacy-policies')
     .attr('privacy_policies', { en: 'en.attachment', fr: 'fr.html', })
-    .attr('_attachments', {
-      'en.attachment': {
-        content_type: 'text/html',
-        data: Buffer.from(privacyPolicyInEnglish).toString('base64'),
-        digest: 'en_digest'
-      },
-      'fr.html': {
-        content_type: 'text/html',
-        data: Buffer.from(privacyPolicyInFrench).toString('base64'),
-        digest: 'fr_digest'
-      }
+    .option('attachments', attachments)
+    .attr('_attachments', ['attachments'], (attachments) => {
+      const builtAttachments = {};
+      attachments.forEach((attachment) =>
+        builtAttachments[attachment.key] = {
+          content_type: 'text/html',
+          data: Buffer.from(attachment.text).toString('base64'),
+        });
+      return builtAttachments;
     });
 };
 
 module.exports = {
   privacyPolicy,
   english,
-  french
+  french,
+  privacyPolicyHtml
 };

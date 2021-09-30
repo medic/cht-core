@@ -1,129 +1,109 @@
 const commonElements = require('../../page-objects/common/common.wdio.page.js');
 const utils = require('../../utils');
 const loginPage = require('../../page-objects/login/login.wdio.page');
-const privacyPolicyPage = require('../../page-objects/privacy-policy/privacy-policy.wdio.page');
+const privacyPage = require('../../page-objects/privacy-policy/privacy-policy.wdio.page');
 const userFactory = require('../../factories/cht/users/users');
 const privacyPolicyFactory = require('../../factories/cht/settings/privacy-policy');
 const placeFactory = require('../../factories/cht/contacts/place');
+const privacyPolicy = privacyPolicyFactory.privacyPolicy().build();
 
 describe('Privacy policy', () => {
   const englishTexts = privacyPolicyFactory.english;
   const frenchTexts = privacyPolicyFactory.french;
-  const offlineUser = userFactory.build();
-  const onlineUser = userFactory.build({
+  const users = [userFactory.build({
+    username: 'offline',
+    isOffline: true
+  }),
+  userFactory.build({
     username: 'online',
-    roles: ['program_officer'],
-    place: {
-      _id: 'hc2',
-      type: 'health_center',
-      name: 'Health Center 2',
-      parent: 'dist1'
-    },
-    contact: {
-      _id: 'fixture:user:onlineuser',
-      name: 'onlineuser'
-    }
-  });
+    roles: ['program_officer']
+  })];
 
   const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
 
   before(async () => {
-    await utils.saveDocs([parent, privacyPolicyFactory.privacyPolicy().build()]);
-    await utils.createUsers([onlineUser, offlineUser]);
+    await utils.saveDocs([parent, privacyPolicy]);
   });
 
-  describe('for an online user', () => {
-    it('should show the correct privacy policy on login', async () => {
-      // After first login, check that privacy policy was prompted to user
-      await loginPage.login(onlineUser.username, onlineUser.password);
-      await browser.waitUntil(async () => {
-        const wrapperText = await (await privacyPolicyPage.privacyWrapper()).getText();
-        return wrapperText.includes(englishTexts.header) && wrapperText.includes(englishTexts.paragraph);
-      }, 'Timed out waiting for English Online Privacy Policy to Display');
+  users.forEach((user) => {
+    describe(`for a ${user.username} user`, () => {
+      beforeEach(async () => {
+        await utils.createUsers([user]);
+        await loginPage.login(user.username, user.password);
+      });
 
-      // After accepting, no privacy policy on next load
-      await privacyPolicyPage.acceptPrivacyPolicy();
-      await browser.url('/');
-      await expect(await privacyPolicyPage.privacyWrapper()).not.toBeDisplayed();
-      await expect(await commonElements.messagesTab()).toBeDisplayed();
+      afterEach(async () => {
+        await utils.deleteUsers([user]);
+        await utils.deleteDocs([user.contact._id, user.place._id]);
+        await browser.reloadSession();
+        await browser.url('/');
+      });
 
-      // Check display when loading privacy policy page
-      await privacyPolicyPage.goToPrivacyPolicyConfig();
-      await browser.waitUntil(async () => {
-        const wrapperText = await (await privacyPolicyPage.privacyConfig()).getText();
-        return wrapperText.includes(englishTexts.header) && wrapperText.includes(englishTexts.paragraph);
-      }, 'Timed out waiting for english online privacy to display');
+      it('should show the correct privacy policy on login', async () => {
+        await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), englishTexts, user.isOffline);
+        await expect(await commonElements.messagesTab()).toBeDisplayed();
+      });
 
-      // No privacy policy on 2nd login
-      await browser.reloadSession();
-      await browser.url('/');
-      await loginPage.login(onlineUser.username, onlineUser.password);
-      await expect(await privacyPolicyPage.privacyWrapper()).not.toBeDisplayed();
-      await expect(await commonElements.messagesTab()).toBeDisplayed();
+      it('should not show on refresh', async () => {
+        await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), englishTexts, user.isOffline);
+        await browser.url('/');
+        await expect(await privacyPage.privacyWrapper()).not.toBeDisplayed();
+        await expect(await commonElements.messagesTab()).toBeDisplayed();
+      });
 
+      it('should display when navigating to the privacy policy page', async () => {
+        await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), englishTexts, user.isOffline);
+        await privacyPage.goToPrivacyPolicyConfig();
+        await privacyPage.waitForPolicy(await privacyPage.privacyConfig(), englishTexts);
+      });
 
-      // After login in french, check that privacy policy was prompted to user again
-      await browser.reloadSession();
-      await browser.url('/');
-      await loginPage.login(onlineUser.username, onlineUser.password, 'fr');
-      await browser.waitUntil(async () => {
-        const wrapperText = await (await privacyPolicyPage.privacyWrapper()).getText();
-        return wrapperText.includes(frenchTexts.header) && wrapperText.includes(frenchTexts.paragraph);
-      }, 'Timed out waiting for french online privacy to display');
-      await privacyPolicyPage.acceptPrivacyPolicy();
+      it('should not show on subsequent login', async () => {
+        await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), englishTexts, user.isOffline);
+        await browser.reloadSession();
+        await browser.url('/');
+        await loginPage.login(user.username, user.password);
+        await expect(await privacyPage.privacyWrapper()).not.toBeDisplayed();
+        await expect(await commonElements.messagesTab()).toBeDisplayed();
+      });
+
+      it('should show french policy on secondary login', async () => {
+        await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), englishTexts, user.isOffline);
+        await browser.reloadSession();
+        await browser.url('/');
+        await loginPage.login(user.username, user.password, 'fr');
+        await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), frenchTexts);
+        await expect(await commonElements.messagesTab()).toBeDisplayed();
+      });
+
+      it('should show if the user changes there language', async () => {
+        await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), englishTexts, user.isOffline);
+        await browser.setCookies({ name: 'locale', value: 'fr' });
+        await browser.refresh();
+        await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), frenchTexts);
+        await expect(await commonElements.messagesTab()).toBeDisplayed();
+      });
+
+      it('should show if the user policy changes', async () => {
+        const text = {
+          header: 'New privacy policy',
+          paragraph: 'This is a new privacy policy'
+        };
+        const updated = {
+          key: 'en_attachment',
+          text: privacyPolicyFactory.privacyPolicyHtml(text)
+        };
+        const updatedPolicy = privacyPolicyFactory.privacyPolicy().build(
+          { privacy_policies: { en: updated.key } }, { attachments: [updated] });
+
+        await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), englishTexts, user.isOffline);
+        await privacyPage.updatePrivacyPolicy(updatedPolicy);
+        if (user.isOffline) {
+          await commonElements.sync();
+        }
+        await browser.refresh();
+        await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), updated.text);
+        await expect(await commonElements.messagesTab()).toBeDisplayed();
+      });
     });
-  });
-
-
-  // WDIO currently cannot log in offline users because of service worker race condition
-  // https://github.com/medic/cht-core/issues/7242
-  xdescribe('for a french offline user', () => {
-    let passed = false;
-    afterEach(async () => {
-      if (!passed) {
-        // I suspect this test is failing because of a conflict.
-        const userDoc = await utils.requestOnTestDb('/org.couchdb.user:offline?conflicts=true');
-        console.log('Check if the test failed because of a conflict on this doc:');
-        console.log(JSON.stringify(userDoc, null, 2));
-      }
-    });
-
-    xit('should show the correct privacy policy on login', async () => {
-      // After first login in french, check that privacy policy was prompted to user
-      await browser.reloadSession();
-      await browser.url('/');
-      await loginPage.login(offlineUser.username, offlineUser.password, 'fr');
-      await browser.waitUntil(async () => {
-        const wrapperText = await (await privacyPolicyPage.privacyWrapper()).getText();
-        return wrapperText.includes(frenchTexts.header) && wrapperText.includes(frenchTexts.paragraph);
-      }, 'Timed out waiting for french offline privacy to display');
-
-      // After accepting, no privacy policy on next load
-      await privacyPolicyPage.acceptPrivacyPolicy();
-      await commonElements.sync();
-
-      await browser.url('/');
-      await expect(await privacyPolicyPage.privacyWrapper()).not.toBeDisplayed();
-
-      // Check display when loading privacy policy page
-      await privacyPolicyPage.goToPrivacyPolicyConfig();
-      await browser.waitUntil(async () => {
-        const wrapperText = await (await privacyPolicyPage.privacyConfig()).getText();
-        return wrapperText.includes(frenchTexts.header) && wrapperText.includes(frenchTexts.paragraph);
-      }, 'Timed out waiting for english online privacy to display');
-
-      // Update privacy policies
-      const newPolicyText = 'Cette text est totalement different c`est fois!';
-      await privacyPolicyPage.updatePrivacyPolicy('privacy-policies', 'fr', 'fr_attachment', newPolicyText);
-      await commonElements.sync();
-      await browser.refresh();
-
-      // Privacy policy updated
-      await browser.waitUntil(async () => {
-        const wrapperText = await (await privacyPolicyPage.privacyWrapper()).getText();
-        return wrapperText.includes(newPolicyText);
-      }, 'Timed out waiting for new offline french text');
-    });
-    passed = true;
   });
 });
