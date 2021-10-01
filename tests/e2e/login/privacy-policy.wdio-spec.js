@@ -11,31 +11,29 @@ describe('Privacy policy', () => {
   const englishTexts = privacyPolicyFactory.english;
   const frenchTexts = privacyPolicyFactory.french;
   const users = [userFactory.build({
-    username: 'offline',
+    username: 'offlineUser',
     isOffline: true
   }),
   userFactory.build({
-    username: 'online',
+    username: 'onlineUser',
     roles: ['program_officer']
   })];
 
   const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
 
-
   users.forEach((user) => {
-    describe(`for a ${user.username} user`, () => {
+    xdescribe(`for a ${user.username} user`, () => {
       beforeEach(async () => {
-        try {
-          await utils.deleteUsers([user]);
-          await utils.deleteDocs([user.contact._id, user.place._id, parent._id, privacyPolicy._id]);
-        } catch (e) {
-          // We may not have created these yet but it ensures they're deleted before creating. 
-        }
         await browser.reloadSession();
         await browser.url('/');
         await utils.saveDocs([parent, privacyPolicy]);
         await utils.createUsers([user]);
         await loginPage.login(user.username, user.password);
+      });
+
+      afterEach(async () => {
+        await utils.deleteUsers([user]);
+        await utils.deleteDocs([user.contact._id, user.place._id, parent._id, privacyPolicy._id]);
       });
 
       it('should show the correct privacy policy on login', async () => {
@@ -104,6 +102,36 @@ describe('Privacy policy', () => {
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), text);
         await expect(await commonElements.messagesTab()).toBeDisplayed();
       });
+    });
+  });
+
+  describe('conflicts', () => {
+    let passed = false;
+    const conflictUser = userFactory.build({
+      username: 'newoffline',
+      known: false
+    });
+    before(async () => {
+      await utils.saveDocs([parent, privacyPolicy]);
+      await utils.createUsers([conflictUser]);
+      await loginPage.login(conflictUser.username, conflictUser.password);
+    });
+    afterEach(async () => {
+      if (!passed) {
+        // I suspect this test is failing because of a conflict.
+        const userDoc = await utils.requestOnTestDb('/org.couchdb.user:offline?conflicts=true');
+        console.log('Check if the test failed because of a conflict on this doc:');
+        console.log(JSON.stringify(userDoc, null, 2));
+      }
+      await utils.deleteUsers([conflictUser]);
+    });
+    it('should not fail due to document conflict for new offline user', async () => {
+      await privacyPage.waitForPolicy(await privacyPage.privacyWrapper(), englishTexts);
+      await privacyPage.acceptPrivacyPolicy();
+      await commonElements.closeTour();
+      await commonElements.sync();
+      await expect(await commonElements.messagesTab()).toBeDisplayed();
+      passed = true;
     });
   });
 });
