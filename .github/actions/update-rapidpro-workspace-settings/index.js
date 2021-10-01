@@ -52,7 +52,7 @@ try {
     to: [rp_hostname, value_key, `['${rp_contact_group}']`, `'${write_patient_state_flow}'`]
   };
 
-  const flowsContent = `const RAPIDPRO_FLOWS = ${rp_flows}; module.exports = RAPIDPRO_FLOWS;`;
+  const flowsContent = `module.exports = ${rp_flows};`;
 
   setMedicCredentials(couch_username, couch_password, hostname, couch_node_name, value_key, rp_api_token);
   replace(options);
