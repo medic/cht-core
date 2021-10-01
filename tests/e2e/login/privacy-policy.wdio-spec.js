@@ -21,20 +21,18 @@ describe('Privacy policy', () => {
 
   const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
 
-  before(async () => {
-    await utils.saveDocs([parent, privacyPolicy]);
-  });
 
   users.forEach((user) => {
     describe(`for a ${user.username} user`, () => {
       beforeEach(async () => {
+        await utils.saveDocs([parent, privacyPolicy]);
         await utils.createUsers([user]);
         await loginPage.login(user.username, user.password);
       });
 
       afterEach(async () => {
         await utils.deleteUsers([user]);
-        await utils.deleteDocs([user.contact._id, user.place._id]);
+        await utils.deleteDocs([user.contact._id, user.place._id, parent._id, privacyPolicy._id]);
         await browser.reloadSession();
         await browser.url('/');
       });
