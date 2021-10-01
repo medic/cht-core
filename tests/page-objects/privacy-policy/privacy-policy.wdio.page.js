@@ -36,7 +36,7 @@ const waitForPolicy = async (elm, { header, paragraph, language }) => {
 };
 
 const waitAndAcceptPolicy = async (elm, { header, paragraph, language }, sync = false) => {
-  waitForPolicy(elm, { header, paragraph, language });
+  await waitForPolicy(elm, { header, paragraph, language });
   await acceptPrivacyPolicy();
   await expect(await commonElements.messagesTab()).toBeDisplayed();
   if (sync) {

@@ -25,16 +25,17 @@ describe('Privacy policy', () => {
   users.forEach((user) => {
     describe(`for a ${user.username} user`, () => {
       beforeEach(async () => {
+        try {
+          await utils.deleteUsers([user]);
+          await utils.deleteDocs([user.contact._id, user.place._id, parent._id, privacyPolicy._id]);
+        } catch (e) {
+          // We may not have created these yet but it ensures they're deleted before creating. 
+        }
+        await browser.reloadSession();
+        await browser.url('/');
         await utils.saveDocs([parent, privacyPolicy]);
         await utils.createUsers([user]);
         await loginPage.login(user.username, user.password);
-      });
-
-      afterEach(async () => {
-        await utils.deleteUsers([user]);
-        await utils.deleteDocs([user.contact._id, user.place._id, parent._id, privacyPolicy._id]);
-        await browser.reloadSession();
-        await browser.url('/');
       });
 
       it('should show the correct privacy policy on login', async () => {
@@ -84,7 +85,8 @@ describe('Privacy policy', () => {
       it('should show if the user policy changes', async () => {
         const text = {
           header: 'New privacy policy',
-          paragraph: 'This is a new privacy policy'
+          paragraph: 'This is a new privacy policy',
+          language: 'Enlgish Updated'
         };
         const updated = {
           key: 'en_attachment',
@@ -99,7 +101,7 @@ describe('Privacy policy', () => {
           await commonElements.sync();
         }
         await browser.refresh();
-        await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), updated.text);
+        await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), text);
         await expect(await commonElements.messagesTab()).toBeDisplayed();
       });
     });
