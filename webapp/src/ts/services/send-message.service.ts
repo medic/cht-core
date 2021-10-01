@@ -118,7 +118,7 @@ export class SendMessageService {
   }
 
   private formatRecipients(recipients) {
-    const splitRecipients = _groupBy(recipients, (recipient) => {
+    const splitRecipients: any = _groupBy(recipients, (recipient) => {
       if (recipient.everyoneAt) {
         return 'explode';
       }
