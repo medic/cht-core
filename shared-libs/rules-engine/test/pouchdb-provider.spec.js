@@ -62,6 +62,61 @@ const headlessTask = {
   requester: 'headless',
   owner: 'headless',
 };
+const cancelledTask = {
+  _id: 'cancelledTask',
+  type: 'task',
+  requester: 'patient',
+  owner: 'patient',
+  state: 'Cancelled',
+};
+
+const completedTask = {
+  _id: 'completedTask',
+  type: 'task',
+  requester: 'patient',
+  owner: 'patient',
+  state: 'Completed',
+};
+
+const failedTask = {
+  _id: 'failedTask',
+  type: 'task',
+  requester: 'patient',
+  owner: 'patient',
+  state: 'Failed',
+};
+
+const readyTask = {
+  _id: 'readyTask',
+  type: 'task',
+  requester: 'patient',
+  owner: 'patient',
+  state: 'Ready',
+};
+
+const draftTask = {
+  _id: 'draftTask',
+  type: 'task',
+  requester: 'patient',
+  owner: 'patient',
+  state: 'Draft',
+};
+
+const readyTaskForPlace = {
+  _id: 'readyPlaceTask',
+  type: 'task',
+  requester: 'place',
+  owner: 'place',
+  state: 'Ready',
+};
+
+const cancelledTaskForPlace = {
+  _id: 'cancelledPlaceTask',
+  type: 'task',
+  requester: 'place',
+  owner: 'place',
+  state: 'Cancelled',
+};
 
 const fixtures = [
   chtDocs.contact,
@@ -77,6 +132,15 @@ const fixtures = [
   taskRequestedByChtContact,
   headlessTask,
   taskRequestedByChtPlace,
+
+  cancelledTask,
+  completedTask,
+  failedTask,
+  readyTask,
+  draftTask,
+
+  readyTaskForPlace,
+  cancelledTaskForPlace,
 ];
 
 describe('pouchdb provider', () => {
@@ -94,9 +158,28 @@ describe('pouchdb provider', () => {
 
   describe('allTasks', () => {
     it('for owner', async () => expect(await pouchdbProvider(db).allTasks('owner')).excludingEvery('_rev')
-      .to.deep.eq([taskRequestedByChtContact, taskRequestedByChtPlace, headlessTask, taskOwnedByChtContact]));
+      .to.deep.eq([
+        taskRequestedByChtContact,
+        taskRequestedByChtPlace,
+        headlessTask,
+        draftTask,
+        readyTask,
+        taskOwnedByChtContact,
+        readyTaskForPlace,
+      ]));
     it('for requester', async () => expect(await pouchdbProvider(db).allTasks('requester')).excludingEvery('_rev')
-      .to.deep.eq([headlessTask, taskRequestedByChtContact, taskRequestedByChtPlace]));
+      .to.deep.eq([
+        headlessTask,
+        cancelledTask,
+        completedTask,
+        draftTask,
+        failedTask,
+        readyTask,
+        taskRequestedByChtContact,
+        cancelledTaskForPlace,
+        readyTaskForPlace,
+        taskRequestedByChtPlace,
+      ]));
   });
 
   it('allTaskData', async () => {
@@ -109,7 +192,18 @@ describe('pouchdb provider', () => {
         reportConnectedByPlace,
         reportConnectedByPlaceUuid,
       ],
-      taskDocs: [headlessTask, taskRequestedByChtContact, taskRequestedByChtPlace], // not owner
+      taskDocs: [
+        headlessTask,
+        cancelledTask,
+        completedTask,
+        draftTask,
+        failedTask,
+        readyTask,
+        taskRequestedByChtContact,
+        cancelledTaskForPlace,
+        readyTaskForPlace,
+        taskRequestedByChtPlace,
+      ], // not owner
       userSettingsId: mockUserSettingsDoc._id,
     });
   });
@@ -188,12 +282,23 @@ describe('pouchdb provider', () => {
   describe('tasksByRelation', () => {
     it('by owner', async () => {
       const actual = await pouchdbProvider(db).tasksByRelation([chtDocs.contact._id, 'abc'], 'owner');
-      expect(actual).excluding('_rev').to.deep.eq([taskOwnedByChtContact]);
+      expect(actual).excluding('_rev').to.deep.eq([
+        draftTask,
+        readyTask,
+        taskOwnedByChtContact,
+      ]);
     });
 
     it('by requester', async () => {
       const actual = await pouchdbProvider(db).tasksByRelation([chtDocs.contact._id, 'abc'], 'requester');
-      expect(actual).excluding('_rev').to.deep.eq([taskRequestedByChtContact]);
+      expect(actual).excluding('_rev').to.deep.eq([
+        cancelledTask,
+        completedTask,
+        draftTask,
+        failedTask,
+        readyTask,
+        taskRequestedByChtContact,
+      ]);
     });
   });
 
@@ -213,7 +318,14 @@ describe('pouchdb provider', () => {
       expect(actual).excludingEvery('_rev').to.deep.eq({
         contactDocs: [chtDocs.contact],
         reportDocs: [chtDocs.pregnancyReport, reportConnectedByPatientAndPlaceUuid, reportConnectedByPlace ],
-        taskDocs: [taskRequestedByChtContact],
+        taskDocs: [
+          cancelledTask,
+          completedTask,
+          draftTask,
+          failedTask,
+          readyTask,
+          taskRequestedByChtContact,
+        ],
         userSettingsId: 'org.couchdb.user:username',
       });
     });
@@ -223,7 +335,14 @@ describe('pouchdb provider', () => {
       expect(forContact).excludingEvery('_rev').to.deep.eq({
         contactDocs: [chtDocs.contact],
         reportDocs: [chtDocs.pregnancyReport, reportConnectedByPatientAndPlaceUuid, reportConnectedByPlace, ],
-        taskDocs: [taskRequestedByChtContact],
+        taskDocs: [
+          cancelledTask,
+          completedTask,
+          draftTask,
+          failedTask,
+          readyTask,
+          taskRequestedByChtContact,
+        ],
         userSettingsId: 'org.couchdb.user:username',
       });
     });
@@ -233,7 +352,7 @@ describe('pouchdb provider', () => {
       chai.expect(forPlace).excludingEvery('_rev').to.deep.eq({
         contactDocs: [chtDocs.place],
         reportDocs: [reportConnectedByPlaceUuid],
-        taskDocs: [taskRequestedByChtPlace],
+        taskDocs: [cancelledTaskForPlace, readyTaskForPlace, taskRequestedByChtPlace],
         userSettingsId: 'org.couchdb.user:username',
       });
     });
@@ -249,9 +368,81 @@ describe('pouchdb provider', () => {
           chtDocs.pregnancyReport,
           reportConnectedByPlace,
         ],
-        taskDocs: [taskRequestedByChtPlace, taskRequestedByChtContact],
+        taskDocs: [
+          cancelledTaskForPlace,
+          readyTaskForPlace,
+          taskRequestedByChtPlace,
+          cancelledTask,
+          completedTask,
+          draftTask,
+          failedTask,
+          readyTask,
+          taskRequestedByChtContact
+        ],
         userSettingsId: 'org.couchdb.user:username',
       });
+    });
+  });
+
+  describe('allTaskRowsByOwner', () => {
+    it('should return tasks_by_contact for patient', async () => {
+      const contactIds = ['patient', 'thing'];
+
+      const rowsByOwner = await pouchdbProvider(db).allTaskRowsByOwner(contactIds);
+      chai.expect(rowsByOwner).excludingEvery('_rev').to.have.deep.members([
+        { id: completedTask._id, key: ['owner', 'all', 'patient'], value: { state: 'Completed' } },
+        { id: failedTask._id, key: ['owner', 'all', 'patient'], value: { state: 'Failed' } },
+        { id: cancelledTask._id, key: ['owner', 'all', 'patient'], value: { state: 'Cancelled' } },
+        { id: readyTask._id, key: ['owner', 'all', 'patient'], value: { state: 'Ready' } },
+        { id: draftTask._id, key: ['owner', 'all', 'patient'], value: { state: 'Draft' } },
+        { id: taskOwnedByChtContact._id, key: ['owner', 'all', 'patient'], value: { } },
+      ]);
+    });
+
+    it('should return tasks_by_contact for place', async () => {
+      const contactIds = ['place', 'thing'];
+
+      const rowsByOwner = await pouchdbProvider(db).allTaskRowsByOwner(contactIds);
+      chai.expect(rowsByOwner).excludingEvery('_rev').to.have.deep.members([
+        { id: cancelledTaskForPlace._id, key: ['owner', 'all', 'place'], value: { state: 'Cancelled' } },
+        { id: readyTaskForPlace._id, key: ['owner', 'all', 'place'], value: { state: 'Ready' } },
+      ]);
+    });
+
+    it('should return tasks_by_contact for no provided contacts', async () => {
+      const rowsByOwner = await pouchdbProvider(db).allTaskRowsByOwner([]);
+      chai.expect(rowsByOwner).excludingEvery('_rev').to.deep.equal([]);
+    });
+
+    it('should throw errors', async () => {
+      const circular = { a: 'test' };
+      circular.a = circular;
+      try {
+        await pouchdbProvider(db).allTaskRowsByOwner([circular]);
+        chai.expect.fail('should have thrown');
+      } catch (err) {
+        chai.expect(err.message).to.equal('Maximum call stack size exceeded');
+        chai.expect(err).to.be.an.instanceof(RangeError);
+      }
+    });
+  });
+
+  describe('allTaskRows', () => {
+    it('should return all task rows', async () => {
+      const allRows = await pouchdbProvider(db).allTaskRows();
+      expect(allRows).excludingEvery('_rev').to.have.deep.members([
+        { id: completedTask._id, key: ['owner', 'all', 'patient'], value: { state: 'Completed' } },
+        { id: failedTask._id, key: ['owner', 'all', 'patient'], value: { state: 'Failed' } },
+        { id: cancelledTask._id, key: ['owner', 'all', 'patient'], value: { state: 'Cancelled' } },
+        { id: draftTask._id, key: ['owner', 'all', 'patient'], value: { state: 'Draft' } },
+        { id: readyTask._id, key: ['owner', 'all', 'patient'], value: { state: 'Ready' } },
+        { id: taskOwnedByChtContact._id, key: ['owner', 'all', 'patient'], value: { } },
+        { id: taskRequestedByChtContact._id, key: ['owner', 'all', '_unassigned'], value: { } },
+        { id: taskRequestedByChtPlace._id, key: ['owner', 'all', '_unassigned'], value: { } },
+        { id: headlessTask._id, key: ['owner', 'all', 'headless'], value: { } },
+        { id: cancelledTaskForPlace._id, key: ['owner', 'all', 'place'], value: { state: 'Cancelled' } },
+        { id: readyTaskForPlace._id, key: ['owner', 'all', 'place'], value: { state: 'Ready' } },
+      ]);
     });
   });
 });

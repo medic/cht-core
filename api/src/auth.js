@@ -4,6 +4,12 @@ const _ = require('lodash');
 const db = require('./db');
 const environment = require('./environment');
 const config = require('./config');
+/**
+ * this role is used in webapp bootstrap and session service to mainly determine whether the user should
+ * replicate or not, without requiring access to server settings.
+ */
+const ONLINE_ROLE = 'mm-online';
+const DB_ADMIN_ROLE = '_admin';
 
 const get = (path, headers) => {
   const dbUrl = url.parse(environment.serverUrl);
@@ -24,7 +30,7 @@ const hasRole = (userCtx, role) => {
   return _.includes(userCtx && userCtx.roles, role);
 };
 
-const isDbAdmin = userCtx => hasRole(userCtx, '_admin');
+const isDbAdmin = userCtx => hasRole(userCtx, DB_ADMIN_ROLE);
 
 const hasPermission = (userCtx, permission) => {
   const roles = config.get('permissions')[permission];
@@ -55,19 +61,49 @@ const getFacilityId = (req, userCtx) => {
   return get(url, req.headers).then(user => user.facility_id);
 };
 
+const hydrateUserSettings = (userSettings) => {
+  return db.medic
+    .allDocs({ keys: [ userSettings.facility_id, userSettings.contact_id ], include_docs: true })
+    .then((response) => {
+      if (!Array.isArray(response.rows) || response.rows.length !== 2) { // malformed response
+        return userSettings;
+      }
+
+      const [facilityRow, contactRow] = response.rows;
+      if (!facilityRow || !contactRow) { // malformed response
+        return userSettings;
+      }
+
+      userSettings.facility = facilityRow.doc;
+      userSettings.contact = contactRow.doc;
+
+      return userSettings;
+    });
+};
+
 module.exports = {
+  hasOnlineRole: roles => {
+    if (!Array.isArray(roles) || !roles.length) {
+      return false;
+    }
+
+    const onlineRoles = [
+      DB_ADMIN_ROLE,
+      ONLINE_ROLE,
+      'national_admin', // kept for backwards compatibility
+    ];
+    return roles.some(role => onlineRoles.includes(role));
+  },
+
   isOnlineOnly: userCtx => {
-    return hasRole(userCtx, '_admin') ||
-           hasRole(userCtx, 'national_admin') || // kept for backwards compatibility
-           !module.exports.isOffline(userCtx.roles);
+    return userCtx && module.exports.hasOnlineRole(userCtx.roles);
   },
 
   isOffline: roles => {
     const configured = config.get('roles') || {};
     const configuredRole = roles.some(role => configured[role]);
     return !isDbAdmin({ roles }) &&
-           !configuredRole ||
-           roles.some(role => configured[role] && configured[role].offline);
+           (!configuredRole || roles.some(role => configured[role] && configured[role].offline));
   },
 
   hasAllPermissions: (userCtx, permissions) => {
@@ -193,9 +229,10 @@ module.exports = {
       ])
       .then(([ user, medicUser ]) => {
         Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
-        return medicUser;
+        return hydrateUserSettings(medicUser);
       });
   },
 
   isDbAdmin: isDbAdmin,
+  ONLINE_ROLE: ONLINE_ROLE,
 };

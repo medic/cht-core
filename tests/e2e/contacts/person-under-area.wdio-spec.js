@@ -6,7 +6,7 @@ const utils = require('../../utils');
 const placeFactory = require('../../factories/cht/contacts/place');
 const personFactory = require('../../factories/cht/contacts/person');
 const places = placeFactory.generateHierarchy(); // This generates ['district_hospital', 'health_center', 'clinic']
-const district_hospital = places.find((place) => place.type === 'district_hospital');
+const districtHospital = utils.findDistrictHospitalFromPlaces(places);
 
 const username = 'jack_test';
 const password = 'Jacktest@123';
@@ -16,7 +16,7 @@ const healthCenter2 = placeFactory.place().build({
   name: 'HealthCenter-2',
   type: 'health_center',
   parent: {
-    _id: district_hospital._id,
+    _id: districtHospital._id,
     parent: {
       _id: ''
     }
@@ -47,10 +47,6 @@ describe('Create Person Under Area', async () => {
   beforeEach(async () => {
     await utils.saveDocs(docs);
     await loginPage.cookieLogin();
-  });
-
-  afterEach(async () => {
-    await utils.revertDb([], true);
   });
 
   it('create person under area should only see children', async () => {

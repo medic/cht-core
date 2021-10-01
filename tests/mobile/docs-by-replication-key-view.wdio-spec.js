@@ -308,7 +308,7 @@ describe('view docs_by_replication_key', () => {
   let docByPlaceIds;
   let docByPlaceIds_unassigned;
 
-  beforeAll( async () => {
+  before( async () => {
     const alldocs = documentsToReturn.concat(documentsToIgnore, documentsToIgnoreSometimes);
 
     const getChanges = async (keys) => {
@@ -347,7 +347,7 @@ describe('view docs_by_replication_key', () => {
       });
   }, 5 * 60 * 1000);
 
-  afterAll(utils.afterEach);
+  after(() => utils.revertDb([], true));
 
   it('Does not return the ddoc', () => {
     expect(docByPlaceIds).not.toContain('_design/medic');

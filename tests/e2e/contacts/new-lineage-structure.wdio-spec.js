@@ -1,28 +1,22 @@
-const faker = require('faker');
 const chai = require('chai');
 
 const contactPage = require('../../page-objects/contacts/contacts.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
-const utils = require('../../utils');
 const sentinelUtils = require('../sentinel/utils');
 
-const centerName = faker.address.city();
-const centerContact = faker.name.findName();
-const area = faker.address.city();
-const areaContact = faker.name.findName();
-const household = faker.address.city();
-const householdContact = faker.name.findName();
+const centerName = 'Franklin';
+const centerContact = 'Center Contact';
+const area = 'Georgia';
+const areaContact = 'Area Contact';
+const household = 'Barbados';
+const householdContact = 'House Contact';
 
 describe('Create new lineage structure', () => {
   before(async () => {
     await loginPage.cookieLogin();
     await commonPage.hideSnackbar();
     await commonPage.goToPeople();
-  });
-
-  after(async () => {
-    await utils.revertDb([], true);
   });
 
   afterEach(async () => {
@@ -66,4 +60,35 @@ describe('Create new lineage structure', () => {
     chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
     chai.expect(await contactPage.getContactSummaryField('person.field.phone')).to.equal(phone);
   });
+
+  it('should edit a name of the health facility', async () => {
+    await contactPage.selectLHSRowByText(centerName);
+    const name = 'SomePerson';
+    chai.expect(await contactPage.addPerson(name)).to.equal(name);
+    const updatedName = 'SomePersonNew';
+    chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
+  });
+
+  it('should delete the primary contact of health facility', async () => {
+    await contactPage.selectLHSRowByText(area);
+    await contactPage.deletePerson(centerContact);
+    chai.expect(await contactPage.getAllRHSPeopleNames()).to.not.have.members([centerContact]);
+  });
+
+  it('should edit the name of the CHW area', async () => {
+    await contactPage.selectLHSRowByText(area);
+    const name = 'SomePerson';
+    chai.expect(await contactPage.addPerson(name)).to.equal(name);
+    const updatedName = 'SomePersonNew';
+    chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
+  });
+
+  it('should edit the name of the Family', async () => {
+    await contactPage.selectLHSRowByText(household);
+    const name = 'SomePerson';
+    chai.expect(await contactPage.addPerson(name)).to.equal(name);
+    const updatedName = 'SomePersonNew';
+    chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
+  });
+
 });

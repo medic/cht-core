@@ -5,6 +5,9 @@ const constants = require('./constants');
 const utils = require('./utils');
 const path = require('path');
 
+const chai = require('chai');
+chai.use(require('chai-exclude'));
+
 const ALLURE_OUTPUT = 'allure-results';
 const getSpecName = (specs) => specs[0].split('/').slice(-1)[0].split('.wdio-spec')[0];
 const getBrowserLogFilePath = (specs) => {
@@ -79,7 +82,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: ['--headless', '--disable-gpu', '--enable-logging']
+      args: ['--headless', '--disable-gpu', '--enable-logging', '--deny-permission-prompts']
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
@@ -183,7 +186,7 @@ const baseConfig = {
    * @param {Object} config wdio configuration object
    * @param {Array.<Object>} capabilities list of capabilities details
    */
-  onPrepare: async function (config) {
+  onPrepare: async function () {
     // delete all previous test
     if (fs.existsSync(ALLURE_OUTPUT)) {
       const files = fs.readdirSync(ALLURE_OUTPUT) || [];
@@ -197,7 +200,7 @@ const baseConfig = {
     if (fs.existsSync(browserLogPath)) {
       fs.unlinkSync(browserLogPath);
     }
-    await utils.prepServices(config);
+    await utils.prepServices();
   },
   /**
    * Gets executed before a worker process is spawned and can be used to initialise specific service
@@ -249,7 +252,7 @@ const baseConfig = {
   beforeTest: async (test) => {
     await browser.execute(`
       console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-      console.log("~~~~~~~~~~~~~~~~~~~ ${test.title} ~~~~~~~~~~~~~~~~~~~~");     
+      console.log("~~~~~~~~~~~~~~~~~~~ ${test.title} ~~~~~~~~~~~~~~~~~~~~");
     `);
   },
   /**
@@ -304,8 +307,14 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {Array.<String>} specs List of spec file paths that ran
    */
-  // after: function (result, capabilities, specs) {
-  // },
+  after: async () => {
+    // Replaces After hook in test file with a common clean up
+    const users = await utils.getCreatedUsers();
+    if (users.length) {
+      await utils.deleteUsers(users);
+    }
+    await utils.revertDb([], true);
+  },
   /**
    * Gets executed right after terminating the webdriver session.
    * @param {Object} config wdio configuration object

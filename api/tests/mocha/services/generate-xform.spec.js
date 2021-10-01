@@ -1,7 +1,7 @@
 const { promisify } = require('util');
 const readFile = promisify(require('fs').readFile);
 const { join } = require('path');
-const { expect } = require('chai');
+const { assert, expect } = require('chai');
 const sinon = require('sinon');
 const childProcess = require('child_process');
 const db = require('../../../src/db');
@@ -30,6 +30,25 @@ describe('generate-xform service', () => {
 
   describe('generate', () => {
 
+    let spawned;
+
+    beforeEach(() => {
+      // The base for a successful spawned process
+      spawned = {
+        stdout: { on: sinon.stub() },
+        stderr: { on: sinon.stub() },
+        stdin: {
+          setEncoding: sinon.stub(),
+          write: sinon.stub(),
+          end: sinon.stub(),
+          on: sinon.stub(),
+        },
+        on: sinon.stub()
+      };
+    });
+
+    afterEach(sinon.restore);
+
     const read = (dirname, filename) => {
       return readFile(join(__dirname, 'xforms', dirname, filename), 'utf8');
     };
@@ -45,24 +64,17 @@ describe('generate-xform service', () => {
       });
     };
 
-    const runTest = (dirname, err) => {
-      const spawned = {
-        stdout: { on: sinon.stub() },
-        stderr: { on: sinon.stub() },
-        stdin: {
-          setEncoding: sinon.stub(),
-          write: sinon.stub(),
-          end: sinon.stub()
-        },
-        on: sinon.stub()
-      };
+    const runTest = (dirname, spawned, stdErr, errIn, successClose = true) => {
       sinon.stub(childProcess, 'spawn').returns(spawned);
       return setup(dirname).then(files => {
         const generate = service.generate(files.xform);
-        if (err) {
-          spawned.stderr.on.args[0][1](err);
+        if (stdErr) {
+          spawned.stderr.on.args[0][1](stdErr);
           spawned.on.args[0][1](100);
-        } else {
+        } else if (errIn) {
+          spawned.stdin.on.args[0][1](errIn);
+          spawned.on.args[0][1](100);
+        } else if (successClose) {
           // child process outputs then closes with code 0
           spawned.stdout.on.args[0][1](files.givenForm);
           spawned.on.args[0][1](0);
@@ -76,28 +88,94 @@ describe('generate-xform service', () => {
       });
     };
 
-    it('generates form and model', () => runTest('simple'));
+    it('should generate form and model', () => runTest('simple', spawned));
 
-    it('replaces multimedia src elements', () => runTest('multimedia'));
+    it('should replace multimedia src elements', () => runTest('multimedia', spawned));
 
-    it('correctly replaces models with nested "</root>" - #5971', () => runTest('nested-root'));
+    it('should correctly replaces models with nested "</root>" - #5971', () => runTest('nested-root', spawned));
 
-    it('errors if child process errors', done => {
-      runTest('simple', 'some error')
-        .then(() => done(new Error('expected error to be thrown')))
-        .catch(err => {
-          expect(err.message).to.equal(
-            'Error transforming xml. xsltproc returned code "100", and signal "undefined". ' +
-            'xsltproc stderr output:\nsome error'
-          );
-          done();
-        });
+    it('should fail when child process errors', async () => {
+      try {
+        await runTest('simple', spawned, 'some error');
+        assert.fail('expected error to be thrown');
+      } catch (err) {
+        expect(err.message).to.equal(
+          'Error transforming xml. xsltproc returned code "100", and signal "undefined". ' +
+          'xsltproc stderr output:\nsome error'
+        );
+      }
+    });
+
+    it('should fail when xsltproc command not found', async () => {
+      try {
+        const writeErr = new Error('Error: write EPIPE');
+        writeErr.code = 'EPIPE';
+        const spawnedEpipe = {
+          stdout: { on: sinon.stub() },
+          stderr: { on: sinon.stub() },
+          stdin: {
+            setEncoding: sinon.stub(),
+            write: sinon.stub().throws(writeErr),
+            end: sinon.stub(),
+            on: sinon.stub(),
+          },
+          on: sinon.stub()
+        };
+        await runTest('simple', spawnedEpipe, null, null, false);
+        assert.fail('expected error to be thrown');
+      } catch (err) {
+        expect(err.message).to.equal(
+          'Unable to continue execution, check that \'xsltproc\' command is available.');
+      }
+    });
+
+    it('should fail when xsltproc command not found also in OSX', async () => {
+      try {
+        const writeErr = new Error('Error: unknown');
+        const spawnedEpipe = {
+          stdout: { on: sinon.stub() },
+          stderr: { on: sinon.stub() },
+          stdin: {
+            setEncoding: sinon.stub(),
+            write: sinon.stub(),
+            end: sinon.stub(),
+            on: sinon.stub()
+          },
+          on: sinon.stub()
+        };
+        await runTest('simple', spawnedEpipe, null, writeErr, null, false);
+        assert.fail('expected error to be thrown');
+      } catch (err) {
+        expect(err.message).to.equal(
+          'Unknown Error: An error occurred when executing \'xsltproc\' command');
+      }
+    });
+
+    it('should fail when xsltproc raises unknown exception', async () => {
+      try {
+        const spawnedUnknownWriteErr = {
+          stdout: { on: sinon.stub() },
+          stderr: { on: sinon.stub() },
+          stdin: {
+            setEncoding: sinon.stub(),
+            write: sinon.stub().throws('mystery error'),
+            end: sinon.stub(),
+            on: sinon.stub(),
+          },
+          on: sinon.stub()
+        };
+        await runTest('simple', spawnedUnknownWriteErr, null, null, false);
+        assert.fail('expected error to be thrown');
+      } catch (err) {
+        expect(err.message).to.equal(
+          'Unknown Error: An error occurred when executing \'xsltproc\' command');
+      }
     });
   });
 
   describe('update', () => {
 
-    it('errors if no form found', done => {
+    it('should fail when no form found', done => {
       sinon.stub(db.medic, 'get').rejects('boom');
       service.update('form:missing')
         .then(() => done(new Error('expected error to be thrown')))
@@ -109,7 +187,7 @@ describe('generate-xform service', () => {
         });
     });
 
-    it('does nothing if doc does not have form attachment', () => {
+    it('should do nothing when doc does not have form attachment', () => {
       sinon.stub(db.medic, 'get').resolves({ _attachments: { image: {} } });
       sinon.stub(db.medic, 'put');
       return service.update('form:exists').then(() => {
@@ -118,7 +196,7 @@ describe('generate-xform service', () => {
       });
     });
 
-    it('does nothing if the attachments are up to date', () => {
+    it('should do nothing when the attachments are up to date', () => {
       const formXml = '<my-xml/>';
       const currentForm = '<html/>';
       const currentModel = '<xml/>';
@@ -136,7 +214,7 @@ describe('generate-xform service', () => {
       });
     });
 
-    it('updates doc if attachments do not exist', () => {
+    it('should update doc when attachments do not exist', () => {
       const formXml = '<my-xml/>';
       const newForm = '<html><title>Hello</title></html>';
       const newModel = '<instance><multimedia/></instance>';
@@ -151,7 +229,7 @@ describe('generate-xform service', () => {
       });
     });
 
-    it('updates doc if attachments have changed', () => {
+    it('should update doc when attachments have changed', () => {
       const formXml = '<my-xml/>';
       const currentForm = '<html/>';
       const newForm = '<html><title>Hello</title></html>';
@@ -188,7 +266,7 @@ describe('generate-xform service', () => {
       }
     };
 
-    it('handles no forms', () => {
+    it('should handle no forms', () => {
       sinon.stub(db.medic, 'query').resolves({ rows: [] });
       sinon.stub(db.medic, 'bulkDocs');
       return service.updateAll().then(() => {
@@ -197,7 +275,7 @@ describe('generate-xform service', () => {
       });
     });
 
-    it('ignores json forms', () => {
+    it('should ignore json forms', () => {
       sinon.stub(db.medic, 'query').resolves({ rows: [ JSON_FORM_ROW ] });
       sinon.stub(db.medic, 'bulkDocs');
       return service.updateAll().then(() => {
@@ -206,7 +284,7 @@ describe('generate-xform service', () => {
       });
     });
 
-    it('ignores collect forms', () => {
+    it('should ignore collect forms', () => {
       sinon.stub(db.medic, 'query').resolves({ rows: [ COLLECT_FORM_ROW ] });
       sinon.stub(db.medic, 'bulkDocs');
       return service.updateAll().then(() => {
@@ -215,7 +293,7 @@ describe('generate-xform service', () => {
       });
     });
 
-    it('does nothing if no forms have changed', () => {
+    it('should do nothing when no forms have changed', () => {
       const formXml = '<my-xml/>';
       const currentForm = '<html/>';
       const currentModel = '<xml/>';
@@ -234,7 +312,7 @@ describe('generate-xform service', () => {
       });
     });
 
-    it('throws if not all updated successfully', done => {
+    it('should throw when not all updated successfully', done => {
       const formXml = '<my-xml/>';
       const currentForm = '<html/>';
       const newForm = '<html><title>Hello</title></html>';
@@ -262,7 +340,7 @@ describe('generate-xform service', () => {
         });
     });
 
-    it('saves all updated forms', () => {
+    it('should save all updated forms', () => {
       const formXml = '<my-xml/>';
       const currentForm = '<html/>';
       const newForm = '<html><title>Hello</title></html>';

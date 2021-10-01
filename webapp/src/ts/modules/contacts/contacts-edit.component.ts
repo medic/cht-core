@@ -138,7 +138,8 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.enketoContact?.formInstance) {
       this.enketoService.unload(this.enketoContact.formInstance);
     }
-    this.globalActions.clearCancelCallback();
+    this.globalActions.clearNavigation();
+    this.globalActions.clearEnketoStatus();
   }
 
   ngAfterViewInit() {

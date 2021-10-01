@@ -323,14 +323,14 @@ const isUntransitionedDoc = doc => {
 const contactsRevs = [];
 
 describe('transitions', () => {
-  beforeAll(() => {
+  before(() => {
     return utils
       .saveDocs(contacts)
       .then((results) => contactsRevs.push(...results))
       .then(() => sentinelUtils.waitForSentinel());
   });
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
+  after(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb(contacts.map(c => c._id), true));
 
   it('should run all sync transitions and all async transitions', () => {
     const settings = {
@@ -704,7 +704,7 @@ describe('transitions', () => {
         utils.getDocs(ids)
       ]))
       .then(([infos, updatedDocs]) => {
-        infos.forEach(info => expect(!info));
+        infos.forEach(info => chai.expect(!info));
         chai.expect(updatedDocs.every(isUntransitionedDoc)).to.equal(true);
       })
       .then(() => getDocByPatientId('child1'))

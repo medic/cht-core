@@ -1,7 +1,11 @@
 /**
  * Delete old artefacts from the testing and staging dbs
  */
-const { MARKET_URL, BUILDS_SERVER, STAGING_SERVER } = process.env;
+const { MARKET_URL } = process.env;
+
+const BUILDS_SERVER = '_couch/builds_testing';
+const BUILDS_EXTERNAL_SERVER = '_couch/builds_external';
+const STAGING_SERVER = '_couch/builds';
 
 const MAX_BUILDS_TO_DELETE = 100; // don't try and delete too many at once
 const BETAS_TO_KEEP = 5; // keep the most recent 5 beta builds
@@ -13,6 +17,7 @@ PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
 const testingDb = new PouchDB(`${MARKET_URL}/${BUILDS_SERVER}`);
+const externalDb = new PouchDB(`${MARKET_URL}/${BUILDS_EXTERNAL_SERVER}`);
 const stagingDb = new PouchDB(`${MARKET_URL}/${STAGING_SERVER}`);
 
 process.on('unhandledRejection', error => {
@@ -75,6 +80,12 @@ const testingBuilds = () => {
     .then(response => remove(testingDb, response));
 };
 
+const externalBuilds = () => {
+  console.log('Querying for old external builds...');
+  return queryReleasesByDate(externalDb, DAYS_TO_KEEP_TEST)
+    .then(response => remove(externalDb, response));
+};
+
 const branchBuilds = () => {
   console.log('Querying for old branch builds...');
   return queryReleasesByDate(stagingDb, DAYS_TO_KEEP_BRANCH)
@@ -93,7 +104,9 @@ const betaBuilds = () => {
     .then(response => remove(stagingDb, response));
 };
 
-testingBuilds()
+Promise.resolve()
+  .then(testingBuilds)
+  .then(externalBuilds)
   .then(branchBuilds)
   .then(betaBuilds)
   .catch(err => {
