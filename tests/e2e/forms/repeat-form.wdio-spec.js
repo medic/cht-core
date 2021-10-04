@@ -61,15 +61,15 @@ describe('RepeatForm', () => {
     await (await reportsPage.formActionsLink(formDocument.internalId)).click();
 
     const stateLabel = await $(stateLabelPath);
-    expect(await stateLabel.getText()).toBe('Select a state: - SV');
+    expect(await stateLabel.getText()).to.equal('Select a state: - SV');
 
     await reportsPage.repeatForm();
 
     const cityLabel = await $(cityLabelPath);
-    expect(await cityLabel.getText()).toBe('Select a city: - SV');
+    expect(await cityLabel.getText()).to.equal('Select a city: - SV');
 
     const melbourneLabel = await $(melbourneLabelPath);
-    expect(await melbourneLabel.getText()).toBe('ML');
+    expect(await melbourneLabel.getText()).to.equal('ML');
   });
 
   it('should display the initial form and its repeated content in English', async () => {
@@ -82,14 +82,14 @@ describe('RepeatForm', () => {
     await (await reportsPage.formActionsLink(formDocument.internalId)).click();
 
     const stateLabel = await $(stateLabelPath);
-    expect(await stateLabel.getText()).toBe('Select a state:');
+    expect(await stateLabel.getText()).to.equal('Select a state:');
 
     await reportsPage.repeatForm();
 
     const cityLabel = await $(cityLabelPath);
-    expect(await cityLabel.getText()).toBe('Select a city:');
+    expect(await cityLabel.getText()).to.equal('Select a city:');
 
     const melbourneLabel = await $(melbourneLabelPath);
-    expect(await melbourneLabel.getText()).toBe('Melbourne');
+    expect(await melbourneLabel.getText()).to.equal('Melbourne');
   });
 });
