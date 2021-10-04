@@ -20,7 +20,7 @@
   "dependencies": {
     "@medic/calendar-interval": "file:../calendar-interval",
     "@medic/registration-utils": "file:../registration-utils",
-    "lodash": "^4.17.19",
+    "lodash": "4.17.19",
     "md5": "^2.3.0",
     "medic-nootils": "^4.0.1",
     "nools": "^0.4.4"
@@ -28,7 +28,7 @@
   "devDependencies": {
     "@medic/memdown": "file:../memdown",
     "chai": "^4.3.4",
-    "chai-exclude": "^2.0.3",
+    "chai-exclude": "^2.1.0",
     "mocha": "^7.2.0",
     "moment": "^2.29.1",
     "pouchdb": "^7.2.2",
