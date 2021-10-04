@@ -474,7 +474,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
           {
             qs: {
-              limit: 1000,
+              limit: 1001,
               start_key: JSON.stringify('person'),
               startkey_docid: 'f3',
               include_docs: true,
@@ -487,7 +487,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
           {
             qs: {
-              limit: 1000,
+              limit: 1001,
               start_key: JSON.stringify('clinic'),
               startkey_docid: 'f5',
               include_docs: true,
@@ -500,7 +500,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
           {
             qs: {
-              limit: 1000,
+              limit: 1001,
               start_key:  JSON.stringify('health_center'),
               startkey_docid: 'f8',
               include_docs: true,
@@ -567,15 +567,15 @@ describe('ServerSidePurge', () => {
         chai.expect(request.get.args[0]).to.deep.equal(expectedParams(1000));
         chai.expect(request.get.args[1]).to.deep.equal(expectedParams(500));
         chai.expect(request.get.args[2]).to.deep.equal(expectedParams(250));
-        chai.expect(request.get.args[3]).to.deep.equal(expectedParams(250, 249));
-        chai.expect(request.get.args[4]).to.deep.equal(expectedParams(250, 499));
-        chai.expect(request.get.args[5]).to.deep.equal(expectedParams(250, 749));
-        chai.expect(request.get.args[6]).to.deep.equal(expectedParams(250, 999));
-        chai.expect(request.get.args[7]).to.deep.equal(expectedParams(250, 1249));
-        chai.expect(request.get.args[8]).to.deep.equal(expectedParams(250, 1499));
+        chai.expect(request.get.args[3]).to.deep.equal(expectedParams(251, 249));
+        chai.expect(request.get.args[4]).to.deep.equal(expectedParams(251, 499));
+        chai.expect(request.get.args[5]).to.deep.equal(expectedParams(251, 749));
+        chai.expect(request.get.args[6]).to.deep.equal(expectedParams(251, 999));
+        chai.expect(request.get.args[7]).to.deep.equal(expectedParams(251, 1249));
+        chai.expect(request.get.args[8]).to.deep.equal(expectedParams(251, 1499));
 
         chai.expect(db.medic.query.callCount).to.equal(9);
-
+        chai.expect(service.__get__('contactsBatchSize')).to.equal(250);
       });
     });
 
@@ -592,7 +592,7 @@ describe('ServerSidePurge', () => {
         .catch((err) => {
           chai.expect(err).to.deep.equal({
             code: 'max_size_reached',
-            message: `Purging aborted. Too many reports for contact "0"`,
+            message: `Purging aborted. Too many reports for contacts: 0`,
           });
 
           chai.expect(request.get.callCount).to.equal(10);
@@ -606,8 +606,20 @@ describe('ServerSidePurge', () => {
           chai.expect(request.get.args[7][1].qs.limit).to.equal(7);
           chai.expect(request.get.args[8][1].qs.limit).to.equal(3);
           chai.expect(request.get.args[9][1].qs.limit).to.equal(1);
+
+          chai.expect(service.__get__('contactsBatchSize')).to.equal(1);
         });
     });
+
+    it('should decrease batch size to 1 on subsequent queries', () => {
+
+    });
+
+    it('should continue to purge with batch size 1 until queue is ', () => {
+
+    });
+
+    // todo
 
     it('should set correct start_key and startkey_docid when last result is a tombstone', () => {
       sinon.stub(request, 'get');
@@ -663,7 +675,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
           {
             qs: {
-              limit: 1000,
+              limit: 1001,
               start_key: JSON.stringify('health_center'),
               startkey_docid: 'f3-tombstone',
               include_docs: true,
@@ -676,7 +688,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
           {
             qs: {
-              limit: 1000,
+              limit: 1001,
               start_key:  JSON.stringify('person'),
               startkey_docid: 'f5',
               include_docs: true,
@@ -689,7 +701,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
           {
             qs: {
-              limit: 1000,
+              limit: 1001,
               start_key:  JSON.stringify('person'),
               startkey_docid: 'f8-tombstone',
               include_docs: true,

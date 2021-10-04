@@ -11,9 +11,19 @@ const moment = require('moment');
 const TASK_EXPIRATION_PERIOD = 60; // days
 const TARGET_EXPIRATION_PERIOD = 6; // months
 
-let contactsBatchSize = 1000;
+const MAX_CONTACT_BATCH_SIZE = 1000;
+const MIN_CONTACT_BATCH_SIZE = 1;
 const MAX_BATCH_SIZE = 10000;
 const MAX_BATCH_SIZE_REACHED = 'max_size_reached';
+let contactsBatchSize = MAX_CONTACT_BATCH_SIZE;
+
+const decreaseBatchSize = () => {
+  contactsBatchSize = Math.floor(contactsBatchSize / 2);
+};
+
+/*const increaseBatchSize = () => {
+  contactsBatchSize = Math.min(MAX_CONTACT_BATCH_SIZE, contactsBatchSize * 2);
+};*/
 
 const purgeDbs = {};
 let currentlyPurging = false;
@@ -325,7 +335,7 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
   );
 
   const queryString = {
-    limit: contactsBatchSize,
+    limit: startKeyDocId ? contactsBatchSize + 1 : contactsBatchSize,
     start_key: JSON.stringify(startKey),
     startkey_docid: startKeyDocId,
     include_docs: true,
@@ -352,9 +362,13 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
       if (result.rows.length >= MAX_BATCH_SIZE) {
         return Promise.reject({
           code: MAX_BATCH_SIZE_REACHED,
-          message: `Purging aborted. Too many reports for contact "${nextKeyDocId}"`,
+          message: `Purging aborted. Too many reports for contacts: ${Object.keys(groups).join(', ')}`,
         });
       }
+
+      /* if (result.rows.length < MAX_BATCH_SIZE / 4) {
+        increaseBatchSize();
+      }*/
 
       const recordsByKey = getRecordsByKey(result.rows, groups, subjectIds);
       assignRecordsToGroups(recordsByKey, groups);
@@ -368,8 +382,8 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
     })
     .then(() => nextKey && batchedContactsPurge(roles, purgeFn, nextKey, nextKeyDocId))
     .catch(err => {
-      if (err && err.code === MAX_BATCH_SIZE_REACHED && contactsBatchSize > 1) {
-        contactsBatchSize = Math.floor(contactsBatchSize / 2);
+      if (err && err.code === MAX_BATCH_SIZE_REACHED && contactsBatchSize > MIN_CONTACT_BATCH_SIZE) {
+        decreaseBatchSize();
         logger.warn(`Too many reports to process. Decreasing contacts batch size to ${contactsBatchSize}`);
         return batchedContactsPurge(roles, purgeFn, startKey, startKeyDocId);
       }
@@ -533,6 +547,9 @@ const purge = () => {
     return;
   }
   logger.info('Running server side purge');
+
+  contactsBatchSize = MAX_CONTACT_BATCH_SIZE;
+
   const purgeFn = getPurgeFn();
   if (!purgeFn) {
     logger.info('No purge function configured.');
