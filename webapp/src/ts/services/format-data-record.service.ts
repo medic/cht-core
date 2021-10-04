@@ -10,9 +10,7 @@ import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import * as messages from '@medic/message-utils';
 import * as registrationUtils from '@medic/registration-utils';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class FormatDataRecordService {
   constructor(
     private dbService:DbService,

@@ -18,9 +18,7 @@ import { LineageModelGeneratorService } from '@mm-services/lineage-model-generat
  *   formatted: <the doc formatted using the FormatDataRecord service>
  * }
  */
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class ReportViewModelGeneratorService {
   constructor(
     private formatDataRecordService:FormatDataRecordService,

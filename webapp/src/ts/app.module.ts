@@ -40,7 +40,6 @@ import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-
 import { ExceptionHandlerProvider } from '@mm-providers/exception-handler.provider';
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { GlobalEffects } from '@mm-effects/global.effects';
-import { ReportsEffects } from '@mm-effects/reports.effects';
 import { ContactsEffects } from '@mm-effects/contacts.effects';
 import { reducers } from '@mm-reducers/index';
 
@@ -93,7 +92,7 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     BsDropdownModule.forRoot(),
     FormsModule,
     AccordionModule.forRoot(),
-    EffectsModule.forRoot([ GlobalEffects, ReportsEffects, ContactsEffects ]),
+    EffectsModule.forRoot([ GlobalEffects, ContactsEffects ]),
   ],
   providers: [
     { provide: APP_BASE_HREF, useValue: '/' },
