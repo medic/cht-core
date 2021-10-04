@@ -185,11 +185,6 @@ describe('Tasks group landing page', () => {
     await utils.updateSettings({ tasks }, 'api');
   });
 
-  after(async () => {
-    await utils.deleteUsers([chw, supervisor]);
-    await utils.revertDb([], true);
-  });
-
   describe('for chw', () => {
     before(async () => {
       await loginPage.login(chw.username, chw.password);

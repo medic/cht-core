@@ -31,7 +31,7 @@ describe('SMS Test Forms', async () => {
     await commonPage.goToPeople(user.place);
     await commonPage.waitForLoaders();
     const allRHSPeople = await contactPage.getAllRHSPeopleNames();
-    expect(allRHSPeople.length).toEqual(2);
-    expect(allRHSPeople).toEqual(expect.arrayContaining(['Potu', user.contact.name]));
+    expect(allRHSPeople.length).to.equal(2);
+    expect(allRHSPeople).to.include.members(['Potu', user.contact.name]);
   });
 });

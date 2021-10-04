@@ -106,6 +106,11 @@ const goToAnalytics = async () => {
   await (await analyticsTab()).waitForDisplayed();
 };
 
+const goToAboutPage = async () => {
+  await browser.url(`/#/about`);
+  await (await analyticsTab()).waitForDisplayed();
+};
+
 const closeTour = async () => {
   const closeButton = await $('#tour-select a.btn.cancel');
   try {
@@ -236,5 +241,6 @@ module.exports = {
   openUserSettingsAndFetchProperties,
   openReportBugAndFetchProperties,
   openAppManagement,
-  waitForLoaderToDisappear
+  waitForLoaderToDisappear,
+  goToAboutPage,
 };

@@ -97,10 +97,6 @@ describe('Test Reports Search Functionality', async () => {
     await commonPage.goToReports();
   });
 
-  after(async () => {
-    await utils.revertDb([], true);
-  });
-
   it('search by NON empty string should display results with contains match and then clears', async () => {
     // Waiting for initial load
     await contactPage.getAllReportsText();
@@ -108,11 +104,11 @@ describe('Test Reports Search Functionality', async () => {
     // Searching by keyword
     await searchPage.performSearch('sittu');
     let allLHSContacts = await contactPage.getAllReportsText();
-    expect(allLHSContacts.sort()).toEqual([sittuPerson.name]);
-    
+    expect(allLHSContacts.sort()).to.deep.equal([sittuPerson.name]);
+
     // Clearing
     await searchPage.clearSearch();
     allLHSContacts = await contactPage.getAllReportsText();
-    expect(allLHSContacts.sort()).toEqual([potuPerson.name, sittuPerson.name]);
+    expect(allLHSContacts.sort()).to.deep.equal([potuPerson.name, sittuPerson.name]);
   });
 });

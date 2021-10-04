@@ -49,10 +49,6 @@ describe('Create Person Under Area', async () => {
     await loginPage.cookieLogin();
   });
 
-  afterEach(async () => {
-    await utils.revertDb([], true);
-  });
-
   it('create person under area should only see children', async () => {
     await usersAdminPage.goToAdminUser();
     await usersAdminPage.openAddUserDialog();
@@ -65,8 +61,8 @@ describe('Create Person Under Area', async () => {
     await commonPage.goToPeople();
     const rows = await contactPage.getAllLHSContactsNames();
     // Only one row will be displayed: for HealthCenter
-    expect(rows.length).toEqual(1);
-    expect(rows[0]).toEqual(healthCenter2.name);
+    expect(rows.length).to.equal(1);
+    expect(rows[0]).to.equal(healthCenter2.name);
     await contactPage.selectLHSRowByText(healthCenter2.name);
   });
 });

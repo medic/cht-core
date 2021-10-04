@@ -1,5 +1,4 @@
 const utils = require('../../utils');
-const chai = require('chai');
 const usersAdminPage = require('../../page-objects/admin/user.wdio.page');
 const placeFactory = require('../../factories/cht/contacts/place');
 const loginPage = require('../../page-objects/login/login.wdio.page');
@@ -30,10 +29,6 @@ describe('User Test Cases ->', () => {
     await loginPage.cookieLogin();
   });
 
-  after(async () => {
-    await utils.revertDb([], true);
-  });
-
   beforeEach(async () => {
     await usersAdminPage.goToAdminUser();
     await usersAdminPage.openAddUserDialog();
@@ -44,10 +39,10 @@ describe('User Test Cases ->', () => {
     after(async () => await utils.deleteUsers([{ username: username }]));
 
     it('should add user with valid password', async () => {
-      await usersAdminPage.inputAddUserFields(username, 'Jack', onlineUserRole, districtHospital.name, 
+      await usersAdminPage.inputAddUserFields(username, 'Jack', onlineUserRole, districtHospital.name,
         person.name, password);
       await usersAdminPage.saveUser();
-      chai.expect(await usersAdminPage.getAllUsernames()).to.contain.members([username]);
+      expect(await usersAdminPage.getAllUsernames()).to.include.members([username]);
     });
   });
 
@@ -63,27 +58,27 @@ describe('User Test Cases ->', () => {
       { passwordValue: '', errorMessage: 'required' }
     ].forEach(async (args) => {
       it(`TestCase for ${args.errorMessage}`, async () => {
-        await usersAdminPage.inputAddUserFields(username, 'Jack', onlineUserRole, districtHospital.name, 
+        await usersAdminPage.inputAddUserFields(username, 'Jack', onlineUserRole, districtHospital.name,
           person.name, args.passwordValue, args.otherPassword);
         await usersAdminPage.saveUser(false);
         const text = await usersAdminPage.getPasswordErrorText();
-        expect(text).toContain(args.errorMessage);
+        expect(text).to.contain(args.errorMessage);
       });
     });
 
     it('should require username', async () => {
-      await usersAdminPage.inputAddUserFields('', 'Jack', onlineUserRole, districtHospital.name, 
+      await usersAdminPage.inputAddUserFields('', 'Jack', onlineUserRole, districtHospital.name,
         person.name, password);
       await usersAdminPage.saveUser(false);
       const text = await usersAdminPage.getUsernameErrorText();
-      expect(text).toContain('required');
+      expect(text).to.contain('required');
     });
 
     it('should require place and contact for restricted user', async () => {
       await usersAdminPage.inputAddUserFields(username, 'Jack', offlineUserRole, null, null, password);
       await usersAdminPage.saveUser(false);
-      expect(await usersAdminPage.getPlaceErrorText()).toContain('required');
-      expect(await usersAdminPage.getContactErrorText()).toContain('required');
+      expect(await usersAdminPage.getPlaceErrorText()).to.contain('required');
+      expect(await usersAdminPage.getContactErrorText()).to.contain('required');
     });
   });
 });

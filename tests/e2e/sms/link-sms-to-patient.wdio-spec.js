@@ -42,8 +42,6 @@ describe('Link SMS to patient without passing id', () => {
     await loginPage.cookieLogin();
   });
 
-  after(async () => await utils.revertDb([], true));
-
   it('Send SMS without patient_id and report created under person', async () => {
     await utils.createUsers([user]);
     await sentinelUtils.waitForSentinel();
