@@ -321,7 +321,7 @@ describe('db-sync', () => {
     it('should replicate meta db down', async () => {
       await browser.refresh(); // meta databases sync every 30 minutes
       await commonElements.sync();
-      chai.expect(await reportsPage.getUnreadCount()).to.equal('2');
+      expect(await reportsPage.getUnreadCount()).to.equal('2');
 
       const readReport = { _id: `read:report:${report2}` };
       await utils.saveMetaDocs(restrictedUserName, [readReport]);
