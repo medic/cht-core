@@ -3,10 +3,10 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import * as moment from 'moment';
 import * as BikramSambat from 'bikram-sambat';
+import { TranslateService } from '@ngx-translate/core';
 
 import { FormatDateService } from '@mm-services/format-date.service';
 import { SettingsService } from '@mm-services/settings.service';
-import { TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '@mm-services/language.service';
 
 

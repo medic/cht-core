@@ -1,5 +1,4 @@
 const path = require('path');
-const chai = require('chai');
 
 const utils = require('../../utils');
 const sentinelUtils = require('../sentinel/utils');
@@ -161,7 +160,7 @@ const getGroupTasksNamesAndTitles = async () => {
 };
 
 const expectTasksGroupLeaveModal = async () => {
-  chai.expect(await (await modalPage.body()).getText()).to.equal(
+  expect(await (await modalPage.body()).getText()).to.equal(
     'Are you sure you want to leave this page? You will no longer be able to see this household\'s other tasks.'
   );
   // modals have an animation, so clicking immediately on any of the buttons, mid animation, might cause the click to
@@ -200,7 +199,7 @@ describe('Tasks group landing page', () => {
     it('should have tasks', async () => {
       await tasksPage.goToTasksTab();
       const list = await tasksPage.getTasks();
-      chai.expect(list.length).to.equal(people.length + clinics.length + 2);
+      expect(list.length).to.equal(people.length + clinics.length + 2);
     });
 
     it('should display tasks group landing page after task completion', async () => {
@@ -212,11 +211,11 @@ describe('Tasks group landing page', () => {
       // tasks group is displayed
       await tasksPage.waitForTasksGroupLoaded();
       const groupTasks = await tasksPage.getTasksInGroup();
-      chai.expect(groupTasks.length).to.equal(3);
+      expect(groupTasks.length).to.equal(3);
 
       const groupTasksNamesAndTitles = await getGroupTasksNamesAndTitles();
       // and we see correct tasks
-      chai.expect(groupTasksNamesAndTitles).to.have.deep.members([
+      expect(groupTasksNamesAndTitles).to.have.deep.members([
         { contactName: 'Julius Caesar', formTitle: 'person_create' },
         { contactName: 'Napoleon Bonaparte', formTitle: 'person_create' },
         { contactName: 'Politicians', formTitle: 'clinic_create' },
@@ -240,7 +239,7 @@ describe('Tasks group landing page', () => {
       // tasks group is displayed again
       await tasksPage.waitForTasksGroupLoaded();
       const secondGroupTasks = await tasksPage.getTasksInGroup();
-      chai.expect(secondGroupTasks.length).to.equal(2);
+      expect(secondGroupTasks.length).to.equal(2);
     });
 
     it('should display modal when clicking on a task from another group', async () => {
@@ -267,7 +266,7 @@ describe('Tasks group landing page', () => {
 
       await tasksPage.waitForTasksGroupLoaded();
       const groupTasksAndTitles = await getGroupTasksNamesAndTitles();
-      chai.expect(groupTasksAndTitles).to.have.deep.members([
+      expect(groupTasksAndTitles).to.have.deep.members([
         { contactName: 'Leonardo da Vinci', formTitle: 'person_create' },
         { contactName: 'Francisco Goya', formTitle: 'person_create' },
         { contactName: 'Wolfgang Amadeus Mozart', formTitle: 'person_create' },
@@ -303,7 +302,7 @@ describe('Tasks group landing page', () => {
       await tasksPage.waitForTasksGroupLoaded();
       const tasksInGroup = await tasksPage.getTasksInGroup();
 
-      chai.expect(tasksInGroup.length).to.equal(1);
+      expect(tasksInGroup.length).to.equal(1);
       const lastTask = await tasksPage.getTaskByContactAndForm('Politicians', 'clinic_create');
       await lastTask.click();
 
@@ -313,7 +312,7 @@ describe('Tasks group landing page', () => {
       const emptySelection = await tasksPage.noSelectedTask();
       await (emptySelection).waitForDisplayed();
       await commonPage.waitForLoaderToDisappear(emptySelection);
-      chai.expect(await emptySelection.getText()).to.equal('No task selected');
+      expect(await emptySelection.getText()).to.equal('No task selected');
     });
 
     it('should not show page when submitting task for contact with no leaf type place in lineage', async () => {
@@ -325,7 +324,7 @@ describe('Tasks group landing page', () => {
       const emptySelection = await tasksPage.noSelectedTask();
       await (emptySelection).waitForDisplayed();
       await commonPage.waitForLoaderToDisappear(emptySelection);
-      chai.expect(await emptySelection.getText()).to.equal('No task selected');
+      expect(await emptySelection.getText()).to.equal('No task selected');
     });
   });
 
@@ -345,7 +344,7 @@ describe('Tasks group landing page', () => {
       await tasksPage.goToTasksTab();
       const list = await tasksPage.getTasks();
       const taskNamesAndTitles = await getTaskNamesAndTitles(list);
-      chai.expect(taskNamesAndTitles).to.include.deep.members([
+      expect(taskNamesAndTitles).to.include.deep.members([
         { contactName: 'Albert Einstenin', formTitle: 'person_create' },
         { contactName: 'Charles Darwin', formTitle: 'person_create' },
         { contactName: 'Nikola Tesla', formTitle: 'person_create' },
@@ -363,7 +362,7 @@ describe('Tasks group landing page', () => {
       const emptySelection = await tasksPage.noSelectedTask();
       await (emptySelection).waitForDisplayed();
       await commonPage.waitForLoaderToDisappear(emptySelection);
-      chai.expect(await emptySelection.getText()).to.equal('No task selected');
+      expect(await emptySelection.getText()).to.equal('No task selected');
     });
   });
 

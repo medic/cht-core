@@ -102,10 +102,6 @@ export class LanguageService {
 
   useDevanagariScript() {
     const language = this.languageCookieService.get();
-    if (language === this.NEPALI_LOCALE) {
-      return true;
-    }
-
-    return false;
+    return language === this.NEPALI_LOCALE;
   }
 }

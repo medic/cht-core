@@ -1,7 +1,7 @@
 {
-	"context": {
-		"expression": "true",
-		"collect": false
-	}
+  "context": {
+    "expression": "true",
+    "collect": false
+  }
 }
 

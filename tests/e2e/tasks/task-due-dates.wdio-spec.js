@@ -1,5 +1,4 @@
 const path = require('path');
-const chai = require('chai');
 
 const utils = require('../../utils');
 const sentinelUtils = require('../sentinel/utils');
@@ -74,7 +73,7 @@ describe('Task list due dates', () => {
     await tasksPage.goToTasksTab();
     const infos = await getTasksInfos(await tasksPage.getTasks());
 
-    chai.expect(infos).to.have.deep.members([
+    expect(infos).to.have.deep.members([
       { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false },
       { contactName: 'Bob', formTitle: 'person_create_5', dueDateText: '', overdue: false },
       { contactName: 'Bob', formTitle: 'person_create_2', dueDateText: '2 days left', overdue: false },
@@ -92,7 +91,7 @@ describe('Task list due dates', () => {
     await tasksPage.goToTasksTab();
     const infos = await getTasksInfos(await tasksPage.getTasks());
 
-    chai.expect(infos).to.have.deep.members([
+    expect(infos).to.have.deep.members([
       { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false },
       { contactName: 'Bob', formTitle: 'person_create_5', dueDateText: '', overdue: false },
       { contactName: 'Bob', formTitle: 'person_create_2', dueDateText: '2 days left', overdue: false },
@@ -111,7 +110,7 @@ describe('Task list due dates', () => {
     await tasksPage.goToTasksTab();
     const infos = await getTasksInfos(await tasksPage.getTasks());
 
-    chai.expect(infos).to.have.deep.members([
+    expect(infos).to.have.deep.members([
       { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false },
       { contactName: 'Bob', formTitle: 'person_create_5', dueDateText: '', overdue: false },
       { contactName: 'Bob', formTitle: 'person_create_2', dueDateText: '2 days left', overdue: false },

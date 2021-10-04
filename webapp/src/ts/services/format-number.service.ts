@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { isNumber, isString } from 'lodash-es';
 import { devanagari as toDevanagariDigit } from 'eurodigit/src/to_non_euro';
 
-import { LanguageService } from './language.service';
+import { LanguageService } from '@mm-services/language.service';
 
 @Injectable({
   providedIn: 'root',

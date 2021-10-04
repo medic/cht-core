@@ -2,7 +2,6 @@ const path = require('path');
 const bikramSambat = require('bikram-sambat');
 const { devanagari } = require('eurodigit/src/to_non_euro');
 const moment = require('moment');
-const { expect } = require('chai');
 
 const utils = require('../../utils');
 const loginPage = require('../../page-objects/login/login.wdio.page');

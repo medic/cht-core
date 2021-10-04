@@ -57,6 +57,7 @@ export class FormatDateService {
         console.error('Error fetching settings', err);
       });
   }
+
   private displayBikramSambatDate(momentDate, key) {
     if (key === 'time') {
       return momentDate.format(this.config[key]);
