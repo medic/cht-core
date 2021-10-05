@@ -11,11 +11,11 @@ describe('Privacy policy', () => {
   const englishTexts = privacyPolicyFactory.english;
   const frenchTexts = privacyPolicyFactory.french;
   const users = [userFactory.build({
-    username: 'offlineUser',
+    username: 'offlineuser',
     isOffline: true
   }),
   userFactory.build({
-    username: 'onlineUser',
+    username: 'onlineuser',
     roles: ['program_officer']
   })];
 
