@@ -49,21 +49,22 @@ function (doc) {
   var value = { type: doc.type };
   switch (doc.type) {
     case 'data_record':
-      var subject = getSubject() || '_unassigned';
+      value.subject = getSubject() || '_unassigned';
       if (doc.form && doc.contact) {
         value.submitter = doc.contact._id;
       }
       if (doc.fields && doc.fields.private) {
         value.private = true;
       }
-      emit(subject, value);
+      emit(value.subject, value);
       if (doc.fields &&
           doc.fields.needs_signoff &&
           doc.contact
       ) {
+        value.needs_signoff = true;
         var contact = doc.contact;
         while (contact) {
-          if (contact._id && contact._id !== subject) {
+          if (contact._id && contact._id !== value.subject) {
             emit(contact._id, value);
           }
           contact = contact.parent;

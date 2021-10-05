@@ -1,4 +1,5 @@
 const chai = require('chai');
+chai.use(require('deep-equal-in-any-order'));
 const sinon = require('sinon');
 const rewire = require('rewire');
 const moment = require('moment');
@@ -532,8 +533,9 @@ describe('ServerSidePurge', () => {
       const reports = Array.from({ length: 32000 }).map((_, idx) => ({
         id: idx,
         key: `key${idx}`,
-        doc: { id: idx },
+        value: { subject: `key${idx}` },
       }));
+
       sinon.stub(db.medic, 'query');
       db.medic.query.onCall(0).resolves({ rows: reports });
       db.medic.query.onCall(1).resolves({ rows: reports });
@@ -544,6 +546,9 @@ describe('ServerSidePurge', () => {
       db.medic.query.onCall(6).resolves({ rows: reports.slice(8000, 30000) });
       db.medic.query.onCall(7).resolves({ rows: reports.slice(30000, 12000) });
       db.medic.query.onCall(8).resolves({ rows: [] });
+
+      sinon.stub(db.medic, 'allDocs');
+      db.medic.allDocs.callsFake(({ keys }) => Promise.resolve({ rows: keys.map((key) => ({ doc: { _id: key } }))}));
 
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
@@ -733,30 +738,41 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(db.medic, 'query');
       db.medic.query.onCall(0).resolves({ rows: [
-        { id: 'first', key: 'first', doc: { _id: 'first', type: 'district_hospital' }},
-        { id: 'f1', key: 'f1', doc: { _id: 'f1', place_id: 's1', type: 'clinic' }},
-        { id: 'f1-r1', key: 's1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
-        { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
-        { id: 'f1-r2', key: 's1', doc: { _id: 'f1-r2', type: 'data_record', form: 'b', patient_id: 's1' } },
-        { id: 'f1-m2', key: 'f1', doc: { _id: 'f1-m2', type: 'data_record', sms_message: 'b' } },
-        { id: 'f2', key: 'f2', doc: { _id: 'f2', type: 'person' }},
-        { id: 'f2-r1', key: 'f2', doc: { _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'f2' } },
-        { id: 'f2-r2', key: 'f2', doc: { _id: 'f2-r2', type: 'data_record', form: 'b', patient_id: 'f2' } },
-        { id: 'f4', key: 'f4', doc: { _id: 'f4', place_id: 's4', type: 'clinic' }},
-        { id: 'f4-m1', key: 'f4', doc: { _id: 'f4-m1', type: 'data_record', sms_message: 'b' } },
-        { id: 'f4-m2', key: 'f4', doc: { _id: 'f4-m2', type: 'data_record', sms_message: 'b' } },
+        { id: 'first', key: 'first', value: { type: 'district_hospital' }},
+        { id: 'f1', key: 'f1', value: { type: 'clinic' }},
+        { id: 'f1-r1', key: 's1', value: { type: 'data_record', subject: 's1' } },
+        { id: 'f1-m1', key: 'f1', value: { type: 'data_record', subject: 'f1' } },
+        { id: 'f1-r2', key: 's1', value: { type: 'data_record', subject: 's1' } },
+        { id: 'f1-m2', key: 'f1', value: { type: 'data_record', subject: 'f1' } },
+        { id: 'f2', key: 'f2', value: { type: 'person' }},
+        { id: 'f2-r1', key: 'f2', value: { type: 'data_record', subject: 'f2' } },
+        { id: 'f2-r2', key: 'f2', value: { type: 'data_record', subject: 'f2' } },
+        { id: 'f4', key: 'f4', value: { type: 'clinic' }},
+        { id: 'f4-m1', key: 'f4', value: { type: 'data_record', subject: 'f4' } },
+        { id: 'f4-m2', key: 'f4', value: { type: 'data_record', subject: 'f4' } },
       ] });
       db.medic.query.onCall(1).resolves({ rows: [] });
+      sinon.stub(db.medic, 'allDocs');
+      db.medic.allDocs.onCall(0).resolves({ rows: [
+        { id: 'f1-r1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
+        { id: 'f1-m1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
+        { id: 'f1-r2', doc: { _id: 'f1-r2', type: 'data_record', form: 'b', patient_id: 's1' } },
+        { id: 'f1-m2', doc: { _id: 'f1-m2', type: 'data_record', sms_message: 'b' } },
+        { id: 'f2-r1', doc: { _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'f2' } },
+        { id: 'f2-r2', doc: { _id: 'f2-r2', type: 'data_record', form: 'b', patient_id: 'f2' } },
+        { id: 'f4-m1', doc: { _id: 'f4-m1', type: 'data_record', sms_message: 'b' } },
+        { id: 'f4-m2', doc: { _id: 'f4-m2', type: 'data_record', sms_message: 'b' } },
+      ] });
 
       return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2', 'f4', 's4'], include_docs: true, limit: 30000 }
+          { keys: ['first', 'f1', 's1', 'f2', 'f4', 's4'], limit: 30000 }
         ]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
-        chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
+        chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
           doc_ids: [
             'purged:first',
             'purged:f1', 'purged:f1-m1', 'purged:f1-m2', 'purged:f1-r1', 'purged:f1-r2',
@@ -767,7 +783,7 @@ describe('ServerSidePurge', () => {
           seq_interval: 12
         }]);
 
-        chai.expect(purgeDbChanges.args[1]).to.deep.equal([{
+        chai.expect(purgeDbChanges.args[1]).to.deep.equalInAnyOrder([{
           doc_ids: [
             'purged:first',
             'purged:f1', 'purged:f1-m1', 'purged:f1-m2', 'purged:f1-r1', 'purged:f1-r2',
@@ -785,14 +801,14 @@ describe('ServerSidePurge', () => {
           [],
           []
         ]);
-        chai.expect(purgeFn.args[1]).deep.to.equal([
+        chai.expect(purgeFn.args[1]).to.deep.equal([
           { roles: roles['b'] },
           { _id: 'first', type: 'district_hospital' },
           [],
           []
         ]);
 
-        chai.expect(purgeFn.args[2]).deep.to.equal([
+        chai.expect(purgeFn.args[2]).to.deep.equal([
           { roles: roles['a'] },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [
@@ -804,7 +820,7 @@ describe('ServerSidePurge', () => {
             { _id: 'f1-m2', type: 'data_record', sms_message: 'b' }
           ]
         ]);
-        chai.expect(purgeFn.args[3]).deep.to.equal([
+        chai.expect(purgeFn.args[3]).to.deep.equal([
           { roles: roles['b'] },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [
@@ -817,7 +833,7 @@ describe('ServerSidePurge', () => {
           ]
         ]);
 
-        chai.expect(purgeFn.args[4]).deep.to.equal([
+        chai.expect(purgeFn.args[4]).to.deep.equalInAnyOrder([
           { roles: roles['a'] },
           { _id: 'f2', type: 'person' },
           [
@@ -826,7 +842,7 @@ describe('ServerSidePurge', () => {
           ],
           []
         ]);
-        chai.expect(purgeFn.args[5]).deep.to.equal([
+        chai.expect(purgeFn.args[5]).to.deep.equalInAnyOrder([
           { roles: roles['b'] },
           { _id: 'f2', type: 'person' },
           [
@@ -836,7 +852,7 @@ describe('ServerSidePurge', () => {
           []
         ]);
 
-        chai.expect(purgeFn.args[6]).deep.to.equal([
+        chai.expect(purgeFn.args[6]).to.deep.equalInAnyOrder([
           { roles: roles['a'] },
           { _id: 'f4', type: 'clinic', place_id: 's4' },
           [],
@@ -845,7 +861,7 @@ describe('ServerSidePurge', () => {
             { _id: 'f4-m2', type: 'data_record', sms_message: 'b' }
           ]
         ]);
-        chai.expect(purgeFn.args[7]).deep.to.equal([
+        chai.expect(purgeFn.args[7]).to.deep.equalInAnyOrder([
           { roles: roles['b'] },
           { _id: 'f4', type: 'clinic', place_id: 's4' },
           [],
@@ -884,36 +900,44 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(db.medic, 'query');
       db.medic.query.onCall(0).resolves({ rows: [
-        { id: 'first', key: 'first', doc: { _id: 'first', type: 'district_hospital' }},
-        { id: 'f1-tombstone', key: 'f1',
-          doc: { _id: 'f1-tombstone', tombstone: { _id: 'f1', type: 'clinic', place_id: 's1'  } } },
-        { id: 'f1-r1', key: 's1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
-        { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
-        { id: 'f1-r2', key: 's1', doc: { _id: 'f1-r2', type: 'data_record', form: 'b', patient_id: 's1' } },
-        { id: 'f1-m2', key: 'f1', doc: { _id: 'f1-m2', type: 'data_record', sms_message: 'b' } },
-        { id: 'f2-tombstone', key: 'f2',
-          doc: { _id: 'f1-tombstone', tombstone: { _id: 'f1', type: 'clinic', place_id: 's1'  } }},
-        { id: 'f2-r1', key: 'f2', doc: { _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'f2' } },
-        { id: 'f2-r2', key: 'f2', doc: { _id: 'f2-r2', type: 'data_record', sms_message: 'b' } },
-        { id: 'f3', key: 'f3', doc: { _id: 'f3', type: 'health_center' }},
-        { id: 'f3-m1-tombstone', key: 'f3', doc: { _id: 'f3-m1-tombstone', type: 'tombstone' } },
-        { id: 'f3-r1-tombstone', key: 'f3', doc: { _id: 'f3-r1-tombstone', type: 'tombstone' } },
-        { id: 'f3-m2', key: 'f3', doc: { _id: 'f3-m2', type: 'data_record', sms_message: 'b' } },
-        { id: 'f3-r2', key: 'f3', doc: { _id: 'f3-r2', type: 'data_record', sms_message: 'b' } },
-        { id: 'f4-tombstone', key: 'f4',
-          doc: { _id: 'f4-tombstone', tombstone: { _id: 'f4', type: 'person', patient_id: 's4' } }},
+        { id: 'first', key: 'first', value: { type: 'district_hospital' }},
+        { id: 'f1-tombstone', key: 'f1', value: { type: 'clinic' } },
+        { id: 'f1-r1', key: 's1', value: { type: 'data_record', subject: 's1' } },
+        { id: 'f1-m1', key: 'f1', value: { type: 'data_record', subject: 'f1' } },
+        { id: 'f1-r2', key: 's1', value: { type: 'data_record', subject: 's1' } },
+        { id: 'f1-m2', key: 'f1', value: { type: 'data_record', subject: 'f1' } },
+        { id: 'f2-tombstone', key: 'f2', value: { type: 'clinic' } },
+        { id: 'f2-r1', key: 'f2', value: { type: 'data_record', subject: 'f2' } },
+        { id: 'f2-r2', key: 'f2', value: { type: 'data_record',  subject: 'f2' } },
+        { id: 'f3', key: 'f3', value: { type: 'health_center' }},
+        { id: 'f3-m1-tombstone', key: 'f3', value: { type: 'data_record', subject: 'f3' } },
+        { id: 'f3-r1-tombstone', key: 'f3', value: { type: 'data_record', subject: 'f3' } },
+        { id: 'f3-m2', key: 'f3', value: { type: 'data_record', subject: 'f3' } },
+        { id: 'f3-r2', key: 'f3', value: { type: 'data_record', subject: 'f3' } },
+        { id: 'f4-tombstone', key: 'f4', value: { type: 'person' }},
       ] });
       db.medic.query.onCall(1).resolves({ rows: [] });
+
+      sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
+        { id: 'f1-r1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
+        { id: 'f1-m1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
+        { id: 'f1-r2', doc: { _id: 'f1-r2', type: 'data_record', form: 'b', patient_id: 's1' } },
+        { id: 'f1-m2', doc: { _id: 'f1-m2', type: 'data_record', sms_message: 'b' } },
+        { id: 'f2-r1', doc: { _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'f2' } },
+        { id: 'f2-r2', doc: { _id: 'f2-r2', type: 'data_record', sms_message: 'b' } },
+        { id: 'f3-m2', doc: { _id: 'f3-m2', type: 'data_record', sms_message: 'b' } },
+        { id: 'f3-r2', doc: { _id: 'f3-r2', type: 'data_record', sms_message: 'b' } },
+      ] });
 
       return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(db.medic.query.callCount).to.equal(2);
-        chai.expect(db.medic.query.args[0]).to.deep.equal([
+        chai.expect(db.medic.query.args[0]).to.deep.equalInAnyOrder([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2', 'f3', 'f4', 's4'], include_docs: true, limit: 30000 }
+          { keys: ['first', 'f1', 's1', 'f2', 'f3', 'f4', 's4'], limit: 30000 }
         ]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
-        chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
+        chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
           doc_ids: [
             'purged:first',
             'purged:f1-m1', 'purged:f1-m2', 'purged:f1-r1', 'purged:f1-r2',
@@ -924,7 +948,7 @@ describe('ServerSidePurge', () => {
           seq_interval: 10
         }]);
 
-        chai.expect(purgeDbChanges.args[1]).to.deep.equal([{
+        chai.expect(purgeDbChanges.args[1]).to.deep.equalInAnyOrder([{
           doc_ids: [
             'purged:first',
             'purged:f1-m1', 'purged:f1-m2', 'purged:f1-r1', 'purged:f1-r2',
@@ -995,27 +1019,35 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(db.medic, 'query');
       db.medic.query.onCall(0).resolves({ rows: [
-        { id: 'first', key: 'first', doc: { _id: 'first', type: 'district_hospital' }},
-        { id: 'f1', key: 'f1', doc: { _id: 'f1', type: 'clinic', place_id: 's1' }},
-        { id: 'f1-r1', key: 's1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
-        { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
-        { id: 'f2', key: 'f2', doc: { _id: 'f2', type: 'person', patient_id: 's2' }},
-        { id: 'f2-r1', key: 'f2', doc: { _id: 'f2-r1', type: 'data_record', form: 'a' } },
-        { id: 'f2-r2', key: 'f2', doc: { _id: 'f2-r2', type: 'data_record', form: 'b' } },
-        { id: 'f2-r3', key: 's2', doc: { _id: 'f2-r3', type: 'data_record', form: 'a', patient_id: 's2' } },
-        { id: 'f2-m1', key: 'f2', doc: { _id: 'f2-m1', type: 'data_record' } },
+        { id: 'first', key: 'first', value: { type: 'district_hospital' }},
+        { id: 'f1', key: 'f1', value: { type: 'clinic' }},
+        { id: 'f1-r1', key: 's1', value: { type: 'data_record', subject: 's1' } },
+        { id: 'f1-m1', key: 'f1', value: { type: 'data_record', subject: 'f1' } },
+        { id: 'f2', key: 'f2', value: { type: 'person' }},
+        { id: 'f2-r1', key: 'f2', value: { type: 'data_record', subject: 'f2' } },
+        { id: 'f2-r2', key: 'f2', value: { type: 'data_record', subject: 'f2' } },
+        { id: 'f2-r3', key: 's2', value: { type: 'data_record', subject: 's2' } },
+        { id: 'f2-m1', key: 'f2', value: { type: 'data_record', subject: 'f2' } },
       ] });
       db.medic.query.onCall(1).resolves({ rows: [] });
+      sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
+        { id: 'f1-r1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
+        { id: 'f1-m1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
+        { id: 'f2-r1', doc: { _id: 'f2-r1', type: 'data_record', form: 'a' } },
+        { id: 'f2-r2', doc: { _id: 'f2-r2', type: 'data_record', form: 'b' } },
+        { id: 'f2-r3', doc: { _id: 'f2-r3', type: 'data_record', form: 'a', patient_id: 's2' } },
+        { id: 'f2-m1', doc: { _id: 'f2-m1', type: 'data_record' } },
+      ] });
 
       return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(db.medic.query.callCount).to.equal(2);
-        chai.expect(db.medic.query.args[0]).to.deep.equal([
+        chai.expect(db.medic.query.args[0]).to.deep.equalInAnyOrder([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2', 's2'], include_docs: true, limit: 30000 }
+          { keys: ['first', 'f1', 's1', 'f2', 's2'], limit: 30000 }
         ]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
-        chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
+        chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
           doc_ids: [
             'purged:first',
             'purged:f1', 'purged:f1-m1', 'purged:f1-r1',
@@ -1033,28 +1065,28 @@ describe('ServerSidePurge', () => {
           []
         ]);
 
-        chai.expect(purgeFn.args[2]).deep.to.equal([
+        chai.expect(purgeFn.args[2]).to.deep.equal([
           { roles: roles['a'] },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' }],
           [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }]
         ]);
 
-        chai.expect(purgeFn.args[4]).deep.to.equal([
+        chai.expect(purgeFn.args[4]).to.deep.equal([
           { roles: roles['a'] },
           { _id: 'f2', type: 'person', patient_id: 's2' },
           [{ _id: 'f2-r3', type: 'data_record', form: 'a', patient_id: 's2' }],
           [{ _id: 'f2-m1', type: 'data_record' }]
         ]);
 
-        chai.expect(purgeFn.args[6]).deep.to.equal([
+        chai.expect(purgeFn.args[6]).to.deep.equal([
           { roles: roles['a'] },
           {},
           [{ _id: 'f2-r1', type: 'data_record', form: 'a' }],
           []
         ]);
 
-        chai.expect(purgeFn.args[8]).deep.to.equal([
+        chai.expect(purgeFn.args[8]).to.deep.equal([
           { roles: roles['a'] },
           {},
           [{ _id: 'f2-r2', type: 'data_record', form: 'b' }],
@@ -1083,34 +1115,36 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(db.medic, 'query');
       db.medic.query.onCall(0).resolves({ rows: [
-        { id: 'first', key: 'first', doc: { _id: 'first', type: 'district_hospital' } },
-        { id: 'f1', key: 'f1', doc: { _id: 'f1', type: 'clinic', place_id: 's1' } },
-        { id: 'f1-r1', key: 's1',
-          doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1', needs_signoff: true } },
-        { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
-        { id: 'f2', key: 'f2', doc: { _id: 'f2', type: 'person' } },
+        { id: 'first', key: 'first', value: { type: 'district_hospital' } },
+        { id: 'f1', key: 'f1', value: { type: 'clinic' } },
+        { id: 'f1-r1', key: 's1', value: { type: 'data_record', subject: 's1', needs_signoff: true } },
+        { id: 'f1-m1', key: 'f1', value: { type: 'data_record', subject: 'f1' } },
+        { id: 'f2', key: 'f2', value: { type: 'person' } },
         { id: 'f2-r1', key: 'f2',
-          doc: { _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'random', needs_signoff: true,
-            contact: { _id: 'f2' } } },
+          value: { type: 'data_record', subject: 'random', needs_signoff: true, submitter: 'f2'}
+        },
         { id: 'f2-r2', key: 'f2',
-          doc: { _id: 'f2-r2', type: 'data_record', form: 'b', patient_id: 'random', needs_signoff: true,
-            contact: { _id: 'other' } } },
-        { id: 'f2-r3', key: 'f2',
-          doc: { _id: 'f2-r3', type: 'data_record', form: 'a', needs_signoff: true, contact: { _id: 'f2' } } },
-        { id: 'f2-r4', key: 'f2',
-          doc: { _id: 'f2-r4', type: 'data_record', form: 'a', needs_signoff: true, contact: { _id: 'other' } } },
+          value: {type: 'data_record', subject: 'random', needs_signoff: true, submitter: 'other' }
+        },
+        { id: 'f2-r3', key: 'f2', value: { type: 'data_record', needs_signoff: true, submitter: 'f2' } },
       ] });
       db.medic.query.onCall(1).resolves({ rows: [] });
+      sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
+        { id: 'f1-r1', doc: { _id: 'f1-r1', type: 'data_record', patient_id: 's1', needs_signoff: true, form: 'a' } },
+        { id: 'f1-m1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
+        { id: 'f2-r3',
+          doc: { _id: 'f2-r3', type: 'data_record', form: 'a', needs_signoff: true, contact: { _id: 'f2' } } },
+      ] });
 
       return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2'], include_docs: true, limit: 30000 }
+          { keys: ['first', 'f1', 's1', 'f2'], limit: 30000 }
         ]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
-        chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
+        chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
           doc_ids: [
             'purged:first',
             'purged:f1', 'purged:f1-m1',  'purged:f1-r1',
@@ -1120,6 +1154,7 @@ describe('ServerSidePurge', () => {
           seq_interval: 6
         }]);
 
+        console.log(JSON.stringify(purgeFn.args, null, 2));
         chai.expect(purgeFn.callCount).to.equal(8);
         chai.expect(purgeFn.args[0]).to.deep.equal([
           { roles: roles['a'] },
@@ -1128,21 +1163,21 @@ describe('ServerSidePurge', () => {
           []
         ]);
 
-        chai.expect(purgeFn.args[2]).deep.to.equal([
+        chai.expect(purgeFn.args[2]).to.deep.equal([
           { roles: roles['a'] },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1', needs_signoff: true }],
           [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }]
         ]);
 
-        chai.expect(purgeFn.args[4]).deep.to.equal([
+        chai.expect(purgeFn.args[4]).to.deep.equal([
           { roles: roles['a'] },
           { _id: 'f2', type: 'person' },
           [],
           []
         ]);
 
-        chai.expect(purgeFn.args[6]).deep.to.equal([
+        chai.expect(purgeFn.args[6]).to.deep.equal([
           { roles: roles['a'] },
           {},
           [{ _id: 'f2-r3', type: 'data_record', form: 'a', needs_signoff: true, contact: { _id: 'f2' } }],
@@ -1168,17 +1203,26 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(db.medic, 'query');
       db.medic.query.onCall(0).resolves({ rows: [
-        { id: 'first', key: 'first', doc: { _id: 'first', type: 'district_hospital' } },
-        { id: 'f1', key: 'f1', doc: { _id: 'f1', type: 'clinic' } },
-        { id: 'f1-r1', key: 's1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
-        { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
-        { id: 'f2', key: 'f2', doc: { _id: 'f2', type: 'person' } },
-        { id: 'f2-r1', key: 'f2', doc: { _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'f2' } },
-        { id: 'f2-r2', key: 'f2', doc: { _id: 'f2-r2', type: 'data_record', form: 'b', patient_id: 'f2' } },
-        { id: 'f2-m1', key: 'f2', doc: { _id: 'f2-m1', type: 'data_record' } },
-        { id: 'f2-r3', key: 'f2', doc: { _id: 'f2-r3', type: 'data_record', form: 'a', patient_id: 'f2' } },
+        { id: 'first', key: 'first', value: { } },
+        { id: 'f1', key: 'f1', value: { } },
+        { id: 'f1-r1', key: 's1', value: { subject: 's1', type: 'data_record' } },
+        { id: 'f1-m1', key: 'f1', value: { subject: 'f1', type: 'data_record' } },
+        { id: 'f2', key: 'f2', value: { } },
+        { id: 'f2-r1', key: 'f2', value: { subject: 'f2', type: 'data_record' } },
+        { id: 'f2-r2', key: 'f2', value: { subject: 'f2', type: 'data_record' } },
+        { id: 'f2-m1', key: 'f2', value: { subject: 'f2', type: 'data_record' } },
+        { id: 'f2-r3', key: 'f2', value: { subject: 'f2', type: 'data_record' } },
       ] });
       db.medic.query.onCall(1).resolves({ rows: [] });
+      sinon.stub(db.medic, 'allDocs');
+      db.medic.allDocs.onCall(0).resolves({ rows: [
+        { id: 'f1-r1', doc: { _id: 'f1-r1', type: 'data_record', subject: 's1' } },
+        { id: 'f1-m1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
+        { id: 'f2-r1', doc: { _id: 'f2-r1', type: 'data_record', subject: 'f2' } },
+        { id: 'f2-r2', doc: { _id: 'f2-r2', type: 'data_record', subject: 'f2' } },
+        { id: 'f2-m1', doc: { _id: 'f2-m1', type: 'data_record' } },
+        { id: 'f2-r3', doc: { _id: 'f2-r3', type: 'data_record', subject: 'f2' } },
+      ] });
 
       const dbA = { changes: sinon.stub(), bulkDocs: sinon.stub().resolves([]) };
       const dbB = { changes: sinon.stub(), bulkDocs: sinon.stub().resolves([]) };
@@ -1210,7 +1254,7 @@ describe('ServerSidePurge', () => {
 
       return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
         chai.expect(dbA.changes.callCount).to.equal(1);
-        chai.expect(dbA.changes.args[0]).to.deep.equal([{
+        chai.expect(dbA.changes.args[0]).to.deep.equalInAnyOrder([{
           doc_ids: [
             'purged:first',
             'purged:f1', 'purged:f1-m1', 'purged:f1-r1',
@@ -1221,7 +1265,7 @@ describe('ServerSidePurge', () => {
         }]);
 
         chai.expect(dbB.changes.callCount).to.equal(1);
-        chai.expect(dbB.changes.args[0]).to.deep.equal([{
+        chai.expect(dbB.changes.args[0]).to.deep.equalInAnyOrder([{
           doc_ids: [
             'purged:first',
             'purged:f1', 'purged:f1-m1', 'purged:f1-r1',
@@ -1234,7 +1278,7 @@ describe('ServerSidePurge', () => {
         chai.expect(purgeFn.callCount).to.equal(6);
 
         chai.expect(dbA.bulkDocs.callCount).to.equal(1);
-        chai.expect(dbA.bulkDocs.args[0]).to.deep.equal([{ docs: [
+        chai.expect(dbA.bulkDocs.args[0]).to.deep.equalInAnyOrder([{ docs: [
           { _id: 'purged:f1-m1' },
           { _id: 'purged:f1-r1', _deleted: true, _rev: '1' },
           { _id: 'purged:f2-m1' },
@@ -1242,7 +1286,7 @@ describe('ServerSidePurge', () => {
           { _id: 'purged:f2-r3', _deleted: true, _rev: '2' },
         ]}]);
         chai.expect(dbB.bulkDocs.callCount).to.equal(1);
-        chai.expect(dbB.bulkDocs.args[0]).to.deep.equal([{ docs: [
+        chai.expect(dbB.bulkDocs.args[0]).to.deep.equalInAnyOrder([{ docs: [
           { _id: 'purged:f1-r1' },
           { _id: 'purged:f2-m1', _deleted: true, _rev: '2' },
           { _id: 'purged:f2-r1' },
@@ -1267,13 +1311,17 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(db.medic, 'query');
       db.medic.query.onCall(0).resolves({ rows: [
-        { id: 'first', key: 'first', doc: { _id: 'first', type: 'district_hospital' } },
-        { id: 'f1', key: 'f1', doc: { _id: 'f1', type: 'clinic', place_id: 's1' } },
-        { id: 'f1-r1', key: 's1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
-        { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
-        { id: 'f2', key: 'f2', doc: { _id: 'f2', type: 'clinic' }},
+        { id: 'first', key: 'first', value: { type: 'district_hospital' } },
+        { id: 'f1', key: 'f1', value: { type: 'clinic' } },
+        { id: 'f1-r1', key: 's1', value: { type: 'data_record', subject: 's1' } },
+        { id: 'f1-m1', key: 'f1', value: { type: 'data_record', subject: 'f1' } },
+        { id: 'f2', key: 'f2', value: { type: 'clinic' }},
       ] });
       db.medic.query.onCall(1).resolves({ rows: [] });
+      sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
+        { id: 'f1-r1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
+        { id: 'f1-m1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
+      ] });
 
       const dbA = { changes: sinon.stub().resolves({ results: [] }), bulkDocs: sinon.stub().resolves([])};
       const dbB = { changes: sinon.stub().resolves({ results: [] }), bulkDocs: sinon.stub().resolves([])};
@@ -1291,14 +1339,14 @@ describe('ServerSidePurge', () => {
 
       return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
         chai.expect(dbA.changes.callCount).to.equal(1);
-        chai.expect(dbA.changes.args[0]).to.deep.equal([{
-          doc_ids: ['purged:first', 'purged:f1', 'purged:f1-m1', 'purged:f1-r1', 'purged:f2',  ],
+        chai.expect(dbA.changes.args[0]).to.deep.equalInAnyOrder([{
+          doc_ids: ['purged:first', 'purged:f1', 'purged:f1-r1', 'purged:f1-m1', 'purged:f2',  ],
           batch_size: 6,
           seq_interval: 5
         }]);
 
         chai.expect(dbB.changes.callCount).to.equal(1);
-        chai.expect(dbB.changes.args[0]).to.deep.equal([{
+        chai.expect(dbB.changes.args[0]).to.deep.equalInAnyOrder([{
           doc_ids: ['purged:first', 'purged:f1', 'purged:f1-m1', 'purged:f1-r1', 'purged:f2',  ],
           batch_size: 6,
           seq_interval: 5
@@ -1350,13 +1398,17 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(db.medic, 'query');
       db.medic.query.onCall(0).resolves({ rows: [
-        { id: 'first', key: 'first', doc: { _id: 'first', type: 'district_hospital' }},
-        { id: 'f1', key: 'f1', doc: { _id: 'f1', type: 'clinic' }},
-        { id: 'f1-r1', key: 's1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
-        { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
-        { id: 'f2', key: 'f2', doc: { _id: 'f2', type: 'clinic' }},
+        { id: 'first', key: 'first', value: { type: 'district_hospital' }},
+        { id: 'f1', key: 'f1', value: { type: 'clinic' }},
+        { id: 'f1-r1', key: 's1', value: { type: 'data_record', subject: 's1' } },
+        { id: 'f1-m1', key: 'f1', value: { type: 'data_record', subject: 'f1' } },
+        { id: 'f2', key: 'f2', value: { type: 'clinic' }},
       ] });
       db.medic.query.onCall(1).resolves({ rows: [] });
+      sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
+        { id: 'f1-r1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
+        { id: 'f1-m1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
+      ] });
 
       const dbA = {
         changes: sinon.stub().resolves({ results: [ { id: 'purged:f1-m1', changes: [{ rev: '1' }] } ] }),
@@ -1402,29 +1454,32 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(db.medic, 'query');
       db.medic.query.onCall(0).resolves({ rows: [
-        { id: 'first', key: 'first', doc: { _id: 'first', type: 'district_hospital' } },
-        { id: 'f1', key: 'f1', doc: { _id: 'f1', type: 'clinic', place_id: 's1' } },
-        { id: 'target~one', key: 's1', doc: { _id: 'target~one', type: 'target', owner: 's1' } },
-        { id: 'random~two', key: 'f2', doc: { _id: 'random~two', type: 'random2', form: 'a', contact: 'other' } },
-        { id: 'f1-r1', key: 's1',
-          doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
-        { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
-        { id: 'f2', key: 'f2', doc: { _id: 'f2', type: 'person' } },
-        { id: 'target~two', key: 'f2', doc: { _id: 'target~two', type: 'target', owner: 'f2' } },
-        { id: 'random~one', key: 'f2', doc: { _id: 'random~one', type: 'random', form: 'a', contact: { _id: 'f2' } } },
+        { id: 'first', key: 'first', value: { type: 'district_hospital' } },
+        { id: 'f1', key: 'f1', value: { type: 'clinic' } },
+        { id: 'target~one', key: 's1', value: { type: 'target' } },
+        { id: 'random~two', key: 'f2', value: { type: 'random2' } },
+        { id: 'f1-r1', key: 's1', value: { type: 'data_record', subject: 's1' } },
+        { id: 'f1-m1', key: 'f1', value: { type: 'data_record', subject: 'f1' } },
+        { id: 'f2', key: 'f2', value: { type: 'person' } },
+        { id: 'target~two', key: 'f2', value: { type: 'target' } },
+        { id: 'random~one', key: 'f2', value: { type: 'random' } },
 
       ] });
       db.medic.query.onCall(1).resolves({ rows: [] });
+      sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
+        { id: 'f1-r1', key: 's1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
+        { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
+      ]});
 
       return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(db.medic.query.callCount).to.equal(2);
-        chai.expect(db.medic.query.args[0]).to.deep.equal([
+        chai.expect(db.medic.query.args[0]).to.deep.equalInAnyOrder([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2'], include_docs: true, limit: 30000 }
+          { keys: ['first', 'f1', 's1', 'f2'], limit: 30000 }
         ]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
-        chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
+        chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
           doc_ids: [
             'purged:first',
             'purged:f1', 'purged:f1-m1',  'purged:f1-r1',
@@ -1442,14 +1497,14 @@ describe('ServerSidePurge', () => {
           []
         ]);
 
-        chai.expect(purgeFn.args[2]).deep.to.equal([
+        chai.expect(purgeFn.args[2]).to.deep.equal([
           { roles: roles['a'] },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' }],
           [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }]
         ]);
 
-        chai.expect(purgeFn.args[4]).deep.to.equal([
+        chai.expect(purgeFn.args[4]).to.deep.equal([
           { roles: roles['a'] },
           { _id: 'f2', type: 'person' },
           [],

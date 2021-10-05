@@ -211,7 +211,7 @@ const assignContactToGroups = (row, groups, subjectIds) => {
   subjectIds.push(...group.subjectIds);
 };
 
-const getRecordGroupInfo = (row, groups, subjectIds) => {
+const filterReportRows = (row, groups, subjectIds) => {
   if (groups[row.id]) { // groups keys are contact ids, we already know everything about contacts
     return;
   }
@@ -220,37 +220,57 @@ const getRecordGroupInfo = (row, groups, subjectIds) => {
     return;
   }
 
-  if (row.doc.type !== 'data_record') {
+  if (row.value.type !== 'data_record') {
     return;
   }
 
-  if (row.doc.form) {
-    const subjectId = registrationUtils.getSubjectId(row.doc);
-    if (row.doc.needs_signoff) {
-      // reports with needs_signoff will emit for every contact from their submitter lineage,
-      // but we only want to process them once, either associated to their patient or alone, if no patient_id
+  if (row.value.needs_signoff) {
+    // reports with needs_signoff will emit for every contact from their submitter lineage,
+    // but we only want to process them once, either associated to their patient or alone, if no patient_id
 
-      if (subjectId && !subjectIds.includes(subjectId)) {
-        // if the report has a subject, but it is not amongst the list of keys we requested, we hit the emit
-        // for the contact or it's lineage via the `needs_signoff` path. Skip.
-        return;
-      }
-      const submitter = row.doc.contact && row.doc.contact._id;
-      if (!subjectId && !subjectIds.includes(submitter)) {
-        // if the report doesn't have a subject, we want to process it when we hit the emit for the submitter.
-        // if the report submitter is not amongst our request keys, we hit an emit for the submitter's lineage. Skip.
-        return;
-      }
+    if (row.value.subject && !subjectIds.includes(row.value.subject)) {
+      // if the report has a subject, but it is not amongst the list of keys we requested, we hit the emit
+      // for the contact or it's lineage via the `needs_signoff` path. Skip.
+      return;
     }
 
+    if (!row.value.subject && !subjectIds.includes(row.value.submitter)) {
+      // if the report doesn't have a subject, we want to process it when we hit the emit for the submitter.
+      // if the report submitter is not amongst our request keys, we hit an emit for the submitter's lineage. Skip.
+      return;
+    }
+  }
+
+  return true;
+};
+
+const getRecordGroupInfo = (row) => {
+  if (row.doc.form) {
+    const subjectId = registrationUtils.getSubjectId(row.doc);
     // use patient_id as a key, as to keep subject to report associations correct
     // reports without a subject are processed separately
     const key = subjectId === row.key ? subjectId : row.id;
     return { key, report: row.doc };
-  } else {
-    // messages only emit once, either their sender or receiver
-    return { key: row.key, message: row.doc };
   }
+
+  // messages only emit once, either their sender or receiver
+  return { key: row.key, message: row.doc };
+};
+
+const assignRecords = (rows, groups, subjectIds) => {
+  const relevantRows = rows.filter(row => filterReportRows(row, groups, subjectIds));
+
+  if (!relevantRows.length) {
+    return;
+  }
+
+  const ids = relevantRows.map(row => row.id);
+  return db.medic.allDocs({ keys: ids, include_docs: true }).then(allDocsResult => {
+    relevantRows.forEach((row, idx) => row.doc = allDocsResult.rows[idx].doc);
+
+    const recordsByKey = getRecordsByKey(relevantRows, groups, subjectIds);
+    assignRecordsToGroups(recordsByKey, groups);
+  });
 };
 
 const getRecordsByKey = (rows, groups, subjectIds) => {
@@ -366,7 +386,7 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
         assignContactToGroups(row, groups, subjectIds);
       });
 
-      const opts = { keys: subjectIds, include_docs: true, limit: MAX_BATCH_SIZE };
+      const opts = { keys: subjectIds, limit: MAX_BATCH_SIZE };
       return db.medic.query('medic/docs_by_replication_key', opts);
     })
     .then(result => {
@@ -378,13 +398,13 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
       }
 
       /* if (result.rows.length < MAX_BATCH_SIZE / 4) {
-        increaseBatchSize();
-      }*/
+       increaseBatchSize();
+       }*/
 
-      const recordsByKey = getRecordsByKey(result.rows, groups, subjectIds);
-      assignRecordsToGroups(recordsByKey, groups);
+      return assignRecords(result.rows, groups, subjectIds);
+    })
+    .then(() => {
       docIds = getIdsFromGroups(groups);
-
       return getAlreadyPurgedDocs(rolesHashes, docIds);
     })
     .then(alreadyPurged => {
