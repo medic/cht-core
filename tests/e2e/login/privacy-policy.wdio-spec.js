@@ -131,6 +131,7 @@ describe('Privacy policy', () => {
       await privacyPage.acceptPrivacyPolicy();
       await commonElements.closeTour();
       await commonElements.sync();
+      
       await expect(await commonElements.messagesTab()).toBeDisplayed();
       passed = true;
     });
