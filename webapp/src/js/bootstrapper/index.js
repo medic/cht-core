@@ -198,9 +198,9 @@
     const userCtx = getUserCtx();
     const hasForceLoginCookie = document.cookie.includes('login=force');
     if (!userCtx || hasForceLoginCookie) {
-      const err = new Error('User must reauthenticate');
-      err.status = 401;
-      return redirectToLogin(dbInfo, err, callback);
+      const error = new Error('User must reauthenticate');
+      error.status = 401;
+      return redirectToLogin(dbInfo, error, callback);
     }
 
     if (hasFullDataAccess(userCtx)) {
@@ -224,12 +224,14 @@
       .catch(() => true);
 
     let isInitialReplicationNeeded;
-    Promise.all([swRegistration, testReplicationNeeded(), setReplicationId(POUCHDB_OPTIONS, localDb)])
-      .then(function(resolved) {
+    Promise
+      .all([swRegistration, testReplicationNeeded(), setReplicationId(POUCHDB_OPTIONS, localDb)])
+      .then(resolved => {
         purger.setOptions(POUCHDB_OPTIONS);
         isInitialReplicationNeeded = !!resolved[1];
 
         if (isInitialReplicationNeeded) {
+          window.startupTimes.replicationStarted = performance.now();
           return docCountPoll(localDb)
             .then(() => initialReplication(localDb, remoteDb))
             .then(testReplicationNeeded)
@@ -237,7 +239,8 @@
               if (isReplicationStillNeeded) {
                 throw new Error('Initial replication failed');
               }
-            });
+            })
+            .then(() => window.startupTimes.replicationEnded = performance.now());
         }
       })
       .then(() => {
@@ -248,11 +251,13 @@
               return;
             }
 
+            window.startupTimes.purgeStarted = performance.now();
             return purger
               .purge(localDb, userCtx)
               .on('start', () => setUiStatus('PURGE_INIT'))
               .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
-              .catch(err => console.error('Error attempting to purge', err));
+              .catch(error => console.error('Error attempting to purge', error))
+              .then(() => window.startupTimes.purgeEnded = performance.now());
           });
       })
       .then(() => {
@@ -262,27 +267,28 @@
             if (!shouldPurgeMeta) {
               return;
             }
-
+            window.startupTimes.purgeMetaStarted = performance.now();
             setUiStatus('PURGE_META');
             return purger.purgeMeta(localMetaDb);
           })
-          .catch(err => console.error('Error attempting to purge meta', err));
+          .catch(error => console.error('Error attempting to purge meta', error))
+          .then(() => window.startupTimes.purgeMetaEnded = performance.now());
       })
       .then(() => setUiStatus('STARTING_APP'))
-      .catch(err => err)
-      .then(function(err) {
+      .catch(error => error)
+      .then(error => {
         localDb.close();
         remoteDb.close();
         localMetaDb.close();
-        if (err) {
-          if (err.status === 401) {
-            return redirectToLogin(dbInfo, err, callback);
+        if (error) {
+          if (error.status === 401) {
+            return redirectToLogin(dbInfo, error, callback);
           }
 
-          setUiError(err);
+          setUiError(error);
         }
 
-        callback(err);
+        callback(error);
       });
 
   };

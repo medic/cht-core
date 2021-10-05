@@ -633,14 +633,38 @@ export class AppComponent implements OnInit {
       'boot_time:1:to_first_code_execution',
       window.startupTimes.firstCodeExecution - window.startupTimes.start
     );
+
+    if (window.startupTimes.replicationStarted && window.startupTimes.replicationEnded) {
+      this.telemetryService.record(
+        'boot_time:2_1:to_replication',
+        window.startupTimes.replicationEnded - window.startupTimes.replicationStarted
+      );
+    }
+
+    if (window.startupTimes.purgeStarted && window.startupTimes.purgeEnded) {
+      this.telemetryService.record(
+        'boot_time:2_2:to_purge',
+        window.startupTimes.purgeEnded - window.startupTimes.purgeStarted
+      );
+    }
+
+    if (window.startupTimes.purgeMetaStarted && window.startupTimes.purgeMetaEnded) {
+      this.telemetryService.record(
+        'boot_time:2_3:to_purge_meta',
+        window.startupTimes.purgeMetaEnded - window.startupTimes.purgeMetaStarted
+      );
+    }
+
     this.telemetryService.record(
       'boot_time:2:to_bootstrap',
       window.startupTimes.bootstrapped - window.startupTimes.firstCodeExecution
     );
+
     this.telemetryService.record(
       'boot_time:3:to_angular_bootstrap',
       window.startupTimes.angularBootstrapped - window.startupTimes.bootstrapped
     );
+
     this.telemetryService.record('boot_time', window.startupTimes.angularBootstrapped - window.startupTimes.start);
   }
 
