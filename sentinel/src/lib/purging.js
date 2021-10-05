@@ -13,7 +13,7 @@ const TARGET_EXPIRATION_PERIOD = 6; // months
 
 const MAX_CONTACT_BATCH_SIZE = 1000;
 const MIN_CONTACT_BATCH_SIZE = 1;
-const MAX_BATCH_SIZE = 10000;
+const MAX_BATCH_SIZE = 30000;
 const MAX_BATCH_SIZE_REACHED = 'max_size_reached';
 let contactsBatchSize = MAX_CONTACT_BATCH_SIZE;
 
