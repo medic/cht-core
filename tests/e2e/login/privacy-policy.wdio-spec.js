@@ -22,7 +22,7 @@ describe('Privacy policy', () => {
   const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
 
   users.forEach((user) => {
-    xdescribe(`for a ${user.username} user`, () => {
+    describe(`for a ${user.username} user`, () => {
       beforeEach(async () => {
         await browser.reloadSession();
         await browser.url('/');

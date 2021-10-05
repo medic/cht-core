@@ -20,8 +20,7 @@ const acceptPrivacyPolicy = async () => {
 
 const updatePrivacyPolicy = async (updatedPolicy) => {
   const existingPolicy = await utils.getDoc(updatedPolicy._id);
-  const res = await utils.saveDoc({ ...existingPolicy, ...updatedPolicy });
-  console.log(res);
+  await utils.saveDoc({ ...existingPolicy, ...updatedPolicy });
 };
 
 const waitForPolicy = async (elm, { header, paragraph, language }) => {
