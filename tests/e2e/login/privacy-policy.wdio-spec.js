@@ -114,6 +114,7 @@ describe('Privacy policy', () => {
     before(async () => {
       await utils.saveDocs([parent, privacyPolicy]);
       await utils.createUsers([conflictUser]);
+      await browser.reloadSession();
       await browser.url('/');
       await loginPage.login(conflictUser.username, conflictUser.password);
     });
@@ -131,7 +132,6 @@ describe('Privacy policy', () => {
       await privacyPage.acceptPrivacyPolicy();
       await commonElements.closeTour();
       await commonElements.sync();
-      
       await expect(await commonElements.messagesTab()).toBeDisplayed();
       passed = true;
     });
