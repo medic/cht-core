@@ -322,6 +322,17 @@ const getDocsToPurge = (purgeFn, groups, roles) => {
   return toPurge;
 };
 
+const contactsPurge = async (roles, purgeFn) => {
+  let startKey = '';
+  let startKeyDocId = '';
+
+  do {
+    const next = await batchedContactsPurge(roles, purgeFn, startKey, startKeyDocId);
+    startKey = next.startKey;
+    startKeyDocId = next.startKeyDocId;
+  } while (startKey !== undefined);
+};
+
 const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '') => {
   let nextKeyDocId;
   let nextKey;
@@ -380,12 +391,14 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
       const toPurge = getDocsToPurge(purgeFn, groups, roles);
       return updatePurgedDocs(rolesHashes, docIds, alreadyPurged, toPurge);
     })
-    .then(() => nextKey && batchedContactsPurge(roles, purgeFn, nextKey, nextKeyDocId))
+    .then(() => {
+      return { startKey: nextKey, startKeyDocId: nextKeyDocId };
+    })
     .catch(err => {
       if (err && err.code === MAX_BATCH_SIZE_REACHED && contactsBatchSize > MIN_CONTACT_BATCH_SIZE) {
         decreaseBatchSize();
         logger.warn(`Too many reports to process. Decreasing contacts batch size to ${contactsBatchSize}`);
-        return batchedContactsPurge(roles, purgeFn, startKey, startKeyDocId);
+        return { startKey, startKeyDocId };
       }
 
       throw err;
@@ -565,7 +578,7 @@ const purge = () => {
         return;
       }
       return initPurgeDbs(roles)
-        .then(() => batchedContactsPurge(roles, purgeFn))
+        .then(() => contactsPurge(roles, purgeFn))
         .then(() => batchedUnallocatedPurge(roles, purgeFn))
         .then(() => batchedTasksPurge(roles))
         .then(() => batchedTargetsPurge(roles))
