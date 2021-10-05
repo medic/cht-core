@@ -114,6 +114,7 @@ describe('Privacy policy', () => {
     before(async () => {
       await utils.saveDocs([parent, privacyPolicy]);
       await utils.createUsers([conflictUser]);
+      await browser.url('/');
       await loginPage.login(conflictUser.username, conflictUser.password);
     });
     afterEach(async () => {
