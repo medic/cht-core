@@ -1154,7 +1154,6 @@ describe('ServerSidePurge', () => {
           seq_interval: 6
         }]);
 
-        console.log(JSON.stringify(purgeFn.args, null, 2));
         chai.expect(purgeFn.callCount).to.equal(8);
         chai.expect(purgeFn.args[0]).to.deep.equal([
           { roles: roles['a'] },
