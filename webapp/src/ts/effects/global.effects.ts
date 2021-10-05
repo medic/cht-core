@@ -72,7 +72,7 @@ export class GlobalEffects {
       .catch(() => false);
   }
 
-  private navigate(nextUrl: string, cancelCallback: Function) {
+  private navigate(nextUrl: string, cancelCallback: () => void) {
     try {
       if (nextUrl) {
         return this.router.navigateByUrl(nextUrl);
