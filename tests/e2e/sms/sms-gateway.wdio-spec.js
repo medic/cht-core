@@ -3,132 +3,7 @@ const messagesPo = require('../../page-objects/messages/messages.wdio.page');
 const reportsPo = require('../../page-objects/reports/reports.wdio.page');
 const commonElements = require('../../page-objects/common/common.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
-
-const messageId1 = '00f237ab-dd34-44a8-9f17-caaa022be947';
-const messageId2 = '40cb5078-57da-427c-b3a9-b76ae581e5da';
-const messageId3 = '121a9fe4-2da0-49c1-a0cf-13f2554d7430';
-const messageTo1 = '+64275555556';
-const messageContent1 =
-  'Thank you for registering Shannon. Their pregnancy ID is 28551, and EDD is Sun, Dec 18th, 2016';
-const messageContent2 =
-  'Please remind Shannon (28551) to visit the health facility for ANC visit this week. ' +
-  'When she does let us know with "V 28551". Thanks!';
-const messageTo2 = '+64275555556';
-const report = {
-  type: 'data_record',
-  from: '+64275555556',
-  form: 'P',
-  errors: [],
-  tasks: [
-    {
-      messages: [
-        {
-          to: messageTo1,
-          message: messageContent1,
-          uuid: messageId1,
-        },
-      ],
-      state: 'pending',
-      state_history: [
-        {
-          state: 'pending',
-          timestamp: '2016-08-04T02:24:48.578Z',
-        },
-      ],
-    },
-  ],
-  fields: {
-    last_menstrual_period: 20,
-    patient_name: 'Shannon',
-  },
-  reported_date: 1470277478632,
-  sms_message: {
-    message_id: '4490',
-    sent_timestamp: '1470277478632',
-    message: '1!P!20#Shannon',
-    from: '+64275555556',
-    type: 'sms_message',
-    form: 'P',
-    locale: 'en',
-  },
-  read: [],
-  patient_id: '28551',
-  lmp_date: '2016-03-12T11:00:00.000Z',
-  expected_date: '2016-12-17T11:00:00.000Z',
-  scheduled_tasks: [
-    {
-      due: '2016-08-28T21:00:00.000Z',
-      messages: [
-        {
-          to: messageTo2,
-          message: messageContent2,
-          uuid: messageId2,
-        },
-      ],
-      state: 'scheduled',
-      state_history: [
-        {
-          state: 'scheduled',
-          timestamp: '2016-08-04T02:24:48.569Z',
-        },
-      ],
-      group: 2,
-      type: 'ANC Reminders LMP',
-    },
-    {
-      due: '2016-09-04T22:00:00.000Z',
-      messages: [
-        {
-          to: '+64275555556',
-          message:
-            'Did Shannon attend her ANC visit? When she does, respond with "V 28551". Thank you!',
-          uuid: '2ca2e79b-4971-4619-bd8b-7324d30bc060',
-        },
-      ],
-      state: 'scheduled',
-      state_history: [
-        {
-          state: 'scheduled',
-          timestamp: '2016-08-04T02:24:48.570Z',
-        },
-      ],
-      group: 2,
-      type: 'ANC Reminders LMP',
-    },
-    {
-      due: '2016-10-23T20:00:00.000Z',
-      messages: [
-        {
-          to: '+64275555556',
-          message:
-            'Please remind Shannon (28551) to visit the health facility for ANC visit this week. ' +
-            'When she does let us know with "V 28551". Thanks!',
-          uuid: messageId3,
-        },
-      ],
-      state: 'scheduled',
-      state_history: [
-        {
-          state: 'scheduled',
-          timestamp: '2016-08-04T02:24:48.570Z',
-        },
-      ],
-      group: 3,
-      type: 'ANC Reminders LMP',
-    },
-  ],
-  contact: {
-    _id: 'c49385b3594af7025ef097114104dd97',
-    _rev: '1-6f271bce3935ae5a336bdfc15edf313a',
-    name: 'John',
-    date_of_birth: '',
-    phone: '+64275555556',
-    alternate_phone: '',
-    notes: '',
-    type: 'person',
-    reported_date: 1469578114398,
-  },
-};
+const smsPregancy = require('../../factories/cht/reports/sms-pregnancy');
 
 describe('sms-gateway api', () => {
   before(async ()=> {
@@ -182,14 +57,15 @@ describe('sms-gateway api', () => {
     let savedDoc;
 
     beforeEach(async () => {
+      const report = smsPregancy.pregnancy().build();
       const result = await utils.saveDoc(report);
       savedDoc = result.id;
       const body = {
         updates: [
-          { id: messageId1, status: 'SENT' },
-          { id: messageId2, status: 'DELIVERED' },
+          { id: report.tasks[0].messages[0].uuid, status: 'SENT' },
+          { id: report.scheduled_tasks[0].messages[0].uuid, status: 'DELIVERED' },
           {
-            id: messageId3,
+            id: report.scheduled_tasks[2].messages[0].uuid,
             status: 'FAILED',
             reason: 'Insufficient credit',
           },
@@ -220,9 +96,10 @@ describe('sms-gateway api', () => {
   describe('- api returns list of pending WO messages', () => {
     let savedDoc;
     let response;
+    let reportWithTwoMessagesToSend;
 
     beforeEach(async () => {
-      const reportWithTwoMessagesToSend = JSON.parse(JSON.stringify(report));
+      reportWithTwoMessagesToSend = smsPregancy.pregnancy().build();
       // First scheduled message is in forwarded-to-gateway state.
       reportWithTwoMessagesToSend.scheduled_tasks[0].state =
         'forwarded-to-gateway';
@@ -234,10 +111,10 @@ describe('sms-gateway api', () => {
       const result = await utils.saveDoc(reportWithTwoMessagesToSend);
       savedDoc = result.id;
       response = await pollSmsApi({});
+      console.log(response);
     });
 
     afterEach(async () => {
-      // await helper.logConsoleErrors('sms-gateway');
       await utils.deleteDoc(savedDoc);
     });
 
@@ -264,12 +141,12 @@ describe('sms-gateway api', () => {
       console.log('Messages currently present'); // eslint-disable-line no-console
       console.log(JSON.stringify(response.messages)); // eslint-disable-line no-console
       expect(response.messages.length).toBe(2);
-      expect(response.messages[0].id).toBe(messageId1);
-      expect(response.messages[0].to).toBe(messageTo1);
-      expect(response.messages[0].content).toBe(messageContent1);
-      expect(response.messages[1].id).toBe(messageId2);
-      expect(response.messages[1].to).toBe(messageTo2);
-      expect(response.messages[1].content).toBe(messageContent2);
+      expect(response.messages[0].id).toBe(reportWithTwoMessagesToSend.scheduled_tasks[0].messages[0].uuid);
+      expect(response.messages[0].to).toBe(reportWithTwoMessagesToSend.scheduled_tasks[0].messages[0].to);
+      expect(response.messages[0].content).toBe(reportWithTwoMessagesToSend.scheduled_tasks[0].messages[0].message);
+      expect(response.messages[1].id).toBe(reportWithTwoMessagesToSend.tasks[0].messages[0].uuid);
+      expect(response.messages[1].to).toBe(reportWithTwoMessagesToSend.tasks[0].messages[0].to);
+      expect(response.messages[1].content).toBe(reportWithTwoMessagesToSend.tasks[0].messages[0].message);
 
       await reportsPo.goToReportById(savedDoc);
 
