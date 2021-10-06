@@ -11,6 +11,7 @@ const purger = require('../../../src/js/bootstrapper/purger');
 
 let originalDocument;
 let originalWindow;
+let originalPerformance;
 let pouchDb;
 let localGet;
 let localReplicate;
@@ -66,6 +67,9 @@ describe('bootstrapper', () => {
     if (typeof window !== 'undefined') {
       originalWindow = window;
     }
+    if (typeof performance !== 'undefined') {
+      originalPerformance = performance;
+    }
     document = { cookie: '' };
     window = {
       location: {
@@ -80,8 +84,10 @@ describe('bootstrapper', () => {
           register: () => Promise.resolve(registered),
         },
       },
-      PouchDB: pouchDb
+      PouchDB: pouchDb,
+      startupTimes: {}
     };
+    performance = { now: sinon.stub() };
 
     purgeOn = sinon.stub();
     purgeOn.callsFake(() => {
@@ -102,16 +108,9 @@ describe('bootstrapper', () => {
   });
 
   afterEach(done => {
-    if (typeof originalDocument === 'undefined') {
-      document = undefined;
-    } else {
-      document = originalDocument;
-    }
-    if (typeof originalWindow === 'undefined') {
-      window = undefined;
-    } else {
-      window = originalWindow;
-    }
+    document = typeof originalDocument === 'undefined' ? undefined : originalDocument;
+    window = typeof originalWindow === 'undefined' ? undefined : originalWindow;
+    performance = typeof originalPerformance === 'undefined' ? undefined : originalPerformance;
     sinon.restore();
     done();
   });
