@@ -530,7 +530,7 @@ describe('ServerSidePurge', () => {
       request.get.onCall(7).resolves({ rows: contacts.slice(1250, 1500) });
       request.get.onCall(8).resolves({ rows: contacts.slice(1500, 1500) });
 
-      const reports = Array.from({ length: 32000 }).map((_, idx) => ({
+      const reports = Array.from({ length: 48000 }).map((_, idx) => ({
         id: idx,
         key: `key${idx}`,
         value: { subject: `key${idx}`, type: 'data_record' },
@@ -539,12 +539,12 @@ describe('ServerSidePurge', () => {
       sinon.stub(db.medic, 'query');
       db.medic.query.onCall(0).resolves({ rows: reports });
       db.medic.query.onCall(1).resolves({ rows: reports });
-      db.medic.query.onCall(2).resolves({ rows: reports.slice(0, 2000) });
-      db.medic.query.onCall(3).resolves({ rows: reports.slice(2000, 4000) });
-      db.medic.query.onCall(4).resolves({ rows: reports.slice(4000, 6000) });
-      db.medic.query.onCall(5).resolves({ rows: reports.slice(6000, 8000) });
-      db.medic.query.onCall(6).resolves({ rows: reports.slice(8000, 10000) });
-      db.medic.query.onCall(7).resolves({ rows: reports.slice(10000, 12000) });
+      db.medic.query.onCall(2).resolves({ rows: reports.slice(0, 8000) });
+      db.medic.query.onCall(3).resolves({ rows: reports.slice(8000, 16000) });
+      db.medic.query.onCall(4).resolves({ rows: reports.slice(16000, 24000) });
+      db.medic.query.onCall(5).resolves({ rows: reports.slice(24000, 32000) });
+      db.medic.query.onCall(6).resolves({ rows: reports.slice(32000, 40000) });
+      db.medic.query.onCall(7).resolves({ rows: reports.slice(40000, 48000) });
       db.medic.query.onCall(8).resolves({ rows: [] });
 
       sinon.stub(db.medic, 'allDocs')
@@ -581,6 +581,98 @@ describe('ServerSidePurge', () => {
 
         chai.expect(db.medic.query.callCount).to.equal(9);
         chai.expect(service.__get__('contactsBatchSize')).to.equal(250);
+      });
+    });
+
+    it('should increase and decrease the batch size as reports count comes in', () => {
+      sinon.stub(request, 'get');
+      const contacts = Array.from({ length: 2500 }).map((_, idx) => ({
+        id: idx,
+        key: `key${idx}`,
+        doc: { _id: idx, patient_id: `key${idx}` },
+      }));
+
+      request.get.callsFake((_, { qs: { limit, startkey_docid } }) => {
+        return Promise.resolve({ rows: contacts.slice(startkey_docid, limit + startkey_docid) });
+      });
+      /*request.get.onCall(0).resolves({ rows: contacts.slice(0, 1000) });
+      request.get.onCall(1).resolves({ rows: contacts.slice(0, 500) });
+      request.get.onCall(2).resolves({ rows: contacts.slice(0, 250) });
+      request.get.onCall(3).resolves({ rows: contacts.slice(250, 500) });
+      request.get.onCall(4).resolves({ rows: contacts.slice(500, 750) });
+      request.get.onCall(5).resolves({ rows: contacts.slice(750, 1000) });
+      request.get.onCall(6).resolves({ rows: contacts.slice(1000, 1250) });
+      request.get.onCall(7).resolves({ rows: contacts.slice(1250, 1500) });
+      request.get.onCall(8).resolves({ rows: contacts.slice(1500, 1500) });*/
+
+      const reports = Array.from({ length: 48000 }).map((_, idx) => ({
+        id: idx,
+        key: `key${idx}`,
+        value: { subject: `key${idx}`, type: 'data_record' },
+      }));
+
+      sinon.stub(db.medic, 'query');
+      db.medic.query.onCall(0).resolves({ rows: reports });
+      db.medic.query.onCall(1).resolves({ rows: reports });
+      db.medic.query.onCall(2).resolves({ rows: reports.slice(0, 8000) });
+      db.medic.query.onCall(3).resolves({ rows: reports.slice(8000, 16000) });
+      db.medic.query.onCall(4).resolves({ rows: reports.slice(16000, 20000) });
+      db.medic.query.onCall(5).resolves({ rows: reports.slice(20000, 22000) });
+      db.medic.query.onCall(6).resolves({ rows: reports.slice(22000, 23000) });
+      db.medic.query.onCall(7).resolves({ rows: reports.slice(23000, 48000) });
+      db.medic.query.onCall(8).resolves({ rows: reports.slice(23000, 48000) });
+      db.medic.query.onCall(9).resolves({ rows: reports.slice(23000, 48000) });
+      db.medic.query.onCall(10).resolves({ rows: reports.slice(23000, 48000) });
+      db.medic.query.onCall(11).resolves({ rows: reports.slice(23000, 28000) });
+      db.medic.query.onCall(12).resolves({ rows: reports.slice(28000, 35000) });
+      db.medic.query.onCall(13).resolves({ rows: reports.slice(35000, 45000) });
+      db.medic.query.onCall(14).resolves({ rows: reports.slice(45000, 46000) });
+      db.medic.query.onCall(15).resolves({ rows: reports.slice(46000, 47000) });
+      db.medic.query.onCall(16).resolves({ rows: reports.slice(47000, 48000) });
+      db.medic.query.onCall(17).resolves({ rows: [] });
+
+      sinon.stub(db.medic, 'allDocs')
+        .callsFake(({ keys }) => Promise.resolve({ rows: keys.map((key) => ({ doc: { _id: key } }))}));
+
+      const purgeDbChanges = sinon.stub().resolves({ results: [] });
+      sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
+
+      const expectedParams = (limit, id = '') => ([
+        'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
+        {
+          qs: {
+            limit: limit,
+            start_key: JSON.stringify(id ? `key${id}` : ''),
+            startkey_docid: id,
+            include_docs: true,
+          },
+          json: true
+        }
+      ]);
+
+      return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
+        chai.expect(request.get.callCount).to.equal(17);
+
+        chai.expect(request.get.args[0]).to.deep.equal(expectedParams(1000));
+        chai.expect(request.get.args[1]).to.deep.equal(expectedParams(500));
+        chai.expect(request.get.args[2]).to.deep.equal(expectedParams(250));
+        chai.expect(request.get.args[3]).to.deep.equal(expectedParams(251, 249));
+        chai.expect(request.get.args[4]).to.deep.equal(expectedParams(251, 499));
+        chai.expect(request.get.args[5]).to.deep.equal(expectedParams(501, 749));
+        chai.expect(request.get.args[6]).to.deep.equal(expectedParams(1001, 1249));
+        chai.expect(request.get.args[7]).to.deep.equal(expectedParams(1001, 2249));
+        chai.expect(request.get.args[8]).to.deep.equal(expectedParams(501, 2249));
+        chai.expect(request.get.args[9]).to.deep.equal(expectedParams(251, 2249));
+        chai.expect(request.get.args[10]).to.deep.equal(expectedParams(126, 2249));
+        chai.expect(request.get.args[11]).to.deep.equal(expectedParams(63, 2249));
+        chai.expect(request.get.args[12]).to.deep.equal(expectedParams(63, 2311));
+        chai.expect(request.get.args[13]).to.deep.equal(expectedParams(63, 2373));
+        chai.expect(request.get.args[14]).to.deep.equal(expectedParams(63, 2435));
+        chai.expect(request.get.args[15]).to.deep.equal(expectedParams(125, 2497));
+        chai.expect(request.get.args[16]).to.deep.equal(expectedParams(249, 2499));
+
+        chai.expect(db.medic.query.callCount).to.equal(17);
+        chai.expect(service.__get__('contactsBatchSize')).to.equal(496);
       });
     });
 

@@ -20,9 +20,9 @@ const decreaseBatchSize = () => {
   contactsBatchSize = Math.floor(contactsBatchSize / 2);
 };
 
-/*const increaseBatchSize = () => {
+const increaseBatchSize = () => {
   contactsBatchSize = Math.min(MAX_CONTACT_BATCH_SIZE, contactsBatchSize * 2);
-};*/
+};
 
 const purgeDbs = {};
 let currentlyPurging = false;
@@ -270,6 +270,10 @@ const assignRecords = (rows, groups, subjectIds) => {
     });
   }
 
+  if (relevantRows.length < MAX_BATCH_SIZE / 4) {
+    increaseBatchSize();
+  }
+
   const ids = relevantRows.map(row => row.id);
   return db.medic.allDocs({ keys: ids, include_docs: true }).then(allDocsResult => {
     relevantRows.forEach((row, idx) => row.doc = allDocsResult.rows[idx].doc);
@@ -395,9 +399,6 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
       return db.medic.query('medic/docs_by_replication_key', { keys: subjectIds });
     })
     .then(result => {
-      /* if (result.rows.length < MAX_BATCH_SIZE / 4) {
-       increaseBatchSize();
-       }*/
       return assignRecords(result.rows, groups, subjectIds);
     })
     .then(() => {
