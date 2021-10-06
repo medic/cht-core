@@ -198,9 +198,9 @@
     const userCtx = getUserCtx();
     const hasForceLoginCookie = document.cookie.includes('login=force');
     if (!userCtx || hasForceLoginCookie) {
-      const error = new Error('User must reauthenticate');
-      error.status = 401;
-      return redirectToLogin(dbInfo, error, callback);
+      const err = new Error('User must reauthenticate');
+      err.status = 401;
+      return redirectToLogin(dbInfo, err, callback);
     }
 
     if (hasFullDataAccess(userCtx)) {
@@ -247,6 +247,8 @@
         return purger
           .shouldPurge(localDb, userCtx)
           .then(shouldPurge => {
+            window.startupTimes.purgedDB = shouldPurge;
+
             if (!shouldPurge) {
               return;
             }
@@ -256,7 +258,10 @@
               .purge(localDb, userCtx)
               .on('start', () => setUiStatus('PURGE_INIT'))
               .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
-              .catch(error => console.error('Error attempting to purge', error))
+              .catch(err => {
+                console.error('Error attempting to purge', err);
+                window.startupTimes.purgedDB = false;
+              })
               .then(() => window.startupTimes.purgeEnded = performance.now());
           });
       })
@@ -264,31 +269,37 @@
         return purger
           .shouldPurgeMeta(localMetaDb)
           .then(shouldPurgeMeta => {
+            window.startupTimes.purgedMeta = shouldPurgeMeta;
+
             if (!shouldPurgeMeta) {
               return;
             }
+
             window.startupTimes.purgeMetaStarted = performance.now();
             setUiStatus('PURGE_META');
             return purger.purgeMeta(localMetaDb);
           })
-          .catch(error => console.error('Error attempting to purge meta', error))
+          .catch(err => {
+            console.error('Error attempting to purge meta', err);
+            window.startupTimes.purgedMeta = false;
+          })
           .then(() => window.startupTimes.purgeMetaEnded = performance.now());
       })
       .then(() => setUiStatus('STARTING_APP'))
-      .catch(error => error)
-      .then(error => {
+      .catch(err => err)
+      .then(err => {
         localDb.close();
         remoteDb.close();
         localMetaDb.close();
-        if (error) {
-          if (error.status === 401) {
-            return redirectToLogin(dbInfo, error, callback);
+        if (err) {
+          if (err.status === 401) {
+            return redirectToLogin(dbInfo, err, callback);
           }
 
-          setUiError(error);
+          setUiError(err);
         }
 
-        callback(error);
+        callback(err);
       });
 
   };

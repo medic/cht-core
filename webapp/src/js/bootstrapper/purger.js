@@ -90,7 +90,7 @@ module.exports.shouldPurge = (localDb, userCtx) => {
 };
 
 module.exports.shouldPurgeMeta = (localDb) => {
-  return getPurgeLog(localDb).then(purgeLog => purgeLog.synced_seq);
+  return getPurgeLog(localDb).then(purgeLog => !!purgeLog.synced_seq);
 };
 
 module.exports.purge = (localDb, userCtx) => {

@@ -641,14 +641,16 @@ export class AppComponent implements OnInit {
       );
     }
 
-    if (window.startupTimes.purgeStarted && window.startupTimes.purgeEnded) {
+    this.telemetryService.record(`boot_time:purgedDB:${window.startupTimes.purgedDB}`);
+    if (window.startupTimes.purgedDB) {
       this.telemetryService.record(
         'boot_time:2_2:to_purge',
         window.startupTimes.purgeEnded - window.startupTimes.purgeStarted
       );
     }
 
-    if (window.startupTimes.purgeMetaStarted && window.startupTimes.purgeMetaEnded) {
+    this.telemetryService.record(`boot_time:purgedMeta:${window.startupTimes.purgedMeta}`);
+    if (window.startupTimes.purgedMeta) {
       this.telemetryService.record(
         'boot_time:2_3:to_purge_meta',
         window.startupTimes.purgeMetaEnded - window.startupTimes.purgeMetaStarted
