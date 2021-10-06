@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { TranslateService as NgxTranslateService } from '@ngx-translate/core';
 import * as moment from 'moment';
 
@@ -8,6 +8,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { CookieService } from 'ngx-cookie-service';
 import { LanguageService, LanguageCookieService, SetLanguageService } from '@mm-services/language.service';
 import { FormatDateService } from '@mm-services/format-date.service';
+import { FeedbackService } from '@mm-services/feedback.service';
 
 describe('Language services', () => {
   afterEach(() => {
@@ -59,6 +60,7 @@ describe('Language services', () => {
     let languageCookieService;
     let ngxTranslateService;
     let formatDateService;
+    let feedbackService;
     let setLanguageService:SetLanguageService;
 
     beforeEach(() => {
@@ -73,12 +75,14 @@ describe('Language services', () => {
         use: sinon.stub().returns({ toPromise: sinon.stub().resolves() }),
       };
       formatDateService = { init: sinon.stub().resolves() };
+      feedbackService = { submit: sinon.stub() };
 
       TestBed.configureTestingModule({
         providers: [
           { provide: LanguageCookieService, useValue: languageCookieService },
           { provide: NgxTranslateService, useValue: ngxTranslateService },
           { provide: FormatDateService, useValue: formatDateService },
+          { provide: FeedbackService, useValue: feedbackService },
         ]
       });
       setLanguageService = TestBed.inject(SetLanguageService);
@@ -124,6 +128,19 @@ describe('Language services', () => {
       expect(ngxTranslateService.use.args[0]).to.deep.equal([newLocale]);
       expect(languageCookieService.set.callCount).to.equal(0);
       expect(formatDateService.init.callCount).to.equal(1);
+    });
+
+    it('should record a feedback doc when there is an exception', () => {
+      ngxTranslateService.use.throws(new Error('an error'));
+
+      return setLanguageService
+        .set('es')
+        .then(() => assert.fail('expected error to be thrown'))
+        .catch(error => {
+          expect(error.message).to.equal('Error when setting the language: an error');
+          expect(feedbackService.submit.calledOnce).to.be.true;
+          expect(feedbackService.submit.args[0]).to.have.members(['Error when setting the language: an error', false]);
+        });
     });
   });
 
@@ -201,6 +218,5 @@ describe('Language services', () => {
       });
     });
   });
-
 
 });
