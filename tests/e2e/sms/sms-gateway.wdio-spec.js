@@ -1,7 +1,6 @@
 const utils = require('../../utils');
-// const helper = require('../../helper');
-// const smsGatewayPo = require('../../page-objects/messages/sms-gateway.po');
 const messagesPo = require('../../page-objects/messages/messages.wdio.page');
+const reportsPo = require('../../page-objects/reports/reports.wdio.page');
 const commonElements = require('../../page-objects/common/common.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 
@@ -155,10 +154,8 @@ describe('sms-gateway api', () => {
           },
         ],
       };
-      await pollSmsApi(body);
-      // await helper.handleUpdateModalNative();
+      await pollSmsApi(body); 
     });
-    // afterEach(async () => { await helper.handleUpdateModalNative(); });
 
     it('shows content', async () => {
       //LHS
@@ -176,12 +173,12 @@ describe('sms-gateway api', () => {
       await expect(await messagesPo.messageDetailsHeader()).toHaveText(phone);
       const msgContent = await messagesPo.messageContentText(await messagesPo.messageContentIndex());
       await expect(msgContent).toHaveText(msg);
-      // const messageStatus = await helper.getTextFromElementNative(smsGatewayPo.messageDetailStatus());
-      // await expect(messageStatus).toMatch('received');
+      const messageStatus = await (await messagesPo.messageDetailStatus()).getText();
+      await expect(messageStatus).toMatch('received');
     });
   });
 
-  xdescribe('- gateway submits WT sms status updates', () => {
+  describe('- gateway submits WT sms status updates', () => {
     let savedDoc;
 
     beforeEach(async () => {
@@ -205,21 +202,22 @@ describe('sms-gateway api', () => {
 
     it('- shows content', async () => {
 
-      await smsGatewayPo.showReport(savedDoc);
+      await reportsPo.goToReportById(savedDoc);
 
       // tasks
 
-      expect(await smsGatewayPo.sentTaskState()).toMatch('sent');
-      const deliveredTask = smsGatewayPo.getState(1, 1);
-      expect(await smsGatewayPo.getTaskState(deliveredTask)).toMatch('delivered');
-      const scheduledTask = smsGatewayPo.getState(1, 2);
-      expect(await smsGatewayPo.getTaskState(scheduledTask)).toMatch('scheduled');
-      const failedTask = smsGatewayPo.getState(2, 1);
-      expect(await smsGatewayPo.getTaskState(failedTask)).toMatch('failed');
+      const sentTask = await (await reportsPo.sentTask()).getText();
+      const deliveredTask = await (await reportsPo.getTaskState(1, 1)).getText();
+      const scheduledTask = await (await reportsPo.getTaskState(1, 2)).getText();
+      const failedTask = await (await reportsPo.getTaskState(2, 1)).getText();
+      expect(sentTask).toMatch('sent');
+      expect(deliveredTask).toMatch('delivered');
+      expect(scheduledTask).toMatch('scheduled');
+      expect(failedTask).toMatch('failed');
     });
   });
 
-  xdescribe('- api returns list of pending WO messages', () => {
+  describe('- api returns list of pending WO messages', () => {
     let savedDoc;
     let response;
 
@@ -273,14 +271,15 @@ describe('sms-gateway api', () => {
       expect(response.messages[1].to).toBe(messageTo2);
       expect(response.messages[1].content).toBe(messageContent2);
 
-      await smsGatewayPo.showReport(savedDoc);
+      await reportsPo.goToReportById(savedDoc);
 
       // tasks
-      expect(await smsGatewayPo.feedbackState()).toMatch('forwarded');
+      const forwardedMessage = await (await reportsPo.sentTask()).getText();
+      expect(forwardedMessage).toMatch('forwarded');
       // scheduled tasks
       // State for messageId2 is still forwarded-to-gateway
-      const messageState = smsGatewayPo.getState(1, 1);
-      expect(await smsGatewayPo.getTaskState(messageState)).toMatch('forwarded');
+      const messageState = await (await reportsPo.getTaskState(1, 1)).getText();
+      expect(messageState).toMatch('forwarded');
     });
   });
 });
