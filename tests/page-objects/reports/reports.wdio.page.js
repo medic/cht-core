@@ -17,7 +17,6 @@ const unreadCount = () => $('#reports-tab .mm-badge');
 const formTitle = () => $('#report-form #form-title');
 const submitButton = () => $('#report-form .form-footer .btn.submit');
 
-const submitReportButton = () => $('.action-container .general-actions:not(.ng-hide) .fa-plus');
 const forms = () => $$('.action-container .general-actions .actions.dropup .dropdown-menu li');
 
 // warning: the unread element is not displayed when there are no unread reports
