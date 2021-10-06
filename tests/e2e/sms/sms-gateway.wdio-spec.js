@@ -39,17 +39,20 @@ describe('sms-gateway api', () => {
       await commonElements.goToMessages();
       await messagesPo.waitForMessagesInLHS();
       const message = await messagesPo.messageByIndex(1);
-      await expect(await messagesPo.listMessageHeading(message)).toHaveText(phone);
-      await expect(await messagesPo.listMessageSummary(message)).toHaveText(msg);
+      const heading = await (await messagesPo.listMessageHeading(message)).getText();
+      const listSummary = await(await messagesPo.listMessageSummary(message)).getText();
+      await expect(heading).to.equal(phone);
+      await expect(listSummary).to.equal(msg);
 
       // RHS
       const id = await (await messagesPo.messageByIndex(1)).getAttribute('test-id');
       await messagesPo.clickLhsEntry(id);
-      await expect(await messagesPo.messageDetailsHeader()).toHaveText(phone);
-      const msgContent = await messagesPo.messageContentText(await messagesPo.messageContentIndex());
-      await expect(msgContent).toHaveText(msg);
+      const headerDetail = await(await messagesPo.messageDetailsHeader()).getText();
+      const msgContent = await (await messagesPo.messageContentText(await messagesPo.messageContentIndex())).getText();
       const messageStatus = await (await messagesPo.messageDetailStatus()).getText();
-      await expect(messageStatus).toMatch('received');
+      await expect(headerDetail).to.equal(phone);
+      await expect(msgContent).to.equal(msg);
+      await expect(messageStatus).to.equal('received');
     });
   });
 
@@ -84,10 +87,10 @@ describe('sms-gateway api', () => {
       const deliveredTask = await (await reportsPo.getTaskState(1, 1)).getText();
       const scheduledTask = await (await reportsPo.getTaskState(1, 2)).getText();
       const failedTask = await (await reportsPo.getTaskState(2, 1)).getText();
-      expect(sentTask).toMatch('sent');
-      expect(deliveredTask).toMatch('delivered');
-      expect(scheduledTask).toMatch('scheduled');
-      expect(failedTask).toMatch('failed');
+      expect(sentTask).to.contain('sent');
+      expect(deliveredTask).to.contain('delivered');
+      expect(scheduledTask).to.contain('scheduled');
+      expect(failedTask).to.contain('failed');
     });
   });
 
@@ -134,23 +137,25 @@ describe('sms-gateway api', () => {
       // ]
       console.log('Messages currently present'); // eslint-disable-line no-console
       console.log(JSON.stringify(response.messages)); // eslint-disable-line no-console
-      expect(response.messages.length).toBe(2);
-      expect(response.messages[0].id).toBe(reportWithTwoMessagesToSend.scheduled_tasks[0].messages[0].uuid);
-      expect(response.messages[0].to).toBe(reportWithTwoMessagesToSend.scheduled_tasks[0].messages[0].to);
-      expect(response.messages[0].content).toBe(reportWithTwoMessagesToSend.scheduled_tasks[0].messages[0].message);
-      expect(response.messages[1].id).toBe(reportWithTwoMessagesToSend.tasks[0].messages[0].uuid);
-      expect(response.messages[1].to).toBe(reportWithTwoMessagesToSend.tasks[0].messages[0].to);
-      expect(response.messages[1].content).toBe(reportWithTwoMessagesToSend.tasks[0].messages[0].message);
+      const scheduledTaskMessage = reportWithTwoMessagesToSend.scheduled_tasks[0].messages[0];
+      const taskMessage = reportWithTwoMessagesToSend.tasks[0].messages[0];
+      expect(response.messages.length).to.equal(2);
+      expect(response.messages[0].id).to.equal(scheduledTaskMessage.uuid);
+      expect(response.messages[0].to).to.equal(scheduledTaskMessage.to);
+      expect(response.messages[0].content).to.equal(scheduledTaskMessage.message);
+      expect(response.messages[1].id).to.equal(taskMessage.uuid);
+      expect(response.messages[1].to).to.equal(taskMessage.to);
+      expect(response.messages[1].content).to.equal(taskMessage.message);
 
       await reportsPo.goToReportById(savedDoc);
 
       // tasks
       const forwardedMessage = await (await reportsPo.sentTask()).getText();
-      expect(forwardedMessage).toMatch('forwarded');
+      expect(forwardedMessage).to.equal('forwarded to gateway');
       // scheduled tasks
       // State for messageId2 is still forwarded-to-gateway
       const messageState = await (await reportsPo.getTaskState(1, 1)).getText();
-      expect(messageState).toMatch('forwarded');
+      expect(messageState).to.equal('forwarded to gateway');
     });
   });
 });
