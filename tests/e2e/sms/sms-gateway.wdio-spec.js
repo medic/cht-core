@@ -5,18 +5,18 @@ const commonElements = require('../../page-objects/common/common.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const smsPregancy = require('../../factories/cht/reports/sms-pregnancy');
 
+const pollSmsApi = body => {
+  return utils.request({
+    method: 'POST',
+    path: '/api/sms',
+    body: body
+  });
+};
+
 describe('sms-gateway api', () => {
   before(async ()=> {
     await loginPage.cookieLogin();
   });
-
-  const pollSmsApi = body => {
-    return utils.request({
-      method: 'POST',
-      path: '/api/sms',
-      body: body
-    });
-  };
 
   describe('- gateway submits new WT sms messages', () => {
     beforeEach(async () => {
@@ -74,8 +74,6 @@ describe('sms-gateway api', () => {
       await pollSmsApi(body);
     });
 
-    afterEach(async () => { await utils.deleteDoc(savedDoc); });
-
     it('- shows content', async () => {
 
       await reportsPo.goToReportById(savedDoc);
@@ -112,10 +110,6 @@ describe('sms-gateway api', () => {
       savedDoc = result.id;
       response = await pollSmsApi({});
       console.log(response);
-    });
-
-    afterEach(async () => {
-      await utils.deleteDoc(savedDoc);
     });
 
     it('- returns list and updates state', async () => {
