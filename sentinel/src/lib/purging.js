@@ -12,8 +12,7 @@ const TASK_EXPIRATION_PERIOD = 60; // days
 const TARGET_EXPIRATION_PERIOD = 6; // months
 
 const MAX_CONTACT_BATCH_SIZE = 1000;
-const MIN_CONTACT_BATCH_SIZE = 1;
-const MAX_BATCH_SIZE = 30000;
+const MAX_BATCH_SIZE = 20000;
 const MAX_BATCH_SIZE_REACHED = 'max_size_reached';
 let contactsBatchSize = MAX_CONTACT_BATCH_SIZE;
 
@@ -264,6 +263,13 @@ const assignRecords = (rows, groups, subjectIds) => {
     return;
   }
 
+  if (relevantRows.length >= MAX_BATCH_SIZE) {
+    return Promise.reject({
+      code: MAX_BATCH_SIZE_REACHED,
+      message: `Purging aborted. Too many reports for contacts: ${Object.keys(groups).join(', ')}`,
+    });
+  }
+
   const ids = relevantRows.map(row => row.id);
   return db.medic.allDocs({ keys: ids, include_docs: true }).then(allDocsResult => {
     relevantRows.forEach((row, idx) => row.doc = allDocsResult.rows[idx].doc);
@@ -386,21 +392,12 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
         assignContactToGroups(row, groups, subjectIds);
       });
 
-      const opts = { keys: subjectIds, limit: MAX_BATCH_SIZE };
-      return db.medic.query('medic/docs_by_replication_key', opts);
+      return db.medic.query('medic/docs_by_replication_key', { keys: subjectIds });
     })
     .then(result => {
-      if (result.rows.length >= MAX_BATCH_SIZE) {
-        return Promise.reject({
-          code: MAX_BATCH_SIZE_REACHED,
-          message: `Purging aborted. Too many reports for contacts: ${Object.keys(groups).join(', ')}`,
-        });
-      }
-
       /* if (result.rows.length < MAX_BATCH_SIZE / 4) {
        increaseBatchSize();
        }*/
-
       return assignRecords(result.rows, groups, subjectIds);
     })
     .then(() => {
@@ -415,7 +412,7 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
       return { startKey: nextKey, startKeyDocId: nextKeyDocId };
     })
     .catch(err => {
-      if (err && err.code === MAX_BATCH_SIZE_REACHED && contactsBatchSize > MIN_CONTACT_BATCH_SIZE) {
+      if (err && err.code === MAX_BATCH_SIZE_REACHED && contactsBatchSize > 1) {
         decreaseBatchSize();
         logger.warn(`Too many reports to process. Decreasing contacts batch size to ${contactsBatchSize}`);
         return { startKey, startKeyDocId };
