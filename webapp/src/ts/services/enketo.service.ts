@@ -124,7 +124,7 @@ export class EnketoService {
     return this.getAttachment(doc._id, this.xmlFormsService.findXFormAttachmentName(doc));
   }
 
-  private transformXml(form, language) {
+  private transformXml(form) {
     return Promise
       .all([
         this.getAttachment(form._id, this.HTML_ATTACHMENT_NAME),
@@ -136,25 +136,6 @@ export class EnketoService {
           const $element = $(element);
           $element.text(this.translateService.instant('enketo.' + $element.attr('data-i18n')));
         });
-
-        // TODO remove this when our enketo-core dependency is updated as the latest
-        //      version uses the language passed to the constructor
-        const languages = $html.find('#form-languages option');
-        if (languages.length > 1) { // TODO how do we detect a non-localized form?
-          // for localized forms, change language to user's language
-          $html
-            .find('[lang]')
-            .removeClass('active')
-            .filter('[lang="' + language + '"], [lang=""]')
-            .filter((idx, element) => {
-              // localized forms can support a short and long version for labels
-              // Enketo takes this into account when switching languages
-              // https://opendatakit.github.io/xforms-spec/#languages
-              return !$(element).hasClass('or-form-short') ||
-                ($(element).hasClass('or-form-short') && $(element).siblings( '.or-form-long' ).length === 0 );
-            })
-            .addClass( 'active' );
-        }
 
         const hasContactSummary = $(model).find('> instance[id="contact-summary"]').length === 1;
         return {
@@ -310,6 +291,13 @@ export class EnketoService {
         if (loadErrors?.length) {
           return Promise.reject(new Error(JSON.stringify(loadErrors)));
         }
+        const language = options.language;
+        this.currentForm.view.$.on(
+          'click',
+          'button.add-repeat-btn:enabled',
+          () => this.currentForm.langs.setAll(language),
+        );
+        this.currentForm.langs.$formLanguages.val(language).trigger('change');
       })
       .then(() => this.getFormTitle(titleKey, doc))
       .then((title) => {
@@ -427,31 +415,29 @@ export class EnketoService {
       valuechangeListener,
     } = formContext;
 
-    return this.languageService.get().then(language => {
-      const $selector = $(selector);
-      return this
-        .transformXml(formDoc, language)
-        .then(doc => {
-          this.replaceJavarosaMediaWithLoaders(formDoc, doc.html);
-          const xmlFormContext: XmlFormContext = {
-            doc,
-            wrapper: $selector,
-            instanceData,
-            titleKey,
-          };
-          return this.renderFromXmls(xmlFormContext);
-        })
-        .then((form) => {
-          const formContainer = $selector.find('.container').first();
-          this.replaceMediaLoaders(formContainer, formDoc);
-          this.registerAddrepeatListener($selector, formDoc);
-          this.registerEditedListener($selector, editedListener);
-          this.registerValuechangeListener($selector, valuechangeListener);
+    const $selector = $(selector);
+    return this
+      .transformXml(formDoc)
+      .then(doc => {
+        this.replaceJavarosaMediaWithLoaders(formDoc, doc.html);
+        const xmlFormContext: XmlFormContext = {
+          doc,
+          wrapper: $selector,
+          instanceData,
+          titleKey,
+        };
+        return this.renderFromXmls(xmlFormContext);
+      })
+      .then((form) => {
+        const formContainer = $selector.find('.container').first();
+        this.replaceMediaLoaders(formContainer, formDoc);
+        this.registerAddrepeatListener($selector, formDoc);
+        this.registerEditedListener($selector, editedListener);
+        this.registerValuechangeListener($selector, valuechangeListener);
 
-          window.CHTCore.debugFormModel = () => form.model.getStr();
-          return form;
-        });
-    });
+        window.CHTCore.debugFormModel = () => form.model.getStr();
+        return form;
+      });
   }
 
   render(selector, form, instanceData, editedListener, valuechangeListener) {
