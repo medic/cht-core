@@ -517,7 +517,7 @@ describe('ServerSidePurge', () => {
       const contacts = Array.from({ length: 1500 }).map((_, idx) => ({
         id: idx,
         key: `key${idx}`,
-        doc: { id: idx },
+        doc: { _id: idx, patient_id: `key${idx}` },
       }));
 
       request.get.onCall(0).resolves({ rows: contacts.slice(0, 1000) });
@@ -533,7 +533,7 @@ describe('ServerSidePurge', () => {
       const reports = Array.from({ length: 32000 }).map((_, idx) => ({
         id: idx,
         key: `key${idx}`,
-        value: { subject: `key${idx}` },
+        value: { subject: `key${idx}`, type: 'data_record' },
       }));
 
       sinon.stub(db.medic, 'query');
@@ -543,12 +543,12 @@ describe('ServerSidePurge', () => {
       db.medic.query.onCall(3).resolves({ rows: reports.slice(2000, 4000) });
       db.medic.query.onCall(4).resolves({ rows: reports.slice(4000, 6000) });
       db.medic.query.onCall(5).resolves({ rows: reports.slice(6000, 8000) });
-      db.medic.query.onCall(6).resolves({ rows: reports.slice(8000, 30000) });
-      db.medic.query.onCall(7).resolves({ rows: reports.slice(30000, 12000) });
+      db.medic.query.onCall(6).resolves({ rows: reports.slice(8000, 10000) });
+      db.medic.query.onCall(7).resolves({ rows: reports.slice(10000, 12000) });
       db.medic.query.onCall(8).resolves({ rows: [] });
 
-      sinon.stub(db.medic, 'allDocs');
-      db.medic.allDocs.callsFake(({ keys }) => Promise.resolve({ rows: keys.map((key) => ({ doc: { _id: key } }))}));
+      sinon.stub(db.medic, 'allDocs')
+        .callsFake(({ keys }) => Promise.resolve({ rows: keys.map((key) => ({ doc: { _id: key } }))}));
 
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
@@ -585,8 +585,14 @@ describe('ServerSidePurge', () => {
     });
 
     it('should throw error if report limit reached with contacts batch size = 1', () => {
-      const contacts = Array.from({ length: 1001 }).map((_, idx) => ({ id: idx, key: `key${idx}`, doc: { id: idx }}));
-      const reports = Array.from({ length: 32000 }).map((_, idx) => ({ id: idx, key: `key${idx}`, doc: { id: idx }}));
+      const contacts = Array
+        .from({ length: 1001 })
+        .map((_, idx) => ({ id: idx, key: `key${idx}`, doc: { id: idx }}));
+      const reports = Array
+        .from({ length: 32000 })
+        .map((_, idx) => ({ id: idx, key: `key${idx}`, value: { subject: `key${idx}`, type: 'data_record' }}));
+      sinon.stub(db.medic, 'allDocs')
+        .callsFake(({ keys }) => Promise.resolve({ rows: keys.map((key) => ({ doc: { _id: key } }))}));
 
       sinon.stub(request, 'get').callsFake((_, { qs }) => Promise.resolve({ rows: contacts.slice(0, qs.limit)}));
       sinon.stub(db.medic, 'query').resolves({ rows: reports });
@@ -769,7 +775,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2', 'f4', 's4'], limit: 30000 }
+          { keys: ['first', 'f1', 's1', 'f2', 'f4', 's4'] }
         ]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
@@ -934,7 +940,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equalInAnyOrder([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2', 'f3', 'f4', 's4'], limit: 30000 }
+          { keys: ['first', 'f1', 's1', 'f2', 'f3', 'f4', 's4'] }
         ]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
@@ -1044,7 +1050,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equalInAnyOrder([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2', 's2'], limit: 30000 }
+          { keys: ['first', 'f1', 's1', 'f2', 's2'] }
         ]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
@@ -1141,7 +1147,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2'], limit: 30000 }
+          { keys: ['first', 'f1', 's1', 'f2'] }
         ]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
@@ -1475,7 +1481,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equalInAnyOrder([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2'], limit: 30000 }
+          { keys: ['first', 'f1', 's1', 'f2'] }
         ]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
@@ -1598,7 +1604,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
           {
             qs: {
-              limit: 30000,
+              limit: 20000,
               key: JSON.stringify('_unassigned'),
               startkey_docid: '',
               include_docs: true
@@ -1635,7 +1641,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
           {
             qs: {
-              limit: 30000,
+              limit: 20000,
               key: JSON.stringify('_unassigned'),
               startkey_docid: '',
               include_docs: true
@@ -1647,7 +1653,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
           {
             qs: {
-              limit: 30000,
+              limit: 20000,
               key: JSON.stringify('_unassigned'),
               startkey_docid: 'r3',
               include_docs: true
@@ -1659,7 +1665,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
           {
             qs: {
-              limit: 30000,
+              limit: 20000,
               key: JSON.stringify('_unassigned'),
               startkey_docid: 'r5',
               include_docs: true
@@ -1911,7 +1917,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
           {
             qs: {
-              limit: 30000,
+              limit: 20000,
               end_key: JSON.stringify(getDaysAgo(60)),
               start_key: JSON.stringify(''),
               startkey_docid: '',
@@ -1950,7 +1956,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
           {
             qs: {
-              limit: 30000,
+              limit: 20000,
               end_key: JSON.stringify(getDaysAgo(60)),
               start_key: JSON.stringify(''),
               startkey_docid: '',
@@ -1962,7 +1968,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
           {
             qs: {
-              limit: 30000,
+              limit: 20000,
               end_key: JSON.stringify(getDaysAgo(60)),
               start_key: JSON.stringify(getDaysAgo(98)),
               startkey_docid: 'task3',
@@ -1974,7 +1980,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
           {
             qs: {
-              limit: 30000,
+              limit: 20000,
               end_key: JSON.stringify(getDaysAgo(60)),
               start_key: JSON.stringify(getDaysAgo(65)),
               startkey_docid: 'task5',
@@ -2086,7 +2092,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_all_docs',
           {
             qs: {
-              limit: 30000,
+              limit: 20000,
               start_key: JSON.stringify('target~'),
               end_key: JSON.stringify('target~2019-09~'),
             },
@@ -2127,7 +2133,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_all_docs',
           {
             qs: {
-              limit: 30000,
+              limit: 20000,
               start_key: JSON.stringify('target~'),
               end_key: JSON.stringify('target~2019-08~'),
             },
@@ -2138,7 +2144,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_all_docs',
           {
             qs: {
-              limit: 30000,
+              limit: 20000,
               start_key: JSON.stringify('target~2019~05~three'),
               end_key: JSON.stringify('target~2019-08~'),
             },
@@ -2149,7 +2155,7 @@ describe('ServerSidePurge', () => {
           'http://a:p@localhost:6500/medic/_all_docs',
           {
             qs: {
-              limit: 30000,
+              limit: 20000,
               start_key: JSON.stringify('target~2019~06~two'),
               end_key: JSON.stringify('target~2019-08~'),
             },
