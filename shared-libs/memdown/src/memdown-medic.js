@@ -14,7 +14,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { v4: uuid } = require('uuid');
+const uuid = require('uuid').v4;
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));

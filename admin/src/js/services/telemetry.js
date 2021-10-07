@@ -5,7 +5,7 @@
  * @memberof inboxServices
  */
 const moment = require('moment');
-const { v4: uuid } = require('uuid');
+const uuid = require('uuid').v4;
 
 angular
   .module('inboxServices')
