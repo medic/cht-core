@@ -634,27 +634,31 @@ export class AppComponent implements OnInit {
       window.startupTimes.firstCodeExecution - window.startupTimes.start
     );
 
-    if (window.startupTimes.replicationStarted && window.startupTimes.replicationEnded) {
-      this.telemetryService.record(
-        'boot_time:2_1:to_replication',
-        window.startupTimes.replicationEnded - window.startupTimes.replicationStarted
-      );
+    if (window.startupTimes.replication) {
+      this.telemetryService.record('boot_time:2_1:to_replication', window.startupTimes.replication);
     }
 
-    this.telemetryService.record(`boot_time:purgedDB:${window.startupTimes.purgedDB}`);
-    if (window.startupTimes.purgedDB) {
-      this.telemetryService.record(
-        'boot_time:2_2:to_purge',
-        window.startupTimes.purgeEnded - window.startupTimes.purgeStarted
-      );
+    if (window.startupTimes.purgingFailed) {
+      this.feedbackService.submit(`Error when purging on device startup: ${window.startupTimes.purgingFailed}`);
+      this.telemetryService.record('boot_time:purging_failed');
+    } else {
+      // When: 1- Purging ran and successfully completed. 2- Purging didn't run.
+      this.telemetryService.record(`boot_time:purging:${window.startupTimes.purging}`);
+    }
+    if (window.startupTimes.purge) {
+      this.telemetryService.record('boot_time:2_2:to_purge', window.startupTimes.purge);
     }
 
-    this.telemetryService.record(`boot_time:purgedMeta:${window.startupTimes.purgedMeta}`);
-    if (window.startupTimes.purgedMeta) {
-      this.telemetryService.record(
-        'boot_time:2_3:to_purge_meta',
-        window.startupTimes.purgeMetaEnded - window.startupTimes.purgeMetaStarted
-      );
+    if (window.startupTimes.purgingMetaFailed) {
+      const message = `Error when purging meta  on device startup: ${window.startupTimes.purgingMetaFailed}`;
+      this.feedbackService.submit(message);
+      this.telemetryService.record('boot_time:purging_meta_failed');
+    } else {
+      // When: 1- Purging ran and successfully completed. 2- Purging didn't run.
+      this.telemetryService.record(`boot_time:purging_meta:${window.startupTimes.purgingMeta}`);
+    }
+    if (window.startupTimes.purgeMeta) {
+      this.telemetryService.record('boot_time:2_3:to_purge_meta', window.startupTimes.purgeMeta);
     }
 
     this.telemetryService.record(
