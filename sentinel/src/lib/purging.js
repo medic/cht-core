@@ -13,6 +13,7 @@ const TARGET_EXPIRATION_PERIOD = 6; // months
 
 const MAX_CONTACT_BATCH_SIZE = 1000;
 const MAX_BATCH_SIZE = 20000;
+const MIN_BATCH_SIZE = 5000;
 const MAX_BATCH_SIZE_REACHED = 'max_size_reached';
 let contactsBatchSize = MAX_CONTACT_BATCH_SIZE;
 
@@ -210,29 +211,26 @@ const assignContactToGroups = (row, groups, subjectIds) => {
   subjectIds.push(...group.subjectIds);
 };
 
-const filterReportRows = (row, groups) => {
+const isRelevantRecordEmission = (row, groups) => {
   if (groups[row.id]) { // groups keys are contact ids, we already know everything about contacts
-    return;
+    return false;
   }
 
   if (tombstoneUtils.isTombstoneId(row.id)) { // we don't purge tombstones
-    return;
+    return false;
   }
 
   if (row.value.type !== 'data_record') {
-    return;
+    return false;
   }
 
-  if (row.value.needs_signoff) {
-    // reports with needs_signoff will emit for every contact from their submitter lineage,
-    // but we only want to process them once, either associated to their subject, or to their submitter,
-    // when they have no subject or have an invalid subject
-
-    if (row.key !== row.value.subject) {
-      // if the report has a subject, but it's not the the same as the emission key, we hit the emit
-      // for the contact or it's lineage via the `needs_signoff` path. Skip.
-      return;
-    }
+  if (row.value.needs_signoff && row.key !== row.value.subject) {
+    // reports with `needs_signoff` will emit for every contact from their submitter lineage,
+    // but we only want to process them once, either associated to their subject, or to their submitter
+    // when they have no subject or have an invalid subject.
+    // if the report has a subject, but it's not the the same as the emission key, we hit the emit
+    // for the submitter or submitter lineage via the `needs_signoff` path. Skip.
+    return false;
   }
 
   return true;
@@ -241,7 +239,7 @@ const filterReportRows = (row, groups) => {
 const getRecordGroupInfo = (row) => {
   if (row.doc.form) {
     const subjectId = registrationUtils.getSubjectId(row.doc);
-    // use patient_id as a key, as to keep subject to report associations correct
+    // use subject as a key, as to keep subject to report associations correct
     // reports without a subject are processed separately
     const key = subjectId === row.key ? subjectId : row.id;
     return { key, report: row.doc };
@@ -251,8 +249,8 @@ const getRecordGroupInfo = (row) => {
   return { key: row.key, message: row.doc };
 };
 
-const assignRecords = (rows, groups, subjectIds) => {
-  const relevantRows = rows.filter(row => filterReportRows(row, groups));
+const assignRecords = (rows, groups) => {
+  const relevantRows = rows.filter(row => isRelevantRecordEmission(row, groups));
 
   if (!relevantRows.length) {
     return Promise.resolve();
@@ -265,23 +263,25 @@ const assignRecords = (rows, groups, subjectIds) => {
     });
   }
 
-  if (relevantRows.length < MAX_BATCH_SIZE / 4) {
+  if (relevantRows.length < MIN_BATCH_SIZE) {
     increaseBatchSize();
   }
 
   const ids = relevantRows.map(row => row.id);
   return db.medic.allDocs({ keys: ids, include_docs: true }).then(allDocsResult => {
-    relevantRows.forEach((row, idx) => row.doc = allDocsResult.rows[idx].doc);
+    const hydratedRows = relevantRows
+      .map((row, idx) => Object.assign(row, { doc: allDocsResult.rows[idx].doc }))
+      .filter(row => row.doc);
 
-    const recordsByKey = getRecordsByKey(relevantRows, groups, subjectIds);
+    const recordsByKey = getRecordsByKey(hydratedRows);
     assignRecordsToGroups(recordsByKey, groups);
   });
 };
 
-const getRecordsByKey = (rows, groups, subjectIds) => {
+const getRecordsByKey = (rows) => {
   const recordsByKey = {};
   rows.forEach(row => {
-    const { key, report, message } = getRecordGroupInfo(row, groups, subjectIds);
+    const { key, report, message } = getRecordGroupInfo(row);
     recordsByKey[key] = recordsByKey[key] || { reports: [], messages: [] };
 
     return report ?
@@ -407,13 +407,13 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
     });
 };
 
-const purgeUnallocatedReports = async (roles, purgeFn) => {
-  const url = `${db.couchUrl}/_design/medic/_view/docs_by_replication_key`;
+const purgeUnallocatedRecords = async (roles, purgeFn) => {
   let startKeyDocId = '';
   let startKey = '';
 
+  // using `request-promise-native` because PouchDB doesn't support `start_key_doc_id`
   const getBatch = () => request.get({
-    url: url,
+    url: `${db.couchUrl}/_design/medic/_view/docs_by_replication_key`,
     json: true,
     qs: {
       limit: MAX_BATCH_SIZE,
@@ -450,13 +450,13 @@ const purgeUnallocatedReports = async (roles, purgeFn) => {
 };
 
 const purgeTasks = async (roles) => {
-  const url = `${db.couchUrl}/_design/medic/_view/tasks_in_terminal_state`;
   const maximumEmissionEndDate = moment().subtract(TASK_EXPIRATION_PERIOD, 'days').format('YYYY-MM-DD');
   let startKeyDocId = '';
   let startKey = '';
 
+  // using `request-promise-native` because PouchDB doesn't support `start_key_doc_id`
   const getBatch = () => request.get({
-    url: url,
+    url: `${db.couchUrl}/_design/medic/_view/tasks_in_terminal_state`,
     json: true,
     qs: {
       limit: MAX_BATCH_SIZE,
@@ -488,9 +488,9 @@ const purgeTargets = async (roles) => {
   let startKey = JSON.stringify(startKeyDocId);
 
   const lastAllowedReportingIntervalTag = moment().subtract(TARGET_EXPIRATION_PERIOD, 'months').format('YYYY-MM');
-  const url = `${db.couchUrl}/_all_docs`;
+  // using `request-promise-native` because PouchDB doesn't support `start_key_doc_id`
   const getBatch = () => request.get({
-    url: url,
+    url: `${db.couchUrl}/_all_docs`,
     json: true,
     qs: {
       limit: MAX_BATCH_SIZE,
@@ -523,7 +523,6 @@ const batchedPurge = (getBatch, getIdsToPurge, roles, startKeyDocId) => {
   const docIds = [];
   const rolesHashes = Object.keys(roles);
 
-  // using `rpn` because PouchDB doesn't support `start_key_doc_id`
   return getBatch()
     .then(result => {
       result.rows.forEach(row => {
@@ -585,9 +584,7 @@ const purge = async () => {
     return;
   }
   logger.info('Running server side purge');
-
   contactsBatchSize = MAX_CONTACT_BATCH_SIZE;
-
   const purgeFn = getPurgeFn();
   if (!purgeFn) {
     logger.info('No purge function configured.');
@@ -604,7 +601,7 @@ const purge = async () => {
       }
       return initPurgeDbs(roles)
         .then(() => purgeContacts(roles, purgeFn))
-        .then(() => purgeUnallocatedReports(roles, purgeFn))
+        .then(() => purgeUnallocatedRecords(roles, purgeFn))
         .then(() => purgeTasks(roles))
         .then(() => purgeTargets(roles))
         .then(() => {
