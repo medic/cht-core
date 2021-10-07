@@ -108,9 +108,9 @@ Our current setup has 1 ec2 instance acting as the JMeter Orchestrator with 2 wo
 1. Launch an ec2 instance c5.2xlarge(Orchestrator)
 1. Launch 2 ec2 instances of c5.4xlarge(Worker)
 1. SSH into each of these machines. 
-1. Copy `tests/scalability/run_suite.sh` to the user directory(`/home/ubuntu`). From this branch.
-1. On each of the three VMs, call  `chmod +x run_suite.sh&&./run_suite.sh` . This clones cht-core, installs JAVA, installs Node 14, runs npm install, installs JMeter, and its plugins. The resulting directory will be `/home/ubuntu/cht-core/tests/scalability`.
-1. On just the orchestrator node, update the `cht-core/tests/scalability/config.json` to ensure the users and URL are correct.
+1. Copy `tests/scalability/jmeter_setup.sh` to the user directory(`/home/ubuntu`).
+1. On each of the three VMs, call  `chmod +x jmeter_setup.sh && ./jmeter_setup.sh` . This clones cht-core, installs JAVA, installs Node 14, runs npm install, installs JMeter, and its plugins. The resulting directory will be `/home/ubuntu/cht-core/tests/scalability`.
+1. On the orchestrator node, update the `cht-core/tests/scalability/config.json` and ensure the users are valid(can login as offline user), and the URL points to your instance under test. 
 1. Split the `config.json` on the orchestrator
     1. `cd cht-core/tests/scalability`
     1. `npm install` 
