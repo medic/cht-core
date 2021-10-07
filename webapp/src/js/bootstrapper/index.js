@@ -266,7 +266,7 @@
           });
       })
       .then(() => {
-        let purgeMetaStarted = 0;
+        let purgeMetaStarted;
         return purger
           .shouldPurgeMeta(localMetaDb)
           .then(shouldPurgeMeta => {
