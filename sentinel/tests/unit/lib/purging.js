@@ -394,7 +394,20 @@ describe('ServerSidePurge', () => {
     });
   });
 
-  describe('contactsPurge', () => {
+  describe('purgeContacts', () => {
+    const getContactsByTypeArgs = ({ limit, id = '', key }) => ([
+      'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
+      {
+        qs: {
+          limit: limit,
+          start_key: JSON.stringify(key ? key : (id ? `key${id}` : '')),
+          startkey_docid: id,
+          include_docs: true,
+        },
+        json: true
+      }
+    ]);
+
     let roles;
     let purgeFn;
 
@@ -409,20 +422,9 @@ describe('ServerSidePurge', () => {
       sinon.stub(db, 'get').resolves({});
       sinon.stub(db.medic, 'query').resolves({ rows: [] });
 
-      return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(1);
-        chai.expect(request.get.args[0]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
-          {
-            qs: {
-              limit: 1000,
-              start_key:  JSON.stringify(''),
-              startkey_docid: '',
-              include_docs: true
-            },
-            json: true
-          }
-        ]);
+        chai.expect(request.get.args[0]).to.deep.equal(getContactsByTypeArgs({ limit: 1000, id: '', key: '' }));
       });
     });
 
@@ -456,58 +458,13 @@ describe('ServerSidePurge', () => {
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
 
-      return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(4);
-        chai.expect(request.get.args[0]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
-          {
-            qs: {
-              limit: 1000,
-              start_key: JSON.stringify(''),
-              startkey_docid: '',
-              include_docs: true,
-            },
-            json: true
-          }
-        ]);
-
-        chai.expect(request.get.args[1]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
-          {
-            qs: {
-              limit: 1001,
-              start_key: JSON.stringify('person'),
-              startkey_docid: 'f3',
-              include_docs: true,
-            },
-            json: true
-          }
-        ]);
-
-        chai.expect(request.get.args[2]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
-          {
-            qs: {
-              limit: 1001,
-              start_key: JSON.stringify('clinic'),
-              startkey_docid: 'f5',
-              include_docs: true,
-            },
-            json: true
-          }
-        ]);
-
-        chai.expect(request.get.args[3]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
-          {
-            qs: {
-              limit: 1001,
-              start_key:  JSON.stringify('health_center'),
-              startkey_docid: 'f8',
-              include_docs: true,
-            },
-            json: true
-          }
+        chai.expect(request.get.args).to.deep.equal([
+          getContactsByTypeArgs({ limit: 1000, id: '', key: '' }),
+          getContactsByTypeArgs({ limit: 1001, id: 'f3', key: 'person' }),
+          getContactsByTypeArgs({ limit: 1001, id: 'f5', key: 'clinic' }),
+          getContactsByTypeArgs({ limit: 1001, id: 'f8', key: 'health_center' }),
         ]);
       });
     });
@@ -553,38 +510,25 @@ describe('ServerSidePurge', () => {
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
 
-      const expectedParams = (limit, id = '') => ([
-        'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
-        {
-          qs: {
-            limit: limit,
-            start_key: JSON.stringify(id ? `key${id}` : ''),
-            startkey_docid: id,
-            include_docs: true,
-          },
-          json: true
-        }
-      ]);
-
-      return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(9);
 
-        chai.expect(request.get.args[0]).to.deep.equal(expectedParams(1000));
-        chai.expect(request.get.args[1]).to.deep.equal(expectedParams(500));
-        chai.expect(request.get.args[2]).to.deep.equal(expectedParams(250));
-        chai.expect(request.get.args[3]).to.deep.equal(expectedParams(251, 249));
-        chai.expect(request.get.args[4]).to.deep.equal(expectedParams(251, 499));
-        chai.expect(request.get.args[5]).to.deep.equal(expectedParams(251, 749));
-        chai.expect(request.get.args[6]).to.deep.equal(expectedParams(251, 999));
-        chai.expect(request.get.args[7]).to.deep.equal(expectedParams(251, 1249));
-        chai.expect(request.get.args[8]).to.deep.equal(expectedParams(251, 1499));
+        chai.expect(request.get.args[0]).to.deep.equal(getContactsByTypeArgs({ limit: 1000 }));
+        chai.expect(request.get.args[1]).to.deep.equal(getContactsByTypeArgs({ limit: 500 }));
+        chai.expect(request.get.args[2]).to.deep.equal(getContactsByTypeArgs({ limit: 250 }));
+        chai.expect(request.get.args[3]).to.deep.equal(getContactsByTypeArgs({ limit: 251, id: 249 }));
+        chai.expect(request.get.args[4]).to.deep.equal(getContactsByTypeArgs({ limit: 251, id: 499 }));
+        chai.expect(request.get.args[5]).to.deep.equal(getContactsByTypeArgs({ limit: 251, id: 749 }));
+        chai.expect(request.get.args[6]).to.deep.equal(getContactsByTypeArgs({ limit: 251, id: 999 }));
+        chai.expect(request.get.args[7]).to.deep.equal(getContactsByTypeArgs({ limit: 251, id: 1249 }));
+        chai.expect(request.get.args[8]).to.deep.equal(getContactsByTypeArgs({ limit: 251, id: 1499 }));
 
         chai.expect(db.medic.query.callCount).to.equal(9);
         chai.expect(service.__get__('contactsBatchSize')).to.equal(250);
       });
     });
 
-    it('should increase and decrease the batch size as reports count comes in', () => {
+    it('should increase and decrease the batch size depending on the number of relevant reports', () => {
       sinon.stub(request, 'get');
       const contacts = Array.from({ length: 2500 }).map((_, idx) => ({
         id: idx,
@@ -595,15 +539,6 @@ describe('ServerSidePurge', () => {
       request.get.callsFake((_, { qs: { limit, startkey_docid } }) => {
         return Promise.resolve({ rows: contacts.slice(startkey_docid, limit + startkey_docid) });
       });
-      /*request.get.onCall(0).resolves({ rows: contacts.slice(0, 1000) });
-      request.get.onCall(1).resolves({ rows: contacts.slice(0, 500) });
-      request.get.onCall(2).resolves({ rows: contacts.slice(0, 250) });
-      request.get.onCall(3).resolves({ rows: contacts.slice(250, 500) });
-      request.get.onCall(4).resolves({ rows: contacts.slice(500, 750) });
-      request.get.onCall(5).resolves({ rows: contacts.slice(750, 1000) });
-      request.get.onCall(6).resolves({ rows: contacts.slice(1000, 1250) });
-      request.get.onCall(7).resolves({ rows: contacts.slice(1250, 1500) });
-      request.get.onCall(8).resolves({ rows: contacts.slice(1500, 1500) });*/
 
       const reports = Array.from({ length: 48000 }).map((_, idx) => ({
         id: idx,
@@ -612,23 +547,23 @@ describe('ServerSidePurge', () => {
       }));
 
       sinon.stub(db.medic, 'query');
-      db.medic.query.onCall(0).resolves({ rows: reports });
-      db.medic.query.onCall(1).resolves({ rows: reports });
-      db.medic.query.onCall(2).resolves({ rows: reports.slice(0, 8000) });
-      db.medic.query.onCall(3).resolves({ rows: reports.slice(8000, 16000) });
-      db.medic.query.onCall(4).resolves({ rows: reports.slice(16000, 20000) });
-      db.medic.query.onCall(5).resolves({ rows: reports.slice(20000, 22000) });
-      db.medic.query.onCall(6).resolves({ rows: reports.slice(22000, 23000) });
-      db.medic.query.onCall(7).resolves({ rows: reports.slice(23000, 48000) });
-      db.medic.query.onCall(8).resolves({ rows: reports.slice(23000, 48000) });
-      db.medic.query.onCall(9).resolves({ rows: reports.slice(23000, 48000) });
-      db.medic.query.onCall(10).resolves({ rows: reports.slice(23000, 48000) });
-      db.medic.query.onCall(11).resolves({ rows: reports.slice(23000, 28000) });
-      db.medic.query.onCall(12).resolves({ rows: reports.slice(28000, 35000) });
-      db.medic.query.onCall(13).resolves({ rows: reports.slice(35000, 45000) });
-      db.medic.query.onCall(14).resolves({ rows: reports.slice(45000, 46000) });
-      db.medic.query.onCall(15).resolves({ rows: reports.slice(46000, 47000) });
-      db.medic.query.onCall(16).resolves({ rows: reports.slice(47000, 48000) });
+      db.medic.query.onCall(0).resolves({ rows: reports }); // decrease
+      db.medic.query.onCall(1).resolves({ rows: reports }); // decrease
+      db.medic.query.onCall(2).resolves({ rows: reports.slice(0, 8000) }); // keep
+      db.medic.query.onCall(3).resolves({ rows: reports.slice(8000, 16000) }); // keep
+      db.medic.query.onCall(4).resolves({ rows: reports.slice(16000, 20000) }); // increase
+      db.medic.query.onCall(5).resolves({ rows: reports.slice(20000, 22000) }); // increase
+      db.medic.query.onCall(6).resolves({ rows: reports.slice(22000, 23000) }); // increase
+      db.medic.query.onCall(7).resolves({ rows: reports.slice(23000, 48000) }); // decrease
+      db.medic.query.onCall(8).resolves({ rows: reports.slice(23000, 48000) }); // decrease
+      db.medic.query.onCall(9).resolves({ rows: reports.slice(23000, 48000) }); // decrease
+      db.medic.query.onCall(10).resolves({ rows: reports.slice(23000, 48000) }); // decrease
+      db.medic.query.onCall(11).resolves({ rows: reports.slice(23000, 28000) }); // keep
+      db.medic.query.onCall(12).resolves({ rows: reports.slice(28000, 35000) }); // keep
+      db.medic.query.onCall(13).resolves({ rows: reports.slice(35000, 45000) }); // keep
+      db.medic.query.onCall(14).resolves({ rows: reports.slice(45000, 46000) }); // increase
+      db.medic.query.onCall(15).resolves({ rows: reports.slice(46000, 47000) }); // increase
+      db.medic.query.onCall(16).resolves({ rows: reports.slice(47000, 48000) }); // increase
       db.medic.query.onCall(17).resolves({ rows: [] });
 
       sinon.stub(db.medic, 'allDocs')
@@ -637,42 +572,29 @@ describe('ServerSidePurge', () => {
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
 
-      const expectedParams = (limit, id = '') => ([
-        'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
-        {
-          qs: {
-            limit: limit,
-            start_key: JSON.stringify(id ? `key${id}` : ''),
-            startkey_docid: id,
-            include_docs: true,
-          },
-          json: true
-        }
-      ]);
-
-      return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(17);
 
-        chai.expect(request.get.args[0]).to.deep.equal(expectedParams(1000));
-        chai.expect(request.get.args[1]).to.deep.equal(expectedParams(500));
-        chai.expect(request.get.args[2]).to.deep.equal(expectedParams(250));
-        chai.expect(request.get.args[3]).to.deep.equal(expectedParams(251, 249));
-        chai.expect(request.get.args[4]).to.deep.equal(expectedParams(251, 499));
-        chai.expect(request.get.args[5]).to.deep.equal(expectedParams(501, 749));
-        chai.expect(request.get.args[6]).to.deep.equal(expectedParams(1001, 1249));
-        chai.expect(request.get.args[7]).to.deep.equal(expectedParams(1001, 2249));
-        chai.expect(request.get.args[8]).to.deep.equal(expectedParams(501, 2249));
-        chai.expect(request.get.args[9]).to.deep.equal(expectedParams(251, 2249));
-        chai.expect(request.get.args[10]).to.deep.equal(expectedParams(126, 2249));
-        chai.expect(request.get.args[11]).to.deep.equal(expectedParams(63, 2249));
-        chai.expect(request.get.args[12]).to.deep.equal(expectedParams(63, 2311));
-        chai.expect(request.get.args[13]).to.deep.equal(expectedParams(63, 2373));
-        chai.expect(request.get.args[14]).to.deep.equal(expectedParams(63, 2435));
-        chai.expect(request.get.args[15]).to.deep.equal(expectedParams(125, 2497));
-        chai.expect(request.get.args[16]).to.deep.equal(expectedParams(249, 2499));
+        chai.expect(request.get.args[0]).to.deep.equal(getContactsByTypeArgs({ limit: 1000 }));
+        chai.expect(request.get.args[1]).to.deep.equal(getContactsByTypeArgs({ limit: 500 })); // decrease
+        chai.expect(request.get.args[2]).to.deep.equal(getContactsByTypeArgs({ limit: 250 })); // decrease
+        chai.expect(request.get.args[3]).to.deep.equal(getContactsByTypeArgs({ limit: 251, id: 249 })); // keep
+        chai.expect(request.get.args[4]).to.deep.equal(getContactsByTypeArgs({ limit: 251, id: 499})); // keep
+        chai.expect(request.get.args[5]).to.deep.equal(getContactsByTypeArgs({ limit: 501, id: 749 })); // increase
+        chai.expect(request.get.args[6]).to.deep.equal(getContactsByTypeArgs({ limit: 1001, id: 1249 })); // increase
+        chai.expect(request.get.args[7]).to.deep.equal(getContactsByTypeArgs({ limit: 1001, id: 2249 })); // increase
+        chai.expect(request.get.args[8]).to.deep.equal(getContactsByTypeArgs({ limit: 501, id: 2249 })); // decrease
+        chai.expect(request.get.args[9]).to.deep.equal(getContactsByTypeArgs({ limit: 251, id: 2249 })); // decrease
+        chai.expect(request.get.args[10]).to.deep.equal(getContactsByTypeArgs({ limit: 126, id: 2249 })); // decrease
+        chai.expect(request.get.args[11]).to.deep.equal(getContactsByTypeArgs({ limit: 63, id: 2249 })); // decrease
+        chai.expect(request.get.args[12]).to.deep.equal(getContactsByTypeArgs({ limit: 63, id: 2311 })); // keep
+        chai.expect(request.get.args[13]).to.deep.equal(getContactsByTypeArgs({ limit: 63, id: 2373 })); // keep
+        chai.expect(request.get.args[14]).to.deep.equal(getContactsByTypeArgs({ limit: 63, id: 2435 })); // keep
+        chai.expect(request.get.args[15]).to.deep.equal(getContactsByTypeArgs({ limit: 125, id: 2497 })); // increase
+        chai.expect(request.get.args[16]).to.deep.equal(getContactsByTypeArgs({ limit: 249, id: 2499 })); // increase
 
         chai.expect(db.medic.query.callCount).to.equal(17);
-        chai.expect(service.__get__('contactsBatchSize')).to.equal(496);
+        chai.expect(service.__get__('contactsBatchSize')).to.equal(496); // one more increase
       });
     });
 
@@ -690,7 +612,7 @@ describe('ServerSidePurge', () => {
       sinon.stub(db.medic, 'query').resolves({ rows: reports });
 
       return service
-        .__get__('contactsPurge')(roles, purgeFn)
+        .__get__('purgeContacts')(roles, purgeFn)
         .then(() => chai.expect.fail())
         .catch((err) => {
           chai.expect(err).to.deep.equal({
@@ -715,14 +637,63 @@ describe('ServerSidePurge', () => {
     });
 
     it('should decrease batch size to 1 on subsequent queries', () => {
+      const contacts = Array
+        .from({ length: 1005 })
+        .map((_, idx) => ({ id: idx, key: `key${idx}`, doc: { id: idx }}));
+      const reports = Array
+        .from({ length: 40000 })
+        .map((_, idx) => ({ id: idx, key: `key${idx}`, value: { subject: `key${idx}`, type: 'data_record' }}));
 
+      sinon.stub(db.medic, 'allDocs')
+        .callsFake(({ keys }) => Promise.resolve({ rows: keys.map((key) => ({ doc: { _id: key } }))}));
+      sinon.stub(request, 'get').callsFake((_, { qs }) => {
+        const start = (qs.startkey_docid && contacts.findIndex(contact => contact.id === qs.startkey_docid)) || 0;
+        return Promise.resolve({ rows: contacts.slice(start, start + qs.limit)});
+      });
+
+      sinon.stub(db.medic, 'query');
+      db.medic.query.onCall(0).resolves({ rows: reports.slice(0, 2000) });
+      db.medic.query.onCall(1).resolves({ rows: reports.slice(2000, 25000) });
+      db.medic.query.onCall(2).resolves({ rows: reports.slice(2000, 25000) });
+      db.medic.query.onCall(3).resolves({ rows: reports.slice(2000, 25000) });
+      db.medic.query.onCall(4).resolves({ rows: reports.slice(2000, 25000) });
+      db.medic.query.onCall(5).resolves({ rows: reports.slice(2000, 25000) });
+      db.medic.query.onCall(6).resolves({ rows: reports.slice(2000, 25000) });
+      db.medic.query.onCall(7).resolves({ rows: reports.slice(2000, 25000) });
+      db.medic.query.onCall(8).resolves({ rows: reports.slice(2000, 25000) });
+      db.medic.query.onCall(9).resolves({ rows: reports.slice(2000, 25000) });
+      db.medic.query.onCall(10).resolves({ rows: reports.slice(2000, 15000) });
+      db.medic.query.onCall(11).resolves({ rows: reports.slice(15000, 30000) });
+      db.medic.query.onCall(12).resolves({ rows: reports.slice(30000, 35000) });
+      db.medic.query.onCall(13).resolves({ rows: reports.slice(35000, 36000) });
+      db.medic.query.onCall(14).resolves({ rows: reports.slice(36000, 38000) });
+      db.medic.query.onCall(15).resolves({ rows: reports.slice(38000, 40000) });
+
+      const purgeDbChanges = sinon.stub().resolves({ results: [] });
+      sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
+
+      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
+        chai.expect(request.get.callCount).to.equal(16);
+        chai.expect(request.get.args[0][1].qs.limit).to.equal(1000);
+        chai.expect(request.get.args[1][1].qs.limit).to.equal(1001);
+        chai.expect(request.get.args[2][1].qs.limit).to.equal(501);
+        chai.expect(request.get.args[3][1].qs.limit).to.equal(251);
+        chai.expect(request.get.args[4][1].qs.limit).to.equal(126);
+        chai.expect(request.get.args[5][1].qs.limit).to.equal(63);
+        chai.expect(request.get.args[6][1].qs.limit).to.equal(32);
+        chai.expect(request.get.args[7][1].qs.limit).to.equal(16);
+        chai.expect(request.get.args[8][1].qs.limit).to.equal(8);
+        chai.expect(request.get.args[9][1].qs.limit).to.equal(4);
+        chai.expect(request.get.args[10][1].qs.limit).to.equal(2);
+        chai.expect(request.get.args[11][1].qs.limit).to.equal(2);
+        chai.expect(request.get.args[12][1].qs.limit).to.equal(2);
+        chai.expect(request.get.args[13][1].qs.limit).to.equal(2);
+        chai.expect(request.get.args[14][1].qs.limit).to.equal(3);
+        chai.expect(request.get.args[15][1].qs.limit).to.equal(5);
+
+        chai.expect(db.medic.query.callCount).to.equal(16);
+      });
     });
-
-    it('should continue to purge with batch size 1 until queue is ', () => {
-
-    });
-
-    // todo
 
     it('should set correct start_key and startkey_docid when last result is a tombstone', () => {
       sinon.stub(request, 'get');
@@ -759,58 +730,13 @@ describe('ServerSidePurge', () => {
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
 
-      return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(4);
-        chai.expect(request.get.args[0]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
-          {
-            qs: {
-              limit: 1000,
-              start_key: JSON.stringify(''),
-              startkey_docid: '',
-              include_docs: true,
-            },
-            json: true
-          }
-        ]);
-
-        chai.expect(request.get.args[1]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
-          {
-            qs: {
-              limit: 1001,
-              start_key: JSON.stringify('health_center'),
-              startkey_docid: 'f3-tombstone',
-              include_docs: true,
-            },
-            json: true
-          }
-        ]);
-
-        chai.expect(request.get.args[2]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
-          {
-            qs: {
-              limit: 1001,
-              start_key:  JSON.stringify('person'),
-              startkey_docid: 'f5',
-              include_docs: true,
-            },
-            json: true
-          }
-        ]);
-
-        chai.expect(request.get.args[3]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic-client/_view/contacts_by_type',
-          {
-            qs: {
-              limit: 1001,
-              start_key:  JSON.stringify('person'),
-              startkey_docid: 'f8-tombstone',
-              include_docs: true,
-            },
-            json: true
-          }
+        chai.expect(request.get.args).to.deep.equal([
+          getContactsByTypeArgs({ limit: 1000, id: '', key: '' }),
+          getContactsByTypeArgs({ limit: 1001, id: 'f3-tombstone', key: 'health_center' }),
+          getContactsByTypeArgs({ limit: 1001, id: 'f5', key: 'person' }),
+          getContactsByTypeArgs({ limit: 1001, id: 'f8-tombstone', key: 'person' }),
         ]);
       });
     });
@@ -862,13 +788,19 @@ describe('ServerSidePurge', () => {
         { id: 'f4-m2', doc: { _id: 'f4-m2', type: 'data_record', sms_message: 'b' } },
       ] });
 
-      return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
           'medic/docs_by_replication_key',
           { keys: ['first', 'f1', 's1', 'f2', 'f4', 's4'] }
         ]);
+        chai.expect(db.medic.allDocs.callCount).to.equal(1);
+        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
+          include_docs: true,
+          keys: ['f1-r1', 'f1-m1', 'f1-r2', 'f1-m2', 'f2-r1', 'f2-r2', 'f4-m1', 'f4-m2'],
+        }]);
+
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
           doc_ids: [
@@ -1027,13 +959,18 @@ describe('ServerSidePurge', () => {
         { id: 'f3-r2', doc: { _id: 'f3-r2', type: 'data_record', sms_message: 'b' } },
       ] });
 
-      return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equalInAnyOrder([
           'medic/docs_by_replication_key',
           { keys: ['first', 'f1', 's1', 'f2', 'f3', 'f4', 's4'] }
         ]);
+        chai.expect(db.medic.allDocs.callCount).to.equal(1);
+        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
+          include_docs: true,
+          keys: ['f1-r1', 'f1-m1', 'f1-r2', 'f1-m2', 'f2-r1', 'f2-r2', 'f3-m2', 'f3-r2'],
+        }]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
           doc_ids: [
@@ -1120,30 +1057,35 @@ describe('ServerSidePurge', () => {
         { id: 'first', key: 'first', value: { type: 'district_hospital' }},
         { id: 'f1', key: 'f1', value: { type: 'clinic' }},
         { id: 'f1-r1', key: 's1', value: { type: 'data_record', subject: 's1' } },
-        { id: 'f1-m1', key: 'f1', value: { type: 'data_record', subject: 'f1' } },
+        { id: 'f1-m1', key: 'f1', value: { type: 'data_record', subject: 'f1', submitter: 'f1' } },
         { id: 'f2', key: 'f2', value: { type: 'person' }},
-        { id: 'f2-r1', key: 'f2', value: { type: 'data_record', subject: 'f2' } },
-        { id: 'f2-r2', key: 'f2', value: { type: 'data_record', subject: 'f2' } },
-        { id: 'f2-r3', key: 's2', value: { type: 'data_record', subject: 's2' } },
-        { id: 'f2-m1', key: 'f2', value: { type: 'data_record', subject: 'f2' } },
+        { id: 'f2-r1', key: 'f2', value: { type: 'data_record', subject: 'f2', submitter: 'f2' } },
+        { id: 'f2-r2', key: 'f2', value: { type: 'data_record', subject: 'f2', submitter: 'f2' } },
+        { id: 'f2-r3', key: 's2', value: { type: 'data_record', subject: 's2', submitter: 'f2' } },
+        { id: 'f2-m1', key: 'f2', value: { type: 'data_record', subject: 'f2', submitter: 'f2' } },
       ] });
       db.medic.query.onCall(1).resolves({ rows: [] });
       sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
         { id: 'f1-r1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
-        { id: 'f1-m1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
-        { id: 'f2-r1', doc: { _id: 'f2-r1', type: 'data_record', form: 'a' } },
-        { id: 'f2-r2', doc: { _id: 'f2-r2', type: 'data_record', form: 'b' } },
+        { id: 'f1-m1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a', contact: { _id: 'f1' } } },
+        { id: 'f2-r1', doc: { _id: 'f2-r1', type: 'data_record', form: 'a', contact: { _id: 'f2' } } },
+        { id: 'f2-r2', doc: { _id: 'f2-r2', type: 'data_record', form: 'b', contact: { _id: 'f2' } } },
         { id: 'f2-r3', doc: { _id: 'f2-r3', type: 'data_record', form: 'a', patient_id: 's2' } },
-        { id: 'f2-m1', doc: { _id: 'f2-m1', type: 'data_record' } },
+        { id: 'f2-m1', doc: { _id: 'f2-m1', type: 'data_record', contact: { _id: 'f2' } } },
       ] });
 
-      return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equalInAnyOrder([
           'medic/docs_by_replication_key',
           { keys: ['first', 'f1', 's1', 'f2', 's2'] }
         ]);
+        chai.expect(db.medic.allDocs.callCount).to.equal(1);
+        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
+          include_docs: true,
+          keys: ['f1-r1', 'f1-m1', 'f2-r1', 'f2-r2', 'f2-r3', 'f2-m1'],
+        }]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
           doc_ids: [
@@ -1167,27 +1109,27 @@ describe('ServerSidePurge', () => {
           { roles: roles['a'] },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' }],
-          [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }]
+          [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a', contact: { _id: 'f1' } }]
         ]);
 
         chai.expect(purgeFn.args[4]).to.deep.equal([
           { roles: roles['a'] },
           { _id: 'f2', type: 'person', patient_id: 's2' },
           [{ _id: 'f2-r3', type: 'data_record', form: 'a', patient_id: 's2' }],
-          [{ _id: 'f2-m1', type: 'data_record' }]
+          [{ _id: 'f2-m1', type: 'data_record', contact: { _id: 'f2' } }]
         ]);
 
         chai.expect(purgeFn.args[6]).to.deep.equal([
           { roles: roles['a'] },
           {},
-          [{ _id: 'f2-r1', type: 'data_record', form: 'a' }],
+          [{ _id: 'f2-r1', type: 'data_record', form: 'a', contact: { _id: 'f2' } }],
           []
         ]);
 
         chai.expect(purgeFn.args[8]).to.deep.equal([
           { roles: roles['a'] },
           {},
-          [{ _id: 'f2-r2', type: 'data_record', form: 'b' }],
+          [{ _id: 'f2-r2', type: 'data_record', form: 'b', contact: { _id: 'f2' } }],
           []
         ]);
       });
@@ -1215,16 +1157,17 @@ describe('ServerSidePurge', () => {
       db.medic.query.onCall(0).resolves({ rows: [
         { id: 'first', key: 'first', value: { type: 'district_hospital' } },
         { id: 'f1', key: 'f1', value: { type: 'clinic' } },
-        { id: 'f1-r1', key: 's1', value: { type: 'data_record', subject: 's1', needs_signoff: true } },
-        { id: 'f1-m1', key: 'f1', value: { type: 'data_record', subject: 'f1' } },
+        { id: 'f1-r1', key: 's1', value: { type: 'data_record', subject: 's1', needs_signoff: true, submitter: 'f1' } },
+        { id: 'f1-m1', key: 'f1', value: { type: 'data_record', subject: 'f1', submitter: 'f1' } },
         { id: 'f2', key: 'f2', value: { type: 'person' } },
         { id: 'f2-r1', key: 'f2',
-          value: { type: 'data_record', subject: 'random', needs_signoff: true, submitter: 'f2'}
+          value: { type: 'data_record', subject: 'random', needs_signoff: true, submitter: 'f2' }
         },
         { id: 'f2-r2', key: 'f2',
           value: {type: 'data_record', subject: 'random', needs_signoff: true, submitter: 'other' }
         },
-        { id: 'f2-r3', key: 'f2', value: { type: 'data_record', needs_signoff: true, submitter: 'f2' } },
+        { id: 'f2-r3', key: 'f2', value: { type: 'data_record', needs_signoff: true, submitter: 'f2', subject: 'f2' } },
+        { id: 'f2-r4', key: 'f2', value: { type: 'data_record', needs_signoff: true, submitter: 'f2', subject: 'f6' } },
       ] });
       db.medic.query.onCall(1).resolves({ rows: [] });
       sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
@@ -1234,13 +1177,18 @@ describe('ServerSidePurge', () => {
           doc: { _id: 'f2-r3', type: 'data_record', form: 'a', needs_signoff: true, contact: { _id: 'f2' } } },
       ] });
 
-      return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
           'medic/docs_by_replication_key',
           { keys: ['first', 'f1', 's1', 'f2'] }
         ]);
+        chai.expect(db.medic.allDocs.callCount).to.equal(1);
+        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
+          include_docs: true,
+          keys: ['f1-r1', 'f1-m1', 'f2-r3'],
+        }]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
           doc_ids: [
@@ -1349,7 +1297,7 @@ describe('ServerSidePurge', () => {
       purgeFn.withArgs({ roles: roles['a'] }, { _id: 'f2', type: 'person' }).returns(['f2-m1', 'f2-r1']);
       purgeFn.withArgs({ roles: roles['b'] }, { _id: 'f2', type: 'person' }).returns(['f2-r1']);
 
-      return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(dbA.changes.callCount).to.equal(1);
         chai.expect(dbA.changes.args[0]).to.deep.equalInAnyOrder([{
           doc_ids: [
@@ -1434,7 +1382,7 @@ describe('ServerSidePurge', () => {
       purgeFn.withArgs({ roles: roles['a'] }, { _id: 'f2', type: 'clinic' }).returns(['f2-m1']);
       purgeFn.withArgs({ roles: roles['b'] }, { _id: 'f2', type: 'clinic' }).returns(['f2']);
 
-      return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(dbA.changes.callCount).to.equal(1);
         chai.expect(dbA.changes.args[0]).to.deep.equalInAnyOrder([{
           doc_ids: ['purged:first', 'purged:f1', 'purged:f1-r1', 'purged:f1-m1', 'purged:f2',  ],
@@ -1526,7 +1474,7 @@ describe('ServerSidePurge', () => {
       purgeFn.withArgs({ roles: roles['a'] }, { _id: 'f2', type: 'clinic' }).returns(false);
       purgeFn.withArgs({ roles: roles['b'] }, { _id: 'f2', type: 'clinic' }).returns(null);
 
-      return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(dbA.bulkDocs.callCount).to.equal(1);
         chai.expect(dbA.bulkDocs.args[0]).to.deep.equal([{docs: [{_id: 'purged:f1-m1', _rev: '1', _deleted: true}]}]);
         chai.expect(dbB.bulkDocs.callCount).to.equal(0);
@@ -1568,7 +1516,7 @@ describe('ServerSidePurge', () => {
         { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
       ]});
 
-      return service.__get__('contactsPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(db.medic.query.callCount).to.equal(2);
         chai.expect(db.medic.query.args[0]).to.deep.equalInAnyOrder([
@@ -1615,7 +1563,7 @@ describe('ServerSidePurge', () => {
       sinon.stub(db, 'get').resolves({});
       sinon.stub(db.medic, 'query');
 
-      return service.__get__('contactsPurge')(roles, purgeFn).catch(err => {
+      return service.__get__('purgeContacts')(roles, purgeFn).catch(err => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(err).to.deep.equal({some: 'err'});
         chai.expect(db.medic.query.callCount).to.equal(0);
@@ -1626,7 +1574,7 @@ describe('ServerSidePurge', () => {
       sinon.stub(request, 'get').resolves({ rows: [{ id: 'first', key: 'district_hospital', doc: { _id: 'first' } }]});
       sinon.stub(db.medic, 'query').rejects({ some: 'err' });
 
-      return service.__get__('contactsPurge')(roles, purgeFn).catch(err => {
+      return service.__get__('purgeContacts')(roles, purgeFn).catch(err => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(err).to.deep.equal({some: 'err'});
@@ -1639,7 +1587,7 @@ describe('ServerSidePurge', () => {
       const purgeDbChanges = sinon.stub().rejects({ some: 'err' });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
 
-      return service.__get__('contactsPurge')(roles, purgeFn).catch(err => {
+      return service.__get__('purgeContacts')(roles, purgeFn).catch(err => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(err).to.deep.equal({ some: 'err' });
@@ -1653,7 +1601,7 @@ describe('ServerSidePurge', () => {
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
       purgeFn.throws(new Error('error'));
 
-      return service.__get__('contactsPurge')(roles, purgeFn).catch(err => {
+      return service.__get__('purgeContacts')(roles, purgeFn).catch(err => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
@@ -1668,7 +1616,7 @@ describe('ServerSidePurge', () => {
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub().rejects({ some: 'err' }) });
       purgeFn.returns(['first']);
 
-      return service.__get__('contactsPurge')(roles, purgeFn).catch(err => {
+      return service.__get__('purgeContacts')(roles, purgeFn).catch(err => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
@@ -1678,7 +1626,7 @@ describe('ServerSidePurge', () => {
     });
   });
 
-  describe('batchedUnallocatedPurge', () => {
+  describe('purgeUnallocatedReports', () => {
     let roles;
     let purgeFn;
 
@@ -1690,11 +1638,11 @@ describe('ServerSidePurge', () => {
 
     it('should request first batch', () => {
       sinon.stub(request, 'get').resolves({ rows:[] });
-      return service.__get__('batchedUnallocatedPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeUnallocatedReports')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(request.get.args[0]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
           {
+            url: 'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
             qs: {
               limit: 20000,
               key: JSON.stringify('_unassigned'),
@@ -1727,11 +1675,11 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(db, 'get').returns({ changes: sinon.stub().resolves({ results: [] }) });
 
-      return service.__get__('batchedUnallocatedPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeUnallocatedReports')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(3);
         chai.expect(request.get.args[0]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
           {
+            url: 'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
             qs: {
               limit: 20000,
               key: JSON.stringify('_unassigned'),
@@ -1742,8 +1690,8 @@ describe('ServerSidePurge', () => {
           }]);
 
         chai.expect(request.get.args[1]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
           {
+            url: 'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
             qs: {
               limit: 20000,
               key: JSON.stringify('_unassigned'),
@@ -1754,8 +1702,8 @@ describe('ServerSidePurge', () => {
           }]);
 
         chai.expect(request.get.args[2]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
           {
+            url: 'http://a:p@localhost:6500/medic/_design/medic/_view/docs_by_replication_key',
             qs: {
               limit: 20000,
               key: JSON.stringify('_unassigned'),
@@ -1784,7 +1732,7 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(db, 'get').returns({ changes: sinon.stub().resolves({ results: [] }) });
 
-      return service.__get__('batchedUnallocatedPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeUnallocatedReports')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(purgeFn.callCount).to.equal(12);
         chai.expect(purgeFn.args[0]).to.deep.equal([{ roles: roles['a'] }, {}, [{ _id: 'r1', form: 'a' }], []]);
@@ -1842,7 +1790,7 @@ describe('ServerSidePurge', () => {
       purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r4', form: 'a' }], []).returns(['r4']);
       purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r6', form: 'a' }], []).returns(['r6']);
 
-      return service.__get__('batchedUnallocatedPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeUnallocatedReports')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(purgeFn.callCount).to.equal(12);
         chai.expect(dbA.bulkDocs.callCount).to.equal(1);
@@ -1889,7 +1837,7 @@ describe('ServerSidePurge', () => {
       purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r1', form: 'a' }], []).returns(['random', '10', '11']);
       purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r2', form: 'a' }], []).returns(['oops', 'fifty', '22']);
 
-      return service.__get__('batchedUnallocatedPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeUnallocatedReports')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(purgeFn.callCount).to.equal(4);
         chai.expect(dbA.bulkDocs.callCount).to.equal(1);
@@ -1930,7 +1878,7 @@ describe('ServerSidePurge', () => {
       purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r2', form: 'a' }], []).returns(null);
       purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r3', form: 'a' }], []).returns([]);
 
-      return service.__get__('batchedUnallocatedPurge')(roles, purgeFn).then(() => {
+      return service.__get__('purgeUnallocatedReports')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(purgeFn.callCount).to.equal(6);
         chai.expect(dbA.bulkDocs.callCount).to.equal(1);
@@ -1944,7 +1892,7 @@ describe('ServerSidePurge', () => {
     it('should throw docs_by_replication_key errors ', () => {
       sinon.stub(request, 'get').rejects({ some: 'err' });
 
-      return service.__get__('batchedUnallocatedPurge')(roles, purgeFn).catch(err => {
+      return service.__get__('purgeUnallocatedReports')(roles, purgeFn).catch(err => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(err).to.deep.equal({ some: 'err' });
       });
@@ -1955,7 +1903,7 @@ describe('ServerSidePurge', () => {
       const purgeDbChanges = sinon.stub().rejects({ some: 'err' });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
 
-      return service.__get__('batchedUnallocatedPurge')(roles, purgeFn).catch(err => {
+      return service.__get__('purgeUnallocatedReports')(roles, purgeFn).catch(err => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(err).to.deep.equal({ some: 'err' });
       });
@@ -1967,7 +1915,7 @@ describe('ServerSidePurge', () => {
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
       purgeFn.throws(new Error('error'));
 
-      return service.__get__('batchedUnallocatedPurge')(roles, purgeFn).catch(err => {
+      return service.__get__('purgeUnallocatedReports')(roles, purgeFn).catch(err => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(err.message).to.deep.equal('error');
@@ -1980,7 +1928,7 @@ describe('ServerSidePurge', () => {
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub().rejects({ some: 'err' }) });
       purgeFn.returns(['first']);
 
-      return service.__get__('batchedUnallocatedPurge')(roles, purgeFn).catch(err => {
+      return service.__get__('purgeUnallocatedReports')(roles, purgeFn).catch(err => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeFn.callCount).to.equal(2);
@@ -1989,7 +1937,7 @@ describe('ServerSidePurge', () => {
     });
   });
 
-  describe('batchedTasksPurge', () => {
+  describe('purgeTasks', () => {
     let roles;
 
     const getDaysAgo = (days) => moment().subtract(days, 'days').format('YYYY-MM-DD');
@@ -2003,11 +1951,11 @@ describe('ServerSidePurge', () => {
       sinon.stub(request, 'get').resolves({ rows:[] });
       clock = sinon.useFakeTimers(moment('2020-03-01').valueOf());
 
-      return service.__get__('batchedTasksPurge')(roles).then(() => {
+      return service.__get__('purgeTasks')(roles).then(() => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(request.get.args[0]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
           {
+            url: 'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
             qs: {
               limit: 20000,
               end_key: JSON.stringify(getDaysAgo(60)),
@@ -2042,11 +1990,11 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(db, 'get').returns({changes: sinon.stub().resolves({ results: [] }), bulkDocs: sinon.stub() });
 
-      return service.__get__('batchedTasksPurge')(roles).then(() => {
+      return service.__get__('purgeTasks')(roles).then(() => {
         chai.expect(request.get.callCount).to.equal(3);
         chai.expect(request.get.args[0]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
           {
+            url: 'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
             qs: {
               limit: 20000,
               end_key: JSON.stringify(getDaysAgo(60)),
@@ -2057,8 +2005,8 @@ describe('ServerSidePurge', () => {
           }]);
 
         chai.expect(request.get.args[1]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
           {
+            url: 'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
             qs: {
               limit: 20000,
               end_key: JSON.stringify(getDaysAgo(60)),
@@ -2069,8 +2017,8 @@ describe('ServerSidePurge', () => {
           }]);
 
         chai.expect(request.get.args[2]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
           {
+            url: 'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
             qs: {
               limit: 20000,
               end_key: JSON.stringify(getDaysAgo(60)),
@@ -2112,7 +2060,7 @@ describe('ServerSidePurge', () => {
         { id: 'purged:t5', changes: [{ rev: 't5-rev' }] },
       ]});
 
-      return service.__get__('batchedTasksPurge')(roles).then(() => {
+      return service.__get__('purgeTasks')(roles).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(dbA.bulkDocs.callCount).to.equal(1);
         chai.expect(dbA.bulkDocs.args[0]).to.deep.equal([{ docs: [
@@ -2136,7 +2084,7 @@ describe('ServerSidePurge', () => {
     it('should throw view errors ', () => {
       sinon.stub(request, 'get').rejects({ some: 'err' });
 
-      return service.__get__('batchedTasksPurge')(roles).catch(err => {
+      return service.__get__('purgeTasks')(roles).catch(err => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(err).to.deep.equal({ some: 'err' });
       });
@@ -2147,7 +2095,7 @@ describe('ServerSidePurge', () => {
       const purgeDbChanges = sinon.stub().rejects({ some: 'err' });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
 
-      return service.__get__('batchedTasksPurge')(roles).catch(err => {
+      return service.__get__('purgeTasks')(roles).catch(err => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(err).to.deep.equal({ some: 'err' });
       });
@@ -2158,7 +2106,7 @@ describe('ServerSidePurge', () => {
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub().rejects({ some: 'err' }) });
 
-      return service.__get__('batchedTasksPurge')(roles).catch(err => {
+      return service.__get__('purgeTasks')(roles).catch(err => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(err).to.deep.equal({ some: 'err' });
@@ -2166,7 +2114,7 @@ describe('ServerSidePurge', () => {
     });
   });
 
-  describe('batchedTargetsPurge', () => {
+  describe('purgeTargets', () => {
     let roles;
 
     beforeEach(() => {
@@ -2178,11 +2126,11 @@ describe('ServerSidePurge', () => {
       sinon.stub(request, 'get').resolves({ rows:[] });
       const now = moment('2020-03-23').valueOf();
       sinon.useFakeTimers(now);
-      return service.__get__('batchedTargetsPurge')(roles).then(() => {
+      return service.__get__('purgeTargets')(roles).then(() => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(request.get.args[0]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_all_docs',
           {
+            url: 'http://a:p@localhost:6500/medic/_all_docs',
             qs: {
               limit: 20000,
               start_key: JSON.stringify('target~'),
@@ -2219,11 +2167,11 @@ describe('ServerSidePurge', () => {
       dbA.bulkDocs.resolves([]);
       sinon.stub(db, 'get').returns(dbA);
 
-      return service.__get__('batchedTargetsPurge')(roles).then(() => {
+      return service.__get__('purgeTargets')(roles).then(() => {
         chai.expect(request.get.callCount).to.equal(3);
         chai.expect(request.get.args[0]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_all_docs',
           {
+            url: 'http://a:p@localhost:6500/medic/_all_docs',
             qs: {
               limit: 20000,
               start_key: JSON.stringify('target~'),
@@ -2233,8 +2181,8 @@ describe('ServerSidePurge', () => {
           }]);
 
         chai.expect(request.get.args[1]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_all_docs',
           {
+            url: 'http://a:p@localhost:6500/medic/_all_docs',
             qs: {
               limit: 20000,
               start_key: JSON.stringify('target~2019~05~three'),
@@ -2244,8 +2192,8 @@ describe('ServerSidePurge', () => {
           }]);
 
         chai.expect(request.get.args[2]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_all_docs',
           {
+            url: 'http://a:p@localhost:6500/medic/_all_docs',
             qs: {
               limit: 20000,
               start_key: JSON.stringify('target~2019~06~two'),
@@ -2290,7 +2238,7 @@ describe('ServerSidePurge', () => {
         { id: 'purged:target~2019~03~user3', changes: [{ rev: 't5-rev' }] },
       ]});
 
-      return service.__get__('batchedTargetsPurge')(roles).then(() => {
+      return service.__get__('purgeTargets')(roles).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(dbA.bulkDocs.callCount).to.equal(1);
         chai.expect(dbA.bulkDocs.args[0]).to.deep.equal([{ docs: [
@@ -2317,7 +2265,7 @@ describe('ServerSidePurge', () => {
     it('should throw allDocs errors ', () => {
       sinon.stub(request, 'get').rejects({ some: 'err' });
 
-      return service.__get__('batchedTargetsPurge')(roles).catch(err => {
+      return service.__get__('purgeTargets')(roles).catch(err => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(err).to.deep.equal({ some: 'err' });
       });
@@ -2328,7 +2276,7 @@ describe('ServerSidePurge', () => {
       const purgeDbChanges = sinon.stub().rejects({ some: 'err' });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
 
-      return service.__get__('batchedTargetsPurge')(roles).catch(err => {
+      return service.__get__('purgeTargets')(roles).catch(err => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(err).to.deep.equal({ some: 'err' });
       });
@@ -2339,7 +2287,7 @@ describe('ServerSidePurge', () => {
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub().rejects({ some: 'err' }) });
 
-      return service.__get__('batchedTargetsPurge')(roles).catch(err => {
+      return service.__get__('purgeTargets')(roles).catch(err => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(err).to.deep.equal({ some: 'err' });
@@ -2352,10 +2300,10 @@ describe('ServerSidePurge', () => {
     let getRoles;
     let initPurgeDbs;
     let closePurgeDbs;
-    let contactsPurge;
-    let batchedUnallocatedPurge;
-    let batchedTasksPurge;
-    let batchedTargetsPurge;
+    let purgeContacts;
+    let purgeUnallocatedReports;
+    let purgeTasks;
+    let purgeTargets;
     let purgeFn;
 
     beforeEach(() => {
@@ -2363,10 +2311,10 @@ describe('ServerSidePurge', () => {
       getRoles = sinon.stub();
       initPurgeDbs = sinon.stub();
       closePurgeDbs = sinon.stub();
-      contactsPurge = sinon.stub();
-      batchedUnallocatedPurge = sinon.stub();
-      batchedTasksPurge = sinon.stub();
-      batchedTargetsPurge = sinon.stub();
+      purgeContacts = sinon.stub();
+      purgeUnallocatedReports = sinon.stub();
+      purgeTasks = sinon.stub();
+      purgeTargets = sinon.stub();
       purgeFn = sinon.stub();
     });
 
@@ -2393,36 +2341,77 @@ describe('ServerSidePurge', () => {
       });
     });
 
-    it('should initialize dbs, run per contact, unallocated, tasks and targets purges', () => {
+    it('should not purge if purge is already running', () => {
       const roles = { 'a': [1, 2, 3], 'b': [1, 2, 4] };
       getPurgeFn.returns(purgeFn);
       getRoles.resolves(roles);
       initPurgeDbs.resolves();
-      contactsPurge.resolves();
-      batchedUnallocatedPurge.resolves();
+      purgeContacts.resolves();
+      purgeUnallocatedReports.resolves();
       sinon.stub(db.sentinel, 'put').resolves();
 
       service.__set__('getPurgeFn', getPurgeFn);
       service.__set__('getRoles', getRoles);
       service.__set__('initPurgeDbs', initPurgeDbs);
-      service.__set__('contactsPurge', contactsPurge);
-      service.__set__('batchedUnallocatedPurge', batchedUnallocatedPurge);
-      service.__set__('batchedTasksPurge', batchedTasksPurge);
-      service.__set__('batchedTargetsPurge', batchedTargetsPurge);
+      service.__set__('purgeContacts', purgeContacts);
+      service.__set__('purgeUnallocatedReports', purgeUnallocatedReports);
+      service.__set__('purgeTasks', purgeTasks);
+      service.__set__('purgeTargets', purgeTargets);
+      service.__set__('closePurgeDbs', closePurgeDbs);
+
+      const promises = [];
+      promises.push(service.__get__('purge')());
+      promises.push(service.__get__('purge')());
+      promises.push(service.__get__('purge')());
+      promises.push(service.__get__('purge')());
+
+      return Promise.all(promises).then(() => {
+        chai.expect(getPurgeFn.callCount).to.equal(1);
+        chai.expect(getRoles.callCount).to.equal(1);
+        chai.expect(initPurgeDbs.callCount).to.equal(1);
+        chai.expect(purgeContacts.callCount).to.equal(1);
+        chai.expect(purgeContacts.args[0]).to.deep.equal([ roles, purgeFn ]);
+        chai.expect(purgeUnallocatedReports.callCount).to.equal(1);
+        chai.expect(purgeUnallocatedReports.args[0]).to.deep.equal([ roles, purgeFn ]);
+        chai.expect(purgeTasks.callCount).to.equal(1);
+        chai.expect(purgeTasks.args[0]).to.deep.equal([ roles ]);
+        chai.expect(purgeTargets.callCount).to.equal(1);
+        chai.expect(purgeTargets.args[0]).to.deep.equal([ roles ]);
+        chai.expect(db.sentinel.put.callCount).to.equal(1);
+        chai.expect(closePurgeDbs.callCount).to.equal(1);
+      });
+    });
+
+    it('should initialize dbs, run per contact, unallocated, tasks and targets purges', () => {
+      const roles = { 'a': [1, 2, 3], 'b': [1, 2, 4] };
+      getPurgeFn.returns(purgeFn);
+      getRoles.resolves(roles);
+      initPurgeDbs.resolves();
+      purgeContacts.resolves();
+      purgeUnallocatedReports.resolves();
+      sinon.stub(db.sentinel, 'put').resolves();
+
+      service.__set__('getPurgeFn', getPurgeFn);
+      service.__set__('getRoles', getRoles);
+      service.__set__('initPurgeDbs', initPurgeDbs);
+      service.__set__('purgeContacts', purgeContacts);
+      service.__set__('purgeUnallocatedReports', purgeUnallocatedReports);
+      service.__set__('purgeTasks', purgeTasks);
+      service.__set__('purgeTargets', purgeTargets);
       service.__set__('closePurgeDbs', closePurgeDbs);
 
       return service.__get__('purge')().then(() => {
         chai.expect(getPurgeFn.callCount).to.equal(1);
         chai.expect(getRoles.callCount).to.equal(1);
         chai.expect(initPurgeDbs.callCount).to.equal(1);
-        chai.expect(contactsPurge.callCount).to.equal(1);
-        chai.expect(contactsPurge.args[0]).to.deep.equal([ roles, purgeFn ]);
-        chai.expect(batchedUnallocatedPurge.callCount).to.equal(1);
-        chai.expect(batchedUnallocatedPurge.args[0]).to.deep.equal([ roles, purgeFn ]);
-        chai.expect(batchedTasksPurge.callCount).to.equal(1);
-        chai.expect(batchedTasksPurge.args[0]).to.deep.equal([ roles ]);
-        chai.expect(batchedTargetsPurge.callCount).to.equal(1);
-        chai.expect(batchedTargetsPurge.args[0]).to.deep.equal([ roles ]);
+        chai.expect(purgeContacts.callCount).to.equal(1);
+        chai.expect(purgeContacts.args[0]).to.deep.equal([ roles, purgeFn ]);
+        chai.expect(purgeUnallocatedReports.callCount).to.equal(1);
+        chai.expect(purgeUnallocatedReports.args[0]).to.deep.equal([ roles, purgeFn ]);
+        chai.expect(purgeTasks.callCount).to.equal(1);
+        chai.expect(purgeTasks.args[0]).to.deep.equal([ roles ]);
+        chai.expect(purgeTargets.callCount).to.equal(1);
+        chai.expect(purgeTargets.args[0]).to.deep.equal([ roles ]);
         chai.expect(db.sentinel.put.callCount).to.equal(1);
         chai.expect(closePurgeDbs.callCount).to.equal(1);
       });
@@ -2435,16 +2424,16 @@ describe('ServerSidePurge', () => {
       service.__set__('getPurgeFn', getPurgeFn);
       service.__set__('getRoles', getRoles);
       service.__set__('initPurgeDbs', initPurgeDbs);
-      service.__set__('contactsPurge', contactsPurge);
-      service.__set__('batchedUnallocatedPurge', batchedUnallocatedPurge);
+      service.__set__('purgeContacts', purgeContacts);
+      service.__set__('purgeUnallocatedReports', purgeUnallocatedReports);
       service.__set__('closePurgeDbs', closePurgeDbs);
 
       return service.__get__('purge')().then(() => {
         chai.expect(getPurgeFn.callCount).to.equal(1);
         chai.expect(getRoles.callCount).to.equal(1);
         chai.expect(initPurgeDbs.callCount).to.equal(0);
-        chai.expect(contactsPurge.callCount).to.equal(0);
-        chai.expect(batchedUnallocatedPurge.callCount).to.equal(0);
+        chai.expect(purgeContacts.callCount).to.equal(0);
+        chai.expect(purgeUnallocatedReports.callCount).to.equal(0);
         chai.expect(closePurgeDbs.callCount).to.equal(1);
       });
     });
@@ -2458,16 +2447,16 @@ describe('ServerSidePurge', () => {
       service.__set__('getPurgeFn', getPurgeFn);
       service.__set__('getRoles', getRoles);
       service.__set__('initPurgeDbs', initPurgeDbs);
-      service.__set__('contactsPurge', contactsPurge);
-      service.__set__('batchedUnallocatedPurge', batchedUnallocatedPurge);
+      service.__set__('purgeContacts', purgeContacts);
+      service.__set__('purgeUnallocatedReports', purgeUnallocatedReports);
       service.__set__('closePurgeDbs', closePurgeDbs);
 
       return service.__get__('purge')().then(() => {
         chai.expect(getPurgeFn.callCount).to.equal(1);
         chai.expect(getRoles.callCount).to.equal(1);
         chai.expect(initPurgeDbs.callCount).to.equal(1);
-        chai.expect(contactsPurge.callCount).to.equal(0);
-        chai.expect(batchedUnallocatedPurge.callCount).to.equal(0);
+        chai.expect(purgeContacts.callCount).to.equal(0);
+        chai.expect(purgeUnallocatedReports.callCount).to.equal(0);
         chai.expect(closePurgeDbs.callCount).to.equal(1);
       });
     });
@@ -2477,22 +2466,22 @@ describe('ServerSidePurge', () => {
       getPurgeFn.returns(purgeFn);
       getRoles.resolves(roles);
       initPurgeDbs.resolves();
-      contactsPurge.rejects({});
+      purgeContacts.rejects({});
 
       service.__set__('getPurgeFn', getPurgeFn);
       service.__set__('getRoles', getRoles);
       service.__set__('initPurgeDbs', initPurgeDbs);
-      service.__set__('contactsPurge', contactsPurge);
-      service.__set__('batchedUnallocatedPurge', batchedUnallocatedPurge);
+      service.__set__('purgeContacts', purgeContacts);
+      service.__set__('purgeUnallocatedReports', purgeUnallocatedReports);
       service.__set__('closePurgeDbs', closePurgeDbs);
 
       return service.__get__('purge')().then(() => {
         chai.expect(getPurgeFn.callCount).to.equal(1);
         chai.expect(getRoles.callCount).to.equal(1);
         chai.expect(initPurgeDbs.callCount).to.equal(1);
-        chai.expect(contactsPurge.callCount).to.equal(1);
-        chai.expect(contactsPurge.args[0]).to.deep.equal([ roles, purgeFn ]);
-        chai.expect(batchedUnallocatedPurge.callCount).to.equal(0);
+        chai.expect(purgeContacts.callCount).to.equal(1);
+        chai.expect(purgeContacts.args[0]).to.deep.equal([ roles, purgeFn ]);
+        chai.expect(purgeUnallocatedReports.callCount).to.equal(0);
         chai.expect(closePurgeDbs.callCount).to.equal(1);
       });
     });
@@ -2502,24 +2491,24 @@ describe('ServerSidePurge', () => {
       getPurgeFn.returns(purgeFn);
       getRoles.resolves(roles);
       initPurgeDbs.resolves();
-      contactsPurge.resolves();
-      batchedUnallocatedPurge.rejects({});
+      purgeContacts.resolves();
+      purgeUnallocatedReports.rejects({});
       service.__set__('closePurgeDbs', closePurgeDbs);
 
       service.__set__('getPurgeFn', getPurgeFn);
       service.__set__('getRoles', getRoles);
       service.__set__('initPurgeDbs', initPurgeDbs);
-      service.__set__('contactsPurge', contactsPurge);
-      service.__set__('batchedUnallocatedPurge', batchedUnallocatedPurge);
+      service.__set__('purgeContacts', purgeContacts);
+      service.__set__('purgeUnallocatedReports', purgeUnallocatedReports);
 
       return service.__get__('purge')().then(() => {
         chai.expect(getPurgeFn.callCount).to.equal(1);
         chai.expect(getRoles.callCount).to.equal(1);
         chai.expect(initPurgeDbs.callCount).to.equal(1);
-        chai.expect(contactsPurge.callCount).to.equal(1);
-        chai.expect(contactsPurge.args[0]).to.deep.equal([ roles, purgeFn ]);
-        chai.expect(batchedUnallocatedPurge.callCount).to.equal(1);
-        chai.expect(batchedUnallocatedPurge.args[0]).to.deep.equal([ roles, purgeFn ]);
+        chai.expect(purgeContacts.callCount).to.equal(1);
+        chai.expect(purgeContacts.args[0]).to.deep.equal([ roles, purgeFn ]);
+        chai.expect(purgeUnallocatedReports.callCount).to.equal(1);
+        chai.expect(purgeUnallocatedReports.args[0]).to.deep.equal([ roles, purgeFn ]);
         chai.expect(closePurgeDbs.callCount).to.equal(1);
       });
     });
@@ -2529,28 +2518,28 @@ describe('ServerSidePurge', () => {
       getPurgeFn.returns(purgeFn);
       getRoles.resolves(roles);
       initPurgeDbs.resolves();
-      contactsPurge.resolves();
-      batchedUnallocatedPurge.resolves();
-      batchedTasksPurge.rejects({});
+      purgeContacts.resolves();
+      purgeUnallocatedReports.resolves();
+      purgeTasks.rejects({});
       service.__set__('closePurgeDbs', closePurgeDbs);
 
       service.__set__('getPurgeFn', getPurgeFn);
       service.__set__('getRoles', getRoles);
       service.__set__('initPurgeDbs', initPurgeDbs);
-      service.__set__('contactsPurge', contactsPurge);
-      service.__set__('batchedUnallocatedPurge', batchedUnallocatedPurge);
-      service.__set__('batchedTasksPurge', batchedTasksPurge);
+      service.__set__('purgeContacts', purgeContacts);
+      service.__set__('purgeUnallocatedReports', purgeUnallocatedReports);
+      service.__set__('purgeTasks', purgeTasks);
 
       return service.__get__('purge')().then(() => {
         chai.expect(getPurgeFn.callCount).to.equal(1);
         chai.expect(getRoles.callCount).to.equal(1);
         chai.expect(initPurgeDbs.callCount).to.equal(1);
-        chai.expect(contactsPurge.callCount).to.equal(1);
-        chai.expect(contactsPurge.args[0]).to.deep.equal([ roles, purgeFn ]);
-        chai.expect(batchedUnallocatedPurge.callCount).to.equal(1);
-        chai.expect(batchedUnallocatedPurge.args[0]).to.deep.equal([ roles, purgeFn ]);
-        chai.expect(batchedTasksPurge.callCount).to.equal(1);
-        chai.expect(batchedTasksPurge.args[0]).to.deep.equal([ roles ]);
+        chai.expect(purgeContacts.callCount).to.equal(1);
+        chai.expect(purgeContacts.args[0]).to.deep.equal([ roles, purgeFn ]);
+        chai.expect(purgeUnallocatedReports.callCount).to.equal(1);
+        chai.expect(purgeUnallocatedReports.args[0]).to.deep.equal([ roles, purgeFn ]);
+        chai.expect(purgeTasks.callCount).to.equal(1);
+        chai.expect(purgeTasks.args[0]).to.deep.equal([ roles ]);
         chai.expect(closePurgeDbs.callCount).to.equal(1);
       });
     });
