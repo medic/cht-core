@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const uuid = require('uuid/v4');
+const { v4: uuid } = require('uuid');
 const _ = require('lodash');
 
 const commonElements = require('../page-objects/common/common.po.js');

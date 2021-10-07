@@ -19,7 +19,7 @@
     "pouchdb-core": "^7.2.2",
     "pouchdb-mapreduce": "^7.2.2",
     "sinon": "^8.1.1",
-    "uuid": "^3.4.0"
+    "uuid": "^8.3.2"
   },
   "dependencies": {
     "@medic/contact-types-utils": "file:../contact-types-utils",

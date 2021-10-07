@@ -2,7 +2,7 @@ const utils = require('../utils');
 const helper = require('../helper');
 const common = require('../page-objects/common/common.po');
 const messagesPo = require('../page-objects/messages/messages.po');
-const uuid = require('uuid/v4');
+const { v4: uuid } = require('uuid');
 const _ = require('lodash');
 
 /* eslint-disable no-console */

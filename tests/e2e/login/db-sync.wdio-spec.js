@@ -4,7 +4,7 @@ const sentinelUtils = require('../sentinel/utils');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 const chai = require('chai');
-const uuid = require('uuid/v4');
+const { v4: uuid } = require('uuid');
 
 /* global window */
 
