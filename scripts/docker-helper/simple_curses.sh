@@ -684,6 +684,7 @@ parse_args (){
     VERBOSE=1
     BSC_TITLECROP=0
     reboot_count=0
+    debug=0
     sleepFor=0
     time=1
     exitNext=''
@@ -696,6 +697,7 @@ parse_args (){
         -c | --crop )        BSC_TITLECROP=1; shift 1 ;;
         -h | --help )        usage; exit 0 ;;
         -e | --env-file )    envFile=$2; shift 2 ;;
+        --debug )            debug=1; shift 1 ;;
         -d | --docker_action )
           if [ "$2" = "up" ] || [ "$2" = "down" ] || [ "$2" = "destroy" ];then
             docker_action=$2

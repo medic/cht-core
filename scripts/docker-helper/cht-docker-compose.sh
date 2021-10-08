@@ -251,6 +251,20 @@ get_load_avg() {
   fi
 }
 
+log_iteration(){
+  counter=$1
+  timestamp=$(date)
+  logname='cht-docker-compose.log'
+  if [ $counter -eq 1 ]; then
+    echo "" >& 1 >>./$logname
+    echo "${timestamp} ---------------------------START--------------------------" >& 1 >>./$logname
+  fi
+  echo "${timestamp} Load: $(get_load_avg) URL: $(get_local_ip_url $lanAddress) PID: $$" >& 1 >>./$logname
+  echo "${timestamp} Iterations: $counter" >& 1 >>./$logname
+  echo "${timestamp} Global/CHT Containers: $(get_global_running_container_count)/$(get_running_container_count $ALL_CONTAINERS)" >& 1 >>./$logname
+}
+
+counter=1
 main (){
 
   # very first thing check we have valid env file, exit if not
@@ -297,6 +311,11 @@ main (){
   dockerComposePath=$(get_docker_compose_yml_path)
   loadAvg=$(get_load_avg)
   chtVersion="NA"
+
+  if [ $debug -eq 1 ]; then
+    log_iteration $counter
+    null=$((counter++))
+  fi
 
   # if we're exiting, call down or destroy and quit proper
   if [ "$exitNext" = "destroy" ] || [ "$exitNext" = "down" ] || [ "$exitNext" = "happy" ]; then
