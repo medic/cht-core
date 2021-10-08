@@ -3,6 +3,7 @@ chai.use(require('deep-equal-in-any-order'));
 const sinon = require('sinon');
 const rewire = require('rewire');
 const moment = require('moment');
+const { performance } = require('perf_hooks');
 
 const registrationUtils = require('@medic/registration-utils');
 const tombstoneUtils = require('@medic/tombstone-utils');
@@ -598,43 +599,65 @@ describe('ServerSidePurge', () => {
       });
     });
 
-    it('should throw error if report limit reached with contacts batch size = 1', () => {
+    it('should skip contact if report limit reached with batch size = 1', () => {
       const contacts = Array
-        .from({ length: 1001 })
-        .map((_, idx) => ({ id: idx, key: `key${idx}`, doc: { id: idx }}));
+        .from({ length: 500 })
+        .map((_, idx) => ({ id: idx, key: `key${idx}`, doc: { _id: idx }}));
+      const contactsToSkip = [120, 121, 325, 409];
+
       const reports = Array
         .from({ length: 32000 })
         .map((_, idx) => ({ id: idx, key: `key${idx}`, value: { subject: `key${idx}`, type: 'data_record' }}));
       sinon.stub(db.medic, 'allDocs')
         .callsFake(({ keys }) => Promise.resolve({ rows: keys.map((key) => ({ doc: { _id: key } }))}));
 
-      sinon.stub(request, 'get').callsFake((_, { qs }) => Promise.resolve({ rows: contacts.slice(0, qs.limit)}));
-      sinon.stub(db.medic, 'query').resolves({ rows: reports });
+      sinon.stub(request, 'get').callsFake((_, { qs: { limit, startkey_docid } }) => {
+        return Promise.resolve({ rows: contacts.slice(startkey_docid, limit + startkey_docid) });
+      });
+      sinon.stub(db.medic, 'query').callsFake((_, opts) => {
+        if (opts['keys'].find(key => contactsToSkip.includes(key))) {
+          return Promise.resolve({ rows: reports });
+        }
+        return Promise.resolve({ rows: reports.slice(0, 6000)}); // never increase
+      });
 
-      return service
-        .__get__('purgeContacts')(roles, purgeFn)
-        .then(() => chai.expect.fail())
-        .catch((err) => {
-          chai.expect(err).to.deep.equal({
-            code: 'max_size_reached',
-            message: `Purging aborted. Too many reports for contacts: 0`,
-          });
+      const purgeDbChanges = sinon.stub().resolves({ results: [] });
+      sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
 
-          chai.expect(request.get.callCount).to.equal(10);
-          chai.expect(request.get.args[0][1].qs.limit).to.equal(1000);
-          chai.expect(request.get.args[1][1].qs.limit).to.equal(500);
-          chai.expect(request.get.args[2][1].qs.limit).to.equal(250);
-          chai.expect(request.get.args[3][1].qs.limit).to.equal(125);
-          chai.expect(request.get.args[4][1].qs.limit).to.equal(62);
-          chai.expect(request.get.args[5][1].qs.limit).to.equal(31);
-          chai.expect(request.get.args[6][1].qs.limit).to.equal(15);
-          chai.expect(request.get.args[7][1].qs.limit).to.equal(7);
-          chai.expect(request.get.args[8][1].qs.limit).to.equal(3);
-          chai.expect(request.get.args[9][1].qs.limit).to.equal(1);
+      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
+        chai.expect(request.get.callCount).to.equal(397);
 
-          chai.expect(service.__get__('contactsBatchSize')).to.equal(1);
-        });
-    });
+        chai.expect(request.get.args.slice(0, 20)).to.deep.equal([
+          getContactsByTypeArgs({ limit: 1000 }),
+          getContactsByTypeArgs({ limit: 500 }),
+          getContactsByTypeArgs({ limit: 250 }),
+          getContactsByTypeArgs({ limit: 125 }),
+          getContactsByTypeArgs({ limit: 62 }),
+          getContactsByTypeArgs({ limit: 63, id: 61 }),
+          getContactsByTypeArgs({ limit: 32, id: 61 }),
+          getContactsByTypeArgs({ limit: 32, id: 92 }),
+          getContactsByTypeArgs({ limit: 16, id: 92 }),
+          getContactsByTypeArgs({ limit: 16, id: 107 }),
+          getContactsByTypeArgs({ limit: 8, id: 107 }),
+          getContactsByTypeArgs({ limit: 8, id: 114 }),
+          getContactsByTypeArgs({ limit: 4, id: 114 }),
+          getContactsByTypeArgs({ limit: 4, id: 117 }),
+          getContactsByTypeArgs({ limit: 2, id: 117 }),
+          getContactsByTypeArgs({ limit: 2, id: 118 }),
+          getContactsByTypeArgs({ limit: 2, id: 119 }),
+          getContactsByTypeArgs({ limit: 2, id: 120 }),
+          getContactsByTypeArgs({ limit: 2, id: 121 }),
+          getContactsByTypeArgs({ limit: 2, id: 122 }),
+        ]);
+        for (let i = 20; i < request.get.args.length; i++) {
+          const id = 123 - 20 + i;
+          chai.expect(request.get.args[i]).to.deep.equal(getContactsByTypeArgs({ limit: 2, id: id }));
+        }
+
+        chai.expect(service.__get__('contactsBatchSize')).to.equal(1);
+        chai.expect(service.__get__('skippedContacts')).to.deep.equal(contactsToSkip.map(id => JSON.stringify(id)));
+      });
+    }).timeout(10000);
 
     it('should decrease batch size to 1 on subsequent queries', () => {
       const contacts = Array
@@ -2333,6 +2356,7 @@ describe('ServerSidePurge', () => {
       service.__set__('getPurgeFn', getPurgeFn);
       service.__set__('getRoles', getRoles);
       service.__set__('initPurgeDbs', initPurgeDbs);
+      sinon.stub(db.sentinel, 'put').resolves();
 
       return service.__get__('purge')().then(() => {
         chai.expect(getPurgeFn.callCount).to.equal(1);
@@ -2383,13 +2407,21 @@ describe('ServerSidePurge', () => {
     });
 
     it('should initialize dbs, run per contact, unallocated, tasks and targets purges', () => {
+      const now = moment('2020-01-01');
+      clock = sinon.useFakeTimers(now.valueOf());
       const roles = { 'a': [1, 2, 3], 'b': [1, 2, 4] };
       getPurgeFn.returns(purgeFn);
       getRoles.resolves(roles);
       initPurgeDbs.resolves();
-      purgeContacts.resolves();
+      purgeContacts.callsFake(() => {
+        service.__set__('skippedContacts', ['a', 'b', 'c']);
+        return Promise.resolve();
+      });
       purgeUnallocatedRecords.resolves();
       sinon.stub(db.sentinel, 'put').resolves();
+      sinon.stub(performance, 'now');
+      performance.now.onCall(0).returns(0);
+      performance.now.onCall(1).returns(65000);
 
       service.__set__('getPurgeFn', getPurgeFn);
       service.__set__('getRoles', getRoles);
@@ -2414,12 +2446,22 @@ describe('ServerSidePurge', () => {
         chai.expect(purgeTargets.args[0]).to.deep.equal([ roles ]);
         chai.expect(db.sentinel.put.callCount).to.equal(1);
         chai.expect(closePurgeDbs.callCount).to.equal(1);
+
+        chai.expect(db.sentinel.put.callCount).to.equal(1);
+        chai.expect(db.sentinel.put.args[0][0]).to.deep.equal({
+          _id: `purgelog:${now.valueOf()}`,
+          date: now.toISOString(),
+          duration: 65000,
+          error: undefined,
+          roles: roles,
+          skipped_contacts: ['a', 'b', 'c'],
+        });
       });
     });
 
     it('should catch any errors thrown when getting roles', () => {
       getPurgeFn.returns(purgeFn);
-      getRoles.rejects({});
+      getRoles.rejects({ message: 'booom' });
 
       service.__set__('getPurgeFn', getPurgeFn);
       service.__set__('getRoles', getRoles);
@@ -2427,6 +2469,7 @@ describe('ServerSidePurge', () => {
       service.__set__('purgeContacts', purgeContacts);
       service.__set__('purgeUnallocatedRecords', purgeUnallocatedRecords);
       service.__set__('closePurgeDbs', closePurgeDbs);
+      sinon.stub(db.sentinel, 'put').resolves();
 
       return service.__get__('purge')().then(() => {
         chai.expect(getPurgeFn.callCount).to.equal(1);
@@ -2435,14 +2478,27 @@ describe('ServerSidePurge', () => {
         chai.expect(purgeContacts.callCount).to.equal(0);
         chai.expect(purgeUnallocatedRecords.callCount).to.equal(0);
         chai.expect(closePurgeDbs.callCount).to.equal(1);
+
+        chai.expect(db.sentinel.put.callCount).to.equal(1);
+        const purgelog = db.sentinel.put.args[0][0];
+        chai.expect(purgelog._id).to.contain('purgelog:error');
+        chai.expect(purgelog).to.deep.include({
+          skipped_contacts: [],
+          error: 'booom',
+        });
       });
     });
 
     it('should catch any errors thrown when initing dbs', () => {
+      const now = moment('2019-09-20');
+      clock = sinon.useFakeTimers(now.valueOf());
       const roles = { 'a': [1, 2, 3], 'b': [1, 2, 4] };
       getPurgeFn.returns(purgeFn);
       getRoles.resolves(roles);
-      initPurgeDbs.rejects({});
+      initPurgeDbs.rejects({ message: 'something' });
+      sinon.stub(performance, 'now');
+      performance.now.onCall(0).returns(1000);
+      performance.now.onCall(1).returns(2000);
 
       service.__set__('getPurgeFn', getPurgeFn);
       service.__set__('getRoles', getRoles);
@@ -2450,6 +2506,7 @@ describe('ServerSidePurge', () => {
       service.__set__('purgeContacts', purgeContacts);
       service.__set__('purgeUnallocatedRecords', purgeUnallocatedRecords);
       service.__set__('closePurgeDbs', closePurgeDbs);
+      sinon.stub(db.sentinel, 'put').resolves();
 
       return service.__get__('purge')().then(() => {
         chai.expect(getPurgeFn.callCount).to.equal(1);
@@ -2458,6 +2515,16 @@ describe('ServerSidePurge', () => {
         chai.expect(purgeContacts.callCount).to.equal(0);
         chai.expect(purgeUnallocatedRecords.callCount).to.equal(0);
         chai.expect(closePurgeDbs.callCount).to.equal(1);
+
+        chai.expect(db.sentinel.put.callCount).to.equal(1);
+        chai.expect(db.sentinel.put.args[0][0]).to.deep.equal({
+          _id: `purgelog:error:${now.valueOf()}`,
+          skipped_contacts: [],
+          error: 'something',
+          date: now.toISOString(),
+          roles: roles,
+          duration: 1000,
+        });
       });
     });
 
@@ -2466,7 +2533,8 @@ describe('ServerSidePurge', () => {
       getPurgeFn.returns(purgeFn);
       getRoles.resolves(roles);
       initPurgeDbs.resolves();
-      purgeContacts.rejects({});
+      purgeContacts.rejects({ no: 'message' });
+      sinon.stub(db.sentinel, 'put').resolves();
 
       service.__set__('getPurgeFn', getPurgeFn);
       service.__set__('getRoles', getRoles);
@@ -2483,6 +2551,14 @@ describe('ServerSidePurge', () => {
         chai.expect(purgeContacts.args[0]).to.deep.equal([ roles, purgeFn ]);
         chai.expect(purgeUnallocatedRecords.callCount).to.equal(0);
         chai.expect(closePurgeDbs.callCount).to.equal(1);
+
+        chai.expect(db.sentinel.put.callCount).to.equal(1);
+        const purgelog = db.sentinel.put.args[0][0];
+        chai.expect(purgelog._id).to.contain('purgelog:error');
+        chai.expect(purgelog).to.deep.include({
+          skipped_contacts: [],
+          error: undefined,
+        });
       });
     });
 
@@ -2494,6 +2570,7 @@ describe('ServerSidePurge', () => {
       purgeContacts.resolves();
       purgeUnallocatedRecords.rejects({});
       service.__set__('closePurgeDbs', closePurgeDbs);
+      sinon.stub(db.sentinel, 'put').resolves();
 
       service.__set__('getPurgeFn', getPurgeFn);
       service.__set__('getRoles', getRoles);
@@ -2510,6 +2587,7 @@ describe('ServerSidePurge', () => {
         chai.expect(purgeUnallocatedRecords.callCount).to.equal(1);
         chai.expect(purgeUnallocatedRecords.args[0]).to.deep.equal([ roles, purgeFn ]);
         chai.expect(closePurgeDbs.callCount).to.equal(1);
+        chai.expect(db.sentinel.put.callCount).to.equal(1);
       });
     });
 
@@ -2522,6 +2600,7 @@ describe('ServerSidePurge', () => {
       purgeUnallocatedRecords.resolves();
       purgeTasks.rejects({});
       service.__set__('closePurgeDbs', closePurgeDbs);
+      sinon.stub(db.sentinel, 'put').resolves();
 
       service.__set__('getPurgeFn', getPurgeFn);
       service.__set__('getRoles', getRoles);
@@ -2541,6 +2620,7 @@ describe('ServerSidePurge', () => {
         chai.expect(purgeTasks.callCount).to.equal(1);
         chai.expect(purgeTasks.args[0]).to.deep.equal([ roles ]);
         chai.expect(closePurgeDbs.callCount).to.equal(1);
+        chai.expect(db.sentinel.put.callCount).to.equal(1);
       });
     });
   });

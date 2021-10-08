@@ -357,12 +357,27 @@ const requestPurges = username => {
   };
   return utils.request(options);
 };
+
 const requestPurgeInfo = username => {
   const options = {
     path: '/purging',
     auth: { username, password },
   };
   return utils.request(options);
+};
+
+const getPurgeLog = () => {
+  return sentinelUtils
+    .requestOnSentinelTestDb({
+      path: '/_all_docs',
+      qs: {
+        startkey: JSON.stringify('purgelog\ufff0'),
+        limit: 1,
+        include_docs: true,
+        descending: true,
+      }
+    })
+    .then(result => result.rows[0].doc);
 };
 
 const getChangeIds = changes => changes.map(change => change.id);
@@ -391,6 +406,16 @@ describe('server side purge', () => {
       })
       .then(() => restartSentinel())
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))
+      .then(() => getPurgeLog())
+      .then(purgelog => {
+        chai.expect(Object.values(purgelog.roles)).to.deep.equal([
+          ['district_admin', 'purge_regular'],
+          ['district_admin', 'purge_reverse'],
+        ]);
+        chai.expect(purgelog.skipped_contacts).to.deep.equal([]);
+        chai.expect(purgelog.error).to.equal(undefined);
+        chai.expect(purgelog.duration).to.be.a('number');
+      })
       .then(() => Promise.all([
         requestChanges('user1'),
         requestChanges('user2'),
