@@ -650,7 +650,7 @@ export class AppComponent implements OnInit {
     }
 
     if (window.startupTimes.purgingMetaFailed) {
-      const message = `Error when purging meta  on device startup: ${window.startupTimes.purgingMetaFailed}`;
+      const message = `Error when purging meta on device startup: ${window.startupTimes.purgingMetaFailed}`;
       this.feedbackService.submit(message);
       this.telemetryService.record('boot_time:purging_meta_failed');
     } else {
