@@ -33,6 +33,6 @@
     "moment": "^2.29.1",
     "pouchdb": "^7.2.2",
     "pouchdb-adapter-memory": "^7.2.2",
-    "sinon": "^8.1.1"
+    "sinon": "^11.1.2"
   }
 }

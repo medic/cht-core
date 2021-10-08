@@ -13,7 +13,7 @@
     "jsverify": "^0.8.4",
     "mocha": "^7.2.0",
     "rewire": "^5.0.0",
-    "sinon": "^8.1.1"
+    "sinon": "^11.1.2"
   },
   "dependencies": {
     "@medic/contact-types-utils": "file:../contact-types-utils",
