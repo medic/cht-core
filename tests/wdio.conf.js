@@ -231,6 +231,7 @@ const baseConfig = {
    * @param {Object}     browser    instance of created browser/device session
    */
   before: async function () {
+    global.expect = chai.expect;
     await browser.url('/');
   },
   /**
@@ -307,8 +308,14 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {Array.<String>} specs List of spec file paths that ran
    */
-  // after: function (result, capabilities, specs) {
-  // },
+  after: async () => {
+    // Replaces After hook in test file with a common clean up
+    const users = await utils.getCreatedUsers();
+    if (users.length) {
+      await utils.deleteUsers(users);
+    }
+    await utils.revertDb([], true);
+  },
   /**
    * Gets executed right after terminating the webdriver session.
    * @param {Object} config wdio configuration object

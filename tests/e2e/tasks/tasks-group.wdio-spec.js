@@ -185,14 +185,9 @@ describe('Tasks group landing page', () => {
     await utils.updateSettings({ tasks: compiledTasks }, 'api');
   });
 
-  after(async () => {
-    await utils.deleteUsers([chw, supervisor]);
-    await utils.revertDb([], true);
-  });
-
   describe('for chw', () => {
     before(async () => {
-      await loginPage.login(chw.username, chw.password);
+      await loginPage.login({ username: chw.username, password: chw.password });
       await commonPage.closeTour();
       await (await commonPage.analyticsTab()).waitForDisplayed();
     });
@@ -336,7 +331,7 @@ describe('Tasks group landing page', () => {
 
   describe('for supervisor', () => {
     before(async () => {
-      await loginPage.login(supervisor.username, supervisor.password);
+      await loginPage.login({ username: supervisor.username, password: supervisor.password });
       await commonPage.closeTour();
       await (await commonPage.analyticsTab()).waitForDisplayed();
     });

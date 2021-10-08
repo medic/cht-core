@@ -8,17 +8,30 @@ const labelForUser = () => $('label[for="user"]');
 const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
 
-
-const login = async (username, password) => {
+const login = async ({ username, password, createUser = false }) => {
   await (await userField()).setValue(username);
   await (await passwordField()).setValue(password);
   await (await loginButton()).click();
+
+  if (createUser) {
+    await browser.waitUntil(async () => {
+      const cookies = await browser.getCookies('userCtx');
+      return cookies.some(cookie => cookie.name === 'userCtx');
+    });
+    await utils.setupUserDoc(username);
+  }
 };
 
-const cookieLogin = async (username = auth.username, password = auth.password, createUser = true) => {
+const cookieLogin = async (options = {}) => {
+  const {
+    username = auth.username,
+    password = auth.password,
+    createUser = true,
+    locale = 'en',
+  } = options;
   const opts = {
     path: '/medic/login',
-    body: { user: username, password: password },
+    body: { user: username, password, locale },
     method: 'POST',
     simple: false,
   };
@@ -40,6 +53,14 @@ const getLanguage = async (selector) => {
     };
   }));
   return lang;
+};
+
+const getCurrentLanguage = async () => {
+  const localeElement = await $('.locale.selected');
+  return {
+    code: await localeElement.getAttribute('name'),
+    name: await localeElement.getText(),
+  };
 };
 
 const changeLocale = async locale => {
@@ -65,6 +86,7 @@ module.exports = {
   cookieLogin,
   getAllLocales: () => getLanguage('.locale'),
   changeLanguage,
+  getCurrentLanguage,
   labelForUser,
   loginButton,
   labelForPassword,
