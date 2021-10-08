@@ -74,7 +74,7 @@ const chw = {
 
 const login = async () => {
   await browser.throttle('online');
-  await loginPage.login(chw.username, chw.password);
+  await loginPage.login(chw);
   await (await commonPage.analyticsTab()).waitForDisplayed();
 };
 
@@ -87,11 +87,6 @@ describe('Service worker cache', () => {
 
     await login();
     await commonPage.closeTour();
-  });
-
-  after(async () => {
-    await utils.deleteUsers([chw]);
-    await utils.revertDb([], true);
   });
 
   it('confirm initial list of cached resources', async () => {
