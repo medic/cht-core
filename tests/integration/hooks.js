@@ -2,7 +2,7 @@ const utils = require('../utils');
 const request = require('request-promise-native');
 
 exports.mochaHooks = {
-  beforeAll: async ()=> {
+  beforeAll: async () => {
     console.log('Starting services......');
     await utils.prepServices(true);
     console.log('Services started');

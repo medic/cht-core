@@ -386,7 +386,9 @@ const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentine
 describe('server side purge', () => {
   before(() => {
     return utils
-      .saveDocs([...docs, ...tasks, ...targets])
+      .getCreatedUsers()
+      .then((existingUsers) => utils.deleteUsers(existingUsers))
+      .then(() => utils.saveDocs([...docs, ...tasks, ...targets]))
       .then(() => utils.createUsers(users));
   });
   after(() =>
@@ -409,8 +411,8 @@ describe('server side purge', () => {
       .then(() => getPurgeLog())
       .then(purgelog => {
         chai.expect(Object.values(purgelog.roles)).to.deep.equal([
-          ['district_admin', 'purge_regular'],
-          ['district_admin', 'purge_reverse'],
+          users[0].roles,
+          users[1].roles,
         ]);
         chai.expect(purgelog.skipped_contacts).to.deep.equal([]);
         chai.expect(purgelog.error).to.equal(undefined);
