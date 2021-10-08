@@ -115,7 +115,7 @@ describe('Feedback service', () => {
     expect(submittedDoc.meta.language).to.equal('en');
   });
 
-  it('should blanked out password in URL', async () => {
+  it('should blank out password in URL', async () => {
     post.resolves();
     getLocal.resolves(({ version: '0.5.0' }));
     mockDocument.URL = 'http://gareth:SUPERSECRET!@somewhere.com';
