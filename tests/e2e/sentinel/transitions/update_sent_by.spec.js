@@ -1,6 +1,6 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 const { expect } = require('chai');
 
 describe('update_sent_by', () => {
