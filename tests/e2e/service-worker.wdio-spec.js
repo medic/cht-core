@@ -159,27 +159,6 @@ describe('Service worker cache', () => {
     await login();
   });
 
-  it('other translation updates do not trigger a login page refresh', async () => {
-    await commonPage.sync();
-
-    const cacheDetails = await getCachedRequests(true);
-
-    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFULL_REGEX);
-    await utils.addTranslations('en', {
-      'ran': 'dom',
-      'some': 'thing',
-    });
-    await waitForLogs.promise;
-    await commonPage.sync(false);
-
-    const updatedCacheDetails = await getCachedRequests(true);
-
-    // login page has the same hash
-    const initial = cacheDetails.requests.find(request => request.url.startsWith('/medic/login'));
-    const updated = updatedCacheDetails.requests.find(request => request.url.startsWith('/medic/login'));
-    expect(initial).to.deep.equal(updated);
-  });
-
   it('adding new languages triggers login page refresh', async () => {
     await commonPage.sync();
 
@@ -201,6 +180,27 @@ describe('Service worker cache', () => {
     expect(await (await loginPage.labelForPassword()).getText()).to.equal('Parola');
 
     await login();
+  });
+
+  it('other translation updates do not trigger a login page refresh', async () => {
+    await commonPage.sync();
+
+    const cacheDetails = await getCachedRequests(true);
+
+    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFULL_REGEX);
+    await utils.addTranslations('en', {
+      'ran': 'dom',
+      'some': 'thing',
+    });
+    await waitForLogs.promise;
+    await commonPage.sync(false);
+
+    const updatedCacheDetails = await getCachedRequests(true);
+
+    // login page has the same hash
+    const initial = cacheDetails.requests.find(request => request.url.startsWith('/medic/login'));
+    const updated = updatedCacheDetails.requests.find(request => request.url.startsWith('/medic/login'));
+    expect(initial).to.deep.equal(updated);
   });
 
   it('should load the page while offline', async () => {
