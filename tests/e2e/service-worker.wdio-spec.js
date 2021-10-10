@@ -124,7 +124,6 @@ describe('Service worker cache', () => {
   });
 
   it('branding updates trigger login page refresh', async () => {
-    await commonPage.sync();
     const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFULL_REGEX);
     const branding = await utils.getDoc('branding');
     branding.title = 'Not Medic';
@@ -140,8 +139,6 @@ describe('Service worker cache', () => {
   });
 
   it('login page translation updates trigger login page refresh', async () => {
-    await commonPage.sync();
-
     const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFULL_REGEX);
     await utils.addTranslations('en', {
       'User Name': 'NotUsername',
@@ -160,8 +157,6 @@ describe('Service worker cache', () => {
   });
 
   it('adding new languages triggers login page refresh', async () => {
-    await commonPage.sync();
-
     const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFULL_REGEX);
     await utils.addTranslations('ro', {
       'User Name': 'Utilizator',
