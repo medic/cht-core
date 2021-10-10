@@ -164,7 +164,7 @@ const sync = async (expectReload) => {
 };
 
 const closeReloadModal = async () => {
-  await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist());
+  await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist({ timeout: 2000 }));
   // wait for the animation to complete
   await browser.pause(500);
   await (await reloadModalCancel()).click();

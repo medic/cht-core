@@ -29,7 +29,7 @@ node /cht-core/scripts/e2e/e2e-servers.js > /tests/logs/e2e-server.log &
 echo Creating logs dir
 mkdir -p > /tests/logs/
 echo Installing Horti
-npm install -g horticulturalist 
+npm install -g horticulturalist
 echo INSTALL_LATEST is $INSTALL_LATEST
 echo tag is $IS_TAG
 if [ -n "$IS_TAG"  ] && [ -z "$INSTALL_LATEST" ]; then
@@ -38,7 +38,6 @@ if [ -n "$IS_TAG"  ] && [ -z "$INSTALL_LATEST" ]; then
     HORTI_BUILDS_SERVER=$DEFAULT_BUILDS_URL
     BUILD='@medic:medic:release'
 fi
-
 echo 'Horti Env Vars'
 echo Build server url $HORTI_BUILDS_SERVER
 echo Upgrade var $UPGRADE

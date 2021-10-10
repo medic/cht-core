@@ -87,4 +87,7 @@ module.exports = {
   getAllLocales: () => getLanguage('.locale'),
   changeLanguage,
   getCurrentLanguage,
+  labelForUser,
+  loginButton,
+  labelForPassword,
 };
