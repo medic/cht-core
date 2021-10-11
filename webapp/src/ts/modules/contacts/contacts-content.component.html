@@ -32,7 +32,7 @@
           </div>
 
           <div class="loader" *ngIf="contactsLoadingSummary"></div>
-          <div class="row flex grid" *ngIf="!contactsLoadingSummary">
+          <div class="row flex grid" id="contact_summary" *ngIf="!contactsLoadingSummary">
             <div class="col col-xs-12 col-sm-{{field.width || 12}}" *ngFor="let field of selectedContact?.summary?.fields">
               <div class="cell {{field.label | lowercase}}">
                 <span *ngIf="field.icon" class="field-icon" [innerHTML]="field.icon | resourceIcon"></span>
@@ -92,6 +92,7 @@
               [muted]="child.doc.muted"
               [displayMuted]="true"
               [valid]="true"
+              [attr.test-id]="group?.type?.person ? 'person' : 'place'"
             ></mm-content-row>
           </ng-container>
         </ul>
@@ -160,6 +161,7 @@
                 [showStatus]="true"
                 [valid]="report.valid"
                 [verified]="report.verified"
+                test-id="report"
               ></mm-content-row>
             </ul>
             <div class="row" *ngIf="!filteredReports.length">

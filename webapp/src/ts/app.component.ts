@@ -42,6 +42,8 @@ import { TelemetryService } from '@mm-services/telemetry.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
+import { AnalyticsActions } from '@mm-actions/analytics';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -72,6 +74,7 @@ const SYNC_STATUS = {
 })
 export class AppComponent implements OnInit {
   private globalActions;
+  private analyticsActions;
   setupPromise;
   translationsLoaded;
 
@@ -121,9 +124,11 @@ export class AppComponent implements OnInit {
     private telemetryService:TelemetryService,
     private transitionsService:TransitionsService,
     private ngZone:NgZone,
-    private chtScriptApiService: CHTScriptApiService
+    private chtScriptApiService: CHTScriptApiService,
+    private analyticsModulesService: AnalyticsModulesService,
   ) {
     this.globalActions = new GlobalActions(store);
+    this.analyticsActions = new AnalyticsActions(store);
 
     moment.locale(['en']);
 
@@ -283,6 +288,7 @@ export class AppComponent implements OnInit {
     this.requestPersistentStorage();
     this.startWealthQuintiles();
     this.enableTooltips();
+    this.initAnalyticsModules();
   }
 
   private initTransitions() {
@@ -627,14 +633,44 @@ export class AppComponent implements OnInit {
       'boot_time:1:to_first_code_execution',
       window.startupTimes.firstCodeExecution - window.startupTimes.start
     );
+
+    if (window.startupTimes.replication) {
+      this.telemetryService.record('boot_time:2_1:to_replication', window.startupTimes.replication);
+    }
+
+    if (window.startupTimes.purgingFailed) {
+      this.feedbackService.submit(`Error when purging on device startup: ${window.startupTimes.purgingFailed}`);
+      this.telemetryService.record('boot_time:purging_failed');
+    } else {
+      // When: 1- Purging ran and successfully completed. 2- Purging didn't run.
+      this.telemetryService.record(`boot_time:purging:${window.startupTimes.purging}`);
+    }
+    if (window.startupTimes.purge) {
+      this.telemetryService.record('boot_time:2_2:to_purge', window.startupTimes.purge);
+    }
+
+    if (window.startupTimes.purgingMetaFailed) {
+      const message = `Error when purging meta on device startup: ${window.startupTimes.purgingMetaFailed}`;
+      this.feedbackService.submit(message);
+      this.telemetryService.record('boot_time:purging_meta_failed');
+    } else {
+      // When: 1- Purging ran and successfully completed. 2- Purging didn't run.
+      this.telemetryService.record(`boot_time:purging_meta:${window.startupTimes.purgingMeta}`);
+    }
+    if (window.startupTimes.purgeMeta) {
+      this.telemetryService.record('boot_time:2_3:to_purge_meta', window.startupTimes.purgeMeta);
+    }
+
     this.telemetryService.record(
       'boot_time:2:to_bootstrap',
       window.startupTimes.bootstrapped - window.startupTimes.firstCodeExecution
     );
+
     this.telemetryService.record(
       'boot_time:3:to_angular_bootstrap',
       window.startupTimes.angularBootstrapped - window.startupTimes.bootstrapped
     );
+
     this.telemetryService.record('boot_time', window.startupTimes.angularBootstrapped - window.startupTimes.start);
   }
 
@@ -642,5 +678,14 @@ export class AppComponent implements OnInit {
   private stopWatchingChanges() {
     // avoid Failed to fetch errors being logged when the browser window is reloaded
     this.changesService.killWatchers();
+  }
+
+  private async initAnalyticsModules() {
+    try {
+      const modules = await this.analyticsModulesService.get();
+      this.analyticsActions.setAnalyticsModules(modules);
+    } catch (error) {
+      console.error('Error while initializing analytics modules', error);
+    }
   }
 }

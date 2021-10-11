@@ -58,7 +58,7 @@ We require that all researchers:
 - Refrain from using any in-scope compromise as a platform to probe or conduct additional research, on any other system, regardless of scope;
 - Perform research only within the scope set out below;
 - Use the identified communication channels to report vulnerability information to us; and
-- Keep information about any vulnerabilities you've discovered confidential between yourself and Medic Mobile until all production systems have been patched.
+- Keep information about any vulnerabilities you've discovered confidential between yourself and Medic until all production systems have been patched.
 
 If you follow these guidelines when reporting an issue to us, we commit to:
 
@@ -89,7 +89,7 @@ Things we do not want to receive:
 
 #### How to report a security vulnerability?
 
-If you believe you've found a security vulnerability in one of our products or platforms please send it to us by emailing dev@medicmobile.org. Please include the following details with your report:
+If you believe you've found a security vulnerability in one of our products or platforms please send it to us by emailing dev@medic.org. Please include the following details with your report:
 
 - Description of the location and potential impact of the vulnerability;
 - A detailed description of the steps required to reproduce the vulnerability (proof of concept source code, screenshots, and compressed screen captures are all helpful to us); and

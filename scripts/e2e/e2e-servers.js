@@ -34,7 +34,7 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
     const logStream = fs.createWriteStream(`tests/logs/${serviceName}.e2e.log`, { flags: append ? 'a' : 'w' });
 
     let server;
-    if (constants.IS_TRAVIS) {
+    if (constants.IS_CI) {
       server = spawn('horti-svc-start', [
         `${require('os').homedir()}/.horticulturalist/deployments`,
         `medic-${serviceName}`
@@ -68,7 +68,7 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
 });
 
 const stopServer = (serviceName) => new Promise(res => {
-  if (constants.IS_TRAVIS) {
+  if (constants.IS_CI) {
     const pid = spawn('horti-svc-stop', [
       `medic-${serviceName}`
     ]);

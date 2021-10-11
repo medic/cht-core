@@ -547,26 +547,26 @@ describe('Purger', () => {
       };
     });
 
-    it('should return falsy if no purgelog document exists', () => {
+    it('should return false if no purgelog document exists', () => {
       localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
       return purger.shouldPurgeMeta(localDb).then(result => {
-        chai.expect(result).to.equal(undefined);
+        chai.expect(result).to.be.false;
         chai.expect(localDb.get.callCount).to.equal(1);
         chai.expect(localDb.get.args[0]).to.deep.equal(['_local/purgelog']);
       });
     });
 
-    it('should return falsy if purge log document exists, but lacks a synced seq', () => {
+    it('should return false if purge log document exists, but lacks a synced seq', () => {
       localDb.get.withArgs('_local/purgelog').resolves({ _id: '_local/purgelog' });
       return purger.shouldPurgeMeta(localDb).then(result => {
-        chai.expect(result).to.equal(undefined);
+        chai.expect(result).to.be.false;
       });
     });
 
-    it('should return truthy when purgelog exists and synced_seq is set', () => {
+    it('should return true when purgelog exists and synced_seq is set', () => {
       localDb.get.withArgs('_local/purgelog').resolves({ _id: '_local/purgelog', synced_seq: 1000 });
       return purger.shouldPurgeMeta(localDb).then(result => {
-        chai.expect(result).to.equal(1000);
+        chai.expect(result).to.be.true;
         chai.expect(localDb.get.callCount).to.equal(1);
         chai.expect(localDb.get.args[0]).to.deep.equal(['_local/purgelog']);
       });

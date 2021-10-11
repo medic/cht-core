@@ -16,17 +16,40 @@ const MEDIA_SRC_ATTR = ' data-media-src="';
 
 const FORM_STYLESHEET = path.join(__dirname, '../xsl/openrosa2html5form.xsl');
 const MODEL_STYLESHEET = path.join(__dirname, '../../node_modules/enketo-xslt/xsl/openrosa2xmlmodel.xsl');
+const XSLTPROC_CMD = 'xsltproc';
+
+const processErrorHandler = (xsltproc, err, reject) => {
+  xsltproc.stdin.end();
+  if (err.code === 'EPIPE'                                                    // Node v10,v12,v14
+      || (err.code === 'ENOENT' && err.syscall === `spawn ${XSLTPROC_CMD}`)   // Node v8,v16+
+  ) {
+    const errMsg = `Unable to continue execution, check that '${XSLTPROC_CMD}' command is available.`;
+    logger.error(errMsg);
+    return reject(new Error(errMsg));
+  }
+  logger.error(err);
+  return reject(new Error(`Unknown Error: An error occurred when executing '${XSLTPROC_CMD}' command`));
+};
 
 const transform = (formXml, stylesheet) => {
   return new Promise((resolve, reject) => {
-    const xsltproc = childProcess.spawn('xsltproc', [ stylesheet, '-' ]);
+    const xsltproc = childProcess.spawn(XSLTPROC_CMD, [ stylesheet, '-' ]);
     let stdout = '';
     let stderr = '';
     xsltproc.stdout.on('data', data => stdout += data);
     xsltproc.stderr.on('data', data => stderr += data);
     xsltproc.stdin.setEncoding('utf-8');
-    xsltproc.stdin.write(formXml);
-    xsltproc.stdin.end();
+    xsltproc.stdin.on('error', err => {
+      // Errors related with spawned processes and stdin are handled here on Node v10
+      return processErrorHandler(xsltproc, err, reject);
+    });
+    try {
+      xsltproc.stdin.write(formXml);
+      xsltproc.stdin.end();
+    } catch (err) {
+      // Errors related with spawned processes and stdin are handled here on Node v12
+      return processErrorHandler(xsltproc, err, reject);
+    }
     xsltproc.on('close', (code, signal) => {
       if (code !== 0 || signal || stderr.length) {
         let errorMsg = `Error transforming xml. xsltproc returned code "${code}", and signal "${signal}"`;
@@ -41,8 +64,8 @@ const transform = (formXml, stylesheet) => {
       resolve(stdout);
     });
     xsltproc.on('error', err => {
-      logger.error(err);
-      return reject(new Error('Child process errored attempting to transform xml'));
+      // Errors related with spawned processes are handled here on Node v8,v14,v16+
+      return processErrorHandler(xsltproc, err, reject);
     });
   });
 };

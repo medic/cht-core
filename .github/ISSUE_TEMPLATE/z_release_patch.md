@@ -7,19 +7,19 @@ assignees: ''
 
 ---
 
-# Planning
+# Planning - Product Manager
 
 - [ ] Create an GH Milestone and add this issue to it.
 - [ ] Add all the issues to be worked on to the Milestone.
 
-# Development
+# Development - Release Engineer
 
-When development is ready to begin one of the engineers should be nominated as a Release Manager. They will be responsible for making sure the following tasks are completed though not necessarily completing them.
+When development is ready to begin one of the engineers should be nominated as a Release Engineer. They will be responsible for making sure the following tasks are completed though not necessarily completing them.
 
 - [ ] Set the version number in `package.json` and `package-lock.json` and submit a PR to the release branch. The easiest way to do this is to use `npm --no-git-tag-version version patch`.
-- [ ] Write an update in the weekly Product Team call agenda summarising development and acceptance testing progress and identifying any blockers. The release manager is to update this every week until the version is released.
+- [ ] Write an update in the weekly Product Team call agenda summarising development and acceptance testing progress and identifying any blockers. The Release Engineer is to update this every week until the version is released.
 
-# Releasing
+# Releasing - Release Engineer
 
 Once all issues have passed acceptance testing and have been merged into `master` and backported to the release branch release testing can begin.
 
@@ -28,11 +28,10 @@ Once all issues have passed acceptance testing and have been merged into `master
 - [ ] Until release testing passes, make sure regressions are fixed in `master`, cherry-pick them into the release branch, and release another beta.
 - [ ] Create a release in GitHub from the release branch so it shows up under the [Releases tab](https://github.com/medic/cht-core/releases) with the naming convention `<major>.<minor>.<patch>`. This will create the git tag automatically. Link to the release notes in the description of the release.
 - [ ] Confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/builds/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
-- [ ] Announce the release in #products using this template:
+- [ ] Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org/), under the "Product - Releases" category using this template:
 ```
 @channel *Announcing the release of {{version}}*
 
 This release fixes {{number of bugs}}. Read the release notes for full details: {{url}}
 ```
-- [ ] Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org/), under the "Product - Releases" category. You can use the previous message and omit `@channel`.
 - [ ] Mark this issue "done" and close the Milestone.

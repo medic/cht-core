@@ -13,6 +13,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { DbService } from '@mm-services/db.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 
 @Component({
   templateUrl: './tasks-content.component.html'
@@ -29,6 +30,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     private geolocationService:GeolocationService,
     private dbService:DbService,
     private router:Router,
+    private tasksForContactService:TasksForContactService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.tasksActions = new TasksActions(store);
@@ -39,14 +41,14 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
   private tasksActions;
 
   enketoStatus;
-  enketoEdited;
+  private enketoEdited;
   loadingContent;
   selectedTask;
   form;
   loadingForm;
   contentError;
   formId;
-  cancelCallback;
+  private cancelCallback;
   errorTranslationKey;
   private tasksList;
   private geoHandle;
@@ -63,13 +65,16 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     this.form = null;
     this.formId = null;
     this.resetFormError();
+
+    this.tasksActions.setLastSubmittedTask(null);
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
     this.geoHandle?.cancel();
     this.enketoService.unload(this.form);
-    this.globalActions.clearCancelCallback();
+    this.globalActions.clearNavigation();
+    this.globalActions.clearEnketoStatus();
   }
 
   private subscribeToStore() {
@@ -228,6 +233,19 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
+  private preloadTaskGroupContact(action) {
+    this.tasksActions.setTaskGroupContactLoading(true);
+    return this.tasksForContactService
+      .getLeafPlaceAncestor(action?.content?.contact?._id)
+      .then(contactModel => {
+        this.tasksActions.setTaskGroupContact(contactModel);
+      })
+      .catch(err => {
+        console.error('Error when loading task group contact', err);
+        this.tasksActions.setTaskGroupContact(null);
+      });
+  }
+
   performAction(action, skipDetails?) {
     if (!action) {
       return;
@@ -246,7 +264,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
         this.form = null;
         this.loadingForm = false;
         this.contentError = false;
-        this.globalActions.clearCancelCallback();
+        this.globalActions.clearNavigation();
       };
       // unfortunately, this callback has to update the component itself
       this.globalActions.setCancelCallback(cancelCallback.bind(this));
@@ -274,7 +292,8 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
           this.contentError = true;
           this.loadingForm = false;
           console.error('Error loading form.', err);
-        });
+        })
+        .then(() => this.preloadTaskGroupContact(action));
     }
 
     if (action.type === 'contact') {
@@ -283,7 +302,6 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       } else {
         this.router.navigate(['/contacts', 'add', action.content?.type || '']);
       }
-
     }
   }
 
@@ -308,13 +326,14 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
         console.debug('saved report and associated docs', docs);
         this.globalActions.setSnackbarContent(this.translateService.instant('report.created'));
 
+        this.tasksActions.setLastSubmittedTask(this.selectedTask);
         this.globalActions.setEnketoSavingStatus(false);
         this.globalActions.setEnketoEditedStatus(false);
         this.enketoService.unload(this.form);
         this.globalActions.unsetSelected();
-        this.globalActions.clearCancelCallback();
+        this.globalActions.clearNavigation();
 
-        this.router.navigate(['/tasks']);
+        this.router.navigate(['/tasks', 'group']);
       })
       .then(() => {
         this.telemetryData.postSave = Date.now();
@@ -332,5 +351,14 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
 
   navigationCancel() {
     this.globalActions.navigationCancel();
+  }
+
+  canDeactivate(nextUrl) {
+    if (!this.enketoEdited || !this.cancelCallback) {
+      return true;
+    }
+
+    this.globalActions.navigationCancel(nextUrl);
+    return false;
   }
 }

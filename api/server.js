@@ -16,7 +16,7 @@ process
 (async () => {
 
   const app = require('./src/routing');
-  const config = require('./src/config');
+  const configWatcher = require('./src/services/config-watcher');
   const migrations = require('./src/migrations');
   const ddocExtraction = require('./src/ddoc-extraction');
   const generateXform = require('./src/services/generate-xform');
@@ -24,6 +24,7 @@ process
   const translations = require('./src/translations');
   const serverUtils = require('./src/server-utils');
   const uploadDefaultDocs = require('./src/upload-default-docs');
+  const generateServiceWorker = require('./src/generate-service-worker');
   const apiPort = process.env.API_PORT || 5988;
 
   try
@@ -49,9 +50,9 @@ process
     logger.info('Extracting initial documents completed successfully');
 
     logger.info('Loading configuration…');
-    await config.load();
+    await configWatcher.load();
     logger.info('Configuration loaded successfully');
-    await config.listen();
+    configWatcher.listen();
 
     logger.info('Merging translations…');
     await translations.run();
@@ -60,6 +61,10 @@ process
     logger.info('Running db migrations…');
     await migrations.run();
     logger.info('Database migrations completed successfully');
+
+    logger.info('Generating service worker');
+    await generateServiceWorker.run();
+    logger.info('Service worker generated successfully');
 
     logger.info('Updating xforms…');
     await generateXform.updateAll();
@@ -70,7 +75,7 @@ process
     logger.error('%o',err);
     process.exit(1);
   }
-  
+
   // Define error-handling middleware last.
   // http://expressjs.com/guide/error-handling.html
   app.use((err, req, res, next) => {
@@ -82,8 +87,8 @@ process
     serverUtils.serverError(err, req, res);
   });
 
-  app.listen(apiPort, () => {
+  const server = app.listen(apiPort, () => {
     logger.info('Medic API listening on port ' + apiPort);
   });
-
+  server.setTimeout(0);
 })();

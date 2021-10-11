@@ -4,6 +4,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { TranslateService as NgxTranslateService } from '@ngx-translate/core';
 
 import { SettingsService } from '@mm-services/settings.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 const localeCookieKey = 'locale';
 
@@ -33,6 +34,7 @@ export class SetLanguageService {
   constructor(
     private ngxTranslateService:NgxTranslateService,
     private setLanguageCookieService:SetLanguageCookieService,
+    private telemetryService:TelemetryService,
   ) {
   }
 
@@ -50,6 +52,8 @@ export class SetLanguageService {
     if (setLanguageCookie !== false) {
       this.setLanguageCookieService.set(code);
     }
+
+    this.telemetryService.record(`user_settings:language:${code}`);
   }
 }
 

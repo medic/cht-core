@@ -2,6 +2,8 @@ const chai = require('chai');
 const _ = require('lodash');
 const utils = require('../../../utils');
 const constants = require('../../../constants');
+const chaiExclude = require('chai-exclude');
+chai.use(chaiExclude);
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -19,11 +21,13 @@ const users = [
       _id: 'fixture:offline',
       type: 'health_center',
       name: 'Offline place',
-      parent: 'PARENT_PLACE'
+      parent: 'PARENT_PLACE',
+      place_id: 'shortcode:offline',
     },
     contact: {
       _id: 'fixture:user:offline',
-      name: 'OfflineUser'
+      name: 'OfflineUser',
+      patient_id: 'shortcode:user:offline',
     },
     roles: ['district_admin']
   },
@@ -34,11 +38,13 @@ const users = [
       _id: 'fixture:online',
       type: 'health_center',
       name: 'Online place',
-      parent: 'PARENT_PLACE'
+      parent: 'PARENT_PLACE',
+      place_id: 'shortcode:online',
     },
     contact: {
       _id: 'fixture:user:online',
-      name: 'OnlineUser'
+      name: 'OnlineUser',
+      patient_id: 'shortcode:user:online',
     },
     roles: ['national_admin']
   },
@@ -49,6 +55,7 @@ const users = [
     contact: {
       _id: 'fixture:user:supervisor',
       name: 'Supervisor',
+      patient_id: 'shortcode:user:supervisor',
     },
     roles: ['district_admin'],
   },
@@ -65,15 +72,15 @@ const DOCS_TO_KEEP = [
 ];
 
 describe('bulk-get handler', () => {
-  beforeAll(() => {
+  before(() => {
     return utils
       .saveDoc(parentPlace)
       .then(() => utils.createUsers(users));
   });
 
-  afterAll(() =>
+  after(() =>
     utils
-      .revertDb()
+      .revertDb([], true)
       .then(() => utils.deleteUsers(users))
   );
 
@@ -809,12 +816,48 @@ describe('bulk-get handler', () => {
         fields: { private: false },
       },
       {
-        _id: 'sensitive_report',
+        _id: 'insensitive_report_4',
         type: 'data_record',
         form: 'a',
         contact: { _id: 'fixture:online'},
-        patient_id: 'fixture:offline',
+        fields: { private: false, patient_id: 'shortcode:user:offline', },
+      },
+      {
+        _id: 'sensitive_report_1',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:online'},
+        patient_id: 'fixture:user:offline',
         fields: { private: true },
+      },
+      {
+        _id: 'sensitive_report_2',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:online'},
+        patient_id: 'shortcode:user:offline',
+        fields: { private: true },
+      },
+      {
+        _id: 'sensitive_report_3',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:online'},
+        fields: { private: true, place_id: 'shortcode:offline', },
+      },
+      {
+        _id: 'sensitive_report_4',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:online'},
+        fields: { private: true, patient_id: 'shortcode:user:offline', },
+      },
+      {
+        _id: 'sensitive_report_5',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:online'},
+        fields: { private: true, patient_uuid: 'fixture:user:offline', },
       },
     ];
 
@@ -838,6 +881,10 @@ describe('bulk-get handler', () => {
           {
             id: 'insensitive_report_3',
             docs: [{ ok: docs[2] }],
+          },
+          {
+            id: 'insensitive_report_4',
+            docs: [{ ok: docs[3] }],
           },
         ]);
       });
