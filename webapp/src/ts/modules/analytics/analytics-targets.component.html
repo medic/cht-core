@@ -7,7 +7,11 @@
     <div><div class="loader"></div></div>
   </div>
 
-  <div class="targets" *ngIf="!targetsDisabled && !loading && targets?.length; else noTargetTpl">
+  <div class="item-content empty-selection" *ngIf="!targetsDisabled && !loading && !targets?.length">
+    <div>{{ 'targets.no_targets' | translate }}</div>
+  </div>
+
+  <div class="targets" *ngIf="!targetsDisabled && !loading && targets?.length">
     <div class="target" 
       *ngFor="let target of targets" 
       [ngClass]="{ 'has-goal': target.goal >= 0, 'goal-met': (target.value?.pass >= target.goal) || (target.value?.percent >= target.goal) }"
@@ -33,10 +37,4 @@
       </div>
     </div>
   </div>
-
-  <ng-template #noTargetTpl>
-    <div class="item-content empty-selection">
-      <div>{{ 'targets.no_targets' | translate }}</div>
-    </div>
-  </ng-template>
 </div>
