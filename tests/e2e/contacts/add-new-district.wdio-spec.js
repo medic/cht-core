@@ -75,7 +75,7 @@ describe('Add new district tests : ', () => {
     expect(updatedDistrict.contact_type).to.equal('not a district_hospital'); // editing didn't overwrite
 
     // expect to have a single children section
-    expect(await (await contactPage.childrenCards()).count()).to.equal(1);
+    expect(await (await contactPage.childrenCards()).length).to.equal(1);
     // expect to list two children
     expect(await contactPage.getAllRHSPeopleNames()).to.deep.equal(['Tudor', 'Ginny']);
   });
