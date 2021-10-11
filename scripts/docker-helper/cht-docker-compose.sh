@@ -253,15 +253,45 @@ get_load_avg() {
 
 log_iteration(){
   counter=$1
-  timestamp=$(date)
+  reboot_count=$2
+  line_head="$(date) PID:$$ Count:${counter}"
+  load_now=$(echo $(get_load_avg)|cut -d" " -f 1)
   logname='cht-docker-compose.log'
+  full_url=$(get_local_ip_url $lanAddress)
+  portIsOpen=$(port_open "$lanAddress" "$CHT_HTTPS")
+  if [ "$portIsOpen" = "0" ]; then
+    port_status='open'
+    http_code=$(curl -k --silent --show-error --head "$full_url" --write-out '%{http_code}' | tail -n1)
+    ssl_verify=$(curl -k --silent --show-error --head "$full_url" --write-out '%{ssl_verify_result}' | tail -n1)
+  else
+    port_status='closed'
+    http_code='NA'
+    ssl_verify='NA'
+  fi
+
+  container_stat=''
+  IFS=' ' read -ra containersArray <<<"$ALL_CONTAINERS"
+  for container in "${containersArray[@]}"; do
+    RUNNING=$(docker inspect --format="{{.State.Running}}" "${container}" 2> /dev/null)
+    if [ "$RUNNING" == "true" ]; then
+      foo=1
+      # todo - implement one of below to gather logs when container is running
+      # docker logs helper_test_medic-os_1
+      # docker logs helper_test_medic-os_1 | tail -n3
+
+      # todo - maybe grab horti logs if container ends in "_medic-os_1"?
+      # docker exec -it helper_test_medic-os_1  tail -n3 /srv/storage/horticulturalist/logs/horticulturalist.lo
+    fi
+    container_stat="${container}=${RUNNING} ${container_stat}"
+  done
+
   if [ $counter -eq 1 ]; then
     echo "" >& 1 >>./$logname
-    echo "${timestamp} ---------------------------START--------------------------" >& 1 >>./$logname
+    echo "${line_head} \---START---/" >& 1 >>./$logname
+    echo "${line_head} URL:\"$full_url\" IP:$lanAddress port:$CHT_HTTPS total_containers:$(get_global_running_container_count)" >& 1 >>./$logname
   fi
-  echo "${timestamp} Load: $(get_load_avg) URL: $(get_local_ip_url $lanAddress) PID: $$" >& 1 >>./$logname
-  echo "${timestamp} Iterations: $counter" >& 1 >>./$logname
-  echo "${timestamp} Global/CHT Containers: $(get_global_running_container_count)/$(get_running_container_count $ALL_CONTAINERS)" >& 1 >>./$logname
+  echo "${line_head} CHT_cont:$(get_running_container_count "$ALL_CONTAINERS") port_stat=$port_status http_code:$http_code ssl_verify=$ssl_verify reboot_count=$reboot_count $container_stat" >& 1 >>./$logname
+
 }
 
 counter=1
@@ -313,7 +343,7 @@ main (){
   chtVersion="NA"
 
   if [ $debug -eq 1 ]; then
-    log_iteration $counter
+    log_iteration $counter $reboot_count
     null=$((counter++))
   fi
 
