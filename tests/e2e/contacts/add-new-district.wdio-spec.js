@@ -1,19 +1,18 @@
-const commonElements = require('../../page-objects/common/common.po.js');
-const contactPage = require('../../page-objects/contacts/contacts.po.js');
-const helper = require('../../helper');
+const commonElements = require('../../page-objects/common/common.wdio.page.js');
+const contactPage = require('../../page-objects/contacts/contacts.wdio.page.js');
 const utils = require('../../utils');
+const loginPage = require('../../page-objects/login/login.wdio.page');
 
 describe('Add new district tests : ', () => {
-  afterEach(utils.afterEach);
+  before(async () => await loginPage.cookieLogin());
+  afterEach(async () => await utils.revertDb([], true));
 
   it('should add new district with a new person', async () => {
     await commonElements.goToPeople();
-    const district = 'BedeDistrict';
-    await contactPage.addNewDistrict(district);
-    await helper.waitUntilReadyNative(contactPage.center());
-    expect(await contactPage.center().getText()).toBe(district);
-    await helper.waitUntilReadyNative(contactPage.name());
-    expect(await contactPage.name().getText()).toBe('Bede');
+    const district = 'TestDistrict';
+    await contactPage.addPlace('district_hospital', 'TestDistrict', 'Tester');
+    expect(await (await contactPage.contactCard()).getText()).to.equal(district);
+    expect(await contactPage.getPrimaryContactName()).to.equal('Tester');
   });
 
   it('should edit district', async () => {
@@ -36,9 +35,8 @@ describe('Add new district tests : ', () => {
 
     await utils.saveDocs(contacts);
     await commonElements.goToPeople();
-    await contactPage.editDistrict('Caroline\'s district', 'At Caroline\'s');
-    await helper.waitUntilReadyNative(contactPage.center());
-    expect(await contactPage.center().getText()).toBe('At Caroline\'s');
+    await contactPage.editDistrict('Caroline\'s district', 'Edited Caroline\'s');
+    expect(await (await contactPage.contactCard()).getText()).to.equal('Edited Caroline\'s');
   });
 
   it('should edit district with contact_type', async () => {
@@ -71,17 +69,14 @@ describe('Add new district tests : ', () => {
     await utils.saveDocs(contacts);
     await commonElements.goToPeople();
     await contactPage.editDistrict('Tudor\'s district', 'At Tudor\'s');
-    await helper.waitUntilReadyNative(contactPage.center());
-    expect(await contactPage.center().getText()).toBe('At Tudor\'s');
+    expect(await (await contactPage.contactCard()).getText()).to.equal('At Tudor\'s');
 
     const updatedDistrict = await utils.getDoc('other_district');
-    expect(updatedDistrict.contact_type).toEqual('not a district_hospital'); // editing didn't overwrite
+    expect(updatedDistrict.contact_type).to.equal('not a district_hospital'); // editing didn't overwrite
 
     // expect to have a single children section
-    expect(await contactPage.childrenCards().count()).toEqual(1);
+    expect(await (await contactPage.childrenCards()).count()).to.equal(1);
     // expect to list two children
-    expect(await contactPage.peopleRows.count()).toEqual(2);
-    const childrenNames = await contactPage.peopleRows.map(row => helper.getTextFromElementNative(row));
-    expect(childrenNames).toEqual(['Tudor', 'Ginny']);
+    expect(await contactPage.getAllRHSPeopleNames()).to.deep.equal(['Tudor', 'Ginny']);
   });
 });

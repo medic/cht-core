@@ -40,13 +40,15 @@ const emptySelection = () => $('contacts-content .empty-selection');
 const editContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
 const deleteContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-trash-o');
 const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
-
 const leftAddPlace = () => $('.dropup a[mmauth="can_create_places"]');
 const rightAddPlace = () => $('span[test-id="rhs_add_contact"] a');
 const rightAddPlaces = () => $('span[test-id="rhs_add_contact"] p[test-key="Add place"]');
 const rightAddPersons = () => $('span[test-id="rhs_add_contact"] p[test-key="Add person"]');
 const rightAddPerson = (create_key) => $(`span[test-id="rhs_add_contact"] p[test-key="${create_key}"]`);
 const contactCards = () => $$('.card.children');
+const districtHospitalName = () => $('[name="/data/district_hospital/name"]');
+const childrenCards = () => $$('.right-pane .card.children');
+
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
@@ -120,6 +122,7 @@ const addPerson = async (name, params = {}) => {
 const editPerson = async (name, updatedName) => {
   await selectLHSRowByText(name);
   await waitForContactLoaded();
+  await (await editContactButton()).waitForDisplayed();
   await (await editContactButton()).click();
 
   await (await genericForm.nextPage());
@@ -184,6 +187,15 @@ const allContactsList = async () => {
   }));
 };
 
+const  editDistrict = async (districtName, editedName) => {
+  await selectLHSRowByText(districtName);
+  await waitForContactLoaded();
+  await (await editContactButton()).click();
+  await (await districtHospitalName()).setValue(editedName);
+  // trigger blur to trigger Enketo validation
+  await (await notes('district_hospital')).click();
+  await (await genericForm.submitButton()).click();
+};
 
 module.exports = {
   selectLHSRowByText,
@@ -210,5 +222,7 @@ module.exports = {
   rightAddPlaces,
   rightAddPersons,
   rightAddPerson,
-  allContactsList
+  allContactsList,
+  editDistrict,
+  childrenCards
 };
