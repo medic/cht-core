@@ -286,6 +286,7 @@ log_iteration(){
   done
 
   if [ $counter -eq 1 ]; then
+    # todo - add project name, http port, https port to start msg
     echo "" >& 1 >>./$logname
     echo "${line_head} \---START---/" >& 1 >>./$logname
     echo "${line_head} URL:\"$full_url\" IP:$lanAddress port:$CHT_HTTPS total_containers:$(get_global_running_container_count)" >& 1 >>./$logname
