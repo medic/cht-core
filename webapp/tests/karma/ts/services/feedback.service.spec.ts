@@ -49,7 +49,7 @@ describe('Feedback service', () => {
     clock.restore();
   });
 
-  it('should submit feedback when there is an unhandled', async () => {
+  it('should submit feedback when there is an unhandled error', async () => {
     post.resolves();
     getLocal.resolves(({ version: '0.5.0' }));
     languageService.get.resolves('es');
