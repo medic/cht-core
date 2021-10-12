@@ -6,14 +6,14 @@ describe('Hamburger Menu tests' , async () => {
     await loginPage.cookieLogin();
   });
 
-  beforeEach(async () => { 
+  beforeEach(async () => {
     await commonPage.goToReports();
   });
 
   it('should open Configuration wizard', async () => {
     await commonPage.openHamburgerMenu();
     const actualProperties = await commonPage.openConfigurationWizardAndFetchProperties();
-    expect(actualProperties).toEqual({
+    expect(actualProperties).to.deep.equal({
       modelTitle: 'Configuration wizard',
       defaultCountryCode: 'Canada (+1)',
       modelFinishButtonText: 'Finish'
@@ -33,7 +33,7 @@ describe('Hamburger Menu tests' , async () => {
   it('should open Report bug', async () => {
     await commonPage.openHamburgerMenu();
     const actualProperties = await commonPage.openReportBugAndFetchProperties();
-    expect(actualProperties).toEqual({
+    expect(actualProperties).to.deep.equal({
       modalHeader: 'Report bug',
       modelCancelButtonText: 'Cancel',
       modelSubmitButtonText: 'Submit'

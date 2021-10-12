@@ -56,11 +56,11 @@ describe('generating short codes', () => {
     await sentinelUtils.waitForSentinel();
     await commonElements.goToReports();
     await (await reportsPage.firstReport()).click();
-    expect(await (await reportsPage.submitterName()).getText()).toMatch(contact.name);
-    expect(await (await reportsPage.submitterPhone()).getText()).toBe(contact.phone);
-    expect(await (await reportsPage.submitterPlace()).getText()).toBe(clinic.name);
-    expect(await (await reportsPage.selectedCaseIdLabel()).getText()).toBe('Case ID');
-    expect(await (await reportsPage.selectedCaseId()).getText()).toMatch(/^\d{5}$/);
+    expect(await (await reportsPage.submitterName()).getText()).to.contain(contact.name);
+    expect(await (await reportsPage.submitterPhone()).getText()).to.contain(contact.phone);
+    expect(await (await reportsPage.submitterPlace()).getText()).to.contain(clinic.name);
+    expect(await (await reportsPage.selectedCaseIdLabel()).getText()).to.contain('Case ID');
+    expect(await (await reportsPage.selectedCaseId()).getText()).to.match(/^\d{5}$/);
   });
 });
 
