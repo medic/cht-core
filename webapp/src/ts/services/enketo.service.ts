@@ -284,13 +284,6 @@ export class EnketoService {
         if (loadErrors?.length) {
           return Promise.reject(new Error(JSON.stringify(loadErrors)));
         }
-        const language = options.language;
-        this.currentForm.view.$.on(
-          'click',
-          'button.add-repeat-btn:enabled',
-          () => this.currentForm.langs.setAll(language),
-        );
-        this.currentForm.langs.$formLanguages.val(language).trigger('change');
       })
       .then(() => this.getFormTitle(titleKey, doc))
       .then((title) => {
