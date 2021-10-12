@@ -93,8 +93,14 @@ describe('Enketo service', () => {
     window.EnketoForm = EnketoForm;
     window.URL.createObjectURL = createObjectURL;
     EnketoForm.returns({
+      view: {
+        $: { on: sinon.stub() },
+      },
       init: enketoInit,
-      langs: { setAll: () => {} },
+      langs: {
+        setAll: () => {},
+        $formLanguages: $('<select><option value="en">en</option></select>'),
+      },
       calc: { update: () => {} },
       output: { update: () => {} },
     });
