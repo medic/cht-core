@@ -5,7 +5,6 @@ import { TranslateService as NgxTranslateService } from '@ngx-translate/core';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { FormatDateService } from '@mm-services/format-date.service';
-import { FeedbackService } from '@mm-services/feedback.service';
 
 @Injectable({
   providedIn: 'root'
@@ -49,7 +48,6 @@ export class SetLanguageService {
     private ngxTranslateService:NgxTranslateService,
     private languageCookieService:LanguageCookieService,
     private formatDateService:FormatDateService,
-    private feedbackService:FeedbackService,
   ) {
   }
 
@@ -60,22 +58,16 @@ export class SetLanguageService {
   }
 
   async set(code, setLanguageCookie?) {
-    try {
-      moment.locale([code, 'en']);
-      this.setDatepickerLanguage(code);
-      await this.ngxTranslateService.use(code).toPromise();
+    moment.locale([ code, 'en' ]);
+    this.setDatepickerLanguage(code);
+    await this.ngxTranslateService.use(code).toPromise();
 
-      if (setLanguageCookie !== false) {
-        this.languageCookieService.set(code);
-      }
-
-      // formatDateService depends on the cookie, so also wait for the cookie to be updated
-      await this.formatDateService.init();
-    } catch (error) {
-      const errorMessage = 'Error when setting the language: ' + error.message;
-      this.feedbackService.submit(errorMessage, false);
-      throw new Error(errorMessage);
+    if (setLanguageCookie !== false) {
+      this.languageCookieService.set(code);
     }
+
+    // formatDateService depends on the cookie, so also wait for the cookie to be updated
+    await this.formatDateService.init();
   }
 }
 
