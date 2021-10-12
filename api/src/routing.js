@@ -161,9 +161,6 @@ app.use(
           `'sha256-B5cfIVb4/wnv2ixHP03bHeMXZDszDL610YG5wdDq/Tc='`,
           // AngularJS and several dependencies require this
           `'unsafe-eval'`,
-          // Angular styles optimization requires this because it adds an inline onload event handler
-          // https://github.com/angular/angular-cli/issues/20864
-          `'sha256-MhtPZXr7+LpJUY5qtMutB+qWfQtMaPccfe7QXtCcEYc='`,
           // Allow Enketo onsubmit form attribute
           // https://github.com/medic/cht-core/issues/6988
           `'unsafe-hashes'`,

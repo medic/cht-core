@@ -63,7 +63,14 @@
                 }
               ],
               "deleteOutputPath": false,
-              "optimization": true,
+              "optimization": {
+                "fonts": true,
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                }
+              },
               "outputHashing": "none",
               "sourceMap": false,
               "namedChunks": false,
