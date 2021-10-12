@@ -72,7 +72,6 @@ module.exports = function(grunt) {
     replace: 'grunt-text-replace',
     uglify: 'grunt-contrib-uglify-es',
   });
-  require('./grunt/service-worker')(grunt);
   require('time-grunt')(grunt);
 
   // Project configuration
@@ -235,13 +234,6 @@ module.exports = function(grunt) {
         src: 'build/ddocs/medic/_attachments/css/*.css',
       },
     },
-    'generate-service-worker': {
-      config: {
-        staticDirectoryPath: 'build/ddocs/medic/_attachments',
-        apiSrcDirectoryPath: 'api/src',
-        scriptOutputPath: 'build/ddocs/medic/_attachments/js/service-worker.js',
-      }
-    },
     copy: {
       ddocs: {
         expand: true,
@@ -339,7 +331,7 @@ module.exports = function(grunt) {
         },
         stdio: 'inherit', // enable colors!
       },
-      'eslint-sw': `${ESLINT_COMMAND} build/ddocs/medic/_attachments/js/service-worker.js`,
+      'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
       'pack-node-modules': {
         cmd: ['api', 'sentinel']
           .map(module =>
@@ -678,7 +670,6 @@ module.exports = function(grunt) {
         // instead of watching the source files, watch the build folder and upload on rebuild
         files: ['build/ddocs/medic/_attachments/**/*'],
         tasks: [
-          'generate-service-worker',
           'couch-compile:primary',
           'deploy',
         ],
@@ -917,12 +908,6 @@ module.exports = function(grunt) {
   grunt.registerTask('build-ddoc', 'Build the main ddoc', [
     'couch-compile:secondary',
     'copy:ddoc-attachments',
-    'build-service-worker',
-  ]);
-
-  grunt.registerTask('build-service-worker', 'Build the service worker', [
-    'generate-service-worker',
-    'exec:eslint-sw',
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
@@ -985,7 +970,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('e2e-integration', 'Deploy app for testing', [
     'e2e-env-setup',
-    'exec:e2e-integration'
+    'exec:e2e-integration',
+    'exec:eslint-sw'
   ]);
 
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
@@ -1083,6 +1069,7 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
     'exec:e2e-servers',
     'exec:e2e-integration',
+    'exec:eslint-sw',
   ]);
 
   grunt.registerTask('ci-e2e-cht', 'Run e2e tests for CI', [

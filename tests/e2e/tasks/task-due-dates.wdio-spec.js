@@ -58,14 +58,9 @@ describe('Task list due dates', () => {
     await utils.createUsers([ chw ]);
     await sentinelUtils.waitForSentinel();
 
-    await loginPage.login(chw.username, chw.password);
+    await loginPage.login({ username: chw.username, password: chw.password });
     await commonPage.closeTour();
     await (await commonPage.analyticsTab()).waitForDisplayed();
-  });
-
-  after(async () => {
-    await utils.deleteUsers([ chw ]);
-    await utils.revertDb([], true);
   });
 
   afterEach(async () => {

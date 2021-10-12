@@ -119,7 +119,6 @@
     "rosie": "^2.1.0",
     "semver": "^7.3.5",
     "sinon": "^8.1.1",
-    "sw-precache": "^5.2.1",
     "tail": "^2.2.3",
     "time-grunt": "^2.0.0",
     "typescript": "^3.9.10",

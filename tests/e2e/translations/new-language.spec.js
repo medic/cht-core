@@ -14,6 +14,7 @@ describe('Adding new language', () => {
       'reports.none':'Geen verslae gevind nie',
       'Analytics': 'Analytiks'
     });
+    await utils.closeReloadModal();
     await utils.resetBrowserNative();
   };
 
