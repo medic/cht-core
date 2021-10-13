@@ -208,6 +208,25 @@ const openAppManagement = async () => {
   await (await $('.navbar-brand')).waitForDisplayed();
 };
 
+const acceptUpdates =  async () => {
+  // wait for the updates to replicate
+  const dialog = await $('#update-available .submit:not(.disabled)');
+  const contactTab = await $('contacts-tab');
+  return await dialog
+    .waitForClickable({timeout: 10000})
+    .then(() => dialog().click())
+    .catch(() => {
+      // sometimes there's a double update which causes the dialog to be redrawn
+      // retry with the new dialog
+      return dialog.isExisting().then((isPresent) => {
+        return isPresent && dialog.click();
+      });
+    })
+    .then(() => {
+      return contactTab.waitForClickable({timeout: 10000, timeoutMsg:'Second refresh to get settings'});
+    });
+};
+
 module.exports = {
   logout,
   logoutButton,
@@ -242,4 +261,5 @@ module.exports = {
   openAppManagement,
   waitForLoaderToDisappear,
   goToAboutPage,
+  acceptUpdates,
 };

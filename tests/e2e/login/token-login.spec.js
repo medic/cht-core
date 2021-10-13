@@ -1,18 +1,16 @@
-const auth = require('../../auth')();
-const commonElements = require('../../page-objects/common/common.po.js');
-const loginPage = require('../../page-objects/login/login.po.js');
+const commonElements = require('../../page-objects/common/common.wdio.page');
+const loginPage = require('../../page-objects/login/login.wdio.page');
 const utils = require('../../utils');
-const helper = require('../../helper');
 
 const INVALID = 'Your link is invalid.';
 const EXPIRED = 'Your link has expired.';
 const MISSING = 'Your link is missing required information';
 const TOLOGIN = 'If you know your username and password, click on the following link to load the login page.';
-const ERROR = 'Something went wrong when processing your request';
+const UNKNOWN = 'Something went wrong when processing your request';
 
 let user;
 
-const getUrl = token => `${utils.getOrigin()}/medic/login/token/${token}`;
+const getUrl = token => `/medic/login/token/${token}`;
 const setupTokenLoginSettings = () => {
   // we're configuring app_url here because we're serving api on a port, and in express4 req.hostname strips the port
   // https://expressjs.com/en/guide/migrating-5.html#req.host
@@ -48,15 +46,16 @@ const expireToken = (user) => {
 };
 
 describe('Token login', () => {
+  before(async () =>  await utils.deleteAllDocs());
   beforeEach(async () => {
     user = {
       username: 'testusername',
-      roles: ['national_admin'],
+      roles: ['program_officer'],
       phone: '+40766565656',
       token_login: true,
       known: true,
     };
-    await browser.manage().deleteAllCookies();
+    await browser.deleteCookies();
   });
 
   afterEach(async () => {
@@ -64,57 +63,38 @@ describe('Token login', () => {
     await utils.revertDb([], true);
   });
 
-  afterAll(async () => {
+  after(async () => {
     await utils.revertDb([], 'api');
-    await commonElements.goToLoginPageNative();
-    await loginPage.loginNative(auth.username, auth.password);
-    await commonElements.calmNative();
   });
 
-  const waitForLoaderToDisappear = async () => {
-    try {
-      await helper.waitElementToDisappear(by.css('.loader'));
-    } catch(err) {
-      // element can go stale
-    }
-  };
-
   it('should redirect the user to the app if already logged in', async () => {
-    await commonElements.goToLoginPageNative();
-    await loginPage.loginNative(auth.username, auth.password);
-    await commonElements.calmNative();
-    await browser.driver.get(getUrl('this is a random string'));
-    await waitForLoaderToDisappear();
-    await browser.waitForAngular();
-    await helper.waitUntilReadyNative(element(by.id('message-list')));
+    await loginPage.cookieLogin();
+    await browser.url(getUrl('this is a random string'));
+    await commonElements.acceptUpdates();
+    await commonElements.waitForLoaderToDisappear();
+    expect(await commonElements.isMessagesListPresent()).to.be.true;
   });
 
   it('should display an error when token login is disabled', async () => {
-    await browser.driver.get(getUrl('this is a random string'));
-    await waitForLoaderToDisappear();
-    expect(await helper.isTextDisplayed(ERROR)).toBe(true);
-    expect(await helper.isTextDisplayed(TOLOGIN)).toBe(true);
-    expect(await loginPage.returnToLogin().isDisplayed()).toBe(true);
+    await browser.url(getUrl('this is a random string'));
+    await loginPage.getTokenError('unknown');
+    expect (await loginPage.getTokenError('unknown')).to.contain(UNKNOWN);
+    expect (await loginPage.toLogin()).to.equal(TOLOGIN);
   });
 
   it('should display an error with incorrect url', async () => {
     await setupTokenLoginSettings();
-    await browser.driver.get(`${utils.getOrigin()}/medic/login/token`);
-    await waitForLoaderToDisappear();
-    await helper.waitUntilReadyNative(loginPage.returnToLogin());
-    expect(await helper.isTextDisplayed(MISSING)).toBe(true);
-    expect(await helper.isTextDisplayed(TOLOGIN)).toBe(true);
-    expect(await loginPage.returnToLogin().isDisplayed()).toBe(true);
+    await browser.url(`/medic/login/token`);
+    await loginPage.getTokenError('missing');
+    expect (await loginPage.getTokenError('missing')).to.contain(MISSING);
+    expect (await loginPage.toLogin()).to.equal(TOLOGIN);
   });
 
   it('should display an error when accessing with random strings', async () => {
     await setupTokenLoginSettings();
-    await browser.driver.get(getUrl('this is a random string'));
-    await waitForLoaderToDisappear();
-    await helper.waitUntilReadyNative(loginPage.returnToLogin());
-    expect(await helper.isTextDisplayed(INVALID)).toBe(true);
-    expect(await helper.isTextDisplayed(TOLOGIN)).toBe(true);
-    expect(await loginPage.returnToLogin().isDisplayed()).toBe(true);
+    await browser.url(getUrl('this is a random string'));
+    expect (await loginPage.getTokenError('invalid')).to.contain(INVALID);
+    expect (await loginPage.toLogin()).to.equal(TOLOGIN);
   });
 
   it('should display an error when token is expired', async () => {
@@ -123,12 +103,9 @@ describe('Token login', () => {
     const userDoc = await getUser(response.user.id);
     const url = await getTokenUrl(userDoc);
     await expireToken(userDoc);
-    await browser.driver.get(url);
-    await waitForLoaderToDisappear();
-    await helper.waitUntilReadyNative(loginPage.returnToLogin());
-    expect(await helper.isTextDisplayed(EXPIRED)).toBe(true);
-    expect(await helper.isTextDisplayed(TOLOGIN)).toBe(true);
-    expect(await loginPage.returnToLogin().isDisplayed()).toBe(true);
+    await browser.url(url);
+    expect (await loginPage.getTokenError('expired')).to.contain(EXPIRED);
+    expect (await loginPage.toLogin()).to.equal(TOLOGIN);
   });
 
   it('should log the user in when token is correct', async () => {
@@ -136,9 +113,8 @@ describe('Token login', () => {
     const response = await createUser(user);
     const userDoc = await getUser(response.user.id);
     const url = await getTokenUrl(userDoc);
-    await browser.driver.get(url);
-    await browser.waitForAngular();
-    await helper.waitUntilReadyNative(commonElements.messagesList);
-    expect(await commonElements.messagesList.isDisplayed()).toBe(true);
+    await browser.url(url);
+    await commonElements.waitForLoaderToDisappear();
+    expect(await commonElements.isMessagesListPresent()).to.be.true;
   });
 });
