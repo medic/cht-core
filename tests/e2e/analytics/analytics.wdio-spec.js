@@ -41,12 +41,10 @@ const updateSettings = async (settings) => {
 };
 
 const compileTasks = async (configDirectory) => {
-  const settings = {};
   await chtConfUtils.initializeConfigDir();
   const targetFilePath = path.join(__dirname, configDirectory, 'targets.js');
-  settings.tasks = await chtConfUtils.compileNoolsConfig(null, targetFilePath);
 
-  return settings;
+  return chtConfUtils.compileNoolsConfig(null, targetFilePath)
 };
 
 describe('Targets', () => {
@@ -82,8 +80,8 @@ describe('Targets', () => {
   });
 
   it('should display correct message when no target found', async () => {
-    const compiledTasks = await compileTasks('no-targets-config');
-    await updateSettings(compiledTasks);
+    const tasks = await compileTasks('no-targets-config');
+    await updateSettings({ tasks });
     await analyticsPage.goToTargets();
 
     const emptySelectionLoading = await analyticsPage.noSelectedTarget();
