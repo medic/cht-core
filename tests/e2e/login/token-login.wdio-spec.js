@@ -46,7 +46,6 @@ const expireToken = (user) => {
 };
 
 describe('Token login', () => {
-  before(async () =>  await utils.deleteAllDocs());
   beforeEach(async () => {
     user = {
       username: 'testusername',
@@ -70,7 +69,6 @@ describe('Token login', () => {
   it('should redirect the user to the app if already logged in', async () => {
     await loginPage.cookieLogin();
     await browser.url(getUrl('this is a random string'));
-    await commonElements.acceptUpdates();
     await commonElements.waitForLoaderToDisappear();
     expect(await commonElements.isMessagesListPresent()).to.be.true;
   });
