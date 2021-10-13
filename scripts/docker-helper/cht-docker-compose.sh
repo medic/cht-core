@@ -191,7 +191,7 @@ docker_up_or_restart(){
   # haproxy never starts on first "up" call, so you know, call it twice ;)
   docker-compose --env-file "${envFile}" -f "${composeFile}" down >/dev/null 2>&1
   docker-compose --env-file "${envFile}" -f "${composeFile}" up -d >/dev/null 2>&1
-  docker-compose --env-file "${envFile}" -f "${composeFile}" up -d >/dev/null 2>&1
+#  docker-compose --env-file "${envFile}" -f "${composeFile}" up -d >/dev/null 2>&1
 }
 
 install_local_ip_cert(){
@@ -254,7 +254,9 @@ get_load_avg() {
 log_iteration(){
   counter=$1
   reboot_count=$2
-  line_head="$(date) PID:$$ Count:${counter}"
+  last_msg=$(echo "$3" | tr -d '"')
+  docker_call=$4
+  line_head="$(date) PID=$$ Count=${counter}"
   load_now=$(echo $(get_load_avg)|cut -d" " -f 1)
   logname='cht-docker-compose.log'
   full_url=$(get_local_ip_url $lanAddress)
@@ -263,10 +265,26 @@ log_iteration(){
     port_status='open'
     http_code=$(curl -k --silent --show-error --head "$full_url" --write-out '%{http_code}' | tail -n1)
     ssl_verify=$(curl -k --silent --show-error --head "$full_url" --write-out '%{ssl_verify_result}' | tail -n1)
+    if [ "$ssl_verify" = "0" ]; then
+      ssl_verify=yes
+    else
+      ssl_verify=no
+    fi
   else
     port_status='closed'
     http_code='NA'
-    ssl_verify='NA'
+    ssl_verify='no'
+  fi
+
+  if [ $counter -eq 1 ]; then
+    # todo - add project name, http port, https port to start msg
+    echo "${line_head} \
+item=start \
+URL=\"$full_url\" \
+IP=$lanAddress \
+port=$CHT_HTTPS \
+total_containers=$(get_global_running_container_count)\
+" >& 1 >>./$logname
   fi
 
   container_stat=''
@@ -274,24 +292,28 @@ log_iteration(){
   for container in "${containersArray[@]}"; do
     RUNNING=$(docker inspect --format="{{.State.Running}}" "${container}" 2> /dev/null)
     if [ "$RUNNING" == "true" ]; then
-      foo=1
-      # todo - implement one of below to gather logs when container is running
-      # docker logs helper_test_medic-os_1
-      # docker logs helper_test_medic-os_1 | tail -n3
+      logs=$(docker logs -n1 ${container})
+      echo "${line_head} item=docker_logs container=${container} $logs" >& 1 >>./$logname
 
       # todo - maybe grab horti logs if container ends in "_medic-os_1"?
       # docker exec -it helper_test_medic-os_1  tail -n3 /srv/storage/horticulturalist/logs/horticulturalist.lo
+    else
+      RUNNING="false"
     fi
     container_stat="${container}=${RUNNING} ${container_stat}"
   done
 
-  if [ $counter -eq 1 ]; then
-    # todo - add project name, http port, https port to start msg
-    echo "" >& 1 >>./$logname
-    echo "${line_head} \---START---/" >& 1 >>./$logname
-    echo "${line_head} URL:\"$full_url\" IP:$lanAddress port:$CHT_HTTPS total_containers:$(get_global_running_container_count)" >& 1 >>./$logname
-  fi
-  echo "${line_head} CHT_cont:$(get_running_container_count "$ALL_CONTAINERS") port_stat=$port_status http_code:$http_code ssl_verify=$ssl_verify reboot_count=$reboot_count $container_stat" >& 1 >>./$logname
+  echo "${line_head} \
+item=status \
+CHT_count=$(get_running_container_count "$ALL_CONTAINERS") \
+port_stat=$port_status \
+http_code=$http_code \
+ssl_verify=$ssl_verify \
+reboot_count=$reboot_count \
+docker_call=$docker_call \
+last_msg=\"$last_msg\" \
+$container_stat\
+" >& 1 >>./$logname
 
 }
 
@@ -344,7 +366,7 @@ main (){
   chtVersion="NA"
 
   if [ $debug -eq 1 ]; then
-    log_iteration $counter $reboot_count
+    log_iteration $counter $reboot_count "${last_action}" $docker_action
     null=$((counter++))
   fi
 
@@ -428,14 +450,14 @@ main (){
 
   if [[ "$containerCount" != 2 ]] && [[ "$reboot_count" != "$MAX_REBOOTS" ]] && [[ "$sleepFor" = 0 ]]; then
     sleepFor=$DEFAULT_SLEEP
-    last_action="Running \"down\" then  \"up\""
+    last_action="Running \"down\" then \"up\""
     docker_up_or_restart "$envFile" "$dockerComposePath" &
     (( reboot_count++ ))
   fi
 
   if [ -n "$health" ] && [[ "$sleepFor" = 0 ]] && [[ "$reboot_count" != "$MAX_REBOOTS" ]]; then
     sleepFor=$DEFAULT_SLEEP
-    last_action="Running \"down\" then  \"up\""
+    last_action="Running \"down\" then \"up\""
     docker_up_or_restart "$envFile" "$dockerComposePath"  &
     (( reboot_count++ ))
   fi
@@ -473,12 +495,8 @@ main (){
     return 0
   fi
 
-  # reset all the things to be thorough
-  sleepFor=0
-  reboot_count=0
-  last_action=" :) "
-
   # if we're here, we're happy! Show happy sign and exit next iteration via exitNext
+  last_action=" :) "
   window "Successfully started ${COMPOSE_PROJECT_NAME} " "green" "100%"
   append "login: medic"
   append "password: password"
