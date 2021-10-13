@@ -269,13 +269,14 @@ const assignRecords = (rows, groups) => {
     increaseBatchSize();
   }
 
-  const ids = relevantRows.map(row => row.id);
-  return db.medic.allDocs({ keys: ids, include_docs: true }).then(allDocsResult => {
+  const recordIds = relevantRows.map(row => row.id);
+  return db.medic.allDocs({ keys: recordIds, include_docs: true }).then(allDocsResult => {
     const hydratedRows = relevantRows
       .map((row, idx) => Object.assign(row, { doc: allDocsResult.rows[idx].doc }))
       .filter(row => row.doc);
 
     const recordsByKey = getRecordsByKey(hydratedRows);
+    logger.info(`Found ${recordIds.length} records`);
     assignRecordsToGroups(recordsByKey, groups);
   });
 };

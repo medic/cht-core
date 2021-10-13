@@ -91,6 +91,40 @@ const docs = [
     to_be_purged: false,
   },
   {
+    _id: 'report9',
+    type: 'data_record',
+    form: 'yes',
+    fields: {
+      patient_id: 'patient1',
+      needs_signoff: true,
+    },
+    contact: { _id: 'fixture:user:user1', parent: { _id: 'clinic1' } },
+    to_be_purged: true,
+  },
+  {
+    _id: 'report10',
+    type: 'data_record',
+    form: 'yes',
+    fields: {
+      patient_id: 'patient1',
+      needs_signoff: true,
+    },
+    errors: [{ code: 'registration_not_found' }],
+    contact: { _id: 'fixture:user:user1', parent: { _id: 'clinic1' } },
+    to_be_purged: true,
+  },
+  {
+    _id: 'report11', // orphaned needs signoff
+    type: 'data_record',
+    form: 'yes',
+    fields: {
+      patient_id: 'orphaned',
+      needs_signoff: true,
+    },
+    contact: { _id: 'fixture:user:user1', parent: { _id: 'clinic1' } },
+    to_be_purged: true,
+  },
+  {
     _id: 'message1',
     type: 'data_record',
     sms_message: true,
@@ -429,7 +463,7 @@ describe('server side purge', () => {
         chai.expect(user1ChangeIds)
           .to.include.members([
             'clinic1', 'contact1',
-            'report2', 'report5', 'report6',
+            'report2', 'report5', 'report6', 'report11',
             'message2', 'message4',
             'task1~user1', 'task2~user1', 'task3~user1',
           ]);
@@ -437,6 +471,8 @@ describe('server side purge', () => {
           .to.not.include('report1')
           .and.not.include('report3')
           .and.not.include('report4')
+          .and.not.include('report9')
+          .and.not.include('report10')
           .and.not.include('message1')
           .and.not.include('message3')
           .and.not.include('task4~user1');
@@ -444,7 +480,7 @@ describe('server side purge', () => {
         chai.expect(user2ChangeIds)
           .to.include.members([
             'clinic1', 'contact1',
-            'report1', 'report3', 'report4',
+            'report1', 'report3', 'report4', 'report11', 'report9', 'report10',
             'message1', 'message3',
             'task1~user2', 'task2~user2', 'task3~user2',
             ...targetIdsToKeep
@@ -462,7 +498,15 @@ describe('server side purge', () => {
       .then(() => Promise.all([ requestPurges('user1'), requestPurges('user2') ]))
       .then(([ purgedIdsUser1, purgedIdsUser2 ]) => {
         chai.expect(purgedIdsUser1.purged_ids).to.have.members([
-          'report1', 'report3', 'report4', 'message1', 'message3', 'task4~user1', ...targetIdsToPurge
+          'report1',
+          'report3',
+          'report4',
+          'message1',
+          'message3',
+          'report9',
+          'report10',
+          'task4~user1',
+          ...targetIdsToPurge,
         ]);
         chai.expect(purgedIdsUser2.purged_ids).to.have.members([
           'report2', 'report5', 'report6', 'message2', 'message4', 'task4~user2', ...targetIdsToPurge
@@ -560,8 +604,15 @@ describe('server side purge', () => {
         // reverse purges
         chai.expect(purgedDocsUser1.purged_ids)
           .to.have.members(['report2', 'report5', 'report6', 'message2', 'message4']);
-        chai.expect(purgedDocsUser2.purged_ids)
-          .to.have.members(['report1', 'report3', 'report4', 'message1', 'message3']);
+        chai.expect(purgedDocsUser2.purged_ids).to.have.members([
+          'report1',
+          'report3',
+          'report4',
+          'report9',
+          'report10',
+          'message1',
+          'message3',
+        ]);
       })
       .then(() => Promise.all([
         requestChanges('user1', { initial_replication: true }),
@@ -618,8 +669,15 @@ describe('server side purge', () => {
         // reverse purges
         chai.expect(purgedDocsUser1.purged_ids)
           .to.have.members(['report2', 'report5', 'report6', 'message2', 'message4']);
-        chai.expect(purgedDocsUser2.purged_ids)
-          .to.have.members(['report1', 'report3', 'report4', 'message1', 'message3']);
+        chai.expect(purgedDocsUser2.purged_ids).to.have.members([
+          'report1',
+          'report3',
+          'report4',
+          'report9',
+          'report10',
+          'message1',
+          'message3',
+        ]);
         chai.assert(infoUser1.update_seq);
         chai.assert(infoUser2.update_seq);
 
@@ -674,7 +732,15 @@ describe('server side purge', () => {
       .then(() => requestPurges('user1'))
       .then(purgedDocs => {
         chai.expect(purgedDocs.purged_ids).to.have.members([
-          'report1', 'report3', 'report4', 'message1', 'message3', 'task4~user1', ...targetIdsToPurge
+          'report1',
+          'report3',
+          'report4',
+          'report9',
+          'report10',
+          'message1',
+          'message3',
+          'task4~user1',
+          ...targetIdsToPurge,
         ]);
       })
       .then(() => writePurgeCheckpoint('user1'))
