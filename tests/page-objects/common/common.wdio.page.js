@@ -144,7 +144,7 @@ const hideSnackbar = () => {
 const waitForLoaders = async () => {
   await browser.waitUntil(async () => {
     return (await loaders()).map((loader) => loader.isDisplayed()).length === 0;
-  });
+  }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
 
 const syncAndWaitForSuccess = async () => {
@@ -197,7 +197,7 @@ const openConfigurationWizardAndFetchProperties = async () => {
   };
 };
 
-const openUserSettingsAndFetchProperties  = async () => {
+const openUserSettingsAndFetchProperties = async () => {
   await (await $('=User settings')).click();
   await (await $('=Update password')).waitForDisplayed();
   await (await $('=Edit user profile')).waitForDisplayed();
