@@ -9,18 +9,31 @@ const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
 const localeByName = (locale) => $(`.locale[name="${locale}"]`);
 
-const login = async (username, password, locale) => {
+const login = async ({ username, password, createUser = false, locale }) => {
   await (await userField()).setValue(username);
   await (await passwordField()).setValue(password);
   await changeLocale(locale);
   await (await loginButton()).click();
   await commonPage.waitForLoaders();
+  if (createUser) {
+    await browser.waitUntil(async () => {
+      const cookies = await browser.getCookies('userCtx');
+      return cookies.some(cookie => cookie.name === 'userCtx');
+    });
+    await utils.setupUserDoc(username);
+  }
 };
 
-const cookieLogin = async (username = auth.username, password = auth.password, createUser = true) => {
+const cookieLogin = async (options = {}) => {
+  const {
+    username = auth.username,
+    password = auth.password,
+    createUser = true,
+    locale = 'en',
+  } = options;
   const opts = {
     path: '/medic/login',
-    body: { user: username, password: password },
+    body: { user: username, password: password, locale },
     method: 'POST',
     simple: false,
   };
