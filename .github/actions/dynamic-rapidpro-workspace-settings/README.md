@@ -1,5 +1,5 @@
 # dynamic-rapidpro-workspace Shared GitHub Action
-The `update-rapidpro-workspace-settings` is a parameterised reusable GitHub action that updates app-settings prior to compiling and uploading to a running CHT app.
+The `dynamic-rapidpro-workspace-settings` is a parameterised reusable GitHub action that updates app-settings prior to compiling and uploading to a running CHT app.
 
 ### Background
 This action is relevant for CHT apps that have either [outbound](https://docs.communityhealthtoolkit.org/apps/reference/app-settings/outbound/) integrations with RapidPro or logic that requires RapidPro workspace data GUIDs.
@@ -23,7 +23,7 @@ const RAPIDPRO_FLOWS = {
 module.exports = RAPIDPRO_FLOWS;
 ```
 
-> **This action can be executed jointly with other Github actions like [deploy-with-medic-conf](https://github.com/medic/cht-core/tree/master/.github/actions/deploy-with-medic-conf).**
+> **This action can be executed jointly with other Github actions like [deploy-with-medic-conf](https://github.com/medic/cht-core/tree/master/.github/actions/deploy-with-medic-conf). However, it must be executed before other actions to update dependencies prior to compiling app settings.** 
 
 ## CHT App Requirements
 * medic-conf@3.3 or above
@@ -41,7 +41,7 @@ jobs:
 
     steps:
     - name: Update rapidpro workspace in app-settings 
-      uses: 'medic/cht-core/.github/actions/update-rapidpro-workspace-settings@master'
+      uses: 'medic/cht-core/.github/actions/dynamic-rapidpro-workspace-settings@master'
       with:
         directory: 'my_app_folder'
         hostname: myapp.staging.company.org
@@ -52,7 +52,7 @@ jobs:
         rp_api_token: ${{ secrets.RAPIDPRO_STAGING_TOKEN }}
         value_key: medic.credentials.key
         rp_contact_group: ${{ secrets.RAPIDPRO_STAGING_GROUP }}
-        flows: ${{ secrets.RAPIDPRO_STAGING_FLOWS }}
+        rp_flows: ${{ secrets.RAPIDPRO_STAGING_FLOWS }}
         write_patient_state_flow: ${{ secrets.RAPIDPRO_STAGING_WRITE_PATIENT_STATE_FLOW }}
 ```
 
