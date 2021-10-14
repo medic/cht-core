@@ -34,28 +34,36 @@ describe('Login and logout tests', () => {
 
   it('should show locale selector on login page', async () => {
     const locales = await loginPage.getAllLocales();
-    expect(locales).toEqual(defaultLocales);
+    expect(locales).to.deep.equal(defaultLocales);
   });
 
   it('should change locale to French', async () => {
     //French translations
-    expect(await loginPage.changeLanguage('fr',frTranslations.user)).toEqual(frTranslations);
+    expect(await loginPage.changeLanguage('fr',frTranslations.user)).to.deep.equal(frTranslations);
+    expect(await loginPage.getCurrentLanguage()).to.deep.equal({ code: 'fr', name: 'Français (French)' });
   });
 
   it('should change locale to Spanish', async () => {
     //Spanish translations
-    expect(await loginPage.changeLanguage('es',esTranslations.user)).toEqual(esTranslations);
+    expect(await loginPage.changeLanguage('es',esTranslations.user)).to.deep.equal(esTranslations);
+    expect(await loginPage.getCurrentLanguage()).to.deep.equal({ code: 'es', name: 'Español (Spanish)' });
   });
 
   it('should show a warning before log out', async () => {
-    await loginPage.cookieLogin(auth.username, auth.password);
+    await loginPage.cookieLogin({
+      username: auth.username,
+      password: auth.password,
+    });
     const warning = await commonPage.getLogoutMessage();
-    expect(warning).toBe('Are you sure you want to log out?');
+    expect(warning).to.equal('Are you sure you want to log out?');
   });
 
   it('should log in using username and password fields', async () => {
-    await loginPage.login(auth.username, auth.password);
-    expect(await commonPage.analyticsTab()).toBeDisplayed();
-    expect(await commonPage.messagesTab()).toBeDisplayed();
+    await loginPage.login({
+      username: auth.username,
+      password: auth.password,
+    });
+    await (await commonPage.analyticsTab()).waitForDisplayed();
+    await (await commonPage.messagesTab()).waitForDisplayed();
   });
 });

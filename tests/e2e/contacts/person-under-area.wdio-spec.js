@@ -55,14 +55,14 @@ describe('Create Person Under Area', async () => {
     await usersAdminPage.inputAddUserFields(username, 'Jack', 'CHW', healthCenter2.name, person2.name, password);
     await usersAdminPage.saveUser();
     await usersAdminPage.logout();
-    await loginPage.login(username, password);
+    await loginPage.login({ username, password });
     await commonPage.closeTour();
 
     await commonPage.goToPeople();
     const rows = await contactPage.getAllLHSContactsNames();
     // Only one row will be displayed: for HealthCenter
-    expect(rows.length).toEqual(1);
-    expect(rows[0]).toEqual(healthCenter2.name);
+    expect(rows.length).to.equal(1);
+    expect(rows[0]).to.equal(healthCenter2.name);
     await contactPage.selectLHSRowByText(healthCenter2.name);
   });
 });

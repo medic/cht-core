@@ -96,7 +96,7 @@
     <div *ngIf="partners?.length" class="partners">
       <h3>{{'partner.supporting' | translate}}</h3>
       <ul class="list-inline">
-        <li *ngFor="let partner in partners">
+        <li *ngFor="let partner of partners">
           <span [innerHTML]="partner | partnerImage"></span>
         </li>
       </ul>

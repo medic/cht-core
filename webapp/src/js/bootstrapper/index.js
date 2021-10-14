@@ -224,12 +224,14 @@
       .catch(() => true);
 
     let isInitialReplicationNeeded;
-    Promise.all([swRegistration, testReplicationNeeded(), setReplicationId(POUCHDB_OPTIONS, localDb)])
-      .then(function(resolved) {
+    Promise
+      .all([swRegistration, testReplicationNeeded(), setReplicationId(POUCHDB_OPTIONS, localDb)])
+      .then(resolved => {
         purger.setOptions(POUCHDB_OPTIONS);
         isInitialReplicationNeeded = !!resolved[1];
 
         if (isInitialReplicationNeeded) {
+          const replicationStarted = performance.now();
           return docCountPoll(localDb)
             .then(() => initialReplication(localDb, remoteDb))
             .then(testReplicationNeeded)
@@ -237,40 +239,60 @@
               if (isReplicationStillNeeded) {
                 throw new Error('Initial replication failed');
               }
-            });
+            })
+            .then(() => window.startupTimes.replication = performance.now() - replicationStarted);
         }
       })
       .then(() => {
         return purger
           .shouldPurge(localDb, userCtx)
           .then(shouldPurge => {
+            window.startupTimes.purging = shouldPurge;
+
             if (!shouldPurge) {
               return;
             }
 
+            const purgeStarted = performance.now();
             return purger
               .purge(localDb, userCtx)
               .on('start', () => setUiStatus('PURGE_INIT'))
               .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
-              .catch(err => console.error('Error attempting to purge', err));
+              .catch(err => {
+                console.error('Error attempting to purge', err);
+                window.startupTimes.purgingFailed = err.message;
+              })
+              .then(() => window.startupTimes.purge = performance.now() - purgeStarted);
           });
       })
       .then(() => {
+        let purgeMetaStarted;
         return purger
           .shouldPurgeMeta(localMetaDb)
           .then(shouldPurgeMeta => {
+            window.startupTimes.purgingMeta = shouldPurgeMeta;
+
             if (!shouldPurgeMeta) {
               return;
             }
 
+            purgeMetaStarted = performance.now();
             setUiStatus('PURGE_META');
             return purger.purgeMeta(localMetaDb);
           })
-          .catch(err => console.error('Error attempting to purge meta', err));
+          .catch(err => {
+            console.error('Error attempting to purge meta', err);
+            window.startupTimes.purgingMetaFailed = err.message;
+          })
+          .then(() => {
+            if (purgeMetaStarted) {
+              window.startupTimes.purgeMeta = performance.now() - purgeMetaStarted;
+            }
+          });
       })
       .then(() => setUiStatus('STARTING_APP'))
       .catch(err => err)
-      .then(function(err) {
+      .then(err => {
         localDb.close();
         remoteDb.close();
         localMetaDb.close();

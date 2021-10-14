@@ -45,7 +45,7 @@ describe('RouteGuard provider', () => {
       expect(authService.has.callCount).to.equal(1);
       expect(authService.has.args[0]).to.deep.equal(['can_activate']);
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['error/403']]);
+      expect(router.navigate.args[0]).to.deep.equal([['error', '403']]);
     });
   }));
 

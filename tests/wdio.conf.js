@@ -231,6 +231,7 @@ const baseConfig = {
    * @param {Object}     browser    instance of created browser/device session
    */
   before: async function () {
+    global.expect = chai.expect;
     await browser.url('/');
   },
   /**
