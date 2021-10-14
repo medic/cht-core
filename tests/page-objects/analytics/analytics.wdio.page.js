@@ -1,36 +1,41 @@
-const targetsUrl = '/#/analytics/targets';
-const noSelectedTargetSelector = '.empty-selection';
-const targetWrapSelector = '.page .targets';
-const targetSelector = '.target';
-const targetTitle = '.heading .title h2';
-const targetGoal = '.body .count .goal';
-const targetCountNumber = '.body .count .number';
-const targetProgressNumber = '.body .target-progress .number';
+const goToTargets = () => browser.url('/#/analytics/targets');
 
-const noSelectedTarget = () => $(noSelectedTargetSelector);
+const noSelectedTarget = () => $('.empty-selection');
 
-const targets = () => $$(targetSelector);
+const targets = () => $$('.target');
 
-const targetWrap = () => $(targetWrapSelector);
+const targetWrap = () => $('.page .targets');
 
-const goToTargets = () => browser.url(targetsUrl);
+const targetTitle = (targetElement) => targetElement.$('.heading .title h2');
+
+const targetGoal = (targetElement) => targetElement.$('.body .count .goal');
+
+const targetCountNumber = (targetElement) => targetElement.$('.body .count .number');
+
+const targetProgressNumber = (targetElement) => targetElement.$('.body .target-progress .number');
+
+const targetNumberPercent = (targetElement) => targetElement.$('.body .target-progress .number .value');
+
+const targetNumberPercentCount = (targetElement) => targetElement.$('.body .target-progress .number span:nth-child(2)');
+
+const targetGoalValue = (targetElement) => targetElement.$('.body .count .goal p');
 
 const getTargetInfo = async (targetElement) => {
   const target = {
-    title: await (await targetElement.$(targetTitle)).getText()
+    title: await (await targetTitle(targetElement)).getText()
   };
 
-  if (await (await targetElement.$(targetGoal)).isExisting()) {
-    target.goal = await (await targetElement.$(`${targetGoal} p`)).getText();
+  if (await (await targetGoal(targetElement)).isExisting()) {
+    target.goal = await (await targetGoalValue(targetElement)).getText();
   }
 
-  if (await (await targetElement.$(targetCountNumber)).isExisting()) {
-    target.count = await (await targetElement.$(targetCountNumber)).getText();
+  if (await (await targetCountNumber(targetElement)).isExisting()) {
+    target.count = await (await targetCountNumber(targetElement)).getText();
   }
 
-  if (await (await targetElement.$(targetProgressNumber)).isExisting()) {
-    target.percent = await (await targetElement.$(`${targetProgressNumber} .value`)).getText();
-    target.percentCount = await (await targetElement.$(`${targetProgressNumber} span:nth-child(2)`)).getText();
+  if (await (await targetProgressNumber(targetElement)).isExisting()) {
+    target.percent = await (await targetNumberPercent(targetElement)).getText();
+    target.percentCount = await (await targetNumberPercentCount(targetElement)).getText();
   }
 
   return target;

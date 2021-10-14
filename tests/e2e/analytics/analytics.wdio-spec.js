@@ -84,14 +84,11 @@ describe('Targets', () => {
     await updateSettings({ tasks });
     await analyticsPage.goToTargets();
 
-    const emptySelectionLoading = await analyticsPage.noSelectedTarget();
-    await (emptySelectionLoading).waitForDisplayed();
-    await commonPage.waitForLoaderToDisappear(emptySelectionLoading);
+    const emptySelection = await analyticsPage.noSelectedTarget();
+    await (emptySelection).waitForDisplayed();
+    await commonPage.waitForLoaderToDisappear(emptySelection);
 
-    const emptySelectionMessage = await analyticsPage.noSelectedTarget();
-    await (emptySelectionMessage).waitForDisplayed();
-
-    expect(await emptySelectionMessage.getText()).to.equal('No target found.');
+    expect(await emptySelection.getText()).to.equal('No target found.');
   });
 
   it('should display correct message when targets are disabled', async () => {
@@ -101,14 +98,11 @@ describe('Targets', () => {
     await updateSettings({ tasks });
     await analyticsPage.goToTargets();
 
-    const emptySelectionLoading = await analyticsPage.noSelectedTarget();
-    await (emptySelectionLoading).waitForDisplayed();
-    await commonPage.waitForLoaderToDisappear(emptySelectionLoading);
+    const emptySelection = await analyticsPage.noSelectedTarget();
+    await (emptySelection).waitForDisplayed();
+    await commonPage.waitForLoaderToDisappear(emptySelection);
 
-    const emptySelectionMessage = await analyticsPage.noSelectedTarget();
-    await (emptySelectionMessage).waitForDisplayed();
-
-    expect(await emptySelectionMessage.getText()).to.equal(
+    expect(await emptySelection.getText()).to.equal(
       'Targets are disabled for admin users. If you need to see targets, login as a normal user.'
     );
   });
