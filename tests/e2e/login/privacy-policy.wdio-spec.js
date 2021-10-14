@@ -44,8 +44,8 @@ describe('Privacy policy', () => {
       it('should not show on refresh', async () => {
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), englishTexts, user.isOffline);
         await browser.url('/');
+        await (await commonElements.messagesTab()).waitForDisplayed();
         expect(await (await privacyPage.privacyWrapper()).isDisplayed()).to.not.be.true;
-        expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
       });
 
       it('should display when navigating to the privacy policy page', async () => {
@@ -59,8 +59,9 @@ describe('Privacy policy', () => {
         await browser.reloadSession();
         await browser.url('/');
         await loginPage.login(user.username, user.password);
+        await (await commonElements.messagesTab()).waitForDisplayed();
         expect(await (await privacyPage.privacyWrapper()).isDisplayed()).to.not.be.true;
-        expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
+        
       });
 
       it('should show french policy on secondary login', async () => {

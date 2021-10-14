@@ -37,7 +37,11 @@ const waitForPolicy = async (elm, { header, paragraph, language }) => {
 const waitAndAcceptPolicy = async (elm, { header, paragraph, language }, sync = false) => {
   await waitForPolicy(elm, { header, paragraph, language });
   await acceptPrivacyPolicy();
-  expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
+  const timeoutOpts = {
+    timeout: 15 * 1000,
+    timeoutMsg: `Timed out waiting for messages tag to be displayed`
+  };
+  await browser.waitUntil(async () => (await commonElements.messagesTab()).isDisplayed(), timeoutOpts);
   if (sync) {
     await commonElements.sync();
   }

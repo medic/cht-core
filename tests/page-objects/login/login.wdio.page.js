@@ -14,6 +14,7 @@ const login = async (username, password, locale) => {
   await (await passwordField()).setValue(password);
   await changeLocale(locale);
   await (await loginButton()).click();
+  await commonPage.waitForLoaders();
 };
 
 const cookieLogin = async (username = auth.username, password = auth.password, createUser = true) => {
