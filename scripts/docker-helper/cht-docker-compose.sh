@@ -19,6 +19,7 @@
 # Error response from daemon: dial unix docker.raw.sock: connect: connection refused
 
 # todo MacOS doesn't print simple curses screens at  full width and is stuck at ~80 chars wide?
+# ticket filed and work around found: https://github.com/metal3d/bashsimplecurses/issues/51#issuecomment-905914780
 
 get_lan_ip() {
   ipInstalled=$(required_apps_installed "ip")
@@ -256,7 +257,7 @@ log_iteration(){
   reboot_count=$2
   last_msg=$(echo "$3" | tr -d '"')
   docker_call=$4
-  line_head="$(date) PID=$$ Count=${counter}"
+  line_head="$(date) pid=\"$$\" count=\"${counter}\""
   load_now=$(echo $(get_load_avg)|cut -d" " -f 1)
   logname='cht-docker-compose.log'
   full_url=$(get_local_ip_url $lanAddress)
@@ -277,14 +278,17 @@ log_iteration(){
   fi
 
   if [ $counter -eq 1 ]; then
-    # todo - add project name, http port, https port to start msg
+
     echo "${line_head} \
-item=start \
+item=\"start\" \
 URL=\"$full_url\" \
-IP=$lanAddress \
-port=$CHT_HTTPS \
-total_containers=$(get_global_running_container_count)\
+IP=\"$lanAddress\" \
+port_https=\"$CHT_HTTPS\" \
+port_http=\"$CHT_HTTP\" \
+project_name=\"$COMPOSE_PROJECT_NAME\" \
+total_containers=\"$(get_global_running_container_count)\"\
 " >& 1 >>./$logname
+
   fi
 
   container_stat=''
@@ -293,24 +297,27 @@ total_containers=$(get_global_running_container_count)\
     RUNNING=$(docker inspect --format="{{.State.Running}}" "${container}" 2> /dev/null)
     if [ "$RUNNING" == "true" ]; then
       logs=$(docker logs -n1 ${container})
-      echo "${line_head} item=docker_logs container=${container} $logs" >& 1 >>./$logname
+      logs=$(echo $logs | tr -d '"')
 
       # todo - maybe grab horti logs if container ends in "_medic-os_1"?
       # docker exec -it helper_test_medic-os_1  tail -n3 /srv/storage/horticulturalist/logs/horticulturalist.lo
     else
       RUNNING="false"
+      logs="NA"
     fi
-    container_stat="${container}=${RUNNING} ${container_stat}"
+
+    echo "${line_head} item=\"docker_logs\" container=\"${container}\" last_log=\"$logs\"" >& 1 >>./$logname
+    container_stat="${container}=\"${RUNNING}\" ${container_stat}"
   done
 
   echo "${line_head} \
-item=status \
-CHT_count=$(get_running_container_count "$ALL_CONTAINERS") \
-port_stat=$port_status \
-http_code=$http_code \
-ssl_verify=$ssl_verify \
-reboot_count=$reboot_count \
-docker_call=$docker_call \
+item=\"status\" \
+CHT_count=\"$(get_running_container_count "$ALL_CONTAINERS")\" \
+port_stat=\"$port_status\" \
+http_code=\"$http_code\" \
+ssl_verify=\"$ssl_verify\" \
+reboot_count=\"$reboot_count\" \
+docker_call=\"$docker_call\" \
 last_msg=\"$last_msg\" \
 $container_stat\
 " >& 1 >>./$logname
@@ -411,7 +418,6 @@ main (){
     exit 0
   fi
 
-  # todo - add CHT version as info displayed
   window "CHT Docker Helper: ${COMPOSE_PROJECT_NAME}" "green" "100%"
   append_tabbed "CHT Health - Version|${overAllHealth} - ${chtVersion}" 2 "|"
   append_tabbed "CHT URL|${chtUrl}" 2 "|"
