@@ -64,7 +64,7 @@ describe('generate-xform service', () => {
       });
     };
 
-    const runTest = (dirname, spawned, stdErr, errIn, successClose = true) => {
+    const runTest = (dirname, spawned, stdErr, errIn, errOn, successClose = true) => {
       sinon.stub(childProcess, 'spawn').returns(spawned);
       return setup(dirname).then(files => {
         const generate = service.generate(files.xform);
@@ -74,6 +74,8 @@ describe('generate-xform service', () => {
         } else if (errIn) {
           spawned.stdin.on.args[0][1](errIn);
           spawned.on.args[0][1](100);
+        } else if (errOn) {
+          spawned.on.args[1][1](errOn);
         } else if (successClose) {
           // child process outputs then closes with code 0
           spawned.stdout.on.args[0][1](files.givenForm);
@@ -106,7 +108,54 @@ describe('generate-xform service', () => {
       }
     });
 
-    it('should fail when xsltproc command not found', async () => {
+    it('should fail when xsltproc command not found in Node v8 and v16+', async () => {
+      try {
+        const errOn = new Error('Error: ENOENT');
+        errOn.code = 'ENOENT';
+        errOn.syscall = 'spawn xsltproc';
+        const spawnedEpipe = {
+          stdout: { on: sinon.stub() },
+          stderr: { on: sinon.stub() },
+          stdin: {
+            setEncoding: sinon.stub(),
+            write: sinon.stub(),
+            end: sinon.stub(),
+            on: sinon.stub()
+          },
+          on: sinon.stub()
+        };
+        await runTest('simple', spawnedEpipe, null, null, errOn, false);
+        assert.fail('expected error to be thrown');
+      } catch (err) {
+        expect(err.message).to.equal(
+          'Unable to continue execution, check that \'xsltproc\' command is available.');
+      }
+    });
+
+    it('should fail when xsltproc command not found in Node v10', async () => {
+      try {
+        const writeErr = new Error('Error: write EPIPE');
+        writeErr.code = 'EPIPE';
+        const spawnedErr = {
+          stdout: { on: sinon.stub() },
+          stderr: { on: sinon.stub() },
+          stdin: {
+            setEncoding: sinon.stub(),
+            write: sinon.stub().throws(writeErr),
+            end: sinon.stub(),
+            on: sinon.stub(),
+          },
+          on: sinon.stub()
+        };
+        await runTest('simple', spawnedErr, null, null, null, false);
+        assert.fail('expected error to be thrown');
+      } catch (err) {
+        expect(err.message).to.equal(
+          'Unable to continue execution, check that \'xsltproc\' command is available.');
+      }
+    });
+
+    it('should fail when xsltproc command not found in Node v12', async () => {
       try {
         const writeErr = new Error('Error: write EPIPE');
         writeErr.code = 'EPIPE';
@@ -121,7 +170,7 @@ describe('generate-xform service', () => {
           },
           on: sinon.stub()
         };
-        await runTest('simple', spawnedEpipe, null, null, false);
+        await runTest('simple', spawnedEpipe, null, null, null, false);
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
@@ -129,7 +178,30 @@ describe('generate-xform service', () => {
       }
     });
 
-    it('should fail when xsltproc command not found also in OSX', async () => {
+    it('should fail when xsltproc command not found in Node v14', async () => {
+      try {
+        const errOn = new Error('Error: some EPIPE');
+        errOn.code = 'EPIPE';
+        const spawnedEpipe = {
+          stdout: { on: sinon.stub() },
+          stderr: { on: sinon.stub() },
+          stdin: {
+            setEncoding: sinon.stub(),
+            write: sinon.stub(),
+            end: sinon.stub(),
+            on: sinon.stub()
+          },
+          on: sinon.stub()
+        };
+        await runTest('simple', spawnedEpipe, null, null, errOn, false);
+        assert.fail('expected error to be thrown');
+      } catch (err) {
+        expect(err.message).to.equal(
+          'Unable to continue execution, check that \'xsltproc\' command is available.');
+      }
+    });
+
+    it('should fail when xsltproc raises unknown write error', async () => {
       try {
         const writeErr = new Error('Error: unknown');
         const spawnedEpipe = {
@@ -164,13 +236,14 @@ describe('generate-xform service', () => {
           },
           on: sinon.stub()
         };
-        await runTest('simple', spawnedUnknownWriteErr, null, null, false);
+        await runTest('simple', spawnedUnknownWriteErr, null, null, null, false);
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
           'Unknown Error: An error occurred when executing \'xsltproc\' command');
       }
     });
+
   });
 
   describe('update', () => {

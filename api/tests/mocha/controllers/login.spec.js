@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const controller = require('../../../src/controllers/login');
+const rewire = require('rewire');
 const chai = require('chai');
 const environment = require('../../../src/environment');
 const auth = require('../../../src/auth');
@@ -14,12 +14,16 @@ const fs = require('fs');
 const DB_NAME = 'lg';
 const DDOC_NAME = 'medic';
 
+let controller;
+
 let req;
 let res;
 
 describe('login controller', () => {
 
   beforeEach(() => {
+    controller = rewire('../../../src/controllers/login');
+
     req = {
       query: {},
       body: {},
@@ -47,7 +51,6 @@ describe('login controller', () => {
   });
 
   afterEach(() => {
-    controller._reset();
     sinon.restore();
   });
 
@@ -84,7 +87,7 @@ describe('login controller', () => {
       },
     ].forEach(({given, expected}) => {
       it(`Bad URL "${given}" should redirect to root`, () => {
-        chai.expect(controller._safePath({}, given)).to.equal(expected);
+        chai.expect(controller.__get__('getRedirectUrl')({}, given)).to.equal(expected);
       });
     });
 
@@ -96,7 +99,7 @@ describe('login controller', () => {
       '/lg/_design/medic/_rewrite/long/path',
     ].forEach(requested => {
       it(`Good URL "${requested}" should redirect unchanged`, () => {
-        chai.expect(controller._safePath({}, requested)).to.equal(requested);
+        chai.expect(controller.__get__('getRedirectUrl')({}, requested)).to.equal(requested);
       });
     });
 
@@ -119,7 +122,7 @@ describe('login controller', () => {
       },
     ].forEach(({ given, expected }) => {
       it(`Absolute URL "${given}" should redirect as a relative url`, () => {
-        chai.expect(controller._safePath({}, given)).to.equal(expected);
+        chai.expect(controller.__get__('getRedirectUrl')({}, given)).to.equal(expected);
       });
     });
 
@@ -742,6 +745,93 @@ describe('login controller', () => {
       });
     });
 
+  });
+
+  describe('renderLogin', () => {
+    it('should get branding and render the login page', () => {
+      sinon.stub(db, 'query').resolves({ rows: [] });
+      sinon.stub(db, 'get').resolves({
+        _id: 'branding',
+        title: 'something',
+        resources: {
+          logo: 'xyz'
+        },
+        _attachments: {
+          xyz: {
+            content_type: 'zes',
+            data: 'xsd'
+          }
+        }
+      });
+      sinon.stub(fs, 'readFile')
+        .callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ translations }} {{ branding.logo }} {{ branding.name }}');
+      sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
+
+      return controller.renderLogin(req).then((loginPage) => {
+        chai.expect(loginPage).to.equal(
+          'LOGIN PAGE GOES HERE. %7B%22en%22%3A%7B%22login%22%3A%22English%22%7D%7D data:zes;base64,xsd something'
+        );
+        chai.expect(db.get.callCount).to.equal(1);
+        chai.expect(db.get.args[0]).to.deep.equal(['branding', { attachments: true }]);
+        chai.expect(fs.readFile.callCount).to.equal(1);
+        chai.expect(db.query.callCount).to.equal(1);
+        chai.expect(db.query.args[0]).to.deep.equal([
+          'medic-client/doc_by_type',
+          { key: ['translations', true], include_docs: true },
+        ]);
+      });
+    });
+
+    it('should render login page when branding doc missing', () => {
+      sinon.stub(db, 'get').rejects({ error: 'not_found', docId: 'branding'});
+      sinon.stub(db, 'query').resolves({ rows: [] });
+      sinon.stub(fs, 'readFile');
+      fs.readFile
+        .withArgs(sinon.match(/medic-logo-light-full\.svg/))
+        .callsArgWith(2, null, 'image');
+      fs.readFile
+        .withArgs(sinon.match(/templates\/login\/index\.html/))
+        .callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ branding.logo }} {{ branding.name }}');
+
+      sinon.stub(config, 'getTranslationValues').returns({});
+
+      return controller.renderLogin(req).then((loginPage) => {
+        chai.expect(db.get.callCount).to.equal(1);
+        chai.expect(loginPage).to.equal('LOGIN PAGE GOES HERE. data:image/svg+xml;base64,aW1hZ2U= Medic');
+        chai.expect(fs.readFile.callCount).to.equal(2);
+      });
+    });
+
+    it('should nullcheck the request param', () => {
+      sinon.stub(db, 'query').resolves({ rows: [] });
+      sinon.stub(db, 'get').resolves({
+        _id: 'branding',
+        title: 'something',
+        resources: {
+          logo: 'xyz'
+        },
+        _attachments: {
+          xyz: {
+            content_type: 'zes',
+            data: 'xsd'
+          }
+        }
+      });
+      sinon.stub(fs, 'readFile')
+        .callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ translations }} {{ branding.logo }} {{ branding.name }}');
+      sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
+
+      return controller.renderLogin().then((loginPage) => {
+        chai.expect(loginPage).to.equal(
+          'LOGIN PAGE GOES HERE. %7B%22en%22%3A%7B%22login%22%3A%22English%22%7D%7D data:zes;base64,xsd something'
+        );
+        chai.expect(db.query.callCount).to.equal(1);
+        chai.expect(db.query.args[0]).to.deep.equal([
+          'medic-client/doc_by_type',
+          { key: ['translations', true], include_docs: true },
+        ]);
+      });
+    });
   });
 
 });

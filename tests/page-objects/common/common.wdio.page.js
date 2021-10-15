@@ -105,6 +105,11 @@ const goToAnalytics = async () => {
   await (await analyticsTab()).waitForDisplayed();
 };
 
+const goToAboutPage = async () => {
+  await browser.url(`/#/about`);
+  await (await analyticsTab()).waitForDisplayed();
+};
+
 const closeTour = async () => {
   const closeButton = await $('#tour-select a.btn.cancel');
   try {
@@ -159,7 +164,7 @@ const sync = async (expectReload) => {
 };
 
 const closeReloadModal = async () => {
-  await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist());
+  await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist({ timeout: 2000 }));
   // wait for the animation to complete
   await browser.pause(500);
   await (await reloadModalCancel()).click();
@@ -184,7 +189,7 @@ const openAboutMenu = async () => {
 const openConfigurationWizardAndFetchProperties = async () => {
   await (await $('i.fa-list-ol')).click();
   await (await $('#guided-setup')).waitForDisplayed();
-  
+
   return {
     modelTitle: await (await $('#guided-setup .modal-header > h2')).getText(),
     defaultCountryCode: await (await $('#select2-default-country-code-setup-container')).getText(),
@@ -235,5 +240,6 @@ module.exports = {
   openUserSettingsAndFetchProperties,
   openReportBugAndFetchProperties,
   openAppManagement,
-  waitForLoaderToDisappear 
+  waitForLoaderToDisappear,
+  goToAboutPage,
 };

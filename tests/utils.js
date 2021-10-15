@@ -265,7 +265,7 @@ const revertDb = async (except, ignoreRefresh) => {
   await revertTranslations();
 
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
-  if (!ignoreRefresh && (needsRefresh || hasModal)) {
+  if (!ignoreRefresh && (needsRefresh || await hasModal())) {
     watcher && watcher.cancel();
     await refreshToGetNewSettings();
   } else if (needsRefresh) {
@@ -387,13 +387,13 @@ const deprecated = (name, replacement) => {
 const waitForSettingsUpdateLogs = (type) => {
   if (type === 'sentinel') {
     return module.exports.waitForLogs(
-      'sentinel.e2e.log',
+      module.exports.sentinelLogFile,
       /Reminder messages allowed between/,
     );
   }
 
   return module.exports.waitForLogs(
-    'api.e2e.log',
+    module.exports.apiLogFile,
     /Settings updated/,
   );
 };
@@ -1065,5 +1065,8 @@ module.exports = {
   },
 
   runAndLogApiStartupMessage: runAndLogApiStartupMessage,
-  findDistrictHospitalFromPlaces: (places) => places.find((place) => place.type === 'district_hospital')
+  findDistrictHospitalFromPlaces: (places) => places.find((place) => place.type === 'district_hospital'),
+
+  apiLogFile: 'api.e2e.log',
+  sentinelLogFile: 'sentinel.e2e.log',
 };

@@ -182,7 +182,10 @@
         <div class="actions dropup" *ngIf="showActionBar && selectedContactDoc && !loadingContent && snapshotData?.name === 'contacts.detail'">
           <span>
             <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" [ngClass]="{'mm-icon-disabled': (!actionBar?.right?.relevantForms || !actionBar?.right?.relevantForms?.length)}">
-              <span class="fa fa-plus"></span>
+              <span class="fa-stack">
+                <i class="fa fa-list-alt"></i>
+                <i class="fa fa-plus fa-stack-1x"></i>
+              </span>
               <p>{{'action.report.add' | translate}}</p>
             </a>
             <ul id="relevant-contacts-form" class="dropdown-menu mm-dropdown-menu with-icon" *ngIf="actionBar?.right?.relevantForms && actionBar?.right?.relevantForms?.length">
