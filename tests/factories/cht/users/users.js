@@ -21,4 +21,5 @@ module.exports = new Factory()
   .attr('contact', contact)
   .attr('place', place)
   .attr('phone', phoneNumber)
-  .attr('roles', ['chw']);
+  .attr('roles', ['chw'])
+  .attr('known', true);
