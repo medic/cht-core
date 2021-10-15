@@ -252,6 +252,11 @@ get_load_avg() {
   fi
 }
 
+get_container_process_count(){
+  container=$1
+  echo $(docker top "${container}" | tail -n +2 | wc -l)
+}
+
 log_iteration(){
   counter=$1
   reboot_count=$2
@@ -306,7 +311,7 @@ total_containers=\"$(get_global_running_container_count)\"\
       logs="NA"
     fi
 
-    echo "${line_head} item=\"docker_logs\" container=\"${container}\" last_log=\"$logs\"" >& 1 >>./$logname
+    echo "${line_head} item=\"docker_logs\" container=\"${container}\" processes=\"$(get_container_process_count ${container})\" last_log=\"$logs\"" >& 1 >>./$logname
     container_stat="${container}=\"${RUNNING}\" ${container_stat}"
   done
 
@@ -319,6 +324,7 @@ ssl_verify=\"$ssl_verify\" \
 reboot_count=\"$reboot_count\" \
 docker_call=\"$docker_call\" \
 last_msg=\"$last_msg\" \
+load_now=\"$load_now\" \
 $container_stat\
 " >& 1 >>./$logname
 
@@ -341,7 +347,7 @@ main (){
   fi
 
   # after valid env file is loaded, let's set all our constants
-  declare -r APP_STRING="docker;docker-compose;grep;head;cut;tr;nc;curl;file;wc;awk"
+  declare -r APP_STRING="docker;docker-compose;grep;head;cut;tr;nc;curl;file;wc;awk;tail"
   declare -r MAX_REBOOTS=5
   declare -r DEFAULT_SLEEP=$((60 * $((reboot_count + 1))))
   declare -r MEDIC_OS="${COMPOSE_PROJECT_NAME}_medic-os_1"
