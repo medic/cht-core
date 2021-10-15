@@ -118,7 +118,7 @@ The main reason you're likely to run into is that the CHT doesn't correctly star
 
 If you still get stuck review the items below as possible issues you may find workarounds to.  If none of these work, run the `-d up` command with the `--debug` option.  This will output a file called `cht-docker-compose.log` in your current directory.  File a ticket in this repository and attach this log file. To read more about the contents of the `cht-docker-compose.log` see the 
 
-## Cookie collisions
+### Cookie collisions
 
 The CHT stores its cookies based on the domain.  This means if you're running two concurrent instances on `https://192-168-68-40.my.local-ip.co:8443` and `https://192-168-68-40.my.local-ip.co:8440` (note different ports), the CHT would write the cookie under the same `192-168-68-40.my.local-ip.co` domain. When logging out of one instance, you would get logged out of both and other consistencies.
 
