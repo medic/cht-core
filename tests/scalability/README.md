@@ -118,7 +118,10 @@ Our current setup has 1 ec2 instance acting as the JMeter Orchestrator with 2 wo
     1. Using `node split_config.js --workerCount 2 --filePath './config.json'`
     NOTE: This will split the file into `conf-N.json`. Where N is the based on the worker count. The file needs to be copied and named `config.json` on the worker node.
     JMeter does not send any data to the workers. All it does is trigger the action to run as if you were doing it manually on that machine. You will need to split the `config.json` to have users for each worker node. 
-1. On the orchestrator node, create a [RMI key](https://jmeter.apache.org/usermanual/remote-test.html#setup_ssl) 
+1. On the orchestrator node, create a [RMI key](https://jmeter.apache.org/usermanual/remote-test.html#setup_ssl)
+    1. cd jmeter/bin
+    1. ./create-rmi-keystore.sh
+    1. hit return for all answers to accept the default. On the the last one type, type yes
 1. Copy `rmi_keystore.jks` (RMI Key) and `conf-0.json`(rename once copied to `config.json`) split to the two worker nodes into `cht-core/tests/scalability/.`. Each worker node should get a different config file.
 1. Start jmeter server on the worker nodes. 
     1. `cd cht-core/tests/scalability`
