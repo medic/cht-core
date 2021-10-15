@@ -47,7 +47,7 @@ The main difference now is that `grunt ci-webdriver` is executed now instead of 
 ### File Structure
 Test files should represent a feature within the application. Using `describe` to identify the feature and `it` to detail the individual functions of the feature.
 
-EX: `describe('Users can login )`  `it(with valid credentials)`
+EX: `describe('Users can login')`  `it('with valid credentials')`.
 
 ### Page Object Model
 We are leveraging the [page object model](https://www.thoughtworks.com/insights/blog/using-page-objects-overcome-protractors-shortcomings) for structure. When identifying elements they should be added to a page object and not within a test file. Add functions that perform actions to the page within the page object. Keep expects outside of page objects. The tests should be self-documenting. 
