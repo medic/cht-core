@@ -110,13 +110,13 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private resetState() {
-    this.globalActions.setLoadingContent(true);
-    this.globalActions.setShowContent(true);
-
-    if (!this.routeSnapshot.params?.id && !this.routeSnapshot.params?.parent_id) {
+    if (!this.routeSnapshot.params?.id) {
       this.globalActions.unsetSelected();
       this.globalActions.settingSelected();
     }
+
+    this.globalActions.setLoadingContent(true);
+    this.globalActions.setShowContent(true);
   }
 
   private setCancelCallback() {
