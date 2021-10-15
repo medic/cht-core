@@ -12,8 +12,9 @@ const TASK_EXPIRATION_PERIOD = 60; // days
 const TARGET_EXPIRATION_PERIOD = 6; // months
 
 const MAX_CONTACT_BATCH_SIZE = 1000;
-const MAX_BATCH_SIZE = 20000;
-const MIN_BATCH_SIZE = 5000;
+const VIEW_LIMIT = 100 * 1000;
+const MAX_BATCH_SIZE = 20 * 1000;
+const MIN_BATCH_SIZE = 5 * 1000;
 const MAX_BATCH_SIZE_REACHED = 'max_size_reached';
 let contactsBatchSize = MAX_CONTACT_BATCH_SIZE;
 let skippedContacts = [];
@@ -250,35 +251,57 @@ const getRecordGroupInfo = (row) => {
   return { key: row.key, message: row.doc };
 };
 
-const assignRecords = (rows, groups) => {
-  const relevantRows = rows.filter(row => isRelevantRecordEmission(row, groups));
+const hydrateRecords = (recordRows) => {
+  const recordIds = recordRows.map(row => row.id);
+  return db.medic.allDocs({ keys: recordIds, include_docs: true }).then(allDocsResult => {
+    return recordRows
+      .map((row, idx) => Object.assign(row, { doc: allDocsResult.rows[idx].doc }))
+      .filter(row => row.doc);
+  });
+};
 
-  if (!relevantRows.length) {
-    return Promise.resolve();
+const getRecordsForContacts = async (groups, subjectIds) => {
+  if (!subjectIds.length) {
+    return;
   }
 
-  if (relevantRows.length >= MAX_BATCH_SIZE) {
-    return Promise.reject({
-      code: MAX_BATCH_SIZE_REACHED,
-      contactIds: Object.keys(groups),
-      message: `Purging skipped. Too many reports for contacts: ${Object.keys(groups).join(', ')}`,
-    });
-  }
+  const relevantRows = [];
+  let skip = 0;
+  let requestNext;
+
+  do {
+    const opts = {
+      keys: subjectIds,
+      limit: VIEW_LIMIT,
+      skip: skip,
+    };
+    const result = await db.medic.query('medic/docs_by_replication_key', opts);
+
+    skip += result.rows.length;
+    requestNext = result.rows.length === VIEW_LIMIT;
+
+    relevantRows.push(...result.rows.filter(row => isRelevantRecordEmission(row, groups)));
+    if (relevantRows.length >= MAX_BATCH_SIZE) {
+      return Promise.reject({
+        code: MAX_BATCH_SIZE_REACHED,
+        contactIds: Object.keys(groups),
+        message: `Purging skipped. Too many records for contacts: ${Object.keys(groups).join(', ')}`,
+      });
+    }
+  } while (requestNext);
 
   if (relevantRows.length < MIN_BATCH_SIZE) {
     increaseBatchSize();
   }
 
-  const recordIds = relevantRows.map(row => row.id);
-  return db.medic.allDocs({ keys: recordIds, include_docs: true }).then(allDocsResult => {
-    const hydratedRows = relevantRows
-      .map((row, idx) => Object.assign(row, { doc: allDocsResult.rows[idx].doc }))
-      .filter(row => row.doc);
+  logger.info(`Found ${relevantRows.length} records`);
+  if (!relevantRows.length) {
+    return;
+  }
 
-    const recordsByKey = getRecordsByKey(hydratedRows);
-    logger.info(`Found ${recordIds.length} records`);
-    assignRecordsToGroups(recordsByKey, groups);
-  });
+  const hydratedRows = await hydrateRecords(relevantRows);
+  const recordsByKey = getRecordsByKey(hydratedRows);
+  assignRecordsToGroups(recordsByKey, groups);
 };
 
 const getRecordsByKey = (rows) => {
@@ -394,10 +417,8 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
         ({ id: nextKeyDocId, key: nextKey } = row);
         assignContactToGroups(row, groups, subjectIds);
       });
-
-      return db.medic.query('medic/docs_by_replication_key', { keys: subjectIds });
     })
-    .then(result => assignRecords(result.rows, groups, subjectIds))
+    .then(() => getRecordsForContacts(groups, subjectIds))
     .then(() => {
       docIds = getIdsFromGroups(groups);
       return getAlreadyPurgedDocs(rolesHashes, docIds);

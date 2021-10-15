@@ -1,5 +1,6 @@
 const chai = require('chai');
 chai.use(require('deep-equal-in-any-order'));
+chai.use(require('chai-exclude'));
 const sinon = require('sinon');
 const rewire = require('rewire');
 const moment = require('moment');
@@ -503,7 +504,6 @@ describe('ServerSidePurge', () => {
       db.medic.query.onCall(5).resolves({ rows: reports.slice(24000, 32000) });
       db.medic.query.onCall(6).resolves({ rows: reports.slice(32000, 40000) });
       db.medic.query.onCall(7).resolves({ rows: reports.slice(40000, 48000) });
-      db.medic.query.onCall(8).resolves({ rows: [] });
 
       sinon.stub(db.medic, 'allDocs')
         .callsFake(({ keys }) => Promise.resolve({ rows: keys.map((key) => ({ doc: { _id: key } }))}));
@@ -524,7 +524,7 @@ describe('ServerSidePurge', () => {
         chai.expect(request.get.args[7]).to.deep.equal(getContactsByTypeArgs({ limit: 251, id: 1249 }));
         chai.expect(request.get.args[8]).to.deep.equal(getContactsByTypeArgs({ limit: 251, id: 1499 }));
 
-        chai.expect(db.medic.query.callCount).to.equal(9);
+        chai.expect(db.medic.query.callCount).to.equal(8);
         chai.expect(service.__get__('contactsBatchSize')).to.equal(250);
       });
     });
@@ -536,7 +536,6 @@ describe('ServerSidePurge', () => {
         key: `key${idx}`,
         doc: { _id: idx, patient_id: `key${idx}` },
       }));
-
       request.get.callsFake((_, { qs: { limit, startkey_docid } }) => {
         return Promise.resolve({ rows: contacts.slice(startkey_docid, limit + startkey_docid) });
       });
@@ -594,8 +593,79 @@ describe('ServerSidePurge', () => {
         chai.expect(request.get.args[15]).to.deep.equal(getContactsByTypeArgs({ limit: 125, id: 2497 })); // increase
         chai.expect(request.get.args[16]).to.deep.equal(getContactsByTypeArgs({ limit: 249, id: 2499 })); // increase
 
-        chai.expect(db.medic.query.callCount).to.equal(17);
-        chai.expect(service.__get__('contactsBatchSize')).to.equal(496); // one more increase
+        chai.expect(db.medic.query.callCount).to.equal(16);
+        chai.expect(service.__get__('contactsBatchSize')).to.equal(248);
+      });
+    });
+
+    it('should keep requesting docs_by_replication_key and select only relevant records to purge', () => {
+      sinon.stub(request, 'get');
+      const contacts = Array.from({ length: 1500 }).map((_, idx) => ({
+        id: idx,
+        key: `key${idx}`,
+        doc: { _id: idx, patient_id: `key${idx}` },
+      }));
+      request.get.callsFake((_, { qs: { limit, startkey_docid } }) => {
+        return Promise.resolve({ rows: contacts.slice(startkey_docid, limit + startkey_docid) });
+      });
+
+      // 1 in 5000 records is relevant
+      const fiveK = 5000;
+      const reports = Array.from({ length: 320000 }).map((_, idx) => ({
+        id: `id${idx}`,
+        key: `key${idx}`,
+        value: { subject: `key${idx}`, type: idx % fiveK === 0 ? 'data_record' : 'othertype' },
+      }));
+
+      sinon.stub(db.medic, 'query');
+      db.medic.query.onCall(0).resolves({ rows: reports.slice(0, 100000) });
+      db.medic.query.onCall(1).resolves({ rows: reports.slice(100000, 200000) });
+      db.medic.query.onCall(2).resolves({ rows: reports.slice(200000, 300000) });
+      db.medic.query.onCall(3).resolves({ rows: reports.slice(300000, 400000) });
+      db.medic.query.onCall(4).resolves({ rows: reports.slice(0, 20000) });
+
+      sinon.stub(db.medic, 'allDocs')
+        .callsFake(({ keys }) => Promise.resolve({ rows: keys.map((key) => ({ doc: { _id: key } }))}));
+
+      const purgeDbChanges = sinon.stub().resolves({ results: [] });
+      sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
+
+      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
+        chai.expect(request.get.callCount).to.equal(3);
+        chai.expect(db.medic.query.callCount).to.equal(5);
+        chai.expect(db.medic.query.args[0]).excluding('keys').to.deep.equal([
+          'medic/docs_by_replication_key',
+          { skip: 0, limit: 100000 },
+        ]);
+        chai.expect(db.medic.query.args[1]).excluding('keys').to.deep.equal([
+          'medic/docs_by_replication_key',
+          { skip: 100000, limit: 100000 },
+        ]);
+        chai.expect(db.medic.query.args[2]).excluding('keys').to.deep.equal([
+          'medic/docs_by_replication_key',
+          { skip: 200000, limit: 100000 },
+        ]);
+        chai.expect(db.medic.query.args[3]).excluding('keys').to.deep.equal([
+          'medic/docs_by_replication_key',
+          { skip: 300000, limit: 100000 },
+        ]);
+        chai.expect(db.medic.query.args[4]).excluding('keys').to.deep.equal([
+          'medic/docs_by_replication_key',
+          { skip: 0, limit: 100000 },
+        ]);
+        chai.expect(db.medic.allDocs.callCount).to.equal(2);
+
+        const getRelevantRecordsIds = (length) => Array
+          .from({ length: length / fiveK })
+          .map((_, idx) => `id${idx * fiveK}`);
+
+        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
+          keys: getRelevantRecordsIds(reports.length), include_docs: true,
+        }]);
+        chai.expect(db.medic.allDocs.args[1]).to.deep.equal([{
+          keys: getRelevantRecordsIds(20000), include_docs: true,
+        }]);
+        chai.expect(service.__get__('contactsBatchSize')).to.equal(1000);
       });
     });
 
@@ -662,7 +732,7 @@ describe('ServerSidePurge', () => {
     it('should decrease batch size to 1 on subsequent queries', () => {
       const contacts = Array
         .from({ length: 1005 })
-        .map((_, idx) => ({ id: idx, key: `key${idx}`, doc: { id: idx }}));
+        .map((_, idx) => ({ id: idx, key: `key${idx}`, doc: { id: idx, patient_id: `p${idx}` }}));
       const reports = Array
         .from({ length: 40000 })
         .map((_, idx) => ({ id: idx, key: `key${idx}`, value: { subject: `key${idx}`, type: 'data_record' }}));
@@ -690,7 +760,6 @@ describe('ServerSidePurge', () => {
       db.medic.query.onCall(12).resolves({ rows: reports.slice(30000, 35000) });
       db.medic.query.onCall(13).resolves({ rows: reports.slice(35000, 36000) });
       db.medic.query.onCall(14).resolves({ rows: reports.slice(36000, 38000) });
-      db.medic.query.onCall(15).resolves({ rows: reports.slice(38000, 40000) });
 
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
@@ -714,7 +783,7 @@ describe('ServerSidePurge', () => {
         chai.expect(request.get.args[14][1].qs.limit).to.equal(3);
         chai.expect(request.get.args[15][1].qs.limit).to.equal(5);
 
-        chai.expect(db.medic.query.callCount).to.equal(16);
+        chai.expect(db.medic.query.callCount).to.equal(15);
       });
     });
 
@@ -764,7 +833,7 @@ describe('ServerSidePurge', () => {
       });
     });
 
-    it('should get all docs_by_replication_key using the retrieved contacts and purge docs', () => {
+    it('should get docs_by_replication_key using the retrieved contacts and purge docs', () => {
       sinon.stub(request, 'get');
       request.get.onCall(0).resolves({ rows: [
         { id: 'first', key: 'health_center', doc: { _id: 'first', type: 'district_hospital' } },
@@ -798,7 +867,6 @@ describe('ServerSidePurge', () => {
         { id: 'f4-m1', key: 'f4', value: { type: 'data_record', subject: 'f4' } },
         { id: 'f4-m2', key: 'f4', value: { type: 'data_record', subject: 'f4' } },
       ] });
-      db.medic.query.onCall(1).resolves({ rows: [] });
       sinon.stub(db.medic, 'allDocs');
       db.medic.allDocs.onCall(0).resolves({ rows: [
         { id: 'f1-r1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
@@ -813,10 +881,10 @@ describe('ServerSidePurge', () => {
 
       return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
-        chai.expect(db.medic.query.callCount).to.equal(2);
+        chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2', 'f4', 's4'] }
+          { keys: ['first', 'f1', 's1', 'f2', 'f4', 's4'], limit: 100000, skip: 0 }
         ]);
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
@@ -969,7 +1037,6 @@ describe('ServerSidePurge', () => {
         { id: 'f3-r2', key: 'f3', value: { type: 'data_record', subject: 'f3' } },
         { id: 'f4-tombstone', key: 'f4', value: { type: 'person' }},
       ] });
-      db.medic.query.onCall(1).resolves({ rows: [] });
 
       sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
         { id: 'f1-r1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
@@ -984,10 +1051,10 @@ describe('ServerSidePurge', () => {
 
       return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
-        chai.expect(db.medic.query.callCount).to.equal(2);
+        chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equalInAnyOrder([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2', 'f3', 'f4', 's4'] }
+          { keys: ['first', 'f1', 's1', 'f2', 'f3', 'f4', 's4'], limit: 100000, skip: 0 },
         ]);
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
@@ -1087,7 +1154,6 @@ describe('ServerSidePurge', () => {
         { id: 'f2-r3', key: 's2', value: { type: 'data_record', subject: 's2', submitter: 'f2' } },
         { id: 'f2-m1', key: 'f2', value: { type: 'data_record', subject: 'f2', submitter: 'f2' } },
       ] });
-      db.medic.query.onCall(1).resolves({ rows: [] });
       sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
         { id: 'f1-r1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
         { id: 'f1-m1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a', contact: { _id: 'f1' } } },
@@ -1099,10 +1165,10 @@ describe('ServerSidePurge', () => {
 
       return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
-        chai.expect(db.medic.query.callCount).to.equal(2);
+        chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equalInAnyOrder([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2', 's2'] }
+          { keys: ['first', 'f1', 's1', 'f2', 's2'], limit: 100000, skip: 0 }
         ]);
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
@@ -1192,7 +1258,6 @@ describe('ServerSidePurge', () => {
         { id: 'f2-r3', key: 'f2', value: { type: 'data_record', needs_signoff: true, submitter: 'f2', subject: 'f2' } },
         { id: 'f2-r4', key: 'f2', value: { type: 'data_record', needs_signoff: true, submitter: 'f2', subject: 'f6' } },
       ] });
-      db.medic.query.onCall(1).resolves({ rows: [] });
       sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
         { id: 'f1-r1', doc: { _id: 'f1-r1', type: 'data_record', patient_id: 's1', needs_signoff: true, form: 'a' } },
         { id: 'f1-m1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
@@ -1202,10 +1267,10 @@ describe('ServerSidePurge', () => {
 
       return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
-        chai.expect(db.medic.query.callCount).to.equal(2);
+        chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2'] }
+          { keys: ['first', 'f1', 's1', 'f2'], limit: 100000, skip: 0 }
         ]);
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
@@ -1531,9 +1596,7 @@ describe('ServerSidePurge', () => {
         { id: 'f2', key: 'f2', value: { type: 'person' } },
         { id: 'target~two', key: 'f2', value: { type: 'target' } },
         { id: 'random~one', key: 'f2', value: { type: 'random' } },
-
       ] });
-      db.medic.query.onCall(1).resolves({ rows: [] });
       sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
         { id: 'f1-r1', key: 's1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
         { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
@@ -1541,10 +1604,10 @@ describe('ServerSidePurge', () => {
 
       return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
-        chai.expect(db.medic.query.callCount).to.equal(2);
+        chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equalInAnyOrder([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2'] }
+          { keys: ['first', 'f1', 's1', 'f2'], limit: 100000, skip: 0 }
         ]);
         chai.expect(purgeDbChanges.callCount).to.equal(2);
         chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
