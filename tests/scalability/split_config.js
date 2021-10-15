@@ -54,7 +54,7 @@ function splitUsers(users, workerCount) {
   }
   return result;
 }
-console.log(config)
+
 const usersList = splitUsers(config.users, workerCount);
 
 usersList.forEach((userList,index) => {
