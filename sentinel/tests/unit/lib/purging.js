@@ -727,7 +727,7 @@ describe('ServerSidePurge', () => {
         chai.expect(service.__get__('contactsBatchSize')).to.equal(1);
         chai.expect(service.__get__('skippedContacts')).to.deep.equal(contactsToSkip.map(id => JSON.stringify(id)));
       });
-    }).timeout(10000);
+    }).timeout(20000);
 
     it('should decrease batch size to 1 on subsequent queries', () => {
       const contacts = Array
