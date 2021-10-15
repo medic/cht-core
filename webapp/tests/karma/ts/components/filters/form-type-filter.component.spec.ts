@@ -1,4 +1,4 @@
-import { async, ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
@@ -20,7 +20,7 @@ describe('Form Type Filter Component', () => {
   let fixture:ComponentFixture<FormTypeFilterComponent>;
   let store;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const mockedSelectors = [
       { selector: Selectors.getForms, value: [] },
     ];

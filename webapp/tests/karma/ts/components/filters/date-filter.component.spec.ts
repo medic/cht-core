@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -18,7 +18,7 @@ describe('Date Filter Component', () => {
   let dateRangePicker;
   let clock;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const mockedSelectors = [
       { selector: Selectors.getCurrentTab, value: 'reports' },
     ];

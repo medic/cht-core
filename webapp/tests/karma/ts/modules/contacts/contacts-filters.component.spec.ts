@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -17,7 +17,7 @@ describe('Reports Filters Component', () => {
   let component: ContactsFiltersComponent;
   let fixture: ComponentFixture<ContactsFiltersComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     return TestBed
       .configureTestingModule({
         imports: [
