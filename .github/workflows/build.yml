@@ -22,7 +22,8 @@ jobs:
       - id: skip_check
         uses: fkirc/skip-duplicate-actions@master
         with:
-          concurrent_skipping: 'same_content'
+          cancel_others: 'true'
+          concurrent_skipping: 'same_content_newer'
           paths_ignore: '["**.md", "release-notes/**", "demo-forms/**"]'
 
   build:
