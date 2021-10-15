@@ -2,7 +2,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { Subject } from 'rxjs';
 
@@ -30,7 +30,7 @@ describe('UpdatePasswordComponent', () => {
   let setFinished;
   let close;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     bsModalRef = { hide: sinon.stub(), onHide: new Subject() };
     updateUserService = {
       update: sinon.stub().resolves({}),

@@ -1,4 +1,4 @@
-import { async, TestBed, ComponentFixture, fakeAsync, flush } from '@angular/core/testing';
+import { TestBed, ComponentFixture, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -55,7 +55,7 @@ describe('Contacts component', () => {
   let globalActions;
   let district;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     district = {
       _id: 'district-id',
       name: 'My District',

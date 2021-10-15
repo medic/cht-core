@@ -1,5 +1,5 @@
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
-import { TestBed, async, fakeAsync, tick } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick, waitForAsync } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
@@ -25,7 +25,7 @@ describe('Changes service', () => {
     };
   };
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     changesCalls = {
       medic: { callCount: 0, callOptions: null, callbacks: {} },
       meta:  { callCount: 0, callOptions: null, callbacks: {} }

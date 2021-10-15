@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { provideMockStore } from '@ngrx/store/testing';
@@ -17,7 +17,7 @@ describe('Status Filter Component', () => {
   let component:StatusFilterComponent;
   let fixture:ComponentFixture<StatusFilterComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     return TestBed
       .configureTestingModule({
         imports: [

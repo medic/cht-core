@@ -93,7 +93,7 @@ describe('RulesEngineService', () => {
   };
 
   const realSetTimeout = setTimeout;
-  const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
+  const nextTick = () => new Promise<void>(resolve => realSetTimeout(() => resolve()));
 
   beforeEach(() => {
     authService = { has: sinon.stub().resolves(true) };

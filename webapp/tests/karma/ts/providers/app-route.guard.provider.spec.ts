@@ -1,4 +1,4 @@
-import { async } from '@angular/core/testing';
+import { waitForAsync } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { ActivatedRouteSnapshot } from '@angular/router';
@@ -19,7 +19,7 @@ describe('RouteGuard provider', () => {
 
   afterEach(() => sinon.stub());
 
-  it('should return true when no route data', async(() => {
+  it('should return true when no route data', waitForAsync(() => {
     const snapshot = new ActivatedRouteSnapshot();
     provider.canActivate(snapshot).subscribe(value => {
       expect(value).to.equal(true);
@@ -27,7 +27,7 @@ describe('RouteGuard provider', () => {
     });
   }));
 
-  it('should return true when no permissions', async (() => {
+  it('should return true when no permissions', waitForAsync (() => {
     const snapshot = new ActivatedRouteSnapshot();
     snapshot.data = { no: 'permissions', name: 'thing' };
     provider.canActivate(snapshot).subscribe(value => {
@@ -36,7 +36,7 @@ describe('RouteGuard provider', () => {
     });
   }));
 
-  it('should return false and navigate to error when not allowed', async(() => {
+  it('should return false and navigate to error when not allowed', waitForAsync(() => {
     authService.has.resolves(false);
     const snapshot = new ActivatedRouteSnapshot();
     snapshot.data = { permissions: 'can_activate' };
@@ -49,7 +49,7 @@ describe('RouteGuard provider', () => {
     });
   }));
 
-  it('should return true and not navigate to error when allowed', async(() => {
+  it('should return true and not navigate to error when allowed', waitForAsync(() => {
     authService.has.resolves(true);
     const snapshot = new ActivatedRouteSnapshot();
     snapshot.data = { permissions: 'can_really_activate' };

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { of } from 'rxjs';
 import { expect } from 'chai';
@@ -47,7 +47,7 @@ describe('Contacts content component', () => {
   let mutingTransition;
   let settings;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     changesService = { subscribe: sinon.stub().resolves(of({})) };
     contactChangeFilterService = {
       matchContact: sinon.stub(),

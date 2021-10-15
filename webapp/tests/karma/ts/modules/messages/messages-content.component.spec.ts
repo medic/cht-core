@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { By } from '@angular/platform-browser';
@@ -35,7 +35,7 @@ describe('MessagesContentComponent', () => {
   let activatedRoute;
   let activatedRouteParams;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     messageContactService = {
       getConversation: sinon.stub().resolves([]),
       isRelevantChange: sinon.stub()
