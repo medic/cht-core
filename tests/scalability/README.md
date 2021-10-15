@@ -105,16 +105,17 @@ Our current setup has 1 ec2 instance acting as the JMeter Orchestrator with 2 wo
 
 ### Setup
 
+
 1. Launch an ec2 instance c5.2xlarge(Orchestrator)
 1. Launch 2 ec2 instances of c5.4xlarge(Worker)
-1. SSH into each of these machines. 
+1. SSH into each of these machines. Using the ubuntu user and ensure it has sudo permissions.
 1. Copy `tests/scalability/jmeter_setup.sh` to the user directory(`/home/ubuntu`).
 1. On each of the three VMs, call  `chmod +x jmeter_setup.sh && ./jmeter_setup.sh` . This clones cht-core, installs JAVA, installs Node 14, runs npm install, installs JMeter, and its plugins. The resulting directory will be `/home/ubuntu/cht-core/tests/scalability`.
 1. On the orchestrator node, update the `cht-core/tests/scalability/config.json` and ensure the users are valid(can login as offline user), and the URL points to your instance under test. 
 1. Split the `config.json` on the orchestrator
     1. `cd cht-core/tests/scalability`
     1. `npm install` 
-    1. Using `node cht-core/tests/scalability/split_config.js --workerCount 2 --filePath './config.json'`
+    1. Using `node split_config.js --workerCount 2 --filePath './config.json'`
     NOTE: This will split the file into `conf-N.json`. Where N is the based on the worker count. The file needs to be copied and named `config.json` on the worker node.
     JMeter does not send any data to the workers. All it does is trigger the action to run as if you were doing it manually on that machine. You will need to split the `config.json` to have users for each worker node. 
 1. On the orchestrator node, create a [RMI key](https://jmeter.apache.org/usermanual/remote-test.html#setup_ssl) 
