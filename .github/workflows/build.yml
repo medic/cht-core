@@ -1,14 +1,6 @@
 name: Build cht-core and test against node versions
 
-on:
-  push:
-    paths-ignore:
-      - '**.md'
-      - 'demo-forms/**'
-  pull_request:
-    paths-ignore:
-      - '**.md'
-      - 'demo-forms/**'
+on: [push, pull_request]
 
 env:
   COUCH_URL: http://admin:pass@localhost:5984/medic-test
@@ -19,9 +11,24 @@ env:
   MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
 
 jobs:
+
+  skip_check:
+
+    name: Skip Check
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          paths_ignore: '["**.md", "release-notes/**", "demo-forms/**"]'
+
   build:
     name: Compile the app
     runs-on: ubuntu-18.04
+    needs: skip_check
+    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
 
     steps:
     - name: Get Docker Hub username
@@ -65,6 +72,7 @@ jobs:
     needs: build
     name: Config Tests
     runs-on: ubuntu-18.04
+    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
     strategy:
       matrix:
         grunt-cmd: [ 'exec:test-config-standard', 'exec:test-config-default']
@@ -106,6 +114,7 @@ jobs:
     needs: build
     name: ${{ matrix.grunt-cmd }} on node ${{ matrix.node-version }}
     runs-on: ubuntu-18.04
+    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
     env:
       NODE: ${{ matrix.node-version }}
 
@@ -162,7 +171,7 @@ jobs:
     - name: Test it!
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
     - name: Dump Couch logs
-      run: | 
+      run: |
         docker logs couch > tests/logs/couch_container.log 2>&1 &&
         docker logs horti > tests/logs/horti_container.log 2>&1
       if: ${{ always() }}

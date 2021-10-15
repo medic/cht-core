@@ -2,7 +2,7 @@ const utils = require('../../utils');
 const helper = require('../../helper');
 const fs = require('fs');
 
-const xml = fs.readFileSync(`${__dirname}/../../../demo-forms/multiple-repeats.xml`, 'utf8');
+const xml = fs.readFileSync(`${__dirname}/../../forms/multiple-repeats.xml`, 'utf8');
 
 const docs = [
   {
