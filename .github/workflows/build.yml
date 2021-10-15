@@ -70,9 +70,9 @@ jobs:
 
   config-tests:
     needs: build
+    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
     name: Config Tests
     runs-on: ubuntu-18.04
-    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
     strategy:
       matrix:
         grunt-cmd: [ 'exec:test-config-standard', 'exec:test-config-default']
@@ -92,6 +92,7 @@ jobs:
 
   publish:
     needs: [tests,config-tests]
+    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
     name: Publish branch build
     runs-on: ubuntu-18.04
 
@@ -112,9 +113,9 @@ jobs:
 
   tests:
     needs: build
+    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
     name: ${{ matrix.grunt-cmd }} on node ${{ matrix.node-version }}
     runs-on: ubuntu-18.04
-    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
     env:
       NODE: ${{ matrix.node-version }}
 
