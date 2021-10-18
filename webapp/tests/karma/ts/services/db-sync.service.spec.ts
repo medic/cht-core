@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { Store } from '@ngrx/store';
 
 import { SessionService } from '@mm-services/session.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
@@ -10,6 +11,7 @@ import { DbService } from '@mm-services/db.service';
 import { AuthService } from '@mm-services/auth.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 describe('DBSync service', () => {
   let service:DBSyncService;
@@ -32,6 +34,8 @@ describe('DBSync service', () => {
   let rulesEngine;
   let checkDateService;
   let telemetryService;
+  let translateService;
+  let store;
 
   let localMedicDb;
   let localMetaDb;
@@ -91,6 +95,8 @@ describe('DBSync service', () => {
     dbSyncRetry = sinon.stub();
     rulesEngine = { monitorExternalChanges: sinon.stub() };
     telemetryService = { record: sinon.stub().resolves() };
+    translateService = { instant: sinon.stub().returnsArg(0) };
+    store = { dispatch: sinon.stub() };
 
     localMedicDb = {
       replicate: { to: to, from: from },
@@ -122,6 +128,8 @@ describe('DBSync service', () => {
         { provide: DbSyncRetryService, useValue: { retryForbiddenFailure: dbSyncRetry } },
         { provide: RulesEngineService, useValue: rulesEngine },
         { provide: TelemetryService, useValue: telemetryService },
+        { provide: TranslateService, useValue: translateService },
+        { provide: Store, useValue: store },
         { provide: CheckDateService, useValue: checkDateService },
       ]
     });
