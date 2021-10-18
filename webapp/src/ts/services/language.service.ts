@@ -68,10 +68,9 @@ export class SetLanguageService {
       this.languageCookieService.set(code);
     }
 
-    this.telemetryService.record(`user_settings:language:${code}`);
-
     // formatDateService depends on the cookie, so also wait for the cookie to be updated
     await this.formatDateService.init();
+    this.telemetryService.record(`user_settings:language:${code}`);
   }
 }
 
