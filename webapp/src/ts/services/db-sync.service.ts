@@ -11,6 +11,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
+import { TranslateService } from '@mm-services/translate.service';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
@@ -56,6 +57,7 @@ export class DBSyncService {
     private checkDateService:CheckDateService,
     private telemetryService:TelemetryService,
     private store:Store,
+    private translateService:TranslateService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -194,11 +196,10 @@ export class DBSyncService {
 
             if (force) {
               if (update.to === 'success' && update.from === 'success') {
-                this.globalActions.setSnackbarContent('Sync complete'); // TODO: translate
+                this.globalActions.setSnackbarContent(this.translateService.instant('sync.feedback.success'));
               } else {
-                // TODO: translate & offer to retry
-                const snackbarContent = `Sync failed. ${this.translateService.instant('sync.status.unknown')}`;
-                this.globalActions.setSnackbarContent(snackbarContent);
+                // TODO: offer to retry
+                this.globalActions.setSnackbarContent(this.translateService.instant('sync.feedback.failure.unknown'));
               }
             }
 
@@ -290,7 +291,7 @@ export class DBSyncService {
     }
 
     if (force) {
-      this.globalActions.setSnackbarContent('Sync in progress'); // TODO: translate
+      this.globalActions.setSnackbarContent(this.translateService.instant('sync.feedback.in_progress'));
     }
 
     if (!this.intervalPromises.meta || force) {
