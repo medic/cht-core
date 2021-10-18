@@ -68,11 +68,7 @@ export class DBSyncService {
         checkpoint: 'source',
       },
       allowed: () => this.authService.has('can_edit'),
-      onDenied: (err?) => {
-        this.onSyncFailure(err);
-        return this.dbSyncRetryService.retryForbiddenFailure(err);
-      },
-      onError: (err) => this.onSyncFailure(err),
+      onDenied: (err?) => this.dbSyncRetryService.retryForbiddenFailure(err),
     },
     {
       name: 'from',
@@ -82,8 +78,6 @@ export class DBSyncService {
       },
       allowed: () => Promise.resolve(true),
       onChange: (replicationResult?) => this.rulesEngineService.monitorExternalChanges(replicationResult),
-      onDenied: (err) => this.onSyncFailure(err),
-      onError: (err) => this.onSyncFailure(err),
     }
   ];
   private globalActions;
@@ -98,11 +92,6 @@ export class DBSyncService {
 
   isEnabled() {
     return !this.sessionService.isOnlineOnly();
-  }
-
-  private onSyncFailure(err?: Error) {
-    // TODO: translate and offer to retry
-    this.globalActions.setSnackbarContent(`Sync failed. ${err.message}`);
   }
 
   private replicate(direction, { batchSize=100 }={}) {
@@ -148,7 +137,7 @@ export class DBSyncService {
           return this.replicate(direction, { batchSize });
         }
         console.error(`Error replicating ${direction.name} remote server`, err);
-        return direction.name;
+        return { direction: direction.name, err };
       });
   }
 
@@ -185,7 +174,7 @@ export class DBSyncService {
         .then(errs => {
           return this.getCurrentSeq().then(currentSeq => {
             errs = errs.filter(err => err);
-            let update:any = { to: 'success', from: 'success' };
+            let update: any = { to: 'success', from: 'success' };
             if (!errs.length) {
               // no errors
               this.syncIsRecent = true;
@@ -195,16 +184,22 @@ export class DBSyncService {
               update = { state: 'unknown' };
             } else {
               // definitely need to sync something
-              errs.forEach(err => {
-                update[err] = 'required';
+              errs.forEach(({ direction }) => {
+                update[direction] = 'required';
               });
             }
             if (update.to === 'success') {
               window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
             }
 
-            if (update.to === 'success' && update.from === 'success') {
-              this.globalActions.setSnackbarContent('Sync complete'); // TODO: translate
+            if (force) {
+              if (update.to === 'success' && update.from === 'success') {
+                this.globalActions.setSnackbarContent('Sync complete'); // TODO: translate
+              } else {
+                // TODO: translate & offer to retry
+                const snackbarContent = `Sync failed. ${this.translateService.instant('sync.status.unknown')}`;
+                this.globalActions.setSnackbarContent(snackbarContent);
+              }
             }
 
             this.sendUpdate(update);
