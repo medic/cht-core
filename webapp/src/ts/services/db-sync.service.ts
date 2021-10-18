@@ -1,5 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
+import { Store } from '@ngrx/store';
 
 import { SessionService } from '@mm-services/session.service';
 import * as purger from '../../js/bootstrapper/purger';
@@ -9,6 +10,7 @@ import { DbService } from '@mm-services/db.service';
 import { AuthService } from '@mm-services/auth.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { GlobalActions } from '@mm-actions/global';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
@@ -53,7 +55,10 @@ export class DBSyncService {
     private ngZone:NgZone,
     private checkDateService:CheckDateService,
     private telemetryService:TelemetryService,
-  ) {}
+    private store:Store,
+  ) {
+    this.globalActions = new GlobalActions(store);
+  }
 
   private readonly DIRECTIONS = [
     {
@@ -75,6 +80,7 @@ export class DBSyncService {
       onChange: (replicationResult?) => this.rulesEngineService.monitorExternalChanges(replicationResult),
     }
   ];
+  private globalActions;
   private inProgressSync;
   private knownOnlineState = window.navigator.onLine;
   private syncIsRecent = false; // true when a replication has succeeded within one interval
@@ -182,6 +188,11 @@ export class DBSyncService {
             if (update.to === 'success') {
               window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
             }
+
+            if (update.to === 'success' && update.from === 'success') {
+              this.globalActions.setSnackbarContent('Sync complete'); // TODO: translate
+            }
+
             this.sendUpdate(update);
           });
         })
@@ -267,6 +278,10 @@ export class DBSyncService {
     if (!this.isEnabled()) {
       this.sendUpdate({ state: 'disabled' });
       return Promise.resolve();
+    }
+
+    if (force) {
+      this.globalActions.setSnackbarContent('Sync in progress'); // TODO: translate
     }
 
     if (!this.intervalPromises.meta || force) {
