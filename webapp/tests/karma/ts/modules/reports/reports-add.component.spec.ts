@@ -1,4 +1,4 @@
-import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -36,7 +36,7 @@ describe('Reports Add Component', () => {
   let router;
   let route;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     dbService = { getAttachment: sinon.stub() };
     fileReaderService = { base64: sinon.stub() };
     getReportContentService = { getReportContent: sinon.stub().resolves() };

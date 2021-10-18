@@ -145,7 +145,7 @@ const hideSnackbar = () => {
 const waitForLoaders = async () => {
   await browser.waitUntil(async () => {
     return (await loaders()).map((loader) => loader.isDisplayed()).length === 0;
-  });
+  }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
 
 const syncAndWaitForSuccess = async () => {
@@ -165,7 +165,7 @@ const sync = async (expectReload) => {
 };
 
 const closeReloadModal = async () => {
-  await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist());
+  await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist({ timeout: 2000 }));
   // wait for the animation to complete
   await browser.pause(500);
   await (await reloadModalCancel()).click();
@@ -198,7 +198,7 @@ const openConfigurationWizardAndFetchProperties = async () => {
   };
 };
 
-const openUserSettingsAndFetchProperties  = async () => {
+const openUserSettingsAndFetchProperties = async () => {
   await (await $('=User settings')).click();
   await (await $('=Update password')).waitForDisplayed();
   await (await $('=Edit user profile')).waitForDisplayed();

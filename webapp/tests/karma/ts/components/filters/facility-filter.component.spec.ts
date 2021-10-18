@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -26,7 +26,7 @@ describe('Facility Filter Component', () => {
 
   let placeHierarchyService;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     placeHierarchyService = {
       get: sinon.stub(),
     };

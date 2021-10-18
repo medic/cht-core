@@ -27,6 +27,7 @@ describe('Incorrect locale', () => {
   beforeEach(async () => {
     await createContact();
     await createLanguage();
+    await utils.closeReloadModal();
   });
 
   afterEach(async () => {

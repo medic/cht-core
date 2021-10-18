@@ -5,6 +5,7 @@ import { TranslateService as NgxTranslateService } from '@ngx-translate/core';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { FormatDateService } from '@mm-services/format-date.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 @Injectable({
   providedIn: 'root'
@@ -46,6 +47,7 @@ export class LanguageCookieService {
 export class SetLanguageService {
   constructor(
     private ngxTranslateService:NgxTranslateService,
+    private telemetryService:TelemetryService,
     private languageCookieService:LanguageCookieService,
     private formatDateService:FormatDateService,
   ) {
@@ -65,6 +67,8 @@ export class SetLanguageService {
     if (setLanguageCookie !== false) {
       this.languageCookieService.set(code);
     }
+
+    this.telemetryService.record(`user_settings:language:${code}`);
 
     // formatDateService depends on the cookie, so also wait for the cookie to be updated
     await this.formatDateService.init();
