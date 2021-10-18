@@ -595,13 +595,14 @@ const writePurgeLog = (roles, start, error) => {
   logger.info(`Purging ${error ? 'failed after' : 'completed in'} ${duration / 1000 / 60} minutes`);
   const date = moment();
   const id = `purgelog${error ? ':error' : ''}:${date.valueOf()}`;
+
   return db.sentinel.put({
     _id: id,
     date: date.toISOString(),
     roles: roles,
     duration: duration,
     skipped_contacts: skippedContacts,
-    error: error && error.message,
+    error: error && JSON.stringify(error),
   });
 };
 

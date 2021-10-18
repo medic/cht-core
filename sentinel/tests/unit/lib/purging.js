@@ -2547,7 +2547,7 @@ describe('ServerSidePurge', () => {
         chai.expect(purgelog._id).to.contain('purgelog:error');
         chai.expect(purgelog).to.deep.include({
           skipped_contacts: [],
-          error: 'booom',
+          error: JSON.stringify({ message: 'booom' }),
         });
       });
     });
@@ -2583,7 +2583,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.sentinel.put.args[0][0]).to.deep.equal({
           _id: `purgelog:error:${now.valueOf()}`,
           skipped_contacts: [],
-          error: 'something',
+          error: JSON.stringify({ message: 'something' }),
           date: now.toISOString(),
           roles: roles,
           duration: 1000,
@@ -2620,7 +2620,7 @@ describe('ServerSidePurge', () => {
         chai.expect(purgelog._id).to.contain('purgelog:error');
         chai.expect(purgelog).to.deep.include({
           skipped_contacts: [],
-          error: undefined,
+          error: JSON.stringify({ no: 'message' }),
         });
       });
     });
