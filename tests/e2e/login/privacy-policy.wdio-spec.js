@@ -33,7 +33,7 @@ describe('Privacy policy', () => {
 
       afterEach(async () => {
         await utils.deleteUsers([user]);
-        await utils.deleteDocs([user.contact._id, user.place._id, parent._id, privacyPolicy._id]);
+        await utils.revertDb([], true);
       });
 
       it('should show the correct privacy policy on login', async () => {
