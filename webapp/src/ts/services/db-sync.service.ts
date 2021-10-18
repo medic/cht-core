@@ -68,7 +68,11 @@ export class DBSyncService {
         checkpoint: 'source',
       },
       allowed: () => this.authService.has('can_edit'),
-      onDenied: (err?) => this.dbSyncRetryService.retryForbiddenFailure(err),
+      onDenied: (err?) => {
+        this.onSyncFailure(err);
+        return this.dbSyncRetryService.retryForbiddenFailure(err);
+      },
+      onError: (err) => this.onSyncFailure(err),
     },
     {
       name: 'from',
@@ -78,6 +82,8 @@ export class DBSyncService {
       },
       allowed: () => Promise.resolve(true),
       onChange: (replicationResult?) => this.rulesEngineService.monitorExternalChanges(replicationResult),
+      onDenied: (err) => this.onSyncFailure(err),
+      onError: (err) => this.onSyncFailure(err),
     }
   ];
   private globalActions;
@@ -92,6 +98,11 @@ export class DBSyncService {
 
   isEnabled() {
     return !this.sessionService.isOnlineOnly();
+  }
+
+  private onSyncFailure(err?: Error) {
+    // TODO: translate and offer to retry
+    this.globalActions.setSnackbarContent(`Sync failed. ${err.message}`);
   }
 
   private replicate(direction, { batchSize=100 }={}) {
@@ -120,6 +131,9 @@ export class DBSyncService {
       })
       .on('error', (err) => {
         console.error(`Error replicating ${direction.name} remote server`, err);
+        if (direction.onError) {
+          direction.onError(err);
+        }
         telemetryEntry.recordFailure(err, this.knownOnlineState);
       })
       .then(info => {
