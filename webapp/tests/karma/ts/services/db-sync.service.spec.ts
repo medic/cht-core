@@ -778,6 +778,21 @@ describe('DBSync service', () => {
       });
 
     });
+
+    describe('give user feedback when manually syncing', () => {
+      it('displays a snackbar when sync begins and when it succeeds', async () => {
+        isOnlineOnly.returns(false);
+        hasAuth.resolves(true);
+
+        await service.sync(true);
+        expectSyncCall(1);
+        expect(store.dispatch.callCount).to.equal(2);
+        expect(store.dispatch.args[0][0].type).to.equal('SET_SNACKBAR_CONTENT');
+        expect(store.dispatch.args[0][0].payload.content).to.equal('sync.feedback.in_progress');
+        expect(store.dispatch.args[1][0].type).to.equal('SET_SNACKBAR_CONTENT');
+        expect(store.dispatch.args[1][0].payload.content).to.equal('sync.feedback.success');
+      });
+    });
   });
 
   describe('on denied', () => {
