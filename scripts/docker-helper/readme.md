@@ -167,7 +167,7 @@ If you're on a resource constrained computer, like a very old or very slow lapto
 
 ![](docker.status.png?8.12.21a)
 
-A word of caution though - for now this script doesn't scale well if you have 10s of containers and volumes.  Things can scroll of the screen and seem confusing! 
+A word of caution though - for now this script doesn't scale well if you have 10s of containers and volumes.  Content [can scroll off the screen](https://user-images.githubusercontent.com/1608415/137566806-e13b765e-4f95-48be-82e7-c8e6351e14b7.mp4) and seem confusing! 
 
 ### Output on macOS is too narrow
 
