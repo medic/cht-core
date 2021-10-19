@@ -104,6 +104,9 @@ validate_env_file(){
   envFile=$1
   if [ ! -f "$envFile" ] || [[ ! "$(file $envFile)" == *"ASCII text"* ]]; then
     echo "File not found or not a text file: $envFile"
+    echo ""
+    echo " Start with: ./cht-docker-compose.sh -d up -e ../PATH_TO_CONFIG/.env_docker"
+    echo " Stop with: ./cht-docker-compose.sh -d down -e ../PATH_TO_CONFIG/.env_docker"
   else
     # TODO- maybe grep for env vars we're expecting? Blindly including
     # is a bit promiscuous
