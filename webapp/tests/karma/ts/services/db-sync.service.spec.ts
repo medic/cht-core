@@ -797,9 +797,9 @@ describe('DBSync service', () => {
         expectSyncCall(1);
         expect(store.dispatch.callCount).to.equal(2);
         expect(store.dispatch.args[0][0].type).to.equal('SET_SNACKBAR_CONTENT');
-        expect(store.dispatch.args[0][0].payload.content).to.equal('sync.feedback.in_progress');
+        expect(store.dispatch.args[0][0].payload.message).to.equal('sync.feedback.in_progress');
         expect(store.dispatch.args[1][0].type).to.equal('SET_SNACKBAR_CONTENT');
-        expect(store.dispatch.args[1][0].payload.content).to.equal('sync.feedback.success');
+        expect(store.dispatch.args[1][0].payload.message).to.equal('sync.feedback.success');
       });
 
       it('displays a snackbar when the sync fails', async () => {
@@ -811,9 +811,9 @@ describe('DBSync service', () => {
         expectSyncCall(1);
         expect(store.dispatch.callCount).to.equal(2);
         expect(store.dispatch.args[0][0].type).to.equal('SET_SNACKBAR_CONTENT');
-        expect(store.dispatch.args[0][0].payload.content).to.equal('sync.feedback.in_progress');
+        expect(store.dispatch.args[0][0].payload.message).to.equal('sync.feedback.in_progress');
         expect(store.dispatch.args[1][0].type).to.equal('SET_SNACKBAR_CONTENT');
-        expect(store.dispatch.args[1][0].payload.content).to.equal('sync.feedback.failure.unknown');
+        expect(store.dispatch.args[1][0].payload.message).to.equal('sync.feedback.failure.unknown');
       });
 
       it('allows retrying from the snackbar when the sync fails', async () => {
@@ -825,18 +825,18 @@ describe('DBSync service', () => {
         expectSyncCall(1);
         expect(store.dispatch.callCount).to.equal(2);
         expect(store.dispatch.args[0][0].type).to.equal('SET_SNACKBAR_CONTENT');
-        expect(store.dispatch.args[0][0].payload.content).to.equal('sync.feedback.in_progress');
+        expect(store.dispatch.args[0][0].payload.message).to.equal('sync.feedback.in_progress');
         expect(store.dispatch.args[1][0].type).to.equal('SET_SNACKBAR_CONTENT');
-        expect(store.dispatch.args[1][0].payload.content).to.equal('sync.feedback.failure.unknown');
+        expect(store.dispatch.args[1][0].payload.message).to.equal('sync.feedback.failure.unknown');
 
         replicationResultTo = replicationResultFrom = Promise.resolve();
         await store.dispatch.args[1][0].payload.action.onClick();
         expectSyncCall(2);
         expect(store.dispatch.callCount).to.equal(4);
         expect(store.dispatch.args[2][0].type).to.equal('SET_SNACKBAR_CONTENT');
-        expect(store.dispatch.args[2][0].payload.content).to.equal('sync.feedback.in_progress');
+        expect(store.dispatch.args[2][0].payload.message).to.equal('sync.feedback.in_progress');
         expect(store.dispatch.args[3][0].type).to.equal('SET_SNACKBAR_CONTENT');
-        expect(store.dispatch.args[3][0].payload.content).to.equal('sync.feedback.success');
+        expect(store.dispatch.args[3][0].payload.message).to.equal('sync.feedback.success');
       });
     });
   });

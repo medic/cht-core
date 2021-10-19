@@ -35,8 +35,21 @@ describe('Global Reducer', () => {
     });
   });
 
-  it('should update snackbar content', () => {
-    const content = 'this is just a random text';
+  it('should update snackbar content with a message', () => {
+    const message = 'this is just a random text';
+    expect(globalReducer(state, Actions.setSnackbarContent({ message }))).to.deep.equal({
+      snackbarContent: { message, action: undefined },
+    });
+  });
+
+  it('should update snackbar content with a message and an action', () => {
+    const content = {
+      message: 'this is just a random text',
+      action: {
+        label: 'click me',
+        onClick: () => {},
+      },
+    };
     expect(globalReducer(state, Actions.setSnackbarContent(content))).to.deep.equal({
       snackbarContent: content,
     });

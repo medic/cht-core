@@ -20,7 +20,7 @@ export class SnackbarComponent implements OnInit {
   private globalActions;
   private timer;
 
-  content;
+  message;
   action;
   active = false;
 
@@ -41,26 +41,26 @@ export class SnackbarComponent implements OnInit {
   ngOnInit() {
     this.changeDetectorRef.detach();
     const reduxSubscription = this.store.select(Selectors.getSnackbarContent).subscribe((snackbarContent) => {
-      if (!snackbarContent || !snackbarContent.content) {
+      if (!snackbarContent || !snackbarContent.message) {
         return;
       }
 
-      const { content, action } = snackbarContent;
+      const { message, action } = snackbarContent;
       if (this.active) {
         this.hide(false);
-        this.setTimeout(() => this.show(content, action), this.ANIMATION_DURATION);
+        this.setTimeout(() => this.show(message, action), this.ANIMATION_DURATION);
 
         return;
       }
 
-      this.show(content, action);
+      this.show(message, action);
     });
     this.subscription.add(reduxSubscription);
     this.hide();
   }
 
-  private show(content, action) {
-    this.content = content;
+  private show(message, action) {
+    this.message = message;
     this.action = action;
     this.active = true;
     this.changeDetectorRef.detectChanges();
