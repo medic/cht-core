@@ -14,7 +14,7 @@ const generateXform = require('../../../src/services/generate-xform');
 const config = require('../../../src/config');
 const bootstrap = require('../../../src/services/config-watcher');
 
-const nextTick = () => new Promise(r => setTimeout(r));
+const nextTick = () => new Promise(r => setTimeout(r, 5));
 let on;
 const emitChange = (change) => {
   const changeCallback = on.args[0][1];
