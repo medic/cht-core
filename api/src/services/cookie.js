@@ -10,12 +10,13 @@ const getCookieOptions = (options = {}) => {
       delete options[key];
     }
   });
-  const defaults = {
+
+  const securityOptions = {
     sameSite: 'lax', // prevents the browser from sending this cookie along with some cross-site requests
     secure: production, // only transmit when requesting via https unless in development mode
   };
 
-  return Object.assign({}, options, defaults);
+  return Object.assign({}, options, securityOptions);
 };
 
 const normalizeAttributeName = (option, lowerCaseFirst = true) => {
