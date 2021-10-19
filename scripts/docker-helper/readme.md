@@ -202,7 +202,7 @@ All lines start with a date, PID and count:
 
 ### item = `start`
 
-When you first call the script, a line it output with generic information about the project. This is only shown once per call:
+When you first call the script, a line is output with generic information about the project. This is only shown once per call:
 
 | Name in log | Note | Example(s) |
 | --------------- | --------------- | --------------- |
