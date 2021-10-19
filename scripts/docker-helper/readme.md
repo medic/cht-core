@@ -167,12 +167,14 @@ If you're on a resource constrained computer, like a very old or very slow lapto
 
 ![](docker.status.png?8.12.21a)
 
+A word of caution though - for now this script doesn't scale well if you have 10s of containers and volumes.  Things can scroll of the screen and seem confusing! 
+
 ### Output on macOS is too narrow
 
 There's a known bug with the bash library we're using that causes it to always render at 80 characters wide.  [The fix is](https://github.com/metal3d/bashsimplecurses/issues/51#issuecomment-905914780) to use `brew` to run a more recent version of `ncurses`.
 
 
-### "Device '' does not exist'" and "Could not resolve host" errors
+### "Device '' does not exist'" and "curl: (6) Could not resolve host" errors
 
 If you see either of these errors, you're very likely off-line such that you effectively cannot reach the Internet. The script will not work as is.  See the "Booting with no connectivity" section above for work-arounds.
 
@@ -223,13 +225,12 @@ For each internal loop of the script, each one taking 1-5 seconds, a status line
 | `item` | which log item this is | `status` |
 | `CHT_count` | number of CHT contianers running for this project. Healthy is `2` | `2` |
 | `port_stat` | Status of the `https` port. Healhty is `open` | `open` or `closed` |
-| `http_code` | If the `https` port is open by the web server, what `HTTP` response code is returned for a `GET`. Healthy is `200` |  `200` or `404` |
+| `http_code` | If the `https` port is open by the web server, what `HTTP` response code is returned for a `GET`. Healthy is `200`. If you see `000`, [see workarounds](#booting-with-no-connectivity). |  `200` or `404` |
 | `ssl_verify` | If the `https` port is open by the web server, is the valid `local-ip.co` certificate installed. Healthy is `yes` |  `yes` or `no` |
 | `reboot_count` | How many times `docker restart` has been called. Max is `5` |  `3` |
 | `docker_call` | The docker action call to the script |  `up` |
 | `last_msg` | Last message the user was shown |  `Running "down" then "up"` |
-| `load_now` | Load average for the past minute. Healthy can vary, but should be < `10` |  `2.66` |
-| `load_now` | Load average for the past minute. Healthy can vary, but healthy should be < `10` |  `2.66` |
+| `load_now` | Load average for the past minute. Healthy can vary, but should be < `10` |  `2.66` |   
 | `*_haproxy_1` | Name of container based on `project_name`. Showing the "has booted" status, healthy is `true` |  `false` |
 | `*_medic-os_1` | Name of container based on `project_name`. Showing the "has booted" status, healthy is `true` |  `false` |
 

@@ -86,8 +86,10 @@ cht_healthy(){
   chtUrl=$3
   portIsOpen=$(port_open "$chtIp" "$chtPort")
   if [ "$portIsOpen" = "0" ]; then
-    # todo - when thoere's no connectivity, this fails w/ DNS
+    # todo - when there's no connectivity or DNS server is messing with resolution,
+    #  this fails w/ DNS like one of these two:
     # curl: (6) Could not resolve host: 127-0-0-1.my.local-ip.co
+    # curl: (6) Could not resolve host: 192-168-217-207.my.local-ip.co
 
     # todo - macos returns this error some times
     # curl: (35) LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to 127-0-0-1.my.local-ip.co:8443
@@ -265,10 +267,13 @@ log_iteration(){
   reboot_count=$2
   last_msg=$(echo "$3" | tr -d '"')
   docker_call=$4
-#  log_location=$5 # todo - get this working so it's the same path as envfile
   line_head="$(date) pid=\"$$\" count=\"${counter}\""
   load_now=$(echo $(get_load_avg)|cut -d" " -f 1)
+
+  # output the log in the same directory as the env file
+  log_location=$(dirname $envFile)
   logname="${log_location}/cht-docker-compose.log"
+
   full_url=$(get_local_ip_url $lanAddress)
   portIsOpen=$(port_open "$lanAddress" "$CHT_HTTPS")
   if [ "$portIsOpen" = "0" ]; then
@@ -443,6 +448,7 @@ main (){
     append "Download before proceeding: "
     append "wget https://github.com/medic/cht-core/blob/master/docker-compose-developer.yml"
     endwin
+    set -e
     return 0
   fi
 
