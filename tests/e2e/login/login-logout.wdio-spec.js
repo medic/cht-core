@@ -86,8 +86,10 @@ describe('Login and logout tests', () => {
       domain: 'localhost',
       path: '/',
       secure: false,
-      value: encodeURIComponent(JSON.stringify({ name: 'admin', roles: ['_admin', 'admin'] })),
     });
+    const userCtxCookieValue = JSON.parse(decodeURIComponent(userCtxCookie.value));
+    expect(userCtxCookieValue).to.include({ name: 'admin' });
+    expect(userCtxCookieValue.roles).to.include('_admin');
 
     const localeCookie = cookies.find(cookie => cookie.name === 'locale');
     expect(localeCookie).to.include({
