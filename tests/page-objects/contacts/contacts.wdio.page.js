@@ -88,7 +88,10 @@ const waitForContactUnloaded = async () => {
 
 const addPlace = async (type, placeName , contactName ) => {
   const dashedType = type.replace('_','-');
+  await (await actionResourceIcon(dashedType)).waitForDisplayed();
   await (await actionResourceIcon(dashedType)).click();
+
+  await (await newPrimaryContactButton()).waitForDisplayed();
   await (await newPrimaryContactButton()).click();
   await (await newPrimaryContactName()).addValue(contactName);
   await (await dateOfBirthField()).addValue('2000-01-01');
@@ -145,7 +148,7 @@ const deletePerson = async (name) => {
 
 const getContactSummaryField = async (fieldName) => {
   await (await contactSummaryContainer()).waitForDisplayed();
-  const field = await (await contactSummaryContainer()).$(`.cell.${fieldName.replace(/\./g, '\\.')}`);
+  const field = await (await contactSummaryContainer()).$(`.cell.${fieldName.toLowerCase().replace(/\./g, '\\.')}`);
   return await (await field.$('p')).getText();
 };
 

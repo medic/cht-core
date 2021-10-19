@@ -87,6 +87,7 @@ const goToPeople = async (contactId = '', shouldLoad = true) => {
   await browser.url(`/#/contacts/${contactId}`);
   if (shouldLoad) {
     await (await contactsPage.contactList()).waitForDisplayed();
+    await waitForLoaders();
   }
 };
 

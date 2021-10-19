@@ -38,7 +38,7 @@
                   <span *ngIf="contact.dod" [innerHTML]="contact.dod | dateOfDeath"></span>
                 </div>
                 <div *ngIf="contact.visits" class="visits" [class.danger]="contact.visits.status === 'pending'" [class.warning]="contact.visits.status === 'started'" [class.success]="contact.visits.status === 'done'">
-                  <span>{{contact.visits.count}}</span>
+                  <span>{{contact.visits.count | localizeNumber}}</span>
                 </div>
               </div>
 
