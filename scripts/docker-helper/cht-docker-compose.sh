@@ -105,8 +105,8 @@ validate_env_file(){
   if [ ! -f "$envFile" ] || [[ ! "$(file $envFile)" == *"ASCII text"* ]]; then
     echo "File not found or not a text file: $envFile"
     echo ""
-    echo " Start with: ./cht-docker-compose.sh -d up -e ../PATH_TO_CONFIG/.env_docker"
-    echo " Stop with: ./cht-docker-compose.sh -d down -e ../PATH_TO_CONFIG/.env_docker"
+    echo " Start CHT with: ./cht-docker-compose.sh -d up -e ../PATH_TO_CONFIG/.env_docker"
+    echo " Stop CHT with: ./cht-docker-compose.sh -d down -e ../PATH_TO_CONFIG/.env_docker"
   else
     # TODO- maybe grep for env vars we're expecting? Blindly including
     # is a bit promiscuous
@@ -265,9 +265,10 @@ log_iteration(){
   reboot_count=$2
   last_msg=$(echo "$3" | tr -d '"')
   docker_call=$4
+#  log_location=$5 # todo - get this working so it's the same path as envfile
   line_head="$(date) pid=\"$$\" count=\"${counter}\""
   load_now=$(echo $(get_load_avg)|cut -d" " -f 1)
-  logname='cht-docker-compose.log'
+  logname="${log_location}/cht-docker-compose.log"
   full_url=$(get_local_ip_url $lanAddress)
   portIsOpen=$(port_open "$lanAddress" "$CHT_HTTPS")
   if [ "$portIsOpen" = "0" ]; then
@@ -350,7 +351,7 @@ main (){
   fi
 
   # after valid env file is loaded, let's set all our constants
-  declare -r APP_STRING="docker;docker-compose;grep;head;cut;tr;nc;curl;file;wc;awk;tail"
+  declare -r APP_STRING="docker;docker-compose;grep;head;cut;tr;nc;curl;file;wc;awk;tail;dirname"
   declare -r MAX_REBOOTS=5
   declare -r DEFAULT_SLEEP=$((60 * $((reboot_count + 1))))
   declare -r MEDIC_OS="${COMPOSE_PROJECT_NAME}_medic-os_1"
@@ -381,10 +382,8 @@ main (){
   loadAvg=$(get_load_avg)
   chtVersion="NA"
 
-  if [ $debug -eq 1 ]; then
-    log_iteration $counter $reboot_count "${last_action}" $docker_action
-    null=$((counter++))
-  fi
+  log_iteration $counter $reboot_count "${last_action}" $docker_action
+  null=$((counter++))
 
   # if we're exiting, call down or destroy and quit proper
   if [ "$exitNext" = "destroy" ] || [ "$exitNext" = "down" ] || [ "$exitNext" = "happy" ]; then
@@ -511,10 +510,14 @@ main (){
   fi
 
   # if we're here, we're happy! Show happy sign and exit next iteration via exitNext
+  script_path1=$(dirname $0)
   last_action=" :) "
   window "Successfully started ${COMPOSE_PROJECT_NAME} " "green" "100%"
   append "login: medic"
   append "password: password"
+  append ""
+  append "To stop the CHT run: ${script_path1}/cht-docker-compose.sh -d down -e "${envFile}""
+  append ""
   append ""
   append "Have a great day!"
   endwin

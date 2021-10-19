@@ -116,7 +116,7 @@ The main reason you're likely to run into is that the CHT doesn't correctly star
 2. Destroy everything by using the `-d destory` [option](#syntax).  While this will delete any data, if you can't start the CHT instance, you won't be loosing any data you care about ;). This will delete the containers and volumes.  Then run `-d up` and try again.
 3. Quit apps that may be causing a high load on your computer.  Possibly consider rebooting and running nothing else.  In one instance this helped!
 
-If you still get stuck review the items below as possible issues you may find workarounds to.  If none of these work, run the `-d up` command with the `--debug` option.  This will output a file called `cht-docker-compose.log` in your current directory.  File a ticket in this repository and attach this log file. To read more about the contents of the `cht-docker-compose.log` see [the CHT Docker Compose Log section](#cht-docker-composelog).
+If you still get stuck review the items below as possible issues you may find workarounds to.  If none of these work, see the debug file which is always output in the same directory as your `env_file`.  File a ticket in this repository and attach this log file. To read more about the contents of the `cht-docker-compose.log` see [the CHT Docker Compose Log section](#cht-docker-composelog).
 
 ### Cookie collisions
 
@@ -186,7 +186,7 @@ docker stop $(docker ps -q)&&docker system prune&&docker volume prune
 
 ## cht-docker-compose.log
 
-This log will be output when you call `./cht-docker-compose.sh` with the debug flag of `--debug`.  It will be created and appended to in the directory you're in when you call `./cht-docker-compose.sh`. 
+This log will be output every time you call the script.  It will be created and appended to in the directory where you specified your environment file to be (`-e PATH/TO/env_file`). 
 
 There are three types of lines in this file. The first line will always be the Start line: `item="start"`. Then there will be a Status line: `item="status"`.  Finally, there will be two lines, one for each docker container: `item="docker_logs"`.
 
