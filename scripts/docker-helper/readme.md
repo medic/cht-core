@@ -137,7 +137,7 @@ This would result in the domains being `127.0.0.1` and `127.0.0.2` from the CHT'
 
 If you're on macOS, or other OS without the `ip` utility, your IP address will always show as `127.0.0.1`.  You can not connect to this IP from a mobile client on your LAN because it always references the host it's on, not a foreign host.  
 
-To work around this, you can find out your IP on your LAN and just replace the `127-0-0-1` part of the `https://127-0-0-1.my.local-ip.co:8443` URL to be your IP address.  So if your local IP was `192.168.0.22` your URL would be `https://192-168-0-22.my.local-ip.co:8443`
+To work around this, you can find out your IP on your LAN and just replace the `127-0-0-1` part of the `https://127-0-0-1.my.local-ip.co:8443` URL to be your IP address.  So if your local IP was `192.168.0.22` your URL would be `https://192-168-0-22.my.local-ip.co:8443`.
 
 ### Booting with no connectivity
 
