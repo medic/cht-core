@@ -10,24 +10,30 @@ const privacyPolicyHtml = ({ header, paragraph }) => {
 
 const english = { header: 'English Privacy Policy', paragraph: 'More markup', language: 'English' };
 const french = { header: 'Politique de confidentialité en Francais', paragraph: 'Plus de markup', language: 'French' };
+const spanish = { header: 'Política de confidencialidad en Espanol', paragraph: 'Text', language: 'Spanish' };
 const privacyPolicyInFrench = privacyPolicyHtml(french);
 const privacyPolicyInEnglish = privacyPolicyHtml(english);
+const privacyPolicyInSpanish = privacyPolicyHtml(spanish);
 
 const attachments = [
   {
     key: 'en.attachment',
-    text: privacyPolicyInEnglish
+    text: privacyPolicyInEnglish,
   },
   {
     key: 'fr.html',
-    text: privacyPolicyInFrench
-  }
+    text: privacyPolicyInFrench,
+  },
+  {
+    key: 'es.html',
+    text: privacyPolicyInSpanish,
+  },
 ];
 
 const privacyPolicy = () => {
   return new Factory()
     .attr('_id', 'privacy-policies')
-    .attr('privacy_policies', { en: 'en.attachment', fr: 'fr.html', })
+    .attr('privacy_policies', { en: 'en.attachment', fr: 'fr.html', es: 'es.html' })
     .option('attachments', attachments)
     .attr('_attachments', ['attachments'], (attachments) => {
       const builtAttachments = {};
@@ -44,5 +50,6 @@ module.exports = {
   privacyPolicy,
   english,
   french,
-  privacyPolicyHtml
+  spanish,
+  privacyPolicyHtml,
 };
