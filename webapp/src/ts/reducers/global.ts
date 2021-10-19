@@ -72,8 +72,8 @@ const _globalReducer = createReducer(
   on(Actions.setSnapshotData, (state, { payload: { snapshotData } }) => {
     return { ...state, snapshotData };
   }),
-  on(Actions.setSnackbarContent, (state, { payload: { content } }) => {
-    return { ...state, snackbarContent: content };
+  on(Actions.setSnackbarContent, (state, { payload: { content, action } }) => {
+    return { ...state, snackbarContent: { content, action } };
   }),
   on(Actions.setLoadingContent, (state, { payload: { loadingContent } }) => {
     return { ...state, loadingContent };

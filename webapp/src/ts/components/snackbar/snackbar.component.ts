@@ -21,6 +21,7 @@ export class SnackbarComponent implements OnInit {
   private timer;
 
   content;
+  action;
   active = false;
 
   constructor(
@@ -39,27 +40,28 @@ export class SnackbarComponent implements OnInit {
 
   ngOnInit() {
     this.changeDetectorRef.detach();
-    const reduxSubscription = this.store.select(Selectors.getSnackbarContent).subscribe(content => {
-      if (!content) {
+    const reduxSubscription = this.store.select(Selectors.getSnackbarContent).subscribe((snackbarContent) => {
+      if (!snackbarContent || !snackbarContent.content) {
         return;
       }
 
+      const { content, action } = snackbarContent;
       if (this.active) {
         this.hide(false);
-        this.setTimeout(() => this.show(content), this.ANIMATION_DURATION);
+        this.setTimeout(() => this.show(content, action), this.ANIMATION_DURATION);
 
         return;
       }
 
-      this.show(content);
+      this.show(content, action);
     });
     this.subscription.add(reduxSubscription);
     this.hide();
   }
 
-  private show(content) {
-    console.log(content);
+  private show(content, action) {
     this.content = content;
+    this.action = action;
     this.active = true;
     this.changeDetectorRef.detectChanges();
 

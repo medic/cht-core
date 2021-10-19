@@ -198,8 +198,13 @@ export class DBSyncService {
               if (update.to === 'success' && update.from === 'success') {
                 this.globalActions.setSnackbarContent(this.translateService.instant('sync.feedback.success'));
               } else {
-                // TODO: offer to retry
-                this.globalActions.setSnackbarContent(this.translateService.instant('sync.feedback.failure.unknown'));
+                this.globalActions.setSnackbarContent(
+                  this.translateService.instant('sync.feedback.failure.unknown'),
+                  {
+                    label: this.translateService.instant('sync.retry'),
+                    onClick: () => this.sync(force),
+                  },
+                );
               }
             }
 

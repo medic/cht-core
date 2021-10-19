@@ -135,7 +135,8 @@
   .snackbar-content {
     pointer-events: initial;
     text-align: left;
-    display: inline-block;
+    display: flex;
+    justify-content: space-between;
     padding: 14px 24px;
     vertical-align: middle;
     min-width: 288px;
@@ -147,6 +148,19 @@
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+    .snackbar-message {
+      max-width: 80%;
+      word-break: break-word;
+      white-space: normal;
+    }
+    .snackbar-action {
+      cursor: pointer;
+      color: @text-link-color;
+      text-transform: uppercase;
+      &:hover {
+        color: @text-link-active-color;
+      }
+    }
   }
   &.active {
     transform: translate3d(0, 0, 0);
