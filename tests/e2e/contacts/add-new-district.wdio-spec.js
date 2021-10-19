@@ -5,7 +5,6 @@ const loginPage = require('../../page-objects/login/login.wdio.page');
 
 describe('Add new district tests : ', () => {
   before(async () => await loginPage.cookieLogin());
-  afterEach(async () => await utils.revertDb([], true));
 
   it('should add new district with a new person', async () => {
     await commonElements.goToPeople();
