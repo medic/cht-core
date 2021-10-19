@@ -39,8 +39,6 @@ describe('RepeatForm', () => {
     await utils.seedTestData(userContactDoc, [formDocument]);
   });
 
-  after(() => utils.revertDb([], true));
-
   afterEach(async () => {
     await browser.deleteCookies();
     await browser.refresh();
