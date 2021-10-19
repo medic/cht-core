@@ -125,7 +125,7 @@ module.exports = {
   getUnreadCount,
   goToReportById,
   sentTask,
-  getTaskState
+  getTaskState,
   openForm,
   formTitle,
   setDateInput,
