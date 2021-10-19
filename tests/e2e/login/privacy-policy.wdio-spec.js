@@ -102,6 +102,7 @@ describe('Privacy policy', () => {
 
   describe('conflicts', () => {
     let passed = false;
+    
     const conflictUser = userFactory.build({
       username: 'newoffline',
       known: false
