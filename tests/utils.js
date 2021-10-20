@@ -104,7 +104,11 @@ const revertTranslations = async () => {
     delete originalTranslations[doc.code];
   });
 
-  await module.exports.saveDocs(docs);
+  await module.exports.requestOnTestDb({
+    path: '/_bulk_docs',
+    method: 'POST',
+    body: { docs },
+  });
 };
 
 const revertSettings = () => {
