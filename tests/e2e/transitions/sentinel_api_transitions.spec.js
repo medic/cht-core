@@ -571,8 +571,13 @@ describe('transitions', () => {
         //mute
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses', 'update_clinics');
-        chai.expect(infodoc.transitions.muting).to.equal(undefined);
+        // depending on how fast sentinel is, there's a chance muting transition already ran over this doc
+        try {
+          expectTransitions(infodoc, 'default_responses', 'update_clinics');
+          chai.expect(infodoc.transitions.muting).to.equal(undefined);
+        } catch (err) {
+          expectTransitions(infodoc, 'default_responses', 'update_clinics', 'muting');
+        }
 
         chai.expect(child1.length).to.equal(1);
         chai.expect(child1[0].doc.patient_id).to.equal('child1');
