@@ -7,7 +7,7 @@ const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 
-const xml = fs.readFileSync(`${__dirname}/../../../demo-forms/repeat-translation.xml`, 'utf8');
+const xml = fs.readFileSync(`${__dirname}/../../forms/repeat-translation.xml`, 'utf8');
 const formDocument = {
   _id: 'form:repeat-translation',
   internalId: 'repeat-translation',
