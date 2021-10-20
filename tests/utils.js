@@ -24,6 +24,7 @@ const originalTranslations = {};
 let e2eDebug;
 const hasModal = () => element(by.css('#update-available')).isPresent();
 const { execSync } = require('child_process');
+const {utils} = require('protractor');
 const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 
 
@@ -104,7 +105,11 @@ const revertTranslations = async () => {
     delete originalTranslations[doc.code];
   });
 
-  await module.exports.saveDocs(docs);
+  await module.exports.requestOnTestDb({
+    path: '/_bulk_docs',
+    method: 'POST',
+    body: { docs },
+  });
 };
 
 const revertSettings = () => {
