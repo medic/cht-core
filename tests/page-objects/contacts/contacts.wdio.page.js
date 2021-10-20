@@ -195,7 +195,10 @@ const allContactsList = async () => {
 const editDistrict = async (districtName, editedName) => {
   await selectLHSRowByText(districtName);
   await waitForContactLoaded();
+
+  await (await editContactButton()).waitForDisplayed();
   await (await editContactButton()).click();
+
   await (await districtHospitalName()).setValue(editedName);
   // trigger blur to trigger Enketo validation
   await (await notes('district_hospital')).click();
