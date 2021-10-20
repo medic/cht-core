@@ -34,7 +34,7 @@ describe('Add new district tests : ', () => {
 
     await utils.saveDocs(contacts);
     await commonElements.goToPeople();
-    await contactPage.editDistrict('Caroline\'s district', 'Edited Caroline\'s');
+    await contactPage.editDistrict('Caroline\'s district', 'Edited Caroline\'s', false);
     expect(await (await contactPage.contactCard()).getText()).to.equal('Edited Caroline\'s');
   });
 
