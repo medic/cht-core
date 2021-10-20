@@ -82,7 +82,7 @@ export class DBSyncService {
       onChange: (replicationResult?) => this.rulesEngineService.monitorExternalChanges(replicationResult),
     }
   ];
-  private globalActions;
+  private globalActions: GlobalActions;
   private inProgressSync;
   private knownOnlineState = window.navigator.onLine;
   private syncIsRecent = false; // true when a replication has succeeded within one interval
@@ -122,9 +122,6 @@ export class DBSyncService {
       })
       .on('error', (err) => {
         console.error(`Error replicating ${direction.name} remote server`, err);
-        if (direction.onError) {
-          direction.onError(err);
-        }
         telemetryEntry.recordFailure(err, this.knownOnlineState);
       })
       .then(info => {

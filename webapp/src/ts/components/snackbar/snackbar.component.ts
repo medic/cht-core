@@ -41,7 +41,7 @@ export class SnackbarComponent implements OnInit {
   ngOnInit() {
     this.changeDetectorRef.detach();
     const reduxSubscription = this.store.select(Selectors.getSnackbarContent).subscribe((snackbarContent) => {
-      if (!snackbarContent || !snackbarContent.message) {
+      if (!snackbarContent?.message) {
         return;
       }
 
