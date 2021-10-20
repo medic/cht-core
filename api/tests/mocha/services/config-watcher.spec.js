@@ -14,11 +14,10 @@ const generateXform = require('../../../src/services/generate-xform');
 const config = require('../../../src/config');
 const bootstrap = require('../../../src/services/config-watcher');
 
-const nextTick = () => new Promise(r => setTimeout(r));
 let on;
 const emitChange = (change) => {
   const changeCallback = on.args[0][1];
-  changeCallback(change);
+  return changeCallback(change);
 };
 
 describe('Configuration', () => {
@@ -149,9 +148,7 @@ describe('Configuration', () => {
         generateServiceWorker.run.resolves();
         db.medic.get.resolves();
 
-        emitChange({ id: '_design/medic' });
-
-        return nextTick().then(() => {
+        return emitChange({ id: '_design/medic' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(1);
           chai.expect(ddocExtraction.run.callCount).to.equal(1);
           chai.expect(resourceExtraction.run.callCount).to.equal(1);
@@ -170,9 +167,7 @@ describe('Configuration', () => {
         generateServiceWorker.run.resolves();
         db.medic.get.resolves();
 
-        emitChange({ id: '_design/medic' });
-
-        return nextTick().then(() => {
+        return emitChange({ id: '_design/medic' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(1);
           chai.expect(ddocExtraction.run.callCount).to.equal(1);
           chai.expect(resourceExtraction.run.callCount).to.equal(1);
@@ -190,9 +185,7 @@ describe('Configuration', () => {
         db.medic.get.resolves();
         sinon.stub(process, 'exit');
 
-        emitChange({ id: '_design/medic' });
-
-        return nextTick().then(() => {
+        return emitChange({ id: '_design/medic' }).then(() => {
           chai.expect(process.exit.callCount).to.deep.equal(1);
         });
       });
@@ -206,9 +199,7 @@ describe('Configuration', () => {
         db.medic.get.resolves();
         sinon.stub(process, 'exit');
 
-        emitChange({ id: '_design/medic' });
-
-        return nextTick().then(() => {
+        return emitChange({ id: '_design/medic' }).then(() => {
           chai.expect(process.exit.callCount).to.deep.equal(1);
         });
       });
@@ -222,9 +213,7 @@ describe('Configuration', () => {
         db.medic.get.resolves();
         sinon.stub(process, 'exit');
 
-        emitChange({ id: '_design/medic' });
-
-        return nextTick().then(() => {
+        return emitChange({ id: '_design/medic' }).then(() => {
           chai.expect(process.exit.callCount).to.deep.equal(1);
         });
       });
@@ -236,9 +225,7 @@ describe('Configuration', () => {
         generateServiceWorker.run.resolves();
         db.medic.query.resolves({ rows: [] });
 
-        emitChange({ id: 'messages-test' });
-
-        return nextTick().then(() => {
+        return emitChange({ id: 'messages-test' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(0);
           chai.expect(ddocExtraction.run.callCount).to.equal(0);
           chai.expect(resourceExtraction.run.callCount).to.equal(0);
@@ -258,9 +245,7 @@ describe('Configuration', () => {
         generateServiceWorker.run.resolves();
         db.medic.query.resolves({ rows: [] });
 
-        emitChange({ id: 'messages-test' });
-
-        return nextTick().then(() => {
+        return emitChange({ id: 'messages-test' }).then(() => {
           chai.expect(generateServiceWorker.run.callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(0);
         });
@@ -272,9 +257,7 @@ describe('Configuration', () => {
         db.medic.query.resolves({ rows: [] });
         sinon.stub(process, 'exit');
 
-        emitChange({ id: 'messages-test' });
-
-        return nextTick().then(() => {
+        return emitChange({ id: 'messages-test' }).then(() => {
           chai.expect(process.exit.callCount).to.equal(1);
         });
       });
@@ -284,9 +267,7 @@ describe('Configuration', () => {
       it('generates service worker when branding doc is updated', () => {
         generateServiceWorker.run.resolves();
 
-        emitChange({ id: 'branding' });
-
-        return nextTick().then(() => {
+        return emitChange({ id: 'branding' }).then(() => {
           chai.expect(generateServiceWorker.run.callCount).to.equal(1);
 
           chai.expect(translations.run.callCount).to.equal(0);
@@ -299,9 +280,7 @@ describe('Configuration', () => {
         generateServiceWorker.run.rejects();
         sinon.stub(process, 'exit');
 
-        emitChange({ id: 'branding' });
-
-        return nextTick().then(() => {
+        return emitChange({ id: 'branding' }).then(() => {
           chai.expect(process.exit.callCount).to.equal(1);
         });
       });
@@ -312,9 +291,7 @@ describe('Configuration', () => {
         settingsService.update.resolves();
         settingsService.get.resolves({ settings: 'yes' });
 
-        emitChange({ id: 'settings' });
-
-        return nextTick().then(() => {
+        return emitChange({ id: 'settings' }).then(() => {
           chai.expect(settingsService.update.callCount).to.equal(1);
           chai.expect(settingsService.get.callCount).to.equal(1);
           chai.expect(config.set.callCount).to.equal(1);
@@ -326,9 +303,8 @@ describe('Configuration', () => {
         settingsService.update.resolves();
         settingsService.get.rejects();
         sinon.stub(process, 'exit');
-        emitChange({ id: 'settings' });
 
-        return nextTick().then(() => {
+        return emitChange({ id: 'settings' }).then(() => {
           chai.expect(process.exit.callCount).to.equal(1);
         });
       });
@@ -338,9 +314,7 @@ describe('Configuration', () => {
       it('handles xform changes', () => {
         sinon.stub(generateXform, 'update').resolves();
 
-        emitChange({ id: 'form:something:something' });
-
-        return nextTick().then(() => {
+        return emitChange({ id: 'form:something:something' }).then(() => {
           chai.expect(generateXform.update.callCount).to.equal(1);
           chai.expect(generateXform.update.args[0]).to.deep.equal(['form:something:something']);
         });
@@ -349,9 +323,7 @@ describe('Configuration', () => {
       it('should not terminate the process on form gen errors', () => {
         sinon.stub(generateXform, 'update').rejects();
 
-        emitChange({ id: 'form:id' });
-
-        return nextTick().then(() => {
+        return emitChange({ id: 'form:id' }).then(() => {
           chai.expect(generateXform.update.callCount).to.equal(1);
           chai.expect(generateXform.update.args[0]).to.deep.equal(['form:id']);
         });
