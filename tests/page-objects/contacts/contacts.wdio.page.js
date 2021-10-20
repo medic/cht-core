@@ -1,4 +1,5 @@
 const genericForm = require('../forms/generic-form.wdio.page');
+const commonElements = require('../common/common.wdio.page');
 const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
 const contentRowSelector = '#contacts-list .content-row';
@@ -49,10 +50,10 @@ const contactCards = () => $$('.card.children');
 const districtHospitalName = () => $('[name="/data/district_hospital/name"]');
 const childrenCards = () => $$('.right-pane .card.children');
 
-
 const search = async (query) => {
   await (await searchBox()).setValue(query);
   await (await searchButton()).click();
+  await commonElements.waitForLoaders();
 };
 
 const selectLHSRowByText = async (text, executeSearch= true) => {
@@ -65,6 +66,7 @@ const selectLHSRowByText = async (text, executeSearch= true) => {
       return await row.click();
     }
   }
+  throw new Error(`Contact with name ${text} not found`);
 };
 
 const getReportFiltersText = async () => {
@@ -190,7 +192,7 @@ const allContactsList = async () => {
   }));
 };
 
-const  editDistrict = async (districtName, editedName) => {
+const editDistrict = async (districtName, editedName) => {
   await selectLHSRowByText(districtName);
   await waitForContactLoaded();
   await (await editContactButton()).click();
