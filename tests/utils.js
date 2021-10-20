@@ -24,7 +24,6 @@ const originalTranslations = {};
 let e2eDebug;
 const hasModal = () => element(by.css('#update-available')).isPresent();
 const { execSync } = require('child_process');
-const {utils} = require('protractor');
 const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 
 
