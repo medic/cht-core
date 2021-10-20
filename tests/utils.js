@@ -162,7 +162,7 @@ const deleteAll = (except) => {
     })
     .then(({ rows }) =>
       rows
-        .filter(({ doc }) => !ignoreFns.find(fn => fn(doc)))
+        .filter(({ doc }) => doc && !ignoreFns.find(fn => fn(doc)))
         .map(({ doc }) => {
           doc._deleted = true;
           doc.type = 'tombstone'; // circumvent tombstones being created when DB is cleaned up

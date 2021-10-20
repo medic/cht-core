@@ -53,6 +53,7 @@
     "angular-jsdoc": "^1.5.1",
     "angular-mocks": "^1.8.2",
     "autoprefixer": "^9.8.6",
+    "bikram-sambat": "^1.7.0",
     "browserify-ngannotate": "^2.0.0",
     "bundlesize": "^0.18.1",
     "chai": "^4.3.4",
@@ -69,6 +70,7 @@
     "eslint-plugin-json": "^2.1.2",
     "eslint-plugin-no-only-tests": "^2.5.0",
     "eslint-plugin-promise": "^4.3.1",
+    "eurodigit": "^3.1.3",
     "express": "^4.17.1",
     "faker": "^5.5.3",
     "flat": "^5.0.2",
@@ -154,5 +156,6 @@
       "path": "./build/ddocs/medic/_attachments/styles.css",
       "maxSize": "70 kB"
     }
-  ]
+  ],
+  "dependencies": {}
 }

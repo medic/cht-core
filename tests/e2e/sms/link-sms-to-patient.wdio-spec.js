@@ -6,7 +6,6 @@ const placeFactory = require('../../factories/cht/contacts/place');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const contactPage = require('../../page-objects/contacts/contacts.wdio.page');
 const sentinelUtils = require('../sentinel/utils');
-const chai = require('chai');
 
 const formId = 'CASEID';
 const formTitle = 'Case Id Form';
@@ -55,7 +54,7 @@ describe('Link SMS to patient without passing id', () => {
     await commonPage.waitForLoaders();
     const allRHSReports = await contactPage.getAllRHSReportsNames();
 
-    chai.expect([formTitle]).to.have.members(allRHSReports);
+    expect([formTitle]).to.have.members(allRHSReports);
   });
 });
 

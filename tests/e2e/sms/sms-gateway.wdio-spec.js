@@ -29,7 +29,7 @@ describe('sms-gateway api', () => {
           },
         ],
       };
-      await pollSmsApi(body); 
+      await pollSmsApi(body);
     });
 
     it('shows content', async () => {
@@ -112,7 +112,6 @@ describe('sms-gateway api', () => {
       const result = await utils.saveDoc(reportWithTwoMessagesToSend);
       savedDoc = result.id;
       response = await pollSmsApi({});
-      console.log(response);
     });
 
     it('- returns list and updates state', async () => {

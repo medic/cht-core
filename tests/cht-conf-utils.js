@@ -11,7 +11,7 @@ const runCommand = async (action, dirPath) => {
     const { stdout } = await exec(`${chtConfPath} --url=${url} ${action} --force --debug`, { cwd: dirPath });
     return stdout;
   } catch (err) {
-    throw err.stderr || err.message;
+    throw err.stdout || err.stderr || err.message;
   }
 };
 
@@ -57,20 +57,32 @@ const initializeConfigDir = async () => {
   fs.writeFileSync(eslintPath, JSON.stringify(eslintRules));
 };
 
-const compileNoolsConfig = async (tasksFile, targetsFile) => {
+const compileNoolsConfig = async ({ tasks, targets, contactSummary }) => {
   const dir = getDirPath();
 
-  if (tasksFile && fs.existsSync(tasksFile)) {
-    fs.copyFileSync(tasksFile, path.join(dir, 'tasks.js'));
+  if (tasks && fs.existsSync(tasks)) {
+    fs.copyFileSync(tasks, path.join(dir, 'tasks.js'));
   }
-  if (targetsFile && fs.existsSync(targetsFile)) {
-    fs.copyFileSync(targetsFile, path.join(dir, 'targets.js'));
+  if (targets && fs.existsSync(targets)) {
+    fs.copyFileSync(targets, path.join(dir, 'targets.js'));
+  }
+  if (contactSummary && fs.existsSync(contactSummary)) {
+    fs.unlinkSync(path.join(dir, 'contact-summary.js'));
+    fs.copyFileSync(contactSummary, path.join(dir, 'contact-summary.templated.js'));
   }
 
   await runCommand('compile-app-settings', dir);
   const appSettings = require(path.join(dir, 'app_settings.json'));
 
-  return appSettings && appSettings.tasks;
+  const compiledConfig = {};
+  if (tasks || targets) {
+    compiledConfig.tasks = appSettings.tasks;
+  }
+  if (contactSummary) {
+    compiledConfig.contactSummary = appSettings.contact_summary;
+  }
+
+  return compiledConfig;
 };
 
 const compileAndUploadAppForms = async (formsDir) => {
