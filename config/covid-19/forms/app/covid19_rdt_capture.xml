@@ -87,7 +87,7 @@
         </translation>
       </itext>
       <instance>
-        <covid19_rdt_capture id="covid19_rdt_capture" prefix="J1!covid19_rdt_capture!" delimiter="#" version="2021-10-21_04-18">
+        <covid19_rdt_capture id="covid19_rdt_capture" prefix="J1!covid19_rdt_capture!" delimiter="#" version="2021-10-21_06-26">
           <inputs tag="hidden">
             <source>user</source>
             <contact>
@@ -252,12 +252,12 @@ concat( /covid19_rdt_capture/patient_age_in_years , ' years old')))"/>
       <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read" type="string"/>
       <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped" type="string"/>
       <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/preview_session_state" type="string" readonly="true()" calculate="if( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state  = 'QUEUED', 'COMPLETED',  /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state )" required="true()"/>
+      <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/preview_session_state" type="string" required="true()" readonly="true()" calculate="if( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state  = 'QUEUED', 'COMPLETED',  /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state )"/>
       <bind nodeset="/covid19_rdt_capture/capture/note_continue_1" readonly="true()" type="string" relevant=" /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read  != ''"/>
       <bind nodeset="/covid19_rdt_capture/capture/note_continue_2" readonly="true()" type="string" relevant=" /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read  != ''"/>
       <bind nodeset="/covid19_rdt_capture/repeat-test/repeat_test" type="select1" required="true()"/>
-      <bind nodeset="/covid19_rdt_capture/repeat-test/repeat_test_reason" type="select1" relevant="selected(../repeat_test , 'yes')" required="true()"/>
-      <bind nodeset="/covid19_rdt_capture/repeat-test/repeat_test_reason_other" type="string" relevant="selected(../repeat_test_reason , 'other')" required="true()"/>
+      <bind nodeset="/covid19_rdt_capture/repeat-test/repeat_test_reason" type="select1" required="true()" relevant="selected(../repeat_test , 'yes')"/>
+      <bind nodeset="/covid19_rdt_capture/repeat-test/repeat_test_reason_other" type="string" required="true()" relevant="selected(../repeat_test_reason , 'other')"/>
       <bind nodeset="/covid19_rdt_capture/summary" relevant=" /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state  != ''"/>
       <bind nodeset="/covid19_rdt_capture/summary/time_started" type="string" calculate="format-date-time(parse-timestamp-to-date( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started ), &quot;%e %b, %Y at %H:%M:%S&quot;)"/>
       <bind nodeset="/covid19_rdt_capture/summary/time_read" type="string" calculate="format-date-time(parse-timestamp-to-date( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read ), &quot;%e %b, %Y at %H:%M:%S&quot;)"/>
