@@ -32,6 +32,9 @@
           <text id="/covid19_rdt_provision/provision/rdtoolkit-provision/preview_session_state:label">
             <value>RDT status *</value>
           </text>
+          <text id="/covid19_rdt_provision/rdt_session_other/rdt_session_other_type:label">
+            <value>You have selected "Other" for the test in RD-Toolkit. Please specify the test being used:</value>
+          </text>
           <text id="/covid19_rdt_provision/spec-lot/additional_notes:label">
             <value>Notes</value>
           </text>
@@ -213,7 +216,7 @@
         </translation>
       </itext>
       <instance>
-        <covid19_rdt_provision id="covid19_rdt_provision" prefix="J1!covid19_rdt_provision!" delimiter="#" version="2021-09-08_23-22">
+        <covid19_rdt_provision id="covid19_rdt_provision" prefix="J1!covid19_rdt_provision!" delimiter="#" version="2021-10-21_04-22">
           <inputs>
             <meta>
               <location>
@@ -311,6 +314,9 @@
             <note_continue_1/>
             <note_continue_2/>
           </provision>
+          <rdt_session_other>
+            <rdt_session_other_type/>
+          </rdt_session_other>
           <summary tag="hidden">
             <syndrome_test_type>COVID-19</syndrome_test_type>
             <rdt_loinc_code>94558-4</rdt_loinc_code>
@@ -372,7 +378,7 @@ concat( /covid19_rdt_provision/patient_age_in_years , ' years old')))"/>
       <bind nodeset="/covid19_rdt_provision/test-reference/other_test_setting" type="string" relevant="(selected(../other_facility_test_setting , 'community_other') or selected(../other_facility_test_setting , 'healthcare_other'))"/>
       <bind nodeset="/covid19_rdt_provision/test-reference/test_reason" type="select"/>
       <bind nodeset="/covid19_rdt_provision/test-reference/symptoms" type="select"/>
-      <bind nodeset="/covid19_rdt_provision/test-reference/days_since_symptoms_began" type="int" constraint=". &amp;gt;= 1 and . &amp;lt;= 200" relevant="../symptoms != ''" jr:constraintMsg="jr:itext('/covid19_rdt_provision/test-reference/days_since_symptoms_began:jr:constraintMsg')"/>
+      <bind nodeset="/covid19_rdt_provision/test-reference/days_since_symptoms_began" type="int" constraint=". &amp;gt;= 1 and . &amp;lt;= 200" jr:constraintMsg="jr:itext('/covid19_rdt_provision/test-reference/days_since_symptoms_began:jr:constraintMsg')" relevant="../symptoms != ''"/>
       <bind nodeset="/covid19_rdt_provision/spec-lot/specimen_type" type="select1"/>
       <bind nodeset="/covid19_rdt_provision/spec-lot/specimen_type_other" type="string" relevant="selected(../specimen_type, 'other')"/>
       <bind nodeset="/covid19_rdt_provision/spec-lot/rdt_lot" type="string"/>
@@ -393,9 +399,10 @@ concat( /covid19_rdt_provision/patient_age_in_years , ' years old')))"/>
       <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_resolved" type="string"/>
       <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_expired" type="string"/>
       <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_test_profile" type="string"/>
-      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/preview_session_state" type="string" calculate=" /covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_state " required="true()" readonly="true()"/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/preview_session_state" type="string" required="true()" readonly="true()" calculate=" /covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_state "/>
       <bind nodeset="/covid19_rdt_provision/provision/note_continue_1" readonly="true()" type="string" relevant=" /covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_started  != ''"/>
       <bind nodeset="/covid19_rdt_provision/provision/note_continue_2" readonly="true()" type="string" relevant=" /covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_started  != ''"/>
+      <bind nodeset="/covid19_rdt_provision/rdt_session_other/rdt_session_other_type" type="string" required="true()" relevant="starts-with( /covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_test_profile , &quot;generic_c19_&quot;)"/>
       <bind nodeset="/covid19_rdt_provision/summary/syndrome_test_type" type="string"/>
       <bind nodeset="/covid19_rdt_provision/summary/rdt_loinc_code" type="string"/>
       <bind nodeset="/covid19_rdt_provision/summary/rdt_loinc_long_common_name" type="string"/>
@@ -650,6 +657,11 @@ concat( /covid19_rdt_provision/patient_age_in_years , ' years old')))"/>
       </input>
       <input ref="/covid19_rdt_provision/provision/note_continue_2">
         <label ref="jr:itext('/covid19_rdt_provision/provision/note_continue_2:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/covid19_rdt_provision/rdt_session_other">
+      <input ref="/covid19_rdt_provision/rdt_session_other/rdt_session_other_type">
+        <label ref="jr:itext('/covid19_rdt_provision/rdt_session_other/rdt_session_other_type:label')"/>
       </input>
     </group>
     <group appearance="field-list summary" ref="/covid19_rdt_provision/summary">
