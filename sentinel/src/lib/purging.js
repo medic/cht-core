@@ -1,5 +1,4 @@
 const config = require('../config');
-const request = require('request-promise-native');
 const registrationUtils = require('@medic/registration-utils');
 const tombstoneUtils = require('@medic/tombstone-utils');
 const serverSidePurgeUtils = require('@medic/purging-utils');
@@ -251,13 +250,12 @@ const getRecordGroupInfo = (row) => {
   return { key: row.key, message: row.doc };
 };
 
-const hydrateRecords = (recordRows) => {
+const hydrateRecords = async (recordRows) => {
   const recordIds = recordRows.map(row => row.id);
-  return db.medic.allDocs({ keys: recordIds, include_docs: true }).then(allDocsResult => {
-    return recordRows
-      .map((row, idx) => Object.assign(row, { doc: allDocsResult.rows[idx].doc }))
-      .filter(row => row.doc);
-  });
+
+  const allDocsResult = await db.medic.allDocs({ keys: recordIds, include_docs: true });
+  recordRows.forEach((row, idx) => row.doc = allDocsResult.rows[idx].doc);
+  return recordRows.filter(row => row.doc);
 };
 
 const getRecordsForContacts = async (groups, subjectIds) => {
@@ -404,10 +402,10 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
     include_docs: true,
   };
 
-  // using `request` library because PouchDB doesn't support `startkey_docid` in view queries
+  // using `db.queryMedic` library because PouchDB doesn't support `startkey_docid` in view queries
   // using `startkey_docid` because using `skip` is *very* slow
-  return request
-    .get(`${db.couchUrl}/_design/medic-client/_view/contacts_by_type`, { qs: queryString, json: true })
+  return db
+    .queryMedic('medic-client/contacts_by_type', queryString)
     .then(result => {
       result.rows.forEach(row => {
         if (row.id === startKeyDocId) {
@@ -450,16 +448,12 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
   let startKey = '';
   let nextBatch;
 
-  // using `request-promise-native` because PouchDB doesn't support `start_key_doc_id`
-  const getBatch = () => request.get({
-    url: `${db.couchUrl}/_design/medic/_view/docs_by_replication_key`,
-    json: true,
-    qs: {
-      limit: MAX_BATCH_SIZE,
-      key: JSON.stringify('_unassigned'),
-      startkey_docid: startKeyDocId,
-      include_docs: true
-    },
+  // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
+  const getBatch = () => db.queryMedic('medic/docs_by_replication_key', {
+    limit: MAX_BATCH_SIZE,
+    key: JSON.stringify('_unassigned'),
+    startkey_docid: startKeyDocId,
+    include_docs: true
   });
 
   const getIdsToPurge = (rolesHashes, rows) => {
@@ -495,16 +489,12 @@ const purgeTasks = async (roles) => {
   let startKey = '';
   let nextBatch;
 
-  // using `request-promise-native` because PouchDB doesn't support `start_key_doc_id`
-  const getBatch = () => request.get({
-    url: `${db.couchUrl}/_design/medic/_view/tasks_in_terminal_state`,
-    json: true,
-    qs: {
-      limit: MAX_BATCH_SIZE,
-      end_key: JSON.stringify(maximumEmissionEndDate),
-      start_key: JSON.stringify(startKey),
-      startkey_docid: startKeyDocId,
-    },
+  // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
+  const getBatch = () => db.queryMedic('medic/tasks_in_terminal_state', {
+    limit: MAX_BATCH_SIZE,
+    end_key: JSON.stringify(maximumEmissionEndDate),
+    start_key: JSON.stringify(startKey),
+    startkey_docid: startKeyDocId,
   });
 
   const getIdsToPurge = (rolesHashes, rows) => {
@@ -531,15 +521,11 @@ const purgeTargets = async (roles) => {
   let nextBatch;
 
   const lastAllowedReportingIntervalTag = moment().subtract(TARGET_EXPIRATION_PERIOD, 'months').format('YYYY-MM');
-  // using `request-promise-native` because PouchDB doesn't support `start_key_doc_id`
-  const getBatch = () => request.get({
-    url: `${db.couchUrl}/_all_docs`,
-    json: true,
-    qs: {
-      limit: MAX_BATCH_SIZE,
-      start_key: JSON.stringify(startKeyDocId),
-      end_key: JSON.stringify(`target~${lastAllowedReportingIntervalTag}~`),
-    },
+  // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
+  const getBatch = () => db.queryMedic('allDocs', {
+    limit: MAX_BATCH_SIZE,
+    start_key: JSON.stringify(startKeyDocId),
+    end_key: JSON.stringify(`target~${lastAllowedReportingIntervalTag}~`),
   });
 
   const getIdsToPurge = (rolesHashes, rows) => {
@@ -631,7 +617,7 @@ const writePurgeLog = (roles, start, error) => {
 // - we intentionally skip reports that `needs_signoff` when they are retrieved because of the `needs_signoff`
 // submitter lineage emit. As a consequence, orphaned reports with `needs_signoff` will not be purged
 
-const purge = async () => {
+const purge = () => {
   if (currentlyPurging) {
     return;
   }
