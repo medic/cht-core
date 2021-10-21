@@ -8,6 +8,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { CookieService } from 'ngx-cookie-service';
 import { LanguageService, LanguageCookieService, SetLanguageService } from '@mm-services/language.service';
 import { FormatDateService } from '@mm-services/format-date.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 describe('Language services', () => {
   afterEach(() => {
@@ -59,6 +60,7 @@ describe('Language services', () => {
     let languageCookieService;
     let ngxTranslateService;
     let formatDateService;
+    let telemetryService;
     let setLanguageService:SetLanguageService;
 
     beforeEach(() => {
@@ -73,12 +75,14 @@ describe('Language services', () => {
         use: sinon.stub().returns({ toPromise: sinon.stub().resolves() }),
       };
       formatDateService = { init: sinon.stub().resolves() };
+      telemetryService = { record: sinon.stub() };
 
       TestBed.configureTestingModule({
         providers: [
           { provide: LanguageCookieService, useValue: languageCookieService },
           { provide: NgxTranslateService, useValue: ngxTranslateService },
           { provide: FormatDateService, useValue: formatDateService },
+          { provide: TelemetryService, useValue: telemetryService },
         ]
       });
       setLanguageService = TestBed.inject(SetLanguageService);
@@ -97,6 +101,8 @@ describe('Language services', () => {
       expect(formatDateService.init.callCount).to.equal(1);
 
       expect((<any>$.fn).datepicker.defaults.language).to.equal('en');
+      expect(telemetryService.record.callCount).to.equal(1);
+      expect(telemetryService.record.args[0]).to.deep.equal(['user_settings:language:new locale']);
     });
 
     it('should set supported datepicker language', async () => {

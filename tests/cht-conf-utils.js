@@ -7,7 +7,8 @@ const utils = require('./utils');
 const runCommand = async (action, dirPath) => {
   const url = utils.getInstanceUrl();
   try {
-    const { stdout } = await exec(`cht --url=${url} ${action} --force --debug`, { cwd: dirPath });
+    const chtConfPath = path.resolve(process.cwd(), './node_modules/.bin/cht');
+    const { stdout } = await exec(`${chtConfPath} --url=${url} ${action} --force --debug`, { cwd: dirPath });
     return stdout;
   } catch (err) {
     throw err.stdout || err.stderr || err.message;
@@ -101,6 +102,7 @@ const compileAndUploadAppForms = async (formsDir) => {
 };
 
 module.exports = {
+  runCommand,
   compileNoolsConfig,
   initializeConfigDir,
   compileAndUploadAppForms,
