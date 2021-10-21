@@ -57,6 +57,7 @@
     "browserify-ngannotate": "^2.0.0",
     "bundlesize": "^0.18.1",
     "chai": "^4.3.4",
+    "chai-as-promised": "^7.1.1",
     "chai-exclude": "^2.0.3",
     "chai-shallow-deep-equal": "^1.4.6",
     "cht-conf": "^3.8.0",
@@ -109,7 +110,7 @@
     "mocha": "^7.2.0",
     "moment": "^2.29.1",
     "moment-locales-webpack-plugin": "^1.2.0",
-    "node-sass": "^4.14.1",
+    "node-sass": "^6.0.1",
     "nodemon": "^2.0.12",
     "postcss": "^8.3.6",
     "pouchdb-adapter-http": "^7.2.2",
@@ -155,6 +156,5 @@
       "path": "./build/ddocs/medic/_attachments/styles.css",
       "maxSize": "70 kB"
     }
-  ],
-  "dependencies": {}
+  ]
 }

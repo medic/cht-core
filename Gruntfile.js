@@ -338,7 +338,6 @@ module.exports = function(grunt) {
             [
               `cd ${module}`,
               `npm ci --production`,
-              `${copySharedLibs}`,
               `npm dedupe`,
               `npm pack`,
               `ls -l medic-${module}-0.1.0.tgz`,
@@ -437,7 +436,7 @@ module.exports = function(grunt) {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
       'setup-api-integration': {
-        cmd: `cd api && npm ci && ${linkSharedLibs('api')}`,
+        cmd: `cd api && npm ci}`,
       },
       'npm-ci-shared-libs': {
         cmd: (production) => {
@@ -452,7 +451,7 @@ module.exports = function(grunt) {
       },
       'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && ${linkSharedLibs(dir)} && cd ..`)
+          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {

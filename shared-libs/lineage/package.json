@@ -9,17 +9,7 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@medic/memdown": "file:../memdown",
-    "chai": "^4.3.4",
-    "chai-as-promised": "^7.1.1",
-    "chai-exclude": "^2.0.3",
-    "chai-shallow-deep-equal": "^1.4.6",
-    "mocha": "^7.2.0",
-    "pouchdb-adapter-memory": "^7.2.2",
-    "pouchdb-core": "^7.2.2",
-    "pouchdb-mapreduce": "^7.2.2",
-    "sinon": "^8.1.1",
-    "uuid": "^3.4.0"
+    "@medic/memdown": "file:../memdown"
   },
   "dependencies": {
     "@medic/contact-types-utils": "file:../contact-types-utils",

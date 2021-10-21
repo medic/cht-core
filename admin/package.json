@@ -7,6 +7,15 @@
     "npm": ">=6.4.1"
   },
   "dependencies": {
+    "@medic/calendar-interval": "file:../shared-libs/calendar-interval",
+    "@medic/cht-script-api": "file:../shared-libs/cht-script-api",
+    "@medic/contact-types-utils": "file:../shared-libs/contact-types-utils",
+    "@medic/lineage": "file:../shared-libs/lineage",
+    "@medic/message-utils": "file:../shared-libs/message-utils",
+    "@medic/phone-number": "file:../shared-libs/phone-number",
+    "@medic/registration-utils": "file:../shared-libs/registration-utils",
+    "@medic/search": "file:../shared-libs/search",
+    "@medic/translation-utils": "file:../shared-libs/translation-utils",
     "@uirouter/angularjs": "^1.0.26",
     "angular": "^1.7.9",
     "angular-cookie": "^4.1.0",
@@ -34,7 +43,6 @@
     "select2": "^4.0.11",
     "simple-password-tester": "^1.0.0"
   },
-  "devDependencies": {},
   "resolutions": {
     "**/jquery": "3.2.x",
     "**/pouchdb-browser": "^7.2.2"
