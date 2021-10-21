@@ -13,7 +13,6 @@ const date = require('../date');
 const bs = require('bikram-sambat');
 
 const contactTypesUtils = require('@medic/contact-types-utils');
-const { padStart } = require('lodash');
 
 const NAME = 'registration';
 const PARENT_NOT_FOUND = 'parent_not_found';
@@ -128,32 +127,28 @@ const getDaysSinceDOB = doc => {
 };
 
 const getExactLMPDate = doc => {
-  let lmpYYYY, lmpMM, lmpDD;
+  //basic validations will be done in the app_settings.registrations
+  const lmpYYYY = doc.fields.lmpYYYY.padStart(4, '2000');
+  const lmpMM = doc.fields.lmpMM.padStart(2, '00');
+  const lmpDD = doc.fields.lmpDD.padStart(2, '00');
   let gregDate;
-  if (doc.fields.lmpYYYY.length > 4) {//YYYY*(M)M*(D)D
-    const matchArray = doc.fields.lmpYYYY.match(/^([0-9]{2,4})[^0-9]([0-9]{1,2})[^0-9]([0-9]{1,2})$/);
-    if (matchArray && matchArray.length === 4) {//All 3 groups matched
-      lmpYYYY = matchArray[1].padStart(4, '2000');
-      lmpMM = matchArray[2].padStart(2, '00');
-      lmpDD = matchArray[3].padStart(2, '00');
-    }
-  }
-  else if (doc.fields.lmpDD) {
-    lmpYYYY = doc.fields.lmpYYYY.padStart(4, '2000');
-    lmpMM = doc.fields.lmpMM.padStart(2, '00');
-    lmpDD = doc.fields.lmpDD.padStart(2, '00');
-  }
-  else {
-    throw ("Could not get the date from input.");//TODO:send error msg to the sender
-  }
-  if (lmpYYYY > moment().year() + 54) {//Bikram Sambat?
+
+  //Bikram Sambat is either 56 or 57 years ahead of Gregorian
+  //To support LMP dates from last year, we check now + 55
+  if (lmpYYYY > moment().year() + 55) {
     gregDate = bs.toGreg_text(lmpYYYY, lmpMM, lmpDD);
   }
   else {
     gregDate = `${lmpYYYY}-${lmpMM}-${lmpDD}`;
   }
+
+  //check that date is not later than 8 weeks ago
+  if (moment(gregDate).isAfter(moment().subtract(8, 'weeks'))) {
+    throw ("Date should not be later than 8 weeks ago.");//TODO: possible to send error message to user?
+  }
   return moment(gregDate);
 };
+
 /*
  * Given a doc get the LMP value as a number, including 0. Supports three
  * property names atm.
