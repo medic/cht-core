@@ -43,6 +43,14 @@ const readOnlyFilter = function(doc) {
 // of invalidating existent replication checkpointers after upgrade, causing users to restart upwards replication.
 readOnlyFilter.toString = () => '';
 
+type Update = {
+  state?: 'unknown' | 'disabled' | 'inProgress';
+  to?: 'success';
+  from?: 'success';
+};
+
+type UpdateListener = Parameters<Subject<Update>['subscribe']>[0];
+
 @Injectable({
   providedIn: 'root'
 })
@@ -90,7 +98,7 @@ export class DBSyncService {
     sync: undefined,
     meta: undefined,
   };
-  private readonly observable = new Subject();
+  private readonly observable = new Subject<Update>();
 
   isEnabled() {
     return !this.sessionService.isOnlineOnly();
@@ -173,7 +181,7 @@ export class DBSyncService {
         .then(errs => {
           return this.getCurrentSeq().then(currentSeq => {
             errs = errs.filter(err => err);
-            let update: any = { to: 'success', from: 'success' };
+            let update: Update = { to: 'success', from: 'success' };
             if (!errs.length) {
               // no errors
               this.syncIsRecent = true;
@@ -228,7 +236,7 @@ export class DBSyncService {
       .then(() => this.ngZone.runOutsideAngular(() => purger.writePurgeMetaCheckpoint(local, currentSeq)));
   }
 
-  private sendUpdate(update) {
+  private sendUpdate(update: Update) {
     this.observable.next(update);
   }
 
@@ -244,7 +252,7 @@ export class DBSyncService {
     }, SYNC_INTERVAL);
   }
 
-  private displayUserFeedback(update) {
+  private displayUserFeedback(update: Update) {
     if (update.to === 'success' && update.from === 'success') {
       this.globalActions.setSnackbarContent(this.translateService.instant('sync.status.not_required'));
     } else {
@@ -258,7 +266,7 @@ export class DBSyncService {
     }
   }
 
-  subscribe(listener) {
+  subscribe(listener: UpdateListener) {
     return this.observable.subscribe(listener);
   }
 
