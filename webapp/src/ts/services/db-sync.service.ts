@@ -192,17 +192,7 @@ export class DBSyncService {
             }
 
             if (force) {
-              if (update.to === 'success' && update.from === 'success') {
-                this.globalActions.setSnackbarContent(this.translateService.instant('sync.feedback.success'));
-              } else {
-                this.globalActions.setSnackbarContent(
-                  this.translateService.instant('sync.feedback.failure.unknown'),
-                  {
-                    label: this.translateService.instant('sync.retry'),
-                    onClick: () => this.sync(force),
-                  },
-                );
-              }
+              this.displayUserFeedback(update);
             }
 
             this.sendUpdate(update);
@@ -252,6 +242,20 @@ export class DBSyncService {
       this.syncIsRecent = false;
       this.sync();
     }, SYNC_INTERVAL);
+  }
+
+  private displayUserFeedback(update) {
+    if (update.to === 'success' && update.from === 'success') {
+      this.globalActions.setSnackbarContent(this.translateService.instant('sync.feedback.success'));
+    } else {
+      this.globalActions.setSnackbarContent(
+        this.translateService.instant('sync.feedback.failure.unknown'),
+        {
+          label: this.translateService.instant('sync.retry'),
+          onClick: () => this.sync(true),
+        },
+      );
+    }
   }
 
   subscribe(listener) {
