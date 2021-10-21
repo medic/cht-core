@@ -15,7 +15,7 @@ const {
   BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
-} = process.env;
+} = process.env
 
 const releaseName = TAG || BRANCH || 'local-development';
 const ESLINT_COMMAND = './node_modules/.bin/eslint --color';
