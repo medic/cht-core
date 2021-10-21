@@ -20,6 +20,7 @@ const {
 const releaseName = TAG || BRANCH || 'local-development';
 const ESLINT_COMMAND = './node_modules/.bin/eslint --color';
 
+
 const couchConfig = (() => {
   if (!COUCH_URL) {
     throw 'Required environment variable COUCH_URL is undefined. (eg. http://your:pass@localhost:5984/medic)';
