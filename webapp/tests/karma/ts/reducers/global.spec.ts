@@ -1,3 +1,4 @@
+import sinon from 'sinon';
 import { expect } from 'chai';
 
 import { Actions } from '@mm-actions/global';
@@ -47,7 +48,7 @@ describe('Global Reducer', () => {
       message: 'this is just a random text',
       action: {
         label: 'click me',
-        onClick: () => {},
+        onClick: sinon.stub(),
       },
     };
     expect(globalReducer(state, Actions.setSnackbarContent(content))).to.deep.equal({
