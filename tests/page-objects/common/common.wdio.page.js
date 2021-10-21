@@ -151,6 +151,8 @@ const waitForLoaders = async () => {
 };
 
 const waitForPageLoaded = async () => {
+  // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
+  // so waiting for the main page to load.
   await (await $('.header-logo')).waitForDisplayed();
   // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
   // get all loaders.
