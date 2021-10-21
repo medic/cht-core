@@ -204,7 +204,7 @@ const editDistrict = async (districtName, editedName) => {
   await (await editContactButton()).click();
 
   await (await districtHospitalName()).setValue(editedName);
-  // trigger blur to trigger Enketo validation
+  // blur field to trigger Enketo validation
   await (await notes('district_hospital')).click();
   await (await genericForm.submitButton()).click();
 };
