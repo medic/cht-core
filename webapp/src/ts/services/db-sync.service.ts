@@ -136,7 +136,7 @@ export class DBSyncService {
           return this.replicate(direction, { batchSize });
         }
         console.error(`Error replicating ${direction.name} remote server`, err);
-        return { direction: direction.name, err };
+        return direction.name;
       });
   }
 
@@ -183,8 +183,8 @@ export class DBSyncService {
               update = { state: 'unknown' };
             } else {
               // definitely need to sync something
-              errs.forEach(({ direction }) => {
-                update[direction] = 'required';
+              errs.forEach((directionName) => {
+                update[directionName] = 'required';
               });
             }
             if (update.to === 'success') {
