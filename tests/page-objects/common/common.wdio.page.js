@@ -152,6 +152,8 @@ const waitForLoaders = async () => {
 
 const waitForPageLoaded = async () => {
   await (await $('.header-logo')).waitForDisplayed();
+  // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
+  // get all loaders.
   do {
     await waitForLoaders();
   } while ((await loaders()).length > 0);
