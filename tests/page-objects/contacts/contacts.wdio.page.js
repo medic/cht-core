@@ -56,17 +56,21 @@ const search = async (query) => {
   await commonElements.waitForLoaders();
 };
 
+const findRowByText = async (text) => {
+  for (const row of await contentRows()) {
+    if ((await row.getText()) === text) {
+      return row;
+    }
+  }
+};
+
 const selectLHSRowByText = async (text, executeSearch= true) => {
   if (executeSearch) {
     await search(text);
   }
-  await browser.waitUntil(async () => (await contentRows()).length);
-  for (const row of await contentRows()) {
-    if ((await row.getText()) === text) {
-      return await row.click();
-    }
-  }
-  throw new Error(`Contact with name ${text} not found`);
+  await browser.waitUntil(async () => await findRowByText(text));
+  const row = await findRowByText(text);
+  return await row.click();
 };
 
 const getReportFiltersText = async () => {
