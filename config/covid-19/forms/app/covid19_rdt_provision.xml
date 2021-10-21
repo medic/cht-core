@@ -211,7 +211,7 @@
             <value>Symptomatic</value>
           </text>
           <text id="/covid19_rdt_provision/test-reference/test_reason:jr:constraintMsg">
-            <value>Select only one of "asymptomatic" or "symptomatic", not both.</value>
+            <value>Select only one of the "asymptomatic" or "symptomatic", a patient cannot be both "asymptomatic" and "symptomatic"</value>
           </text>
           <text id="/covid19_rdt_provision/test-reference/test_reason:label">
             <value>Why is the patient taking the test?</value>
@@ -222,7 +222,7 @@
         </translation>
       </itext>
       <instance>
-        <covid19_rdt_provision id="covid19_rdt_provision" prefix="J1!covid19_rdt_provision!" delimiter="#" version="2021-10-21_06-37">
+        <covid19_rdt_provision id="covid19_rdt_provision" prefix="J1!covid19_rdt_provision!" delimiter="#" version="2021-10-21_23-11">
           <inputs>
             <meta>
               <location>
@@ -385,7 +385,7 @@ concat( /covid19_rdt_provision/patient_age_in_years , ' years old')))"/>
       <bind nodeset="/covid19_rdt_provision/test-reference/other_test_setting" type="string" relevant="(selected(../other_facility_test_setting , 'community_other') or selected(../other_facility_test_setting , 'healthcare_other'))"/>
       <bind nodeset="/covid19_rdt_provision/test-reference/test_reason" type="select" constraint="not(selected(., 'symptomatic') and selected(., 'asymptomatic'))" jr:constraintMsg="jr:itext('/covid19_rdt_provision/test-reference/test_reason:jr:constraintMsg')"/>
       <bind nodeset="/covid19_rdt_provision/test-reference/symptoms" type="select" relevant="selected( /covid19_rdt_provision/test-reference/test_reason , 'symptomatic')"/>
-      <bind nodeset="/covid19_rdt_provision/test-reference/days_since_symptoms_began" type="int" relevant="../symptoms != ''" jr:constraintMsg="jr:itext('/covid19_rdt_provision/test-reference/days_since_symptoms_began:jr:constraintMsg')" constraint=". &amp;gt;= 1 and . &amp;lt;= 200"/>
+      <bind nodeset="/covid19_rdt_provision/test-reference/days_since_symptoms_began" type="int" relevant="../symptoms != ''" constraint=". &amp;gt;= 1 and . &amp;lt;= 200" jr:constraintMsg="jr:itext('/covid19_rdt_provision/test-reference/days_since_symptoms_began:jr:constraintMsg')"/>
       <bind nodeset="/covid19_rdt_provision/spec-lot/specimen_type" type="select1"/>
       <bind nodeset="/covid19_rdt_provision/spec-lot/specimen_type_other" type="string" relevant="selected(../specimen_type, 'other')"/>
       <bind nodeset="/covid19_rdt_provision/spec-lot/rdt_lot" type="string"/>
