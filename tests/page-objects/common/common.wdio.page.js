@@ -86,8 +86,7 @@ const goToReports = async () => {
 const goToPeople = async (contactId = '', shouldLoad = true) => {
   await browser.url(`/#/contacts/${contactId}`);
   if (shouldLoad) {
-    await (await contactsPage.contactList()).waitForDisplayed();
-    await waitForLoaders();
+    await waitForPageLoaded();
   }
 };
 
@@ -144,8 +143,24 @@ const hideSnackbar = () => {
 
 const waitForLoaders = async () => {
   await browser.waitUntil(async () => {
-    return (await loaders()).map((loader) => loader.isDisplayed()).length === 0;
+    for (const loader of await loaders()) {
+      if (await loader.isDisplayed()) {
+        return false;
+      }
+    }
+    return true;
   }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
+};
+
+const waitForPageLoaded = async () => {
+  // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
+  // so waiting for the main page to load.
+  await (await $('.header-logo')).waitForDisplayed();
+  // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
+  // get all loaders.
+  do {
+    await waitForLoaders();
+  } while ((await loaders()).length > 0);
 };
 
 const syncAndWaitForSuccess = async () => {
@@ -243,4 +258,5 @@ module.exports = {
   openAppManagement,
   waitForLoaderToDisappear,
   goToAboutPage,
+  waitForPageLoaded,
 };
