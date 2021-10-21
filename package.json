@@ -108,7 +108,7 @@
     "lodash": "^4.17.19",
     "loose-envify": "^1.4.0",
     "medic-conf": "^3.2.1",
-    "mocha": "^8.4.0",
+    "mocha": "^7.2.0",
     "moment": "^2.29.1",
     "moment-locales-webpack-plugin": "^1.2.0",
     "node-sass": "^6.0.1",
