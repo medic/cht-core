@@ -78,14 +78,13 @@ const goToBase = async () => {
 
 const goToReports = async () => {
   await browser.url('/#/reports');
-  await (await $(`#reports-list`)).waitForDisplayed();
+  await waitForPageLoaded();
 };
 
 const goToPeople = async (contactId = '', shouldLoad = true) => {
   await browser.url(`/#/contacts/${contactId}`);
   if (shouldLoad) {
-    await (await $('#contacts-list')).waitForDisplayed();
-    await waitForLoaders();
+    await waitForPageLoaded();
   }
 };
 
@@ -142,8 +141,20 @@ const hideSnackbar = () => {
 
 const waitForLoaders = async () => {
   await browser.waitUntil(async () => {
-    return (await loaders()).map((loader) => loader.isDisplayed()).length === 0;
+    for (const loader of await loaders()) {
+      if (await loader.isDisplayed()) {
+        return false;
+      }
+    }
+    return true;
   }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
+};
+
+const waitForPageLoaded = async () => {
+  await (await $('.header-logo')).waitForDisplayed();
+  do {
+    await waitForLoaders();
+  } while ((await loaders()).length > 0);
 };
 
 const syncAndWaitForSuccess = async () => {
@@ -241,4 +252,5 @@ module.exports = {
   openAppManagement,
   waitForLoaderToDisappear,
   goToAboutPage,
+  waitForPageLoaded,
 };

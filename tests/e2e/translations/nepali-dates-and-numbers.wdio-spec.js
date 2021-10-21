@@ -112,7 +112,6 @@ describe('Bikram Sambat date display', () => {
 
     await browser.refresh();
     await commonPage.goToReports();
-    await commonPage.waitForLoaders();
 
     const reportDetails = await reportsPage.reportsListDetails();
     moment.locale(NEPALI_LOCALE_CODE);

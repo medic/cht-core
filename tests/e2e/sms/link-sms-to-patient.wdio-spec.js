@@ -51,7 +51,6 @@ describe('Link SMS to patient without passing id', () => {
     });
 
     await commonPage.goToPeople(user.contact._id);
-    await commonPage.waitForLoaders();
     const allRHSReports = await contactPage.getAllRHSReportsNames();
 
     expect([formTitle]).to.have.members(allRHSReports);
