@@ -45,11 +45,11 @@ const getSharedLibDirs = () => {
     .readdirSync('shared-libs')
     .filter(file => fs.lstatSync(`shared-libs/${file}`).isDirectory());
 };
-
+/*
 const copySharedLibs = [
-  'rm -rf ../shared-libs/*/node_modules/@medic',
+  'rm -rf ../shared-libs/!*!/node_modules/@medic',
   'mkdir ./node_modules/@medic',
-  'cp -RP ../shared-libs/* ./node_modules/@medic'
+  'cp -RP ../shared-libs/!* ./node_modules/@medic'
 ].join( '&& ');
 
 const linkSharedLibs = dir => {
@@ -59,7 +59,7 @@ const linkSharedLibs = dir => {
     'mkdir ./node_modules/@medic',
     ...getSharedLibDirs().map(lib => `ln -s ${sharedLibPath(lib)} ${symlinkPath(lib)}`)
   ].join(' && ');
-};
+};*/
 
 module.exports = function(grunt) {
   'use strict';

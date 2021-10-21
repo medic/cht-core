@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "PouchDB instance populated with ddocs",
   "main": "src/memdown-medic.js",
-  "scripts": {},
+  "scripts": {
+    "test": ""
+  },
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {},
