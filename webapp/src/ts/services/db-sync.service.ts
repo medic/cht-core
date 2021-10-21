@@ -294,6 +294,7 @@ export class DBSyncService {
 
     if (force) {
       this.globalActions.setSnackbarContent(this.translateService.instant('sync.feedback.in_progress'));
+      this.telemetryService.record('replication:user-initiated');
     }
 
     if (!this.intervalPromises.meta || force) {
