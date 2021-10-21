@@ -246,7 +246,7 @@ export class DBSyncService {
 
   private displayUserFeedback(update) {
     if (update.to === 'success' && update.from === 'success') {
-      this.globalActions.setSnackbarContent(this.translateService.instant('sync.feedback.success'));
+      this.globalActions.setSnackbarContent(this.translateService.instant('sync.status.not_required'));
     } else {
       this.globalActions.setSnackbarContent(
         this.translateService.instant('sync.feedback.failure.unknown'),
@@ -297,7 +297,7 @@ export class DBSyncService {
     }
 
     if (force) {
-      this.globalActions.setSnackbarContent(this.translateService.instant('sync.feedback.in_progress'));
+      this.globalActions.setSnackbarContent(this.translateService.instant('sync.status.in_progress'));
       this.telemetryService.record('replication:user-initiated');
     }
 
