@@ -1,7 +1,7 @@
 import { provideMockStore } from '@ngrx/store/testing';
 import { Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
-import { async, ComponentFixture, fakeAsync, TestBed, flush } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, flush, waitForAsync } from '@angular/core/testing';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -22,7 +22,7 @@ describe('DeleteDocConfirmComponent', () => {
   let translateService;
   let globalActions;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     bdModalRef = { hide: sinon.stub(), onHide: new Subject() };
     localDb = { put: sinon.stub().resolves(true) };
     dbService = { get: sinon.stub().returns(localDb) };

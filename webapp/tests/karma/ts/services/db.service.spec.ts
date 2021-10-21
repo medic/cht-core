@@ -1,4 +1,4 @@
-import { TestBed, async, tick, fakeAsync } from '@angular/core/testing';
+import { TestBed, tick, fakeAsync, waitForAsync } from '@angular/core/testing';
 import sinon from 'sinon';
 import * as chai from 'chai';
 import * as chaiExclude from 'chai-exclude';
@@ -34,7 +34,7 @@ describe('Db Service', () => {
     tick(1000); // trigger the viewCleanup timeout
   };
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     sessionService = {
       userCtx: sinon.stub(),
       isOnlineOnly: sinon.stub(),
@@ -316,11 +316,11 @@ describe('Db Service', () => {
 
           expect(stubbedMethod.callCount).to.equal(0);
 
-          methods[method].forEach((args) => {
+          methods[method].forEach(({ args }) => {
             sinon.resetHistory();
             db[method](...args);
             expect(stubbedMethod.callCount).to.equal(1);
-            expect(stubbedMethod.args[0]).to.deep.equal([args]);
+            expect(stubbedMethod.args[0]).to.deep.equal(args);
             expect(runOutsideAngular.callCount).to.equal(1);
           });
         }));
