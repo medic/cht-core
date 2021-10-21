@@ -135,7 +135,6 @@
     pointer-events: initial;
     text-align: left;
     display: flex;
-    align-items: center;
     justify-content: space-between;
     padding: 14px 24px;
     vertical-align: middle;
@@ -149,11 +148,16 @@
     overflow: hidden;
     white-space: nowrap;
     .snackbar-message {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
       max-width: 80%;
       word-break: break-word;
       white-space: normal;
     }
     .snackbar-action {
+      align-self: center;
       cursor: pointer;
       color: @text-link-color;
       text-transform: uppercase;
