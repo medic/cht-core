@@ -27,6 +27,7 @@ import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
 import { SafeHtmlPipe } from '@mm-pipes/safe-html.pipe';
 import { PhonePipe } from '@mm-pipes/phone.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
+import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 
 describe('PipesService', () => {
   let pipes;
@@ -68,6 +69,7 @@ describe('PipesService', () => {
         { provide: PhonePipe, useValue: genPipe('PhonePipe') },
         { provide: TranslateFromPipe, useValue: genPipe('TranslateFromPipe') },
         { provide: DatePipe, useValue: genPipe('DatePipe') },
+        { provide: LocalizeNumberPipe, useValue: genPipe('LocalizeNumberPipe') },
       ],
     });
     service = TestBed.inject(PipesService);

@@ -10,7 +10,7 @@ import { MarkReadService } from '@mm-services/mark-read.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
-import { ServicesActions } from '@mm-actions/services.ts';
+import { ServicesActions } from '@mm-actions/services';
 
 @Injectable({
   providedIn: 'root'
