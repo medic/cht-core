@@ -79,7 +79,7 @@ const goToBase = async () => {
 
 const goToReports = async () => {
   await browser.url('/#/reports');
-  await (await reportsPage.reportList()).waitForDisplayed();
+  await (await $(`#reports-list`)).waitForDisplayed();
 };
 
 const goToPeople = async (contactId = '', shouldLoad = true) => {
