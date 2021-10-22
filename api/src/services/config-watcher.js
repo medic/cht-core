@@ -11,6 +11,7 @@ const generateServiceWorker = require('../generate-service-worker');
 const config = require('../config');
 
 const MEDIC_DDOC_ID = '_design/medic';
+const ADMIN_DDOC_ID = '_design/medic-admin';
 
 const loadTranslations = () => {
   const translationCache = {};
@@ -93,6 +94,10 @@ const handleDdocChange = () => {
     .then(() => updateServiceWorker());
 };
 
+const handleAdminDdocChange = () => {
+  return resourceExtraction.run(ADMIN_DDOC_ID, 'admin');
+};
+
 const handleSettingsChange = () => {
   logger.info('Detected settings change - reloading');
   return loadSettings()
@@ -142,6 +147,10 @@ const listen = () => {
     .on('change', change => {
       if (change.id === MEDIC_DDOC_ID) {
         return handleDdocChange();
+      }
+
+      if (change.id === ADMIN_DDOC_ID) {
+        return handleAdminDdocChange();
       }
 
       if (change.id === settingsService.SETTINGS_DOC_ID) {

@@ -52,21 +52,22 @@ const removeDirectory = () => {
   removeDirectoryRecursive(outputPath);
 };
 
-const extractResources = () => {
-  const extractToDirectory = environment.getExtractedResourcesPath();
+const extractResources = (ddocId = '_design/medic', subdir = '') => {
+  const extractToDirectory = path.join(environment.getExtractedResourcesPath(), subdir);
   createFolderIfDne(extractToDirectory);
   return db.medic
-    .get('_design/medic')
-    .then(ddoc => Promise.resolve(Object.keys(ddoc._attachments))
+    .get(ddocId)
+    .then(ddoc => Promise
+      .resolve(Object.keys(ddoc._attachments))
       .then(attachmentNames => attachmentNames.filter(n => extractedDigests[n] !== ddoc._attachments[n].digest))
       .then(attachmentNames => attachmentNames.filter(isAttachmentExtractable))
-      .then(requiredNames => Promise.all(requiredNames.map(req => extractAttachment(extractToDirectory, req))))
+      .then(requiredNames => Promise.all(requiredNames.map(req => extractAttachment(ddocId, extractToDirectory, req))))
       .then(attachmentNames => attachmentNames.forEach(name => extractedDigests[name] = ddoc._attachments[name].digest))
     );
 };
 
-const extractAttachment = (extractToDirectory, attachmentName) => db.medic
-  .getAttachment('_design/medic', attachmentName)
+const extractAttachment = (ddocId, extractToDirectory, attachmentName) => db.medic
+  .getAttachment(ddocId, attachmentName)
   .then(raw => new Promise((resolve, reject) => {
     const outputPath = path.join(extractToDirectory, attachmentName);
     createFolderIfDne(path.dirname(outputPath));

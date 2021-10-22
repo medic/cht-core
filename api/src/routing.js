@@ -221,11 +221,6 @@ app.all('/+medic(/*)?', (req, res, next) => {
   next();
 });
 
-app.all('/+admin(/*)?', (req, res, next) => {
-  req.url = req.url.replace(/\/admin\/?/, adminAppPrefix);
-  next();
-});
-
 app.get('/favicon.ico', (req, res) => {
   // Cache for a week. Normally we don't interfere with couch headers, but
   // due to Chrome (including Android WebView) aggressively requesting
@@ -243,6 +238,17 @@ app.get('/favicon.ico', (req, res) => {
   });
 });
 
+// saves CouchDB _session information as `userCtx` in the `req` object
+app.use(authorization.getUserCtx);
+
+app.all(['/+admin(/*)?', adminAppPrefix], (req, res, next) => {
+  if (!req.userCtx) {
+    return serverUtils.notLoggedIn(req, res);
+  }
+  next();
+  //res.sendFile(path.join(extractedResourceDirectory, 'admin', 'index.html')); // Webapp's index - entry point
+});
+
 app.use(express.static(path.join(__dirname, '../build/public')));
 app.use(express.static(extractedResourceDirectory));
 app.get(routePrefix + 'login', login.get);
@@ -250,9 +256,6 @@ app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
 app.get(routePrefix + 'login/token/:token?', login.tokenGet);
 app.postJson(routePrefix + 'login/token/:token?', login.tokenPost);
-
-// saves CouchDB _session information as `userCtx` in the `req` object
-app.use(authorization.getUserCtx);
 
 // authorization for `_compact`, `_view_cleanup`, `_revs_limit` endpoints is handled by CouchDB
 const ONLINE_ONLY_ENDPOINTS = [
