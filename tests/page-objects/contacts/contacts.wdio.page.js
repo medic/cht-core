@@ -71,6 +71,9 @@ const selectLHSRowByText = async (text, executeSearch= true) => {
   }
   await browser.waitUntil(async () => await findRowByText(text));
   const row = await findRowByText(text);
+  if (!row) {
+    throw new Error(`Contact "${text}" was not found`);
+  }
   return await row.click();
 };
 
