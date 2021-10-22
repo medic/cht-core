@@ -131,11 +131,11 @@
     },
     {
       "path": "./build/ddocs/medic/_attachments/polyfills-es5.js",
-      "maxSize": "50 kB"
+      "maxSize": "55 kB"
     },
     {
       "path": "./build/ddocs/medic/_attachments/polyfills.js",
-      "maxSize": "16 kB"
+      "maxSize": "24 kB"
     },
     {
       "path": "./build/ddocs/medic/_attachments/runtime.js",
