@@ -48,7 +48,7 @@ const staticResources = /\/(templates|static)\//;
 const routePrefix = '/+' + environment.db + '/+';
 const pathPrefix = '/' + environment.db + '/';
 const appPrefix = pathPrefix + '_design/' + environment.ddoc + '/_rewrite/';
-const adminAppPrefix = pathPrefix + '_design/medic-admin/_rewrite/';
+const adminAppPrefix = pathPrefix + '_design/medic-admin/_rewrite(/*)?';
 const serverUtils = require('./server-utils');
 const uuid = require('uuid');
 const compression = require('compression');
@@ -241,13 +241,7 @@ app.get('/favicon.ico', (req, res) => {
 // saves CouchDB _session information as `userCtx` in the `req` object
 app.use(authorization.getUserCtx);
 
-app.all(['/+admin(/*)?', adminAppPrefix], (req, res, next) => {
-  if (!req.userCtx) {
-    return serverUtils.notLoggedIn(req, res);
-  }
-  next();
-  //res.sendFile(path.join(extractedResourceDirectory, 'admin', 'index.html')); // Webapp's index - entry point
-});
+app.all(['/+admin(/*)?', adminAppPrefix], authorization.handleAuthErrors, authorization.offlineUserFirewall);
 
 app.use(express.static(path.join(__dirname, '../build/public')));
 app.use(express.static(extractedResourceDirectory));
