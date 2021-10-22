@@ -330,7 +330,7 @@ describe('bootstrapper', () => {
     sinon.stub(purger, 'info').resolves('some-info');
     sinon.stub(purger, 'checkpoint').resolves();
 
-    localReplicateResult = new Promise((resolve, reject) => setTimeout(() => reject({ status: 401 })));
+    const localReplicateResult = new Promise((resolve, reject) => setTimeout(() => reject({ status: 401 })));
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
 
