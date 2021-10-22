@@ -53,7 +53,7 @@ const childrenCards = () => $$('.right-pane .card.children');
 const search = async (query) => {
   await (await searchBox()).setValue(query);
   await (await searchButton()).click();
-  await commonElements.waitForLoaders();
+  await commonElements.waitForLoaderToDisappear($('.left-pane'));
 };
 
 const findRowByText = async (text) => {
@@ -197,7 +197,7 @@ const allContactsList = async () => {
 };
 
 const editDistrict = async (districtName, editedName) => {
-  await selectLHSRowByText(districtName);
+  await selectLHSRowByText(districtName, false);
   await waitForContactLoaded();
 
   await (await editContactButton()).waitForDisplayed();
