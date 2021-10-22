@@ -13,7 +13,6 @@ env:
 jobs:
 
   skip_check:
-
     name: Skip Check
     runs-on: ubuntu-18.04
     outputs:
@@ -22,7 +21,6 @@ jobs:
       - id: skip_check
         uses: fkirc/skip-duplicate-actions@master
         with:
-          concurrent_skipping: 'same_content_newer'
           paths_ignore: '["**.md", "release-notes/**", "demo-forms/**"]'
 
   build:
