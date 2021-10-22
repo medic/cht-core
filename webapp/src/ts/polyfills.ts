@@ -66,9 +66,10 @@ import 'zone.js/dist/zone';
  * APPLICATION IMPORTS
  */
 
-import 'core-js-pure/es/object/entries';
-import 'core-js-pure/es/string/pad-start';
-import 'core-js-pure/es/promise/finally';
+// Polyfills for JS/Web API functions used in enketo-core but not found in Chrome 53
+import 'core-js/es/object/entries';
+import 'core-js/es/string/pad-start';
+import 'core-js/es/promise/finally';
 import '@webcomponents/webcomponentsjs/src/platform/child-node/after';
 import '@webcomponents/webcomponentsjs/src/platform/child-node/before';
 import '@webcomponents/webcomponentsjs/src/platform/child-node/replace-with';
