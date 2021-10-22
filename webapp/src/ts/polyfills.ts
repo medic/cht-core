@@ -66,9 +66,9 @@ import 'zone.js/dist/zone';
  * APPLICATION IMPORTS
  */
 
-import 'core-js-pure/es/object/entries'
-import 'core-js-pure/es/string/pad-start'
-import 'core-js-pure/es/promise/finally'
+import 'core-js-pure/es/object/entries';
+import 'core-js-pure/es/string/pad-start';
+import 'core-js-pure/es/promise/finally';
 import '@webcomponents/webcomponentsjs/src/platform/child-node/after';
 import '@webcomponents/webcomponentsjs/src/platform/child-node/before';
 import '@webcomponents/webcomponentsjs/src/platform/child-node/replace-with';
