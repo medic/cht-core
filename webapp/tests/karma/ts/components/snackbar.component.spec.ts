@@ -6,6 +6,7 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
 import { Selectors } from '@mm-selectors/index';
+import { GlobalActions } from '@mm-actions/global';
 
 describe('SnackbarComponent', () => {
   let fixture;
@@ -45,6 +46,7 @@ describe('SnackbarComponent', () => {
   });
 
   it('should display the snackbar with a message and then hide it', fakeAsync(async () => {
+    const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
     const message = 'important message';
     component.ngOnInit();
     store.overrideSelector(Selectors.getSnackbarContent, { message, action: undefined });
@@ -54,12 +56,15 @@ describe('SnackbarComponent', () => {
     expect(getElement('#snackbar.active')).to.exist;
     expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(message);
     expect(getElement('#snackbar.active .snackbar-action')).to.not.exist;
+    expect(setSnackbarContent.callCount).to.equal(1);
 
     tick(5000);
 
     expect(component.active).to.equal(false);
     expect(getElement('#snackbar')).to.exist;
     expect(getElement('#snackbar.active')).to.not.exist;
+    expect(setSnackbarContent.callCount).to.equal(2);
+    expect(setSnackbarContent.lastCall.firstArg).to.be.undefined;
   }));
 
   it('should display the snackbar with a clickable action', async () => {
