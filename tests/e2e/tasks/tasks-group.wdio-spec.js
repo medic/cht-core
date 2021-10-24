@@ -287,7 +287,7 @@ describe('Tasks group landing page', () => {
       await expectTasksGroupLeaveModal();
       await (await modalPage.confirm()).click();
       await (await contactsPage.contactList()).waitForDisplayed();
-      await (await commonPage.waitForLoaders());
+      await (await commonPage.waitForPageLoaded());
     });
 
     it('should not show page when there are no more household tasks', async () => {

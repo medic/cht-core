@@ -75,7 +75,7 @@ const chw = {
 const login = async () => {
   await browser.throttle('online');
   await loginPage.login(chw);
-  await (await commonPage.analyticsTab()).waitForDisplayed();
+  await commonPage.waitForPageLoaded();
 };
 
 const SW_SUCCESSFULL_REGEX = /Service worker generated successfully/;
