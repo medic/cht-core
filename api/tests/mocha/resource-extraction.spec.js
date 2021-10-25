@@ -1,34 +1,50 @@
 const rewire = require('rewire');
-const resourceExtraction = rewire('../../src/resource-extraction');
 const sinon = require('sinon');
 const { expect } = require('chai'); // jshint ignore:line
 const db = require('../../src/db');
 const fs = require('fs');
 
-let fakeDdoc;
-
-resourceExtraction.__set__('logger', { debug: () => {} });
+let resourceExtraction;
+let medicDdoc;
+let adminDdoc;
 
 const doMocking = (overwrites = {}) => {
+  resourceExtraction = rewire('../../src/resource-extraction');
+  resourceExtraction.__set__('logger', { debug: sinon.stub() });
+
   const defaultAttachment = {
     'js/attached.js': { digest: 'current' },
   };
+  const defaultAdminAttachment = {
+    'main.js': { digest: 'this' },
+  };
 
-  fakeDdoc = {
+  medicDdoc = {
     _id: '_design/medic',
     _attachments: overwrites.attachments || defaultAttachment,
   };
+  adminDdoc = {
+    _id: '_design/medic-admin',
+    _attachments: overwrites.adminAttachments || defaultAdminAttachment,
+  };
 
-  sinon.stub(db.medic, 'get').resolves(fakeDdoc);
-  sinon.stub(db.medic, 'getAttachment').resolves(overwrites.content);
+  sinon.stub(db.medic, 'get');
+  db.medic.get.withArgs('_design/medic').resolves(medicDdoc);
+  db.medic.get.withArgs('_design/medic-admin').resolves(adminDdoc);
+  sinon.stub(db.medic, 'getAttachment');
+  db.medic.getAttachment.withArgs('_design/medic').resolves(overwrites.content);
+  db.medic.getAttachment.withArgs('_design/medic-admin').resolves(overwrites.adminContent);
   sinon.stub(fs, 'existsSync').returns(true);
   sinon.stub(fs, 'writeFile').callsArg(2);
   sinon.stub(fs, 'unlinkSync');
   sinon.stub(fs, 'rmdirSync');
   sinon.stub(fs, 'readdirSync').returns([]);
   sinon.stub(fs, 'statSync');
+};
 
-  resourceExtraction.clearCache();
+const expectWrite = (args, pathLike, content) => {
+  expect(args[0]).to.include(pathLike);
+  expect(args[1]).to.equal(content);
 };
 
 describe('Resource Extraction', () => {
@@ -37,50 +53,106 @@ describe('Resource Extraction', () => {
   });
 
   it('attachments written to disk', () => {
-    const expected = { content: { toString: () => 'foo' } };
+    const expected = {
+      content: { toString: sinon.stub().returns('foo') },
+      adminContent: { toString: sinon.stub().returns('bar') },
+    };
     doMocking(expected);
     return resourceExtraction.run().then(() => {
-      expect(fs.writeFile.callCount).to.eq(1);
+      expect(db.medic.get.args).to.deep.equal([
+        ['_design/medic'],
+        ['_design/medic-admin'],
+      ]);
+      expect(db.medic.getAttachment.args).to.deep.equal([
+        ['_design/medic', 'js/attached.js'],
+        ['_design/medic-admin', 'main.js'],
+      ]);
 
-      const [actualOutputPath, actualContent] = fs.writeFile.args[0];
-      expect(actualOutputPath).to.include('/extracted-resources/js/attached.js');
-      expect(actualContent).to.include(expected.content);
+      expect(fs.writeFile.callCount).to.eq(2);
+      expectWrite(fs.writeFile.args[0], '/extracted-resources/js/attached.js', expected.content);
+      expectWrite(fs.writeFile.args[1], '/extracted-resources/admin/main.js', expected.adminContent);
+    });
+  });
+
+  it('should work with multiple attachments', () => {
+    const mocks = {
+      attachments: {
+        'js/one.js': { digest: '2' },
+        'css/two.css': { digest: '2' },
+        'js/skipped': { digest: 1 },
+      },
+      adminAttachments: {
+        'main.js': { digest: '1' },
+        'main.css': { digest: '1' },
+      },
+      content: 'medic',
+      adminContent: 'admin',
+    };
+    doMocking(mocks);
+
+    return resourceExtraction.run().then(() => {
+      expect(db.medic.get.args).to.deep.equal([
+        ['_design/medic'],
+        ['_design/medic-admin'],
+      ]);
+
+      expect(db.medic.getAttachment.args).to.deep.equal([
+        ['_design/medic', 'js/one.js'],
+        ['_design/medic', 'css/two.css'],
+        ['_design/medic-admin', 'main.js'],
+        ['_design/medic-admin', 'main.css'],
+      ]);
+
+      expect(fs.writeFile.callCount).to.eq(4);
+      expectWrite(fs.writeFile.args[0], '/extracted-resources/js/one.js', mocks.content);
+      expectWrite(fs.writeFile.args[1], '/extracted-resources/css/two.css', mocks.content);
+      expectWrite(fs.writeFile.args[2], '/extracted-resources/admin/main.js', mocks.adminContent);
+      expectWrite(fs.writeFile.args[3], '/extracted-resources/admin/main.css', mocks.adminContent);
     });
   });
 
   it('unchanged files get written once', () => {
-    const expected = { content: 'foo' };
+    const expected = { content: 'foo', adminContent: 'bar' };
     doMocking(expected);
     return resourceExtraction.run()
       .then(resourceExtraction.run)
       .then(() => {
-        expect(fs.writeFile.callCount).to.eq(1);
+        expect(fs.writeFile.callCount).to.eq(2);
 
-        const [actualOutputPath, actualContent] = fs.writeFile.args[0];
+        let [actualOutputPath, actualContent] = fs.writeFile.args[0];
         expect(actualOutputPath).to.include('/extracted-resources/js/attached.js');
         expect(actualContent).to.include(expected.content);
+
+        [actualOutputPath, actualContent] = fs.writeFile.args[1];
+        expect(actualOutputPath).to.include('/extracted-resources/admin/main.js');
+        expect(actualContent).to.include(expected.adminContent);
       });
   });
 
   it('changed files get written again', () => {
-    const expected = { content: 'foo' };
+    const expected = { content: 'foo', adminContent: 'baz' };
     doMocking(expected);
     return resourceExtraction.run()
       .then(() => {
-        fakeDdoc._attachments['js/attached.js'].digest = 'update';
+        medicDdoc._attachments['js/attached.js'].digest = 'update';
+        adminDdoc._attachments['main.js'].digest = 'new';
         return resourceExtraction.run();
       })
       .then(() => {
-        expect(fs.writeFile.callCount).to.eq(2);
+        expect(fs.writeFile.callCount).to.eq(4);
 
-        const [actualOutputPath, actualContent] = fs.writeFile.args[1];
+        let [actualOutputPath, actualContent] = fs.writeFile.args[2];
         expect(actualOutputPath).to.include('/extracted-resources/js/attached.js');
         expect(actualContent).to.include(expected.content);
+
+        [actualOutputPath, actualContent] = fs.writeFile.args[3];
+        expect(actualOutputPath).to.include('/extracted-resources/admin/main.js');
+        expect(actualContent).to.include(expected.adminContent);
       });
   });
 
   it('non-cacheable attachments not written to disk', () => {
-    doMocking({ attachments: { 'skip/me.js': {} }});
+    doMocking({ attachments: { 'skip/me.js': {} }, adminAttachments: { }});
     return resourceExtraction.run().then(() => {
       expect(fs.writeFile.callCount).to.eq(0);
     });
@@ -102,9 +174,10 @@ describe('Resource Extraction', () => {
     fs.existsSync.returns(false);
     fs.mkdirSync = sinon.stub().returns(true);
     return resourceExtraction.run().then(() => {
-      expect(fs.mkdirSync.callCount).to.eq(2);
+      expect(fs.mkdirSync.callCount).to.eq(4);
       expect(fs.mkdirSync.args[0][0]).to.include('/extracted-resources');
       expect(fs.mkdirSync.args[1][0]).to.include('/extracted-resources/js');
+      expect(fs.mkdirSync.args[2][0]).to.include('/extracted-resources/admin');
     });
   });
 
@@ -194,6 +267,40 @@ describe('Resource Extraction', () => {
       expect(fs.unlinkSync.args[2][0]).to.include('/extracted-resources/js/service-worker.js');
       expect(fs.unlinkSync.args[3][0]).to.include('/extracted-resources/main.js');
       expect(fs.unlinkSync.args[4][0]).to.include('/extracted-resources/deep/deeper/any.js');
+    });
+  });
+
+  describe('extractMedic', () => {
+    it('should only extract medic ddoc', () => {
+      const expected = {
+        content: { toString: sinon.stub().returns('foo') },
+        adminContent: { toString: sinon.stub().returns('bar') },
+      };
+      doMocking(expected);
+      return resourceExtraction.extractMedic().then(() => {
+        expect(db.medic.get.args).to.deep.equal([ ['_design/medic'] ]);
+        expect(db.medic.getAttachment.args).to.deep.equal([ ['_design/medic', 'js/attached.js'] ]);
+
+        expect(fs.writeFile.callCount).to.eq(1);
+        expectWrite(fs.writeFile.args[0], '/extracted-resources/js/attached.js', expected.content);
+      });
+    });
+  });
+
+  describe('extractAdmin', () => {
+    it('should only extract admin ddoc', () => {
+      const expected = {
+        content: { toString: sinon.stub().returns('foo') },
+        adminContent: { toString: sinon.stub().returns('bar') },
+      };
+      doMocking(expected);
+      return resourceExtraction.extractAdmin().then(() => {
+        expect(db.medic.get.args).to.deep.equal([ ['_design/medic-admin'] ]);
+        expect(db.medic.getAttachment.args).to.deep.equal([ ['_design/medic-admin', 'main.js'], ]);
+
+        expect(fs.writeFile.callCount).to.eq(1);
+        expectWrite(fs.writeFile.args[0], '/extracted-resources/admin/main.js', expected.adminContent);
+      });
     });
   });
 });

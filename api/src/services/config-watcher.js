@@ -86,7 +86,7 @@ const handleDdocChange = () => {
       logger.error('Something went wrong trying to extract ddocs: %o', err);
       process.exit(1);
     })
-    .then(() => resourceExtraction.run())
+    .then(() => resourceExtraction.extractMedic())
     .catch(err => {
       logger.error('Something went wrong trying to extract resources: %o', err);
       process.exit(1);
@@ -95,7 +95,11 @@ const handleDdocChange = () => {
 };
 
 const handleAdminDdocChange = () => {
-  return resourceExtraction.run(ADMIN_DDOC_ID, 'admin');
+  return resourceExtraction
+    .extractAdmin()
+    .catch(err => {
+      logger.error('Something went wrong trying to extract admin resources: %o', err);
+    });
 };
 
 const handleSettingsChange = () => {

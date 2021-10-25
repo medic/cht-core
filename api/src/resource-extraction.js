@@ -10,6 +10,10 @@ const db = require('./db');
 const environment = require('./environment');
 const logger = require('./logger');
 
+const DDOC_ID = '_design/medic';
+const ADMIN_DDOC_ID = '_design/medic-admin';
+const ADMIN_FOLDER = 'admin';
+
 const extractableFolders = ['audio', 'fonts', 'default-docs','img'];
 // todo the build process can be improved (maybe?) to have "build" files nicely packed into one folder so
 // we won't need to match extensions
@@ -21,7 +25,7 @@ const isAttachmentExtractable = name => {
 };
 
 // Map of attachmentName -> attachmentDigest used to avoid extraction of unchanged documents
-let extractedDigests = {};
+const extractedDigests = {};
 
 const createFolderIfDne = folderPath => !fs.existsSync(folderPath) && fs.mkdirSync(folderPath);
 
@@ -52,7 +56,7 @@ const removeDirectory = () => {
   removeDirectoryRecursive(outputPath);
 };
 
-const extractResources = (ddocId = '_design/medic', subdir = '') => {
+const extractResources = (ddocId, subdir = '') => {
   const extractToDirectory = path.join(environment.getExtractedResourcesPath(), subdir);
   createFolderIfDne(extractToDirectory);
   return db.medic
@@ -81,8 +85,12 @@ const extractAttachment = (ddocId, extractToDirectory, attachmentName) => db.med
     });
   }));
 
+const extractMedic = () => extractResources(DDOC_ID);
+const extractAdmin = () => extractResources(ADMIN_DDOC_ID, ADMIN_FOLDER);
+
 module.exports = {
-  run: extractResources,
-  removeDirectory: removeDirectory,
-  clearCache: () => extractedDigests = {},
+  run: () => extractMedic().then(() => extractAdmin()),
+  extractMedic,
+  extractAdmin,
+  removeDirectory,
 };

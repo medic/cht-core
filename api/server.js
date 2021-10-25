@@ -43,7 +43,6 @@ process
 
     logger.info('Extracting resources…');
     await resourceExtraction.run();
-    await resourceExtraction.run('_design/medic-admin', 'admin');
     logger.info('Extracting resources completed successfully');
 
     logger.info('Extracting initial documents…');
