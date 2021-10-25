@@ -44,5 +44,11 @@ describe('Snackbar', () => {
     await (await commonPage.activeSnackbar()).waitForDisplayed();
     expect(await commonPage.snackbarMessage()).to.equal('Currently syncing…');
     await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'Sync failed. Unable to connect.');
+
+    await browser.throttle('online');
+    const retryButton = await commonPage.snackbarAction();
+    await retryButton.click();
+    await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'Currently syncing…');
+    await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'All reports synced');
   });
 });
