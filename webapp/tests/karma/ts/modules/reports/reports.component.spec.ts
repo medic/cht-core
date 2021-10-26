@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -32,7 +32,7 @@ describe('Reports Component', () => {
   let searchService;
   let listContains;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     listContains = sinon.stub();
     const mockedSelectors = [
       { selector: Selectors.getSelectedReports, value: [] },

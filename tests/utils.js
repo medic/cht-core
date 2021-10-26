@@ -104,7 +104,11 @@ const revertTranslations = async () => {
     delete originalTranslations[doc.code];
   });
 
-  await module.exports.saveDocs(docs);
+  await module.exports.requestOnTestDb({
+    path: '/_bulk_docs',
+    method: 'POST',
+    body: { docs },
+  });
 };
 
 const revertSettings = () => {
@@ -162,7 +166,7 @@ const deleteAll = (except) => {
     })
     .then(({ rows }) =>
       rows
-        .filter(({ doc }) => !ignoreFns.find(fn => fn(doc)))
+        .filter(({ doc }) => doc && !ignoreFns.find(fn => fn(doc)))
         .map(({ doc }) => {
           doc._deleted = true;
           doc.type = 'tombstone'; // circumvent tombstones being created when DB is cleaned up

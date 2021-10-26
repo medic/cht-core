@@ -10,6 +10,8 @@ const XPR = {
 };
 
 let zscoreUtil;
+let toBikramSambat;
+let moment;
 
 const isObject = (value) => {
   const type = typeof value;
@@ -110,11 +112,24 @@ const asDate = (r) => {
   }
 };
 
+const convertToBikramSambat = (value) => {
+  const date = getValue(value);
+  if (!date) {
+    return { t: 'str', v: '' };
+  }
+
+  const convertedDate = toBikramSambat(moment(date));
+
+  return { t: 'str', v: convertedDate };
+};
+
 module.exports = {
   getTimezoneOffsetAsTime: getTimezoneOffsetAsTime,
   toISOLocalString: toISOLocalString,
-  init: function(_zscoreUtil) {
+  init: function(_zscoreUtil, _toBikramSambat, _moment) {
     zscoreUtil = _zscoreUtil;
+    toBikramSambat = _toBikramSambat;
+    moment = _moment;
   },
   func: {
     today: function() {
@@ -130,7 +145,8 @@ module.exports = {
       }
       return XPR.number(result);
     },
-    'parse-timestamp-to-date': parseTimestampToDate, // Function name convention of XForm,
+    'to-bikram-sambat': convertToBikramSambat,
+    'parse-timestamp-to-date': parseTimestampToDate, // Function name convention of XForm
     'difference-in-months': function(d1, d2) {
       d1 = asDate(d1);
       d2 = asDate(d2);

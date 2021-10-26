@@ -1,5 +1,5 @@
 import { provideMockActions } from '@ngrx/effects/testing';
-import { async, TestBed } from '@angular/core/testing';
+import { TestBed, waitForAsync } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { Observable, of } from 'rxjs';
 import { expect } from 'chai';
@@ -26,7 +26,7 @@ describe('GlobalEffects', () => {
   let initialModalState;
   let cancelCallback;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     actions$ = new Observable<Action>();
     const mockedSelectors = [
       { selector: Selectors.getEnketoStatus, value: { error: false, saving: false, form: false, edited: false } },
@@ -68,7 +68,7 @@ describe('GlobalEffects', () => {
   });
 
   describe('deleteDocConfirm', () => {
-    it('should not be triggered by random actions', async (() => {
+    it('should not be triggered by random actions', waitForAsync (() => {
       actions$ = of([
         GlobalActionsList.setLoadingContent(true),
         GlobalActionsList.clearSelected(),
@@ -78,7 +78,7 @@ describe('GlobalEffects', () => {
       expect(modalService.show.callCount).to.equal(0);
     }));
 
-    it('should open modal with payload', async (() => {
+    it('should open modal with payload', waitForAsync (() => {
       const doc = { _id: 'some_doc' };
       actions$ = of(GlobalActionsList.deleteDocConfirm(doc));
       effects.deleteDocConfirm$.subscribe();
@@ -92,7 +92,7 @@ describe('GlobalEffects', () => {
 
   describe('navigationCancel', () => {
     describe('for enketo forms', () => {
-      it('when saving, do nothing', async(() => {
+      it('when saving, do nothing', waitForAsync(() => {
         store.overrideSelector(Selectors.getEnketoStatus, { form: true, saving: true, edited: true });
         store.overrideSelector(Selectors.getNavigation, { cancelCallback });
 
@@ -103,7 +103,7 @@ describe('GlobalEffects', () => {
         expect(router.navigateByUrl.callCount).to.equal(0);
       }));
 
-      it('when not saving and not edited and no cancelCallback', async(async () => {
+      it('when not saving and not edited and no cancelCallback', waitForAsync(async () => {
         store.overrideSelector(Selectors.getEnketoStatus, { form: true, saving: false, edited: false });
         actions$ = of(GlobalActionsList.navigationCancel('next'));
         effects.navigationCancel.subscribe();
@@ -113,7 +113,7 @@ describe('GlobalEffects', () => {
         expect(router.navigateByUrl.args[0]).to.deep.equal(['next']);
       }));
 
-      it('when not saving edited and no cancel callback and no route', async (async () => {
+      it('when not saving edited and no cancel callback and no route', waitForAsync (async () => {
         store.overrideSelector(Selectors.getEnketoStatus, { form: true, saving: false, edited: true });
         actions$ = of(GlobalActionsList.navigationCancel(''));
         effects.navigationCancel.subscribe();
@@ -124,7 +124,7 @@ describe('GlobalEffects', () => {
         expect(router.navigateByUrl.callCount).to.equal(0);
       }));
 
-      it('when not saving edited and no cancel callback and route', async (async () => {
+      it('when not saving edited and no cancel callback and route', waitForAsync (async () => {
         store.overrideSelector(Selectors.getEnketoStatus, { form: true, saving: false, edited: true });
         actions$ = of(GlobalActionsList.navigationCancel('next'));
         effects.navigationCancel.subscribe();
@@ -135,7 +135,7 @@ describe('GlobalEffects', () => {
         expect(router.navigateByUrl.callCount).to.equal(0);
       }));
 
-      it('when not saving edited and cancel callback but user cancels modal', async (async () => {
+      it('when not saving edited and cancel callback but user cancels modal', waitForAsync (async () => {
         modalService.show.rejects({ means: 'that user cancelled' });
         store.overrideSelector(Selectors.getNavigation, { cancelCallback });
         store.overrideSelector(Selectors.getEnketoStatus, { form: true, saving: false, edited: true });
@@ -149,7 +149,7 @@ describe('GlobalEffects', () => {
         expect(cancelCallback.callCount).to.equal(0);
       }));
 
-      it('when not saving, not edited and cancelCallback ', async(async () => {
+      it('when not saving, not edited and cancelCallback ', waitForAsync(async () => {
         store.overrideSelector(Selectors.getEnketoStatus, { form: true });
         store.overrideSelector(Selectors.getNavigation, { cancelCallback });
         actions$ = of(GlobalActionsList.navigationCancel(null));
@@ -162,7 +162,7 @@ describe('GlobalEffects', () => {
     });
 
     describe('for regular pages', () => {
-      it('when navigation is not prevented and with route', async(() => {
+      it('when navigation is not prevented and with route', waitForAsync(() => {
         store.overrideSelector(Selectors.getNavigation, { cancelCallback });
         actions$ = of(GlobalActionsList.navigationCancel('route'));
         effects.navigationCancel.subscribe();
@@ -172,7 +172,7 @@ describe('GlobalEffects', () => {
         expect(router.navigateByUrl.args[0]).to.deep.equal(['route']);
       }));
 
-      it('when navigation is not prevented and no route', async(() => {
+      it('when navigation is not prevented and no route', waitForAsync(() => {
         store.overrideSelector(Selectors.getNavigation, { cancelCallback });
         actions$ = of(GlobalActionsList.navigationCancel(null));
         effects.navigationCancel.subscribe();
@@ -182,7 +182,7 @@ describe('GlobalEffects', () => {
         expect(router.navigateByUrl.callCount).to.equal(0);
       }));
 
-      it('when navigation is not prevented and no route and no cancel callback', async(() => {
+      it('when navigation is not prevented and no route and no cancel callback', waitForAsync(() => {
         store.overrideSelector(Selectors.getNavigation, { });
         actions$ = of(GlobalActionsList.navigationCancel(null));
         effects.navigationCancel.subscribe();
@@ -191,7 +191,7 @@ describe('GlobalEffects', () => {
         expect(router.navigateByUrl.callCount).to.equal(0);
       }));
 
-      it('when navigation is prevented and user cancels modal', async(async () => {
+      it('when navigation is prevented and user cancels modal', waitForAsync(async () => {
         store.overrideSelector(Selectors.getNavigation, { cancelCallback, preventNavigation: true });
         modalService.show.rejects();
         actions$ = of(GlobalActionsList.navigationCancel(null));
@@ -208,7 +208,7 @@ describe('GlobalEffects', () => {
         expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
       }));
 
-      it('when navigation is prevented and user confirms modal with route', async(async () => {
+      it('when navigation is prevented and user confirms modal with route', waitForAsync(async () => {
         store.overrideSelector(Selectors.getNavigation, { cancelCallback, preventNavigation: true });
         modalService.show.resolves();
         actions$ = of(GlobalActionsList.navigationCancel('path'));
@@ -228,7 +228,7 @@ describe('GlobalEffects', () => {
 
       }));
 
-      it('when navigation is prevented and user confirms modal without route', async(async () => {
+      it('when navigation is prevented and user confirms modal without route', waitForAsync(async () => {
         store.overrideSelector(Selectors.getNavigation, { cancelCallback, preventNavigation: true });
         modalService.show.resolves();
         actions$ = of(GlobalActionsList.navigationCancel(null));
@@ -245,7 +245,7 @@ describe('GlobalEffects', () => {
         expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
       }));
 
-      it('should pass message translation key to modal', async(async () => {
+      it('should pass message translation key to modal', waitForAsync(async () => {
         const nav = {
           cancelCallback,
           preventNavigation: true,
@@ -272,7 +272,7 @@ describe('GlobalEffects', () => {
         });
       }));
 
-      it('should pass whether to record telemetry to modal', async(async () => {
+      it('should pass whether to record telemetry to modal', waitForAsync(async () => {
         const nav = {
           cancelCallback,
           preventNavigation: true,

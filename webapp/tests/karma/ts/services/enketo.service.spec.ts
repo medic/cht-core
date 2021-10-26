@@ -3,6 +3,8 @@ import sinon from 'sinon';
 import { expect, assert } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import * as _ from 'lodash-es';
+import { toBik_text } from 'bikram-sambat';
+import * as moment from 'moment';
 
 import { DbService } from '@mm-services/db.service';
 import { Form2smsService } from '@mm-services/form2sms.service';
@@ -23,6 +25,7 @@ import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { TranslateService } from '@mm-services/translate.service';
+import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -62,6 +65,8 @@ describe('Enketo service', () => {
   let LineageModelGenerator;
   let transitionsService;
   let translateService;
+  let zScoreService;
+  let zScoreUtil;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -104,6 +109,8 @@ describe('Enketo service', () => {
       instant: sinon.stub().returnsArg(0),
       get: sinon.stub(),
     };
+    zScoreUtil = sinon.stub();
+    zScoreService = { getScoreUtil: sinon.stub().resolves(zScoreUtil) };
 
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
 
@@ -135,7 +142,7 @@ describe('Enketo service', () => {
             findXFormAttachmentName: sinon.stub().resolves('mydoc')
           }
         },
-        { provide: ZScoreService, useValue: { getScoreUtil: sinon.stub().resolves(sinon.stub())} },
+        { provide: ZScoreService, useValue: zScoreService },
         { provide: TransitionsService, useValue: transitionsService },
         { provide: TranslateService, useValue: translateService },
       ],
@@ -151,6 +158,30 @@ describe('Enketo service', () => {
   afterEach(() => {
     sinon.restore();
     delete window.CHTCore;
+  });
+
+  describe('init', () => {
+    it('should init zscore and xpath extensions', async () => {
+      sinon.stub(medicXpathExtensions, 'init');
+
+      sinon.resetHistory();
+      await service.init();
+
+      expect(zScoreService.getScoreUtil.callCount).to.equal(1);
+      expect(medicXpathExtensions.init.callCount).to.equal(1);
+      expect(medicXpathExtensions.init.args[0]).to.deep.equal([zScoreUtil, toBik_text, moment]);
+    });
+
+    it('should catch errors', async () => {
+      sinon.stub(medicXpathExtensions, 'init');
+      zScoreService.getScoreUtil.rejects({ omg: 'error' });
+
+      sinon.resetHistory();
+      await service.init();
+
+      expect(zScoreService.getScoreUtil.callCount).to.equal(1);
+      expect(medicXpathExtensions.init.callCount).to.equal(0);
+    });
   });
 
   describe('render', () => {

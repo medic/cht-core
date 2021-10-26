@@ -1,4 +1,5 @@
 const genericForm = require('../forms/generic-form.wdio.page');
+const commonElements = require('../common/common.wdio.page');
 const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
 const contentRowSelector = '#contacts-list .content-row';
@@ -40,29 +41,40 @@ const emptySelection = () => $('contacts-content .empty-selection');
 const editContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
 const deleteContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-trash-o');
 const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
-
 const leftAddPlace = () => $('.dropup a[mmauth="can_create_places"]');
 const rightAddPlace = () => $('span[test-id="rhs_add_contact"] a');
 const rightAddPlaces = () => $('span[test-id="rhs_add_contact"] p[test-key="Add place"]');
 const rightAddPersons = () => $('span[test-id="rhs_add_contact"] p[test-key="Add person"]');
 const rightAddPerson = (create_key) => $(`span[test-id="rhs_add_contact"] p[test-key="${create_key}"]`);
 const contactCards = () => $$('.card.children');
+const districtHospitalName = () => $('[name="/data/district_hospital/name"]');
+const childrenCards = () => $$('.right-pane .card.children');
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
   await (await searchButton()).click();
+  await commonElements.waitForLoaderToDisappear(await $('.left-pane'));
+  await (await emptySelection()).waitForDisplayed();
+};
+
+const findRowByText = async (text) => {
+  for (const row of await contentRows()) {
+    if ((await row.getText()) === text) {
+      return row;
+    }
+  }
 };
 
 const selectLHSRowByText = async (text, executeSearch= true) => {
   if (executeSearch) {
     await search(text);
   }
-  await browser.waitUntil(async () => (await contentRows()).length);
-  for (const row of await contentRows()) {
-    if ((await row.getText()) === text) {
-      return await row.click();
-    }
+  await browser.waitUntil(async () => await findRowByText(text));
+  const row = await findRowByText(text);
+  if (!row) {
+    throw new Error(`Contact "${text}" was not found`);
   }
+  return await row.click();
 };
 
 const getReportFiltersText = async () => {
@@ -86,7 +98,10 @@ const waitForContactUnloaded = async () => {
 
 const addPlace = async (type, placeName , contactName ) => {
   const dashedType = type.replace('_','-');
+  await (await actionResourceIcon(dashedType)).waitForDisplayed();
   await (await actionResourceIcon(dashedType)).click();
+
+  await (await newPrimaryContactButton()).waitForDisplayed();
   await (await newPrimaryContactButton()).click();
   await (await newPrimaryContactName()).addValue(contactName);
   await (await dateOfBirthField()).addValue('2000-01-01');
@@ -120,6 +135,7 @@ const addPerson = async (name, params = {}) => {
 const editPerson = async (name, updatedName) => {
   await selectLHSRowByText(name);
   await waitForContactLoaded();
+  await (await editContactButton()).waitForDisplayed();
   await (await editContactButton()).click();
 
   await (await genericForm.nextPage());
@@ -142,7 +158,7 @@ const deletePerson = async (name) => {
 
 const getContactSummaryField = async (fieldName) => {
   await (await contactSummaryContainer()).waitForDisplayed();
-  const field = await (await contactSummaryContainer()).$(`.cell.${fieldName.replace(/\./g, '\\.')}`);
+  const field = await (await contactSummaryContainer()).$(`.cell.${fieldName.toLowerCase().replace(/\./g, '\\.')}`);
   return await (await field.$('p')).getText();
 };
 
@@ -184,6 +200,18 @@ const allContactsList = async () => {
   }));
 };
 
+const editDistrict = async (districtName, editedName) => {
+  await selectLHSRowByText(districtName, true);
+  await waitForContactLoaded();
+
+  await (await editContactButton()).waitForDisplayed();
+  await (await editContactButton()).click();
+
+  await (await districtHospitalName()).setValue(editedName);
+  // blur field to trigger Enketo validation
+  await (await notes('district_hospital')).click();
+  await (await genericForm.submitButton()).click();
+};
 
 module.exports = {
   selectLHSRowByText,
@@ -210,5 +238,7 @@ module.exports = {
   rightAddPlaces,
   rightAddPersons,
   rightAddPerson,
-  allContactsList
+  allContactsList,
+  editDistrict,
+  childrenCards
 };

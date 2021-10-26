@@ -8,8 +8,6 @@ const taskTab = () => $('#tasks-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
-const contactsPage = require('../contacts/contacts.wdio.page');
-const reportsPage = require('../reports/reports.wdio.page');
 const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
@@ -80,13 +78,13 @@ const goToBase = async () => {
 
 const goToReports = async () => {
   await browser.url('/#/reports');
-  await (await reportsPage.reportList()).waitForDisplayed();
+  await waitForPageLoaded();
 };
 
 const goToPeople = async (contactId = '', shouldLoad = true) => {
   await browser.url(`/#/contacts/${contactId}`);
   if (shouldLoad) {
-    await (await contactsPage.contactList()).waitForDisplayed();
+    await waitForPageLoaded();
   }
 };
 
@@ -143,8 +141,24 @@ const hideSnackbar = () => {
 
 const waitForLoaders = async () => {
   await browser.waitUntil(async () => {
-    return (await loaders()).map((loader) => loader.isDisplayed()).length === 0;
-  });
+    for (const loader of await loaders()) {
+      if (await loader.isDisplayed()) {
+        return false;
+      }
+    }
+    return true;
+  }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
+};
+
+const waitForPageLoaded = async () => {
+  // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
+  // so waiting for the main page to load.
+  await (await $('.header-logo')).waitForDisplayed();
+  // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
+  // get all loaders.
+  do {
+    await waitForLoaders();
+  } while ((await loaders()).length > 0);
 };
 
 const syncAndWaitForSuccess = async () => {
@@ -197,7 +211,7 @@ const openConfigurationWizardAndFetchProperties = async () => {
   };
 };
 
-const openUserSettingsAndFetchProperties  = async () => {
+const openUserSettingsAndFetchProperties = async () => {
   await (await $('=User settings')).click();
   await (await $('=Update password')).waitForDisplayed();
   await (await $('=Edit user profile')).waitForDisplayed();
@@ -242,4 +256,5 @@ module.exports = {
   openAppManagement,
   waitForLoaderToDisappear,
   goToAboutPage,
+  waitForPageLoaded,
 };

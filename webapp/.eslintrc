@@ -68,6 +68,12 @@
         "indent": "off", // this rule throws an error in eslint itself
         "max-len": "off"
       }
+    },
+    {
+      "files": ["src/js/enketo/widgets/*.js"],
+      "rules": {
+        "no-inner-declarations": "off"
+      }
     }
   ]
 }

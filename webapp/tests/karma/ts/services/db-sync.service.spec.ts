@@ -42,7 +42,7 @@ describe('DBSync service', () => {
   let clock;
 
   const realSetTimeout = setTimeout;
-  const nextTick = () => new Promise(resolve => realSetTimeout(resolve));
+  const nextTick = () => new Promise<void>(resolve => realSetTimeout(resolve));
 
   const expectSyncCall = (numCalls) => {
     expect(from.callCount).to.equal(numCalls);

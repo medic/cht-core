@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick, waitForAsync } from '@angular/core/testing';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -18,7 +18,7 @@ describe('EditMessageGroupComponent', () => {
   let settingsService;
   let clock;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     bdModalRef = {
       hide: sinon.stub(),
       onHide: new Subject(),

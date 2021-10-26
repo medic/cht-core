@@ -1,10 +1,10 @@
 <span *ngIf="!value?.placeholder; else valuePlaceholderTpl">
   <span *ngIf="target?.isPercent; else targetIsNotPercentTpl">
-    {{ value?.percent }}%
-    <span translate [translateParams]="value">{{ target?.percentage_count_translation_key || 'targets.count.default' }}</span>
+    {{ value?.percent | localizeNumber }}%
+    <span translate [translateParams]="value | localizeNumber">{{ target?.percentage_count_translation_key || 'targets.count.default' }}</span>
   </span>
   <ng-template #targetIsNotPercentTpl>
-    <span>{{ value?.pass }}</span>
+    <span>{{ value?.pass | localizeNumber }}</span>
   </ng-template>
 </span>
 

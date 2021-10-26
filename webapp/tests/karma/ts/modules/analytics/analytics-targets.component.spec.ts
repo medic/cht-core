@@ -1,4 +1,4 @@
-import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
@@ -12,7 +12,7 @@ describe('AnalyticsTargetsComponent', () => {
   let rulesEngineService;
   let telemetryService;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     rulesEngineService = {
       isEnabled: sinon.stub().resolves(true),
       fetchTargets: sinon.stub().resolves([]),
