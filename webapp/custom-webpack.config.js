@@ -32,7 +32,7 @@ module.exports = {
       // Exclude the node-forge dependency from the bundle. This breaks the `digest` xForm function from
       // openrosa-xpath-evaluator, but keeping it in adds 72.51KB to the bundle size.
       // https://github.com/medic/cht-core/issues/7324
-      'node-forge': '',
+      'node-forge': false,
     },
     fallback: {
       path: false,
