@@ -11,7 +11,8 @@ const loginController = require('./controllers/login');
 const SWMETA_DOC_ID = 'service-worker-meta';
 const apiSrcDirectoryPath = __dirname;
 
-const staticDirectoryPath = environment.getExtractedResourcesPath();
+const staticDirectoryPath = environment.staticPath();
+const publicPath = environment.publicPath();
 const scriptOutputPath = path.join(staticDirectoryPath, 'js', 'service-worker.js');
 
 const fsExists = (path) => new Promise((resolve) => {
@@ -54,7 +55,7 @@ const getLoginPageContents = async () => {
   } catch (err) {
     logger.error('Error rendering login page %o', err);
     // default to returning the file
-    return [path.join(apiSrcDirectoryPath, 'templates/login', 'index.html')];
+    return [path.join(apiSrcDirectoryPath, 'templates', 'login', 'index.html')];
   }
 };
 
@@ -77,12 +78,12 @@ const writeServiceWorkerFile = async () => {
       path.join(staticDirectoryPath, 'fonts', 'enketo-icons-v2.woff'),
       path.join(staticDirectoryPath, 'fonts', 'NotoSans-Bold.ttf'),
       path.join(staticDirectoryPath, 'fonts', 'NotoSans-Regular.ttf'),
-      path.join(apiSrcDirectoryPath, 'public/login', '*.{css,js}'),
+      path.join(publicPath, 'login', '*.{css,js}'),
     ],
     dynamicUrlToDependencies: {
       '/': [path.join(staticDirectoryPath, 'index.html')], // Webapp's entry point
       '/medic/login': await getLoginPageContents(),
-      '/medic/_design/medic/_rewrite/': [path.join(apiSrcDirectoryPath, 'public', 'appcache-upgrade.html')],
+      '/medic/_design/medic/_rewrite/': [path.join(publicPath, 'appcache-upgrade.html')],
     },
     ignoreUrlParametersMatching: [/redirect/, /username/],
     stripPrefixMulti: {

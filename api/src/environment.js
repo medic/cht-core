@@ -48,16 +48,9 @@ module.exports.setDeployInfo = newDeployInfo => {
 };
 
 module.exports.getDeployInfo = () => deployInfo;
-
-module.exports.getExtractedResourcesPath = () => {
-  let destination = MEDIC_API_RESOURCE_PATH;
-  if (!destination) {
-    const isProduction = NODE_ENV === 'production';
-    const defaultLocation = path.join(__dirname, '..', 'extracted-resources');
-    destination = isProduction ? '/tmp/extracted-resources' : defaultLocation;
-  }
-
-  return path.resolve(destination);
-};
-
+module.exports.buildPath = () => path.join(__dirname, '..', 'build');
+module.exports.staticPath = () => path.join(module.exports.buildPath(), 'static');
+module.exports.publicPath = () => path.join(module.exports.buildPath(), 'public');
+module.exports.defaultDocs = () => path.join(module.exports.buildPath(), 'default-docs');
+module.exports.resourcesPath = () => path.join(__dirname, '..', 'resources');
 module.exports.isTesting = module.exports.db === 'medic-test';

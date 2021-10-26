@@ -59,7 +59,6 @@ const app = express();
 // requires content-type application/json header
 const jsonParser = bodyParser.json({ limit: '32mb' });
 const jsonQueryParser = require('./middleware/query-parser').json;
-const extractedResourceDirectory = environment.getExtractedResourcesPath();
 
 const handleJsonRequest = (method, path, callback) => {
   app[method](path, jsonParser, (req, res, next) => {
@@ -243,8 +242,8 @@ app.use(authorization.getUserCtx);
 
 app.all(['/+admin(/*)?', adminAppPrefix], authorization.handleAuthErrors, authorization.offlineUserFirewall);
 
-app.use(express.static(path.join(__dirname, '../build/public')));
-app.use(express.static(extractedResourceDirectory));
+app.use(express.static(environment.staticPath()));
+app.use(express.static(environment.publicPath()));
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);

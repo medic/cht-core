@@ -20,7 +20,6 @@ process
   const migrations = require('./src/migrations');
   const ddocExtraction = require('./src/ddoc-extraction');
   const generateXform = require('./src/services/generate-xform');
-  const resourceExtraction = require('./src/resource-extraction');
   const translations = require('./src/translations');
   const serverUtils = require('./src/server-utils');
   const uploadDefaultDocs = require('./src/upload-default-docs');
@@ -36,14 +35,6 @@ process
     logger.info('Extracting ddoc…');
     await ddocExtraction.run();
     logger.info('DDoc extraction completed successfully');
-
-    logger.info('Cleaning resources directory…');
-    resourceExtraction.removeDirectory();
-    logger.info('Cleaning resources directory completed successfully');
-
-    logger.info('Extracting resources…');
-    await resourceExtraction.run();
-    logger.info('Extracting resources completed successfully');
 
     logger.info('Extracting initial documents…');
     await uploadDefaultDocs.run();
