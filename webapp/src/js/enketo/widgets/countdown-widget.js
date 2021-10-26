@@ -14,37 +14,35 @@
  * limitations under the License.
  */
 
-{
-  'use strict';
-  const Widget = require( 'enketo-core/src/js/widget' ).default;
-  const $ = require( 'jquery' );
-  require( 'enketo-core/src/js/plugins' );
+'use strict';
+const Widget = require( 'enketo-core/src/js/widget' ).default;
+const $ = require( 'jquery' );
+require( 'enketo-core/src/js/plugins' );
 
-  const DIM = 320;
-  const DEFAULT_TIME = 60;
+const DIM = 320;
+const DEFAULT_TIME = 60;
 
-  /**
-     * Countdown timer.
-     *
-     * @extends Widget
-     */
-  class Timerwidget extends Widget {
-    static get selector() {
-      return '.or-appearance-countdown-timer input';
-    }
-
-    _init() {
-      const $el = $( this.element );
-      const $label = $el.parent();
-
-      const canvas = $('<canvas width="%s" height="%s">'.replace(/%s/g, DIM));
-      $label.append(canvas);
-      new TimerAnimation(canvas[0], DIM, DIM, parseInt($el.val()) || DEFAULT_TIME);
-    }
+/**
+   * Countdown timer.
+   *
+   * @extends Widget
+   */
+class Timerwidget extends Widget {
+  static get selector() {
+    return '.or-appearance-countdown-timer input';
   }
 
-  module.exports = Timerwidget;
+  _init() {
+    const $el = $( this.element );
+    const $label = $el.parent();
+
+    const canvas = $('<canvas width="%s" height="%s">'.replace(/%s/g, DIM));
+    $label.append(canvas);
+    new TimerAnimation(canvas[0], DIM, DIM, parseInt($el.val()) || DEFAULT_TIME);
+  }
 }
+
+module.exports = Timerwidget;
 
 function TimerAnimation(canvas, canvasW, canvasH, duration) {
   const pi = Math.PI;
