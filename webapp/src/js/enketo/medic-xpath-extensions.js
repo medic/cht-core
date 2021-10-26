@@ -1,4 +1,3 @@
-const moment = require('moment');
 const { isNil } = require('lodash');
 
 const DATE_STRING = /^\d\d\d\d-\d{1,2}-\d{1,2}(?:T\d\d:\d\d:\d\d\.?\d?\d?(?:Z|[+-]\d\d:\d\d)|.*)?$/;
