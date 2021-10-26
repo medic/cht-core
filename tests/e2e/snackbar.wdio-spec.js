@@ -37,7 +37,7 @@ describe('Snackbar', () => {
     await (await commonPage.inactiveSnackbar()).waitForDisplayed({ timeout: 6000 });
   });
 
-  it('should display the snackbar with an action and be clickable', async () => {
+  it('should display the snackbar with a clickable action', async () => {
     await browser.throttle('offline');
     await commonPage.openHamburgerMenu();
     await (await commonPage.syncButton()).click();
@@ -45,10 +45,8 @@ describe('Snackbar', () => {
     expect(await commonPage.snackbarMessage()).to.equal('Currently syncing…');
     await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'Sync failed. Unable to connect.');
 
-    await browser.throttle('online');
     const retryButton = await commonPage.snackbarAction();
     await retryButton.click();
-    await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'Currently syncing…');
-    await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'All reports synced');
+    await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'Currently syncing…', { interval: 250 });
   });
 });
