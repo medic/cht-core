@@ -9,19 +9,22 @@ describe('should renew token', async () => {
 
   beforeEach(async () => {
     await loginPage.cookieLogin();
-    await commonPage.goToPeople();
   });
 
   it('Refresh page multiple times and verify token gets renewed', async () => {
+    await commonPage.waitForPageLoaded();
+
     for (let counter = 0; counter < 3; counter++) {
       const beforPageLoadTime = moment();
       await browser.refresh();
-      await commonPage.goToPeople();
+      await commonPage.waitForPageLoaded();
       const afterPageLoadTime = moment();
       const ctxExpiry = await getCtxCookieExpiry();
-      
-      chai.expect(ctxExpiry.isBetween(beforPageLoadTime.add(1, 'year'), 
-        afterPageLoadTime.add(1, 'year')), `Failed for counter = ${counter}`).to.be.true;
+
+      chai.expect(
+        ctxExpiry.isBetween(beforPageLoadTime.add(1, 'year'), afterPageLoadTime.add(1, 'year')),
+        `Failed for counter = ${counter}, ${ctxExpiry.toISOString()} ${beforPageLoadTime.toISOString()}`
+      ).to.be.true;
     }
   });
 });
