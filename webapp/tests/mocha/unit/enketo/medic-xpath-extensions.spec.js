@@ -1,6 +1,8 @@
 const assert = require('chai').assert;
+const moment = require('moment');
 const medicXpathExtensions = require('../../../../src/js/enketo/medic-xpath-extensions');
 
+medicXpathExtensions.init(null, null, moment);
 const func = medicXpathExtensions.func;
 
 const getTimezoneOffset = Date.prototype.getTimezoneOffset;
