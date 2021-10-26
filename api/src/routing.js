@@ -199,7 +199,7 @@ app.get('/', function(req, res) {
     // Required for service compatibility during upgrade.
     proxy.web(req, res);
   } else {
-    res.sendFile(path.join(extractedResourceDirectory, 'index.html')); // Webapp's index - entry point
+    res.sendFile(path.join(environment.staticPath(), 'index.html')); // Webapp's index - entry point
   }
 });
 
@@ -240,7 +240,11 @@ app.get('/favicon.ico', (req, res) => {
 // saves CouchDB _session information as `userCtx` in the `req` object
 app.use(authorization.getUserCtx);
 
-app.all(['/+admin(/*)?', adminAppPrefix], authorization.handleAuthErrors, authorization.offlineUserFirewall);
+app.all(adminAppPrefix, (req, res, next) => {
+  req.url = req.url.replace(/\/medic\/_design\/medic-admin\/_rewrite\/?/, '/admin/');
+  next();
+});
+app.all(['/+admin(/*)?'], authorization.handleAuthErrors, authorization.offlineUserFirewall);
 
 app.use(express.static(environment.staticPath()));
 app.use(express.static(environment.publicPath()));
@@ -565,6 +569,7 @@ app.post(
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
 const dbDocHandler = require('./controllers/db-doc');
+const {en} = require('faker/lib/locales');
 const docPath = routePrefix + ':docId/{0,}';
 const attachmentPath = routePrefix + ':docId/+:attachmentId*';
 const ddocPath = routePrefix + '_design/+:ddocId*';
@@ -705,7 +710,7 @@ app.get('/service-worker.js', (req, res) => {
     ['Content-Type', 'application/javascript'],
   ]);
 
-  res.sendFile(path.join(extractedResourceDirectory, 'js/service-worker.js'));
+  res.sendFile(path.join(environment.staticPath(), 'js', 'service-worker.js'));
 });
 
 /**
