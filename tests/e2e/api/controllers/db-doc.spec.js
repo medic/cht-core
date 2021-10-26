@@ -3,7 +3,7 @@ const chai = require('chai');
 const utils = require('../../../utils');
 const sentinelUtils = require('../../sentinel/utils');
 const constants = require('../../../constants');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 
 const password = 'passwordSUP3RS3CR37!';
 

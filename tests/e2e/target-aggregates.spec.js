@@ -4,7 +4,7 @@ const analytics = require('../page-objects/analytics/analytics.po');
 const loginPage = require('../page-objects/login/login.po.js');
 const helper = require('../helper');
 const moment = require('moment');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 const auth = require('../auth')();
 const _ = require('lodash');
 
