@@ -29,6 +29,7 @@ describe('FormatDataRecord service', () => {
 
     TestBed.configureTestingModule({
       providers: [
+        FormatDataRecordService,
         { provide: SettingsService, useValue: { get: Settings } },
         { provide: LanguageService, useValue: { get: Language } },
         { provide: FormatDateService, useValue: { relative: sinon.stub().returns('sometime') } },

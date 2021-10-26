@@ -2,7 +2,6 @@ import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
-
 import { FormatDataRecordService } from '@mm-services/format-data-record.service';
 import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-generator.service';
 import { GetSummariesService } from '@mm-services/get-summaries.service';
@@ -23,6 +22,7 @@ describe('ReportViewModelGeneratorService Service', () => {
     lineageModelGeneratorService = { report: sinon.stub() };
     TestBed.configureTestingModule({
       providers: [
+        ReportViewModelGeneratorService,
         { provide: FormatDataRecordService, useValue: formatDataRecordService },
         { provide: GetSubjectSummariesService, useValue: getSubjectSummariesService },
         { provide: GetSummariesService, useValue: getSummariesService },
