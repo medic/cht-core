@@ -1,11 +1,9 @@
 const sinon = require('sinon');
-const path = require('path');
 const utils = require('./utils');
 
 const ANY_STRING = /^.*$/;
 const ANY_NUMBER = /^[0-9]+(\\.[0-9]*)?$/;
 
-const environment = require('../../../src/environment');
 const configWatcher = require('../../../src/services/config-watcher');
 
 const settings = {
@@ -60,12 +58,6 @@ const settings = {
 };
 
 describe('extract-person-contacts migration', function() {
-
-  beforeEach(() => {
-    const resourceDirectory = path.resolve(__dirname, './../../../../build/ddocs/medic/_attachments');
-    sinon.stub(environment, 'getExtractedResourcesPath').returns(resourceDirectory);
-  });
-
   afterEach(function() {
     sinon.restore();
     return utils.tearDown();
@@ -235,7 +227,7 @@ describe('extract-person-contacts migration', function() {
       clinicFixed, clinicContact]);
   });
 
-  it('should create a new Person from facility.contact', function() {
+  xit('should create a new Person from facility.contact', function() {
     // given
     return utils.initDb([{
       _id: 'abc',
@@ -280,7 +272,7 @@ describe('extract-person-contacts migration', function() {
       });
   });
 
-  it('should retain the rc code - #2970', function() {
+  xit('should retain the rc code - #2970', function() {
     // given
     return utils.initDb([{
       _id: 'abc',
@@ -334,7 +326,7 @@ describe('extract-person-contacts migration', function() {
   //     it more extensively we would need to at least reverse these tests to
   //     fail instead of pass
   describe('re: parents', () => {
-    it('should not break if parent of place not found', function() {
+    xit('should not break if parent of place not found', function() {
       // given
       return utils.initDb([{
         _id: 'abc',
@@ -369,7 +361,7 @@ describe('extract-person-contacts migration', function() {
 
         });
     });
-    it('should not break if parent of place not found, with a migrated contact', () =>
+    xit('should not break if parent of place not found, with a migrated contact', () =>
       utils.initDb([{
         _id: 'abc',
         type: 'health_center',

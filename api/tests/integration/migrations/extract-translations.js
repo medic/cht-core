@@ -1,15 +1,7 @@
-const path = require('path');
 const sinon = require('sinon');
-
-const environment = require('../../../src/environment');
 const utils = require('./utils');
 
 describe('extract-translations', function() {
-  beforeEach(() => {
-    sinon.stub(environment, 'getExtractedResourcesPath')
-      .returns(path.resolve(__dirname, './../../../../build/ddocs/medic/_attachments'));
-  });
-
   afterEach(() => {
     utils.tearDown();
     sinon.restore();
