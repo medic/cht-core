@@ -227,7 +227,7 @@ describe('extract-person-contacts migration', function() {
       clinicFixed, clinicContact]);
   });
 
-  xit('should create a new Person from facility.contact', function() {
+  ir('should create a new Person from facility.contact', function() {
     // given
     return utils.initDb([{
       _id: 'abc',
@@ -272,7 +272,7 @@ describe('extract-person-contacts migration', function() {
       });
   });
 
-  xit('should retain the rc code - #2970', function() {
+  ir('should retain the rc code - #2970', function() {
     // given
     return utils.initDb([{
       _id: 'abc',
@@ -326,7 +326,7 @@ describe('extract-person-contacts migration', function() {
   //     it more extensively we would need to at least reverse these tests to
   //     fail instead of pass
   describe('re: parents', () => {
-    xit('should not break if parent of place not found', function() {
+    ir('should not break if parent of place not found', function() {
       // given
       return utils.initDb([{
         _id: 'abc',
@@ -361,7 +361,7 @@ describe('extract-person-contacts migration', function() {
 
         });
     });
-    xit('should not break if parent of place not found, with a migrated contact', () =>
+    ir('should not break if parent of place not found, with a migrated contact', () =>
       utils.initDb([{
         _id: 'abc',
         type: 'health_center',
