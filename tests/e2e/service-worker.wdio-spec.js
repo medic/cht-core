@@ -119,6 +119,7 @@ describe('Service worker cache', () => {
       '/polyfills.js',
       '/runtime.js',
       '/scripts.js',
+      '/src_ts_modules_reports_reports_module_ts.js',
       '/styles.css'
     ]);
   });
