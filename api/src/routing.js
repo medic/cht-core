@@ -247,7 +247,6 @@ app.all(adminAppPrefix, (req, res, next) => {
 app.all('/+admin(/*)?', authorization.handleAuthErrors, authorization.offlineUserFirewall);
 
 app.use(express.static(environment.staticPath()));
-app.use(express.static(environment.publicPath()));
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);

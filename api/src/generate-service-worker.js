@@ -12,7 +12,6 @@ const SWMETA_DOC_ID = 'service-worker-meta';
 const apiSrcDirectoryPath = __dirname;
 
 const staticDirectoryPath = environment.staticPath();
-const publicPath = environment.publicPath();
 const scriptOutputPath = path.join(staticDirectoryPath, 'js', 'service-worker.js');
 
 const fsExists = (path) => new Promise((resolve) => {
@@ -78,12 +77,12 @@ const writeServiceWorkerFile = async () => {
       path.join(staticDirectoryPath, 'fonts', 'enketo-icons-v2.woff'),
       path.join(staticDirectoryPath, 'fonts', 'NotoSans-Bold.ttf'),
       path.join(staticDirectoryPath, 'fonts', 'NotoSans-Regular.ttf'),
-      path.join(publicPath, 'login', '*.{css,js}'),
+      path.join(staticDirectoryPath, 'login', '*.{css,js}'),
     ],
     dynamicUrlToDependencies: {
       '/': [path.join(staticDirectoryPath, 'index.html')], // Webapp's entry point
       '/medic/login': await getLoginPageContents(),
-      '/medic/_design/medic/_rewrite/': [path.join(publicPath, 'appcache-upgrade.html')],
+      '/medic/_design/medic/_rewrite/': [path.join(staticDirectoryPath, 'appcache-upgrade.html')],
     },
     ignoreUrlParametersMatching: [/redirect/, /username/],
     stripPrefixMulti: {
