@@ -1,22 +1,31 @@
 const rewire = require('rewire');
-const environment = rewire('../../src/environment');
 const { expect } = require('chai');
 
-describe('environment', () => {
-  describe('getExtractedResourcesPath', () => {
-    const testScenario = (env, expected) => environment.__with__(Object.assign(env, {
-      __dirname: '/api/src',
-    }))(() => {
-      const actual = environment.getExtractedResourcesPath();
-      expect(actual).to.eq(expected);
-    });
+let environment;
 
-    it('default', () => testScenario({}, '/api/extracted-resources'));
-    it('explicit via env', () => testScenario({ MEDIC_API_RESOURCE_PATH: '/foo' }, '/foo'));
-    it('default in production', () => testScenario({ NODE_ENV: 'production' }, '/tmp/extracted-resources'));
-    it('explit and production', () => testScenario(
-      { MEDIC_API_RESOURCE_PATH: '/foo', NODE_ENV: 'production' }, '/foo')
-    );
+describe('environment', () => {
+  beforeEach(() => {
+    environment = rewire('../../src/environment');
+  });
+
+  it('buildPath should return build path', () => {
+    environment.__set__('__dirname', 'absolute/path/to/api/src');
+    expect(environment.getBuildPath()).to.equal('absolute/path/to/api/build');
+  });
+
+  it('getStaticPath should return static path', () => {
+    environment.__set__('__dirname', 'absolute/path/to/api/src');
+    expect(environment.getStaticPath()).to.equal('absolute/path/to/api/build/static');
+  });
+
+  it('getDefaultDocsPath should return default docs path', () => {
+    environment.__set__('__dirname', 'absolute/path/to/api/src');
+    expect(environment.getDefaultDocsPath()).to.equal('absolute/path/to/api/build/default-docs');
+  });
+
+  it('getResourcesPath should return resources path', () => {
+    environment.__set__('__dirname', 'absolute/path/to/api/src');
+    expect(environment.getResourcesPath()).to.equal('absolute/path/to/api/resources');
   });
 
   it('should set, get and update deploy info correctly', () => {

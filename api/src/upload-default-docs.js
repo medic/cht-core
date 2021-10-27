@@ -41,7 +41,7 @@ const uploadDefaultDocuments = async function () {
     return;
   }
 
-  const pathToConfig = environment.defaultDocs();
+  const pathToConfig = environment.getDefaultDocsPath();
   if (fs.existsSync(pathToConfig)) {
     const uploadResult = await uploadDocumentsInFolder(pathToConfig);
     const unsuccessfulUploads = uploadResult.filter(result => !result.ok);

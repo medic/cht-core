@@ -11,7 +11,7 @@ const loginController = require('./controllers/login');
 const SWMETA_DOC_ID = 'service-worker-meta';
 const apiSrcDirectoryPath = __dirname;
 
-const staticDirectoryPath = environment.staticPath();
+const staticDirectoryPath = environment.getStaticPath();
 const scriptOutputPath = path.join(staticDirectoryPath, 'js', 'service-worker.js');
 
 const fsExists = (path) => new Promise((resolve) => {
@@ -87,7 +87,6 @@ const writeServiceWorkerFile = async () => {
     ignoreUrlParametersMatching: [/redirect/, /username/],
     stripPrefixMulti: {
       [staticDirectoryPath]: '',
-      [path.join(apiSrcDirectoryPath, 'public')]: '',
     },
     maximumFileSizeToCacheInBytes: 1048576 * 30,
     verbose: true,

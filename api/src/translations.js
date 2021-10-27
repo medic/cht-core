@@ -99,7 +99,7 @@ const readTranslationFile = (fileName, folderPath) => {
 };
 
 const getTranslationFiles = () => {
-  const translationsPath = path.join(environment.resourcesPath(), 'translations');
+  const translationsPath = path.join(environment.getResourcesPath(), 'translations');
   return readdir(translationsPath).then(files => {
     const translationsFiles = files.filter(file => file.match(TRANSLATION_FILE_NAME_REGEX));
     return Promise.all(translationsFiles.map(fileName => readTranslationFile(fileName, translationsPath)));
