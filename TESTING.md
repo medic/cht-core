@@ -66,9 +66,22 @@ Documented here are two ways to run individual tests and have your IDE break on 
 
 > When debugging it can be helpful to disable the headless browser mode so that you can see the browser window as the tests run. To do this, remove `--headless` from the [tests/conf.js](tests/conf.js) file for the Protractor tests and the [tests/wdio.conf.js](tests/wdio.conf.js) file for the WebdriverID tests.
 
-### Visual Studio Code
+### WebdriverIO
 
-#### Setting up Vscode for e2e debugging. 
+> To run just a single test file in WebdriverIO, update the `specs` config in [tests/wdio.conf.js](tests/wdio.conf.js) to refer to the desired test file.
+
+#### IntelliJ Based
+
+1. In a terminal, run `grunt`
+1. In Intellij, open the [package.json](package.json) file
+1. Scroll to the scripts section and click the ▶ button next to `wdio-local`
+1. Select `Debug 'wdio-local'`
+
+### Protractor
+
+#### Visual Studio Code
+
+##### Setting up Vscode for e2e debugging. 
 
 1. This assumes you have gone through the [development](https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md) setup guide. 
 1. Copy the vscode launch.json and tasks.json files from this [location](https://github.com/medic/medic-release-testing/tree/master/ide_config/vscode).
@@ -77,7 +90,7 @@ Documented here are two ways to run individual tests and have your IDE break on 
 1. Select launch e2e.
 1. This will now run as if you ran the command `grunt e2e-deploy` and start the `scripts/e2e/e2e-servers` script. Then launch protractor to debug the test(s). 
 
-#### Debugging a single test by using the "grep" feature.
+##### Debugging a single test by using the "grep" feature.
 
 1. Open launch.json.
 1. Update the grep argument with the name of your test to the args array.
@@ -86,8 +99,7 @@ Documented here are two ways to run individual tests and have your IDE break on 
 1. Click the debug icon on the left tool bar.
 1. Select launch e2e.
 
-
-### IntelliJ Based
+#### IntelliJ Based
 
 1. Click the run menu across the top.
 1. Click Edit Configurations.
@@ -104,7 +116,6 @@ Documented here are two ways to run individual tests and have your IDE break on 
 1. Click the run configuration dropdown and select the protractor config. 
 1. In a terminal run `grunt e2e-deploy`   NOTE: This has to happen each time you run. 
 1. Click debug button in IntelliJ.
-
 
 ## Migration To Webdriver IO
 
