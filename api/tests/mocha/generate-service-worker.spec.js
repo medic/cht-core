@@ -1,6 +1,5 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const path = require('path');
 const fs = require('fs');
 const swPrecache = require('sw-precache');
 const rewire = require('rewire');
