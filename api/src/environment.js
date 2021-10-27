@@ -2,7 +2,7 @@ const path = require('path');
 const url = require('url');
 const logger = require('./logger');
 
-const { UNIT_TEST_ENV, COUCH_URL, MEDIC_API_RESOURCE_PATH, NODE_ENV } = process.env;
+const { UNIT_TEST_ENV, COUCH_URL } = process.env;
 
 if (UNIT_TEST_ENV) {
   module.exports = {

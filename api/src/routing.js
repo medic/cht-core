@@ -568,7 +568,6 @@ app.post(
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
 const dbDocHandler = require('./controllers/db-doc');
-const {en} = require('faker/lib/locales');
 const docPath = routePrefix + ':docId/{0,}';
 const attachmentPath = routePrefix + ':docId/+:attachmentId*';
 const ddocPath = routePrefix + '_design/+:ddocId*';
