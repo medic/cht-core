@@ -37,10 +37,10 @@ docker run -d -p 5984:5984 -p 5986:5986 --name medic-couchdb -e COUCHDB_USER=mya
 ```
 
 Notes before copy pasting:
-- `--name` creates a container called `medic-couchdb`. You can name it whatever you want, but this is how you refer to it later
-- `-e` sets an environment variable inside the container. Two are set here, for a user and password for the initial admin user.
-- `-v` maps where couchdb stores data to your local file system to ensure persistence without depending on the container, using the path *before* the `:` (the path after the colon is the internal path inside the docker image). This should be somewhere you have write access to, and want this data to be stored. The second mounted volume is for the couch configuration, which will retain settings if your container is removed. This is especially important after running the command to secure the instance (done in steps below).
-- `apache/couchdb:2` will install the latest package for CouchDB 2.x
+ - `--name` creates a container called `medic-couchdb`. You can name it whatever you want, but this is how you refer to it later
+ - `-e` sets an environment variable inside the container. Two are set here, for a user and password for the initial admin user.
+ - `-v` maps where couchdb stores data to your local file system to ensure persistence without depending on the container, using the path *before* the `:` (the path after the colon is the internal path inside the docker image). This should be somewhere you have write access to, and want this data to be stored. The second mounted volume is for the couch configuration, which will retain settings if your container is removed. This is especially important after running the command to secure the instance (done in steps below).
+ - `apache/couchdb:2` will install the latest package for CouchDB 2.x
 
 Once this downloads and starts, you will need to [initialise CouchDB](http://localhost:5984/_utils/#/setup) as noted in [their install instructions](https://docs.couchdb.org/en/2.3.1/setup/index.html#setup).
 
@@ -50,7 +50,7 @@ Medic recommends you familiarise yourself with other Docker commands to make doc
 
 ### CouchDB on Ubuntu
 
-While we recommend use Docker to install CouchDB for development, it is still possible to install CouchDB on bare metal in Ubuntu, but there are some caveats:
+While we recommend use Docker to install CouchDB for development, it is still possible to install CouchDB on bare metal in Ubuntu, but there are some caveats: 
 
 * For Ubuntu 18.04 and earlier, you need to specify in `apt` version to install with the `-V` flag.  For example, on a clean 18.04 install you would run:
     ```bash
@@ -64,10 +64,10 @@ While we recommend use Docker to install CouchDB for development, it is still po
 ## Required environment variables
 
 Medic needs the following environment variables to be declared:
-- `COUCH_URL`: the full authenticated url to the `medic` DB. Locally this would be  `http://myadminuser:myadminpass@localhost:5984/medic`
-- `COUCH_NODE_NAME`: the name of your CouchDB's node. The Docker image default is `nonode@nohost`. Other installations may use `couchdb@127.0.0.1`. You can find out by querying [CouchDB's membership API](https://docs.couchdb.org/en/stable/api/server/common.html#membership)
-- (optionally) `API_PORT`: the port API will run on. If not defined we use `5988`
-- (optionally) `CHROME_BIN`: only required if `grunt unit` or `grunt e2e` complain that they can't find Chrome.
+ - `COUCH_URL`: the full authenticated url to the `medic` DB. Locally this would be  `http://myadminuser:myadminpass@localhost:5984/medic`
+ - `COUCH_NODE_NAME`: the name of your CouchDB's node. The Docker image default is `nonode@nohost`. Other installations may use `couchdb@127.0.0.1`. You can find out by querying [CouchDB's membership API](https://docs.couchdb.org/en/stable/api/server/common.html#membership)
+ - (optionally) `API_PORT`: the port API will run on. If not defined we use `5988`
+ - (optionally) `CHROME_BIN`: only required if `grunt unit` or `grunt e2e` complain that they can't find Chrome.
 
 How to permanently define environment variables depends on your OS and shell (e.g. for bash you can put them `~/.bashrc`). You can temporarily define them with `export`:
 
@@ -178,19 +178,19 @@ Follow the steps below to use an Android device with a development build of your
 1. Clone the repo: `git clone https://github.com/medic/nginx-local-ip.git`
 1. `cd` into the new directory: `cd nginx-local-ip`
 1. Assuming your IP is `192.168.0.3`, start `nginx-local-ip` to connect to:
-   * The CHT API running via `grunt` or `horti`, execute `APP_URL=http://192.168.0.3:5988 docker-compose up` and then access it at [https://192-168-0-3.my.local-ip.co/](https://192-168-0-3.my.local-ip.co/)
-   * The CHT API running via `docker`, the ports are remapped, so execute `HTTP=8080 HTTPS=8443 APP_URL=https://192.168.0.3 docker-compose up` and then access it at [https://192-168-0-3.my.local-ip.co:8443/](https://192-168-0-3.my.local-ip.co:8443/)
+    * The CHT API running via `grunt` or `horti`, execute `APP_URL=http://192.168.0.3:5988 docker-compose up` and then access it at [https://192-168-0-3.my.local-ip.co/](https://192-168-0-3.my.local-ip.co/)
+    * The CHT API running via `docker`, the ports are remapped, so execute `HTTP=8080 HTTPS=8443 APP_URL=https://192.168.0.3 docker-compose up` and then access it at [https://192-168-0-3.my.local-ip.co:8443/](https://192-168-0-3.my.local-ip.co:8443/)
 
 ### Remote Proxies
 
-`ngrok` and `pagekite` are remote proxies that route local traffic between your client and the CHT via a remote SSL terminator. While easy and handy, they introduce latency and are sometimes throttled.
+`ngrok` and `pagekite` are remote proxies that route local traffic between your client and the CHT via a remote SSL terminator. While easy and handy, they introduce latency and are sometimes throttled.  
 
 #### ngrok
 
 1. Create an [ngrok account](https://ngrok.com/), download and install the binary, then link your computer to your ngrok account.
 1. Start `ngrok` to connect to:
-   * The CHT API running via `grunt` or `horti`, execute `./ngrok http 5988`
-   * The CHT API running via `docker`, execute `./ngrok http 443`
+    * The CHT API running via `grunt` or `horti`, execute `./ngrok http 5988`
+    * The CHT API running via `docker`, execute `./ngrok http 443`
 1. Access the app using the https address shown (e.g. `https://YOUR-NGROK-NAME.ngrok.io`, replacing `YOUR-NGROK-NAME` with what you signed up with).
 
 **Note:** The service worker cache preload sometimes fails due to connection throttling (thereby causing an `ngrok` failure at startup).
@@ -199,8 +199,8 @@ Follow the steps below to use an Android device with a development build of your
 
 1. Create a [pagekite account](https://pagekite.net/signup/), download and install the python script.
 1. Start pagekite (be sure to replace `YOUR-PAGEKIT-NAME` with the URL you signed up for) to connect to:
-   * The CHT API running via `grunt` or `horti`, execute `python2 pagekite.py 5988 YOUR-PAGEKIT-NAME.pagekite.me`
-   * The CHT API running via `docker`, execute `python2 pagekite.py 443 YOUR-PAGEKIT-NAME.pagekite.me`
+    * The CHT API running via `grunt` or `horti`, execute `python2 pagekite.py 5988 YOUR-PAGEKIT-NAME.pagekite.me`
+    * The CHT API running via `docker`, execute `python2 pagekite.py 443 YOUR-PAGEKIT-NAME.pagekite.me`
 1. Access the app using the https address shown (e.g. `https://YOUR-PAGEKIT-NAME.pagekite.me`).
 
 
