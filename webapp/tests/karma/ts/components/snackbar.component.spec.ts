@@ -22,11 +22,13 @@ describe('SnackbarComponent', () => {
       { selector: Selectors.getSnackbarContent, value: null },
     ];
 
-    await TestBed.configureTestingModule({
-      providers: [
-        provideMockStore({ selectors: mockedSelectors }),
-      ],
-    }).compileComponents();
+    await TestBed
+      .configureTestingModule({
+        providers: [
+          provideMockStore({ selectors: mockedSelectors }),
+        ],
+      })
+      .compileComponents();
     store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(SnackbarComponent);
     component = fixture.componentInstance;
@@ -58,7 +60,12 @@ describe('SnackbarComponent', () => {
     expect(getElement('#snackbar.active .snackbar-action')).to.not.exist;
     expect(setSnackbarContent.callCount).to.equal(1);
 
-    tick(5000);
+    tick(4500);
+    expect(component.active).to.equal(true);
+    expect(getElement('#snackbar.active')).to.exist;
+    expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(message);
+
+    tick(500);
 
     expect(component.active).to.equal(false);
     expect(getElement('#snackbar')).to.exist;
