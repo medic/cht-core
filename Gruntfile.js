@@ -638,6 +638,7 @@ module.exports = function(grunt) {
         files: ['admin/src/css/**/*'],
         tasks: [
           'less:admin',
+          'copy:static-resources',
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
@@ -647,6 +648,7 @@ module.exports = function(grunt) {
         files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
         tasks: [
           'browserify:admin',
+          'copy:static-resources',
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
@@ -656,6 +658,7 @@ module.exports = function(grunt) {
         files: ['admin/src/templates/index.html'],
         tasks: [
           'copy:admin-resources',
+          'copy:static-resources',
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
@@ -665,6 +668,7 @@ module.exports = function(grunt) {
         files: ['admin/src/templates/**/*', '!admin/src/templates/index.html'],
         tasks: [
           'ngtemplates:adminApp',
+          'copy:static-resources',
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
@@ -674,6 +678,7 @@ module.exports = function(grunt) {
         // instead of watching the source files, watch the build folder and upload on rebuild
         files: ['build/static/**/*'],
         tasks: [
+          'copy:static-resources',
           'couch-compile:primary',
           'deploy',
         ],
