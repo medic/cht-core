@@ -1,11 +1,11 @@
 import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
-import { Component, NgZone, OnInit, HostListener } from '@angular/core';
+import { Component, HostListener, NgZone, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
+import { setTheme as setBootstrapTheme } from 'ngx-bootstrap/utils';
 import { combineLatest } from 'rxjs';
 
-import { DBSyncService } from '@mm-services/db-sync.service';
+import { DBSyncService, SyncResult, SyncStatusState } from '@mm-services/db-sync.service';
 import { Selectors } from './selectors';
 import { GlobalActions } from '@mm-actions/global';
 import { SessionService } from '@mm-services/session.service';
@@ -213,12 +213,12 @@ export class AppComponent implements OnInit {
     };
 
     this.dbSyncService.subscribe(({ state, to, from }) => {
-      if (state === 'disabled') {
+      if (state === SyncStatusState.Disabled) {
         this.globalActions.updateReplicationStatus({ disabled: true });
         return;
       }
 
-      if (state === 'unknown') {
+      if (state === SyncStatusState.Unknown) {
         this.globalActions.updateReplicationStatus({ current: SYNC_STATUS.unknown });
         return;
       }
@@ -227,7 +227,7 @@ export class AppComponent implements OnInit {
       const lastTrigger = this.replicationStatus.lastTrigger;
       const delay = lastTrigger ? Math.round((now - lastTrigger) / 1000) : 'unknown';
 
-      if (state === 'inProgress') {
+      if (state === SyncStatusState.InProgress) {
         this.globalActions.updateReplicationStatus({
           current: SYNC_STATUS.inProgress,
           lastTrigger: now
@@ -237,13 +237,13 @@ export class AppComponent implements OnInit {
       }
 
       const statusUpdates:any = {};
-      if (to === 'success') {
+      if (to === SyncResult.Success) {
         statusUpdates.lastSuccessTo = now;
       }
-      if (from === 'success') {
+      if (from === SyncResult.Success) {
         statusUpdates.lastSuccessFrom = now;
       }
-      if (to === 'success' && from === 'success') {
+      if (to === SyncResult.Success && from === SyncResult.Success) {
         console.info(`Replication succeeded after ${delay} seconds`);
         statusUpdates.current = SYNC_STATUS.success;
       } else {

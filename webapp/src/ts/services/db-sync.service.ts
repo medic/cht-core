@@ -43,13 +43,24 @@ const readOnlyFilter = function(doc) {
 // of invalidating existent replication checkpointers after upgrade, causing users to restart upwards replication.
 readOnlyFilter.toString = () => '';
 
-type Update = {
-  state?: 'unknown' | 'disabled' | 'inProgress';
-  to?: 'success';
-  from?: 'success';
+export enum SyncResult {
+  Success = 'success',
+  Required = 'required',
+}
+
+export enum SyncStatusState {
+  Unknown = 'unknown',
+  Disabled = 'disabled',
+  InProgress = 'inProgress',
+}
+
+type SyncStatus = {
+  state?: SyncStatusState;
+  to?: SyncResult;
+  from?: SyncResult;
 };
 
-type UpdateListener = Parameters<Subject<Update>['subscribe']>[0];
+type SyncStatusListener = Parameters<Subject<SyncStatus>['subscribe']>[0];
 
 @Injectable({
   providedIn: 'root'
@@ -98,7 +109,7 @@ export class DBSyncService {
     sync: undefined,
     meta: undefined,
   };
-  private readonly observable = new Subject<Update>();
+  private readonly observable = new Subject<SyncStatus>();
 
   isEnabled() {
     return !this.sessionService.isOnlineOnly();
@@ -181,29 +192,29 @@ export class DBSyncService {
         .then(errs => {
           return this.getCurrentSeq().then(currentSeq => {
             errs = errs.filter(err => err);
-            let update: Update = { to: 'success', from: 'success' };
+            let syncStatus: SyncStatus = { to: SyncResult.Success, from: SyncResult.Success };
             if (!errs.length) {
               // no errors
               this.syncIsRecent = true;
               window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
             } else if (currentSeq === this.getLastReplicatedSeq()) {
               // no changes to send, but may have some to receive
-              update = { state: 'unknown' };
+              syncStatus = { state: SyncStatusState.Unknown };
             } else {
               // definitely need to sync something
-              errs.forEach((directionName) => {
-                update[directionName] = 'required';
+              errs.forEach((directionName: 'to' | 'from') => {
+                syncStatus[directionName] = SyncResult.Required;
               });
             }
-            if (update.to === 'success') {
+            if (syncStatus.to === SyncResult.Success) {
               window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
             }
 
             if (force) {
-              this.displayUserFeedback(update);
+              this.displayUserFeedback(syncStatus);
             }
 
-            this.sendUpdate(update);
+            this.sendUpdate(syncStatus);
           });
         })
         .finally(() => {
@@ -211,7 +222,7 @@ export class DBSyncService {
         });
     }
 
-    this.sendUpdate({ state: 'inProgress' });
+    this.sendUpdate({ state: SyncStatusState.InProgress });
     return this.inProgressSync;
   }
 
@@ -236,8 +247,8 @@ export class DBSyncService {
       .then(() => this.ngZone.runOutsideAngular(() => purger.writePurgeMetaCheckpoint(local, currentSeq)));
   }
 
-  private sendUpdate(update: Update) {
-    this.observable.next(update);
+  private sendUpdate(syncStatus: SyncStatus) {
+    this.observable.next(syncStatus);
   }
 
   private resetSyncInterval() {
@@ -252,8 +263,8 @@ export class DBSyncService {
     }, SYNC_INTERVAL);
   }
 
-  private displayUserFeedback(update: Update) {
-    if (update.to === 'success' && update.from === 'success') {
+  private displayUserFeedback(syncStatus: SyncStatus) {
+    if (syncStatus.to === SyncResult.Success && syncStatus.from === SyncResult.Success) {
       this.globalActions.setSnackbarContent(this.translateService.instant('sync.status.not_required'));
       return;
     }
@@ -267,7 +278,7 @@ export class DBSyncService {
     );
   }
 
-  subscribe(listener: UpdateListener) {
+  subscribe(listener: SyncStatusListener) {
     return this.observable.subscribe(listener);
   }
 
@@ -301,7 +312,7 @@ export class DBSyncService {
   */
   sync(force?) {
     if (!this.isEnabled()) {
-      this.sendUpdate({ state: 'disabled' });
+      this.sendUpdate({ state: SyncStatusState.Disabled });
       return Promise.resolve();
     }
 
