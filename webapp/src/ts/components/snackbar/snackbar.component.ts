@@ -5,7 +5,6 @@ import { Subscription } from 'rxjs';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 
-
 @Component({
   selector: 'snackbar',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,6 +41,9 @@ export class SnackbarComponent implements OnInit {
     this.changeDetectorRef.detach();
     const reduxSubscription = this.store.select(Selectors.getSnackbarContent).subscribe((snackbarContent) => {
       if (!snackbarContent?.message) {
+        this.message = undefined;
+        this.action = undefined;
+        this.changeDetectorRef.detectChanges();
         return;
       }
 
