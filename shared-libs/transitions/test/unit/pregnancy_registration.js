@@ -828,7 +828,6 @@ describe('pregnancy registration with exact LMP date', () => {
     const startBS = bs.toBik(start.format('YYYY-MM-DD'));
 
     sinon.stub(utils, 'getContactUuid').resolves('uuid');
-
     sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
 
     const doc = {
@@ -851,7 +850,7 @@ describe('pregnancy registration with exact LMP date', () => {
   });
 
   it('LMP date less than 8 weeks ago should fail', () => {
-    const start = moment().subtract(7, 'weeks').subtract(6, 'days').startOf('day');
+    const start = moment().subtract({ weeks: 7, days: 6 }).startOf('day');
     sinon.stub(utils, 'getContactUuid').resolves('uuid');
     sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
 
@@ -874,7 +873,7 @@ describe('pregnancy registration with exact LMP date', () => {
   });
 
   it('LMP date more than 40 weeks ago should fail', () => {
-    const start = moment().subtract(40, 'weeks').subtract(1, 'day').startOf('day');
+    const start = moment().subtract({ weeks: 40, days: 1 }).startOf('day');
     sinon.stub(utils, 'getContactUuid').resolves('uuid');
     sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
 
@@ -901,7 +900,6 @@ describe('pregnancy registration with exact LMP date', () => {
     const startBS = bs.toBik(start.format('YYYY-MM-DD'));
 
     sinon.stub(utils, 'getContactUuid').resolves('uuid');
-
     sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
 
     const doc = {
