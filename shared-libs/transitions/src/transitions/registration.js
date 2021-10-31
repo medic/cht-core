@@ -128,7 +128,7 @@ const getDaysSinceDOB = doc => {
 
 const getExactLMPDate = doc => {
   //basic validations will be done in the app_settings.registrations
-  const lmpYYYY = doc.fields.lmpYYYY.padStart(4, '2000');
+  const lmpYYYY = doc.fields.lmpYYYY.toString().padStart(4, '2000');
   const lmpMM = doc.fields.lmpMM.padStart(2, '00');
   const lmpDD = doc.fields.lmpDD.padStart(2, '00');
   let gregDate;
@@ -142,9 +142,14 @@ const getExactLMPDate = doc => {
     gregDate = `${lmpYYYY}-${lmpMM}-${lmpDD}`;
   }
 
-  //check that date is not later than 8 weeks ago
+  //check that date is not later than 8 weeks ago //TODO: make this configurable
   if (moment(gregDate).isAfter(moment().subtract(8, 'weeks'))) {
     throw ("Date should not be later than 8 weeks ago.");//TODO: possible to send error message to user?
+  }
+
+  //date should not be earlier than 40 weeks ago
+  if(moment(gregDate).isBefore(moment().subtract(40, 'weeks'))) {
+    throw ("Date should not be earlier than 40 weeks ago.");
   }
   return moment(gregDate);
 };
