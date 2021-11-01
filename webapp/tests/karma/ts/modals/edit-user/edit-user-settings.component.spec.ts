@@ -1,6 +1,6 @@
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { async, ComponentFixture, fakeAsync, TestBed, flush } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, flush, waitForAsync } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { Subject } from 'rxjs';
@@ -25,7 +25,7 @@ describe('EditUserSettingsComponent', () => {
   let setLanguageService;
   let bdModalRef;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     updateUserService = {
       update: sinon.stub().resolves(),
     };

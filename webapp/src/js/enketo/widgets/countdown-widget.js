@@ -14,69 +14,67 @@
  * limitations under the License.
  */
 
-{
-  'use strict';
-  const Widget = require( 'enketo-core/src/js/Widget' );
-  const $ = require( 'jquery' );
-  require( 'enketo-core/src/js/plugins' );
+'use strict';
+const Widget = require( 'enketo-core/src/js/Widget' );
+const $ = require( 'jquery' );
+require( 'enketo-core/src/js/plugins' );
 
-  const pluginName = 'timerwidget';
+const pluginName = 'timerwidget';
 
-  const DIM = 320;
-  const DEFAULT_TIME = 60;
+const DIM = 320;
+const DEFAULT_TIME = 60;
 
-  /**
-     * Countdown timer.
-     *
-     * @constructor
-     * @param {Element} element [description]
-     * @param {(boolean|{touch: boolean, repeat: boolean})} options options
-     * @param {*=} e     event
-     */
+/**
+   * Countdown timer.
+   *
+   * @constructor
+   * @param {Element} element [description]
+   * @param {(boolean|{touch: boolean, repeat: boolean})} options options
+   * @param {*=} e     event
+   */
 
-  function Timerwidget( element, options ) {
-    this.namespace = pluginName;
-    Widget.call( this, element, options );
-    this._init();
-  }
-
-  //copy the prototype functions from the Widget super class
-  Timerwidget.prototype = Object.create( Widget.prototype );
-
-  //ensure the constructor is the new one
-  Timerwidget.prototype.constructor = Timerwidget;
-
-  Timerwidget.prototype._init = function() {
-    const $el = $( this.element );
-    const $label = $el.parent();
-
-    const canvas = $('<canvas width="%s" height="%s">'.replace(/%s/g, DIM));
-    $label.append(canvas);
-    new TimerAnimation(canvas[0], DIM, DIM, parseInt($el.val()) || DEFAULT_TIME);
-  };
-
-  Timerwidget.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
-
-  $.fn[ pluginName ] = function( options, event ) {
-    return this.each( function() {
-      const $this = $( this );
-      let data = $this.data( pluginName );
-
-      options = options || {};
-
-      if ( !data && typeof options === 'object' ) {
-        $this.data( pluginName, ( data = new Timerwidget( this, options, event ) ) );
-      } else if ( data && typeof options === 'string' ) {
-        data[ options ]( this );
-      }
-    } );
-  };
-
-  module.exports = {
-    'name': pluginName,
-    'selector': '.or-appearance-countdown-timer input',
-  };
+function Timerwidget( element, options ) {
+  this.namespace = pluginName;
+  Widget.call( this, element, options );
+  this._init();
 }
+
+//copy the prototype functions from the Widget super class
+Timerwidget.prototype = Object.create( Widget.prototype );
+
+//ensure the constructor is the new one
+Timerwidget.prototype.constructor = Timerwidget;
+
+Timerwidget.prototype._init = function() {
+  const $el = $( this.element );
+  const $label = $el.parent();
+
+  const canvas = $('<canvas width="%s" height="%s">'.replace(/%s/g, DIM));
+  $label.append(canvas);
+  new TimerAnimation(canvas[0], DIM, DIM, parseInt($el.val()) || DEFAULT_TIME);
+};
+
+Timerwidget.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
+
+$.fn[ pluginName ] = function( options, event ) {
+  return this.each( function() {
+    const $this = $( this );
+    let data = $this.data( pluginName );
+
+    options = options || {};
+
+    if ( !data && typeof options === 'object' ) {
+      $this.data( pluginName, ( data = new Timerwidget( this, options, event ) ) );
+    } else if ( data && typeof options === 'string' ) {
+      data[ options ]( this );
+    }
+  } );
+};
+
+module.exports = {
+  'name': pluginName,
+  'selector': '.or-appearance-countdown-timer input',
+};
 
 function TimerAnimation(canvas, canvasW, canvasH, duration) {
   const pi = Math.PI;

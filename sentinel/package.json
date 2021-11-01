@@ -9,16 +9,16 @@
   },
   "dependencies": {
     "async": "^3.2.1",
-    "bikram-sambat": "^1.6.0",
+    "bikram-sambat": "^1.7.0",
     "bikram-sambat-bootstrap": "^1.5.0",
     "epi-week": "^0.0.1",
-    "google-libphonenumber": "^3.2.22",
+    "google-libphonenumber": "3.2.22",
     "gsm": "^0.1.4",
     "later": "^1.2.0",
-    "lodash": "^4.17.19",
+    "lodash": "4.17.19",
     "moment": "^2.29.1",
     "mustache": "^4.2.0",
-    "object-path": "^0.11.7",
+    "object-path": "^0.11.8",
     "pouchdb-adapter-http": "^7.2.2",
     "pouchdb-core": "^7.2.2",
     "pouchdb-mapreduce": "^7.2.2",
@@ -26,8 +26,8 @@
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9",
     "url-join": "^4.0.1",
-    "uuid": "^3.4.0",
-    "winston": "^3.2.1"
+    "uuid": "^8.3.2",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "jsverify": "^0.8.4"
