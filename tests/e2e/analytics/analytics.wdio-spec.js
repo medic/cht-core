@@ -40,7 +40,7 @@ const updateSettings = async (settings) => {
   await browser.refresh();
 };
 
-const compileTasks = async (configDirectory) => {
+const compileTargets = async (configDirectory) => {
   await chtConfUtils.initializeConfigDir();
   const targetFilePath = path.join(__dirname, configDirectory, 'targets.js');
 
@@ -80,8 +80,8 @@ describe('Targets', () => {
   });
 
   it('should display correct message when no target found', async () => {
-    const tasks = await compileTasks('no-targets-config');
-    await updateSettings({ tasks });
+    const settings = await compileTargets('no-targets-config');
+    await updateSettings(settings);
     await analyticsPage.goToTargets();
 
     const emptySelection = await analyticsPage.noSelectedTarget();
