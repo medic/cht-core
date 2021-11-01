@@ -44,7 +44,7 @@ const compileTasks = async (configDirectory) => {
   await chtConfUtils.initializeConfigDir();
   const targetFilePath = path.join(__dirname, configDirectory, 'targets.js');
 
-  return chtConfUtils.compileNoolsConfig(null, targetFilePath);
+  return chtConfUtils.compileNoolsConfig({ targets: targetFilePath });
 };
 
 describe('Targets', () => {
