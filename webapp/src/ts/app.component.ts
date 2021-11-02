@@ -5,7 +5,7 @@ import { Store } from '@ngrx/store';
 import { setTheme as setBootstrapTheme } from 'ngx-bootstrap/utils';
 import { combineLatest } from 'rxjs';
 
-import { DBSyncService, SyncResult, SyncStatusState } from '@mm-services/db-sync.service';
+import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
 import { Selectors } from './selectors';
 import { GlobalActions } from '@mm-actions/global';
 import { SessionService } from '@mm-services/session.service';
@@ -213,12 +213,12 @@ export class AppComponent implements OnInit {
     };
 
     this.dbSyncService.subscribe(({ state, to, from }) => {
-      if (state === SyncStatusState.Disabled) {
+      if (state === SyncStatus.Disabled) {
         this.globalActions.updateReplicationStatus({ disabled: true });
         return;
       }
 
-      if (state === SyncStatusState.Unknown) {
+      if (state === SyncStatus.Unknown) {
         this.globalActions.updateReplicationStatus({ current: SYNC_STATUS.unknown });
         return;
       }
@@ -227,7 +227,7 @@ export class AppComponent implements OnInit {
       const lastTrigger = this.replicationStatus.lastTrigger;
       const delay = lastTrigger ? Math.round((now - lastTrigger) / 1000) : 'unknown';
 
-      if (state === SyncStatusState.InProgress) {
+      if (state === SyncStatus.InProgress) {
         this.globalActions.updateReplicationStatus({
           current: SYNC_STATUS.inProgress,
           lastTrigger: now
@@ -237,13 +237,13 @@ export class AppComponent implements OnInit {
       }
 
       const statusUpdates:any = {};
-      if (to === SyncResult.Success) {
+      if (to === SyncStatus.Success) {
         statusUpdates.lastSuccessTo = now;
       }
-      if (from === SyncResult.Success) {
+      if (from === SyncStatus.Success) {
         statusUpdates.lastSuccessFrom = now;
       }
-      if (to === SyncResult.Success && from === SyncResult.Success) {
+      if (to === SyncStatus.Success && from === SyncStatus.Success) {
         console.info(`Replication succeeded after ${delay} seconds`);
         statusUpdates.current = SYNC_STATUS.success;
       } else {

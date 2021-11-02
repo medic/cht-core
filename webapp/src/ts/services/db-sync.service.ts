@@ -43,24 +43,21 @@ const readOnlyFilter = function(doc) {
 // of invalidating existent replication checkpointers after upgrade, causing users to restart upwards replication.
 readOnlyFilter.toString = () => '';
 
-export enum SyncResult {
+export enum SyncStatus {
+  Unknown = 'unknown',
+  Disabled = 'disabled',
+  InProgress = 'inProgress',
   Success = 'success',
   Required = 'required',
 }
 
-export enum SyncStatusState {
-  Unknown = 'unknown',
-  Disabled = 'disabled',
-  InProgress = 'inProgress',
-}
-
-type SyncStatus = {
-  state?: SyncStatusState;
-  to?: SyncResult;
-  from?: SyncResult;
+type SyncState = {
+  state?: SyncStatus;
+  to?: SyncStatus;
+  from?: SyncStatus;
 };
 
-type SyncStatusListener = Parameters<Subject<SyncStatus>['subscribe']>[0];
+type SyncStateListener = Parameters<Subject<SyncState>['subscribe']>[0];
 
 @Injectable({
   providedIn: 'root'
@@ -109,7 +106,7 @@ export class DBSyncService {
     sync: undefined,
     meta: undefined,
   };
-  private readonly observable = new Subject<SyncStatus>();
+  private readonly observable = new Subject<SyncState>();
 
   isEnabled() {
     return !this.sessionService.isOnlineOnly();
@@ -192,29 +189,29 @@ export class DBSyncService {
         .then(errs => {
           return this.getCurrentSeq().then(currentSeq => {
             errs = errs.filter(err => err);
-            let syncStatus: SyncStatus = { to: SyncResult.Success, from: SyncResult.Success };
+            let syncState: SyncState = { to: SyncStatus.Success, from: SyncStatus.Success };
             if (!errs.length) {
               // no errors
               this.syncIsRecent = true;
               window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
             } else if (currentSeq === this.getLastReplicatedSeq()) {
               // no changes to send, but may have some to receive
-              syncStatus = { state: SyncStatusState.Unknown };
+              syncState = { state: SyncStatus.Unknown };
             } else {
               // definitely need to sync something
               errs.forEach((directionName: 'to' | 'from') => {
-                syncStatus[directionName] = SyncResult.Required;
+                syncState[directionName] = SyncStatus.Required;
               });
             }
-            if (syncStatus.to === SyncResult.Success) {
+            if (syncState.to === SyncStatus.Success) {
               window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
             }
 
             if (force) {
-              this.displayUserFeedback(syncStatus);
+              this.displayUserFeedback(syncState);
             }
 
-            this.sendUpdate(syncStatus);
+            this.sendUpdate(syncState);
           });
         })
         .finally(() => {
@@ -222,7 +219,7 @@ export class DBSyncService {
         });
     }
 
-    this.sendUpdate({ state: SyncStatusState.InProgress });
+    this.sendUpdate({ state: SyncStatus.InProgress });
     return this.inProgressSync;
   }
 
@@ -247,8 +244,8 @@ export class DBSyncService {
       .then(() => this.ngZone.runOutsideAngular(() => purger.writePurgeMetaCheckpoint(local, currentSeq)));
   }
 
-  private sendUpdate(syncStatus: SyncStatus) {
-    this.observable.next(syncStatus);
+  private sendUpdate(syncState: SyncState) {
+    this.observable.next(syncState);
   }
 
   private resetSyncInterval() {
@@ -263,8 +260,8 @@ export class DBSyncService {
     }, SYNC_INTERVAL);
   }
 
-  private displayUserFeedback(syncStatus: SyncStatus) {
-    if (syncStatus.to === SyncResult.Success && syncStatus.from === SyncResult.Success) {
+  private displayUserFeedback(syncState: SyncState) {
+    if (syncState.to === SyncStatus.Success && syncState.from === SyncStatus.Success) {
       this.globalActions.setSnackbarContent(this.translateService.instant('sync.status.not_required'));
       return;
     }
@@ -278,7 +275,7 @@ export class DBSyncService {
     );
   }
 
-  subscribe(listener: SyncStatusListener) {
+  subscribe(listener: SyncStateListener) {
     return this.observable.subscribe(listener);
   }
 
@@ -312,7 +309,7 @@ export class DBSyncService {
   */
   sync(force?) {
     if (!this.isEnabled()) {
-      this.sendUpdate({ state: SyncStatusState.Disabled });
+      this.sendUpdate({ state: SyncStatus.Disabled });
       return Promise.resolve();
     }
 
