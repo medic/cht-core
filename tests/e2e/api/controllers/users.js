@@ -1,7 +1,7 @@
 const constants = require('../../../constants');
 const http = require('http');
 const utils = require('../../../utils');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 const querystring = require('querystring');
 const chai = require('chai');
 chai.use(require('chai-shallow-deep-equal'));

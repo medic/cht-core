@@ -6,7 +6,7 @@ const utils = require('../lib/utils');
 const logger = require('../lib/logger');
 const config = require('../config');
 const infodoc = require('@medic/infodoc');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 
 infodoc.initLib(db.medic, db.sentinel);
 /*
