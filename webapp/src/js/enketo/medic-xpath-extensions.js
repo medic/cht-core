@@ -1,4 +1,6 @@
 let zscoreUtil;
+let toBikramSambat;
+let moment;
 
 const isObject = (value) => {
   const type = typeof value;
@@ -60,11 +62,24 @@ const parseTimestampToDate = (value) => {
   return { t:'date', v: new Date(timestamp) };
 };
 
+const convertToBikramSambat = (value) => {
+  const date = getValue(value);
+  if (!date) {
+    return { t: 'str', v: '' };
+  }
+
+  const convertedDate = toBikramSambat(moment(date));
+
+  return { t: 'str', v: convertedDate };
+};
+
 module.exports = {
   getTimezoneOffsetAsTime: getTimezoneOffsetAsTime,
   toISOLocalString: toISOLocalString,
-  init: function(_zscoreUtil) {
+  init: function(_zscoreUtil, _toBikramSambat, _moment) {
     zscoreUtil = _zscoreUtil;
+    toBikramSambat = _toBikramSambat;
+    moment = _moment;
   },
   func: {
     now: now_and_today,
@@ -79,6 +94,7 @@ module.exports = {
       }
       return { t: 'num', v: result };
     },
+    'to-bikram-sambat': convertToBikramSambat,
     'parse-timestamp-to-date': parseTimestampToDate, // Function name convention of XForm
   },
   process: {

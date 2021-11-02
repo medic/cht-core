@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -20,7 +20,7 @@ describe('AnalyticsComponent', () => {
   let tourService;
   let store;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const mockSelectors = [
       { selector: Selectors.getAnalyticsModules, value: [] },
     ];

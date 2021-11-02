@@ -1,23 +1,27 @@
 <div class="page scrolling">
   <div class="item-content empty-selection" *ngIf="targetsDisabled">
-    <div>{{'targets.disabled' | translate}}</div>
+    <div>{{ 'targets.disabled' | translate }}</div>
   </div>
 
   <div class="item-content empty-selection" *ngIf="!targetsDisabled && loading">
     <div><div class="loader"></div></div>
   </div>
 
-  <div class="targets" *ngIf="!targetsDisabled && !loading">
-    <div class="target" 
-      *ngFor="let target of targets" 
+  <div class="item-content empty-selection" *ngIf="!targetsDisabled && !loading && !targets?.length">
+    <div>{{ 'targets.no_targets' | translate }}</div>
+  </div>
+
+  <div class="targets" *ngIf="!targetsDisabled && !loading && targets?.length">
+    <div class="target"
+      *ngFor="let target of targets"
       [ngClass]="{ 'has-goal': target.goal >= 0, 'goal-met': (target.value?.pass >= target.goal) || (target.value?.percent >= target.goal) }"
       attr.test-target-id="{{ target.id }}">
       <div class="heading">
         <div class="icon" [innerHTML]="target.icon | resourceIcon"></div>
         <div class="title">
-          <h2 *ngIf="target.translation_key">{{ target.translation_key | translate}}</h2>
+          <h2 *ngIf="target.translation_key">{{ target.translation_key | translate }}</h2>
           <h2 *ngIf="!target.translation_key">{{ target.name | translateFrom }}</h2>
-          <p *ngIf="target.subtitle_translation_key">{{ target.subtitle_translation_key | translate}}</p>
+          <p *ngIf="target.subtitle_translation_key">{{ target.subtitle_translation_key | translate }}</p>
         </div>
       </div>
 
@@ -25,10 +29,10 @@
         <mm-analytics-targets-progress *ngIf="target.type === 'percent'" [target]="target" [value]="target.value" [aggregate]="false"></mm-analytics-targets-progress>
         <div class="count" *ngIf="target.type !== 'percent'">
           <div class="goal" *ngIf="target.goal >= 0">
-            <label>{{'analytics.target.monthly_goal' | translate}}</label>
-            <p>{{ target.goal }}</p>
+            <label>{{ 'analytics.target.monthly_goal' | translate }}</label>
+            <p>{{ target.goal | localizeNumber }}</p>
           </div>
-          <div class="number">{{ target.value?.pass }}</div>
+          <div class="number">{{ target.value?.pass | localizeNumber }}</div>
         </div>
       </div>
     </div>

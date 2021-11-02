@@ -1,4 +1,4 @@
-import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -21,7 +21,7 @@ describe('Testing Component', () => {
   let sessionService;
   let cookieService;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     database = { destroy: sinon.stub() };
     dbService = { get: sinon.stub().returns(database) };
     debugService = {

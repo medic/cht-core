@@ -30,15 +30,15 @@ const getPurgeLog = (localDb) => {
 };
 
 let opts;
-module.exports.setOptions = options => {
+const setOptions = options => {
   opts = options;
 };
 
-module.exports.info = () => {
+const info = () => {
   return purgeFetch(`${utils.getBaseUrl()}/purging`).then(res => res && res.update_seq);
 };
 
-module.exports.checkpoint = (seq) => {
+const checkpoint = (seq) => {
   if (!seq) {
     return Promise.resolve();
   }
@@ -46,9 +46,9 @@ module.exports.checkpoint = (seq) => {
 };
 
 const daysToMs = (days) => 1000 * 60 * 60 * 24 * days;
-module.exports.shouldPurge = (localDb, userCtx) => {
+const shouldPurge = (localDb, userCtx) => {
   return Promise
-    .all([ localDb.get('settings'), getPurgeLog(localDb), module.exports.info() ])
+    .all([ localDb.get('settings'), getPurgeLog(localDb), info() ])
     .then(([ { settings: { purge } }, purgelog, info ]) => {
       // purge not running on the server
       if (!purge) {
@@ -89,11 +89,11 @@ module.exports.shouldPurge = (localDb, userCtx) => {
     });
 };
 
-module.exports.shouldPurgeMeta = (localDb) => {
+const shouldPurgeMeta = (localDb) => {
   return getPurgeLog(localDb).then(purgeLog => !!purgeLog.synced_seq);
 };
 
-module.exports.purge = (localDb, userCtx) => {
+const purge = (localDb, userCtx) => {
   const handlers = {};
   const baseUrl = utils.getBaseUrl();
   let totalPurged = 0;
@@ -116,7 +116,7 @@ module.exports.purge = (localDb, userCtx) => {
           .then(nbr => {
             totalPurged += nbr;
             emit('progress', { purged: totalPurged });
-            return module.exports.checkpoint(lastSeq);
+            return checkpoint(lastSeq);
           })
           .then(() => batchedPurge());
       });
@@ -138,11 +138,11 @@ module.exports.purge = (localDb, userCtx) => {
   return p;
 };
 
-module.exports.purgeMeta = (localDb) => {
+const purgeMeta = (localDb) => {
   return getPurgeLog(localDb).then(purgeLog => batchedMetaPurge(localDb, purgeLog.purged_seq, purgeLog.synced_seq));
 };
 
-module.exports.writePurgeMetaCheckpoint = (localDb, currentSeq) => {
+const writePurgeMetaCheckpoint = (localDb, currentSeq) => {
   return writeMetaPurgeLog(localDb, { syncedSeq: currentSeq });
 };
 
@@ -237,4 +237,15 @@ const purgeIds = (db, ids) => {
 
       return nbrPurged;
     });
+};
+
+module.exports = {
+  setOptions,
+  info,
+  checkpoint,
+  shouldPurge,
+  shouldPurgeMeta,
+  purge,
+  purgeMeta,
+  writePurgeMetaCheckpoint,
 };
