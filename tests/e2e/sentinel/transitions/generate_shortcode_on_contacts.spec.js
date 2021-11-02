@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 
 describe('generate_shortcode_on_contacts', () => {
   after(() => utils.revertDb([], true));
