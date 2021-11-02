@@ -82,7 +82,7 @@ const changeLanguage = async (languageCode, userTranslation) => {
   };
 };
 
-const returnToLogin = async () => {
+const returnToLoginButtonExists = async () => {
   return await (await $('.btn[href="/medic/login"]')).isExisting();
 };
 
@@ -92,7 +92,7 @@ const getTokenError = async (reason) => {
   return await (await tokenLoginError(reason)).getText();
 };
 
-const toLogin = async () => {
+const getToLoginLinkText = async () => {
   const message = await $('[translate="login.token.redirect.login.info"]');
   return await message.getText();
 };
@@ -105,8 +105,8 @@ module.exports = {
   labelForUser,
   loginButton,
   labelForPassword,
-  returnToLogin,
+  returnToLoginButtonExists,
   getTokenError,
-  toLogin,
+  getToLoginLinkText,
   getCurrentLanguage
 };

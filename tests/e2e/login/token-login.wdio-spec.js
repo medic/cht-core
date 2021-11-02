@@ -75,24 +75,22 @@ describe('Token login', () => {
 
   it('should display an error when token login is disabled', async () => {
     await browser.url(getUrl('this is a random string'));
-    await loginPage.getTokenError('unknown');
     expect (await loginPage.getTokenError('unknown')).to.contain(UNKNOWN);
-    expect (await loginPage.toLogin()).to.equal(TOLOGIN);
+    expect (await loginPage.getToLoginLinkText()).to.equal(TOLOGIN);
   });
 
   it('should display an error with incorrect url', async () => {
     await setupTokenLoginSettings();
     await browser.url(`/medic/login/token`);
-    await loginPage.getTokenError('missing');
     expect (await loginPage.getTokenError('missing')).to.contain(MISSING);
-    expect (await loginPage.toLogin()).to.equal(TOLOGIN);
+    expect (await loginPage.getToLoginLinkText()).to.equal(TOLOGIN);
   });
 
   it('should display an error when accessing with random strings', async () => {
     await setupTokenLoginSettings();
     await browser.url(getUrl('this is a random string'));
     expect (await loginPage.getTokenError('invalid')).to.contain(INVALID);
-    expect (await loginPage.toLogin()).to.equal(TOLOGIN);
+    expect (await loginPage.getToLoginLinkText()).to.equal(TOLOGIN);
   });
 
   it('should display an error when token is expired', async () => {
@@ -103,7 +101,7 @@ describe('Token login', () => {
     await expireToken(userDoc);
     await browser.url(url);
     expect (await loginPage.getTokenError('expired')).to.contain(EXPIRED);
-    expect (await loginPage.toLogin()).to.equal(TOLOGIN);
+    expect (await loginPage.getToLoginLinkText()).to.equal(TOLOGIN);
   });
 
   it('should log the user in when token is correct', async () => {
