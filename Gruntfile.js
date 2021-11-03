@@ -11,7 +11,6 @@ const {
   COUCH_URL,
   COUCH_NODE_NAME,
   MARKET_URL,
-  STAGING_SERVER,
   BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
@@ -61,6 +60,59 @@ const linkSharedLibs = dir => {
   ].join(' && ');
 };
 
+const getVersion = () => {
+  if (TAG) {
+    return TAG;
+  }
+  let version = packageJson.version;
+  if (BRANCH === 'master') {
+    version += `-alpha.${BUILD_NUMBER}`;
+  }
+  return version;
+};
+
+const safeMakeDir = (dirPath) => {
+  if (!fs.existsSync(dirPath)){
+    fs.mkdirSync(dirPath);
+  }
+};
+
+const createStagingDoc = () => {
+  const stagingPath = path.resolve(__dirname, 'build', 'staging');
+  safeMakeDir(stagingPath);
+  fs.writeFileSync(path.resolve(stagingPath, '_id'), `medic:medic:test-${BUILD_NUMBER}`);
+  copyBuildInfo();
+
+  const stagingAttachmentsPath = path.resolve(stagingPath, '_attachments');
+  safeMakeDir(stagingAttachmentsPath);
+  const buildDdocsPath = path.resolve(__dirname, 'build', 'ddocs');
+  fs.readdirSync(buildDdocsPath, { withFileTypes: true }).forEach(file => {
+    if (!file.isDirectory()) {
+      fs.copyFileSync(path.resolve(buildDdocsPath, file.name), path.resolve(stagingAttachmentsPath, file.name));
+    }
+  });
+};
+
+const copyBuildInfo = () => {
+  const medicBuildInfoPath = path.resolve(__dirname, 'build', 'ddocs', 'medic-db', 'medic', 'build_info');
+  const stagingBuildInfoPath = path.resolve(__dirname, 'build', 'staging', 'build_info');
+  safeMakeDir(stagingBuildInfoPath);
+
+  fs.readdirSync(medicBuildInfoPath, { withFileTypes: true }).forEach(file => {
+    if (!file.isDirectory()) {
+      fs.copyFileSync(path.resolve(medicBuildInfoPath, file.name), path.resolve(stagingBuildInfoPath, file.name));
+    }
+  });
+};
+
+const setBuildInfo = () => {
+  const buildInfoPath = path.resolve(__dirname, 'build', 'ddocs', 'medic-db', 'medic', 'build_info');
+  safeMakeDir(buildInfoPath);
+  fs.writeFileSync(path.resolve(buildInfoPath, 'version'), releaseName);
+  fs.writeFileSync(path.resolve(buildInfoPath, 'base_version'), packageJson.version);
+  fs.writeFileSync(path.resolve(buildInfoPath, 'time'), new Date().toISOString());
+};
+
 module.exports = function(grunt) {
   'use strict';
 
@@ -69,39 +121,30 @@ module.exports = function(grunt) {
     'couch-push': 'grunt-couch',
     ngtemplates: 'grunt-angular-templates',
     protractor: 'grunt-protractor-runner',
-    replace: 'grunt-text-replace',
     uglify: 'grunt-contrib-uglify-es',
   });
   require('time-grunt')(grunt);
 
   // Project configuration
   grunt.initConfig({
-    replace: {
-      'change-ddoc-id-for-testing': {
-        src: ['build/ddocs/medic.json'],
-        overwrite: true,
-        replacements: [
-          {
-            from: '"_id": "_design/medic"',
-            to: `"_id": "medic:medic:test-${BUILD_NUMBER}"`,
-          },
-        ],
-      },
-    },
     'couch-compile': {
       primary: {
         files: {
-          'build/ddocs/medic.json': 'build/ddocs/medic/',
+          'build/ddocs/medic.json': 'build/ddocs/medic-db/*',
         },
       },
       secondary: {
         files: {
-          'build/ddocs/medic/_attachments/ddocs/medic.json': 'build/ddocs/medic-db/*',
-          'build/ddocs/medic/_attachments/ddocs/sentinel.json': 'build/ddocs/sentinel-db/*',
-          'build/ddocs/medic/_attachments/ddocs/users-meta.json': 'build/ddocs/users-meta-db/*',
-          'build/ddocs/medic/_attachments/ddocs/logs.json': 'build/ddocs/logs-db/*',
+          'build/ddocs/sentinel.json': 'build/ddocs/sentinel-db/*',
+          'build/ddocs/users-meta.json': 'build/ddocs/users-meta-db/*',
+          'build/ddocs/logs.json': 'build/ddocs/logs-db/*',
         },
       },
+      staging: {
+        files: {
+          'build/staging.json': 'build/staging',
+        }
+      }
     },
     'couch-push': {
       localhost: {
@@ -131,18 +174,10 @@ module.exports = function(grunt) {
           ['http://admin:pass@localhost:4984/medic-test']: 'build/ddocs/medic.json',
         },
       },
-      staging: {
-        files: [
-          {
-            src: 'build/ddocs/medic.json',
-            dest: `${MARKET_URL}/${STAGING_SERVER}`,
-          },
-        ],
-      },
       testing: {
         files: [
           {
-            src: 'build/ddocs/medic.json',
+            src: 'build/staging.json',
             dest: `${MARKET_URL}/${BUILDS_SERVER}`,
           },
         ],
@@ -342,7 +377,7 @@ module.exports = function(grunt) {
               `npm dedupe`,
               `npm pack`,
               `ls -l medic-${module}-0.1.0.tgz`,
-              `mv medic-*.tgz ../build/ddocs/medic/_attachments/`,
+              `mv medic-*.tgz ../build/staging/_attachments/`,
               `cd ..`,
             ].join(' && ')
           )
@@ -364,27 +399,7 @@ module.exports = function(grunt) {
         },
       },
       'set-ddoc-version': {
-        cmd: () => {
-          let version;
-          if (TAG) {
-            version = TAG;
-          } else {
-            version = packageJson.version;
-            if (BRANCH === 'master') {
-              version += `-alpha.${BUILD_NUMBER}`;
-            }
-          }
-          return `echo "${version}" > build/ddocs/medic/version`;
-        },
-      },
-      'set-horticulturalist-metadata': {
-        cmd: () => `
-          mkdir -p build/ddocs/medic/build_info;
-          cd build/ddocs/medic/build_info;
-          echo "${releaseName}" > version;
-          echo "${packageJson.version}" > base_version;
-          echo "${new Date().toISOString()}" > time;
-          echo "grunt on \`whoami\`" > author;`,
+        cmd: () => `echo "${getVersion()}" > build/ddocs/medic-db/medic/version`,
       },
       'api-dev': {
         cmd:
@@ -639,7 +654,7 @@ module.exports = function(grunt) {
         tasks: [
           'less:admin',
           'copy:static-resources',
-          'couch-compile:secondary',
+          'couch-compile:primary',
           'couch-push:localhost-secondary',
           'notify:deployed',
         ],
@@ -649,7 +664,7 @@ module.exports = function(grunt) {
         tasks: [
           'browserify:admin',
           'copy:static-resources',
-          'couch-compile:secondary',
+          'couch-compile:primary',
           'couch-push:localhost-secondary',
           'notify:deployed',
         ],
@@ -659,7 +674,7 @@ module.exports = function(grunt) {
         tasks: [
           'copy:admin-resources',
           'copy:static-resources',
-          'couch-compile:secondary',
+          'couch-compile:primary',
           'couch-push:localhost-secondary',
           'notify:deployed',
         ],
@@ -669,7 +684,7 @@ module.exports = function(grunt) {
         tasks: [
           'ngtemplates:adminApp',
           'copy:static-resources',
-          'couch-compile:secondary',
+          'couch-compile:primary',
           'couch-push:localhost-secondary',
           'notify:deployed',
         ],
@@ -684,11 +699,11 @@ module.exports = function(grunt) {
         ],
       },
       'primary-ddoc': {
-        files: ['ddocs/medic/**/*'],
+        files: ['ddocs/medic-db/**/*'],
         tasks: ['copy:ddocs', 'couch-compile:primary', 'deploy'],
       },
       'secondary-ddocs': {
-        files: ['ddocs/*-db/**/*'],
+        files: ['ddocs/*-db/**/*', '!ddocs/medic-db/**/*'],
         tasks: [
           'copy:ddocs',
           'couch-compile:secondary',
@@ -902,11 +917,13 @@ module.exports = function(grunt) {
     'couch-compile:primary',
   ]);
 
+  grunt.registerTask('set-build-info', setBuildInfo);
+
   grunt.registerTask('build-common', 'Build the static resources', [
     'build-css',
     'build-js',
     'exec:set-ddoc-version',
-    'exec:set-horticulturalist-metadata',
+    'set-build-info',
     'build-admin',
     'build-ddoc',
     'exec:build-config',
@@ -936,6 +953,7 @@ module.exports = function(grunt) {
     'uglify:api',
     'cssmin:api',
     'exec:bundle-dependencies',
+    'create-staging-doc',
     'exec:pack-node-modules',
   ]);
 
@@ -1137,8 +1155,10 @@ module.exports = function(grunt) {
     'exec:sentinel-dev',
   ]);
 
-  grunt.registerTask('publish-for-testing', 'Publish the ddoc to the testing server', [
-    'replace:change-ddoc-id-for-testing',
+  grunt.registerTask('create-staging-doc', createStagingDoc);
+
+  grunt.registerTask('publish-for-testing', 'Publish the staging doc to the testing server', [
+    'couch-compile:staging',
     'couch-push:testing',
   ]);
 
