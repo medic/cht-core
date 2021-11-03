@@ -43,6 +43,8 @@ export class SnackbarComponent implements OnInit {
       if (!snackbarContent?.message) {
         this.message = undefined;
         this.action = undefined;
+        this.active = false;
+        clearTimeout(this.timer);
         this.changeDetectorRef.detectChanges();
         return;
       }
