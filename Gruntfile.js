@@ -82,12 +82,14 @@ const createStagingDoc = () => {
   makeDirSync(stagingPath);
 
   fs.writeFileSync(path.resolve(stagingPath, '_id'), `medic:medic:test-${BUILD_NUMBER}`);
+  makeDirSync(path.resolve(stagingPath, '_attachments'));
+};
+
+const populateStagingDoc = () => {
+  const stagingPath = path.resolve(__dirname, 'build', 'staging');
   copyBuildInfo();
 
-  const stagingAttachmentsPath = path.resolve(stagingPath, '_attachments');
-  makeDirSync(stagingAttachmentsPath);
-
-  const ddocAttachmentsPath = path.resolve(stagingAttachmentsPath, 'ddocs');
+  const ddocAttachmentsPath = path.resolve(stagingPath, '_attachments', 'ddocs');
   makeDirSync(ddocAttachmentsPath);
 
   const buildDdocsPath = path.resolve(__dirname, 'build', 'ddocs');
@@ -911,6 +913,7 @@ module.exports = function(grunt) {
     'build-node-modules',
     'minify',
     'couch-compile:primary',
+    'populate-staging-doc',
   ]);
 
   grunt.registerTask('build-dev', 'Build the static resources', [
@@ -1162,6 +1165,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('create-staging-doc', createStagingDoc);
+  grunt.registerTask('populate-staging-doc', populateStagingDoc);
 
   grunt.registerTask('publish-for-testing', 'Publish the staging doc to the testing server', [
     'couch-compile:staging',
