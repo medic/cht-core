@@ -71,7 +71,7 @@ const getVersion = () => {
   return version;
 };
 
-const safeMakeDir = (dirPath) => {
+const makeDirSync = (dirPath) => {
   if (!fs.existsSync(dirPath)){
     fs.mkdirSync(dirPath);
   }
@@ -79,16 +79,21 @@ const safeMakeDir = (dirPath) => {
 
 const createStagingDoc = () => {
   const stagingPath = path.resolve(__dirname, 'build', 'staging');
-  safeMakeDir(stagingPath);
+  makeDirSync(stagingPath);
+
   fs.writeFileSync(path.resolve(stagingPath, '_id'), `medic:medic:test-${BUILD_NUMBER}`);
   copyBuildInfo();
 
   const stagingAttachmentsPath = path.resolve(stagingPath, '_attachments');
-  safeMakeDir(stagingAttachmentsPath);
+  makeDirSync(stagingAttachmentsPath);
+
+  const ddocAttachmentsPath = path.resolve(stagingAttachmentsPath, 'ddocs');
+  makeDirSync(ddocAttachmentsPath);
+
   const buildDdocsPath = path.resolve(__dirname, 'build', 'ddocs');
   fs.readdirSync(buildDdocsPath, { withFileTypes: true }).forEach(file => {
     if (!file.isDirectory()) {
-      fs.copyFileSync(path.resolve(buildDdocsPath, file.name), path.resolve(stagingAttachmentsPath, file.name));
+      fs.copyFileSync(path.resolve(buildDdocsPath, file.name), path.resolve(ddocAttachmentsPath, file.name));
     }
   });
 };
@@ -96,7 +101,7 @@ const createStagingDoc = () => {
 const copyBuildInfo = () => {
   const medicBuildInfoPath = path.resolve(__dirname, 'build', 'ddocs', 'medic-db', 'medic', 'build_info');
   const stagingBuildInfoPath = path.resolve(__dirname, 'build', 'staging', 'build_info');
-  safeMakeDir(stagingBuildInfoPath);
+  makeDirSync(stagingBuildInfoPath);
 
   fs.readdirSync(medicBuildInfoPath, { withFileTypes: true }).forEach(file => {
     if (!file.isDirectory()) {
@@ -107,10 +112,11 @@ const copyBuildInfo = () => {
 
 const setBuildInfo = () => {
   const buildInfoPath = path.resolve(__dirname, 'build', 'ddocs', 'medic-db', 'medic', 'build_info');
-  safeMakeDir(buildInfoPath);
+  makeDirSync(buildInfoPath);
   fs.writeFileSync(path.resolve(buildInfoPath, 'version'), releaseName);
   fs.writeFileSync(path.resolve(buildInfoPath, 'base_version'), packageJson.version);
   fs.writeFileSync(path.resolve(buildInfoPath, 'time'), new Date().toISOString());
+  fs.writeFileSync(path.resolve(buildInfoPath, 'author'), `grunt on ${process.env.USER}`);
 };
 
 module.exports = function(grunt) {
@@ -163,10 +169,9 @@ module.exports = function(grunt) {
           pass: couchConfig.password,
         },
         files: {
-          [couchConfig.withPathNoAuth(couchConfig.dbName)]: 'build/ddocs/medic/_attachments/ddocs/medic.json',
-          [couchConfig.withPathNoAuth(couchConfig.dbName + '-sentinel')]: 'build/ddocs/medic/_attachments/ddocs/sentinel.json',
-          [couchConfig.withPathNoAuth(couchConfig.dbName + '-users-meta')]: 'build/ddocs/medic/_attachments/ddocs/users-meta.json',
-          [couchConfig.withPathNoAuth(couchConfig.dbName + '-logs')]: 'build/ddocs/medic/_attachments/ddocs/logs.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName + '-sentinel')]: 'build/ddocs/sentinel.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName + '-users-meta')]: 'build/ddocs/users-meta.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName + '-logs')]: 'build/ddocs/logs.json',
         }
       },
       test: {
@@ -655,7 +660,7 @@ module.exports = function(grunt) {
           'less:admin',
           'copy:static-resources',
           'couch-compile:primary',
-          'couch-push:localhost-secondary',
+          'couch-push:primary',
           'notify:deployed',
         ],
       },
@@ -665,7 +670,7 @@ module.exports = function(grunt) {
           'browserify:admin',
           'copy:static-resources',
           'couch-compile:primary',
-          'couch-push:localhost-secondary',
+          'couch-push:primary',
           'notify:deployed',
         ],
       },
@@ -675,7 +680,7 @@ module.exports = function(grunt) {
           'copy:admin-resources',
           'copy:static-resources',
           'couch-compile:primary',
-          'couch-push:localhost-secondary',
+          'couch-push:primary',
           'notify:deployed',
         ],
       },
@@ -685,7 +690,7 @@ module.exports = function(grunt) {
           'ngtemplates:adminApp',
           'copy:static-resources',
           'couch-compile:primary',
-          'couch-push:localhost-secondary',
+          'couch-push:primary',
           'notify:deployed',
         ],
       },
@@ -944,6 +949,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('deploy', 'Deploy the webapp', [
     'couch-push:localhost',
+    'couch-push:localhost-secondary',
     'notify:deployed',
   ]);
 
