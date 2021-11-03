@@ -283,6 +283,9 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
           throw new Error('Validation failed.');
         }
 
+        // Updating fields before save. Ref: #6670.
+        $('form.or').trigger('beforesave');
+
         return this.contactSaveService
           .save(form, docId, this.enketoContact.type)
           .then((result) => {
