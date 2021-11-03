@@ -1,4 +1,4 @@
-import { discardPeriodicTasks, fakeAsync, flush, TestBed, tick } from "@angular/core/testing";
+import { discardPeriodicTasks, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { Store } from '@ngrx/store';
