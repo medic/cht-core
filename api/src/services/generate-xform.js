@@ -8,7 +8,7 @@ const htmlParser = require('node-html-parser');
 const logger = require('../logger');
 const db = require('../db');
 const formsService = require('./forms');
-const markdown = require('enketo-transformer/src/markdown')
+const markdown = require('enketo-transformer/src/markdown');
 
 const MODEL_ROOT_OPEN = '<root xmlns="http://www.w3.org/2002/xforms" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema">';
 const ROOT_CLOSE = '</root>';
@@ -106,7 +106,7 @@ function replaceAllMarkdown(formString) {
   const hints = form.querySelectorAll('span.or-hint');
   questions.concat(hints).forEach((el, index) => {
     const original = el.innerHTML.replace('<', '&lt;').replace('>', '&gt;');
-    let rendered = convertDynamicUrls(original)
+    let rendered = convertDynamicUrls(original);
     rendered = markdown.toHtml(rendered);
     rendered = convertEmbeddedHtml(rendered);
 

@@ -462,7 +462,7 @@ describe('generate-xform service', () => {
   });
 
   describe('replaceAllMarkdown', () => {
-    let markdown
+    let markdown;
     let replaceAllMarkdown;
 
     const wrapInQuestionLabel = (contents) => `
@@ -568,39 +568,48 @@ describe('generate-xform service', () => {
     });
 
     it('h1', () => {
-      expect(replaceAllMarkdown(wrapInQuestionLabel('\n# HELLO\n'))).to.equal(wrapInQuestionLabel('<h1>HELLO</h1>'));
+      expect(replaceAllMarkdown(wrapInQuestionLabel('\n# HELLO\n')))
+        .to.equal(wrapInQuestionLabel('<h1>HELLO</h1>'));
     });
 
     it('h2', () => {
-      expect(replaceAllMarkdown(wrapInQuestionLabel('\n## HELLO\n'))).to.equal(wrapInQuestionLabel('<h2>HELLO</h2>'));
+      expect(replaceAllMarkdown(wrapInQuestionLabel('\n## HELLO\n')))
+        .to.equal(wrapInQuestionLabel('<h2>HELLO</h2>'));
     });
 
     it('h3', () => {
-      expect(replaceAllMarkdown(wrapInQuestionLabel('\n### HELLO\n'))).to.equal(wrapInQuestionLabel('<h3>HELLO</h3>'));
+      expect(replaceAllMarkdown(wrapInQuestionLabel('\n### HELLO\n')))
+        .to.equal(wrapInQuestionLabel('<h3>HELLO</h3>'));
     });
 
     it('h4', () => {
-      expect(replaceAllMarkdown(wrapInQuestionLabel('\n#### HELLO\n'))).to.equal(wrapInQuestionLabel('<h4>HELLO</h4>'));
+      expect(replaceAllMarkdown(wrapInQuestionLabel('\n#### HELLO\n')))
+        .to.equal(wrapInQuestionLabel('<h4>HELLO</h4>'));
     });
 
     it('h5', () => {
-      expect(replaceAllMarkdown(wrapInQuestionLabel('\n##### HELLO\n'))).to.equal(wrapInQuestionLabel('<h5>HELLO</h5>'));
+      expect(replaceAllMarkdown(wrapInQuestionLabel('\n##### HELLO\n')))
+        .to.equal(wrapInQuestionLabel('<h5>HELLO</h5>'));
     });
 
     it('strong with underscore', () => {
-      expect(replaceAllMarkdown(wrapInQuestionLabel('__HELLO__'))).to.equal(wrapInQuestionLabel('<strong>HELLO</strong>'));
+      expect(replaceAllMarkdown(wrapInQuestionLabel('__HELLO__')))
+        .to.equal(wrapInQuestionLabel('<strong>HELLO</strong>'));
     });
 
     it('strong with asterisk', () => {
-      expect(replaceAllMarkdown(wrapInQuestionLabel('**HELLO**'))).to.equal(wrapInQuestionLabel('<strong>HELLO</strong>'));
+      expect(replaceAllMarkdown(wrapInQuestionLabel('**HELLO**')))
+        .to.equal(wrapInQuestionLabel('<strong>HELLO</strong>'));
     });
 
     it('em with underscore', () => {
-      expect(replaceAllMarkdown(wrapInQuestionLabel(' _HELLO_'))).to.equal(wrapInQuestionLabel(' <em>HELLO</em>'));
+      expect(replaceAllMarkdown(wrapInQuestionLabel(' _HELLO_')))
+        .to.equal(wrapInQuestionLabel(' <em>HELLO</em>'));
     });
 
     it('em with asterisk', () => {
-      expect(replaceAllMarkdown(wrapInQuestionLabel('*HELLO*'))).to.equal(wrapInQuestionLabel('<em>HELLO</em>'));
+      expect(replaceAllMarkdown(wrapInQuestionLabel('*HELLO*')))
+        .to.equal(wrapInQuestionLabel('<em>HELLO</em>'));
     });
 
     it('a', () => {
@@ -609,7 +618,8 @@ describe('generate-xform service', () => {
     });
 
     it('br', () => {
-      expect(replaceAllMarkdown(wrapInQuestionLabel('hello\ncheck for new\nlines'))).to.equal(wrapInQuestionLabel('hello<br>check for new<br>lines'));
+      expect(replaceAllMarkdown(wrapInQuestionLabel('hello\ncheck for new\nlines')))
+        .to.equal(wrapInQuestionLabel('hello<br>check for new<br>lines'));
     });
 
     it('converts a computed URL - #3349', () => {
@@ -625,15 +635,18 @@ describe('generate-xform service', () => {
     });
 
     it('converts ampersand', () => {
-      expect(replaceAllMarkdown(wrapInQuestionLabel('mock &amp; test'))).to.equal(wrapInQuestionLabel('mock & test'));
+      expect(replaceAllMarkdown(wrapInQuestionLabel('mock &amp; test')))
+        .to.equal(wrapInQuestionLabel('mock & test'));
     });
 
     it('converts double quote', () => {
-      expect(replaceAllMarkdown(wrapInQuestionLabel('mock &quot;test&quot;'))).to.equal(wrapInQuestionLabel('mock "test"'));
+      expect(replaceAllMarkdown(wrapInQuestionLabel('mock &quot;test&quot;')))
+        .to.equal(wrapInQuestionLabel('mock "test"'));
     });
 
     it('converts single quote', () => {
-      expect(replaceAllMarkdown(wrapInQuestionLabel('someone&#039;s test'))).to.equal(wrapInQuestionLabel('someone\'s test'));
+      expect(replaceAllMarkdown(wrapInQuestionLabel('someone&#039;s test')))
+        .to.equal(wrapInQuestionLabel('someone\'s test'));
     });
   });
 });
