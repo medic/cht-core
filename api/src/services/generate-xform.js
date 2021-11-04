@@ -8,6 +8,7 @@ const htmlParser = require('node-html-parser');
 const logger = require('../logger');
 const db = require('../db');
 const formsService = require('./forms');
+const markdown = require('enketo-transformer/src/markdown')
 
 const MODEL_ROOT_OPEN = '<root xmlns="http://www.w3.org/2002/xforms" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema">';
 const ROOT_CLOSE = '</root>';
@@ -70,70 +71,65 @@ const transform = (formXml, stylesheet) => {
   });
 };
 
-const replaceMarkdown = html => {
-  return html
-    // headings
-    .replace(/\n# (.*)\n/gm, '<h1>$1</h1>')
-    .replace(/\n## (.*)\n/gm, '<h2>$1</h2>')
-    .replace(/\n### (.*)\n/gm, '<h3>$1</h3>')
-    .replace(/\n#### (.*)\n/gm, '<h4>$1</h4>')
-    .replace(/\n##### (.*)\n/gm, '<h5>$1</h5>')
+const convertDynamicUrls = original => original
+  .replace(
+    /\[([^\]]*)\]\(([^)]*<[^>]*>[^)]*)\)/gm,
+    '<a href="#" target="_blank" rel="noopener noreferrer" class="dynamic-url">' +
+    '$1<span class="url hidden">$2</span>' +
+    '</a>'
+  );
 
-    // font styles
-    .replace(/__([^\s]([^_]*[^\s])?)__/gm, '<strong>$1</strong>')
-    .replace(/\*\*([^\s]([^*]*[^\s])?)\*\*/gm, '<strong>$1</strong>')
-    .replace(/\s_([^_\s]([^_]*[^_\s])?)_/gm, ' <em>$1</em>')
-    .replace(/\*([^*\s]([^*]*[^*\s])?)\*/gm, '<em>$1</em>')
+const convertEmbeddedHtml = original => original
+  .replace(/&lt;([\s\S]*?)&gt;/gm, '<$1>')
+  .replace(/&quot;/g, '"')
+  .replace(/&#039;/g, '\'')
+  .replace(/&amp;/g, '&');
 
-    // urls containing tags
-    .replace(
-      /\[([^\]]*)\]\(([^)]*<[^>]*>[^)]*)\)/gm,
-      '<a href="#" target="_blank" rel="noopener noreferrer" class="dynamic-url">' +
-      '$1<span class="url hidden">$2</span>' +
-      '</a>'
-    )
-
-    // plain urls
-    .replace(/\[([^\]]*)\]\(([^)]+)\)/gm, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-
-    // new lines
-    .replace(/\n/gm, '<br />')
-
-    // convert embedded html
-    .replace(/&lt;([\s\S]*?)&gt;/gm, '<$1>')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, '\'');
-};
-
-// inspired by enketo/enketo-transformer
-const replaceAllMarkdown = formString => {
-
-  const form = htmlParser.parse(formString).querySelector('form');
+// Based on enketo/enketo-transformer
+// https://github.com/enketo/enketo-transformer/blob/master/src/transformer.js
+function replaceAllMarkdown(formString) {
   const replacements = {};
+  const form = htmlParser.parse(formString).querySelector('form');
 
+  // First turn all outputs into text so *<span class="or-output></span>* can be detected
+  form.querySelectorAll('span.or-output').forEach((el, index) => {
+    const key = `---output-${index}`;
+    const textNode = el.childNodes[0];
+    replacements[key] = el.toString();
+    textNode.textContent = key;
+    el.replaceWith(textNode);
+    // Note that we end up in a situation where we likely have sibling text nodes...
+  });
+
+  // Now render markdown
   const questions = form.querySelectorAll('span.question-label');
   const hints = form.querySelectorAll('span.or-hint');
-  const spans = questions.concat(hints);
-  spans.forEach((span, i) => {
-    const original = span.innerHTML;
-    const rendered = replaceMarkdown(original);
-    if (rendered && original !== rendered) {
-      const key = `~~~${i}~~~`;
+  questions.concat(hints).forEach((el, index) => {
+    const original = el.innerHTML.replace('<', '&lt;').replace('>', '&gt;');
+    let rendered = convertDynamicUrls(original)
+    rendered = markdown.toHtml(rendered);
+    rendered = convertEmbeddedHtml(rendered);
+
+    if (original !== rendered) {
+      const key = `$$$${index}`;
       replacements[key] = rendered;
-      span.set_content(key);
+      el.innerHTML = key;
     }
   });
 
   let result = form.toString();
-  Object.keys(replacements).forEach(key => {
+
+  // Now replace the placeholders with the rendered HTML
+  // in reverse order so outputs are done last
+  Object.keys(replacements).reverse().forEach(key => {
     const replacement = replacements[key];
     if (replacement) {
       result = result.replace(key, replacement);
     }
   });
+
   return result;
-};
+}
 
 const generateForm = formXml => {
   return transform(formXml, FORM_STYLESHEET).then(form => {
@@ -196,7 +192,7 @@ const updateAttachments = (accumulator, doc) => {
       return results;
     }
     logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
-    return generate(form.data.toString()).then(result => {
+    return module.exports.generate(form.data.toString()).then(result => {
       results.push(result);
       return results;
     });
