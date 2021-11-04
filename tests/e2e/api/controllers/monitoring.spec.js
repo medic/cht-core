@@ -21,8 +21,9 @@ describe('monitoring', () => {
   beforeEach(() => sentinelUtils.waitForSentinel());
   afterEach(() => utils.revertDb([], true));
 
+  // todo re-enable these tests once we extract ddocs for all databases in horticulturalist
   describe('v1', () => {
-    it('should return empty values for empty db', async () => {
+    xit('should return empty values for empty db', async () => {
       const medicInfo = await getInfo('medic');
       const sentinelInfo = await getInfo('medic-test-sentinel');
       const usersMetaInfo = await getInfo('medic-test-users-meta');
@@ -94,7 +95,7 @@ describe('monitoring', () => {
   });
 
   describe('v2', () => {
-    it('should return empty values for empty db', async () => {
+    xit('should return empty values for empty db', async () => {
       const medicInfo = await getInfo('medic');
       const sentinelInfo = await getInfo('medic-test-sentinel');
       const usersMetaInfo = await getInfo('medic-test-users-meta');
