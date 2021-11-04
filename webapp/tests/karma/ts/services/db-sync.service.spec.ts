@@ -788,6 +788,8 @@ describe('DBSync service', () => {
     });
 
     describe('give user feedback when manually syncing', () => {
+      beforeEach(() => clock.restore());
+
       it('doesn\'t give feedback when sync happens automatically in the background', async () => {
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
