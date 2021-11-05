@@ -41,12 +41,10 @@ export class SnackbarComponent implements OnInit {
 
   ngOnInit() {
     this.changeDetectorRef.detach();
-    console.log("start");
     const reduxSubscription = this.store.select(Selectors.getSnackbarContent).subscribe((snackbarContent) => {
       if (!snackbarContent?.message) {
         this.message = undefined;
         this.action = undefined;
-        console.log("allez");
         this.hide();
 
         return;
@@ -89,9 +87,7 @@ export class SnackbarComponent implements OnInit {
   }
 
   private hide() {
-    console.log("hide");
     clearTimeout(this.hideTimeout);
-    console.log("this.active", this.active);
     this.active = false;
     this.changeDetectorRef.detectChanges();
   }
