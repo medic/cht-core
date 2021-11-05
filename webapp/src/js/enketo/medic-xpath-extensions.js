@@ -85,29 +85,32 @@ const asDate = (r) => {
     date.setDate(1 + days);
     return date;
   };
-  switch(r.t) {
-  case 'bool': return new Date(NaN);
-  case 'date': return r.v;
-  case 'num':  return dateSinceUnixEpoch(r.v);
-  case 'arr':
-  default:
-    r = asString(r);
-    if(RAW_NUMBER.test(r)) {
-      return dateSinceUnixEpoch(parseInt(r, 10));
-    } else if(DATE_STRING.test(r)) {
-      temp = r.indexOf('T');
-      if(temp !== -1) {
-        r = r.substring(0, temp);
+  switch (r.t) {
+    case 'bool':
+      return new Date(NaN);
+    case 'date':
+      return r.v;
+    case 'num':
+      return dateSinceUnixEpoch(r.v);
+    case 'arr':
+    default:
+      r = asString(r);
+      if (RAW_NUMBER.test(r)) {
+        return dateSinceUnixEpoch(parseInt(r, 10));
+      } else if (DATE_STRING.test(r)) {
+        temp = r.indexOf('T');
+        if (temp !== -1) {
+          r = r.substring(0, temp);
+        }
+        temp = r.split('-');
+        if (moment({ year: temp[0], month: temp[1], day: temp[2] }).isValid()) {
+          const zeroPad = (n, len) => n.padStart(len || 2, '0');
+          const time = `${zeroPad(temp[0])}-${zeroPad(temp[1])}-${zeroPad(temp[2])}` +
+            'T00:00:00.000' + getTimezoneOffsetAsTime(new Date(r));
+          return new Date(time);
+        }
       }
-      temp = r.split('-');
-      if(moment({ year: temp[0], month: temp[1], day: temp[2] }).isValid()) {
-        const zeroPad = (n, len) => n.padStart(len || 2, '0');
-        const time = `${zeroPad(temp[0])}-${zeroPad(temp[1])}-${zeroPad(temp[2])}`+
-          'T00:00:00.000' + getTimezoneOffsetAsTime(new Date(r));
-        return new Date(time);
-      }
-    }
-    return new Date(r);
+      return new Date(r);
   }
 };
 

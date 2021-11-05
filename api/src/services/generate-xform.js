@@ -86,14 +86,14 @@ const convertEmbeddedHtml = original => original
   .replace(/&amp;/g, '&');
 
 const replaceNode = (currentNode, newNode) => {
-  const {parentNode} = currentNode;
+  const { parentNode } = currentNode;
   const idx = parentNode.childNodes.findIndex((child) => child === currentNode);
   parentNode.childNodes = [
     ...parentNode.childNodes.slice(0, idx),
     newNode,
     ...parentNode.childNodes.slice(idx + 1),
   ];
-}
+};
 
 // Based on enketo/enketo-transformer
 // https://github.com/enketo/enketo-transformer/blob/master/src/transformer.js
