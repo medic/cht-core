@@ -1,5 +1,6 @@
 const hamburgerMenu = () => $('#header-dropdown-link');
 const hamburgerMenuItemSelector = '#header-dropdown li';
+const hamburgerMenuOptions = () => $$('#header-dropdown>li:not(.hidden)');
 const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
 const syncButton = () => $(`${hamburgerMenuItemSelector} a:not(.disabled) .fa-refresh`);
 const messagesTab = () => $('#messages-tab');
@@ -16,6 +17,13 @@ const activeSnackbar = () => $('#snackbar.active');
 const inactiveSnackbar = () => $('#snackbar:not(.active)');
 const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message')).getText();
 const snackbarAction = () => $('#snackbar.active .snackbar-action');
+const settings = () => $$('.configuration a>span');
+const wizardTitle = () => $('#guided-setup .modal-header > h2');
+//languages
+const languagePreferenceHeading = () => $('#language-preference-heading');
+const selectedPreferenceHeading = () => $('#language-preference-heading > h4:nth-child(1) > span:nth-child(3)');
+const messagesLanguage = () => $('.locale a.selected span.rectangle');
+const defaultLanguage=  () => $('.locale-outgoing a.selected span.rectangle');
 
 const isHamburgerMenuOpen = async () => {
   return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
@@ -229,6 +237,56 @@ const openAppManagement = async () => {
 const getTextForElements = async (elements) => {
   return Promise.all((await elements()).map(filter => filter.getText()));
 };
+const openMenu = async () => {
+  await (await messagesTab()).waitForDisplayed();
+  const menuAlreadyOpen = hamburgerMenuOptions.length &&
+                          hamburgerMenuOptions.first() &&
+                          await hamburgerMenuOptions.first().waitForDisplayed();
+  if (!menuAlreadyOpen) {
+    await (await hamburgerMenu()).click();
+  }
+  await hamburgerMenuOptions.first().waitForDisplayed();
+};
+
+const findElementByTextAndClick = async (elements, expectedText) => {
+  //await elements.waitForDisplayed();
+  const expectedTexts = Array.isArray(expectedText) ? expectedText : [expectedText];
+
+  await elements.each(async (element) => {
+    const text = await element.getText();
+    const trimmedText = text.toLowerCase().trim();
+    const includesAny = expectedTexts.some(expectedText => trimmedText.includes(expectedText));
+    if (!includesAny) {
+      return;
+    }
+
+    await element.click();
+  });
+};
+
+const openSubmenu = (menuName) => {
+  return findElementByTextAndClick(hamburgerMenuOptions, menuName);
+};
+
+const checkUserSettings = async () => {
+  await openSubmenu(['user settings', 'edit.user.settings']);
+  const optionNames = await (await settings()).getText();
+  expect(optionNames[0]).toContain('password');
+  expect(optionNames[1].toLowerCase()).toEqual('edit user profile');
+};
+
+const getDefaultLanguages = async () => {
+  openMenu();
+  await openSubmenu(['configuration wizard','easy setup wizard ']);
+  await (await wizardTitle()).waitForDisplayed();
+  //await helper.waitUntilTranslated(wizardTitle);
+  await (await languagePreferenceHeading()).click();
+  const headingText = await (await selectedPreferenceHeading()).getText();
+  const messageLang = await (await messagesLanguage()).getAttribute('innerText');
+  const defaultLang = await (await defaultLanguage()).getAttribute('innerText');
+  await browser.refresh();
+  return  [headingText, messageLang, defaultLang];
+};
 
 module.exports = {
   logout,
@@ -271,4 +329,6 @@ module.exports = {
   snackbarMessage,
   snackbarAction,
   getTextForElements,
+  checkUserSettings,
+  getDefaultLanguages
 };
