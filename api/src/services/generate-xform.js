@@ -85,6 +85,16 @@ const convertEmbeddedHtml = original => original
   .replace(/&#039;/g, '\'')
   .replace(/&amp;/g, '&');
 
+const replaceNode = (currentNode, newNode) => {
+  const {parentNode} = currentNode;
+  const idx = parentNode.childNodes.findIndex((child) => child === currentNode);
+  parentNode.childNodes = [
+    ...parentNode.childNodes.slice(0, idx),
+    newNode,
+    ...parentNode.childNodes.slice(idx + 1),
+  ];
+}
+
 // Based on enketo/enketo-transformer
 // https://github.com/enketo/enketo-transformer/blob/master/src/transformer.js
 function replaceAllMarkdown(formString) {
@@ -97,7 +107,7 @@ function replaceAllMarkdown(formString) {
     const textNode = el.childNodes[0];
     replacements[key] = el.toString();
     textNode.textContent = key;
-    el.replaceWith(textNode);
+    replaceNode(el, textNode);
     // Note that we end up in a situation where we likely have sibling text nodes...
   });
 
