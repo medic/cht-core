@@ -270,11 +270,7 @@ export class DBSyncService {
       this.translateService.instant('sync.feedback.failure.unknown'),
       {
         label: this.translateService.instant('sync.retry'),
-        onClick: () => {
-          // let the error snackbar disappear before retrying
-          this.globalActions.setSnackbarContent(undefined);
-          setTimeout(() => this.sync(true), 750);
-        },
+        onClick: () => this.sync(true),
       },
     );
   }

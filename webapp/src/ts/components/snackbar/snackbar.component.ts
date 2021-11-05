@@ -15,9 +15,11 @@ export class SnackbarComponent implements OnInit {
 
   private readonly SHOW_DURATION = 5000;
   private readonly ANIMATION_DURATION = 250;
+  private readonly ROUND_TRIP_ANIMATION_DURATION = this.ANIMATION_DURATION * 2
 
   private globalActions;
-  private timer;
+  private hideTimeout;
+  private showNextMessageTimeout;
 
   message;
   action;
@@ -39,20 +41,28 @@ export class SnackbarComponent implements OnInit {
 
   ngOnInit() {
     this.changeDetectorRef.detach();
+    console.log("start");
     const reduxSubscription = this.store.select(Selectors.getSnackbarContent).subscribe((snackbarContent) => {
       if (!snackbarContent?.message) {
         this.message = undefined;
         this.action = undefined;
-        this.active = false;
-        clearTimeout(this.timer);
-        this.changeDetectorRef.detectChanges();
+        console.log("allez");
+        this.hide();
+
         return;
       }
 
       const { message, action } = snackbarContent;
+      if (this.showNextMessageTimeout) {
+        clearTimeout(this.showNextMessageTimeout);
+        this.queueShowMessage(message, action);
+
+        return;
+      }
+
       if (this.active) {
-        this.hide(false);
-        this.setTimeout(() => this.show(message, action), this.ANIMATION_DURATION);
+        this.setTimeout(() => this.resetMessage(), this.ANIMATION_DURATION);
+        this.queueShowMessage(message, action);
 
         return;
       }
@@ -63,21 +73,30 @@ export class SnackbarComponent implements OnInit {
     this.hide();
   }
 
+  private queueShowMessage(message, action) {
+    this.showNextMessageTimeout = this.setTimeout(() => this.show(message, action), this.ROUND_TRIP_ANIMATION_DURATION);
+  }
+
   private show(message, action) {
+    clearTimeout(this.showNextMessageTimeout);
+    this.showNextMessageTimeout = undefined;
     this.message = message;
     this.action = action;
     this.active = true;
     this.changeDetectorRef.detectChanges();
 
-    this.timer = this.setTimeout(() => this.hide(), this.SHOW_DURATION);
+    this.hideTimeout = this.setTimeout(() => this.resetMessage(), this.SHOW_DURATION);
   }
 
-  private hide(clearContent = true) {
-    clearTimeout(this.timer);
-    if (clearContent) {
-      this.globalActions.setSnackbarContent();
-      this.active = false;
-      this.changeDetectorRef.detectChanges();
-    }
+  private hide() {
+    console.log("hide");
+    clearTimeout(this.hideTimeout);
+    console.log("this.active", this.active);
+    this.active = false;
+    this.changeDetectorRef.detectChanges();
+  }
+
+  private resetMessage() {
+    this.globalActions.setSnackbarContent();
   }
 }
