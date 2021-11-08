@@ -10,7 +10,7 @@ const db = require('./db');
 const environment = require('./environment');
 const logger = require('./logger');
 
-const DDOC_ID = '_design/medic';
+const MAIN_DDOC_ID = '_design/medic';
 const ADMIN_DDOC_ID = '_design/medic-admin';
 const ADMIN_FOLDER = 'admin';
 
@@ -85,7 +85,7 @@ const extractAttachment = (ddocId, extractToDirectory, attachmentName) => db.med
     });
   }));
 
-const extractMedic = () => extractResources(DDOC_ID);
+const extractMedic = () => extractResources(MAIN_DDOC_ID);
 const extractAdmin = () => extractResources(ADMIN_DDOC_ID, ADMIN_FOLDER);
 
 module.exports = {
