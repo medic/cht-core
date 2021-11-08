@@ -623,8 +623,8 @@ describe('generate-xform service', () => {
     });
 
     it('converts a computed URL - #3349', () => {
-      const given = wrapInQuestionLabel('[Search for <output value="/notedata/name"/>](http://google.com?q=<output value="/notedata/name"/>)');
-      const expected = wrapInQuestionLabel('<a href="#" target="_blank" rel="noopener noreferrer" class="dynamic-url">Search for <output value="/notedata/name"></output><span class="url hidden">http://google.com?q=<output value="/notedata/name"></output></span></a>');
+      const given = wrapInQuestionLabel('[Search for<span class="or-output" data-value=" /notedata/name "> </span>](http://google.com?q=<span class="or-output" data-value=" /notedata/name "> </span>)');
+      const expected = wrapInQuestionLabel('<a href="#" target="_blank" rel="noopener" class="dynamic-url">Search for<span class="or-output" data-value=" /notedata/name "> </span><span class="url hidden">http://google.com?q=<span class="or-output" data-value=" /notedata/name "> </span></span></a>');
       expect(replaceAllMarkdown(given)).to.equal(expected);
     });
 

@@ -71,15 +71,14 @@ const transform = (formXml, stylesheet) => {
   });
 };
 
-const convertDynamicUrls = original => original
+const convertDynamicUrls = (original) => original
   .replace(
-    /\[([^\]]*)\]\(([^)]*<[^>]*>[^)]*)\)/gm,
-    '<a href="#" target="_blank" rel="noopener noreferrer" class="dynamic-url">' +
-    '$1<span class="url hidden">$2</span>' +
-    '</a>'
-  );
+    /<a[^>]+href="([^"]*---output[^"]*)"[^>]*>(.*?)<\/a>/gm,
+    '<a href="#" target="_blank" rel="noopener" class="dynamic-url">' +
+    '$2<span class="url hidden">$1</span>' +
+    '</a>');
 
-const convertEmbeddedHtml = original => original
+const convertEmbeddedHtml = (original) => original
   .replace(/&lt;([\s\S]*?)&gt;/gm, '<$1>')
   .replace(/&quot;/g, '"')
   .replace(/&#039;/g, '\'')
@@ -96,7 +95,7 @@ const replaceNode = (currentNode, newNode) => {
 };
 
 // Based on enketo/enketo-transformer
-// https://github.com/enketo/enketo-transformer/blob/master/src/transformer.js
+// https://github.com/enketo/enketo-transformer/blob/377caf14153586b040367f8c2de53c9d794c19d4/src/transformer.js#L430
 function replaceAllMarkdown(formString) {
   const replacements = {};
   const form = htmlParser.parse(formString).querySelector('form');
@@ -116,8 +115,8 @@ function replaceAllMarkdown(formString) {
   const hints = form.querySelectorAll('span.or-hint');
   questions.concat(hints).forEach((el, index) => {
     const original = el.innerHTML.replace('<', '&lt;').replace('>', '&gt;');
-    let rendered = convertDynamicUrls(original);
-    rendered = markdown.toHtml(rendered);
+    let rendered = markdown.toHtml(original);
+    rendered = convertDynamicUrls(rendered);
     rendered = convertEmbeddedHtml(rendered);
 
     if (original !== rendered) {
