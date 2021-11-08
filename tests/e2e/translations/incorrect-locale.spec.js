@@ -4,9 +4,11 @@ const userSettingsElements = require('../../page-objects/user-settings/user-sett
 const contactElements = require('../../page-objects/contacts/contacts.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
-const { expect } = require('chai');
+
+
 
 describe('Incorrect locale', () => {
+
   const createLanguage = () =>  utils.addTranslations('hil', {
     'n.month': '{MONTHS, plural, =1{1 luna} other{# luni}}',
     'n.week': '{WEEKS, plural, =1{1 saptamana} other{# saptamani}}',
@@ -25,10 +27,21 @@ describe('Incorrect locale', () => {
     parent: '',
   });
 
+  const getTextFromElements = async (elements, expectedElements) => {
+    const textFromElements = [];
+    //await browser.wait(async () => await elements.count() === expectedElements, 2000);
+    await elements.each(async (element) => {
+      const text = (await element.getText()).trim();
+      textFromElements.push(text);
+    });
+    return textFromElements;
+  };
+
   before(async () => await loginPage.cookieLogin());
   beforeEach(async () => {
     await createContact();
     await createLanguage();
+    //await utils.closeReloadModal();
   });
 
   afterEach(async () => {
@@ -37,7 +50,6 @@ describe('Incorrect locale', () => {
     await utils.revertDb([], true);
   });
 
-    // open user settings modal
   it('should work with incorrect locale',async () => {
     await commonPage.openHamburgerMenu();
     await commonPage.openUserSettingsAndFetchProperties();
@@ -46,23 +58,35 @@ describe('Incorrect locale', () => {
     // change language
     await userSettingsElements.selectLanguage('hil');
     // wait for language to load
-    await browser.pause(
-      async () => await (await commonElements.getReportsButtonLabel()).getText() === 'HilReports',
+    await browser.wait(
+      async () => await commonElements.getReportsButtonLabel().getText() === 'HilReports',
       2000,
       'Translations for Hil were not applied'
     );
 
     // we have correct language!
     const text = await commonElements.getReportsButtonLabel().getText();
-    expect(text).to.equal('HilReports');
+    expect(text).toEqual('HilReports');
 
     await commonElements.goToPeople();
     await contactElements.selectLHSRowByText('hil district');
+    let totalElements = $$('.card.reports .table-filter a').map((result) => {
+      return result.getText();
+  });
+  console.log('repots....', totalElements);
 
-    const reportsFilter = await contactElements.getReportFiltersText();
-    expect(reportsFilter.sort()).to.deep.equal(['3 luni', '6 luni', 'View all'].sort());
 
-    const tasksFilter = await contactElements.getReportTaskFiltersText();
-    expect(tasksFilter.sort()).to.deep.equal(['1 saptamana', '2 saptamani', 'View all'].sort());
+  let totalElement = $$('.card.tasks .table-filter a').map((result) => {
+    return result.getText();
+});
+console.log('tasj...', totalElement);
+
+
+    const reportsFilter =
+    //await getTextFromElements(contactElements.getReportsFilters(), 3);
+    //expect(reportsFilter.sort()).toEqual(['3 luni', '6 luni', 'View all'].sort());
+
+    //const tasksFilter = await getTextFromElements(contactElements.getTasksFilters(), 3);
+    //expect(tasksFilter.sort()).toEqual(['1 saptamana', '2 saptamani', 'View all'].sort());
   });
 });
