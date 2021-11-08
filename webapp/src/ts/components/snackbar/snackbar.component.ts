@@ -15,7 +15,7 @@ export class SnackbarComponent implements OnInit {
 
   private readonly SHOW_DURATION = 5000;
   private readonly ANIMATION_DURATION = 250;
-  private readonly ROUND_TRIP_ANIMATION_DURATION = this.ANIMATION_DURATION * 2
+  private readonly ROUND_TRIP_ANIMATION_DURATION = this.ANIMATION_DURATION * 2;
 
   private globalActions;
   private hideTimeout;
@@ -88,6 +88,7 @@ export class SnackbarComponent implements OnInit {
 
   private hide() {
     clearTimeout(this.hideTimeout);
+    this.hideTimeout = undefined;
     this.active = false;
     this.changeDetectorRef.detectChanges();
   }

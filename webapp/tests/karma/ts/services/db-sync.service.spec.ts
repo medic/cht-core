@@ -843,13 +843,11 @@ describe('DBSync service', () => {
         await store.dispatch.args[1][0].payload.action.onClick();
         tick(1000); // trigger the hide snackbar timeout
         expectSyncCall(2);
-        expect(store.dispatch.callCount).to.equal(5);
+        expect(store.dispatch.callCount).to.equal(4);
         expect(store.dispatch.args[2][0].type).to.equal('SET_SNACKBAR_CONTENT');
-        expect(store.dispatch.args[2][0].payload.message).to.equal(undefined);
+        expect(store.dispatch.args[2][0].payload.message).to.equal('sync.status.in_progress');
         expect(store.dispatch.args[3][0].type).to.equal('SET_SNACKBAR_CONTENT');
-        expect(store.dispatch.args[3][0].payload.message).to.equal('sync.status.in_progress');
-        expect(store.dispatch.args[4][0].type).to.equal('SET_SNACKBAR_CONTENT');
-        expect(store.dispatch.args[4][0].payload.message).to.equal('sync.status.not_required');
+        expect(store.dispatch.args[3][0].payload.message).to.equal('sync.status.not_required');
         discardPeriodicTasks();
       }));
     });

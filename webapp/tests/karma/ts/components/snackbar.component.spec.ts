@@ -58,7 +58,7 @@ describe('SnackbarComponent', () => {
     expect(getElement('#snackbar.active')).to.exist;
     expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(message);
     expect(getElement('#snackbar.active .snackbar-action')).to.not.exist;
-    expect(setSnackbarContent.callCount).to.equal(1);
+    expect(setSnackbarContent.callCount).to.equal(0);
 
     tick(4500);
     expect(component.active).to.equal(true);
@@ -67,11 +67,13 @@ describe('SnackbarComponent', () => {
 
     tick(500);
 
+    expect(setSnackbarContent.callCount).to.equal(1);
+    expect(setSnackbarContent.firstCall.firstArg).to.be.undefined;
+    store.overrideSelector(Selectors.getSnackbarContent, { message: undefined, action: undefined });
+    store.refreshState();
     expect(component.active).to.equal(false);
     expect(getElement('#snackbar')).to.exist;
     expect(getElement('#snackbar.active')).to.not.exist;
-    expect(setSnackbarContent.callCount).to.equal(2);
-    expect(setSnackbarContent.lastCall.firstArg).to.be.undefined;
   }));
 
   it('should display the snackbar with a clickable action', async () => {
