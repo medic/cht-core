@@ -15,7 +15,6 @@ describe('Adding new language', () => {
       'reports.none':'Geen verslae gevind nie',
       'Analytics': 'Analytiks'
     });
-    await commonPo.closeReloadModal();
     await browser.refresh();
   };
 
@@ -31,7 +30,7 @@ describe('Adding new language', () => {
     await languagesPage.goToLanguagesTab();
     await languagesPage.addNewLanguage('afr', 'Afrikaans');
     const languageName = await languagesPage.languageDisplayed('afr');
-    expect(languageName).to.equal('Afrikaans');
+    expect(languageName.trim()).to.equal('Afrikaans');
   });
 
   it('should be set as Default language ',async () => {
@@ -51,27 +50,22 @@ describe('Adding new language', () => {
 
   it('should add new translations', async () => {
     await addTranslations();
-    await commonPo.openHumbergerMenu();
-    await commonPo.checkUserSettings();
-
-    // open user settings modal
+    await commonPo.openHamburgerMenu();
+    await commonPo.openUserSettingsAndFetchProperties();
     await userSettingsElements.openEditSettings();
 
     // change language
-    await userSettingsElements.getLanguageField().selectByAttribute('value', 'afr');
-    await userSettingsElements.getSubmitButton().click();
-
-    //await browser.wait(async () => await helper.getTextFromElementNative(commonPo.analyticsTab)
-    //  === 'Analytiks', 2000);
-    //const analysticsTabText = await
+    await userSettingsElements.selectLanguage('afr');
+    await browser.pause(100);
     expect(await (await commonPo.analyticsTab()).getText()).to.equal('Analytiks');
 
     //check for translations
     await commonPo.goToMessages();
+    await commonPo.waitForLoaderToDisappear();
     expect(await (await commonPo.messagesList()).getText()).to.equal('Geen boodskappe gevind nie');
     await commonPo.goToReports();
-    expect(await (await reportsPage.list()).getText()).to.equal('Geen verslae gevind nie');
+    expect(await (await reportsPage.reportList()).getText()).to.equal('Geen verslae gevind nie');
     await commonPo.goToPeople();
-    expect(await (await contactsPage.contactsList()).getText()).to.equal('Geen mense gevind nie');
+    expect(await (await contactsPage.contactList()).getText()).to.equal('Geen mense gevind nie');
   });
 });

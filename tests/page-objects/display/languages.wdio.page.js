@@ -29,6 +29,7 @@ const addNewLanguage = async (code, name) =>{
   await (await languageCodeInput()).setValue(code);
   await (await languageNameInput()).setValue(name);
   await (await languageSubmitButton()).click();
+  await (await languageSubmitButton()).waitForDisplayed({reverse:true});
 };
 
 const languageDisplayed = async (code) =>{
@@ -53,7 +54,7 @@ const setOutgoingMessageLanguage = async (language) => {
 const isLanguageSelected = async (el, code) => {
   await (await el()).click();
   const option = await $(`option[value="string:${code}"]`);
-  return option.getAttribute('selected');
+  return await option.getAttribute('selected') === 'selected';
 };
 
 const goToApplication = async () => {
