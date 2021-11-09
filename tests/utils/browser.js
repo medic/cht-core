@@ -9,9 +9,13 @@ const feedBackDocs = async (testName = 'allLogs', existingDocIds = []) => {
   }
 };
 
-
 const feedBackDocsScript = async (done) => {
-  //This is running inside the browser. indexedDB and PouchDB is available there.
+  // sometimes tests end when the user is _not_ on an angular page
+  // eslint-disable-next-line no-undef
+  if (!window.PouchDB) {
+    return done(Promise.resolve([]));
+  }
+  // This is running inside the browser. indexedDB and PouchDB is available there.
   // eslint-disable-next-line no-undef
   const allDbList = await indexedDB.databases();
   const metaDbList = allDbList.filter(db => db.name.includes('pouch_medic-user') && db.name.endsWith('-meta'));
@@ -24,7 +28,7 @@ const feedBackDocsScript = async (done) => {
   })));
 };
 
-const getCookies = (...cookieNameList) => { 
+const getCookies = (...cookieNameList) => {
   return browser.getCookies(cookieNameList);
 };
 
