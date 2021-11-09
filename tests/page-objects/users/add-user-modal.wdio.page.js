@@ -38,7 +38,7 @@ module.exports = {
     await (await getFullNameField()).setValue(fullName);
     await (await getEmailField()).setValue('bede@mobile.org');
     await (await getPhoneField()).setValue('0064212134566');
-    await (await getRoleField()).selectAttribute('value', 'string:national_admin');
+    await (await getRoleField()).selectByAttribute('value', 'string:national_admin');
     await (await getPasswordField()).setValue(password);
     await (await getConfirmPasswordField()).setValue(password);
   }
