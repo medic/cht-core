@@ -1,9 +1,9 @@
 const _ = require('lodash');
-const utils = require('../utils');
-const usersPage = require('../page-objects/users/users.wdio.page');
-const commonElements = require('../page-objects/common/common.wdio.page');
-const loginPage = require('../page-objects/login/login.wdio.page');
-const addUserModal = require('../page-objects/users/add-user-modal.wdio.page');
+const utils = require('../../utils');
+const usersPage = require('../../page-objects/users/users.wdio.page');
+const commonElements = require('../../page-objects/common/common.wdio.page');
+const loginPage = require('../../page-objects/login/login.wdio.page');
+const addUserModal = require('../../page-objects/users/add-user-modal.wdio.page');
 
 const username = 'fulltester';
 const fullName = 'Roger Milla';
