@@ -91,7 +91,7 @@ const asDate = (r) => {
   case 'num':
     return dateSinceUnixEpoch(r.v);
   case 'arr':
-  default:
+  default: {
     r = asString(r);
     if(RAW_NUMBER.test(r)) {
       return dateSinceUnixEpoch(parseInt(r, 10));
@@ -102,6 +102,7 @@ const asDate = (r) => {
       return new Date(time);
     }
     return new Date(r);
+  }
   }
 };
 
@@ -148,7 +149,7 @@ module.exports = {
         return XPR.string('');
       }
 
-      const months = d2Moment.diff(d1Moment, 'months')
+      const months = d2Moment.diff(d1Moment, 'months');
       return XPR.number(months);
     },
   },
