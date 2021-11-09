@@ -50,7 +50,8 @@ const staticResources = /\/(templates|static)\//;
 const routePrefix = '/+' + environment.db + '/+';
 const pathPrefix = '/' + environment.db + '/';
 const appPrefix = pathPrefix + '_design/' + environment.ddoc + '/_rewrite/';
-const adminAppPrefix = pathPrefix + '_design/medic-admin/_rewrite/';
+const adminAppPrefix = routePrefix + '_design/medic-admin/_rewrite(/*)?';
+const adminAppReg = new RegExp(`/*${environment.db}/_design/medic-admin/_rewrite/?`);
 const serverUtils = require('./server-utils');
 const uuid = require('uuid');
 const compression = require('compression');
@@ -237,11 +238,6 @@ app.all('/+medic(/*)?', (req, res, next) => {
   next();
 });
 
-app.all('/+admin(/*)?', (req, res, next) => {
-  req.url = req.url.replace(/\/admin\/?/, adminAppPrefix);
-  next();
-});
-
 app.get('/favicon.ico', (req, res) => {
   // Cache for a week. Normally we don't interfere with couch headers, but
   // due to Chrome (including Android WebView) aggressively requesting
@@ -259,6 +255,14 @@ app.get('/favicon.ico', (req, res) => {
   });
 });
 
+// saves CouchDB _session information as `userCtx` in the `req` object
+app.use(authorization.getUserCtx);
+app.all(adminAppPrefix, (req, res, next) => {
+  req.url = req.url.replace(adminAppReg, '/admin/');
+  next();
+});
+app.all('/+admin(/*)?', authorization.handleAuthErrors, authorization.offlineUserFirewall);
+
 app.use(express.static(path.join(__dirname, '../build/public')));
 app.use(express.static(extractedResourceDirectory));
 app.get(routePrefix + 'login', login.get);
@@ -267,9 +271,6 @@ app.postJson(routePrefix + 'login', login.post);
 app.get(routePrefix + 'login/token/:token?', login.tokenGet);
 app.postJson(routePrefix + 'login/token/:token?', login.tokenPost);
 app.get(routePrefix + 'privacy-policy', privacyPolicyController.get);
-
-// saves CouchDB _session information as `userCtx` in the `req` object
-app.use(authorization.getUserCtx);
 
 // authorization for `_compact`, `_view_cleanup`, `_revs_limit` endpoints is handled by CouchDB
 const ONLINE_ONLY_ENDPOINTS = [

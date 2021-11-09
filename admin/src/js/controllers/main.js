@@ -1,14 +1,14 @@
 angular.module('controllers').controller('MainCtrl',
   function (
     $log,
+    $q,
     $scope,
     $state,
+    $translate,
     $window,
     Auth,
-    Language,
     Location,
-    Session,
-    SetLanguage
+    Session
   ) {
     'ngInject';
 
@@ -22,16 +22,20 @@ angular.module('controllers').controller('MainCtrl',
           }
           return response;
         });
-    };   
-    
-    Language().then(locale => SetLanguage(locale));
+    };
+
+    $translate.use('en');
     $scope.authorized = false;
     $scope.navbarCollapsed = true;
-    Auth.any([['can_configure'], ['can_view_outgoing_messages'], ['can_export_all']])
-      .then(isAuthorized => {
-        $scope.authorized = isAuthorized;
+    $q
+      .all([
+        Auth.online(true),
+        Auth.any([['can_configure'], ['can_view_outgoing_messages'], ['can_export_all']])
+      ])
+      .then(([online, isAuthorized]) => {
+        $scope.authorized = online && isAuthorized;
 
-        if (!isAuthorized) {
+        if (!isAuthorized || !online) {
           $log.error('Insufficient permissions. Must be either "admin" or "nationalAdmin".');
           $window.location.href = Location.path;
         }
