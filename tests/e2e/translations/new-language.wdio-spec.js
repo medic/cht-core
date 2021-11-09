@@ -23,7 +23,6 @@ describe('Adding new language', () => {
   after(async () => {
     await browser.setCookies({ name: 'locale', value: 'en' });
     await browser.refresh();
-    await utils.revertDb([], true);
   });
 
   it('should show in enabled language list', async () => {

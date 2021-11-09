@@ -34,7 +34,6 @@ describe('Incorrect locale', () => {
   afterEach(async () => {
     await browser.setCookies({ name: 'locale', value: 'en' });
     await browser.refresh();
-    await utils.revertDb([], true);
   });
 
     // open user settings modal
