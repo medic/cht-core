@@ -5,34 +5,30 @@ const commonElements = require('../page-objects/common/common.wdio.page');
 const loginPage = require('../page-objects/login/login.wdio.page');
 const addUserModal = require('../page-objects/users/add-user-modal.wdio.page');
 
-const userName = 'fulltester' + new Date().getTime();
+const username = 'fulltester';
 const fullName = 'Roger Milla';
 const password = 'StrongP@ssword1';
 
 const options = {
-  auth: { username: userName, password },
+  auth: { username: username, password },
   method: 'GET',
-  userName: userName
+  userName: username
 };
 
 describe('Create user meta db : ', () => {
 
   before(async () => await loginPage.cookieLogin());
-  after(async () => await utils.deleteUsers([{ username: userName }], true));
+  after(async () => await utils.deleteUsers([{ username: username }], true));
 
   it('should allow a new user to read/write from meta db', async () => {
-    // await commonElements.waitForPageLoaded();
     await usersPage.openAddUserModal();
-    await addUserModal.fillForm(userName, fullName, password);
+    await addUserModal.fillForm(username, fullName, password);
     await addUserModal.submit();
-
-    // await helper.waitForTextDisplayed(userName);
-    // await helper.waitForTextDisplayed(fullName);
-
-    // await commonElements.goToLoginPageNative();
-    // await loginPage.loginNative(userName, password, false);
-    // await commonElements.calmNative();
-    // await utils.closeTour();
+    await browser.url(utils.getBaseUrl() + 'messages');
+    await commonElements.waitForPageLoaded();
+    await commonElements.logout();
+    await loginPage.login({ username, password });
+    await commonElements.waitForPageLoaded();
 
     const doc = { _id: 'this is a random uuid' };
     await utils.requestOnTestMetaDb(_.defaults({ method: 'POST', body: doc }, options));
