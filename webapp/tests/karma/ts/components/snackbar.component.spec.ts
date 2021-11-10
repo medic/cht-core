@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { fakeAsync, tick, TestBed } from '@angular/core/testing';
+import { fakeAsync, tick, TestBed, flush } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 
@@ -95,4 +95,22 @@ describe('SnackbarComponent', () => {
     actionElement.click();
     expect(action.onClick.callCount).to.equal(1);
   });
+
+  it('should display the snackbar with a message and queue another one', fakeAsync(async () => {
+    const firstMessage = 'first message';
+    const secondMessage = 'second message';
+
+    component.ngOnInit();
+    store.overrideSelector(Selectors.getSnackbarContent, { message: firstMessage, action: undefined });
+    store.refreshState();
+    expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(firstMessage);
+
+    store.overrideSelector(Selectors.getSnackbarContent, { message: secondMessage, action: undefined });
+    store.refreshState();
+    expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(firstMessage);
+
+    tick(500);
+    expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(secondMessage);
+    flush();
+  }));
 });
