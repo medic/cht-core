@@ -48,7 +48,7 @@ const outgoingLanguageDropdown = () => $('#locale-outgoing');
 const setOutgoingMessageLanguage = async (language) => {
   await (await outgoingLanguageDropdown()).selectByVisibleText(language);
   await (await submitButton()).click();
-  await (await submitButton()).waitForClickable();
+  await browser.waitUntil(async () => (await $('.success.ng-binding.ng-scope').getText()) === 'Saved');
 };
 
 const isLanguageSelected = async (el, code) => {
