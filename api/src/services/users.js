@@ -469,7 +469,7 @@ const updateAdminPassword = user => {
       url: `${environment.serverUrl}/_node/${environment.couchNodeName}/_config/admins/${user.name}`,
       body: `"${user.password}"`
     })
-    // Don't save the admin password in CouchDB's docs.
+    // Prevent saving the admin password somewhere else like in the user docs.
     .then(() => delete user.password);
 };
 

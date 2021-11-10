@@ -1343,7 +1343,7 @@ describe('Users service', () => {
       });
     });
 
-    it('should update admin password and not save password in couchdb docs', async () => {
+    it('should update the admin password in CouchDB config and not in user docs', async () => {
       const data = { password: COMPLEX_PASSWORD };
       const admins = {
         admin1: 'password_1',
@@ -1380,7 +1380,7 @@ describe('Users service', () => {
       });
     });
 
-    it('should not update password in couch config if user isnt admin', async () => {
+    it('should not update the password in CouchDB config if user isnt admin', async () => {
       const data = { password: COMPLEX_PASSWORD };
       const admins = {
         admin1: 'password_1',
@@ -1410,6 +1410,40 @@ describe('Users service', () => {
         name: 'anne',
         type: 'user',
         password: COMPLEX_PASSWORD,
+      });
+      chai.expect(request.put.callCount).to.equal(0);
+    });
+
+    it('should update admin data in user-settings doc even if the password isnt sent', async () => {
+      const data = { email: 'admin@facility.com' };
+      const admins = {
+        admin1: 'password_1',
+        admin2: 'password_2',
+      };
+      const request = {
+        get: sinon.stub().resolves(admins),
+        put: sinon.stub().resolves(true),
+      };
+      service.__set__('request', request);
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
+      sinon.stub(db.medic, 'put').resolves({});
+      sinon.stub(db.users, 'put').resolves({});
+
+      await service.updateUser('admin1', data, true);
+
+      chai.expect(db.medic.put.callCount).to.equal(1);
+      chai.expect(db.medic.put.args[0][0]).to.deep.equal({
+        _id: 'org.couchdb.user:admin1',
+        name: 'admin1',
+        type: 'user-settings',
+        email: 'admin@facility.com',
+      });
+      chai.expect(db.users.put.callCount).to.equal(1);
+      chai.expect(db.users.put.args[0][0]).to.deep.equal({
+        _id: 'org.couchdb.user:admin1',
+        name: 'admin1',
+        type: 'user',
       });
       chai.expect(request.put.callCount).to.equal(0);
     });
