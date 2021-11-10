@@ -5,7 +5,7 @@ const openEditSettings = async () => {
   await links.waitForDisplayed();
   await links.$$('.btn-link')[1].click();
   // modals have an animation and the click might land somewhere else
-  await browser.pause(500);
+  await browser.pause(1000);
 };
 
 const selectLanguage = async (code) => {

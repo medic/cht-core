@@ -55,7 +55,6 @@ describe('Adding new language', () => {
 
     // change language
     await userSettingsElements.selectLanguage('afr');
-    await browser.pause(100);
     expect(await (await commonPo.analyticsTab()).getText()).to.equal('Analytiks');
 
     //check for translations
