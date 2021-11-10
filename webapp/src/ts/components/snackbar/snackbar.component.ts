@@ -52,7 +52,6 @@ export class SnackbarComponent implements OnInit {
 
       const { message, action } = snackbarContent;
       if (this.showNextMessageTimeout) {
-        clearTimeout(this.showNextMessageTimeout);
         this.queueShowMessage(message, action);
 
         return;
@@ -72,6 +71,7 @@ export class SnackbarComponent implements OnInit {
   }
 
   private queueShowMessage(message, action) {
+    clearTimeout(this.showNextMessageTimeout);
     this.showNextMessageTimeout = this.setTimeout(() => this.show(message, action), this.ROUND_TRIP_ANIMATION_DURATION);
   }
 
