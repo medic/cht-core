@@ -479,7 +479,7 @@ const isDbAdmin = user => {
       url: `${environment.serverUrl}/_node/${environment.couchNodeName}/_config/admins`,
       json: true,
     })
-    .then(admins => !!admins[user.name]);
+    .then(admins => admins && !!admins[user.name]);
 };
 
 /*

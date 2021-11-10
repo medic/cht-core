@@ -19,10 +19,16 @@ let clock;
 const oneDayInMS = 24 * 60 * 60 * 1000;
 
 let service;
+let request;
 
 describe('Users service', () => {
   beforeEach(() => {
+    request = {
+      get: sinon.stub().resolves(),
+      put: sinon.stub().resolves(),
+    };
     service = rewire('../../../src/services/users');
+    service.__set__('request', request);
     service.__set__('getFacilities', sinon.stub().returns([
       facilitya,
       facilityb,
@@ -1345,15 +1351,10 @@ describe('Users service', () => {
 
     it('should update the admin password in CouchDB config and not in user docs', async () => {
       const data = { password: COMPLEX_PASSWORD };
-      const admins = {
+      request.get.resolves({
         admin1: 'password_1',
         admin2: 'password_2',
-      };
-      const request = {
-        get: sinon.stub().resolves(admins),
-        put: sinon.stub().resolves(true),
-      };
-      service.__set__('request', request);
+      });
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves({});
@@ -1382,14 +1383,10 @@ describe('Users service', () => {
 
     it('should not update the password in CouchDB config if user isnt admin', async () => {
       const data = { password: COMPLEX_PASSWORD };
-      const admins = {
+      request.get.resolves({
         admin1: 'password_1',
         admin2: 'password_2',
-      };
-      const request = {
-        get: sinon.stub().resolves(admins),
-        put: sinon.stub().resolves(true),
-      };
+      });
       service.__set__('request', request);
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
@@ -1416,14 +1413,10 @@ describe('Users service', () => {
 
     it('should update admin data in user-settings doc even if the password isnt sent', async () => {
       const data = { email: 'admin@facility.com' };
-      const admins = {
+      request.get.resolves({
         admin1: 'password_1',
         admin2: 'password_2',
-      };
-      const request = {
-        get: sinon.stub().resolves(admins),
-        put: sinon.stub().resolves(true),
-      };
+      });
       service.__set__('request', request);
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
