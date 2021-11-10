@@ -7,6 +7,7 @@ const places = require('../../../src/controllers/places');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
 const auth = require('../../../src/auth');
+const environment = require('../../../src/environment');
 const COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
 
 const facilitya = { _id: 'a', name: 'aaron' };
@@ -1340,6 +1341,77 @@ describe('Users service', () => {
           '_id': 'org.couchdb.user:paul'
         } ]);
       });
+    });
+
+    it('should update admin password and not save password in couchdb docs', async () => {
+      const data = { password: COMPLEX_PASSWORD };
+      const admins = {
+        admin1: 'password_1',
+        admin2: 'password_2',
+      };
+      const request = {
+        get: sinon.stub().resolves(admins),
+        put: sinon.stub().resolves(true),
+      };
+      service.__set__('request', request);
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
+      sinon.stub(db.medic, 'put').resolves({});
+      sinon.stub(db.users, 'put').resolves({});
+
+      await service.updateUser('admin2', data, true);
+
+      chai.expect(db.medic.put.callCount).to.equal(1);
+      chai.expect(db.medic.put.args[0][0]).to.deep.equal({
+        _id: 'org.couchdb.user:admin2',
+        name: 'admin2',
+        type: 'user-settings',
+      });
+      chai.expect(db.users.put.callCount).to.equal(1);
+      chai.expect(db.users.put.args[0][0]).to.deep.equal({
+        _id: 'org.couchdb.user:admin2',
+        name: 'admin2',
+        type: 'user',
+      });
+      chai.expect(request.put.calledOnce).to.be.true;
+      chai.expect(request.put.args[0][0]).to.deep.equal({
+        url: `${environment.serverUrl}/_node/${environment.couchNodeName}/_config/admins/admin2`,
+        body: `"${COMPLEX_PASSWORD}"`
+      });
+    });
+
+    it('should not update password in couch config if user isnt admin', async () => {
+      const data = { password: COMPLEX_PASSWORD };
+      const admins = {
+        admin1: 'password_1',
+        admin2: 'password_2',
+      };
+      const request = {
+        get: sinon.stub().resolves(admins),
+        put: sinon.stub().resolves(true),
+      };
+      service.__set__('request', request);
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
+      sinon.stub(db.medic, 'put').resolves({});
+      sinon.stub(db.users, 'put').resolves({});
+
+      await service.updateUser('anne', data, true);
+
+      chai.expect(db.medic.put.callCount).to.equal(1);
+      chai.expect(db.medic.put.args[0][0]).to.deep.equal({
+        _id: 'org.couchdb.user:anne',
+        name: 'anne',
+        type: 'user-settings',
+      });
+      chai.expect(db.users.put.callCount).to.equal(1);
+      chai.expect(db.users.put.args[0][0]).to.deep.equal({
+        _id: 'org.couchdb.user:anne',
+        name: 'anne',
+        type: 'user',
+        password: COMPLEX_PASSWORD,
+      });
+      chai.expect(request.put.callCount).to.equal(0);
     });
   });
 

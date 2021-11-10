@@ -2,7 +2,7 @@ const path = require('path');
 const url = require('url');
 const logger = require('./logger');
 
-const { UNIT_TEST_ENV, COUCH_URL, MEDIC_API_RESOURCE_PATH, NODE_ENV } = process.env;
+const { UNIT_TEST_ENV, COUCH_URL, MEDIC_API_RESOURCE_PATH, NODE_ENV, COUCH_NODE_NAME } = process.env;
 
 if (UNIT_TEST_ENV) {
   module.exports = {
@@ -10,6 +10,7 @@ if (UNIT_TEST_ENV) {
     db: '',
     ddoc: '',
     couchUrl: '',
+    couchNodeName: '',
     port: '',
     host: '',
     protocol: '',
@@ -21,6 +22,7 @@ if (UNIT_TEST_ENV) {
 
   module.exports = {
     couchUrl: couchUrl,
+    couchNodeName: COUCH_NODE_NAME,
     serverUrl: couchUrl.slice(0, couchUrl.lastIndexOf('/')),
     protocol: parsedUrl.protocol,
     port: parsedUrl.port,

@@ -8,6 +8,8 @@ const getRoles = require('./types-and-roles');
 const auth = require('../auth');
 const tokenLogin = require('./token-login');
 const moment = require('moment');
+const request = require('request-promise-native');
+const environment = require('../environment');
 
 const USER_PREFIX = 'org.couchdb.user:';
 const DOC_IDS_WARN_LIMIT = 10000;
@@ -457,6 +459,29 @@ const getUpdatedSettingsDoc = (username, data) => {
   });
 };
 
+const updateAdminPassword = user => {
+  if (!user.password || !user.name) {
+    return;
+  }
+
+  return request
+    .put({
+      url: `${environment.serverUrl}/_node/${environment.couchNodeName}/_config/admins/${user.name}`,
+      body: `"${user.password}"`
+    })
+    // Don't save the admin password in CouchDB's docs.
+    .then(() => delete user.password);
+};
+
+const isDbAdmin = user => {
+  return request
+    .get({
+      url: `${environment.serverUrl}/_node/${environment.couchNodeName}/_config/admins`,
+      json: true,
+    })
+    .then(admins => !!admins[user.name]);
+};
+
 /*
  * Everything not exported directly is private.  Underscore prefix is only used
  * to export functions needed for testing.
@@ -590,7 +615,8 @@ module.exports = {
 
         const response = {};
 
-        return Promise.resolve()
+        return Promise
+          .resolve()
           .then(() => {
             if (data.place) {
               settings.facility_id = user.facility_id;
@@ -623,6 +649,12 @@ module.exports = {
                 ));
               }
               settings.contact_id = null;
+            }
+          })
+          .then(() => isDbAdmin(user))
+          .then(isAdminUser => {
+            if (isAdminUser) {
+              return updateAdminPassword(user);
             }
           })
           .then(() => db.users.put(user))
