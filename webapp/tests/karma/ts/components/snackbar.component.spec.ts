@@ -113,4 +113,28 @@ describe('SnackbarComponent', () => {
     expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(secondMessage);
     flush();
   }));
+
+  it('should display the snackbar with a message and queue two others', fakeAsync(async () => {
+    const firstMessage = 'first message';
+    const secondMessage = 'second message';
+    const thirdMessage = 'third message';
+
+    component.ngOnInit();
+    store.overrideSelector(Selectors.getSnackbarContent, { message: firstMessage, action: undefined });
+    store.refreshState();
+    expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(firstMessage);
+
+    store.overrideSelector(Selectors.getSnackbarContent, { message: secondMessage, action: undefined });
+    store.refreshState();
+    expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(firstMessage);
+
+    tick(400);
+    store.overrideSelector(Selectors.getSnackbarContent, { message: thirdMessage, action: undefined });
+    store.refreshState();
+    expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(firstMessage);
+
+    tick(500);
+    expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(thirdMessage);
+    flush();
+  }));
 });
