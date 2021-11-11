@@ -469,14 +469,14 @@ const saveUserUpdates = async (user) => {
   let password;
 
   if (isAdmin) {
-    // CouchDB doesn't save admin password in docs.
+    // CouchDB doesn't save the admin password in docs.
     password = user.password;
     delete user.password;
   }
 
   const savedDoc = await db.users.put(user);
 
-  if (isAdmin) {
+  if (isAdmin && password) {
     await couchSettings.updateAdminPassword(user.name, password);
   }
 

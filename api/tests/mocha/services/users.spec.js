@@ -1374,6 +1374,35 @@ describe('Users service', () => {
       chai.expect(couchSettings.updateAdminPassword.args[0]).to.have.members(['admin2', COMPLEX_PASSWORD]);
     });
 
+    it('should update admin when no password is sent', async () => {
+      const data = { fullname: 'John Smith' };
+      couchSettings.getCouchConfig.resolves({
+        admin1: 'password_1',
+        admin2: 'password_2',
+      });
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
+      sinon.stub(db.medic, 'put').resolves({});
+      sinon.stub(db.users, 'put').resolves({});
+
+      await service.updateUser('admin2', data, true);
+
+      chai.expect(db.medic.put.callCount).to.equal(1);
+      chai.expect(db.medic.put.args[0][0]).to.deep.equal({
+        _id: 'org.couchdb.user:admin2',
+        name: 'admin2',
+        type: 'user-settings',
+        fullname: 'John Smith',
+      });
+      chai.expect(db.users.put.callCount).to.equal(1);
+      chai.expect(db.users.put.args[0][0]).to.deep.equal({
+        _id: 'org.couchdb.user:admin2',
+        name: 'admin2',
+        type: 'user',
+      });
+      chai.expect(couchSettings.updateAdminPassword.callCount).to.equal(0);
+    });
+
     it('should not update the password in CouchDB config if user isnt admin', async () => {
       const data = { password: COMPLEX_PASSWORD };
       couchSettings.getCouchConfig.resolves({
