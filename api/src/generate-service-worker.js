@@ -14,7 +14,6 @@ const apiSrcDirectoryPath = __dirname;
 const staticDirectoryPath = environment.getStaticPath();
 const webappDirectoryPath = environment.getWebappPath();
 const scriptOutputPath = path.join(webappDirectoryPath, 'js', 'service-worker.js');
-console.log(scriptOutputPath);
 
 const fsExists = (path) => new Promise((resolve) => {
   fs.access(path, (err) => resolve(!err));
