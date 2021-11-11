@@ -34,7 +34,9 @@ describe('Create user meta db : ', () => {
     const response = await utils.requestOnTestMetaDb(_.defaults({ path: '/_changes' }, options));
 
     const changes = response.results;
+    expect(changes.length).to.equal(2);
     const ids = changes.map(change => change.id).sort();
+    expect(ids[0]).to.equal('_design/medic-user');
     expect(ids[1]).to.equal(doc._id);
   });
 
