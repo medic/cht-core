@@ -2,12 +2,12 @@ const chai = require('chai');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
+const couchSettings = require('@medic/settings');
 const people = require('../../../src/controllers/people');
 const places = require('../../../src/controllers/places');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
 const auth = require('../../../src/auth');
-const environment = require('../../../src/environment');
 const COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
 
 const facilitya = { _id: 'a', name: 'aaron' };
@@ -19,21 +19,17 @@ let clock;
 const oneDayInMS = 24 * 60 * 60 * 1000;
 
 let service;
-let request;
 
 describe('Users service', () => {
   beforeEach(() => {
-    request = {
-      get: sinon.stub().resolves(),
-      put: sinon.stub().resolves(),
-    };
     service = rewire('../../../src/services/users');
-    service.__set__('request', request);
     service.__set__('getFacilities', sinon.stub().returns([
       facilitya,
       facilityb,
       facilityc,
     ]));
+    sinon.stub(couchSettings, 'getCouchConfig').resolves();
+    sinon.stub(couchSettings, 'updateAdminPassword').resolves();
     userData = {
       username: 'x',
       password: COMPLEX_PASSWORD,
@@ -1351,7 +1347,7 @@ describe('Users service', () => {
 
     it('should update the admin password in CouchDB config and not in user docs', async () => {
       const data = { password: COMPLEX_PASSWORD };
-      request.get.resolves({
+      couchSettings.getCouchConfig.resolves({
         admin1: 'password_1',
         admin2: 'password_2',
       });
@@ -1374,20 +1370,16 @@ describe('Users service', () => {
         name: 'admin2',
         type: 'user',
       });
-      chai.expect(request.put.calledOnce).to.be.true;
-      chai.expect(request.put.args[0][0]).to.deep.equal({
-        url: `${environment.serverUrl}/_node/${environment.couchNodeName}/_config/admins/admin2`,
-        body: `"${COMPLEX_PASSWORD}"`
-      });
+      chai.expect(couchSettings.updateAdminPassword.calledOnce).to.be.true;
+      chai.expect(couchSettings.updateAdminPassword.args[0]).to.have.members(['admin2', COMPLEX_PASSWORD]);
     });
 
     it('should not update the password in CouchDB config if user isnt admin', async () => {
       const data = { password: COMPLEX_PASSWORD };
-      request.get.resolves({
+      couchSettings.getCouchConfig.resolves({
         admin1: 'password_1',
         admin2: 'password_2',
       });
-      service.__set__('request', request);
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves({});
@@ -1408,16 +1400,15 @@ describe('Users service', () => {
         type: 'user',
         password: COMPLEX_PASSWORD,
       });
-      chai.expect(request.put.callCount).to.equal(0);
+      chai.expect(couchSettings.updateAdminPassword.callCount).to.equal(0);
     });
 
     it('should update admin data in user-settings doc even if the password isnt sent', async () => {
       const data = { email: 'admin@facility.com' };
-      request.get.resolves({
+      couchSettings.getCouchConfig.resolves({
         admin1: 'password_1',
         admin2: 'password_2',
       });
-      service.__set__('request', request);
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves({});
@@ -1438,7 +1429,6 @@ describe('Users service', () => {
         name: 'admin1',
         type: 'user',
       });
-      chai.expect(request.put.callCount).to.equal(0);
     });
   });
 

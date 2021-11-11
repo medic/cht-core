@@ -4,12 +4,11 @@ const people  = require('../controllers/people');
 const places = require('../controllers/places');
 const db = require('../db');
 const lineage = require('@medic/lineage')(Promise, db.medic);
+const couchSettings = require('@medic/settings');
 const getRoles = require('./types-and-roles');
 const auth = require('../auth');
 const tokenLogin = require('./token-login');
 const moment = require('moment');
-const request = require('request-promise-native');
-const environment = require('../environment');
 
 const USER_PREFIX = 'org.couchdb.user:';
 const DOC_IDS_WARN_LIMIT = 10000;
@@ -459,27 +458,77 @@ const getUpdatedSettingsDoc = (username, data) => {
   });
 };
 
-const updateAdminPassword = user => {
-  if (!user.password || !user.name) {
-    return;
-  }
-
-  return request
-    .put({
-      url: `${environment.serverUrl}/_node/${environment.couchNodeName}/_config/admins/${user.name}`,
-      body: `"${user.password}"`
-    })
-    // Prevent saving the admin password somewhere else like in the user docs.
-    .then(() => delete user.password);
+const isDbAdmin = user => {
+  return couchSettings
+    .getCouchConfig('admins')
+    .then(admins => admins && !!admins[user.name]);
 };
 
-const isDbAdmin = user => {
-  return request
-    .get({
-      url: `${environment.serverUrl}/_node/${environment.couchNodeName}/_config/admins`,
-      json: true,
-    })
-    .then(admins => admins && !!admins[user.name]);
+const saveUserUpdates = async (user) => {
+  const isAdmin = await isDbAdmin(user);
+  let password;
+
+  if (isAdmin) {
+    // CouchDB doesn't save admin password in docs.
+    password = user.password;
+    delete user.password;
+  }
+
+  const savedDoc = await db.users.put(user);
+
+  if (isAdmin) {
+    await couchSettings.updateAdminPassword(user.name, password);
+  }
+
+  return {
+    id: savedDoc.id,
+    rev: savedDoc.rev
+  };
+};
+
+const saveUserSettingsUpdates = async (userSettings) => {
+  const savedDoc = await db.medic.put(userSettings);
+
+  return {
+    id: savedDoc.id,
+    rev: savedDoc.rev
+  };
+};
+
+const validateUserFacility = (data, user, userSettings) => {
+  if (data.place) {
+    userSettings.facility_id = user.facility_id;
+    return places.getPlace(user.facility_id);
+  }
+
+  if (_.isNull(data.place)) {
+    if (userSettings.roles && auth.isOffline(userSettings.roles)) {
+      return Promise.reject(error400(
+        'Place field is required for offline users',
+        'field is required',
+        {'field': 'Place'}
+      ));
+    }
+    user.facility_id = null;
+    userSettings.facility_id = null;
+  }
+};
+
+const validateUserContact = (data, user, userSettings) => {
+  if (data.contact) {
+    return validateContact(userSettings.contact_id, user.facility_id);
+  }
+
+  if (_.isNull(data.contact)) {
+    if (userSettings.roles && auth.isOffline(userSettings.roles)) {
+      return Promise.reject(error400(
+        'Contact field is required for offline users',
+        'field is required',
+        {'field': 'Contact'}
+      ));
+    }
+    userSettings.contact_id = null;
+  }
 };
 
 /*
@@ -489,11 +538,12 @@ const isDbAdmin = user => {
 module.exports = {
   deleteUser: username => deleteUser(createID(username)),
   getList: () => {
-    return Promise.all([
-      getAllUsers(),
-      getAllUserSettings(),
-      getFacilities()
-    ])
+    return Promise
+      .all([
+        getAllUsers(),
+        getAllUserSettings(),
+        getFacilities()
+      ])
       .then(([ users, settings, facilities ]) => {
         return mapUsers(users, settings, facilities);
       });
@@ -570,7 +620,7 @@ module.exports = {
    *                                     security-related things?
    * @param      {String}    appUrl      request protocol://hostname
    */
-  updateUser: (username, data, fullAccess, appUrl) => {
+  updateUser: async (username, data, fullAccess, appUrl) => {
     // Reject update attempts that try to modify data they're not allowed to
     if (!fullAccess) {
       const illegalAttempts = illegalDataModificationAttempts(data);
@@ -602,78 +652,24 @@ module.exports = {
       }
     }
 
-    return Promise
-      .all([
-        getUpdatedUserDoc(username, data),
-        getUpdatedSettingsDoc(username, data),
-      ])
-      .then(([ user, settings ]) => {
-        const tokenLoginError = tokenLogin.validateTokenLogin(data, false, user, settings);
-        if (tokenLoginError) {
-          return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
-        }
+    const [user, userSettings] = await Promise.all([
+      getUpdatedUserDoc(username, data),
+      getUpdatedSettingsDoc(username, data),
+    ]);
 
-        const response = {};
+    const tokenLoginError = tokenLogin.validateTokenLogin(data, false, user, userSettings);
+    if (tokenLoginError) {
+      return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
+    }
 
-        return Promise
-          .resolve()
-          .then(() => {
-            if (data.place) {
-              settings.facility_id = user.facility_id;
-              return places.getPlace(user.facility_id);
-            }
+    await validateUserFacility(data, user, userSettings);
+    await validateUserContact(data, user, userSettings);
+    const response = {
+      user: await saveUserUpdates(user),
+      'user-settings': await saveUserSettingsUpdates(userSettings),
+    };
 
-            if (_.isNull(data.place)) {
-              if (settings.roles && auth.isOffline(settings.roles)) {
-                return Promise.reject(error400(
-                  'Place field is required for offline users',
-                  'field is required',
-                  {'field': 'Place'}
-                ));
-              }
-              user.facility_id = null;
-              settings.facility_id = null;
-            }
-          })
-          .then(() => {
-            if (data.contact) {
-              return validateContact(settings.contact_id, user.facility_id);
-            }
-
-            if (_.isNull(data.contact)) {
-              if (settings.roles && auth.isOffline(settings.roles)) {
-                return Promise.reject(error400(
-                  'Contact field is required for offline users',
-                  'field is required',
-                  {'field': 'Contact'}
-                ));
-              }
-              settings.contact_id = null;
-            }
-          })
-          .then(() => isDbAdmin(user))
-          .then(isAdminUser => {
-            if (isAdminUser) {
-              return updateAdminPassword(user);
-            }
-          })
-          .then(() => db.users.put(user))
-          .then(resp => {
-            response.user = {
-              id: resp.id,
-              rev: resp.rev
-            };
-          })
-          .then(() => db.medic.put(settings))
-          .then(resp => {
-            response['user-settings'] = {
-              id: resp.id,
-              rev: resp.rev
-            };
-          })
-          .then(() => tokenLogin.manageTokenLogin(data, appUrl, response))
-          .then(() => response);
-      });
+    return tokenLogin.manageTokenLogin(data, appUrl, response);
   },
 
   DOC_IDS_WARN_LIMIT,
