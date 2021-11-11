@@ -274,6 +274,38 @@ describe('Users API', () => {
 
     });
 
+    it('should allow to change admin password', async () => {
+      const otherAdmin = {
+        username: 'admin2',
+        password: 'medic.123',
+        roles: [ 'admin' ],
+        contact: { name: 'Philip' },
+        place: newPlaceId,
+      };
+      await utils.createUsers([ otherAdmin ]);
+      await utils.request({
+        port: constants.COUCH_PORT,
+        method: 'PUT',
+        path: `/_node/${constants.COUCH_NODE_NAME}/_config/admins/${otherAdmin.name}`,
+        body: `"${otherAdmin.password}"`,
+      });
+
+      const response = await utils
+        .request({
+          path: `/api/v1/users/${otherAdmin.username}`,
+          method: 'POST',
+          body: {
+            password: 'medic.456'
+          }
+        })
+        .catch(() => chai.assert.fail('Should not throw error'));
+
+      chai.expect(response.user).to.not.be.undefined;
+      chai.expect(response.user.id).to.equal('org.couchdb.user:admin2');
+      chai.expect(response['user-settings']).to.not.be.undefined;
+      chai.expect(response['user-settings'].id).to.equal('org.couchdb.user:admin2');
+    });
+
   });
 
   describe('/api/v1/users-info', () => {

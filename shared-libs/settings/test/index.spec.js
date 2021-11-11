@@ -21,6 +21,7 @@ describe('Settings Shared Library', () => {
     it('should throw error if no server url is set', () => {
       environment.COUCH_URL = '';
       environment.COUCH_NODE_NAME = '';
+
       return lib
         .getCredentials()
         .then(() => assert.fail('exception expected'))
@@ -32,6 +33,7 @@ describe('Settings Shared Library', () => {
     it('should throw error if no node name is set', () => {
       environment.COUCH_URL = 'http://user:pass@server.com/medic';
       environment.COUCH_NODE_NAME = '';
+
       return lib
         .getCredentials()
         .then(() => assert.fail('exception expected'))
