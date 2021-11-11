@@ -20,6 +20,7 @@ export class SnackbarComponent implements OnInit {
   private globalActions;
   private hideTimeout;
   private showNextMessageTimeout;
+  private resetMessageTimeout;
 
   message;
   action;
@@ -51,14 +52,9 @@ export class SnackbarComponent implements OnInit {
       }
 
       const { message, action } = snackbarContent;
-      if (this.showNextMessageTimeout) {
-        this.queueShowMessage(message, action);
-
-        return;
-      }
-
       if (this.active) {
-        this.setTimeout(() => this.resetMessage(), this.ANIMATION_DURATION);
+        clearTimeout(this.resetMessageTimeout);
+        this.resetMessageTimeout = this.setTimeout(() => this.resetMessage(), this.ANIMATION_DURATION);
         this.queueShowMessage(message, action);
 
         return;
@@ -72,10 +68,15 @@ export class SnackbarComponent implements OnInit {
 
   private queueShowMessage(message, action) {
     clearTimeout(this.showNextMessageTimeout);
-    this.showNextMessageTimeout = this.setTimeout(() => this.show(message, action), this.ROUND_TRIP_ANIMATION_DURATION);
+    this.showNextMessageTimeout = this.setTimeout(
+      () => this.globalActions.setSnackbarContent(message, action),
+      this.ROUND_TRIP_ANIMATION_DURATION,
+    );
   }
 
   private show(message, action) {
+    clearTimeout(this.hideTimeout);
+    this.hideTimeout = undefined;
     clearTimeout(this.showNextMessageTimeout);
     this.showNextMessageTimeout = undefined;
     this.message = message;

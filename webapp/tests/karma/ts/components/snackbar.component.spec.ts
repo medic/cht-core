@@ -1,3 +1,4 @@
+import type { SinonStub } from 'sinon';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { fakeAsync, tick, TestBed, flush } from '@angular/core/testing';
@@ -12,6 +13,7 @@ describe('SnackbarComponent', () => {
   let fixture;
   let component: SnackbarComponent;
   let store: MockStore;
+  let setSnackbarContent: SinonStub;
 
   const getElement = (cssSelector) => {
     return fixture.debugElement.query(By.css(cssSelector))?.nativeElement;
@@ -32,6 +34,11 @@ describe('SnackbarComponent', () => {
     store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(SnackbarComponent);
     component = fixture.componentInstance;
+    setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
+  });
+
+  afterEach(() => {
+    setSnackbarContent.restore();
   });
 
   it('should hide the snackbar when no message', async () => {
@@ -48,7 +55,6 @@ describe('SnackbarComponent', () => {
   });
 
   it('should display the snackbar with a message and then hide it', fakeAsync(async () => {
-    const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
     const message = 'important message';
     component.ngOnInit();
     store.overrideSelector(Selectors.getSnackbarContent, { message, action: undefined });
@@ -105,12 +111,34 @@ describe('SnackbarComponent', () => {
     store.refreshState();
     expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(firstMessage);
 
+    // second message gets queued
+    expect(setSnackbarContent.callCount).to.equal(0);
     store.overrideSelector(Selectors.getSnackbarContent, { message: secondMessage, action: undefined });
     store.refreshState();
     expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(firstMessage);
 
-    tick(500);
+    tick(250);
+    // first message disappears
+    expect(setSnackbarContent.callCount).to.equal(1);
+    expect(setSnackbarContent.firstCall.args[0]).to.be.undefined;
+    store.overrideSelector(Selectors.getSnackbarContent, { message: undefined, action: undefined });
+    store.refreshState();
+
+    tick(250);
+    // second message is shown
+    expect(setSnackbarContent.callCount).to.equal(2);
+    expect(setSnackbarContent.secondCall.args[0]).to.equal(secondMessage);
+    store.overrideSelector(Selectors.getSnackbarContent, { message: secondMessage, action: undefined });
+    store.refreshState();
     expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(secondMessage);
+
+    tick(5000);
+    // snackbar is hidden
+    expect(setSnackbarContent.callCount).to.equal(3);
+    expect(setSnackbarContent.thirdCall.args[0]).to.be.undefined;
+    store.overrideSelector(Selectors.getSnackbarContent, { message: undefined, action: undefined });
+    store.refreshState();
+    expect(getElement('#snackbar.active')).to.not.exist;
     flush();
   }));
 
@@ -124,17 +152,41 @@ describe('SnackbarComponent', () => {
     store.refreshState();
     expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(firstMessage);
 
+    // second message gets queued
+    expect(setSnackbarContent.callCount).to.equal(0);
     store.overrideSelector(Selectors.getSnackbarContent, { message: secondMessage, action: undefined });
     store.refreshState();
     expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(firstMessage);
 
-    tick(400);
+    tick(200);
+    // queue third message before first message disappears
+    expect(setSnackbarContent.callCount).to.equal(0);
     store.overrideSelector(Selectors.getSnackbarContent, { message: thirdMessage, action: undefined });
     store.refreshState();
     expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(firstMessage);
 
+    tick(250);
+    // first message disappears
+    expect(setSnackbarContent.callCount).to.equal(1);
+    expect(setSnackbarContent.firstCall.args[0]).to.be.undefined;
+    store.overrideSelector(Selectors.getSnackbarContent, { message: undefined, action: undefined });
+    store.refreshState();
+
     tick(500);
+    // third message is shown
+    expect(setSnackbarContent.callCount).to.equal(2);
+    expect(setSnackbarContent.secondCall.args[0]).to.equal(thirdMessage);
+    store.overrideSelector(Selectors.getSnackbarContent, { message: thirdMessage, action: undefined });
+    store.refreshState();
     expect(getElement('#snackbar.active .snackbar-message').innerText).to.equal(thirdMessage);
+
+    tick(5000);
+    // snackbar is hidden
+    expect(setSnackbarContent.callCount).to.equal(3);
+    expect(setSnackbarContent.thirdCall.args[0]).to.be.undefined;
+    store.overrideSelector(Selectors.getSnackbarContent, { message: undefined, action: undefined });
+    store.refreshState();
+    expect(getElement('#snackbar.active')).to.not.exist;
     flush();
   }));
 });
