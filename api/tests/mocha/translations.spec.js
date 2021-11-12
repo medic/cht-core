@@ -13,6 +13,7 @@ describe('translations', () => {
   beforeEach(() => {
     sinon.stub(fs, 'readdir');
     sinon.stub(fs, 'readFile');
+    sinon.stub(properties, 'parse');
     sinon.stub(environment, 'getResourcesPath').returns('/path/to/resources/');
     translations = rewire('../../src/translations');
   });
@@ -61,7 +62,7 @@ describe('translations', () => {
   it('run returns errors from properties parse', () => {
     fs.readdir.callsArgWith(1, null, ['messages-en.properties']);
     fs.readFile.callsArgWith(2, null, 'some buffer');
-    sinon.stub(properties, 'parse').callsArgWith(1, 'boom');
+    properties.parse.callsArgWith(1, 'boom');
     return translations.run().catch(err => {
       chai.expect(err).to.equal('boom');
       chai.expect(fs.readdir.callCount).to.equal(1);
@@ -74,7 +75,7 @@ describe('translations', () => {
   it('run returns errors from getting translation docs', () => {
     fs.readdir.callsArgWith(1, null, ['messages-en.properties']);
     fs.readFile.callsArgWith(2, null, 'some buffer');
-    sinon.stub(properties, 'parse').callsArgWith(1, null, { first: '1st' });
+    properties.parse.callsArgWith(1, null, { first: '1st' });
     sinon.stub(db.medic, 'allDocs').rejects('boom');
     return translations.run().catch(err => {
       chai.expect(err.name).to.equal('boom');
@@ -101,7 +102,7 @@ describe('translations', () => {
       generic: { hello: 'Gidday' }
     } } ];
 
-    sinon.stub(properties, 'parse').callsArgWith(1, null, { hello: 'Hello' });
+    properties.parse.callsArgWith(1, null, { hello: 'Hello' });
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
     sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
@@ -131,9 +132,7 @@ describe('translations', () => {
       type: 'translations',
       generic: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
     } } ];
-    sinon
-      .stub(properties, 'parse')
-      .callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
+    properties.parse.callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
     sinon.stub(db.medic, 'bulkDocs').rejects('boom');
     return translations.run().catch(err => {
@@ -157,9 +156,7 @@ describe('translations', () => {
       generic: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
     } } ];
 
-    sinon
-      .stub(properties, 'parse')
-      .callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
+    properties.parse.callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
     sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
@@ -194,7 +191,7 @@ describe('translations', () => {
       type: 'translations',
       generic: { empty: '' }
     } } ];
-    sinon.stub(properties, 'parse').callsArgWith(1, null, { empty: '' });
+    properties.parse.callsArgWith(1, null, { empty: '' });
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
     sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
@@ -213,9 +210,7 @@ describe('translations', () => {
       generic: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
     } } ];
 
-    sinon
-      .stub(properties, 'parse')
-      .callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
+    properties.parse.callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
     sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
@@ -252,9 +247,7 @@ describe('translations', () => {
       generic: { hello: 'Hello', bye: 'Goodbye' }
     } } ];
 
-    sinon
-      .stub(properties, 'parse')
-      .callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
+    properties.parse.callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
     sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
@@ -299,7 +292,6 @@ describe('translations', () => {
       } }
     ];
 
-    sinon.stub(properties, 'parse');
     properties.parse
       .onCall(0)
       .callsArgWith(1, null, { hello: 'Hello EN UPDATED', bye: 'Goodbye EN UPDATED', added: 'EN ADDED' });
@@ -354,7 +346,7 @@ describe('translations', () => {
       } }
     ];
 
-    sinon.stub(properties, 'parse').callsArgWith(1, null, { hello: null, bye: 'Goodbye' });
+    properties.parse.callsArgWith(1, null, { hello: null, bye: 'Goodbye' });
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
     sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
@@ -396,7 +388,6 @@ describe('translations', () => {
       } }
     ];
 
-    sinon.stub(properties, 'parse');
     properties.parse.onCall(0).callsArgWith(1, null, { hello: 'Hello', bye: 'Goodbye' });
     properties.parse.onCall(1).callsArgWith(1, null, { bye: 'Goodbye' });
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
@@ -434,7 +425,7 @@ describe('translations', () => {
       } }
     ];
 
-    sinon.stub(properties, 'parse').callsArgWith(1, null, { hello: null, bye: 0, ciao: false, adios: 23, salut: true });
+    properties.parse.callsArgWith(1, null, { hello: null, bye: 0, ciao: false, adios: 23, salut: true });
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
     sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
