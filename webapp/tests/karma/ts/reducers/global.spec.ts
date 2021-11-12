@@ -35,11 +35,6 @@ describe('Global Reducer', () => {
     });
   });
 
-  it('should update minimal tabs', () => {
-    expect(globalReducer(state, Actions.setMinimalTabs(true))).to.deep.equal({ minimalTabs: true });
-    expect(globalReducer(state, Actions.setMinimalTabs(false))).to.deep.equal({ minimalTabs: false });
-  });
-
   it('should update snackbar content', () => {
     const content = 'this is just a random text';
     expect(globalReducer(state, Actions.setSnackbarContent(content))).to.deep.equal({

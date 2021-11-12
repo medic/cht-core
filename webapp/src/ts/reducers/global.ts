@@ -28,7 +28,6 @@ const initialState = {
   lastChangedDoc: false,
   loadingContent: false,
   loadingSubActionBar: false,
-  minimalTabs: false,
   replicationStatus: {},
   selectMode: false,
   privacyPolicyAccepted: false,
@@ -66,9 +65,6 @@ const _globalReducer = createReducer(
   }),
   on(Actions.setAndroidAppVersion, (state, { payload: { androidAppVersion } }) => {
     return { ...state, androidAppVersion };
-  }),
-  on(Actions.setMinimalTabs, (state, { payload: { minimalTabs } } ) => {
-    return { ...state, minimalTabs };
   }),
   on(Actions.setCurrentTab, (state, { payload: { currentTab } }) => {
     return { ...state, currentTab };

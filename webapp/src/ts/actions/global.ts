@@ -4,7 +4,6 @@ import { createSingleValueAction, createMultiValueAction } from './actionUtils';
 
 export const Actions = {
   updateReplicationStatus: createSingleValueAction('UPDATE_REPLICATION_STATUS', 'replicationStatus'),
-  setMinimalTabs: createSingleValueAction('SET_MINIMAL_TABS', 'minimalTabs'),
   setAndroidAppVersion: createSingleValueAction('SET_ANDROID_APP_VERSION', 'androidAppVersion'),
   setCurrentTab: createSingleValueAction('SET_CURRENT_TAB', 'currentTab'),
   setSnapshotData: createSingleValueAction('SET_SNAPSHOT_DATA', 'snapshotData'),
@@ -46,10 +45,6 @@ export class GlobalActions {
 
   updateReplicationStatus(replicationStatus) {
     return this.store.dispatch(Actions.updateReplicationStatus(replicationStatus));
-  }
-
-  setMinimalTabs(minimal) {
-    return this.store.dispatch(Actions.setMinimalTabs(minimal));
   }
 
   setAndroidAppVersion(androidAppVersion) {
