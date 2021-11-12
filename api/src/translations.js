@@ -9,8 +9,10 @@ const TRANSLATION_FILE_NAME_REGEX = /messages-([a-z]*)\.properties/;
 const DOC_TYPE = 'translations';
 const MESSAGES_DOC_ID_PREFIX = 'messages-';
 
+// todo dump this and use fs.promises.<thing> once we don't support Node 8
 const readdir = util.promisify(fs.readdir);
 const readFile = util.promisify(fs.readFile);
+const parseProperties = util.promisify(properties.parse);
 
 const LOCAL_NAME_MAP = {
   bm: 'Bamanankan (Bambara)',
@@ -83,25 +85,18 @@ const getTranslationDocs = () => {
 
 const readTranslationFile = (fileName, folderPath) => {
   const filePath = path.join(folderPath, fileName);
-  return readFile(filePath, 'utf8').then(fileContents => {
-    return new Promise((resolve, reject) => {
-      properties.parse(fileContents, (err, values) => {
-        if (err) {
-          return reject(err);
-        }
-        resolve({
-          code: extractLocaleCode(fileName),
-          generic: values
-        });
-      });
-    });
-  });
+  return readFile(filePath, 'utf8')
+    .then(fileContents => parseProperties(fileContents))
+    .then(values => ({
+      code: extractLocaleCode(fileName),
+      generic: values
+    }));
 };
 
 const getTranslationFiles = () => {
   const translationsPath = path.join(environment.getResourcesPath(), 'translations');
   return readdir(translationsPath).then(files => {
-    const translationsFiles = files.filter(file => file.match(TRANSLATION_FILE_NAME_REGEX));
+    const translationsFiles = files.filter(file => file && file.match(TRANSLATION_FILE_NAME_REGEX));
     return Promise.all(translationsFiles.map(fileName => readTranslationFile(fileName, translationsPath)));
   });
 };
@@ -113,7 +108,8 @@ module.exports = {
         return;
       }
 
-      return Promise.all([ getTranslationDocs() ])
+      return Promise
+        .all([ getTranslationDocs() ])
         .then(([ docs ]) => overwrite(files, docs))
         .then(updated => {
           if (updated.length) {
