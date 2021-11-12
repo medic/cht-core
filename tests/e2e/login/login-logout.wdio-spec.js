@@ -28,8 +28,8 @@ describe('Login and logout tests', () => {
   };
 
   afterEach(async () => {
-    await browser.deleteCookies();
-    await browser.refresh();
+    await browser.reloadSession();
+    await browser.url('/');
   });
 
   it('should show locale selector on login page', async () => {
@@ -50,20 +50,55 @@ describe('Login and logout tests', () => {
   });
 
   it('should show a warning before log out', async () => {
-    await loginPage.cookieLogin({
-      username: auth.username,
-      password: auth.password,
-    });
+    await loginPage.cookieLogin(auth);
     const warning = await commonPage.getLogoutMessage();
     expect(warning).to.equal('Are you sure you want to log out?');
   });
 
   it('should log in using username and password fields', async () => {
-    await loginPage.login({
-      username: auth.username,
-      password: auth.password,
-    });
+    await loginPage.login(auth);
     await (await commonPage.analyticsTab()).waitForDisplayed();
     await (await commonPage.messagesTab()).waitForDisplayed();
+  });
+
+  it('should set correct cookies', async () => {
+    await loginPage.login(auth);
+    await (await commonPage.analyticsTab()).waitForDisplayed();
+
+    const cookies = await browser.getCookies();
+    expect(cookies.length).to.equal(3);
+
+    const authSessionCookie = cookies.find(cookie => cookie.name === 'AuthSession');
+    expect(authSessionCookie).to.include({
+      httpOnly: true,
+      session: false,
+      sameSite: 'Lax',
+      domain: 'localhost',
+      secure: false,
+      path: '/'
+    });
+    expect(authSessionCookie.expires).to.be.greaterThan(0);
+
+    const userCtxCookie = cookies.find(cookie => cookie.name === 'userCtx');
+    expect(userCtxCookie).to.include({
+      session: false,
+      sameSite: 'Lax',
+      domain: 'localhost',
+      path: '/',
+      secure: false,
+    });
+    const userCtxCookieValue = JSON.parse(decodeURIComponent(userCtxCookie.value));
+    expect(userCtxCookieValue).to.include({ name: 'admin' });
+    expect(userCtxCookieValue.roles).to.include('_admin');
+
+    const localeCookie = cookies.find(cookie => cookie.name === 'locale');
+    expect(localeCookie).to.include({
+      session: false,
+      sameSite: 'Lax',
+      domain: 'localhost',
+      path: '/',
+      secure: false,
+      value: 'en',
+    });
   });
 });
