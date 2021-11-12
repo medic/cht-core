@@ -3,11 +3,11 @@
   border-radius: @radius;
 }
 
-.child-button-label(@num, @font) {
-  &:first-child:nth-last-child(@{num}),
-  &:first-child:nth-last-child(@{num}) ~ & {
-    .button-label {
-      font-size: @font;
+.child-element-label(@container, @child, @num, @fontSize) {
+  @{container}:first-child:nth-last-child(@{num}),
+  @{container}:first-child:nth-last-child(@{num}) ~ @{container} {
+    .@{child} {
+      font-size: @fontSize;
     }
   }
 }

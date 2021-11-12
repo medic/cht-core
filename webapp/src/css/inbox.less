@@ -1541,13 +1541,13 @@ a.fa:hover {
         .button-label {
           font-size: @font-extra-extra-small;
         }
-
-        // If there are 4 or less tabs, then use bigger font.
-        .child-button-label(1, @font-extra-small);
-        .child-button-label(2, @font-extra-small);
-        .child-button-label(3, @font-extra-small);
-        .child-button-label(4, @font-extra-small);
       }
+
+      // If there are 4 or less tabs, then use bigger font.
+      .child-element-label(a, button-label, 1, @font-extra-small);
+      .child-element-label(a, button-label, 2, @font-extra-small);
+      .child-element-label(a, button-label, 3, @font-extra-small);
+      .child-element-label(a, button-label, 4, @font-extra-small);
     }
     .mm-badge-overlay {
       right: 10%;
