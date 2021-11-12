@@ -1539,11 +1539,14 @@ a.fa:hover {
       a {
         min-width: 40px;
         .button-label {
-          font-size: @font-extra-small;
+          font-size: @font-extra-extra-small;
         }
-      }
-      .configuration-tab {
-        display: none;
+
+        // If there are 4 or less tabs, then use bigger font.
+        .child-button-label(1, @font-extra-small);
+        .child-button-label(2, @font-extra-small);
+        .child-button-label(3, @font-extra-small);
+        .child-button-label(4, @font-extra-small);
       }
     }
     .mm-badge-overlay {

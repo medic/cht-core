@@ -2,3 +2,12 @@
 .border-radius(@radius) {
   border-radius: @radius;
 }
+
+.child-button-label(@num, @font) {
+  &:first-child:nth-last-child(@num),
+  &:first-child:nth-last-child(@num) ~ & {
+    .button-label {
+      font-size: @font;
+    }
+  }
+}
