@@ -57,6 +57,7 @@ describe('Incorrect locale', () => {
 
     await commonElements.goToPeople();
     await contactElements.selectLHSRowByText('hil district');
+    await commonElements.waitForPageLoaded();
 
     const reportsFilter = await contactElements.getReportFiltersText();
     expect(reportsFilter.sort()).to.deep.equal(['3 luni', '6 luni', 'View all'].sort());
