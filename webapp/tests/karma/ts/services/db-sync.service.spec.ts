@@ -1,4 +1,4 @@
-import { discardPeriodicTasks, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { Store } from '@ngrx/store';
@@ -788,8 +788,6 @@ describe('DBSync service', () => {
     });
 
     describe('give user feedback when manually syncing', () => {
-      beforeEach(() => clock.restore());
-
       it('doesn\'t give feedback when sync happens automatically in the background', async () => {
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
@@ -826,7 +824,7 @@ describe('DBSync service', () => {
         expect(store.dispatch.args[1][0].payload.message).to.equal('sync.feedback.failure.unknown');
       });
 
-      it('allows retrying from the snackbar when the sync fails', fakeAsync(async () => {
+      it('allows retrying from the snackbar when the sync fails', async () => {
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
 
@@ -841,15 +839,13 @@ describe('DBSync service', () => {
 
         replicationResultTo = replicationResultFrom = Promise.resolve();
         await store.dispatch.args[1][0].payload.action.onClick();
-        tick(1000); // trigger the hide snackbar timeout
         expectSyncCall(2);
         expect(store.dispatch.callCount).to.equal(4);
         expect(store.dispatch.args[2][0].type).to.equal('SET_SNACKBAR_CONTENT');
         expect(store.dispatch.args[2][0].payload.message).to.equal('sync.status.in_progress');
         expect(store.dispatch.args[3][0].type).to.equal('SET_SNACKBAR_CONTENT');
         expect(store.dispatch.args[3][0].payload.message).to.equal('sync.status.not_required');
-        discardPeriodicTasks();
-      }));
+      });
     });
   });
 

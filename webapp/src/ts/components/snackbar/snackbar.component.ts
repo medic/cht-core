@@ -44,8 +44,6 @@ export class SnackbarComponent implements OnInit {
     this.changeDetectorRef.detach();
     const reduxSubscription = this.store.select(Selectors.getSnackbarContent).subscribe((snackbarContent) => {
       if (!snackbarContent?.message) {
-        this.message = undefined;
-        this.action = undefined;
         this.hide();
 
         return;
@@ -53,8 +51,6 @@ export class SnackbarComponent implements OnInit {
 
       const { message, action } = snackbarContent;
       if (this.active) {
-        clearTimeout(this.resetMessageTimeout);
-        this.resetMessageTimeout = this.setTimeout(() => this.resetMessage(), this.ANIMATION_DURATION);
         this.queueShowMessage(message, action);
 
         return;
@@ -67,7 +63,9 @@ export class SnackbarComponent implements OnInit {
   }
 
   private queueShowMessage(message, action) {
+    clearTimeout(this.resetMessageTimeout);
     clearTimeout(this.showNextMessageTimeout);
+    this.resetMessageTimeout = this.setTimeout(() => this.resetMessage(), this.ANIMATION_DURATION);
     this.showNextMessageTimeout = this.setTimeout(
       () => this.globalActions.setSnackbarContent(message, action),
       this.ROUND_TRIP_ANIMATION_DURATION,
@@ -90,6 +88,8 @@ export class SnackbarComponent implements OnInit {
   private hide() {
     clearTimeout(this.hideTimeout);
     this.hideTimeout = undefined;
+    this.message = undefined;
+    this.action = undefined;
     this.active = false;
     this.changeDetectorRef.detectChanges();
   }

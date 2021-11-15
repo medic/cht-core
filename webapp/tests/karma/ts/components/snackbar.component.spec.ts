@@ -1,7 +1,7 @@
 import type { SinonStub } from 'sinon';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { fakeAsync, tick, TestBed, flush } from '@angular/core/testing';
+import { fakeAsync, tick, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 
@@ -38,7 +38,7 @@ describe('SnackbarComponent', () => {
   });
 
   afterEach(() => {
-    setSnackbarContent.restore();
+    sinon.restore();
   });
 
   it('should hide the snackbar when no message', async () => {
@@ -74,7 +74,7 @@ describe('SnackbarComponent', () => {
     tick(500);
 
     expect(setSnackbarContent.callCount).to.equal(1);
-    expect(setSnackbarContent.firstCall.firstArg).to.be.undefined;
+    expect(setSnackbarContent.args[0]).to.deep.equal([]);
     store.overrideSelector(Selectors.getSnackbarContent, { message: undefined, action: undefined });
     store.refreshState();
     expect(component.active).to.equal(false);
@@ -120,7 +120,7 @@ describe('SnackbarComponent', () => {
     tick(250);
     // first message disappears
     expect(setSnackbarContent.callCount).to.equal(1);
-    expect(setSnackbarContent.firstCall.args[0]).to.be.undefined;
+    expect(setSnackbarContent.args[0]).to.deep.equal([]);
     store.overrideSelector(Selectors.getSnackbarContent, { message: undefined, action: undefined });
     store.refreshState();
 
@@ -135,11 +135,11 @@ describe('SnackbarComponent', () => {
     tick(5000);
     // snackbar is hidden
     expect(setSnackbarContent.callCount).to.equal(3);
-    expect(setSnackbarContent.thirdCall.args[0]).to.be.undefined;
+    expect(setSnackbarContent.args[2]).to.deep.equal([]);
     store.overrideSelector(Selectors.getSnackbarContent, { message: undefined, action: undefined });
     store.refreshState();
     expect(getElement('#snackbar.active')).to.not.exist;
-    flush();
+    // flush();
   }));
 
   it('should display the snackbar with a message and queue two others', fakeAsync(async () => {
@@ -168,7 +168,7 @@ describe('SnackbarComponent', () => {
     tick(250);
     // first message disappears
     expect(setSnackbarContent.callCount).to.equal(1);
-    expect(setSnackbarContent.firstCall.args[0]).to.be.undefined;
+    expect(setSnackbarContent.args[0]).to.deep.equal([]);
     store.overrideSelector(Selectors.getSnackbarContent, { message: undefined, action: undefined });
     store.refreshState();
 
@@ -183,10 +183,10 @@ describe('SnackbarComponent', () => {
     tick(5000);
     // snackbar is hidden
     expect(setSnackbarContent.callCount).to.equal(3);
-    expect(setSnackbarContent.thirdCall.args[0]).to.be.undefined;
+    expect(setSnackbarContent.args[2]).to.deep.equal([]);
     store.overrideSelector(Selectors.getSnackbarContent, { message: undefined, action: undefined });
     store.refreshState();
     expect(getElement('#snackbar.active')).to.not.exist;
-    flush();
+    // flush();
   }));
 });
