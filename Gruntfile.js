@@ -661,8 +661,6 @@ module.exports = function(grunt) {
         tasks: [
           'less:admin',
           'copy:static-resources',
-          'couch-compile:primary',
-          'couch-push:primary',
           'notify:deployed',
         ],
       },
@@ -671,8 +669,6 @@ module.exports = function(grunt) {
         tasks: [
           'browserify:admin',
           'copy:static-resources',
-          'couch-compile:primary',
-          'couch-push:primary',
           'notify:deployed',
         ],
       },
@@ -681,8 +677,6 @@ module.exports = function(grunt) {
         tasks: [
           'copy:admin-resources',
           'copy:static-resources',
-          'couch-compile:primary',
-          'couch-push:primary',
           'notify:deployed',
         ],
       },
@@ -691,8 +685,6 @@ module.exports = function(grunt) {
         tasks: [
           'ngtemplates:adminApp',
           'copy:static-resources',
-          'couch-compile:primary',
-          'couch-push:primary',
           'notify:deployed',
         ],
       },
@@ -701,13 +693,12 @@ module.exports = function(grunt) {
         files: ['build/static/webapp/**/*'],
         tasks: [
           'copy:static-resources',
-          'couch-compile:primary',
-          'deploy',
+          'notify:deployed',
         ],
       },
       'primary-ddoc': {
         files: ['ddocs/medic-db/**/*'],
-        tasks: ['copy:ddocs', 'couch-compile:primary', 'deploy'],
+        tasks: ['copy:ddocs', 'couch-compile:primary', 'deploy', 'copy:api-ddocs'],
       },
       'secondary-ddocs': {
         files: ['ddocs/*-db/**/*', '!ddocs/medic-db/**/*'],
@@ -716,8 +707,13 @@ module.exports = function(grunt) {
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
+          'copy:api-ddocs',
         ],
       },
+      'api-public-files': {
+        files: ['api/src/public/**/*'],
+        tasks: ['copy:api-resources'],
+      }
     },
     notify: {
       deployed: {

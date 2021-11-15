@@ -51,6 +51,7 @@ module.exports.getDeployInfo = () => deployInfo;
 module.exports.getBuildPath = () => path.join(__dirname, '..', 'build');
 module.exports.getStaticPath = () => path.join(module.exports.getBuildPath(), 'static');
 module.exports.getWebappPath = () => path.join(module.exports.getStaticPath(), 'webapp');
+module.exports.getLoginPath = () => path.join(module.exports.getStaticPath(), 'login');
 module.exports.getDefaultDocsPath = () => path.join(module.exports.getBuildPath(), 'default-docs');
 module.exports.getResourcesPath = () => path.join(__dirname, '..', 'resources');
 module.exports.isTesting = module.exports.db === 'medic-test';
