@@ -280,7 +280,7 @@ module.exports = function(grunt) {
           'fonts/**/*',
           'img/**/*',
         ],
-        dest: 'build/static/',
+        dest: 'build/static/webapp/',
       },
       'api-resources': {
         expand: true,
@@ -698,7 +698,7 @@ module.exports = function(grunt) {
       },
       'webapp-js': {
         // instead of watching the source files, watch the build folder and upload on rebuild
-        files: ['build/static/**/*'],
+        files: ['build/static/webapp/**/*'],
         tasks: [
           'copy:static-resources',
           'couch-compile:primary',
@@ -839,7 +839,7 @@ module.exports = function(grunt) {
       compile: {
         cwd: 'webapp/src/css/',
         src: 'enketo/enketo.scss',
-        dest: 'build/static',
+        dest: 'build/static/webapp',
         ext: '.less',
         expand: true,
         outputStyle: 'expanded',
