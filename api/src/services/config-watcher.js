@@ -1,3 +1,6 @@
+const fs = require('fs');
+const _ = require('lodash');
+
 const db = require('../db');
 const logger = require('../logger');
 const translationUtils = require('@medic/translation-utils');
@@ -8,6 +11,7 @@ const ddocExtraction = require('../ddoc-extraction');
 const generateXform = require('./generate-xform');
 const generateServiceWorker = require('../generate-service-worker');
 const config = require('../config');
+const environment = require('../environment');
 
 const MEDIC_DDOC_ID = '_design/medic';
 
@@ -87,8 +91,7 @@ const handleDdocChange = () => {
     .catch(err => {
       logger.error('Something went wrong trying to extract resources: %o', err);
       process.exit(1);
-    })
-    .then(() => updateServiceWorker());
+    });
 };
 
 const handleSettingsChange = () => {
@@ -135,6 +138,14 @@ const load = () => {
 };
 
 const listen = () => {
+  const debouncedUpdateServiceWorker = _.debounce(updateServiceWorker, 200);
+  fs.watch(environment.getWebappPath(), () => {
+    debouncedUpdateServiceWorker();
+  });
+  fs.watch(environment.getLoginPath(), () => {
+    debouncedUpdateServiceWorker();
+  });
+
   db.medic
     .changes({ live: true, since: 'now', return_docs: false })
     .on('change', change => {
