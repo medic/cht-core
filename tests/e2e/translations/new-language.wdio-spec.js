@@ -33,10 +33,8 @@ describe('Adding new language', () => {
   });
 
   it('should be set as Default language ',async () => {
-    await languagesPage.setDefaultLanguage('Afrikaans');
-    await languagesPage.setOutgoingMessageLanguage('Afrikaans');
-    expect(await languagesPage.isLanguageSelected(languagesPage.defaultLocaleOption, 'afr')).to.be.true;
-    expect(await languagesPage.isLanguageSelected(languagesPage.outgoingLocaleOption, 'afr')).to.be.true;
+    expect(await languagesPage.selectLanguage(languagesPage.defaultLanguageDropdown, 'afr')).to.be.true;
+    expect(await languagesPage.selectLanguage(languagesPage.outgoingLanguageDropdown, 'afr')).to.be.true;
   });
 
   it('should reflect in config wizard', async () => {
@@ -59,7 +57,7 @@ describe('Adding new language', () => {
 
     //check for translations
     await commonPo.goToMessages();
-    await commonPo.waitForLoaderToDisappear();
+    await commonPo.waitForPageLoaded();
     expect(await (await commonPo.messagesList()).getText()).to.equal('Geen boodskappe gevind nie');
     await commonPo.goToReports();
     expect(await (await reportsPage.reportList()).getText()).to.equal('Geen verslae gevind nie');

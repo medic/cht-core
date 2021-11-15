@@ -7,8 +7,8 @@ const languageCodeInput = () => $('[ng-model="language.code"]');
 const languageNameInput  = () => $('[ng-model="language.name"]');
 const languageSubmitButton  = () => $('a.btn.submit.ng-scope.ng-binding.btn-primary');
 const applicationLink = () => $('i.fa.fa-fw.fa-home');
-const defaultLocaleOption = () => $('#locale');
-const outgoingLocaleOption = () => $('#locale-outgoing');
+const defaultLanguageDropdown = () => $('#locale');
+const outgoingLanguageDropdown = () => $('#locale-outgoing');
 
 const goToLanguagesTab = async () => {
   await browser.url(utils.getAdminBaseUrl() + 'display/languages');
@@ -24,7 +24,6 @@ const openAddLanguageModal = async () => {
 const addNewLanguage = async (code, name) =>{
   await (await addLanguageButton()).click();
   await (await addLanguageModal()).waitForDisplayed();
-  //await (await addLanguageModal()).click();
   await (await languageCodeInput()).waitForDisplayed();
   await (await languageCodeInput()).setValue(code);
   await (await languageNameInput()).setValue(name);
@@ -37,24 +36,13 @@ const languageDisplayed = async (code) =>{
   const languageName = await (await languageDiv()).getText();
   return languageName;
 };
-const defaultLanguageDropdown = () => $('#locale');
-const setDefaultLanguage = async (language) => {
-  await (await defaultLanguageDropdown()).selectByVisibleText(language);
-  await (await submitButton()).click();
-  await (await submitButton()).waitForClickable();
-};
 
-const outgoingLanguageDropdown = () => $('#locale-outgoing');
-const setOutgoingMessageLanguage = async (language) => {
-  await (await outgoingLanguageDropdown()).selectByVisibleText(language);
+const selectLanguage = async (element, code) => {
+  await (await element()).selectByAttribute('value', `string:${code}`);
   await (await submitButton()).click();
   await browser.waitUntil(async () => (await $('.success.ng-binding.ng-scope').getText()) === 'Saved');
-};
-
-const isLanguageSelected = async (el, code) => {
-  await (await el()).click();
-  const option = await $(`option[value="string:${code}"]`);
-  return await option.getAttribute('selected') === 'selected';
+  const newLanguage = await $(`[value="string:${code}"]`);
+  return await newLanguage.isSelected();
 };
 
 const goToApplication = async () => {
@@ -62,15 +50,13 @@ const goToApplication = async () => {
 };
 
 module.exports = {
-  defaultLocaleOption,
-  outgoingLocaleOption,
+  outgoingLanguageDropdown,
+  defaultLanguageDropdown,
   goToLanguagesTab,
   openAddLanguageModal,
   addNewLanguage,
   languageDisplayed,
-  setDefaultLanguage,
-  setOutgoingMessageLanguage,
-  isLanguageSelected,
+  selectLanguage,
   goToApplication
 };
 

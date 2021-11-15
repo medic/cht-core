@@ -1,20 +1,19 @@
-const commonPage = require('../common/common.wdio.page');
+const submiButton = () => $('.btn.submit.btn-primary');
 
 const openEditSettings = async () => {
   const links = await $('.content .configuration');
   await links.waitForDisplayed();
   await links.$$('.btn-link')[1].click();
-  // modals have an animation and the click might land somewhere else
-  await browser.pause(1000);
+  //modals have an animation and the click might land somewhere else
+  await browser.pause(500);
 };
 
 const selectLanguage = async (code) => {
   const languageDropDown = await $('#language');
+  await browser.waitUntil(async () => await languageDropDown.getValue() === 'en');
   await languageDropDown.selectByAttribute('value', code);
-  const submiButton = await $('.btn.submit.btn-primary');
-  await submiButton.click();
-  await submiButton.waitForDisplayed({reverse:true});
-  await commonPage.waitForLoaderToDisappear();
+  await (await submiButton()).click();
+  await (await submiButton()).waitForDisplayed({reverse:true});
 };
 
 module.exports = {
