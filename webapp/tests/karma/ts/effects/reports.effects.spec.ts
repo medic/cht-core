@@ -894,7 +894,7 @@ describe('Reports effects', () => {
 
       sinon.stub(Date, 'now').returns(1000); // using faketimers breaks fakeAsync's tick :(
       dbService.put.resolves();
-      dbService.get.resolves({ _id: 'report', _rev: 3 });
+      dbService.get.resolves({ _id: 'report', _rev: 3, contact: { _id: 'contact', parent: { _id: 'parent' } } });
 
       actions$ = of(ReportActionList.verifyReport(false));
       effects.verifyReport.subscribe();
@@ -928,7 +928,7 @@ describe('Reports effects', () => {
       // Getting the report from the db causes a new report to be selected
       dbService.get.callsFake(() => {
         actions$ = concat(actions$, of(ReportActionList.selectReport({id: 'report1', silent: false})));
-        return Promise.resolve({ _id: 'report', _rev: 3 });
+        return Promise.resolve({ _id: 'report', _rev: 3, contact: { _id: 'contact', parent: { _id: 'parent' } } });
       });
       // Updating the report causes it to be re-selected
       dbService.put.callsFake(() => {
@@ -1104,7 +1104,7 @@ describe('Reports effects', () => {
         canEdit ? authService.has.resolves(true) : authService.has.resolves(false);
         confirm ? modalService.show.resolves() : modalService.show.rejects();
         dbService.put.resolves();
-        dbService.get.resolves({ _rev: '1' });
+        dbService.get.resolves({ _id: 'def', name: 'hello', _rev: '1', form: 'P' });
         store.overrideSelector(Selectors.getSelectedReports, selectedReports);
         store.refreshState();
 
