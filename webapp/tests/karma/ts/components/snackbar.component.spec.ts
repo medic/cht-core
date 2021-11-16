@@ -139,7 +139,6 @@ describe('SnackbarComponent', () => {
     store.overrideSelector(Selectors.getSnackbarContent, { message: undefined, action: undefined });
     store.refreshState();
     expect(getElement('#snackbar.active')).to.not.exist;
-    // flush();
   }));
 
   it('should display the snackbar with a message and queue two others', fakeAsync(async () => {
@@ -187,6 +186,5 @@ describe('SnackbarComponent', () => {
     store.overrideSelector(Selectors.getSnackbarContent, { message: undefined, action: undefined });
     store.refreshState();
     expect(getElement('#snackbar.active')).to.not.exist;
-    // flush();
   }));
 });
