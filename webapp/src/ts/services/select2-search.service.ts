@@ -128,11 +128,7 @@ export class Select2SearchService {
       } else {
         resolution = this.getDoc(value)
           .then((doc) => {
-            if (doc) {
-              selectEl.select2('data')[0].doc = doc;
-            } else {
-              selectEl.val('');
-            }
+            this.setDoc(selectEl, doc);
           })
           .catch(err => console.error('Select2 failed to get document', err));
       }
@@ -179,16 +175,25 @@ export class Select2SearchService {
         if (docId) {
           this.getDoc(docId)
             .then((doc) => {
-              if (doc) {
-                selectEl.select2('data')[0].doc = doc;
-              } else {
-                selectEl.val('');
-              }
+              this.setDoc(selectEl, doc);
               selectEl.trigger('change');
             })
             .catch(err => console.error('Select2 failed to get document', err));
         }
       });
+    }
+  }
+
+  private setDoc(selectEl, doc) {
+    if (doc) {
+      selectEl.select2('data')[0].doc = doc;  // Set the value
+      // In case an unknown doc was set before, remove the grayed style from the select2 option selected
+      selectEl.next('span').find('.select2-selection__rendered').removeClass('grayed');
+    } else {
+      // Because doc doesn't exist or the user don't have access to, a fixed title in the
+      // option selected is set in gray
+      selectEl.next('span').find('.select2-selection__rendered').addClass('grayed');
+      selectEl.select2('data')[0].text = this.translateService.instant('Unknown contact');
     }
   }
 
