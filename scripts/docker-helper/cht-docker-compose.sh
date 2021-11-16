@@ -301,7 +301,7 @@ port_https=\"$CHT_HTTPS\" \
 port_http=\"$CHT_HTTP\" \
 project_name=\"$COMPOSE_PROJECT_NAME\" \
 total_containers=\"$(get_global_running_container_count)\"\
-" >& 1 >>./$logname
+" >& 1 >> $logname
 
   fi
 
@@ -320,7 +320,7 @@ total_containers=\"$(get_global_running_container_count)\"\
       logs="NA"
     fi
 
-    echo "${line_head} item=\"docker_logs\" container=\"${container}\" processes=\"$(get_container_process_count ${container})\" last_log=\"$logs\"" >& 1 >>./$logname
+    echo "${line_head} item=\"docker_logs\" container=\"${container}\" processes=\"$(get_container_process_count ${container})\" last_log=\"$logs\"" >& 1 >> $logname
     container_stat="${container}=\"${RUNNING}\" ${container_stat}"
   done
 
@@ -335,7 +335,7 @@ docker_call=\"$docker_call\" \
 last_msg=\"$last_msg\" \
 load_now=\"$load_now\" \
 $container_stat\
-" >& 1 >>./$logname
+" >& 1 >> $logname
 
 }
 
