@@ -17,7 +17,7 @@ describe('settings service', () => {
     sinon.stub(db.medic, 'get').resolves({ settings });
 
     const defaultDocsPath = path.resolve(__dirname, '../../../build/default-docs');
-    sinon.stub(environment, 'getDefaultDocsPath').returns(defaultDocsPath);
+    sinon.stub(environment, 'defaultDocsPath').value(defaultDocsPath);
   });
 
   afterEach(function() {
