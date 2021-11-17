@@ -996,8 +996,10 @@ describe('Reports effects', () => {
       expect(setSelected.args).to.deep.equal([[{_id: 'report2', model: true}]]);
 
       // Make sure we only end up setting the data we expect onto the report
-      expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(3);
-      expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).args[2]).to.deep.equal([{ _rev: 3 }]);
+      expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(1);
+      expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).args[0]).to.deep.equal(
+        [{ verified: false, verified_date: 1000 }],
+      );
       expect((<any>ReportsActions.prototype.setFirstSelectedReportFormattedProperty).callCount).to.equal(1);
       expect((<any>ReportsActions.prototype.setFirstSelectedReportFormattedProperty).args[0]).to.deep.equal(
         [{ oldVerified: undefined, verified: false }]);
@@ -1124,13 +1126,11 @@ describe('Reports effects', () => {
             verified_date: expectedDate,
             verified: expectVerified,
           }]);
-          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(2);
+          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(1);
           expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).args[0]).to.deep.equal([{
             verified: expectVerified,
             verified_date: expectedDate,
           }]);
-          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).args[1])
-            .to.deep.equal([{ _rev: '1'}]);
           expect((<any>ServicesActions.prototype.setLastChangedDoc).callCount).to.equal(1);
           expect((<any>ServicesActions.prototype.setLastChangedDoc).args[0]).to.deep.equal([
             { _id: 'def', name: 'hello', form: 'P', verified: initial },
