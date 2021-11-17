@@ -55,6 +55,16 @@ describe('Family form', () => {
     );
     await genericForm.reportApproveNative();
     await genericForm.invalidateReportNative();
+    const currentUrl = await browser.getCurrentUrl();
+    const reportBaseUrl = utils.getBaseUrl() + 'reports/';
+    const reportId = currentUrl.slice(reportBaseUrl.length);
+    const invalidatedReport = await utils.getDoc(reportId);
+    expect(invalidatedReport.verified).toBe(false);
+    expect(invalidatedReport.contact).toEqual({ _id: 'e2e_contact_test_id' });
+
     await genericForm.validateReportNative();
+    const validatedReport = await utils.getDoc(reportId);
+    expect(validatedReport.verified).toBe(true);
+    expect(validatedReport.contact).toEqual({ _id: 'e2e_contact_test_id' });
   });
 });
