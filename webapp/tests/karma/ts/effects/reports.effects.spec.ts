@@ -885,7 +885,85 @@ describe('Reports effects', () => {
         doc: {
           _id: 'report',
           _rev: 2,
-          contact: { _id: 'contact', name: 'name', parent: { _id: 'parent', type: 'clinic' } },
+          contact: {
+            parent: {
+              type: 'health_center',
+              is_name_generated: 'false',
+              name: 'health center',
+              external_id: '',
+              notes: '',
+              contact: {
+                type: 'person',
+                name: 'contact',
+                short_name: '',
+                date_of_birth: '1990-02-01',
+                date_of_birth_method: '',
+                ephemeral_dob: {
+                  dob_calendar: '1990-02-01',
+                  dob_method: '',
+                  ephemeral_months: '7',
+                  ephemeral_years: '2021',
+                  dob_approx: '2021-07-06',
+                  dob_raw: '1990-02-01',
+                  dob_iso: '1990-02-01'
+                },
+                sex: 'female',
+                phone: '+33612345678',
+                phone_alternate: '',
+                role: 'patient',
+                external_id: '',
+                notes: '',
+                meta: {
+                  created_by: 'admin',
+                  created_by_person_uuid: '',
+                  created_by_place_uuid: ''
+                },
+                reported_date: 1625563997559,
+                patient_id: '64038',
+                _id: 'contact',
+                _rev: 2
+              },
+              geolocation: '',
+              meta: {
+                created_by: 'admin',
+                created_by_person_uuid: '',
+                created_by_place_uuid: ''
+              },
+              reported_date: 1625561218242,
+              place_id: '34435',
+              _id: 'parent',
+              _rev: 4
+            },
+            type: 'person',
+            name: 'contact',
+            short_name: '',
+            date_of_birth: '1990-02-01',
+            date_of_birth_method: '',
+            ephemeral_dob: {
+              dob_calendar: '1990-02-01',
+              dob_method: '',
+              ephemeral_months: '7',
+              ephemeral_years: '2021',
+              dob_approx: '2021-07-06',
+              dob_raw: '1990-02-01',
+              dob_iso: '1990-02-01'
+            },
+            sex: 'female',
+            phone: '+33612345678',
+            phone_alternate: '',
+            role: 'patient',
+            external_id: '',
+            notes: '',
+            meta: {
+              created_by: 'admin',
+              created_by_person_uuid: '',
+              created_by_place_uuid: ''
+            },
+            reported_date: 1625563997559,
+            patient_id: '64038',
+            _id: 'contact',
+            _rev: 2
+          },
         },
       }];
       authService.has.resolves(true);
