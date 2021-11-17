@@ -62,7 +62,7 @@ describe('Incorrect locale', () => {
     const reportsFilter = await contactElements.getReportFiltersText();
     expect(reportsFilter.sort()).to.deep.equal(['3 luni', '6 luni', 'View all'].sort());
 
-    const tasksFilter = await contactElements.getReportTaskFiltersText();
+    const tasksFilter = await contactElements.getReportTaskFiltersText(30000);
     expect(tasksFilter.sort()).to.deep.equal(['1 saptamana', '2 saptamani', 'View all'].sort());
   });
 });

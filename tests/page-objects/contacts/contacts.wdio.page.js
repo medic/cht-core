@@ -86,8 +86,8 @@ const getReportFiltersText = async () => {
   return Promise.all((await reportFilters()).map(filter => filter.getText()));
 };
 
-const getReportTaskFiltersText = async () => {
-  await (await taskFilter()).waitForDisplayed();
+const getReportTaskFiltersText = async (timeout) => {
+  await (await taskFilter()).waitForDisplayed({timeout:timeout});
   return await Promise.all((await taskFilters()).map(filter => filter.getText()));
 };
 
