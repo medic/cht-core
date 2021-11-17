@@ -6,14 +6,12 @@ const viewMapUtils = require('@medic/view-map-utils');
 const settingsService = require('./settings');
 const translations = require('../translations');
 const ddocExtraction = require('../ddoc-extraction');
-const resourceExtraction = require('../resource-extraction');
 const generateXform = require('./generate-xform');
 const generateServiceWorker = require('../generate-service-worker');
 const manifest = require('./manifest');
 const config = require('../config');
 
 const MEDIC_DDOC_ID = '_design/medic';
-const ADMIN_DDOC_ID = '_design/medic-admin';
 
 const loadTranslations = () => {
   const translationCache = {};
@@ -88,20 +86,11 @@ const handleDdocChange = () => {
       logger.error('Something went wrong trying to extract ddocs: %o', err);
       process.exit(1);
     })
-    .then(() => resourceExtraction.extractMedic())
     .catch(err => {
       logger.error('Something went wrong trying to extract resources: %o', err);
       process.exit(1);
     })
     .then(() => updateServiceWorker());
-};
-
-const handleAdminDdocChange = () => {
-  return resourceExtraction
-    .extractAdmin()
-    .catch(err => {
-      logger.error('Something went wrong trying to extract admin resources: %o', err);
-    });
 };
 
 const handleSettingsChange = () => {
@@ -168,10 +157,6 @@ const listen = () => {
 
       if (change.id === MEDIC_DDOC_ID) {
         return handleDdocChange();
-      }
-
-      if (change.id === ADMIN_DDOC_ID) {
-        return handleAdminDdocChange();
       }
 
       if (change.id === settingsService.SETTINGS_DOC_ID) {

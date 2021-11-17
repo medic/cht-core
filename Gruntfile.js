@@ -157,7 +157,7 @@ module.exports = function(grunt) {
       },
       admin: {
         src: 'admin/src/js/main.js',
-        dest: 'build/ddocs/medic-db/medic-admin/_attachments/js/main.js',
+        dest: 'build/static/admin/js/main.js',
         options: {
           transform: ['browserify-ngannotate'],
           alias: {
@@ -179,14 +179,14 @@ module.exports = function(grunt) {
       },
       web: {
         files: {
-          'build/ddocs/medic-db/medic-admin/_attachments/js/main.js': 'build/ddocs/medic-db/medic-admin/_attachments/js/main.js',
-          'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js': 'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js'
+          'build/static/admin/js/main.js': 'build/static/admin/js/main.js',
+          'build/static/admin/js/templates.js': 'build/static/admin/js/templates.js'
         },
       },
       api: {
         files: {
-          // public api files
-          'api/build/public/login/script.js': 'api/build/public/login/script.js',
+          // static api files
+          'api/build/static/login/script.js': 'api/build/static/login/script.js',
         }
       }
     },
@@ -202,8 +202,7 @@ module.exports = function(grunt) {
     less: {
       admin: {
         files: {
-          'build/ddocs/medic-db/medic-admin/_attachments/css/main.css':
-            'admin/src/css/main.less',
+          'build/static/admin/css/main.css': 'admin/src/css/main.less',
         },
       },
     },
@@ -213,7 +212,7 @@ module.exports = function(grunt) {
           keepSpecialComments: 0,
         },
         files: {
-          'build/ddocs/medic-db/medic-admin/_attachments/css/main.css': 'build/ddocs/medic-db/medic-admin/_attachments/css/main.css',
+          'build/static/admin/css/main.css': 'build/static/admin/css/main.css',
         },
       },
       api: {
@@ -221,7 +220,7 @@ module.exports = function(grunt) {
           keepSpecialComments: 0,
         },
         files: {
-          'api/build/public/login/style.css': 'api/build/public/login/style.css',
+          'api/build/static/login/style.css': 'api/build/static/login/style.css',
         },
       }
     },
@@ -232,22 +231,33 @@ module.exports = function(grunt) {
         src: '**/*',
         dest: 'build/ddocs/',
       },
-      'ddoc-attachments': {
+      'webapp-static': {
         expand: true,
         cwd: 'webapp/src/',
         src: [
           'audio/**/*',
           'fonts/**/*',
           'img/**/*',
-          'ddocs/medic/_attachments/**/*',
         ],
-        dest: 'build/ddocs/medic/_attachments/',
+        dest: 'build/static/webapp/',
       },
       'api-resources': {
         expand: true,
         cwd: 'api/src/public/',
         src: '**/*',
-        dest: 'api/build/public/',
+        dest: 'api/build/static/',
+      },
+      'static-resources': {
+        expand: true,
+        cwd: 'build/static',
+        src: '**/*',
+        dest: 'api/build/static/',
+      },
+      'default-docs': {
+        expand: true,
+        cwd: 'build/default-docs/',
+        src: '**/*',
+        dest: 'api/build/default-docs/',
       },
       'admin-resources': {
         files: [
@@ -255,7 +265,7 @@ module.exports = function(grunt) {
             expand: true,
             flatten: true,
             src: 'admin/src/templates/index.html',
-            dest: 'build/ddocs/medic-db/medic-admin/_attachments/',
+            dest: 'build/static/admin',
           },
           {
             expand: true,
@@ -264,7 +274,7 @@ module.exports = function(grunt) {
               'admin/node_modules/font-awesome/fonts/*',
               'webapp/src/fonts/**/*'
             ],
-            dest: 'build/ddocs/medic-db/medic-admin/_attachments/fonts/',
+            dest: 'build/static/admin/fonts/',
           },
         ],
       },
@@ -380,7 +390,7 @@ module.exports = function(grunt) {
       },
       'api-dev': {
         cmd:
-          'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "api/extracted-resources/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
+          'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "api/build/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
       },
       'sentinel-dev': {
         cmd:
@@ -565,7 +575,7 @@ module.exports = function(grunt) {
         cmd: () => {
           const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
           const configPath = path.resolve('./config/default');
-          const buildPath = path.resolve('./build/ddocs/medic/_attachments/default-docs');
+          const buildPath = path.resolve('./build/default-docs');
           const actions = ['upload-app-settings', 'upload-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-resources', 'upload-custom-translations'];
           return `node ${medicConfPath} --skip-dependency-check --archive --source=${configPath} --destination=${buildPath} ${actions.join(' ')}`;
         }
@@ -631,6 +641,7 @@ module.exports = function(grunt) {
         files: ['admin/src/css/**/*'],
         tasks: [
           'less:admin',
+          'copy:static-resources',
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
@@ -640,6 +651,7 @@ module.exports = function(grunt) {
         files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
         tasks: [
           'browserify:admin',
+          'copy:static-resources',
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
@@ -649,6 +661,7 @@ module.exports = function(grunt) {
         files: ['admin/src/templates/index.html'],
         tasks: [
           'copy:admin-resources',
+          'copy:static-resources',
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
@@ -658,6 +671,7 @@ module.exports = function(grunt) {
         files: ['admin/src/templates/**/*', '!admin/src/templates/index.html'],
         tasks: [
           'ngtemplates:adminApp',
+          'copy:static-resources',
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
@@ -665,8 +679,9 @@ module.exports = function(grunt) {
       },
       'webapp-js': {
         // instead of watching the source files, watch the build folder and upload on rebuild
-        files: ['build/ddocs/medic/_attachments/**/*'],
+        files: ['build/static/webapp/**/*'],
         tasks: [
+          'copy:static-resources',
           'couch-compile:primary',
           'deploy',
         ],
@@ -783,7 +798,7 @@ module.exports = function(grunt) {
       adminApp: {
         cwd: 'admin/src',
         src: ['templates/**/*.html', '!templates/index.html'],
-        dest: 'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js',
+        dest: 'build/static/admin/js/templates.js',
         options: {
           htmlmin: {
             collapseBooleanAttributes: true,
@@ -805,7 +820,7 @@ module.exports = function(grunt) {
       compile: {
         cwd: 'webapp/src/css/',
         src: 'enketo/enketo.scss',
-        dest: 'build',
+        dest: 'build/static/webapp',
         ext: '.less',
         expand: true,
         outputStyle: 'expanded',
@@ -814,10 +829,8 @@ module.exports = function(grunt) {
       },
     },
     'optimize-js': {
-      'build/ddocs/medic-db/medic-admin/_attachments/js/main.js':
-        'build/ddocs/medic-db/medic-admin/_attachments/js/main.js',
-      'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js':
-        'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js',
+      'build/static/admin/js/main.js': 'build/static/admin/js/main.js',
+      'build/static/admin/js/templates.js': 'build/static/admin/js/templates.js',
     },
     jsdoc: {
       admin: {
@@ -871,7 +884,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-css', 'Build the CSS resources', [
-    'sass'
+    'sass',
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
@@ -888,6 +901,7 @@ module.exports = function(grunt) {
     'copy:ddocs',
     'copy:api-resources',
     'build-common',
+    'copy:static-resources',
     'couch-compile:primary',
   ]);
 
@@ -899,11 +913,12 @@ module.exports = function(grunt) {
     'build-admin',
     'build-ddoc',
     'exec:build-config',
+    'copy:webapp-static',
+    'copy:default-docs',
   ]);
 
   grunt.registerTask('build-ddoc', 'Build the main ddoc', [
     'couch-compile:secondary',
-    'copy:ddoc-attachments',
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
@@ -920,6 +935,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build-node-modules', 'Build and pack api and sentinel bundles', [
     'copy:api-resources',
+    'copy:static-resources',
     'uglify:api',
     'cssmin:api',
     'exec:bundle-dependencies',
