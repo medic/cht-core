@@ -131,27 +131,27 @@
   },
   "bundlesize": [
     {
-      "path": "./build/ddocs/medic/_attachments/main.js",
+      "path": "./build/static/webapp/main.js",
       "maxSize": "900 kB"
     },
     {
-      "path": "./build/ddocs/medic/_attachments/polyfills-es5.js",
+      "path": "./build/static/webapp/polyfills-es5.js",
       "maxSize": "50 kB"
     },
     {
-      "path": "./build/ddocs/medic/_attachments/polyfills.js",
+      "path": "./build/static/webapp/polyfills.js",
       "maxSize": "16 kB"
     },
     {
-      "path": "./build/ddocs/medic/_attachments/runtime.js",
+      "path": "./build/static/webapp/runtime.js",
       "maxSize": "1 kB"
     },
     {
-      "path": "./build/ddocs/medic/_attachments/scripts.js",
+      "path": "./build/static/webapp/scripts.js",
       "maxSize": "55 kB"
     },
     {
-      "path": "./build/ddocs/medic/_attachments/styles.css",
+      "path": "./build/static/webapp/styles.css",
       "maxSize": "70 kB"
     }
   ],

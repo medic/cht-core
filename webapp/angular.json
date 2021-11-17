@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-builders/custom-webpack:browser",
           "options": {
-            "outputPath": "../build/ddocs/medic/_attachments",
+            "outputPath": "../build/static/webapp",
             "index": "src/ts/index.html",
             "main": "src/ts/main.ts",
             "polyfills": "src/ts/polyfills.ts",

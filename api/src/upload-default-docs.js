@@ -12,13 +12,13 @@ const uploadDocumentsInFolder = async folderPath => {
       const resolvedPath = path.resolve(folderPath, filename);
       const fileContent = fs.readFileSync(resolvedPath).toString();
       const parsed = JSON.parse(fileContent);
-      
+
       return {
         name: filename,
         doc: parsed,
       };
     });
-  
+
   // Settings doc requires special casing because it does not have an id
   const settingsDoc = parsedFiles.find(file => file.name === 'settings.doc.json');
   if (settingsDoc) {
@@ -28,7 +28,7 @@ const uploadDocumentsInFolder = async folderPath => {
   const notSettingsDocs = parsedFiles
     .filter(file => !settingsDoc || file !== settingsDoc)
     .map(file => file.doc);
-  
+
   return db.medic.bulkDocs(notSettingsDocs);
 };
 
@@ -40,8 +40,8 @@ const uploadDefaultDocuments = async function () {
   if (hasConfiguration) {
     return;
   }
-  
-  const pathToConfig = path.join(environment.getExtractedResourcesPath(), 'default-docs');
+
+  const pathToConfig = environment.defaultDocsPath;
   if (fs.existsSync(pathToConfig)) {
     const uploadResult = await uploadDocumentsInFolder(pathToConfig);
     const unsuccessfulUploads = uploadResult.filter(result => !result.ok);
