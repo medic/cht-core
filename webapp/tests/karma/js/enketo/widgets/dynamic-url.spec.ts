@@ -6,11 +6,11 @@ describe('Enketo: Dynamic URL Widget', () => {
   const $ = jQuery;
   let windowOpen;
   let urlWidget;
-  const buildHtml = (dynamic) => {
+  const buildHtml = (dynamic, anchorClass = 'dynamic-url') => {
     const html =
       `<label id="dynamic-url-test" class="question non-select readonly">\
         <span lang="en" class="question-label active" data-itext-id="/notedata/search_link:label">\
-          <a href="#" target="_blank" rel="noopener noreferrer" class="dynamic-url">\
+          <a href="#" target="_blank" rel="noopener noreferrer" class="${anchorClass}">\
             Search for <span class="or-output" data-value=" /notedata/name ">${dynamic}</span>\
             <span class="url hidden">http://google.com?q=<span class="or-output" data-value=" /notedata/text ">${dynamic}</span></span>\
           </a>\
@@ -29,24 +29,36 @@ describe('Enketo: Dynamic URL Widget', () => {
     $('#dynamic-url-test').remove();
   });
 
-  it('should navigate to the dynamically generated URL when clicked', () => {
+  it('should set the href to the default value for the dynamically generated URL', () => {
     const dynamic = 'helloWorld';
     buildHtml(dynamic);
 
     new urlWidget($(urlWidget.selector)[0]);
-    $(urlWidget.selector).trigger('click');
 
-    expect(windowOpen.callCount).to.equal(1);
-    expect(windowOpen.args[0][0]).to.equal(`http://google.com?q=${dynamic}`);
+    expect($(urlWidget.selector).attr('href')).to.equal(`http://google.com?q=${dynamic}`)
   });
 
-  it('should navigate to the dynamically generated URL when clicked even when the dynamic value is empty', () => {
+  it('should set the href to the dynamically generated URL even when the dynamic value is empty', () => {
     buildHtml('');
 
     new urlWidget($(urlWidget.selector)[0]);
-    $(urlWidget.selector).trigger('click');
 
-    expect(windowOpen.callCount).to.equal(1);
-    expect(windowOpen.args[0][0]).to.equal(`http://google.com?q=`);
+    expect($(urlWidget.selector).attr('href')).to.equal('http://google.com?q=')
+  });
+
+  it('should update the href for the dynamically generated URL when the dynamic value changes', () => {
+    buildHtml('helloWorld');
+
+    new urlWidget($(urlWidget.selector)[0]);
+    const dynamic = 'worldHello';
+    $('.url span').text(dynamic);
+
+    expect($(urlWidget.selector).attr('href')).to.equal(`http://google.com?q=${dynamic}`)
+  });
+
+  it('should not modify elements besides dynamic-url links', () => {
+    buildHtml('helloWorld', 'not-dynamic');
+
+    expect($(urlWidget.selector).length).to.equal(0)
   });
 });

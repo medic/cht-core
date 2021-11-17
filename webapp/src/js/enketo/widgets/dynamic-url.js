@@ -13,8 +13,11 @@ class DynamicUrlWidget extends Widget {
   }
 
   _init() {
-    const urlElement = $( this.element ).find('.url');
-    $( this.element ).click(() => window.open(urlElement.text(), '_blank'));
+    const currentElement = $( this.element );
+    const urlElement = currentElement.find('.url');
+    const setHref = () => currentElement.attr('href', urlElement.text());
+    setHref();
+    urlElement.on('DOMSubtreeModified', setHref);
   }
 }
 
