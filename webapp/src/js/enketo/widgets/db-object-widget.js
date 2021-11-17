@@ -28,42 +28,30 @@ class Dbobjectwidget extends Widget {
 }
 
 function construct(element) {
-  // timeout needed to let setting the value complete before rendering
-  setTimeout(function() {
-    const $question = $( element );
+  const $question = $( element );
 
-    const Select2Search = window.CHTCore.Select2Search;
+  const Select2Search = window.CHTCore.Select2Search;
 
-    let $textInput = $question.find('input');
+  let $textInput = $question.find('input');
 
-    const value = $textInput.val();
-    const disabled = $textInput.prop('readonly');
-    const relevant = $textInput.attr('data-relevant');
-    const name = $textInput.attr('name');
+  const value = $textInput.val();
+  const disabled = $textInput.prop('readonly');
+  $textInput.replaceWith($textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
+  $textInput = $question.find('select');
+  const preSelectedOption = $('<option></option>')
+    .attr('value', value)
+    .text(value);
+  $textInput.append(preSelectedOption);
 
-    if (relevant) {
-      $textInput.removeAttr('data-relevant disabled');
-      $question.attr('data-relevant', relevant);
-      $question.attr('disabled', disabled);
-      $question.attr('name', name);
-    }
-    $textInput.replaceWith($textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
-    $textInput = $question.find('select');
-    const preSelectedOption = $('<option></option>')
-      .attr('value', value)
-      .text(value);
-    $textInput.append(preSelectedOption);
+  const contactTypes = getContactTypes($question, $textInput);
 
-    const contactTypes = getContactTypes($question, $textInput);
-
-    if (!$question.hasClass('or-appearance-bind-id-only')) {
-      $textInput.on('change.dbobjectwidget', changeHandler);
-    }
-    const allowNew = $question.hasClass('or-appearance-allow-new');
-    Select2Search.init($textInput, contactTypes, { allowNew }).then(function() {
-      // select2 doesn't understand readonly
-      $textInput.prop('disabled', disabled);
-    });
+  if (!$question.hasClass('or-appearance-bind-id-only')) {
+    $textInput.on('change.dbobjectwidget', changeHandler);
+  }
+  const allowNew = $question.hasClass('or-appearance-allow-new');
+  Select2Search.init($textInput, contactTypes, { allowNew }).then(function() {
+    // select2 doesn't understand readonly
+    $textInput.prop('disabled', disabled);
   });
 }
 
