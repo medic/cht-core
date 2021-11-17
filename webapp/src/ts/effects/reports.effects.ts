@@ -310,11 +310,6 @@ export class ReportsEffects {
             return;
           }
 
-          if (report.doc.contact) {
-            const minifiedContact = lineageFactory().minifyLineage(report.doc.contact);
-            this.reportActions.setFirstSelectedReportDocProperty({ contact: minifiedContact });
-          }
-
           const clearVerification = report.doc.verified === verified;
           if (clearVerification) {
             this.reportActions.setFirstSelectedReportDocProperty({
@@ -333,7 +328,6 @@ export class ReportsEffects {
             .get()
             .get(report.doc._id)
             .then(existingRecord => {
-              this.reportActions.setFirstSelectedReportDocProperty({ _rev: existingRecord._rev });
               const doc = getFirstSelectedReport().doc;
               const nextRecord = {
                 ...existingRecord,
