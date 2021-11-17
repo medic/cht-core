@@ -5,7 +5,6 @@ import { from, of } from 'rxjs';
 import { map, exhaustMap, filter, catchError, withLatestFrom, concatMap, tap, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
-import * as lineageFactory from '@medic/lineage';
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-generator.service';
