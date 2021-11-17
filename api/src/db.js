@@ -14,7 +14,8 @@ if (UNIT_TEST_ENV) {
     'users',
     'medicUsersMeta',
     'sentinel',
-    'medicLogs'
+    'medicLogs',
+    'builds',
   ];
   const DB_FUNCTIONS_TO_STUB = [
     'allDocs',
@@ -71,6 +72,7 @@ if (UNIT_TEST_ENV) {
   module.exports.medicLogs = new PouchDB(`${environment.couchUrl}-logs`, { fetch });
   module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch });
   module.exports.users = new PouchDB(getDbUrl('/_users'));
+  module.exports.builds = new PouchDB(environment.buildsUrl);
 
   // Get the DB with the given name
   module.exports.get = name => new PouchDB(getDbUrl(name));

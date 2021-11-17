@@ -272,6 +272,12 @@ module.exports = function(grunt) {
         src: '**/*',
         dest: 'build/ddocs/',
       },
+      'api-ddocs': {
+        expand: true,
+        cwd: 'build/ddocs',
+        src: '*.json',
+        dest: 'api/build/ddocs',
+      },
       'webapp-static': {
         expand: true,
         cwd: 'webapp/src/',
@@ -909,6 +915,7 @@ module.exports = function(grunt) {
     'build-node-modules',
     'minify',
     'couch-compile:primary',
+    'copy:api-ddocs',
     'populate-staging-doc',
   ]);
 
@@ -919,6 +926,7 @@ module.exports = function(grunt) {
     'build-common',
     'copy:static-resources',
     'couch-compile:primary',
+    'copy:api-ddocs',
   ]);
 
   grunt.registerTask('set-build-info', setBuildInfo);
@@ -937,6 +945,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build-ddoc', 'Build the main ddoc', [
     'couch-compile:secondary',
+    'copy:api-ddocs',
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
@@ -1013,6 +1022,7 @@ module.exports = function(grunt) {
     'build-ddoc',
     'couch-compile:primary',
     'couch-push:test',
+    'copy:api-ddocs',
     'protractor:performance-tests-and-services',
   ]);
 

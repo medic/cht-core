@@ -14,7 +14,7 @@ process
   });
 
 (async () => {
-
+  const installer = require('./src/services/horti/install');
   const app = require('./src/routing');
   const configWatcher = require('./src/services/config-watcher');
   const migrations = require('./src/migrations');
@@ -31,6 +31,10 @@ process
     logger.info('Running server checks…');
     await serverChecks.check(environment.serverUrl);
     logger.info('Checks passed successfully');
+
+    logger.info('Running installation checks…');
+    await installer.checkInstall();
+    logger.info('Installation checks passed');
 
     logger.info('Extracting ddoc…');
     await ddocExtraction.run();

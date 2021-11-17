@@ -2,7 +2,8 @@ const path = require('path');
 const url = require('url');
 const logger = require('./logger');
 
-const { UNIT_TEST_ENV, COUCH_URL } = process.env;
+const { UNIT_TEST_ENV, COUCH_URL, BUILDS_SERVER } = process.env;
+const DEFAULT_BUILDS_URL = 'https://staging.dev.medicmobile.org/_couch/builds';
 
 if (UNIT_TEST_ENV) {
   module.exports = {
@@ -21,6 +22,7 @@ if (UNIT_TEST_ENV) {
 
   module.exports = {
     couchUrl: couchUrl,
+    buildsUrl: BUILDS_SERVER || DEFAULT_BUILDS_URL,
     serverUrl: couchUrl.slice(0, couchUrl.lastIndexOf('/')),
     protocol: parsedUrl.protocol,
     port: parsedUrl.port,
@@ -53,5 +55,8 @@ module.exports.getStaticPath = () => path.join(module.exports.getBuildPath(), 's
 module.exports.getWebappPath = () => path.join(module.exports.getStaticPath(), 'webapp');
 module.exports.getLoginPath = () => path.join(module.exports.getStaticPath(), 'login');
 module.exports.getDefaultDocsPath = () => path.join(module.exports.getBuildPath(), 'default-docs');
+module.exports.getDdocsPath = () => path.join(module.exports.getBuildPath(), 'ddocs');
+module.exports.getUpgradePath = () => path.join(module.exports.getBuildPath(), 'upgrade');
 module.exports.getResourcesPath = () => path.join(__dirname, '..', 'resources');
+
 module.exports.isTesting = module.exports.db === 'medic-test';

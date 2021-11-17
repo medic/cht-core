@@ -1,10 +1,13 @@
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
 
-const service = require('../services/upgrade');
+const service = require('../services/horti/upgrade');
+
+const REQUIRED_PERMISSIONS = ['can_configure'];
 
 const upgrade = (req, res, stageOnly) => {
-  return auth.check(req, 'can_configure')
+  return auth
+    .check(req, REQUIRED_PERMISSIONS)
     .then(userCtx => {
       const buildInfo = req.body.build;
       if (!buildInfo) {
@@ -14,21 +17,21 @@ const upgrade = (req, res, stageOnly) => {
         };
       }
 
-      return service.upgrade(req.body.build, userCtx.user, {stageOnly: stageOnly})
-        .then(() => res.json({ ok: true }));
+      return service.upgrade(req.body.build, userCtx.user, stageOnly);
     })
+    .then(() => res.json({ ok: true }))
+    .catch(err => serverUtils.error(err, req, res));
+};
+
+const completeUpgrade = (req, res) => {
+  return auth
+    .check(req, REQUIRED_PERMISSIONS)
+    .then(() => service.complete().then(() => res.json({ ok: true })))
     .catch(err => serverUtils.error(err, req, res));
 };
 
 module.exports = {
   upgrade: (req, res) => upgrade(req, res, false),
   stage: (req, res) => upgrade(req, res, true),
-  complete: (req, res) => {
-    return auth.check(req, 'can_configure')
-      .then(() => {
-        return service.complete()
-          .then(() => res.json({ ok: true }));
-      })
-      .catch(err => serverUtils.error(err, req, res));
-  }
+  complete: (req, res) => completeUpgrade(req, res),
 };
