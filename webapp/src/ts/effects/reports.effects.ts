@@ -329,14 +329,14 @@ export class ReportsEffects {
             .get(report.doc._id)
             .then(existingRecord => {
               const doc = getFirstSelectedReport().doc;
-              const nextRecord = {
+              const verifiedRecord = {
                 ...existingRecord,
                 verified: doc.verified,
                 verified_date: doc.verified_date,
               };
               return this.dbService
                 .get()
-                .put(nextRecord);
+                .put(verifiedRecord);
             })
             .catch(err => console.error('Error verifying message', err))
             .finally(() => {
