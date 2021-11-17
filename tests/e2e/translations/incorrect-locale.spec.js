@@ -1,10 +1,8 @@
 const utils = require('../../utils');
-const commonElements = require('../../page-objects/common/common.wdio.page');
-const userSettingsElements = require('../../page-objects/user-settings/user-settings.wdio.page');
-const contactElements = require('../../page-objects/contacts/contacts.wdio.page');
-const loginPage = require('../../page-objects/login/login.wdio.page');
-const commonPage = require('../../page-objects/common/common.wdio.page');
-const { expect } = require('chai');
+const helper = require('../../helper');
+const commonElements = require('../../page-objects/common/common.po.js');
+const userSettingsElements = require('../../page-objects/user-settings/user-settings.po');
+const contactElements = require('../../page-objects/contacts/contacts.po');
 
 describe('Incorrect locale', () => {
   const createLanguage = () =>  utils.addTranslations('hil', {
@@ -25,44 +23,48 @@ describe('Incorrect locale', () => {
     parent: '',
   });
 
-  before(async () => await loginPage.cookieLogin());
   beforeEach(async () => {
     await createContact();
     await createLanguage();
+    await utils.closeReloadModal();
   });
 
   afterEach(async () => {
-    await browser.setCookies({ name: 'locale', value: 'en' });
-    await browser.refresh();
+    await browser.manage().addCookie({ name: 'locale', value: 'en' });
+    await utils.resetBrowser();
+    await utils.afterEach();
   });
 
     // open user settings modal
   it('should work with incorrect locale',async () => {
-    await commonPage.openHamburgerMenu();
-    await commonPage.openUserSettingsAndFetchProperties();
+    await commonElements.openMenuNative();
+    await commonElements.checkUserSettings();
+
+    // open user settings modal
     await userSettingsElements.openEditSettings();
 
     // change language
-    await userSettingsElements.selectLanguage('hil');
+    await helper.selectDropdownByValue(userSettingsElements.getLanguageField(), 'hil');
+    await helper.clickElementNative(userSettingsElements.getSubmitButton());
+
     // wait for language to load
-    await browser.pause(
-      async () => await (await commonElements.getReportsButtonLabel()).getText() === 'HilReports',
+    await browser.wait(
+      async () => await commonElements.getReportsButtonLabel().getText() === 'HilReports',
       2000,
       'Translations for Hil were not applied'
     );
 
     // we have correct language!
     const text = await commonElements.getReportsButtonLabel().getText();
-    expect(text).to.equal('HilReports');
+    expect(text).toEqual('HilReports');
 
     await commonElements.goToPeople();
     await contactElements.selectLHSRowByText('hil district');
-    await commonElements.waitForPageLoaded();
 
-    const reportsFilter = await contactElements.getReportFiltersText();
-    expect(reportsFilter.sort()).to.deep.equal(['3 luni', '6 luni', 'View all'].sort());
+    const reportsFilter = await helper.getTextFromElements(contactElements.getReportsFilters(), 3);
+    expect(reportsFilter.sort()).toEqual(['3 luni', '6 luni', 'View all'].sort());
 
-    const tasksFilter = await contactElements.getReportTaskFiltersText(30000);
-    expect(tasksFilter.sort()).to.deep.equal(['1 saptamana', '2 saptamani', 'View all'].sort());
+    const tasksFilter = await helper.getTextFromElements(contactElements.getTasksFilters(), 3);
+    expect(tasksFilter.sort()).toEqual(['1 saptamana', '2 saptamani', 'View all'].sort());
   });
 });
