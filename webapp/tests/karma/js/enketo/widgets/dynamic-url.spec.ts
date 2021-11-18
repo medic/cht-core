@@ -4,7 +4,6 @@ import { expect } from 'chai';
 
 describe('Enketo: Dynamic URL Widget', () => {
   const $ = jQuery;
-  let windowOpen;
   let urlWidget;
   const buildHtml = (dynamic, anchorClass = 'dynamic-url') => {
     const html =
@@ -21,7 +20,6 @@ describe('Enketo: Dynamic URL Widget', () => {
   
   beforeEach(() => {
     urlWidget = require('../../../../../src/js/enketo/widgets/dynamic-url');
-    windowOpen = sinon.stub(window, 'open');
   });
 
   afterEach(() => {
@@ -35,7 +33,7 @@ describe('Enketo: Dynamic URL Widget', () => {
 
     new urlWidget($(urlWidget.selector)[0]);
 
-    expect($(urlWidget.selector).attr('href')).to.equal(`http://google.com?q=${dynamic}`)
+    expect($(urlWidget.selector).attr('href')).to.equal(`http://google.com?q=${dynamic}`);
   });
 
   it('should set the href to the dynamically generated URL even when the dynamic value is empty', () => {
@@ -43,7 +41,7 @@ describe('Enketo: Dynamic URL Widget', () => {
 
     new urlWidget($(urlWidget.selector)[0]);
 
-    expect($(urlWidget.selector).attr('href')).to.equal('http://google.com?q=')
+    expect($(urlWidget.selector).attr('href')).to.equal('http://google.com?q=');
   });
 
   it('should update the href for the dynamically generated URL when the dynamic value changes', () => {
@@ -53,12 +51,12 @@ describe('Enketo: Dynamic URL Widget', () => {
     const dynamic = 'worldHello';
     $('.url span').text(dynamic);
 
-    expect($(urlWidget.selector).attr('href')).to.equal(`http://google.com?q=${dynamic}`)
+    expect($(urlWidget.selector).attr('href')).to.equal(`http://google.com?q=${dynamic}`);
   });
 
   it('should not modify elements besides dynamic-url links', () => {
     buildHtml('helloWorld', 'not-dynamic');
 
-    expect($(urlWidget.selector).length).to.equal(0)
+    expect($(urlWidget.selector).length).to.equal(0);
   });
 });
