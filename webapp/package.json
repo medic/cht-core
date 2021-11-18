@@ -16,9 +16,6 @@
     "node": ">=12.14.0",
     "npm": ">=6.4.1"
   },
-  "scripts": {
-    "preinstall": "npx npm-force-resolutions"
-  },
   "dependencies": {
     "@angular/animations": "^12.2.1",
     "@angular/common": "^12.2.1",
@@ -66,9 +63,9 @@
     "zone.js": "^0.11.4"
   },
   "resolutions": {
-    "jquery": "3.5.1",
-    "pouchdb-browser": "^7.2.2",
-    "moment": "^2.29.1"
+    "**/jquery": "3.2.x",
+    "**/pouchdb-browser": "^7.2.2",
+    "**/moment": "^2.26.2"
   },
   "devDependencies": {}
 }

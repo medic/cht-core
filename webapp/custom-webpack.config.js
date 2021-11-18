@@ -33,6 +33,7 @@ module.exports = {
       // openrosa-xpath-evaluator, but keeping it in adds 72.51KB to the bundle size.
       // https://github.com/medic/cht-core/issues/7324
       'node-forge': false,
+      'jquery': __dirname + '/node_modules/jquery'
     },
     fallback: {
       path: false,
