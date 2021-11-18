@@ -4,6 +4,7 @@ const url = require('url');
 const packageJson = require('./package.json');
 const fs = require('fs');
 const path = require('path');
+const uuid = require('uuid').v4;
 
 const {
   TAG,

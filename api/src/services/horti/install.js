@@ -13,11 +13,18 @@ const compareUploadedToBundledDdocs = (uploadedDdocs, bundledDdocs) => {
 
   for (const uploadedDdoc of uploadedDdocs) {
     const bundledDdoc = bundledDdocs.find(bundledDdoc => bundledDdoc._id === uploadedDdoc.id);
+
     if (!bundledDdoc) {
       missing.push(uploadedDdoc.id);
-    } else if (bundledDdoc.secret !== uploadedDdoc.doc.secret) {
-      different.push(uploadedDdoc.id);
+      continue;
     }
+
+    // todo compare secret
+    /* uploadedDdoc.secret = JSON.stringify(uploadedDdoc.views);
+    bundledDdoc.secret = JSON.stringify(bundledDdoc.views);
+    if (bundledDdoc.secret !== uploadedDdoc.doc.secret) {
+      different.push(uploadedDdoc.id);
+    }*/
   }
 
   for (const bundledDdoc of bundledDdocs) {
@@ -37,7 +44,8 @@ const checkInstall = async () => {
   const check = {};
 
   for (const database of upgradeUtils.DATABASES) {
-    check[database.name] = {};
+    const dbCheck = {};
+    check[database.name] = dbCheck;
 
     const allDdocs = await upgradeUtils.getDdocs(database, true);
     const uploadedDdocs = allDdocs.filter(ddoc => !upgradeUtils.isStagedDdoc(ddoc.id));
@@ -46,14 +54,14 @@ const checkInstall = async () => {
     const bundledDdocs = getBundledDdocs(database.jsonFileName);
     // todo improve this
     const { missing , different } = compareUploadedToBundledDdocs(uploadedDdocs, bundledDdocs);
-    check[database.name].missing = missing;
-    check[database.name].different = different;
+    dbCheck.missing = missing;
+    dbCheck.different = different;
 
     if (missing.length || different.length) {
       const { missing, different } = compareUploadedToBundledDdocs(stagedDdocs, bundledDdocs);
-      check.stagedUpgrade = !missing.length && !different.length;
+      dbCheck.stagedUpgrade = !missing.length && !different.length;
     } else {
-      check.valid = true;
+      dbCheck.valid = true;
     }
   }
 

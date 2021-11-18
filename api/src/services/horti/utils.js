@@ -45,9 +45,6 @@ const cleanup = async () => {
   const deferredJobs = [];
   for (const database of DATABASES) {
     const currentDdocs = await getStagedDdocs(database);
-    console.log('current Ddocs', currentDdocs);
-    continue;
-
     await deleteDocs(database, currentDdocs);
     logger.info(`Running DB compact and cleanup for ${database.name}`);
     deferredJobs.push(database.dbObject.compact(), database.dbObject.viewCleanup());
@@ -58,13 +55,11 @@ const cleanup = async () => {
 
 const getStagedDdocs = async ({ dbObject }) => {
   const result = await dbObject.allDocs({ startkey: STAGED_DDOC_PREFIX, endkey: `${STAGED_DDOC_PREFIX}\ufff0`});
-  console.log(result);
-  return [];
-  //return result.rows.map(row => ({ id: row.id, rev: row.value.rev }));
+  return result.rows.map(row => ({ id: row.id, rev: row.value.rev }));
 };
 
 const getDdocs = async ({ dbObject }, includeDocs = false) => {
-  const opts = { startKey: DDOC_PREFIX, endkey: `${DDOC_PREFIX}\ufff0`, include_docs: includeDocs };
+  const opts = { startkey: DDOC_PREFIX, endkey: `${DDOC_PREFIX}\ufff0`, include_docs: includeDocs };
   const result = await dbObject.allDocs(opts);
   return result.rows.map(row => ({ id: row.id, rev: row.value.rev, doc: row.doc }));
 };
@@ -73,12 +68,11 @@ const deleteDocs = async ({ dbObject }, docs) => {
   if (!docs.length) {
     return;
   }
-  console.log(docs);
-  return;
-
   docs.forEach(doc => doc._deleted = true);
-  // todo test for successfull deletion
-  return dbObject.bulkDocs(docs);
+
+  const result = await dbObject.bulkDocs(docs);
+  // todo test for successful deletion
+  return result;
 };
 
 const getDocs = async (dbObject, docIds) => {
