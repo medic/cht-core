@@ -1,9 +1,10 @@
-const helper = require('../helper');
-const concatenateStrings = require('../page-objects/forms/concatenate-strings.po');
-const common = require('../page-objects/common/common.po');
-const utils = require('../utils');
+const concatenateStrings = require('../page-objects/forms/concatenate-strings.wdio.page');
+const common = require('../page-objects/common/common.wdio.page');
 const constants = require('../constants');
-const genericForm = require('../page-objects/forms/generic-form.po');
+const loginPage = require('../page-objects/login/login.wdio.page');
+const reportsPage = require('../page-objects/reports/reports.wdio.page');
+const { expect } = require('chai');
+
 
 const userContactDoc = {
   _id: constants.USER_CONTACT_ID,
@@ -22,21 +23,22 @@ const userContactDoc = {
 // If this test starts failing then we need to document in the release notes that we've removed the deprecated
 // feature allowing for concatenation of strings
 describe('Concatenate xpath strings', () => {
-  beforeAll(() => concatenateStrings.configureForm(userContactDoc));
-  afterEach(() => utils.afterEach());
+  before(async () => {
+    await loginPage.cookieLogin();
+    await concatenateStrings.configureForm(userContactDoc);
+  });
 
   it('concatenates strings', async () => {
-    await common.goToReportsNative();
-    await genericForm.selectFormNative(concatenateStrings.formInternalId);
-    await helper.waitElementToPresentNative(element(by.css('#concat')));
+    await common.goToReports();
+    await reportsPage.openForm('Concatenate Strings');
+    const concatElement = await $('#concat');
+    await concatElement.waitForDisplayed();
+    const fullNameInput = await $('[name="/concatenate-strings/inputs/full_name"]');
+    const firstNameInput = await  $('[name="/concatenate-strings/inputs/first_name"]');
+    expect(await fullNameInput.getValue()).to.equal('John Doe');
 
-    let name = await element(by.name('/concatenate-strings/inputs/full_name')).getAttribute('value');
-    expect(name).toEqual('John Doe');
-
-    await element(by.name('/concatenate-strings/inputs/first_name')).sendKeys('Bruce');
-    await element(by.name('/concatenate-strings/inputs/full_name')).click();
-
-    name = await element(by.name('/concatenate-strings/inputs/full_name')).getAttribute('value');
-    expect(name).toEqual('Bruce Wayne');
+    await firstNameInput.setValue('Bruce');
+    await fullNameInput.click();
+    expect(await fullNameInput.getValue()).to.equal('Bruce Wayne');
   });
 });
