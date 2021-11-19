@@ -427,6 +427,8 @@ export class EnketoService {
         this.registerAddrepeatListener($selector, formDoc);
         this.registerEditedListener($selector, editedListener);
         this.registerValuechangeListener($selector, valuechangeListener);
+        this.registerValuechangeListener($selector,
+          () => this.setupNavButtons($selector, form.pages._getCurrentIndex()));
 
         window.CHTCore.debugFormModel = () => form.model.getStr();
         return form;
