@@ -32,7 +32,7 @@ class Displaybase64image extends Widget {
     setSource($img, $input.val());
     $input
       .hide()
-      .on('change inputupdate.enketo', () => setSource($img, $input.val()));
+      .on('change inputupdate', () => setSource($img, $input.val()));
   }
 }
 

@@ -380,13 +380,13 @@ export class EnketoService {
 
   private registerEditedListener($selector, listener) {
     if (listener) {
-      $selector.on('edited.enketo', () => this.ngZone.run(() => listener()));
+      $selector.on('edited', () => this.ngZone.run(() => listener()));
     }
   }
 
   private registerValuechangeListener($selector, listener) {
     if (listener) {
-      $selector.on('valuechange.enketo', () => this.ngZone.run(() => listener()));
+      $selector.on('xforms-value-changed', () => this.ngZone.run(() => listener()));
     }
   }
 
