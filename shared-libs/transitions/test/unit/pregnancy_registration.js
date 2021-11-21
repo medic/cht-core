@@ -8,7 +8,6 @@ const utils = require('../../src/lib/utils');
 const config = require('../../src/config');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const db = require('../../src/db');
-const { expect } = require('chai');
 
 const transition = rewire('../../src/transitions/registration');
 
@@ -817,7 +816,10 @@ describe('pregnancy registration with exact LMP date', () => {
       assert.equal(changed, true);
       assert.equal(
         getMessage(doc),
-        'Invalid Year; must be 2000-2100.  Invalid Month; must be 1-12.  Invalid Day; must be 1-32.  Invalid patient name.'
+        'Invalid Year; must be 2000-2100.  ' +
+        'Invalid Month; must be 1-12.  ' +
+        'Invalid Day; must be 1-32.  ' +
+        'Invalid patient name.'
       );
     });
   });
