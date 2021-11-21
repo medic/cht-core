@@ -52,10 +52,10 @@ const parseParams = params => {
   }
   const firstCharacter = params.trim()[0];
   if (firstCharacter === '[' || firstCharacter === '{') {
-    // We support JSON in a string, eg: '{'foo': 'bar'}'
+    // We support JSON in a string, eg: '{"foo": "bar"}'
     return JSON.parse(params);
   }
-  // And comma delimted strings, eg: 'foo,bar', 'foo'
+  // And comma delimted strings, eg: "foo,bar", "foo"
   return params.split(',');
 };
 
@@ -295,7 +295,7 @@ const fireConfiguredTriggers = (registrationConfig, doc) => {
         params: parseParams(event.params),
       };
       logger.debug(
-        `Parsed params for form '${registrationConfig.form}', trigger '${event.trigger}, params: ${options.params}'`
+        `Parsed params for form "${registrationConfig.form}", trigger "${event.trigger}, params: ${options.params}"`
       );
       return () => trigger(options);
     })
@@ -633,13 +633,13 @@ module.exports = {
             if (!contactType) {
               throw new Error(
                 `Configuration error in ${registration.form}.${event.trigger}: ` +
-                `trigger would create a doc with an unknown contact type '${typeId}'`
+                `trigger would create a doc with an unknown contact type "${typeId}"`
               );
             }
             if (!contactTypesUtils.isPersonType(contactType)) {
               throw new Error(
                 `Configuration error in ${registration.form}.${event.trigger}: ` +
-                `trigger would create a person with a place contact type '${typeId}'`
+                `trigger would create a person with a place contact type "${typeId}"`
               );
             }
           }
@@ -674,13 +674,13 @@ module.exports = {
             if (!contactType) {
               throw new Error(
                 `Configuration error in ${registration.form}.${event.trigger}: ` +
-                `trigger would create a place with an unknown contact type '${typeId}'`
+                `trigger would create a place with an unknown contact type "${typeId}"`
               );
             }
             if (!contactTypesUtils.isPlaceType(contactType)) {
               throw new Error(
                 `Configuration error in ${registration.form}.${event.trigger}: ` +
-                `trigger would create a place with a person contact type '${typeId}'`
+                `trigger would create a place with a person contact type "${typeId}"`
               );
             }
           }
