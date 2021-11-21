@@ -135,7 +135,7 @@ const getLMPDateFromString = dateString => {
   const separator = dateString[dateString.search(/[^0-9]/)];//Find non-numeric character
   const dateParts = dateString.split(separator);
   return getDateFromParts(dateParts[0], dateParts[1], dateParts[2]);
-}
+};
 
 const getDateFromParts = (year, month, day) => {
 
