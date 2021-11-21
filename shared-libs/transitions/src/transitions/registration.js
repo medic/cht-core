@@ -126,33 +126,39 @@ const getDaysSinceDOB = doc => {
   return findFirstDefinedValue(doc, fields);
 };
 
-const getExactLMPDate = doc => {
+const getLMPDateFromParts = doc => {
   //basic validations will be done in the app_settings.registrations
   const lmpYYYY = doc.fields.lmpYYYY.toString().padStart(4, '2000');
-  const lmpMM = doc.fields.lmpMM.padStart(2, '00');
-  const lmpDD = doc.fields.lmpDD.padStart(2, '00');
-  let gregDate;
+  const lmpMM = doc.fields.lmpMM.toString().padStart(2, '00');
+  const lmpDD = doc.fields.lmpDD.toString().padStart(2, '00');
+  let gregDateISO;
 
   //Bikram Sambat is either 56 or 57 years ahead of Gregorian
-  //To support LMP dates from last year, we check now + 55
+  //To support LMP dates from last year also, we check now + 55 only
   if (lmpYYYY > moment().year() + 55) {
-    gregDate = bs.toGreg_text(lmpYYYY, lmpMM, lmpDD);
+    gregDateISO = bs.toGreg_text(lmpYYYY, lmpMM, lmpDD);
   }
   else {
-    gregDate = `${lmpYYYY}-${lmpMM}-${lmpDD}`;
+    gregDateISO = `${lmpYYYY}-${lmpMM}-${lmpDD}`;
   }
+  return getLMPDate(gregDateISO);
+};
 
-  //check that date is not later than 8 weeks ago //TODO: make this configurable
-  if (moment(gregDate).isAfter(moment().subtract(8, 'weeks'))) {
+
+const getLMPDate = dateISO => {
+
+  //check that date is no later than 8 weeks ago //TODO: can we make the number of weeks configurable?
+  if (moment(dateISO).isAfter(moment().subtract(8, 'weeks'))) {
     throw ("Date should not be later than 8 weeks ago.");//TODO: possible to send error message to user?
   }
 
   //date should not be earlier than 40 weeks ago
-  if(moment(gregDate).isBefore(moment().subtract(40, 'weeks'))) {
+  if (moment(dateISO).isBefore(moment().subtract(40, 'weeks'))) {
     throw ("Date should not be earlier than 40 weeks ago.");
   }
-  return moment(gregDate);
+  return moment(dateISO);
 };
+
 
 /*
  * Given a doc get the LMP value as a number, including 0. Supports three
@@ -169,21 +175,30 @@ const getWeeksSinceLMP = doc => {
 };
 
 const setExpectedBirthDate = doc => {
-  const lmp = getWeeksSinceLMP(doc);
-  let start = moment(doc.reported_date).startOf('day');
-  if (lmp === 0) {
-    // means baby was already born, chw just wants a registration.
-    doc.lmp_date = null;
-    doc.expected_date = null;
+  let start;
+
+  if (doc.fields.lmpDate) {
+    start = getLMPDate(doc.fields.lmpDate);
+  }
+  else if (doc.fields.lmpYYYY && doc.fields.lmpMM && doc.fields.lmpDD) {
+    start = getLMPDateFromParts(doc);
   }
   else {
-    start = doc.fields.lmpYYYY ? getExactLMPDate(doc) : start.subtract(lmp, 'weeks');
-    doc.lmp_date = start.toISOString();
-    doc.expected_date = start
-      .clone()
-      .add(40, 'weeks')
-      .toISOString();
+    const lmp = getWeeksSinceLMP(doc);
+    if (lmp === 0) {
+      // means baby was already born, chw just wants a registration.
+      doc.lmp_date = null;
+      doc.expected_date = null;
+      return;
+    }
+    start = moment(doc.reported_date).startOf('day');
+    start.subtract(lmp, 'weeks');
   }
+  doc.lmp_date = start.toISOString();
+  doc.expected_date = start
+    .clone()
+    .add(40, 'weeks')
+    .toISOString();
 };
 
 const setBirthDate = doc => {
