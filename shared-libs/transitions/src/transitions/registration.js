@@ -128,37 +128,46 @@ const getDaysSinceDOB = doc => {
 
 const getLMPDateFromParts = doc => {
   //basic validations will be done in the app_settings.registrations
-  const lmpYYYY = doc.fields.lmpYYYY.toString().padStart(4, '2000');
-  const lmpMM = doc.fields.lmpMM.toString().padStart(2, '00');
-  const lmpDD = doc.fields.lmpDD.toString().padStart(2, '00');
+  return getDateFromParts(doc.fields.lmpYYYY, doc.fields.lmpMM, doc.fields.lmpDD);
+};
+
+const getLMPDateFromString = dateString => {
+  const separator = dateString[dateString.search(/[^0-9]/)];//Find non-numeric character
+  const dateParts = dateString.split(separator);
+  return getDateFromParts(dateParts[0], dateParts[1], dateParts[2]);
+}
+
+const getDateFromParts = (year, month, day) => {
+
+  const dateYYYY = year.toString().padStart(4, '2000');
+  const dateMM = month.toString().padStart(2, '00');
+  const dateDD = day.toString().padStart(2, '00');
+
   let gregDateISO;
 
   //Bikram Sambat is either 56 or 57 years ahead of Gregorian
   //To support LMP dates from last year also, we check now + 55 only
-  if (lmpYYYY > moment().year() + 55) {
-    gregDateISO = bs.toGreg_text(lmpYYYY, lmpMM, lmpDD);
+  if (dateYYYY > moment().year() + 55) {
+    gregDateISO = bs.toGreg_text(dateYYYY, dateMM, dateDD);
   }
   else {
-    gregDateISO = `${lmpYYYY}-${lmpMM}-${lmpDD}`;
+    gregDateISO = `${dateYYYY}-${dateMM}-${dateDD}`;
   }
-  return getLMPDate(gregDateISO);
-};
 
+  const gregDate = moment(gregDateISO, 'YYYY-MM-DD');
 
-const getLMPDate = dateISO => {
-
+  //TODO: Add support for BS dates
   //check that date is no later than 8 weeks ago //TODO: can we make the number of weeks configurable?
-  if (moment(dateISO).isAfter(moment().subtract(8, 'weeks'))) {
+  if (gregDate.isAfter(moment().subtract(8, 'weeks'))) {
     throw ('Date should not be later than 8 weeks ago.');//TODO: possible to send error message to user?
   }
 
   //date should not be earlier than 40 weeks ago
-  if (moment(dateISO).isBefore(moment().subtract(40, 'weeks'))) {
+  if (gregDate.isBefore(moment().subtract(40, 'weeks'))) {
     throw ('Date should not be earlier than 40 weeks ago.');
   }
-  return moment(dateISO);
+  return gregDate;
 };
-
 
 /*
  * Given a doc get the LMP value as a number, including 0. Supports three
@@ -178,7 +187,7 @@ const setExpectedBirthDate = doc => {
   let start;
 
   if (doc.fields.lmpDate) {
-    start = getLMPDate(doc.fields.lmpDate);
+    start = getLMPDateFromString(doc.fields.lmpDate);
   }
   else if (doc.fields.lmpYYYY && doc.fields.lmpMM && doc.fields.lmpDD) {
     start = getLMPDateFromParts(doc);
