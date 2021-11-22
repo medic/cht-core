@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const request = require('request-promise-native');
 const chai = require('chai');
-const { assert, expect } = chai;
+const { expect } = chai;
 
 const lib = require('../src/');
 
@@ -24,7 +24,7 @@ describe('Settings Shared Library', () => {
 
       return lib
         .getCredentials()
-        .then(() => assert.fail('exception expected'))
+        .then(() => expect.fail('exception expected'))
         .catch(err => {
           expect(err.message).to.equal('Failed to find the CouchDB server');
         });
@@ -36,7 +36,7 @@ describe('Settings Shared Library', () => {
 
       return lib
         .getCredentials()
-        .then(() => assert.fail('exception expected'))
+        .then(() => expect.fail('exception expected'))
         .catch(err => {
           expect(err.message).to.equal('Failed to find the CouchDB node name');
         });
@@ -49,7 +49,7 @@ describe('Settings Shared Library', () => {
       
       return lib
         .getCredentials()
-        .then(() => assert.fail('exception expected'))
+        .then(() => expect.fail('exception expected'))
         .catch(err => {
           expect(request.get.callCount).to.equal(1);
           expect(err.message).to.equal('no perms');
