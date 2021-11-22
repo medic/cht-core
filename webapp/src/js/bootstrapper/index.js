@@ -102,14 +102,19 @@
     });
   };
 
+  const createPurgingCheckpoint = () => {
+    return purger.info().then(purger.checkpoint);
+  };
+
   const initialReplication = function(localDb, remoteDb) {
     setUiStatus('LOAD_APP');
     const dbSyncStartTime = Date.now();
     const dbSyncStartData = getDataUsage();
 
-    return purger
-      .info()
-      .then(info => {
+    return createPurgingCheckpoint()
+      .then(() => {
+        setUiStatus('FETCH_INFO', { count: localDocCount, total: remoteDocCount });
+
         const replicator = localDb.replicate
           .from(remoteDb, {
             live: false,
@@ -125,7 +130,7 @@
             setUiStatus('FETCH_INFO', { count: info.docs_read + localDocCount || '?', total: remoteDocCount });
           });
 
-        return replicator.then(() => purger.checkpoint(info));
+        return replicator;
       })
       .then(() => {
         const duration = Date.now() - dbSyncStartTime;
