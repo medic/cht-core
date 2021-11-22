@@ -1345,7 +1345,7 @@ describe('Users service', () => {
       });
     });
 
-    it('should update the admin password in CouchDB config and not in user docs', async () => {
+    it('should update the admin password in CouchDB config', async () => {
       const data = { password: COMPLEX_PASSWORD };
       couchSettings.getCouchConfig.resolves({
         admin1: 'password_1',
@@ -1368,10 +1368,13 @@ describe('Users service', () => {
       chai.expect(db.users.put.args[0][0]).to.deep.equal({
         _id: 'org.couchdb.user:admin2',
         name: 'admin2',
+        password: COMPLEX_PASSWORD,
         type: 'user',
       });
       chai.expect(couchSettings.updateAdminPassword.calledOnce).to.be.true;
-      chai.expect(couchSettings.updateAdminPassword.args[0]).to.have.members(['admin2', COMPLEX_PASSWORD]);
+      chai.expect(couchSettings.updateAdminPassword.args[0]).to.deep.equal(['admin2', COMPLEX_PASSWORD]);
+      chai.expect(couchSettings.getCouchConfig.calledOnce).to.be.true;
+      chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
     });
 
     it('should update admin when no password is sent', async () => {
@@ -1401,6 +1404,7 @@ describe('Users service', () => {
         type: 'user',
       });
       chai.expect(couchSettings.updateAdminPassword.callCount).to.equal(0);
+      chai.expect(couchSettings.getCouchConfig.callCount).to.equal(0);
     });
 
     it('should not update the password in CouchDB config if user isnt admin', async () => {
@@ -1430,34 +1434,8 @@ describe('Users service', () => {
         password: COMPLEX_PASSWORD,
       });
       chai.expect(couchSettings.updateAdminPassword.callCount).to.equal(0);
-    });
-
-    it('should update admin data in user-settings doc even if the password isnt sent', async () => {
-      const data = { email: 'admin@facility.com' };
-      couchSettings.getCouchConfig.resolves({
-        admin1: 'password_1',
-        admin2: 'password_2',
-      });
-      service.__set__('validateUser', sinon.stub().resolves({}));
-      service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
-
-      await service.updateUser('admin1', data, true);
-
-      chai.expect(db.medic.put.callCount).to.equal(1);
-      chai.expect(db.medic.put.args[0][0]).to.deep.equal({
-        _id: 'org.couchdb.user:admin1',
-        name: 'admin1',
-        type: 'user-settings',
-        email: 'admin@facility.com',
-      });
-      chai.expect(db.users.put.callCount).to.equal(1);
-      chai.expect(db.users.put.args[0][0]).to.deep.equal({
-        _id: 'org.couchdb.user:admin1',
-        name: 'admin1',
-        type: 'user',
-      });
+      chai.expect(couchSettings.getCouchConfig.callCount).to.equal(1);
+      chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
     });
   });
 

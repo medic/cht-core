@@ -10,6 +10,46 @@ const sentinelUtils = require('../../sentinel/utils');
 const getUserId = n => `org.couchdb.user:${n}`;
 
 describe('Users API', () => {
+
+  const expectPasswordLoginToWork = (user) => {
+    const opts = {
+      path: '/login',
+      method: 'POST',
+      simple: false,
+      noAuth: true,
+      body: { user: user.username, password: user.password },
+      followRedirect: false,
+    };
+
+    return utils
+      .requestOnMedicDb(opts)
+      .then(response => {
+        chai.expect(response).to.include({
+          statusCode: 302,
+          body: '/',
+        });
+        chai.expect(response.headers['set-cookie']).to.be.an('array');
+        chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
+        chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
+      });
+  };
+
+  const expectPasswordLoginToFail = (user) => {
+    const opts = {
+      path: '/login',
+      method: 'POST',
+      simple: false,
+      noAuth: true,
+      body: { user: user.username, password: user.password },
+    };
+
+    return utils
+      .requestOnMedicDb(opts)
+      .then(response => {
+        chai.expect(response).to.deep.include({ statusCode: 401, body: { error: 'Not logged in' } });
+      });
+  };
+
   describe('POST /api/v1/users/{username}', () => {
     const username = 'test' + new Date().getTime();
     const password = 'pass1234!';
@@ -274,7 +314,8 @@ describe('Users API', () => {
 
     });
 
-    it('should allow to change admin password', async () => {
+    it('should allow to update the admin password and login successfully', async () => {
+      const newPassword = 'medic.456';
       const otherAdmin = {
         username: 'admin2',
         password: 'medic.123',
@@ -283,6 +324,7 @@ describe('Users API', () => {
         place: newPlaceId,
       };
       await utils.createUsers([ otherAdmin ]);
+      // Set admin user's password in CouchDB config.
       await utils.request({
         port: constants.COUCH_PORT,
         method: 'PUT',
@@ -290,20 +332,22 @@ describe('Users API', () => {
         body: `"${otherAdmin.password}"`,
       });
 
-      const response = await utils
+      // Update password with new value.
+      const userResponse = await utils
         .request({
           path: `/api/v1/users/${otherAdmin.username}`,
           method: 'POST',
-          body: {
-            password: 'medic.456'
-          }
+          body: { password: newPassword }
         })
         .catch(() => chai.assert.fail('Should not throw error'));
 
-      chai.expect(response.user).to.not.be.undefined;
-      chai.expect(response.user.id).to.equal('org.couchdb.user:admin2');
-      chai.expect(response['user-settings']).to.not.be.undefined;
-      chai.expect(response['user-settings'].id).to.equal('org.couchdb.user:admin2');
+      chai.expect(userResponse.user).to.not.be.undefined;
+      chai.expect(userResponse.user.id).to.equal('org.couchdb.user:admin2');
+      chai.expect(userResponse['user-settings']).to.not.be.undefined;
+      chai.expect(userResponse['user-settings'].id).to.equal('org.couchdb.user:admin2');
+      // Old password shouldn't work.
+      expectPasswordLoginToFail(otherAdmin);
+      expectPasswordLoginToWork({ username: otherAdmin.username, password: newPassword });
     });
 
   });
@@ -607,45 +651,6 @@ describe('Users API', () => {
         contact_id: 'fixture:user:testuser',
       };
       chai.expect(userSettings).to.shallowDeepEqual(Object.assign(defaultProps, extra));
-    };
-
-    const expectPasswordLoginToWork = (user) => {
-      const opts = {
-        path: '/login',
-        method: 'POST',
-        simple: false,
-        noAuth: true,
-        body: { user: user.username, password: user.password },
-        followRedirect: false,
-      };
-
-      return utils
-        .requestOnMedicDb(opts)
-        .then(response => {
-          chai.expect(response).to.include({
-            statusCode: 302,
-            body: '/',
-          });
-          chai.expect(response.headers['set-cookie']).to.be.an('array');
-          chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
-          chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
-        });
-    };
-
-    const expectPasswordLoginToFail = (user) => {
-      const opts = {
-        path: '/login',
-        method: 'POST',
-        simple: false,
-        noAuth: true,
-        body: { user: user.username, password: user.password },
-      };
-
-      return utils
-        .requestOnMedicDb(opts)
-        .then(response => {
-          chai.expect(response).to.deep.include({ statusCode: 401, body: { error: 'Not logged in' } });
-        });
     };
 
     const expectTokenLoginToSucceed = (url) => {
