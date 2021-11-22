@@ -1,9 +1,10 @@
 const utils = require('../utils');
-const helper = require('../helper');
 const constants = require('../constants');
-const commonElements = require('../page-objects/common/common.po.js');
-const reportsPo = require('../page-objects/reports/reports.po');
-const genericForm = require('../page-objects/forms/generic-form.po');
+const commonElements = require('../page-objects/common/common.wdio.page');
+const reportsPo = require('../page-objects/reports/reports.wdio.page');
+const genericForm = require('../page-objects/forms/generic-form.wdio.page');
+const { expect } = require('chai');
+const loginPage = require('../page-objects/login/login.wdio.page');
 
 describe('Submit Enketo form', () => {
   const xml = `<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -89,37 +90,29 @@ describe('Submit Enketo form', () => {
     },
   };
 
-  beforeAll(async () => {
+  before(async () => {
+    await loginPage.cookieLogin();
     await utils.seedTestData(userContactDoc, docs);
   });
 
-  afterEach(async () => {
-    await utils.afterEach();
-  });
-
   it('submits on reports tab', async () => {
-    await commonElements.goToReportsNative();
-
-    await helper.waitElementToBeClickable(reportsPo.submitReport);
+    await commonElements.goToReports();
+    await (await reportsPo.submitReportButton()).waitForClickable();
 
     // select form
-    await helper.clickElementNative(reportsPo.submitReport);
-    await helper.waitElementToBeClickable(reportsPo.firstForm);
-    await helper.clickElementNative(reportsPo.firstForm);
+    await (await reportsPo.submitReportButton()).click();
+    await (await reportsPo.firstForm()).click();
 
     // enter name
 
-    await helper.waitElementToBeClickable(genericForm.nameField);
-    await genericForm.nameField.sendKeys('Jones');
+    await (await genericForm.nameField()).setValue('Jones');
 
     // submit form
 
-    await helper.waitUntilReadyNative(genericForm.submitButton);
-    await helper.clickElementNative(genericForm.submitButton);
-    await helper.waitElementToPresentNative(genericForm.submittedName);
+    await (await genericForm.submitButton()).click();
 
     // check the submitted name
-    await helper.waitUntilReadyNative(genericForm.submittedName);
-    expect(await genericForm.submittedName.getText()).toBe('Jones');
+    await (await genericForm.submittedName()).waitForDisplayed();
+    expect(await (await genericForm.submittedName()).getText()).to.equal('Jones');
   });
 });
