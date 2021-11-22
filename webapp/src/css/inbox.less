@@ -1543,11 +1543,8 @@ a.fa:hover {
         }
       }
 
-      // If there are 4 or less tabs, then use bigger font.
-      .child-element-label(a, button-label, 1, @font-extra-small);
-      .child-element-label(a, button-label, 2, @font-extra-small);
-      .child-element-label(a, button-label, 3, @font-extra-small);
-      .child-element-label(a, button-label, 4, @font-extra-small);
+      // Use bigger font when there are 4 or less tabs.
+      .elements-label(a, button-label, 4, @font-extra-small);
     }
     .mm-badge-overlay {
       right: 10%;
