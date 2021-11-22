@@ -21,7 +21,6 @@ const submitButton = () => $('#report-form .form-footer .btn.submit');
 const forms = () => $$('.action-container .general-actions .actions.dropup .dropdown-menu li');
 
 const sentTask = async () => (await reportBody()).$('ul .task-list .task-state .state');
-const firstForm = () => $('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a');
 
 // warning: the unread element is not displayed when there are no unread reports
 const getUnreadCount = async () => {
@@ -111,6 +110,9 @@ const reportsListDetails = async () => {
   return reportDetails;
 };
 
+
+const firstReportDetailField = () => $('#reports-content .details ul li:first-child p');
+
 module.exports = {
   reportList,
   firstReport,
@@ -135,5 +137,5 @@ module.exports = {
   getSummaryField,
   submitForm,
   reportsListDetails,
-  firstForm
+  firstReportDetailField
 };

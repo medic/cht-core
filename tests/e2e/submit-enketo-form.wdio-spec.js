@@ -3,7 +3,6 @@ const constants = require('../constants');
 const commonElements = require('../page-objects/common/common.wdio.page');
 const reportsPo = require('../page-objects/reports/reports.wdio.page');
 const genericForm = require('../page-objects/forms/generic-form.wdio.page');
-const { expect } = require('chai');
 const loginPage = require('../page-objects/login/login.wdio.page');
 
 describe('Submit Enketo form', () => {
@@ -100,8 +99,7 @@ describe('Submit Enketo form', () => {
     await (await reportsPo.submitReportButton()).waitForClickable();
 
     // select form
-    await (await reportsPo.submitReportButton()).click();
-    await (await reportsPo.firstForm()).click();
+    await reportsPo.openForm('Assessment');
 
     // enter name
 
@@ -112,7 +110,7 @@ describe('Submit Enketo form', () => {
     await (await genericForm.submitButton()).click();
 
     // check the submitted name
-    await (await genericForm.submittedName()).waitForDisplayed();
-    expect(await (await genericForm.submittedName()).getText()).to.equal('Jones');
+    await (await reportsPo.firstReportDetailField()).waitForDisplayed();
+    expect(await (await reportsPo.firstReportDetailField()).getText()).to.equal('Jones');
   });
 });
