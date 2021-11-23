@@ -132,6 +132,7 @@ module.exports = {
     // select form
     await helper.clickElementNative(addButton);
     const form = module.exports.formByHref(formId);
+    await helper.waitUntilReadyNative(form);
     await helper.clickElementNative(form);
 
     // waiting for form

@@ -18,7 +18,7 @@ describe('Submit Delivery Report', () => {
   afterEach(utils.resetBrowser);
   afterAll(utils.afterEach);
 
-  xit('open delivery form', async () => {
+  it('open delivery form', async () => {
     await common.goToReportsNative();
     await genericForm.selectFormNative('D');
     //select name
