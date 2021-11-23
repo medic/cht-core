@@ -112,7 +112,7 @@ describe('initial replication', () => {
     await restartSentinel();
     await sentinelUtils.waitForPurgeCompletion(seq);
 
-    await browser.throttle('Regular3G');
+    await browser.throttle('Good3G');
     await loginPage.login({ username: user.username, password: user.password, loadPage: false });
 
     await waitForReplicationProgress();
