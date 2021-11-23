@@ -3,7 +3,7 @@ const submiButton = () => $('.btn.submit.btn-primary');
 const openEditSettings = async () => {
   const links = await $('.content .configuration');
   await links.waitForDisplayed();
-  await links.$$('.btn-link')[1].click();
+  await (await links.$$('.btn-link'))[1].click();
   //modals have an animation and the click might land somewhere else
   await browser.pause(500);
 };
