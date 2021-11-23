@@ -88,7 +88,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .then(settings => this.headerTabsService.getAuthorizedTabs(settings))
       .then(permittedTabs => {
         this.permittedTabs = permittedTabs;
-        this.globalActions.setMinimalTabs(this.permittedTabs.length > 3);
       });
   }
 

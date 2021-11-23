@@ -1465,11 +1465,8 @@ a.fa:hover {
     .header {
       display: none;
     }
-    &,
-    &.hide-mobile-tab-labels {
-      .content .page {
-        top: 46px;
-      }
+    .content .page {
+      top: 46px;
     }
     .left-pane {
       left: -100%;
@@ -1541,10 +1538,13 @@ a.fa:hover {
       padding-left: 2px;
       a {
         min-width: 40px;
+        .button-label {
+          font-size: @font-extra-extra-small;
+        }
       }
-      .configuration-tab {
-        display: none;
-      }
+
+      // Use bigger font when there are 4 or less tabs.
+      .elements-label(a, button-label, 4, @font-extra-small);
     }
     .mm-badge-overlay {
       right: 10%;
@@ -1578,17 +1578,6 @@ a.fa:hover {
   .app-root.testing {
     .page {
       top: 55px;
-    }
-  }
-  .hide-mobile-tab-labels {
-    .button-label {
-      display: none;
-    }
-    .header .inner {
-      height: 50px;
-    }
-    .content .page {
-      top: 101px;
     }
   }
 }
