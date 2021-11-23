@@ -3,7 +3,7 @@
   [titleKey]="'tour.select'"
   (onCancel)="close()"
 >
-  <div role="document" class="tour-select" [class.hide-mobile-tab-labels]="minimalTabs">
+  <div role="document" class="tour-select">
     <div class="modal-body">
       <p>{{'tour.select.description' | translate}}</p>
       <a *ngFor="let tour of tours; trackBy: listTrackBy" class="btn tour-option" (click)="start(tour.id)" [ngClass]="'tour-option-' + tour.id">

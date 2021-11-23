@@ -82,7 +82,6 @@ export class AppComponent implements OnInit {
   privacyPolicyAccepted;
   showPrivacyPolicy;
   selectMode;
-  minimalTabs;
   adminUrl;
   canLogOut;
   replicationStatus;
@@ -420,7 +419,6 @@ export class AppComponent implements OnInit {
       this.store.select(Selectors.getReplicationStatus),
       this.store.select(Selectors.getAndroidAppVersion),
       this.store.select(Selectors.getCurrentTab),
-      this.store.select(Selectors.getMinimalTabs),
       this.store.select(Selectors.getPrivacyPolicyAccepted),
       this.store.select(Selectors.getShowPrivacyPolicy),
       this.store.select(Selectors.getSelectMode),
@@ -428,7 +426,6 @@ export class AppComponent implements OnInit {
       replicationStatus,
       androidAppVersion,
       currentTab,
-      minimalTabs,
       privacyPolicyAccepted,
       showPrivacyPolicy,
       selectMode,
@@ -436,7 +433,6 @@ export class AppComponent implements OnInit {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
       this.currentTab = currentTab;
-      this.minimalTabs = minimalTabs;
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.privacyPolicyAccepted = privacyPolicyAccepted;
       this.selectMode = selectMode;
