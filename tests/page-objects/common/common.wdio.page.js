@@ -20,10 +20,10 @@ const settings = () => $$('.configuration a>span');
 const wizardTitle = () => $('#guided-setup .modal-header > h2');
 //languages
 const languagePreferenceHeading = () => $('#language-preference-heading');
-const selectedPreferenceHeading = '#language-preference-heading > h4:nth-child(1) > span:nth-child(3)';
-const messagesLanguage = '.locale a.selected span.rectangle';
-const defaultLanguage = '.locale-outgoing a.selected span.rectangle';
-const messagesList = () => $('#message-list');
+const selectedPreferenceHeading = () => $('#language-preference-heading > h4:nth-child(1) > span:nth-child(3)');
+const messagesLanguage = () => $('.locale a.selected span.rectangle');
+const defaultLanguage = () => $('.locale-outgoing a.selected span.rectangle');
+
 
 const isHamburgerMenuOpen = async () => {
   return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
@@ -279,10 +279,12 @@ const getDefaultLanguages = async () => {
   await (await hamburgerMenu()).click();
   await openConfigurationWizardAndFetchProperties();
   await (await languagePreferenceHeading()).click();
-  await browser.waitUntil(async () => (await $(defaultLanguage).getText()) === 'Afrikaans');
-  await browser.waitUntil(async () => (await $(messagesLanguage).getText()) === 'Afrikaans');
-  await browser.waitUntil(async () => (await $(selectedPreferenceHeading).getText()) === 'Afrikaans, Afrikaans');
+  const headingText = await (await selectedPreferenceHeading()).getText();
+  const messagesLang = await (await messagesLanguage()).getText();
+  const defaultLang = await (await defaultLanguage()).getText();
+  await browser.waitUntil(async () => await messagesLang !== '');
   await browser.refresh();
+  return [headingText, messagesLang, defaultLang];
 };
 
 module.exports = {
@@ -329,5 +331,6 @@ module.exports = {
   checkUserSettings,
   getDefaultLanguages,
   getDefaultLanguages,
-  messagesList
+  messagesList,
+  getDefaultLanguages
 };

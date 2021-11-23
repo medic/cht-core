@@ -1,12 +1,12 @@
 const utils = require('../../utils');
 
-const submitButton = () => $('div.form-actions button.btn.btn-primary.ng-scope');
-const addLanguageButton = () => $('i.fa.fa-plus');
+const submitButton = () => $('div.form-actions button.btn.btn-primary');
+const addLanguageButton = () => $('span=Add new language');
 const addLanguageModal = () => $('body.ng-scope.modal-open');
 const languageCodeInput = () => $('[ng-model="language.code"]');
 const languageNameInput  = () => $('[ng-model="language.name"]');
 const languageSubmitButton  = () => $('a.btn.submit.ng-scope.ng-binding.btn-primary');
-const applicationLink = () => $('i.fa.fa-fw.fa-home');
+const applicationLink = () => $('span=Application');
 const defaultLanguageDropdown = () => $('#locale');
 const outgoingLanguageDropdown = () => $('#locale-outgoing');
 
