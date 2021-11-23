@@ -41,7 +41,7 @@ describe('Adding new language', () => {
   it('should reflect in config wizard', async () => {
     await languagesPage.goToApplication();
     const [heading, messageLanguage, appLanguage] = await commonPo.getDefaultLanguages();
-    expect(heading).to.equal(`${NEW_LANG_CODE}, ${NEW_LANG_NAME}`);
+    expect(heading).to.equal(`${NEW_LANG_NAME}, ${NEW_LANG_NAME}`);
     expect(messageLanguage).to.equal(NEW_LANG_NAME);
     expect(appLanguage).to.equal(NEW_LANG_NAME);
   });
