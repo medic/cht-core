@@ -1,7 +1,6 @@
 const utils = require('../utils');
-const helper = require('../helper');
-const commonElements = require('../page-objects/common/common.po.js');
-const reports = require('../page-objects/reports/reports.po');
+const commonElements = require('../page-objects/common/common.wdio.page');
+const reports = require('../page-objects/reports/reports.wdio.page');
 
 describe('Bulk delete reports', () => {
   const docs = [
@@ -58,29 +57,27 @@ describe('Bulk delete reports', () => {
 
   const savedUuids = [];
 
-  beforeEach(async () => {
+  before(async () => {
     const results = await utils.saveDocs(docs);
     results.forEach(result => {
       savedUuids.push(result.id);
     });
   });
 
-  afterEach(utils.afterEach);
-
   it('should select, deselect and delete only selected reports', async () => {
-    await commonElements.goToReportsNative();
-    await reports.startSelectModeNative(savedUuids);
-    await reports.stopSelectModeNative(savedUuids);
+    await commonElements.goToReports();
+    await reports.startSelectMode(savedUuids);
+    await reports.stopSelectMode(savedUuids);
     // start select mode again
-    await reports.startSelectModeNative(savedUuids);
-    await reports.selectReportNative(savedUuids);
-    await reports.expandSelectionNative();
-    await reports.collapseSelectionNative();
+    await reports.startSelectMode(savedUuids);
+    await reports.selectReport(savedUuids);
+    await reports.expandSelection();
+    await reports.collapseSelection();
     // deselect
-    await helper.clickElementNative(reports.deselectReport());
-    await reports.selectAllNative();
-    await reports.deselectAllNative();
-    await reports.selectSeveralReportsNative(savedUuids);
-    await reports.deleteSelectedReportsNative(savedUuids);
+    await (await reports.deselectReport()).click();
+    await reports.selectAll();
+    await reports.deselectAll();
+    await reports.selectSeveralReports(savedUuids);
+    await reports.deleteSelectedReports(savedUuids);
   });
 });
