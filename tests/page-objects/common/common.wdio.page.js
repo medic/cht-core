@@ -279,12 +279,13 @@ const getDefaultLanguages = async () => {
   await (await hamburgerMenu()).click();
   await openConfigurationWizardAndFetchProperties();
   await (await languagePreferenceHeading()).click();
+  const messagesLang = async () => await (await messagesLanguage()).getText();
+  await browser.waitUntil(async () => await messagesLang() !== '');
+
   const headingText = await (await selectedPreferenceHeading()).getText();
-  const messagesLang = await (await messagesLanguage()).getText();
   const defaultLang = await (await defaultLanguage()).getText();
-  await browser.waitUntil(async () => await messagesLang !== '');
-  await browser.refresh();
-  return [headingText, messagesLang, defaultLang];
+
+  return [headingText, await messagesLang(), defaultLang];
 };
 
 module.exports = {
