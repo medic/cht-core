@@ -1,5 +1,3 @@
-const { isNil } = require('lodash');
-
 const RAW_NUMBER = /^(-?[0-9]+)(\.[0-9]+)?$/;
 const XPR = {
   number:  v => ({ t:'num',  v }),
@@ -71,7 +69,7 @@ const parseTimestampToDate = (value) => {
 
 const asString = (r) => {
   return r.t === 'arr' ?
-    r.v.length && !isNil(r.v[0]) ? r.v[0].textContent || '' : '' :
+    r.v.length && !(r.v[0] === null || r.v[0] === undefined) ? r.v[0].textContent || '' : '' :
     r.v.toString();
 };
 
