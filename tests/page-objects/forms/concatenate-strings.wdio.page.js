@@ -1,6 +1,4 @@
 const utils = require('../../utils');
-const helper = require('../../helper');
-
 const xml = `<?xml version="1.0"?>
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">
 	<h:head>
@@ -50,20 +48,22 @@ const docs = [
       }
     }
   }];
+const submitButton = () => $('[ng-click="onSubmit()"]');
+const reportContent = () => $('div#reports-content');
+const refreshIcon = () => $('.icon.icon-refresh');
 
 module.exports = {
-  configureForm: (userContactDoc) => {
-    return utils.seedTestData(userContactDoc, docs);
+  configureForm: async (userContactDoc) => {
+    return await utils.seedTestData(userContactDoc, docs);
   },
 
   submit: async () => {
-    const submitButton = element(by.css('[ng-click="onSubmit()"]'));
-    await helper.clickElementNative(submitButton);
-    await helper.waitElementToBeVisibleNative(element(by.css('div#reports-content')));
+    await (await submitButton()).click();
+    await (await reportContent()).waitForDisplayed();
   },
 
-  reset: () => {
-    return element(by.css('.icon.icon-refresh')).click();
+  reset: async () => {
+    return await(await refreshIcon()).click();
   },
 
   formInternalId: formInternalId,
