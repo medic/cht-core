@@ -84,8 +84,8 @@ const getPurgeLog = () => browser.executeAsync(callback => {
 const getAllReports = () => browser.executeAsync(callback => {
   window.CHTCore.DB
     .get()
-    .query('medic-client/reports_by_date', { include_docs: true })
-    .then(results => results.rows.map(row => row.doc))
+    .allDocs({ include_docs: true })
+    .then(results => results.rows.map(row => row.doc).filter(doc => doc.type === 'data_record'))
     .then(callback)
     .catch(callback);
 });
@@ -95,23 +95,42 @@ const pageLoaded = async () => {
   return 'page-loaded';
 };
 
+const updateSettings = async (purgeFn, revert) => {
+  if (revert) {
+    await utils.revertSettings(true);
+  }
+  const settings = { purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds', run_every_days: -1 } };
+  await utils.updateSettings(settings, true);
+};
+
+const runPurging = async () => {
+  const seq = await sentinelUtils.getCurrentSeq();
+  await restartSentinel();
+  await sentinelUtils.waitForPurgeCompletion(seq);
+};
+
+const parsePurgingLogEntries = (logEntries) => {
+  const re = /^REQ .* GET (\/purging[a-z/]*)/;
+  return logEntries.map(entry => {
+    const match = entry.match(re);
+    return match && match[1];
+  });
+};
+
 describe('initial replication', () => {
   it('interruption in initial replication should not trigger purging', async () => {
     await utils.saveDocs([district, healthCenter, contact, patient]);
     await utils.createUsers([user]);
 
-    let settings = { purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds', run_every_days: -1 } };
-    await utils.updateSettings(settings, true);
-
+    await updateSettings(purgeFn); // settings should be at the beginning of the changes feed
     await utils.saveDocs(reportsToPurge);
     await utils.saveDocs(homeVisits);
     await utils.saveDocs(pregnancies);
     await sentinelUtils.waitForSentinel();
 
-    let seq = await sentinelUtils.getCurrentSeq();
-    await restartSentinel();
-    await sentinelUtils.waitForPurgeCompletion(seq);
+    await runPurging();
 
+    const purgingRequestsPromise = utils.collectLogs(utils.apiLogFile, /REQ.*purging/);
     await browser.throttle('Good3G');
     await loginPage.login({ username: user.username, password: user.password, loadPage: false });
 
@@ -124,6 +143,15 @@ describe('initial replication', () => {
     ]);
     expect(event).to.equal('page-loaded');
 
+    const purgingRequests = parsePurgingLogEntries(await purgingRequestsPromise());
+    expect(purgingRequests).to.deep.equal([
+      '/purging',
+      '/purging/checkpoint',
+      '/purging',
+      '/purging/changes', // we still request once, and get zero changes because we're up to date
+    ]);
+
+    await browser.throttle('online');
     await commonElements.sync();
 
     let allReports = await getAllReports();
@@ -135,13 +163,8 @@ describe('initial replication', () => {
     expect(purgeLog.history.length).to.equal(1);
 
     // Purging occurs normally when refreshing
-    await utils.revertSettings(true);
-    settings = { purge: { fn: purgeHomeVisitFn.toString(), text_expression: 'every 1 seconds', run_every_days: '0' } };
-    await utils.updateSettings(settings, true);
-
-    seq = await sentinelUtils.getCurrentSeq();
-    await restartSentinel();
-    await sentinelUtils.waitForPurgeCompletion(seq);
+    await updateSettings(purgeHomeVisitFn, true);
+    await runPurging();
 
     await commonElements.sync(true);
     await browser.refresh();
