@@ -119,10 +119,13 @@ const reportsListDetails = async () => {
 
 const filterByDate = async (startDate, endDate) => {
   await (await dateFilter()).click();
+  await (await datePickerStart()).click();
   await (await datePickerStart()).setValue(startDate.format('MM/DD/YYYY'));
-  await (await datePickerEnd()).setValue( endDate.format('MM/DD/YYYY') + protractor.Key.ENTER);
+  await (await datePickerEnd()).click();
+  await (await datePickerEnd()).setValue(endDate.format('MM/DD/YYYY'));
+  await (await datePickerStart()).click();
   await (await $('#freetext')).click(); // blur the datepicker
-}
+};
 
 module.exports = {
   reportList,
