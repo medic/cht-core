@@ -346,8 +346,8 @@ describe('Users API', () => {
       chai.expect(userResponse['user-settings']).to.not.be.undefined;
       chai.expect(userResponse['user-settings'].id).to.equal('org.couchdb.user:admin2');
       // Old password shouldn't work.
-      expectPasswordLoginToFail(otherAdmin);
-      expectPasswordLoginToWork({ username: otherAdmin.username, password: newPassword });
+      await expectPasswordLoginToFail(otherAdmin);
+      await expectPasswordLoginToWork({ username: otherAdmin.username, password: newPassword });
     });
 
   });
