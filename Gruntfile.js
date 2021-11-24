@@ -71,27 +71,25 @@ const getVersion = () => {
   return version;
 };
 
-const makeDirSync = (dirPath) => {
+const mkdirSync = (dirPath) => {
   if (!fs.existsSync(dirPath)){
     fs.mkdirSync(dirPath);
   }
 };
 
+const getStagingDocPath = () => path.resolve(__dirname, 'build', 'staging');
+
 const createStagingDoc = () => {
-  const stagingPath = path.resolve(__dirname, 'build', 'staging');
-  makeDirSync(stagingPath);
+  const stagingPath = getStagingDocPath();
+  mkdirSync(stagingPath);
 
   fs.writeFileSync(path.resolve(stagingPath, '_id'), `medic:medic:test-${BUILD_NUMBER}`);
-  makeDirSync(path.resolve(stagingPath, '_attachments'));
+  mkdirSync(path.resolve(stagingPath, '_attachments'));
 };
 
 const populateStagingDoc = () => {
-  const stagingPath = path.resolve(__dirname, 'build', 'staging');
-  // the validate_doc_update from staging.dev requires full build info in the staging document.
-  copyBuildInfo();
-
-  const ddocAttachmentsPath = path.resolve(stagingPath, '_attachments', 'ddocs');
-  makeDirSync(ddocAttachmentsPath);
+  const ddocAttachmentsPath = path.resolve(getStagingDocPath(), '_attachments', 'ddocs');
+  mkdirSync(ddocAttachmentsPath);
 
   const buildDdocsPath = path.resolve(__dirname, 'build', 'ddocs');
   fs.readdirSync(buildDdocsPath, { withFileTypes: true }).forEach(file => {
@@ -99,12 +97,15 @@ const populateStagingDoc = () => {
       fs.copyFileSync(path.resolve(buildDdocsPath, file.name), path.resolve(ddocAttachmentsPath, file.name));
     }
   });
+
+  // the validate_doc_update from staging.dev requires full build info in the staging document.
+  copyBuildInfoToStagingDoc();
 };
 
-const copyBuildInfo = () => {
+const copyBuildInfoToStagingDoc = () => {
   const medicBuildInfoPath = path.resolve(__dirname, 'build', 'ddocs', 'medic-db', 'medic', 'build_info');
-  const stagingBuildInfoPath = path.resolve(__dirname, 'build', 'staging', 'build_info');
-  makeDirSync(stagingBuildInfoPath);
+  const stagingBuildInfoPath = path.resolve(getStagingDocPath(), 'build_info');
+  mkdirSync(stagingBuildInfoPath);
 
   fs.readdirSync(medicBuildInfoPath, { withFileTypes: true }).forEach(file => {
     if (!file.isDirectory()) {
@@ -115,7 +116,7 @@ const copyBuildInfo = () => {
 
 const setBuildInfo = () => {
   const buildInfoPath = path.resolve(__dirname, 'build', 'ddocs', 'medic-db', 'medic', 'build_info');
-  makeDirSync(buildInfoPath);
+  mkdirSync(buildInfoPath);
   // the validate_doc_update from staging.dev requires all of these fields
   fs.writeFileSync(path.resolve(buildInfoPath, 'version'), releaseName);
   fs.writeFileSync(path.resolve(buildInfoPath, 'base_version'), packageJson.version);
