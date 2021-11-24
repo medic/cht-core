@@ -15,7 +15,8 @@ describe('generate service worker', () => {
   let generateServiceWorker;
 
   beforeEach(() => {
-    sinon.stub(env, 'getStaticPath').returns('/absolute/path/to/build/static/');
+    sinon.stub(env, 'staticPath').value('/absolute/path/to/build/static/');
+    sinon.stub(env, 'webappPath').value('/absolute/path/to/build/static/webapp/');
     sinon.stub(loginController, 'renderLogin');
     sinon.stub(swPrecache, 'write');
     sinon.stub(db.medic, 'get');
@@ -47,7 +48,7 @@ describe('generate service worker', () => {
 
       chai.expect(swPrecache.write.callCount).to.deep.equal(1);
       chai.expect(swPrecache.write.args[0]).to.deep.equal([
-        '/absolute/path/to/build/static/js/service-worker.js',
+        '/absolute/path/to/build/static/webapp/js/service-worker.js',
         {
           cacheId: 'cache',
           claimsClient: true,
@@ -55,23 +56,24 @@ describe('generate service worker', () => {
           directoryIndex: false,
           handleFetch: true,
           staticFileGlobs: [
-            '/absolute/path/to/build/static/{audio,img}/*',
-            '/absolute/path/to/build/static/manifest.json',
-            '/absolute/path/to/build/static/*.js',
-            '/absolute/path/to/build/static/*.css',
-            '/absolute/path/to/build/static/fontawesome-webfont.woff2',
-            '/absolute/path/to/build/static/fonts/enketo-icons-v2.woff',
-            '/absolute/path/to/build/static/fonts/NotoSans-Bold.ttf',
-            '/absolute/path/to/build/static/fonts/NotoSans-Regular.ttf',
+            '/absolute/path/to/build/static/webapp/{audio,img}/*',
+            '/absolute/path/to/build/static/webapp/manifest.json',
+            '/absolute/path/to/build/static/webapp/*.js',
+            '/absolute/path/to/build/static/webapp/*.css',
+            '/absolute/path/to/build/static/webapp/fontawesome-webfont.woff2',
+            '/absolute/path/to/build/static/webapp/fonts/enketo-icons-v2.woff',
+            '/absolute/path/to/build/static/webapp/fonts/NotoSans-Bold.ttf',
+            '/absolute/path/to/build/static/webapp/fonts/NotoSans-Regular.ttf',
             '/absolute/path/to/build/static/login/*.{css,js}',
           ],
           dynamicUrlToDependencies: {
-            '/': ['/absolute/path/to/build/static/index.html'], // Webapp's entry point
+            '/': ['/absolute/path/to/build/static/webapp/index.html'], // Webapp's entry point
             '/medic/login': 'loginpage html',
-            '/medic/_design/medic/_rewrite/': ['/absolute/path/to/build/static/appcache-upgrade.html'],
+            '/medic/_design/medic/_rewrite/': ['/absolute/path/to/build/static/webapp/appcache-upgrade.html'],
           },
           ignoreUrlParametersMatching: [/redirect/, /username/],
           stripPrefixMulti: {
+            ['/absolute/path/to/build/static/webapp/']: '',
             ['/absolute/path/to/build/static/']: '',
           },
           maximumFileSizeToCacheInBytes: 1048576 * 30,
@@ -160,7 +162,7 @@ describe('generate service worker', () => {
 
       chai.expect(swPrecache.write.callCount).to.deep.equal(1);
       chai.expect(swPrecache.write.args[0]).to.deep.equal([
-        '/absolute/path/to/build/static/js/service-worker.js',
+        '/absolute/path/to/build/static/webapp/js/service-worker.js',
         {
           cacheId: 'cache',
           claimsClient: true,
@@ -168,23 +170,24 @@ describe('generate service worker', () => {
           directoryIndex: false,
           handleFetch: true,
           staticFileGlobs: [
-            '/absolute/path/to/build/static/{audio,img}/*',
-            '/absolute/path/to/build/static/manifest.json',
-            '/absolute/path/to/build/static/*.js',
-            '/absolute/path/to/build/static/*.css',
-            '/absolute/path/to/build/static/fontawesome-webfont.woff2',
-            '/absolute/path/to/build/static/fonts/enketo-icons-v2.woff',
-            '/absolute/path/to/build/static/fonts/NotoSans-Bold.ttf',
-            '/absolute/path/to/build/static/fonts/NotoSans-Regular.ttf',
+            '/absolute/path/to/build/static/webapp/{audio,img}/*',
+            '/absolute/path/to/build/static/webapp/manifest.json',
+            '/absolute/path/to/build/static/webapp/*.js',
+            '/absolute/path/to/build/static/webapp/*.css',
+            '/absolute/path/to/build/static/webapp/fontawesome-webfont.woff2',
+            '/absolute/path/to/build/static/webapp/fonts/enketo-icons-v2.woff',
+            '/absolute/path/to/build/static/webapp/fonts/NotoSans-Bold.ttf',
+            '/absolute/path/to/build/static/webapp/fonts/NotoSans-Regular.ttf',
             '/absolute/path/to/build/static/login/*.{css,js}',
           ],
           dynamicUrlToDependencies: {
-            '/': ['/absolute/path/to/build/static/index.html'], // Webapp's entry point
+            '/': ['/absolute/path/to/build/static/webapp/index.html'], // Webapp's entry point
             '/medic/login': ['/absolute/path/to/api/src/templates/login/index.html'],
-            '/medic/_design/medic/_rewrite/': ['/absolute/path/to/build/static/appcache-upgrade.html'],
+            '/medic/_design/medic/_rewrite/': ['/absolute/path/to/build/static/webapp/appcache-upgrade.html'],
           },
           ignoreUrlParametersMatching: [/redirect/, /username/],
           stripPrefixMulti: {
+            ['/absolute/path/to/build/static/webapp/']: '',
             ['/absolute/path/to/build/static/']: '',
           },
           maximumFileSizeToCacheInBytes: 1048576 * 30,
@@ -300,7 +303,7 @@ describe('generate service worker', () => {
       return getServiceWorkerHash().then((result) => {
         chai.expect(result).to.equal(undefined);
         chai.expect(fs.access.callCount).to.equal(1);
-        chai.expect(fs.access.args[0][0]).to.equal('/absolute/path/to/build/static/js/service-worker.js');
+        chai.expect(fs.access.args[0][0]).to.equal('/absolute/path/to/build/static/webapp/js/service-worker.js');
         chai.expect(fs.createReadStream.callCount).to.equal(0);
       });
     });
@@ -316,7 +319,7 @@ describe('generate service worker', () => {
         .then(() => {
           chai.expect(fs.createReadStream.callCount).to.equal(1);
           chai.expect(fs.createReadStream.args[0]).to.deep.equal([
-            '/absolute/path/to/build/static/js/service-worker.js',
+            '/absolute/path/to/build/static/webapp/js/service-worker.js',
           ]);
           chai.expect(stream.setEncoding.callCount).to.equal(1);
           chai.expect(stream.setEncoding.args[0]).to.deep.equal(['utf8']);
@@ -349,7 +352,7 @@ describe('generate service worker', () => {
         .then(() => {
           chai.expect(fs.createReadStream.callCount).to.equal(1);
           chai.expect(fs.createReadStream.args[0]).to.deep.equal([
-            '/absolute/path/to/build/static/js/service-worker.js',
+            '/absolute/path/to/build/static/webapp/js/service-worker.js',
           ]);
           chai.expect(stream.setEncoding.callCount).to.equal(1);
           chai.expect(stream.setEncoding.args[0]).to.deep.equal(['utf8']);
