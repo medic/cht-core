@@ -4,6 +4,8 @@ const url = require('url');
 const packageJson = require('./package.json');
 const fs = require('fs');
 const path = require('path');
+const {writeFileSync} = require('fs');
+const {build} = require('./tests/factories/cht/config/partners');
 const uuid = require('uuid').v4;
 
 const {
@@ -76,6 +78,21 @@ const makeDirSync = (dirPath) => {
   if (!fs.existsSync(dirPath)){
     fs.mkdirSync(dirPath);
   }
+};
+
+const setDdocSecrets = () => {
+  const buildPath = path.resolve(__dirname, 'build', 'ddocs');
+  const databases = fs.readdirSync(buildPath);
+  databases.forEach(database => {
+    const dbPath = path.resolve(buildPath, database);
+    if (!fs.lstatSync(dbPath).isDirectory()) {
+      return;
+    }
+    const ddocs = fs.readdirSync(dbPath);
+    ddocs.forEach(ddoc => {
+      fs.writeFileSync(path.resolve(dbPath, ddoc, 'secret'), uuid());
+    });
+  });
 };
 
 const createStagingDoc = () => {
@@ -705,12 +722,13 @@ module.exports = function(grunt) {
       },
       'primary-ddoc': {
         files: ['ddocs/medic-db/**/*'],
-        tasks: ['copy:ddocs', 'couch-compile:primary', 'deploy', 'copy:api-ddocs'],
+        tasks: ['copy:ddocs', 'set-ddoc-secrets', 'couch-compile:primary', 'deploy', 'copy:api-ddocs'],
       },
       'secondary-ddocs': {
         files: ['ddocs/*-db/**/*', '!ddocs/medic-db/**/*'],
         tasks: [
           'copy:ddocs',
+          'set-ddoc-secrets',
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
@@ -912,6 +930,7 @@ module.exports = function(grunt) {
   grunt.registerTask('build', 'Build the static resources', [
     'exec:clean-build-dir',
     'copy:ddocs',
+    'set-ddoc-secrets',
     'build-common',
     'build-node-modules',
     'minify',
@@ -923,6 +942,7 @@ module.exports = function(grunt) {
   grunt.registerTask('build-dev', 'Build the static resources', [
     'exec:clean-build-dir',
     'copy:ddocs',
+    'set-ddoc-secrets',
     'copy:api-resources',
     'build-common',
     'copy:static-resources',
@@ -1173,6 +1193,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('create-staging-doc', createStagingDoc);
   grunt.registerTask('populate-staging-doc', populateStagingDoc);
+  grunt.registerTask('set-ddoc-secrets', setDdocSecrets);
 
   grunt.registerTask('publish-for-testing', 'Publish the staging doc to the testing server', [
     'couch-compile:staging',

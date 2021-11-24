@@ -19,12 +19,9 @@ const compareUploadedToBundledDdocs = (uploadedDdocs, bundledDdocs) => {
       continue;
     }
 
-    // todo compare secret
-    /* uploadedDdoc.secret = JSON.stringify(uploadedDdoc.views);
-    bundledDdoc.secret = JSON.stringify(bundledDdoc.views);
     if (bundledDdoc.secret !== uploadedDdoc.doc.secret) {
       different.push(uploadedDdoc.id);
-    }*/
+    }
   }
 
   for (const bundledDdoc of bundledDdocs) {

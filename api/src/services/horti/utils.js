@@ -20,17 +20,17 @@ const DATABASES = [
     index: true,
   },
   {
-    name: 'sentinel',
+    name: 'medic-sentinel',
     dbObject: db.sentinel,
     jsonFileName: 'sentinel.json',
   },
   {
-    name: 'logs',
+    name: 'medic-logs',
     dbObject: db.medicLogs,
     jsonFileName: 'logs.json',
   },
   {
-    name: 'usersMeta',
+    name: 'medic-users-meta',
     dbObject: db.medicUsersMeta,
     jsonFileName: 'users-meta.json',
   }
@@ -75,22 +75,22 @@ const deleteDocs = async ({ dbObject }, docs) => {
   return result;
 };
 
-const getDocs = async (dbObject, docIds) => {
+const getDocs = async ({ dbObject }, docIds) => {
   const result = await dbObject.allDocs({ keys: docIds, include_docs: true });
   return result.rows.map(row => row.doc);
 };
 
-const indexView = (dbObject, ddocName, viewName) => {
+const indexView = (dbName, ddocName, viewName) => {
   try {
     return rpn.get({
-      uri: `${environment.serverUrl}/${dbObject.name}/${DDOC_PREFIX}${ddocName}/_view/${viewName}`,
+      uri: `${environment.serverUrl}/${dbName}/${DDOC_PREFIX}${ddocName}/_view/${viewName}`,
       json: true,
       qs: { limit: 1 },
       timeout: 2000,
     });
   } catch (requestError) {
     if (requestError && requestError.error && requestError.error.code === SOCKET_TIMEOUT_ERROR_CODE) {
-      return indexView(dbObject, ddocName, viewName);
+      return indexView(dbName, ddocName, viewName);
     }
     throw requestError;
   }
@@ -99,20 +99,20 @@ const indexView = (dbObject, ddocName, viewName) => {
 const getDdocsToStageFromJson = (json) => {
   const ddocs = json.docs;
   ddocs.forEach(ddoc => {
-    ddoc._id = ddoc._id.replace(DDOC_PREFIX, `${DDOC_PREFIX}${STAGED_DDOC_PREFIX}`);
+    ddoc._id = ddoc._id.replace(DDOC_PREFIX, STAGED_DDOC_PREFIX);
   });
   return ddocs;
 };
 
 const saveDocs = ({ dbObject }, ddocs) => dbObject.bulkDocs(ddocs);
 
-const getViewsToIndex = async ({ dbObject }, ddocsToStage) => {
+const getViewsToIndex = async ({ dbObject, name }, ddocsToStage) => {
   const viewsToIndex = [];
 
-  const ddocs = await getDocs(ddocsToStage.map(doc => doc._id));
+  const ddocs = await getDocs({ dbObject }, ddocsToStage.map(doc => doc._id));
   ddocs.forEach(ddoc => {
     const ddocName = ddoc._id.replace(DDOC_PREFIX, '');
-    viewsToIndex.push(...Object.keys(ddoc.views).map(viewName => indexView.bind({}, dbObject, ddocName, viewName)));
+    viewsToIndex.push(...Object.keys(ddoc.views).map(viewName => indexView.bind({}, name, ddocName, viewName)));
   });
 
   return viewsToIndex;
@@ -146,10 +146,25 @@ const getDdocsForVersion = async (version) => {
   }
 };
 
-const getDdocsToStage = ({ jsonFileName }, version) => {
+const getDdocsToStage = ({ jsonFileName, name }, version) => {
   const ddocsFolderPath = version === LOCAL_VERSION ? environment.getDdocsPath() : environment.getUpgradePath();
   const json = require(path.join(ddocsFolderPath, jsonFileName));
-  return getDdocsToStageFromJson(json);
+  const ddocsToStage = getDdocsToStageFromJson(json);
+
+  if (name === 'medic') {
+    const medicDdoc = ddocsToStage.find(ddoc => ddoc._id === `${STAGED_DDOC_PREFIX}medic`);
+    const medicClientDdoc = ddocsToStage.find(ddoc => ddoc._id === `${STAGED_DDOC_PREFIX}medic-client`);
+
+    const deployInfo = {
+      timestamp: new Date().getTime(),
+      user: 'user', // todo previously we saved the couchdb user that initiated the upgrade in the horti-upgrade doc
+      version: medicDdoc.build_info.version,
+    };
+    medicDdoc.deploy_info = deployInfo;
+    medicClientDdoc.deploy_info = deployInfo;
+  }
+
+  return ddocsToStage;
 };
 
 const stage = async (version = 'local') => {
