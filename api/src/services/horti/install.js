@@ -12,21 +12,22 @@ const compareUploadedToBundledDdocs = (uploadedDdocs, bundledDdocs) => {
   const different = [];
 
   for (const uploadedDdoc of uploadedDdocs) {
-    const bundledDdoc = bundledDdocs.find(bundledDdoc => bundledDdoc._id === uploadedDdoc.id);
+    const bundledDdoc = bundledDdocs.find(bundledDdoc => bundledDdoc._id === uploadedDdoc._id);
 
     if (!bundledDdoc) {
-      missing.push(uploadedDdoc.id);
+      missing.push(uploadedDdoc._id);
       continue;
     }
 
-    if (bundledDdoc.secret !== uploadedDdoc.doc.secret) {
-      different.push(uploadedDdoc.id);
+    if (bundledDdoc.secret !== uploadedDdoc.secret) {
+      different.push(uploadedDdoc._id);
+      different.push(uploadedDdoc._id);
     }
   }
 
   for (const bundledDdoc of bundledDdocs) {
     const uploadedDdoc = uploadedDdocs.find(uploadedDdoc => {
-      return uploadedDdoc.id === bundledDdoc._id || upgradeUtils.getDdocId(uploadedDdoc.id) === bundledDdoc._id;
+      return uploadedDdoc._id === bundledDdoc._id || upgradeUtils.getDdocId(uploadedDdoc._id) === bundledDdoc._id;
     });
 
     if (!uploadedDdoc) {
@@ -45,8 +46,8 @@ const checkInstall = async () => {
     check[database.name] = dbCheck;
 
     const allDdocs = await upgradeUtils.getDdocs(database, true);
-    const uploadedDdocs = allDdocs.filter(ddoc => !upgradeUtils.isStagedDdoc(ddoc.id));
-    const stagedDdocs = allDdocs.filter(ddoc => upgradeUtils.isStagedDdoc(ddoc.id));
+    const uploadedDdocs = allDdocs.filter(ddoc => !upgradeUtils.isStagedDdoc(ddoc._id));
+    const stagedDdocs = allDdocs.filter(ddoc => upgradeUtils.isStagedDdoc(ddoc._id));
 
     const bundledDdocs = getBundledDdocs(database.jsonFileName);
     // todo improve this

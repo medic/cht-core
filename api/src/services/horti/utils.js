@@ -38,7 +38,6 @@ const DATABASES = [
 
 const isStagedDdoc = ddocId => ddocId.startsWith(STAGED_DDOC_PREFIX);
 
-
 const cleanup = async () => {
   logger.info('Deleting existent staged ddocs');
 
@@ -54,14 +53,14 @@ const cleanup = async () => {
 };
 
 const getStagedDdocs = async ({ dbObject }) => {
-  const result = await dbObject.allDocs({ startkey: STAGED_DDOC_PREFIX, endkey: `${STAGED_DDOC_PREFIX}\ufff0`});
-  return result.rows.map(row => ({ id: row.id, rev: row.value.rev }));
+  const result = await dbObject.allDocs({ startkey: STAGED_DDOC_PREFIX, endkey: `${STAGED_DDOC_PREFIX}\ufff0` });
+  return result.rows.map(row => ({ _id: row.id, _rev: row.value.rev }));
 };
 
 const getDdocs = async ({ dbObject }, includeDocs = false) => {
   const opts = { startkey: DDOC_PREFIX, endkey: `${DDOC_PREFIX}\ufff0`, include_docs: includeDocs };
   const result = await dbObject.allDocs(opts);
-  return result.rows.map(row => ({ id: row.id, rev: row.value.rev, doc: row.doc }));
+  return result.rows.map(row => row.doc || { _id: row.id, _rev: row.value.rev });
 };
 
 const deleteDocs = async ({ dbObject }, docs) => {
@@ -169,12 +168,15 @@ const getDdocsToStage = ({ jsonFileName, name }, version) => {
 
 const stage = async (version = 'local') => {
   await cleanup();
+
+  logger.info(`Staging ${version}`);
   await getDdocsForVersion(version);
 
   const viewsToIndex = [];
 
   for (const database of DATABASES) {
     const ddocsToStage = getDdocsToStage(database, version);
+    logger.info(`Saving ddocs for ${database.name}`);
     await saveDocs(database, ddocsToStage);
     if (database.index) {
       viewsToIndex.push(...await getViewsToIndex(database, ddocsToStage));
@@ -186,23 +188,25 @@ const stage = async (version = 'local') => {
 };
 
 const complete = async () => {
+  logger.info('Completing install');
   for (const database of DATABASES) {
     const ddocs = await getDdocs(database, true);
+    console.log(ddocs);
     for (const ddoc of ddocs) {
-      if (!isStagedDdoc(ddoc.id)) {
+      if (!isStagedDdoc(ddoc._id)) {
         continue;
       }
 
-      const ddocName = ddoc.id.replace(STAGED_DDOC_PREFIX, '');
-      const ddocToReplace = ddocs.find(ddoc => ddoc._id === `${DDOC_PREFIX}${ddocName}`);
+      const ddocName = ddoc._id.replace(STAGED_DDOC_PREFIX, DDOC_PREFIX);
+      const ddocToReplace = ddocs.find(ddoc => ddoc._id === ddocName);
       if (!ddocToReplace) {
-        delete ddoc.doc._rev;
+        delete ddoc._rev;
       } else {
-        ddoc.doc._rev = ddocToReplace.doc._rev;
-        ddoc.doc._id = ddocToReplace.doc._id;
+        ddoc._rev = ddocToReplace._rev;
+        ddoc._id = ddocToReplace._id;
       }
 
-      await database.dbObject.put(ddoc.doc);
+      await database.dbObject.put(ddoc);
     }
   }
 };
