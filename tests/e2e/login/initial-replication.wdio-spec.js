@@ -56,12 +56,19 @@ const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentine
 
 const bootstrapperStatus = () => $('.bootstrap-layer .status');
 
-const waitForReplicationProgress = () => {
-  const fetchInfo = 'Fetching info (100';
-  return browser.waitUntil(
-    async () => (await (await bootstrapperStatus()).getText()).trim().startsWith(fetchInfo),
-    { interval: 50 },
-  );
+const hasLocalDocs = () => {
+  const localDbName = `medic-user-${user.username}`;
+  return browser.executeAsync((localDbName, callback) => {
+    const db = window.PouchDB(localDbName);
+    db
+      .allDocs({ keys: ['_design/medic-client', 'settings'] })
+      .then(results => callback(results.rows.every(row => !row.error)))
+      .catch(err => callback(err));
+  }, localDbName);
+};
+
+const waitForReplicationProgress = async () => {
+  await browser.waitUntil(hasLocalDocs, { interval: 50 });
 };
 
 const waitForPurgingProgress = async () => {
@@ -119,10 +126,10 @@ const parsePurgingLogEntries = (logEntries) => {
 
 describe('initial replication', () => {
   it('interruption in initial replication should not trigger purging', async () => {
+    await updateSettings(purgeFn); // settings should be at the beginning of the changes feed
+
     await utils.saveDocs([district, healthCenter, contact, patient]);
     await utils.createUsers([user]);
-
-    await updateSettings(purgeFn); // settings should be at the beginning of the changes feed
     await utils.saveDocs(reportsToPurge);
     await utils.saveDocs(homeVisits);
     await utils.saveDocs(pregnancies);
