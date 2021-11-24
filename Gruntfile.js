@@ -87,6 +87,7 @@ const createStagingDoc = () => {
 
 const populateStagingDoc = () => {
   const stagingPath = path.resolve(__dirname, 'build', 'staging');
+  // the validate_doc_update from staging.dev requires full build info in the staging document.
   copyBuildInfo();
 
   const ddocAttachmentsPath = path.resolve(stagingPath, '_attachments', 'ddocs');
@@ -115,6 +116,7 @@ const copyBuildInfo = () => {
 const setBuildInfo = () => {
   const buildInfoPath = path.resolve(__dirname, 'build', 'ddocs', 'medic-db', 'medic', 'build_info');
   makeDirSync(buildInfoPath);
+  // the validate_doc_update from staging.dev requires all of these fields
   fs.writeFileSync(path.resolve(buildInfoPath, 'version'), releaseName);
   fs.writeFileSync(path.resolve(buildInfoPath, 'base_version'), packageJson.version);
   fs.writeFileSync(path.resolve(buildInfoPath, 'time'), new Date().toISOString());
