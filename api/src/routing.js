@@ -340,6 +340,16 @@ app.get('/api/deploy-info', (req, res) => {
   if (!req.userCtx) {
     return serverUtils.notLoggedIn(req, res);
   }
+
+  // todo!
+  const deployInfo = environment.getDeployInfo();
+  if (!deployInfo) {
+    return db.medic.get('_design/medic').then(medic => {
+      environment.setDeployInfo(medic.deploy_info);
+      res.json(environment.getDeployInfo());
+    });
+  }
+
   res.json(environment.getDeployInfo());
 });
 

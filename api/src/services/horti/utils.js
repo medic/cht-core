@@ -14,23 +14,23 @@ const SOCKET_TIMEOUT_ERROR_CODE = 'ESOCKETTIMEDOUT';
 
 const DATABASES = [
   {
-    name: 'medic',
+    name: environment.db,
     dbObject: db.medic,
     jsonFileName: 'medic.json',
     index: true,
   },
   {
-    name: 'medic-sentinel',
+    name: `${environment.db}-sentinel`,
     dbObject: db.sentinel,
     jsonFileName: 'sentinel.json',
   },
   {
-    name: 'medic-logs',
+    name: `${environment.db}-logs`,
     dbObject: db.medicLogs,
     jsonFileName: 'logs.json',
   },
   {
-    name: 'medic-users-meta',
+    name: `${environment.db}-users-meta`,
     dbObject: db.medicUsersMeta,
     jsonFileName: 'users-meta.json',
   }
@@ -69,9 +69,7 @@ const deleteDocs = async ({ dbObject }, docs) => {
   }
   docs.forEach(doc => doc._deleted = true);
 
-  const result = await dbObject.bulkDocs(docs);
-  // todo test for successful deletion
-  return result;
+  return saveDocs({ dbObject }, docs);
 };
 
 const getDocs = async ({ dbObject }, docIds) => {
@@ -103,7 +101,15 @@ const getDdocsToStageFromJson = (json) => {
   return ddocs;
 };
 
-const saveDocs = ({ dbObject }, ddocs) => dbObject.bulkDocs(ddocs);
+const saveDocs = async ({ dbObject }, docs) => {
+  const results = await dbObject.bulkDocs(docs);
+  const errors = results.map(result => result.error).filter(error => error);
+  if (!errors.length) {
+    return results;
+  }
+
+  throw new Error(`Error while saving docs ${JSON.stringify(errors)}`);
+};
 
 const getViewsToIndex = async ({ dbObject, name }, ddocsToStage) => {
   const viewsToIndex = [];
@@ -150,7 +156,7 @@ const getDdocsToStage = ({ jsonFileName, name }, version) => {
   const json = require(path.join(ddocsFolderPath, jsonFileName));
   const ddocsToStage = getDdocsToStageFromJson(json);
 
-  if (name === 'medic') {
+  if (name === environment.db) {
     const medicDdoc = ddocsToStage.find(ddoc => ddoc._id === `${STAGED_DDOC_PREFIX}medic`);
     const medicClientDdoc = ddocsToStage.find(ddoc => ddoc._id === `${STAGED_DDOC_PREFIX}medic-client`);
 
@@ -184,6 +190,7 @@ const stage = async (version = 'local') => {
   }
 
   const indexViews = () => viewsToIndex.map(indexView => indexView());
+  logger.info('Staging complete');
   return indexViews;
 };
 
@@ -191,24 +198,27 @@ const complete = async () => {
   logger.info('Completing install');
   for (const database of DATABASES) {
     const ddocs = await getDdocs(database, true);
-    console.log(ddocs);
+    const ddocsToSave = [];
     for (const ddoc of ddocs) {
       if (!isStagedDdoc(ddoc._id)) {
         continue;
       }
 
-      const ddocName = ddoc._id.replace(STAGED_DDOC_PREFIX, DDOC_PREFIX);
-      const ddocToReplace = ddocs.find(ddoc => ddoc._id === ddocName);
+      const ddocId = ddoc._id.replace(STAGED_DDOC_PREFIX, DDOC_PREFIX);
+      const ddocToReplace = ddocs.find(existentDdoc => ddocId === existentDdoc._id);
+      ddoc._id = ddocId;
       if (!ddocToReplace) {
         delete ddoc._rev;
       } else {
         ddoc._rev = ddocToReplace._rev;
-        ddoc._id = ddocToReplace._id;
       }
 
-      await database.dbObject.put(ddoc);
+      ddocsToSave.push(ddoc);
     }
+
+    await saveDocs(database, ddocsToSave);
   }
+  logger.info('Install complete');
 };
 
 const getStagedDdocId = ddocId => ddocId.replace(DDOC_PREFIX, `${DDOC_PREFIX}${STAGED_DDOC_PREFIX}`);

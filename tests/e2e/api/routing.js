@@ -228,8 +228,7 @@ describe('routing', () => {
       });
     });
 
-    // todo re-enable this test once we extract ddocs for all databases in horticulturalist
-    xit('should display deploy-info to authenticated users', () => {
+    it('should display deploy-info to authenticated users', () => {
       return Promise.all([
         utils.request(Object.assign({ path: '/api/deploy-info' }, onlineRequestOptions)),
         utils.request(Object.assign({ path: '/api/deploy-info' }, offlineRequestOptions)),
