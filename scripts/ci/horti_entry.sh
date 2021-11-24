@@ -25,7 +25,7 @@ echo '[medic] setting max_http_request_size'
 curl -X PUT --data '"4294967296"' "$COUCH/_node/_local/_config/httpd/max_http_request_size"
 
 echo start e2e-servers
-node /cht-core/scripts/e2e/e2e-servers.js > /tests/logs/e2e-server.log &
+node /cht-core/tests/scripts/e2e-servers.js > /tests/logs/e2e-server.log &
 echo Creating logs dir
 mkdir -p > /tests/logs/
 echo Installing Horti
