@@ -1,8 +1,8 @@
-const utils = require('../utils');
+const utils = require('../../utils');
 const moment = require('moment');
-const commonElements = require('../page-objects/common/common.wdio.page');
-const reportsTab = require('../page-objects/reports/reports.wdio.page');
-const loginPage = require('../page-objects/login/login.wdio.page');
+const commonElements = require('../../page-objects/common/common.wdio.page');
+const reportsTab = require('../../page-objects/reports/reports.wdio.page');
+const loginPage = require('../../page-objects/login/login.wdio.page');
 
 
 describe('Filters reports', () => {
