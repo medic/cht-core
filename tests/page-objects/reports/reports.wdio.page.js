@@ -8,7 +8,14 @@ const submitterPhone = () => $('.sender .phone');
 const submitterName = () => $('.sender .name');
 const firstReport = () => $(`${reportListID} li:first-child`);
 const reportList = () => $(`${reportListID}`);
+const allReports = () => $$(`${reportListID} li`);
+const reportsByUUID = (uuid) => $$(`li[data-record-id="${uuid}"]`);
+
 const submitReportButton = () => $('.action-container .general-actions:not(.ng-hide) .fa-plus');
+const dateFilter = () => $('#date-filter');
+const datePickerStart = () => $('.daterangepicker [name="daterangepicker_start"]');
+const datePickerEnd = () => $('.daterangepicker [name="daterangepicker_end"]');
+
 const formActionsLink = (formId) => {
   return $(`.action-container .general-actions .dropup.open .dropdown-menu li a[href="#/reports/add/${formId}"]`);
 };
@@ -110,6 +117,13 @@ const reportsListDetails = async () => {
   return reportDetails;
 };
 
+const filterByDate = async (startDate, endDate) => {
+  await (await dateFilter()).click();
+  await (await datePickerStart()).setValue(startDate.format('MM/DD/YYYY'));
+  await (await datePickerEnd()).setValue( endDate.format('MM/DD/YYYY') + protractor.Key.ENTER);
+  await (await $('#freetext')).click(); // blur the datepicker
+}
+
 module.exports = {
   reportList,
   firstReport,
@@ -134,4 +148,7 @@ module.exports = {
   getSummaryField,
   submitForm,
   reportsListDetails,
+  filterByDate,
+  allReports,
+  reportsByUUID
 };

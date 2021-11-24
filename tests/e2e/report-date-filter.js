@@ -1,8 +1,7 @@
 const utils = require('../utils');
-const helper = require('../helper');
 const moment = require('moment');
-const commonElements = require('../page-objects/common/common.po.js');
-const reportsTab = require('../page-objects/reports/reports.po.js');
+const commonElements = require('../page-objects/common/common.wdio.page');
+const reportsTab = require('../page-objects/reports/reports.wdio.page');
 
 describe('Filters reports', () => {
   const reports = [
@@ -90,19 +89,17 @@ describe('Filters reports', () => {
     results.forEach(result => savedUuids.push(result.id));
   });
 
-  afterEach(utils.afterEach);
-
   it('by date', async () => {
-    await commonElements.goToReportsNative();
-    await helper.waitUntilReadyNative(reportsTab.firstReport());
+    await commonElements.goToReports();
+    //await helper.waitUntilReadyNative(reportsTab.firstReport());
 
     await reportsTab.filterByDate(moment('05/16/2016','MM/DD/YYYY'), moment('05/17/2016','MM/DD/YYYY'));
-    
-    await helper.waitUntilReadyNative(reportsTab.firstReport());
 
-    expect(await reportsTab.allReports().count()).toBe(2);
-    expect(await reportsTab.reportsByUUID(savedUuids[1]).count()).toBe(1);
-    expect(await reportsTab.reportsByUUID(savedUuids[3]).count()).toBe(1);
+    //await helper.waitUntilReadyNative(reportsTab.firstReport());
+
+    expect(await reportsTab.allReports().length).to.equal(2);
+    expect(await reportsTab.reportsByUUID(savedUuids[1]).length).to.equal(1);
+    expect(await reportsTab.reportsByUUID(savedUuids[3]).length).to.equal(1);
 
   });
 });
