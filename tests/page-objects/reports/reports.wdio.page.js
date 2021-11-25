@@ -110,6 +110,9 @@ const reportsListDetails = async () => {
   return reportDetails;
 };
 
+
+const firstReportDetailField = () => $('#reports-content .details ul li:first-child p');
+
 module.exports = {
   reportList,
   firstReport,
@@ -134,4 +137,5 @@ module.exports = {
   getSummaryField,
   submitForm,
   reportsListDetails,
+  firstReportDetailField
 };
