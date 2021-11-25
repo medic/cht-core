@@ -1,8 +1,9 @@
 const reportListID = '#reports-list';
-const reportBodyDetails = '#reports-content .report-body .details';
-const reportBody = () => $(reportBodyDetails);
-const selectedCaseId = () => $(`${reportBodyDetails} > ul > li > p > span > a`);
-const selectedCaseIdLabel = () => $(`${reportBodyDetails} ul > li > label > span`);
+const reportBodyDetailsSelector = '#reports-content .report-body .details';
+const reportBodyDetails = () => $(reportBodyDetailsSelector);
+const reportBody = '#reports-content .report-body';
+const selectedCaseId = () => $(`${reportBodyDetailsSelector} > ul > li > p > span > a`);
+const selectedCaseIdLabel = () => $(`${reportBodyDetailsSelector} ul > li > label > span`);
 const submitterPlace = () => $('.position a');
 const submitterPhone = () => $('.sender .phone');
 const submitterName = () => $('.sender .name');
@@ -19,21 +20,23 @@ const formTitle = () => $('#report-form #form-title');
 const submitButton = () => $('#report-form .form-footer .btn.submit');
 
 const forms = () => $$('.action-container .general-actions .actions.dropup .dropdown-menu li');
-const deselectReport = () => $('#reports-content .report-body .deselect'),
+const deselectReport = () => $('#reports-content .report-body .deselect');
 const itemSummary = () => $('#reports-content .report-body .item-summary');
+const checkCss = 'input[type="checkbox"]';
 
-const sentTask = async () => (await reportBody()).$('ul .task-list .task-state .state');
+const sentTask = async () => (await reportBodyDetails()).$('ul .task-list .task-state .state');
+const reportsByUUID = (uuid) => $$(`li[data-record-id="${uuid}"]`);
 
 // warning: the unread element is not displayed when there are no unread reports
 const getUnreadCount = async () => {
-  await browser.waitUntil(async () => await (await unreadlength).waitForDisplayed());
-  return await (await unreadlength).getText();
+  await browser.waitUntil(async () => await (await unreadCount()).waitForDisplayed());
+  return await (await unreadCount()).getText();
 };
 
 const goToReportById = (reportId) => browser.url(`#/reports/${reportId}`);
 
 const getTaskState = async (first, second) => {
-  return (await reportBody())
+  return (await reportBodyDetails())
     .$(`.scheduled-tasks > ul > li:nth-child(${first}) > ul > li:nth-child(${second}) .task-state .state`);
 };
 
@@ -84,7 +87,7 @@ const getFieldValue = async (name) => {
 
 const submitForm = async () => {
   await (await submitButton()).click();
-  await (await $(reportBodyDetails)).waitForDisplayed();
+  await (await reportBodyDetails()).waitForDisplayed();
 };
 
 const getElementText = async (element) => {
@@ -114,7 +117,7 @@ const reportsListDetails = async () => {
 
 const collapseSelection = async () => {
   await (await itemSummary()).click();
-  expect(await $(reportBodyDetails).isExisting()).to.be.false;
+  expect(await (await reportBodyDetails()).isExisting()).to.be.false;
 };
 
 const deleteSelectedReports = async (savedUuids) => {
@@ -122,63 +125,63 @@ const deleteSelectedReports = async (savedUuids) => {
   const confirmButton = () => $('.btn.submit.btn-danger');
 
   await (await deleteAllButton()).click();
-  await (await confirmButton()).click();;
-  await (await confirmButton()).click();;
+  await (await confirmButton()).click();
+  await (await confirmButton()).click();
   await (await firstReport ()).waitForDisplayed();
   // make sure the reports are deleted
-  expect(await reportsByUUID(savedUuids[1]).lenghth).to.equal(1);
+  expect(await reportsByUUID(savedUuids[1]).length).to.equal(1);
 };
 
 const deselectAll = async () => {
   const deselectAllButton = await $('.action-container .deselect-all');
   await deselectAllButton.click();
-  expect(await $('#reports-content .selection-count > span').isExising()).to.be.false;
-  expect(await $(reportBody).length).to.equal(0);
+  const count = await $('#reports-content .selection-count > span');
+  expect(await count.isExisting()).to.be.false;
+  expect(await $$(reportBody).length).to.equal(0);
 };
 
 const expandSelection = async () => {
   await (await itemSummary()).click();
-  await (await $(reportBodyDetails)).waitForDisplayed();
+  await (await $(reportBodyDetailsSelector)).waitForDisplayed();
 };
 const selectAll = async () => {
-    await (await $('.action-container .select-all')).click();
-    await (await $('#reports-content .selection-count > span')).waitForDisplayed();
-    expect(await $$(reportBody).length).to.equal(3);
-  };
-  const selectSeveralReports = async (savedUuids) => {
-    const checkCss = 'input[type="checkbox"]';
-    await helper.clickElement(reportsByUUID(savedUuids[0]).first().element(by.css(checkCss)));
-    await helper.clickElement(reportsByUUID(savedUuids[2]).first().element(by.css(checkCss)));
-    await browser.sleep(1000);
-    expect(await element.all(by.css(reportBody)).length).to.equal(2);
-  };
+  await (await $('.action-container .select-all')).click();
+  await (await $('#reports-content .selection-count > span')).waitForDisplayed();
+  expect(await $$(reportBody).length).to.equal(3);
+};
 
-  const selectReport = async (savedUuids) => {
-    const checkbox = element(by.css(`#reports-list li[data-record-id="${savedUuids[0]}"] input[type="checkbox"]`));
-    await helper.clickElement(checkbox);
-    await helper.waitElementToBeVisible(element(by.css('#reports-content .selection-count > span:first-child')));
-    expect(await element.all(by.css(reportBody)).length).to.equal(1);
+const selectSeveralReports = async (savedUuids) => {
+  const firstCheck = (await reportsByUUID(savedUuids[0]))[0].$(checkCss);
+  await firstCheck.click();
+  const secondCheck = (await reportsByUUID(savedUuids[2]))[0].$(checkCss);
+  secondCheck.click();
+  await browser.pause(1000);
+  expect(await (await $$(reportBody)).length).to.equal(2);
+};
 
-    const textContent = element(by.css('#reports-content .report-body .item-summary .sender .name'));
-    await browser.wait(
-      async () => await helper.getTextFromElement(textContent) === 'Sharon',
-      5000
-    );
-    expect(await element(by.css(reportBodyDetails)).isPresent()).to.be.false;
-  };
+const selectReport = async (savedUuids) => {
+  const checkbox = await $(`#reports-list li[data-record-id="${savedUuids[0]}"] input[type="checkbox"]`);
+  await checkbox.click();
+  await (await $('#reports-content .selection-count > span:first-child')).waitForDisplayed();
+  expect(await $$(reportBody).length).to.equal(1);
 
-  const startSelectMode = async (savedUuids)=> {
-    const selectModeButton = element(by.css('.action-container .select-mode-start'));
-    await helper.clickElement(selectModeButton);
-    const checkbox = reportsByUUID(savedUuids[0]).first().element(by.css('input[type="checkbox"]'));
-    await helper.waitUntilReady(checkbox);
-  };
+  const textContent = await $('#reports-content .report-body .item-summary .sender .name');
+  await browser.waitUntil(async () => (await textContent.getText()).trim() === 'Sharon');
+  expect(await (await reportBodyDetails()).isExisting()).to.be.false;
+};
 
-  const stopSelectMode = async (savedUuids)=> {
-    await helper.clickElement(element(by.css('.action-container .select-mode-stop')));
-    const checkbox = reportsByUUID(savedUuids[0]).first().element(by.css('input[type="checkbox"]'));
-    await helper.waitElementToDisappear(checkbox.locator());
-  };
+const startSelectMode = async (savedUuids)=> {
+  const selectModeButton = () => $('.action-container .select-mode-start');
+  await (await selectModeButton()).click();
+  const checkbox = (await reportsByUUID(savedUuids[0]))[0].$(checkCss);
+  await checkbox.waitForDisplayed();
+};
+
+const stopSelectMode = async (savedUuids)=> {
+  await (await $('.action-container .select-mode-stop')).click();
+  const checkbox = (await reportsByUUID(savedUuids[0]))[0].$(checkCss);
+  await  checkbox.waitForDisplayed({reverse: true});
+};
 
 module.exports = {
   reportList,
@@ -204,7 +207,6 @@ module.exports = {
   getSummaryField,
   submitForm,
   reportsListDetails,
-  deselectReport,
   stopSelectMode,
   startSelectMode,
   selectReport,

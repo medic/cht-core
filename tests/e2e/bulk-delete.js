@@ -1,6 +1,7 @@
 const utils = require('../utils');
 const commonElements = require('../page-objects/common/common.wdio.page');
 const reports = require('../page-objects/reports/reports.wdio.page');
+const loginPage = require('../page-objects/login/login.wdio.page');
 
 describe('Bulk delete reports', () => {
   const docs = [
@@ -58,6 +59,7 @@ describe('Bulk delete reports', () => {
   const savedUuids = [];
 
   before(async () => {
+    await loginPage.cookieLogin();
     const results = await utils.saveDocs(docs);
     results.forEach(result => {
       savedUuids.push(result.id);
