@@ -117,6 +117,7 @@ const reportsListDetails = async () => {
   return reportDetails;
 };
 
+
 const filterByDate = async (startDate, endDate) => {
   await (await dateFilter()).click();
   await (await datePickerStart()).click();
@@ -126,6 +127,8 @@ const filterByDate = async (startDate, endDate) => {
   await (await datePickerStart()).click();
   await (await $('#freetext')).click(); // blur the datepicker
 };
+
+const firstReportDetailField = () => $('#reports-content .details ul li:first-child p');
 
 module.exports = {
   reportList,
@@ -153,5 +156,6 @@ module.exports = {
   reportsListDetails,
   filterByDate,
   allReports,
-  reportsByUUID
+  reportsByUUID,
+  firstReportDetailField
 };

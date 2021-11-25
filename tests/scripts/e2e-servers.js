@@ -124,13 +124,19 @@ app.post('/:server/:action', (req, res) => {
 
 app.post('/die', (req, res) => {
   console.log('Killing API / Sentinel service port');
-  Promise.all([
-    () => stopServer('api'),
-    () => stopServer('sentinel'),
-  ]).then(() => {
-    res.status(200).end();
-    process.exit(0);
-  });
+  Promise
+    .all([
+      () => stopServer('api'),
+      () => stopServer('sentinel'),
+    ])
+    .then(() => {
+      res.status(200).end();
+      process.exit(0);
+    })
+    .catch(() => {
+      res.status(200).end();
+      process.exit(0);
+    });
 });
 
 const port = 31337;
