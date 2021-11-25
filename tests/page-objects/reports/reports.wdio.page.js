@@ -183,6 +183,10 @@ const stopSelectMode = async (savedUuids)=> {
   await  checkbox.waitForDisplayed({reverse: true});
 };
 
+
+const firstReportDetailField = () => $('#reports-content .details ul li:first-child p');
+
+
 module.exports = {
   reportList,
   firstReport,
@@ -217,4 +221,5 @@ module.exports = {
   collapseSelection,
   deleteSelectedReports,
   deselectAll,
+  firstReportDetailField
 };
