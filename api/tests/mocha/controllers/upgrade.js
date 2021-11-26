@@ -5,7 +5,7 @@ const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 
 const controller = require('../../../src/controllers/upgrade');
-const service = require('../../../src/services/upgrade');
+const service = require('../../../src/services/horti/upgrade');
 
 describe('Upgrade controller', () => {
   const req = {
@@ -33,7 +33,7 @@ describe('Upgrade controller', () => {
       return controller.upgrade(req, {})
         .then(() => {
           auth.check.callCount.should.equal(1);
-          auth.check.args[0][1].should.equal('can_configure');
+          auth.check.args[0][1].should.deep.equal(['can_configure']);
           serverUtils.error.callCount.should.equal(1);
         });
     });
@@ -59,7 +59,7 @@ describe('Upgrade controller', () => {
           service.upgrade.callCount.should.equal(1);
           service.upgrade.args[0][0].should.deep.equal(req.body.build);
           service.upgrade.args[0][1].should.equal('admin');
-          service.upgrade.args[0][2].should.deep.equal({stageOnly: false});
+          service.upgrade.args[0][2].should.deep.equal(false);
           json.callCount.should.equal(1);
           json.args[0][0].should.deep.equal({ok: true});
         });
@@ -77,7 +77,7 @@ describe('Upgrade controller', () => {
           service.upgrade.callCount.should.equal(1);
           service.upgrade.args[0][0].should.deep.equal(req.body.build);
           service.upgrade.args[0][1].should.equal('admin');
-          service.upgrade.args[0][2].should.deep.equal({stageOnly: true});
+          service.upgrade.args[0][2].should.deep.equal(true);
           json.callCount.should.equal(1);
           json.args[0][0].should.deep.equal({ok: true});
         });
@@ -91,7 +91,7 @@ describe('Upgrade controller', () => {
       return controller.complete({}, {})
         .then(() => {
           auth.check.callCount.should.equal(1);
-          auth.check.args[0][1].should.equal('can_configure');
+          auth.check.args[0][1].should.deep.equal(['can_configure']);
           service.complete.callCount.should.equal(1);
         });
     });

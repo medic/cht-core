@@ -5,7 +5,6 @@ const path = require('path');
 
 const viewMapUtils = require('@medic/view-map-utils');
 const db = require('../../../src/db');
-const ddocExtraction = require('../../../src/ddoc-extraction');
 const settingsService = require('../../../src/services/settings');
 const translations = require('../../../src/translations');
 const generateServiceWorker = require('../../../src/generate-service-worker');
@@ -29,7 +28,6 @@ describe('Configuration', () => {
     sinon.stub(db.medic, 'query');
     sinon.stub(db.medic, 'changes').returns({ on: on });
     sinon.stub(viewMapUtils, 'loadViewMaps');
-    sinon.stub(ddocExtraction, 'run');
     sinon.stub(translations, 'run');
     sinon.stub(settingsService, 'get');
     sinon.stub(settingsService, 'update');
@@ -182,15 +180,13 @@ describe('Configuration', () => {
     });
 
     describe('medic ddoc changes', () => {
-      it('reloads settings, runs translations and ddoc extraction', () => {
+      it('reloads settings, runs translations', () => {
         settingsService.update.resolves();
-        ddocExtraction.run.resolves();
         translations.run.resolves();
         db.medic.get.resolves();
 
         return emitChange({ id: '_design/medic' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(1);
-          chai.expect(ddocExtraction.run.callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(1);
           chai.expect(db.medic.get.args[0]).to.deep.equal(['_design/medic']);
           chai.expect(viewMapUtils.loadViewMaps.callCount).to.equal(1);
@@ -202,25 +198,11 @@ describe('Configuration', () => {
       it('should catch translations errors', () => {
         translations.run.rejects();
         settingsService.update.resolves();
-        ddocExtraction.run.resolves();
         db.medic.get.resolves();
 
         return emitChange({ id: '_design/medic' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(1);
-          chai.expect(ddocExtraction.run.callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(1);
-        });
-      });
-
-      it('should stop execution when ddocExtraction fails', () => {
-        translations.run.resolves();
-        settingsService.update.resolves();
-        ddocExtraction.run.rejects();
-        db.medic.get.resolves();
-        sinon.stub(process, 'exit');
-
-        return emitChange({ id: '_design/medic' }).then(() => {
-          chai.expect(process.exit.callCount).to.deep.equal(1);
         });
       });
     });
@@ -233,7 +215,6 @@ describe('Configuration', () => {
 
         return emitChange({ id: 'messages-test' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(0);
-          chai.expect(ddocExtraction.run.callCount).to.equal(0);
           chai.expect(generateServiceWorker.run.callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(0);
 
@@ -276,7 +257,6 @@ describe('Configuration', () => {
           chai.expect(generateServiceWorker.run.callCount).to.equal(1);
 
           chai.expect(translations.run.callCount).to.equal(0);
-          chai.expect(ddocExtraction.run.callCount).to.equal(0);
         });
       });
 
