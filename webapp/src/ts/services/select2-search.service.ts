@@ -185,12 +185,12 @@ export class Select2SearchService {
   private setDoc(selectEl, doc) {
     if (doc) {
       selectEl.select2('data')[0].doc = doc;  // Set the value
-      // In case an unknown doc was set before, remove the grayed style from select2
-      selectEl.next('span').find('.select2-selection__rendered').removeClass('grayed');
+      // In case an unknown doc was set before, remove the "missing" style from select2
+      selectEl.next('span').find('.select2-selection__rendered').removeClass('missing');
     } else {
       // Because doc was deleted or the user don't have access to,
-      // a fixed title in the option selected is set with a grayed style
-      selectEl.next('span').find('.select2-selection__rendered').addClass('grayed');
+      // a fixed title in the option selected is set with a "missing" style
+      selectEl.next('span').find('.select2-selection__rendered').addClass('missing');
       selectEl.select2('data')[0].text = this.translateService.instant('Unknown contact');
     }
   }
