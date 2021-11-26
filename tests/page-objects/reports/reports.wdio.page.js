@@ -126,7 +126,6 @@ const deleteSelectedReports = async (savedUuids) => {
 
   await (await deleteAllButton()).click();
   await (await confirmButton()).click();
-  await (await confirmButton()).click();
   await (await firstReport ()).waitForDisplayed();
   // make sure the reports are deleted
   expect(await reportsByUUID(savedUuids[1]).length).to.equal(1);

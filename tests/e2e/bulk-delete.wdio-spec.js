@@ -77,13 +77,10 @@ describe('Bulk delete reports', () => {
     await reports.collapseSelection();
     // deselect
     await (await reports.deselectReport()).click();
-    await console.log(' deselect ...');
     await reports.selectAll();
-    await console.log(' deselect ...');
     await reports.deselectAll();
-    await console.log(' deselect ...');
-    // await reports.selectSeveralReports(savedUuids);
-    // await console.log(' deselect ...');
-    // await reports.deleteSelectedReports(savedUuids);
+    await reports.selectSeveralReports(savedUuids);
+    await console.log(' deselect 3...');
+    await reports.deleteSelectedReports(savedUuids);
   });
 });
