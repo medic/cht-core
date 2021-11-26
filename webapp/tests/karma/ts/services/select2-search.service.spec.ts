@@ -118,7 +118,7 @@ describe('Select2SearchService', () => {
       lineageModelGeneratorService.contact.rejects({ code: 404, error: 'not found' });
       try {
         await service.init(selectEl, ['person'], {initialValue: 'aaa-222-333'});
-        assert.fail('expected error to be thrown');
+        assert.fail('Should not fail');
       } catch (e) {
         expect(selectEl.val.callCount).to.equal(2);
         expect(selectEl.val.args[0]).to.deep.equal([ 'aaa-222-333' ]);  // set the value
