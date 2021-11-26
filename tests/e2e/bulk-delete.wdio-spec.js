@@ -80,7 +80,6 @@ describe('Bulk delete reports', () => {
     await reports.selectAll();
     await reports.deselectAll();
     await reports.selectSeveralReports(savedUuids);
-    await console.log(' deselect 3...');
     await reports.deleteSelectedReports(savedUuids);
   });
 });
