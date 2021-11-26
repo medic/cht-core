@@ -78,19 +78,19 @@ const getDocs = async ({ dbObject }, docIds) => {
 };
 
 const indexView = (dbName, ddocName, viewName) => {
-  try {
-    return rpn.get({
+  return rpn
+    .get({
       uri: `${environment.serverUrl}/${dbName}/${DDOC_PREFIX}${ddocName}/_view/${viewName}`,
       json: true,
       qs: { limit: 1 },
       timeout: 2000,
+    })
+    .catch(requestError => {
+      if (requestError && requestError.error && requestError.error.code === SOCKET_TIMEOUT_ERROR_CODE) {
+        return indexView(dbName, ddocName, viewName);
+      }
+      throw requestError;
     });
-  } catch (requestError) {
-    if (requestError && requestError.error && requestError.error.code === SOCKET_TIMEOUT_ERROR_CODE) {
-      return indexView(dbName, ddocName, viewName);
-    }
-    throw requestError;
-  }
 };
 
 const getDdocsToStageFromJson = (json) => {
