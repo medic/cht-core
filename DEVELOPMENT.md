@@ -19,7 +19,7 @@ You will need to install the following:
 - xsltproc
 - python 2.7
 
-To run end-to-end (e22) tests you will also need:
+To run end-to-end (e2e) tests you will also need:
 
 - Java JDK 11
 - Docker
