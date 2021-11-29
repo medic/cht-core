@@ -5,6 +5,7 @@ const { join } = require('path');
 const { assert, expect } = require('chai');
 const sinon = require('sinon');
 const childProcess = require('child_process');
+const markdown = require('enketo-transformer/src/markdown');
 const db = require('../../../src/db');
 const service = require('../../../src/services/generate-xform');
 
@@ -462,7 +463,6 @@ describe('generate-xform service', () => {
   });
 
   describe('replaceAllMarkdown', () => {
-    let markdown;
     let replaceAllMarkdown;
 
     const wrapInQuestionLabel = (contents) => `
@@ -472,7 +472,6 @@ describe('generate-xform service', () => {
 
     beforeEach(() => {
       const generate = rewire('../../../src/services/generate-xform');
-      markdown = generate.__get__('markdown');
       replaceAllMarkdown = generate.__get__('replaceAllMarkdown');
     });
 
@@ -482,8 +481,7 @@ describe('generate-xform service', () => {
     });
 
     it('replaces questions', () => {
-      const toHtml = sinon.stub(markdown, 'toHtml');
-      toHtml.returns('def');
+      sinon.stub(markdown, 'toHtml').returns('def');
       const given = `
 <root>
   <form>
@@ -495,13 +493,12 @@ describe('generate-xform service', () => {
     <span class="question-label">def</span>
   </form>`;
       expect(replaceAllMarkdown(given)).to.equal(expected.trim());
-      expect(toHtml.callCount).to.equal(1);
-      expect(toHtml.args[0][0]).to.equal('abc');
+      expect(markdown.toHtml.callCount).to.equal(1);
+      expect(markdown.toHtml.args[0][0]).to.equal('abc');
     });
 
     it('replaces hints', () => {
-      const toHtml = sinon.stub(markdown, 'toHtml');
-      toHtml.returns('def');
+      sinon.stub(markdown, 'toHtml').returns('def');
       const given = `
 <root>
   <form>
@@ -513,15 +510,15 @@ describe('generate-xform service', () => {
     <span class="or-hint">def</span>
   </form>`;
       expect(replaceAllMarkdown(given)).to.equal(expected.trim());
-      expect(toHtml.callCount).to.equal(1);
-      expect(toHtml.args[0][0]).to.equal('abc');
+      expect(markdown.toHtml.callCount).to.equal(1);
+      expect(markdown.toHtml.args[0][0]).to.equal('abc');
     });
 
     it('replaces all questions and hints', () => {
-      const toHtml = sinon.stub(markdown, 'toHtml');
-      toHtml.withArgs('1').returns('a');
-      toHtml.withArgs('2').returns('b');
-      toHtml.withArgs('3').returns('c');
+      sinon.stub(markdown, 'toHtml')
+        .withArgs('1').returns('a')
+        .withArgs('2').returns('b')
+        .withArgs('3').returns('c');
       const given = `
 <root>
   <form>
@@ -537,10 +534,12 @@ describe('generate-xform service', () => {
     <span class="question-label">c</span>
   </form>`;
       expect(replaceAllMarkdown(given)).to.equal(expected.trim());
-      expect(toHtml.callCount).to.equal(3);
+      expect(markdown.toHtml.callCount).to.equal(3);
+      expect(markdown.toHtml.args).to.deep.equal([['1'], ['3'], ['2']]);
     });
 
     it('does not convert content outside of questions and hints', () => {
+      sinon.spy(markdown, 'toHtml');
       const given = `
   <form>
     <span class="question-label">not markdown##</span>
@@ -565,6 +564,9 @@ describe('generate-xform service', () => {
   </form>`;
 
       expect(replaceAllMarkdown(given)).to.equal(expected.trim());
+      expect(markdown.toHtml.callCount).to.equal(4);
+      expect(markdown.toHtml.args)
+        .to.deep.equal([['not markdown##'], ['##markdown'], ['not markdown_'], ['_markdown_']]);
     });
 
     it('h1', () => {

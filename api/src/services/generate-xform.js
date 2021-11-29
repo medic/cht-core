@@ -71,12 +71,11 @@ const transform = (formXml, stylesheet) => {
   });
 };
 
-const convertDynamicUrls = (original) => original
-  .replace(
-    /<a[^>]+href="([^"]*---output[^"]*)"[^>]*>(.*?)<\/a>/gm,
-    '<a href="#" target="_blank" rel="noopener" class="dynamic-url">' +
-    '$2<span class="url hidden">$1</span>' +
-    '</a>');
+const convertDynamicUrls = (original) => original.replace(
+  /<a[^>]+href="([^"]*---output[^"]*)"[^>]*>(.*?)<\/a>/gm,
+  '<a href="#" target="_blank" rel="noopener" class="dynamic-url">' +
+  '$2<span class="url hidden">$1</span>' +
+  '</a>');
 
 const convertEmbeddedHtml = (original) => original
   .replace(/&lt;([\s\S]*?)&gt;/gm, '<$1>')
