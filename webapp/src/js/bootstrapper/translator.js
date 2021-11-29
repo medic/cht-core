@@ -17,6 +17,9 @@ const TRANSLATIONS = {
     TOO_MANY_DOCS: ({ count, limit }) => `Warning! You are about to download ${count} docs, which exceeds recommended limit of ${limit}. Do you wish to continue?`, // eslint-disable-line max-len
     CONTINUE: 'Continue',
     ABORT: 'Cancel',
+    SESSION_EXPIRED_TITLE: 'Session has expired',
+    SESSION_EXPIRED_DESCRIPTION: 'Your session has expired, please login to continue.',
+    LOGIN: 'Login',
   },
   es: {
     FETCH_INFO: ({ count, total }) => `Obteniendo información (${count} de ${total} docs)…`,
