@@ -19,12 +19,12 @@ You will need to install the following:
 - xsltproc
 - python 2.7
 
-To run end-to-end tests you will also need:
+To run end-to-end (e22) tests you will also need:
 
-- Java JDK
+- Java JDK 11
 - Docker
 
-Installation instructions for these tools differ heavily based on your operating system and aren't covered here.
+Installation instructions for these tools differ heavily based on your operating system and aren't covered here. Note that currently e2e tests need Java 11 and fail on newer versions.
 
 ### CouchDB on Docker
 
