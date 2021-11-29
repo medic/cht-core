@@ -71,9 +71,9 @@ const TRANSLATIONS = {
     TOO_MANY_DOCS: ({ count, limit }) => eurodigit.to_non_euro.devanagari(`सावधान! तपाई ${count} डकुमेन्ट डाउनलोड गर्न जाँदै हुनुहुन्छ, जुन कि सुझावित ${limit} भन्दा बढी छ. के तपाई डाउनलोड गर्न चाहनु हुन्छ?`), // eslint-disable-line max-len
     CONTINUE: 'जारी राख्नुस',
     ABORT: 'बन्द गर्नुस',
-    SESSION_EXPIRED_TITLE: '',
-    SESSION_EXPIRED_DESCRIPTION: '',
-    LOGIN: '',
+    SESSION_EXPIRED_TITLE: 'अघिल्लो सत्रको म्याद सकियो',
+    SESSION_EXPIRED_DESCRIPTION: 'तपाईँको अघिल्लो सत्रको म्याद सकिएको छ, जारी राख्नका लागि कृपया लगिन गर्नुहोला।',
+    LOGIN: 'लगिन',
   },
   fr: {
     FETCH_INFO: ({ count, total }) => `Récupération des données  (${count} sur ${total} documents)…`,
@@ -107,9 +107,9 @@ const TRANSLATIONS = {
     TOO_MANY_DOCS: ({ count, limit }) => `चेतावनी! आप ${count} डॉक्स डाउनलोड करने वाले हैं, जो ${limit} की अनुशंसित सीमा से अधिक है। क्या आप  डाउनलोड जारी रखना चाहते हैं?`, // eslint-disable-line max-len
     CONTINUE: 'जारी रखें',
     ABORT: 'रद्द करें',
-    SESSION_EXPIRED_TITLE: '',
-    SESSION_EXPIRED_DESCRIPTION: '',
-    LOGIN: '',
+    SESSION_EXPIRED_TITLE: 'सेशुन समाप्त हो चुका है',
+    SESSION_EXPIRED_DESCRIPTION: 'आपका सेशुन समाप्त हो चुका है, जारी रखने के लिए कृपया लॉग इन करें',
+    LOGIN: 'लॉग',
   },
 };
 
