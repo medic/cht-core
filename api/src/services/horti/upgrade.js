@@ -4,10 +4,12 @@ const upgrade = async (build, userCtx, stageOnly) => {
   // get version
   const indexViewPromises = await upgradeUtils.stage(build.version);
   if (stageOnly) {
+    indexViewPromises();
     return;
   }
 
-  await Promise.all(indexViewPromises());
+
+  await indexViewPromises();
   await complete();
 };
 

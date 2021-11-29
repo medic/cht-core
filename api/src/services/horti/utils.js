@@ -189,7 +189,11 @@ const stage = async (version = 'local') => {
     }
   }
 
-  const indexViews = () => viewsToIndex.map(indexView => indexView());
+  const indexViews = () => {
+    logger.info('Indexing staged views');
+    return Promise.all(viewsToIndex.map(indexView => indexView()));
+  };
+
   logger.info('Staging complete');
   return indexViews;
 };

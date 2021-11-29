@@ -1,34 +1,5 @@
-/*const probeViewsLoop = (deployDoc, viewlist) => {
-  return new Promise(res => {
-    const probeViews = () => {
-      if (stopViewWarming) {
-        return res();
-      }
-
-      Promise
-        .all(viewlist.map(view => DB.app.query(view, { limit: 1 })))
-        .then(() => {
-          stopViewWarming = true;
-          info('Warming views complete');
-          return updateIndexers(deployDoc);
-        })
-        .catch(err => {
-          if (err.error !== 'timeout') {
-            // Ignore errors in the view warming loop because long-running view queries aren't that
-            // trust-worthy. We *do* check for errors in the writeProgressTimeout loop, so that will
-            // catch real CouchDB errors
-            info(`Unexpected error while warming: (${err.message}), continuing`);
-          }
-
-          probeViews();
-        });
-    };
-
-    probeViews();
-  });
-};*/
-
 const db = require('../../db');
+const logger = require('../../logger');
 
 const setTasksToComplete = (indexer) => {
   Object
@@ -76,15 +47,14 @@ const logIndexersProgress = (indexers) => {
       .padEnd(barLength, '_');
     const ddocName = indexer.design_document.padEnd(35, ' ');
 
-    console.log(`${ddocName}[${bar}]`);
+    logger.info(`${ddocName}[${bar}]`);
   };
-
-  console.log('View indexer progress');
   indexers.forEach(logProgress);
 };
 
 const viewIndexerProgress = () => {
   const indexers = [];
+  let timeout;
 
   const logIndexerProgress = async () => {
     const activeTasks = await db.activeTasks();
@@ -96,13 +66,13 @@ const viewIndexerProgress = () => {
     updateRunningTasks(indexers, relevantTasks);
     indexers.forEach(calculateAverageProgress);
     logIndexersProgress(indexers);
+    timeout = setTimeout(logIndexerProgress, 5000);
   };
 
   logIndexerProgress();
-  const interval = setInterval(logIndexerProgress, 5000);
 
   return () => {
-    clearInterval(interval);
+    clearTimeout(timeout);
   };
 };
 

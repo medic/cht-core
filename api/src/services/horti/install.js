@@ -3,7 +3,6 @@ const path = require('path');
 const environment = require('../../environment');
 const upgradeUtils = require('./utils');
 const viewIndexerProgress = require('./indexer-progress');
-const logger = require('../../logger');
 
 const getBundledDdocs = (jsonFileName) => {
   return require(path.join(environment.getDdocsPath(), jsonFileName)).docs;
@@ -79,9 +78,8 @@ const checkInstall = async () => {
   }
 
   const indexViewPromises = await upgradeUtils.stage();
-  logger.info('Indexing views');
   const stop = viewIndexerProgress.viewIndexerProgress();
-  await Promise.all(indexViewPromises());
+  await indexViewPromises();
   stop();
   await upgradeUtils.complete();
   await upgradeUtils.cleanup();
