@@ -20,7 +20,7 @@ const formTitle = () => $('#report-form #form-title');
 const submitButton = () => $('#report-form .form-footer .btn.submit');
 
 const forms = () => $$('.action-container .general-actions .actions.dropup .dropdown-menu li');
-const deselectReport = () => $('#reports-content .report-body .deselect');
+const deselectReport = () => $(`${reportBody} .deselect`);
 const itemSummary = () => $('#reports-content .report-body .item-summary');
 const checkCss = 'input[type="checkbox"]';
 
