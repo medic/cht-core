@@ -21,7 +21,7 @@ const submitButton = () => $('#report-form .form-footer .btn.submit');
 
 const forms = () => $$('.action-container .general-actions .actions.dropup .dropdown-menu li');
 const deselectReport = () => $(`${reportBody} .deselect`);
-const itemSummary = () => $('#reports-content .report-body .item-summary');
+const itemSummary = () => $(`${reportBody} .item-summary`);
 const checkCss = 'input[type="checkbox"]';
 
 const sentTask = async () => (await reportBodyDetails()).$('ul .task-list .task-state .state');
