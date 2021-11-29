@@ -2,7 +2,7 @@ const path = require('path');
 const url = require('url');
 const logger = require('./logger');
 
-const { UNIT_TEST_ENV, COUCH_URL, BUILDS_SERVER } = process.env;
+const { UNIT_TEST_ENV, COUCH_URL, STAGING_SERVER } = process.env;
 const DEFAULT_BUILDS_URL = 'https://staging.dev.medicmobile.org/_couch/builds';
 
 if (UNIT_TEST_ENV) {
@@ -22,7 +22,7 @@ if (UNIT_TEST_ENV) {
 
   module.exports = {
     couchUrl: couchUrl,
-    buildsUrl: BUILDS_SERVER || DEFAULT_BUILDS_URL,
+    buildsUrl: STAGING_SERVER || DEFAULT_BUILDS_URL,
     serverUrl: couchUrl.slice(0, couchUrl.lastIndexOf('/')),
     protocol: parsedUrl.protocol,
     port: parsedUrl.port,
