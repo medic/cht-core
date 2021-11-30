@@ -25,7 +25,7 @@ const itemSummary = () => $(`${reportBody} .item-summary`);
 const checkCss = 'input[type="checkbox"]';
 
 const sentTask = async () => (await reportBodyDetails()).$('ul .task-list .task-state .state');
-const reportsByUUID = (uuid) => $$(`li[data-record-id="${uuid}"]`);
+const reportByUUID = (uuid) => $(`li[data-record-id="${uuid}"]`);
 
 // warning: the unread element is not displayed when there are no unread reports
 const getUnreadCount = async () => {
@@ -120,23 +120,39 @@ const collapseSelection = async () => {
   expect(await (await reportBodyDetails()).isExisting()).to.be.false;
 };
 
-const deleteSelectedReports = async (savedUuids) => {
+const deleteSelectedReports = async () => {
   const deleteAllButton = () => $('.action-container .detail-actions .delete-all');
   const confirmButton = () => $('.btn.submit.btn-danger');
+  const completeButton = () => $('a=Complete');
+  const deleteConfirnModal = () => $('#bulk-delete-confirm');
 
   await (await deleteAllButton()).click();
   await (await confirmButton()).click();
+  //await (await deleteConfirnModal()).waitForDisplayed({reverse: true});
+  //await (await completeButton()).waitForDisplayed();
+  await (await completeButton()).click();
+  await (await completeButton()).waitForDisplayed({reverse:true});
   await (await firstReport ()).waitForDisplayed();
+
+  await browser.pause(1000);
+  //await deleteConfirnModal.waitForDisplayed();
   // make sure the reports are deleted
-  expect(await reportsByUUID(savedUuids[1]).length).to.equal(1);
+  //await console.log('report 1...', await (await reportByUUID(uuids[0])).isDisplayed());
+  //await console.log('report 1...', await (await reportByUUID(uuids[1])).isDisplayed());
+  // for(const uuid of uuids){
+  //   return (await reportByUUID(uuid)).isDisplayed();
+  // }
+  // return await reportsByUUID(savedUuids[1]).length
+  // expect(await reportsByUUID(savedUuids[1]).length).to.equal(1);
+  return await $$(reportBody);
 };
 
 const deselectAll = async () => {
   const deselectAllButton = await $('.action-container .deselect-all');
   await deselectAllButton.click();
   const count = await $('#reports-content .selection-count > span');
-  expect(await count.isExisting()).to.be.false;
-  expect(await $$(reportBody).length).to.equal(0);
+  await count.waitForExist({reverse: true});
+  return await $$(reportBody);
 };
 
 const expandSelection = async () => {
@@ -146,39 +162,42 @@ const expandSelection = async () => {
 const selectAll = async () => {
   await (await $('.action-container .select-all')).click();
   await (await $('#reports-content .selection-count > span')).waitForDisplayed();
-  expect(await $$(reportBody).length).to.equal(3);
+  return await $$(reportBody);
 };
 
-const selectSeveralReports = async (savedUuids) => {
-  const firstCheck = (await reportsByUUID(savedUuids[0]))[0].$(checkCss);
-  await firstCheck.click();
-  const secondCheck = (await reportsByUUID(savedUuids[2]))[0].$(checkCss);
-  secondCheck.click();
-  await browser.pause(1000);
-  expect(await (await $$(reportBody)).length).to.equal(2);
+const selectSeveralReports = async (uuids) => {
+  // for (const uuid of uuids) {
+  //   await (await reportByUUID(uuid)).$(checkCss).click();
+  //   await browser.pause(2000);
+  // }
+  await (await reportByUUID(uuids[0])).$(checkCss).click();
+  await browser.pause(2000);
+  await (await reportByUUID(uuids[2])).$(checkCss).click();
+  await browser.pause(2000);
+  return await $$(reportBody);
 };
 
 const selectReport = async (savedUuids) => {
-  const checkbox = await $(`#reports-list li[data-record-id="${savedUuids[0]}"] input[type="checkbox"]`);
+  const checkbox = (await reportByUUID(savedUuids[0])).$(checkCss);
   await checkbox.click();
   await (await $('#reports-content .selection-count > span:first-child')).waitForDisplayed();
-  expect(await $$(reportBody).length).to.equal(1);
-
-  const textContent = await $('#reports-content .report-body .item-summary .sender .name');
-  await browser.waitUntil(async () => (await textContent.getText()).trim() === 'Sharon');
-  expect(await (await reportBodyDetails()).isExisting()).to.be.false;
+  //const textContent = await $('#reports-content .report-body .item-summary .sender .name');
+  //await browser.waitUntil(async () => (await textContent.getText()).trim() === name);
+  //expect(await (await reportBodyDetails()).isExisting()).to.be.false;
+  await (await reportBodyDetails()).waitForExist({reverse: true});
+  return await $$(reportBody);//1
 };
 
 const startSelectMode = async (savedUuids)=> {
   const selectModeButton = () => $('.action-container .select-mode-start');
   await (await selectModeButton()).click();
-  const checkbox = (await reportsByUUID(savedUuids[0]))[0].$(checkCss);
+  const checkbox = (await reportByUUID(savedUuids[0])).$(checkCss);
   await checkbox.waitForDisplayed();
 };
 
 const stopSelectMode = async (savedUuids)=> {
   await (await $('.action-container .select-mode-stop')).click();
-  const checkbox = (await reportsByUUID(savedUuids[0]))[0].$(checkCss);
+  const checkbox = (await reportByUUID(savedUuids[0])).$(checkCss);
   await  checkbox.waitForDisplayed({reverse: true});
 };
 
@@ -220,5 +239,6 @@ module.exports = {
   collapseSelection,
   deleteSelectedReports,
   deselectAll,
-  firstReportDetailField
+  firstReportDetailField,
+  reportByUUID
 };
