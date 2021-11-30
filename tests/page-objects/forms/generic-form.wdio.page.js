@@ -9,8 +9,31 @@ const nextPage = async (numberOfPages = 1) => {
   }
 };
 
+const openReportReviewMenu = async () => {
+  const reviewButton = await $('.actions>.mm-icon-inverse>.fa-check');
+  await reviewButton.click();
+};
+
+
+const invalidateReport = async () => {
+  const reportInvalidBtn = await $('.verify-error');
+  await reportInvalidBtn.click();
+  const reportInvalidMessage = await $('.verify-error.active');
+  expect(await reportInvalidMessage.getText()).to.equal('Has errors');
+};
+
+const validateReport = async () => {
+  const reportValidBtn = await $('.verify-valid');
+  await reportValidBtn.click();
+  const reportValidMessage = await $('.verify-valid.active');
+  expect(await reportValidMessage.getText()).to.equal('Correct');
+};
+
 module.exports = {
   submitButton,
   nextPage,
+  openReportReviewMenu,
+  invalidateReport,
+  validateReport,
   nameField
 };
