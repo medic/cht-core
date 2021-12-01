@@ -177,39 +177,14 @@ const getUserCtx = function() {
   }
 };
 
-const requestSession = () => {
-  return new Promise((resolve, reject) => {
-    request('GET', '/_session', null, xmlhttp => {
-      if (xmlhttp.status === 200) {
-        let response;
-        try {
-          response = JSON.parse(xmlhttp.responseText);
-        } catch (error) {
-          // No body
-        }
-        return resolve(response);
-      }
-      return reject(xmlhttp);
-    });
-  });
-};
-
-const checkSession = async () => {
+const checkSession = function() {
   if (getCookie('login') === 'force') {
-    // Require user to login regardless of session state
+    // require user to login regardless of session state
     return;
   }
-
-  let userCtx;
-  if (window.navigator.onLine) {
-    const session = await requestSession();
-    userCtx = session && session.userCtx;
-  } else {
-    userCtx = getUserCtx();
-  }
-
+  const userCtx = getUserCtx();
   if (userCtx && userCtx.name) {
-    // User is already logged in - redirect to app
+    // user is already logged in - redirect to app
     window.location = getRedirectUrl() || userCtx.home || '/';
   }
 };
