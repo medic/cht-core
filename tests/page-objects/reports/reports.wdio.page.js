@@ -10,6 +10,7 @@ const submitterName = () => $('.sender .name');
 const firstReport = () => $(`${reportListID} li:first-child`);
 const reportList = () => $(`${reportListID}`);
 const submitReportButton = () => $('.action-container .general-actions:not(.ng-hide) .fa-plus');
+const deleteAllButton = () => $('.action-container .detail-actions .delete-all');
 const formActionsLink = (formId) => {
   return $(`.action-container .general-actions .dropup.open .dropdown-menu li a[href="#/reports/add/${formId}"]`);
 };
@@ -121,29 +122,13 @@ const collapseSelection = async () => {
 };
 
 const deleteSelectedReports = async () => {
-  const deleteAllButton = () => $('.action-container .detail-actions .delete-all');
   const confirmButton = () => $('.btn.submit.btn-danger');
   const completeButton = () => $('a=Complete');
-  const deleteConfirnModal = () => $('#bulk-delete-confirm');
-
   await (await deleteAllButton()).click();
   await (await confirmButton()).click();
-  //await (await deleteConfirnModal()).waitForDisplayed({reverse: true});
-  //await (await completeButton()).waitForDisplayed();
   await (await completeButton()).click();
   await (await completeButton()).waitForDisplayed({reverse:true});
   await (await firstReport ()).waitForDisplayed();
-
-  await browser.pause(1000);
-  //await deleteConfirnModal.waitForDisplayed();
-  // make sure the reports are deleted
-  //await console.log('report 1...', await (await reportByUUID(uuids[0])).isDisplayed());
-  //await console.log('report 1...', await (await reportByUUID(uuids[1])).isDisplayed());
-  // for(const uuid of uuids){
-  //   return (await reportByUUID(uuid)).isDisplayed();
-  // }
-  // return await reportsByUUID(savedUuids[1]).length
-  // expect(await reportsByUUID(savedUuids[1]).length).to.equal(1);
   return await $$(reportBody);
 };
 
@@ -165,27 +150,12 @@ const selectAll = async () => {
   return await $$(reportBody);
 };
 
-const selectSeveralReports = async (uuids) => {
-  // for (const uuid of uuids) {
-  //   await (await reportByUUID(uuid)).$(checkCss).click();
-  //   await browser.pause(2000);
-  // }
-  await (await reportByUUID(uuids[0])).$(checkCss).click();
-  await browser.pause(2000);
-  await (await reportByUUID(uuids[2])).$(checkCss).click();
-  await browser.pause(2000);
+const selectReports = async (uuids) => {
+  for (const uuid of uuids) {
+    await (await reportByUUID(uuid)).$(checkCss).click();
+    await (await deleteAllButton()).waitForClickable();
+  }
   return await $$(reportBody);
-};
-
-const selectReport = async (savedUuids) => {
-  const checkbox = (await reportByUUID(savedUuids[0])).$(checkCss);
-  await checkbox.click();
-  await (await $('#reports-content .selection-count > span:first-child')).waitForDisplayed();
-  //const textContent = await $('#reports-content .report-body .item-summary .sender .name');
-  //await browser.waitUntil(async () => (await textContent.getText()).trim() === name);
-  //expect(await (await reportBodyDetails()).isExisting()).to.be.false;
-  await (await reportBodyDetails()).waitForExist({reverse: true});
-  return await $$(reportBody);//1
 };
 
 const startSelectMode = async (savedUuids)=> {
@@ -231,9 +201,8 @@ module.exports = {
   reportsListDetails,
   stopSelectMode,
   startSelectMode,
-  selectReport,
   selectAll,
-  selectSeveralReports,
+  selectReports,
   deselectReport,
   expandSelection,
   collapseSelection,

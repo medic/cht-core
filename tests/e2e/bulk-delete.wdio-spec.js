@@ -71,27 +71,25 @@ describe('Bulk delete reports', () => {
     await reports.stopSelectMode(savedUuids);
     // start select mode again
     await reports.startSelectMode(savedUuids);
-    await reports.selectReport(savedUuids, docs[3].name);
+    const selectedReport = await reports.selectReports([savedUuids[0]]);
+    expect(selectedReport.length).to.equal(1);
     await reports.expandSelection();
     await reports.collapseSelection();
     // deselect
     await (await reports.deselectReport()).click();
-    const selectedReports = await reports.selectAll();
-    expect(selectedReports.length).to.equal(docs.length -1);
-    const reportsi = await reports.deselectAll();
-    expect(reportsi.length).to.equal(0);
-    const selectedItems = await reports.selectSeveralReports([savedUuids[0], savedUuids[2]]);
-    expect(selectedItems.length).to.equal(2);
-    const body = await reports.deleteSelectedReports();
-    console.log('ret...', body);
+    const selectedAll = await reports.selectAll();
+    expect(selectedAll.length).to.equal(3);
 
+    const deselect = await reports.deselectAll();
+    expect(deselect.length).to.equal(0);
+
+    const selectedItems = await reports.selectReports([savedUuids[0], savedUuids[2]]);
+    expect(selectedItems.length).to.equal(2);
+
+    await reports.deleteSelectedReports();
+    expect(await (await reports.reportsListDetails()).length).to.equal(1);
     expect(await (await reports.reportByUUID(savedUuids[0])).isDisplayed()).to.be.false;
     expect(await (await reports.reportByUUID(savedUuids[1])).isDisplayed()).to.be.true;
     expect(await (await reports.reportByUUID(savedUuids[2])).isDisplayed()).to.be.false;
-  // await console.log('report 1...', await (await reports.reportByUUID(savedUuids[1])).isDisplayed());
-  // await console.log('report 1...', await (await reports.reportByUUID(savedUuids[2])).isDisplayed());
-
-    //console.log('report....', abc.length);
-    //expect((await reports.deleteSelectedReports()).length).to.equal(1);
   });
 });
