@@ -4,6 +4,7 @@ const environment = require('./environment');
 const isClientHuman = require('./is-client-human');
 const logger = require('./logger');
 const MEDIC_BASIC_AUTH = 'Basic realm="Medic Web Services"';
+const cookie = require('./services/cookie');
 
 const wantsJSON = req => req.get('Accept') === 'application/json';
 
@@ -93,6 +94,7 @@ module.exports = {
         pathname: path.join('/', environment.db, 'login'),
         query: { redirect: req.url },
       });
+      cookie.setLogin(res, 'force');
       res.redirect(302, redirectUrl);
     } else {
       promptForBasicAuth(res);

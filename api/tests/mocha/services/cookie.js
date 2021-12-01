@@ -210,4 +210,33 @@ describe('cookie service', () => {
       ]);
     });
   });
+
+  describe('setLogin', () => {
+    it('should set cookie with correct value and options when not in production environment', () => {
+      sinon.stub(process, 'env').value({});
+
+      service.setLogin(res, 'force');
+
+      chai.expect(res.cookie.callCount).to.equal(1);
+      chai.expect(res.cookie.args[0]).to.deep.equal([
+        'login',
+        'force',
+        { sameSite: 'lax', secure: false },
+      ]);
+    });
+
+    it('should set cookie with correct value and options when in production environment', () => {
+      sinon.stub(process, 'env').value({ NODE_ENV: 'production' });
+      service = rewire('../../../src/services/cookie');
+
+      service.setLogin(res, 'force');
+
+      chai.expect(res.cookie.callCount).to.equal(1);
+      chai.expect(res.cookie.args[0]).to.deep.equal([
+        'login',
+        'force',
+        { sameSite: 'lax', secure: true },
+      ]);
+    });
+  });
 });
