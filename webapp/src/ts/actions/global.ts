@@ -7,7 +7,7 @@ export const Actions = {
   setAndroidAppVersion: createSingleValueAction('SET_ANDROID_APP_VERSION', 'androidAppVersion'),
   setCurrentTab: createSingleValueAction('SET_CURRENT_TAB', 'currentTab'),
   setSnapshotData: createSingleValueAction('SET_SNAPSHOT_DATA', 'snapshotData'),
-  setSnackbarContent: createSingleValueAction('SET_SNACKBAR_CONTENT', 'content'),
+  setSnackbarContent: createMultiValueAction('SET_SNACKBAR_CONTENT'),
   setLoadingContent: createSingleValueAction('SET_LOADING_CONTENT', 'loadingContent'),
   setShowContent: createSingleValueAction('SET_SHOW_CONTENT', 'showContent'),
   setShowActionBar: createSingleValueAction('SET_SHOW_ACTION_BAR', 'showActionBar'),
@@ -59,8 +59,8 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setSnapshotData(snapshotData));
   }
 
-  setSnackbarContent(content) {
-    return this.store.dispatch(Actions.setSnackbarContent(content));
+  setSnackbarContent(message, action?) {
+    return this.store.dispatch(Actions.setSnackbarContent({ message, action }));
   }
 
   setLoadingContent(loading) {
