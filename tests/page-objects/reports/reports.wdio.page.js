@@ -230,5 +230,4 @@ module.exports = {
   filterByDate,
   allReports,
   reportsByUUID,
-  firstReportDetailField,
 };
