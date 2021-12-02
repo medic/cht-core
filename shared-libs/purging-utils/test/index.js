@@ -43,6 +43,14 @@ describe('Purging Utils', () => {
       chai.expect(utils.isOffline(config, ['roleB'])).to.equal(false);
       chai.expect(utils.isOffline(config, ['roleB', 'roleC'])).to.equal(false);
     });
+
+    it('should return false when user has admin or online role role', () => {
+      const config = { roleA: { offline: true }};
+      chai.expect(utils.isOffline(config, ['roleA', '_admin'])).to.equal(false);
+      chai.expect(utils.isOffline(config, ['roleB', '_admin'])).to.equal(false);
+      chai.expect(utils.isOffline(config, ['mm-online', 'roleA'])).to.equal(false);
+      chai.expect(utils.isOffline(config, ['mm-online', 'roleB'])).to.equal(false);
+    });
   });
 
   describe('getPurgeDbName', () => {

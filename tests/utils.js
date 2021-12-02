@@ -263,7 +263,7 @@ const revertDb = async (except, ignoreRefresh) => {
   await revertTranslations();
 
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
-  if (!ignoreRefresh && (needsRefresh || hasModal)) {
+  if (!ignoreRefresh && (needsRefresh || await hasModal())) {
     watcher && watcher.cancel();
     await refreshToGetNewSettings();
   } else if (needsRefresh) {
@@ -276,6 +276,9 @@ const revertDb = async (except, ignoreRefresh) => {
 };
 
 const deleteUsers = async (users, meta = false) => {
+  if (!users.length) {
+    return;
+  }
   const usernames = users.map(user => `org.couchdb.user:${user.username}`);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
   const medicDocs = await request({
