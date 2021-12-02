@@ -114,7 +114,7 @@ module.exports = function(grunt) {
       },
       admin: {
         src: 'admin/src/js/main.js',
-        dest: 'build/static/admin/js/main.js',
+        dest: 'api/build/static/admin/js/main.js',
         options: {
           transform: ['browserify-ngannotate'],
           alias: {
@@ -159,7 +159,7 @@ module.exports = function(grunt) {
     less: {
       admin: {
         files: {
-          'build/static/admin/css/main.css': 'admin/src/css/main.less',
+          'api/build/static/admin/css/main.css': 'admin/src/css/main.less',
         },
       },
     },
@@ -210,12 +210,6 @@ module.exports = function(grunt) {
         src: '**/*',
         dest: 'api/build/static/',
       },
-      /*'default-docs': {
-        expand: true,
-        cwd: 'build/default-docs/',
-        src: '**!/!*',
-        dest: 'api/build/default-docs/',
-      },*/
       'admin-static': {
         files: [
           {
@@ -576,7 +570,6 @@ module.exports = function(grunt) {
         files: ['admin/src/css/**/*'],
         tasks: [
           'less:admin',
-          'copy:built-resources',
           'notify:deployed',
         ],
       },
@@ -584,7 +577,6 @@ module.exports = function(grunt) {
         files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
         tasks: [
           'browserify:admin',
-          'copy:built-resources',
           'notify:deployed',
         ],
       },
@@ -599,17 +591,13 @@ module.exports = function(grunt) {
         files: ['admin/src/templates/**/*', '!admin/src/templates/index.html'],
         tasks: [
           'ngtemplates:adminApp',
-          'copy:built-resources',
           'notify:deployed',
         ],
       },
       'webapp-js': {
         // instead of watching the source files, watch the build folder and upload on rebuild
-        files: ['build/static/webapp/**/*'],
-        tasks: [
-          'copy:built-resources',
-          'notify:deployed',
-        ],
+        files: ['api/build/static/webapp/**/*'],
+        tasks: [ 'notify:deployed' ],
       },
       'primary-ddoc': {
         files: ['ddocs/medic-db/**/*'],
@@ -728,7 +716,7 @@ module.exports = function(grunt) {
       adminApp: {
         cwd: 'admin/src',
         src: ['templates/**/*.html', '!templates/index.html'],
-        dest: 'build/static/admin/js/templates.js',
+        dest: 'api/build/static/admin/js/templates.js',
         options: {
           htmlmin: {
             collapseBooleanAttributes: true,
@@ -750,7 +738,7 @@ module.exports = function(grunt) {
       compile: {
         cwd: 'webapp/src/css/',
         src: 'enketo/enketo.scss',
-        dest: 'build/static/webapp',
+        dest: 'api/build/static/webapp',
         ext: '.less',
         expand: true,
         outputStyle: 'expanded',
@@ -759,8 +747,8 @@ module.exports = function(grunt) {
       },
     },
     'optimize-js': {
-      'build/static/admin/js/main.js': 'build/static/admin/js/main.js',
-      'build/static/admin/js/templates.js': 'build/static/admin/js/templates.js',
+      'api/build/static/admin/js/main.js': 'api/build/static/admin/js/main.js',
+      'api/build/static/admin/js/templates.js': 'api/build/static/admin/js/templates.js',
     },
     jsdoc: {
       admin: {
