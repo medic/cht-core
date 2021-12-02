@@ -120,7 +120,7 @@ const handleFormChange = (change) => {
 };
 
 const handleBrandingChanges = () => {
-  return debouncedUpdateServiceWorker();
+  return updateServiceWorker();
 };
 
 const updateServiceWorker = () => {
