@@ -94,7 +94,7 @@ module.exports = {
         pathname: path.join('/', environment.db, 'login'),
         query: { redirect: req.url },
       });
-      cookie.setLogin(res, 'force');
+      cookie.setForceLogin(res);
       res.redirect(302, redirectUrl);
     } else {
       promptForBasicAuth(res);

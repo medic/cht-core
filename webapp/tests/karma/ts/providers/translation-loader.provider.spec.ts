@@ -37,7 +37,7 @@ describe('Translations Loader provider', () => {
     });
   }));
 
-  it('should return empty when no authorised', waitForAsync(() => {
+  it('should return empty when not authorised', waitForAsync(() => {
     DBGet.rejects({ status: 401 });
 
     provider

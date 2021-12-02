@@ -212,9 +212,9 @@ describe('cookie service', () => {
     });
   });
 
-  describe('setLogin', () => {
+  describe('setForceLogin', () => {
     it('should set cookie with correct value and options when not in production environment', () => {
-      service.setLogin(res, 'force');
+      service.setForceLogin(res);
 
       chai.expect(res.cookie.callCount).to.equal(1);
       chai.expect(res.cookie.args[0]).to.deep.equal([
@@ -228,7 +228,7 @@ describe('cookie service', () => {
       sinon.stub(process, 'env').value({ NODE_ENV: 'production' });
       service = rewire('../../../src/services/cookie'); // Rewire to pick stub in process.env.
 
-      service.setLogin(res, 'force');
+      service.setForceLogin(res);
 
       chai.expect(res.cookie.callCount).to.equal(1);
       chai.expect(res.cookie.args[0]).to.deep.equal([

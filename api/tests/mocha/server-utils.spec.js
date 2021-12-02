@@ -139,7 +139,7 @@ describe('Server utils', () => {
 
     it('redirects to login page for human user', () => {
       const redirect = sinon.stub(res, 'redirect');
-      const setLoginCookieStub = sinon.stub(cookie, 'setLogin');
+      const setForceLoginStub = sinon.stub(cookie, 'setForceLogin');
       sinon.stub(res, 'setHeader');
       req.url = 'someurl';
       req.headers = { 'user-agent': 'Mozilla/1.0' };
@@ -151,8 +151,8 @@ describe('Server utils', () => {
       chai.expect(redirect.args[0][1]).to.equal('/medic/login?redirect=someurl');
       chai.expect(res.setHeader.callCount).to.equal(1);
       chai.expect(res.setHeader.args[0]).to.deep.equal(['logout-authorization', 'CHT-Core API']);
-      chai.expect(setLoginCookieStub.calledOnce);
-      chai.expect(setLoginCookieStub.args[0]).to.deep.equal([res, 'force']);
+      chai.expect(setForceLoginStub.calledOnce);
+      chai.expect(setForceLoginStub.args[0]).to.deep.equal([res]);
     });
 
     it('returns 401 for medic-collect', () => {
