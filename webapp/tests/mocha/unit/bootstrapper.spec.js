@@ -303,7 +303,7 @@ describe('bootstrapper', () => {
     });
   });
 
-  it('should redirect to login when not userCtx cookie found', async () => {
+  it('should redirect to login when no userCtx cookie found', async () => {
     localGet.withArgs('_design/medic-client').rejects();
     sinon.stub(purger, 'setOptions');
 
@@ -436,7 +436,7 @@ describe('bootstrapper', () => {
 
   });
 
-  it('should not ignore error if users-info fetch fails with 401', async () => {
+  it('should not ignore the error and redirect to login if the users-info fetch fails with 401', async () => {
     setUserCtxCookie({ name: 'jim' });
     localGet.withArgs('_design/medic-client').onCall(0).rejects();
     localGet.withArgs('_design/medic-client').onCall(1).resolves();
