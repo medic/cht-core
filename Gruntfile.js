@@ -134,7 +134,7 @@ module.exports = function(grunt) {
         banner:
           '/*! Medic <%= grunt.template.today("yyyy-mm-dd") %> */\n',
       },
-      web: {
+      admin: {
         files: {
           'build/static/admin/js/main.js': 'build/static/admin/js/main.js',
           'build/static/admin/js/templates.js': 'build/static/admin/js/templates.js'
@@ -164,7 +164,7 @@ module.exports = function(grunt) {
       },
     },
     cssmin: {
-      web: {
+      admin: {
         options: {
           keepSpecialComments: 0,
         },
@@ -196,7 +196,7 @@ module.exports = function(grunt) {
           'fonts/**/*',
           'img/**/*',
         ],
-        dest: 'build/static/webapp/',
+        dest: 'api/build/static/webapp/',
       },
       'api-resources': {
         expand: true,
@@ -204,25 +204,25 @@ module.exports = function(grunt) {
         src: '**/*',
         dest: 'api/build/static/',
       },
-      'static-resources': {
+      'built-resources': {
         expand: true,
         cwd: 'build/static',
         src: '**/*',
         dest: 'api/build/static/',
       },
-      'default-docs': {
+      /*'default-docs': {
         expand: true,
         cwd: 'build/default-docs/',
-        src: '**/*',
+        src: '**!/!*',
         dest: 'api/build/default-docs/',
-      },
-      'admin-resources': {
+      },*/
+      'admin-static': {
         files: [
           {
             expand: true,
             flatten: true,
             src: 'admin/src/templates/index.html',
-            dest: 'build/static/admin',
+            dest: 'api/build/static/admin',
           },
           {
             expand: true,
@@ -231,7 +231,7 @@ module.exports = function(grunt) {
               'admin/node_modules/font-awesome/fonts/*',
               'webapp/src/fonts/**/*'
             ],
-            dest: 'build/static/admin/fonts/',
+            dest: 'api/build/static/admin/fonts/',
           },
         ],
       },
@@ -510,7 +510,7 @@ module.exports = function(grunt) {
         cmd: () => {
           const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
           const configPath = path.resolve('./config/default');
-          const buildPath = path.resolve('./build/default-docs');
+          const buildPath = path.resolve('./api/build/default-docs');
           const actions = ['upload-app-settings', 'upload-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-resources', 'upload-custom-translations'];
           return `node ${medicConfPath} --skip-dependency-check --archive --source=${configPath} --destination=${buildPath} ${actions.join(' ')}`;
         }
@@ -576,7 +576,7 @@ module.exports = function(grunt) {
         files: ['admin/src/css/**/*'],
         tasks: [
           'less:admin',
-          'copy:static-resources',
+          'copy:built-resources',
           'notify:deployed',
         ],
       },
@@ -584,15 +584,14 @@ module.exports = function(grunt) {
         files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
         tasks: [
           'browserify:admin',
-          'copy:static-resources',
+          'copy:built-resources',
           'notify:deployed',
         ],
       },
       'admin-index': {
         files: ['admin/src/templates/index.html'],
         tasks: [
-          'copy:admin-resources',
-          'copy:static-resources',
+          'copy:admin-static',
           'notify:deployed',
         ],
       },
@@ -600,7 +599,7 @@ module.exports = function(grunt) {
         files: ['admin/src/templates/**/*', '!admin/src/templates/index.html'],
         tasks: [
           'ngtemplates:adminApp',
-          'copy:static-resources',
+          'copy:built-resources',
           'notify:deployed',
         ],
       },
@@ -608,7 +607,7 @@ module.exports = function(grunt) {
         // instead of watching the source files, watch the build folder and upload on rebuild
         files: ['build/static/webapp/**/*'],
         tasks: [
-          'copy:static-resources',
+          'copy:built-resources',
           'notify:deployed',
         ],
       },
@@ -810,56 +809,62 @@ module.exports = function(grunt) {
     'exec:apply-patches',
   ]);
 
-  grunt.registerTask('build-js', 'Build the JS resources', [
+  grunt.registerTask('build-webapp', 'Build the JS resources', [
+    'build-enketo-css',
     'exec:build-webapp',
   ]);
 
-  grunt.registerTask('build-css', 'Build the CSS resources', [
+  grunt.registerTask('build-enketo-css', 'Build the CSS resources', [
     'sass',
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
     'exec:clean-build-dir',
-    'copy:ddocs',
-    'build-common',
+    'build-ddocs',
+    'build-webapp',
+    'exec:bundlesize', // bundlesize only checks webapp build files
+    'build-admin',
+    'build-config',
+    'create-staging-doc',
     'build-node-modules',
-    'minify',
-    'couch-compile:primary',
     'populate-staging-doc',
   ]);
 
   grunt.registerTask('build-dev', 'Build the static resources', [
     'exec:clean-build-dir',
-    'copy:ddocs',
+    'build-ddocs',
+    'build-webapp',
+    'build-admin',
+    'build-config',
+    'copy-static-files-to-api',
+  ]);
+
+  grunt.registerTask('copy-static-files-to-api', 'Copy build files and static files to api', [
     'copy:api-resources',
-    'build-common',
-    'copy:static-resources',
-    'couch-compile:primary',
+    'copy:built-resources',
+    'copy:webapp-static',
+    'copy:admin-static',
   ]);
 
   grunt.registerTask('set-build-info', buildUtils.setBuildInfo);
 
-  grunt.registerTask('build-common', 'Build the static resources', [
-    'build-css',
-    'build-js',
+  grunt.registerTask('build-ddocs', 'Builds the ddocs', [
+    'copy:ddocs',
     'exec:set-ddoc-version',
     'set-build-info',
-    'build-admin',
-    'build-ddoc',
-    'exec:build-config',
-    'copy:webapp-static',
-    'copy:default-docs',
-  ]);
-
-  grunt.registerTask('build-ddoc', 'Build the main ddoc', [
+    'couch-compile:primary',
     'couch-compile:secondary',
   ]);
 
+  grunt.registerTask('build-config', 'Build default configuration', [
+    'exec:build-config',
+  ]);
+
   grunt.registerTask('build-admin', 'Build the admin app', [
-    'copy:admin-resources',
     'ngtemplates:adminApp',
     'browserify:admin',
     'less:admin',
+    'minify-admin',
   ]);
 
   grunt.registerTask('deploy', 'Deploy the webapp', [
@@ -869,12 +874,10 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-node-modules', 'Build and pack api and sentinel bundles', [
-    'copy:api-resources',
-    'copy:static-resources',
+    'copy-static-files-to-api',
     'uglify:api',
     'cssmin:api',
     'exec:bundle-dependencies',
-    'create-staging-doc',
     'exec:pack-node-modules',
   ]);
 
@@ -926,7 +929,7 @@ module.exports = function(grunt) {
     'exec:clean-test-database',
     'exec:setup-test-database',
     'build-node-modules',
-    'build-ddoc',
+    'couch-compile:secondary',
     'couch-compile:primary',
     'couch-push:test',
     'protractor:performance-tests-and-services',
@@ -975,12 +978,11 @@ module.exports = function(grunt) {
   ]);
 
   // CI tasks
-  grunt.registerTask('minify', 'Minify JS and CSS', [
-    'uglify:web',
+  grunt.registerTask('minify-admin', 'Minify JS and CSS', BUILD_NUMBER ? [
+    'uglify:admin',
     'optimize-js',
-    'cssmin:web',
-    'exec:bundlesize',
-  ]);
+    'cssmin:admin',
+  ] : []);
 
   grunt.registerTask('ci-compile', 'build, lint, unit, integration test', [
     'exec:check-version',

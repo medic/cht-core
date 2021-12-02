@@ -120,7 +120,7 @@ const handleFormChange = (change) => {
 };
 
 const handleBrandingChanges = () => {
-  return updateServiceWorker();
+  return debouncedUpdateServiceWorker();
 };
 
 const updateServiceWorker = () => {
@@ -129,6 +129,7 @@ const updateServiceWorker = () => {
     process.exit(1);
   });
 };
+const debouncedUpdateServiceWorker = _.debounce(updateServiceWorker, 200);
 
 const load = () => {
   loadViewMaps();
@@ -138,11 +139,10 @@ const load = () => {
 };
 
 const listen = () => {
-  const debouncedUpdateServiceWorker = _.debounce(updateServiceWorker, 200);
-  fs.watch(environment.getWebappPath(), () => {
+  fs.watch(environment.webappPath, () => {
     debouncedUpdateServiceWorker();
   });
-  fs.watch(environment.getLoginPath(), () => {
+  fs.watch(environment.loginPath, () => {
     debouncedUpdateServiceWorker();
   });
 
