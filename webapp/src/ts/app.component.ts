@@ -1,11 +1,11 @@
 import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
-import { Component, NgZone, OnInit, HostListener } from '@angular/core';
+import { Component, HostListener, NgZone, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
+import { setTheme as setBootstrapTheme } from 'ngx-bootstrap/utils';
 import { combineLatest } from 'rxjs';
 
-import { DBSyncService } from '@mm-services/db-sync.service';
+import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
 import { Selectors } from './selectors';
 import { GlobalActions } from '@mm-actions/global';
 import { SessionService } from '@mm-services/session.service';
@@ -82,7 +82,6 @@ export class AppComponent implements OnInit {
   privacyPolicyAccepted;
   showPrivacyPolicy;
   selectMode;
-  minimalTabs;
   adminUrl;
   canLogOut;
   replicationStatus;
@@ -214,12 +213,12 @@ export class AppComponent implements OnInit {
     };
 
     this.dbSyncService.subscribe(({ state, to, from }) => {
-      if (state === 'disabled') {
+      if (state === SyncStatus.Disabled) {
         this.globalActions.updateReplicationStatus({ disabled: true });
         return;
       }
 
-      if (state === 'unknown') {
+      if (state === SyncStatus.Unknown) {
         this.globalActions.updateReplicationStatus({ current: SYNC_STATUS.unknown });
         return;
       }
@@ -228,7 +227,7 @@ export class AppComponent implements OnInit {
       const lastTrigger = this.replicationStatus.lastTrigger;
       const delay = lastTrigger ? Math.round((now - lastTrigger) / 1000) : 'unknown';
 
-      if (state === 'inProgress') {
+      if (state === SyncStatus.InProgress) {
         this.globalActions.updateReplicationStatus({
           current: SYNC_STATUS.inProgress,
           lastTrigger: now
@@ -238,13 +237,13 @@ export class AppComponent implements OnInit {
       }
 
       const statusUpdates:any = {};
-      if (to === 'success') {
+      if (to === SyncStatus.Success) {
         statusUpdates.lastSuccessTo = now;
       }
-      if (from === 'success') {
+      if (from === SyncStatus.Success) {
         statusUpdates.lastSuccessFrom = now;
       }
-      if (to === 'success' && from === 'success') {
+      if (to === SyncStatus.Success && from === SyncStatus.Success) {
         console.info(`Replication succeeded after ${delay} seconds`);
         statusUpdates.current = SYNC_STATUS.success;
       } else {
@@ -420,7 +419,6 @@ export class AppComponent implements OnInit {
       this.store.select(Selectors.getReplicationStatus),
       this.store.select(Selectors.getAndroidAppVersion),
       this.store.select(Selectors.getCurrentTab),
-      this.store.select(Selectors.getMinimalTabs),
       this.store.select(Selectors.getPrivacyPolicyAccepted),
       this.store.select(Selectors.getShowPrivacyPolicy),
       this.store.select(Selectors.getSelectMode),
@@ -428,7 +426,6 @@ export class AppComponent implements OnInit {
       replicationStatus,
       androidAppVersion,
       currentTab,
-      minimalTabs,
       privacyPolicyAccepted,
       showPrivacyPolicy,
       selectMode,
@@ -436,7 +433,6 @@ export class AppComponent implements OnInit {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
       this.currentTab = currentTab;
-      this.minimalTabs = minimalTabs;
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.privacyPolicyAccepted = privacyPolicyAccepted;
       this.selectMode = selectMode;

@@ -23,7 +23,6 @@ export const Selectors = {
   getSnapshotData: createSelector(getGlobalState, (globalState) => globalState.snapshotData),
   getSnackbarContent: createSelector(getGlobalState, (globalState) => globalState.snackbarContent),
   getLoadingContent: createSelector(getGlobalState, (globalState) => globalState.loadingContent),
-  getMinimalTabs: createSelector(getGlobalState, (globalState) => globalState.minimalTabs),
   getShowContent: createSelector(getGlobalState, (globalState) => globalState.showContent),
   getSelectMode: createSelector(getGlobalState, (globalState) => globalState.selectMode),
   getShowActionBar: createSelector(getGlobalState, (globalState) => globalState.showActionBar),

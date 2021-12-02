@@ -1,3 +1,6 @@
 <div id="snackbar" [class.active]="active">
-  <span class="snackbar-content">{{content}}</span>
+  <span class="snackbar-content">
+    <span class="snackbar-message">{{message}}</span>
+    <span class="snackbar-action" *ngIf="action" (click)="action.onClick()">{{action.label}}</span>
+  </span>
 </div>
