@@ -1,44 +1,20 @@
 /* eslint-disable max-len */
 
-const url = require('url');
-const packageJson = require('./package.json');
 const fs = require('fs');
 const path = require('path');
 
 const {
-  TAG,
-  BRANCH,
-  COUCH_URL,
   COUCH_NODE_NAME,
   MARKET_URL,
-  STAGING_SERVER,
   BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
 } = process.env;
 
-const releaseName = TAG || BRANCH || 'local-development';
-const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
+const buildUtils = require('./scripts/build');
+const couchConfig = buildUtils.getCouchConfig();
 
-const couchConfig = (() => {
-  if (!COUCH_URL) {
-    throw 'Required environment variable COUCH_URL is undefined. (eg. http://your:pass@localhost:5984/medic)';
-  }
-  const parsedUrl = url.parse(COUCH_URL);
-  if (!parsedUrl.auth) {
-    throw 'COUCH_URL must contain admin authentication information';
-  }
-
-  const [ username, password ] = parsedUrl.auth.split(':', 2);
-
-  return {
-    username,
-    password,
-    dbName: parsedUrl.path.substring(1),
-    withPath: path => `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}/${path}`,
-    withPathNoAuth: path => `${parsedUrl.protocol}//${parsedUrl.host}/${path}`,
-  };
-})();
+const ESLINT_COMMAND = './node_modules/.bin/eslint --color';
 
 const getSharedLibDirs = () => {
   return fs
@@ -69,39 +45,30 @@ module.exports = function(grunt) {
     'couch-push': 'grunt-couch',
     ngtemplates: 'grunt-angular-templates',
     protractor: 'grunt-protractor-runner',
-    replace: 'grunt-text-replace',
     uglify: 'grunt-contrib-uglify-es',
   });
   require('time-grunt')(grunt);
 
   // Project configuration
   grunt.initConfig({
-    replace: {
-      'change-ddoc-id-for-testing': {
-        src: ['build/ddocs/medic.json'],
-        overwrite: true,
-        replacements: [
-          {
-            from: '"_id": "_design/medic"',
-            to: `"_id": "medic:medic:test-${BUILD_NUMBER}"`,
-          },
-        ],
-      },
-    },
     'couch-compile': {
       primary: {
         files: {
-          'build/ddocs/medic.json': 'build/ddocs/medic/',
+          'build/ddocs/medic.json': 'build/ddocs/medic-db/*',
         },
       },
       secondary: {
         files: {
-          'build/ddocs/medic/_attachments/ddocs/medic.json': 'build/ddocs/medic-db/*',
-          'build/ddocs/medic/_attachments/ddocs/sentinel.json': 'build/ddocs/sentinel-db/*',
-          'build/ddocs/medic/_attachments/ddocs/users-meta.json': 'build/ddocs/users-meta-db/*',
-          'build/ddocs/medic/_attachments/ddocs/logs.json': 'build/ddocs/logs-db/*',
+          'build/ddocs/sentinel.json': 'build/ddocs/sentinel-db/*',
+          'build/ddocs/users-meta.json': 'build/ddocs/users-meta-db/*',
+          'build/ddocs/logs.json': 'build/ddocs/logs-db/*',
         },
       },
+      staging: {
+        files: {
+          'build/staging.json': 'build/staging',
+        }
+      }
     },
     'couch-push': {
       localhost: {
@@ -120,30 +87,20 @@ module.exports = function(grunt) {
           pass: couchConfig.password,
         },
         files: {
-          [couchConfig.withPathNoAuth(couchConfig.dbName)]: 'build/ddocs/medic/_attachments/ddocs/medic.json',
-          [couchConfig.withPathNoAuth(couchConfig.dbName + '-sentinel')]: 'build/ddocs/medic/_attachments/ddocs/sentinel.json',
-          [couchConfig.withPathNoAuth(couchConfig.dbName + '-users-meta')]: 'build/ddocs/medic/_attachments/ddocs/users-meta.json',
-          [couchConfig.withPathNoAuth(couchConfig.dbName + '-logs')]: 'build/ddocs/medic/_attachments/ddocs/logs.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName + '-sentinel')]: 'build/ddocs/sentinel.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName + '-users-meta')]: 'build/ddocs/users-meta.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName + '-logs')]: 'build/ddocs/logs.json',
         }
       },
       test: {
         files: {
           ['http://admin:pass@localhost:4984/medic-test']: 'build/ddocs/medic.json',
-          ['http://admin:pass@localhost:4984/medic-test-logs']: 'build/ddocs/medic/_attachments/ddocs/logs.json',
         },
-      },
-      staging: {
-        files: [
-          {
-            src: 'build/ddocs/medic.json',
-            dest: `${MARKET_URL}/${STAGING_SERVER}`,
-          },
-        ],
       },
       testing: {
         files: [
           {
-            src: 'build/ddocs/medic.json',
+            src: 'build/staging.json',
             dest: `${MARKET_URL}/${BUILDS_SERVER}`,
           },
         ],
@@ -323,7 +280,6 @@ module.exports = function(grunt) {
             '**/node_modules/**',
             'build/**',
             '**/pupil/**',
-            'api/src/enketo-transformer/**',
           ];
 
           return [ESLINT_COMMAND]
@@ -344,7 +300,7 @@ module.exports = function(grunt) {
               `npm dedupe`,
               `npm pack`,
               `ls -l medic-${module}-0.1.0.tgz`,
-              `mv medic-*.tgz ../build/ddocs/medic/_attachments/`,
+              `mv medic-*.tgz ../build/staging/_attachments/`,
               `cd ..`,
             ].join(' && ')
           )
@@ -366,27 +322,7 @@ module.exports = function(grunt) {
         },
       },
       'set-ddoc-version': {
-        cmd: () => {
-          let version;
-          if (TAG) {
-            version = TAG;
-          } else {
-            version = packageJson.version;
-            if (BRANCH === 'master') {
-              version += `-alpha.${BUILD_NUMBER}`;
-            }
-          }
-          return `echo "${version}" > build/ddocs/medic/version`;
-        },
-      },
-      'set-horticulturalist-metadata': {
-        cmd: () => `
-          mkdir -p build/ddocs/medic/build_info;
-          cd build/ddocs/medic/build_info;
-          echo "${releaseName}" > version;
-          echo "${packageJson.version}" > base_version;
-          echo "${new Date().toISOString()}" > time;
-          echo "grunt on \`whoami\`" > author;`,
+        cmd: () => `echo "${buildUtils.getVersion()}" > build/ddocs/medic-db/medic/version`,
       },
       'api-dev': {
         cmd:
@@ -413,7 +349,7 @@ module.exports = function(grunt) {
       'setup-test-database': {
         cmd: [
           `docker run -d -p 4984:5984 -p 4986:5986 --rm --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data couchdb:2`,
-          'sh scripts/wait_for_response_code.sh 4984 200 couch',
+          'sh scripts/e2e/wait_for_response_code.sh 4984 200 couch',
           `curl 'http://localhost:4984/_cluster_setup' -H 'Content-Type: application/json' --data-binary '{"action":"enable_single_node","username":"admin","password":"pass","bind_address":"0.0.0.0","port":5984,"singlenode":true}'`,
           'COUCH_URL=http://admin:pass@localhost:4984/medic COUCH_NODE_NAME=nonode@nohost grunt secure-couchdb', // yo dawg, I heard you like grunt...
           // Useful for debugging etc, as it allows you to use Fauxton easily
@@ -422,7 +358,7 @@ module.exports = function(grunt) {
       },
       'wait_for_api_down': {
         cmd: [
-          'sh scripts/wait_for_response_code.sh 4988 000 api',
+          'sh scripts/e2e/wait_for_response_code.sh 4988 000 api',
         ].join('&& '),
         exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
@@ -433,7 +369,7 @@ module.exports = function(grunt) {
         exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
       'e2e-servers': {
-        cmd: `${BUILD_NUMBER ? 'echo running in CI' :'node ./tests/scripts/e2e-servers.js &'}`
+        cmd: `${BUILD_NUMBER ? 'echo running in CI' :'node ./scripts/e2e/e2e-servers.js &'}`
       },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
@@ -466,7 +402,7 @@ module.exports = function(grunt) {
       },
       'start-webdriver-ci': {
         cmd:
-          'tests/scripts/start_webdriver.sh'
+          'scripts/e2e/start_webdriver.sh'
       },
       'check-env-vars':
         'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
@@ -511,7 +447,7 @@ module.exports = function(grunt) {
       },
       'wdio-run-standard': {
         cmd: [
-          'npm run standard-wdio'
+          'npm run wdio-standard'
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
@@ -552,12 +488,11 @@ module.exports = function(grunt) {
             'patch webapp/node_modules/moment/locale/hi.js < webapp/patches/moment-hindi-use-euro-numerals.patch',
 
             // patch enketo to always mark the /inputs group as relevant
-            'patch webapp/node_modules/enketo-core/src/js/form.js < webapp/patches/enketo-inputs-always-relevant_form.patch',
-            'patch webapp/node_modules/enketo-core/src/js/relevant.js < webapp/patches/enketo-inputs-always-relevant_relevant.patch',
+            'patch webapp/node_modules/enketo-core/src/js/Form.js < webapp/patches/enketo-inputs-always-relevant.patch',
 
-            // patch enketo to fix repeat name collision bug - this should be removed when upgrading to a new version of enketo-core
-            // https://github.com/enketo/enketo-core/issues/815
-            'patch webapp/node_modules/enketo-core/src/js/calculate.js < webapp/patches/enketo-repeat-name-collision.patch',
+            // patch enketo so forms with no active pages are considered valid
+            // https://github.com/medic/medic/issues/5484
+            'patch webapp/node_modules/enketo-core/src/js/page.js < webapp/patches/enketo-handle-no-active-pages.patch',
 
             // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
             'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
@@ -642,8 +577,8 @@ module.exports = function(grunt) {
         tasks: [
           'less:admin',
           'copy:static-resources',
-          'couch-compile:secondary',
-          'couch-push:localhost-secondary',
+          'couch-compile:primary',
+          'couch-push:primary',
           'notify:deployed',
         ],
       },
@@ -652,8 +587,8 @@ module.exports = function(grunt) {
         tasks: [
           'browserify:admin',
           'copy:static-resources',
-          'couch-compile:secondary',
-          'couch-push:localhost-secondary',
+          'couch-compile:primary',
+          'couch-push:primary',
           'notify:deployed',
         ],
       },
@@ -662,8 +597,8 @@ module.exports = function(grunt) {
         tasks: [
           'copy:admin-resources',
           'copy:static-resources',
-          'couch-compile:secondary',
-          'couch-push:localhost-secondary',
+          'couch-compile:primary',
+          'couch-push:primary',
           'notify:deployed',
         ],
       },
@@ -672,8 +607,8 @@ module.exports = function(grunt) {
         tasks: [
           'ngtemplates:adminApp',
           'copy:static-resources',
-          'couch-compile:secondary',
-          'couch-push:localhost-secondary',
+          'couch-compile:primary',
+          'couch-push:primary',
           'notify:deployed',
         ],
       },
@@ -687,11 +622,11 @@ module.exports = function(grunt) {
         ],
       },
       'primary-ddoc': {
-        files: ['ddocs/medic/**/*'],
+        files: ['ddocs/medic-db/**/*'],
         tasks: ['copy:ddocs', 'couch-compile:primary', 'deploy'],
       },
       'secondary-ddocs': {
-        files: ['ddocs/*-db/**/*'],
+        files: ['ddocs/*-db/**/*', '!ddocs/medic-db/**/*'],
         tasks: [
           'copy:ddocs',
           'couch-compile:secondary',
@@ -739,7 +674,7 @@ module.exports = function(grunt) {
             suite: 'mobile',
             capabilities: {
               chromeOptions: {
-                'args': ['headless', 'disable-gpu'],
+                'args': ['headless','disable-gpu'],
                 mobileEmulation: { 'deviceName': 'Nexus 5' }
               }
             }
@@ -894,6 +829,7 @@ module.exports = function(grunt) {
     'build-node-modules',
     'minify',
     'couch-compile:primary',
+    'populate-staging-doc',
   ]);
 
   grunt.registerTask('build-dev', 'Build the static resources', [
@@ -905,11 +841,13 @@ module.exports = function(grunt) {
     'couch-compile:primary',
   ]);
 
+  grunt.registerTask('set-build-info', buildUtils.setBuildInfo);
+
   grunt.registerTask('build-common', 'Build the static resources', [
     'build-css',
     'build-js',
     'exec:set-ddoc-version',
-    'exec:set-horticulturalist-metadata',
+    'set-build-info',
     'build-admin',
     'build-ddoc',
     'exec:build-config',
@@ -930,6 +868,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('deploy', 'Deploy the webapp', [
     'couch-push:localhost',
+    'couch-push:localhost-secondary',
     'notify:deployed',
   ]);
 
@@ -939,6 +878,7 @@ module.exports = function(grunt) {
     'uglify:api',
     'cssmin:api',
     'exec:bundle-dependencies',
+    'create-staging-doc',
     'exec:pack-node-modules',
   ]);
 
@@ -1140,8 +1080,11 @@ module.exports = function(grunt) {
     'exec:sentinel-dev',
   ]);
 
-  grunt.registerTask('publish-for-testing', 'Publish the ddoc to the testing server', [
-    'replace:change-ddoc-id-for-testing',
+  grunt.registerTask('create-staging-doc', buildUtils.createStagingDoc);
+  grunt.registerTask('populate-staging-doc', buildUtils.populateStagingDoc);
+
+  grunt.registerTask('publish-for-testing', 'Publish the staging doc to the testing server', [
+    'couch-compile:staging',
     'couch-push:testing',
   ]);
 
