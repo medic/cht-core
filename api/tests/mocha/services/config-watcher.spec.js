@@ -191,10 +191,10 @@ describe('Configuration', () => {
         return emitChange({ id: '_design/medic' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(1);
           chai.expect(ddocExtraction.run.callCount).to.equal(1);
+          chai.expect(generateServiceWorker.run.callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(1);
           chai.expect(db.medic.get.args[0]).to.deep.equal(['_design/medic']);
           chai.expect(viewMapUtils.loadViewMaps.callCount).to.equal(1);
-
           chai.expect(generateServiceWorker.run.callCount).to.equal(0);
         });
       });
@@ -203,11 +203,13 @@ describe('Configuration', () => {
         translations.run.rejects();
         settingsService.update.resolves();
         ddocExtraction.run.resolves();
+        generateServiceWorker.run.resolves();
         db.medic.get.resolves();
 
         return emitChange({ id: '_design/medic' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(1);
           chai.expect(ddocExtraction.run.callCount).to.equal(1);
+          chai.expect(generateServiceWorker.run.callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(1);
         });
       });
@@ -216,6 +218,20 @@ describe('Configuration', () => {
         translations.run.resolves();
         settingsService.update.resolves();
         ddocExtraction.run.rejects();
+        generateServiceWorker.run.resolves();
+        db.medic.get.resolves();
+        sinon.stub(process, 'exit');
+
+        return emitChange({ id: '_design/medic' }).then(() => {
+          chai.expect(process.exit.callCount).to.deep.equal(1);
+        });
+      });
+
+      it('should stop execution when updating the service worker fails', () => {
+        translations.run.resolves();
+        settingsService.update.resolves();
+        ddocExtraction.run.resolves();
+        generateServiceWorker.run.rejects();
         db.medic.get.resolves();
         sinon.stub(process, 'exit');
 

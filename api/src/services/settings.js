@@ -71,7 +71,7 @@ module.exports = {
    * @returns Boolean whether or not settings doc has been updated
    */
   update: (body, replace, overwrite) => {
-    const pathToDefaultConfig = path.join(environment.getDefaultDocsPath(), 'settings.doc.json');
+    const pathToDefaultConfig = path.join(environment.defaultDocsPath, 'settings.doc.json');
     const defaultConfig = require(pathToDefaultConfig);
 
     return getDoc()

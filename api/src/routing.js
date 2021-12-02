@@ -200,7 +200,7 @@ app.get('/', function(req, res) {
     // Required for service compatibility during upgrade.
     proxy.web(req, res);
   } else {
-    res.sendFile(path.join(environment.getWebappPath(), 'index.html')); // Webapp's index - entry point
+    res.sendFile(path.join(environment.webappPath, 'index.html')); // Webapp's index - entry point
   }
 });
 
@@ -211,7 +211,7 @@ app.get('/dbinfo', connectedUserLog, (req, res) => {
 
 app.get(
   [`/medic/_design/medic/_rewrite/`, appPrefix],
-  (req, res) => res.sendFile(path.join(environment.getWebappPath(), 'appcache-upgrade.html'))
+  (req, res) => res.sendFile(path.join(environment.webappPath, 'appcache-upgrade.html'))
 );
 
 app.all('/+medic(/*)?', (req, res, next) => {
@@ -246,8 +246,8 @@ app.all(adminAppPrefix, (req, res, next) => {
 });
 app.all('/+admin(/*)?', authorization.handleAuthErrors, authorization.offlineUserFirewall);
 
-app.use(express.static(environment.getStaticPath()));
-app.use(express.static(environment.getWebappPath()));
+app.use(express.static(environment.staticPath));
+app.use(express.static(environment.webappPath));
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
@@ -709,7 +709,7 @@ app.get('/service-worker.js', (req, res) => {
     ['Content-Type', 'application/javascript'],
   ]);
 
-  res.sendFile(path.join(environment.getWebappPath(), 'js', 'service-worker.js'));
+  res.sendFile(path.join(environment.webappPath, 'js', 'service-worker.js'));
 });
 
 /**

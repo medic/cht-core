@@ -14,7 +14,7 @@ describe('translations', () => {
     sinon.stub(fs, 'readdir');
     sinon.stub(fs, 'readFile');
     sinon.stub(properties, 'parse');
-    sinon.stub(environment, 'getResourcesPath').returns('/path/to/resources/');
+    sinon.stub(environment, 'resourcesPath').value('/path/to/resources/');
     translations = rewire('../../src/translations');
   });
 

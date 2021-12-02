@@ -1,14 +1,9 @@
 /* eslint-disable max-len */
 
-const url = require('url');
-const packageJson = require('./package.json');
 const fs = require('fs');
 const path = require('path');
 
 const {
-  TAG,
-  BRANCH,
-  COUCH_URL,
   COUCH_NODE_NAME,
   MARKET_URL,
   BUILDS_SERVER,
@@ -16,28 +11,10 @@ const {
   CI,
 } = process.env;
 
-const releaseName = TAG || BRANCH || 'local-development';
+const buildUtils = require('./scripts/build');
+const couchConfig = buildUtils.getCouchConfig();
+
 const ESLINT_COMMAND = './node_modules/.bin/eslint --color';
-
-const couchConfig = (() => {
-  if (!COUCH_URL) {
-    throw 'Required environment variable COUCH_URL is undefined. (eg. http://your:pass@localhost:5984/medic)';
-  }
-  const parsedUrl = url.parse(COUCH_URL);
-  if (!parsedUrl.auth) {
-    throw 'COUCH_URL must contain admin authentication information';
-  }
-
-  const [ username, password ] = parsedUrl.auth.split(':', 2);
-
-  return {
-    username,
-    password,
-    dbName: parsedUrl.path.substring(1),
-    withPath: path => `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}/${path}`,
-    withPathNoAuth: path => `${parsedUrl.protocol}//${parsedUrl.host}/${path}`,
-  };
-})();
 
 const getSharedLibDirs = () => {
   return fs
@@ -58,67 +35,6 @@ const linkSharedLibs = dir => {
     'mkdir ./node_modules/@medic',
     ...getSharedLibDirs().map(lib => `ln -s ${sharedLibPath(lib)} ${symlinkPath(lib)}`)
   ].join(' && ');
-};
-
-const getVersion = () => {
-  if (TAG) {
-    return TAG;
-  }
-  let version = packageJson.version;
-  if (BRANCH === 'master') {
-    version += `-alpha.${BUILD_NUMBER}`;
-  }
-  return version;
-};
-
-const makeDirSync = (dirPath) => {
-  if (!fs.existsSync(dirPath)){
-    fs.mkdirSync(dirPath);
-  }
-};
-
-const createStagingDoc = () => {
-  const stagingPath = path.resolve(__dirname, 'build', 'staging');
-  makeDirSync(stagingPath);
-
-  fs.writeFileSync(path.resolve(stagingPath, '_id'), `medic:medic:test-${BUILD_NUMBER}`);
-  makeDirSync(path.resolve(stagingPath, '_attachments'));
-};
-
-const populateStagingDoc = () => {
-  const stagingPath = path.resolve(__dirname, 'build', 'staging');
-  copyBuildInfo();
-
-  const ddocAttachmentsPath = path.resolve(stagingPath, '_attachments', 'ddocs');
-  makeDirSync(ddocAttachmentsPath);
-
-  const buildDdocsPath = path.resolve(__dirname, 'build', 'ddocs');
-  fs.readdirSync(buildDdocsPath, { withFileTypes: true }).forEach(file => {
-    if (!file.isDirectory()) {
-      fs.copyFileSync(path.resolve(buildDdocsPath, file.name), path.resolve(ddocAttachmentsPath, file.name));
-    }
-  });
-};
-
-const copyBuildInfo = () => {
-  const medicBuildInfoPath = path.resolve(__dirname, 'build', 'ddocs', 'medic-db', 'medic', 'build_info');
-  const stagingBuildInfoPath = path.resolve(__dirname, 'build', 'staging', 'build_info');
-  makeDirSync(stagingBuildInfoPath);
-
-  fs.readdirSync(medicBuildInfoPath, { withFileTypes: true }).forEach(file => {
-    if (!file.isDirectory()) {
-      fs.copyFileSync(path.resolve(medicBuildInfoPath, file.name), path.resolve(stagingBuildInfoPath, file.name));
-    }
-  });
-};
-
-const setBuildInfo = () => {
-  const buildInfoPath = path.resolve(__dirname, 'build', 'ddocs', 'medic-db', 'medic', 'build_info');
-  makeDirSync(buildInfoPath);
-  fs.writeFileSync(path.resolve(buildInfoPath, 'version'), releaseName);
-  fs.writeFileSync(path.resolve(buildInfoPath, 'base_version'), packageJson.version);
-  fs.writeFileSync(path.resolve(buildInfoPath, 'time'), new Date().toISOString());
-  fs.writeFileSync(path.resolve(buildInfoPath, 'author'), `grunt on ${process.env.USER}`);
 };
 
 module.exports = function(grunt) {
@@ -406,7 +322,7 @@ module.exports = function(grunt) {
         },
       },
       'set-ddoc-version': {
-        cmd: () => `echo "${getVersion()}" > build/ddocs/medic-db/medic/version`,
+        cmd: () => `echo "${buildUtils.getVersion()}" > build/ddocs/medic-db/medic/version`,
       },
       'api-dev': {
         cmd:
@@ -921,7 +837,7 @@ module.exports = function(grunt) {
     'couch-compile:primary',
   ]);
 
-  grunt.registerTask('set-build-info', setBuildInfo);
+  grunt.registerTask('set-build-info', buildUtils.setBuildInfo);
 
   grunt.registerTask('build-common', 'Build the static resources', [
     'build-css',
@@ -1160,8 +1076,8 @@ module.exports = function(grunt) {
     'exec:sentinel-dev',
   ]);
 
-  grunt.registerTask('create-staging-doc', createStagingDoc);
-  grunt.registerTask('populate-staging-doc', populateStagingDoc);
+  grunt.registerTask('create-staging-doc', buildUtils.createStagingDoc);
+  grunt.registerTask('populate-staging-doc', buildUtils.populateStagingDoc);
 
   grunt.registerTask('publish-for-testing', 'Publish the staging doc to the testing server', [
     'couch-compile:staging',
