@@ -24,6 +24,8 @@ const originalTranslations = {};
 let e2eDebug;
 const hasModal = () => element(by.css('#update-available')).isPresent();
 const { execSync } = require('child_process');
+const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
+
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
@@ -160,7 +162,7 @@ const deleteAll = (except) => {
     })
     .then(({ rows }) =>
       rows
-        .filter(({ doc }) => !ignoreFns.find(fn => fn(doc)))
+        .filter(({ doc }) => doc && !ignoreFns.find(fn => fn(doc)))
         .map(({ doc }) => {
           doc._deleted = true;
           doc.type = 'tombstone'; // circumvent tombstones being created when DB is cleaned up
@@ -275,11 +277,20 @@ const revertDb = async (except, ignoreRefresh) => {
   await setUserContactDoc();
 };
 
+const getCreatedUsers = async () => {
+  const adminUserId = COUCH_USER_ID_PREFIX + auth.username;
+  const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
+  return users.rows
+    .filter(user => user.id !== adminUserId)
+    .map((user) => ({ ...user, username: user.id.replace(COUCH_USER_ID_PREFIX, '') }));
+};
+
 const deleteUsers = async (users, meta = false) => {
   if (!users.length) {
     return;
   }
-  const usernames = users.map(user => `org.couchdb.user:${user.username}`);
+
+  const usernames = users.map(user => COUCH_USER_ID_PREFIX + user.username);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
   const medicDocs = await request({
     path: `/${constants.DB_NAME}/_all_docs`,
@@ -874,6 +885,7 @@ module.exports = {
   // @param {Boolean} meta - if true, deletes meta db-s as well, default true
   // @return {Promise}
   deleteUsers: deleteUsers,
+  getCreatedUsers,
 
   // Creates users - optionally also creating their meta dbs
   // @param {Array} users - list of users to be created
