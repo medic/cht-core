@@ -11,8 +11,8 @@ const loginController = require('./controllers/login');
 const SWMETA_DOC_ID = 'service-worker-meta';
 const apiSrcDirectoryPath = __dirname;
 
-const staticDirectoryPath = environment.getStaticPath();
-const webappDirectoryPath = environment.getWebappPath();
+const staticDirectoryPath = environment.staticPath;
+const webappDirectoryPath = environment.webappPath;
 const scriptOutputPath = path.join(webappDirectoryPath, 'js', 'service-worker.js');
 
 const fsExists = (path) => new Promise((resolve) => {

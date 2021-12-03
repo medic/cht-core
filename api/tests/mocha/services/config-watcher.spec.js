@@ -190,7 +190,6 @@ describe('Configuration', () => {
           chai.expect(db.medic.get.callCount).to.equal(1);
           chai.expect(db.medic.get.args[0]).to.deep.equal(['_design/medic']);
           chai.expect(viewMapUtils.loadViewMaps.callCount).to.equal(1);
-
           chai.expect(generateServiceWorker.run.callCount).to.equal(0);
         });
       });

@@ -15,8 +15,8 @@ describe('generate service worker', () => {
   let generateServiceWorker;
 
   beforeEach(() => {
-    sinon.stub(env, 'getStaticPath').returns('/absolute/path/to/build/static/');
-    sinon.stub(env, 'getWebappPath').returns('/absolute/path/to/build/static/webapp/');
+    sinon.stub(env, 'staticPath').value('/absolute/path/to/build/static/');
+    sinon.stub(env, 'webappPath').value('/absolute/path/to/build/static/webapp/');
     sinon.stub(loginController, 'renderLogin');
     sinon.stub(swPrecache, 'write');
     sinon.stub(db.medic, 'get');

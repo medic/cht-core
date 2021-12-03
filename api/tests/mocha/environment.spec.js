@@ -1,5 +1,6 @@
 const rewire = require('rewire');
 const { expect } = require('chai');
+const path = require('path');
 
 let environment;
 
@@ -9,23 +10,19 @@ describe('environment', () => {
   });
 
   it('buildPath should return build path', () => {
-    environment.__set__('__dirname', 'absolute/path/to/api/src');
-    expect(environment.getBuildPath()).to.equal('absolute/path/to/api/build');
+    expect(environment.buildPath).to.equal(path.resolve(__dirname, '../../build'));
   });
 
   it('getStaticPath should return static path', () => {
-    environment.__set__('__dirname', 'absolute/path/to/api/src');
-    expect(environment.getStaticPath()).to.equal('absolute/path/to/api/build/static');
+    expect(environment.staticPath).to.equal(path.resolve(__dirname, '../../build/static'));
   });
 
   it('getDefaultDocsPath should return default docs path', () => {
-    environment.__set__('__dirname', 'absolute/path/to/api/src');
-    expect(environment.getDefaultDocsPath()).to.equal('absolute/path/to/api/build/default-docs');
+    expect(environment.defaultDocsPath).to.equal(path.resolve(__dirname, '../../build/default-docs'));
   });
 
   it('getResourcesPath should return resources path', () => {
-    environment.__set__('__dirname', 'absolute/path/to/api/src');
-    expect(environment.getResourcesPath()).to.equal('absolute/path/to/api/resources');
+    expect(environment.resourcesPath).to.equal(path.resolve(__dirname, '../../resources'));
   });
 
   it('should set, get and update deploy info correctly', () => {

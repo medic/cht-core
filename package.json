@@ -131,27 +131,27 @@
   },
   "bundlesize": [
     {
-      "path": "./build/static/webapp/main.js",
+      "path": "./api/build/static/webapp/main.js",
       "maxSize": "900 kB"
     },
     {
-      "path": "./build/static/webapp/polyfills-es5.js",
+      "path": "./api/build/static/webapp/polyfills-es5.js",
       "maxSize": "50 kB"
     },
     {
-      "path": "./build/static/webapp/polyfills.js",
+      "path": "./api/build/static/webapp/polyfills.js",
       "maxSize": "16 kB"
     },
     {
-      "path": "./build/static/webapp/runtime.js",
+      "path": "./api/build/static/webapp/runtime.js",
       "maxSize": "1 kB"
     },
     {
-      "path": "./build/static/webapp/scripts.js",
+      "path": "./api/build/static/webapp/scripts.js",
       "maxSize": "55 kB"
     },
     {
-      "path": "./build/static/webapp/styles.css",
+      "path": "./api/build/static/webapp/styles.css",
       "maxSize": "70 kB"
     }
   ],
