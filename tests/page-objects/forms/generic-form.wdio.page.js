@@ -29,11 +29,21 @@ const validateReport = async () => {
   expect(await reportValidMessage.getText()).to.equal('Correct');
 };
 
+const selectContact = async (inputName, contactName) => {
+  await (await $(`section[name="${inputName}"] .select2-selection`)).click();
+  const searchField = await $('.select2-search__field');
+  await searchField.setValue(contactName);
+  const contact = await $('.name');
+  await contact.waitForDisplayed();
+  await contact.click();
+};
+
 module.exports = {
   submitButton,
   nextPage,
   openReportReviewMenu,
   invalidateReport,
   validateReport,
-  nameField
+  nameField,
+  selectContact,
 };
