@@ -2,7 +2,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const uuid = require('uuid').v4;
 
 const {
   COUCH_NODE_NAME,
@@ -36,21 +35,6 @@ const linkSharedLibs = dir => {
     'mkdir ./node_modules/@medic',
     ...getSharedLibDirs().map(lib => `ln -s ${sharedLibPath(lib)} ${symlinkPath(lib)}`)
   ].join(' && ');
-};
-
-const setDdocSecrets = () => {
-  const buildPath = path.resolve(__dirname, 'build', 'ddocs');
-  const databases = fs.readdirSync(buildPath);
-  databases.forEach(database => {
-    const dbPath = path.resolve(buildPath, database);
-    if (!fs.lstatSync(dbPath).isDirectory()) {
-      return;
-    }
-    const ddocs = fs.readdirSync(dbPath);
-    ddocs.forEach(ddoc => {
-      fs.writeFileSync(path.resolve(dbPath, ddoc, 'secret'), uuid());
-    });
-  });
 };
 
 module.exports = function(grunt) {
@@ -1101,7 +1085,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('create-staging-doc', buildUtils.createStagingDoc);
   grunt.registerTask('populate-staging-doc', buildUtils.populateStagingDoc);
-  grunt.registerTask('set-ddoc-secrets', setDdocSecrets);
+  grunt.registerTask('set-ddoc-secrets', buildUtils.setDdocSecrets);
 
   grunt.registerTask('publish-for-testing', 'Publish the staging doc to the testing server', [
     'couch-compile:staging',

@@ -129,12 +129,12 @@ const getDdocsForVersion = async (version) => {
   }
 
   try {
-    await fs.promises.access(environment.getUpgradePath());
-    await fs.promises.rmdir(environment.getUpgradePath());
+    await fs.promises.access(environment.stagedDdocsPath);
+    await fs.promises.rmdir(environment.stagedDdocsPath);
   } catch (err) {
     // if file doesn't exist, do nothing
   } finally {
-    await fs.promises.mkdir(environment.getUpgradePath());
+    await fs.promises.mkdir(environment.stagedDdocsPath);
   }
 
   const docId = `${BUILD_DOC_PREFIX}${version}`;
@@ -147,12 +147,12 @@ const getDdocsForVersion = async (version) => {
       continue;
     }
 
-    await fs.promises.writeFile(path.join(environment.getUpgradePath(), database.jsonFileName), attachment.data);
+    await fs.promises.writeFile(path.join(environment.stagedDdocsPath, database.jsonFileName), attachment.data);
   }
 };
 
 const getDdocsToStage = ({ jsonFileName, name }, version) => {
-  const ddocsFolderPath = version === LOCAL_VERSION ? environment.getDdocsPath() : environment.getUpgradePath();
+  const ddocsFolderPath = version === LOCAL_VERSION ? environment.ddocsPath : environment.stagedDdocsPath;
   const json = require(path.join(ddocsFolderPath, jsonFileName));
   const ddocsToStage = getDdocsToStageFromJson(json);
 

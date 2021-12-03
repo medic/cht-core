@@ -1,6 +1,7 @@
 const packageJson = require('../../package.json');
 const path = require('path');
 const fs = require('fs');
+const uuid = require('uuid').v4;
 
 const {
   TAG,
@@ -11,6 +12,7 @@ const {
 
 const buildPath = path.resolve(__dirname, '..', '..', 'build');
 const stagingPath = path.resolve(buildPath, 'staging');
+const ddocsBuildPath = path.resolve(buildPath, 'ddocs');
 
 const getCouchConfig = () => {
   if (!COUCH_URL) {
@@ -43,7 +45,7 @@ const getVersion = () => {
 
 const releaseName = TAG || BRANCH || 'local-development';
 const setBuildInfo = () => {
-  const buildInfoPath = path.resolve(buildPath, 'ddocs', 'medic-db', 'medic', 'build_info');
+  const buildInfoPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'build_info');
   mkdirSync(buildInfoPath);
   // the validate_doc_update from staging.dev requires all of these fields
   fs.writeFileSync(path.resolve(buildInfoPath, 'version'), releaseName);
@@ -69,10 +71,9 @@ const populateStagingDoc = () => {
   const ddocAttachmentsPath = path.resolve(stagingPath, '_attachments', 'ddocs');
   mkdirSync(ddocAttachmentsPath);
 
-  const buildDdocsPath = path.resolve(buildPath, 'ddocs');
-  fs.readdirSync(buildDdocsPath, { withFileTypes: true }).forEach(file => {
+  fs.readdirSync(ddocsBuildPath, { withFileTypes: true }).forEach(file => {
     if (!file.isDirectory()) {
-      fs.copyFileSync(path.resolve(buildDdocsPath, file.name), path.resolve(ddocAttachmentsPath, file.name));
+      fs.copyFileSync(path.resolve(ddocsBuildPath, file.name), path.resolve(ddocAttachmentsPath, file.name));
     }
   });
 
@@ -81,7 +82,7 @@ const populateStagingDoc = () => {
 };
 
 const copyBuildInfoToStagingDoc = () => {
-  const medicBuildInfoPath = path.resolve(buildPath, 'ddocs', 'medic-db', 'medic', 'build_info');
+  const medicBuildInfoPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'build_info');
   const stagingBuildInfoPath = path.resolve(stagingPath, 'build_info');
   mkdirSync(stagingBuildInfoPath);
 
@@ -92,8 +93,23 @@ const copyBuildInfoToStagingDoc = () => {
   });
 };
 
+const setDdocSecrets = () => {
+  const databases = fs.readdirSync(ddocsBuildPath);
+  databases.forEach(database => {
+    const dbPath = path.resolve(ddocsBuildPath, database);
+    if (!fs.lstatSync(dbPath).isDirectory()) {
+      return;
+    }
+    const ddocs = fs.readdirSync(dbPath);
+    ddocs.forEach(ddoc => {
+      fs.writeFileSync(path.resolve(dbPath, ddoc, 'secret'), uuid());
+    });
+  });
+};
+
 
 module.exports = {
+  setDdocSecrets,
   getCouchConfig,
   getVersion,
   setBuildInfo,

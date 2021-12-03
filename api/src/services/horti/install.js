@@ -5,7 +5,7 @@ const upgradeUtils = require('./utils');
 const viewIndexerProgress = require('./indexer-progress');
 
 const getBundledDdocs = (jsonFileName) => {
-  return require(path.join(environment.getDdocsPath(), jsonFileName)).docs;
+  return require(path.join(environment.ddocsPath, jsonFileName)).docs;
 };
 
 const compareUploadedToBundledDdocs = (uploadedDdocs, bundledDdocs) => {
