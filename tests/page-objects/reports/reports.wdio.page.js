@@ -201,7 +201,18 @@ const getAllReportsText = async () => {
   return commonElements.getTextForElements(reportRowsText);
 };
 
+const getCurrentReportId = async () => {
+  const currentUrl = await browser.getUrl();
+  const reportBaseUrl = utils.getBaseUrl() + 'reports/';
+  if (!currentUrl.startsWith(reportBaseUrl)) {
+    return;
+  }
+
+  return currentUrl.slice(reportBaseUrl.length);
+}
+
 module.exports = {
+  getCurrentReportId,
   reportList,
   firstReport,
   submitterName,

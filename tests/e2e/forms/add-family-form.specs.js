@@ -3,6 +3,7 @@ const genericForm = require('../../page-objects/forms/generic-form.po');
 const common = require('../../page-objects/common/common.po.js');
 const utils = require('../../utils');
 const userData = require('../../page-objects/forms/data/user.po.data');
+const reportsPage = require('../../page-objects/reports/reports.po');
 
 describe('Family form', () => {
   const contactId = userData.contactId;
@@ -55,9 +56,7 @@ describe('Family form', () => {
     );
     await genericForm.reportApproveNative();
     await genericForm.invalidateReportNative();
-    const currentUrl = await browser.getCurrentUrl();
-    const reportBaseUrl = utils.getBaseUrl() + 'reports/';
-    const reportId = currentUrl.slice(reportBaseUrl.length);
+    const reportId = await reportsPage.getCurrentReportId();
     const invalidatedReport = await utils.getDoc(reportId);
     expect(invalidatedReport.verified).toBe(false);
     expect(invalidatedReport.contact).toEqual({ _id: 'e2e_contact_test_id' });

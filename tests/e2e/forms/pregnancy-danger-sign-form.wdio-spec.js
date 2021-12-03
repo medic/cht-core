@@ -39,9 +39,7 @@ describe('Pregnancy danger sign follow-up form', () => {
     await (await genericForm.submitButton()).click();
     await (await $('.details>ul>li')).waitForDisplayed();
 
-    const currentUrl = await browser.getUrl();
-    const reportBaseUrl = utils.getBaseUrl() + 'reports/';
-    const reportId = currentUrl.slice(reportBaseUrl.length);
+    const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
     expect(initialReport.verified).to.be.undefined;
 
