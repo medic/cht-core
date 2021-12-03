@@ -1,4 +1,5 @@
 const commonElements = require('../common/common.wdio.page');
+const utils = require('../../utils');
 
 const reportListID = '#reports-list';
 const reportBodyDetailsSelector = '#reports-content .report-body .details';
@@ -209,7 +210,7 @@ const getCurrentReportId = async () => {
   }
 
   return currentUrl.slice(reportBaseUrl.length);
-}
+};
 
 module.exports = {
   getCurrentReportId,
