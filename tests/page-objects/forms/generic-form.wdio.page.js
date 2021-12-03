@@ -16,16 +16,16 @@ const openReportReviewMenu = async () => {
 
 
 const invalidateReport = async () => {
-  const reportInvalidBtn = await $('.verify-error');
+  const reportInvalidBtn = await $('.actions .sub-actions .verify-error');
   await reportInvalidBtn.click();
-  const reportInvalidMessage = await $('.verify-error.active');
+  const reportInvalidMessage = await $('.actions .sub-actions .verify-error.active');
   expect(await reportInvalidMessage.getText()).to.equal('Has errors');
 };
 
 const validateReport = async () => {
-  const reportValidBtn = await $('.verify-valid');
+  const reportValidBtn = await $('.actions .sub-actions .verify-valid');
   await reportValidBtn.click();
-  const reportValidMessage = await $('.verify-valid.active');
+  const reportValidMessage = await $('.actions .sub-actions .verify-valid.active');
   expect(await reportValidMessage.getText()).to.equal('Correct');
 };
 
