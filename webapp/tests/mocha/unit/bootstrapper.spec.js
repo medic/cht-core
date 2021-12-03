@@ -345,6 +345,9 @@ describe('bootstrapper', () => {
         err.redirect,
         '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
       );
+      assert.equal(purger.info.callCount, 1);
+      assert.equal(purger.checkpoint.callCount, 1);
+      assert.deepEqual(purger.checkpoint.args[0], ['some-info']);
       done();
     });
   });
@@ -366,6 +369,47 @@ describe('bootstrapper', () => {
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 404);
       assert.equal(err.redirect, null);
+      assert.equal(purger.info.callCount, 1);
+      assert.equal(purger.checkpoint.callCount, 1);
+      assert.deepEqual(purger.checkpoint.args[0], ['some-info']);
+      done();
+    });
+  });
+
+  it('should return purger info errors', (done) => {
+    setUserCtxCookie({ name: 'jim' });
+    localGet.withArgs('_design/medic-client').rejects();
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'info').rejects({ error: 'boom' });
+    sinon.stub(purger, 'checkpoint');
+
+    localAllDocs.resolves({ total_rows: 0 });
+    fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
+
+    bootstrapper(pouchDbOptions, err => {
+      assert.equal(err.error, 'boom');
+      assert.equal(purger.info.callCount, 1);
+      assert.equal(purger.checkpoint.callCount, 0);
+      assert.equal(localReplicate.callCount, 0);
+      done();
+    });
+  });
+
+  it('should return purger checkpoint errors', (done) => {
+    setUserCtxCookie({ name: 'jim' });
+    localGet.withArgs('_design/medic-client').rejects();
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'info').resolves('info');
+    sinon.stub(purger, 'checkpoint').rejects({ some: 'error' });
+
+    localAllDocs.resolves({ total_rows: 0 });
+    fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
+
+    bootstrapper(pouchDbOptions, err => {
+      assert.deepEqual(err, { some: 'error' });
+      assert.equal(purger.info.callCount, 1);
+      assert.equal(purger.checkpoint.callCount, 1);
+      assert.equal(localReplicate.callCount, 0);
       done();
     });
   });

@@ -9,12 +9,15 @@ const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
 const localeByName = (locale) => $(`.locale[name="${locale}"]`);
 
-const login = async ({ username, password, createUser = false, locale }) => {
+const login = async ({ username, password, createUser = false, locale, loadPage = true }) => {
   await (await userField()).setValue(username);
   await (await passwordField()).setValue(password);
   await changeLocale(locale);
   await (await loginButton()).click();
-  await commonPage.waitForLoaders();
+  if (loadPage) {
+    await commonPage.waitForLoaders();
+  }
+
   if (createUser) {
     await browser.waitUntil(async () => {
       const cookies = await browser.getCookies('userCtx');
@@ -74,7 +77,7 @@ const changeLocale = async locale => {
 
 const changeLanguage = async (languageCode, userTranslation) => {
   await changeLocale(languageCode);
-  browser.waitUntil(async () => (await labelForUser()).getText() === userTranslation);
+  await browser.waitUntil(async () => await (await labelForUser()).getText() === userTranslation);
   return {
     user: await (await labelForUser()).getText(),
     pass: await (await labelForPassword()).getText(),
