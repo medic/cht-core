@@ -188,6 +188,12 @@ module.exports = function(grunt) {
         src: '**/*',
         dest: 'build/ddocs/',
       },
+      'api-ddocs': {
+        expand: true,
+        cwd: 'ddocs/',
+        src: 'build/ddocs/*.json',
+        dest: 'api/build/ddocs/',
+      },
       'webapp-static': {
         expand: true,
         cwd: 'webapp/src/',
@@ -601,7 +607,13 @@ module.exports = function(grunt) {
       },
       'primary-ddoc': {
         files: ['ddocs/medic-db/**/*'],
-        tasks: ['copy:ddocs', 'couch-compile:primary', 'deploy', 'copy:api-ddocs'],
+        tasks: [
+          'copy:ddocs',
+          'couch-compile:primary',
+          'couch-push:localhost',
+          'notify:deployed',
+          'copy:api-ddocs',
+        ],
       },
       'secondary-ddocs': {
         files: ['ddocs/*-db/**/*', '!ddocs/medic-db/**/*'],
@@ -842,6 +854,7 @@ module.exports = function(grunt) {
     'set-build-info',
     'couch-compile:primary',
     'couch-compile:secondary',
+    'copy:api-ddocs',
   ]);
 
   grunt.registerTask('build-config', 'Build default configuration', [
