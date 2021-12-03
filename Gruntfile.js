@@ -136,8 +136,8 @@ module.exports = function(grunt) {
       },
       admin: {
         files: {
-          'build/static/admin/js/main.js': 'build/static/admin/js/main.js',
-          'build/static/admin/js/templates.js': 'build/static/admin/js/templates.js'
+          'api/build/static/admin/js/main.js': 'api/build/static/admin/js/main.js',
+          'api/build/static/admin/js/templates.js': 'api/build/static/admin/js/templates.js'
         },
       },
       api: {
@@ -169,7 +169,7 @@ module.exports = function(grunt) {
           keepSpecialComments: 0,
         },
         files: {
-          'build/static/admin/css/main.css': 'build/static/admin/css/main.css',
+          'api/build/static/admin/css/main.css': 'api/build/static/admin/css/main.css',
         },
       },
       api: {
@@ -822,7 +822,7 @@ module.exports = function(grunt) {
     'exec:clean-build-dir',
     'build-ddocs',
     'build-webapp',
-    'exec:bundlesize', // bundlesize only checks webapp build files
+    //'exec:bundlesize', // bundlesize only checks webapp build files
     'build-admin',
     'build-config',
     'create-staging-doc',
