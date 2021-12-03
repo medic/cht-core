@@ -36,8 +36,7 @@ describe('Pregnancy danger sign follow-up form', () => {
     await genericForm.nextPage();
     await pregnancyDangerSignForm.selectVisitedHealthFacility();
     await pregnancyDangerSignForm.selectNoDangerSigns();
-    await (await genericForm.submitButton()).click();
-    await (await $('.details>ul>li')).waitForDisplayed();
+    await reportsPage.submitForm();
 
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
