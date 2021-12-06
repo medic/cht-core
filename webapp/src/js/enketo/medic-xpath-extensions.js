@@ -1,4 +1,5 @@
 const RAW_NUMBER = /^(-?[0-9]+)(\.[0-9]+)?$/;
+const DATE_STRING = /^\d\d\d\d-\d{1,2}-\d{1,2}(?:T\d\d:\d\d:\d\d\.?\d?\d?(?:Z|[+-]\d\d:\d\d)|.*)?$/;
 const XPR = {
   number:  v => ({ t:'num',  v }),
   string:  v => ({ t:'str',  v }),
@@ -68,24 +69,28 @@ const parseTimestampToDate = (value) => {
 };
 
 const asString = (r) => {
-  return r.t === 'arr' ?
-    r.v.length && !(r.v[0] === null || r.v[0] === undefined) ? r.v[0].textContent || '' : '' :
-    r.v.toString();
+  if(r.t !== 'arr') {
+    return r.v.toString();
+  }
+  if(r.v.length && !(r.v[0] === null || r.v[0] === undefined)) {
+    return r.v[0].textContent || '' ;
+  }
+  return '';
 };
 
 // Based on https://github.com/enketo/openrosa-xpath-evaluator/blob/3bfcb493ec01cf84f55e254a096a31e5be01de15/src/openrosa-extensions.js#L547
-const asDate = (r) => {
+const asMoment = (r) => {
   const dateSinceUnixEpoch = (days) => {
     // Create a date at 00:00:00 1st Jan 1970 _in the current timezone_
     const date = new Date(1970, 0, 1);
     date.setDate(1 + days);
-    return date;
+    return moment(date);
   };
   switch(r.t) {
   case 'bool':
-    return new Date(NaN);
+    return moment(NaN);
   case 'date':
-    return r.v;
+    return moment(r.v);
   case 'num':
     return dateSinceUnixEpoch(r.v);
   case 'arr':
@@ -95,11 +100,12 @@ const asDate = (r) => {
       return dateSinceUnixEpoch(parseInt(r, 10));
     }
     const rMoment = moment(r);
-    if(rMoment.isValid()) {
-      const time = `${rMoment.format('YYYY-MM-DD')}T00:00:00.000${getTimezoneOffsetAsTime(new Date(r))}`;
-      return new Date(time);
+    if(DATE_STRING.test(r) && rMoment.isValid()) {
+      const rDate = rMoment.format('YYYY-MM-DD');
+      const time = `${rDate}T00:00:00.000${getTimezoneOffsetAsTime(new Date(rDate))}`;
+      return moment(time);
     }
-    return new Date(r);
+    return moment(r);
   }
   }
 };
@@ -140,8 +146,8 @@ module.exports = {
     'to-bikram-sambat': convertToBikramSambat,
     'parse-timestamp-to-date': parseTimestampToDate, // Function name convention of XForm
     'difference-in-months': function(d1, d2) {
-      const d1Moment = moment(asDate(d1));
-      const d2Moment = moment(asDate(d2));
+      const d1Moment = asMoment(d1);
+      const d2Moment = asMoment(d2);
 
       if(!d1Moment.isValid() || !d2Moment.isValid()) {
         return XPR.string('');
