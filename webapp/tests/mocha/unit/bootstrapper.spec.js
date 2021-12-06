@@ -118,6 +118,7 @@ describe('bootstrapper', () => {
   const setUserCtxCookie = userCtx => {
     document.cookie = `userCtx=${JSON.stringify(userCtx)};something=true`;
   };
+  const wait = time => new Promise(resolve => setTimeout(resolve, time));
 
   it('does nothing for admins', done => {
     setUserCtxCookie({ name: 'jimbo', roles: [ '_admin' ] });
@@ -316,7 +317,7 @@ describe('bootstrapper', () => {
 
     bootstrapper(pouchDbOptions, () => assert.fail('should not have executed callback'));
 
-    await Promise.resolve();
+    await wait(100);
     assert.equal(
       window.location.href,
       '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
@@ -340,13 +341,13 @@ describe('bootstrapper', () => {
 
     bootstrapper(pouchDbOptions, () => assert.fail('should not have executed callback'));
 
-    await Promise.resolve();
+    await wait(100);
     assert.equal(
       window.location.href,
-      'http://localhost:5988/medic/_design/medic/_rewrite/#/messages'
+      '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
     );
-    assert.equal(purger.info.callCount, 1);
-    assert.equal(purger.checkpoint.callCount, 1);
+    assert.equal(purger.info.calledOnce, true);
+    assert.equal(purger.checkpoint.calledOnce, true);
     assert.deepEqual(purger.checkpoint.args[0], ['some-info']);
   });
 
@@ -496,14 +497,14 @@ describe('bootstrapper', () => {
 
     bootstrapper(pouchDbOptions, () => assert.fail('should not have executed callback'));
 
-    await Promise.resolve();
+    await wait(100);
     assert.equal(
       window.location.href,
-      'http://localhost:5988/medic/_design/medic/_rewrite/#/messages'
+      '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
     );
+    assert.equal(fetch.calledOnce, true);
     // It didn't continue with the execution of purge.
     assert.equal(purger.info.callCount, 0);
-    assert.equal(fetch.callCount, 0);
   });
 
   it('error results if service worker fails registration', done => {
