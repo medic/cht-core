@@ -330,8 +330,6 @@ module.exports = {
   snackbarAction,
   getTextForElements,
   checkUserSettings,
-  getDefaultLanguages,
-  getDefaultLanguages,
   messagesList,
   getDefaultLanguages
 };
