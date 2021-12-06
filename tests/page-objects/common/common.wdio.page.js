@@ -169,7 +169,7 @@ const syncAndWaitForSuccess = async () => {
   await openHamburgerMenu();
   await (await syncButton()).click();
   await openHamburgerMenu();
-  await (await syncSuccess()).waitForDisplayed();
+  await (await syncSuccess()).waitForDisplayed({ timeout: 20000 });
 };
 
 const sync = async (expectReload) => {
