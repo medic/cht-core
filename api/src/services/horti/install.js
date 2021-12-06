@@ -8,81 +8,82 @@ const getBundledDdocs = (jsonFileName) => {
   return require(path.join(environment.ddocsPath, jsonFileName)).docs;
 };
 
-const compareUploadedToBundledDdocs = (uploadedDdocs, bundledDdocs) => {
+const compareDdocs = (ddocsA, ddocsB) => {
   const missing = [];
   const different = [];
 
-  for (const uploadedDdoc of uploadedDdocs) {
-    const bundledDdoc = bundledDdocs.find(bundledDdoc => bundledDdoc._id === uploadedDdoc._id);
+  const findCorrespondingDdoc = (ddocA, ddocsB) => {
+    const ddocAName = upgradeUtils.getDdocName(ddocA._id);
+    return ddocsB.find(ddocB => upgradeUtils.getDdocName(ddocB._id) === ddocAName);
+  };
 
-    if (!bundledDdoc) {
-      missing.push(uploadedDdoc._id);
-      continue;
-    }
-
-    if (bundledDdoc.secret !== uploadedDdoc.secret) {
-      different.push(uploadedDdoc._id);
-      different.push(uploadedDdoc._id);
+  for (const ddocA of ddocsA) {
+    const ddocB = findCorrespondingDdoc(ddocA, ddocsB);
+    if (!ddocB) {
+      missing.push(ddocB._id);
+    } else if (ddocA.secret !== ddocB.secret) {
+      different.push(ddocB._id);
     }
   }
 
-  for (const bundledDdoc of bundledDdocs) {
-    const uploadedDdoc = uploadedDdocs.find(uploadedDdoc => {
-      return uploadedDdoc._id === bundledDdoc._id || upgradeUtils.getDdocId(uploadedDdoc._id) === bundledDdoc._id;
-    });
-
-    if (!uploadedDdoc) {
-      missing.push(bundledDdoc._id);
+  for (const ddocB of ddocsB) {
+    const ddocA = findCorrespondingDdoc(ddocB, ddocsA);
+    if (!ddocA) {
+      missing.push(ddocA._id);
+    } else if (ddocA.secret !== ddocB.secret) {
+      different.push(ddocA._id);
     }
   }
 
   return { missing, different };
 };
 
+const completeInstall = async () => {
+  await upgradeUtils.complete();
+  await upgradeUtils.cleanup();
+};
+
 const checkInstall = async () => {
-  const check = {};
+  const ddocValidation = {};
 
   for (const database of upgradeUtils.DATABASES) {
-    const dbCheck = {};
-    check[database.name] = dbCheck;
+    ddocValidation[database.name] = {};
 
     const allDdocs = await upgradeUtils.getDdocs(database, true);
-    const uploadedDdocs = allDdocs.filter(ddoc => !upgradeUtils.isStagedDdoc(ddoc._id));
-    const stagedDdocs = allDdocs.filter(ddoc => upgradeUtils.isStagedDdoc(ddoc._id));
 
+    const liveDdocs = allDdocs.filter(ddoc => !upgradeUtils.isStagedDdoc(ddoc._id));
+    const stagedDdocs = allDdocs.filter(ddoc => upgradeUtils.isStagedDdoc(ddoc._id));
     const bundledDdocs = getBundledDdocs(database.jsonFileName);
-    // todo improve this
-    const { missing , different } = compareUploadedToBundledDdocs(uploadedDdocs, bundledDdocs);
-    dbCheck.missing = missing;
-    dbCheck.different = different;
+
+    const { missing , different } = compareDdocs(liveDdocs, bundledDdocs);
+    ddocValidation[database.name].missing = missing;
+    ddocValidation[database.name].different = different;
 
     if (missing.length || different.length) {
-      const { missing, different } = compareUploadedToBundledDdocs(stagedDdocs, bundledDdocs);
-      dbCheck.stagedUpgrade = !missing.length && !different.length;
+      const { missing: missingStaged, different: differentStaged } = compareDdocs(stagedDdocs, bundledDdocs);
+      ddocValidation[database.name].stagedUpgrade = !missingStaged.length && !differentStaged.length;
     } else {
-      dbCheck.valid = true;
+      ddocValidation[database.name].valid = true;
     }
   }
 
-  const allDbsValid = Object.values(check).every(check => check.valid);
+  const allDbsValid = Object.values(ddocValidation).every(check => check.valid);
   if (allDbsValid) {
     // all good
     return;
   }
 
-  const allDbsStaged = Object.values(check).every(check => check.stagedUpgrade);
+  const allDbsStaged = Object.values(ddocValidation).every(check => check.stagedUpgrade);
   if (allDbsStaged) {
-    await upgradeUtils.complete();
-    await upgradeUtils.cleanup();
-    return;
+    return completeInstall();
   }
 
-  const indexViewPromises = await upgradeUtils.stage();
-  const stop = viewIndexerProgress.viewIndexerProgress();
-  await indexViewPromises();
-  stop();
-  await upgradeUtils.complete();
-  await upgradeUtils.cleanup();
+  const indexViews = await upgradeUtils.stage();
+  const stopQueryingIndexers = viewIndexerProgress.viewIndexerProgress();
+  await indexViews();
+  stopQueryingIndexers();
+
+  return completeInstall();
 };
 
 module.exports = {

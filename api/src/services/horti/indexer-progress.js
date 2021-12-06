@@ -1,6 +1,8 @@
 const db = require('../../db');
 const logger = require('../../logger');
 
+const QUERY_TASKS_INTERVAL = 5000;
+
 const setTasksToComplete = (indexer) => {
   Object
     .keys(indexer.tasks)
@@ -52,30 +54,34 @@ const logIndexersProgress = (indexers) => {
   indexers.forEach(logProgress);
 };
 
-const viewIndexerProgress = () => {
+const getIndexers = async (indexers = []) => {
+  const activeTasks = await db.activeTasks();
+  const tasks = activeTasks.filter(task => task.type === 'indexer' && task.design_document.includes(':staged:'));
+  // We assume all previous tasks have finished.
+  indexers.forEach(setTasksToComplete);
+  updateRunningTasks(indexers, tasks);
+  indexers.forEach(calculateAverageProgress);
+  return indexers;
+};
+
+const logIndexerProgress = async (indexers, timeout) => {
+  indexers = await getIndexers(indexers);
+  logIndexersProgress(indexers);
+  timeout = setTimeout(logIndexerProgress, QUERY_TASKS_INTERVAL);
+  return timeout;
+};
+
+const logProgress = () => {
   const indexers = [];
-  let timeout;
-
-  const logIndexerProgress = async () => {
-    const activeTasks = await db.activeTasks();
-    const relevantTasks = activeTasks.filter(task =>
-      task.type === 'indexer' && task.design_document.includes(':staged:'));
-
-    // We assume all previous tasks have finished.
-    indexers.forEach(setTasksToComplete);
-    updateRunningTasks(indexers, relevantTasks);
-    indexers.forEach(calculateAverageProgress);
-    logIndexersProgress(indexers);
-    timeout = setTimeout(logIndexerProgress, 5000);
-  };
-
-  logIndexerProgress();
+  let timeout = logIndexerProgress(indexers);
 
   return () => {
     clearTimeout(timeout);
+    timeout = null;
   };
 };
 
 module.exports = {
-  viewIndexerProgress,
+  log: logProgress,
+  query: getIndexers,
 };

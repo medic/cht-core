@@ -4,10 +4,10 @@ const serverUtils = require('../server-utils');
 const service = require('../services/horti/upgrade');
 
 const REQUIRED_PERMISSIONS = ['can_configure'];
+const checkAuth = (req) => auth.check(req, REQUIRED_PERMISSIONS);
 
 const upgrade = (req, res, stageOnly) => {
-  return auth
-    .check(req, REQUIRED_PERMISSIONS)
+  return checkAuth(req)
     .then(userCtx => {
       const buildInfo = req.body.build;
       if (!buildInfo) {
@@ -24,14 +24,20 @@ const upgrade = (req, res, stageOnly) => {
 };
 
 const completeUpgrade = (req, res) => {
-  return auth
-    .check(req, REQUIRED_PERMISSIONS)
+  return checkAuth(req)
     .then(() => service.complete().then(() => res.json({ ok: true })))
     .catch(err => serverUtils.error(err, req, res));
+};
+
+const progress = (req, res) => {
+  return checkAuth(req)
+    .then(() => service.progress())
+    .then(indexers => res.json(indexers));
 };
 
 module.exports = {
   upgrade: (req, res) => upgrade(req, res, false),
   stage: (req, res) => upgrade(req, res, true),
-  complete: (req, res) => completeUpgrade(req, res),
+  complete: completeUpgrade,
+  progress,
 };

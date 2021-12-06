@@ -225,8 +225,10 @@ const complete = async () => {
   logger.info('Install complete');
 };
 
-const getStagedDdocId = ddocId => ddocId.replace(DDOC_PREFIX, `${DDOC_PREFIX}${STAGED_DDOC_PREFIX}`);
-const getDdocId = stagedDdocId => stagedDdocId.replace(`${DDOC_PREFIX}${STAGED_DDOC_PREFIX}`, DDOC_PREFIX);
+const getStagedDdocId = ddocId => ddocId.replace(DDOC_PREFIX, STAGED_DDOC_PREFIX);
+const getDdocId = stagedDdocId => stagedDdocId.replace(STAGED_DDOC_PREFIX, DDOC_PREFIX);
+
+const getDdocName = ddocId => ddocId.replace(STAGED_DDOC_PREFIX, '').replace(DDOC_PREFIX, '');
 
 module.exports = {
   DDOC_PREFIX,
@@ -241,4 +243,5 @@ module.exports = {
   isStagedDdoc,
   getStagedDdocId,
   getDdocId,
+  getDdocName,
 };
