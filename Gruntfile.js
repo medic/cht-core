@@ -14,7 +14,7 @@ const {
 const buildUtils = require('./scripts/build');
 const couchConfig = buildUtils.getCouchConfig();
 
-const ESLINT_COMMAND = './node_modules/.bin/eslint --color';
+const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
 
 const getSharedLibDirs = () => {
   return fs
