@@ -28,7 +28,6 @@ const initialState = {
   lastChangedDoc: false,
   loadingContent: false,
   loadingSubActionBar: false,
-  minimalTabs: false,
   replicationStatus: {},
   selectMode: false,
   privacyPolicyAccepted: false,
@@ -67,17 +66,14 @@ const _globalReducer = createReducer(
   on(Actions.setAndroidAppVersion, (state, { payload: { androidAppVersion } }) => {
     return { ...state, androidAppVersion };
   }),
-  on(Actions.setMinimalTabs, (state, { payload: { minimalTabs } } ) => {
-    return { ...state, minimalTabs };
-  }),
   on(Actions.setCurrentTab, (state, { payload: { currentTab } }) => {
     return { ...state, currentTab };
   }),
   on(Actions.setSnapshotData, (state, { payload: { snapshotData } }) => {
     return { ...state, snapshotData };
   }),
-  on(Actions.setSnackbarContent, (state, { payload: { content } }) => {
-    return { ...state, snackbarContent: content };
+  on(Actions.setSnackbarContent, (state, { payload: { message, action } }) => {
+    return { ...state, snackbarContent: { message, action } };
   }),
   on(Actions.setLoadingContent, (state, { payload: { loadingContent } }) => {
     return { ...state, loadingContent };

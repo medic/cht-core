@@ -12,6 +12,10 @@ const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
 const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
+const activeSnackbar = () => $('#snackbar.active');
+const inactiveSnackbar = () => $('#snackbar:not(.active)');
+const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message')).getText();
+const snackbarAction = () => $('#snackbar.active .snackbar-action');
 
 const isHamburgerMenuOpen = async () => {
   return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
@@ -165,7 +169,7 @@ const syncAndWaitForSuccess = async () => {
   await openHamburgerMenu();
   await (await syncButton()).click();
   await openHamburgerMenu();
-  await (await syncSuccess()).waitForDisplayed();
+  await (await syncSuccess()).waitForDisplayed({ timeout: 20000 });
 };
 
 const sync = async (expectReload) => {
@@ -238,6 +242,7 @@ module.exports = {
   hideSnackbar,
   waitForLoaders,
   sync,
+  syncButton,
   closeReloadModal,
   goToMessages,
   goToTasks,
@@ -257,4 +262,8 @@ module.exports = {
   waitForLoaderToDisappear,
   goToAboutPage,
   waitForPageLoaded,
+  activeSnackbar,
+  inactiveSnackbar,
+  snackbarMessage,
+  snackbarAction,
 };

@@ -88,7 +88,7 @@ To run just a single test file in WebdriverIO, update the `specs` config in [tes
 1. Paste those files into a directory called .vscode within your cht-core repo. 
 1. Click the debug icon on the left tool bar.
 1. Select launch e2e.
-1. This will now run as if you ran the command `grunt e2e-deploy` and start the `scripts/e2e/e2e-servers` script. Then launch protractor to debug the test(s). 
+1. This will now run as if you ran the command `grunt e2e-deploy` and start the `tests/scripts/e2e-servers` script. Then launch protractor to debug the test(s). 
 
 ##### Debugging a single test by using the "grep" feature.
 

@@ -102,40 +102,39 @@
     });
   };
 
+  const createPurgingCheckpoint = () => {
+    return purger.info().then(purger.checkpoint);
+  };
+
   const initialReplication = function(localDb, remoteDb) {
     setUiStatus('LOAD_APP');
     const dbSyncStartTime = Date.now();
     const dbSyncStartData = getDataUsage();
+    setUiStatus('FETCH_INFO', { count: localDocCount, total: remoteDocCount });
 
-    return purger
-      .info()
-      .then(info => {
-        const replicator = localDb.replicate
-          .from(remoteDb, {
-            live: false,
-            retry: false,
-            heartbeat: 10000,
-            timeout: 1000 * 60 * 10, // try for ten minutes then give up,
-            query_params: { initial_replication: true }
-          });
+    const replicator = localDb.replicate.from(remoteDb, {
+      live: false,
+      retry: false,
+      heartbeat: 10000,
+      timeout: 1000 * 60 * 10, // try for ten minutes then give up,
+      query_params: { initial_replication: true }
+    });
 
-        replicator
-          .on('change', function(info) {
-            console.log('initialReplication()', 'change', info);
-            setUiStatus('FETCH_INFO', { count: info.docs_read + localDocCount || '?', total: remoteDocCount });
-          });
-
-        return replicator.then(() => purger.checkpoint(info));
-      })
-      .then(() => {
-        const duration = Date.now() - dbSyncStartTime;
-        console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
-        if (dbSyncStartData) {
-          const dbSyncEndData = getDataUsage();
-          const rx = dbSyncEndData.app.rx - dbSyncStartData.app.rx;
-          console.info('Initial sync received ' + rx + 'B of data');
-        }
+    replicator
+      .on('change', function(info) {
+        console.log('initialReplication()', 'change', info);
+        setUiStatus('FETCH_INFO', { count: info.docs_read + localDocCount || '?', total: remoteDocCount });
       });
+
+    return replicator.then(() => {
+      const duration = Date.now() - dbSyncStartTime;
+      console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
+      if (dbSyncStartData) {
+        const dbSyncEndData = getDataUsage();
+        const rx = dbSyncEndData.app.rx - dbSyncStartData.app.rx;
+        console.info('Initial sync received ' + rx + 'B of data');
+      }
+    });
   };
 
   const getDataUsage = function() {
@@ -233,6 +232,7 @@
         if (isInitialReplicationNeeded) {
           const replicationStarted = performance.now();
           return docCountPoll(localDb)
+            .then(() => createPurgingCheckpoint())
             .then(() => initialReplication(localDb, remoteDb))
             .then(testReplicationNeeded)
             .then(isReplicationStillNeeded => {
