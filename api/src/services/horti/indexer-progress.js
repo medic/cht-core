@@ -67,14 +67,12 @@ const getIndexers = async (indexers = []) => {
 const logIndexerProgress = async (indexers, timeout) => {
   indexers = await getIndexers(indexers);
   logIndexersProgress(indexers);
-  timeout = setTimeout(logIndexerProgress, QUERY_TASKS_INTERVAL);
+  timeout = setTimeout(() => logIndexerProgress(indexers, timeout), QUERY_TASKS_INTERVAL);
   return timeout;
 };
 
 const logProgress = () => {
-  const indexers = [];
-  let timeout = logIndexerProgress(indexers);
-
+  let timeout = logIndexerProgress([]);
   return () => {
     clearTimeout(timeout);
     timeout = null;

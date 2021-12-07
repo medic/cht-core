@@ -3,6 +3,7 @@ const path = require('path');
 const environment = require('../../environment');
 const upgradeUtils = require('./utils');
 const viewIndexerProgress = require('./indexer-progress');
+const logger = require('../../logger');
 
 const getBundledDdocs = (jsonFileName) => {
   return require(path.join(environment.ddocsPath, jsonFileName)).docs;
@@ -29,9 +30,9 @@ const compareDdocs = (ddocsA, ddocsB) => {
   for (const ddocB of ddocsB) {
     const ddocA = findCorrespondingDdoc(ddocB, ddocsA);
     if (!ddocA) {
-      missing.push(ddocA._id);
+      missing.push(ddocB._id);
     } else if (ddocA.secret !== ddocB.secret) {
-      different.push(ddocA._id);
+      different.push(ddocB._id);
     }
   }
 
@@ -69,21 +70,38 @@ const checkInstall = async () => {
 
   const allDbsValid = Object.values(ddocValidation).every(check => check.valid);
   if (allDbsValid) {
+    logger.info('Installation valid');
     // all good
     return;
   }
 
-  const allDbsStaged = Object.values(ddocValidation).every(check => check.stagedUpgrade);
+  const allDbsStaged = Object.values(ddocValidation).every(check => check.stagedUpgrade || check.valid);
   if (allDbsStaged) {
+    logger.info('Staged installation valid. Completing install');
     return completeInstall();
   }
 
+  logDdocCheck(ddocValidation);
+  logger.info('Installation invalid. Staging install');
   const indexViews = await upgradeUtils.stage();
-  const stopQueryingIndexers = viewIndexerProgress.viewIndexerProgress();
+  const stopQueryingIndexers = viewIndexerProgress.log();
   await indexViews();
   stopQueryingIndexers();
 
   return completeInstall();
+};
+
+const logDdocCheck = (ddocValidation) => {
+  const missing = [];
+  const different = [];
+
+  for (const database of upgradeUtils.DATABASES) {
+    missing.push(...ddocValidation[database.name].missing.map(ddocId => `${database.name}/${ddocId}`));
+    different.push(...ddocValidation[database.name].different.map(ddocId => `${database.name}/${ddocId}`));
+  }
+
+  logger.debug(`Found missing ddocs: ${missing.length ? missing : 'none'}`);
+  logger.debug(`Found different ddocs: ${different}`);
 };
 
 module.exports = {
