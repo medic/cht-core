@@ -14,7 +14,6 @@ const config = require('../../../src/config');
 const bootstrap = require('../../../src/services/config-watcher');
 
 let on;
-let clock;
 const emitChange = (change) => {
   const changeCallback = on.args[0][1];
   return changeCallback(change);
@@ -42,7 +41,6 @@ describe('Configuration', () => {
 
   afterEach(() => {
     sinon.restore();
-    clock && clock.restore();
   });
 
   describe('load', () => {
@@ -120,7 +118,6 @@ describe('Configuration', () => {
 
   describe('listen', () => {
     beforeEach(() => {
-      clock = sinon.useFakeTimers();
       bootstrap.listen();
     });
 
@@ -129,48 +126,6 @@ describe('Configuration', () => {
       chai
         .expect(db.medic.changes.args[0])
         .to.deep.equal([{ live: true, since: 'now', return_docs: false }]);
-    });
-
-    it('initializes the file watcher', () => {
-      chai.expect(fs.watch.callCount).to.equal(2);
-      chai.expect(fs.watch.args[0][0]).to.equal(path.resolve(__dirname, '../../../build/static/webapp'));
-      chai.expect(fs.watch.args[1][0]).to.equal(path.resolve(__dirname, '../../../build/static/login'));
-    });
-
-    it('should debounce file changes to generate the service worker', () => {
-      const watchWebappCallback = fs.watch.args[0][1];
-      const watchLoginCallback = fs.watch.args[1][1];
-
-      generateServiceWorker.run.resolves();
-
-      chai.expect(watchWebappCallback).to.be.a('function');
-      chai.expect(watchLoginCallback).to.be.a('function');
-
-      chai.expect(generateServiceWorker.run.callCount).to.equal(0);
-      watchWebappCallback();
-      chai.expect(generateServiceWorker.run.callCount).to.equal(0);
-      clock.tick(300);
-      chai.expect(generateServiceWorker.run.callCount).to.equal(1);
-
-      watchLoginCallback();
-      chai.expect(generateServiceWorker.run.callCount).to.equal(1);
-      clock.tick(250);
-      chai.expect(generateServiceWorker.run.callCount).to.equal(2);
-
-      watchWebappCallback();
-      chai.expect(generateServiceWorker.run.callCount).to.equal(2);
-      watchLoginCallback();
-      chai.expect(generateServiceWorker.run.callCount).to.equal(2);
-      watchWebappCallback();
-      chai.expect(generateServiceWorker.run.callCount).to.equal(2);
-      watchLoginCallback();
-      chai.expect(generateServiceWorker.run.callCount).to.equal(2);
-      watchWebappCallback();
-      chai.expect(generateServiceWorker.run.callCount).to.equal(2);
-      watchLoginCallback();
-      chai.expect(generateServiceWorker.run.callCount).to.equal(2);
-      clock.tick(250);
-      chai.expect(generateServiceWorker.run.callCount).to.equal(3);
     });
 
     it('does nothing for irrelevant change', () => {

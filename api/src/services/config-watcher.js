@@ -1,6 +1,3 @@
-const fs = require('fs');
-const _ = require('lodash');
-
 const db = require('../db');
 const logger = require('../logger');
 const translationUtils = require('@medic/translation-utils');
@@ -11,7 +8,6 @@ const ddocExtraction = require('../ddoc-extraction');
 const generateXform = require('./generate-xform');
 const generateServiceWorker = require('../generate-service-worker');
 const config = require('../config');
-const environment = require('../environment');
 
 const MEDIC_DDOC_ID = '_design/medic';
 
@@ -129,7 +125,6 @@ const updateServiceWorker = () => {
     process.exit(1);
   });
 };
-const debouncedUpdateServiceWorker = _.debounce(updateServiceWorker, 200);
 
 const load = () => {
   loadViewMaps();
@@ -139,13 +134,6 @@ const load = () => {
 };
 
 const listen = () => {
-  fs.watch(environment.webappPath, () => {
-    debouncedUpdateServiceWorker();
-  });
-  fs.watch(environment.loginPath, () => {
-    debouncedUpdateServiceWorker();
-  });
-
   db.medic
     .changes({ live: true, since: 'now', return_docs: false })
     .on('change', change => {
@@ -178,4 +166,5 @@ const listen = () => {
 module.exports = {
   load,
   listen,
+  updateServiceWorker,
 };

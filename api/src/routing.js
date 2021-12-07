@@ -363,6 +363,7 @@ app.get('/api/auth/:path', function(req, res) {
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
 app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);
+app.all('/api/v1/upgrade/service-worker', upgrade.serviceWorker);
 
 app.post('/api/v1/sms/africastalking/incoming-messages', formParser, africasTalking.incomingMessages);
 app.post('/api/v1/sms/africastalking/delivery-reports', formParser, africasTalking.deliveryReports);
@@ -569,6 +570,7 @@ app.post(
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
 const dbDocHandler = require('./controllers/db-doc');
+const {offlineUserFirewall} = require('./middleware/authorization');
 const docPath = routePrefix + ':docId/{0,}';
 const attachmentPath = routePrefix + ':docId/+:attachmentId*';
 const ddocPath = routePrefix + '_design/+:ddocId*';
@@ -709,7 +711,7 @@ app.get('/service-worker.js', (req, res) => {
     ['Content-Type', 'application/javascript'],
   ]);
 
-  res.sendFile(path.join(environment.webappPath, 'js', 'service-worker.js'));
+  res.sendFile(path.join(environment.webappPath, 'service-worker.js'));
 });
 
 /**
