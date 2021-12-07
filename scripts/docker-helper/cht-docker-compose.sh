@@ -209,6 +209,21 @@ install_local_ip_cert(){
   docker exec -it "${medicOs}" bash -c "/boot/svc-restart medic-core nginx" >/dev/null 2>&1
 }
 
+local_ip_cert_expired(){
+  medicOs=$1
+  cert_expire_date=$(docker exec -i "${medicOs}" bash -c "/usr/bin/openssl x509 -enddate -noout -in /srv/settings/medic-core/nginx/private/default.crt  | grep -oP 'notAfter=\K.+'")
+  cert_expire_date_ISO=$(date -d "$cert_expire_date" '+%Y-%m-%d')
+
+  today_ISO=$(date '+%Y-%m-%d')
+  if [[ "$cert_expire_date_ISO" < "$today_ISO" ]]; then
+#    echo "0 expired!! $cert_expire_date_ISO   $today_ISO cert_expire_date: $cert_expire_date"
+    echo "1"
+  else
+#    echo "1 not expired $cert_expire_date_ISO   $today_ISO cert_expire_date: $cert_expire_date"
+    echo "0"
+  fi
+}
+
 docker_down(){
   envFile=$1
   composeFile=$2
@@ -405,13 +420,15 @@ main (){
   # we are healthy, check for self_signed cert and version
   if [ -n "$health" ]; then
     self_signed=0
+    expired_cert=0
   else
     chtVersion=$(get_cht_version "$chtUrl")
     self_signed=$(has_self_signed_cert "$chtUrl")
+    expired_cert=$(local_ip_cert_expired $MEDIC_OS)
   fi
 
   # derive overall healthy
-  if [ -z "$appStatus" ] && [ -z "$health" ] && [ "$self_signed" = "0" ]; then
+  if [ -z "$appStatus" ] && [ -z "$health" ] && [ "$self_signed" = "0" ] && [ "$expired_cert" = "0" ]; then
     overAllHealth="Good"
   elif [[ "$sleepFor" > 0 ]]; then
     overAllHealth="Booting..."
@@ -510,6 +527,16 @@ main (){
     window "WARNING: CHT has self signed certificate" "red" "100%"
     append "Installing local-ip.co certificate to fix..."
     last_action="Installing local-ip.co certificate..."
+    endwin
+    install_local_ip_cert $MEDIC_OS &
+    return 0
+  fi
+
+  # check for expired cert, reinstall if so
+  if [ "$expired_cert" = "1" ]; then
+    window "WARNING: CHT has expired certificate" "red" "100%"
+    append "Re-installing local-ip.co certificate to fix..."
+    last_action="Re-installing expired local-ip.co certificate..."
     endwin
     install_local_ip_cert $MEDIC_OS &
     return 0
