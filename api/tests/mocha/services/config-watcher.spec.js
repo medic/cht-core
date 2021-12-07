@@ -1,7 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const fs = require('fs');
-const path = require('path');
 
 const viewMapUtils = require('@medic/view-map-utils');
 const db = require('../../../src/db');
