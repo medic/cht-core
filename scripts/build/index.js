@@ -115,7 +115,7 @@ const updateServiceWorker = () => {
     }
 
     if (err.error && err.error.code === 'ECONNREFUSED') {
-      console.warn('API could not be reached.');
+      console.warn('API could not be reached, so the service-worker has not been updated.');
       return;
     }
 
