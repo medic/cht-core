@@ -2,13 +2,16 @@ const packageJson = require('../../package.json');
 const path = require('path');
 const fs = require('fs');
 const uuid = require('uuid').v4;
+const rpn = require('request-promise-native');
 
 const {
   TAG,
   COUCH_URL,
   BRANCH,
   BUILD_NUMBER,
+  API_PORT,
 } = process.env;
+const DEFAULT_API_PORT = 5988;
 
 const buildPath = path.resolve(__dirname, '..', '..', 'build');
 const stagingPath = path.resolve(buildPath, 'staging');
@@ -30,6 +33,14 @@ const getCouchConfig = () => {
     withPath: path => `${parsedUrl.protocol}//${parsedUrl.username}:${parsedUrl.password}@${parsedUrl.host}/${path}`,
     withPathNoAuth: path => `${parsedUrl.protocol}//${parsedUrl.host}/${path}`,
   };
+};
+
+const getApiUrl = (pathname = '') => {
+  const apiUrl = new URL(COUCH_URL);
+  apiUrl.port = API_PORT || DEFAULT_API_PORT;
+  apiUrl.pathname = pathname;
+
+  return apiUrl.toString();
 };
 
 const getVersion = () => {
@@ -93,6 +104,25 @@ const copyBuildInfoToStagingDoc = () => {
   });
 };
 
+const updateServiceWorker = () => {
+  const updateSWUrl = getApiUrl('/api/v1/upgrade/service-worker');
+
+  return rpn.get(updateSWUrl).catch(err => {
+    if (err.status === 401) {
+      throw new Error('Environment variable COUCH_URL has invalid authentication');
+    }
+    if (err.status === 403) {
+      throw new Error('Environment variable COUCH_URL must have admin authentication');
+    }
+
+    if (err.error && err.error.code === 'ECONNREFUSED') {
+      console.warn('API could not be reached.');
+      return;
+    }
+
+    throw err;
+  });
+};
 const setDdocSecrets = () => {
   const databases = fs.readdirSync(ddocsBuildPath);
   databases.forEach(database => {
@@ -115,5 +145,5 @@ module.exports = {
   setBuildInfo,
   createStagingDoc,
   populateStagingDoc,
-
+  updateServiceWorker,
 };

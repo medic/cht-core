@@ -11,6 +11,8 @@ const {
   CI,
 } = process.env;
 
+const DEV = !BUILD_NUMBER;
+
 const buildUtils = require('./scripts/build');
 const couchConfig = buildUtils.getCouchConfig();
 
@@ -369,7 +371,7 @@ module.exports = function(grunt) {
         exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
       'e2e-servers': {
-        cmd: `${BUILD_NUMBER ? 'echo running in CI' :'node ./scripts/e2e/e2e-servers.js &'}`
+        cmd: `${DEV ? 'node ./scripts/e2e/e2e-servers.js &' : 'echo running in CI' }`
       },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
@@ -517,10 +519,10 @@ module.exports = function(grunt) {
       },
       'build-webapp': {
         cmd: () => {
-          const configuration = BUILD_NUMBER ? 'production' : 'development';
+          const configuration = DEV ? 'development' : 'production';
           return [
             `cd webapp`,
-            `../node_modules/.bin/ng build --configuration=${configuration} --progress=${BUILD_NUMBER ? 'false' : 'true'}`,
+            `../node_modules/.bin/ng build --configuration=${configuration} --progress=${DEV ? 'true' : 'false'}`,
             `../node_modules/.bin/ngc`,
             'cd ../',
           ].join(' && ');
@@ -529,7 +531,7 @@ module.exports = function(grunt) {
       },
       'watch-webapp': {
         cmd: () => {
-          const configuration = BUILD_NUMBER ? 'production' : 'development';
+          const configuration = DEV ? 'development' : 'production';
           return `
             cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true &
             cd ../
@@ -541,7 +543,7 @@ module.exports = function(grunt) {
         cmd: () => {
           return [
             'cd webapp',
-            `../node_modules/.bin/ng test webapp --watch=false --progress=${BUILD_NUMBER ? 'false' : 'true'}`,
+            `../node_modules/.bin/ng test webapp --watch=false --progress=${DEV ? 'true' : 'false'}`,
             'cd ../',
           ].join(' && ');
         },
@@ -602,8 +604,8 @@ module.exports = function(grunt) {
       },
       'webapp-js': {
         // instead of watching the source files, watch the build folder and upload on rebuild
-        files: ['api/build/static/webapp/**/*'],
-        tasks: [ 'notify:deployed' ],
+        files: ['api/build/static/webapp/**/*', '!api/build/static/webapp/service-worker.js'],
+        tasks: ['update-service-worker', 'notify:deployed'],
       },
       'primary-ddoc': {
         files: ['ddocs/medic-db/**/*'],
@@ -811,12 +813,12 @@ module.exports = function(grunt) {
     'exec:apply-patches',
   ]);
 
-  grunt.registerTask('build-webapp', 'Build the JS resources', [
+  grunt.registerTask('build-webapp', 'Build webapp resources', [
     'build-enketo-css',
     'exec:build-webapp',
   ]);
 
-  grunt.registerTask('build-enketo-css', 'Build the CSS resources', [
+  grunt.registerTask('build-enketo-css', 'Build Enketo css', [
     'sass',
   ]);
 
@@ -983,21 +985,10 @@ module.exports = function(grunt) {
   ]);
 
   // CI tasks
-  grunt.registerTask('minify-admin', 'Minify JS and CSS', BUILD_NUMBER ? [
+  grunt.registerTask('minify-admin', 'Minify Admin JS and CSS', DEV ? [] : [
     'uglify:admin',
     'optimize-js',
     'cssmin:admin',
-  ] : []);
-
-  grunt.registerTask('ci-compile', 'build, lint, unit, integration test', [
-    'exec:check-version',
-    'static-analysis',
-    'install-dependencies',
-    'build',
-    'mochaTest:api-integration',
-    'unit',
-    'exec:test-config-default',
-    'exec:test-config-standard',
   ]);
 
   grunt.registerTask('ci-compile-github', 'build, lint, unit, integration test', [
@@ -1085,6 +1076,10 @@ module.exports = function(grunt) {
 
   grunt.registerTask('create-staging-doc', buildUtils.createStagingDoc);
   grunt.registerTask('populate-staging-doc', buildUtils.populateStagingDoc);
+  grunt.registerTask('update-service-worker', function () {
+    const done = this.async();
+    buildUtils.updateServiceWorker().then(done);
+  });
   grunt.registerTask('set-ddoc-secrets', buildUtils.setDdocSecrets);
 
   grunt.registerTask('publish-for-testing', 'Publish the staging doc to the testing server', [

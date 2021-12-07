@@ -2,6 +2,7 @@ const auth = require('../auth');
 const serverUtils = require('../server-utils');
 
 const service = require('../services/horti/upgrade');
+const configWatcher = require('../services/config-watcher');
 
 const REQUIRED_PERMISSIONS = ['can_configure'];
 const checkAuth = (req) => auth.check(req, REQUIRED_PERMISSIONS);
@@ -39,5 +40,11 @@ module.exports = {
   upgrade: (req, res) => upgrade(req, res, false),
   stage: (req, res) => upgrade(req, res, true),
   complete: completeUpgrade,
-  progress,
+  progress: progress,
+  serviceWorker: (req, res) => {
+    return checkAuth()
+      .then(() => configWatcher.updateServiceWorker())
+      .then(() => res.json({ ok: true }))
+      .catch(err => serverUtils.error(err, req, res));
+  },
 };
