@@ -2,6 +2,7 @@ const auth = require('../auth');
 const serverUtils = require('../server-utils');
 
 const service = require('../services/upgrade');
+const configWatcher = require('../services/config-watcher');
 
 const upgrade = (req, res, stageOnly) => {
   return auth
@@ -34,5 +35,12 @@ module.exports = {
           .then(() => res.json({ ok: true }));
       })
       .catch(err => serverUtils.error(err, req, res));
-  }
+  },
+  serviceWorker: (req, res) => {
+    return auth
+      .check(req, 'can_configure')
+      .then(() => configWatcher.updateServiceWorker())
+      .then(() => res.json({ ok: true }))
+      .catch(err => serverUtils.error(err, req, res));
+  },
 };

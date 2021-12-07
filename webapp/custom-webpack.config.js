@@ -27,8 +27,8 @@ module.exports = {
       // they don't exist in the enketo source and the styles are commented out in the latest version
       // https://github.com/enketo/enketo-core/blob/master/src/widget/geo/geopicker.scss#L1119
       // the builder throws an error if the paths are not resolved
-      '../../../build/static/webapp/images/layers.png': 'src/img/layers.png',
-      '../../../build/static/webapp/images/layers-2x.png': 'src/img/layers.png',
+      '../../../api/build/static/webapp/images/layers.png': 'src/img/layers.png',
+      '../../../api/build/static/webapp/images/layers-2x.png': 'src/img/layers.png',
     },
     fallback: {
       path: false,

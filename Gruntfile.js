@@ -11,10 +11,12 @@ const {
   CI,
 } = process.env;
 
+const DEV = !BUILD_NUMBER;
+
 const buildUtils = require('./scripts/build');
 const couchConfig = buildUtils.getCouchConfig();
 
-const ESLINT_COMMAND = './node_modules/.bin/eslint --color';
+const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
 
 const getSharedLibDirs = () => {
   return fs
@@ -114,7 +116,7 @@ module.exports = function(grunt) {
       },
       admin: {
         src: 'admin/src/js/main.js',
-        dest: 'build/static/admin/js/main.js',
+        dest: 'api/build/static/admin/js/main.js',
         options: {
           transform: ['browserify-ngannotate'],
           alias: {
@@ -134,10 +136,10 @@ module.exports = function(grunt) {
         banner:
           '/*! Medic <%= grunt.template.today("yyyy-mm-dd") %> */\n',
       },
-      web: {
+      admin: {
         files: {
-          'build/static/admin/js/main.js': 'build/static/admin/js/main.js',
-          'build/static/admin/js/templates.js': 'build/static/admin/js/templates.js'
+          'api/build/static/admin/js/main.js': 'api/build/static/admin/js/main.js',
+          'api/build/static/admin/js/templates.js': 'api/build/static/admin/js/templates.js'
         },
       },
       api: {
@@ -159,17 +161,17 @@ module.exports = function(grunt) {
     less: {
       admin: {
         files: {
-          'build/static/admin/css/main.css': 'admin/src/css/main.less',
+          'api/build/static/admin/css/main.css': 'admin/src/css/main.less',
         },
       },
     },
     cssmin: {
-      web: {
+      admin: {
         options: {
           keepSpecialComments: 0,
         },
         files: {
-          'build/static/admin/css/main.css': 'build/static/admin/css/main.css',
+          'api/build/static/admin/css/main.css': 'api/build/static/admin/css/main.css',
         },
       },
       api: {
@@ -188,6 +190,12 @@ module.exports = function(grunt) {
         src: '**/*',
         dest: 'build/ddocs/',
       },
+      'api-ddocs': {
+        expand: true,
+        cwd: 'ddocs/',
+        src: 'build/ddocs/*.json',
+        dest: 'api/build/ddocs/',
+      },
       'webapp-static': {
         expand: true,
         cwd: 'webapp/src/',
@@ -196,7 +204,7 @@ module.exports = function(grunt) {
           'fonts/**/*',
           'img/**/*',
         ],
-        dest: 'build/static/webapp/',
+        dest: 'api/build/static/webapp/',
       },
       'api-resources': {
         expand: true,
@@ -204,25 +212,19 @@ module.exports = function(grunt) {
         src: '**/*',
         dest: 'api/build/static/',
       },
-      'static-resources': {
+      'built-resources': {
         expand: true,
         cwd: 'build/static',
         src: '**/*',
         dest: 'api/build/static/',
       },
-      'default-docs': {
-        expand: true,
-        cwd: 'build/default-docs/',
-        src: '**/*',
-        dest: 'api/build/default-docs/',
-      },
-      'admin-resources': {
+      'admin-static': {
         files: [
           {
             expand: true,
             flatten: true,
             src: 'admin/src/templates/index.html',
-            dest: 'build/static/admin',
+            dest: 'api/build/static/admin',
           },
           {
             expand: true,
@@ -231,7 +233,7 @@ module.exports = function(grunt) {
               'admin/node_modules/font-awesome/fonts/*',
               'webapp/src/fonts/**/*'
             ],
-            dest: 'build/static/admin/fonts/',
+            dest: 'api/build/static/admin/fonts/',
           },
         ],
       },
@@ -369,7 +371,7 @@ module.exports = function(grunt) {
         exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
       'e2e-servers': {
-        cmd: `${BUILD_NUMBER ? 'echo running in CI' :'node ./scripts/e2e/e2e-servers.js &'}`
+        cmd: `${DEV ? 'node ./scripts/e2e/e2e-servers.js &' : 'echo running in CI' }`
       },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
@@ -510,17 +512,17 @@ module.exports = function(grunt) {
         cmd: () => {
           const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
           const configPath = path.resolve('./config/default');
-          const buildPath = path.resolve('./build/default-docs');
+          const buildPath = path.resolve('./api/build/default-docs');
           const actions = ['upload-app-settings', 'upload-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-resources', 'upload-custom-translations'];
           return `node ${medicConfPath} --skip-dependency-check --archive --source=${configPath} --destination=${buildPath} ${actions.join(' ')}`;
         }
       },
       'build-webapp': {
         cmd: () => {
-          const configuration = BUILD_NUMBER ? 'production' : 'development';
+          const configuration = DEV ? 'development' : 'production';
           return [
             `cd webapp`,
-            `../node_modules/.bin/ng build --configuration=${configuration} --progress=${BUILD_NUMBER ? 'false' : 'true'}`,
+            `../node_modules/.bin/ng build --configuration=${configuration} --progress=${DEV ? 'true' : 'false'}`,
             `../node_modules/.bin/ngc`,
             'cd ../',
           ].join(' && ');
@@ -529,7 +531,7 @@ module.exports = function(grunt) {
       },
       'watch-webapp': {
         cmd: () => {
-          const configuration = BUILD_NUMBER ? 'production' : 'development';
+          const configuration = DEV ? 'development' : 'production';
           return `
             cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true &
             cd ../
@@ -541,7 +543,7 @@ module.exports = function(grunt) {
         cmd: () => {
           return [
             'cd webapp',
-            `../node_modules/.bin/ng test webapp --watch=false --progress=${BUILD_NUMBER ? 'false' : 'true'}`,
+            `../node_modules/.bin/ng test webapp --watch=false --progress=${DEV ? 'true' : 'false'}`,
             'cd ../',
           ].join(' && ');
         },
@@ -576,9 +578,6 @@ module.exports = function(grunt) {
         files: ['admin/src/css/**/*'],
         tasks: [
           'less:admin',
-          'copy:static-resources',
-          'couch-compile:primary',
-          'couch-push:primary',
           'notify:deployed',
         ],
       },
@@ -586,19 +585,13 @@ module.exports = function(grunt) {
         files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
         tasks: [
           'browserify:admin',
-          'copy:static-resources',
-          'couch-compile:primary',
-          'couch-push:primary',
           'notify:deployed',
         ],
       },
       'admin-index': {
         files: ['admin/src/templates/index.html'],
         tasks: [
-          'copy:admin-resources',
-          'copy:static-resources',
-          'couch-compile:primary',
-          'couch-push:primary',
+          'copy:admin-static',
           'notify:deployed',
         ],
       },
@@ -606,24 +599,23 @@ module.exports = function(grunt) {
         files: ['admin/src/templates/**/*', '!admin/src/templates/index.html'],
         tasks: [
           'ngtemplates:adminApp',
-          'copy:static-resources',
-          'couch-compile:primary',
-          'couch-push:primary',
           'notify:deployed',
         ],
       },
       'webapp-js': {
         // instead of watching the source files, watch the build folder and upload on rebuild
-        files: ['build/static/webapp/**/*'],
-        tasks: [
-          'copy:static-resources',
-          'couch-compile:primary',
-          'deploy',
-        ],
+        files: ['api/build/static/webapp/**/*', '!api/build/static/webapp/service-worker.js'],
+        tasks: ['update-service-worker', 'notify:deployed'],
       },
       'primary-ddoc': {
         files: ['ddocs/medic-db/**/*'],
-        tasks: ['copy:ddocs', 'couch-compile:primary', 'deploy'],
+        tasks: [
+          'copy:ddocs',
+          'couch-compile:primary',
+          'couch-push:localhost',
+          'notify:deployed',
+          'copy:api-ddocs',
+        ],
       },
       'secondary-ddocs': {
         files: ['ddocs/*-db/**/*', '!ddocs/medic-db/**/*'],
@@ -632,8 +624,13 @@ module.exports = function(grunt) {
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
+          'copy:api-ddocs',
         ],
       },
+      'api-public-files': {
+        files: ['api/src/public/**/*'],
+        tasks: ['copy:api-resources'],
+      }
     },
     notify: {
       deployed: {
@@ -733,7 +730,7 @@ module.exports = function(grunt) {
       adminApp: {
         cwd: 'admin/src',
         src: ['templates/**/*.html', '!templates/index.html'],
-        dest: 'build/static/admin/js/templates.js',
+        dest: 'api/build/static/admin/js/templates.js',
         options: {
           htmlmin: {
             collapseBooleanAttributes: true,
@@ -755,7 +752,7 @@ module.exports = function(grunt) {
       compile: {
         cwd: 'webapp/src/css/',
         src: 'enketo/enketo.scss',
-        dest: 'build/static/webapp',
+        dest: 'api/build/static/webapp',
         ext: '.less',
         expand: true,
         outputStyle: 'expanded',
@@ -764,8 +761,8 @@ module.exports = function(grunt) {
       },
     },
     'optimize-js': {
-      'build/static/admin/js/main.js': 'build/static/admin/js/main.js',
-      'build/static/admin/js/templates.js': 'build/static/admin/js/templates.js',
+      'api/build/static/admin/js/main.js': 'api/build/static/admin/js/main.js',
+      'api/build/static/admin/js/templates.js': 'api/build/static/admin/js/templates.js',
     },
     jsdoc: {
       admin: {
@@ -814,56 +811,63 @@ module.exports = function(grunt) {
     'exec:apply-patches',
   ]);
 
-  grunt.registerTask('build-js', 'Build the JS resources', [
+  grunt.registerTask('build-webapp', 'Build webapp resources', [
+    'build-enketo-css',
     'exec:build-webapp',
   ]);
 
-  grunt.registerTask('build-css', 'Build the CSS resources', [
+  grunt.registerTask('build-enketo-css', 'Build Enketo css', [
     'sass',
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
     'exec:clean-build-dir',
-    'copy:ddocs',
-    'build-common',
+    'build-ddocs',
+    'build-webapp',
+    //'exec:bundlesize', // bundlesize only checks webapp build files
+    'build-admin',
+    'build-config',
+    'create-staging-doc',
     'build-node-modules',
-    'minify',
-    'couch-compile:primary',
     'populate-staging-doc',
   ]);
 
   grunt.registerTask('build-dev', 'Build the static resources', [
     'exec:clean-build-dir',
-    'copy:ddocs',
+    'build-ddocs',
+    'build-webapp',
+    'build-admin',
+    'build-config',
+    'copy-static-files-to-api',
+  ]);
+
+  grunt.registerTask('copy-static-files-to-api', 'Copy build files and static files to api', [
     'copy:api-resources',
-    'build-common',
-    'copy:static-resources',
-    'couch-compile:primary',
+    'copy:built-resources',
+    'copy:webapp-static',
+    'copy:admin-static',
   ]);
 
   grunt.registerTask('set-build-info', buildUtils.setBuildInfo);
 
-  grunt.registerTask('build-common', 'Build the static resources', [
-    'build-css',
-    'build-js',
+  grunt.registerTask('build-ddocs', 'Builds the ddocs', [
+    'copy:ddocs',
     'exec:set-ddoc-version',
     'set-build-info',
-    'build-admin',
-    'build-ddoc',
-    'exec:build-config',
-    'copy:webapp-static',
-    'copy:default-docs',
+    'couch-compile:primary',
+    'couch-compile:secondary',
+    'copy:api-ddocs',
   ]);
 
-  grunt.registerTask('build-ddoc', 'Build the main ddoc', [
-    'couch-compile:secondary',
+  grunt.registerTask('build-config', 'Build default configuration', [
+    'exec:build-config',
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
-    'copy:admin-resources',
     'ngtemplates:adminApp',
     'browserify:admin',
     'less:admin',
+    'minify-admin',
   ]);
 
   grunt.registerTask('deploy', 'Deploy the webapp', [
@@ -873,12 +877,10 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-node-modules', 'Build and pack api and sentinel bundles', [
-    'copy:api-resources',
-    'copy:static-resources',
+    'copy-static-files-to-api',
     'uglify:api',
     'cssmin:api',
     'exec:bundle-dependencies',
-    'create-staging-doc',
     'exec:pack-node-modules',
   ]);
 
@@ -930,7 +932,7 @@ module.exports = function(grunt) {
     'exec:clean-test-database',
     'exec:setup-test-database',
     'build-node-modules',
-    'build-ddoc',
+    'couch-compile:secondary',
     'couch-compile:primary',
     'couch-push:test',
     'protractor:performance-tests-and-services',
@@ -979,22 +981,10 @@ module.exports = function(grunt) {
   ]);
 
   // CI tasks
-  grunt.registerTask('minify', 'Minify JS and CSS', [
-    'uglify:web',
+  grunt.registerTask('minify-admin', 'Minify Admin JS and CSS', DEV ? [] : [
+    'uglify:admin',
     'optimize-js',
-    'cssmin:web',
-    'exec:bundlesize',
-  ]);
-
-  grunt.registerTask('ci-compile', 'build, lint, unit, integration test', [
-    'exec:check-version',
-    'static-analysis',
-    'install-dependencies',
-    'build',
-    'mochaTest:api-integration',
-    'unit',
-    'exec:test-config-default',
-    'exec:test-config-standard',
+    'cssmin:admin',
   ]);
 
   grunt.registerTask('ci-compile-github', 'build, lint, unit, integration test', [
@@ -1082,6 +1072,10 @@ module.exports = function(grunt) {
 
   grunt.registerTask('create-staging-doc', buildUtils.createStagingDoc);
   grunt.registerTask('populate-staging-doc', buildUtils.populateStagingDoc);
+  grunt.registerTask('update-service-worker', function () {
+    const done = this.async();
+    buildUtils.updateServiceWorker().then(done);
+  });
 
   grunt.registerTask('publish-for-testing', 'Publish the staging doc to the testing server', [
     'couch-compile:staging',

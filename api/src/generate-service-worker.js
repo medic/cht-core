@@ -13,7 +13,7 @@ const apiSrcDirectoryPath = __dirname;
 
 const staticDirectoryPath = environment.staticPath;
 const webappDirectoryPath = environment.webappPath;
-const scriptOutputPath = path.join(webappDirectoryPath, 'js', 'service-worker.js');
+const scriptOutputPath = path.join(webappDirectoryPath, 'service-worker.js');
 
 const fsExists = (path) => new Promise((resolve) => {
   fs.access(path, (err) => resolve(!err));
@@ -72,6 +72,7 @@ const writeServiceWorkerFile = async () => {
       path.join(webappDirectoryPath, 'manifest.json'),
       path.join(webappDirectoryPath, '*.js'),
       path.join(webappDirectoryPath, '*.css'),
+      `!${scriptOutputPath}`, // exclude service worker path
 
       // Fonts
       path.join(webappDirectoryPath, 'fontawesome-webfont.woff2'),
