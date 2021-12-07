@@ -1,5 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
+const fs = require('fs');
 
 const viewMapUtils = require('@medic/view-map-utils');
 const db = require('../../../src/db');
@@ -34,6 +35,7 @@ describe('Configuration', () => {
     sinon.spy(config, 'set');
     sinon.spy(config, 'setTranslationCache');
     sinon.spy(config, 'setTransitionsLib');
+    sinon.stub(fs, 'watch');
   });
 
   afterEach(() => {
@@ -134,20 +136,19 @@ describe('Configuration', () => {
     });
 
     describe('medic ddoc changes', () => {
-      it('reloads settings, runs translations, ddoc extraction and generates sw', () => {
+      it('reloads settings, runs translations and ddoc extraction', () => {
         settingsService.update.resolves();
         ddocExtraction.run.resolves();
         translations.run.resolves();
-        generateServiceWorker.run.resolves();
         db.medic.get.resolves();
 
         return emitChange({ id: '_design/medic' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(1);
           chai.expect(ddocExtraction.run.callCount).to.equal(1);
-          chai.expect(generateServiceWorker.run.callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(1);
           chai.expect(db.medic.get.args[0]).to.deep.equal(['_design/medic']);
           chai.expect(viewMapUtils.loadViewMaps.callCount).to.equal(1);
+          chai.expect(generateServiceWorker.run.callCount).to.equal(0);
         });
       });
 
@@ -155,13 +156,11 @@ describe('Configuration', () => {
         translations.run.rejects();
         settingsService.update.resolves();
         ddocExtraction.run.resolves();
-        generateServiceWorker.run.resolves();
         db.medic.get.resolves();
 
         return emitChange({ id: '_design/medic' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(1);
           chai.expect(ddocExtraction.run.callCount).to.equal(1);
-          chai.expect(generateServiceWorker.run.callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(1);
         });
       });
@@ -171,19 +170,6 @@ describe('Configuration', () => {
         settingsService.update.resolves();
         ddocExtraction.run.rejects();
         generateServiceWorker.run.resolves();
-        db.medic.get.resolves();
-        sinon.stub(process, 'exit');
-
-        return emitChange({ id: '_design/medic' }).then(() => {
-          chai.expect(process.exit.callCount).to.deep.equal(1);
-        });
-      });
-
-      it('should stop execution when updating the service worker fails', () => {
-        translations.run.resolves();
-        settingsService.update.resolves();
-        ddocExtraction.run.resolves();
-        generateServiceWorker.run.rejects();
         db.medic.get.resolves();
         sinon.stub(process, 'exit');
 

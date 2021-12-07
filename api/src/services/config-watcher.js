@@ -89,8 +89,7 @@ const handleDdocChange = () => {
     .catch(err => {
       logger.error('Something went wrong trying to extract resources: %o', err);
       process.exit(1);
-    })
-    .then(() => updateServiceWorker());
+    });
 };
 
 const handleSettingsChange = () => {
@@ -184,4 +183,5 @@ const listen = () => {
 module.exports = {
   load,
   listen,
+  updateServiceWorker,
 };
