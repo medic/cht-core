@@ -202,24 +202,30 @@ docker_up_or_restart(){
 
 install_local_ip_cert(){
   medicOs=$1
+
+  # comment out to test with expired certs
+#  docker exec -it "${medicOs}" bash -c "curl -s -o server.pem https://raw.githubusercontent.com/medic/nginx-local-ip/49f969777f2e288d1e5ed4af7186c4c2220cc971/cert/server.pem" >/dev/null 2>&1
+#  docker exec -it "${medicOs}" bash -c "curl -s -o chain.pem https://raw.githubusercontent.com/medic/nginx-local-ip/49f969777f2e288d1e5ed4af7186c4c2220cc971/cert/chain.pem" >/dev/null 2>&1
+#  docker exec -it "${medicOs}" bash -c "curl -s -o /srv/settings/medic-core/nginx/private/default.key https://raw.githubusercontent.com/medic/nginx-local-ip/49f969777f2e288d1e5ed4af7186c4c2220cc971/cert/server.key" >/dev/null 2>&1
+
   docker exec -it "${medicOs}" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem" >/dev/null 2>&1
   docker exec -it "${medicOs}" bash -c "curl -s -o chain.pem http://local-ip.co/cert/chain.pem" >/dev/null 2>&1
-  docker exec -it "${medicOs}" bash -c "cat server.pem chain.pem > /srv/settings/medic-core/nginx/private/default.crt" >/dev/null 2>&1
   docker exec -it "${medicOs}" bash -c "curl -s -o /srv/settings/medic-core/nginx/private/default.key http://local-ip.co/cert/server.key" >/dev/null 2>&1
+
+  docker exec -it "${medicOs}" bash -c "cat server.pem chain.pem > /srv/settings/medic-core/nginx/private/default.crt" >/dev/null 2>&1
   docker exec -it "${medicOs}" bash -c "/boot/svc-restart medic-core nginx" >/dev/null 2>&1
 }
 
+# thanks https://github.com/medic/nginx-local-ip/blob/main/entrypoint.sh#L44 !
 local_ip_cert_expired(){
   medicOs=$1
-  cert_expire_date=$(docker exec -i "${medicOs}" bash -c "/usr/bin/openssl x509 -enddate -noout -in /srv/settings/medic-core/nginx/private/default.crt  | grep -oP 'notAfter=\K.+'")
+  cert_expire_date=$(docker exec -i "${medicOs}" bash -c "/usr/bin/openssl x509 -enddate -noout -in /srv/settings/medic-core/nginx/private/default.crt | grep -oP 'notAfter=\K.+'")
   cert_expire_date_ISO=$(date -d "$cert_expire_date" '+%Y-%m-%d')
 
   today_ISO=$(date '+%Y-%m-%d')
   if [[ "$cert_expire_date_ISO" < "$today_ISO" ]]; then
-#    echo "0 expired!! $cert_expire_date_ISO   $today_ISO cert_expire_date: $cert_expire_date"
     echo "1"
   else
-#    echo "1 not expired $cert_expire_date_ISO   $today_ISO cert_expire_date: $cert_expire_date"
     echo "0"
   fi
 }
@@ -355,6 +361,7 @@ $container_stat\
 }
 
 counter=1
+tls_reinstalls=0
 main (){
 
   # very first thing check we have valid env file, exit if not
@@ -403,7 +410,7 @@ main (){
   chtVersion="NA"
 
   log_iteration $counter $reboot_count "${last_action}" $docker_action
-  null=$((counter++))
+  (( counter++ ))
 
   # if we're exiting, call down or destroy and quit proper
   if [ "$exitNext" = "destroy" ] || [ "$exitNext" = "down" ] || [ "$exitNext" = "happy" ]; then
@@ -420,7 +427,6 @@ main (){
   # we are healthy, check for self_signed cert and version
   if [ -n "$health" ]; then
     self_signed=0
-    expired_cert=0
   else
     chtVersion=$(get_cht_version "$chtUrl")
     self_signed=$(has_self_signed_cert "$chtUrl")
@@ -533,12 +539,21 @@ main (){
   fi
 
   # check for expired cert, reinstall if so
-  if [ "$expired_cert" = "1" ]; then
+  expired_cert=$(local_ip_cert_expired $MEDIC_OS)
+  if [[ "$expired_cert" = "1" ]] && [[ $tls_reinstalls = 0 ]]; then
     window "WARNING: CHT has expired certificate" "red" "100%"
     append "Re-installing local-ip.co certificate to fix..."
     last_action="Re-installing expired local-ip.co certificate..."
     endwin
+    (( tls_reinstalls++ ))
     install_local_ip_cert $MEDIC_OS &
+    return 0
+  elif [[ "$expired_cert" = "1" ]]; then
+    window "local-ip.co certificate renewed, but still expired" "red" "100%"
+    append "HTTPS calls will fail. Try running this script tomorrow"
+    append "when hopefully local-ip.co has renewed their certificate."
+    endwin
+    set -e
     return 0
   fi
 
@@ -549,7 +564,7 @@ main (){
   append "login: medic"
   append "password: password"
   append ""
-  append "To stop the CHT run: ${script_path1}/cht-docker-compose.sh -d down -e "${envFile}""
+  append "To stop the CHT run: ${script_path1}/cht-docker-compose.sh -d down -e ${envFile}"
   append ""
   append ""
   append "Have a great day!"
