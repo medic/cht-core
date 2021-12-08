@@ -8,10 +8,8 @@ angular.module('controllers').controller('UpgradeCtrl',
     $log,
     $q,
     $scope,
-    $timeout,
     $translate,
     $window,
-    Changes,
     DB,
     Modal,
     Version,
@@ -24,17 +22,6 @@ angular.module('controllers').controller('UpgradeCtrl',
     $scope.loading = true;
     $scope.versions = {};
 
-    const getDeploymentInProgress = function() {
-      return DB().get(DEPLOY_DOC_ID)
-        .then(function(deployDoc) {
-          $scope.deployDoc = deployDoc;
-        }).catch(function(err) {
-          if (err.status !== 404) {
-            throw err;
-          }
-        });
-    };
-
     const getExistingDeployment = function() {
       return DB().get('_design/medic')
         .then(function(ddoc) {
@@ -42,7 +29,8 @@ angular.module('controllers').controller('UpgradeCtrl',
         });
     };
 
-    $q.all([getDeploymentInProgress(), getExistingDeployment()])
+    // todo this will change so I'm not refactoring this code yet
+    $q.all([getExistingDeployment()])
       .then(function() {
         if (!$scope.currentDeploy) {
           // This user has not deployed via horti, so upgrading via it (for now)
