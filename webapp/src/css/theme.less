@@ -80,12 +80,10 @@ a {
   .select2-selection__arrow b {
     margin-top: 0;
   }
-  .missing {
-    color: @gray-medium;
-    .select2-selection__clear {
-      color: @gray-ultra-dark;
-    }
-  }
+}
+
+.select2-missing + span.select2-container .select2-selection__rendered {
+  color: @inactive-color;
 }
 
 .popover .popover-title {
