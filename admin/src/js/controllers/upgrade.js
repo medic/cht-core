@@ -1,7 +1,6 @@
 const _ = require('lodash/core');
 
 const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
-const DEPLOY_DOC_ID = 'horti-upgrade';
 
 angular.module('controllers').controller('UpgradeCtrl',
   function(
@@ -141,6 +140,8 @@ angular.module('controllers').controller('UpgradeCtrl',
         .then(function(confirmed) {
           if (confirmed) {
             upgrade(version, action);
+
+            // todo start polling upgrade progress endpoint
           }
         });
     };
@@ -152,8 +153,6 @@ angular.module('controllers').controller('UpgradeCtrl',
         '/api/v1/upgrade/' + action :
         '/api/v1/upgrade';
 
-      // This will cause the DEPLOY_DOC_ID doc to be written by api, which
-      // will be caught in the changes feed below
       $http
         .post(url, { build: {
           namespace: 'medic',
@@ -171,19 +170,5 @@ angular.module('controllers').controller('UpgradeCtrl',
             });
         });
     };
-
-    Changes({
-      key: 'upgrade',
-      filter: change => change.id === DEPLOY_DOC_ID,
-      callback: change => {
-        if (!change.deleted) {
-          return getDeploymentInProgress();
-        }
-
-        if ($scope.deployDoc) {
-          $timeout(() => $scope.deployDoc._deleted = true);
-        }
-      }
-    });
   }
 );

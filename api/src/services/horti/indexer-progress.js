@@ -54,25 +54,27 @@ const logIndexersProgress = (indexers) => {
   indexers.forEach(logProgress);
 };
 
-const getIndexers = async (indexers = []) => {
+const getIndexers = async (previousIndexers = []) => {
   const activeTasks = await db.activeTasks();
   const tasks = activeTasks.filter(task => task.type === 'indexer' && task.design_document.includes(':staged:'));
   // We assume all previous tasks have finished.
-  indexers.forEach(setTasksToComplete);
-  updateRunningTasks(indexers, tasks);
-  indexers.forEach(calculateAverageProgress);
-  return indexers;
-};
-
-const logIndexerProgress = async (indexers, timeout) => {
-  indexers = await getIndexers(indexers);
-  logIndexersProgress(indexers);
-  timeout = setTimeout(() => logIndexerProgress(indexers, timeout), QUERY_TASKS_INTERVAL);
-  return timeout;
+  previousIndexers.forEach(setTasksToComplete);
+  updateRunningTasks(previousIndexers, tasks);
+  previousIndexers.forEach(calculateAverageProgress);
+  return previousIndexers;
 };
 
 const logProgress = () => {
-  let timeout = logIndexerProgress([]);
+  let timeout;
+  const indexers = [];
+
+  const logIndexerProgress = async () => {
+    await getIndexers(indexers);
+    logIndexersProgress(indexers);
+    timeout = setTimeout(() => logIndexerProgress(indexers, timeout), QUERY_TASKS_INTERVAL);
+  };
+
+  logIndexerProgress([]);
   return () => {
     clearTimeout(timeout);
     timeout = null;

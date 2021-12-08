@@ -113,7 +113,7 @@ describe('Upgrade controller', () => {
       return controller.serviceWorker(req, res).then(() => {
         configWatcher.updateServiceWorker.callCount.should.equal(1);
         auth.check.callCount.should.equal(1);
-        auth.check.args[0].should.deep.equal([req, 'can_configure']);
+        auth.check.args[0].should.deep.equal([req, ['can_configure']]);
         serverUtils.error.callCount.should.equal(0);
       });
     });
@@ -125,7 +125,7 @@ describe('Upgrade controller', () => {
       return controller.serviceWorker(req, res).then(() => {
         configWatcher.updateServiceWorker.callCount.should.equal(0);
         auth.check.callCount.should.equal(1);
-        auth.check.args[0].should.deep.equal([req, 'can_configure']);
+        auth.check.args[0].should.deep.equal([req, ['can_configure']]);
         serverUtils.error.callCount.should.equal(1);
         serverUtils.error.args[0].should.deep.equal([{ some: 'error' }, req, res]);
       });

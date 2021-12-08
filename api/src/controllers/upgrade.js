@@ -42,7 +42,7 @@ module.exports = {
   complete: completeUpgrade,
   progress: progress,
   serviceWorker: (req, res) => {
-    return checkAuth()
+    return checkAuth(req)
       .then(() => configWatcher.updateServiceWorker())
       .then(() => res.json({ ok: true }))
       .catch(err => serverUtils.error(err, req, res));
