@@ -50,12 +50,8 @@ describe('Select2SearchService', () => {
         }
         return val;
       }),
-      next: sinon.stub().returns({
-        find: () => ({
-          removeClass: sinon.stub(),
-          addClass: sinon.stub(),
-        })
-      })
+      removeClass: sinon.stub(),
+      addClass: sinon.stub()
     };
 
     TestBed.configureTestingModule({
