@@ -74,7 +74,7 @@ const logProgress = () => {
     timeout = setTimeout(() => logIndexerProgress(indexers, timeout), QUERY_TASKS_INTERVAL);
   };
 
-  logIndexerProgress([]);
+  logIndexerProgress(indexers);
   return () => {
     clearTimeout(timeout);
     timeout = null;

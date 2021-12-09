@@ -9,41 +9,19 @@ const getBundledDdocs = (jsonFileName) => {
   return require(path.join(environment.ddocsPath, jsonFileName)).docs;
 };
 
-const compareDdocs = (ddocsA, ddocsB) => {
-  const missing = [];
-  const different = [];
-
-  const findCorrespondingDdoc = (ddocA, ddocsB) => {
-    const ddocAName = upgradeUtils.getDdocName(ddocA._id);
-    return ddocsB.find(ddocB => upgradeUtils.getDdocName(ddocB._id) === ddocAName);
-  };
-
-  for (const ddocA of ddocsA) {
-    const ddocB = findCorrespondingDdoc(ddocA, ddocsB);
-    if (!ddocB) {
-      missing.push(ddocB._id);
-    } else if (ddocA.secret !== ddocB.secret) {
-      different.push(ddocB._id);
-    }
-  }
-
-  for (const ddocB of ddocsB) {
-    const ddocA = findCorrespondingDdoc(ddocB, ddocsA);
-    if (!ddocA) {
-      missing.push(ddocB._id);
-    } else if (ddocA.secret !== ddocB.secret) {
-      different.push(ddocB._id);
-    }
-  }
-
-  return { missing, different };
-};
-
 const completeInstall = async () => {
   await upgradeUtils.complete();
   await upgradeUtils.cleanup();
 };
 
+/**
+ * Checks whether currently installed ddocs are the same as the bundled ddocs
+ * If they are, does nothing
+ * If comparison between bundled ddocs and uploaded ddocs fails, it compares staged ddocs with bundled ddocs.
+ * If comparison between bundled ddocs and staged ddocs succeeds, it renames staged ddocs to overwrite uploaded ddocs.
+ * If comparison between bundled ddocs and staged ddocs fails, it stqges the bundled ddocs and begins an install
+ * @return {Promise}
+ */
 const checkInstall = async () => {
   const ddocValidation = {};
 
@@ -56,13 +34,13 @@ const checkInstall = async () => {
     const stagedDdocs = allDdocs.filter(ddoc => upgradeUtils.isStagedDdoc(ddoc._id));
     const bundledDdocs = getBundledDdocs(database.jsonFileName);
 
-    const { missing , different } = compareDdocs(liveDdocs, bundledDdocs);
+    let { missing , different } = upgradeUtils.compareDdocs(bundledDdocs, liveDdocs);
     ddocValidation[database.name].missing = missing;
     ddocValidation[database.name].different = different;
 
     if (missing.length || different.length) {
-      const { missing: missingStaged, different: differentStaged } = compareDdocs(stagedDdocs, bundledDdocs);
-      ddocValidation[database.name].stagedUpgrade = !missingStaged.length && !differentStaged.length;
+      ({ missing, different } = upgradeUtils.compareDdocs(bundledDdocs, stagedDdocs));
+      ddocValidation[database.name].stagedUpgrade = !missing.length && !different.length;
     } else {
       ddocValidation[database.name].valid = true;
     }
@@ -71,6 +49,7 @@ const checkInstall = async () => {
   const allDbsValid = Object.values(ddocValidation).every(check => check.valid);
   if (allDbsValid) {
     logger.info('Installation valid');
+    // todo poll views to start view warming anyway?
     // all good
     return;
   }
@@ -101,7 +80,7 @@ const logDdocCheck = (ddocValidation) => {
   }
 
   logger.debug(`Found missing ddocs: ${missing.length ? missing : 'none'}`);
-  logger.debug(`Found different ddocs: ${different}`);
+  logger.debug(`Found different ddocs: ${different.length ? different: 'none'}`);
 };
 
 module.exports = {
