@@ -310,7 +310,7 @@ const compareDdocs = (bundled, uploaded) => {
   bundled.forEach(bundledDdoc => {
     const uploadedDdoc = findCorrespondingDdoc(bundledDdoc, uploaded);
     if (!uploadedDdoc) {
-      return missing.push(uploadedDdoc._id);
+      return missing.push(bundledDdoc._id);
     }
 
     if (bundledDdoc.secret !== uploadedDdoc.secret) {
