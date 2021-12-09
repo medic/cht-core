@@ -47,6 +47,7 @@ describe('Contact details page', () => {
     it('should show reports and tasks when permissions are enabled', async () => {
       await commonElements.goToPeople(patient._id, true);
       expect(await (await contactPage.contactCard()).getText()).to.equal(patient.name);
+      await contactPage.waitForContactLoaded();
 
       expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(true);
       expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(true);
@@ -62,6 +63,8 @@ describe('Contact details page', () => {
       await browser.refresh();
       await commonElements.waitForPageLoaded();
 
+      await contactPage.waitForContactLoaded();
+
       expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(false);
       expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(true);
 
@@ -74,6 +77,7 @@ describe('Contact details page', () => {
       await commonElements.sync(true);
       await browser.refresh();
       await commonElements.waitForPageLoaded();
+      await contactPage.waitForContactLoaded();
 
       expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(true);
       expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(false);
