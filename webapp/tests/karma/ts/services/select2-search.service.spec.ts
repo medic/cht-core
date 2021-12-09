@@ -112,21 +112,17 @@ describe('Select2SearchService', () => {
     it('should set the id value when a deleted reference is set and fixed label', async () => {
       selectEl.children.returns({ length: 0 });
       lineageModelGeneratorService.contact.rejects({ code: 404, error: 'not found' });
-      try {
-        await service.init(selectEl, ['person'], {initialValue: 'aaa-222-333'});
-        assert.fail('Should not fail');
-      } catch (e) {
-        expect(selectEl.val.callCount).to.equal(2);
-        expect(selectEl.val.args[0]).to.deep.equal([ 'aaa-222-333' ]);  // set the value
-        expect(selectEl.val.args[1]).to.deep.equal([ ]);                // read the value
-        expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
-        expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal([ 'aaa-222-333', { merge: true } ]);
-        expect(contactMutedService.getMuted.callCount).to.equal(0);
-        expect(val).to.equal('aaa-222-333');                              // final value
-        expect(select2Val[0]).to.deep.equal({ text: 'Unknown contact' }); // Label in Select2
-        expect(selectEl.trigger.callCount).to.equal(1);
-        expect(selectEl.trigger.args[0]).to.deep.equal([ 'change' ]);     // the change is notified to the component
-      }
+      await service.init(selectEl, ['person'], {initialValue: 'aaa-222-333'});
+      expect(selectEl.val.callCount).to.equal(2);
+      expect(selectEl.val.args[0]).to.deep.equal([ 'aaa-222-333' ]);  // set the value
+      expect(selectEl.val.args[1]).to.deep.equal([ ]);                // read the value
+      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
+      expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal([ 'aaa-222-333', { merge: true } ]);
+      expect(contactMutedService.getMuted.callCount).to.equal(0);
+      expect(val).to.equal('aaa-222-333');                              // final value
+      expect(select2Val[0]).to.deep.equal({ text: 'Unknown contact' }); // Label in Select2
+      expect(selectEl.trigger.callCount).to.equal(1);
+      expect(selectEl.trigger.args[0]).to.deep.equal([ 'change' ]);     // the change is notified to the component
     });
   });
 });
