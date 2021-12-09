@@ -1,3 +1,5 @@
+const commonElements = require('../common/common.wdio.page');
+
 const reportListID = '#reports-list';
 const reportBodyDetails = '#reports-content .report-body .details';
 const reportBody = () => $(reportBodyDetails);
@@ -10,6 +12,9 @@ const firstReport = () => $(`${reportListID} li:first-child`);
 const reportList = () => $(`${reportListID}`);
 const allReports = () => $$(`${reportListID} li`);
 const reportsByUUID = (uuid) => $$(`li[data-record-id="${uuid}"]`);
+const reportRowSelector = `${reportListID} .content-row`;
+const reportRow = () => $(reportRowSelector);
+const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 
 const submitReportButton = () => $('.action-container .general-actions:not(.ng-hide) .fa-plus');
 const dateFilter = () => $('#date-filter');
@@ -130,6 +135,11 @@ const filterByDate = async (startDate, endDate) => {
 
 const firstReportDetailField = () => $('#reports-content .details ul li:first-child p');
 
+const getAllReportsText = async () => {
+  await (await reportRow()).waitForDisplayed();
+  return commonElements.getTextForElements(reportRowsText);
+};
+
 module.exports = {
   reportList,
   firstReport,
@@ -157,5 +167,6 @@ module.exports = {
   filterByDate,
   allReports,
   reportsByUUID,
-  firstReportDetailField
+  firstReportDetailField,
+  getAllReportsText,
 };

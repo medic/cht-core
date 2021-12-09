@@ -71,7 +71,7 @@
         </ng-container>
       </div>
 
-      <div class="card children" *ngFor="let group of selectedContact?.children">
+      <div class="card children" [ngClass]="group?.type?.person ? 'persons' : 'places'" *ngFor="let group of selectedContact?.children">
         <div class="action-header cell">
           <div class="col-xs-10">
             <h3>{{group?.type?.group_key | translate}}</h3>
@@ -92,7 +92,6 @@
               [muted]="child.doc.muted"
               [displayMuted]="true"
               [valid]="true"
-              [attr.test-id]="group?.type?.person ? 'person' : 'place'"
             ></mm-content-row>
           </ng-container>
         </ul>
@@ -161,7 +160,6 @@
                 [showStatus]="true"
                 [valid]="report.valid"
                 [verified]="report.verified"
-                test-id="report"
               ></mm-content-row>
             </ul>
             <div class="row" *ngIf="!filteredReports.length">
