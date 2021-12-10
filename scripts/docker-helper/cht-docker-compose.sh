@@ -203,14 +203,14 @@ docker_up_or_restart(){
 install_local_ip_cert(){
   medicOs=$1
 
-  # comment out to test with expired certs
-#  docker exec -it "${medicOs}" bash -c "curl -s -o server.pem https://raw.githubusercontent.com/medic/nginx-local-ip/49f969777f2e288d1e5ed4af7186c4c2220cc971/cert/server.pem" >/dev/null 2>&1
-#  docker exec -it "${medicOs}" bash -c "curl -s -o chain.pem https://raw.githubusercontent.com/medic/nginx-local-ip/49f969777f2e288d1e5ed4af7186c4c2220cc971/cert/chain.pem" >/dev/null 2>&1
-#  docker exec -it "${medicOs}" bash -c "curl -s -o /srv/settings/medic-core/nginx/private/default.key https://raw.githubusercontent.com/medic/nginx-local-ip/49f969777f2e288d1e5ed4af7186c4c2220cc971/cert/server.key" >/dev/null 2>&1
-
   docker exec -it "${medicOs}" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem" >/dev/null 2>&1
   docker exec -it "${medicOs}" bash -c "curl -s -o chain.pem http://local-ip.co/cert/chain.pem" >/dev/null 2>&1
   docker exec -it "${medicOs}" bash -c "curl -s -o /srv/settings/medic-core/nginx/private/default.key http://local-ip.co/cert/server.key" >/dev/null 2>&1
+
+  # uncomment to test with expired certs
+#  docker exec -it "${medicOs}" bash -c "curl -s -o server.pem https://raw.githubusercontent.com/medic/nginx-local-ip/49f969777f2e288d1e5ed4af7186c4c2220cc971/cert/server.pem" >/dev/null 2>&1
+#  docker exec -it "${medicOs}" bash -c "curl -s -o chain.pem https://raw.githubusercontent.com/medic/nginx-local-ip/49f969777f2e288d1e5ed4af7186c4c2220cc971/cert/chain.pem" >/dev/null 2>&1
+#  docker exec -it "${medicOs}" bash -c "curl -s -o /srv/settings/medic-core/nginx/private/default.key https://raw.githubusercontent.com/medic/nginx-local-ip/49f969777f2e288d1e5ed4af7186c4c2220cc971/cert/server.key" >/dev/null 2>&1
 
   docker exec -it "${medicOs}" bash -c "cat server.pem chain.pem > /srv/settings/medic-core/nginx/private/default.crt" >/dev/null 2>&1
   docker exec -it "${medicOs}" bash -c "/boot/svc-restart medic-core nginx" >/dev/null 2>&1
