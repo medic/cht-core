@@ -103,7 +103,7 @@ const indexView = (dbName, ddocName, viewName) => {
   // todo change this to do while for memory management
   return rpn
     .get({
-      uri: `${environment.serverUrl}/${dbName}/${DDOC_PREFIX}${ddocName}/_view/${viewName}`,
+      uri: `${environment.serverUrl}/${dbName}/${STAGED_DDOC_PREFIX}${ddocName}/_view/${viewName}`,
       json: true,
       qs: { limit: 1 },
       timeout: 2000,
