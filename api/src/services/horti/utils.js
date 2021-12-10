@@ -12,6 +12,24 @@ const BUILD_DOC_PREFIX = 'medic:medic:';
 const STAGED_DDOC_PREFIX = `${DDOC_PREFIX}:staged:`;
 const SOCKET_TIMEOUT_ERROR_CODE = 'ESOCKETTIMEDOUT';
 
+/**
+ * @typedef {Object} DesignDocument
+ * @property {string} _id
+ * @property {string} _rev
+ * @property {Object} views
+ */
+
+/**
+ * @typedef {Object} Database
+ * @property {string} name
+ * @property {PouchDB} db
+ * @property {string} jsonFileName
+ * @property {Boolean} index
+ */
+
+/**
+ * @type {Array<Database>}
+ */
 const DATABASES = [
   {
     name: environment.db,
@@ -38,19 +56,34 @@ const DATABASES = [
 
 const isStagedDdoc = ddocId => ddocId.startsWith(STAGED_DDOC_PREFIX);
 
+/**
+ * @param {Database} database
+ * @param {Array<DesignDocument>} docs
+ * @return {Promise}
+ */
 const deleteDocs = (database, docs) => {
   if (!docs.length) {
-    return;
+    return Promise.resolve();
   }
   docs.forEach(doc => doc._deleted = true);
   return saveDocs(database, docs);
 };
 
+/**
+ * @param {Database} database
+ * @param {Array<string>} docIds
+ * @return {Promise<Array<DesignDocument>>}
+ */
 const getDocs = async (database, docIds) => {
   const result = await database.db.allDocs({ keys: docIds, include_docs: true });
   return result.rows.map(row => row.doc);
 };
 
+/**
+ * @param {Database} database
+ * @param {Array<DesignDocument>} docs
+ * @return {Promise}
+ */
 const saveDocs = async (database , docs) => {
   const results = await database.db.bulkDocs(docs);
   const errors = results.map(result => result.error).filter(error => error);
@@ -80,11 +113,20 @@ const cleanup = async () => {
   return Promise.all(deferredJobs);
 };
 
+/**
+ * @param {Database} database
+ * @return {Promise<Array<DesignDocument>>}
+ */
 const getStagedDdocs = async (database) => {
   const result = await database.db.allDocs({ startkey: STAGED_DDOC_PREFIX, endkey: `${STAGED_DDOC_PREFIX}\ufff0` });
   return result.rows.map(row => ({ _id: row.id, _rev: row.value.rev }));
 };
 
+/**
+ * @param {Database} database
+ * @param {Boolean} includeDocs
+ * @return {Promise<Array<DesignDocument>>}
+ */
 const getDdocs = async (database, includeDocs = false) => {
   const opts = { startkey: DDOC_PREFIX, endkey: `${DDOC_PREFIX}\ufff0`, include_docs: includeDocs };
   const result = await database.db.allDocs(opts);
@@ -119,8 +161,8 @@ const indexView = (dbName, ddocName, viewName) => {
 
 /**
  * Updates json ddocs to add the :staged: ddoc name prefix
- * @param {Object<{ docs: [{ _id: string }] }>} json
- * @return {Object<{ docs: [{ _id: string }] }>}
+ * @param {Object<{ docs: Array<DesignDocument> }>} json
+ * @return {Array<DesignDocument>}
  */
 const getDdocsToStageFromJson = (json) => {
   return json.docs.map(ddoc => {
@@ -131,8 +173,8 @@ const getDdocsToStageFromJson = (json) => {
 
 /**
  * Returns an array of functions that, when called, start indexing all staged views and return view indexing promises
- * @param {Object<{ name: string }>} database
- * @param {[{ _id: string, views: [Object] }]} ddocsToStage
+ * @param {Database} database
+ * @param {Array<DesignDocument>} ddocsToStage
  * @return {Promise<[function]>}
  */
 const getViewsToIndex = async (database, ddocsToStage) => {
@@ -153,14 +195,13 @@ const getViewsToIndex = async (database, ddocsToStage) => {
 const createDdocsStagingFolder = async () => {
   try {
     await fs.promises.access(environment.stagedDdocsPath);
-    await wipeDdocsStagingFolder();
+    await fs.promises.rmdir(environment.stagedDdocsPath, { recursive: true });
   } catch (err) {
     // if folder doesn't exist, do nothing
-  } finally {
-    await fs.promises.mkdir(environment.stagedDdocsPath);
   }
+
+  await fs.promises.mkdir(environment.stagedDdocsPath);
 };
-const wipeDdocsStagingFolder = () => fs.promises.rmdir(environment.stagedDdocsPath, { recursive: true });
 
 /**
  * For a given version, reads ddocs that are attached to the staging document and saves them in a staged ddocs folder.
@@ -192,17 +233,15 @@ const getDdocsToStageForVersion = async (version) => {
 const getDdocsToStage = (database, version) => {
   const ddocsFolderPath = version === LOCAL_VERSION ? environment.ddocsPath : environment.stagedDdocsPath;
   const json = require(path.join(ddocsFolderPath, database.jsonFileName));
-  const ddocsToStage = getDdocsToStageFromJson(json);
-
-  return ddocsToStage;
+  return getDdocsToStageFromJson(json);
 };
 
 /**
  * For a given version:
  * - downloads ddoc definitions from the staging server
  * - creates all staged ddocs (all databases)
- * - returns an a function that, when called, starts indexing every view from every database
- * @param version
+ * - returns a function that, when called, starts indexing every view from every database
+ * @param {string} version
  * @return {Promise<function(): Promise>}
  */
 const stage = async (version = 'local') => {
@@ -251,7 +290,6 @@ const assignDeployInfo = (stagedDdocs) => {
  */
 const complete = async () => {
   logger.info('Completing install');
-  await wipeDdocsStagingFolder();
 
   for (const database of DATABASES) {
     const ddocs = await getDdocs(database, true);
@@ -269,10 +307,11 @@ const complete = async () => {
       const ddocId = ddoc._id.replace(STAGED_DDOC_PREFIX, DDOC_PREFIX);
       const ddocToReplace = ddocs.find(existentDdoc => ddocId === existentDdoc._id);
       ddoc._id = ddocId;
-      if (!ddocToReplace) {
-        delete ddoc._rev;
-      } else {
+
+      if (ddocToReplace) {
         ddoc._rev = ddocToReplace._rev;
+      } else {
+        delete ddoc._rev;
       }
 
       ddocsToSave.push(ddoc);
@@ -310,7 +349,8 @@ const compareDdocs = (bundled, uploaded) => {
   bundled.forEach(bundledDdoc => {
     const uploadedDdoc = findCorrespondingDdoc(bundledDdoc, uploaded);
     if (!uploadedDdoc) {
-      return missing.push(bundledDdoc._id);
+      missing.push(bundledDdoc._id);
+      return;
     }
 
     if (bundledDdoc.secret !== uploadedDdoc.secret) {
