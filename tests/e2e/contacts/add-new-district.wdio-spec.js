@@ -1,10 +1,12 @@
 const commonElements = require('../../page-objects/common/common.wdio.page.js');
 const contactPage = require('../../page-objects/contacts/contacts.wdio.page.js');
 const utils = require('../../utils');
+const sentinelUtils = require('../sentinel/utils');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 
 describe('Add new district tests : ', () => {
   before(async () => await loginPage.cookieLogin());
+  afterEach(() => sentinelUtils.waitForSentinel());
 
   it('should add new district with a new person', async () => {
     await commonElements.goToPeople();
