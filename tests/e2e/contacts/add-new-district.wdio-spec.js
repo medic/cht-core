@@ -12,6 +12,9 @@ describe('Add new district tests : ', () => {
     await commonElements.goToPeople();
     const district = 'TestDistrict';
     await contactPage.addPlace('district_hospital', 'TestDistrict', 'Tester');
+
+    await sentinelUtils.waitForSentinel();
+
     expect(await (await contactPage.contactCard()).getText()).to.equal(district);
     expect(await contactPage.getPrimaryContactName()).to.equal('Tester');
   });
