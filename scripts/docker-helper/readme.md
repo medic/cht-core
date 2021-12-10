@@ -18,16 +18,21 @@ This script has been heavily tested on Ubuntu and should work very well there.  
 
 ### Software
 
-The script will check and require these commands. All but the first two should be installed by default on Ubuntu:
+The script will check and require these commands. All but `docker` and `docker-compose` should be installed by default on Ubuntu:
 
+* awk
+* curl
+* cut
+* dirname
 * docker (At least version 20.x)
 * docker-compose  (At least version 1.27)
-* nc
-* curl
-* tr
-* awk
+* file
 * grep
-* cut
+* head
+* nc
+* tail
+* tr
+* wc
 
 Optionally you can install `jq` so that the script can parse JSON and tell you which version of the CHT is running.
 
