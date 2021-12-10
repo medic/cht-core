@@ -18,7 +18,7 @@ const {
 } = process.env;
 
 const releaseName = TAG || BRANCH || 'local-development';
-const ESLINT_COMMAND = './node_modules/.bin/eslint --color';
+const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
 
 const couchConfig = (() => {
   if (!COUCH_URL) {

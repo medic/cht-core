@@ -1605,7 +1605,7 @@ describe('Changes controller', () => {
         .then(() => {
           clock.tick(40000);
           testRes.write.callCount.should.equal(12);
-          for (let i = 0; i < 12 ; i++) {
+          for (let i = 0; i < 12; i++) {
             testRes.write.args[i][0].should.equal('\n');
           }
           controller._getLongpollFeeds().length.should.equal(1);
