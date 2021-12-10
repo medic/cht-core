@@ -33,6 +33,9 @@ module.exports = {
       // openrosa-xpath-evaluator, but keeping it in adds 72.51KB to the bundle size.
       // https://github.com/medic/cht-core/issues/7324
       'node-forge': false,
+      // Only include the jquery version from the package.json (and not any different versions pulled in transitively).
+      // Once https://github.com/select2/select2/issues/5993 is resolved, we should try to coalesce back on one version
+      // of jquery and remove this alias.
       'jquery': __dirname + '/node_modules/jquery'
     },
     fallback: {
