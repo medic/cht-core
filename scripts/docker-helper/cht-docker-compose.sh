@@ -312,6 +312,16 @@ log_iteration(){
     ssl_verify='no'
   fi
 
+  if [ $counter -eq 0 ]; then
+
+    echo "$(date) pid=\"$$\" \
+item=\"end\" \
+project_name=\"$COMPOSE_PROJECT_NAME\" \
+" >& 1 >> $logname
+    return 0
+
+  fi
+
   if [ $counter -eq 1 ]; then
 
     echo "${line_head} \
@@ -323,7 +333,6 @@ port_http=\"$CHT_HTTP\" \
 project_name=\"$COMPOSE_PROJECT_NAME\" \
 total_containers=\"$(get_global_running_container_count)\"\
 " >& 1 >> $logname
-
   fi
 
   container_stat=''
@@ -393,6 +402,7 @@ main (){
     append "Install before proceeding:"
     append "$appStatus"
     endwin
+    log_iteration 0
     set -e
     return 0
   fi
@@ -419,6 +429,7 @@ main (){
     elif [ "$exitNext" = "down" ]; then
       docker_down "$envFile" "$dockerComposePath"
     fi
+    log_iteration 0
     set -e
     exit 0
   fi
@@ -450,6 +461,8 @@ main (){
     exitNext=$docker_action
     return 0
   elif [ -z "$docker_action" ] || [ "$docker_action" != "up" ] || [ "$docker_action" = "" ]; then
+    endwin
+    log_iteration 0
     set -e
     exit 0
   fi
@@ -471,6 +484,8 @@ main (){
     append "Download before proceeding: "
     append "wget https://github.com/medic/cht-core/blob/master/docker-compose-developer.yml"
     endwin
+    endwin
+    log_iteration 0
     set -e
     return 0
   fi
@@ -516,6 +531,7 @@ main (){
     window "Reboot max met: $MAX_REBOOTS reboots" "red" "100%"
     append "Please try running docker helper script again"
     endwin
+    log_iteration 0
     set -e
     return 0
   fi
@@ -553,6 +569,7 @@ main (){
     append "HTTPS calls will fail. Try running this script tomorrow"
     append "when hopefully local-ip.co has renewed their certificate."
     endwin
+    log_iteration 0
     set -e
     return 0
   fi
