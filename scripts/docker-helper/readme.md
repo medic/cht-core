@@ -193,7 +193,7 @@ docker stop $(docker ps -q)&&docker system prune&&docker volume prune
 
 ## cht-docker-compose.log
 
-This log will be output every time you call the script.  It will be created and appended to in the directory where you specified your environment file to be (`-e PATH/TO/env_file`). 
+This log will be output every time you call the script.  It will be created and appended to in the directory where you specified your environment file (`-e PATH/TO/env_file`). 
 
 There are three types of lines in this file. The first line will always be the Start line: `item="start"`. Then there will be a Status line: `item="status"`.  Finally, there will be two lines, one for each docker container: `item="docker_logs"`.
 
