@@ -115,7 +115,7 @@ When you're done with a project and want to completely destroy it, run `destroy`
 
 ## Troubleshooting
 
-The main reason you're likely to run into is that the CHT doesn't correctly start up, the very reason this script was created.  If the script either hangs on one step, or fails to start and quits after 5 tries, try these steps:
+The main issue you're likely to run into is that the CHT doesn't correctly start up, the very reason this script was created.  If the script either hangs on one step, or fails to start and quits after 5 tries, try these steps:
 
 1. Ensure your Internet is working. 
 2. Destroy everything by using the `-d destroy` [option](#syntax).  While this will delete any data, if you can't start the CHT instance, you won't be loosing any data you care about ;). This will delete the containers and volumes.  Then run `-d up` and try again.
