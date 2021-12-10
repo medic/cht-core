@@ -120,7 +120,7 @@ describe('Select2SearchService', () => {
       expect(lineageModelGeneratorService.contact.args[0]).to.deep.equal([ 'aaa-222-333', { merge: true } ]);
       expect(contactMutedService.getMuted.callCount).to.equal(0);
       expect(val).to.equal('aaa-222-333');                              // final value
-      expect(select2Val[0]).to.deep.equal({ text: 'Unknown contact' }); // Label in Select2
+      expect(select2Val[0]).to.deep.equal({ text: 'unknown.contact' }); // Label in Select2
       expect(selectEl.trigger.callCount).to.equal(1);
       expect(selectEl.trigger.args[0]).to.deep.equal([ 'change' ]);     // the change is notified to the component
     });

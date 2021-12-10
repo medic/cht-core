@@ -191,7 +191,7 @@ export class Select2SearchService {
       // Because doc was deleted or the user don't have access to,
       // a fixed title in the option selected is set with a "missing" style
       selectEl.addClass('select2-missing');
-      selectEl.select2('data')[0].text = this.translateService.instant('Unknown contact');
+      selectEl.select2('data')[0].text = this.translateService.instant('unknown.contact');
     }
   }
 
