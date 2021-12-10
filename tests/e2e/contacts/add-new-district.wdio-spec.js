@@ -70,8 +70,6 @@ describe('Add new district tests : ', () => {
       },
     ];
 
-    console.log('bump');
-
     await utils.saveDocs(contacts);
     await commonElements.goToPeople();
     await contactPage.editDistrict('Tudor\'s district', 'At Tudor\'s');
