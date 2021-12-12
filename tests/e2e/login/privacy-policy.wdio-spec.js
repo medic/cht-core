@@ -28,11 +28,6 @@ describe('Privacy policy', () => {
         await loginPage.login({ username: user.username, password: user.password });
       });
 
-      after(async () => {
-        await utils.deleteUsers([user]);
-        await utils.revertDb([], true);
-      });
-
       it('should show the correct privacy policy on login', async () => {
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), englishTexts, user.isOffline);
         expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
