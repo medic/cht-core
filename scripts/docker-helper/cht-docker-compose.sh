@@ -461,7 +461,6 @@ main (){
     exitNext=$docker_action
     return 0
   elif [ -z "$docker_action" ] || [ "$docker_action" != "up" ] || [ "$docker_action" = "" ]; then
-    endwin
     log_iteration 0
     set -e
     exit 0
