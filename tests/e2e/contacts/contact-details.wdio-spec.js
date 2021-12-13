@@ -13,6 +13,19 @@ const updateSettings = async (settings) => {
   await utils.updateSettings(settings, true);
 };
 
+const waitForContactLoaded = async (expectTasks) => {
+  await commonElements.waitForPageLoaded();
+  await contactPage.waitForContactLoaded();
+  if (expectTasks) {
+    // contact loaded only waits for contact summary (which requires reports)
+    // tasks are loaded afterwards and there is no visual indication of them being loaded, or still loading
+    return browser.waitUntil(async () => await (await contactPage.rhsTaskListElement()).isDisplayed());
+  }
+
+  // if we expect _not_ to see tasks, wait so we make sure they have enought time to not appear
+  return browser.pause(1000);
+};
+
 describe('Contact details page', () => {
   describe('Permissions to show reports and tasks', () => {
     const role = 'notchw';
@@ -47,7 +60,7 @@ describe('Contact details page', () => {
     it('should show reports and tasks when permissions are enabled', async () => {
       await commonElements.goToPeople(patient._id, true);
       expect(await (await contactPage.contactCard()).getText()).to.equal(patient.name);
-      await contactPage.waitForContactLoaded();
+      await waitForContactLoaded(true);
 
       expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(true);
       expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(true);
@@ -61,9 +74,7 @@ describe('Contact details page', () => {
 
       await commonElements.sync(true);
       await browser.refresh();
-      await commonElements.waitForPageLoaded();
-
-      await contactPage.waitForContactLoaded();
+      await waitForContactLoaded(true);
 
       expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(false);
       expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(true);
@@ -76,8 +87,8 @@ describe('Contact details page', () => {
 
       await commonElements.sync(true);
       await browser.refresh();
-      await commonElements.waitForPageLoaded();
-      await contactPage.waitForContactLoaded();
+
+      await waitForContactLoaded(false);
 
       expect(await (await contactPage.rhsReportListElement()).isDisplayed()).to.equal(true);
       expect(await (await contactPage.rhsTaskListElement()).isDisplayed()).to.equal(false);
