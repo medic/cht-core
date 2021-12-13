@@ -50,7 +50,6 @@ const baseConfig = {
     print: () => {}
   },
   beforeLaunch: function() {
-    console.log('bump');
     process.on('uncaughtException', function() {
       utils.reporter.jasmineDone();
       utils.reporter.afterLaunch();
