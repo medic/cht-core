@@ -129,12 +129,19 @@ module.exports = {
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
     await helper.waitUntilReadyNative(addButton);
 
-    // select form
-    const form = module.exports.formByHref(formId);
-    await helper.clickElementNative(addButton);
-    // wait for animation to finish
-    await browser.sleep(100);
-    await helper.clickElementNative(form);
+    const openForm = async () => {
+      await addButton.click();
+      const form = module.exports.formByHref(formId);
+      await helper.waitElementToBeVisibleNative(form, 1000);
+      await form.click();
+    };
+
+    try {
+      await openForm();
+    } catch (err) {
+      console.warn('Failed to open form, trying again');
+      await openForm();
+    }
 
     // waiting for form
     await helper.waitUntilReadyNative(element(by.css('#report-form #form-title')));
