@@ -323,9 +323,6 @@ module.exports = function(grunt) {
           return 'echo "Node module dependencies updated"';
         },
       },
-      'set-ddoc-version': {
-        cmd: () => `echo "${buildUtils.getVersion()}" > build/ddocs/medic-db/medic/version`,
-      },
       'api-dev': {
         cmd:
           'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "api/build/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
@@ -611,7 +608,7 @@ module.exports = function(grunt) {
         files: ['ddocs/medic-db/**/*'],
         tasks: [
           'copy:ddocs',
-          'set-ddoc-secrets',
+          'set-ddocs-version',
           'couch-compile:primary',
           'couch-push:localhost',
           'notify:deployed',
@@ -622,7 +619,7 @@ module.exports = function(grunt) {
         files: ['ddocs/*-db/**/*', '!ddocs/medic-db/**/*'],
         tasks: [
           'copy:ddocs',
-          'set-ddoc-secrets',
+          'set-ddocs-version',
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
@@ -854,8 +851,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build-ddocs', 'Builds the ddocs', [
     'copy:ddocs',
-    'set-ddoc-secrets',
-    'exec:set-ddoc-version',
+    'set-ddocs-version',
     'set-build-info',
     'couch-compile:primary',
     'couch-compile:secondary',
@@ -1080,7 +1076,7 @@ module.exports = function(grunt) {
     const done = this.async();
     buildUtils.updateServiceWorker().then(done);
   });
-  grunt.registerTask('set-ddoc-secrets', buildUtils.setDdocSecrets);
+  grunt.registerTask('set-ddocs-version', buildUtils.setDdocsVersion);
 
   grunt.registerTask('publish-for-testing', 'Publish the staging doc to the testing server', [
     'couch-compile:staging',

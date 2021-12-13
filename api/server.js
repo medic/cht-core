@@ -14,7 +14,7 @@ process
   });
 
 (async () => {
-  const installer = require('./src/services/horti/install');
+  const installer = require('./src/services/setup/install');
   const app = require('./src/routing');
   const configWatcher = require('./src/services/config-watcher');
   const migrations = require('./src/migrations');

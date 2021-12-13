@@ -5,7 +5,7 @@ const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 
 const controller = require('../../../src/controllers/upgrade');
-const service = require('../../../src/services/horti/upgrade');
+const service = require('../../../src/services/setup/upgrade');
 const configWatcher = require('../../../src/services/config-watcher');
 
 describe('Upgrade controller', () => {

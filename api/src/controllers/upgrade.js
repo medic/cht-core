@@ -1,7 +1,7 @@
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
 
-const service = require('../services/horti/upgrade');
+const service = require('../services/setup/upgrade');
 const configWatcher = require('../services/config-watcher');
 
 const REQUIRED_PERMISSIONS = ['can_configure'];

@@ -1,7 +1,6 @@
 const packageJson = require('../../package.json');
 const path = require('path');
 const fs = require('fs');
-const uuid = require('uuid').v4;
 const rpn = require('request-promise-native');
 
 const {
@@ -43,18 +42,21 @@ const getApiUrl = (pathname = '') => {
   return apiUrl.toString();
 };
 
+const releaseName = TAG || BRANCH || 'local-development';
+
 const getVersion = () => {
   if (TAG) {
     return TAG;
   }
-  let version = packageJson.version;
   if (BRANCH === 'master') {
-    version += `-alpha.${BUILD_NUMBER}`;
+    return `${packageJson.version}-alpha.${BUILD_NUMBER}`;
   }
-  return version;
+  if (BRANCH) {
+    return `${packageJson.version}-${BRANCH}.${BUILD_NUMBER}`;
+  }
+  return `${packageJson.version}-dev.${new Date().getTime()}`;
 };
 
-const releaseName = TAG || BRANCH || 'local-development';
 const setBuildInfo = () => {
   const buildInfoPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'build_info');
   mkdirSync(buildInfoPath);
@@ -116,14 +118,15 @@ const updateServiceWorker = () => {
     }
 
     if (err.error && err.error.code === 'ECONNREFUSED') {
-      console.warn('API could not be reached.');
+      console.warn('API could not be reached, so the service-worker has not been updated. ');
       return;
     }
 
     throw err;
   });
 };
-const setDdocSecrets = () => {
+const setDdocsVersion = () => {
+  const version = getVersion();
   const databases = fs.readdirSync(ddocsBuildPath);
   databases.forEach(database => {
     const dbPath = path.resolve(ddocsBuildPath, database);
@@ -132,16 +135,15 @@ const setDdocSecrets = () => {
     }
     const ddocs = fs.readdirSync(dbPath);
     ddocs.forEach(ddoc => {
-      fs.writeFileSync(path.resolve(dbPath, ddoc, 'secret'), uuid());
+      fs.writeFileSync(path.resolve(dbPath, ddoc, 'version'), version);
     });
   });
 };
 
 
 module.exports = {
-  setDdocSecrets,
+  setDdocsVersion,
   getCouchConfig,
-  getVersion,
   setBuildInfo,
   createStagingDoc,
   populateStagingDoc,

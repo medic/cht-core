@@ -16,6 +16,7 @@ const SOCKET_TIMEOUT_ERROR_CODE = 'ESOCKETTIMEDOUT';
  * @typedef {Object} DesignDocument
  * @property {string} _id
  * @property {string} _rev
+ * @property {string} version
  * @property {Object} views
  */
 
@@ -95,12 +96,23 @@ const saveDocs = async (database , docs) => {
 };
 
 /**
- * Deletes uploaded staged ddocs, runs compaction and view cleanup for every database.
+ * Deletes uploaded staged ddocs
+ * @return {Promise}
+ */
+const deleteStagedDdocs = async () => {
+  logger.info('Deleting existent staged ddocs');
+  for (const database of DATABASES) {
+    const stagedDdocs = await getStagedDdocs(database);
+    await deleteDocs(database, stagedDdocs);
+    logger.info(`Running view cleanup for ${database.name}`);
+  }
+};
+
+/**
+ * Runs compaction and view cleanup for every database.
  * @return {Promise}
  */
 const cleanup = async () => {
-  logger.info('Deleting existent staged ddocs');
-
   const deferredJobs = [];
   for (const database of DATABASES) {
     const stagedDdocs = await getStagedDdocs(database);
@@ -137,22 +149,22 @@ const getDdocs = async (database, includeDocs = false) => {
  * Returns a promise that resolves when a view is indexed.
  * Retries querying the view until no error is thrown
  * @param {String} dbName
- * @param {String} ddocName
+ * @param {String} ddocId
  * @param {String} viewName
  * @return {Promise}
  */
-const indexView = (dbName, ddocName, viewName) => {
+const indexView = (dbName, ddocId, viewName) => {
   // todo change this to do while for memory management
   return rpn
     .get({
-      uri: `${environment.serverUrl}/${dbName}/${STAGED_DDOC_PREFIX}${ddocName}/_view/${viewName}`,
+      uri: `${environment.serverUrl}/${dbName}/${ddocId}/_view/${viewName}`,
       json: true,
       qs: { limit: 1 },
       timeout: 2000,
     })
     .catch(requestError => {
       if (requestError && requestError.error && requestError.error.code === SOCKET_TIMEOUT_ERROR_CODE) {
-        return indexView(dbName, ddocName, viewName);
+        return indexView(dbName, ddocId, viewName);
       }
       throw requestError;
     });
@@ -180,12 +192,15 @@ const getDdocsToStageFromJson = (json) => {
 const getViewsToIndex = async (database, ddocsToStage) => {
   const viewsToIndex = [];
 
+  if (!database.index) {
+    return viewsToIndex;
+  }
+
   const ddocs = await getDocs(database, ddocsToStage.map(doc => doc._id));
   ddocs.forEach(ddoc => {
-    const ddocName = getDdocName(ddoc._id);
     const ddocViewIndexPromises = Object
       .keys(ddoc.views)
-      .map(viewName => indexView.bind({}, database.name, ddocName, viewName));
+      .map(viewName => indexView.bind({}, database.name, ddoc._id, viewName));
     viewsToIndex.push(...ddocViewIndexPromises);
   });
 
@@ -250,15 +265,13 @@ const stage = async (version = 'local') => {
 
   const viewsToIndex = [];
 
-  await cleanup();
+  await deleteStagedDdocs();
+
   for (const database of DATABASES) {
     const ddocsToStage = getDdocsToStage(database, version);
     logger.info(`Saving ddocs for ${database.name}`);
     await saveDocs(database, ddocsToStage);
-    if (database.index) {
-      // todo should we only index views in medic db?
-      viewsToIndex.push(...await getViewsToIndex(database, ddocsToStage));
-    }
+    viewsToIndex.push(...await getViewsToIndex(database, ddocsToStage));
   }
 
   const indexViews = () => {
@@ -323,18 +336,15 @@ const complete = async () => {
   logger.info('Install complete');
 };
 
-const getStagedDdocId = ddocId => ddocId.replace(DDOC_PREFIX, STAGED_DDOC_PREFIX);
-const getDdocId = stagedDdocId => stagedDdocId.replace(STAGED_DDOC_PREFIX, DDOC_PREFIX);
-
 const getDdocName = ddocId => ddocId.replace(STAGED_DDOC_PREFIX, '').replace(DDOC_PREFIX, '');
 
 /**
  * Compares a list of bundled ddocs with a list of uploaded ddocs.
  * Returns a list of missing ddocs ids and a list of different ddocs ids.
  * A ddoc is missing if it is bundled and not uploaded.
- * A ddoc is different the secret of the bundled ddoc is different from the secret of the uploaded ddoc.
- * @param {Array<{ _id, secret: uuid }>} bundled Array of bundled ddocs
- * @param {Array<{ _id, secret: uuid }>} uploaded Array of uploaded ddocs
+ * A ddoc is different the version of the bundled ddoc is different from the version of the uploaded ddoc.
+ * @param {Array<{ _id, version: string }>} bundled Array of bundled ddocs
+ * @param {Array<{ _id, version: string }>} uploaded Array of uploaded ddocs
  * @return {{missing: Array<string>, different: Array<string>}}
  */
 const compareDdocs = (bundled, uploaded) => {
@@ -353,7 +363,7 @@ const compareDdocs = (bundled, uploaded) => {
       return;
     }
 
-    if (bundledDdoc.secret !== uploadedDdoc.secret) {
+    if (bundledDdoc.version !== uploadedDdoc.version) {
       different.push(uploadedDdoc._id);
     }
   });
@@ -366,18 +376,12 @@ const compareDdocs = (bundled, uploaded) => {
 
 module.exports = {
   DATABASES,
-  DDOC_PREFIX,
-  STAGED_DDOC_PREFIX,
 
   cleanup,
   stage,
   complete,
 
-  getStagedDdocs,
   getDdocs,
   isStagedDdoc,
-  getStagedDdocId,
-  getDdocId,
-  getDdocName,
   compareDdocs,
 };
