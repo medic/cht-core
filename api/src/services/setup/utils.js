@@ -52,7 +52,7 @@ const DATABASES = [
     name: `${environment.db}-users-meta`,
     db: db.medicUsersMeta,
     jsonFileName: 'users-meta.json',
-  }
+  },
 ];
 
 const isStagedDdoc = ddocId => ddocId.startsWith(STAGED_DDOC_PREFIX);
@@ -64,7 +64,7 @@ const isStagedDdoc = ddocId => ddocId.startsWith(STAGED_DDOC_PREFIX);
  */
 const deleteDocs = (database, docs) => {
   if (!docs.length) {
-    return Promise.resolve();
+    return Promise.resolve([]);
   }
   docs.forEach(doc => doc._deleted = true);
   return saveDocs(database, docs);
@@ -76,6 +76,10 @@ const deleteDocs = (database, docs) => {
  * @return {Promise<Array<DesignDocument>>}
  */
 const getDocs = async (database, docIds) => {
+  if (!docIds.length) {
+    return [];
+  }
+
   const result = await database.db.allDocs({ keys: docIds, include_docs: true });
   return result.rows.map(row => row.doc);
 };
@@ -86,13 +90,20 @@ const getDocs = async (database, docIds) => {
  * @return {Promise}
  */
 const saveDocs = async (database , docs) => {
+  if (!docs.length) {
+    return [];
+  }
+
   const results = await database.db.bulkDocs(docs);
-  const errors = results.map(result => result.error).filter(error => error);
+  const errors = results
+    .filter(result => result.error)
+    .map(result => `saving ${result.id} failed with ${result.error}`);
+
   if (!errors.length) {
     return results;
   }
 
-  throw new Error(`Error while saving docs ${JSON.stringify(errors)}`);
+  throw new Error(`Error while saving docs: ${JSON.stringify(errors)}`);
 };
 
 /**
@@ -104,7 +115,6 @@ const deleteStagedDdocs = async () => {
   for (const database of DATABASES) {
     const stagedDdocs = await getStagedDdocs(database);
     await deleteDocs(database, stagedDdocs);
-    logger.info(`Running view cleanup for ${database.name}`);
   }
 };
 
@@ -115,10 +125,7 @@ const deleteStagedDdocs = async () => {
 const cleanup = async () => {
   const deferredJobs = [];
   for (const database of DATABASES) {
-    const stagedDdocs = await getStagedDdocs(database);
-    await deleteDocs(database, stagedDdocs);
-    logger.info(`Running DB compact and cleanup for ${database.name}`);
-    // todo maybe only run viewCleanup and keep compaction separate? or not run compaction at all?
+    logger.info(`Running DB compact and view cleanup for ${database.name}`);
     deferredJobs.push(database.db.compact(), database.db.viewCleanup());
   }
 
