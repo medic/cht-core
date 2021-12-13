@@ -130,10 +130,8 @@ module.exports = {
     await helper.waitUntilReadyNative(addButton);
 
     // select form
-    const form = module.exports.formByHref(formId);
     await helper.clickElementNative(addButton);
-    // wait for animation to finish
-    await browser.sleep(100);
+    const form = module.exports.formByHref(formId);
     await helper.clickElementNative(form);
 
     // waiting for form
