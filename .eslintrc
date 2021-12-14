@@ -3,7 +3,25 @@
   "parserOptions": {
     "ecmaVersion": 6
   },
-  "plugins": ["promise"],
+  "plugins": ["promise", "node"],
+  "rules": {
+    "comma-style": ["error", "last"],
+    "dot-location": ["error", "property"],
+    "linebreak-style": ["error", "unix"],
+    "no-alert": "error",
+    "no-extra-bind": "error",
+    "no-lone-blocks": "error",
+    "no-nested-ternary": "error",
+    "no-undef-init": "error",
+    "no-useless-rename": "error",
+    "no-whitespace-before-property": "error",
+    "node/no-exports-assign": "error",
+    "rest-spread-spacing": ["error", "never"],
+    "semi-spacing": ["error", { "before": false, "after": true }],
+    "semi-style": ["error", "last"],
+    "template-curly-spacing": "error",
+    "unicode-bom": ["error", "never"]
+  },
   "overrides": [
     {
       "files": [ "Gruntfile.js" ],
@@ -23,6 +41,12 @@
       "files": [ "**/test/**", "**/tests/**" ],
       "rules": {
         "promise/catch-or-return": "error"
+      }
+    },
+    {
+      "files": ["config/**/**"],
+      "rules": {
+
       }
     }
   ]

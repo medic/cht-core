@@ -400,7 +400,7 @@ describe('ServerSidePurge', () => {
       'medic-client/contacts_by_type',
       {
         limit: limit,
-        start_key: JSON.stringify(key ? key : (id ? `key${id}` : '')),
+        start_key: JSON.stringify(key || (id ? `key${id}` : '')),
         startkey_docid: id,
         include_docs: true,
       },
