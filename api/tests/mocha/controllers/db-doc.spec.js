@@ -119,7 +119,8 @@ describe('db-doc controller', () => {
           next.callCount.should.equal(0);
           service.filterOfflineRequest.callCount.should.equal(1);
           service.filterOfflineRequest.args[0].should.deep.equal([
-            testReq.userCtx, testReq.params, testReq.method, testReq.query, testReq.body ]);
+            testReq.userCtx, testReq.params, testReq.method, testReq.query, testReq.body,
+          ]);
           next.callCount.should.equal(0);
           testRes.json.callCount.should.equal(1);
           testRes.json.args[0].should.deep.equal([{ some: 'thing' }]);

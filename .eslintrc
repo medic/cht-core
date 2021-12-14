@@ -5,6 +5,10 @@
   },
   "plugins": ["promise", "node"],
   "rules": {
+    "array-bracket-newline": ["error", "consistent"],
+    "array-callback-return": ["error", { "allowImplicit": true }],
+    "arrow-spacing": ["error", { "before": true, "after": true }],
+    "brace-style": ["error", "1tbs"],
     "comma-style": ["error", "last"],
     "dot-location": ["error", "property"],
     "linebreak-style": ["error", "unix"],
@@ -46,7 +50,8 @@
     {
       "files": ["config/**/**"],
       "rules": {
-
+        "brace-style": "off",
+        "array-bracket-newline": "off"
       }
     }
   ]

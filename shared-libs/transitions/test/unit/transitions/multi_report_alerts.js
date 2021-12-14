@@ -528,7 +528,8 @@ describe('multi report alerts', () => {
         message : 'bye',
         recipients : ['+254777888111', '+2562299383'],
         time_window_in_days : 5
-      }];
+      },
+    ];
     sinon.stub(config, 'get').returns(twoAlerts);
     sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
     sinon.stub(utils, 'isValidSubmission').callsFake(r => r.contact && r.contact.phone);

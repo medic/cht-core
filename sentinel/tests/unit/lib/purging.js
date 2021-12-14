@@ -59,7 +59,9 @@ describe('ServerSidePurge', () => {
     });
 
     it('should return eval-ed when purge fn is correct', () => {
-      const purgeFn = function(n) { return n * n; };
+      const purgeFn = function(n) {
+        return n * n;
+      };
       config.get.returns({ fn: purgeFn.toString() });
       const result = service.__get__('getPurgeFn')();
       chai.expect(config.get.callCount).to.equal(1);

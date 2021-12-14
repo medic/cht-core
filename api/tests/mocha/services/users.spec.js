@@ -913,7 +913,7 @@ describe('Users service', () => {
       service.__set__('createUserSettings', sinon.stub().resolves());
       return service
         .createUser(userData)
-        .then(() => { throw 'should have thrown'; })
+        .then(() => chai.expect.fail('should have thrown'))
         .catch(err => {
           chai.expect(err).to.equal(conflictErr);
           chai.expect(db.medic.get.callCount).to.equal(4);
@@ -952,7 +952,7 @@ describe('Users service', () => {
       service.__set__('createUserSettings', sinon.stub().resolves());
       return service
         .createUser(userData)
-        .then(() => { throw 'should have thrown'; })
+        .then(() => chai.expect.fail('should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({ status: 400, reason: 'not-a-conflict' });
           chai.expect(db.medic.get.callCount).to.equal(1);

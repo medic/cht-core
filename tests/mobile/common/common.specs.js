@@ -87,7 +87,7 @@ describe('Navigation tests : ', () => {
 
     let originalTimeout;
 
-    beforeEach(async () =>await utils.beforeEach());
+    beforeEach(async () => await utils.beforeEach());
 
     beforeAll(async () => {
       originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;

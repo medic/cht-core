@@ -258,8 +258,8 @@ export class RulesEngineService implements OnDestroy {
     for (
       let current = rulesEngineContext.userContactDoc;
       !!current && userLineage.length < this.MAX_LINEAGE_DEPTH;
-      current = current.parent)
-    {
+      current = current.parent
+    ) {
       userLineage.push(current._id);
     }
 

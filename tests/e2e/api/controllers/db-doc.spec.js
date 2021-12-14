@@ -772,7 +772,7 @@ describe('db-doc handler', () => {
         const docs = reportScenarios.map(scenario => scenario.doc);
         return utils
           .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]}, true)
-          .then(()=> utils.saveDocs([...patientsToDelete, ...docs, ...submittersToDelete]))
+          .then(() => utils.saveDocs([...patientsToDelete, ...docs, ...submittersToDelete]))
           .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(
             _.defaults({ path: `/${patient._id}` }, offlineRequestOptions)
           ).catch(err => err))))

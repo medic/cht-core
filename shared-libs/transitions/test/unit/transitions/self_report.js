@@ -129,8 +129,7 @@ describe('self_report transition', () => {
             translation_key: 'other_message',
           }
         ],
-      }
-      ]);
+      } ]);
       sinon.stub(config, 'getTranslations').returns({ en: { the_message: 'translated message' }});
 
       db.medic.query.resolves({rows: []});
@@ -407,8 +406,7 @@ describe('self_report transition', () => {
             translation_key: 'other_message',
           }
         ],
-      }
-      ]);
+      } ]);
       sinon.stub(config, 'getTranslations').returns({
         en: { the_message: 'translated message', other_message: 'msg' },
         sw: { the_message: 'not english', other_message: 'msg' },

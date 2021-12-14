@@ -47,7 +47,8 @@ const docs = [
         data: Buffer.from(xml).toString('base64')
       }
     }
-  }];
+  }
+];
 const submitButton = () => $('[ng-click="onSubmit()"]');
 const reportContent = () => $('div#reports-content');
 const refreshIcon = () => $('.icon.icon-refresh');
