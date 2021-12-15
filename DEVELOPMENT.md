@@ -192,7 +192,7 @@ $ sudo ufw allow proto tcp from  172.16.0.0/16 to any port 5988
 
 ### Remote Proxies
 
-`ngrok` and `pagekite` are remote proxies that route local traffic between your client and the CHT via a remote SSL terminator. While easy and handy, they introduce latency and are sometimes throttled. 
+`ngrok` and `pagekite` are remote proxies that route local traffic between your client and the CHT via a remote SSL terminator. While easy and handy, they introduce latency and are sometimes throttled.
 
 #### ngrok
 
