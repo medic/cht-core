@@ -28,7 +28,9 @@ if (UNIT_TEST_ENV) {
     'getAttachment',
     'changes',
     'info',
-    'close'
+    'close',
+    'compact',
+    'viewCleanup',
   ];
   const GLOBAL_FUNCTIONS_TO_STUB = [
     'get',

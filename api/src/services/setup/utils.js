@@ -160,22 +160,24 @@ const getDdocs = async (database, includeDocs = false) => {
  * @param {String} viewName
  * @return {Promise}
  */
-const indexView = (dbName, ddocId, viewName) => {
-  // todo change this to do while for memory management
-  return rpn
-    .get({
-      uri: `${environment.serverUrl}/${dbName}/${ddocId}/_view/${viewName}`,
-      json: true,
-      qs: { limit: 1 },
-      timeout: 2000,
-    })
-    .catch(requestError => {
-      if (requestError && requestError.error && requestError.error.code === SOCKET_TIMEOUT_ERROR_CODE) {
-        return indexView(dbName, ddocId, viewName);
+const indexView = async (dbName, ddocId, viewName) => {
+  let viewIndexed = false;
+
+  do {
+    try {
+      await rpn.get({
+        uri: `${environment.serverUrl}/${dbName}/${ddocId}/_view/${viewName}`,
+        json: true,
+        qs: { limit: 1 },
+        timeout: 2000,
+      });
+      viewIndexed = true;
+    } catch (requestError) {
+      if (!requestError || !requestError.error || requestError.error.code !== SOCKET_TIMEOUT_ERROR_CODE) {
+        throw requestError;
       }
-      throw requestError;
-    });
-  // todo also retry when getting a result?
+    }
+  } while (!viewIndexed);
 };
 
 /**

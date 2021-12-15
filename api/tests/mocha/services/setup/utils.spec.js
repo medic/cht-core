@@ -323,7 +323,145 @@ describe('Setup utils', () => {
   });
 
   describe('cleanup', () => {
+    it('should start db compact and view cleanup for every database', async () => {
+      mockDb(db.medic);
+      mockDb(db.sentinel);
+      mockDb(db.medicLogs);
+      mockDb(db.medicUsersMeta);
 
+      await utils.cleanup();
+
+      expect(db.medic.compact.callCount).to.equal(1);
+      expect(db.sentinel.compact.callCount).to.equal(1);
+      expect(db.medicLogs.compact.callCount).to.equal(1);
+      expect(db.medicUsersMeta.compact.callCount).to.equal(1);
+
+      expect(db.medic.viewCleanup.callCount).to.equal(1);
+      expect(db.sentinel.viewCleanup.callCount).to.equal(1);
+      expect(db.medicLogs.viewCleanup.callCount).to.equal(1);
+      expect(db.medicUsersMeta.viewCleanup.callCount).to.equal(1);
+    });
+
+    it('should throw an error when any cleanup task fails', async () => {
+      mockDb(db.medic);
+      mockDb(db.sentinel);
+      mockDb(db.medicLogs);
+      mockDb(db.medicUsersMeta);
+
+      db.sentinel.compact.rejects({ some: 'error' });
+
+      try {
+        await utils.cleanup();
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ some: 'error' });
+      }
+    });
+  });
+
+  describe('getDdocs', () => {
+    it('should return ddocs without include_docs', async () => {
+      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [
+        { id: 'ddoc1', key: 'ddoc1', value: { rev: 'rev1' } },
+        { id: 'ddoc2', key: 'ddoc2', value: { rev: 'rev2' } },
+      ] });
+
+      const result = await utils.__get__('getDdocs')({ db: db.sentinel });
+
+      expect(result).to.deep.equal([
+        { _id: 'ddoc1', _rev: 'rev1' },
+        { _id: 'ddoc2', _rev: 'rev2' },
+      ]);
+      expect(db.sentinel.allDocs.callCount).to.equal(1);
+      expect(db.sentinel.allDocs.args[0]).to.deep.equal([{
+        startkey: '_design/', endkey: `_design/\ufff0`, include_docs: false,
+      }]);
+    });
+
+    it('should return ddocs with include_docs', async () => {
+      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [
+        { id: 'ddoc1', key: 'ddoc1', value: { rev: 'rev1' }, doc: { _id: 'ddoc1', _rev: 'rev1', field: 'a' }  },
+        { id: 'ddoc2', key: 'ddoc2', value: { rev: 'rev2' }, doc: { _id: 'ddoc2', _rev: 'rev2', field: 'b' }, },
+      ] });
+
+      const result = await utils.__get__('getDdocs')({ db: db.sentinel }, true);
+
+      expect(result).to.deep.equal([
+        { _id: 'ddoc1', _rev: 'rev1', field: 'a' },
+        { _id: 'ddoc2', _rev: 'rev2', field: 'b' },
+      ]);
+      expect(db.sentinel.allDocs.callCount).to.equal(1);
+      expect(db.sentinel.allDocs.args[0]).to.deep.equal([{
+        startkey: '_design/', endkey: `_design/\ufff0`, include_docs: true,
+      }]);
+    });
+
+    it('should throw error on allDocs error', async () => {
+      sinon.stub(db.medicLogs, 'allDocs').rejects({ the: 'err' });
+
+      try {
+        await utils.__get__('getDdocs')({ db: db.medicLogs });
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ the: 'err' });
+      }
+    });
+  });
+
+  describe('indexView', () => {
+    it('should query the view with a timeout', async () => {
+      sinon.stub(rpn, 'get').resolves();
+      sinon.stub(env, 'serverUrl').value('http://localhost');
+
+      await utils.__get__('indexView')('medic', '_design/:staged:medic', 'contacts');
+
+      expect(rpn.get.callCount).to.equal(1);
+      expect(rpn.get.args[0]).to.deep.equal([{
+        uri: 'http://localhost/medic/_design/:staged:medic/_view/contacts',
+        json: true,
+        qs: { limit: 1 },
+        timeout: 2000,
+      }]);
+    });
+
+    it('should retry if the error is a timeout error', async () => {
+      sinon.stub(env, 'serverUrl').value('http://localhost');
+      sinon.stub(rpn, 'get').rejects({ error: { code: 'ESOCKETTIMEDOUT' } });
+      rpn.get.onCall(20).resolves();
+
+      await utils.__get__('indexView')('other', '_design/mydesign', 'viewname');
+
+      expect(rpn.get.callCount).to.equal(21);
+      const params = {
+        uri: 'http://localhost/other/_design/mydesign/_view/viewname',
+        json: true,
+        qs: { limit: 1 },
+        timeout: 2000,
+      };
+      expect(rpn.get.args).to.deep.equal(Array.from({ length: 21 }).map(() => [params]));
+    });
+
+    it('should terminate when other errors are thrown', async () => {
+      sinon.stub(env, 'serverUrl').value('http://localhost');
+      sinon.stub(rpn, 'get').rejects({ error: { code: 'ESOCKETTIMEDOUT' } });
+      rpn.get.onCall(10).rejects({ name: 'error' });
+
+      try {
+        await utils.__get__('indexView')('other', '_design/mydesign', 'viewname');
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ name: 'error' });
+        expect(rpn.get.callCount).to.equal(11);
+      }
+    });
+  });
+
+  describe('getViewsToIndex', () => {
+    
+  });
+
+  describe('stage', () => {
+    
   });
 
 });
