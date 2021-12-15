@@ -35,7 +35,7 @@ const languageDisplayed = async (code) =>{
 const selectLanguage = async (element, code) => {
   await (await element()).selectByAttribute('value', `string:${code}`);
   await (await submitButton()).click();
-  await browser.waitUntil(async () => await (await $('.success.ng-binding.ng-scope')).getText() === 'Saved');
+  await (await $('.loader.inline')).waitForDisplayed({reverse:true});
   const newLanguage = await $(`[value="string:${code}"]`);
   return await newLanguage.isSelected();
 };
