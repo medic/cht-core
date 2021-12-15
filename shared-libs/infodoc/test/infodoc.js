@@ -3,7 +3,9 @@ const sinon = require('sinon').createSandbox();
 const lib = require('../src/infodoc');
 
 describe('infodoc', () => {
-  const _ = sinon.stub().throws('unimplemented test stub');
+  const _ = () => {
+    throw Error('unimplemented test stub');
+  };
 
   const db = {
     medic: {
