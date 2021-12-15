@@ -1,6 +1,6 @@
 # Development Setup
 
-These instructions are for developers who want to contribute to the Core Framework (this repository). If you only need to run the Framework (ie with a Reference App configuration), or you are a developer building configurations, you can follow the [easy deployment instructions](./INSTALL.md) instead.
+These instructions are for developers who want to contribute to the Core Framework (this repository). If you only need to run the Framework (ie with a Reference App configuration), or you are a developer building configurations, you can follow the [easy deployment instructions](https://docs.communityhealthtoolkit.org/apps/tutorials/local-setup/#1-install-the-core-framework) instead.
 
 Before getting started, read about our [development workflow](https://docs.communityhealthtoolkit.org/contribute/code/workflow/) and the [architecture overview](https://docs.communityhealthtoolkit.org/core/overview/architecture/). With the setup instructions below the tools will run directly on your machine, rather than via Docker.
 
@@ -50,7 +50,7 @@ Medic recommends you familiarise yourself with other Docker commands to make doc
 
 ### CouchDB on Ubuntu
 
-While we recommend use Docker to install CouchDB for development, it is still possible to install CouchDB on bare metal in Ubuntu, but there are some caveats: 
+While we recommend use Docker to install CouchDB for development, it is still possible to install CouchDB on bare metal in Ubuntu, but there are some caveats:
 
 * For Ubuntu 18.04 and earlier, you need to specify in `apt` version to install with the `-V` flag.  For example, on a clean 18.04 install you would run:
     ```bash
@@ -192,7 +192,7 @@ $ sudo ufw allow proto tcp from  172.16.0.0/16 to any port 5988
 
 ### Remote Proxies
 
-`ngrok` and `pagekite` are remote proxies that route local traffic between your client and the CHT via a remote SSL terminator. While easy and handy, they introduce latency and are sometimes throttled.  
+`ngrok` and `pagekite` are remote proxies that route local traffic between your client and the CHT via a remote SSL terminator. While easy and handy, they introduce latency and are sometimes throttled.
 
 #### ngrok
 
