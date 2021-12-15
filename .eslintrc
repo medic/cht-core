@@ -53,6 +53,12 @@
         "brace-style": "off",
         "array-bracket-newline": "off"
       }
+    },
+    {
+      "files": ["build/service-worker.js"],
+      "rules": {
+        "array-callback-return": "off"
+      }
     }
   ]
 }
