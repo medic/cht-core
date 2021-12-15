@@ -17,7 +17,7 @@ describe('Add new district tests : ', () => {
 
     expect(await (await contactPage.contactCard()).getText()).to.equal(district);
     expect(await contactPage.getPrimaryContactName()).to.equal('Tester');
-  });  
+  });
 
   it('should edit district', async () => {
     const contacts = [
