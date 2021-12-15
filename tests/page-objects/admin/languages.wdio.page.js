@@ -16,11 +16,6 @@ const goToLanguagesTab = async () => {
   await (await addLanguageButton()).waitForDisplayed();
 };
 
-const openAddLanguageModal = async () => {
-  await (await addLanguageButton()).click();
-  await (await addLanguageModal()).waitForDisplayed();
-};
-
 const addNewLanguage = async (code, name) =>{
   await (await addLanguageButton()).click();
   await (await addLanguageModal()).waitForDisplayed();
@@ -53,7 +48,6 @@ module.exports = {
   outgoingLanguageDropdown,
   defaultLanguageDropdown,
   goToLanguagesTab,
-  openAddLanguageModal,
   addNewLanguage,
   languageDisplayed,
   selectLanguage,
