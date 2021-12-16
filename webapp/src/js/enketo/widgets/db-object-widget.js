@@ -6,8 +6,6 @@ const CONTACT_TYPE_CLASS_PREFIX = 'or-appearance-type-';
 
 require('enketo-core/src/js/plugins');
 
-const mainSelector = '.or-appearance-db-object,.or-appearance-select-contact';
-
 /**
  * Allows drop-down selectors for db objects.
  *
@@ -15,7 +13,7 @@ const mainSelector = '.or-appearance-db-object,.or-appearance-select-contact';
  */
 class Dbobjectwidget extends Widget {
   static get selector() {
-    return `${mainSelector} input[type=text]`;
+    return '.or-appearance-db-object,.or-appearance-select-contact';
   }
 
   _init() {
