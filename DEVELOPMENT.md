@@ -1,6 +1,6 @@
 # Development Setup
 
-These instructions are for developers who want to contribute to the Core Framework (this repository). If you only need to run the Framework (ie with a Reference App configuration), or you are a developer building configurations, you can follow the [easy deployment instructions](https://docs.communityhealthtoolkit.org/apps/tutorials/local-setup/#1-install-the-core-framework) instead.
+These instructions are for developers who want to contribute to the Core Framework (this repository). If you only need to run the Framework (ie with a Reference App configuration), or you are a developer building configurations, you can follow the [easy deployment instructions](https://docs.communityhealthtoolkit.org/apps/tutorials/local-setup/) instead.
 
 Before getting started, read about our [development workflow](https://docs.communityhealthtoolkit.org/contribute/code/workflow/) and the [architecture overview](https://docs.communityhealthtoolkit.org/core/overview/architecture/). With the setup instructions below the tools will run directly on your machine, rather than via Docker.
 
