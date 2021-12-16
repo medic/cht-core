@@ -10,7 +10,8 @@ const openEditSettings = async () => {
 
 const selectLanguage = async (code) => {
   const languageDropDown = () => $('#language');
-  await browser.waitUntil(async () => await (await languageDropDown()).getValue() === code);
+  await browser.waitUntil(async () => await (await languageDropDown()).getValue() === 'en');
+  await languageDropDown.selectByAttribute('value', code);
   await (await submiButton()).click();
   await (await submiButton()).waitForDisplayed({timeout:30000, reverse:true});
 };
