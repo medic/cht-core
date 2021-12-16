@@ -15,7 +15,6 @@ import { DBSyncService } from '@mm-services/db-sync.service';
 import { GuidedSetupComponent } from '@mm-modals/guided-setup/guided-setup.component';
 import { TourSelectComponent } from '@mm-modals/tour/tour-select.component';
 import { TourService } from '@mm-services/tour.service';
-import { TelemetryService } from '@mm-services/telemetry.service';
 
 
 @Component({
@@ -45,7 +44,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private modalService: ModalService,
     private dbSyncService: DBSyncService,
     private tourService: TourService,
-    private telemetryService:TelemetryService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -117,6 +115,5 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   replicate() {
     this.dbSyncService.sync(true);
-    this.telemetryService.record('replication:user-initiated');
   }
 }
