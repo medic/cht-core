@@ -140,9 +140,9 @@ const validateRequiredFields = messages => {
     return requiredFields.every(field => {
       if (!message[field]) {
         logger.warn(`Message missing required field "${field}": ${JSON.stringify(message)}`);
-      } else {
-        return true;
+        return false;
       }
+      return true;
     });
   });
 };
@@ -157,9 +157,9 @@ const removeDuplicateMessages = messages => {
     .then(seenIds => messages.filter(message => {
       if (seenIds.includes(message.id)) {
         logger.info(`Ignoring message (ID already seen): "${message.id}"`);
-      } else {
-        return true;
+        return false;
       }
+      return true;
     }));
 };
 

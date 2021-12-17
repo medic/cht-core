@@ -109,7 +109,7 @@ const processReportsAndSettings = async (reports, settings) => {
 };
 
 describe('SMS workflows', () => {
-  before(async () =>await utils.saveDocs(contacts));
+  before(async () => await utils.saveDocs(contacts));
 
   after(() => utils.revertDb([], true));
 

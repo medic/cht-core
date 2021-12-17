@@ -176,7 +176,7 @@ module.exports = {
     expect(await element(by.css(reportBodyDetails)).isPresent()).toBeFalsy();
   },
 
-  startSelectMode: (savedUuids)=> {
+  startSelectMode: (savedUuids) => {
     utils.deprecated('startSelectMode','startSelectModeNative');
     const selectModeButton = element(by.css('.action-container .select-mode-start'));
     helper.waitElementToPresent(selectModeButton, 1000);
@@ -185,27 +185,27 @@ module.exports = {
       .toBeTruthy();
   },
 
-  startSelectModeNative: async (savedUuids)=> {
+  startSelectModeNative: async (savedUuids) => {
     const selectModeButton = element(by.css('.action-container .select-mode-start'));
     await helper.clickElementNative(selectModeButton);
     const checkbox = reportsByUUID(savedUuids[0]).first().element(by.css('input[type="checkbox"]'));
     await helper.waitUntilReadyNative(checkbox);
   },
 
-  stopSelectMode: (savedUuids)=> {
+  stopSelectMode: (savedUuids) => {
     utils.deprecated('stopSelectMode','stopSelectModeNative');
     element(by.css('.action-container .select-mode-stop')).click();
     expect(element(by.css(`#reports-list li[data-record-id="${savedUuids[0]}"] input[type="checkbox"]`)).isDisplayed())
       .toBeFalsy();
   },
 
-  stopSelectModeNative: async (savedUuids)=> {
+  stopSelectModeNative: async (savedUuids) => {
     await helper.clickElementNative(element(by.css('.action-container .select-mode-stop')));
     const checkbox = reportsByUUID(savedUuids[0]).first().element(by.css('input[type="checkbox"]'));
     await helper.waitElementToDisappear(checkbox.locator());
   },
 
-  waitForReportToAppear: ()=> {
+  waitForReportToAppear: () => {
     browser.refresh();
     browser.wait(
       () => element(by.css('#reports-list li:first-child')).isPresent(),

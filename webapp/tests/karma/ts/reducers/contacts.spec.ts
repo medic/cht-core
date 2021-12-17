@@ -344,7 +344,7 @@ describe('Contacts Reducer', () => {
       });
     });
 
-    it('should set selected contact with full contacts list', ()=> {
+    it('should set selected contact with full contacts list', () => {
       state = {
         contacts: [
           { _id: '2', name: 'Facility 2', type: 'district_hospital' },
@@ -501,7 +501,7 @@ describe('Contacts Reducer', () => {
       });
     });
 
-    it('should update the children of selected contact in the state', ()=> {
+    it('should update the children of selected contact in the state', () => {
       state.selected = {
         _id: 'selected_contact',
         children: [{ _id: 'child-1' }]
@@ -546,7 +546,7 @@ describe('Contacts Reducer', () => {
       });
     });
 
-    it('should update the reports of selected contact in the state', ()=> {
+    it('should update the reports of selected contact in the state', () => {
       state.selected = {
         _id: 'selected_contact',
         reports: [{ _id: 'report-1' }]
@@ -684,7 +684,7 @@ describe('Contacts Reducer', () => {
       });
     });
 
-    it('should update the targetDoc of selected contact in the state', ()=> {
+    it('should update the targetDoc of selected contact in the state', () => {
       state.selected = {
         _id: 'selected_contact',
         targetDoc: { _id: 'doc-1' }

@@ -129,10 +129,12 @@ const docs = [
         data: Buffer.from(xml).toString('base64')
       }
     }
-  }, {
+  },
+  {
     _id: 'zscore-charts',
     charts: charts
-  }];
+  }
+];
 
 const clearAndFill = async (el, value) => {
   await el.clear();

@@ -1239,8 +1239,8 @@ describe('Authorization service', () => {
         viewResults = {
           replicationKeys: [{
             key: userCtx.contact_id,
-            value: { submitter: 'submitter', type: 'data_record', private: true }}
-          ],
+            value: { submitter: 'submitter', type: 'data_record', private: true }
+          }],
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
@@ -1249,8 +1249,8 @@ describe('Authorization service', () => {
         viewResults = {
           replicationKeys: [{
             key: userCtx.contact.patient_id,
-            value: { submitter: 'submitter', type: 'data_record', private: true }}
-          ],
+            value: { submitter: 'submitter', type: 'data_record', private: true }
+          }],
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);

@@ -253,7 +253,9 @@ describe('Contact summary info', () => {
     await utils.saveDocs(DOCS);
   });
 
-  afterEach(async () => { await utils.afterEach(); });
+  afterEach(async () => {
+    await utils.afterEach();
+  });
 
   afterAll(async () => {
     await commonElements.goToLoginPageNative();

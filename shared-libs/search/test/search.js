@@ -214,7 +214,7 @@ describe('Search service', function() {
     });
 
     it('does not slice with negative end index when skip is greater than nbr of results #4610', function() {
-      const viewResult = { rows: Array.apply(null, Array(50)).map(function (val, i) { return { id: i, value: i };})};
+      const viewResult = { rows: Array.apply(null, Array(50)).map((val, i) => ({ id: i, value: i })) };
 
       GenerateSearchRequests.generate.returns([
         { view: 'get_stuff', params: { key: [ 'a' ] } },

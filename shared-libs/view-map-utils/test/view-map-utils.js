@@ -2,7 +2,7 @@ const sinon = require('sinon');
 require('chai').should();
 const lib = require('../src/view-map-utils');
 
-describe('Replication Helper Views Lib', () =>{
+describe('Replication Helper Views Lib', () => {
   afterEach(() => {
     sinon.restore();
     lib._reset();

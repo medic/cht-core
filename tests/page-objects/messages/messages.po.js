@@ -85,15 +85,15 @@ module.exports = {
   sendMessageMobalSubmit: () => module.exports.sendMessageModal().element(by.css('a.btn.submit:not(.ng-hide)')),
   messageRecipientSelect: () => element(by.css('#send-message input.select2-search__field')),
 
-  exportData: ()=> {
+  exportData: () => {
     helper.waitUntilReady(exportButton);
     exportButton.click();
   },
-  openSendMessageModal: async ()=> {
+  openSendMessageModal: async () => {
     await helper.clickElementNative(module.exports.sendMessage());
     await helper.waitUntilReadyNative(module.exports.sendMessageModal());
   },
-  getSendMessageButton: ()=> {
+  getSendMessageButton: () => {
     helper.waitUntilReady(sendMessageButton);
     return sendMessageButton;
   },
