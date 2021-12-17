@@ -66,6 +66,7 @@ const findRowByText = async (text) => {
 };
 
 const selectLHSRowByText = async (text, executeSearch= true) => {
+  await commonElements.waitForLoaderToDisappear();
   if (executeSearch) {
     await search(text);
   }
