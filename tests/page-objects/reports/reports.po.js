@@ -69,7 +69,7 @@ module.exports = {
   },
 
   collapseSelection: () => {
-    utils.deprecated('collapseSelection','collapseSelectionNative');
+    utils.deprecated('collapseSelection', 'collapseSelectionNative');
     element(by.css(itemSummary)).click();
     expect(element(by.css(reportBodyDetails)).isDisplayed()).toBeFalsy();
   },
@@ -80,7 +80,7 @@ module.exports = {
   },
 
   deleteSelectedReports: (savedUuids) => {
-    utils.deprecated('deleteSelectedReports','deleteSelectedReportsNative');
+    utils.deprecated('deleteSelectedReports', 'deleteSelectedReportsNative');
     element(by.css('.action-container .detail-actions .delete-all')).click();
     const confirmButton = element(by.css('.btn.submit.btn-danger'));
     helper.waitElementToBeClickable(confirmButton, 5000);
@@ -104,7 +104,7 @@ module.exports = {
 
 
   deselectAll: () => {
-    utils.deprecated('deselectAll','deselectAllNative');
+    utils.deprecated('deselectAll', 'deselectAllNative');
     element(by.css('.action-container .deselect-all')).click();
     expect(element(by.css('#reports-content .selection-count > span:first-child')).isDisplayed()).toBeFalsy();
     expect(element.all(by.css(reportBody)).count()).toBe(0);
@@ -127,7 +127,7 @@ module.exports = {
   },
 
   selectAll: () => {
-    utils.deprecated('selectall','selectAllNative');
+    utils.deprecated('selectall', 'selectAllNative');
     element(by.css('.action-container .select-all')).click();
     helper.waitElementToBeVisible(element(by.css('#reports-content .selection-count > span:nth-child(2)')), 3000);
     expect(element.all(by.css(reportBody)).count()).toBe(3);
@@ -177,7 +177,7 @@ module.exports = {
   },
 
   startSelectMode: (savedUuids) => {
-    utils.deprecated('startSelectMode','startSelectModeNative');
+    utils.deprecated('startSelectMode', 'startSelectModeNative');
     const selectModeButton = element(by.css('.action-container .select-mode-start'));
     helper.waitElementToPresent(selectModeButton, 1000);
     selectModeButton.click();
@@ -193,7 +193,7 @@ module.exports = {
   },
 
   stopSelectMode: (savedUuids) => {
-    utils.deprecated('stopSelectMode','stopSelectModeNative');
+    utils.deprecated('stopSelectMode', 'stopSelectModeNative');
     element(by.css('.action-container .select-mode-stop')).click();
     expect(element(by.css(`#reports-list li[data-record-id="${savedUuids[0]}"] input[type="checkbox"]`)).isDisplayed())
       .toBeFalsy();

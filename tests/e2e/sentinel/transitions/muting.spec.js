@@ -637,7 +637,7 @@ describe('muting', () => {
       .then(() => utils.saveDocs(extraContacts))
       .then(() => utils.saveDoc(mutePerson))
       .then(() => sentinelUtils.waitForSentinel(mutePerson._id))
-      .then(() => sentinelUtils.getInfoDocs([mutePerson._id, 'clinic', 'person' ,'person3']))
+      .then(() => sentinelUtils.getInfoDocs([mutePerson._id, 'clinic', 'person', 'person3']))
       .then(([ mutePersonInfo, clinicInfo, personInfo, person3Info ]) => {
         chai.expect(mutePersonInfo.transitions).to.be.ok;
         chai.expect(mutePersonInfo.transitions.muting).to.be.ok;

@@ -128,7 +128,7 @@ describe('Navigation tests : ', () => {
       await utils.closeTour();
       const tabTexts = await element.all(by.css('.button-label')).getText();
       expect(tabTexts.length).toBe(3);
-      expect(tabTexts).toEqual([ 'Messages','Reports', 'People']);
+      expect(tabTexts).toEqual([ 'Messages', 'Reports', 'People']);
     });
   });
 });

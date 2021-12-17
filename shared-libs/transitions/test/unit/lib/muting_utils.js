@@ -1672,7 +1672,7 @@ describe('mutingUtils', () => {
 
       return mutingUtils._getContactsAndSubjectIds(ids, false).then(result => {
         chai.expect(result.contacts).to.deep.equal([
-          { _id: '1', place_id: 'place_1', muted: 1234 } ,
+          { _id: '1', place_id: 'place_1', muted: 1234 },
           { _id: '2', patient_id: 'patient_2', muted: false },
           { _id: '3', muted: null },
           { _id: '4', patient_id: 'patient_4', muted: 0 },

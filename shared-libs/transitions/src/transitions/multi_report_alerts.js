@@ -70,7 +70,7 @@ const generateMessages = (
   phones.forEach(phone => {
 
     if (phone.error) {
-      logger.error('%o',phone.error);
+      logger.error('%o', phone.error);
       messages.addError(latestReport, phone.error);
       return;
     }

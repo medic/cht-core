@@ -109,7 +109,7 @@ var immunizations = [
   'yellow_fever'
 ];
 
-var immunizationMonths = [1,2,3,6,8,12,16,24];
+var immunizationMonths = [1, 2, 3, 6, 8, 12, 16, 24];
 
 // This is identical to the ones in nootils, but `form` can be an array. This needs to be ported to nootils.
 // TODO shared with contact-summary?

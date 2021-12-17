@@ -10,7 +10,7 @@ const db = require('./db');
 const environment = require('./environment');
 const logger = require('./logger');
 
-const extractableFolders = ['audio', 'fonts', 'default-docs','img'];
+const extractableFolders = ['audio', 'fonts', 'default-docs', 'img'];
 // todo the build process can be improved (maybe?) to have "build" files nicely packed into one folder so
 // we won't need to match extensions
 const extractableExtensions = ['.js', '.css', '.eot', '.svg', '.woff', '.woff2', '.html', '.js.map', 'css.map'];

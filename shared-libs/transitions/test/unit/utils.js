@@ -151,7 +151,7 @@ describe('utils', () => {
       sinon.stub(config, 'getAll').returns({ config: 'all' });
       const expectedDoc1 = { id: 'a' };
       const expectedDoc2 = { id: 'b' };
-      const expected = [ { doc: expectedDoc1 } , { doc: expectedDoc2 } ];
+      const expected = [ { doc: expectedDoc1 }, { doc: expectedDoc2 } ];
       const given = ['11111', '22222'];
       const view = db.medic.query.resolves({ rows: expected });
       return utils.getRegistrations({ ids: given }).then((actual) => {

@@ -11,7 +11,7 @@ describe('TargetsEditCtrl controller', () => {
   beforeEach(() => {
     module('adminApp');
 
-    dbGet = sinon.stub().resolves(['medic-clinic','medic-person']);
+    dbGet = sinon.stub().resolves(['medic-clinic', 'medic-person']);
     Settings = sinon.stub().resolves({
       locales: [
         {code: 'en', name: 'English'}

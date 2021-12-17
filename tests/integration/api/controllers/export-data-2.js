@@ -84,8 +84,8 @@ describe('Export Data V2.0', () => {
       });
     });
     it('GET Filters by date', () => {
-      const from = Date.UTC(2018,1,2,12);
-      const to = Date.UTC(2018,1,3,12);
+      const from = Date.UTC(2018, 1, 2, 12);
+      const to = Date.UTC(2018, 1, 3, 12);
       return utils.request(`/api/v2/export/reports?` +
         `filters%5Bsearch%5D=&filters%5Bdate%5D%5Bfrom%5D=${from}&filters%5Bdate%5D%5Bto%5D=${to}`,
       {notJson: true}
@@ -108,7 +108,7 @@ describe('Export Data V2.0', () => {
       form: 'weird-data-types',
       type: 'data_record',
       fields: {
-        wd_array: [0,1,2],
+        wd_array: [0, 1, 2],
         wd_emptyString: '',
         wd_false: false,
         wd_naughtyArray: [0, {foo: false, bar: null}, 'Hello, "world"'],

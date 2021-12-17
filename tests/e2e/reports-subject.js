@@ -335,7 +335,7 @@ describe('Reports Summary', () => {
       await testLineageList(['TAG Place', 'Health Center', 'District']);
 
       //RHS
-      await browser.wait(() => getElementText(reportsTab.submitterPhone()),10000);
+      await browser.wait(() => getElementText(reportsTab.submitterPhone()), 10000);
       expect(await getElementText(reportsTab.subjectName())).toBe(MARIA.name);
       expect(await getElementText(reportsTab.summaryFormName())).toBe('REF_REF');
 

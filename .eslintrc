@@ -9,6 +9,7 @@
     "array-callback-return": ["error", { "allowImplicit": true }],
     "arrow-spacing": ["error", { "before": true, "after": true }],
     "brace-style": ["error", "1tbs"],
+    "comma-spacing": ["error", { "before": false, "after": true }],
     "comma-style": ["error", "last"],
     "dot-location": ["error", "property"],
     "linebreak-style": ["error", "unix"],

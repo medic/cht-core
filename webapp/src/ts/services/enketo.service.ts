@@ -345,7 +345,7 @@ export class EnketoService {
     $wrapper
       .find('.btn.next-page')
       .off('.pagemode')
-      .on('click.pagemode',() => {
+      .on('click.pagemode', () => {
         form.pages
           .next()
           .then((newPageIndex) => {

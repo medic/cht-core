@@ -634,7 +634,7 @@ describe('Standard Configuration Tasks', () => {
 
   function backdatedReport(reportFixtureName, daysAgo) {
     const noonToday = new Date(now);
-    noonToday.setHours(12,0,0,0);
+    noonToday.setHours(12, 0, 0, 0);
 
     const report = fixtures.reports[reportFixtureName]();
     const msAgo = daysAgo * MS_IN_DAY;

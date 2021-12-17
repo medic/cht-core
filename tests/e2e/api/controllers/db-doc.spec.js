@@ -876,7 +876,7 @@ describe('db-doc handler', () => {
       return utils
         .saveDocs(docs)
         .then(result => Promise.all(docs.map((doc, key) => utils.requestOnTestDb(
-          { method: 'DELETE', path: `/${doc._id}?rev=${result[key].rev}`,}
+          { method: 'DELETE', path: `/${doc._id}?rev=${result[key].rev}`, }
         ))))
         .then(results => {
           results.forEach((result, key) => (docs[key]._rev = result.rev));
@@ -1349,7 +1349,7 @@ describe('db-doc handler', () => {
         utils.requestOnTestDb(_.defaults({ path: '/' }, offlineRequestOptions)).catch(err => err),
       ])
         .then(([allowed, denied, forbidden]) => {
-          chai.expect(allowed).to.include({ id: 'allowed_doc_post', ok: true,});
+          chai.expect(allowed).to.include({ id: 'allowed_doc_post', ok: true, });
           chai.expect(denied).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
           chai.expect(forbidden).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
 
@@ -1594,7 +1594,7 @@ describe('db-doc handler', () => {
         .then(results => {
           chai.expect(results[0]).to.include({ ok: true, id: 'n_put_1' });
           chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
-          chai.expect(results[2]).to.include({ ok: true, id: 'a_put_1',});
+          chai.expect(results[2]).to.include({ ok: true, id: 'a_put_1', });
 
           chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
           chai.expect(results[4]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
