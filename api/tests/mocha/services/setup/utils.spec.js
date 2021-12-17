@@ -38,7 +38,6 @@ describe('Setup utils', () => {
           name: 'thedb',
           db: db.medic,
           jsonFileName: 'medic.json',
-          index: true,
         },
         {
           name: 'thedb-sentinel',
@@ -457,11 +456,192 @@ describe('Setup utils', () => {
   });
 
   describe('getViewsToIndex', () => {
-    
+    it('should return an array of function that will start view indexing, if db should be indexed', async () => {
+      const ddocsToStage = [
+        { _id: '_design/:staged:one' },
+        { _id: '_design/:staged:two' },
+        { _id: '_design/:staged:three' },
+      ];
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
+        { doc: { _id: '_design/:staged:one', views: { 'view1': {}, 'view2': {}, 'view3': {}} } },
+        { doc: { _id: '_design/:staged:two' } },
+        { doc: { _id: '_design/:staged:three', views: { 'view4': {} }}},
+      ] });
+
+      sinon.stub(rpn, 'get').resolves();
+      sinon.stub(env, 'serverUrl').value('http://localhost');
+
+      const result = await utils.__get__('getViewsToIndex')({ db: db.medic, name: 'dbname' }, ddocsToStage);
+
+      expect(result.length).to.equal(4);
+      result.forEach(item => expect(item).to.be.a('function'));
+
+      expect(db.medic.allDocs.callCount).to.equal(1);
+      expect(db.medic.allDocs.args[0]).to.deep.equal([{
+        keys: ['_design/:staged:one', '_design/:staged:two', '_design/:staged:three'],
+        include_docs: true,
+      }]);
+      expect(rpn.get.callCount).to.equal(0);
+
+      await Promise.all(result.map(item => item()));
+
+      expect(rpn.get.callCount).to.equal(4);
+      expect(rpn.get.args).to.deep.equal([
+        [{
+          uri: 'http://localhost/dbname/_design/:staged:one/_view/view1',
+          json: true,
+          qs: { limit: 1 },
+          timeout: 2000,
+        }],
+        [{
+          uri: 'http://localhost/dbname/_design/:staged:one/_view/view2',
+          json: true,
+          qs: { limit: 1 },
+          timeout: 2000,
+        }],
+        [{
+          uri: 'http://localhost/dbname/_design/:staged:one/_view/view3',
+          json: true,
+          qs: { limit: 1 },
+          timeout: 2000,
+        }],
+        [{
+          uri: 'http://localhost/dbname/_design/:staged:three/_view/view4',
+          json: true,
+          qs: { limit: 1 },
+          timeout: 2000,
+        }],
+      ]);
+    });
+
+    it('should return empty array if there are no views', async () => {
+      const ddocsToStage = [
+        { _id: '_design/:staged:one' },
+        { _id: '_design/:staged:two' },
+        { _id: '_design/:staged:three' },
+      ];
+
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
+        { doc: { _id: '_design/:staged:one', views: {} } },
+        { doc: { _id: '_design/:staged:two', views: 'whaaaa' } },
+      ] });
+
+      const result = await utils.__get__('getViewsToIndex')({ db: db.medic }, ddocsToStage);
+      expect(result).to.deep.equal([]);
+    });
+
+    it('should throw an error if getting ddocs throws an error', async () => {
+      sinon.stub(db.medic, 'allDocs').rejects({ an: 'error' });
+
+      try {
+        await utils.__get__('getViewsToIndex')({ db: db.medic }, [{ _id: '_design/:staged:one' }]);
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ an: 'error' });
+        expect(db.medic.allDocs.callCount).to.equal(1);
+        expect(db.medic.allDocs.args[0]).to.deep.equal([{ keys: ['_design/:staged:one'], include_docs: true }]);
+      }
+    });
+  });
+
+  describe('createDdocsStagingFolder', () => {
+    it('should create the staging ddocs folder when it does not exist', async () => {
+      sinon.stub(fs.promises, 'access').rejects({ code: 'ENOENT' });
+      sinon.stub(fs.promises, 'rmdir');
+      sinon.stub(fs.promises, 'mkdir').resolves();
+      sinon.stub(env, 'stagedDdocsPath').value('stagedDdocsPath');
+
+      await utils.__get__('createDdocsStagingFolder')();
+
+      expect(fs.promises.access.callCount).to.equal(1);
+      expect(fs.promises.access.args[0]).to.deep.equal(['stagedDdocsPath']);
+      expect(fs.promises.rmdir.callCount).to.equal(0);
+      expect(fs.promises.mkdir.callCount).to.equal(1);
+      expect(fs.promises.mkdir.args[0]).to.deep.equal(['stagedDdocsPath']);
+    });
+
+    it('should delete existing folder recursively and create new folder', async () => {
+      sinon.stub(fs.promises, 'access').resolves();
+      sinon.stub(fs.promises, 'rmdir').resolves();
+      sinon.stub(fs.promises, 'mkdir').resolves();
+      sinon.stub(env, 'stagedDdocsPath').value('stagedDdocsPath');
+
+      await utils.__get__('createDdocsStagingFolder')();
+
+      expect(fs.promises.access.callCount).to.equal(1);
+      expect(fs.promises.access.args[0]).to.deep.equal(['stagedDdocsPath']);
+      expect(fs.promises.rmdir.callCount).to.equal(1);
+      expect(fs.promises.rmdir.args[0]).to.deep.equal(['stagedDdocsPath', { recursive: true }]);
+      expect(fs.promises.mkdir.callCount).to.equal(1);
+      expect(fs.promises.mkdir.args[0]).to.deep.equal(['stagedDdocsPath']);
+    });
+
+    it('should throw an error when access throws random errors', async () => {
+      sinon.stub(fs.promises, 'access').rejects({ code: 'error' });
+      sinon.stub(fs.promises, 'rmdir');
+      sinon.stub(fs.promises, 'mkdir');
+      sinon.stub(env, 'stagedDdocsPath').value('stagedDdocsPath');
+
+      try {
+        await utils.__get__('createDdocsStagingFolder')();
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ code: 'error' });
+
+        expect(fs.promises.access.callCount).to.equal(1);
+        expect(fs.promises.access.args[0]).to.deep.equal(['stagedDdocsPath']);
+        expect(fs.promises.rmdir.callCount).to.equal(0);
+        expect(fs.promises.mkdir.callCount).to.equal(0);
+      }
+    });
+
+    it('should throw an error when deletion throws an error', async () => {
+      sinon.stub(fs.promises, 'access').resolves();
+      sinon.stub(fs.promises, 'rmdir').rejects({ code: 'some code' });
+      sinon.stub(fs.promises, 'mkdir');
+      sinon.stub(env, 'stagedDdocsPath').value('stagedDdocsPath');
+
+      try {
+        await utils.__get__('createDdocsStagingFolder')();
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ code: 'some code' });
+
+        expect(fs.promises.access.callCount).to.equal(1);
+        expect(fs.promises.access.args[0]).to.deep.equal(['stagedDdocsPath']);
+        expect(fs.promises.rmdir.callCount).to.equal(1);
+        expect(fs.promises.rmdir.args[0]).to.deep.equal(['stagedDdocsPath', { recursive: true }]);
+        expect(fs.promises.mkdir.callCount).to.equal(0);
+      }
+    });
+
+    it('should throw an error when creation fails', async () => {
+      sinon.stub(fs.promises, 'access').rejects({ code: 'ENOENT' });
+      sinon.stub(fs.promises, 'rmdir');
+      sinon.stub(fs.promises, 'mkdir').rejects({ some: 'error' });
+      sinon.stub(env, 'stagedDdocsPath').value('stagedDdocsPath');
+
+      try {
+        await utils.__get__('createDdocsStagingFolder')();
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ some: 'error' });
+      }
+    });
+  });
+
+  describe('getDdocsToStageForVersion', () => {
+    it('should do nothing when installing local version', () => {
+      utils.__get__('getDdocsToStageForVersion')('local');
+    });
+
+    it('should create staging folder, download ', () => {
+      
+    });
   });
 
   describe('stage', () => {
-    
+
   });
 
 });

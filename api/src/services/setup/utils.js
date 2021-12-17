@@ -1,6 +1,7 @@
 const rpn = require('request-promise-native');
 const fs = require('fs');
 const path = require('path');
+const _ = require('lodash');
 
 const db = require('../../db');
 const logger = require('../../logger');
@@ -25,7 +26,6 @@ const SOCKET_TIMEOUT_ERROR_CODE = 'ESOCKETTIMEDOUT';
  * @property {string} name
  * @property {PouchDB} db
  * @property {string} jsonFileName
- * @property {Boolean} index
  */
 
 /**
@@ -36,7 +36,6 @@ const DATABASES = [
     name: environment.db,
     db: db.medic,
     jsonFileName: 'medic.json',
-    index: true,
   },
   {
     name: `${environment.db}-sentinel`,
@@ -201,12 +200,12 @@ const getDdocsToStageFromJson = (json) => {
 const getViewsToIndex = async (database, ddocsToStage) => {
   const viewsToIndex = [];
 
-  if (!database.index) {
-    return viewsToIndex;
-  }
-
   const ddocs = await getDocs(database, ddocsToStage.map(doc => doc._id));
   ddocs.forEach(ddoc => {
+    if (!ddoc.views || !_.isObject(ddoc.views)) {
+      return;
+    }
+
     const ddocViewIndexPromises = Object
       .keys(ddoc.views)
       .map(viewName => indexView.bind({}, database.name, ddoc._id, viewName));
@@ -221,10 +220,20 @@ const createDdocsStagingFolder = async () => {
     await fs.promises.access(environment.stagedDdocsPath);
     await fs.promises.rmdir(environment.stagedDdocsPath, { recursive: true });
   } catch (err) {
-    // if folder doesn't exist, do nothing
+    // if folder doesn't exist, this is fine!
+    if (err.code !== 'ENOENT') {
+      logger.error('Error while deleting staged ddoc folder');
+      throw err;
+    }
   }
 
-  await fs.promises.mkdir(environment.stagedDdocsPath);
+  try {
+    await fs.promises.mkdir(environment.stagedDdocsPath);
+  } catch (err) {
+    logger.error('Error while trying to create the staged ddoc folder');
+    throw err;
+  }
+
 };
 
 /**
@@ -242,10 +251,13 @@ const getDdocsToStageForVersion = async (version) => {
   const docId = `${BUILD_DOC_PREFIX}${version}`;
   const doc = await db.builds.get(docId, { attachments: true });
 
+  // for simplicity, we're only pre-installing and warming "known" databases.
+  // for new databases, the final install will happen in the api the preflight check.
+  // since any new database will be empty, the impact of not warming those views is minimal.
   for (const database of DATABASES) {
     const attachment = doc._attachments[`ddocs/${database.jsonFileName}`];
     if (!attachment) {
-      // throw error ?
+      // maybe we drop databases in a future version
       continue;
     }
 
@@ -269,23 +281,29 @@ const getDdocsToStage = (database, version) => {
  * @return {Promise<function(): Promise>}
  */
 const stage = async (version = 'local') => {
+  if (!version || typeof version !== 'string') {
+    throw new Error(`Invalid version: ${version}`);
+  }
+
   logger.info(`Staging ${version}`);
-  await getDdocsToStageForVersion(version);
+  const dbsToStage = await getDdocsToStageForVersion(version);
+
+  await deleteStagedDdocs(); // delete old staged ddocs only after trying a fetch, so we fail early
 
   const viewsToIndex = [];
 
-  await deleteStagedDdocs();
+  for (const dbToStage of dbsToStage) {
+    logger.info(`Saving ddocs for ${dbToStage.dbName}`);
+    const ddocsToStage = getDdocsToStage(dbToStage, version);
 
-  for (const database of DATABASES) {
-    const ddocsToStage = getDdocsToStage(database, version);
-    logger.info(`Saving ddocs for ${database.name}`);
-    await saveDocs(database, ddocsToStage);
-    viewsToIndex.push(...await getViewsToIndex(database, ddocsToStage));
+    await saveDocs(dbToStage, ddocsToStage);
+    viewsToIndex.push(...await getViewsToIndex(dbToStage, ddocsToStage));
   }
 
-  const indexViews = () => {
+  const indexViews = async () => {
     logger.info('Indexing staged views');
-    return Promise.all(viewsToIndex.map(indexView => indexView()));
+    await Promise.all(viewsToIndex.map(indexView => indexView()));
+    dbsToStage.forEach((dbToStage) => db.close(dbToStage.db));
   };
 
   logger.info('Staging complete');

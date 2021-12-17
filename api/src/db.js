@@ -77,7 +77,7 @@ if (UNIT_TEST_ENV) {
   module.exports.builds = new PouchDB(environment.buildsUrl);
 
   // Get the DB with the given name
-  module.exports.get = name => new PouchDB(getDbUrl(name));
+  module.exports.get = name => new PouchDB(getDbUrl(name), { fetch });
   module.exports.close = db => {
     if (!db || db._destroyed || db._closed) {
       return;

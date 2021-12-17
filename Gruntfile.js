@@ -61,9 +61,9 @@ module.exports = function(grunt) {
       },
       secondary: {
         files: {
-          'build/ddocs/sentinel.json': 'build/ddocs/sentinel-db/*',
-          'build/ddocs/users-meta.json': 'build/ddocs/users-meta-db/*',
-          'build/ddocs/logs.json': 'build/ddocs/logs-db/*',
+          'build/ddocs/medic-sentinel.json': 'build/ddocs/sentinel-db/*',
+          'build/ddocs/medic-users-meta.json': 'build/ddocs/users-meta-db/*',
+          'build/ddocs/medic-logs.json': 'build/ddocs/logs-db/*',
         },
       },
       staging: {
