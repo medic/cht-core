@@ -1,0 +1,33 @@
+FROM alpine:3.12.3
+
+RUN apk add --update --no-cache \
+  build-base \
+  nodejs-current \
+  curl \
+  npm \
+  tzdata \
+  libxslt \
+  bash \
+  jq    \
+  git
+
+WORKDIR /app
+
+COPY ./api ./api
+
+RUN cd api && npm ci --verbose
+COPY ./shared-libs ./api/node_modules/@medic
+COPY ./api/src/public/ /app/api/build/public/
+
+SHELL ["/bin/bash", "-c"]
+RUN for i in $(ls -d /app/api/node_modules/@medic/*); \
+                do \
+                cd "$i" && \
+                npm ci && \
+                echo "$i"; done
+
+ENV NODE_PATH=/app/api/node_modules
+
+RUN npm install -g horticulturalist
+
+ENTRYPOINT ["/bin/bash", "/app/api/docker-entrypoint.sh"]
