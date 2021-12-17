@@ -18,13 +18,13 @@ process
 const waitForApi = () =>
   new Promise(resolve => {
     //
-    // This waits forever, with no escape hatch, becayse there is no way currently
+    // This waits forever, with no escape hatch, because there is no way currently
     // to know what API is doing, and migrations could legitimately take days
     //
     //
     const waitLoop = () => {
       request(
-        `http://localhost:${process.env.API_PORT || 5988}/setup/poll`,
+        `http://${process.env.API_SVC_NAME || localhost}:${process.env.API_PORT || 5988}/setup/poll`,
         (err, response, body) => {
           if (err) {
             logger.info('Waiting for API to be ready...');
