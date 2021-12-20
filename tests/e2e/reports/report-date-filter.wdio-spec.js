@@ -99,9 +99,9 @@ describe('Filters reports', () => {
     await reportsTab.filterByDate(moment('05/16/2016','MM/DD/YYYY'), moment('05/17/2016','MM/DD/YYYY'));
     await (await reportsTab.firstReport()).waitForDisplayed();
 
-    expect(await reportsTab.allReports().length).to.equal(2);
-    expect(await reportsTab.reportsByUUID(savedUuids[1]).length).to.equal(1);
-    expect(await reportsTab.reportsByUUID(savedUuids[3]).length).to.equal(1);
+    expect(await (await reportsTab.allReports()).length).to.equal(2);
+    expect(await (await reportsTab.reportsByUUID(savedUuids[1])).length).to.equal(1);
+    expect(await (await reportsTab.reportsByUUID(savedUuids[3])).length).to.equal(1);
 
   });
 });
