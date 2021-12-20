@@ -34,8 +34,8 @@ const userContactDoc = {
 
 describe('generate-xform service', () => {
   before(async () => {
-    await utils.seedTestData(userContactDoc, [formDocument]);
     await loginPage.cookieLogin();
+    await utils.seedTestData(userContactDoc, [formDocument]);
   });
 
   // If this test fails, it means something has gone wrong with the custom logic in openrosa2html5form.xsl
