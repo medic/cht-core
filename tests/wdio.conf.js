@@ -44,7 +44,8 @@ const baseConfig = {
   // will be called from there.
   //
   specs: [
-    './tests/e2e/**/submit-enketo-form.wdio-spec.js'
+    './tests/e2e/**/submit-enketo-form.wdio-spec.js',
+    './tests/e2e/**/repeat-form.wdio-spec.js'
   ],
   // Patterns to exclude.
   exclude: [
@@ -146,7 +147,6 @@ const baseConfig = {
         formatImageName: '{tag}',
         screenshotPath: path.join(__dirname, 'results', 'screenshots'),
         autoSaveBaseline: true,
-        clearRuntimeFolder: true,
         savePerInstance: true,
       }],
   ],
