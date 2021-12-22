@@ -49,7 +49,7 @@ describe('TranslateLocaleService', () => {
       translateService.compiler.compileTranslations.returns(compiledTranslations);
 
       service = TestBed.inject(TranslateLocaleService);
-      service.instant('item1', {} ,'new_locale');
+      service.instant('item1', {}, 'new_locale');
       tick();
 
       expect(translateService.currentLoader.getTranslation.callCount).to.equal(1);
@@ -86,10 +86,10 @@ describe('TranslateLocaleService', () => {
       translateService.compiler.compileTranslations.returns(compiledTranslations);
 
       service = TestBed.inject(TranslateLocaleService);
-      service.instant('item1', {} ,'new_locale');
-      service.instant('item2', {} ,'new_locale');
-      service.instant('item2', {} ,'new_locale');
-      service.instant('item2', {} ,'new_locale');
+      service.instant('item1', {}, 'new_locale');
+      service.instant('item2', {}, 'new_locale');
+      service.instant('item2', {}, 'new_locale');
+      service.instant('item2', {}, 'new_locale');
       tick(1100);
 
       expect(translateService.currentLoader.getTranslation.callCount).to.equal(1);
@@ -111,12 +111,12 @@ describe('TranslateLocaleService', () => {
       translateService.compiler.compileTranslations.returns(compiledTranslations);
 
       service = TestBed.inject(TranslateLocaleService);
-      service.instant('item1', {} ,'new_locale');
+      service.instant('item1', {}, 'new_locale');
       tick();
 
-      service.instant('item1', {} ,'new_locale');
-      service.instant('item1', {} ,'new_locale');
-      service.instant('item1', {} ,'new_locale');
+      service.instant('item1', {}, 'new_locale');
+      service.instant('item1', {}, 'new_locale');
+      service.instant('item1', {}, 'new_locale');
       tick();
 
       expect(translateService.currentLoader.getTranslation.callCount).to.equal(1);
@@ -133,7 +133,7 @@ describe('TranslateLocaleService', () => {
       translateService.compiler.compileTranslations.returns(compiledTranslations);
 
       service = TestBed.inject(TranslateLocaleService);
-      service.instant('item1', {} ,'my_locale', true);
+      service.instant('item1', {}, 'my_locale', true);
       tick();
 
       const result = service.instant('item1', {}, 'my_locale', true);
@@ -149,7 +149,7 @@ describe('TranslateLocaleService', () => {
       translateService.getParsedResult.callsFake((locale, key) => locale[key] + 'parsed');
 
       service = TestBed.inject(TranslateLocaleService);
-      service.instant('item1', {} ,'new', true);
+      service.instant('item1', {}, 'new', true);
       tick();
 
       expect(service.instant('item1', {}, 'new')).to.equal('compiled1parsed');

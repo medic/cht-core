@@ -75,7 +75,7 @@ describe('Search service', function() {
       return service('reports', {})
         .then(function(actual) {
           chai.expect(actual.docIds.length).to.equal(2);
-          chai.expect(actual).to.deep.equal({ docIds: [3,4] });
+          chai.expect(actual).to.deep.equal({ docIds: [3, 4] });
           chai.expect(GenerateSearchRequests.generate.callCount).to.equal(1);
           chai.expect(DB.query.callCount).to.equal(1);
           chai.expect(DB.query.args[0][0]).to.equal('medic-client/reports_by_date');

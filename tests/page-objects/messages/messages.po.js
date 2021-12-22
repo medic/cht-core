@@ -25,7 +25,7 @@ const enterMessageText = async message => {
 const searchSelect2 = async (searchText, totalExpectedResults, entrySelector, entryText) => {
   await module.exports.messageRecipientSelect().sendKeys(searchText);
   await browser.wait(async () => await selectOptions.count() === totalExpectedResults, 20000, 'searchSelect2 timedout');
-  const elm = element(by.cssContainingText(selectOptions.locator().value + entrySelector , entryText));
+  const elm = element(by.cssContainingText(selectOptions.locator().value + entrySelector, entryText));
   await helper.waitUntilReadyNative(elm);
   return elm;
 };
