@@ -45,7 +45,8 @@ const baseConfig = {
   //
   specs: [
     './tests/e2e/**/submit-enketo-form.wdio-spec.js',
-    './tests/e2e/**/repeat-form.wdio-spec.js'
+    './tests/e2e/**/repeat-form.wdio-spec.js',
+    './tests/e2e/**/add-new-district.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [

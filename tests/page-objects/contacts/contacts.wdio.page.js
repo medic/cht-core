@@ -201,15 +201,20 @@ const allContactsList = async () => {
 };
 
 const editDistrict = async (districtName, editedName) => {
+  const testName = `edit-district_${districtName.replace('\'', '')}_${editedName.replace('\'', '')}`;
   await selectLHSRowByText(districtName, true);
   await waitForContactLoaded();
 
   await (await editContactButton()).waitForDisplayed();
+  expect(await browser.checkFullPageScreen(`${testName}_contact-loaded`)).to.equal(0);
   await (await editContactButton()).click();
+  expect(await browser.checkFullPageScreen(`${testName}_edit-contact`)).to.equal(0);
 
   await (await districtHospitalName()).setValue(editedName);
+  expect(await browser.checkFullPageScreen(`${testName}_contact-edited`)).to.equal(0);
   // blur field to trigger Enketo validation
   await (await notes('district_hospital')).click();
+  expect(await browser.checkFullPageScreen(`${testName}_notes-clicked`)).to.equal(0);
   await (await genericForm.submitButton()).click();
 };
 
