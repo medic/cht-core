@@ -44,7 +44,7 @@ const baseConfig = {
   // will be called from there.
   //
   specs: [
-    './tests/e2e/**/*.wdio-spec.js'
+    './tests/e2e/**/submit-enketo-form.wdio-spec.js'
   ],
   // Patterns to exclude.
   exclude: [
@@ -138,6 +138,18 @@ const baseConfig = {
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
   // services: [],
+  services: [
+    ['image-comparison',
+      // The options: https://github.com/wswebcreation/webdriver-image-comparison/blob/main/docs/OPTIONS.md
+      {
+        baselineFolder: path.join(__dirname, 'baselineScreenshots'),
+        formatImageName: '{tag}',
+        screenshotPath: path.join(__dirname, 'results', 'screenshots'),
+        autoSaveBaseline: true,
+        clearRuntimeFolder: true,
+        savePerInstance: true,
+      }],
+  ],
 
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
