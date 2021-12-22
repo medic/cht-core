@@ -48,8 +48,10 @@ describe('RepeatForm', () => {
   const stateLabelPath = `${selectorPrefix}.question-label[data-itext-id="/repeat-translation/basic/state_1:label"]`;
   const cityLabelPath = `${selectorPrefix}.question-label[data-itext-id="/repeat-translation/basic/rep/city_1:label"]`;
   const melbourneLabelPath = `${selectorPrefix}[data-itext-id="/repeat-translation/basic/rep/city_1/melbourne:label"]`;
+  const suiteName = 'repeat-form';
 
   it('should display the initial form and its repeated content in Swahili', async () => {
+    const testName = `${suiteName}_swahili`;
     const swUserName = 'Jina la mtumizi';
     await loginPage.changeLanguage('sw', swUserName);
     await loginPage.login({ username: auth.username, password: auth.password, createUser: true });
@@ -60,17 +62,21 @@ describe('RepeatForm', () => {
 
     const stateLabel = await $(stateLabelPath);
     expect(await stateLabel.getText()).to.equal('Select a state: - SV');
+    expect(await browser.checkFullPageScreen(`${testName}_select-state`)).to.equal(0);
 
     await reportsPage.repeatForm();
 
     const cityLabel = await $(cityLabelPath);
     expect(await cityLabel.getText()).to.equal('Select a city: - SV');
+    expect(await browser.checkFullPageScreen(`${testName}_select-city`)).to.equal(0);
 
     const melbourneLabel = await $(melbourneLabelPath);
     expect(await melbourneLabel.getText()).to.equal('ML');
+    expect(await browser.checkFullPageScreen(`${testName}_final`)).to.equal(0);
   });
 
   it('should display the initial form and its repeated content in English', async () => {
+    const testName = `${suiteName}_english`;
     const enUserName = 'User name';
     await loginPage.changeLanguage('en', enUserName);
     await loginPage.login({ username: auth.username, password: auth.password, createUser: true });
@@ -81,13 +87,16 @@ describe('RepeatForm', () => {
 
     const stateLabel = await $(stateLabelPath);
     expect(await stateLabel.getText()).to.equal('Select a state:');
+    expect(await browser.checkFullPageScreen(`${testName}_select-state`)).to.equal(0);
 
     await reportsPage.repeatForm();
 
     const cityLabel = await $(cityLabelPath);
     expect(await cityLabel.getText()).to.equal('Select a city:');
+    expect(await browser.checkFullPageScreen(`${testName}_select-city`)).to.equal(0);
 
     const melbourneLabel = await $(melbourneLabelPath);
     expect(await melbourneLabel.getText()).to.equal('Melbourne');
+    expect(await browser.checkFullPageScreen(`${testName}_final`)).to.equal(0);
   });
 });
