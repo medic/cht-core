@@ -95,15 +95,20 @@ describe('Submit Enketo form', () => {
   });
 
   it('submits on reports tab', async () => {
+    const testName = 'submit-enketo-form_submits-on-reports-tab';
     await commonElements.goToReports();
+    expect(await browser.checkFullPageScreen(`${testName}_report-page-loaded`)).to.equal(0);
     await (await reportsPo.submitReportButton()).waitForClickable();
+    expect(await browser.checkFullPageScreen(`${testName}_submit-report-button-clicked`)).to.equal(0);
 
     // select form
     await reportsPo.openForm('Assessment');
+    expect(await browser.checkFullPageScreen(`${testName}_assessment-form-opened`)).to.equal(0);
 
     // enter name
-
     await (await genericForm.nameField()).setValue('Jones');
+    console.log(JSON.stringify(this));
+    expect(await browser.checkFullPageScreen(`${testName}_name-set`)).to.equal(0);
 
     // submit form
 
@@ -112,5 +117,6 @@ describe('Submit Enketo form', () => {
     // check the submitted name
     await (await reportsPo.firstReportDetailField()).waitForDisplayed();
     expect(await (await reportsPo.firstReportDetailField()).getText()).to.equal('Jones');
+    expect(await browser.checkFullPageScreen(`${testName}_report-submitted`)).to.be.lessThanOrEqual(0.4);
   });
 });
