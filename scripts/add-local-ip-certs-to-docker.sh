@@ -54,12 +54,12 @@ if [ "$status" = "true" ]; then
     docker exec -it $container bash -c "curl -s -o /srv/settings/medic-core/nginx/private/default.key http://local-ip.co/cert/server.key"
   elif [ "$action" = "expire" ]; then
     result="installed expired local-ip.co"
-    docker cp ./release_testing_script/local-ip-expired.crt "$container":/srv/settings/medic-core/nginx/private/default.crt
-    docker cp ./release_testing_script/local-ip-expired.key "$container":/srv/settings/medic-core/nginx/private/default.key
+    docker cp ./tls_certificates/local-ip-expired.crt "$container":/srv/settings/medic-core/nginx/private/default.crt
+    docker cp ./tls_certificates/local-ip-expired.key "$container":/srv/settings/medic-core/nginx/private/default.key
   elif [ "$action" = "self" ]; then
     result="installed self-signed"
-    docker cp ./release_testing_script/self-signed.crt "$container":/srv/settings/medic-core/nginx/private/default.crt
-    docker cp ./release_testing_script/self-signed.key "$container":/srv/settings/medic-core/nginx/private/default.key
+    docker cp ./tls_certificates/self-signed.crt "$container":/srv/settings/medic-core/nginx/private/default.crt
+    docker cp ./tls_certificates/self-signed.key "$container":/srv/settings/medic-core/nginx/private/default.key
   fi
 
   if [ "$result" != "" ]; then
