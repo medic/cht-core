@@ -101,51 +101,69 @@ const waitForContactUnloaded = async () => {
 };
 
 const addPlace = async (type, placeName , contactName ) => {
+  const testName = `${type}_${placeName}_${contactName}`;
   const dashedType = type.replace('_','-');
   await (await actionResourceIcon(dashedType)).waitForDisplayed();
+  expect(await browser.checkFullPageScreen(`${testName}_resource-icon`)).to.equal(0);
   await (await actionResourceIcon(dashedType)).click();
 
   await (await newPrimaryContactButton()).waitForDisplayed();
+  expect(await browser.checkFullPageScreen(`${testName}_primary-contact-button`)).to.equal(0);
   await (await newPrimaryContactButton()).click();
   await (await newPrimaryContactName()).addValue(contactName);
+  expect(await browser.checkFullPageScreen(`${testName}_contact-name`)).to.equal(0);
   await (await dateOfBirthField()).addValue('2000-01-01');
+  expect(await browser.checkFullPageScreen(`${testName}_contact-date`)).to.equal(0);
   await (await contactSexField()).click();
+  expect(await browser.checkFullPageScreen(`${testName}_contact-sex`)).to.equal(0);
   await genericForm.nextPage();
   await (await writeNamePlace(type)).click();
   await (await newPlaceName()).addValue(placeName);
+  expect(await browser.checkFullPageScreen(`${testName}_name-place`)).to.equal(0);
   await (await externalIdField(type)).addValue('1234457');
+  expect(await browser.checkFullPageScreen(`${testName}_external-id`)).to.equal(0);
   await (await notes(type)).addValue(`Some ${type} notes`);
+  expect(await browser.checkFullPageScreen(`${testName}_notes`)).to.equal(0);
   await (await genericForm.submitButton()).click();
   await (await contactCardIcon(dashedType)).waitForDisplayed();
   await (await contactCard()).waitForDisplayed();
+  expect(await browser.checkFullPageScreen(`${testName}_finished`)).to.equal(0);
 };
 
-const addPerson = async (name, params = {}) => {
+const addPerson = async (name, params = {}, testName) => {
   const { dob='2000-01-01', phone } = params;
   await (await actionResourceIcon('person')).click();
   await (await personName()).addValue(name);
+  expect(await browser.checkFullPageScreen(`${testName}_person-name`)).to.equal(0);
   await (await dateOfBirthField()).addValue(dob);
+  expect(await browser.checkFullPageScreen(`${testName}_dob`)).to.equal(0);
   await (await personName()).click(); // blur the datepicker field so the sex field is visible
+  expect(await browser.checkFullPageScreen(`${testName}_close-picker`)).to.equal(0);
   if (phone) {
     await (await personPhoneField()).addValue(phone);
   }
   await (await personSexField()).click();
+  expect(await browser.checkFullPageScreen(`${testName}_sex`)).to.equal(0);
   await (await notes('person')).addValue('some person notes');
+  expect(await browser.checkFullPageScreen(`${testName}_notes`)).to.equal(0);
   await (await genericForm.submitButton()).click();
   await (await contactCardIcon('person')).waitForDisplayed();
+  expect(await browser.checkFullPageScreen(`${testName}_new-final`)).to.be.lessThanOrEqual(0.2);
   return (await contactCard()).getText();
 };
 
-const editPerson = async (name, updatedName) => {
+const editPerson = async (name, updatedName, testName) => {
   await selectLHSRowByText(name);
   await waitForContactLoaded();
   await (await editContactButton()).waitForDisplayed();
+  expect(await browser.checkFullPageScreen(`${testName}_edit`)).to.be.lessThanOrEqual(0.3);
   await (await editContactButton()).click();
 
   await (await genericForm.nextPage());
 
   await (await personName()).clearValue();
   await (await personName()).addValue(updatedName);
+  expect(await browser.checkFullPageScreen(`${testName}_update-name`)).to.equal(0);
 
   await (await genericForm.submitButton()).click();
   await waitForContactLoaded();
@@ -206,7 +224,6 @@ const editDistrict = async (districtName, editedName) => {
   await waitForContactLoaded();
 
   await (await editContactButton()).waitForDisplayed();
-  expect(await browser.checkFullPageScreen(`${testName}_contact-loaded`)).to.equal(0);
   await (await editContactButton()).click();
   expect(await browser.checkFullPageScreen(`${testName}_edit-contact`)).to.equal(0);
 
