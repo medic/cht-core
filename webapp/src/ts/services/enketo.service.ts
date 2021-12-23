@@ -685,7 +685,7 @@ export class EnketoService {
       footer.addClass('end');
       footer.find('.next-page').addClass('disabled');
     }
-    if (currentIndex === 0) {
+    if (currentIndex <= 0) {
       footer.find('.previous-page').addClass('disabled');
     }
   }
