@@ -115,7 +115,7 @@ const addPlace = async (type, placeName , contactName ) => {
   await (await dateOfBirthField()).addValue('2000-01-01');
   expect(await browser.checkFullPageScreen(`${testName}_contact-date`)).to.equal(0);
   await (await contactSexField()).click();
-  expect(await browser.checkFullPageScreen(`${testName}_contact-sex`)).to.equal(0);
+  expect(await browser.checkFullPageScreen(`${testName}_contact-sex`)).to.be.lessThanOrEqual(0.04);
   await genericForm.nextPage();
   await (await writeNamePlace(type)).click();
   await (await newPlaceName()).addValue(placeName);
@@ -143,7 +143,7 @@ const addPerson = async (name, params = {}, testName) => {
     await (await personPhoneField()).addValue(phone);
   }
   await (await personSexField()).click();
-  expect(await browser.checkFullPageScreen(`${testName}_sex`)).to.equal(0);
+  expect(await browser.checkFullPageScreen(`${testName}_sex`)).to.be.lessThanOrEqual(0.04);
   await (await notes('person')).addValue('some person notes');
   expect(await browser.checkFullPageScreen(`${testName}_notes`)).to.equal(0);
   await (await genericForm.submitButton()).click();
