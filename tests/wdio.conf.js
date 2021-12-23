@@ -47,6 +47,7 @@ const baseConfig = {
     './tests/e2e/**/submit-enketo-form.wdio-spec.js',
     './tests/e2e/**/repeat-form.wdio-spec.js',
     './tests/e2e/**/add-new-district.wdio-spec.js',
+    './tests/e2e/**/new-lineage-structure.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [

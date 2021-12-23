@@ -11,6 +11,7 @@ const area = 'Georgia';
 const areaContact = 'Area Contact';
 const household = 'Barbados';
 const householdContact = 'House Contact';
+const suiteName = 'new-lineage-structure';
 
 describe('Create new lineage structure', () => {
   before(async () => {
@@ -45,28 +46,31 @@ describe('Create new lineage structure', () => {
   });
 
   it('Create new person', async () => {
-    chai.expect(await contactPage.addPerson('James')).to.equal('James');
+    const testName = `${suiteName}_create-person`;
+    chai.expect(await contactPage.addPerson('James', {}, testName)).to.equal('James');
   });
 
   it('should edit a person with a phone number', async () => {
+    const testName = `${suiteName}_edit-phone`;
     await contactPage.selectLHSRowByText(centerName);
 
     const name = 'Padishah Emperor';
     const phone = '+40755789789';
-    chai.expect(await contactPage.addPerson(name, { phone })).to.equal(name);
+    chai.expect(await contactPage.addPerson(name, { phone }, testName)).to.equal(name);
     chai.expect(await contactPage.getContactSummaryField('person.field.phone')).to.equal(phone);
 
     const updatedName = 'Paul Atreides';
-    chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
+    chai.expect(await contactPage.editPerson(name, updatedName, testName)).to.equal(updatedName);
     chai.expect(await contactPage.getContactSummaryField('person.field.phone')).to.equal(phone);
   });
 
   it('should edit a name of the health facility', async () => {
+    const testName = `${suiteName}_edit-facility-name`;
     await contactPage.selectLHSRowByText(centerName);
     const name = 'SomePerson';
-    chai.expect(await contactPage.addPerson(name)).to.equal(name);
+    chai.expect(await contactPage.addPerson(name, {}, testName)).to.equal(name);
     const updatedName = 'SomePersonNew';
-    chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
+    chai.expect(await contactPage.editPerson(name, updatedName, testName)).to.equal(updatedName);
   });
 
   it('should delete the primary contact of health facility', async () => {
@@ -76,19 +80,21 @@ describe('Create new lineage structure', () => {
   });
 
   it('should edit the name of the CHW area', async () => {
+    const testName = `${suiteName}_edit-area-name`;
     await contactPage.selectLHSRowByText(area);
     const name = 'SomePerson';
-    chai.expect(await contactPage.addPerson(name)).to.equal(name);
+    chai.expect(await contactPage.addPerson(name, {}, testName)).to.equal(name);
     const updatedName = 'SomePersonNew';
-    chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
+    chai.expect(await contactPage.editPerson(name, updatedName, testName)).to.equal(updatedName);
   });
 
   it('should edit the name of the Family', async () => {
+    const testName = `${suiteName}_edit-family-name`;
     await contactPage.selectLHSRowByText(household);
     const name = 'SomePerson';
-    chai.expect(await contactPage.addPerson(name)).to.equal(name);
+    chai.expect(await contactPage.addPerson(name, {}, testName)).to.equal(name);
     const updatedName = 'SomePersonNew';
-    chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
+    chai.expect(await contactPage.editPerson(name, updatedName, testName)).to.equal(updatedName);
   });
 
 });
