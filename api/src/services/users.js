@@ -577,6 +577,53 @@ module.exports = {
       .then(() => response);
   },
 
+  /**
+   * Take the request data and create valid users, user-settings and contacts
+   * objects. Returns the response body in the callback.
+   * @param {Object[]} users
+   * @param {string} users[].name
+   * @param {string=} users[].phone User's phone number. Not required if the password is provided.
+   * @param {string=} users[].password User's password. Not required if the phone number is provided.
+   * @param {string[]} users[].roles
+   * @param {string=} users[].place
+   * @param {string=} users[].contact
+   * @param {string=} users[].type
+   * @param {String} appUrl   request protocol://hostname
+   */
+  async createManyUsers(users, appUrl) {
+    if (!Array.isArray(users)) {
+      // TODO: alternatively, `return module.exports.createUser(users, appUrl);`
+      return Promise.reject(error400('Wrong type, body should be an array of users'));
+    }
+
+    const missing = users.map(user => missingFields(user));
+    const hasMissingFields = missing.some(fields => fields.length > 0);
+    if (hasMissingFields) {
+      const fields = _(missing)
+        .flatten()
+        .uniq()
+        .value()
+        .join(', ');
+
+      const indexes = missing
+        .map((fields, index) => {
+          if (fields.length > 0) {
+            return index;
+          }
+        })
+        .filter(index => Number.isInteger(index));
+
+      return Promise.reject(error400(
+        'Missing required fields: ' + fields,
+        'fields.required',
+        {
+          fields,
+          indexes,
+        },
+      ));
+    }
+  },
+
   /*
   * Take the userCtx of an admin user and create the _user doc and user-settings doc
   * if they do not already exist.

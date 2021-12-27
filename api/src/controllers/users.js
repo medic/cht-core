@@ -131,6 +131,13 @@ module.exports = {
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
   },
+  createMany: (req, res) => {
+    return auth
+      .check(req, ['can_create_users', 'can_create_places', 'can_create_people'])
+      .then(() => usersService.createManyUsers(req.body, getAppUrl(req)))
+      .then(body => res.json(body))
+      .catch(err => serverUtils.error(err, req, res));
+  },
   update: (req, res) => {
     if (_.isEmpty(req.body)) {
       return serverUtils.emptyJSONBodyError(req, res);
