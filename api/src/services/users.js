@@ -599,28 +599,21 @@ module.exports = {
     const missing = users.map(user => missingFields(user));
     const hasMissingFields = missing.some(fields => fields.length > 0);
     if (hasMissingFields) {
-      const fields = _(missing)
-        .flatten()
-        .uniq()
-        .value()
-        .join(', ');
-
-      const indexes = missing
+      const missingFields = missing
         .map((fields, index) => {
           if (fields.length > 0) {
-            return index;
+            return { fields, index };
           }
         })
-        .filter(index => Number.isInteger(index));
-
-      return Promise.reject(error400(
-        'Missing required fields: ' + fields,
-        'fields.required',
-        {
-          fields,
-          indexes,
-        },
-      ));
+        .filter(userMissingFields => userMissingFields);
+      let errorMessge = 'Missing required fields:\n';
+      for (const { fields, index } of missingFields) {
+        errorMessge += `\nMissing fields ${fields.join(', ')} for user at index ${index}`;
+      }
+      const error = new Error(errorMessge);
+      error.code = 400;
+      error.missingFields = missingFields;
+      return Promise.reject(error);
     }
   },
 
