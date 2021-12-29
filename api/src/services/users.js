@@ -635,6 +635,26 @@ module.exports = {
       error.failingIndexes = failingIndexes;
       return Promise.reject(error);
     }
+
+    const passwordErrors = users.map(user => validatePassword(user.password));
+    const hasPasswordError = passwordErrors.some(error => !!error);
+    if (hasPasswordError) {
+      const failingIndexes = passwordErrors
+        .map((passwordError, index) => {
+          if (passwordError) {
+            return { passwordError, index };
+          }
+        })
+        .filter(index => index);
+      let errorMessge = 'Password errors:\n';
+      for (const { passwordError, index } of failingIndexes) {
+        errorMessge += `\nError ${passwordError} for user at index ${index}`;
+      }
+      const error = new Error(errorMessge);
+      error.code = 400;
+      error.failingIndexes = failingIndexes;
+      return Promise.reject(error);
+    }
   },
 
   /*
