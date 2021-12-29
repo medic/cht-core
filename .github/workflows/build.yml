@@ -12,24 +12,9 @@ env:
 
 jobs:
 
-  skip_check:
-
-    name: Skip Check
-    runs-on: ubuntu-18.04
-    outputs:
-      should_skip: ${{ steps.skip_check.outputs.should_skip }}
-    steps:
-      - id: skip_check
-        uses: fkirc/skip-duplicate-actions@master
-        with:
-          concurrent_skipping: 'same_content_newer'
-          paths_ignore: '["**.md", "release-notes/**", "demo-forms/**"]'
-
   build:
     name: Compile the app
     runs-on: ubuntu-18.04
-    needs: skip_check
-    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
 
     steps:
     - name: Get Docker Hub username
@@ -71,7 +56,6 @@ jobs:
 
   config-tests:
     needs: build
-    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
     name: Config Tests
     runs-on: ubuntu-18.04
     strategy:
@@ -93,7 +77,6 @@ jobs:
 
   publish:
     needs: [tests,config-tests]
-    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
     name: Publish branch build
     runs-on: ubuntu-18.04
 
@@ -114,7 +97,6 @@ jobs:
 
   tests:
     needs: build
-    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
     name: ${{ matrix.grunt-cmd }} on node ${{ matrix.node-version }}
     runs-on: ubuntu-18.04
     env:
@@ -159,7 +141,7 @@ jobs:
       run: |
         echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
         docker-compose -f scripts/ci/horti-compose.yml up -d 
-        sh scripts/e2e/wait_for_response_code.sh 5988 200 api
+        sh scripts/wait_for_response_code.sh 5988 200 api
     # Restarting horti to install on a different builds server.
     # Used for installing the current release then installing the beta. 
     - name: Install Latest Build After Installing Latest In Previous Startup
@@ -168,7 +150,7 @@ jobs:
         docker stop horti
         docker logs horti > tests/logs/horti_before_recreate_container.log 2>&1
         INSTALL_LATEST=yes docker-compose -f scripts/ci/horti-compose.yml up -d 
-        sh scripts/e2e/wait_for_response_code.sh 5988 200 api
+        sh scripts/wait_for_response_code.sh 5988 200 api
       if: startsWith(github.ref, 'refs/tags/')
     - name: Test it!
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}

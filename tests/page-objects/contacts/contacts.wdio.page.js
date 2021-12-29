@@ -53,20 +53,29 @@ const childrenCards = () => $$('.right-pane .card.children');
 const search = async (query) => {
   await (await searchBox()).setValue(query);
   await (await searchButton()).click();
-  await commonElements.waitForLoaders();
+  await commonElements.waitForLoaderToDisappear(await $('.left-pane'));
+  await (await emptySelection()).waitForDisplayed();
+};
+
+const findRowByText = async (text) => {
+  for (const row of await contentRows()) {
+    if ((await row.getText()) === text) {
+      return row;
+    }
+  }
 };
 
 const selectLHSRowByText = async (text, executeSearch= true) => {
+  await commonElements.waitForLoaderToDisappear();
   if (executeSearch) {
     await search(text);
   }
-  await browser.waitUntil(async () => (await contentRows()).length);
-  for (const row of await contentRows()) {
-    if ((await row.getText()) === text) {
-      return await row.click();
-    }
+  await browser.waitUntil(async () => await findRowByText(text));
+  const row = await findRowByText(text);
+  if (!row) {
+    throw new Error(`Contact "${text}" was not found`);
   }
-  throw new Error(`Contact with name ${text} not found`);
+  return await row.click();
 };
 
 const getReportFiltersText = async () => {
@@ -193,14 +202,14 @@ const allContactsList = async () => {
 };
 
 const editDistrict = async (districtName, editedName) => {
-  await selectLHSRowByText(districtName);
+  await selectLHSRowByText(districtName, true);
   await waitForContactLoaded();
 
   await (await editContactButton()).waitForDisplayed();
   await (await editContactButton()).click();
 
   await (await districtHospitalName()).setValue(editedName);
-  // trigger blur to trigger Enketo validation
+  // blur field to trigger Enketo validation
   await (await notes('district_hospital')).click();
   await (await genericForm.submitButton()).click();
 };

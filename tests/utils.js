@@ -284,11 +284,16 @@ const revertDb = async (except, ignoreRefresh) => {
 const getCreatedUsers = async () => {
   const adminUserId = COUCH_USER_ID_PREFIX + auth.username;
   const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
-  return users.rows.filter(user => user.id !== adminUserId)
+  return users.rows
+    .filter(user => user.id !== adminUserId)
     .map((user) => ({ ...user, username: user.id.replace(COUCH_USER_ID_PREFIX, '') }));
 };
 
 const deleteUsers = async (users, meta = false) => {
+  if (!users.length) {
+    return;
+  }
+
   const usernames = users.map(user => COUCH_USER_ID_PREFIX + user.username);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
   const medicDocs = await request({

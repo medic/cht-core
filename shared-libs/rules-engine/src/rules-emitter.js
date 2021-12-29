@@ -6,7 +6,7 @@
  * Ensures memory allocated by nools is freed after each run
  */
 const nools = require('nools');
-const nootils = require('medic-nootils');
+const nootils = require('cht-nootils');
 const registrationUtils = require('@medic/registration-utils');
 
 let flow;
