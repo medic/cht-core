@@ -599,7 +599,7 @@ module.exports = {
     const missing = users.map(user => missingFields(user));
     const hasMissingFields = missing.some(fields => fields.length > 0);
     if (hasMissingFields) {
-      const missingFields = missing
+      const failingIndexes = missing
         .map((fields, index) => {
           if (fields.length > 0) {
             return { fields, index };
@@ -607,12 +607,32 @@ module.exports = {
         })
         .filter(userMissingFields => userMissingFields);
       let errorMessge = 'Missing required fields:\n';
-      for (const { fields, index } of missingFields) {
+      for (const { fields, index } of failingIndexes) {
         errorMessge += `\nMissing fields ${fields.join(', ')} for user at index ${index}`;
       }
       const error = new Error(errorMessge);
       error.code = 400;
-      error.missingFields = missingFields;
+      error.failingIndexes = failingIndexes;
+      return Promise.reject(error);
+    }
+
+    const tokenLoginErrors = users.map(user => tokenLogin.validateTokenLogin(user, true));
+    const hasTokenLoginError = tokenLoginErrors.some(error => !!error);
+    if (hasTokenLoginError) {
+      const failingIndexes = tokenLoginErrors
+        .map((tokenLoginError, index) => {
+          if (tokenLoginError) {
+            return { tokenLoginError, index };
+          }
+        })
+        .filter(index => index);
+      let errorMessge = 'Token login errors:\n';
+      for (const { tokenLoginError, index } of failingIndexes) {
+        errorMessge += `\nError ${tokenLoginError.msg} for user at index ${index}`;
+      }
+      const error = new Error(errorMessge);
+      error.code = 400;
+      error.failingIndexes = failingIndexes;
       return Promise.reject(error);
     }
   },
