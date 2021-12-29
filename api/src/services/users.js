@@ -655,6 +655,20 @@ module.exports = {
       error.failingIndexes = failingIndexes;
       return Promise.reject(error);
     }
+
+    const responses = Array(users.length).fill({});
+    await Promise.all(users.map(async (user, index) => {
+      await validateNewUsername(user.username);
+      await createPlace(user);
+      await setContactParent(user);
+      await createContact(user, responses[index]);
+      await storeUpdatedPlace(user);
+      await createUser(user, responses[index]);
+      await createUserSettings(user, responses[index]);
+      await tokenLogin.manageTokenLogin(user, appUrl, responses[index]);
+    }));
+
+    return responses;
   },
 
   /*
