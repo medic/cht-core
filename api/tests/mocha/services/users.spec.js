@@ -764,7 +764,6 @@ describe('Users service', () => {
         chai.expect(responses[0].error.name).to.equal('kablooey');
       });
 
-
       it('returns responses with errors if place lookup fails', async () => {
         service.__set__('validateNewUsername', sinon.stub().resolves());
         service.__set__('createPlace', sinon.stub().rejects('fail'));
@@ -773,7 +772,22 @@ describe('Users service', () => {
         chai.expect(responses[0].error.name).to.equal('fail');
       });
 
+      it('returns responses with errors if place is not within contact', async () => {
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('createPlace', sinon.stub().resolves());
+        sinon.stub(places, 'getPlace').resolves({
+          _id: 'miami',
+          parent: {
+            _id: 'florida'
+          }
+        });
+        userData.place = 'georgia';
 
+        const responses = await service.createManyUsers([userData]);
+        chai.expect(responses[0].error.code).to.equal(400);
+        chai.expect(responses[0].error.message.translationKey).to.equal('configuration.user.place.contact');
+        chai.expect(responses[0].error.message.message).to.equal('Contact is not within place.');
+      });
     });
   });
 
