@@ -655,17 +655,17 @@ module.exports = {
       return Promise.reject(error);
     }
 
-    const responses = Array(users.length).fill({});
+    const response = Array(users.length).fill({});
     // use Promise.allSettled to create all valid users even if some are failing
     const promises = await Promise.allSettled(users.map(async (user, index) => {
       await validateNewUsername(user.username);
       await createPlace(user);
       await setContactParent(user);
-      await createContact(user, responses[index]);
+      await createContact(user, response[index]);
       await storeUpdatedPlace(user);
-      await createUser(user, responses[index]);
-      await createUserSettings(user, responses[index]);
-      await tokenLogin.manageTokenLogin(user, appUrl, responses[index]);
+      await createUser(user, response[index]);
+      await createUserSettings(user, response[index]);
+      await tokenLogin.manageTokenLogin(user, appUrl, response[index]);
     }));
     const hasFailures = promises.some(promise => promise.status === 'rejected');
     if (hasFailures) {
@@ -681,11 +681,11 @@ module.exports = {
         .filter(reason => reason);
 
       for (const { reason, index } of failingIndexes) {
-        responses[index].error = reason;
+        response[index].error = reason;
       }
     }
 
-    return responses;
+    return response;
   },
 
   /*
