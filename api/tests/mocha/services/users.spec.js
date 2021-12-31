@@ -675,58 +675,41 @@ describe('Users service', () => {
   });
 
   describe.only('createManyUsers', () => {
-    it('returns error if missing fields', async () => {
+    it('returns error if one of the users has missing fields', async () => {
       try {
-        await service.createManyUsers([{}]);
+        await service.createManyUsers([
+          {},
+          { password: 'x', place: 'x', contact: { parent: 'x' }},
+          { username: 'x', place: 'x', contact: { parent: 'x' }},
+          { username: 'x', password: 'x', contact: { parent: 'x' }},
+          { username: 'x', place: 'x', contact: { parent: 'x' }},
+          { username: 'x', place: 'x', contact: {}},
+        ]);
       } catch (error) {
         // empty
         chai.expect(error.failingIndexes[0].fields).to.deep.equal(['username', 'password', 'type or roles']);
         chai.expect(error.failingIndexes[0].index).to.equal(0);
-        chai.expect(error.code).to.equal(400);
-      }
 
-      try {
-        await service.createManyUsers([{ password: 'x', place: 'x', contact: { parent: 'x' }}]);
-      } catch (error) {
         // missing username
-        chai.expect(error.failingIndexes[0].fields).to.deep.equal(['username', 'type or roles']);
-        chai.expect(error.failingIndexes[0].index).to.equal(0);
-        chai.expect(error.code).to.equal(400);
-      }
+        chai.expect(error.failingIndexes[1].fields).to.deep.equal(['username', 'type or roles']);
+        chai.expect(error.failingIndexes[1].index).to.equal(1);
 
-      try {
-        await service.createManyUsers([{ username: 'x', place: 'x', contact: { parent: 'x' }}]);
-      } catch (error) {
         // missing password
-        chai.expect(error.failingIndexes[0].fields).to.deep.equal(['password', 'type or roles']);
-        chai.expect(error.failingIndexes[0].index).to.equal(0);
-        chai.expect(error.code).to.equal(400);
-      }
+        chai.expect(error.failingIndexes[2].fields).to.deep.equal(['password', 'type or roles']);
+        chai.expect(error.failingIndexes[2].index).to.equal(2);
 
-      try {
-        await service.createManyUsers([{ username: 'x', password: 'x', contact: { parent: 'x' }}]);
-      } catch (error) {
         // missing place
-        chai.expect(error.failingIndexes[0].fields).to.deep.equal(['type or roles']);
-        chai.expect(error.failingIndexes[0].index).to.equal(0);
-        chai.expect(error.code).to.equal(400);
-      }
+        chai.expect(error.failingIndexes[3].fields).to.deep.equal(['type or roles']);
+        chai.expect(error.failingIndexes[3].index).to.equal(3);
 
-      try {
-        await service.createManyUsers([{ username: 'x', place: 'x', contact: { parent: 'x' }}]);
-      } catch (error) {
         // missing contact
-        chai.expect(error.failingIndexes[0].fields).to.deep.equal(['password', 'type or roles']);
-        chai.expect(error.failingIndexes[0].index).to.equal(0);
-        chai.expect(error.code).to.equal(400);
-      }
+        chai.expect(error.failingIndexes[4].fields).to.deep.equal(['password', 'type or roles']);
+        chai.expect(error.failingIndexes[4].index).to.equal(4);
 
-      try {
-        await service.createManyUsers([{ username: 'x', place: 'x', contact: {}}]);
-      } catch (error) {
         // missing contact.parent
-        chai.expect(error.failingIndexes[0].fields).to.deep.equal(['password', 'type or roles']);
-        chai.expect(error.failingIndexes[0].index).to.equal(0);
+        chai.expect(error.failingIndexes[5].fields).to.deep.equal(['password', 'type or roles']);
+        chai.expect(error.failingIndexes[5].index).to.equal(5);
+
         chai.expect(error.code).to.equal(400);
       }
     });
