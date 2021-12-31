@@ -674,6 +674,52 @@ describe('Users service', () => {
 
   });
 
+  describe.only('createManyUsers', () => {
+    it('returns error if missing fields', async () => {
+      try {
+        await service.createManyUsers([{}]);
+      } catch (error) {
+        // empty
+        chai.expect(error.code).to.equal(400);
+      }
+
+      try {
+        await service.createManyUsers([{ password: 'x', place: 'x', contact: { parent: 'x' }}]);
+      } catch (error) {
+        // missing username
+        chai.expect(error.code).to.equal(400);
+      }
+
+      try {
+        await service.createManyUsers([{ username: 'x', place: 'x', contact: { parent: 'x' }}]);
+      } catch (error) {
+        // missing password
+        chai.expect(error.code).to.equal(400);
+      }
+
+      try {
+        await service.createManyUsers([{ username: 'x', password: 'x', contact: { parent: 'x' }}]);
+      } catch (error) {
+        // missing place
+        chai.expect(error.code).to.equal(400);
+      }
+
+      try {
+        await service.createManyUsers([{ username: 'x', place: 'x', contact: { parent: 'x' }}]);
+      } catch (error) {
+        // missing contact
+        chai.expect(error.code).to.equal(400);
+      }
+
+      try {
+        await service.createManyUsers([{ username: 'x', place: 'x', contact: {}}]);
+      } catch (error) {
+        // missing contact.parent
+        chai.expect(error.code).to.equal(400);
+      }
+    });
+  });
+
   describe('setContactParent', () => {
 
     it('resolves contact parent in waterfall', () => {
