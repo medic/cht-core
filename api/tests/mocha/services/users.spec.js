@@ -789,6 +789,37 @@ describe('Users service', () => {
         chai.expect(responses[0].error.message.message).to.equal('Contact is not within place.');
       });
     });
+
+    it('succeeds if contact and place are the same', async () => {
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
+      sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
+      userData.place = 'foo';
+      const response = await service.createManyUsers([userData]);
+      chai.expect(response).to.deep.equal([{}]);
+    });
+
+    it('succeeds if contact is within place', async () => {
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
+      sinon.stub(places, 'getPlace').resolves({
+        _id: 'miami',
+        parent: {
+          _id: 'florida'
+        }
+      });
+      userData.place = 'florida';
+      const response = await service.createManyUsers([userData]);
+      chai.expect(response).to.deep.equal([{}]);
+    });
   });
 
   describe('setContactParent', () => {
