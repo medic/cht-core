@@ -753,6 +753,20 @@ describe('Users service', () => {
         chai.expect(error.code).to.equal(400);
       }
     });
+
+    it('returns a response with an error if contact.parent lookup fails', async () => {
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('setContactParent', sinon.stub().rejects('kablooey'));
+
+      try {
+        const responses = await service.createManyUsers([userData]);
+        chai.expect(responses[0].error.name).to.equal('kablooey');
+      } catch (error) {
+        console.log('error', error);
+        chai.expect(error).to.be.undefined;
+      }
+    });
   });
 
   describe('setContactParent', () => {
