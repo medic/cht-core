@@ -680,6 +680,8 @@ describe('Users service', () => {
         await service.createManyUsers([{}]);
       } catch (error) {
         // empty
+        chai.expect(error.failingIndexes[0].fields).to.deep.equal(['username', 'password', 'type or roles']);
+        chai.expect(error.failingIndexes[0].index).to.equal(0);
         chai.expect(error.code).to.equal(400);
       }
 
@@ -687,6 +689,8 @@ describe('Users service', () => {
         await service.createManyUsers([{ password: 'x', place: 'x', contact: { parent: 'x' }}]);
       } catch (error) {
         // missing username
+        chai.expect(error.failingIndexes[0].fields).to.deep.equal(['username', 'type or roles']);
+        chai.expect(error.failingIndexes[0].index).to.equal(0);
         chai.expect(error.code).to.equal(400);
       }
 
@@ -694,6 +698,8 @@ describe('Users service', () => {
         await service.createManyUsers([{ username: 'x', place: 'x', contact: { parent: 'x' }}]);
       } catch (error) {
         // missing password
+        chai.expect(error.failingIndexes[0].fields).to.deep.equal(['password', 'type or roles']);
+        chai.expect(error.failingIndexes[0].index).to.equal(0);
         chai.expect(error.code).to.equal(400);
       }
 
@@ -701,6 +707,8 @@ describe('Users service', () => {
         await service.createManyUsers([{ username: 'x', password: 'x', contact: { parent: 'x' }}]);
       } catch (error) {
         // missing place
+        chai.expect(error.failingIndexes[0].fields).to.deep.equal(['type or roles']);
+        chai.expect(error.failingIndexes[0].index).to.equal(0);
         chai.expect(error.code).to.equal(400);
       }
 
@@ -708,6 +716,8 @@ describe('Users service', () => {
         await service.createManyUsers([{ username: 'x', place: 'x', contact: { parent: 'x' }}]);
       } catch (error) {
         // missing contact
+        chai.expect(error.failingIndexes[0].fields).to.deep.equal(['password', 'type or roles']);
+        chai.expect(error.failingIndexes[0].index).to.equal(0);
         chai.expect(error.code).to.equal(400);
       }
 
@@ -715,6 +725,8 @@ describe('Users service', () => {
         await service.createManyUsers([{ username: 'x', place: 'x', contact: {}}]);
       } catch (error) {
         // missing contact.parent
+        chai.expect(error.failingIndexes[0].fields).to.deep.equal(['password', 'type or roles']);
+        chai.expect(error.failingIndexes[0].index).to.equal(0);
         chai.expect(error.code).to.equal(400);
       }
     });
