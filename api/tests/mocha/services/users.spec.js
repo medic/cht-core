@@ -713,6 +713,46 @@ describe('Users service', () => {
         chai.expect(error.code).to.equal(400);
       }
     });
+
+    it('returns error if one of the users has password errors', async () => {
+      try {
+        await service.createManyUsers([
+          {
+            username: 'x',
+            place: 'x',
+            contact: { parent: 'x' },
+            type: 'national-manager',
+            password: 'short',
+          },
+          {
+            username: 'x',
+            place: 'x',
+            contact: { parent: 'x' },
+            type: 'national-manager',
+            password: 'password',
+          },
+        ]);
+      } catch (error) {
+        // short password
+        chai.expect(error.failingIndexes[0].passwordError.message.message).to.equal(
+          'The password must be at least 8 characters long.',
+        );
+        chai.expect(error.failingIndexes[0].passwordError.message.translationKey).to.equal(
+          'password.length.minimum',
+        );
+        chai.expect(error.failingIndexes[0].passwordError.message.translationParams).to.have.property('minimum');
+        chai.expect(error.failingIndexes[0].index).to.equal(0);
+
+        // weak password
+        chai.expect(error.failingIndexes[1].passwordError.message.message).to.equal(
+          'The password is too easy to guess. Include a range of types of characters to increase the score.',
+        );
+        chai.expect(error.failingIndexes[1].passwordError.message.translationKey).to.equal('password.weak');
+        chai.expect(error.failingIndexes[1].index).to.equal(1);
+
+        chai.expect(error.code).to.equal(400);
+      }
+    });
   });
 
   describe('setContactParent', () => {
