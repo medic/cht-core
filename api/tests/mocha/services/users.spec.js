@@ -754,18 +754,26 @@ describe('Users service', () => {
       }
     });
 
-    it('returns a response with an error if contact.parent lookup fails', async () => {
-      service.__set__('validateNewUsername', sinon.stub().resolves());
-      service.__set__('createPlace', sinon.stub().resolves());
-      service.__set__('setContactParent', sinon.stub().rejects('kablooey'));
+    describe('errors at insertion', () => {
+      it('returns responses with errors if contact.parent lookup fails', async () => {
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('createPlace', sinon.stub().resolves());
+        service.__set__('setContactParent', sinon.stub().rejects('kablooey'));
 
-      try {
         const responses = await service.createManyUsers([userData]);
         chai.expect(responses[0].error.name).to.equal('kablooey');
-      } catch (error) {
-        console.log('error', error);
-        chai.expect(error).to.be.undefined;
-      }
+      });
+
+
+      it('returns responses with errors if place lookup fails', async () => {
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('createPlace', sinon.stub().rejects('fail'));
+
+        const responses = await service.createManyUsers([userData]);
+        chai.expect(responses[0].error.name).to.equal('fail');
+      });
+
+
     });
   });
 
