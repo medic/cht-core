@@ -674,7 +674,7 @@ describe('Users service', () => {
 
   });
 
-  describe.only('createManyUsers', () => {
+  describe('createManyUsers', () => {
     it('returns error if one of the users has missing fields', async () => {
       try {
         await service.createManyUsers([
