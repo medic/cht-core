@@ -38,15 +38,11 @@ require('../js/enketo/main');
 window.PouchDB.plugin(pouchdbDebug);
 bootstrapper(POUCHDB_OPTIONS, (err) => {
   if (err) {
-    if (err.redirect) {
-      window.location.href = err.redirect;
-    } else {
-      console.error('Error bootstrapping', err);
-      setTimeout(() => {
-        // retry initial replication automatically after one minute
-        window.location.reload(false);
-      }, 60 * 1000);
-    }
+    console.error('Error bootstrapping', err);
+    setTimeout(() => {
+      // retry initial replication automatically after one minute
+      window.location.reload(false);
+    }, 60 * 1000);
     return;
   }
 

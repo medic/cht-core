@@ -25,6 +25,7 @@ import { SafeHtmlPipe } from '@mm-pipes/safe-html.pipe';
 import { PhonePipe } from '@mm-pipes/phone.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
+import { BootstrapTranslatePipe } from '@mm-pipes/bootstrap-translate.pipe';
 
 @NgModule({
   declarations: [
@@ -53,6 +54,7 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
     PhonePipe,
     TranslateFromPipe,
     LocalizeNumberPipe,
+    BootstrapTranslatePipe,
   ],
   imports: [
     CommonModule,
@@ -83,6 +85,7 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
     PhonePipe,
     TranslateFromPipe,
     LocalizeNumberPipe,
+    BootstrapTranslatePipe,
   ]
 })
 export class PipesModule { }

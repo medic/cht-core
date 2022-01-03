@@ -2,6 +2,7 @@ const sinon = require('sinon');
 const chai = require('chai');
 const environment = require('../../src/environment');
 const serverUtils = require('../../src/server-utils');
+const cookie = require('../../src/services/cookie');
 
 const req = {
   url: '',
@@ -138,15 +139,20 @@ describe('Server utils', () => {
 
     it('redirects to login page for human user', () => {
       const redirect = sinon.stub(res, 'redirect');
+      const setForceLoginStub = sinon.stub(cookie, 'setForceLogin');
       sinon.stub(res, 'setHeader');
       req.url = 'someurl';
       req.headers = { 'user-agent': 'Mozilla/1.0' };
+
       serverUtils.notLoggedIn(req, res);
+
       chai.expect(redirect.callCount).to.equal(1);
       chai.expect(redirect.args[0][0]).to.equal(302);
       chai.expect(redirect.args[0][1]).to.equal('/medic/login?redirect=someurl');
       chai.expect(res.setHeader.callCount).to.equal(1);
       chai.expect(res.setHeader.args[0]).to.deep.equal(['logout-authorization', 'CHT-Core API']);
+      chai.expect(setForceLoginStub.calledOnce);
+      chai.expect(setForceLoginStub.args[0]).to.deep.equal([res]);
     });
 
     it('returns 401 for medic-collect', () => {
