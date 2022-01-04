@@ -1,10 +1,11 @@
 const commonElements = require('../common/common.wdio.page');
 
 const reportListID = '#reports-list';
-const reportBodyDetails = '#reports-content .report-body .details';
-const reportBody = () => $(reportBodyDetails);
-const selectedCaseId = () => $(`${reportBodyDetails} > ul > li > p > span > a`);
-const selectedCaseIdLabel = () => $(`${reportBodyDetails} ul > li > label > span`);
+const reportBodyDetailsSelector = '#reports-content .report-body .details';
+const reportBodyDetails = () => $(reportBodyDetailsSelector);
+const reportBody = '#reports-content .report-body';
+const selectedCaseId = () => $(`${reportBodyDetailsSelector} > ul > li > p > span > a`);
+const selectedCaseIdLabel = () => $(`${reportBodyDetailsSelector} ul > li > label > span`);
 const submitterPlace = () => $('.position a');
 const submitterPhone = () => $('.sender .phone');
 const submitterName = () => $('.sender .name');
@@ -17,6 +18,7 @@ const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 
 const submitReportButton = () => $('.action-container .general-actions:not(.ng-hide) .fa-plus');
+const deleteAllButton = () => $('.action-container .detail-actions .delete-all');
 const dateFilter = () => $('#date-filter');
 const datePickerStart = () => $('.daterangepicker [name="daterangepicker_start"]');
 const datePickerEnd = () => $('.daterangepicker [name="daterangepicker_end"]');
@@ -31,8 +33,12 @@ const formTitle = () => $('#report-form #form-title');
 const submitButton = () => $('#report-form .form-footer .btn.submit');
 
 const forms = () => $$('.action-container .general-actions .actions.dropup .dropdown-menu li');
+const deselectReport = () => $(`${reportBody} .deselect`);
+const itemSummary = () => $(`${reportBody} .item-summary`);
+const checkCss = 'input[type="checkbox"]';
 
-const sentTask = async () => (await reportBody()).$('ul .task-list .task-state .state');
+const sentTask = async () => (await reportBodyDetails()).$('ul .task-list .task-state .state');
+const reportByUUID = (uuid) => $(`li[data-record-id="${uuid}"]`);
 
 // warning: the unread element is not displayed when there are no unread reports
 const getUnreadCount = async () => {
@@ -43,7 +49,7 @@ const getUnreadCount = async () => {
 const goToReportById = (reportId) => browser.url(`#/reports/${reportId}`);
 
 const getTaskState = async (first, second) => {
-  return (await reportBody())
+  return (await reportBodyDetails())
     .$(`.scheduled-tasks > ul > li:nth-child(${first}) > ul > li:nth-child(${second}) .task-state .state`);
 };
 
@@ -94,7 +100,7 @@ const getFieldValue = async (name) => {
 
 const submitForm = async () => {
   await (await submitButton()).click();
-  await (await $(reportBodyDetails)).waitForDisplayed();
+  await (await reportBodyDetails()).waitForDisplayed();
 };
 
 const getElementText = async (element) => {
@@ -120,6 +126,61 @@ const reportsListDetails = async () => {
   }
 
   return reportDetails;
+};
+
+const collapseSelection = async () => {
+  await (await itemSummary()).click();
+  expect(await (await reportBodyDetails()).isExisting()).to.be.false;
+};
+
+const deleteSelectedReports = async () => {
+  const confirmButton = () => $('.btn.submit.btn-danger');
+  const completeButton = () => $('a=Complete');
+  await (await deleteAllButton()).click();
+  await (await confirmButton()).click();
+  await (await completeButton()).click();
+  await (await completeButton()).waitForDisplayed({reverse:true});
+  await (await firstReport ()).waitForDisplayed();
+  return await $$(reportBody);
+};
+
+const deselectAll = async () => {
+  const deselectAllButton = await $('.action-container .deselect-all');
+  await deselectAllButton.click();
+  const count = await $('#reports-content .selection-count > span');
+  await count.waitForExist({reverse: true});
+  return await $$(reportBody);
+};
+
+const expandSelection = async () => {
+  await (await itemSummary()).click();
+  await (await $(reportBodyDetailsSelector)).waitForDisplayed();
+};
+const selectAll = async () => {
+  await (await $('.action-container .select-all')).click();
+  await (await $('#reports-content .selection-count > span')).waitForDisplayed();
+  return await $$(reportBody);
+};
+
+const selectReports = async (uuids) => {
+  for (const uuid of uuids) {
+    await (await reportByUUID(uuid)).$(checkCss).click();
+    await (await deleteAllButton()).waitForClickable();
+  }
+  return await $$(reportBody);
+};
+
+const startSelectMode = async (savedUuids)=> {
+  const selectModeButton = () => $('.action-container .select-mode-start');
+  await (await selectModeButton()).click();
+  const checkbox = (await reportByUUID(savedUuids[0])).$(checkCss);
+  await checkbox.waitForDisplayed();
+};
+
+const stopSelectMode = async (savedUuids)=> {
+  await (await $('.action-container .select-mode-stop')).click();
+  const checkbox = (await reportByUUID(savedUuids[0])).$(checkCss);
+  await  checkbox.waitForDisplayed({reverse: true});
 };
 
 
@@ -164,6 +225,17 @@ module.exports = {
   getSummaryField,
   submitForm,
   reportsListDetails,
+  stopSelectMode,
+  startSelectMode,
+  selectAll,
+  selectReports,
+  deselectReport,
+  expandSelection,
+  collapseSelection,
+  deleteSelectedReports,
+  deselectAll,
+  firstReportDetailField,
+  reportByUUID,
   filterByDate,
   allReports,
   reportsByUUID,

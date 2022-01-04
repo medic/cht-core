@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { TranslateLoader } from '@ngx-translate/core';
 import { from } from 'rxjs';
 
-import { DbService } from '../services/db.service';
+import { DbService } from '@mm-services/db.service';
 import * as translationUtils from '@medic/translation-utils';
 import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-matcher.provider';
 
@@ -45,11 +45,11 @@ export class TranslationLoaderProvider implements TranslateLoader {
         }
         return translationUtils.loadTranslations(values);
       })
-      .catch((err) => {
-        if (err.status !== 404) {
-          throw err;
+      .catch(err => {
+        if ([401, 404].includes(err.status)) {
+          return {};
         }
-        return {};
+        throw err;
       })
       .finally(() => {
         delete this.loadingPromises[locale];
