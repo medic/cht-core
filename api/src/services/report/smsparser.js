@@ -271,7 +271,7 @@ exports.parse = (def, doc) => {
 
     if (bsYear && bsMonth && bsDay) {
       try {
-        formData.lmpDate = moment().valueOf(bs.toGreg_text(bsYear, bsMonth, bsDay));
+        formData.lmpDate = moment(bs.toGreg_text(bsYear, bsMonth, bsDay)).valueOf();
         def.fields['lmpDate'] = {
           type: 'date'
         };
