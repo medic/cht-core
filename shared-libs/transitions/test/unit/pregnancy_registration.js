@@ -430,7 +430,7 @@ describe('pregnancy registration with exact LMP date', () => {
         join_responses: true,
         list: [
           {
-            property: 'lmpYYYY',
+            property: 'lmpYear',
             rule: 'min(2000) && max(2100)',
             message: [{
               content: 'Invalid Year; must be 2000-2100.',
@@ -438,7 +438,7 @@ describe('pregnancy registration with exact LMP date', () => {
             }]
           },
           {
-            property: 'lmpMM',
+            property: 'lmpMonth',
             rule: 'min(1) && max(12)',
             message: [{
               content: 'Invalid Month; must be 1-12.',
@@ -446,7 +446,7 @@ describe('pregnancy registration with exact LMP date', () => {
             }]
           },
           {
-            property: 'lmpDD',
+            property: 'lmpDay',
             rule: 'min(1) && max(32)',//32 for Bikram Sambat
             message: [{
               content: 'Invalid Day; must be 1-32.',
@@ -486,7 +486,7 @@ describe('pregnancy registration with exact LMP date', () => {
         join_responses: true,
         list: [
           {
-            property: 'lmpYYYY',
+            property: 'lmpYear',
             rule: 'min(2000) && max(2100)',
             message: [{
               content: 'Invalid Year; must be 2000-2100.',
@@ -494,7 +494,7 @@ describe('pregnancy registration with exact LMP date', () => {
             }]
           },
           {
-            property: 'lmpMM',
+            property: 'lmpMonth',
             rule: 'min(1) && max(12)',
             message: [{
               content: 'Invalid Month; must be 1-12.',
@@ -502,7 +502,7 @@ describe('pregnancy registration with exact LMP date', () => {
             }]
           },
           {
-            property: 'lmpDD',
+            property: 'lmpDay',
             rule: 'min(1) && max(32)',
             message: [{
               content: 'Invalid Day; must be 1-32.',
@@ -559,9 +559,10 @@ describe('pregnancy registration with exact LMP date', () => {
     const doc = {
       fields:
       {
-        lmpYYYY: (eightWeeksAgo.year()).toString(),
-        lmpMM: (eightWeeksAgo.month() + 1).toString(),
-        lmpDD: (eightWeeksAgo.date()).toString(),
+        lmpYear: (eightWeeksAgo.year()).toString(),
+        lmpMonth: (eightWeeksAgo.month() + 1).toString(),
+        lmpDay: (eightWeeksAgo.date()).toString(),
+        lmpDate: eightWeeksAgo.valueOf(),
         type: 'data_record'
       }
     };
@@ -580,9 +581,10 @@ describe('pregnancy registration with exact LMP date', () => {
       form: 'l',
       type: 'data_record',
       fields: {
-        lmpYYYY: (eightWeeksAgo.year()).toString(),
-        lmpMM: (eightWeeksAgo.month() + 1).toString(),
-        lmpDD: (eightWeeksAgo.date()).toString(),
+        lmpYear: (eightWeeksAgo.year()).toString(),
+        lmpMonth: (eightWeeksAgo.month() + 1).toString(),
+        lmpDay: (eightWeeksAgo.date()).toString(),
+        lmpDate: eightWeeksAgo.valueOf(),
         patient_name: 'abc'
       }
     };
@@ -604,9 +606,10 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_id: '12345',
-        lmpYYYY: (eightWeeksAgo.year()).toString(),
-        lmpMM: (eightWeeksAgo.month() + 1).toString(),
-        lmpDD: (eightWeeksAgo.date()).toString(),
+        lmpYear: (eightWeeksAgo.year()).toString(),
+        lmpMonth: (eightWeeksAgo.month() + 1).toString(),
+        lmpDay: (eightWeeksAgo.date()).toString(),
+        lmpDate: eightWeeksAgo.valueOf(),
       }
     };
 
@@ -625,9 +628,10 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_id: '12345',
-        lmpYYYY: (eightWeeksAgo.year()).toString(),
-        lmpMM: (eightWeeksAgo.month() + 1).toString(),
-        lmpDD: (eightWeeksAgo.date()).toString(),
+        lmpYear: (eightWeeksAgo.year()).toString(),
+        lmpMonth: (eightWeeksAgo.month() + 1).toString(),
+        lmpDay: (eightWeeksAgo.date()).toString(),
+        lmpDate: eightWeeksAgo.valueOf(),
       },
       patient: {
         _id: 'uuid',
@@ -652,9 +656,9 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: 'abc',
-        lmpYYYY: '2000',
-        lmpMM: '01',
-        lmpDD: '01'
+        lmpYear: '2000',
+        lmpMonth: '01',
+        lmpDay: '01'
       },
       getid: 'x'
     };
@@ -676,9 +680,9 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: '',
-        lmpYYYY: '2000',
-        lmpMM: '01',
-        lmpDD: '01'
+        lmpYear: '2000',
+        lmpMonth: '01',
+        lmpDay: '01'
       },
       getid: 'x'
     };
@@ -698,9 +702,9 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: '',
-        lmpYYYY: '2000',
-        lmpMM: '01',
-        lmpDD: '01'
+        lmpYear: '2000',
+        lmpMonth: '01',
+        lmpDay: '01'
       }
     };
 
@@ -718,9 +722,9 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: 'hi',
-        lmpYYYY: '1999',
-        lmpMM: '01',
-        lmpDD: '01'
+        lmpYear: '1999',
+        lmpMonth: '01',
+        lmpDay: '01'
       }
     };
 
@@ -738,9 +742,9 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: 'hi',
-        lmpYYYY: '2000',
-        lmpMM: '00',
-        lmpDD: '01'
+        lmpYear: '2000',
+        lmpMonth: '00',
+        lmpDay: '01'
       }
     };
 
@@ -758,9 +762,9 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: 'hi',
-        lmpYYYY: '2000',
-        lmpMM: '01',
-        lmpDD: '00'
+        lmpYear: '2000',
+        lmpMonth: '01',
+        lmpDay: '00'
       }
     };
 
@@ -778,9 +782,9 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: '',
-        lmpYYYY: '1999',
-        lmpMM: '01',
-        lmpDD: '01'
+        lmpYear: '1999',
+        lmpMonth: '01',
+        lmpDay: '01'
       }
     };
 
@@ -824,33 +828,6 @@ describe('pregnancy registration with exact LMP date', () => {
     });
   });
 
-
-  it('valid LMP date in Bikram Sambat', () => {
-    const start = moment().subtract(10, 'weeks').startOf('day');
-    const startBS = bs.toBik(start.format('YYYY-MM-DD'));
-
-    sinon.stub(utils, 'getContactUuid').resolves('uuid');
-    sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
-
-    const doc = {
-      form: 'l',
-      type: 'data_record',
-      fields: {
-        lmpYYYY: startBS.year.toString(),
-        lmpMM: startBS.month.toString(),
-        lmpDD: startBS.day.toString(),
-        patient_name: 'abc'
-      }
-    };
-
-    return transition.onMatch({ doc: doc }).then(function (changed) {
-      assert.equal(changed, true);
-      assert.equal(doc.lmp_date, start.toISOString());
-      assert(doc.patient_id);
-      assert.equal(doc.tasks, undefined);
-    });
-  });
-
   it('LMP date less than 8 weeks ago should fail', () => {
     const start = moment().subtract({ weeks: 7, days: 6 }).startOf('day');
     sinon.stub(utils, 'getContactUuid').resolves('uuid');
@@ -860,17 +837,18 @@ describe('pregnancy registration with exact LMP date', () => {
       form: 'l',
       type: 'data_record',
       fields: {
-        lmpYYYY: start.year().toString(),
-        lmpMM: (start.month() + 1).toString(),
-        lmpDD: start.date().toString(),
-        patient_name: 'abc'
+        patient_name: 'abc',
+        lmpYear: start.year().toString(),
+        lmpMonth: (start.month() + 1).toString(),
+        lmpDay: start.date().toString(),
+        lmpDate: start.valueOf()
       }
     };
 
     return transition.onMatch({ doc: doc })
       .then(() => assert.fail('should have thrown'))
       .catch(err => {
-        assert.equal(err, 'Date should not be later than 8 weeks ago.');
+        assert.equal(err.message, 'Date should be between 8 to 40 weeks in the past.');
       });
   });
 
@@ -883,9 +861,10 @@ describe('pregnancy registration with exact LMP date', () => {
       form: 'l',
       type: 'data_record',
       fields: {
-        lmpYYYY: start.year().toString(),
-        lmpMM: (start.month() + 1).toString(),
-        lmpDD: start.date().toString(),
+        lmpDate: start.valueOf(),
+        lmpYear: start.year().toString(),
+        lmpMonth: (start.month() + 1).toString(),
+        lmpDay: start.date().toString(),
         patient_name: 'abc'
       }
     };
@@ -893,32 +872,7 @@ describe('pregnancy registration with exact LMP date', () => {
     return transition.onMatch({ doc: doc })
       .then(() => assert.fail('should have thrown'))
       .catch(err => {
-        assert.equal(err, 'Date should not be earlier than 40 weeks ago.');
-      });
-  });
-
-  it('LMP date less than 8 weeks ago in Bikram Sambat should fail', () => {
-    const start = moment().subtract(7, 'weeks').startOf('day');
-    const startBS = bs.toBik(start.format('YYYY-MM-DD'));
-
-    sinon.stub(utils, 'getContactUuid').resolves('uuid');
-    sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
-
-    const doc = {
-      form: 'l',
-      type: 'data_record',
-      fields: {
-        lmpYYYY: startBS.year.toString(),
-        lmpMM: startBS.month.toString(),
-        lmpDD: startBS.day.toString(),
-        patient_name: 'abc'
-      }
-    };
-
-    return transition.onMatch({ doc: doc })
-      .then(() => assert.fail('should have thrown'))
-      .catch(err => {
-        assert.equal(err, 'Date should not be later than 8 weeks ago.');
+        assert.equal(err.message, 'Date should be between 8 to 40 weeks in the past.');
       });
   });
 

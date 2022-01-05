@@ -6,6 +6,8 @@ const mpParser = require('./mp-parser');
 const javarosaParser = require('./javarosa-parser');
 const textformsParser = require('./textforms-parser');
 const logger = require('../../logger');
+const moment = require('moment');
+const bs = require('bikram-sambat');
 
 const MUVUKU_REGEX = /^\s*([A-Za-z]?\d)!.+!.+/;
 
@@ -159,7 +161,19 @@ exports.parseField = (field, raw) => {
     }
     // YYYY-MM-DD assume muvuku format for now
     // store in milliseconds since Epoch
-    return new Date(raw).valueOf();
+    return moment(raw).valueOf();
+  case 'bsDate':
+    if (!raw) {
+      return null;
+    }
+    // store in milliseconds since Epoch
+    if (typeof raw === 'string') {
+      const separator = raw[raw.search(/[^0-9]/)];//non-numeric character
+      const dateParts = raw.split(separator);
+      const gregDate = bs.toGreg_text(dateParts[0], dateParts[1], dateParts[2])
+      return moment(gregDate).valueOf();
+    }
+    return null;
   case 'boolean': {
     if (raw === undefined) {
       return;
@@ -234,6 +248,35 @@ exports.parse = (def, doc) => {
     if (msgData[k] || addOmittedFields) {
       const value = exports.parseField(def.fields[k], msgData[k]);
       createDeepKey(formData, k.split('.'), value);
+    }
+  }
+
+  if(Object.keys(def.fields).some(key => def.fields[key].type === 'bsYear')) {
+    let bsYear, bsMonth, bsDate;
+    for (const k of Object.keys(def.fields)) {
+      switch (def.fields[k].type) {
+      case 'bsYear':
+        bsYear = msgData[k];
+        break;
+      case 'bsMonth':
+        bsMonth = msgData[k];
+        break;
+      case 'bsDay':
+        bsDay = msgData[k];
+        break;
+      }
+    }
+
+    if (bsYear && bsMonth && bsDay) {
+      try {
+        formData.lmpDate = moment().valueOf(bs.toGreg_text(bsYear, bsMonth, bsDay));
+        def.fields['lmpDate'] = {
+          type: "date"
+        }
+      }
+      catch (exception) {//TODO: send SMS to user
+        throw new Error('The provided date could not be converted. ' + exception.message);
+      }
     }
   }
 

@@ -687,5 +687,69 @@ exports.forms = {
       }
     },
     facility_reference: 'cref_rc'
+  },
+  YYYT: {
+    meta: {
+      code: 'YYYT',
+      label: 'Test bsDate'
+    },
+    fields: {
+      patient_id: {
+        labels: {
+          long: 'Patient ID',
+          tiny: 'ID'
+        },
+        type: 'string',
+        required: true
+      },
+      lmp_date: {
+        labels: {
+          short: 'LMP Date in BS',
+          tiny: 'LMP_BS'
+        },
+        type: 'bsDate',
+        required: true
+      }
+    }
+  },
+  YYYU: {
+    meta: {
+      code: 'YYYU',
+      label: 'Test date parts in BS calendar'
+    },
+    fields: {
+      patient_id: {
+        labels: {
+          long: 'Patient ID',
+          tiny: 'ID'
+        },
+        type: 'string',
+        required: true
+      },
+      lmpYear: {
+        labels: {
+          short: 'Year',
+          tiny: 'Y'
+        },
+        type: 'bsYear',
+        required: true
+      },
+      lmpMonth: {
+        labels: {
+          short: 'Month',
+          tiny: 'M'
+        },
+        type: 'bsMonth',
+        required: true
+      },
+      lmpDay: {
+        labels: {
+          short: 'Day',
+          tiny: 'D'
+        },
+        type: 'bsDay',
+        required: true
+      }
+    }
   }
 };
