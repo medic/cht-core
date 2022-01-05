@@ -595,9 +595,9 @@ describe('sms parser', () => {
     chai.expect(data).to.deep.equal({patient_id: '12345', lmp_date: 1331510400000});
   });
 
-  it('parse BS date parts yyyu 2: textforms', () => {
+  it('parse BS date parts yyys 2: textforms', () => {
     const doc = { message: '#ID 12345 #Y 2068 #M 11 #D 29' };
-    const def = definitions.forms.YYYU;
+    const def = definitions.forms.YYYS;
     const data = smsparser.parse(def, doc);
     chai.expect(data).to.deep.equal({
       patient_id: 12345,
@@ -606,9 +606,9 @@ describe('sms parser', () => {
     });
   });
 
-  it('parse BS date parts yyyu 2: compact textforms', () => {
-    const doc = { message: 'YYYU 12345 2068 11 29' };
-    const def = definitions.forms.YYYU;
+  it('parse BS date parts yyys 2: compact textforms', () => {
+    const doc = { message: 'YYYS 12345 2068 11 29' };
+    const def = definitions.forms.YYYS;
     const data = smsparser.parse(def, doc);
     chai.expect(data).to.deep.equal({
       patient_id: '12345',

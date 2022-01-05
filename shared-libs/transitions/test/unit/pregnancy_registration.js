@@ -2,7 +2,6 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 const assert = require('chai').assert;
 const moment = require('moment');
-const bs = require('bikram-sambat');
 const transitionUtils = require('../../src/transitions/utils');
 const utils = require('../../src/lib/utils');
 const config = require('../../src/config');

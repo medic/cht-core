@@ -170,7 +170,7 @@ exports.parseField = (field, raw) => {
     if (typeof raw === 'string') {
       const separator = raw[raw.search(/[^0-9]/)];//non-numeric character
       const dateParts = raw.split(separator);
-      const gregDate = bs.toGreg_text(dateParts[0], dateParts[1], dateParts[2])
+      const gregDate = bs.toGreg_text(dateParts[0], dateParts[1], dateParts[2]);
       return moment(gregDate).valueOf();
     }
     return null;
@@ -252,7 +252,9 @@ exports.parse = (def, doc) => {
   }
 
   if(Object.keys(def.fields).some(key => def.fields[key].type === 'bsYear')) {
-    let bsYear, bsMonth, bsDate;
+    let bsYear;
+    let bsMonth;
+    let bsDay;
     for (const k of Object.keys(def.fields)) {
       switch (def.fields[k].type) {
       case 'bsYear':
@@ -271,8 +273,8 @@ exports.parse = (def, doc) => {
       try {
         formData.lmpDate = moment().valueOf(bs.toGreg_text(bsYear, bsMonth, bsDay));
         def.fields['lmpDate'] = {
-          type: "date"
-        }
+          type: 'date'
+        };
       }
       catch (exception) {//TODO: send SMS to user
         throw new Error('The provided date could not be converted. ' + exception.message);

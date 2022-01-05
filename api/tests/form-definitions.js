@@ -712,9 +712,9 @@ exports.forms = {
       }
     }
   },
-  YYYU: {
+  YYYS: {
     meta: {
-      code: 'YYYU',
+      code: 'YYYS',
       label: 'Test date parts in BS calendar'
     },
     fields: {

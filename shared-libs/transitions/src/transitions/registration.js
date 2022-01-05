@@ -10,7 +10,6 @@ const acceptPatientReports = require('./accept_patient_reports');
 const moment = require('moment');
 const config = require('../config');
 const date = require('../date');
-const bs = require('bikram-sambat');
 
 const contactTypesUtils = require('@medic/contact-types-utils');
 
@@ -152,7 +151,7 @@ const getLMPDate = doc => {
         && moment(lmp).isAfter(moment().subtract(40, 'weeks'))) {
         return lmp;
       }
-      throw new Error('Date should be between 8 to 40 weeks in the past.')//TODO: send SMS to user
+      throw new Error('Date should be between 8 to 40 weeks in the past.');//TODO: send SMS to user
     }
   }
 };
