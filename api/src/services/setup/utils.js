@@ -233,36 +233,46 @@ const createDdocsStagingFolder = async () => {
     logger.error('Error while trying to create the staged ddoc folder');
     throw err;
   }
+};
 
+const getStagingDdoc = async (version) => {
+  const stagingDocId = `${BUILD_DOC_PREFIX}${version}`;
+  try {
+    const stagingDoc = await db.builds.get(stagingDocId, { attachments: true });
+    if (!stagingDoc._attachments || !_.isObject(stagingDoc._attachments)) {
+      throw new Error('Staging ddoc is missing attachments');
+    }
+    return stagingDoc;
+  } catch (err) {
+    logger.error(`Error while getting the staging doc for version ${version}`);
+    throw err;
+  }
 };
 
 /**
- * For a given version, reads ddocs that are attached to the staging document and saves them in a staged ddocs folder.
+ * For a given version, downloads the staging document and saves all ddoc attachments in the staging folder.
  * @param version
  * @return {Promise}
  */
-const getDdocsToStageForVersion = async (version) => {
+const downloadDdocDefinitions = async (version) => {
   if (version === LOCAL_VERSION) {
     return;
   }
 
   await createDdocsStagingFolder();
 
-  const docId = `${BUILD_DOC_PREFIX}${version}`;
-  const doc = await db.builds.get(docId, { attachments: true });
-
+  const stagingDoc = await getStagingDdoc(version);
   // for simplicity, we're only pre-installing and warming "known" databases.
-  // for new databases, the final install will happen in the api the preflight check.
-  // since any new database will be empty, the impact of not warming those views is minimal.
+  // for new databases, the final install will happen in the api preflight check.
+  // since any new database will be empty, the impact of not warming views is minimal.
   for (const database of DATABASES) {
-    const attachment = doc._attachments[`ddocs/${database.jsonFileName}`];
-    if (!attachment) {
-      // maybe we drop databases in a future version
-      continue;
+    const attachment = stagingDoc._attachments[`ddocs/${database.jsonFileName}`];
+    // a missing attachment means that the database is dropped in this version.
+    // a migration should remove the unnecessary database.
+    if (attachment) {
+      const stagingDdocPath = path.join(environment.stagedDdocsPath, database.jsonFileName);
+      await fs.promises.writeFile(stagingDdocPath, attachment.data, 'base64');
     }
-
-    const stagingDdocPath = path.join(environment.stagedDdocsPath, database.jsonFileName);
-    await fs.promises.writeFile(stagingDdocPath, attachment.data, 'base64');
   }
 };
 
@@ -280,30 +290,27 @@ const getDdocsToStage = (database, version) => {
  * @param {string} version
  * @return {Promise<function(): Promise>}
  */
-const stage = async (version = 'local') => {
+const stage = async (version = LOCAL_VERSION) => {
   if (!version || typeof version !== 'string') {
     throw new Error(`Invalid version: ${version}`);
   }
 
   logger.info(`Staging ${version}`);
-  const dbsToStage = await getDdocsToStageForVersion(version);
-
+  await downloadDdocDefinitions(version);
   await deleteStagedDdocs(); // delete old staged ddocs only after trying a fetch, so we fail early
 
   const viewsToIndex = [];
 
-  for (const dbToStage of dbsToStage) {
-    logger.info(`Saving ddocs for ${dbToStage.dbName}`);
-    const ddocsToStage = getDdocsToStage(dbToStage, version);
-
-    await saveDocs(dbToStage, ddocsToStage);
-    viewsToIndex.push(...await getViewsToIndex(dbToStage, ddocsToStage));
+  for (const database of DATABASES) {
+    const ddocsToStage = getDdocsToStage(database, version);
+    logger.info(`Saving ddocs for ${database.name}`);
+    await saveDocs(database, ddocsToStage);
+    viewsToIndex.push(...await getViewsToIndex(database, ddocsToStage));
   }
 
-  const indexViews = async () => {
+  const indexViews = () => {
     logger.info('Indexing staged views');
-    await Promise.all(viewsToIndex.map(indexView => indexView()));
-    dbsToStage.forEach((dbToStage) => db.close(dbToStage.db));
+    return Promise.all(viewsToIndex.map(indexView => indexView()));
   };
 
   logger.info('Staging complete');
@@ -359,6 +366,7 @@ const complete = async () => {
 
     await saveDocs(database, ddocsToSave);
   }
+  await deleteStagedDdocs();
 
   logger.info('Install complete');
 };

@@ -41,6 +41,7 @@ const checkInstall = async () => {
     if (missing.length || different.length) {
       ({ missing, different } = upgradeUtils.compareDdocs(bundledDdocs, stagedDdocs));
       ddocValidation[database.name].stagedUpgrade = !missing.length && !different.length;
+      ddocValidation[database.name].partialStagedUpgrade = !different.length;
     } else {
       ddocValidation[database.name].valid = true;
     }
@@ -60,8 +61,14 @@ const checkInstall = async () => {
     return completeInstall();
   }
 
+  const someDbsStaged = Object.values(ddocValidation).every(check => check.partialStagedUpgrade || check.valid);
+  if (someDbsStaged) {
+    logger.info('Partially staged installation. Continuing staging.');
+  } else {
+    logger.info('Installation invalid. Staging install');
+  }
+
   logDdocCheck(ddocValidation);
-  logger.info('Installation invalid. Staging install');
   const indexViews = await upgradeUtils.stage();
   const stopQueryingIndexers = viewIndexerProgress.log();
   await indexViews();

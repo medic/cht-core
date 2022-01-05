@@ -630,13 +630,188 @@ describe('Setup utils', () => {
     });
   });
 
-  describe('getDdocsToStageForVersion', () => {
-    it('should do nothing when installing local version', () => {
-      utils.__get__('getDdocsToStageForVersion')('local');
+  describe('downloadDdocDefinitions', () => {
+    let createDdocsStagingFolder;
+    beforeEach(() => {
+      createDdocsStagingFolder = sinon.stub();
+      utils.__set__('createDdocsStagingFolder', createDdocsStagingFolder);
+      sinon.stub(fs.promises, 'writeFile');
+      sinon.stub(db.builds, 'get');
+      sinon.stub(env, 'stagedDdocsPath').value('stagedDdocsPath');
     });
 
-    it('should create staging folder, download ', () => {
-      
+    it('should do nothing when installing local version', () => {
+      utils.__get__('downloadDdocDefinitions')('local');
+      expect(createDdocsStagingFolder.callCount).to.equal(0);
+      expect(db.builds.get.callCount).to.equal(0);
+      expect(fs.promises.writeFile.callCount).to.equal(0);
+    });
+
+    it('should create staging folder, download and save ddoc definitions', async () => {
+      createDdocsStagingFolder.resolves();
+      fs.promises.writeFile.resolves();
+      const version = 'version_number';
+      db.builds.get.resolves({
+        build_info: { },
+        version: version,
+        _attachments: {
+          'ddocs/medic.json': { data: 'medicdata' },
+          'ddocs/logs.json': { data: 'logsdata' },
+          'ddocs/sentinel.json': { data: 'sentineldata' },
+          'ddocs/users-meta.json': { data: 'usersmetadata' },
+        },
+      });
+
+      await utils.__get__('downloadDdocDefinitions')(version);
+
+      expect(createDdocsStagingFolder.callCount).to.equal(1);
+      expect(db.builds.get.callCount).to.equal(1);
+      expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:${version}`, { attachments: true }]);
+      expect(fs.promises.writeFile.callCount).to.equal(4);
+      expect(fs.promises.writeFile.args).to.deep.equal([
+        ['stagedDdocsPath/medic.json', 'medicdata', 'base64'],
+        ['stagedDdocsPath/sentinel.json', 'sentineldata', 'base64'],
+        ['stagedDdocsPath/logs.json', 'logsdata', 'base64'],
+        ['stagedDdocsPath/users-meta.json', 'usersmetadata', 'base64'],
+      ]);
+    });
+
+    it('should skip ddocs for new dbs', async () => {
+      createDdocsStagingFolder.resolves();
+      fs.promises.writeFile.resolves();
+      const version = 'version_number';
+      db.builds.get.resolves({
+        build_info: { },
+        version: version,
+        _attachments: {
+          'ddocs/medic.json': { data: 'medicdata' },
+          'ddocs/logs.json': { data: 'logsdata' },
+          'ddocs/sentinel.json': { data: 'sentineldata' },
+          'ddocs/users-meta.json': { data: 'usersmetadata' },
+          'ddocs/newdb.json': { data: 'newdbdata' },
+        },
+      });
+
+      await utils.__get__('downloadDdocDefinitions')(version);
+
+      expect(createDdocsStagingFolder.callCount).to.equal(1);
+      expect(db.builds.get.callCount).to.equal(1);
+      expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:${version}`, { attachments: true }]);
+      expect(fs.promises.writeFile.callCount).to.equal(4);
+      expect(fs.promises.writeFile.args).to.deep.equal([
+        ['stagedDdocsPath/medic.json', 'medicdata', 'base64'],
+        ['stagedDdocsPath/sentinel.json', 'sentineldata', 'base64'],
+        ['stagedDdocsPath/logs.json', 'logsdata', 'base64'],
+        ['stagedDdocsPath/users-meta.json', 'usersmetadata', 'base64'],
+      ]);
+    });
+
+    it('should handle missing dbs', async () => {
+      createDdocsStagingFolder.resolves();
+      fs.promises.writeFile.resolves();
+      const version = 'version_number';
+      db.builds.get.resolves({
+        build_info: { },
+        version: version,
+        _attachments: {
+          'ddocs/medic.json': { data: 'medicdata' },
+          'ddocs/logs.json': { data: 'logsdata' },
+        },
+      });
+
+      await utils.__get__('downloadDdocDefinitions')(version);
+
+      expect(fs.promises.writeFile.callCount).to.equal(2);
+      expect(fs.promises.writeFile.args).to.deep.equal([
+        ['stagedDdocsPath/medic.json', 'medicdata', 'base64'],
+        ['stagedDdocsPath/logs.json', 'logsdata', 'base64'],
+      ]);
+    });
+
+    it('should throw error when staging folder creation fails', async () => {
+      createDdocsStagingFolder.rejects({ an: 'error '});
+
+      try {
+        await utils.__get__('downloadDdocDefinitions')('v');
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ an: 'error '});
+      }
+
+      expect(createDdocsStagingFolder.callCount).to.equal(1);
+      expect(db.builds.get.callCount).to.equal(0);
+      expect(fs.promises.writeFile.callCount).to.equal(0);
+    });
+
+    it('should throw error when staging doc not found', async () => {
+      createDdocsStagingFolder.resolves();
+      db.builds.get.rejects({ error: 'boom' });
+
+      try {
+        await utils.__get__('downloadDdocDefinitions')('vers');
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ error: 'boom' });
+      }
+
+      expect(createDdocsStagingFolder.callCount).to.equal(1);
+      expect(db.builds.get.callCount).to.equal(1);
+      expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:vers`, { attachments: true }]);
+      expect(fs.promises.writeFile.callCount).to.equal(0);
+    });
+
+    it('should throw an error when staging doc has no attachments', async () => {
+      createDdocsStagingFolder.resolves();
+      fs.promises.writeFile.resolves();
+      const version = '4.0.0';
+      db.builds.get.resolves({
+        build_info: { },
+        version: version,
+      });
+
+      try {
+        await utils.__get__('downloadDdocDefinitions')(version);
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal('Staging ddoc is missing attachments');
+      }
+
+      expect(createDdocsStagingFolder.callCount).to.equal(1);
+      expect(db.builds.get.callCount).to.equal(1);
+      expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:4.0.0`, { attachments: true }]);
+      expect(fs.promises.writeFile.callCount).to.equal(0);
+    });
+
+    it('should throw an error when saving ddoc files fails', async () => {
+      createDdocsStagingFolder.resolves();
+      fs.promises.writeFile.rejects({ error: 'omg' });
+      const version = 'theversion';
+      db.builds.get.resolves({
+        build_info: { },
+        version: version,
+        _attachments: {
+          'ddocs/medic.json': { data: 'medicdata' },
+          'ddocs/logs.json': { data: 'logsdata' },
+          'ddocs/sentinel.json': { data: 'sentineldata' },
+          'ddocs/users-meta.json': { data: 'usersmetadata' },
+          'ddocs/newdb.json': { data: 'newdbdata' },
+        },
+      });
+
+      try {
+        await utils.__get__('downloadDdocDefinitions')(version);
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ error: 'omg' });
+      }
+
+      expect(createDdocsStagingFolder.callCount).to.equal(1);
+      expect(db.builds.get.callCount).to.equal(1);
+      expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:${version}`, { attachments: true }]);
+      expect(fs.promises.writeFile.callCount).to.equal(1);
+      expect(fs.promises.writeFile.args).to.deep.equal([
+        ['stagedDdocsPath/medic.json', 'medicdata', 'base64'],
+      ]);
     });
   });
 
