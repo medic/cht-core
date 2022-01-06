@@ -167,13 +167,16 @@ exports.parseField = (field, raw) => {
       return null;
     }
     // store in milliseconds since Epoch
-    if (typeof raw === 'string') {
+    try {
       const separator = raw[raw.search(/[^0-9]/)];//non-numeric character
       const dateParts = raw.split(separator);
       const gregDate = bs.toGreg_text(dateParts[0], dateParts[1], dateParts[2]);
       return moment(gregDate).valueOf();
     }
-    return null;
+    catch (exception) {
+      logger.error('The provided date could not be converted. ' + exception.message);
+      return null;//should be caught by validation
+    }
   case 'boolean': {
     if (raw === undefined) {
       return;
@@ -272,12 +275,10 @@ exports.parse = (def, doc) => {
     if (bsYear && bsMonth && bsDay) {
       try {
         formData.lmpDate = moment(bs.toGreg_text(bsYear, bsMonth, bsDay)).valueOf();
-        def.fields['lmpDate'] = {
-          type: 'date'
-        };
       }
-      catch (exception) {//TODO: send SMS to user
-        throw new Error('The provided date could not be converted. ' + exception.message);
+      catch (exception) {
+        logger.error('The provided date could not be converted. ' + exception.message);
+        formData.lmpDate = null;//should be caught by validation
       }
     }
   }
