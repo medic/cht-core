@@ -43,7 +43,8 @@ const getCurrentUpgradeLogContents = async () => {
   } catch (err) {
     if (err.code === 'ENOENT') {
       // file missing
-
+      // todo reconcile horti upgrades ?
+      return;
     }
 
     logger.error('Error when getting current upgrade log contents: %o', err);
