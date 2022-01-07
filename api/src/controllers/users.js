@@ -134,7 +134,7 @@ module.exports = {
   createMany: (req, res) => {
     return auth
       .check(req, ['can_create_users', 'can_create_places', 'can_create_people'])
-      .then(() => usersService.createManyUsers(req.body, getAppUrl(req)))
+      .then(() => usersService.createUsers(req.body, getAppUrl(req)))
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
   },

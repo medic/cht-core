@@ -596,7 +596,7 @@ module.exports = {
    * @param {string=} users[].type Deprecated. Used to infer user's roles
    * @param {string} appUrl   request protocol://hostname
    */
-  async createManyUsers(users, appUrl) {
+  async createUsers(users, appUrl) {
     if (!Array.isArray(users)) {
       return Promise.reject(error400('Wrong type, body should be an array of users'));
     }

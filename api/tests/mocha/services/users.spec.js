@@ -674,10 +674,10 @@ describe('Users service', () => {
 
   });
 
-  describe('createManyUsers', () => {
+  describe('createUsers', () => {
     it('returns error if one of the users has missing fields', async () => {
       try {
-        await service.createManyUsers([
+        await service.createUsers([
           {},
           { password: 'x', place: 'x', contact: { parent: 'x' }},
           { username: 'x', place: 'x', contact: { parent: 'x' }},
@@ -716,7 +716,7 @@ describe('Users service', () => {
 
     it('returns error if one of the users has password errors', async () => {
       try {
-        await service.createManyUsers([
+        await service.createUsers([
           {
             username: 'x',
             place: 'x',
@@ -760,7 +760,7 @@ describe('Users service', () => {
         service.__set__('createPlace', sinon.stub().resolves());
         service.__set__('setContactParent', sinon.stub().rejects('kablooey'));
 
-        const response = await service.createManyUsers([userData]);
+        const response = await service.createUsers([userData]);
         chai.expect(response[0].error.name).to.equal('kablooey');
       });
 
@@ -768,7 +768,7 @@ describe('Users service', () => {
         service.__set__('validateNewUsername', sinon.stub().resolves());
         service.__set__('createPlace', sinon.stub().rejects('fail'));
 
-        const response = await service.createManyUsers([userData]);
+        const response = await service.createUsers([userData]);
         chai.expect(response[0].error.name).to.equal('fail');
       });
 
@@ -783,7 +783,7 @@ describe('Users service', () => {
         });
         userData.place = 'georgia';
 
-        const response = await service.createManyUsers([userData]);
+        const response = await service.createUsers([userData]);
         chai.expect(response[0].error.code).to.equal(400);
         chai.expect(response[0].error.message.translationKey).to.equal('configuration.user.place.contact');
         chai.expect(response[0].error.message.message).to.equal('Contact is not within place.');
@@ -799,7 +799,7 @@ describe('Users service', () => {
       service.__set__('createUserSettings', sinon.stub().resolves());
       sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
       userData.place = 'foo';
-      const response = await service.createManyUsers([userData]);
+      const response = await service.createUsers([userData]);
       chai.expect(response).to.deep.equal([{}]);
     });
 
@@ -817,7 +817,7 @@ describe('Users service', () => {
         }
       });
       userData.place = 'florida';
-      const response = await service.createManyUsers([userData]);
+      const response = await service.createUsers([userData]);
       chai.expect(response).to.deep.equal([{}]);
     });
 
@@ -825,7 +825,7 @@ describe('Users service', () => {
       sinon.stub(db.users, 'get').resolves('bob lives here already.');
       sinon.stub(db.medic, 'get').resolves();
       const insert = sinon.stub(db.medic, 'put');
-      const response = await service.createManyUsers([userData]);
+      const response = await service.createUsers([userData]);
       chai.expect(response[0].error.message.message).to.equal('Username "x" already taken.');
       chai.expect(response[0].error.message.translationKey).to.equal('username.taken');
       chai.expect(response[0].error.message.translationParams).to.have.property('username');
@@ -836,7 +836,7 @@ describe('Users service', () => {
       sinon.stub(db.users, 'get').resolves();
       sinon.stub(db.medic, 'get').resolves('jane lives here too.');
       const insert = sinon.stub(db.medic, 'put');
-      const response = await service.createManyUsers([userData]);
+      const response = await service.createUsers([userData]);
       chai.expect(response[0].error.message.message).to.equal('Username "x" already taken.');
       chai.expect(response[0].error.message.translationKey).to.equal('username.taken');
       chai.expect(response[0].error.message.translationParams).to.have.property('username');
