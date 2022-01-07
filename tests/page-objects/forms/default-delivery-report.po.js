@@ -109,7 +109,7 @@ module.exports = {
     const datePicker = await element(by.xpath(
       `//*[@data-itext-id="/delivery/delivery_outcome/delivery_date:label"]/..//*[@placeholder="yyyy-mm-dd"]`));
     await datePicker.click();
-    await datePicker.sendKeys(deliveryDate).sendKeys(protractor.Key.TAB);
+    await datePicker.sendKeys(moment(deliveryDate).format('YYYY-MM-DD')).sendKeys(protractor.Key.TAB);
   },
 
   //Delivery Place
