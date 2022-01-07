@@ -6,8 +6,9 @@ const _ = require('lodash');
 const db = require('../../db');
 const logger = require('../../logger');
 const environment = require('../../environment');
+const upgradeLogService = require('./upgrade-log');
 
-const LOCAL_VERSION = 'local';
+const PACKAGED_VERSION = 'local';
 const DDOC_PREFIX = '_design/';
 const BUILD_DOC_PREFIX = 'medic:medic:';
 const STAGED_DDOC_PREFIX = `${DDOC_PREFIX}:staged:`;
@@ -28,15 +29,17 @@ const SOCKET_TIMEOUT_ERROR_CODE = 'ESOCKETTIMEDOUT';
  * @property {string} jsonFileName
  */
 
+const MEDIC_DATABASE = {
+  name: environment.db,
+  db: db.medic,
+  jsonFileName: 'medic.json',
+};
+
 /**
  * @type {Array<Database>}
  */
 const DATABASES = [
-  {
-    name: environment.db,
-    db: db.medic,
-    jsonFileName: 'medic.json',
-  },
+  MEDIC_DATABASE,
   {
     name: `${environment.db}-sentinel`,
     db: db.sentinel,
@@ -55,6 +58,11 @@ const DATABASES = [
 ];
 
 const isStagedDdoc = ddocId => ddocId.startsWith(STAGED_DDOC_PREFIX);
+const getPackagedVersion = async () => {
+  const medicDdocs = await getDdocJsonContents(path.join(environment.ddocsPath, MEDIC_DATABASE.jsonFileName));
+  const medicDdoc = medicDdocs.docs.find(ddoc => ddoc._id === environment.ddoc);
+  return medicDdoc.version;
+};
 
 /**
  * @param {Database} database
@@ -215,10 +223,26 @@ const getViewsToIndex = async (database, ddocsToStage) => {
   return viewsToIndex;
 };
 
-const createDdocsStagingFolder = async () => {
+const abortPreviousUpgrade = async () => {
   try {
-    await fs.promises.access(environment.stagedDdocsPath);
-    await fs.promises.rmdir(environment.stagedDdocsPath, { recursive: true });
+    await upgradeLogService.setAborted();
+  } catch (err) {
+    logger.warn('Error aborting previous upgrade: %o', err);
+  }
+};
+
+/**
+ * Creates the upgrade folder. This folder will contain the ddoc definitions for the new version, along with
+ * the json contents of the upgrade log doc that tracks upgrade progress.
+ * If the staging folder already exists, the previous upgrade is aborted and the folder is re-created.
+ * @return {Promise}
+ */
+const createUpgradeFolder = async () => {
+  try {
+    await fs.promises.access(environment.upgradePath);
+
+    await abortPreviousUpgrade();
+    await deleteUpgradeFolder();
   } catch (err) {
     // if folder doesn't exist, this is fine!
     if (err.code !== 'ENOENT') {
@@ -228,12 +252,13 @@ const createDdocsStagingFolder = async () => {
   }
 
   try {
-    await fs.promises.mkdir(environment.stagedDdocsPath);
+    await fs.promises.mkdir(environment.upgradePath);
   } catch (err) {
     logger.error('Error while trying to create the staged ddoc folder');
     throw err;
   }
 };
+const deleteUpgradeFolder = () => fs.promises.rmdir(environment.upgradePath, { recursive: true });
 
 const getStagingDdoc = async (version) => {
   const stagingDocId = `${BUILD_DOC_PREFIX}${version}`;
@@ -255,12 +280,6 @@ const getStagingDdoc = async (version) => {
  * @return {Promise}
  */
 const downloadDdocDefinitions = async (version) => {
-  if (version === LOCAL_VERSION) {
-    return;
-  }
-
-  await createDdocsStagingFolder();
-
   const stagingDoc = await getStagingDdoc(version);
   // for simplicity, we're only pre-installing and warming "known" databases.
   // for new databases, the final install will happen in the api preflight check.
@@ -270,16 +289,54 @@ const downloadDdocDefinitions = async (version) => {
     // a missing attachment means that the database is dropped in this version.
     // a migration should remove the unnecessary database.
     if (attachment) {
-      const stagingDdocPath = path.join(environment.stagedDdocsPath, database.jsonFileName);
+      const stagingDdocPath = path.join(environment.upgradePath, database.jsonFileName);
       await fs.promises.writeFile(stagingDdocPath, attachment.data, 'base64');
     }
   }
 };
 
-const getDdocsToStage = (database, version) => {
-  const ddocsFolderPath = version === LOCAL_VERSION ? environment.ddocsPath : environment.stagedDdocsPath;
-  const json = require(path.join(ddocsFolderPath, database.jsonFileName));
-  return getDdocsToStageFromJson(json);
+const getDdocJsonContents = async (path) => {
+  const contents = await fs.promises.readFile(path, 'utf-8');
+  return JSON.parse(contents);
+};
+
+const getDdocsToStage = async (database, version) => {
+  const ddocsFolderPath = version === PACKAGED_VERSION ? environment.ddocsPath : environment.upgradePath;
+  const ddocJson = await getDdocJsonContents(path.join(ddocsFolderPath, database.jsonFileName));
+  return getDdocsToStageFromJson(ddocJson);
+};
+
+const freshInstall = async () => {
+  try {
+    await db.medic.get(environment.ddoc);
+  } catch (err) {
+    if (err.status === 404) {
+      return true;
+    }
+  }
+};
+
+const saveStagedDdocs = async (version) => {
+  const viewsToIndex = [];
+
+  for (const database of DATABASES) {
+    const ddocsToStage = await getDdocsToStage(database, version);
+    logger.info(`Saving ddocs for ${database.name}`);
+    await saveDocs(database, ddocsToStage);
+    viewsToIndex.push(...await getViewsToIndex(database, ddocsToStage));
+  }
+
+  return viewsToIndex;
+};
+
+const getIndexViewsFunction = async (viewsToIndex) => {
+  return async () => {
+    await upgradeLogService.setIndexing();
+    const indexResult = await Promise.all(viewsToIndex.map(indexView => indexView()));
+    await upgradeLogService.setIndexed();
+
+    return indexResult;
+  };
 };
 
 /**
@@ -288,33 +345,34 @@ const getDdocsToStage = (database, version) => {
  * - creates all staged ddocs (all databases)
  * - returns a function that, when called, starts indexing every view from every database
  * @param {string} version
+ * @param {string} username
  * @return {Promise<function(): Promise>}
  */
-const stage = async (version = LOCAL_VERSION) => {
+const stage = async (version = PACKAGED_VERSION, username= '') => {
   if (!version || typeof version !== 'string') {
     throw new Error(`Invalid version: ${version}`);
   }
 
-  logger.info(`Staging ${version}`);
-  await downloadDdocDefinitions(version);
-  await deleteStagedDdocs(); // delete old staged ddocs only after trying a fetch, so we fail early
-
-  const viewsToIndex = [];
-
-  for (const database of DATABASES) {
-    const ddocsToStage = getDdocsToStage(database, version);
-    logger.info(`Saving ddocs for ${database.name}`);
-    await saveDocs(database, ddocsToStage);
-    viewsToIndex.push(...await getViewsToIndex(database, ddocsToStage));
+  if (version !== PACKAGED_VERSION) {
+    await createUpgradeFolder();
+    const currentVersion = await getPackagedVersion();
+    await upgradeLogService.create(version, currentVersion, username);
+    await downloadDdocDefinitions(version);
   }
 
-  const indexViews = () => {
-    logger.info('Indexing staged views');
-    return Promise.all(viewsToIndex.map(indexView => indexView()));
-  };
+  if (await freshInstall()) {
+    await createUpgradeFolder();
+    const currentVersion = await getPackagedVersion();
+    await upgradeLogService.create(currentVersion);
+  }
 
-  logger.info('Staging complete');
-  return indexViews;
+  // delete old staged ddocs only after trying a fetch, so we fail early
+  await deleteStagedDdocs();
+
+  const viewsToIndex = await saveStagedDdocs(version);
+  await upgradeLogService.setStaged();
+
+  return getIndexViewsFunction(viewsToIndex);
 };
 
 const assignDeployInfo = (stagedDdocs) => {
@@ -332,11 +390,11 @@ const assignDeployInfo = (stagedDdocs) => {
 
 /**
  * Completes the installation
- * Wipes staging folder, assigns deploy info do staged ddocs, renames staged ddocs to their prod names.
+ * Assigns deploy info do staged ddocs, renames staged ddocs to their prod names, sets upgrade log to complete.
  * @return {Promise}
  */
 const complete = async () => {
-  logger.info('Completing install');
+  await upgradeLogService.setCompleting();
 
   for (const database of DATABASES) {
     const ddocs = await getDdocs(database, true);
@@ -366,9 +424,10 @@ const complete = async () => {
 
     await saveDocs(database, ddocsToSave);
   }
-  await deleteStagedDdocs();
 
-  logger.info('Install complete');
+  await deleteStagedDdocs();
+  await upgradeLogService.setComplete();
+  await deleteUpgradeFolder();
 };
 
 const getDdocName = ddocId => ddocId.replace(STAGED_DDOC_PREFIX, '').replace(DDOC_PREFIX, '');
@@ -402,9 +461,6 @@ const compareDdocs = (bundled, uploaded) => {
       different.push(uploadedDdoc._id);
     }
   });
-
-  // todo How strict to be here? also compare uploaded to bundled? Delete "extra" ddocs when completing upgrade?
-  // is an install invalid if we have extra ddocs?
 
   return { missing, different };
 };

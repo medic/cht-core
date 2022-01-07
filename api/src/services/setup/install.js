@@ -4,6 +4,7 @@ const environment = require('../../environment');
 const upgradeUtils = require('./utils');
 const viewIndexerProgress = require('./indexer-progress');
 const logger = require('../../logger');
+const db = require('../../db');
 
 const getBundledDdocs = (jsonFileName) => {
   return require(path.join(environment.ddocsPath, jsonFileName)).docs;
@@ -12,6 +13,22 @@ const getBundledDdocs = (jsonFileName) => {
 const completeInstall = async () => {
   await upgradeUtils.complete();
   await upgradeUtils.cleanup();
+};
+
+const setDeployInfo = async () => {
+  const deployInfo = environment.getDeployInfo();
+  if (!deployInfo) {
+    try {
+      const ddoc = await db.medic.get(environment.ddoc);
+      environment.setDeployInfo(ddoc.deploy_info);
+    } catch(err) {
+      if (!err || err.status !== 404) {
+        throw err;
+      }
+
+      logger.info('Main design document not found. Proceeding with installation');
+    }
+  }
 };
 
 /**
@@ -92,4 +109,5 @@ const logDdocCheck = (ddocValidation) => {
 
 module.exports = {
   checkInstall,
+  setDeployInfo,
 };

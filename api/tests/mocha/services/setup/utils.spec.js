@@ -7,6 +7,7 @@ const rpn = require('request-promise-native');
 let utils;
 
 const db = require('../../../../src/db');
+const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
 const env = require('../../../../src/environment');
 
 const mockDb = (db) => {
@@ -544,52 +545,72 @@ describe('Setup utils', () => {
     });
   });
 
-  describe('createDdocsStagingFolder', () => {
+  describe('createUpgradeFolder', () => {
     it('should create the staging ddocs folder when it does not exist', async () => {
       sinon.stub(fs.promises, 'access').rejects({ code: 'ENOENT' });
       sinon.stub(fs.promises, 'rmdir');
       sinon.stub(fs.promises, 'mkdir').resolves();
-      sinon.stub(env, 'stagedDdocsPath').value('stagedDdocsPath');
+      sinon.stub(env, 'upgradePath').value('upgradePath');
 
-      await utils.__get__('createDdocsStagingFolder')();
+      await utils.__get__('createUpgradeFolder')();
 
       expect(fs.promises.access.callCount).to.equal(1);
-      expect(fs.promises.access.args[0]).to.deep.equal(['stagedDdocsPath']);
+      expect(fs.promises.access.args[0]).to.deep.equal(['upgradePath']);
       expect(fs.promises.rmdir.callCount).to.equal(0);
       expect(fs.promises.mkdir.callCount).to.equal(1);
-      expect(fs.promises.mkdir.args[0]).to.deep.equal(['stagedDdocsPath']);
+      expect(fs.promises.mkdir.args[0]).to.deep.equal(['upgradePath']);
     });
 
-    it('should delete existing folder recursively and create new folder', async () => {
+    it('should delete existing folder recursively, create new folder, aborting previous upgrade', async () => {
       sinon.stub(fs.promises, 'access').resolves();
       sinon.stub(fs.promises, 'rmdir').resolves();
       sinon.stub(fs.promises, 'mkdir').resolves();
-      sinon.stub(env, 'stagedDdocsPath').value('stagedDdocsPath');
+      sinon.stub(env, 'upgradePath').value('upgradePath');
+      sinon.stub(upgradeLogService, 'setAborted').resolves();
 
-      await utils.__get__('createDdocsStagingFolder')();
+      await utils.__get__('createUpgradeFolder')();
 
       expect(fs.promises.access.callCount).to.equal(1);
-      expect(fs.promises.access.args[0]).to.deep.equal(['stagedDdocsPath']);
+      expect(fs.promises.access.args[0]).to.deep.equal(['upgradePath']);
+      expect(upgradeLogService.setAborted.callCount).to.equal(1);
       expect(fs.promises.rmdir.callCount).to.equal(1);
-      expect(fs.promises.rmdir.args[0]).to.deep.equal(['stagedDdocsPath', { recursive: true }]);
+      expect(fs.promises.rmdir.args[0]).to.deep.equal(['upgradePath', { recursive: true }]);
       expect(fs.promises.mkdir.callCount).to.equal(1);
-      expect(fs.promises.mkdir.args[0]).to.deep.equal(['stagedDdocsPath']);
+      expect(fs.promises.mkdir.args[0]).to.deep.equal(['upgradePath']);
+    });
+
+    it('should catch abort upgrade errors', async () => {
+      sinon.stub(fs.promises, 'access').resolves();
+      sinon.stub(fs.promises, 'rmdir').resolves();
+      sinon.stub(fs.promises, 'mkdir').resolves();
+      sinon.stub(env, 'upgradePath').value('upgradePath');
+      sinon.stub(upgradeLogService, 'setAborted').rejects();
+
+      await utils.__get__('createUpgradeFolder')();
+
+      expect(fs.promises.access.callCount).to.equal(1);
+      expect(fs.promises.access.args[0]).to.deep.equal(['upgradePath']);
+      expect(upgradeLogService.setAborted.callCount).to.equal(1);
+      expect(fs.promises.rmdir.callCount).to.equal(1);
+      expect(fs.promises.rmdir.args[0]).to.deep.equal(['upgradePath', { recursive: true }]);
+      expect(fs.promises.mkdir.callCount).to.equal(1);
+      expect(fs.promises.mkdir.args[0]).to.deep.equal(['upgradePath']);
     });
 
     it('should throw an error when access throws random errors', async () => {
       sinon.stub(fs.promises, 'access').rejects({ code: 'error' });
       sinon.stub(fs.promises, 'rmdir');
       sinon.stub(fs.promises, 'mkdir');
-      sinon.stub(env, 'stagedDdocsPath').value('stagedDdocsPath');
+      sinon.stub(env, 'upgradePath').value('upgradePath');
 
       try {
-        await utils.__get__('createDdocsStagingFolder')();
+        await utils.__get__('createUpgradeFolder')();
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ code: 'error' });
 
         expect(fs.promises.access.callCount).to.equal(1);
-        expect(fs.promises.access.args[0]).to.deep.equal(['stagedDdocsPath']);
+        expect(fs.promises.access.args[0]).to.deep.equal(['upgradePath']);
         expect(fs.promises.rmdir.callCount).to.equal(0);
         expect(fs.promises.mkdir.callCount).to.equal(0);
       }
@@ -597,20 +618,21 @@ describe('Setup utils', () => {
 
     it('should throw an error when deletion throws an error', async () => {
       sinon.stub(fs.promises, 'access').resolves();
+      sinon.stub(upgradeLogService, 'setAborted').resolves();
       sinon.stub(fs.promises, 'rmdir').rejects({ code: 'some code' });
       sinon.stub(fs.promises, 'mkdir');
-      sinon.stub(env, 'stagedDdocsPath').value('stagedDdocsPath');
+      sinon.stub(env, 'upgradePath').value('upgradePath');
 
       try {
-        await utils.__get__('createDdocsStagingFolder')();
+        await utils.__get__('createUpgradeFolder')();
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ code: 'some code' });
 
         expect(fs.promises.access.callCount).to.equal(1);
-        expect(fs.promises.access.args[0]).to.deep.equal(['stagedDdocsPath']);
+        expect(fs.promises.access.args[0]).to.deep.equal(['upgradePath']);
         expect(fs.promises.rmdir.callCount).to.equal(1);
-        expect(fs.promises.rmdir.args[0]).to.deep.equal(['stagedDdocsPath', { recursive: true }]);
+        expect(fs.promises.rmdir.args[0]).to.deep.equal(['upgradePath', { recursive: true }]);
         expect(fs.promises.mkdir.callCount).to.equal(0);
       }
     });
@@ -619,10 +641,10 @@ describe('Setup utils', () => {
       sinon.stub(fs.promises, 'access').rejects({ code: 'ENOENT' });
       sinon.stub(fs.promises, 'rmdir');
       sinon.stub(fs.promises, 'mkdir').rejects({ some: 'error' });
-      sinon.stub(env, 'stagedDdocsPath').value('stagedDdocsPath');
+      sinon.stub(env, 'upgradePath').value('upgradePath');
 
       try {
-        await utils.__get__('createDdocsStagingFolder')();
+        await utils.__get__('createUpgradeFolder')();
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ some: 'error' });
@@ -631,24 +653,13 @@ describe('Setup utils', () => {
   });
 
   describe('downloadDdocDefinitions', () => {
-    let createDdocsStagingFolder;
     beforeEach(() => {
-      createDdocsStagingFolder = sinon.stub();
-      utils.__set__('createDdocsStagingFolder', createDdocsStagingFolder);
       sinon.stub(fs.promises, 'writeFile');
       sinon.stub(db.builds, 'get');
-      sinon.stub(env, 'stagedDdocsPath').value('stagedDdocsPath');
-    });
-
-    it('should do nothing when installing local version', () => {
-      utils.__get__('downloadDdocDefinitions')('local');
-      expect(createDdocsStagingFolder.callCount).to.equal(0);
-      expect(db.builds.get.callCount).to.equal(0);
-      expect(fs.promises.writeFile.callCount).to.equal(0);
+      sinon.stub(env, 'upgradePath').value('upgradePath');
     });
 
     it('should create staging folder, download and save ddoc definitions', async () => {
-      createDdocsStagingFolder.resolves();
       fs.promises.writeFile.resolves();
       const version = 'version_number';
       db.builds.get.resolves({
@@ -664,20 +675,18 @@ describe('Setup utils', () => {
 
       await utils.__get__('downloadDdocDefinitions')(version);
 
-      expect(createDdocsStagingFolder.callCount).to.equal(1);
       expect(db.builds.get.callCount).to.equal(1);
       expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:${version}`, { attachments: true }]);
       expect(fs.promises.writeFile.callCount).to.equal(4);
       expect(fs.promises.writeFile.args).to.deep.equal([
-        ['stagedDdocsPath/medic.json', 'medicdata', 'base64'],
-        ['stagedDdocsPath/sentinel.json', 'sentineldata', 'base64'],
-        ['stagedDdocsPath/logs.json', 'logsdata', 'base64'],
-        ['stagedDdocsPath/users-meta.json', 'usersmetadata', 'base64'],
+        ['upgradePath/medic.json', 'medicdata', 'base64'],
+        ['upgradePath/sentinel.json', 'sentineldata', 'base64'],
+        ['upgradePath/logs.json', 'logsdata', 'base64'],
+        ['upgradePath/users-meta.json', 'usersmetadata', 'base64'],
       ]);
     });
 
     it('should skip ddocs for new dbs', async () => {
-      createDdocsStagingFolder.resolves();
       fs.promises.writeFile.resolves();
       const version = 'version_number';
       db.builds.get.resolves({
@@ -694,20 +703,18 @@ describe('Setup utils', () => {
 
       await utils.__get__('downloadDdocDefinitions')(version);
 
-      expect(createDdocsStagingFolder.callCount).to.equal(1);
       expect(db.builds.get.callCount).to.equal(1);
       expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:${version}`, { attachments: true }]);
       expect(fs.promises.writeFile.callCount).to.equal(4);
       expect(fs.promises.writeFile.args).to.deep.equal([
-        ['stagedDdocsPath/medic.json', 'medicdata', 'base64'],
-        ['stagedDdocsPath/sentinel.json', 'sentineldata', 'base64'],
-        ['stagedDdocsPath/logs.json', 'logsdata', 'base64'],
-        ['stagedDdocsPath/users-meta.json', 'usersmetadata', 'base64'],
+        ['upgradePath/medic.json', 'medicdata', 'base64'],
+        ['upgradePath/sentinel.json', 'sentineldata', 'base64'],
+        ['upgradePath/logs.json', 'logsdata', 'base64'],
+        ['upgradePath/users-meta.json', 'usersmetadata', 'base64'],
       ]);
     });
 
     it('should handle missing dbs', async () => {
-      createDdocsStagingFolder.resolves();
       fs.promises.writeFile.resolves();
       const version = 'version_number';
       db.builds.get.resolves({
@@ -723,28 +730,12 @@ describe('Setup utils', () => {
 
       expect(fs.promises.writeFile.callCount).to.equal(2);
       expect(fs.promises.writeFile.args).to.deep.equal([
-        ['stagedDdocsPath/medic.json', 'medicdata', 'base64'],
-        ['stagedDdocsPath/logs.json', 'logsdata', 'base64'],
+        ['upgradePath/medic.json', 'medicdata', 'base64'],
+        ['upgradePath/logs.json', 'logsdata', 'base64'],
       ]);
     });
 
-    it('should throw error when staging folder creation fails', async () => {
-      createDdocsStagingFolder.rejects({ an: 'error '});
-
-      try {
-        await utils.__get__('downloadDdocDefinitions')('v');
-        expect.fail('should have thrown');
-      } catch (err) {
-        expect(err).to.deep.equal({ an: 'error '});
-      }
-
-      expect(createDdocsStagingFolder.callCount).to.equal(1);
-      expect(db.builds.get.callCount).to.equal(0);
-      expect(fs.promises.writeFile.callCount).to.equal(0);
-    });
-
     it('should throw error when staging doc not found', async () => {
-      createDdocsStagingFolder.resolves();
       db.builds.get.rejects({ error: 'boom' });
 
       try {
@@ -754,14 +745,12 @@ describe('Setup utils', () => {
         expect(err).to.deep.equal({ error: 'boom' });
       }
 
-      expect(createDdocsStagingFolder.callCount).to.equal(1);
       expect(db.builds.get.callCount).to.equal(1);
       expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:vers`, { attachments: true }]);
       expect(fs.promises.writeFile.callCount).to.equal(0);
     });
 
     it('should throw an error when staging doc has no attachments', async () => {
-      createDdocsStagingFolder.resolves();
       fs.promises.writeFile.resolves();
       const version = '4.0.0';
       db.builds.get.resolves({
@@ -776,14 +765,12 @@ describe('Setup utils', () => {
         expect(err.message).to.equal('Staging ddoc is missing attachments');
       }
 
-      expect(createDdocsStagingFolder.callCount).to.equal(1);
       expect(db.builds.get.callCount).to.equal(1);
       expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:4.0.0`, { attachments: true }]);
       expect(fs.promises.writeFile.callCount).to.equal(0);
     });
 
     it('should throw an error when saving ddoc files fails', async () => {
-      createDdocsStagingFolder.resolves();
       fs.promises.writeFile.rejects({ error: 'omg' });
       const version = 'theversion';
       db.builds.get.resolves({
@@ -805,12 +792,11 @@ describe('Setup utils', () => {
         expect(err).to.deep.equal({ error: 'omg' });
       }
 
-      expect(createDdocsStagingFolder.callCount).to.equal(1);
       expect(db.builds.get.callCount).to.equal(1);
       expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:${version}`, { attachments: true }]);
       expect(fs.promises.writeFile.callCount).to.equal(1);
       expect(fs.promises.writeFile.args).to.deep.equal([
-        ['stagedDdocsPath/medic.json', 'medicdata', 'base64'],
+        ['upgradePath/medic.json', 'medicdata', 'base64'],
       ]);
     });
   });

@@ -1,25 +1,29 @@
 const upgradeUtils = require('./utils');
 const indexerProgress = require('./indexer-progress');
+const upgradeLogService = require('./upgrade-log');
 
-const upgrade = async (build, userCtx, stageOnly) => {
-  // todo create "upgrade log" doc
+const upgrade = async (build, username, stageOnly) => {
+  try {
+    const indexViews = await upgradeUtils.stage(build.version, username);
+    if (stageOnly) {
+      indexViews();
+      return;
+    }
 
-  const indexViews = await upgradeUtils.stage(build.version);
-  if (stageOnly) {
-    indexViews();
-    // todo also update upgrade log doc
-    return;
+    await indexViews();
+    await complete();
+  } catch (err) {
+    await upgradeLogService.setErrored();
+    throw err;
   }
 
-  await indexViews();
-  await complete();
 };
 
-const complete = () => {
+const complete = async () => {
+  await upgradeLogService.setComplete();
   // todo
   // this is going to send a request to the bridge container to pull new source code
   // completing the install (overwriting the staged ddocs) is done when API starts up.
-
 };
 
 const progress = () => indexerProgress.query();

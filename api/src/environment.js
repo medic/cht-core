@@ -28,7 +28,7 @@ if (UNIT_TEST_ENV) {
     port: parsedUrl.port,
     host: parsedUrl.hostname,
     db: parsedUrl.path.replace('/', ''),
-    ddoc: 'medic',
+    ddoc: '_design/medic',
   };
   if (parsedUrl.auth) {
     const index = parsedUrl.auth.indexOf(':');
@@ -45,7 +45,7 @@ if (UNIT_TEST_ENV) {
 }
 
 let deployInfo;
-module.exports.setDeployInfo = newDeployInfo => {
+module.exports.setDeployInfo = (newDeployInfo = {}) => {
   deployInfo = newDeployInfo;
 };
 
@@ -56,6 +56,6 @@ module.exports.webappPath = path.join(module.exports.staticPath, 'webapp');
 module.exports.loginPath = path.join(module.exports.staticPath, 'login');
 module.exports.defaultDocsPath = path.join(module.exports.buildPath, 'default-docs');
 module.exports.ddocsPath = path.join(module.exports.buildPath, 'ddocs');
-module.exports.stagedDdocsPath = path.join(module.exports.buildPath, 'staged-ddocs');
+module.exports.upgradePath = path.join(module.exports.buildPath, 'upgrade');
 module.exports.resourcesPath = path.join(__dirname, '..', 'resources');
 module.exports.isTesting = module.exports.db === 'medic-test';
