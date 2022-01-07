@@ -95,7 +95,7 @@ const replaceNode = (currentNode, newNode) => {
 
 // Based on enketo/enketo-transformer
 // https://github.com/enketo/enketo-transformer/blob/377caf14153586b040367f8c2de53c9d794c19d4/src/transformer.js#L430
-function replaceAllMarkdown(formString) {
+const replaceAllMarkdown = (formString) => {
   const replacements = {};
   const form = htmlParser.parse(formString).querySelector('form');
 
@@ -113,7 +113,7 @@ function replaceAllMarkdown(formString) {
   const questions = form.querySelectorAll('span.question-label');
   const hints = form.querySelectorAll('span.or-hint');
   questions.concat(hints).forEach((el, index) => {
-    const original = el.innerHTML.replace('<', '&lt;').replace('>', '&gt;');
+    const original = el.innerHTML;
     let rendered = markdown.toHtml(original);
     rendered = convertDynamicUrls(rendered);
     rendered = convertEmbeddedHtml(rendered);
@@ -137,7 +137,7 @@ function replaceAllMarkdown(formString) {
   });
 
   return result;
-}
+};
 
 const generateForm = formXml => {
   return transform(formXml, FORM_STYLESHEET).then(form => {
