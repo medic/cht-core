@@ -596,63 +596,59 @@ module.exports = {
       return Promise.reject(error400('Wrong type, body should be an array of users'));
     }
 
-    const missing = users.map(user => missingFields(user));
-    const hasMissingFields = missing.some(fields => fields.length > 0);
-    if (hasMissingFields) {
-      const failingIndexes = missing
-        .map((fields, index) => {
-          if (fields.length > 0) {
-            return { fields, index };
-          }
-        })
-        .filter(userMissingFields => userMissingFields);
-      let errorMessge = 'Missing required fields:\n';
-      for (const { fields, index } of failingIndexes) {
-        errorMessge += `\nMissing fields ${fields.join(', ')} for user at index ${index}`;
+    const missingFieldsFailingIndexes = [];
+    const tokenLoginFailingIndexes = [];
+    const passwordFailingIndexes = [];
+    users.forEach((user, index) => {
+      const fields = missingFields(user);
+      const hasMissingFields = fields.length > 0;
+      if (hasMissingFields) {
+        missingFieldsFailingIndexes.push({ fields, index });
+        return;
       }
-      const error = new Error(errorMessge);
+
+      const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
+      if (tokenLoginError) {
+        tokenLoginFailingIndexes.push({ tokenLoginError, index });
+        return;
+      }
+
+      const passwordError = validatePassword(user.password);
+      if (passwordError) {
+        passwordFailingIndexes.push({ passwordError, index });
+      }
+    });
+
+    if (missingFieldsFailingIndexes.length > 0) {
+      let errorMessage = 'Missing required fields:\n';
+      for (const { fields, index } of missingFieldsFailingIndexes) {
+        errorMessage += `\nMissing fields ${fields.join(', ')} for user at index ${index}`;
+      }
+      const error = new Error(errorMessage);
       error.code = 400;
-      error.failingIndexes = failingIndexes;
+      error.failingIndexes = missingFieldsFailingIndexes;
       return Promise.reject(error);
     }
 
-    const tokenLoginErrors = users.map(user => tokenLogin.validateTokenLogin(user, true));
-    const hasTokenLoginError = tokenLoginErrors.some(error => !!error);
-    if (hasTokenLoginError) {
-      const failingIndexes = tokenLoginErrors
-        .map((tokenLoginError, index) => {
-          if (tokenLoginError) {
-            return { tokenLoginError, index };
-          }
-        })
-        .filter(index => index);
+    if (tokenLoginFailingIndexes.length > 0) {
       let errorMessge = 'Token login errors:\n';
-      for (const { tokenLoginError, index } of failingIndexes) {
+      for (const { tokenLoginError, index } of tokenLoginFailingIndexes) {
         errorMessge += `\nError ${tokenLoginError.msg} for user at index ${index}`;
       }
       const error = new Error(errorMessge);
       error.code = 400;
-      error.failingIndexes = failingIndexes;
+      error.failingIndexes = tokenLoginFailingIndexes;
       return Promise.reject(error);
     }
 
-    const passwordErrors = users.map(user => validatePassword(user.password));
-    const hasPasswordError = passwordErrors.some(error => !!error);
-    if (hasPasswordError) {
-      const failingIndexes = passwordErrors
-        .map((passwordError, index) => {
-          if (passwordError) {
-            return { passwordError, index };
-          }
-        })
-        .filter(index => index);
+    if (passwordFailingIndexes.length > 0) {
       let errorMessge = 'Password errors:\n';
-      for (const { passwordError, index } of failingIndexes) {
+      for (const { passwordError, index } of passwordFailingIndexes) {
         errorMessge += `\nError ${passwordError} for user at index ${index}`;
       }
       const error = new Error(errorMessge);
       error.code = 400;
-      error.failingIndexes = failingIndexes;
+      error.failingIndexes = passwordFailingIndexes;
       return Promise.reject(error);
     }
 
