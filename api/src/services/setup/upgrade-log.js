@@ -34,8 +34,6 @@ const UPGRADE_LOG_STATES = {
 const UPGRADE_LOG_NAME = 'upgrade_log';
 const UPGRADE_LOG_PATH = path.join(environment.upgradePath, 'upgrade_log.json');
 
-const getLocalVersion = () => {};
-
 const getUpgradeLogId = (version, startDate) => `${UPGRADE_LOG_NAME}:${version}:${startDate}`;
 
 const getCurrentUpgradeLogContents = async () => {
