@@ -844,6 +844,104 @@ describe('Users API', () => {
           .then(() => expectPasswordLoginToWork(user));
       });
 
+      it('should create and update many users correctly w/o token_login', async () => {
+        const users = [
+          {
+            username: 'offline2',
+            password: password,
+            place: {
+              _id: 'fixture:offline2',
+              type: 'health_center',
+              name: 'Offline2 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline2',
+              name: 'Offline2User'
+            },
+            roles: ['district_admin', 'this', 'user', 'will', 'be', 'offline2']
+          },
+          {
+            username: 'online2',
+            password: password,
+            place: {
+              _id: 'fixture:online2',
+              type: 'health_center',
+              name: 'Online2 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:online2',
+              name: 'Online2User'
+            },
+            roles: ['national_admin']
+          },
+          {
+            username: 'offlineonline2',
+            password: password,
+            place: {
+              _id: 'fixture:offlineonline2',
+              type: 'health_center',
+              name: 'Online2 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offlineonline2',
+              name: 'Online2User'
+            },
+            roles: ['district_admin', 'mm-online2']
+          },
+        ];
+        const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
+        await utils.updateSettings(settings, true);
+        await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
+        const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
+
+        chai.expect(response).to.shallowDeepEqual(users.map(user => ({
+          user: { id: getUserId(user.username) },
+          'user-settings': { id: getUserId(user.username) },
+          contact: { id: user.contact._id },
+        })));
+
+        await Promise.all(users.map(async (user) => {
+          let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
+          const extraProps = { facility_id: user.place._id, name: user.username, roles: user.roles };
+          expectCorrectUser(userInDb, extraProps);
+          expectCorrectUserSettings(userSettings, { ...extraProps, contact_id: user.contact._id });
+          chai.expect(userInDb.token_login).to.be.undefined;
+          chai.expect(userSettings.token_login).to.be.undefined;
+          await ((ms) => new Promise(r => setTimeout(r, ms)))(500);
+          await expectPasswordLoginToWork(user);
+
+          const updates = {
+            roles: ['new_role'],
+            phone: '12345',
+          };
+          const updateResponse = await utils.request({
+            path: `/api/v1/users/${user.username}`,
+            body: updates,
+            method: 'POST',
+          });
+          chai.expect(updateResponse).to.shallowDeepEqual({
+            user: { id: getUserId(user.username) },
+            'user-settings': { id: getUserId(user.username) },
+          });
+
+          [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
+          expectCorrectUser(userInDb, { ...extraProps, roles: ['new_role'] });
+          expectCorrectUserSettings(userSettings, {
+            ...extraProps,
+            contact_id: user.contact._id,
+            roles: ['new_role'],
+            phone: '12345',
+          });
+          chai.expect(userInDb.token_login).to.be.undefined;
+          chai.expect(userSettings.token_login).to.be.undefined;
+          await ((ms) => new Promise(r => setTimeout(r, ms)))(500);
+          await expectPasswordLoginToWork(user);
+        }));
+      });
+
       it('should throw an error when phone is missing when creating a user with token_login', () => {
         const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
         return utils

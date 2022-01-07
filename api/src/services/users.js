@@ -657,7 +657,7 @@ module.exports = {
       return Promise.reject(error);
     }
 
-    const response = Array(users.length).fill({});
+    const response = Array(users.length).fill(null).map(() => ({}));
     // create all valid users even if some are failing
     const promises = await allPromisesSettled(
       users.map(async (user, index) => await createUserEntities(user, response[index], appUrl)),
