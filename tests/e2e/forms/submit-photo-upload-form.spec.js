@@ -34,7 +34,7 @@ describe('Submit Photo Upload form', () => {
     await genericForm.selectFormNative('photo-upload');
     await helper.waitElementToPresentNative(photoUpload.imagePathInput());
     await photoUpload.imagePathInput().sendKeys(
-      path.join(__dirname, '../../../webapp/src/img/icon-chw.png')
+      path.join(__dirname, '../../../webapp/src/img/setup-wizard-demo.png')
     );
     await helper.waitUntilReadyNative(photoUpload.imagePreview());
 
