@@ -9,6 +9,7 @@ const getRoles = require('./types-and-roles');
 const auth = require('../auth');
 const tokenLogin = require('./token-login');
 const moment = require('moment');
+const { allPromisesSettled } = require('../promise-utils');
 
 const USER_PREFIX = 'org.couchdb.user:';
 const DOC_IDS_WARN_LIMIT = 10000;
@@ -656,8 +657,8 @@ module.exports = {
     }
 
     const response = Array(users.length).fill({});
-    // use Promise.allSettled to create all valid users even if some are failing
-    const promises = await Promise.allSettled(users.map(async (user, index) => {
+    // create all valid users even if some are failing
+    const promises = await allPromisesSettled(users.map(async (user, index) => {
       await validateNewUsername(user.username);
       await createPlace(user);
       await setContactParent(user);
