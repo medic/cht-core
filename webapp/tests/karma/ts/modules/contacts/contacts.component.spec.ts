@@ -11,7 +11,6 @@ import { ContactsComponent } from '@mm-modules/contacts/contacts.component';
 import { Selectors } from '@mm-selectors/index';
 import { ChangesService } from '@mm-services/changes.service';
 import { SearchService } from '@mm-services/search.service';
-import { SimprintsService } from '@mm-services/simprints.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
@@ -23,7 +22,6 @@ import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
-import { SimprintsFilterComponent } from '@mm-components/filters/simprints-filter/simprints-filter.component';
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
 import { TourService } from '@mm-services/tour.service';
@@ -48,7 +46,6 @@ describe('Contacts component', () => {
   let scrollLoaderCallback;
   let scrollLoaderProvider;
   let contactListContains;
-  let simprintsService;
   let tourService;
   let exportService;
   let xmlFormsService;
@@ -95,10 +92,6 @@ describe('Contacts component', () => {
         scrollLoaderCallback = callback;
       }
     };
-    simprintsService = {
-      enabled: sinon.stub().resolves([]),
-      identify: sinon.stub().resolves([])
-    };
     exportService = { export: sinon.stub() };
     xmlFormsService = { subscribe: sinon.stub() };
 
@@ -131,7 +124,6 @@ describe('Contacts component', () => {
           ContactsFiltersComponent,
           FreetextFilterComponent,
           NavigationComponent,
-          SimprintsFilterComponent,
           ResetFiltersComponent,
           SortFilterComponent,
         ],
@@ -139,7 +131,6 @@ describe('Contacts component', () => {
           provideMockStore({ selectors: mockedSelectors }),
           { provide: ChangesService, useValue: changesService },
           { provide: SearchService, useValue: searchService },
-          { provide: SimprintsService, useValue: simprintsService },
           { provide: SettingsService, useValue: settingsService },
           { provide: UserSettingsService, useValue: userSettingsService },
           { provide: GetDataRecordsService, useValue: getDataRecordsService },

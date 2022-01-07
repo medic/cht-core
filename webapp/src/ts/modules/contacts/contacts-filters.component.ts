@@ -1,8 +1,8 @@
 import { Component, ViewChild, Output, Input, EventEmitter } from '@angular/core';
-import { GlobalActions } from '@mm-actions/global';
 import { Store } from '@ngrx/store';
+
+import { GlobalActions } from '@mm-actions/global';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
-import { SimprintsFilterComponent } from '@mm-components/filters/simprints-filter/simprints-filter.component';
 
 @Component({
   selector: 'contacts-filters',
@@ -18,26 +18,17 @@ export class ContactsFiltersComponent {
   }
 
   @Output() search: EventEmitter<any> = new EventEmitter();
-  @Output() simIdentify: EventEmitter<any> = new EventEmitter();
   @Output() sort: EventEmitter<any> = new EventEmitter();
   @Input() reset;
   @Input() disabled;
-  @Input() simprintsEnabled;
   @Input() sortDirection;
   @Input() lastVisitedDateExtras;
 
   @ViewChild(FreetextFilterComponent)
   freetextFilter:FreetextFilterComponent;
 
-  @ViewChild(SimprintsFilterComponent)
-  simprintsFilter:SimprintsFilterComponent;
-
   applyFilters(force?) {
     this.search.emit(force);
-  }
-
-  simprintsIdentify() {
-    this.simIdentify.emit();
   }
 
   resetFilters() {
