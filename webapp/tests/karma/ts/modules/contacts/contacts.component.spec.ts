@@ -338,7 +338,6 @@ describe('Contacts component', () => {
     }));
 
     it('when paginating, does not skip the extra place for admins #4085', fakeAsync(() => {
-      store.overrideSelector(Selectors.getIsAdmin, true);
       userSettingsService.get.resolves({ facility_id: undefined });
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
@@ -380,7 +379,6 @@ describe('Contacts component', () => {
     }));
 
     it('when refreshing list as admin, does not modify limit #4085', fakeAsync(() => {
-      store.overrideSelector(Selectors.getIsAdmin, true);
       userSettingsService.get.resolves({ facility_id: undefined });
       const searchResult = { _id: 'search-result' };
       searchResults = Array(60).fill(searchResult);
@@ -566,7 +564,6 @@ describe('Contacts component', () => {
 
     it('when handling deletes, does not shorten the list #4080', fakeAsync(() => {
       const changesCallback = changesService.subscribe.args[0][0].callback;
-      store.overrideSelector(Selectors.getIsAdmin, true);
       userSettingsService.get.resolves({ facility_id: undefined });
       const searchResult = { _id: 'search-result' };
       searchResults = Array(60).fill(searchResult);
