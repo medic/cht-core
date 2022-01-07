@@ -675,6 +675,19 @@ describe('Users service', () => {
   });
 
   describe('createUsers', () => {
+    it('calls `createUser` if the body is not an array', async () => {
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
+      sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
+      userData.place = 'foo';
+      const response = await service.createUsers(userData);
+      chai.expect(response).to.deep.equal({});
+    });
+
     it('returns error if one of the users has missing fields', async () => {
       try {
         await service.createUsers([

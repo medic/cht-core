@@ -586,7 +586,7 @@ module.exports = {
   /**
    * Take the request data and create valid users, user-settings and contacts
    * objects. Returns the response body in the callback.
-   * @param {Object[]} users
+   * @param {Object|Object[]} users
    * @param {string} users[].username
    * @param {string=} users[].phone Not required if the password is provided.
    * @param {string=} users[].password Not required if the phone number is provided.
@@ -598,7 +598,7 @@ module.exports = {
    */
   async createUsers(users, appUrl) {
     if (!Array.isArray(users)) {
-      return Promise.reject(error400('Wrong type, body should be an array of users'));
+      return module.exports.createUser(users, appUrl);
     }
 
     const missingFieldsFailingIndexes = [];
