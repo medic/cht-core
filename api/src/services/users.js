@@ -523,6 +523,17 @@ const validateUserContact = (data, user, userSettings) => {
   }
 };
 
+const createUserEntities = async (user, response, appUrl) => {
+  await validateNewUsername(user.username);
+  await createPlace(user);
+  await setContactParent(user);
+  await createContact(user, response);
+  await storeUpdatedPlace(user);
+  await createUser(user, response);
+  await createUserSettings(user, response);
+  await tokenLogin.manageTokenLogin(user, appUrl, response);
+};
+
 /*
  * Everything not exported directly is private.  Underscore prefix is only used
  * to export functions needed for testing.
@@ -548,7 +559,7 @@ module.exports = {
    * @param {String} appUrl - request protocol://hostname
    * @api public
    */
-  createUser: (data, appUrl) => {
+  createUser: async (data, appUrl) => {
     const missing = missingFields(data);
     if (missing.length > 0) {
       return Promise.reject(error400(
@@ -566,16 +577,10 @@ module.exports = {
     if (passwordError) {
       return Promise.reject(passwordError);
     }
+
     const response = {};
-    return validateNewUsername(data.username)
-      .then(() => createPlace(data))
-      .then(() => setContactParent(data))
-      .then(() => createContact(data, response))
-      .then(() => storeUpdatedPlace(data))
-      .then(() => createUser(data, response))
-      .then(() => createUserSettings(data, response))
-      .then(() => tokenLogin.manageTokenLogin(data, appUrl, response))
-      .then(() => response);
+    await createUserEntities(data, response, appUrl);
+    return response;
   },
 
   /**
@@ -654,16 +659,9 @@ module.exports = {
 
     const response = Array(users.length).fill({});
     // create all valid users even if some are failing
-    const promises = await allPromisesSettled(users.map(async (user, index) => {
-      await validateNewUsername(user.username);
-      await createPlace(user);
-      await setContactParent(user);
-      await createContact(user, response[index]);
-      await storeUpdatedPlace(user);
-      await createUser(user, response[index]);
-      await createUserSettings(user, response[index]);
-      await tokenLogin.manageTokenLogin(user, appUrl, response[index]);
-    }));
+    const promises = await allPromisesSettled(
+      users.map(async (user, index) => await createUserEntities(user, response[index], appUrl)),
+    );
     const hasFailures = promises.some(promise => promise.status === 'rejected');
     if (hasFailures) {
       const failingIndexes = promises
