@@ -13,6 +13,7 @@ const DDOC_PREFIX = '_design/';
 const BUILD_DOC_PREFIX = 'medic:medic:';
 const STAGED_DDOC_PREFIX = `${DDOC_PREFIX}:staged:`;
 const SOCKET_TIMEOUT_ERROR_CODE = 'ESOCKETTIMEDOUT';
+const FILE_NOT_FOUND_ERROR_CODE = 'ENOENT';
 
 /**
  * @typedef {Object} DesignDocument
@@ -224,19 +225,7 @@ const abortPreviousUpgrade = async () => {
  * @return {Promise}
  */
 const createUpgradeFolder = async () => {
-  try {
-    await fs.promises.access(environment.upgradePath);
-
-    await abortPreviousUpgrade();
-    await deleteUpgradeFolder();
-  } catch (err) {
-    // if folder doesn't exist, this is fine!
-    if (err.code !== 'ENOENT') {
-      logger.error('Error while deleting staged ddoc folder');
-      throw err;
-    }
-  }
-
+  await deleteUpgradeFolder();
   try {
     await fs.promises.mkdir(environment.upgradePath);
   } catch (err) {
@@ -244,15 +233,27 @@ const createUpgradeFolder = async () => {
     throw err;
   }
 };
-const deleteUpgradeFolder = async () => {
-  // todo change the contents of this function to just the next line once we don't support node > 12
-  // fs.promises.rmdir(environment.upgradePath, { recursive: true });
 
-  const files = await fs.promises.readdir(environment.upgradePath);
-  for (const file of files) {
-    await fs.promises.unlink(path.join(environment.upgradePath, file));
+const deleteUpgradeFolder = async () => {
+  try {
+    await fs.promises.access(environment.upgradePath);
+
+    await abortPreviousUpgrade();
+
+    // todo change the contents of this function once we don't support node > 12
+    // fs.promises.rmdir(environment.upgradePath, { recursive: true });
+    const files = await fs.promises.readdir(environment.upgradePath);
+    for (const file of files) {
+      await fs.promises.unlink(path.join(environment.upgradePath, file));
+    }
+    await fs.promises.rmdir(environment.upgradePath);
+  } catch (err) {
+    // if folder doesn't exist, this is fine!
+    if (err.code !== FILE_NOT_FOUND_ERROR_CODE) {
+      logger.error('Error while deleting staged ddoc folder');
+      throw err;
+    }
   }
-  await fs.promises.rmdir(environment.upgradePath);
 };
 
 const getStagingDdoc = async (version) => {
