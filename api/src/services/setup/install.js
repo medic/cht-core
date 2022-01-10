@@ -19,7 +19,7 @@ const setDeployInfo = async () => {
   const deployInfo = environment.getDeployInfo();
   if (!deployInfo) {
     try {
-      const ddoc = await db.medic.get(environment.ddoc);
+      const ddoc = await db.medic.get(upgradeUtils.getDdocId(environment.ddoc));
       environment.setDeployInfo(ddoc.deploy_info);
     } catch(err) {
       if (!err || err.status !== 404) {

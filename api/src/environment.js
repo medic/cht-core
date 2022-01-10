@@ -28,7 +28,7 @@ if (UNIT_TEST_ENV) {
     port: parsedUrl.port,
     host: parsedUrl.hostname,
     db: parsedUrl.path.replace('/', ''),
-    ddoc: '_design/medic',
+    ddoc: 'medic',
   };
   if (parsedUrl.auth) {
     const index = parsedUrl.auth.indexOf(':');

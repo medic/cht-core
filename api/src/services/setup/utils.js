@@ -60,7 +60,8 @@ const DATABASES = [
 const isStagedDdoc = ddocId => ddocId.startsWith(STAGED_DDOC_PREFIX);
 const getPackagedVersion = async () => {
   const medicDdocs = await getDdocJsonContents(path.join(environment.ddocsPath, MEDIC_DATABASE.jsonFileName));
-  const medicDdoc = medicDdocs.docs.find(ddoc => ddoc._id === environment.ddoc);
+  const medicDdocId = getDdocId(environment.ddoc);
+  const medicDdoc = medicDdocs.docs.find(ddoc => ddoc._id === medicDdocId);
   return medicDdoc.version;
 };
 
@@ -431,6 +432,7 @@ const complete = async () => {
 };
 
 const getDdocName = ddocId => ddocId.replace(STAGED_DDOC_PREFIX, '').replace(DDOC_PREFIX, '');
+const getDdocId = ddocName => `${DDOC_PREFIX}${ddocName}`;
 
 /**
  * Compares a list of bundled ddocs with a list of uploaded ddocs.
@@ -475,4 +477,5 @@ module.exports = {
   getDdocs,
   isStagedDdoc,
   compareDdocs,
+  getDdocId,
 };
