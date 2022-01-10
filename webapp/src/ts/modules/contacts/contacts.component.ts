@@ -396,11 +396,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     }
 
     this.loading = true;
-    if (this.filters.search) {
-      return this.query();
-    } else {
-      return this.query();
-    }
+    return this.query();
   }
 
   sort(sortDirection?) {
