@@ -15,6 +15,21 @@ const STAGED_DDOC_PREFIX = `${DDOC_PREFIX}:staged:`;
 const SOCKET_TIMEOUT_ERROR_CODE = 'ESOCKETTIMEDOUT';
 const FILE_NOT_FOUND_ERROR_CODE = 'ENOENT';
 
+if (!fs.promises) {
+  const promisify = require('util').promisify;
+  // temporary patching to work on Node 8.
+  // This code will never run on Node 8 in prod!
+  fs.promises = {
+    mkdir: promisify(fs.mkdir),
+    readdir: promisify(fs.readdir),
+    rmdir: promisify(fs.readdir),
+    unlink: promisify(fs.unlink),
+    access: promisify(fs.access),
+    writeFile: promisify(fs.writeFile),
+    readFile: promisify(fs.readFile),
+  };
+}
+
 /**
  * @typedef {Object} DesignDocument
  * @property {string} _id
