@@ -801,7 +801,71 @@ describe('Setup utils', () => {
     });
   });
 
+  describe('saveStagedDdocs', () => {
+    it('should stage ddocs for every db', () => {
+
+    });
+
+    it('should throw erro if staging fails', () => {
+
+    });
+  });
+
   describe('stage', () => {
+    it('should throw an error when version is not defined', () => {
+
+    });
+
+    describe('on upgrade', () => {
+      it('should create upgrade folder, get ddoc definitions, stage new ddocs, return views to index', () => {
+
+      });
+
+      it('should throw an error when upgrade folder creation fails', () => {
+
+      });
+
+      it('should throw an error when staging ddoc for version is not found', () => {
+
+      });
+
+      it('should throw an error if staging fails', () => {
+
+      });
+    });
+
+    describe('on fresh install', () => {
+      it('should create upgrade folder, stage ddocs, return views to index', () => {
+
+      });
+
+      it('should throw an error when upgrade folder creation fails', () => {
+
+      });
+
+      it('should throw an error if staging fails', () => {
+
+      });
+    });
+
+    describe('on update install', () => {
+      it('should stage ddocs, return views to index', () => {
+
+      });
+
+      it('should throw an error if staging fails', () => {
+
+      });
+    });
+
+    describe('indexing views', () => {
+      it('should index ', () => {
+
+      });
+    });
+  });
+
+  describe('complete install', () => {
 
   });
 

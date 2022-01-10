@@ -206,10 +206,9 @@ const getDdocsToStageFromJson = (json) => {
  * @param {Array<DesignDocument>} ddocsToStage
  * @return {Promise<[function]>}
  */
-const getViewsToIndex = async (database, ddocsToStage) => {
+const getViewsToIndex = async (database, ddocs) => {
   const viewsToIndex = [];
 
-  const ddocs = await getDocs(database, ddocsToStage.map(doc => doc._id));
   ddocs.forEach(ddoc => {
     if (!ddoc.views || !_.isObject(ddoc.views)) {
       return;
@@ -259,7 +258,16 @@ const createUpgradeFolder = async () => {
     throw err;
   }
 };
-const deleteUpgradeFolder = () => fs.promises.rmdir(environment.upgradePath, { recursive: true });
+const deleteUpgradeFolder = async () => {
+  // todo change the contents of this function to just the next line once we don't support node > 12
+  // fs.promises.rmdir(environment.upgradePath, { recursive: true });
+
+  const files = await fs.promises.readdir(environment.upgradePath);
+  for (const file of files) {
+    await fs.promises.unlink(path.join(environment.upgradePath, file));
+  }
+  await fs.promises.rmdir(environment.upgradePath);
+};
 
 const getStagingDdoc = async (version) => {
   const stagingDocId = `${BUILD_DOC_PREFIX}${version}`;
@@ -292,6 +300,8 @@ const downloadDdocDefinitions = async (version) => {
     if (attachment) {
       const stagingDdocPath = path.join(environment.upgradePath, database.jsonFileName);
       await fs.promises.writeFile(stagingDdocPath, attachment.data, 'base64');
+    } else {
+      logger.warn(`Attachment for ${database.name} was not found. Skipping.`);
     }
   }
 };
@@ -309,7 +319,7 @@ const getDdocsToStage = async (database, version) => {
 
 const freshInstall = async () => {
   try {
-    await db.medic.get(environment.ddoc);
+    await db.medic.get(getDdocId(environment.ddoc));
   } catch (err) {
     if (err.status === 404) {
       return true;
@@ -367,7 +377,7 @@ const stage = async (version = PACKAGED_VERSION, username= '') => {
     await upgradeLogService.create(currentVersion);
   }
 
-  // delete old staged ddocs only after trying a fetch, so we fail early
+  // delete old staged ddocs only after trying to get the staging doc for the version, and fail early
   await deleteStagedDdocs();
 
   const viewsToIndex = await saveStagedDdocs(version);
