@@ -160,45 +160,6 @@ describe('Setup utils', () => {
     });
   });
 
-  describe('getDocs', () => {
-    it('should do nothing when no ids are passed', async () => {
-      sinon.stub(db.sentinel, 'allDocs');
-      const result = await utils.__get__('getDocs')({ db: db.sentinel }, []);
-      expect(result).to.deep.equal([]);
-      expect(db.sentinel.allDocs.callCount).to.equal(0);
-    });
-
-    it('should return docs', async () => {
-      sinon.stub(db.medicUsersMeta, 'allDocs').resolves({ rows: [
-        { id: 1, value: 1, doc: { _id: 1, _rev: 1, field: 'test' } },
-        { id: 2, value: 1, doc: { _id: 3, _rev: 1, type: 'reminder' } },
-        { id: 3, value: 1, doc: { _id: 3, _rev: 1, type: 'person', parent: 'i' } },
-      ]});
-
-      const result = await utils.__get__('getDocs')({ db: db.medicUsersMeta }, [1, 2, 3]);
-
-      expect(db.medicUsersMeta.allDocs.callCount).to.equal(1);
-      expect(db.medicUsersMeta.allDocs.args[0]).to.deep.equal([{ keys: [1, 2, 3], include_docs: true }]);
-      expect(result).to.deep.equal([
-        { _id: 1, _rev: 1, field: 'test' },
-        { _id: 3, _rev: 1, type: 'reminder' },
-        { _id: 3, _rev: 1, type: 'person', parent: 'i' },
-      ]);
-    });
-
-    it('should throw allDocs errors', async () => {
-      sinon.stub(db.medic, 'allDocs').rejects({ this: 'error' });
-
-      try {
-        await utils.__get__('getDocs')({ db: db.medic }, [1, 2, 3]);
-        expect.fail('Should have thrown');
-      } catch (err) {
-        expect(err).to.deep.equal({ this: 'error' });
-        expect(db.medic.allDocs.callCount).to.equal(1);
-      }
-    });
-  });
-
   describe('getStagedDdocs', () => {
     it('should get the ids and revs of currently staged ddocs', async () => {
       sinon.stub(db.medicLogs, 'allDocs').resolves({
@@ -459,15 +420,10 @@ describe('Setup utils', () => {
   describe('getViewsToIndex', () => {
     it('should return an array of function that will start view indexing, if db should be indexed', async () => {
       const ddocsToStage = [
-        { _id: '_design/:staged:one' },
+        { _id: '_design/:staged:one', views: { 'view1': {}, 'view2': {}, 'view3': {}} },
         { _id: '_design/:staged:two' },
-        { _id: '_design/:staged:three' },
+        { _id: '_design/:staged:three', views: { 'view4': {} }},
       ];
-      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
-        { doc: { _id: '_design/:staged:one', views: { 'view1': {}, 'view2': {}, 'view3': {}} } },
-        { doc: { _id: '_design/:staged:two' } },
-        { doc: { _id: '_design/:staged:three', views: { 'view4': {} }}},
-      ] });
 
       sinon.stub(rpn, 'get').resolves();
       sinon.stub(env, 'serverUrl').value('http://localhost');
@@ -477,11 +433,6 @@ describe('Setup utils', () => {
       expect(result.length).to.equal(4);
       result.forEach(item => expect(item).to.be.a('function'));
 
-      expect(db.medic.allDocs.callCount).to.equal(1);
-      expect(db.medic.allDocs.args[0]).to.deep.equal([{
-        keys: ['_design/:staged:one', '_design/:staged:two', '_design/:staged:three'],
-        include_docs: true,
-      }]);
       expect(rpn.get.callCount).to.equal(0);
 
       await Promise.all(result.map(item => item()));
@@ -517,31 +468,13 @@ describe('Setup utils', () => {
 
     it('should return empty array if there are no views', async () => {
       const ddocsToStage = [
-        { _id: '_design/:staged:one' },
-        { _id: '_design/:staged:two' },
+        { _id: '_design/:staged:one', views: {} },
+        { _id: '_design/:staged:two', views: 'whaaaa' },
         { _id: '_design/:staged:three' },
       ];
 
-      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
-        { doc: { _id: '_design/:staged:one', views: {} } },
-        { doc: { _id: '_design/:staged:two', views: 'whaaaa' } },
-      ] });
-
       const result = await utils.__get__('getViewsToIndex')({ db: db.medic }, ddocsToStage);
       expect(result).to.deep.equal([]);
-    });
-
-    it('should throw an error if getting ddocs throws an error', async () => {
-      sinon.stub(db.medic, 'allDocs').rejects({ an: 'error' });
-
-      try {
-        await utils.__get__('getViewsToIndex')({ db: db.medic }, [{ _id: '_design/:staged:one' }]);
-        expect.fail('should have thrown');
-      } catch (err) {
-        expect(err).to.deep.equal({ an: 'error' });
-        expect(db.medic.allDocs.callCount).to.equal(1);
-        expect(db.medic.allDocs.args[0]).to.deep.equal([{ keys: ['_design/:staged:one'], include_docs: true }]);
-      }
     });
   });
 
@@ -563,6 +496,8 @@ describe('Setup utils', () => {
 
     it('should delete existing folder recursively, create new folder, aborting previous upgrade', async () => {
       sinon.stub(fs.promises, 'access').resolves();
+      sinon.stub(fs.promises, 'readdir').resolves(['one', 'two']);
+      sinon.stub(fs.promises, 'unlink').resolves();
       sinon.stub(fs.promises, 'rmdir').resolves();
       sinon.stub(fs.promises, 'mkdir').resolves();
       sinon.stub(env, 'upgradePath').value('upgradePath');
@@ -573,14 +508,20 @@ describe('Setup utils', () => {
       expect(fs.promises.access.callCount).to.equal(1);
       expect(fs.promises.access.args[0]).to.deep.equal(['upgradePath']);
       expect(upgradeLogService.setAborted.callCount).to.equal(1);
+      expect(fs.promises.readdir.callCount).to.equal(1);
+      expect(fs.promises.readdir.args[0]).to.deep.equal(['upgradePath']);
+      expect(fs.promises.unlink.callCount).to.equal(2);
+      expect(fs.promises.unlink.args[0]).to.deep.equal(['upgradePath/one']);
+      expect(fs.promises.unlink.args[1]).to.deep.equal(['upgradePath/two']);
       expect(fs.promises.rmdir.callCount).to.equal(1);
-      expect(fs.promises.rmdir.args[0]).to.deep.equal(['upgradePath', { recursive: true }]);
+      expect(fs.promises.rmdir.args[0]).to.deep.equal(['upgradePath']);
       expect(fs.promises.mkdir.callCount).to.equal(1);
       expect(fs.promises.mkdir.args[0]).to.deep.equal(['upgradePath']);
     });
 
     it('should catch abort upgrade errors', async () => {
       sinon.stub(fs.promises, 'access').resolves();
+      sinon.stub(fs.promises, 'readdir').resolves([]);
       sinon.stub(fs.promises, 'rmdir').resolves();
       sinon.stub(fs.promises, 'mkdir').resolves();
       sinon.stub(env, 'upgradePath').value('upgradePath');
@@ -591,8 +532,10 @@ describe('Setup utils', () => {
       expect(fs.promises.access.callCount).to.equal(1);
       expect(fs.promises.access.args[0]).to.deep.equal(['upgradePath']);
       expect(upgradeLogService.setAborted.callCount).to.equal(1);
+      expect(fs.promises.readdir.callCount).to.equal(1);
+      expect(fs.promises.readdir.args[0]).to.deep.equal(['upgradePath']);
       expect(fs.promises.rmdir.callCount).to.equal(1);
-      expect(fs.promises.rmdir.args[0]).to.deep.equal(['upgradePath', { recursive: true }]);
+      expect(fs.promises.rmdir.args[0]).to.deep.equal(['upgradePath']);
       expect(fs.promises.mkdir.callCount).to.equal(1);
       expect(fs.promises.mkdir.args[0]).to.deep.equal(['upgradePath']);
     });
@@ -619,6 +562,7 @@ describe('Setup utils', () => {
     it('should throw an error when deletion throws an error', async () => {
       sinon.stub(fs.promises, 'access').resolves();
       sinon.stub(upgradeLogService, 'setAborted').resolves();
+      sinon.stub(fs.promises, 'readdir').resolves([]);
       sinon.stub(fs.promises, 'rmdir').rejects({ code: 'some code' });
       sinon.stub(fs.promises, 'mkdir');
       sinon.stub(env, 'upgradePath').value('upgradePath');
@@ -632,13 +576,37 @@ describe('Setup utils', () => {
         expect(fs.promises.access.callCount).to.equal(1);
         expect(fs.promises.access.args[0]).to.deep.equal(['upgradePath']);
         expect(fs.promises.rmdir.callCount).to.equal(1);
-        expect(fs.promises.rmdir.args[0]).to.deep.equal(['upgradePath', { recursive: true }]);
+        expect(fs.promises.rmdir.args[0]).to.deep.equal(['upgradePath']);
+        expect(fs.promises.mkdir.callCount).to.equal(0);
+      }
+    });
+
+    it('should throw an error if read thrown an error', async () => {
+      sinon.stub(fs.promises, 'access').resolves();
+      sinon.stub(upgradeLogService, 'setAborted').resolves();
+      sinon.stub(fs.promises, 'readdir').rejects({ code: 'some code' });
+      sinon.stub(fs.promises, 'rmdir');
+      sinon.stub(fs.promises, 'mkdir');
+      sinon.stub(env, 'upgradePath').value('upgradePath');
+
+      try {
+        await utils.__get__('createUpgradeFolder')();
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ code: 'some code' });
+
+        expect(fs.promises.access.callCount).to.equal(1);
+        expect(fs.promises.access.args[0]).to.deep.equal(['upgradePath']);
+        expect(fs.promises.readdir.callCount).to.equal(1);
+        expect(fs.promises.readdir.args[0]).to.deep.equal(['upgradePath']);
+        expect(fs.promises.rmdir.callCount).to.equal(0);
         expect(fs.promises.mkdir.callCount).to.equal(0);
       }
     });
 
     it('should throw an error when creation fails', async () => {
       sinon.stub(fs.promises, 'access').rejects({ code: 'ENOENT' });
+      sinon.stub(fs.promises, 'readdir').resolves([]);
       sinon.stub(fs.promises, 'rmdir');
       sinon.stub(fs.promises, 'mkdir').rejects({ some: 'error' });
       sinon.stub(env, 'upgradePath').value('upgradePath');
@@ -806,7 +774,7 @@ describe('Setup utils', () => {
 
     });
 
-    it('should throw erro if staging fails', () => {
+    it('should throw error if staging fails', () => {
 
     });
   });
@@ -854,12 +822,6 @@ describe('Setup utils', () => {
       });
 
       it('should throw an error if staging fails', () => {
-
-      });
-    });
-
-    describe('indexing views', () => {
-      it('should index ', () => {
 
       });
     });

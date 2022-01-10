@@ -80,20 +80,6 @@ const deleteDocs = (database, docs) => {
 
 /**
  * @param {Database} database
- * @param {Array<string>} docIds
- * @return {Promise<Array<DesignDocument>>}
- */
-const getDocs = async (database, docIds) => {
-  if (!docIds.length) {
-    return [];
-  }
-
-  const result = await database.db.allDocs({ keys: docIds, include_docs: true });
-  return result.rows.map(row => row.doc);
-};
-
-/**
- * @param {Database} database
  * @param {Array<DesignDocument>} docs
  * @return {Promise}
  */
