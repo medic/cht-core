@@ -199,6 +199,20 @@ describe('Export Data V2.0', () => {
         const rowsArray = getRows(resultArray);
         expectRows(expected, rowsArray);
       });
+
+      it('should work with multiple selection', async () => {
+        const url = '/api/v2/export/reports?filters[verified][]=false&filters[verified][]=true';
+
+        const result = await utils.request(url, { notJson: true });
+        const rows = getRows(result);
+        const expected = [
+          // eslint-disable-next-line max-len
+          '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,bar,baz,foo,smang.smong',
+          '"export-data-2-not-verified","c","abc125",1580688000000,,,,,,,"bazVal",,',
+          '"export-data-2-verified","c","abc125",1580688000000,,,,,,,"bazVal",,',
+        ];
+        expectRows(expected, rows);
+      });
     });
 
     describe('POST filters by valid', () => {
