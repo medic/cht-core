@@ -265,12 +265,12 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
     this.globalActions.setLeftActionBar({
       hasResults: this.hasReports,
-      exportFn: this.exportFn.bind({}, this.ngZone, this.exportService),
+      exportFn: this.exportFn.bind({}, this.ngZone, this.exportService, this.filters),
     });
   }
 
-  private exportFn(ngZone, exportService, e) {
-    const exportFilters = _assignIn({}, this.filters);
+  private exportFn(ngZone, exportService, filters, e) {
+    const exportFilters = _assignIn({}, filters);
     ['forms', 'facilities'].forEach((type) => {
       if (exportFilters[type]) {
         delete exportFilters[type].options;
