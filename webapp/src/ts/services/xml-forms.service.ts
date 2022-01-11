@@ -162,20 +162,25 @@ export class XmlFormsService {
       if (!validSoFar) {
         return false;
       }
-      if (form.context.permission) {
-        return this.authService.has(form.context.permission);
-      }
       if (form.context.expression) {
         try {
-          return this.evaluateExpression(form.context.expression, options.doc, user, options.contactSummary);
+          const evaluatedExpression = this.evaluateExpression(
+            form.context.expression,
+            options.doc,
+            user,
+            options.contactSummary
+          );
+          if (form.context.permission) {
+            return this.authService.has(form.context.permission) && evaluatedExpression;
+          }
+          return evaluatedExpression;
         } catch(err) {
           console.error(`Unable to evaluate expression for form: ${form._id}`, err);
           return false;
         }
       }
-      if (form.context.expression &&
-        !this.evaluateExpression(form.context.expression, options.doc, user, options.contactSummary)) {
-        return false;
+      if (form.context.permission) {
+        return this.authService.has(form.context.permission);
       }
       return true;
     });
