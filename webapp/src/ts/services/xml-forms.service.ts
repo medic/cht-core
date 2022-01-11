@@ -162,6 +162,9 @@ export class XmlFormsService {
       if (!validSoFar) {
         return false;
       }
+      if (form.context.permission) {
+        return this.authService.has(form.context.permission);
+      }
       if (form.context.expression) {
         try {
           return this.evaluateExpression(form.context.expression, options.doc, user, options.contactSummary);
@@ -174,10 +177,7 @@ export class XmlFormsService {
         !this.evaluateExpression(form.context.expression, options.doc, user, options.contactSummary)) {
         return false;
       }
-      if (!form.context.permission) {
-        return true;
-      }
-      return this.authService.has(form.context.permission);
+      return true;
     });
   }
 
