@@ -276,11 +276,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
         delete exportFilters[type].options;
       }
     });
-    if (exportFilters.date) {
-      // both of these are Moment values
-      exportFilters.date.from = exportFilters.date.from?.valueOf();
-      exportFilters.date.to = exportFilters.date.to?.valueOf();
-    }
 
     const $link = $(e.target).closest('a');
     $link.addClass('mm-icon-disabled');
@@ -290,7 +285,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
       }, 2000);
     });
 
-    console.log(exportFilters);
     exportService.export('reports', exportFilters, { humanReadable: true });
   }
 
