@@ -179,6 +179,10 @@ export class XmlFormsService {
           return false;
         }
       }
+      if (form.context.expression &&
+        !this.evaluateExpression(form.context.expression, options.doc, user, options.contactSummary)) {
+        return false;
+      }
       if (form.context.permission) {
         return this.authService.has(form.context.permission);
       }
