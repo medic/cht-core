@@ -58,6 +58,7 @@ describe('Contact details page', () => {
       await commonElements.waitForPageLoaded();
     });
 
+
     it('should show reports and tasks when permissions are enabled', async () => {
       await commonElements.goToPeople(patient._id, true);
       expect(await (await contactPage.contactCard()).getText()).to.equal(patient.name);
