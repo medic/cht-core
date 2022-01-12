@@ -212,6 +212,20 @@ describe('Export Data V2.0', () => {
           '"export-data-2-verified","c","abc125",1580688000000,,,,,,,"bazVal",,',
         ];
         expectRows(expected, rows);
+
+        const urlAll = '/api/v2/export/reports?filters[verified][]=false&filters[verified][]=true&filters[verified][]=';
+        const allResults = await utils.request(urlAll, { notJson: true });
+        const allRows = getRows(allResults);
+        const allExport = [
+          '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,bar,baz,foo,smang.smong', // eslint-disable-line max-len
+          '"export-data-2-test-doc-3","b","abc125",1517616000000,,,,,,,"bazVal",,',
+          '"export-data-2-test-doc-2","a","abc124",1517529600000,,,,,,"barVal2",,"fooVal2","smangsmongVal2"',
+          '"export-data-2-test-doc-1","a","abc123",1517443200000,,,,,,"barVal",,"fooVal","smangsmongVal"',
+          '"export-data-2-verified","c","abc125",1580688000000,,,,,,,"bazVal",,',
+          '"export-data-2-not-verified","c","abc125",1580688000000,,,,,,,"bazVal",,',
+          '"export-data-2-invalid","c","abc125",1580688000000,,,,,,,"bazVal",,',
+        ];
+        expectRows(allExport, allRows);
       });
     });
 
@@ -223,7 +237,7 @@ describe('Export Data V2.0', () => {
         const rows = getRows(result);
         const expected = [
           // eslint-disable-next-line max-len
-          '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,bar,baz,foo,smang.smong', // eslint-disable-line max-len
+          '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,bar,baz,foo,smang.smong',
           '"export-data-2-test-doc-3","b","abc125",1517616000000,,,,,,,"bazVal",,',
           '"export-data-2-test-doc-2","a","abc124",1517529600000,,,,,,"barVal2",,"fooVal2","smangsmongVal2"',
           '"export-data-2-test-doc-1","a","abc123",1517443200000,,,,,,"barVal",,"fooVal","smangsmongVal"',
