@@ -430,7 +430,7 @@ describe('pregnancy registration with exact LMP date', () => {
         list: [
           {
             property: 'lmpDate',
-            rule: "integer",
+            rule: 'integer',
             message: [{
               content: 'Invalid date.',
               locale: 'en'

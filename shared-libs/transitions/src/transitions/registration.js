@@ -156,7 +156,7 @@ const getLMPDate = doc => {
       if (validations) {
         const lmpValidations = validations.find(item => item.property === prop);
         if (lmpValidations) {
-          lmpWeeksRange = lmpValidations.weeks;
+          const lmpWeeksRange = lmpValidations.weeks;
           if (lmpWeeksRange) {
             minLMPWeeks = lmpWeeksRange.min;
             maxLMPWeeks = lmpWeeksRange.max;
