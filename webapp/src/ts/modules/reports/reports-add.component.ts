@@ -114,7 +114,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       };
       this.globalActions.setCancelCallback(cancelCallback.bind({}, this.router, this.routeSnapshot));
     } else {
-      this.globalActions.clearCancelCallback();
+      this.globalActions.clearNavigation();
     }
   }
 
@@ -242,7 +242,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     // for Angular behavior
     // see https://github.com/medic/cht-core/issues/2198#issuecomment-210202785 for AngularJS behavior
     this.enketoService.unload(this.form);
-    this.globalActions.clearCancelCallback();
+    this.globalActions.clearNavigation();
+    this.globalActions.clearEnketoStatus();
   }
 
   private getSelected() {

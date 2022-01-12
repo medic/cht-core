@@ -1,14 +1,13 @@
 import { createAction, Store } from '@ngrx/store';
 
-import { createSingleValueAction } from './actionUtils';
+import { createSingleValueAction, createMultiValueAction } from './actionUtils';
 
 export const Actions = {
   updateReplicationStatus: createSingleValueAction('UPDATE_REPLICATION_STATUS', 'replicationStatus'),
-  setMinimalTabs: createSingleValueAction('SET_MINIMAL_TABS', 'minimalTabs'),
   setAndroidAppVersion: createSingleValueAction('SET_ANDROID_APP_VERSION', 'androidAppVersion'),
   setCurrentTab: createSingleValueAction('SET_CURRENT_TAB', 'currentTab'),
   setSnapshotData: createSingleValueAction('SET_SNAPSHOT_DATA', 'snapshotData'),
-  setSnackbarContent: createSingleValueAction('SET_SNACKBAR_CONTENT', 'content'),
+  setSnackbarContent: createMultiValueAction('SET_SNACKBAR_CONTENT'),
   setLoadingContent: createSingleValueAction('SET_LOADING_CONTENT', 'loadingContent'),
   setShowContent: createSingleValueAction('SET_SHOW_CONTENT', 'showContent'),
   setShowActionBar: createSingleValueAction('SET_SHOW_ACTION_BAR', 'showActionBar'),
@@ -27,9 +26,12 @@ export const Actions = {
   setPrivacyPolicyAccepted: createSingleValueAction('SET_PRIVACY_POLICY_ACCEPTED', 'accepted'),
   setShowPrivacyPolicy: createSingleValueAction('SET_SHOW_PRIVACY_POLICY', 'show'),
   setEnketoStatus: createSingleValueAction('SET_ENKETO_STATUS', 'enketoStatus'),
+  clearEnketoStatus: createAction('CLEAR_ENKETO_STATUS'),
   navigationCancel: createSingleValueAction('NAVIGATION_CANCEL', 'nextUrl'),
   clearSelected: createAction('CLEAR_SELECTED'),
   setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
+  setNavigation: createMultiValueAction('SET_NAVIGATION'),
+  setPreventNavigation: createSingleValueAction('SET_PREVENT_NAVIGATION', 'preventNavigation'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
   setLoadingSubActionBar: createSingleValueAction('SET_LOADING_SUB_ACTION_BAR', 'loading'),
   setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'),
@@ -45,10 +47,6 @@ export class GlobalActions {
     return this.store.dispatch(Actions.updateReplicationStatus(replicationStatus));
   }
 
-  setMinimalTabs(minimal) {
-    return this.store.dispatch(Actions.setMinimalTabs(minimal));
-  }
-
   setAndroidAppVersion(androidAppVersion) {
     return this.store.dispatch(Actions.setAndroidAppVersion(androidAppVersion));
   }
@@ -61,8 +59,8 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setSnapshotData(snapshotData));
   }
 
-  setSnackbarContent(content) {
-    return this.store.dispatch(Actions.setSnackbarContent(content));
+  setSnackbarContent(message, action?) {
+    return this.store.dispatch(Actions.setSnackbarContent({ message, action }));
   }
 
   setLoadingContent(loading) {
@@ -132,8 +130,21 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setCancelCallback(value));
   }
 
-  clearCancelCallback() {
-    return this.store.dispatch(Actions.setCancelCallback(null));
+  setNavigation({ cancelCallback, preventNavigation, cancelTranslationKey, recordTelemetry }) {
+    return this.store.dispatch(Actions.setNavigation({
+      cancelCallback,
+      preventNavigation,
+      cancelTranslationKey,
+      recordTelemetry,
+    }));
+  }
+
+  setPreventNavigation(preventNavigation) {
+    return this.store.dispatch(Actions.setPreventNavigation(preventNavigation));
+  }
+
+  clearNavigation() {
+    return this.store.dispatch(Actions.setNavigation({ }));
   }
 
   /**
@@ -194,6 +205,10 @@ export class GlobalActions {
 
   setEnketoSavingStatus(saving) {
     return this.store.dispatch(Actions.setEnketoStatus({ saving }));
+  }
+
+  clearEnketoStatus() {
+    return this.store.dispatch(Actions.clearEnketoStatus());
   }
 
   navigationCancel(nextUrl?) {

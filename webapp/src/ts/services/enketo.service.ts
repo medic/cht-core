@@ -3,6 +3,8 @@ import { v4 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import { Store } from '@ngrx/store';
 import type JQuery from 'jquery';
+import { toBik_text } from 'bikram-sambat';
+import * as moment from 'moment';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
@@ -71,7 +73,7 @@ export class EnketoService {
     return this.zScoreService
       .getScoreUtil()
       .then((zscoreUtil) => {
-        medicXpathExtensions.init(zscoreUtil);
+        medicXpathExtensions.init(zscoreUtil, toBik_text, moment);
       })
       .catch((err) => {
         console.error('Error initialising zscore util', err);
@@ -337,9 +339,7 @@ export class EnketoService {
           .then(valid => {
             if (valid) {
               const currentIndex = form.pages._getCurrentIndex();
-              if (typeof currentIndex === 'number') {
-                window.history.pushState({ enketo_page_number: currentIndex }, '');
-              }
+              window.history.pushState({ enketo_page_number: currentIndex }, '');
               this.setupNavButtons($wrapper, currentIndex);
               this.pauseMultimedia($wrapper);
             }
@@ -388,13 +388,13 @@ export class EnketoService {
 
   private registerEditedListener($selector, listener) {
     if (listener) {
-      $selector.on('edited.enketo', () => this.ngZone.run(() => listener()));
+      $selector.on('edited', () => this.ngZone.run(() => listener()));
     }
   }
 
   private registerValuechangeListener($selector, listener) {
     if (listener) {
-      $selector.on('valuechange.enketo', () => this.ngZone.run(() => listener()));
+      $selector.on('xforms-value-changed', () => this.ngZone.run(() => listener()));
     }
   }
 
@@ -435,6 +435,8 @@ export class EnketoService {
         this.registerAddrepeatListener($selector, formDoc);
         this.registerEditedListener($selector, editedListener);
         this.registerValuechangeListener($selector, valuechangeListener);
+        this.registerValuechangeListener($selector,
+          () => this.setupNavButtons($selector, form.pages._getCurrentIndex()));
 
         window.CHTCore.debugFormModel = () => form.model.getStr();
         return form;
@@ -679,19 +681,20 @@ export class EnketoService {
   }
 
   private setupNavButtons($wrapper, currentIndex) {
-    if(this.currentForm?.pages) {
-      const lastIndex = this.currentForm.pages.activePages.length - 1;
-      const footer = $wrapper.find('.form-footer');
-      footer.removeClass('end');
-      footer.find('.previous-page, .next-page').removeClass('disabled');
+    if(!this.currentForm.pages) {
+      return;
+    }
+    const lastIndex = this.currentForm.pages.activePages.length - 1;
+    const footer = $wrapper.find('.form-footer');
+    footer.removeClass('end');
+    footer.find('.previous-page, .next-page').removeClass('disabled');
 
-      if (currentIndex >= lastIndex) {
-        footer.addClass('end');
-        footer.find('.next-page').addClass('disabled');
-      }
-      if (currentIndex === 0) {
-        footer.find('.previous-page').addClass('disabled');
-      }
+    if (currentIndex >= lastIndex) {
+      footer.addClass('end');
+      footer.find('.next-page').addClass('disabled');
+    }
+    if (currentIndex <= 0) {
+      footer.find('.previous-page').addClass('disabled');
     }
   }
 

@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 
 import { ChangesService } from '@mm-services/changes.service';
 import { DbService } from '@mm-services/db.service';
-import { isNil } from 'lodash';
 
 @Injectable({
   providedIn: 'root'
@@ -97,7 +96,7 @@ export class ZScoreService {
           console.error('Doc "' + this.CONFIGURATION_DOC_ID + '" not found');
           return;
         }
-        if (!sex || isNil(x) || isNil(y)) {
+        if (!sex || x === null || x === undefined || y === null || y === undefined) {
           // the form may not have been filled out yet
           return;
         }

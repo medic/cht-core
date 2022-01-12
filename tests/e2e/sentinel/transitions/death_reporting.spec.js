@@ -1,6 +1,6 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 const chai = require('chai');
 
 const contacts = [{
@@ -20,9 +20,9 @@ const contacts = [{
 }];
 
 describe('death_reporting', () => {
-  beforeEach(done => utils.saveDocs(contacts).then(done));
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb([], true).then(done));
+  beforeEach(() => utils.saveDocs(contacts));
+  after(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb([], true));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {

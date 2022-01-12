@@ -4,7 +4,7 @@ const sentinelUtils = require('../sentinel/utils');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 const chai = require('chai');
-const uuid = require('uuid/v4');
+const uuid = require('uuid').v4;
 
 /* global window */
 
@@ -200,13 +200,8 @@ describe('db-sync', () => {
       body: restrictedUser
     });
     await sentinelUtils.waitForSentinel();
-    await loginPage.login(restrictedUserName, restrictedPass);
+    await loginPage.login({ username: restrictedUserName, password: restrictedPass });
     await (await commonElements.analyticsTab()).waitForDisplayed();
-  });
-
-  after(async () => {
-    await utils.revertDb([], true);
-    await utils.deleteUsers([restrictedUserName]);
   });
 
   it('should not filter allowed docs', async () => {
@@ -326,7 +321,7 @@ describe('db-sync', () => {
     it('should replicate meta db down', async () => {
       await browser.refresh(); // meta databases sync every 30 minutes
       await commonElements.sync();
-      chai.expect(await reportsPage.getUnreadCount()).to.equal('2');
+      expect(await reportsPage.getUnreadCount()).to.equal('2');
 
       const readReport = { _id: `read:report:${report2}` };
       await utils.saveMetaDocs(restrictedUserName, [readReport]);

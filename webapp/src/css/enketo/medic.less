@@ -39,8 +39,22 @@
     font-size: @font-large;
   }
 
+  label.readonly {
+    font-weight: 700;
+  }
+  .or-repeat .remove {
+    display: inline-block;
+  }
   .btn-primary {
     background-color: @button-color;
+  }
+  .btn-icon-only {
+    padding: 0;
+    width: inherit;
+  }
+  .icon {
+    position: relative;
+    top: 1px;
   }
   .or-group {
     margin: 15px 0 0 0;
@@ -57,6 +71,9 @@
     h4 {
       padding: 15px 20px;
       text-align: left;
+    }
+    .question-label {
+      display: inline;
     }
   }
   // nested group
@@ -188,6 +205,9 @@
     input[type=checkbox]:checked {
       background-position: -1px;
     }
+    .date input[type=text] {
+      width: 180px;
+    }
   }
   input[type="tel"] {
     /* inherit all standard TEXT input styles */
@@ -214,10 +234,15 @@
   em {
     font-style: italic;
   }
-  .or-appearance-countdown-timer canvas {
-    width: 100%;
-    max-width: 320px;
-    display: block;
+  .or-appearance-countdown-timer {
+    input {
+      display: none;
+    }
+    canvas {
+      width: 100%;
+      max-width: 320px;
+      display: block;
+    }
   }
   .or-appearance-mrdt-verify {
     .mrdt-verify,
@@ -229,7 +254,16 @@
       display: none;
     }
   }
+
+  .or-appearance-android-app-launcher {
+    .android-app-launcher-actions {
+      margin: 0;
+      padding: 15px 20px;
+    }
+  }
+
   .option-wrapper > label:not(.filler) {
+    margin-right: 10px;
     padding-top: 8px;
     padding-bottom: 8px;
     border-radius: 4px;

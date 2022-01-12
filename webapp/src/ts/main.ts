@@ -24,6 +24,13 @@ import * as bootstrapper from '../js/bootstrapper';
 require('../js/moment-locales/tl');
 require('../js/moment-locales/hil');
 require('../js/moment-locales/ceb');
+require('moment/locale/fr');
+require('moment/locale/es');
+require('moment/locale/bm');
+require('moment/locale/hi');
+require('moment/locale/id');
+require('moment/locale/ne');
+require('moment/locale/sw');
 
 require('select2');
 require('../js/enketo/main');
@@ -31,15 +38,11 @@ require('../js/enketo/main');
 window.PouchDB.plugin(pouchdbDebug);
 bootstrapper(POUCHDB_OPTIONS, (err) => {
   if (err) {
-    if (err.redirect) {
-      window.location.href = err.redirect;
-    } else {
-      console.error('Error bootstrapping', err);
-      setTimeout(() => {
-        // retry initial replication automatically after one minute
-        window.location.reload(false);
-      }, 60 * 1000);
-    }
+    console.error('Error bootstrapping', err);
+    setTimeout(() => {
+      // retry initial replication automatically after one minute
+      window.location.reload(false);
+    }, 60 * 1000);
     return;
   }
 

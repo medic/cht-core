@@ -323,14 +323,14 @@ const isUntransitionedDoc = doc => {
 const contactsRevs = [];
 
 describe('transitions', () => {
-  beforeAll(() => {
+  before(() => {
     return utils
       .saveDocs(contacts)
       .then((results) => contactsRevs.push(...results))
       .then(() => sentinelUtils.waitForSentinel());
   });
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
+  after(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb(contacts.map(c => c._id), true));
 
   it('should run all sync transitions and all async transitions', () => {
     const settings = {
@@ -571,8 +571,13 @@ describe('transitions', () => {
         //mute
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses', 'update_clinics');
-        chai.expect(infodoc.transitions.muting).to.equal(undefined);
+        // depending on how fast sentinel is, there's a chance muting transition already ran over this doc
+        try {
+          expectTransitions(infodoc, 'default_responses', 'update_clinics');
+          chai.expect(infodoc.transitions.muting).to.equal(undefined);
+        } catch (err) {
+          expectTransitions(infodoc, 'default_responses', 'update_clinics', 'muting');
+        }
 
         chai.expect(child1.length).to.equal(1);
         chai.expect(child1[0].doc.patient_id).to.equal('child1');
@@ -704,7 +709,7 @@ describe('transitions', () => {
         utils.getDocs(ids)
       ]))
       .then(([infos, updatedDocs]) => {
-        infos.forEach(info => expect(!info));
+        infos.forEach(info => chai.expect(!info));
         chai.expect(updatedDocs.every(isUntransitionedDoc)).to.equal(true);
       })
       .then(() => getDocByPatientId('child1'))

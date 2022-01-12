@@ -1,7 +1,7 @@
 const chai = require('chai');
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 
 const contacts = [
   {
@@ -24,9 +24,9 @@ const translations = {
 };
 
 describe('self_report', () => {
-  beforeAll(() => utils.saveDocs(contacts).then(() => utils.addTranslations('test', translations)));
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
+  before(() => utils.saveDocs(contacts).then(() => utils.addTranslations('test', translations)));
+  after(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb(contacts.map(c => c._id), true));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
@@ -47,7 +47,7 @@ describe('self_report', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(Object.keys(info.transitions).length).to.equal(0);
+        chai.expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -71,7 +71,7 @@ describe('self_report', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(Object.keys(info.transitions).length).to.equal(0);
+        chai.expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -97,7 +97,7 @@ describe('self_report', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(Object.keys(info.transitions).length).to.equal(0);
+        chai.expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -136,7 +136,7 @@ describe('self_report', () => {
           message: 'Sender not found',
           code: 'sender_not_found',
         }]);
-        chai.expect(updated.tasks.length).to.equal(1);
+        chai.expect(updated.tasks).to.have.lengthOf(1);
         chai.expect(updated.tasks[0].messages[0]).to.include({
           to: 'unknown',
           message: 'Sender not found'
@@ -180,7 +180,7 @@ describe('self_report', () => {
           form: 'the_form',
         });
         chai.expect(updated.errors).to.deep.equal([{ message: 'Not registered', code: 'sender_not_found' }]);
-        chai.expect(updated.tasks.length).to.equal(1);
+        chai.expect(updated.tasks).to.have.lengthOf(1);
         chai.expect(updated.tasks[0].messages[0]).to.include({
           to: 'unknown',
           message: 'Not registered',
@@ -209,7 +209,7 @@ describe('self_report', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(Object.keys(info.transitions).length).to.equal(0);
+        chai.expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -347,7 +347,7 @@ describe('self_report', () => {
           },
           reported_date: doc.reported_date,
         });
-        chai.expect(updated.tasks.length).to.equal(1);
+        chai.expect(updated.tasks).to.have.lengthOf(1);
         chai.expect(updated.tasks[0].messages[0]).to.deep.include({
           to: '555 111 222',
           message: 'got message from Contact 1',
@@ -403,7 +403,7 @@ describe('self_report', () => {
           form: 'form3',
         });
         chai.expect(updated.errors).be.undefined;
-        chai.expect(updated.tasks.length).to.equal(1);
+        chai.expect(updated.tasks).to.have.lengthOf(1);
         chai.expect(updated.tasks[0].messages[0]).to.include({
           to: '555 333 444',
           message: 'Registered 555 333 444 Contact 2',

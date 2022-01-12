@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { Store } from '@ngrx/store';
 
 import { SessionService } from '@mm-services/session.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
@@ -10,6 +11,7 @@ import { DbService } from '@mm-services/db.service';
 import { AuthService } from '@mm-services/auth.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 describe('DBSync service', () => {
   let service:DBSyncService;
@@ -32,6 +34,8 @@ describe('DBSync service', () => {
   let rulesEngine;
   let checkDateService;
   let telemetryService;
+  let translateService;
+  let store;
 
   let localMedicDb;
   let localMetaDb;
@@ -42,7 +46,16 @@ describe('DBSync service', () => {
   let clock;
 
   const realSetTimeout = setTimeout;
-  const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
+  const nextTick = () => new Promise<void>(resolve => realSetTimeout(resolve));
+
+  const expectSyncCall = (numCalls) => {
+    expect(from.callCount).to.equal(numCalls);
+    expect(to.callCount).to.equal(numCalls);
+  };
+  const expectSyncMetaCall = (numCalls) => {
+    expect(db.withArgs({ meta: true }).callCount).to.equal(numCalls);
+    expect(db.withArgs({ meta: true, remote: true }).callCount).to.equal(numCalls);
+  };
 
   beforeEach(() => {
     clock = sinon.useFakeTimers();
@@ -82,6 +95,8 @@ describe('DBSync service', () => {
     dbSyncRetry = sinon.stub();
     rulesEngine = { monitorExternalChanges: sinon.stub() };
     telemetryService = { record: sinon.stub().resolves() };
+    translateService = { instant: sinon.stub().returnsArg(0) };
+    store = { dispatch: sinon.stub() };
 
     localMedicDb = {
       replicate: { to: to, from: from },
@@ -113,6 +128,8 @@ describe('DBSync service', () => {
         { provide: DbSyncRetryService, useValue: { retryForbiddenFailure: dbSyncRetry } },
         { provide: RulesEngineService, useValue: rulesEngine },
         { provide: TelemetryService, useValue: telemetryService },
+        { provide: TranslateService, useValue: translateService },
+        { provide: Store, useValue: store },
         { provide: CheckDateService, useValue: checkDateService },
       ]
     });
@@ -129,8 +146,7 @@ describe('DBSync service', () => {
     it('does nothing for admins', () => {
       isOnlineOnly.returns(true);
       return service.sync().then(() => {
-        expect(to.callCount).to.equal(0);
-        expect(from.callCount).to.equal(0);
+        expectSyncCall(0);
         expect(checkDateService.check.callCount).to.equal(0);
       });
     });
@@ -142,13 +158,13 @@ describe('DBSync service', () => {
       return service.sync().then(() => {
         expect(hasAuth.callCount).to.equal(1);
         expect(hasAuth.args[0][0]).to.equal('can_edit');
-        expect(from.callCount).to.equal(1);
+        expectSyncCall(1);
         expect(from.args[0][1]).to.have.keys('heartbeat', 'timeout', 'batch_size');
         expect(from.args[0][1]).to.not.have.keys('filter', 'checkpoint');
-        expect(to.callCount).to.equal(1);
         expect(to.args[0][1]).to.have.keys('filter', 'checkpoint', 'batch_size');
         expect(checkDateService.check.callCount).to.equal(1);
         expect(checkDateService.check.args[0]).to.deep.equal([]);
+        expectSyncMetaCall(1);
       });
     });
 
@@ -177,9 +193,7 @@ describe('DBSync service', () => {
       toResolve({ docs_read: 63 });
 
       return syncResult.then(() => {
-        expect(from.callCount).to.equal(1);
-        expect(to.callCount).to.equal(1);
-
+        expectSyncCall(1);
         expect(telemetryService.record.callCount).to.equal(8);
         expect(telemetryService.record.args).to.have.deep.members([
           ['replication:medic:from:success', 1000],
@@ -201,10 +215,10 @@ describe('DBSync service', () => {
       hasAuth.resolves(true);
 
       await service.sync();
-      expect(from.callCount).to.equal(1);
+      expectSyncCall(1);
       clock.tick(5 * 60 * 1000 + 1);
       await nextTick();
-      expect(from.callCount).to.equal(2);
+      expectSyncCall(2);
     });
 
     it('does not attempt sync while offline', () => {
@@ -213,7 +227,7 @@ describe('DBSync service', () => {
 
       service.setOnlineStatus(false);
       return service.sync().then(() => {
-        expect(from.callCount).to.equal(0);
+        expectSyncCall(0);
         expect(checkDateService.check.callCount).to.equal(0);
       });
     });
@@ -224,7 +238,7 @@ describe('DBSync service', () => {
 
       service.sync();
       return service.sync().then(() => {
-        expect(from.callCount).to.equal(1);
+        expectSyncCall(1);
       });
     });
 
@@ -234,7 +248,7 @@ describe('DBSync service', () => {
 
       service.setOnlineStatus(false);
       return service.sync(true).then(() => {
-        expect(from.callCount).to.equal(1);
+        expectSyncCall(1);
         expect(checkDateService.check.callCount).to.equal(1);
       });
     });
@@ -300,31 +314,31 @@ describe('DBSync service', () => {
 
       // sync with default online status
       await service.sync();
-      expect(from.callCount).to.equal(1);
+      expectSyncCall(1);
       // go offline, don't attempt to sync
       service.setOnlineStatus(false);
       clock.tick(25 * 60 * 1000 + 1);
       await nextTick();
-      expect(from.callCount).to.equal(1);
+      expectSyncCall(1);
 
       // when you come back online eventually, sync immediately
       service.setOnlineStatus(true);
-      expect(from.callCount).to.equal(1);
+      expectSyncCall(1);
 
       // wait for the inprogress sync to complete before continuing the test
       await service.sync();
-      expect(from.callCount).to.equal(2);
+      expectSyncCall(2);
 
       // don't sync if you quickly lose and regain connectivity
       service.setOnlineStatus(false);
       service.setOnlineStatus(true);
-      expect(from.callCount).to.equal(2);
+      expectSyncCall(2);
 
       // eventually, sync on the timer
       clock.tick(5 * 60 * 1000 + 1);
       await nextTick();
 
-      expect(from.callCount).to.equal(3);
+      expectSyncCall(3);
     });
 
     it('does not sync to remote if user lacks "can_edit" permission', () => {
@@ -373,9 +387,7 @@ describe('DBSync service', () => {
         toResolve({ docs_read: 32 });
 
         return syncResult.then(() => {
-          expect(from.callCount).to.equal(1);
-          expect(to.callCount).to.equal(1);
-
+          expectSyncCall(1);
           expect(telemetryService.record.callCount).to.equal(9);
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:medic:from:failure', 2000],
@@ -419,8 +431,7 @@ describe('DBSync service', () => {
         toResolve({ docs_read: 32 });
 
         return syncResult.then(() => {
-          expect(from.callCount).to.equal(1);
-          expect(to.callCount).to.equal(1);
+          expectSyncCall(1);
 
           expect(telemetryService.record.callCount).to.equal(9);
           expect(telemetryService.record.args).to.have.deep.members([
@@ -466,11 +477,11 @@ describe('DBSync service', () => {
         toResolve({ docs_read: 67 });
 
         return syncResult.then(() => {
-          expect(from.callCount).to.equal(1);
-          expect(to.callCount).to.equal(1);
-
-          expect(telemetryService.record.callCount).to.equal(9);
+          expectSyncCall(1);
+          expect(telemetryService.record.callCount).to.equal(10);
           expect(telemetryService.record.args).to.have.deep.members([
+            ['replication:user-initiated'],
+
             ['replication:medic:from:failure', 500],
             ['replication:medic:from:ms-since-last-replicated-date', 700],
             ['replication:medic:from:docs', 12],
@@ -510,9 +521,7 @@ describe('DBSync service', () => {
         toResolve({ docs_read: 67 });
 
         return syncResult.then(() => {
-          expect(from.callCount).to.equal(1);
-          expect(to.callCount).to.equal(1);
-
+          expectSyncCall(1);
           expect(telemetryService.record.callCount).to.equal(9);
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:medic:from:failure', 500],
@@ -554,9 +563,7 @@ describe('DBSync service', () => {
         fromResolve({ docs_read: 32 });
 
         return syncResult.then(() => {
-          expect(from.callCount).to.equal(1);
-          expect(to.callCount).to.equal(1);
-
+          expectSyncCall(1);
           expect(telemetryService.record.callCount).to.equal(9);
           expect(telemetryService.record.args).to.have.deep.members([
             ['replication:medic:from:success', 3000],
@@ -599,11 +606,11 @@ describe('DBSync service', () => {
         fromResolve({ docs_read: 500 });
 
         return syncResult.then(() => {
-          expect(from.callCount).to.equal(1);
-          expect(to.callCount).to.equal(1);
-
-          expect(telemetryService.record.callCount).to.equal(9);
+          expectSyncCall(1);
+          expect(telemetryService.record.callCount).to.equal(10);
           expect(telemetryService.record.args).to.have.deep.members([
+            ['replication:user-initiated'],
+
             ['replication:medic:from:success', 8000],
             ['replication:medic:from:ms-since-last-replicated-date', 100],
             ['replication:medic:from:docs', 500],
@@ -640,11 +647,11 @@ describe('DBSync service', () => {
         fromResolve({ docs_read: 400 });
 
         return syncResult.then(() => {
-          expect(from.callCount).to.equal(1);
-          expect(to.callCount).to.equal(1);
-
-          expect(telemetryService.record.callCount).to.equal(9);
+          expectSyncCall(1);
+          expect(telemetryService.record.callCount).to.equal(10);
           expect(telemetryService.record.args).to.have.deep.members([
+            ['replication:user-initiated'],
+
             ['replication:medic:from:success', 700],
             ['replication:medic:from:ms-since-last-replicated-date', 100],
             ['replication:medic:from:docs', 400],
@@ -686,11 +693,11 @@ describe('DBSync service', () => {
         from.events['error'](errorFrom);
 
         return syncResult.then(() => {
-          expect(from.callCount).to.equal(1);
-          expect(to.callCount).to.equal(1);
-
-          expect(telemetryService.record.callCount).to.equal(10);
+          expectSyncCall(1);
+          expect(telemetryService.record.callCount).to.equal(11);
           expect(telemetryService.record.args).to.have.deep.members([
+            ['replication:user-initiated'],
+
             ['replication:medic:to:failure', 100],
             ['replication:medic:to:ms-since-last-replicated-date', 100],
             ['replication:medic:to:docs', 6],
@@ -779,6 +786,67 @@ describe('DBSync service', () => {
       });
 
     });
+
+    describe('give user feedback when manually syncing', () => {
+      it('doesn\'t give feedback when sync happens automatically in the background', async () => {
+        isOnlineOnly.returns(false);
+        hasAuth.resolves(true);
+
+        await service.sync();
+        expectSyncCall(1);
+        expect(store.dispatch.callCount).to.equal(0);
+      });
+
+      it('displays a snackbar when the sync begins and when it succeeds', async () => {
+        isOnlineOnly.returns(false);
+        hasAuth.resolves(true);
+
+        await service.sync(true);
+        expectSyncCall(1);
+        expect(store.dispatch.callCount).to.equal(2);
+        expect(store.dispatch.args[0][0].type).to.equal('SET_SNACKBAR_CONTENT');
+        expect(store.dispatch.args[0][0].payload.message).to.equal('sync.status.in_progress');
+        expect(store.dispatch.args[1][0].type).to.equal('SET_SNACKBAR_CONTENT');
+        expect(store.dispatch.args[1][0].payload.message).to.equal('sync.status.not_required');
+      });
+
+      it('displays a snackbar when the sync fails', async () => {
+        isOnlineOnly.returns(false);
+        hasAuth.resolves(true);
+
+        replicationResultTo = replicationResultFrom = Promise.reject('error');
+        await service.sync(true);
+        expectSyncCall(1);
+        expect(store.dispatch.callCount).to.equal(2);
+        expect(store.dispatch.args[0][0].type).to.equal('SET_SNACKBAR_CONTENT');
+        expect(store.dispatch.args[0][0].payload.message).to.equal('sync.status.in_progress');
+        expect(store.dispatch.args[1][0].type).to.equal('SET_SNACKBAR_CONTENT');
+        expect(store.dispatch.args[1][0].payload.message).to.equal('sync.feedback.failure.unknown');
+      });
+
+      it('allows retrying from the snackbar when the sync fails', async () => {
+        isOnlineOnly.returns(false);
+        hasAuth.resolves(true);
+
+        replicationResultTo = replicationResultFrom = Promise.reject('error');
+        await service.sync(true);
+        expectSyncCall(1);
+        expect(store.dispatch.callCount).to.equal(2);
+        expect(store.dispatch.args[0][0].type).to.equal('SET_SNACKBAR_CONTENT');
+        expect(store.dispatch.args[0][0].payload.message).to.equal('sync.status.in_progress');
+        expect(store.dispatch.args[1][0].type).to.equal('SET_SNACKBAR_CONTENT');
+        expect(store.dispatch.args[1][0].payload.message).to.equal('sync.feedback.failure.unknown');
+
+        replicationResultTo = replicationResultFrom = Promise.resolve();
+        await store.dispatch.args[1][0].payload.action.onClick();
+        expectSyncCall(2);
+        expect(store.dispatch.callCount).to.equal(4);
+        expect(store.dispatch.args[2][0].type).to.equal('SET_SNACKBAR_CONTENT');
+        expect(store.dispatch.args[2][0].payload.message).to.equal('sync.status.in_progress');
+        expect(store.dispatch.args[3][0].type).to.equal('SET_SNACKBAR_CONTENT');
+        expect(store.dispatch.args[3][0].payload.message).to.equal('sync.status.not_required');
+      });
+    });
   });
 
   describe('on denied', () => {
@@ -813,8 +881,7 @@ describe('DBSync service', () => {
         to.events.denied({ some: 'err' });
         expect(dbSyncRetry.callCount).to.equal(1);
         expect(dbSyncRetry.args[0]).to.deep.equal([{ some: 'err' }]);
-        expect(to.callCount).to.equal(1);
-        expect(from.callCount).to.equal(1);
+        expectSyncCall(1);
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0]).to.equal('Denied replicating to remote server');
         expect(telemetryService.record.args).to.not.include.deep.members([['replication:medic:from:denied']]);
@@ -850,8 +917,7 @@ describe('DBSync service', () => {
         from.events.change(replicationResult);
         expect(rulesEngine.monitorExternalChanges.callCount).to.equal(1);
         expect(rulesEngine.monitorExternalChanges.args[0]).to.deep.equal([replicationResult]);
-        expect(to.callCount).to.equal(1);
-        expect(from.callCount).to.equal(1);
+        expectSyncCall(1);
       });
     });
 
@@ -863,13 +929,33 @@ describe('DBSync service', () => {
 
       it('should sync meta dbs with no filter', () => {
         return service.sync().then(() => {
-          expect(db.withArgs({ meta: true }).callCount).to.equal(1);
-          expect(db.withArgs({ meta: true, remote: true }).callCount).to.equal(1);
+          expectSyncMetaCall(1);
           expect(localMetaDb.replicate.from.callCount).to.equal(1);
           expect(localMetaDb.replicate.from.args[0]).to.deep.equal([remoteMetaDb]);
           expect(localMetaDb.replicate.to.callCount).to.equal(1);
           expect(localMetaDb.replicate.to.args[0]).to.deep.equal([remoteMetaDb]);
         });
+      });
+
+      it('should sync meta dbs only once if sync is called twice', async () => {
+        await service.sync();
+        expectSyncMetaCall(1);
+        expect(localMetaDb.replicate.from.callCount).to.equal(1);
+        expect(localMetaDb.replicate.from.args[0]).to.deep.equal([remoteMetaDb]);
+        expect(localMetaDb.replicate.to.callCount).to.equal(1);
+        expect(localMetaDb.replicate.to.args[0]).to.deep.equal([remoteMetaDb]);
+
+        await service.sync();
+        expectSyncMetaCall(1);
+        expect(localMetaDb.replicate.from.callCount).to.equal(1);
+      });
+
+      it('should sync meta dbs twice if sync is called twice with force flag', async () => {
+        await service.sync();
+        expectSyncMetaCall(1);
+        await service.sync(true);
+        expectSyncMetaCall(2);
+        expect(localMetaDb.replicate.from.callCount).to.equal(2);
       });
 
       it('should write purge log with the current seq after syncing', () => {
@@ -954,12 +1040,13 @@ describe('DBSync service', () => {
         await syncCall;
 
         expect(telemetryService.record.args).to.have.deep.members([
+          ['replication:user-initiated'],
+          ['replication:medic:to:success', 0],
+          ['replication:medic:from:success', 0],
+
           ['replication:meta:sync:failure', 1312321],
           ['replication:meta:sync:docs', 13],
           ['replication:meta:sync:failure:reason:offline:client'],
-
-          ['replication:medic:to:success', 0],
-          ['replication:medic:from:success', 0],
         ]);
       });
     });

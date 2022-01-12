@@ -65,8 +65,8 @@ const setupTokenLoginSettings = (configureAppUrl = false) => {
 };
 
 describe('login', () => {
-  beforeAll(() => utils.saveDoc(parentPlace));
-  afterAll(() => utils.revertDb());
+  before(() => utils.saveDoc(parentPlace));
+  after(() => utils.revertDb([], true));
 
   beforeEach(() => {
     user = {

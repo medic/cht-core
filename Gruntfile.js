@@ -72,7 +72,6 @@ module.exports = function(grunt) {
     replace: 'grunt-text-replace',
     uglify: 'grunt-contrib-uglify-es',
   });
-  require('./grunt/service-worker')(grunt);
   require('time-grunt')(grunt);
 
   // Project configuration
@@ -225,23 +224,6 @@ module.exports = function(grunt) {
         },
       }
     },
-    postcss: {
-      options: {
-        processors: [
-          require('autoprefixer')(),
-        ],
-      },
-      dist: {
-        src: 'build/ddocs/medic/_attachments/css/*.css',
-      },
-    },
-    'generate-service-worker': {
-      config: {
-        staticDirectoryPath: 'build/ddocs/medic/_attachments',
-        apiSrcDirectoryPath: 'api/src',
-        scriptOutputPath: 'build/ddocs/medic/_attachments/js/service-worker.js',
-      }
-    },
     copy: {
       ddocs: {
         expand: true,
@@ -339,7 +321,7 @@ module.exports = function(grunt) {
         },
         stdio: 'inherit', // enable colors!
       },
-      'eslint-sw': `${ESLINT_COMMAND} build/ddocs/medic/_attachments/js/service-worker.js`,
+      'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
       'pack-node-modules': {
         cmd: ['api', 'sentinel']
           .map(module =>
@@ -419,7 +401,7 @@ module.exports = function(grunt) {
       'setup-test-database': {
         cmd: [
           `docker run -d -p 4984:5984 -p 4986:5986 --rm --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data couchdb:2`,
-          'sh scripts/e2e/wait_for_response_code.sh 4984 200 couch',
+          'sh scripts/wait_for_response_code.sh 4984 200 couch',
           `curl 'http://localhost:4984/_cluster_setup' -H 'Content-Type: application/json' --data-binary '{"action":"enable_single_node","username":"admin","password":"pass","bind_address":"0.0.0.0","port":5984,"singlenode":true}'`,
           'COUCH_URL=http://admin:pass@localhost:4984/medic COUCH_NODE_NAME=nonode@nohost grunt secure-couchdb', // yo dawg, I heard you like grunt...
           // Useful for debugging etc, as it allows you to use Fauxton easily
@@ -428,7 +410,7 @@ module.exports = function(grunt) {
       },
       'wait_for_api_down': {
         cmd: [
-          'sh scripts/e2e/wait_for_response_code.sh 4988 000 api',
+          'sh scripts/wait_for_response_code.sh 4988 000 api',
         ].join('&& '),
         exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
@@ -439,7 +421,7 @@ module.exports = function(grunt) {
         exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
       'e2e-servers': {
-        cmd: `${BUILD_NUMBER ? 'echo running in CI' :'node ./scripts/e2e/e2e-servers.js &'}`
+        cmd: `${BUILD_NUMBER ? 'echo running in CI' :'node ./tests/scripts/e2e-servers.js &'}`
       },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
@@ -472,7 +454,7 @@ module.exports = function(grunt) {
       },
       'start-webdriver-ci': {
         cmd:
-          'scripts/e2e/start_webdriver.sh'
+          'tests/scripts/start_webdriver.sh'
       },
       'check-env-vars':
         'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
@@ -559,6 +541,10 @@ module.exports = function(grunt) {
 
             // patch enketo to always mark the /inputs group as relevant
             'patch webapp/node_modules/enketo-core/src/js/form.js < webapp/patches/enketo-inputs-always-relevant.patch',
+
+            // patch enketo to fix repeat name collision bug - this should be removed when upgrading to a new version of enketo-core
+            // https://github.com/enketo/enketo-core/issues/815
+            'patch webapp/node_modules/enketo-core/src/js/calculate.js < webapp/patches/enketo-repeat-name-collision.patch',
 
             // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
             'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
@@ -678,7 +664,6 @@ module.exports = function(grunt) {
         // instead of watching the source files, watch the build folder and upload on rebuild
         files: ['build/ddocs/medic/_attachments/**/*'],
         tasks: [
-          'generate-service-worker',
           'couch-compile:primary',
           'deploy',
         ],
@@ -883,8 +868,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-css', 'Build the CSS resources', [
-    'sass',
-    'postcss',
+    'sass'
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
@@ -917,12 +901,6 @@ module.exports = function(grunt) {
   grunt.registerTask('build-ddoc', 'Build the main ddoc', [
     'couch-compile:secondary',
     'copy:ddoc-attachments',
-    'build-service-worker',
-  ]);
-
-  grunt.registerTask('build-service-worker', 'Build the service worker', [
-    'generate-service-worker',
-    'exec:eslint-sw',
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
@@ -985,7 +963,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('e2e-integration', 'Deploy app for testing', [
     'e2e-env-setup',
-    'exec:e2e-integration'
+    'exec:e2e-integration',
+    'exec:eslint-sw'
   ]);
 
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
@@ -1083,6 +1062,7 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
     'exec:e2e-servers',
     'exec:e2e-integration',
+    'exec:eslint-sw',
   ]);
 
   grunt.registerTask('ci-e2e-cht', 'Run e2e tests for CI', [

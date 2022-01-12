@@ -96,7 +96,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     const routeSubscription =  this.route.params.subscribe((params) => {
       if (params.id) {
         this.reportsActions.selectReport(this.route.snapshot.params.id);
-        this.globalActions.clearCancelCallback();
+        this.globalActions.clearNavigation();
 
         $('.tooltip').remove();
       } else {

@@ -71,7 +71,7 @@ describe('Creating custom places', () => {
   it('the LHS add place button should show the appropriate title', async () => {
     await login.cookieLogin();
     await commonPage.goToPeople();
-    await expect(await contactsPage.leftAddPlace()).toHaveText(translations[customTopLevel.create_key]);
+    expect(await (await contactsPage.leftAddPlace()).getText()).to.contain(translations[customTopLevel.create_key]);
   });
 
   it('the LHS add place button should read add place when multiple places exist at the current level', async () => {
@@ -83,28 +83,30 @@ describe('Creating custom places', () => {
     await utils.saveDocs(forms);
     await login.cookieLogin();
     await commonPage.goToPeople();
-    await expect(await contactsPage.leftAddPlace()).toHaveText(addPlace);
+    expect(await (await contactsPage.leftAddPlace()).getText()).to.contain(addPlace);
   });
 
   it('the RHS add place button should show the custom title', async () => {
     const ngoPlace = placeFactory.place().build({ name: 'NGO', type: 'contact', contact_type: customTopLevel.id });
     await utils.saveDoc(ngoPlace);
     await commonPage.goToPeople(ngoPlace._id);
-    await expect(await contactsPage.rightAddPlace()).toHaveText(translations[customMidLevel.create_key]);
+    expect(await (await contactsPage.rightAddPlace()).getText()).to.contain(translations[customMidLevel.create_key]);
   });
 
   it('the RHS add place button should show the add place title', async () => {
     const lowLevel = placeFactory.place().build({ name: 'LowLevel', type: 'contact', contact_type: customLowLevel.id });
     await utils.saveDoc(lowLevel);
     await commonPage.goToPeople(lowLevel._id);
-    await expect(await contactsPage.rightAddPlace()).toHaveText(addPlace);
+    expect(await (await contactsPage.rightAddPlace()).getText()).to.contain(addPlace);
   });
 
   it('should show the single add person button with the correct title', async () => {
     const ngoPlace = placeFactory.place().build({ name: 'NGO', type: 'contact', contact_type: customTopLevel.id });
     await utils.saveDoc(ngoPlace);
     await commonPage.goToPeople(ngoPlace._id);
-    await expect(await contactsPage.rightAddPerson(person1.create_key)).toHaveText(translations[person1.create_key]);
+    expect(
+      await (await contactsPage.rightAddPerson(person1.create_key)).getText()
+    ).to.contain(translations[person1.create_key]);
   });
 
   it('should show the multi add person button with the correct title', async () => {
@@ -112,7 +114,7 @@ describe('Creating custom places', () => {
       .build({ name: 'multiPerson', type: 'contact', contact_type: customParentWithMultiplePersons.id });
     await utils.saveDoc(multiPerson);
     await commonPage.goToPeople(multiPerson._id);
-    await expect(await contactsPage.rightAddPersons()).toHaveText(addPerson);
+    expect(await (await contactsPage.rightAddPersons()).getText()).to.contain(addPerson);
   });
 
   it('should show custom places in their own list', async () => {
@@ -124,7 +126,6 @@ describe('Creating custom places', () => {
       .build({ name: 'lowlvl', type: 'contact', contact_type: customLowLevel.id, parent: { _id: topLevel._id } });
     await utils.saveDocs([topLevel, midLevel, lowLevel]);
     await commonPage.goToPeople(topLevel._id);
-    await commonPage.waitForLoaders();
     const displayedListOfContacts = await contactsPage.allContactsList();
     const expected = [
       {
@@ -135,6 +136,6 @@ describe('Creating custom places', () => {
         heading: 'mid-level Plural',
         contactNames: ['midLevel']
       }];
-    expect(displayedListOfContacts).toEqual(expected);
+    expect(displayedListOfContacts).to.deep.equal(expected);
   });
 });

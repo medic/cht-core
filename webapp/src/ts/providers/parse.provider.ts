@@ -190,7 +190,7 @@ class ASTCompiler {
     const ast = this.cAst;
     const stmts = this.cStmts;
     const k = this.build(ast.key);
-    const o = this.build(ast.obj);
+    const o = this.build(ast.receiver);
     const v = this.createVar();
     stmts.push(`${v}=${o}["${k}"]`);
     return v;

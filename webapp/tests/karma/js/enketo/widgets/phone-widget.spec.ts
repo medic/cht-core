@@ -101,4 +101,9 @@ describe('Enketo: Phone Widget', () => {
 
     expect(input.val()).to.equal(valid);
   });
+
+  it('should not modify non-phone fields', () => {
+    buildHtml('other');
+    expect($(phoneWidget.selector).length).to.equal(0);
+  });
 });

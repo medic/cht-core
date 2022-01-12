@@ -15,19 +15,15 @@ describe('MessageFormat', () => {
     await loginPage.cookieLogin();
   });
 
-  after(async () => {
-    await utils.revertDb([], true);
-  });
-
   it('should display plurals correctly', async () => {
     await commonPage.goToPeople();
     await contactElements.selectLHSRowByText(district_hospital.name, false);
 
     const reportsFilter = await contactElements.getReportFiltersText();
-    expect(reportsFilter.sort()).toEqual(['3 months', '6 months', 'View all'].sort());
+    expect(reportsFilter).to.have.members(['3 months', '6 months', 'View all']);
 
     const tasksFilter = await contactElements.getReportTaskFiltersText();
-    expect(tasksFilter.sort()).toEqual(['1 week', '2 weeks', 'View all'].sort());
+    expect(tasksFilter).to.have.members(['1 week', '2 weeks', 'View all']);
 
   });
 
@@ -47,8 +43,8 @@ describe('MessageFormat', () => {
       timeoutMsg: 'Timed out waiting for translations to update'
     });
 
-    expect(await (await commonPage.getReportsButtonLabel()).getText()).toEqual('Reports {{thing}}');
-    expect(await (await commonPage.getTasksButtonLabel()).getText()).toEqual('Tasks {thing');
-    expect(await (await commonPage.getMessagesButtonLabel()).getText()).toEqual('Messages {thing}');
+    expect(await (await commonPage.getReportsButtonLabel()).getText()).to.equal('Reports {{thing}}');
+    expect(await (await commonPage.getTasksButtonLabel()).getText()).to.equal('Tasks {thing');
+    expect(await (await commonPage.getMessagesButtonLabel()).getText()).to.equal('Messages {thing}');
   });
 });

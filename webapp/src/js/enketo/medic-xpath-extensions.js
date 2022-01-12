@@ -1,7 +1,5 @@
-const moment = require('moment');
-
-const DATE_STRING = /^\d\d\d\d-\d{1,2}-\d{1,2}(?:T\d\d:\d\d:\d\d\.?\d?\d?(?:Z|[+-]\d\d:\d\d)|.*)?$/;
 const RAW_NUMBER = /^(-?[0-9]+)(\.[0-9]+)?$/;
+const DATE_STRING = /^\d\d\d\d-\d{1,2}-\d{1,2}(?:T\d\d:\d\d:\d\d\.?\d?\d?(?:Z|[+-]\d\d:\d\d)|.*)?$/;
 const XPR = {
   number:  v => ({ t:'num',  v }),
   string:  v => ({ t:'str',  v }),
@@ -9,6 +7,8 @@ const XPR = {
 };
 
 let zscoreUtil;
+let toBikramSambat;
+let moment;
 
 const isObject = (value) => {
   const type = typeof value;
@@ -22,7 +22,7 @@ const getValue = function(resultObject) {
 
   // input fields, evaluated as `UNORDERED_NODE_ITERATOR_TYPE`, are received as arrays with one element
   if (resultObject.t === 'arr' && resultObject.v.length) {
-    return asString(resultObject);
+    return isNaN(resultObject.v[0]) ? asString(resultObject) : resultObject.v[0];
   }
 
   return resultObject.v;
@@ -58,52 +58,76 @@ const getTimezoneOffsetAsTime = function(date) {
   return direction + hours + ':' + minutes;
 };
 
-const asString = (r) => {
-  return r.t === 'arr' ?
-    r.v.length ? r.v[0].textContent || '' : '' :
-    r.v.toString();
+const parseTimestampToDate = (value) => {
+  const timestamp = parseInt(getValue(value));
+
+  if (isNaN(timestamp)) {
+    return XPR.string('');
+  }
+
+  return XPR.date(new Date(timestamp));
 };
 
-// Copied from https://github.com/enketo/openrosa-xpath-evaluator/blob/master/src/openrosa-extensions.js
-const asDate = (r) => {
-  let temp;
+const asString = (r) => {
+  if(r.t !== 'arr') {
+    return r.v.toString();
+  }
+  if(r.v.length && !(r.v[0] === null || r.v[0] === undefined)) {
+    return r.v[0].textContent || '' ;
+  }
+  return '';
+};
+
+// Based on https://github.com/enketo/openrosa-xpath-evaluator/blob/3bfcb493ec01cf84f55e254a096a31e5be01de15/src/openrosa-extensions.js#L547
+const asMoment = (r) => {
   const dateSinceUnixEpoch = (days) => {
     // Create a date at 00:00:00 1st Jan 1970 _in the current timezone_
     const date = new Date(1970, 0, 1);
     date.setDate(1 + days);
-    return date;
+    return moment(date);
   };
   switch(r.t) {
-  case 'bool': return new Date(NaN);
-  case 'date': return r.v;
-  case 'num':  return dateSinceUnixEpoch(r.v);
+  case 'bool':
+    return moment(NaN);
+  case 'date':
+    return moment(r.v);
+  case 'num':
+    return dateSinceUnixEpoch(r.v);
   case 'arr':
-  default:
+  default: {
     r = asString(r);
     if(RAW_NUMBER.test(r)) {
       return dateSinceUnixEpoch(parseInt(r, 10));
-    } else if(DATE_STRING.test(r)) {
-      temp = r.indexOf('T');
-      if(temp !== -1) {
-        r = r.substring(0, temp);
-      }
-      temp = r.split('-');
-      if(moment({ year: temp[0], month: temp[1], day: temp[2] }).isValid()) {
-        const zeroPad = (n, len) => n.padStart(len || 2, '0');
-        const time = `${zeroPad(temp[0])}-${zeroPad(temp[1])}-${zeroPad(temp[2])}`+
-          'T00:00:00.000' + getTimezoneOffsetAsTime(new Date(r));
-        return new Date(time);
-      }
     }
-    return new Date(r);
+    const rMoment = moment(r);
+    if(DATE_STRING.test(r) && rMoment.isValid()) {
+      const rDate = rMoment.format('YYYY-MM-DD');
+      const time = `${rDate}T00:00:00.000${getTimezoneOffsetAsTime(new Date(rDate))}`;
+      return moment(time);
+    }
+    return moment(r);
   }
+  }
+};
+
+const convertToBikramSambat = (value) => {
+  const date = getValue(value);
+  if (!date) {
+    return { t: 'str', v: '' };
+  }
+
+  const convertedDate = toBikramSambat(moment(date));
+
+  return { t: 'str', v: convertedDate };
 };
 
 module.exports = {
   getTimezoneOffsetAsTime: getTimezoneOffsetAsTime,
   toISOLocalString: toISOLocalString,
-  init: function(_zscoreUtil) {
+  init: function(_zscoreUtil, _toBikramSambat, _moment) {
     zscoreUtil = _zscoreUtil;
+    toBikramSambat = _toBikramSambat;
+    moment = _moment;
   },
   func: {
     today: function() {
@@ -119,20 +143,17 @@ module.exports = {
       }
       return XPR.number(result);
     },
+    'to-bikram-sambat': convertToBikramSambat,
+    'parse-timestamp-to-date': parseTimestampToDate, // Function name convention of XForm
     'difference-in-months': function(d1, d2) {
-      d1 = asDate(d1);
-      d2 = asDate(d2);
+      const d1Moment = asMoment(d1);
+      const d2Moment = asMoment(d2);
 
-      const isValidDate = (d) => d instanceof Date && !isNaN(d);
-
-      if(!d1 || !d2 || !isValidDate(d1) || !isValidDate(d2)) {
+      if(!d1Moment.isValid() || !d2Moment.isValid()) {
         return XPR.string('');
       }
 
-      const months =
-        ((d2.getFullYear() - d1.getFullYear()) * 12) +
-        (d2.getMonth() - d1.getMonth()) +
-        (d2.getDate() < d1.getDate() ? -1 : 0);
+      const months = d2Moment.diff(d1Moment, 'months');
       return XPR.number(months);
     },
   },

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -22,7 +22,7 @@ describe('EditReportComponent', () => {
   let select2SearchService;
   let updateFacilityService;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     bdModalRef = {
       hide: sinon.stub(),
       onHidden: new Subject(),

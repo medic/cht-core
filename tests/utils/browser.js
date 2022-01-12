@@ -24,6 +24,11 @@ const feedBackDocsScript = async (done) => {
   })));
 };
 
+const getCookies = (...cookieNameList) => { 
+  return browser.getCookies(cookieNameList);
+};
+
 module.exports = {
-  feedBackDocs
+  feedBackDocs,
+  getCookies
 };

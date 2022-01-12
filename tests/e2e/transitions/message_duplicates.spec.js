@@ -1,5 +1,5 @@
 const chai = require('chai');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 const utils = require('../../utils');
 const apiUtils = require('./utils');
 
@@ -49,7 +49,7 @@ const postMessages = (messages) => {
 const getRecipient = doc => doc.tasks[0].messages[0].to;
 
 describe('message duplicates', () => {
-  afterAll(() => utils.revertDb());
+  after(() => utils.revertDb([], true));
   afterEach(() => utils.revertSettings(true));
 
   it('should mark as duplicate after 5 retries by default', () => {

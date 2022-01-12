@@ -159,11 +159,11 @@ export class EnketoTranslationService {
    */
   contactRecordToJs(record) {
     const root = $.parseXML(record).firstChild;
-
     const result:any = {
       doc: null,
       siblings: {},
     };
+
     const repeats = this.repeatsToJs(root);
     if (repeats) {
       result.repeats = repeats;
@@ -171,16 +171,18 @@ export class EnketoTranslationService {
 
     const NODE_NAMES_TO_IGNORE = ['meta', 'inputs', 'repeat'];
 
-    this.withElements(root.childNodes)
-      .filter((node:any) => !NODE_NAMES_TO_IGNORE.includes(node.nodeName))
+    this
+      .withElements(root.childNodes)
+      .filter((node:any) => !NODE_NAMES_TO_IGNORE.includes(node.nodeName) && node.childElementCount > 0)
       .forEach((child:any) => {
-        // First child is the main result, rest are siblings
-        if(!result.doc) {
+        if (!result.doc) {
+          // First child is the main result, rest are siblings
           result.doc = this.nodesToJs(child.childNodes);
-        } else {
-          result.siblings[child.nodeName] = this.nodesToJs(child.childNodes);
+          return;
         }
+        result.siblings[child.nodeName] = this.nodesToJs(child.childNodes);
       });
+
     return result;
   }
 }

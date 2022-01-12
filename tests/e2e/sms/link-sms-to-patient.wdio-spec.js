@@ -6,7 +6,6 @@ const placeFactory = require('../../factories/cht/contacts/place');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const contactPage = require('../../page-objects/contacts/contacts.wdio.page');
 const sentinelUtils = require('../sentinel/utils');
-const chai = require('chai');
 
 const formId = 'CASEID';
 const formTitle = 'Case Id Form';
@@ -42,8 +41,6 @@ describe('Link SMS to patient without passing id', () => {
     await loginPage.cookieLogin();
   });
 
-  after(async () => await utils.revertDb([], true));
-
   it('Send SMS without patient_id and report created under person', async () => {
     await utils.createUsers([user]);
     await sentinelUtils.waitForSentinel();
@@ -54,10 +51,9 @@ describe('Link SMS to patient without passing id', () => {
     });
 
     await commonPage.goToPeople(user.contact._id);
-    await commonPage.waitForLoaders();
     const allRHSReports = await contactPage.getAllRHSReportsNames();
 
-    chai.expect([formTitle]).to.have.members(allRHSReports);
+    expect([formTitle]).to.have.members(allRHSReports);
   });
 });
 

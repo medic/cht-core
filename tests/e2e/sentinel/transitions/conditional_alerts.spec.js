@@ -1,6 +1,7 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
+const { expect } = require('chai');
 
 const contacts = [
   {
@@ -38,9 +39,9 @@ const contacts = [
 ];
 
 describe('conditional_alerts', () => {
-  beforeAll(done => utils.saveDocs(contacts).then(done));
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
+  before(() => utils.saveDocs(contacts));
+  after(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb(contacts.map(c => c._id), true));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
@@ -74,7 +75,7 @@ describe('conditional_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -108,7 +109,7 @@ describe('conditional_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -146,7 +147,7 @@ describe('conditional_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -181,17 +182,14 @@ describe('conditional_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toBeDefined();
-        expect(info.transitions.conditional_alerts).toBeDefined();
-        expect(info.transitions.conditional_alerts.ok).toBe(true);
+        expect(info.transitions.conditional_alerts.ok).to.be.true;
         return utils.getDoc(doc._id);
       })
       .then(updated => {
-        expect(updated.tasks).toBeDefined();
-        expect(updated.tasks.length).toEqual(1);
-        expect(updated.tasks[0].messages[0].to).toEqual(doc.from);
-        expect(updated.tasks[0].messages[0].message).toEqual('This is an alert');
-        expect(updated.tasks[0].state).toEqual('pending');
+        expect(updated.tasks).to.have.lengthOf(1);
+        expect(updated.tasks[0].messages[0].to).to.equal(doc.from);
+        expect(updated.tasks[0].messages[0].message).to.equal('This is an alert');
+        expect(updated.tasks[0].state).to.equal('pending');
       });
   });
 
@@ -245,33 +243,27 @@ describe('conditional_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(form1._id))
       .then(() => sentinelUtils.getInfoDoc(form1._id))
       .then(info => {
-        expect(info.transitions).toBeDefined();
-        expect(info.transitions.conditional_alerts).toBeDefined();
-        expect(info.transitions.conditional_alerts.ok).toBe(true);
+        expect(info.transitions.conditional_alerts.ok).to.be.true;
         return utils.getDoc(form1._id);
       })
       .then(updated => {
-        expect(updated.tasks).toBeDefined();
-        expect(updated.tasks.length).toEqual(1);
-        expect(updated.tasks[0].messages[0].to).toEqual(form1.from);
-        expect(updated.tasks[0].messages[0].message).toEqual('Patient has a fever');
-        expect(updated.tasks[0].state).toEqual('pending');
+        expect(updated.tasks).to.have.lengthOf(1);
+        expect(updated.tasks[0].messages[0].to).to.equal(form1.from);
+        expect(updated.tasks[0].messages[0].message).to.equal('Patient has a fever');
+        expect(updated.tasks[0].state).to.equal('pending');
       })
       .then(() => utils.saveDoc(form0))
       .then(() => sentinelUtils.waitForSentinel(form0._id))
       .then(() => sentinelUtils.getInfoDoc(form0._id))
       .then(info => {
-        expect(info.transitions).toBeDefined();
-        expect(info.transitions.conditional_alerts).toBeDefined();
-        expect(info.transitions.conditional_alerts.ok).toBe(true);
+        expect(info.transitions.conditional_alerts.ok).to.be.true;
         return utils.getDoc(form0._id);
       })
       .then(updated => {
-        expect(updated.tasks).toBeDefined();
-        expect(updated.tasks.length).toEqual(1);
-        expect(updated.tasks[0].messages[0].to).toEqual(form0.from);
-        expect(updated.tasks[0].messages[0].message).toEqual('Fever increased since the last measurement');
-        expect(updated.tasks[0].state).toEqual('pending');
+        expect(updated.tasks).to.have.lengthOf(1);
+        expect(updated.tasks[0].messages[0].to).to.equal(form0.from);
+        expect(updated.tasks[0].messages[0].message).to.equal('Fever increased since the last measurement');
+        expect(updated.tasks[0].state).to.equal('pending');
       });
   });
 });

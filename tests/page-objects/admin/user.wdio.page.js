@@ -75,7 +75,6 @@ const selectContact = async (associatedContact) => {
   await (await select2SearchContactInputBox()).waitForDisplayed();
   await (await select2SearchContactInputBox()).addValue(associatedContact);
   await (await select2Name()).click();
-
 };
 
 const saveUser = async (isSuccessExpected = true)  => {

@@ -1,4 +1,6 @@
 const chai = require('chai');
+const chaiExclude = require('chai-exclude');
+chai.use(chaiExclude);
 const _ = require('lodash');
 const utils = require('../../../utils');
 const sUtils = require('../../sentinel/utils');
@@ -21,10 +23,12 @@ const users = [
       type: 'health_center',
       name: 'Offline place',
       parent: 'PARENT_PLACE',
+      place_id: 'shortcode:offline',
     },
     contact: {
       _id: 'fixture:user:offline',
       name: 'OfflineUser',
+      patient_id: 'shortcode:user:offline',
     },
     roles: ['district_admin'],
   },
@@ -36,10 +40,12 @@ const users = [
       type: 'health_center',
       name: 'Online place',
       parent: 'PARENT_PLACE',
+      place_id: 'shortcode:online',
     },
     contact: {
       _id: 'fixture:user:online',
       name: 'OnlineUser',
+      patient_id: 'shortcode:user:online',
     },
     roles: ['national_admin'],
   },
@@ -50,6 +56,7 @@ const users = [
     contact: {
       _id: 'fixture:user:supervisor',
       name: 'Supervisor',
+      patient_id: 'shortcode:user:supervisor',
     },
     roles: ['district_admin'],
   },
@@ -66,16 +73,16 @@ const DOCS_TO_KEEP = [
 ];
 
 describe('bulk-docs handler', () => {
-  beforeAll(() => {
+  before(() => {
     return utils
       .saveDoc(parentPlace)
       .then(() => sUtils.waitForSentinel())
       .then(() => utils.createUsers(users));
   });
 
-  afterAll(() =>
+  after(() =>
     utils
-      .revertDb()
+      .revertDb([], true)
       .then(() => utils.deleteUsers(users)));
 
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
@@ -367,6 +374,129 @@ describe('bulk-docs handler', () => {
         chai.expect(result[1]).to.include({ id: 'denied_task', error: 'forbidden' });
         chai.expect(result[2]).to.include({ id: 'allowed_target', ok: true });
         chai.expect(result[3]).to.include({ id: 'denied_target', ok: true });
+      });
+  });
+
+  it('should filter offline reports', () => {
+    const existentDocs = [
+      {
+        _id: 'allowed_contact_1',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline' },
+        name: 'Allowed Contact 1',
+        patient_id: 'shortcode:allowed_contact_1',
+      },
+      {
+        _id: 'denied_contact_1',
+        type: 'clinic',
+        parent: { _id: 'fixture:online' },
+        name: 'Denied Contact 1',
+        patient_id: 'shortcode:denied_contact_1',
+      },
+    ];
+
+    const newDocs = [
+      {
+        _id: 'allowed_report_1',
+        type: 'data_record',
+        form: 'form',
+        contact: { _id: 'fixture:user:offline' },
+        patient_id: 'shortcode:allowed_contact_1',
+      },
+      {
+        _id: 'allowed_report_2',
+        type: 'data_record',
+        form: 'form',
+        contact: { _id: 'fixture:user:offline' },
+        fields: { patient_id: 'shortcode:allowed_contact_1' },
+      },
+      {
+        _id: 'allowed_report_3',
+        type: 'data_record',
+        form: 'form',
+        contact: { _id: 'fixture:user:offline' },
+        fields: { patient_uuid: 'allowed_contact_1' },
+      },
+      {
+        _id: 'allowed_report_4',
+        type: 'data_record',
+        form: 'form',
+        contact: { _id: 'fixture:user:offline' },
+        fields: { private: true, patient_uuid: 'allowed_contact_1' },
+      },
+      {
+        _id: 'allowed_report_5',
+        type: 'data_record',
+        form: 'form',
+        contact: { _id: 'fixture:user:offline' },
+        fields: { private: true, patient_uuid: 'fixture:user:offline' },
+      },
+      {
+        _id: 'allowed_report_6',
+        type: 'data_record',
+        form: 'form',
+        contact: { _id: 'fixture:user:offline' },
+        fields: { private: true, patient_id: 'shortcode:user:offline' },
+      },
+      {
+        _id: 'allowed_report_7',
+        type: 'data_record',
+        form: 'form',
+        contact: { _id: 'fixture:user:offline' },
+        fields: { private: true, place_id: 'shortcode:offline' },
+      },
+      {
+        _id: 'allowed_report_7',
+        type: 'data_record',
+        form: 'form',
+        contact: { _id: 'fixture:user:offline' }, // known submitter
+        fields: { }, // no subject
+      },
+      {
+        _id: 'denied_report_1',
+        type: 'data_record',
+        form: 'form',
+        contact: { _id: 'fixture:user:offline' },
+        fields: { place_id: 'unknown place' }, // unknown subject
+      },
+      {
+        _id: 'denied_report_2',
+        type: 'data_record',
+        form: 'form',
+        contact: { _id: 'fixture:user:offline' },
+        fields: { patient_id: 'shortcode:denied_contact_1' }, // unknown subject
+      },
+      {
+        _id: 'denied_report_3',
+        type: 'data_record',
+        form: 'form',
+        contact: { _id: 'fixture:user:online' }, // unknown submitter for "sensitive" report
+        fields: { private: true, patient_id: 'shortcode:user:offline' },
+      },
+      {
+        _id: 'denied_report_4',
+        type: 'data_record',
+        form: 'form',
+        contact: { _id: 'fixture:user:online' }, // unknown submitter
+        fields: { }, // no subject
+      },
+    ];
+
+    offlineRequestOptions.body = { docs: newDocs };
+
+    return utils
+      .saveDocs(existentDocs)
+      .then(() => utils.requestOnTestDb(offlineRequestOptions))
+      .then((results) => {
+        chai.expect(results.length).to.equal(newDocs.length);
+        results.forEach((result, idx) => {
+          const originalDoc = newDocs[idx];
+          if (result.id.startsWith('allowed')) {
+            chai.expect(result).to.deep.include({ id: originalDoc._id, ok: true });
+          } else {
+            chai.expect(result).to.deep.equal({ id: originalDoc._id, error: 'forbidden' });
+          }
+        });
       });
   });
 

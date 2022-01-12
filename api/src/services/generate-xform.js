@@ -8,6 +8,7 @@ const htmlParser = require('node-html-parser');
 const logger = require('../logger');
 const db = require('../db');
 const formsService = require('./forms');
+const markdown = require('enketo-transformer/src/markdown');
 
 const MODEL_ROOT_OPEN = '<root xmlns="http://www.w3.org/2002/xforms" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema">';
 const ROOT_CLOSE = '</root>';
@@ -16,17 +17,40 @@ const MEDIA_SRC_ATTR = ' data-media-src="';
 
 const FORM_STYLESHEET = path.join(__dirname, '../xsl/openrosa2html5form.xsl');
 const MODEL_STYLESHEET = path.join(__dirname, '../../node_modules/enketo-transformer/src/xsl/openrosa2xmlmodel.xsl');
+const XSLTPROC_CMD = 'xsltproc';
+
+const processErrorHandler = (xsltproc, err, reject) => {
+  xsltproc.stdin.end();
+  if (err.code === 'EPIPE'                                                    // Node v10,v12,v14
+      || (err.code === 'ENOENT' && err.syscall === `spawn ${XSLTPROC_CMD}`)   // Node v8,v16+
+  ) {
+    const errMsg = `Unable to continue execution, check that '${XSLTPROC_CMD}' command is available.`;
+    logger.error(errMsg);
+    return reject(new Error(errMsg));
+  }
+  logger.error(err);
+  return reject(new Error(`Unknown Error: An error occurred when executing '${XSLTPROC_CMD}' command`));
+};
 
 const transform = (formXml, stylesheet) => {
   return new Promise((resolve, reject) => {
-    const xsltproc = childProcess.spawn('xsltproc', [ stylesheet, '-' ]);
+    const xsltproc = childProcess.spawn(XSLTPROC_CMD, [ stylesheet, '-' ]);
     let stdout = '';
     let stderr = '';
     xsltproc.stdout.on('data', data => stdout += data);
     xsltproc.stderr.on('data', data => stderr += data);
     xsltproc.stdin.setEncoding('utf-8');
-    xsltproc.stdin.write(formXml);
-    xsltproc.stdin.end();
+    xsltproc.stdin.on('error', err => {
+      // Errors related with spawned processes and stdin are handled here on Node v10
+      return processErrorHandler(xsltproc, err, reject);
+    });
+    try {
+      xsltproc.stdin.write(formXml);
+      xsltproc.stdin.end();
+    } catch (err) {
+      // Errors related with spawned processes and stdin are handled here on Node v12
+      return processErrorHandler(xsltproc, err, reject);
+    }
     xsltproc.on('close', (code, signal) => {
       if (code !== 0 || signal || stderr.length) {
         let errorMsg = `Error transforming xml. xsltproc returned code "${code}", and signal "${signal}"`;
@@ -41,74 +65,77 @@ const transform = (formXml, stylesheet) => {
       resolve(stdout);
     });
     xsltproc.on('error', err => {
-      logger.error(err);
-      return reject(new Error('Child process errored attempting to transform xml'));
+      // Errors related with spawned processes are handled here on Node v8,v14,v16+
+      return processErrorHandler(xsltproc, err, reject);
     });
   });
 };
 
-const replaceMarkdown = html => {
-  return html
-    // headings
-    .replace(/\n# (.*)\n/gm, '<h1>$1</h1>')
-    .replace(/\n## (.*)\n/gm, '<h2>$1</h2>')
-    .replace(/\n### (.*)\n/gm, '<h3>$1</h3>')
-    .replace(/\n#### (.*)\n/gm, '<h4>$1</h4>')
-    .replace(/\n##### (.*)\n/gm, '<h5>$1</h5>')
+const convertDynamicUrls = (original) => original.replace(
+  /<a[^>]+href="([^"]*---output[^"]*)"[^>]*>(.*?)<\/a>/gm,
+  '<a href="#" target="_blank" rel="noopener" class="dynamic-url">' +
+  '$2<span class="url hidden">$1</span>' +
+  '</a>');
 
-    // font styles
-    .replace(/__([^\s]([^_]*[^\s])?)__/gm, '<strong>$1</strong>')
-    .replace(/\*\*([^\s]([^*]*[^\s])?)\*\*/gm, '<strong>$1</strong>')
-    .replace(/\s_([^_\s]([^_]*[^_\s])?)_/gm, ' <em>$1</em>')
-    .replace(/\*([^*\s]([^*]*[^*\s])?)\*/gm, '<em>$1</em>')
+const convertEmbeddedHtml = (original) => original
+  .replace(/&lt;([\s\S]*?)&gt;/gm, '<$1>')
+  .replace(/&quot;/g, '"')
+  .replace(/&#039;/g, '\'')
+  .replace(/&amp;/g, '&');
 
-    // urls containing tags
-    .replace(
-      /\[([^\]]*)\]\(([^)]*<[^>]*>[^)]*)\)/gm,
-      '<a href="#" target="_blank" rel="noopener noreferrer" class="dynamic-url">' +
-      '$1<span class="url hidden">$2</span>' +
-      '</a>'
-    )
-
-    // plain urls
-    .replace(/\[([^\]]*)\]\(([^)]+)\)/gm, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-
-    // new lines
-    .replace(/\n/gm, '<br />')
-
-    // convert embedded html
-    .replace(/&lt;([\s\S]*?)&gt;/gm, '<$1>')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, '\'');
+const replaceNode = (currentNode, newNode) => {
+  const { parentNode } = currentNode;
+  const idx = parentNode.childNodes.findIndex((child) => child === currentNode);
+  parentNode.childNodes = [
+    ...parentNode.childNodes.slice(0, idx),
+    newNode,
+    ...parentNode.childNodes.slice(idx + 1),
+  ];
 };
 
-// inspired by enketo/enketo-transformer
-const replaceAllMarkdown = formString => {
-
-  const form = htmlParser.parse(formString).querySelector('form');
+// Based on enketo/enketo-transformer
+// https://github.com/enketo/enketo-transformer/blob/377caf14153586b040367f8c2de53c9d794c19d4/src/transformer.js#L430
+const replaceAllMarkdown = (formString) => {
   const replacements = {};
+  const form = htmlParser.parse(formString).querySelector('form');
 
+  // First turn all outputs into text so *<span class="or-output></span>* can be detected
+  form.querySelectorAll('span.or-output').forEach((el, index) => {
+    const key = `---output-${index}`;
+    const textNode = el.childNodes[0];
+    replacements[key] = el.toString();
+    textNode.textContent = key;
+    replaceNode(el, textNode);
+    // Note that we end up in a situation where we likely have sibling text nodes...
+  });
+
+  // Now render markdown
   const questions = form.querySelectorAll('span.question-label');
   const hints = form.querySelectorAll('span.or-hint');
-  const spans = questions.concat(hints);
-  spans.forEach((span, i) => {
-    const original = span.innerHTML;
-    const rendered = replaceMarkdown(original);
-    if (rendered && original !== rendered) {
-      const key = `~~~${i}~~~`;
+  questions.concat(hints).forEach((el, index) => {
+    const original = el.innerHTML;
+    let rendered = markdown.toHtml(original);
+    rendered = convertDynamicUrls(rendered);
+    rendered = convertEmbeddedHtml(rendered);
+
+    if (original !== rendered) {
+      const key = `$$$${index}`;
       replacements[key] = rendered;
-      span.set_content(key);
+      el.innerHTML = key;
     }
   });
 
   let result = form.toString();
-  Object.keys(replacements).forEach(key => {
+
+  // Now replace the placeholders with the rendered HTML
+  // in reverse order so outputs are done last
+  Object.keys(replacements).reverse().forEach(key => {
     const replacement = replacements[key];
     if (replacement) {
       result = result.replace(key, replacement);
     }
   });
+
   return result;
 };
 
@@ -173,7 +200,7 @@ const updateAttachments = (accumulator, doc) => {
       return results;
     }
     logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
-    return generate(form.data.toString()).then(result => {
+    return module.exports.generate(form.data.toString()).then(result => {
       results.push(result);
       return results;
     });
