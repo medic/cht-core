@@ -436,8 +436,8 @@ describe('pregnancy registration with exact LMP date', () => {
               locale: 'en'
             }],
             weeks: {
-              "min": 8,
-              "max": 40
+              'min': 8,
+              'max': 40
             }            
           },
           {
