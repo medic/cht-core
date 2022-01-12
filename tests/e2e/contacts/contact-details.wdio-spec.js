@@ -22,7 +22,7 @@ const waitForContactLoaded = async (expectTasks) => {
     return browser.waitUntil(async () => await (await contactPage.rhsTaskListElement()).isDisplayed());
   }
 
-  // if we expect _not_ to see tasks, wait so we make sure they have enought time to not appear
+  // if we expect _not_ to see tasks, wait so we make sure they have enough time to not appear
   return browser.pause(1000);
 };
 
