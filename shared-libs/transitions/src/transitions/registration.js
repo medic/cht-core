@@ -140,22 +140,46 @@ const getWeeksSinceLMP = doc => {
 };
 
 /*
-* Given a doc, try to get the exact LMP date.
+* Given a doc, try to get the exact LMP date
+* and send error message if date is not within
+* the defined range.
 */
 const getLMPDate = doc => {
-  const props = ['lmpDate', 'lmp_date', 'lmpBSDate', 'lmp_bs_date'];//lmpDate from smsParser
+  const props = ['lmpDate', 'lmp_date'];//lmpDate comes from smsParser
   for (const prop of props) {
     const lmp = doc.fields && doc.fields[prop];
-    if (!isNaN(lmp)) {
-      if (moment(lmp).isBefore(moment().subtract(8, 'weeks'))//TODO: make these configurable
-        && moment(lmp).isAfter(moment().subtract(40, 'weeks'))) {
+    if (!isNaN(lmp)) {//milliseconds since epoch
+      let minLMPWeeks = 0;
+      let maxLMPWeeks;
+      const registrationConfig = getRegistrationConfig(getConfig(), doc.form);
+      const validations = _.get(registrationConfig, 'validations.list');
+      if (validations) {
+        const lmpValidations = validations.find(item => item.property === prop);
+        if (lmpValidations) {
+          lmpWeeksRange = lmpValidations.weeks;
+          if (lmpWeeksRange) {
+            minLMPWeeks = lmpWeeksRange.min;
+            maxLMPWeeks = lmpWeeksRange.max;
+          }
+        }
+      }
+
+      if (moment(lmp).isBefore(moment().subtract(minLMPWeeks, 'weeks'))
+        && (!maxLMPWeeks || moment(lmp).isAfter(moment().subtract(maxLMPWeeks, 'weeks')))
+      ) {
         return lmp;
       }
-      throw new Error('Date should be between 8 to 40 weeks in the past.');//TODO: send SMS to user
+      else {
+        const invalidLMPMessage = registrationConfig.messages && registrationConfig.messages
+          .find(m => m.event_type === 'lmp_date_invalid');
+        if (invalidLMPMessage) {
+          messages.addMessage(doc, invalidLMPMessage);
+        }
+        throw new Error('Date should be between 8 to 40 weeks in the past.');
+      }
     }
   }
 };
-
 const setExpectedBirthDate = doc => {
   let start;
   const lmpDate = getLMPDate(doc);

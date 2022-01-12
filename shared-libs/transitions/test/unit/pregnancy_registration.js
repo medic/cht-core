@@ -429,28 +429,16 @@ describe('pregnancy registration with exact LMP date', () => {
         join_responses: true,
         list: [
           {
-            property: 'lmpYear',
-            rule: 'min(2000) && max(2100)',
+            property: 'lmpDate',
+            rule: "integer",
             message: [{
-              content: 'Invalid Year; must be 2000-2100.',
+              content: 'Invalid date.',
               locale: 'en'
-            }]
-          },
-          {
-            property: 'lmpMonth',
-            rule: 'min(1) && max(12)',
-            message: [{
-              content: 'Invalid Month; must be 1-12.',
-              locale: 'en'
-            }]
-          },
-          {
-            property: 'lmpDay',
-            rule: 'min(1) && max(32)',//32 for Bikram Sambat
-            message: [{
-              content: 'Invalid Day; must be 1-32.',
-              locale: 'en'
-            }]
+            }],
+            weeks: {
+              "min": 8,
+              "max": 40
+            }            
           },
           {
             property: 'patient_name',
@@ -467,13 +455,6 @@ describe('pregnancy registration with exact LMP date', () => {
       form: 'ep',
       type: 'pregnancy',
       events: [
-        // See, no patient id creation!
-        // {
-        //     name: 'on_create',
-        //     trigger: 'add_patient',
-        //     params: '',
-        //     bool_expr: ''
-        // },
         {
           name: 'on_create',
           trigger: 'add_expected_date',
@@ -485,26 +466,10 @@ describe('pregnancy registration with exact LMP date', () => {
         join_responses: true,
         list: [
           {
-            property: 'lmpYear',
-            rule: 'min(2000) && max(2100)',
+            property: 'lmpDate',
+            rule: 'integer',
             message: [{
-              content: 'Invalid Year; must be 2000-2100.',
-              locale: 'en'
-            }]
-          },
-          {
-            property: 'lmpMonth',
-            rule: 'min(1) && max(12)',
-            message: [{
-              content: 'Invalid Month; must be 1-12.',
-              locale: 'en'
-            }]
-          },
-          {
-            property: 'lmpDay',
-            rule: 'min(1) && max(32)',
-            message: [{
-              content: 'Invalid Day; must be 1-32.',
+              content: 'Invalid date.',
               locale: 'en'
             }]
           },
@@ -558,9 +523,6 @@ describe('pregnancy registration with exact LMP date', () => {
     const doc = {
       fields:
       {
-        lmpYear: (eightWeeksAgo.year()).toString(),
-        lmpMonth: (eightWeeksAgo.month() + 1).toString(),
-        lmpDay: (eightWeeksAgo.date()).toString(),
         lmpDate: eightWeeksAgo.valueOf(),
         type: 'data_record'
       }
@@ -580,9 +542,6 @@ describe('pregnancy registration with exact LMP date', () => {
       form: 'l',
       type: 'data_record',
       fields: {
-        lmpYear: (eightWeeksAgo.year()).toString(),
-        lmpMonth: (eightWeeksAgo.month() + 1).toString(),
-        lmpDay: (eightWeeksAgo.date()).toString(),
         lmpDate: eightWeeksAgo.valueOf(),
         patient_name: 'abc'
       }
@@ -605,9 +564,6 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_id: '12345',
-        lmpYear: (eightWeeksAgo.year()).toString(),
-        lmpMonth: (eightWeeksAgo.month() + 1).toString(),
-        lmpDay: (eightWeeksAgo.date()).toString(),
         lmpDate: eightWeeksAgo.valueOf(),
       }
     };
@@ -627,9 +583,6 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_id: '12345',
-        lmpYear: (eightWeeksAgo.year()).toString(),
-        lmpMonth: (eightWeeksAgo.month() + 1).toString(),
-        lmpDay: (eightWeeksAgo.date()).toString(),
         lmpDate: eightWeeksAgo.valueOf(),
       },
       patient: {
@@ -655,9 +608,7 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: 'abc',
-        lmpYear: '2000',
-        lmpMonth: '01',
-        lmpDay: '01'
+        lmpDate: eightWeeksAgo.valueOf(),
       },
       getid: 'x'
     };
@@ -679,9 +630,7 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: '',
-        lmpYear: '2000',
-        lmpMonth: '01',
-        lmpDay: '01'
+        lmpDate: eightWeeksAgo.valueOf()
       },
       getid: 'x'
     };
@@ -701,9 +650,7 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: '',
-        lmpYear: '2000',
-        lmpMonth: '01',
-        lmpDay: '01'
+        lmpDate: eightWeeksAgo.valueOf()
       }
     };
 
@@ -714,63 +661,21 @@ describe('pregnancy registration with exact LMP date', () => {
     });
   });
 
-  it('valid name invalid LMP date year', () => {
+  it('valid name invalid LMP date', () => {
     const doc = {
       form: 'l',
       from: '+1234',
       type: 'data_record',
       fields: {
         patient_name: 'hi',
-        lmpYear: '1999',
-        lmpMonth: '01',
-        lmpDay: '01'
+        lmpDate: 'x'
       }
     };
 
     return transition.onMatch({ doc: doc }).then(function (changed) {
       assert.equal(changed, true);
       assert.equal(doc.patient_id, undefined);
-      assert.equal(getMessage(doc), 'Invalid Year; must be 2000-2100.');
-    });
-  });
-
-  it('valid name invalid LMP date month', () => {
-    const doc = {
-      form: 'l',
-      from: '+1234',
-      type: 'data_record',
-      fields: {
-        patient_name: 'hi',
-        lmpYear: '2000',
-        lmpMonth: '00',
-        lmpDay: '01'
-      }
-    };
-
-    return transition.onMatch({ doc: doc }).then(function (changed) {
-      assert.equal(changed, true);
-      assert.equal(doc.patient_id, undefined);
-      assert.equal(getMessage(doc), 'Invalid Month; must be 1-12.');
-    });
-  });
-
-  it('valid name invalid LMP date day', () => {
-    const doc = {
-      form: 'l',
-      from: '+1234',
-      type: 'data_record',
-      fields: {
-        patient_name: 'hi',
-        lmpYear: '2000',
-        lmpMonth: '01',
-        lmpDay: '00'
-      }
-    };
-
-    return transition.onMatch({ doc: doc }).then(function (changed) {
-      assert.equal(changed, true);
-      assert.equal(doc.patient_id, undefined);
-      assert.equal(getMessage(doc), 'Invalid Day; must be 1-32.');
+      assert.equal(getMessage(doc), 'Invalid date.');
     });
   });
 
@@ -781,16 +686,14 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: '',
-        lmpYear: '1999',
-        lmpMonth: '01',
-        lmpDay: '01'
+        lmpDate: null
       }
     };
 
     return transition.onMatch({ doc: doc }).then(function (changed) {
       assert.equal(changed, true);
       assert.equal(doc.patient_id, undefined);
-      assert.equal(getMessage(doc), 'Invalid patient name.  Invalid Year; must be 2000-2100.');
+      assert.equal(getMessage(doc), 'Invalid patient name.  Invalid date.');
     });
   });
 
@@ -819,9 +722,7 @@ describe('pregnancy registration with exact LMP date', () => {
       assert.equal(changed, true);
       assert.equal(
         getMessage(doc),
-        'Invalid Year; must be 2000-2100.  ' +
-        'Invalid Month; must be 1-12.  ' +
-        'Invalid Day; must be 1-32.  ' +
+        'Invalid date.  ' +
         'Invalid patient name.'
       );
     });
@@ -837,9 +738,6 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: 'abc',
-        lmpYear: start.year().toString(),
-        lmpMonth: (start.month() + 1).toString(),
-        lmpDay: start.date().toString(),
         lmpDate: start.valueOf()
       }
     };
@@ -861,9 +759,6 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         lmpDate: start.valueOf(),
-        lmpYear: start.year().toString(),
-        lmpMonth: (start.month() + 1).toString(),
-        lmpDay: start.date().toString(),
         patient_name: 'abc'
       }
     };

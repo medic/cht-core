@@ -175,7 +175,7 @@ exports.parseField = (field, raw) => {
     }
     catch (exception) {
       logger.error('The provided date could not be converted. ' + exception.message);
-      return null;//should be caught by validation
+      return null;//should be caught by validation in registration
     }
   case 'boolean': {
     if (raw === undefined) {
@@ -278,7 +278,7 @@ exports.parse = (def, doc) => {
       }
       catch (exception) {
         logger.error('The provided date could not be converted. ' + exception.message);
-        formData.lmpDate = null;//should be caught by validation
+        formData.lmpDate = null;//should be caught by validation in registration
       }
     }
   }
