@@ -903,14 +903,13 @@ describe('Users API', () => {
           contact: { id: user.contact._id },
         })));
 
-        await Promise.all(users.map(async (user) => {
+        for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
           const extraProps = { facility_id: user.place._id, name: user.username, roles: user.roles };
           expectCorrectUser(userInDb, extraProps);
           expectCorrectUserSettings(userSettings, { ...extraProps, contact_id: user.contact._id });
           chai.expect(userInDb.token_login).to.be.undefined;
           chai.expect(userSettings.token_login).to.be.undefined;
-          await ((ms) => new Promise(r => setTimeout(r, ms)))(500);
           await expectPasswordLoginToWork(user);
 
           const updates = {
@@ -937,9 +936,8 @@ describe('Users API', () => {
           });
           chai.expect(userInDb.token_login).to.be.undefined;
           chai.expect(userSettings.token_login).to.be.undefined;
-          await ((ms) => new Promise(r => setTimeout(r, ms)))(500);
           await expectPasswordLoginToWork(user);
-        }));
+        }
       });
 
       it('should throw an error when phone is missing when creating a user with token_login', () => {
