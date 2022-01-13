@@ -1600,6 +1600,7 @@ describe('Enketo service', () => {
       form = {
         calc: { update: sinon.stub() },
         output: { update: sinon.stub() },
+        resetView: sinon.stub(),
         pages: {
           _next: sinon.stub(),
           _getCurrentIndex: sinon.stub()

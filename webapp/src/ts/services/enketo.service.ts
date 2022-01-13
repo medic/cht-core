@@ -681,7 +681,7 @@ export class EnketoService {
   }
 
   private setupNavButtons($wrapper, currentIndex) {
-    if(!this.currentForm.pages) {
+    if(!this.currentForm?.pages) {
       return;
     }
     const lastIndex = this.currentForm.pages.activePages.length - 1;
