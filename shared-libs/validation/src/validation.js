@@ -178,6 +178,32 @@ module.exports = {
       logger.error('isISOWeek validation failed: the number of week is greater than the maximum');
       return Promise.resolve(false);
     },
+
+    isAfter: (doc, validation) => {
+      const fields = [...validation.funcArgs];
+      const duration = _parseDuration(fields.pop());
+      const testDate = moment(doc.fields[validation.field]);
+      //TODO: should use moment().startOf day here?
+      const controlDate = moment().add(duration);
+      if (testDate.isSameOrAfter(controlDate)) {
+        return Promise.resolve(true);
+      }
+      logger.error('isAfter validation failed: the date is older than specified');
+      return Promise.resolve(false);
+    },
+
+    isBefore: (doc, validation) => {
+      const fields = [...validation.funcArgs];
+      const duration = _parseDuration(fields.pop());
+      const testDate = moment(doc.fields[validation.field]);
+      //TODO: should use moment().startOf day here?
+      const controlDate = moment().subtract(duration);
+      if (testDate.isSameOrBefore(controlDate)) {
+        return Promise.resolve(true);
+      }
+      logger.error('isBefore validation failed: the date is later than specified');
+      return Promise.resolve(false);
+    },
   },
   /**
    * Validation settings may consist of Pupil.js rules and custom rules.

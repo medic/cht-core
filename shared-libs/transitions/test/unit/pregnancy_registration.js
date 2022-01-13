@@ -742,11 +742,17 @@ describe('pregnancy registration with exact LMP date', () => {
       }
     };
 
-    return transition.onMatch({ doc: doc })
-      .then(() => assert.fail('should have thrown'))
-      .catch(err => {
-        assert.equal(err.message, 'Date should be between 8 to 40 weeks in the past.');
-      });
+    return transition.onMatch({ doc: doc }).then(function (changed) {
+      assert.equal(changed, true);
+      assert.equal(doc.patient_id, undefined);
+      assert.equal(getMessage(doc), 'Invalid LMP; must be between 0-40 weeks.');
+    });
+
+    // return transition.onMatch({ doc: doc })
+    //   .then(() => assert.fail('should have thrown'))
+    //   .catch(err => {
+    //     assert.equal(err.message, 'Date should be between 8 to 40 weeks in the past.');
+    //   });
   });
 
   it('LMP date more than 40 weeks ago should fail', () => {
@@ -762,12 +768,16 @@ describe('pregnancy registration with exact LMP date', () => {
         patient_name: 'abc'
       }
     };
-
-    return transition.onMatch({ doc: doc })
-      .then(() => assert.fail('should have thrown'))
-      .catch(err => {
-        assert.equal(err.message, 'Date should be between 8 to 40 weeks in the past.');
-      });
+    return transition.onMatch({ doc: doc }).then(function (changed) {
+      assert.equal(changed, true);
+      assert.equal(doc.patient_id, undefined);
+      assert.equal(getMessage(doc), 'Invalid LMP; must be between 0-40 weeks.');
+    });
+    // return transition.onMatch({ doc: doc })
+    //   .then(() => assert.fail('should have thrown'))
+    //   .catch(err => {
+    //     assert.equal(err.message, 'Date should be between 8 to 40 weeks in the past.');
+    //   });
   });
 
 });

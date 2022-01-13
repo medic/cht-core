@@ -149,34 +149,7 @@ const getLMPDate = doc => {
   for (const prop of props) {
     const lmp = doc.fields && doc.fields[prop];
     if (!isNaN(lmp)) {//milliseconds since epoch
-      let minLMPWeeks = 0;
-      let maxLMPWeeks;
-      const registrationConfig = getRegistrationConfig(getConfig(), doc.form);
-      const validations = _.get(registrationConfig, 'validations.list');
-      if (validations) {
-        const lmpValidations = validations.find(item => item.property === prop);
-        if (lmpValidations) {
-          const lmpWeeksRange = lmpValidations.weeks;
-          if (lmpWeeksRange) {
-            minLMPWeeks = lmpWeeksRange.min;
-            maxLMPWeeks = lmpWeeksRange.max;
-          }
-        }
-      }
-
-      if (moment(lmp).isBefore(moment().subtract(minLMPWeeks, 'weeks'))
-        && (!maxLMPWeeks || moment(lmp).isAfter(moment().subtract(maxLMPWeeks, 'weeks')))
-      ) {
-        return lmp;
-      }
-      else {
-        const invalidLMPMessage = registrationConfig.messages && registrationConfig.messages
-          .find(m => m.event_type === 'lmp_date_invalid');
-        if (invalidLMPMessage) {
-          messages.addMessage(doc, invalidLMPMessage);
-        }
-        throw new Error('Date should be between 8 to 40 weeks in the past.');
-      }
+      return lmp;
     }
   }
 };
@@ -710,6 +683,8 @@ module.exports = {
           messages.addErrors(registrationConfig, doc, errors, { patient: doc.patient, place: doc.place });
           return true;
         }
+
+        //TODO: should LMP specific validations be put here?
 
         const patientId = doc.fields && doc.fields.patient_id;
         const placeId = doc.fields && doc.fields.place_id;
