@@ -1,4 +1,4 @@
-FROM alpine:3.12.3
+FROM alpine:3.15.0
 
 RUN apk add --update --no-cache \
   build-base \
@@ -13,11 +13,11 @@ RUN apk add --update --no-cache \
 
 WORKDIR /app
 
-COPY ./api ./api
-
+COPY api api/
 RUN cd api && npm ci --verbose
-COPY ./shared-libs ./api/node_modules/@medic
-COPY ./api/src/public/ /app/api/build/public/
+COPY shared-libs ./api/node_modules/@medic
+COPY api/src/public/ /app/api/build/public/
+RUN chmod 777 /tmp
 
 SHELL ["/bin/bash", "-c"]
 RUN for i in $(ls -d /app/api/node_modules/@medic/*); \
@@ -28,6 +28,4 @@ RUN for i in $(ls -d /app/api/node_modules/@medic/*); \
 
 ENV NODE_PATH=/app/api/node_modules
 
-RUN npm install -g horticulturalist
-
-ENTRYPOINT ["/bin/bash", "/app/api/docker-entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "/app/api/docker-entrypoint.sh", "main"]

@@ -1,4 +1,7 @@
 #!/bin/bash
+set -e
+WAIT_THRESHOLD="${WAIT_THRESHOLD:-20}"
+SLEEP_SECONDS="${SLEEP_SECONDS:-3}"
 
 info()
 {
@@ -17,18 +20,17 @@ fatal()
 
 get_couchdb_url()
 {
-  echo "http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SERVICE_NAME:5985"
+  echo "http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SERVICE_NAME:$COUCHDB_PORT"
 }
 
 wait_for_couchdb()
 {
-  local n=60
-
-  while [ "$n" -gt 0 ]; do
+  local  wait_count=0
+  while [ "$WAIT_THRESHOLD" -gt $wait_count ]; do
+    wait_count=$((wait_count +1))
     curl "`get_couchdb_url`" &>/dev/null
     [ "$?" -eq 0 ] && return 0
-    sleep 3
-    n=$[$n-1]
+    sleep $SLEEP_SECONDS
   done
 
   return 1
@@ -85,7 +87,7 @@ create_couchdb_admin()
 
   # generate password and create user
   local passwd=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${4:-32};)
-  curl -X PUT $url/_node/couchdb@127.0.0.1/_config/admins/$user -d '"'"$passwd"'"'
+  curl -X PUT $url/_node/couchdb@$COUCH_NODE_NAME/_config/admins/$user -d '"'"$passwd"'"'
   mkdir -p /srv/storage/$user/passwd
   echo "$passwd" > /srv/storage/$user/passwd/$user
 
@@ -111,7 +113,7 @@ create_couchdb_admin()
 perform_couchdb_lockdown()
 {
   local url="`get_couchdb_url`"
-  curl -X PUT $url/_node/couchdb@127.0.0.1/_config/chttpd/require_valid_user -d '"true"'
+  curl -X PUT $url/_node/couchdb@$COUCH_NODE_NAME/_config/chttpd/require_valid_user -d '"true"'
 }
 
 create_system_databases()
@@ -145,7 +147,7 @@ postinstall()
   if [ "$?" -ne 0 ]; then
     fatal "Failed to create one or more service accounts"
   fi
- 
+
   create_couchdb_admin 'medic'
 
   if [ "$?" -ne 0 ]; then
@@ -158,20 +160,21 @@ postinstall()
   info 'CouchDB first run setup successful'
 }
 
-wait_for_couchdb
-if is_setup_needed; then
-    info 'Running CouchDB Setup'
-    postinstall "$@"
-fi
+welcome_message(){
+  info 'Starting CHT API'
+}
 
-export COUCH_URL=http://medic-api:$(cat /srv/storage/medic-api/passwd/medic-api)@$HAPROXY_SVC:5984/medic
-export NODE_PATH=/app/api/node_modules
+main(){
+  welcome_message
+  wait_for_couchdb
+  if is_setup_needed; then
+      info 'Running CouchDB Setup'
+      postinstall "$@"
+  fi
 
-# This needs to be cleaned up. We are trying to cover two scenarios: initial bootup that installs via horti, and avoid re-install on restart
-already_installed=$(curl -X GET http://medic-api:$(cat /srv/storage/medic-api/passwd/medic-api)@$HAPROXY_SVC:5984/medic/_design/medic | jq '.build_info.version')
-if [ "$already_installed" = null ]; then 
-  horti --medic-os --install=$HORTI_BOOTSTRAP_VERSION --no-daemon
-  rm -rf /srv/software/*
-fi
+  export COUCH_URL=http://medic-api:$(cat /srv/storage/medic-api/passwd/medic-api)@$COUCHDB_SERVICE_NAME:$COUCHDB_PORT/medic
+  export NODE_PATH=/app/api/node_modules
+  node /app/api/server.js
+}
 
-node /app/api/server.js
+"$@"

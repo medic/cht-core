@@ -80,3 +80,15 @@ So, if you want to re-run a migration, delete its entry in the `migrations` list
 ## Troubleshooting
 Given the error `StatusCodeError: 404 - {"error":"not_found","reason":"no such node: couchdb@localhost"}` or alike - check that the value of your COUCH_NODE_NAME environment variable equals the result of `curl -X GET "http://localhost:5984/_membership" --user user:pwd`.`
 
+## Testing the docker entrypoint
+
+To test the docker you need to have docker and docker-compose installed.
+You then need to install test bash test sub modules by running.
+
+```git submodule update --init
+```
+
+Then run tests through docker-compose
+
+```docker-compose -f tests/docker/docker-compose.test.yml  run -u root  sut /app/tests/docker/bats/bin/bats /app/tests/docker/test.bats
+```

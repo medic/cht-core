@@ -1,0 +1,12 @@
+[submodule "api/tests/docker/test_helper/bats-shell-mock"]
+	path = api/tests/docker/test_helper/bats-shell-mock
+	url = https://github.com/capitalone/bash_shell_mock
+[submodule "api/tests/docker/test_helper/bats-assert"]
+	path = api/tests/docker/test_helper/bats-assert
+	url = https://github.com/bats-core/bats-assert.git
+[submodule "api/tests/docker/test_helper/bats-support"]
+	path = api/tests/docker/test_helper/bats-support
+	url = https://github.com/bats-core/bats-support.git
+[submodule "api/tests/docker/bats"]
+	path = api/tests/docker/bats
+	url = https://github.com/bats-core/bats-core.git
