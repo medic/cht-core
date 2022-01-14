@@ -32,7 +32,6 @@ process
     logger.info('Checks passed successfully');
 
     logger.info('Running installation checks…');
-    await installer.setDeployInfo();
     await installer.checkInstall();
     logger.info('Installation checks passed');
 

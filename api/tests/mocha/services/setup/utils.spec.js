@@ -4,11 +4,12 @@ const rewire = require('rewire');
 const fs = require('fs');
 const rpn = require('request-promise-native');
 
-let utils;
-
 const db = require('../../../../src/db');
 const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
 const env = require('../../../../src/environment');
+
+let utils;
+let clock;
 
 const mockDb = (db) => {
   sinon.stub(db, 'allDocs');
@@ -17,19 +18,19 @@ const mockDb = (db) => {
   sinon.stub(db, 'viewCleanup');
 };
 
+'use strict';
+
 describe('Setup utils', () => {
   beforeEach(() => {
     sinon.stub(env, 'db').value('thedb');
+    clock = sinon.useFakeTimers();
 
     utils = rewire('../../../../src/services/setup/utils');
-    // mockDb(db.medic);
-    // mockDb(db.sentinel);
-    // mockDb(db.medicLogs);
-    // mockDb(db.medicUsersMeta);
   });
 
   afterEach(() => {
     sinon.restore();
+    clock.restore();
   });
 
   describe('DATABASES', () => {
@@ -93,11 +94,9 @@ describe('Setup utils', () => {
         await utils.__get__('saveDocs')({ db: db.medicLogs }, docs);
         expect.fail('should have thrown');
       } catch (err) {
-        const errors = [
-          'saving 1 failed with conflict',
-          'saving 3 failed with unauthorized',
-        ];
-        expect(err.message).to.equal(`Error while saving docs: ${JSON.stringify(errors)}`);
+        expect(err.message).to.equal(
+          'Error while saving docs: saving 1 failed with conflict, saving 3 failed with unauthorized'
+        );
         expect(db.medicLogs.bulkDocs.callCount).to.equal(1);
         expect(db.medicLogs.bulkDocs.args[0]).to.deep.equal([docs]);
       }
@@ -161,12 +160,12 @@ describe('Setup utils', () => {
   });
 
   describe('getStagedDdocs', () => {
-    it('should get the ids and revs of currently staged ddocs', async () => {
+    it('should currently staged ddocs', async () => {
       sinon.stub(db.medicLogs, 'allDocs').resolves({
         rows: [
-          { id: '_design/:staged:one', value: { rev: '1' } },
-          { id: '_design/:staged:two', value: { rev: '2' } },
-          { id: '_design/:staged:three', value: { rev: '3' } },
+          { doc: { _id: '_design/:staged:one', _rev: '1' } },
+          { doc: { _id: '_design/:staged:two', _rev: '2' } },
+          { doc: { _id: '_design/:staged:three', _rev: '3' } },
         ],
       });
 
@@ -176,6 +175,7 @@ describe('Setup utils', () => {
       expect(db.medicLogs.allDocs.args[0]).to.deep.equal([{
         startkey: '_design/:staged:',
         endkey: '_design/:staged:\ufff0',
+        include_docs: true,
       }]);
       expect(result).to.deep.equal([
         { _id: '_design/:staged:one', _rev: '1' },
@@ -289,6 +289,7 @@ describe('Setup utils', () => {
       mockDb(db.sentinel);
       mockDb(db.medicLogs);
       mockDb(db.medicUsersMeta);
+      sinon.stub(fs.promises, 'access').resolves();
 
       await utils.cleanup();
 
@@ -321,31 +322,13 @@ describe('Setup utils', () => {
   });
 
   describe('getDdocs', () => {
-    it('should return ddocs without include_docs', async () => {
-      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [
-        { id: 'ddoc1', key: 'ddoc1', value: { rev: 'rev1' } },
-        { id: 'ddoc2', key: 'ddoc2', value: { rev: 'rev2' } },
-      ] });
-
-      const result = await utils.__get__('getDdocs')({ db: db.sentinel });
-
-      expect(result).to.deep.equal([
-        { _id: 'ddoc1', _rev: 'rev1' },
-        { _id: 'ddoc2', _rev: 'rev2' },
-      ]);
-      expect(db.sentinel.allDocs.callCount).to.equal(1);
-      expect(db.sentinel.allDocs.args[0]).to.deep.equal([{
-        startkey: '_design/', endkey: `_design/\ufff0`, include_docs: false,
-      }]);
-    });
-
-    it('should return ddocs with include_docs', async () => {
+    it('should return ddocs', async () => {
       sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [
         { id: 'ddoc1', key: 'ddoc1', value: { rev: 'rev1' }, doc: { _id: 'ddoc1', _rev: 'rev1', field: 'a' }  },
         { id: 'ddoc2', key: 'ddoc2', value: { rev: 'rev2' }, doc: { _id: 'ddoc2', _rev: 'rev2', field: 'b' }, },
       ] });
 
-      const result = await utils.__get__('getDdocs')({ db: db.sentinel }, true);
+      const result = await utils.getDdocs({ db: db.sentinel });
 
       expect(result).to.deep.equal([
         { _id: 'ddoc1', _rev: 'rev1', field: 'a' },
@@ -361,7 +344,7 @@ describe('Setup utils', () => {
       sinon.stub(db.medicLogs, 'allDocs').rejects({ the: 'err' });
 
       try {
-        await utils.__get__('getDdocs')({ db: db.medicLogs });
+        await utils.getDdocs({ db: db.medicLogs });
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ the: 'err' });
@@ -418,63 +401,66 @@ describe('Setup utils', () => {
   });
 
   describe('getViewsToIndex', () => {
-    it('should return an array of function that will start view indexing, if db should be indexed', async () => {
-      const ddocsToStage = [
-        { _id: '_design/:staged:one', views: { 'view1': {}, 'view2': {}, 'view3': {}} },
-        { _id: '_design/:staged:two' },
-        { _id: '_design/:staged:three', views: { 'view4': {} }},
-      ];
+    it('should return an array of function that will start view indexing', async () => {
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { doc: { _id: '_design/:staged:one', views: { view1: {}, view2: {}, view3: {}} } },
+          { doc: { _id: '_design/:staged:three', views: { view4: {} }} },
+        ]
+      });
+      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [] });
+      sinon.stub(db.medicLogs, 'allDocs').resolves({ rows: [{ doc: { _id: '_design/:staged:two' } }] });
+      sinon.stub(db.medicUsersMeta, 'allDocs').resolves({
+        rows: [
+          { doc: { _id: '_design/:staged:four', views: { view: {} }} },
+        ],
+      });
 
       sinon.stub(rpn, 'get').resolves();
       sinon.stub(env, 'serverUrl').value('http://localhost');
 
-      const result = await utils.__get__('getViewsToIndex')({ db: db.medic, name: 'dbname' }, ddocsToStage);
+      const result = await utils.getViewsToIndex();
 
-      expect(result.length).to.equal(4);
+      expect(result.length).to.equal(5);
       result.forEach(item => expect(item).to.be.a('function'));
 
       expect(rpn.get.callCount).to.equal(0);
 
       await Promise.all(result.map(item => item()));
 
-      expect(rpn.get.callCount).to.equal(4);
+      expect(rpn.get.callCount).to.equal(5);
       expect(rpn.get.args).to.deep.equal([
         [{
-          uri: 'http://localhost/dbname/_design/:staged:one/_view/view1',
+          uri: 'http://localhost/thedb/_design/:staged:one/_view/view1',
           json: true,
           qs: { limit: 1 },
           timeout: 2000,
         }],
         [{
-          uri: 'http://localhost/dbname/_design/:staged:one/_view/view2',
+          uri: 'http://localhost/thedb/_design/:staged:one/_view/view2',
           json: true,
           qs: { limit: 1 },
           timeout: 2000,
         }],
         [{
-          uri: 'http://localhost/dbname/_design/:staged:one/_view/view3',
+          uri: 'http://localhost/thedb/_design/:staged:one/_view/view3',
           json: true,
           qs: { limit: 1 },
           timeout: 2000,
         }],
         [{
-          uri: 'http://localhost/dbname/_design/:staged:three/_view/view4',
+          uri: 'http://localhost/thedb/_design/:staged:three/_view/view4',
+          json: true,
+          qs: { limit: 1 },
+          timeout: 2000,
+        }],
+        [{
+          uri: 'http://localhost/thedb-users-meta/_design/:staged:four/_view/view',
           json: true,
           qs: { limit: 1 },
           timeout: 2000,
         }],
       ]);
-    });
-
-    it('should return empty array if there are no views', async () => {
-      const ddocsToStage = [
-        { _id: '_design/:staged:one', views: {} },
-        { _id: '_design/:staged:two', views: 'whaaaa' },
-        { _id: '_design/:staged:three' },
-      ];
-
-      const result = await utils.__get__('getViewsToIndex')({ db: db.medic }, ddocsToStage);
-      expect(result).to.deep.equal([]);
     });
   });
 
@@ -485,7 +471,7 @@ describe('Setup utils', () => {
       sinon.stub(fs.promises, 'mkdir').resolves();
       sinon.stub(env, 'upgradePath').value('upgradePath');
 
-      await utils.__get__('createUpgradeFolder')();
+      await utils.createUpgradeFolder();
 
       expect(fs.promises.access.callCount).to.equal(1);
       expect(fs.promises.access.args[0]).to.deep.equal(['upgradePath']);
@@ -503,7 +489,7 @@ describe('Setup utils', () => {
       sinon.stub(env, 'upgradePath').value('upgradePath');
       sinon.stub(upgradeLogService, 'setAborted').resolves();
 
-      await utils.__get__('createUpgradeFolder')();
+      await utils.createUpgradeFolder();
 
       expect(fs.promises.access.callCount).to.equal(1);
       expect(fs.promises.access.args[0]).to.deep.equal(['upgradePath']);
@@ -527,7 +513,7 @@ describe('Setup utils', () => {
       sinon.stub(env, 'upgradePath').value('upgradePath');
       sinon.stub(upgradeLogService, 'setAborted').rejects();
 
-      await utils.__get__('createUpgradeFolder')();
+      await utils.createUpgradeFolder();
 
       expect(fs.promises.access.callCount).to.equal(1);
       expect(fs.promises.access.args[0]).to.deep.equal(['upgradePath']);
@@ -547,7 +533,7 @@ describe('Setup utils', () => {
       sinon.stub(env, 'upgradePath').value('upgradePath');
 
       try {
-        await utils.__get__('createUpgradeFolder')();
+        await utils.createUpgradeFolder();
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ code: 'error' });
@@ -568,7 +554,7 @@ describe('Setup utils', () => {
       sinon.stub(env, 'upgradePath').value('upgradePath');
 
       try {
-        await utils.__get__('createUpgradeFolder')();
+        await utils.createUpgradeFolder();
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ code: 'some code' });
@@ -590,7 +576,7 @@ describe('Setup utils', () => {
       sinon.stub(env, 'upgradePath').value('upgradePath');
 
       try {
-        await utils.__get__('createUpgradeFolder')();
+        await utils.createUpgradeFolder();
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ code: 'some code' });
@@ -612,7 +598,7 @@ describe('Setup utils', () => {
       sinon.stub(env, 'upgradePath').value('upgradePath');
 
       try {
-        await utils.__get__('createUpgradeFolder')();
+        await utils.createUpgradeFolder();
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ some: 'error' });
@@ -641,7 +627,7 @@ describe('Setup utils', () => {
         },
       });
 
-      await utils.__get__('downloadDdocDefinitions')(version);
+      await utils.downloadDdocDefinitions(version);
 
       expect(db.builds.get.callCount).to.equal(1);
       expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:${version}`, { attachments: true }]);
@@ -669,7 +655,7 @@ describe('Setup utils', () => {
         },
       });
 
-      await utils.__get__('downloadDdocDefinitions')(version);
+      await utils.downloadDdocDefinitions(version);
 
       expect(db.builds.get.callCount).to.equal(1);
       expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:${version}`, { attachments: true }]);
@@ -694,7 +680,7 @@ describe('Setup utils', () => {
         },
       });
 
-      await utils.__get__('downloadDdocDefinitions')(version);
+      await utils.downloadDdocDefinitions(version);
 
       expect(fs.promises.writeFile.callCount).to.equal(2);
       expect(fs.promises.writeFile.args).to.deep.equal([
@@ -707,7 +693,7 @@ describe('Setup utils', () => {
       db.builds.get.rejects({ error: 'boom' });
 
       try {
-        await utils.__get__('downloadDdocDefinitions')('vers');
+        await utils.downloadDdocDefinitions('vers');
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ error: 'boom' });
@@ -727,7 +713,7 @@ describe('Setup utils', () => {
       });
 
       try {
-        await utils.__get__('downloadDdocDefinitions')(version);
+        await utils.downloadDdocDefinitions(version);
         expect.fail('should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Staging ddoc is missing attachments');
@@ -754,7 +740,7 @@ describe('Setup utils', () => {
       });
 
       try {
-        await utils.__get__('downloadDdocDefinitions')(version);
+        await utils.downloadDdocDefinitions(version);
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ error: 'omg' });
@@ -770,65 +756,559 @@ describe('Setup utils', () => {
   });
 
   describe('saveStagedDdocs', () => {
-    it('should stage ddocs for every db', () => {
+    it('should stage ddocs for every db for packaged version', async () => {
+      sinon.stub(fs.promises, 'readFile');
+      sinon.stub(env, 'ddocsPath').value('localDdocs');
+      const deployInfo = { user: 'usr', upgrade_log_id: 'theid' };
+      Object.freeze(deployInfo);
+      sinon.stub(upgradeLogService, 'getDeployInfo').resolves(deployInfo);
+      const medicDdocs = {
+        docs: [
+          { _id: '_design/medic', views: { medic1: {}, medic2: {} } },
+          { _id: '_design/medic-client', views: { client1: {}, client2: {} } },
+        ],
+      };
+      const sentinelDdocs = { docs: [{ _id: '_design/sentinel', views: { sentinel: {} } }] };
+      const logsDdocs = { docs: [{ _id: '_design/logs', views: { logs1: {}, logs2: {} } }] };
+      const usersMetaDdocs = {
+        docs: [
+          { _id: '_design/meta1', views: { usersmeta1: {} } },
+          { _id: '_design/meta2', views: { usersmeta2: {} } },
+        ]
+      };
 
+      fs.promises.readFile.withArgs('localDdocs/medic.json').resolves(JSON.stringify(medicDdocs));
+      fs.promises.readFile.withArgs('localDdocs/sentinel.json').resolves(JSON.stringify(sentinelDdocs));
+      fs.promises.readFile.withArgs('localDdocs/logs.json').resolves(JSON.stringify(logsDdocs));
+      fs.promises.readFile.withArgs('localDdocs/users-meta.json').resolves(JSON.stringify(usersMetaDdocs));
+
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
+      sinon.stub(db.sentinel, 'bulkDocs').resolves([]);
+      sinon.stub(db.medicLogs, 'bulkDocs').resolves([]);
+      sinon.stub(db.medicUsersMeta, 'bulkDocs').resolves([]);
+
+      await utils.saveStagedDdocs('local');
+
+      expect(db.medic.bulkDocs.callCount).to.equal(1);
+      expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
+        { _id: '_design/:staged:medic', views: { medic1: {}, medic2: {} }, deploy_info: deployInfo },
+        { _id: '_design/:staged:medic-client', views: { client1: {}, client2: {} }, deploy_info: deployInfo },
+      ]]);
+      expect(db.sentinel.bulkDocs.callCount).to.equal(1);
+      expect(db.sentinel.bulkDocs.args[0]).to.deep.equal([[
+        { _id: '_design/:staged:sentinel', views: { sentinel: {} }, deploy_info: deployInfo },
+      ]]);
+      expect(db.medicLogs.bulkDocs.callCount).to.equal(1);
+      expect(db.medicLogs.bulkDocs.args[0]).to.deep.equal([[
+        { _id: '_design/:staged:logs', views: { logs1: {}, logs2: {} }, deploy_info: deployInfo }
+      ]]);
+      expect(db.medicUsersMeta.bulkDocs.callCount).to.equal(1);
+      expect(db.medicUsersMeta.bulkDocs.args[0]).to.deep.equal([[
+        { _id: '_design/:staged:meta1', views: { usersmeta1: {} }, deploy_info: deployInfo },
+        { _id: '_design/:staged:meta2', views: { usersmeta2: {} }, deploy_info: deployInfo },
+      ]]);
+      expect(fs.promises.readFile.args).to.deep.equal([
+        ['localDdocs/medic.json', 'utf-8'],
+        ['localDdocs/sentinel.json', 'utf-8'],
+        ['localDdocs/logs.json', 'utf-8'],
+        ['localDdocs/users-meta.json', 'utf-8']
+      ]);
     });
 
-    it('should throw error if staging fails', () => {
+    it('should stage ddocs for every db for upgrade version', async () => {
+      sinon.stub(fs.promises, 'readFile');
+      sinon.stub(env, 'upgradePath').value('upgradeDdocs');
+      const deployInfo = { user: 'admin', upgrade_log_id: 'theid' };
+      Object.freeze(deployInfo);
+      sinon.stub(upgradeLogService, 'getDeployInfo').resolves(deployInfo);
 
+      const medicDdocs = {
+        docs: [
+          { _id: '_design/medic', views: { medic: {} } },
+          { _id: '_design/medic-client', views: { clienta: {}, clientb: {} } },
+        ],
+      };
+      const sentinelDdocs = { docs: [{ _id: '_design/sentinel', views: { sentinel: {} } }] };
+      const logsDdocs = { docs: [{ _id: '_design/logs', views: { logs: {} } }] };
+      const usersMetaDdocs = {
+        docs: [
+          { _id: '_design/meta1', views: { usersmeta1: {} } },
+          { _id: '_design/meta2', views: { usersmeta2: {} } },
+        ]
+      };
+
+      fs.promises.readFile.withArgs('upgradeDdocs/medic.json').resolves(JSON.stringify(medicDdocs));
+      fs.promises.readFile.withArgs('upgradeDdocs/sentinel.json').resolves(JSON.stringify(sentinelDdocs));
+      fs.promises.readFile.withArgs('upgradeDdocs/logs.json').resolves(JSON.stringify(logsDdocs));
+      fs.promises.readFile.withArgs('upgradeDdocs/users-meta.json').resolves(JSON.stringify(usersMetaDdocs));
+
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
+      sinon.stub(db.sentinel, 'bulkDocs').resolves([]);
+      sinon.stub(db.medicLogs, 'bulkDocs').resolves([]);
+      sinon.stub(db.medicUsersMeta, 'bulkDocs').resolves([]);
+
+      await utils.saveStagedDdocs('3.14');
+
+      expect(db.medic.bulkDocs.callCount).to.equal(1);
+      expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
+        { _id: '_design/:staged:medic', views: { medic: {} }, deploy_info: deployInfo },
+        { _id: '_design/:staged:medic-client', views: { clienta: {}, clientb: {} }, deploy_info: deployInfo },
+      ]]);
+      expect(db.sentinel.bulkDocs.callCount).to.equal(1);
+      expect(db.sentinel.bulkDocs.args[0]).to.deep.equal([[
+        { _id: '_design/:staged:sentinel', views: { sentinel: {} }, deploy_info: deployInfo }
+      ]]);
+      expect(db.medicLogs.bulkDocs.callCount).to.equal(1);
+      expect(db.medicLogs.bulkDocs.args[0]).to.deep.equal([[
+        { _id: '_design/:staged:logs', views: { logs: {} }, deploy_info: deployInfo }
+      ]]);
+      expect(db.medicUsersMeta.bulkDocs.callCount).to.equal(1);
+      expect(db.medicUsersMeta.bulkDocs.args[0]).to.deep.equal([[
+        { _id: '_design/:staged:meta1', views: { usersmeta1: {} }, deploy_info: deployInfo },
+        { _id: '_design/:staged:meta2', views: { usersmeta2: {} }, deploy_info: deployInfo },
+      ]]);
+      expect(fs.promises.readFile.args).to.deep.equal([
+        ['upgradeDdocs/medic.json', 'utf-8'],
+        ['upgradeDdocs/sentinel.json', 'utf-8'],
+        ['upgradeDdocs/logs.json', 'utf-8'],
+        ['upgradeDdocs/users-meta.json', 'utf-8']
+      ]);
+    });
+
+    it('should work when db has been removed from upgrade', async () => {
+      sinon.stub(fs.promises, 'readFile');
+      sinon.stub(env, 'upgradePath').value('upgradeDdocs');
+      const deployInfo = { user: 'admin', upgrade_log_id: 'anid' };
+      Object.freeze(deployInfo);
+      sinon.stub(upgradeLogService, 'getDeployInfo').resolves(deployInfo);
+
+      const medicDdocs = {
+        docs: [
+          { _id: '_design/medic', views: { medic: {} } },
+          { _id: '_design/medic-client', views: { clienta: {}, clientb: {} } },
+        ],
+      };
+      const logsDdocs = { docs: [{ _id: '_design/logs', views: { logs: {} } }] };
+      const usersMetaDdocs = {
+        docs: [
+          { _id: '_design/meta1', views: { usersmeta1: {} } },
+          { _id: '_design/meta2', views: { usersmeta2: {} } },
+        ]
+      };
+
+      fs.promises.readFile.withArgs('upgradeDdocs/medic.json').resolves(JSON.stringify(medicDdocs));
+      fs.promises.readFile.withArgs('upgradeDdocs/sentinel.json').rejects({ code: 'ENOENT' });
+      fs.promises.readFile.withArgs('upgradeDdocs/logs.json').resolves(JSON.stringify(logsDdocs));
+      fs.promises.readFile.withArgs('upgradeDdocs/users-meta.json').resolves(JSON.stringify(usersMetaDdocs));
+
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
+      sinon.stub(db.medicLogs, 'bulkDocs').resolves([]);
+      sinon.stub(db.medicUsersMeta, 'bulkDocs').resolves([]);
+
+      await utils.saveStagedDdocs('someversion');
+
+      expect(db.medic.bulkDocs.callCount).to.equal(1);
+      expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
+        { _id: '_design/:staged:medic', views: { medic: {} }, deploy_info: deployInfo },
+        { _id: '_design/:staged:medic-client', views: { clienta: {}, clientb: {} }, deploy_info: deployInfo },
+      ]]);
+      expect(db.medicLogs.bulkDocs.callCount).to.equal(1);
+      expect(db.medicLogs.bulkDocs.args[0]).to.deep.equal([[
+        { _id: '_design/:staged:logs', views: { logs: {} }, deploy_info: deployInfo }
+      ]]);
+      expect(db.medicUsersMeta.bulkDocs.callCount).to.equal(1);
+      expect(db.medicUsersMeta.bulkDocs.args[0]).to.deep.equal([[
+        { _id: '_design/:staged:meta1', views: { usersmeta1: {} }, deploy_info: deployInfo },
+        { _id: '_design/:staged:meta2', views: { usersmeta2: {} }, deploy_info: deployInfo },
+      ]]);
+      expect(fs.promises.readFile.args).to.deep.equal([
+        ['upgradeDdocs/medic.json', 'utf-8'],
+        ['upgradeDdocs/sentinel.json', 'utf-8'],
+        ['upgradeDdocs/logs.json', 'utf-8'],
+        ['upgradeDdocs/users-meta.json', 'utf-8']
+      ]);
+    });
+
+    it('should throw error if reading files throws errors', async () => {
+      sinon.stub(fs.promises, 'readFile');
+      sinon.stub(env, 'upgradePath').value('upgradeDdocs');
+      const deployInfo = { user: '', upgrade_log_id: '' };
+      Object.freeze(deployInfo);
+      sinon.stub(upgradeLogService, 'getDeployInfo').resolves(deployInfo);
+
+      const medicDdocs = {
+        docs: [
+          { _id: '_design/medic', views: { medic: {} } },
+          { _id: '_design/medic-client', views: { client: {} } },
+        ],
+      };
+
+      fs.promises.readFile.withArgs('upgradeDdocs/medic.json').resolves(JSON.stringify(medicDdocs));
+      fs.promises.readFile.withArgs('upgradeDdocs/sentinel.json').rejects({ code: 'someerror' });
+
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
+
+      try {
+        await utils.saveStagedDdocs('a version');
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ code: 'someerror' });
+      }
+
+      expect(fs.promises.readFile.args).to.deep.equal([
+        ['upgradeDdocs/medic.json', 'utf-8'],
+        ['upgradeDdocs/sentinel.json', 'utf-8'],
+      ]);
+
+      expect(db.medic.bulkDocs.callCount).to.equal(1);
+      expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
+        { _id: '_design/:staged:medic', views: { medic: {} }, deploy_info: deployInfo },
+        { _id: '_design/:staged:medic-client', views: { client: {} }, deploy_info: deployInfo },
+      ]]);
+    });
+
+    it('should throw error if staging fails', async () => {
+      sinon.stub(fs.promises, 'readFile');
+      sinon.stub(env, 'upgradePath').value('upgradeDdocs');
+      sinon.stub(upgradeLogService, 'getDeployInfo').resolves({});
+
+      const medicDdocs = {
+        docs: [
+          { _id: '_design/medic', views: { medic: {} } },
+          { _id: '_design/medic-client', views: { client: {} } },
+        ],
+      };
+      const sentinelDocs = {
+        docs: [{ _id: '_design/sentinel', views: { sentinel: {} } }],
+      };
+      const logsDocs = {
+        docs: [{ _id: '_design/logs', views: { logs: {} } }],
+      };
+
+      fs.promises.readFile.withArgs('upgradeDdocs/medic.json').resolves(JSON.stringify(medicDdocs));
+      fs.promises.readFile.withArgs('upgradeDdocs/sentinel.json').resolves(JSON.stringify(sentinelDocs));
+      fs.promises.readFile.withArgs('upgradeDdocs/logs.json').resolves(JSON.stringify(logsDocs));
+
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
+      sinon.stub(db.sentinel, 'bulkDocs').resolves([]);
+      sinon.stub(db.medicLogs, 'bulkDocs').resolves([{ error: 'some error', id: '_design/logs' }]);
+
+      try {
+        await utils.saveStagedDdocs('a version');
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal('Error while saving docs: saving _design/logs failed with some error');
+      }
+
+      expect(fs.promises.readFile.args).to.deep.equal([
+        ['upgradeDdocs/medic.json', 'utf-8'],
+        ['upgradeDdocs/sentinel.json', 'utf-8'],
+        ['upgradeDdocs/logs.json', 'utf-8'],
+      ]);
+
+      expect(db.medic.bulkDocs.callCount).to.equal(1);
+      expect(db.sentinel.bulkDocs.callCount).to.equal(1);
+      expect(db.medicLogs.bulkDocs.callCount).to.equal(1);
     });
   });
 
-  describe('stage', () => {
-    it('should throw an error when version is not defined', () => {
+  describe('getPackagedVersion', () => {
+    it('should get the version from the packaged medic ddoc', async () => {
+      const medicDdoc = {
+        _id: '_design/medic',
+        version: '4.0.0',
+      };
+      sinon.stub(env, 'ddoc').value('medic');
+      sinon.stub(env, 'ddocsPath').value('ddocsPath');
+      sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({ docs: [medicDdoc] }));
 
+      const version = await utils.getPackagedVersion();
+
+      expect(version).to.equal('4.0.0');
+      expect(fs.promises.readFile.callCount).to.equal(1);
+      expect(fs.promises.readFile.args[0]).to.deep.equal(['ddocsPath/medic.json', 'utf-8']);
     });
 
-    describe('on upgrade', () => {
-      it('should create upgrade folder, get ddoc definitions, stage new ddocs, return views to index', () => {
+    it('should throw error if json is not found', async () => {
+      sinon.stub(env, 'ddocsPath').value('ddocsPath');
+      sinon.stub(env, 'ddoc').value('medic');
+      sinon.stub(fs.promises, 'readFile').rejects({ code: 'ENOENT' });
 
-      });
-
-      it('should throw an error when upgrade folder creation fails', () => {
-
-      });
-
-      it('should throw an error when staging ddoc for version is not found', () => {
-
-      });
-
-      it('should throw an error if staging fails', () => {
-
-      });
+      try {
+        await utils.getPackagedVersion();
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal('Cannot find medic db ddocs among packaged ddocs.');
+      }
     });
 
-    describe('on fresh install', () => {
-      it('should create upgrade folder, stage ddocs, return views to index', () => {
+    it('should throw error if json is missing medic ddoc', async () => {
+      const jsonDdocs = [ { _id: '_design/one' }, { _id: '_design/two' }, { _id: '_design/three' } ];
+      sinon.stub(env, 'ddocsPath').value('ddocsPath');
+      sinon.stub(env, 'ddoc').value('medic');
+      sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({ docs: jsonDdocs }));
 
-      });
-
-      it('should throw an error when upgrade folder creation fails', () => {
-
-      });
-
-      it('should throw an error if staging fails', () => {
-
-      });
-    });
-
-    describe('on update install', () => {
-      it('should stage ddocs, return views to index', () => {
-
-      });
-
-      it('should throw an error if staging fails', () => {
-
-      });
+      try {
+        await utils.getPackagedVersion();
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal('Cannot find medic ddoc among packaged ddocs.');
+      }
     });
   });
 
-  describe('complete install', () => {
+  describe('freshInstall', () => {
+    it('should return true if there is no installed medic ddoc', async () => {
+      sinon.stub(env, 'ddoc').value('medic');
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
 
+      expect(await utils.freshInstall()).to.equal(true);
+      expect(db.medic.get.callCount).to.equal(1);
+      expect(db.medic.get.args[0]).to.deep.equal(['_design/medic']);
+    });
+
+    it('should return false if there is a medic ddoc', async () => {
+      sinon.stub(env, 'ddoc').value('theddoc');
+      sinon.stub(db.medic, 'get').resolves({ _id: '_design/theddoc' });
+      expect(await utils.freshInstall()).to.equal(false);
+      expect(db.medic.get.callCount).to.equal(1);
+      expect(db.medic.get.args[0]).to.deep.equal(['_design/theddoc']);
+    });
+
+    it('should throw error when get fails', async () => {
+      sinon.stub(db.medic, 'get').rejects({ status: 401 });
+      try {
+        await utils.freshInstall();
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ status: 401 });
+      }
+    });
   });
 
+  describe('indexViewsFn', () => {
+    it('should call all indexView functions', async () => {
+      const viewToIndexFunctions = [
+        sinon.stub().resolves('a'),
+        sinon.stub().resolves('b'),
+        sinon.stub().resolves('c'),
+        sinon.stub().resolves('d'),
+      ];
+      sinon.stub(upgradeLogService, 'setIndexing');
+      sinon.stub(upgradeLogService, 'setIndexed');
+
+      const promise = utils.indexViews(viewToIndexFunctions);
+
+      viewToIndexFunctions.forEach(indexFn => expect(indexFn.called).to.equal(false));
+      expect(upgradeLogService.setIndexing.callCount).to.equal(1);
+      expect(upgradeLogService.setIndexed.callCount).to.equal(0);
+
+      const result = await promise;
+
+      viewToIndexFunctions.forEach(indexFn => {
+        expect(indexFn.callCount).to.equal(1);
+        expect(indexFn.args[0]).to.deep.equal([]);
+      });
+      expect(upgradeLogService.setIndexing.callCount).to.equal(1);
+      expect(upgradeLogService.setIndexed.callCount).to.equal(1);
+
+      expect(result).to.deep.equal(['a', 'b', 'c', 'd']);
+    });
+
+    it('should throw error if indexing fails', async () => {
+      const viewToIndexFunctions = [
+        sinon.stub().resolves('a'),
+        sinon.stub().resolves('b'),
+        sinon.stub().rejects({ an: 'error' }),
+      ];
+      sinon.stub(upgradeLogService, 'setIndexing');
+      sinon.stub(upgradeLogService, 'setIndexed');
+
+      try {
+        await utils.indexViews(viewToIndexFunctions);
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ an: 'error' });
+      }
+    });
+
+    it('should do nothing if passed param is not an array', async () => {
+      sinon.stub(upgradeLogService, 'setIndexed');
+      await utils.indexViews('something');
+      expect(upgradeLogService.setIndexed.callCount).to.equal(1);
+    });
+  });
+
+  describe('unstageStagedDdocs', () => {
+    it('should rename staged ddocs and assign deploy info timestamp', async () => {
+      clock.tick(1500);
+      const deployInfoNew = { user: 'usr', upgrade_log_id: 'aa' };
+      const deployInfoOld = { user: 'old', upgrade_log_id: '11', timestamp: 100 };
+      const deployInfoExpected = Object.assign({ timestamp: 1500 }, deployInfoNew);
+
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
+        { doc: { _id: '_design/:staged:medic', _rev: '1', new: true, deploy_info: deployInfoNew } },
+        { doc: { _id: '_design/:staged:medic-client', _rev: '1', new: true, deploy_info: deployInfoNew } },
+        { doc: { _id: '_design/medic', _rev: '2', old: true, deploy_info: deployInfoOld } },
+        { doc: { _id: '_design/medic-client', _rev: '3', old: true, deploy_info: deployInfoOld } },
+      ] }); // all ddocs have match
+      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [
+        { doc: { _id: '_design/:staged:sentinel1', _rev: '1', isnew: true, deploy_info: deployInfoNew } },
+        { doc: { _id: '_design/sentinel1', _rev: '2', isOld: true, deploy_info: deployInfoOld } },
+        { doc: { _id: '_design/extra', _rev: '3', deploy_info: deployInfoOld } },
+      ] }); // one extra existent ddoc
+      sinon.stub(db.medicLogs, 'allDocs').resolves({ rows: [
+        { doc: { _id: '_design/:staged:logs1', _rev: '1', field: 'a', deploy_info: deployInfoNew } },
+        { doc: { _id: '_design/:staged:logs2', _rev: '1', deploy_info: deployInfoNew } },
+        { doc: { _id: '_design/logs1', _rev: '3', field: 'b', deploy_info: deployInfoOld } },
+      ] }); // one extra staged ddoc
+      sinon.stub(db.medicUsersMeta, 'allDocs').resolves({ rows: [] }); // no ddocs
+
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
+      sinon.stub(db.sentinel, 'bulkDocs').resolves([]);
+      sinon.stub(db.medicLogs, 'bulkDocs').resolves([]);
+
+      await utils.unstageStagedDdocs();
+
+      const allDocsArgs = [{ startkey: '_design/', endkey: '_design/\ufff0', include_docs: true }];
+
+      expect(db.medic.allDocs.callCount).to.equal(1);
+      expect(db.medic.allDocs.args[0]).to.deep.equal(allDocsArgs);
+      expect(db.sentinel.allDocs.callCount).to.equal(1);
+      expect(db.sentinel.allDocs.args[0]).to.deep.equal(allDocsArgs);
+      expect(db.medicLogs.allDocs.callCount).to.equal(1);
+      expect(db.medicLogs.allDocs.args[0]).to.deep.equal(allDocsArgs);
+      expect(db.medicUsersMeta.allDocs.callCount).to.equal(1);
+      expect(db.medicUsersMeta.allDocs.args[0]).to.deep.equal(allDocsArgs);
+
+      expect(db.medic.bulkDocs.callCount).to.equal(1);
+      expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
+        { _id: '_design/medic', _rev: '2', new: true, deploy_info: deployInfoExpected },
+        { _id: '_design/medic-client', _rev: '3', new: true, deploy_info: deployInfoExpected },
+      ]]);
+      expect(db.sentinel.bulkDocs.callCount).to.equal(1);
+      expect(db.sentinel.bulkDocs.args[0]).to.deep.equal([[
+        { _id: '_design/sentinel1', _rev: '2', isnew: true, deploy_info: deployInfoExpected },
+      ]]);
+      expect(db.medicLogs.bulkDocs.callCount).to.equal(1);
+      expect(db.medicLogs.bulkDocs.args[0]).to.deep.equal([[
+        { _id: '_design/logs1', _rev: '3', field: 'a', deploy_info: deployInfoExpected },
+        { _id: '_design/logs2', deploy_info: deployInfoExpected },
+      ]]);
+    });
+
+    it('should throw an error when getting ddocs fails', async () => {
+      clock.tick(2500);
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
+        { doc: { _id: '_design/:staged:medic', _rev: '1', foo: 1, deploy_info: { deploy: 'info' } } },
+        { doc: { _id: '_design/medic', _rev: '2', bar: 2, deploy_info: { deploy: 'old' } } },
+      ] }); // all ddocs have match
+      sinon.stub(db.sentinel, 'allDocs').rejects({ the: 'error' });
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
+
+      sinon.stub(upgradeLogService, 'getDeployInfo').resolves();
+
+      try {
+        await utils.unstageStagedDdocs();
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ the: 'error' });
+
+        expect(db.medic.allDocs.callCount).to.equal(1);
+        expect(db.medic.bulkDocs.callCount).to.equal(1);
+        expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
+          { _id: '_design/medic', _rev: '2', foo: 1, deploy_info: { deploy: 'info', timestamp: 2500 }},
+        ]]);
+        expect(db.sentinel.allDocs.callCount).to.equal(1);
+      }
+    });
+
+    it('should throw an error when saving ddocs fails', async () => {
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
+        { doc: { _id: '_design/:staged:medic', _rev: '1', foo: 1, deploy_info: { deploy: 'info' } } },
+        { doc: { _id: '_design/medic', _rev: '2', bar: 2, deploy_info: 'omg' } },
+      ] }); // all ddocs have match
+      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [
+        { doc: { _id: '_design/:staged:sentinel', _rev: '1', foo: 1, deploy_info: { deploy: 'info' } } },
+      ]});
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
+      sinon.stub(db.sentinel, 'bulkDocs').rejects({ error: 'an error' });
+
+      try {
+        await utils.unstageStagedDdocs();
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ error: 'an error' });
+
+        expect(db.medic.allDocs.callCount).to.equal(1);
+        expect(db.medic.bulkDocs.callCount).to.equal(1);
+        expect(db.sentinel.allDocs.callCount).to.equal(1);
+        expect(db.sentinel.bulkDocs.callCount).to.equal(1);
+      }
+    });
+  });
+
+  describe('compareDdocs', () => {
+    it('should return empty lists when all bundled are uploaded', () => {
+      const bundled = [
+        { _id: '_design/one', version: '4.0.1-thing' },
+        { _id: '_design/two', version: '4.0.1-thing' },
+        { _id: '_design/three', version: '4.0.1-thing' },
+      ];
+      const uploaded = [
+        { _id: '_design/two', version: '4.0.1-thing' },
+        { _id: '_design/one', version: '4.0.1-thing' },
+        { _id: '_design/three', version: '4.0.1-thing' },
+      ];
+
+      expect(utils.compareDdocs(bundled, uploaded)).to.deep.equal({ missing: [], different: [] });
+    });
+
+    it('should return empty lists when all bundled are staged', () => {
+      const bundled = [
+        { _id: '_design/one', version: '4.0.1-thing' },
+        { _id: '_design/two', version: '4.0.1-thing' },
+        { _id: '_design/three', version: '4.0.1-thing' },
+      ];
+      const uploaded = [
+        { _id: '_design/:staged:two', version: '4.0.1-thing' },
+        { _id: '_design/:staged:one', version: '4.0.1-thing' },
+        { _id: '_design/:staged:three', version: '4.0.1-thing' },
+      ];
+
+      expect(utils.compareDdocs(bundled, uploaded)).to.deep.equal({ missing: [], different: [] });
+    });
+
+    it('should return missing ddocs', () => {
+      const bundled = [
+        { _id: '_design/one', version: '4.0.1-thing' },
+        { _id: '_design/two', version: '4.0.1-thing' },
+        { _id: '_design/three', version: '4.0.1-thing' },
+      ];
+      const uploaded = [
+        { _id: '_design/:staged:two', version: '4.0.1-thing' },
+        { _id: '_design/:staged:three', version: '4.0.1-thing' },
+      ];
+
+      expect(utils.compareDdocs(bundled, uploaded)).to.deep.equal({ missing: ['_design/one'], different: [] });
+    });
+
+    it('should return different ddocs, comparing version', () => {
+      const bundled = [
+        { _id: '_design/one', version: '4.0.1-thing' },
+        { _id: '_design/two', version: '4.0.1-thing' },
+        { _id: '_design/three', version: '4.0.1-thing' },
+      ];
+      const uploaded = [
+        { _id: '_design/:staged:two', version: '4.0.1-thing' },
+        { _id: '_design/:staged:one', version: '4.0.2-thing' },
+        { _id: '_design/:staged:three', version: '4.0.3-thing' },
+      ];
+
+      expect(utils.compareDdocs(bundled, uploaded)).to.deep.equal({
+        different: ['_design/one', '_design/three'],
+        missing: [],
+      });
+    });
+  });
 });

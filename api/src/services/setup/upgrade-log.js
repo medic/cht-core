@@ -20,6 +20,21 @@ const logger = require('../../logger');
  * @property {any} state_history[].details
  */
 
+if (!fs.promises) {
+  const promisify = require('util').promisify;
+  // temporary patching to work on Node 8.
+  // This code will never run on Node 8 in prod!
+  fs.promises = {
+    mkdir: promisify(fs.mkdir),
+    readdir: promisify(fs.readdir),
+    rmdir: promisify(fs.readdir),
+    unlink: promisify(fs.unlink),
+    access: promisify(fs.access),
+    writeFile: promisify(fs.writeFile),
+    readFile: promisify(fs.readFile),
+  };
+}
+
 const UPGRADE_LOG_STATES = {
   INITIATED: 'initiated',
   STAGED: 'staged',
@@ -32,11 +47,11 @@ const UPGRADE_LOG_STATES = {
 };
 
 const UPGRADE_LOG_NAME = 'upgrade_log';
-const UPGRADE_LOG_PATH = path.join(environment.upgradePath, 'upgrade_log.json');
+const UPGRADE_LOG_PATH = path.join(environment.upgradePath, 'upgrade-log.json');
 
 const getUpgradeLogId = (version, startDate) => `${UPGRADE_LOG_NAME}:${version}:${startDate}`;
 
-const getCurrentUpgradeLogContents = async () => {
+const getUpgradeLog = async () => {
   try {
     const content = await fs.promises.readFile(UPGRADE_LOG_PATH, 'utf-8');
     return JSON.parse(content);
@@ -49,6 +64,14 @@ const getCurrentUpgradeLogContents = async () => {
 
     logger.error('Error when getting current upgrade log contents: %o', err);
   }
+};
+
+const getDeployInfo = async () => {
+  const log = await getUpgradeLog() || {};
+  return {
+    user: log.user,
+    upgrade_log_id: log._id,
+  };
 };
 
 /**
@@ -71,7 +94,7 @@ const pushState = (upgradeLog, state, date = new Date().getTime()) => {
  * @param {string} username
  * @return {Promise<UpgradeLog>}
  */
-const create = async (toVersion, fromVersion = '', username = '') => {
+const createUpgradeLog = async (toVersion='', fromVersion = '', username = '') => {
   logger.info(`Staging ${toVersion}`);
   const startDate = new Date().getTime();
 
@@ -96,7 +119,7 @@ const create = async (toVersion, fromVersion = '', username = '') => {
  * @param {string} state
  */
 const update = async (state) => {
-  const upgradeLogFile = await getCurrentUpgradeLogContents();
+  const upgradeLogFile = await getUpgradeLog();
   if (!upgradeLogFile) {
     logger.info('Upgrade log tracking file was not found.');
     return;
@@ -108,6 +131,7 @@ const update = async (state) => {
   pushState(upgradeLog, state);
   await db.medicLogs.put(upgradeLog);
   await fs.promises.writeFile(UPGRADE_LOG_PATH, JSON.stringify(upgradeLog));
+  return upgradeLog;
 };
 
 const setStaged = async () => {
@@ -139,7 +163,8 @@ const setAborted = () => update(UPGRADE_LOG_STATES.ABORTED);
 const setErrored = () => update(UPGRADE_LOG_STATES.ERRORED);
 
 module.exports = {
-  create,
+  create: createUpgradeLog,
+  getDeployInfo,
   setStaged,
   setIndexing,
   setIndexed,

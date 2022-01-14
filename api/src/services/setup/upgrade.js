@@ -1,16 +1,21 @@
-const upgradeUtils = require('./utils');
 const indexerProgress = require('./indexer-progress');
 const upgradeLogService = require('./upgrade-log');
+const installer = require('./install');
+const logger = require('../../logger');
 
 const upgrade = async (build, username, stageOnly) => {
+  if (!build) {
+    throw new Error('Build is invalid');
+  }
+
   try {
-    const indexViews = await upgradeUtils.stage(build.version, username);
+    await installer.stage(build.version, username);
     if (stageOnly) {
       indexViews();
       return;
     }
 
-    await indexViews();
+    await installer.indexStagedViews();
     await complete();
   } catch (err) {
     await upgradeLogService.setErrored();
@@ -19,8 +24,16 @@ const upgrade = async (build, username, stageOnly) => {
 
 };
 
+const indexViews = async () => {
+  try {
+    await installer.indexStagedViews();
+  } catch (err) {
+    await upgradeLogService.setErrored();
+    logger.error('Error thrown when indexing views %o', err);
+  }
+};
+
 const complete = async () => {
-  await upgradeLogService.setComplete();
   // todo
   // this is going to send a request to the bridge container to pull new source code
   // completing the install (overwriting the staged ddocs) is done when API starts up.

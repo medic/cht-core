@@ -37,6 +37,7 @@ if (UNIT_TEST_ENV) {
     'exists',
     'close',
     'allDbs',
+    'activeTasks'
   ];
 
   const notStubbed = (first, second) => {

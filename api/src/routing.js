@@ -336,9 +336,19 @@ app.get('/api/info', function(req, res) {
   res.json({ version: p.version });
 });
 
-app.get('/api/deploy-info', (req, res) => {
+app.get('/api/deploy-info', async (req, res) => {
   if (!req.userCtx) {
     return serverUtils.notLoggedIn(req, res);
+  }
+
+  // todo
+  if (!environment.getDeployInfo()) {
+    try {
+      const ddoc = await db.medic.get(upgradeUtils.getDdocId(environment.ddoc));
+      environment.setDeployInfo(ddoc.deploy_info);
+    } catch(err) {
+      return serverUtils.serverError(err, req, res);
+    }
   }
 
   res.json(environment.getDeployInfo());
@@ -571,6 +581,7 @@ app.post(
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
 const dbDocHandler = require('./controllers/db-doc');
+const upgradeUtils = require('./services/setup/utils');
 const docPath = routePrefix + ':docId/{0,}';
 const attachmentPath = routePrefix + ':docId/+:attachmentId*';
 const ddocPath = routePrefix + '_design/+:ddocId*';
