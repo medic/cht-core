@@ -775,6 +775,177 @@ describe('Users service', () => {
       }
     });
 
+    it('returns error if one of the users has a missing phone number', async () => {
+      const tokenLoginConfig = { translation_key: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('url');
+      sinon.stub(auth, 'isOffline').returns(false);
+
+      try {
+        await service.createUsers([
+          {
+            username: 'sally',
+            roles: ['a', 'b'],
+            phone: '123',
+            token_login: true,
+          },
+          {
+            username: 'sally',
+            roles: ['a', 'b'],
+            token_login: true,
+          },
+        ]);
+        chai.assert.fail('Should have thrown');
+      } catch (error) {
+        chai.expect(error.code).to.equal(400);
+        chai.expect(error.failingIndexes[0].fields).to.deep.equal(['phone']);
+        chai.expect(error.failingIndexes[0].index).to.equal(1);
+      }
+    });
+
+    it('returns error if one of the users has an invalid phone number', async () => {
+      const tokenLoginConfig = { translation_key: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('url');
+      sinon.stub(auth, 'isOffline').returns(false);
+
+      try {
+        await service.createUsers([
+          {
+            username: 'sally',
+            roles: ['a', 'b'],
+            phone: '+40 755 69-69-69',
+            token_login: true,
+          },
+          {
+            username: 'sally',
+            roles: ['a', 'b'],
+            phone: '123',
+            token_login: true,
+          },
+        ]);
+        chai.assert.fail('Should have thrown');
+      } catch (error) {
+        chai.expect(error.code).to.equal(400);
+        chai.expect(error.failingIndexes[0].tokenLoginError.msg).to.equal(
+          'A valid phone number is required for SMS login.'
+        );
+        chai.expect(error.failingIndexes[0].tokenLoginError.key).to.equal('configuration.enable.token.login.phone');
+        chai.expect(error.failingIndexes[0].index).to.equal(1);
+      }
+    });
+
+    it('should normalize phone number and change password (if provided)', async () => {
+      const tokenLoginConfig = { message: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('');
+
+      sinon.stub(auth, 'isOffline').returns(false);
+
+      const users = [{
+        username: 'sally',
+        roles: ['a', 'b'],
+        phone: '+40 755 69-69-69',
+        password: 'random',
+        token_login: true,
+      }];
+
+      sinon.stub(db.medic, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
+        .resolves({ id: 'org.couchdb.user:sally' });
+      sinon.stub(db.users, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
+        .resolves({ id: 'org.couchdb.user:sally' });
+
+      sinon.stub(db.users, 'get').withArgs('org.couchdb.user:sally')
+        .onCall(0).rejects({ status: 404 })
+        .onCall(1).resolves({
+          _id: 'org.couchdb.user:sally',
+          type: 'user',
+          roles: ['a', 'b', 'mm-online'],
+          name: 'sally',
+        });
+      sinon.stub(db.medic, 'get').withArgs('org.couchdb.user:sally')
+        .onCall(0).rejects({ status: 404 })
+        .onCall(1).resolves({
+          _id: 'org.couchdb.user:sally',
+          type: 'user-settings',
+          roles: ['a', 'b', 'mm-online'],
+          phone: '+40755696969',
+          name: 'sally',
+        });
+
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [{ error: 'not_found' }] });
+
+      const response = await service.createUsers(users, 'http://realhost');
+      chai.expect(response).to.deep.equal([
+        {
+          user: { id: 'org.couchdb.user:sally', rev: undefined },
+          'user-settings': { id: 'org.couchdb.user:sally', rev: undefined },
+          token_login: { expiration_date: oneDayInMS },
+        },
+      ]);
+      chai.expect(db.medic.put.callCount).to.equal(3);
+      chai.expect(db.users.put.callCount).to.equal(2);
+
+      chai.expect(db.medic.put.args[0]).to.deep.equal([{
+        _id: 'org.couchdb.user:sally',
+        name: 'sally',
+        type: 'user-settings',
+        phone: '+40755696969', // normalized phone
+        roles: ['a', 'b', 'mm-online'],
+      }]);
+
+      chai.expect(db.users.put.args[0][0]).to.deep.include({
+        _id: 'org.couchdb.user:sally',
+        name: 'sally',
+        type: 'user',
+        roles: ['a', 'b', 'mm-online'],
+      });
+      chai.expect(db.users.put.args[0][0].password).not.to.equal('random');
+      chai.expect(db.users.put.args[0][0].password.length).to.equal(20);
+
+      chai.expect(db.medic.put.args[2][0]).to.deep.equal({
+        _id: 'org.couchdb.user:sally',
+        name: 'sally',
+        type: 'user-settings',
+        phone: '+40755696969', // normalized phone
+        roles: ['a', 'b', 'mm-online'],
+        token_login: {
+          active: true,
+          expiration_date: oneDayInMS,
+        },
+      });
+
+      chai.expect(db.users.put.args[1][0]).to.deep.include({
+        _id: 'org.couchdb.user:sally',
+        name: 'sally',
+        type: 'user',
+        roles: ['a', 'b', 'mm-online'],
+      });
+
+      chai.expect(db.users.put.args[1][0].token_login).to.deep.include({
+        active: true,
+        expiration_date: oneDayInMS,
+      });
+      const token = db.users.put.args[1][0].token_login.token;
+      chai.expect(token.length).to.equal(64);
+
+      chai.expect(db.medic.put.args[1][0]).to.deep.nested.include({
+        _id: `token:login:${token}`,
+        type: 'token_login',
+        reported_date: 0,
+        user: 'org.couchdb.user:sally',
+        'tasks[0].messages[0].to': '+40755696969',
+        'tasks[0].messages[0].message': 'sms',
+        'tasks[0].state': 'pending',
+        'tasks[1].messages[0].to': '+40755696969',
+        'tasks[1].messages[0].message': `http://realhost/medic/login/token/${token}`,
+        'tasks[1].state': 'pending',
+      });
+    });
+
     describe('errors at insertion', () => {
       it('returns responses with errors if contact.parent lookup fails', async () => {
         const userData = {
