@@ -676,6 +676,13 @@ describe('Users service', () => {
 
   describe('createUsers', () => {
     it('calls `createUser` if the body is not an array', async () => {
+      const userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: 'foo',
+        contact: { 'parent': 'x' },
+        type: 'national-manager'
+      };
       service.__set__('validateNewUsername', sinon.stub().resolves());
       service.__set__('createPlace', sinon.stub().resolves());
       service.__set__('createUser', sinon.stub().resolves());
@@ -683,7 +690,6 @@ describe('Users service', () => {
       service.__set__('storeUpdatedPlace', sinon.stub().resolves());
       service.__set__('createUserSettings', sinon.stub().resolves());
       sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
-      userData.place = 'foo';
       const response = await service.createUsers(userData);
       chai.expect(response).to.deep.equal({});
     });
@@ -769,6 +775,13 @@ describe('Users service', () => {
 
     describe('errors at insertion', () => {
       it('returns responses with errors if contact.parent lookup fails', async () => {
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: { name: 'x' },
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
         service.__set__('validateNewUsername', sinon.stub().resolves());
         service.__set__('createPlace', sinon.stub().resolves());
         service.__set__('setContactParent', sinon.stub().rejects(new Error('kablooey')));
@@ -778,6 +791,13 @@ describe('Users service', () => {
       });
 
       it('returns responses with errors if place lookup fails', async () => {
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: { name: 'x' },
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
         service.__set__('validateNewUsername', sinon.stub().resolves());
         service.__set__('createPlace', sinon.stub().rejects(new Error('fail')));
 
@@ -786,6 +806,13 @@ describe('Users service', () => {
       });
 
       it('returns responses with errors if place is not within contact', async () => {
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: 'georgia',
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
         service.__set__('validateNewUsername', sinon.stub().resolves());
         service.__set__('createPlace', sinon.stub().resolves());
         sinon.stub(places, 'getPlace').resolves({
@@ -794,7 +821,6 @@ describe('Users service', () => {
             _id: 'florida'
           }
         });
-        userData.place = 'georgia';
 
         const response = await service.createUsers([userData]);
         chai.expect(response[0].error.message).to.equal('Contact is not within place.');
@@ -842,6 +868,13 @@ describe('Users service', () => {
     });
 
     it('succeeds if contact and place are the same', async () => {
+      const userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: 'foo',
+        contact: { 'parent': 'x' },
+        type: 'national-manager'
+      };
       service.__set__('validateNewUsername', sinon.stub().resolves());
       service.__set__('createPlace', sinon.stub().resolves());
       service.__set__('createUser', sinon.stub().resolves());
@@ -855,6 +888,13 @@ describe('Users service', () => {
     });
 
     it('succeeds if contact is within place', async () => {
+      const userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: 'florida',
+        contact: { 'parent': 'x' },
+        type: 'national-manager'
+      };
       service.__set__('validateNewUsername', sinon.stub().resolves());
       service.__set__('createPlace', sinon.stub().resolves());
       service.__set__('createUser', sinon.stub().resolves());
@@ -873,6 +913,13 @@ describe('Users service', () => {
     });
 
     it('errors if username exists in _users db', async () => {
+      const userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: { name: 'x' },
+        contact: { 'parent': 'x' },
+        type: 'national-manager'
+      };
       sinon.stub(db.users, 'get').resolves('bob lives here already.');
       sinon.stub(db.medic, 'get').resolves();
       const insert = sinon.stub(db.medic, 'put');
@@ -884,6 +931,13 @@ describe('Users service', () => {
     });
 
     it('errors if username exists in medic db', async () => {
+      const userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: { name: 'x' },
+        contact: { 'parent': 'x' },
+        type: 'national-manager'
+      };
       sinon.stub(db.users, 'get').resolves();
       sinon.stub(db.medic, 'get').resolves('jane lives here too.');
       const insert = sinon.stub(db.medic, 'put');
