@@ -771,18 +771,18 @@ describe('Users service', () => {
       it('returns responses with errors if contact.parent lookup fails', async () => {
         service.__set__('validateNewUsername', sinon.stub().resolves());
         service.__set__('createPlace', sinon.stub().resolves());
-        service.__set__('setContactParent', sinon.stub().rejects('kablooey'));
+        service.__set__('setContactParent', sinon.stub().rejects(new Error('kablooey')));
 
         const response = await service.createUsers([userData]);
-        chai.expect(response[0].error.name).to.equal('kablooey');
+        chai.expect(response[0].error).to.equal('kablooey');
       });
 
       it('returns responses with errors if place lookup fails', async () => {
         service.__set__('validateNewUsername', sinon.stub().resolves());
-        service.__set__('createPlace', sinon.stub().rejects('fail'));
+        service.__set__('createPlace', sinon.stub().rejects(new Error('fail')));
 
         const response = await service.createUsers([userData]);
-        chai.expect(response[0].error.name).to.equal('fail');
+        chai.expect(response[0].error).to.equal('fail');
       });
 
       it('returns responses with errors if place is not within contact', async () => {
@@ -797,10 +797,48 @@ describe('Users service', () => {
         userData.place = 'georgia';
 
         const response = await service.createUsers([userData]);
-        chai.expect(response[0].error.code).to.equal(400);
-        chai.expect(response[0].error.message.translationKey).to.equal('configuration.user.place.contact');
-        chai.expect(response[0].error.message.message).to.equal('Contact is not within place.');
+        chai.expect(response[0].error.message).to.equal('Contact is not within place.');
+        chai.expect(response[0].error.translationKey).to.equal('configuration.user.place.contact');
       });
+    });
+
+    it('succeeds and returns responses if some users fail to be created', async () => {
+      sinon.stub(db.medic, 'get').resolves({});
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
+      const getPlaceStub = sinon.stub(places, 'getPlace');
+      getPlaceStub.withArgs('user1-contact').resolves({
+        _id: 'user1-place',
+        _rev: 2,
+        name: 'user1-place',
+        parent: 'user1-contact'
+      });
+      getPlaceStub.withArgs('user2-contact').resolves();
+
+      const response = await service.createUsers([
+        {
+          username: 'user1',
+          place: 'user1-place',
+          contact: { parent: 'user1-contact' },
+          type: 'national-manager',
+          password: 'Sup3rSecret!',
+        },
+        {
+          username: 'user2',
+          place: 'user2-place',
+          contact: { parent: 'user2-contact' },
+          type: 'national-manager',
+          password: 'Sup3rSecret!',
+        },
+      ]);
+
+      chai.expect(response[0]).to.deep.equal({});
+      chai.expect(response[1].error.message).to.equal('Contact is not within place.');
+      chai.expect(response[1].error.translationKey).to.equal('configuration.user.place.contact');
     });
 
     it('succeeds if contact and place are the same', async () => {
@@ -839,9 +877,9 @@ describe('Users service', () => {
       sinon.stub(db.medic, 'get').resolves();
       const insert = sinon.stub(db.medic, 'put');
       const response = await service.createUsers([userData]);
-      chai.expect(response[0].error.message.message).to.equal('Username "x" already taken.');
-      chai.expect(response[0].error.message.translationKey).to.equal('username.taken');
-      chai.expect(response[0].error.message.translationParams).to.have.property('username');
+      chai.expect(response[0].error.message).to.equal('Username "x" already taken.');
+      chai.expect(response[0].error.translationKey).to.equal('username.taken');
+      chai.expect(response[0].error.translationParams).to.have.property('username');
       chai.expect(insert.callCount).to.equal(0);
     });
 
@@ -850,9 +888,9 @@ describe('Users service', () => {
       sinon.stub(db.medic, 'get').resolves('jane lives here too.');
       const insert = sinon.stub(db.medic, 'put');
       const response = await service.createUsers([userData]);
-      chai.expect(response[0].error.message.message).to.equal('Username "x" already taken.');
-      chai.expect(response[0].error.message.translationKey).to.equal('username.taken');
-      chai.expect(response[0].error.message.translationParams).to.have.property('username');
+      chai.expect(response[0].error.message).to.equal('Username "x" already taken.');
+      chai.expect(response[0].error.translationKey).to.equal('username.taken');
+      chai.expect(response[0].error.translationParams).to.have.property('username');
       chai.expect(insert.callCount).to.equal(0);
     });
   });

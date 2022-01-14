@@ -693,7 +693,7 @@ module.exports = {
     if (passwordFailingIndexes.length > 0) {
       let errorMessage = 'Password errors:\n';
       for (const { passwordError, index } of passwordFailingIndexes) {
-        errorMessage += `\nError ${passwordError} for user at index ${index}`;
+        errorMessage += `\nError ${passwordError.message.message} for user at index ${index}`;
       }
       return Promise.reject(error400(errorMessage, { failingIndexes: passwordFailingIndexes }));
     }
@@ -717,7 +717,7 @@ module.exports = {
         .filter(reason => reason);
 
       for (const { reason, index } of failingIndexes) {
-        response[index].error = reason;
+        response[index].error = reason.message;
       }
     }
 
