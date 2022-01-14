@@ -108,10 +108,11 @@ angular.module('controllers').controller('FormsXmlCtrl',
         return uploadFinished(new Error('JSON meta file not found'));
       }
 
-      $q.all([
-        FileReader.utf8(formFiles[0]),
-        FileReader.utf8(metaFiles[0]).then(JsonParse)
-      ])
+      return $q
+        .all([
+          FileReader.utf8(formFiles[0]),
+          FileReader.utf8(metaFiles[0]).then(JsonParse),
+        ])
         .then(results => {
           const xml = results[0];
           const meta = results[1];
@@ -123,7 +124,8 @@ angular.module('controllers').controller('FormsXmlCtrl',
           return ValidateForm(xml)
             .then(() => {
               const couchId = 'form:' + formId;
-              return DB().get(couchId, { include_attachments:true })
+              return DB()
+                .get(couchId, { include_attachments:true })
                 .catch(err => {
                   if (err.status === 404) {
                     return { _id: couchId };

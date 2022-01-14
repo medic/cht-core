@@ -6,7 +6,9 @@ module.exports = {
   openEditSettings: async () => {
     await helper.waitUntilReadyNative(module.exports.configurationSection());
     const link = module.exports.configurationSection().all(by.css('.btn-link')).last();
-    return link.click();
+    await link.click();
+    // modals have an animation and the click might land somewhere else
+    await browser.sleep(500);
   },
 
   getLanguageField: () => element(by.id('language')),

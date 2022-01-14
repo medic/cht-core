@@ -226,6 +226,43 @@ describe('EnketoTranslation service', () => {
         },
       });
     });
+
+    it('should ignore first level elements with no children', () => {
+      const xml =
+        `<data id="clinic" version="1">
+          <start/>
+          <clinic>
+            <name>A House in the Woods</name>
+            <parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>
+            <contact>abc-123-xyz-987</contact>
+          </clinic>
+          <today/>
+          <contact>
+            <name>Mummy Bear</name>
+            <phone>123</phone>
+          </contact>
+          <meta>
+            <instanceID>uuid:ecded7c5-5c8d-4195-8e08-296de6557f1e</instanceID>
+          </meta>
+          <end/>
+        </data>`;
+
+      const js = service.contactRecordToJs(xml);
+
+      assert.deepEqual(js, {
+        doc: {
+          name: 'A House in the Woods',
+          parent: 'eeb17d6d-5dde-c2c0-48ac53f275043126',
+          contact: 'abc-123-xyz-987',
+        },
+        siblings: {
+          contact: {
+            name: 'Mummy Bear',
+            phone: '123',
+          },
+        },
+      });
+    });
   });
 
   describe('#reportRecordToJs()', () => {

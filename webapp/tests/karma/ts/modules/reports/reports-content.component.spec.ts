@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -30,7 +30,7 @@ describe('Reports Content Component', () => {
   let router;
   let modalService;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const mockedSelectors = [
       { selector: Selectors.getSelectedReports, value: [] },
       { selector: Selectors.getSelectedReportsSummaries, value: {} },
@@ -100,7 +100,7 @@ describe('Reports Content Component', () => {
     it('should react correctly when route has id param', () => {
       const callback = activatedRoute.params.subscribe.args[0][0];
       const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
-      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
+      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearNavigation');
       const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
       activatedRoute.snapshot.params = { id: 'someID' };
 
@@ -114,7 +114,7 @@ describe('Reports Content Component', () => {
     it('should react correctly when route does not have id param', () => {
       const callback = activatedRoute.params.subscribe.args[0][0];
       const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
-      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
+      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearNavigation');
       const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
       activatedRoute.snapshot.params = { id: 'someID' };
 

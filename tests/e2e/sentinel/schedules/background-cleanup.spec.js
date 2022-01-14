@@ -1,7 +1,7 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const chai = require('chai');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 
 const docToKeep = { _id: uuid() };
 const docToDelete = { _id: uuid() };
@@ -18,7 +18,7 @@ const userReadDocs = [
 ];
 
 describe('Background cleanup', () => {
-  afterEach(() => utils.revertDb().then(() => utils.deleteUsers([user], true)));
+  afterEach(() => utils.revertDb([], true).then(() => utils.deleteUsers([user], true)));
 
   it('processes a batch of outstanding deletes ', () => {
     // Create then delete a doc
@@ -45,12 +45,12 @@ describe('Background cleanup', () => {
         include_docs: true
       }))
       .then(result => {
-        chai.expect(result.rows.length).to.equal(2);
+        chai.expect(result.rows).to.have.lengthOf(2);
         chai.expect(result.rows[0].id).to.equal(`${docToKeep._id}-info`);
         chai.expect(result.rows[0].doc._id).to.equal(`${docToKeep._id}-info`);
 
         chai.expect(result.rows[1].id).to.equal(`${docToDelete._id}-info`);
-        chai.expect(result.rows[1].value.deleted).to.equal(true);
+        chai.expect(result.rows[1].value.deleted).to.be.true;
       })
       // Check read receipt deletion
       .then(() => utils.requestOnTestMetaDb({
@@ -60,12 +60,12 @@ describe('Background cleanup', () => {
         body: {keys: userReadDocs.map(d => d._id)}
       }))
       .then(result => {
-        chai.expect(result.rows.length).to.equal(2);
+        chai.expect(result.rows).to.have.lengthOf(2);
 
         chai.expect(result.rows[0].id).to.equal(userReadDocs[0]._id);
 
         chai.expect(result.rows[1].id).to.equal(userReadDocs[1]._id);
-        chai.expect(result.rows[1].value.deleted).to.equal(true);
+        chai.expect(result.rows[1].value.deleted).to.be.true;
       });
   });
 });

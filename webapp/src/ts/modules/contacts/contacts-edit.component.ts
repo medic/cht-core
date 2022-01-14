@@ -110,13 +110,13 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private resetState() {
-    this.globalActions.setLoadingContent(true);
-    this.globalActions.setShowContent(true);
-
     if (!this.routeSnapshot.params?.id) {
       this.globalActions.unsetSelected();
       this.globalActions.settingSelected();
     }
+
+    this.globalActions.setLoadingContent(true);
+    this.globalActions.setShowContent(true);
   }
 
   private setCancelCallback() {
@@ -138,7 +138,8 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.enketoContact?.formInstance) {
       this.enketoService.unload(this.enketoContact.formInstance);
     }
-    this.globalActions.clearCancelCallback();
+    this.globalActions.clearNavigation();
+    this.globalActions.clearEnketoStatus();
   }
 
   ngAfterViewInit() {
@@ -281,6 +282,9 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         if(!valid) {
           throw new Error('Validation failed.');
         }
+
+        // Updating fields before save. Ref: #6670.
+        $('form.or').trigger('beforesave');
 
         return this.contactSaveService
           .save(form, docId, this.enketoContact.type)

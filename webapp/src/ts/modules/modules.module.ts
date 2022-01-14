@@ -33,8 +33,10 @@ import { AnalyticsTargetAggregatesComponent } from './analytics/analytics-target
 import { AnalyticsTargetAggregatesDetailComponent } from './analytics/analytics-target-aggregates-detail.component';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
+import { TasksGroupComponent } from '@mm-modules/tasks/tasks-group.component';
 import { ThemeComponent } from '@mm-modules/theme/theme.component';
 import { TestingComponent } from './testing/testing.component';
+import { DirectivesModule } from '@mm-directives/directives.module';
 
 @NgModule({
   declarations: [
@@ -62,6 +64,7 @@ import { TestingComponent } from './testing/testing.component';
     AnalyticsTargetAggregatesDetailComponent,
     TasksComponent,
     TasksContentComponent,
+    TasksGroupComponent,
     ThemeComponent,
     TestingComponent,
   ],
@@ -74,6 +77,7 @@ import { TestingComponent } from './testing/testing.component';
     BsDropdownModule,
     FormsModule,
     AccordionModule,
+    DirectivesModule,
   ],
   exports: [
     HomeComponent,

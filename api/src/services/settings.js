@@ -7,7 +7,8 @@ const { info } = require('../logger');
 
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
-const getDoc = () => db.medic.get('settings');
+const SETTINGS_DOC_ID = 'settings';
+const getDoc = () => db.medic.get(SETTINGS_DOC_ID);
 
 const doReplace = (target, source) => {
   Object.keys(source).forEach(k => {
@@ -76,7 +77,7 @@ module.exports = {
     return getDoc()
       .catch(err => {
         if (err.status === 404) {
-          return { _id: 'settings' };
+          return { _id: SETTINGS_DOC_ID };
         }
         throw err;
       })
@@ -110,5 +111,6 @@ module.exports = {
         return Promise.resolve(false);
       });
   },
-  getDeprecatedTransitions: getDeprecatedTransitions
+  getDeprecatedTransitions: getDeprecatedTransitions,
+  SETTINGS_DOC_ID: SETTINGS_DOC_ID,
 };

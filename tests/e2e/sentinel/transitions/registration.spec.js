@@ -1,6 +1,6 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 const moment = require('moment');
 const chai = require('chai');
 
@@ -94,8 +94,8 @@ const getContactsByReference = shortcodes => {
 const getIds = docs => docs.map(doc => doc._id);
 
 describe('registration', () => {
-  beforeAll(() => utils.saveDocs(contacts));
-  afterAll(() => utils.revertDb());
+  before(() => utils.saveDocs(contacts));
+  after(() => utils.revertDb([], true));
   afterEach(() => utils.revertDb(getIds(contacts), true));
 
   it('should be skipped when transition is disabled', () => {
@@ -133,7 +133,7 @@ describe('registration', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(Object.keys(info.transitions).length).to.equal(0);
+        chai.expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -172,7 +172,7 @@ describe('registration', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(Object.keys(info.transitions).length).to.equal(0);
+        chai.expect(Object.keys(info.transitions)).to.be.empty;
       })
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
@@ -277,36 +277,36 @@ describe('registration', () => {
       .then(() => utils.getDocs(docIds))
       .then(updated => {
         chai.expect(updated[0].tasks).to.be.ok;
-        chai.expect(updated[0].tasks.length).to.equal(1);
+        chai.expect(updated[0].tasks).to.have.lengthOf(1);
         chai.expect(updated[0].tasks[0].messages[0]).to.include({
           message: 'Count is incorrect',
           to: '+444999',
         });
 
         chai.expect(updated[0].errors).to.be.ok;
-        chai.expect(updated[0].errors.length).to.equal(1);
+        chai.expect(updated[0].errors).to.have.lengthOf(1);
         chai.expect(updated[0].errors[0].message).to.equal('Count is incorrect');
 
         chai.expect(updated[1].tasks).to.be.ok;
-        chai.expect(updated[1].tasks.length).to.equal(1);
+        chai.expect(updated[1].tasks).to.have.lengthOf(1);
         chai.expect(updated[1].tasks[0].messages[0]).to.include({
           message: 'Patient not found',
           to: '+444999',
         });
 
         chai.expect(updated[1].errors).to.be.ok;
-        chai.expect(updated[1].errors.length).to.equal(1);
+        chai.expect(updated[1].errors).to.have.lengthOf(1);
         chai.expect(updated[1].errors[0].code).to.equal('registration_not_found');
 
         chai.expect(updated[2].tasks).to.be.ok;
-        chai.expect(updated[2].tasks.length).to.equal(1);
+        chai.expect(updated[2].tasks).to.have.lengthOf(1);
         chai.expect(updated[2].tasks[0].messages[0]).to.include({
           message: 'Patient not found',
           to: '+444999',
         });
 
         chai.expect(updated[2].errors).to.be.ok;
-        chai.expect(updated[2].errors.length).to.equal(1);
+        chai.expect(updated[2].errors).to.have.lengthOf(1);
         chai.expect(updated[2].errors[0].code).to.equal('registration_not_found');
       });
   });
@@ -437,13 +437,13 @@ describe('registration', () => {
       .then(updated => {
         updated.forEach((doc, idx) => {
           const errorMsg = `failed for doc${idx+1}`;
-          chai.expect(doc.tasks.length).to.equal(1, errorMsg);
+          chai.expect(doc.tasks).to.have.lengthOf(1, errorMsg);
           chai.expect(doc.tasks[0].messages[0]).to.include(
             { message: 'Subject not found or invalid', to: '+444999' },
             errorMsg
           );
 
-          chai.expect(doc.errors.length).to.equal(1, errorMsg);
+          chai.expect(doc.errors).to.have.lengthOf(1, errorMsg);
           chai.expect(doc.errors[0].code).to.equal('registration_not_found', errorMsg);
         });
       });
@@ -574,7 +574,7 @@ describe('registration', () => {
       .then(() => utils.getDocs(docIds))
       .then(updated => {
         chai.expect(updated[0].patient_id).not.to.equal(undefined);
-        chai.expect(updated[0].tasks.length).to.equal(1);
+        chai.expect(updated[0].tasks).to.have.lengthOf(1);
         chai.expect(updated[0].tasks[0].messages[0]).to.include({
           to: '+444999',
           message: `Patient Minerva (${updated[0].patient_id}) added to Clinic`
@@ -585,13 +585,13 @@ describe('registration', () => {
         chai.expect(updated[1].patient_id).to.equal(undefined);
         chai.expect(updated[1].fields.patient_id).to.equal('another_person');
         chai.expect(updated[1].errors).to.be.ok;
-        chai.expect(updated[1].errors.length).to.equal(1);
+        chai.expect(updated[1].errors).to.have.lengthOf(1);
         chai.expect(updated[1].errors[0].code).to.equal('registration_not_found');
-        chai.expect(updated[1].tasks.length).to.equal(1);
+        chai.expect(updated[1].tasks).to.have.lengthOf(1);
 
         chai.expect(updated[2].patient_id).to.equal('venus');
         chai.expect(updated[2].errors).to.equal(undefined);
-        chai.expect(updated[2].tasks.length).to.equal(1);
+        chai.expect(updated[2].tasks).to.have.lengthOf(1);
         chai.expect(updated[2].tasks[0].messages[0]).to.include({
           to: '+444999',
           message: `Patient Venus (venus) added to Clinic`
@@ -599,13 +599,13 @@ describe('registration', () => {
 
         chai.expect(updated[3].patient_id).to.equal(undefined);
         chai.expect(updated[3].errors).to.be.ok;
-        chai.expect(updated[3].errors.length).to.equal(1);
+        chai.expect(updated[3].errors).to.have.lengthOf(1);
         chai.expect(updated[3].errors[0].code).to.equal('provided_patient_id_not_unique');
 
         return getContactsByReference([newPatientId, 'venus']);
       })
       .then(patients => {
-        chai.expect(patients.rows.length).to.equal(2);
+        chai.expect(patients.rows).to.have.lengthOf(2);
 
         chai.expect(patients.rows[0].doc).to.deep.include({
           patient_id: newPatientId,
@@ -797,9 +797,9 @@ describe('registration', () => {
         updated.forEach(doc => {
           chai.expect(doc.patient_id).not.to.equal(undefined);
           chai.expect(doc.errors).to.be.an('array');
-          chai.expect(doc.errors.length).to.equal(1);
+          chai.expect(doc.errors).to.have.lengthOf(1);
           chai.expect(doc.tasks).to.be.an('array');
-          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks).to.have.lengthOf(1);
         });
 
         chai.expect(updated[0].errors[0]).to.deep.equal({
@@ -853,7 +853,7 @@ describe('registration', () => {
         return getContactsByReference(updated.map(doc => doc.patient_id));
       })
       .then(patients => {
-        chai.expect(patients.rows.length).to.equal(0);
+        chai.expect(patients.rows).to.be.empty;
       });
   });
 
@@ -978,7 +978,7 @@ describe('registration', () => {
         updated.forEach(doc => {
           chai.expect(doc.patient_id).not.to.equal(undefined);
           chai.expect(doc.errors).to.equal(undefined);
-          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks).to.have.lengthOf(1);
           chai.expect(doc.patient).to.equal(undefined);
           chai.expect(doc.place).to.equal(undefined);
         });
@@ -999,7 +999,7 @@ describe('registration', () => {
         return getContactsByReference(updated.map(doc => doc.patient_id));
       })
       .then(patients => {
-        chai.expect(patients.rows.length).to.equal(3);
+        chai.expect(patients.rows).to.have.lengthOf(3);
 
         chai.expect(patients.rows[0].doc).to.deep.include({
           name: 'Solaris',
@@ -1445,9 +1445,9 @@ describe('registration', () => {
           chai.expect(doc.place_id).not.to.equal(undefined);
           chai.expect(doc.patient_id).to.equal(undefined);
           chai.expect(doc.errors).to.be.an('array');
-          chai.expect(doc.errors.length).to.equal(1);
+          chai.expect(doc.errors).to.have.lengthOf(1);
           chai.expect(doc.tasks).to.be.an('array');
-          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks).to.have.lengthOf(1);
           chai.expect(doc.place).to.equal(undefined);
           chai.expect(doc.patient).to.equal(undefined);
         });
@@ -1526,7 +1526,7 @@ describe('registration', () => {
         return getContactsByReference(updated.map(doc => doc.place_id));
       })
       .then(result => {
-        chai.expect(result.rows.length).to.equal(0);
+        chai.expect(result.rows).to.be.empty;
       });
   });
 
@@ -1696,7 +1696,7 @@ describe('registration', () => {
           chai.expect(doc.patient_id).to.equal(undefined);
           chai.expect(doc.place_id).not.to.equal(undefined);
           chai.expect(doc.errors).to.equal(undefined);
-          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks).to.have.lengthOf(1);
           chai.expect(doc.patient).to.equal(undefined);
           chai.expect(doc.place).to.equal(undefined);
         });
@@ -1719,7 +1719,7 @@ describe('registration', () => {
         return getContactsByReference(updated.map(doc => doc.place_id));
       })
       .then(places => {
-        chai.expect(places.rows.length).to.equal(3);
+        chai.expect(places.rows).to.have.lengthOf(3);
 
         chai.expect(places.rows[0].doc).to.deep.include({
           name: 'Toyota',
@@ -1860,7 +1860,7 @@ describe('registration', () => {
         updatedDocs = updated;
         updated.forEach(doc => {
           chai.expect(doc.errors).to.equal(undefined);
-          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks).to.have.lengthOf(1);
           chai.expect(doc.patient).to.equal(undefined);
           chai.expect(doc.place).to.equal(undefined);
         });
@@ -1880,7 +1880,7 @@ describe('registration', () => {
         return getContactsByReference([updated[0].place_id, updated[1].patient_id]);
       })
       .then(contacts => {
-        chai.expect(contacts.rows.length).to.equal(2);
+        chai.expect(contacts.rows).to.have.lengthOf(2);
 
         chai.expect(contacts.rows[0].doc).to.deep.include({
           name: 'Orbit',
@@ -2062,14 +2062,14 @@ describe('registration', () => {
       .then(() => utils.getDocs([withPatient1._id, withClinic1._id]))
       .then(([updWithPatient1, updWithClinic1]) => {
         chai.expect(updWithPatient1.scheduled_tasks).to.be.ok;
-        chai.expect(updWithPatient1.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithPatient1.scheduled_tasks).to.have.lengthOf(3);
 
         chai.expect(updWithPatient1.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
         chai.expect(updWithPatient1.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
         chai.expect(updWithPatient1.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
 
         chai.expect(updWithClinic1.scheduled_tasks).to.be.ok;
-        chai.expect(updWithClinic1.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithClinic1.scheduled_tasks).to.have.lengthOf(3);
 
         chai.expect(updWithClinic1.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
         chai.expect(updWithClinic1.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
@@ -2086,28 +2086,28 @@ describe('registration', () => {
       .then(([ updWithPatient1, updWithPatient2, updWithClinic1, updWithClinic2 ]) => {
         //1st doc has cleared schedules
         chai.expect(updWithPatient1.scheduled_tasks).to.be.ok;
-        chai.expect(updWithPatient1.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithPatient1.scheduled_tasks).to.have.lengthOf(3);
         chai.expect(updWithPatient1.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('cleared'));
         chai.expect(updWithPatient1.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('cleared'));
         chai.expect(updWithPatient1.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('cleared'));
 
         //2nd doc has schedules
         chai.expect(updWithPatient2.scheduled_tasks).to.be.ok;
-        chai.expect(updWithPatient2.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithPatient2.scheduled_tasks).to.have.lengthOf(3);
         chai.expect(updWithPatient2.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
         chai.expect(updWithPatient2.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
         chai.expect(updWithPatient2.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
 
         //1st doc has cleared schedules
         chai.expect(updWithClinic1.scheduled_tasks).to.be.ok;
-        chai.expect(updWithClinic1.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithClinic1.scheduled_tasks).to.have.lengthOf(3);
         chai.expect(updWithClinic1.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('cleared'));
         chai.expect(updWithClinic1.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('cleared'));
         chai.expect(updWithClinic1.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('cleared'));
 
         //2nd doc has schedules
         chai.expect(updWithClinic2.scheduled_tasks).to.be.ok;
-        chai.expect(updWithClinic2.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithClinic2.scheduled_tasks).to.have.lengthOf(3);
         chai.expect(updWithClinic2.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
         chai.expect(updWithClinic2.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
         chai.expect(updWithClinic2.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
@@ -2122,21 +2122,21 @@ describe('registration', () => {
       .then(([ updWithPatient2, updWithClinic2, withClinicAndPatient ]) => {
         // cleared schedules for the withPatient doc
         chai.expect(updWithPatient2.scheduled_tasks).to.be.ok;
-        chai.expect(updWithPatient2.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithPatient2.scheduled_tasks).to.have.lengthOf(3);
         chai.expect(updWithPatient2.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('cleared'));
         chai.expect(updWithPatient2.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('cleared'));
         chai.expect(updWithPatient2.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('cleared'));
 
         // cleared schedules for the withClinic doc
         chai.expect(updWithClinic2.scheduled_tasks).to.be.ok;
-        chai.expect(updWithClinic2.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithClinic2.scheduled_tasks).to.have.lengthOf(3);
         chai.expect(updWithClinic2.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('cleared'));
         chai.expect(updWithClinic2.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('cleared'));
         chai.expect(updWithClinic2.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('cleared'));
 
         // withPatientAndClinic has schedules
         chai.expect(withClinicAndPatient.scheduled_tasks).to.be.ok;
-        chai.expect(withClinicAndPatient.scheduled_tasks.length).to.equal(3);
+        chai.expect(withClinicAndPatient.scheduled_tasks).to.have.lengthOf(3);
         chai.expect(withClinicAndPatient.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
         chai.expect(withClinicAndPatient.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
         chai.expect(withClinicAndPatient.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
@@ -2156,14 +2156,14 @@ describe('registration', () => {
       .then(([updWithClinicAndPatient2, ...docsWithClearedTasks ]) => {
         // withPatientAndClinic has schedules
         chai.expect(updWithClinicAndPatient2.scheduled_tasks).to.be.ok;
-        chai.expect(updWithClinicAndPatient2.scheduled_tasks.length).to.equal(3);
+        chai.expect(updWithClinicAndPatient2.scheduled_tasks).to.have.lengthOf(3);
         chai.expect(updWithClinicAndPatient2.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('scheduled'));
         chai.expect(updWithClinicAndPatient2.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('scheduled'));
         chai.expect(updWithClinicAndPatient2.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('scheduled'));
 
         docsWithClearedTasks.forEach(doc => {
           chai.expect(doc.scheduled_tasks).to.be.ok;
-          chai.expect(doc.scheduled_tasks.length).to.equal(3);
+          chai.expect(doc.scheduled_tasks).to.have.lengthOf(3);
           chai.expect(doc.scheduled_tasks[0]).to.deep.nested.include(expectedMessage2('cleared'));
           chai.expect(doc.scheduled_tasks[1]).to.deep.nested.include(expectedMessage3('cleared'));
           chai.expect(doc.scheduled_tasks[2]).to.deep.nested.include(expectedMessage4('cleared'));
@@ -2238,7 +2238,7 @@ describe('registration', () => {
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
         chai.expect(updated.tasks).to.be.ok;
-        chai.expect(updated.tasks.length).to.equal(3);
+        chai.expect(updated.tasks).to.have.lengthOf(3);
 
         chai.expect(updated.tasks[0].messages[0].message).to.equal('Report accepted');
         chai.expect(updated.tasks[1].messages[0].message).to.equal('alpha');

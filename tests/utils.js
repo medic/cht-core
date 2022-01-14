@@ -24,6 +24,8 @@ const originalTranslations = {};
 let e2eDebug;
 const hasModal = () => element(by.css('#update-available')).isPresent();
 const { execSync } = require('child_process');
+const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
+
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
@@ -102,7 +104,11 @@ const revertTranslations = async () => {
     delete originalTranslations[doc.code];
   });
 
-  await module.exports.saveDocs(docs);
+  await module.exports.requestOnTestDb({
+    path: '/_bulk_docs',
+    method: 'POST',
+    body: { docs },
+  });
 };
 
 const revertSettings = () => {
@@ -160,7 +166,7 @@ const deleteAll = (except) => {
     })
     .then(({ rows }) =>
       rows
-        .filter(({ doc }) => !ignoreFns.find(fn => fn(doc)))
+        .filter(({ doc }) => doc && !ignoreFns.find(fn => fn(doc)))
         .map(({ doc }) => {
           doc._deleted = true;
           doc.type = 'tombstone'; // circumvent tombstones being created when DB is cleaned up
@@ -263,7 +269,7 @@ const revertDb = async (except, ignoreRefresh) => {
   await revertTranslations();
 
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
-  if (!ignoreRefresh && (needsRefresh || hasModal)) {
+  if (!ignoreRefresh && (needsRefresh || await hasModal())) {
     watcher && watcher.cancel();
     await refreshToGetNewSettings();
   } else if (needsRefresh) {
@@ -275,8 +281,20 @@ const revertDb = async (except, ignoreRefresh) => {
   await setUserContactDoc();
 };
 
+const getCreatedUsers = async () => {
+  const adminUserId = COUCH_USER_ID_PREFIX + auth.username;
+  const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
+  return users.rows
+    .filter(user => user.id !== adminUserId)
+    .map((user) => ({ ...user, username: user.id.replace(COUCH_USER_ID_PREFIX, '') }));
+};
+
 const deleteUsers = async (users, meta = false) => {
-  const usernames = users.map(user => `org.couchdb.user:${user.username}`);
+  if (!users.length) {
+    return;
+  }
+
+  const usernames = users.map(user => COUCH_USER_ID_PREFIX + user.username);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
   const medicDocs = await request({
     path: `/${constants.DB_NAME}/_all_docs`,
@@ -373,13 +391,13 @@ const deprecated = (name, replacement) => {
 const waitForSettingsUpdateLogs = (type) => {
   if (type === 'sentinel') {
     return module.exports.waitForLogs(
-      'sentinel.e2e.log',
+      module.exports.sentinelLogFile,
       /Reminder messages allowed between/,
     );
   }
 
   return module.exports.waitForLogs(
-    'api.e2e.log',
+    module.exports.apiLogFile,
     /Settings updated/,
   );
 };
@@ -448,7 +466,7 @@ const saveBrowserLogs = () => {
 };
 
 
-const prepServices = async (config) => {
+const prepServices = async (defaultSettings) => {
   if (constants.IS_CI) {
     console.log('On CI, waiting for horti to first boot api');
     // CI' horti will be installing and then deploying api and sentinel, and those logs are
@@ -464,7 +482,7 @@ const prepServices = async (config) => {
   }
 
   await listenForApi();
-  if (config && config.suite === 'web') {
+  if (defaultSettings) {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
@@ -492,7 +510,7 @@ const setupUser = () => {
 };
 
 const setupUserDoc = (userName = auth.username, userDoc = userSettings.build()) => {
-  return module.exports.getDoc('org.couchdb.user:' + userName)
+  return module.exports.getDoc(COUCH_USER_ID_PREFIX + userName)
     .then(doc => {
       const finalDoc = Object.assign(doc, userDoc);
       return module.exports.saveDoc(finalDoc);
@@ -520,8 +538,15 @@ const parseCookieResponse = (cookieString) => {
 };
 
 const dockerGateway = () => {
-  return JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
-  
+  if (!constants.IS_CI) {
+    return;
+  }
+  try {
+    return JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
+  } catch (error) {
+    console.log('docker network inspect failed. NOTE this error is not relevant if running outside of docker');
+    console.log(error.message);
+  }
 };
 
 const hostURL = (port = 80) => {
@@ -624,7 +649,6 @@ module.exports = {
       path: '/', // so audit picks this up
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Content-Length': JSON.stringify(doc).length,
       },
       body: doc,
@@ -641,14 +665,30 @@ module.exports = {
       .then(results => {
         if (results.find(r => !r.ok)) {
           throw Error(JSON.stringify(results, null, 2));
-        } else {
-          return results;
         }
+        return results;
+      });
+  },
+
+  saveMetaDocs: (user, docs) => {
+    const options = {
+      userName: user,
+      method: 'POST',
+      body: { docs: docs },
+      path: '/_bulk_docs',
+    };
+    return module.exports
+      .requestOnTestMetaDb(options)
+      .then(results => {
+        if (results.find(r => !r.ok)) {
+          throw Error(JSON.stringify(results, null, 2));
+        }
+        return results;
       });
   },
 
   getDoc: (id, rev) => {
-    const params = { };
+    const params = {};
     if (rev) {
       params.rev = rev;
     }
@@ -666,11 +706,22 @@ module.exports = {
         path: `/_all_docs?include_docs=true`,
         method: 'POST',
         body: { keys: ids || [] },
-        headers: { 'content-type': 'application/json' },
       })
       .then(response => {
         return fullResponse ? response : response.rows.map(row => row.doc);
       });
+  },
+
+  getMetaDocs: (user, ids, fullResponse = false) => {
+    const options = {
+      userName: user,
+      method: 'POST',
+      body: { keys: ids || [] },
+      path: '/_all_docs?include_docs=true',
+    };
+    return module.exports
+      .requestOnTestMetaDb(options)
+      .then(response => fullResponse ? response : response.rows.map(row => row.doc));
   },
 
   deleteDoc: id => {
@@ -838,6 +889,7 @@ module.exports = {
   // @param {Boolean} meta - if true, deletes meta db-s as well, default true
   // @return {Promise}
   deleteUsers: deleteUsers,
+  getCreatedUsers,
 
   // Creates users - optionally also creating their meta dbs
   // @param {Array} users - list of users to be created
@@ -902,7 +954,7 @@ module.exports = {
       timeout = setTimeout(() => {
         tail.unwatch();
         reject({ message: 'Timed out looking for details in log files.' });
-      }, 2000);
+      }, 6000);
 
       tail.on('line', data => {
         if (regex.find(r => r.test(data))) {
@@ -1017,4 +1069,8 @@ module.exports = {
   },
 
   runAndLogApiStartupMessage: runAndLogApiStartupMessage,
+  findDistrictHospitalFromPlaces: (places) => places.find((place) => place.type === 'district_hospital'),
+
+  apiLogFile: 'api.e2e.log',
+  sentinelLogFile: 'sentinel.e2e.log',
 };

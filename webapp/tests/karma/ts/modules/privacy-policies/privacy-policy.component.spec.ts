@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -14,7 +14,7 @@ describe('PrivacyPoliciesComponent', () => {
   let privacyPoliciesService;
   let startupModalsService;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     privacyPoliciesService = {
       accept: sinon.stub().resolves({}),
       hasAccepted: sinon.stub(),

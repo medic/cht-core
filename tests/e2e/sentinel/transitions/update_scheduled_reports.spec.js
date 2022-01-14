@@ -1,6 +1,7 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
+const { expect } = require('chai');
 
 const contacts = [
   {
@@ -76,9 +77,9 @@ const contacts = [
 ];
 
 describe('update_scheduled_reports', () => {
-  beforeAll(done => utils.saveDocs(contacts).then(done));
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
+  before(() => utils.saveDocs(contacts));
+  after(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb(contacts.map(c => c._id), true));
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
@@ -103,7 +104,7 @@ describe('update_scheduled_reports', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(Object.keys(info.transitions).length).toEqual(0);
+        expect(Object.keys(info.transitions)).to.be.empty;
       });
   });
 
@@ -139,8 +140,8 @@ describe('update_scheduled_reports', () => {
       .then(() => sentinelUtils.waitForSentinel([ doc1._id, doc2._id ]))
       .then(() => sentinelUtils.getInfoDocs([ doc1._id, doc2._id ]))
       .then(infos => {
-        expect(Object.keys(infos[0].transitions).length).toEqual(0);
-        expect(Object.keys(infos[1].transitions).length).toEqual(0);
+        expect(Object.keys(infos[0].transitions)).to.be.empty;
+        expect(Object.keys(infos[1].transitions)).to.be.empty;
       });
   });
 
@@ -203,14 +204,10 @@ describe('update_scheduled_reports', () => {
       .then(() => sentinelUtils.waitForSentinel([ doc1._id, doc2._id, doc3._id, doc4._id ]))
       .then(() => sentinelUtils.getInfoDocs([ doc1._id, doc2._id, doc3._id, doc4._id ]))
       .then(infos => {
-        expect(infos[0].transitions).toBeDefined();
-        expect(infos[0].transitions.update_scheduled_reports.ok).toEqual(true);
-        expect(infos[1].transitions).toBeDefined();
-        expect(infos[1].transitions.update_scheduled_reports.ok).toEqual(true);
-        expect(infos[2].transitions).toBeDefined();
-        expect(infos[2].transitions.update_scheduled_reports.ok).toEqual(true);
-        expect(infos[3].transitions).toBeDefined();
-        expect(infos[3].transitions.update_scheduled_reports.ok).toEqual(true);
+        expect(infos[0].transitions.update_scheduled_reports.ok).to.be.true;
+        expect(infos[1].transitions.update_scheduled_reports.ok).to.be.true;
+        expect(infos[2].transitions.update_scheduled_reports.ok).to.be.true;
+        expect(infos[3].transitions.update_scheduled_reports.ok).to.be.true;
       });
   });
 
@@ -287,10 +284,10 @@ describe('update_scheduled_reports', () => {
       .then(updated => {
         //only one of the of doc1, doc2 and doc3 should still exist
         const duplicates = updated.slice(0, 3);
-        expect(duplicates.filter(doc => doc).length).toEqual(1);
+        expect(duplicates.filter(doc => doc)).to.have.lengthOf(1);
 
-        expect(updated[3].type).toEqual('data_record');
-        expect(updated[4].type).toEqual('data_record');
+        expect(updated[3].type).to.equal('data_record');
+        expect(updated[4].type).to.equal('data_record');
       })
       .then(() => utils.stopSentinel())
       .then(() => utils.startSentinel())
@@ -299,12 +296,12 @@ describe('update_scheduled_reports', () => {
       .then(infos => {
         //only one of the of doc1, doc2 and doc3 should still exist
         const duplicates = infos.slice(0, 3);
-        expect(duplicates.filter(info => info).length).toEqual(1);
+        expect(duplicates.filter(info => info)).to.have.lengthOf(1);
 
-        expect(infos[3].transitions).toBeDefined();
-        expect(infos[3].transitions.update_scheduled_reports.ok).toEqual(true);
-        expect(infos[4].transitions).toBeDefined();
-        expect(infos[4].transitions.update_scheduled_reports.ok).toEqual(true);
+        expect(infos[3].transitions).to.not.be.undefined;
+        expect(infos[3].transitions.update_scheduled_reports.ok).to.be.true;
+        expect(infos[4].transitions).to.not.be.undefined;
+        expect(infos[4].transitions.update_scheduled_reports.ok).to.be.true;
       });
   });
 });
