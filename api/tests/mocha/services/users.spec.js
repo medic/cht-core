@@ -704,6 +704,7 @@ describe('Users service', () => {
           { username: 'x', place: 'x', contact: { parent: 'x' }},
           { username: 'x', place: 'x', contact: {}},
         ]);
+        chai.assert.fail('Should have thrown');
       } catch (error) {
         // empty
         chai.expect(error.failingIndexes[0].fields).to.deep.equal(['username', 'password', 'type or roles']);
@@ -751,6 +752,7 @@ describe('Users service', () => {
             password: 'password',
           },
         ]);
+        chai.assert.fail('Should have thrown');
       } catch (error) {
         // short password
         chai.expect(error.failingIndexes[0].passwordError.message.message).to.equal(
