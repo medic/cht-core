@@ -141,8 +141,6 @@ const getWeeksSinceLMP = doc => {
 
 /*
 * Given a doc, try to get the exact LMP date
-* and send error message if date is not within
-* the defined range.
 */
 const getLMPDate = doc => {
   const props = ['lmpDate', 'date_lmp'];//lmpDate comes from smsParser
@@ -308,7 +306,7 @@ const addMessages = (config, doc) => {
       utils.getRegistrations({ id: patientId }),
       utils.getRegistrations({ id: placeId }),
     ])
-    .then(([patientRegistrations, placeRegistrations]) => {
+    .then(([ patientRegistrations, placeRegistrations ]) => {
       const context = {
         patient: doc.patient,
         place: doc.place,
@@ -336,7 +334,7 @@ const assignSchedule = (options) => {
       utils.getRegistrations({ id: patientId }),
       utils.getRegistrations({ id: placeId }),
     ])
-    .then(([patientRegistrations, placeRegistrations]) => {
+    .then(([ patientRegistrations, placeRegistrations ]) => {
       options.params.forEach(scheduleName => {
         const schedule = schedules.getScheduleConfig(scheduleName);
         const context = {
@@ -683,8 +681,6 @@ module.exports = {
           messages.addErrors(registrationConfig, doc, errors, { patient: doc.patient, place: doc.place });
           return true;
         }
-
-        //TODO: should LMP specific validations be put here?
 
         const patientId = doc.fields && doc.fields.patient_id;
         const placeId = doc.fields && doc.fields.place_id;

@@ -28,7 +28,7 @@ describe('pregnancy registration with weeks since LMP', () => {
       events: [
         {
           name: 'on_create',
-          trigger: 'add_patient',
+          trigger: 'add_patient_id',
           params: '',
           bool_expr: ''
         },
@@ -60,7 +60,7 @@ describe('pregnancy registration with weeks since LMP', () => {
           }
         ]
       }
-    }, {
+    },{
       // Pregnancy for existing patient
       form: 'ep',
       type: 'pregnancy',
@@ -68,7 +68,7 @@ describe('pregnancy registration with weeks since LMP', () => {
         // See, no patient id creation!
         // {
         //     name: 'on_create',
-        //     trigger: 'add_patient',
+        //     trigger: 'add_patient_id',
         //     params: '',
         //     bool_expr: ''
         // },
@@ -114,24 +114,24 @@ describe('pregnancy registration with weeks since LMP', () => {
   });
 
   it('filter does not fail if doc has errors', () => {
-    const doc = { form: 'p', type: 'data_record', errors: ['some error '], contact: { phone: '+123' } };
+    const doc = { form: 'p', type: 'data_record', errors: [ 'some error ' ], contact: { phone: '+123' } };
     sinon.stub(utils, 'getForm').returns({ public_form: true });
     assert(transition.filter(doc));
   });
 
   it('filter fails if form is unknown', () => {
-    const doc = { form: 'x', type: 'data_record', contact: { phone: '+123' } };
+    const doc = { form: 'x' , type: 'data_record', contact: { phone: '+123' }};
     assert(!transition.filter(doc));
   });
 
   it('filter succeeds with no clinic phone if public form', () => {
-    const doc = { form: 'p', type: 'data_record' };
+    const doc = { form: 'p' , type: 'data_record'};
     sinon.stub(utils, 'getForm').returns({ public_form: true });
     assert(transition.filter(doc));
   });
 
   it('filter succeeds with populated doc', () => {
-    const doc = { form: 'p', type: 'data_record', contact: { phone: '+123' } };
+    const doc = { form: 'p' , type: 'data_record', contact: { phone: '+123' }};
     sinon.stub(utils, 'getForm').returns({});
     assert(transition.filter(doc));
   });
@@ -144,7 +144,7 @@ describe('pregnancy registration with weeks since LMP', () => {
   });
 
   it('setExpectedBirthDate sets lmp_date and expected_date correctly for lmp: 10', () => {
-    const doc = { fields: { lmp: '10', type: 'data_record' } };
+    const doc = { fields: { lmp: '10', type: 'data_record'} };
     const start = moment().startOf('day');
 
     transition.setExpectedBirthDate(doc);
@@ -181,7 +181,7 @@ describe('pregnancy registration with weeks since LMP', () => {
       }
     };
 
-    return transition.onMatch({ doc: doc }).then(function (changed) {
+    return transition.onMatch({ doc: doc }).then(function(changed) {
       assert.equal(changed, true);
       assert.equal(doc.lmp_date, start.toISOString());
       assert(doc.patient_id);
@@ -202,7 +202,7 @@ describe('pregnancy registration with weeks since LMP', () => {
       }
     };
 
-    return transition.onMatch({ doc: doc }).then(function (changed) {
+    return transition.onMatch({ doc: doc }).then(function(changed) {
       assert.equal(changed, true);
       assert.equal(doc.errors.length, 1);
       assert.equal(doc.errors[0].message, 'messages.generic.registration_not_found');
@@ -226,7 +226,7 @@ describe('pregnancy registration with weeks since LMP', () => {
       }
     };
 
-    return transition.onMatch({ doc: doc }).then(function (changed) {
+    return transition.onMatch({ doc: doc }).then(function(changed) {
       assert.equal(changed, true);
       assert(!doc.errors);
     });
@@ -251,7 +251,7 @@ describe('pregnancy registration with weeks since LMP', () => {
       reported_date: 12345678956
     };
 
-    return transition.onMatch({ doc: doc }).then(function (changed) {
+    return transition.onMatch({ doc: doc }).then(function(changed) {
       assert.equal(changed, true);
       assert.equal(doc.lmp_date, null);
       assert.equal(doc.patient_id, 12345);
@@ -286,7 +286,7 @@ describe('pregnancy registration with weeks since LMP', () => {
       getid: 'x'
     };
 
-    return transition.onMatch({ doc: doc }).then(function (changed) {
+    return transition.onMatch({ doc: doc }).then(function(changed) {
       assert.equal(changed, true);
       assert.equal(doc.lmp_date, undefined);
       assert(doc.patient_id);
@@ -308,7 +308,7 @@ describe('pregnancy registration with weeks since LMP', () => {
       getid: 'x'
     };
 
-    return transition.onMatch({ doc: doc }).then(function (changed) {
+    return transition.onMatch({ doc: doc }).then(function(changed) {
       assert.equal(changed, true);
       assert.equal(doc.patient_id, undefined);
       assert(doc.tasks);
@@ -327,7 +327,7 @@ describe('pregnancy registration with weeks since LMP', () => {
       }
     };
 
-    return transition.onMatch({ doc: doc }).then(function (changed) {
+    return transition.onMatch({ doc: doc }).then(function(changed) {
       assert.equal(changed, true);
       assert.equal(doc.patient_id, undefined);
       assert.equal(getMessage(doc), 'Invalid patient name.');
@@ -345,7 +345,7 @@ describe('pregnancy registration with weeks since LMP', () => {
       }
     };
 
-    return transition.onMatch({ doc: doc }).then(function (changed) {
+    return transition.onMatch({ doc: doc }).then(function(changed) {
       assert.equal(changed, true);
       assert.equal(doc.patient_id, undefined);
       assert.equal(getMessage(doc), 'Invalid LMP; must be between 0-40 weeks.');
@@ -363,11 +363,10 @@ describe('pregnancy registration with weeks since LMP', () => {
       }
     };
 
-    return transition.onMatch({ doc: doc }).then(function (changed) {
+    return transition.onMatch({ doc: doc }).then(function(changed) {
       assert.equal(changed, true);
       assert.equal(doc.patient_id, undefined);
-      assert.equal(getMessage(doc), 'Invalid patient name. ' + 
-      ' Invalid LMP; must be between 0-40 weeks.');
+      assert.equal(getMessage(doc), 'Invalid patient name. Invalid LMP; must be between 0-40 weeks.');
     });
   });
 
@@ -392,7 +391,7 @@ describe('pregnancy registration with weeks since LMP', () => {
       from: '+123',
       type: 'data_record'
     };
-    return transition.onMatch({ doc: doc }).then(function (changed) {
+    return transition.onMatch({ doc: doc }).then(function(changed) {
       assert.equal(changed, true);
       assert.equal(
         getMessage(doc),
