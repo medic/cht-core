@@ -145,7 +145,7 @@ const getWeeksSinceLMP = doc => {
 * the defined range.
 */
 const getLMPDate = doc => {
-  const props = ['lmpDate', 'lmp_date'];//lmpDate comes from smsParser
+  const props = ['lmpDate', 'date_lmp'];//lmpDate comes from smsParser
   for (const prop of props) {
     const lmp = doc.fields && doc.fields[prop];
     if (!isNaN(lmp)) {//milliseconds since epoch

@@ -366,7 +366,8 @@ describe('pregnancy registration with weeks since LMP', () => {
     return transition.onMatch({ doc: doc }).then(function (changed) {
       assert.equal(changed, true);
       assert.equal(doc.patient_id, undefined);
-      assert.equal(getMessage(doc), 'Invalid patient name.  Invalid LMP; must be between 0-40 weeks.');
+      assert.equal(getMessage(doc), 'Invalid patient name. ' + 
+      ' Invalid LMP; must be between 0-40 weeks.');
     });
   });
 
@@ -427,18 +428,22 @@ describe('pregnancy registration with exact LMP date', () => {
       ],
       validations: {
         join_responses: true,
-        list: [
+        list: [          
           {
             property: 'lmpDate',
-            rule: 'integer',
+            rule: 'isAfter("-40 weeks")',
             message: [{
-              content: 'Invalid date.',
+              content: 'Date should be later than 40 weeks ago.',
               locale: 'en'
-            }],
-            weeks: {
-              'min': 8,
-              'max': 40
-            }            
+            }]
+          },          
+          {
+            property: 'lmpDate',
+            rule: 'isBefore("8 weeks")',
+            message: [{
+              content: 'Date should be older than 8 weeks ago.',
+              locale: 'en'
+            }]
           },
           {
             property: 'patient_name',
@@ -465,14 +470,6 @@ describe('pregnancy registration with exact LMP date', () => {
       validations: {
         join_responses: true,
         list: [
-          {
-            property: 'lmpDate',
-            rule: 'integer',
-            message: [{
-              content: 'Invalid date.',
-              locale: 'en'
-            }]
-          },
           {
             property: 'patient_id',
             rule: 'len(5)',
@@ -675,7 +672,9 @@ describe('pregnancy registration with exact LMP date', () => {
     return transition.onMatch({ doc: doc }).then(function (changed) {
       assert.equal(changed, true);
       assert.equal(doc.patient_id, undefined);
-      assert.equal(getMessage(doc), 'Invalid date.');
+      assert.equal(getMessage(doc),
+        'Date should be later than 40 weeks ago. ' +
+        ' Date should be older than 8 weeks ago.');
     });
   });
 
@@ -693,7 +692,10 @@ describe('pregnancy registration with exact LMP date', () => {
     return transition.onMatch({ doc: doc }).then(function (changed) {
       assert.equal(changed, true);
       assert.equal(doc.patient_id, undefined);
-      assert.equal(getMessage(doc), 'Invalid patient name.  Invalid date.');
+      assert.equal(getMessage(doc),
+        'Invalid patient name. ' +
+        ' Date should be later than 40 weeks ago. ' +
+        ' Date should be older than 8 weeks ago.');
     });
   });
 
@@ -722,8 +724,8 @@ describe('pregnancy registration with exact LMP date', () => {
       assert.equal(changed, true);
       assert.equal(
         getMessage(doc),
-        'Invalid date.  ' +
-        'Invalid patient name.'
+        'Date should be older than 8 weeks ago. ' +
+        ' Invalid patient name.'
       );
     });
   });
@@ -745,14 +747,8 @@ describe('pregnancy registration with exact LMP date', () => {
     return transition.onMatch({ doc: doc }).then(function (changed) {
       assert.equal(changed, true);
       assert.equal(doc.patient_id, undefined);
-      assert.equal(getMessage(doc), 'Invalid LMP; must be between 0-40 weeks.');
+      assert.equal(getMessage(doc), 'Date should be older than 8 weeks ago.');
     });
-
-    // return transition.onMatch({ doc: doc })
-    //   .then(() => assert.fail('should have thrown'))
-    //   .catch(err => {
-    //     assert.equal(err.message, 'Date should be between 8 to 40 weeks in the past.');
-    //   });
   });
 
   it('LMP date more than 40 weeks ago should fail', () => {
@@ -771,13 +767,8 @@ describe('pregnancy registration with exact LMP date', () => {
     return transition.onMatch({ doc: doc }).then(function (changed) {
       assert.equal(changed, true);
       assert.equal(doc.patient_id, undefined);
-      assert.equal(getMessage(doc), 'Invalid LMP; must be between 0-40 weeks.');
+      assert.equal(getMessage(doc), 'Date should be later than 40 weeks ago.');
     });
-    // return transition.onMatch({ doc: doc })
-    //   .then(() => assert.fail('should have thrown'))
-    //   .catch(err => {
-    //     assert.equal(err.message, 'Date should be between 8 to 40 weeks in the past.');
-    //   });
   });
 
 });

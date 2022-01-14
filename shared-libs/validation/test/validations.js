@@ -522,4 +522,122 @@ describe('validations', () => {
       ]);
     });
   });
+
+  it('pass isBefore validation on doc when test date is 1 day before control date', () => {
+    const validations = [
+      {
+        property: 'lmp_date',
+        rule: 'isBefore("4 weeks")',
+      },
+    ];
+    const doc = {
+      _id: 'same',
+      lmp_date: moment().subtract({weeks: 4, days: 1}).valueOf()
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 0);
+    });
+  });
+
+  it('pass isBefore validation on doc when the test and control dates are same', () => {
+    const validations = [
+      {
+        property: 'lmp_date',
+        rule: 'isBefore("4 weeks")',
+      },
+    ];
+    const doc = {
+      _id: 'same',
+      lmp_date: moment().subtract({weeks: 4}).valueOf()
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 0);
+    });
+  });
+
+  it('fail isBefore validation when test date is 1 day later than control date', () => {
+    const validations = [
+      {
+        property: 'lmp_date',
+        rule: 'isBefore("4 weeks")',
+        message: [
+          {
+            content: 'Invalid date.',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'same',
+      lmp_date: moment().subtract({weeks: 3, days: 6}).valueOf()
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.deepEqual(errors, [
+        {
+          code: 'invalid_lmp_date_isBefore',
+          message: 'Invalid date.',
+        },
+      ]);
+    });
+  });
+
+  it('pass isAfter validation on doc when test date is 1 day after control date', () => {
+    const validations = [
+      {
+        property: 'lmp_date',
+        rule: 'isAfter("-40 weeks")',
+      },
+    ];
+    const doc = {
+      _id: 'same',
+      lmp_date: moment().subtract({weeks: 39, days: 6}).valueOf()
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 0);
+    });
+  });
+
+  it('pass isAfter validation on doc when the test and control dates are same', () => {
+    const validations = [
+      {
+        property: 'lmp_date',
+        rule: 'isAfter("-40 weeks")',
+      },
+    ];
+    const doc = {
+      _id: 'same',
+      lmp_date: moment().subtract({weeks: 40}).valueOf()
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 0);
+    });
+  });
+
+  it('fail isAfter validation when test date is 1 day before control date', () => {
+    const validations = [
+      {
+        property: 'lmp_date',
+        rule: 'isAfter("-40 weeks")',
+        message: [
+          {
+            content: 'Invalid date.',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'same',
+      lmp_date: moment().subtract({weeks: 40, days: 1}).valueOf()
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.deepEqual(errors, [
+        {
+          code: 'invalid_lmp_date_isAfter',
+          message: 'Invalid date.',
+        },
+      ]);
+    });
+  });
 });

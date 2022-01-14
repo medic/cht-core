@@ -182,10 +182,9 @@ module.exports = {
     isAfter: (doc, validation) => {
       const fields = [...validation.funcArgs];
       const duration = _parseDuration(fields.pop());
-      const testDate = moment(doc.fields[validation.field]);
-      //TODO: should use moment().startOf day here?
+      const testDate = moment(doc[validation.field]);
       const controlDate = moment().add(duration);
-      if (testDate.isSameOrAfter(controlDate)) {
+      if (testDate.isSameOrAfter(controlDate, 'days')) {
         return Promise.resolve(true);
       }
       logger.error('isAfter validation failed: the date is older than specified');
@@ -195,10 +194,9 @@ module.exports = {
     isBefore: (doc, validation) => {
       const fields = [...validation.funcArgs];
       const duration = _parseDuration(fields.pop());
-      const testDate = moment(doc.fields[validation.field]);
-      //TODO: should use moment().startOf day here?
+      const testDate = moment(doc[validation.field]);
       const controlDate = moment().subtract(duration);
-      if (testDate.isSameOrBefore(controlDate)) {
+      if (testDate.isSameOrBefore(controlDate, 'days')) {
         return Promise.resolve(true);
       }
       logger.error('isBefore validation failed: the date is later than specified');
