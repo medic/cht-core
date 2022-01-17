@@ -85,10 +85,13 @@ Given the error `StatusCodeError: 404 - {"error":"not_found","reason":"no such n
 To test the docker you need to have docker and docker-compose installed.
 You then need to install test bash test sub modules by running.
 
-```git submodule update --init
+```bash
+  git submodule update --init
 ```
 
-Then run tests through docker-compose
+Then run tests by using the tests file in the docker tests folder.
 
-```docker-compose -f tests/docker/docker-compose.test.yml  run -u root  sut /app/tests/docker/bats/bin/bats /app/tests/docker/test.bats
+```bash
+   cd tests/docker
+   ./run_docker_tests.sh
 ```

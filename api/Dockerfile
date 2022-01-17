@@ -17,7 +17,6 @@ COPY api api/
 RUN cd api && npm ci --verbose
 COPY shared-libs ./api/node_modules/@medic
 COPY api/src/public/ /app/api/build/public/
-RUN chmod 777 /tmp
 
 SHELL ["/bin/bash", "-c"]
 RUN for i in $(ls -d /app/api/node_modules/@medic/*); \
@@ -27,5 +26,8 @@ RUN for i in $(ls -d /app/api/node_modules/@medic/*); \
                 echo "$i"; done
 
 ENV NODE_PATH=/app/api/node_modules
+
+# Copy common functions
+COPY  scipts/bash_functions/functions.sh  /app/api/functions.sh
 
 ENTRYPOINT ["/bin/bash", "/app/api/docker-entrypoint.sh", "main"]
