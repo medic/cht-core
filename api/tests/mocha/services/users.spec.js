@@ -1060,6 +1060,47 @@ describe('Users service', () => {
       chai.expect(response).to.deep.equal([{}]);
     });
 
+    it('succeeds and response contains the user, contact and user settings fields', async () => {
+      const userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: 'foo',
+        contact: 'x',
+        type: 'national-manager'
+      };
+
+      const medicGet = sinon.stub(db.medic, 'get');
+      const medicPut = sinon.stub(db.medic, 'put');
+      const medicQuery = sinon.stub(db.medic, 'query');
+      const usersPut = sinon.stub(db.users, 'put');
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      medicGet.onFirstCall().rejects({ status: 404 });
+      usersPut.onFirstCall().callsFake(user => Promise.resolve({ id: user._id, rev: 1 }));
+      medicQuery.onFirstCall().resolves({ rows: [] });
+      medicGet.onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 });
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      medicPut.onFirstCall().callsFake(userSettings => Promise.resolve({ id: userSettings._id, rev: 1 }));
+      sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
+
+      const response = await service.createUsers([userData]);
+      chai.expect(response).to.deep.equal([
+        {
+          contact: {
+            id: 'contact_id',
+            rev: 1,
+          },
+          user: {
+            id: 'org.couchdb.user:x',
+            rev: 1,
+          },
+          'user-settings': {
+            id: 'org.couchdb.user:x',
+            rev: 1,
+          },
+        },
+      ]);
+    });
+
     it('succeeds if contact is within place', async () => {
       const userData = {
         username: 'x',
