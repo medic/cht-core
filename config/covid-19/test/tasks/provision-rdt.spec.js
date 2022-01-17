@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const TestHarness = require('medic-conf-test-harness');
+const TestHarness = require('cht-conf-test-harness');
 const formInputs = require('../form-inputs');
 
 const harness = new TestHarness();
