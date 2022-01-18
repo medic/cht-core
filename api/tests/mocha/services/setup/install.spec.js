@@ -22,6 +22,7 @@ describe('Install service', () => {
     it('should overwrite ddocs and cleanup', async () => {
       sinon.stub(upgradeLogService, 'setCompleting');
       sinon.stub(upgradeUtils, 'unstageStagedDdocs');
+      sinon.stub(upgradeUtils, 'deleteStagedDdocs');
       sinon.stub(upgradeLogService, 'setComplete');
       sinon.stub(upgradeUtils, 'cleanup');
 
@@ -29,6 +30,7 @@ describe('Install service', () => {
 
       expect(upgradeLogService.setCompleting.callCount).to.equal(1);
       expect(upgradeUtils.unstageStagedDdocs.callCount).to.equal(1);
+      expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(1);
       expect(upgradeLogService.setCompleting.callCount).to.equal(1);
       expect(upgradeUtils.cleanup.callCount).to.equal(1);
     });
@@ -47,9 +49,26 @@ describe('Install service', () => {
       }
     });
 
+    it('should throw an error if deleting staged ddocs fails', async () => {
+      sinon.stub(upgradeLogService, 'setCompleting');
+      sinon.stub(upgradeUtils, 'unstageStagedDdocs');
+      sinon.stub(upgradeUtils, 'deleteStagedDdocs').rejects({ error: 'thing' });
+
+      try {
+        await install.complete();
+        expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ error: 'thing' });
+        expect(upgradeLogService.setCompleting.callCount).to.equal(1);
+        expect(upgradeUtils.unstageStagedDdocs.callCount).to.equal(1);
+        expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(1);
+      }
+    });
+
     it('should throw an error if cleanup fails', async () => {
       sinon.stub(upgradeLogService, 'setCompleting');
       sinon.stub(upgradeUtils, 'unstageStagedDdocs');
+      sinon.stub(upgradeUtils, 'deleteStagedDdocs');
       sinon.stub(upgradeLogService, 'setComplete');
       sinon.stub(upgradeUtils, 'cleanup').rejects({ an: 'error'});
 

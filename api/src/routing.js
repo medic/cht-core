@@ -341,11 +341,12 @@ app.get('/api/deploy-info', async (req, res) => {
     return serverUtils.notLoggedIn(req, res);
   }
 
-  // todo
+  // todo move this to some service or something
   if (!environment.getDeployInfo()) {
     try {
       const ddoc = await db.medic.get(upgradeUtils.getDdocId(environment.ddoc));
-      environment.setDeployInfo(ddoc.deploy_info);
+      const deployInfo = Object.assign(ddoc.deploy_info, { version: ddoc.version });
+      environment.setDeployInfo(deployInfo);
     } catch(err) {
       return serverUtils.serverError(err, req, res);
     }

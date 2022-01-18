@@ -11,6 +11,7 @@ const upgradeLogService = require('./upgrade-log');
 const complete = async () => {
   await upgradeLogService.setCompleting();
   await upgradeUtils.unstageStagedDdocs();
+  await upgradeUtils.deleteStagedDdocs();
   await upgradeLogService.setComplete();
   await upgradeUtils.cleanup();
 };
