@@ -275,7 +275,8 @@ module.exports = function(grunt) {
           'enketo-core/**',
           'font-awesome/**',
           'messageformat/**',
-          'moment/**'
+          'moment/**',
+          'openrosa-xpath-evaluator'
         ],
         dest: 'webapp/node_modules_backup',
       },
@@ -468,6 +469,7 @@ module.exports = function(grunt) {
             'enketo-core',
             'font-awesome',
             'moment',
+            'openrosa-xpath-evaluator',
             'pouchdb-browser',
           ];
           return modulesToPatch.map(module => {
@@ -545,6 +547,10 @@ module.exports = function(grunt) {
             // patch enketo to fix repeat name collision bug - this should be removed when upgrading to a new version of enketo-core
             // https://github.com/enketo/enketo-core/issues/815
             'patch webapp/node_modules/enketo-core/src/js/calculate.js < webapp/patches/enketo-repeat-name-collision.patch',
+
+            // patch openrosa to maintain existing behavior in calculations using unanswered number questions.
+            // https://github.com/medic/cht-core/issues/7222
+            'patch webapp/node_modules/openrosa-xpath-evaluator/src/utils/xpath-cast.js < webapp/patches/openrosa-unanswered-question-calculate.patch',
 
             // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
             'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',

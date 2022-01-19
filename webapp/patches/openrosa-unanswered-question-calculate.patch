@@ -1,0 +1,19 @@
+*** unpatched	2022-01-19 10:20:58.847173346 -0600
+--- patched 	2022-01-19 10:24:18.755680323 -0600
+***************
+*** 24,30 ****
+    if(r.t === 'date') return dateToDays(r.v); // TODO should be handled in an extension rather than core code
+  
+    const str = asString(r).trim();
+!   if(str === '') return NaN;
+    if(DATE_STRING.test(str)) return dateStringToDays(str); // TODO should be handled in an extension rather than core code
+    return +str;
+  }
+--- 24,30 ----
+    if(r.t === 'date') return dateToDays(r.v); // TODO should be handled in an extension rather than core code
+  
+    const str = asString(r).trim();
+!   if(str === '') return 0;
+    if(DATE_STRING.test(str)) return dateStringToDays(str); // TODO should be handled in an extension rather than core code
+    return +str;
+  }
