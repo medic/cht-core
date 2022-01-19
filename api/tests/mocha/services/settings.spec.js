@@ -5,7 +5,7 @@ require('chai').should();
 const service = require('../../../src/services/settings');
 const db = require('../../../src/db');
 const environment = require('../../../src/environment');
-const defaults = require('../../../../build/ddocs/medic/_attachments/default-docs/settings.doc.json');
+const defaults = require('../../../build/default-docs/settings.doc.json');
 
 let settings;
 let replace;
@@ -16,8 +16,8 @@ describe('settings service', () => {
     settings = { a: 'a', permissions: { b: 'b'} };
     sinon.stub(db.medic, 'get').resolves({ settings });
 
-    const resourceDirectory = path.resolve(__dirname, '../../../../build/ddocs/medic/_attachments');
-    sinon.stub(environment, 'getExtractedResourcesPath').returns(resourceDirectory);
+    const defaultDocsPath = path.resolve(__dirname, '../../../build/default-docs');
+    sinon.stub(environment, 'defaultDocsPath').value(defaultDocsPath);
   });
 
   afterEach(function() {

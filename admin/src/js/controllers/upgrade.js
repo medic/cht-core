@@ -1,7 +1,6 @@
 const _ = require('lodash/core');
 
 const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
-const DEPLOY_DOC_ID = 'horti-upgrade';
 
 angular.module('controllers').controller('UpgradeCtrl',
   function(
@@ -9,10 +8,8 @@ angular.module('controllers').controller('UpgradeCtrl',
     $log,
     $q,
     $scope,
-    $timeout,
     $translate,
     $window,
-    Changes,
     DB,
     Modal,
     Version,
@@ -25,17 +22,6 @@ angular.module('controllers').controller('UpgradeCtrl',
     $scope.loading = true;
     $scope.versions = {};
 
-    const getDeploymentInProgress = function() {
-      return DB().get(DEPLOY_DOC_ID)
-        .then(function(deployDoc) {
-          $scope.deployDoc = deployDoc;
-        }).catch(function(err) {
-          if (err.status !== 404) {
-            throw err;
-          }
-        });
-    };
-
     const getExistingDeployment = function() {
       return DB().get('_design/medic')
         .then(function(ddoc) {
@@ -43,7 +29,8 @@ angular.module('controllers').controller('UpgradeCtrl',
         });
     };
 
-    $q.all([getDeploymentInProgress(), getExistingDeployment()])
+    // todo this will change so I'm not refactoring this code yet
+    $q.all([getExistingDeployment()])
       .then(function() {
         if (!$scope.currentDeploy) {
           // This user has not deployed via horti, so upgrading via it (for now)
@@ -141,6 +128,8 @@ angular.module('controllers').controller('UpgradeCtrl',
         .then(function(confirmed) {
           if (confirmed) {
             upgrade(version, action);
+
+            // todo start polling upgrade progress endpoint
           }
         });
     };
@@ -152,8 +141,6 @@ angular.module('controllers').controller('UpgradeCtrl',
         '/api/v1/upgrade/' + action :
         '/api/v1/upgrade';
 
-      // This will cause the DEPLOY_DOC_ID doc to be written by api, which
-      // will be caught in the changes feed below
       $http
         .post(url, { build: {
           namespace: 'medic',
@@ -171,19 +158,5 @@ angular.module('controllers').controller('UpgradeCtrl',
             });
         });
     };
-
-    Changes({
-      key: 'upgrade',
-      filter: change => change.id === DEPLOY_DOC_ID,
-      callback: change => {
-        if (!change.deleted) {
-          return getDeploymentInProgress();
-        }
-
-        if ($scope.deployDoc) {
-          $timeout(() => $scope.deployDoc._deleted = true);
-        }
-      }
-    });
   }
 );

@@ -14,7 +14,8 @@ if (UNIT_TEST_ENV) {
     'users',
     'medicUsersMeta',
     'sentinel',
-    'medicLogs'
+    'medicLogs',
+    'builds',
   ];
   const DB_FUNCTIONS_TO_STUB = [
     'allDocs',
@@ -27,13 +28,16 @@ if (UNIT_TEST_ENV) {
     'getAttachment',
     'changes',
     'info',
-    'close'
+    'close',
+    'compact',
+    'viewCleanup',
   ];
   const GLOBAL_FUNCTIONS_TO_STUB = [
     'get',
     'exists',
     'close',
     'allDbs',
+    'activeTasks'
   ];
 
   const notStubbed = (first, second) => {
@@ -71,9 +75,10 @@ if (UNIT_TEST_ENV) {
   module.exports.medicLogs = new PouchDB(`${environment.couchUrl}-logs`, { fetch });
   module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch });
   module.exports.users = new PouchDB(getDbUrl('/_users'));
+  module.exports.builds = new PouchDB(environment.buildsUrl);
 
   // Get the DB with the given name
-  module.exports.get = name => new PouchDB(getDbUrl(name));
+  module.exports.get = name => new PouchDB(getDbUrl(name), { fetch });
   module.exports.close = db => {
     if (!db || db._destroyed || db._closed) {
       return;
@@ -99,4 +104,17 @@ if (UNIT_TEST_ENV) {
   };
 
   module.exports.allDbs = () => rpn.get({ uri: `${environment.serverUrl}/_all_dbs`, json: true });
+
+  module.exports.activeTasks = () => {
+    return rpn({
+      url: `${environment.serverUrl}/_active_tasks`,
+      json: true
+    }).then(tasks => {
+      // TODO: consider how to filter these just to the active database.
+      // On CouchDB 2.x you only get the shard name, which looks like:
+      // shards/80000000-ffffffff/medic.1525076838
+      // On CouchDB 1.x (I think) you just get the exact DB name
+      return tasks;
+    });
+  };
 }

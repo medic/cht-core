@@ -48,7 +48,8 @@ const staticResources = /\/(templates|static)\//;
 const routePrefix = '/+' + environment.db + '/+';
 const pathPrefix = '/' + environment.db + '/';
 const appPrefix = pathPrefix + '_design/' + environment.ddoc + '/_rewrite/';
-const adminAppPrefix = pathPrefix + '_design/medic-admin/_rewrite/';
+const adminAppPrefix = routePrefix + '_design/medic-admin/_rewrite(/*)?';
+const adminAppReg = new RegExp(`/*${environment.db}/_design/medic-admin/_rewrite/?`);
 const serverUtils = require('./server-utils');
 const uuid = require('uuid');
 const compression = require('compression');
@@ -59,7 +60,6 @@ const app = express();
 // requires content-type application/json header
 const jsonParser = bodyParser.json({ limit: '32mb' });
 const jsonQueryParser = require('./middleware/query-parser').json;
-const extractedResourceDirectory = environment.getExtractedResourcesPath();
 
 const handleJsonRequest = (method, path, callback) => {
   app[method](path, jsonParser, (req, res, next) => {
@@ -200,7 +200,7 @@ app.get('/', function(req, res) {
     // Required for service compatibility during upgrade.
     proxy.web(req, res);
   } else {
-    res.sendFile(path.join(extractedResourceDirectory, 'index.html')); // Webapp's index - entry point
+    res.sendFile(path.join(environment.webappPath, 'index.html')); // Webapp's index - entry point
   }
 });
 
@@ -211,18 +211,13 @@ app.get('/dbinfo', connectedUserLog, (req, res) => {
 
 app.get(
   [`/medic/_design/medic/_rewrite/`, appPrefix],
-  (req, res) => res.sendFile(path.join(__dirname, 'public/appcache-upgrade.html'))
+  (req, res) => res.sendFile(path.join(environment.webappPath, 'appcache-upgrade.html'))
 );
 
 app.all('/+medic(/*)?', (req, res, next) => {
   if (environment.db !== 'medic') {
     req.url = req.url.replace(/\/medic\/?/, pathPrefix);
   }
-  next();
-});
-
-app.all('/+admin(/*)?', (req, res, next) => {
-  req.url = req.url.replace(/\/admin\/?/, adminAppPrefix);
   next();
 });
 
@@ -243,16 +238,21 @@ app.get('/favicon.ico', (req, res) => {
   });
 });
 
-app.use(express.static(path.join(__dirname, '../build/public')));
-app.use(express.static(extractedResourceDirectory));
+// saves CouchDB _session information as `userCtx` in the `req` object
+app.use(authorization.getUserCtx);
+app.all(adminAppPrefix, (req, res, next) => {
+  req.url = req.url.replace(adminAppReg, '/admin/');
+  next();
+});
+app.all('/+admin(/*)?', authorization.handleAuthErrors, authorization.offlineUserFirewall);
+
+app.use(express.static(environment.staticPath));
+app.use(express.static(environment.webappPath));
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
 app.get(routePrefix + 'login/token/:token?', login.tokenGet);
 app.postJson(routePrefix + 'login/token/:token?', login.tokenPost);
-
-// saves CouchDB _session information as `userCtx` in the `req` object
-app.use(authorization.getUserCtx);
 
 // authorization for `_compact`, `_view_cleanup`, `_revs_limit` endpoints is handled by CouchDB
 const ONLINE_ONLY_ENDPOINTS = [
@@ -336,10 +336,22 @@ app.get('/api/info', function(req, res) {
   res.json({ version: p.version });
 });
 
-app.get('/api/deploy-info', (req, res) => {
+app.get('/api/deploy-info', async (req, res) => {
   if (!req.userCtx) {
     return serverUtils.notLoggedIn(req, res);
   }
+
+  // todo move this to some service or something
+  if (!environment.getDeployInfo()) {
+    try {
+      const ddoc = await db.medic.get(upgradeUtils.getDdocId(environment.ddoc));
+      const deployInfo = Object.assign(ddoc.deploy_info, { version: ddoc.version });
+      environment.setDeployInfo(deployInfo);
+    } catch(err) {
+      return serverUtils.serverError(err, req, res);
+    }
+  }
+
   res.json(environment.getDeployInfo());
 });
 
@@ -363,6 +375,7 @@ app.get('/api/auth/:path', function(req, res) {
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
 app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);
+app.all('/api/v1/upgrade/service-worker', upgrade.serviceWorker);
 
 app.post('/api/v1/sms/africastalking/incoming-messages', formParser, africasTalking.incomingMessages);
 app.post('/api/v1/sms/africastalking/delivery-reports', formParser, africasTalking.deliveryReports);
@@ -569,6 +582,7 @@ app.post(
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
 const dbDocHandler = require('./controllers/db-doc');
+const upgradeUtils = require('./services/setup/utils');
 const docPath = routePrefix + ':docId/{0,}';
 const attachmentPath = routePrefix + ':docId/+:attachmentId*';
 const ddocPath = routePrefix + '_design/+:ddocId*';
@@ -709,7 +723,7 @@ app.get('/service-worker.js', (req, res) => {
     ['Content-Type', 'application/javascript'],
   ]);
 
-  res.sendFile(path.join(extractedResourceDirectory, 'js/service-worker.js'));
+  res.sendFile(path.join(environment.webappPath, 'service-worker.js'));
 });
 
 /**

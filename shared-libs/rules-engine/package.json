@@ -20,9 +20,9 @@
   "dependencies": {
     "@medic/calendar-interval": "file:../calendar-interval",
     "@medic/registration-utils": "file:../registration-utils",
-    "lodash": "^4.17.19",
+    "lodash": "4.17.19",
     "md5": "^2.3.0",
-    "medic-nootils": "^4.0.1",
+    "cht-nootils": "^4.0.2",
     "nools": "^0.4.4"
   },
   "devDependencies": {

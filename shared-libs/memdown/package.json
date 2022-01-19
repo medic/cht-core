@@ -13,6 +13,6 @@
     "pouchdb-adapter-memory": "^7.2.2",
     "pouchdb-core": "^7.2.2",
     "pouchdb-mapreduce": "^7.2.2",
-    "uuid": "^3.4.0"
+    "uuid": "^8.3.2"
   }
 }
