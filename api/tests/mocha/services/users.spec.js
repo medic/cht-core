@@ -5,6 +5,7 @@ const rewire = require('rewire');
 const couchSettings = require('@medic/settings');
 const people = require('../../../src/controllers/people');
 const places = require('../../../src/controllers/places');
+const tokenLogin = require('../../../src/services/token-login');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
 const auth = require('../../../src/auth');
@@ -978,6 +979,85 @@ describe('Users service', () => {
         chai.expect(response[0].error).to.equal('fail');
       });
 
+      it('returns responses with errors if username validation fails', async () => {
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: { name: 'x' },
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
+        service.__set__('validateNewUsername', sinon.stub().rejects(new Error('fail username validation')));
+
+        const response = await service.createUsers([userData]);
+        chai.expect(response[0].error).to.equal('fail username validation');
+      });
+
+      it('returns responses with errors if contact creation fails', async () => {
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: { name: 'x' },
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('createPlace', sinon.stub().resolves());
+        service.__set__('createUser', sinon.stub().resolves());
+        service.__set__('setContactParent', sinon.stub().resolves());
+        service.__set__('createContact', sinon.stub().rejects(new Error('fail contact creation')));
+
+        const response = await service.createUsers([userData]);
+        chai.expect(response[0].error).to.equal('fail contact creation');
+      });
+
+      it('returns responses with errors if place update fails', async () => {
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: { name: 'x' },
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('createPlace', sinon.stub().resolves());
+        service.__set__('createUser', sinon.stub().resolves());
+        service.__set__('setContactParent', sinon.stub().resolves());
+        service.__set__('createContact', sinon.stub().resolves());
+        service.__set__('storeUpdatedPlace', sinon.stub().rejects(new Error('fail place update')));
+
+        const response = await service.createUsers([userData]);
+        chai.expect(response[0].error).to.equal('fail place update');
+      });
+
+      it('returns responses with errors if token login fails to be enabled', async () => {
+        const tokenLoginConfig = { translation_key: 'sms', enabled: true };
+        sinon.stub(config, 'get')
+          .withArgs('token_login').returns(tokenLoginConfig)
+          .withArgs('app_url').returns('url');
+        sinon.stub(auth, 'isOffline').returns(false);
+
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: { name: 'x' },
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('createPlace', sinon.stub().resolves());
+        service.__set__('createUser', sinon.stub().resolves());
+        service.__set__('setContactParent', sinon.stub().resolves());
+        service.__set__('createContact', sinon.stub().resolves());
+        service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+        service.__set__('createUser', sinon.stub().resolves());
+        service.__set__('createUserSettings', sinon.stub().resolves());
+        sinon.stub(tokenLogin, 'manageTokenLogin').rejects(new Error('fail to enable token login'));
+
+        const response = await service.createUsers([userData]);
+        chai.expect(response[0].error).to.equal('fail to enable token login');
+      });
+
       it('returns responses with errors if place is not within contact', async () => {
         const userData = {
           username: 'x',
@@ -1001,7 +1081,7 @@ describe('Users service', () => {
       });
     });
 
-    it('succeeds and returns responses if some users fail to be created', async () => {
+    it('succeeds and returns responses if some users fail to be inserted', async () => {
       sinon.stub(db.medic, 'get').resolves({});
       service.__set__('validateNewUsername', sinon.stub().resolves());
       service.__set__('createPlace', sinon.stub().resolves());
