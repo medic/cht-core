@@ -178,7 +178,7 @@ const writeMetaPurgeLog = (localDb, { syncedSeq, purgedSeq }) => {
   });
 };
 
-const batchedMetaPurge = (localDb, sinceSeq = 0, untilSeq, iterations = 0) => {
+const batchedMetaPurge = (localDb, sinceSeq = 0, untilSeq = '', iterations = 0) => {
   if (iterations >= META_BATCHES) {
     return; // stop after 10 iterations
   }

@@ -176,7 +176,7 @@ describe('refresh-rules-emissions', () => {
   });
 
   describe('disambiguateTaskDocs', () => {
-    const mockTaskDoc = (emissionId, authoredOn = 0, augment) => Object.assign(
+    const mockTaskDoc = (emissionId, authoredOn = 0, augment = {}) => Object.assign(
       { emission: { _id: emissionId }, stateHistory: [], authoredOn: authoredOn || moment().valueOf() },
       augment
     );
@@ -254,7 +254,7 @@ describe('refresh-rules-emissions', () => {
   });
 
   describe('getDeduplicationUpdates', () => {
-    const mockTaskDoc = (emissionId, authoredOn = 0, augment) => Object.assign(
+    const mockTaskDoc = (emissionId, authoredOn = 0, augment = {}) => Object.assign(
       { emission: { _id: emissionId }, stateHistory: [], authoredOn: authoredOn || moment().valueOf() },
       augment
     );

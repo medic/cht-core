@@ -38,7 +38,7 @@ export class UnreadRecordsService implements OnDestroy {
       .query('medic-user/read', { group: true });
   }
 
-  private getRowValueForType(response:any = {}, type) {
+  private getRowValueForType(type, response:any = {}) {
     const result = _find(response.rows, { key: type });
     return (result && result.value) || 0;
   }
@@ -51,7 +51,7 @@ export class UnreadRecordsService implements OnDestroy {
       ])
       .then(([total, read]) => {
         const result = this.TYPES.reduce((countMap, type) => {
-          countMap[type] = this.getRowValueForType(total, type) - this.getRowValueForType(read, type);
+          countMap[type] = this.getRowValueForType(type, total) - this.getRowValueForType(type, read);
           return countMap;
         }, {});
 

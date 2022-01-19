@@ -11,6 +11,7 @@
     "brace-style": ["error", "1tbs"],
     "comma-spacing": ["error", { "before": false, "after": true }],
     "comma-style": ["error", "last"],
+    "default-param-last": "error",
     "dot-location": ["error", "property"],
     "linebreak-style": ["error", "unix"],
     "no-alert": "error",

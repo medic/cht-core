@@ -105,7 +105,7 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
     });
   }
 
-  private templateResult(contactTypes = [], row) {
+  private templateResult(contactTypes, row) {
     if (!row) {
       return;
     }
