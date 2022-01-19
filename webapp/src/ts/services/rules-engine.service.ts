@@ -131,7 +131,7 @@ export class RulesEngineService implements OnDestroy {
                     this.fetchTaskDocsForAllContacts();
                   }, this.ENSURE_FRESHNESS_SECS * 1000);
 
-                  this.debounceActive['tasks'] = {
+                  this.debounceActive.tasks = {
                     active: true,
                     telemetryDataEntry: this.telemetryEntry('rules-engine:ensureTaskFreshness:cancel', true),
                     debounceRef: tasksDebounceRef
@@ -143,7 +143,7 @@ export class RulesEngineService implements OnDestroy {
                     this.fetchTargets();
                   }, this.ENSURE_FRESHNESS_SECS * 1000);
 
-                  this.debounceActive['targets'] = {
+                  this.debounceActive.targets = {
                     active: true,
                     telemetryDataEntry: this.telemetryEntry('rules-engine:ensureTargetFreshness:cancel', true),
                     debounceRef: targetsDebounceRef

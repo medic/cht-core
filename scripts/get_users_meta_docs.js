@@ -34,7 +34,7 @@ Example:
 
 const mode = argv.mode;
 const type = argv.type;
-const couchUrl = argv['_'][0] || 'http://admin:pass@localhost:5984/medic-users-meta';
+const couchUrl = argv._[0] || 'http://admin:pass@localhost:5984/medic-users-meta';
 
 const db = PouchDB(couchUrl);
 

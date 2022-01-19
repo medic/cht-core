@@ -238,8 +238,8 @@ describe('refresh-rules-emissions', () => {
 
       const result = disambiguateTaskDocs(tasks, moment().valueOf());
       expect(result.winners).to.have.all.keys('em1', 'em2');
-      expect(result.winners['em1']).to.deep.equal(mockTaskDoc('em1', now - 500, { _id: 7, state: 'Ready' }));
-      expect(result.winners['em2']).to.deep.equal(mockTaskDoc('em2', now - 1000, { _id: 3, state: 'Ready' }));
+      expect(result.winners.em1).to.deep.equal(mockTaskDoc('em1', now - 500, { _id: 7, state: 'Ready' }));
+      expect(result.winners.em2).to.deep.equal(mockTaskDoc('em2', now - 1000, { _id: 3, state: 'Ready' }));
 
       expect(result.duplicates.length).to.equal(6);
       expect(result.duplicates).to.have.deep.members([

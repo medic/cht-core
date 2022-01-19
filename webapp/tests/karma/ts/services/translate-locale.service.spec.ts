@@ -58,7 +58,7 @@ describe('TranslateLocaleService', () => {
       expect(translateService.compiler.compileTranslations.callCount).to.equal(1);
       expect(translateService.compiler.compileTranslations.args[0]).to.deep.equal([translations, 'new_locale']);
 
-      expect(translateService.translations['new_locale']).to.equal(compiledTranslations);
+      expect(translateService.translations.new_locale).to.equal(compiledTranslations);
       expect(translateService.addLangs.callCount).to.equal(1);
       expect(translateService.addLangs.args[0]).to.deep.equal([['new_locale']]);
 
@@ -70,8 +70,8 @@ describe('TranslateLocaleService', () => {
       expect(translateService.compiler.compileTranslations.callCount).to.equal(2);
       expect(translateService.compiler.compileTranslations.args[1]).to.deep.equal([translations, 'additional_locale']);
 
-      expect(translateService.translations['additional_locale']).to.equal(compiledTranslations);
-      expect(translateService.translations['new_locale']).to.equal(compiledTranslations);
+      expect(translateService.translations.additional_locale).to.equal(compiledTranslations);
+      expect(translateService.translations.new_locale).to.equal(compiledTranslations);
       expect(translateService.addLangs.callCount).to.equal(2);
       expect(translateService.addLangs.args[1]).to.deep.equal([['new_locale', 'additional_locale']]);
     }));
@@ -98,7 +98,7 @@ describe('TranslateLocaleService', () => {
       expect(translateService.compiler.compileTranslations.callCount).to.equal(1);
       expect(translateService.compiler.compileTranslations.args[0]).to.deep.equal([translations, 'new_locale']);
 
-      expect(translateService.translations['new_locale']).to.equal(compiledTranslations);
+      expect(translateService.translations.new_locale).to.equal(compiledTranslations);
       expect(translateService.addLangs.callCount).to.equal(1);
       expect(translateService.addLangs.args[0]).to.deep.equal([['new_locale']]);
     }));
@@ -121,7 +121,7 @@ describe('TranslateLocaleService', () => {
 
       expect(translateService.currentLoader.getTranslation.callCount).to.equal(1);
       expect(translateService.compiler.compileTranslations.callCount).to.equal(1);
-      expect(translateService.translations['new_locale']).to.equal(compiledTranslations);
+      expect(translateService.translations.new_locale).to.equal(compiledTranslations);
       expect(translateService.addLangs.callCount).to.equal(1);
       expect(translateService.addLangs.args[0]).to.deep.equal([['new_locale']]);
     }));
@@ -174,7 +174,7 @@ describe('TranslateLocaleService', () => {
     }));
 
     it('should not hot reload locales', fakeAsync(() => {
-      translateService.translations['existent_locale'] = { item: 'compiled' };
+      translateService.translations.existent_locale = { item: 'compiled' };
       translations = { item1: 'uncompiled1', item2: 'uncompiled2' };
       compiledTranslations = { item1: 'compiled1', item2: 'compiled2' };
       translateService.currentLoader.getTranslation.returns(of(translations));
@@ -194,7 +194,7 @@ describe('TranslateLocaleService', () => {
       expect(translateService.compiler.compileTranslations.callCount).to.equal(1);
       expect(translateService.compiler.compileTranslations.args[0]).to.deep.equal([translations, 'existent_locale']);
 
-      expect(translateService.translations['existent_locale']).to.equal(compiledTranslations);
+      expect(translateService.translations.existent_locale).to.equal(compiledTranslations);
       expect(translateService.addLangs.callCount).to.equal(1);
       expect(translateService.addLangs.args[0]).to.deep.equal([['existent_locale']]);
 
@@ -202,7 +202,7 @@ describe('TranslateLocaleService', () => {
     }));
 
     it('should hot reload locales', fakeAsync(() => {
-      translateService.translations['present'] = { item: 'compiled' };
+      translateService.translations.present = { item: 'compiled' };
       translations = { item1: 'uncompiled1', item2: 'uncompiled2' };
       translateService.currentLoader.getTranslation.returns(of(translations));
 

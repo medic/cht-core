@@ -146,7 +146,7 @@ describe('Replication Helper Views Lib', () => {
       };
       lib.loadViewMaps(ddoc, 'view1', 'view2');
       const viewMapStrings = lib._getViewMapStrings();
-      viewMapStrings['ddoc']['view1'].should.equal('function(a) { return a; }');
+      viewMapStrings.ddoc.view1.should.equal('function(a) { return a; }');
     });
   });
 
