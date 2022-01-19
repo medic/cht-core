@@ -68,9 +68,6 @@
     "winston": "^3.3.3",
     "xmlbuilder": "^15.1.1"
   },
-  "devDependencies": {
-    "doctoc": "^2.0.1"
-  },
   "bundledDependencies": [
     "@medic/bulk-docs-utils",
     "@medic/contact-types-utils",

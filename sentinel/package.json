@@ -44,9 +44,6 @@
     "uuid": "^8.3.2",
     "winston": "^3.3.3"
   },
-  "devDependencies": {
-    "jsverify": "^0.8.4"
-  },
   "bundledDependencies": [
     "@medic/contact-types-utils",
     "@medic/infodoc",

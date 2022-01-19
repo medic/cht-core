@@ -24,10 +24,5 @@
     "md5": "^2.3.0",
     "cht-nootils": "^4.0.2",
     "nools": "^0.4.4"
-  },
-  "devDependencies": {
-    "@medic/memdown": "file:../memdown",
-    "pouchdb": "^7.2.2",
-    "pouchdb-adapter-memory": "^7.2.2"
   }
 }
