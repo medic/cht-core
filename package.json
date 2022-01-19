@@ -159,6 +159,5 @@
       "path": "./api/build/static/webapp/styles.css",
       "maxSize": "70 kB"
     }
-  ],
-  "dependencies": {}
+  ]
 }

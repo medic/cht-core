@@ -8,9 +8,6 @@
   },
   "author": "",
   "license": "Apache-2.0",
-  "devDependencies": {
-    "@medic/memdown": "file:../memdown"
-  },
   "dependencies": {
     "@medic/contact-types-utils": "file:../contact-types-utils",
     "lodash": "4.17.19"
