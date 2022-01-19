@@ -15,15 +15,35 @@ const setTasksToComplete = (indexer) => {
     });
 };
 
+// example "database" is "shards/a0000000-bfffffff/medic.1637673820" (shards/<shard_name>/<db_name>.???)
+const INDEXER_DB_RE = /^shards\/[^/]+\/([^.]+)\..*$/;
+const getDatabaseName = (indexer) => {
+  if (!indexer || !indexer.database || typeof indexer.database !== 'string') {
+    return;
+  }
+
+  const match = indexer.database.match(INDEXER_DB_RE);
+  return (match && match[1]) || indexer.database;
+};
+const DDOC_PREFIX = /^_design\/:staged:/;
+const getDdocName = (indexer) => {
+  if (!indexer || !indexer.design_document || typeof indexer.design_document !== 'string') {
+    return;
+  }
+  return indexer.design_document.replace(DDOC_PREFIX, '');
+};
+
 const updateRunningTasks = (indexers, activeTasks = []) => {
   activeTasks.forEach(task => {
+    const dbName = getDatabaseName(task);
+    const ddocName = getDdocName(task);
     let indexer = indexers.find(indexer => {
-      return indexer.design_document === task.design_document && indexer.database === task.database;
+      return indexer.ddoc === ddocName && indexer.database === dbName;
     });
     if (!indexer) {
       indexer = {
-        database: task.database,
-        design_document: task.design_document,
+        database: dbName,
+        ddoc: ddocName,
         tasks: {},
       };
       indexers.push(indexer);
@@ -53,7 +73,7 @@ const logIndexersProgress = (indexers) => {
       .padStart(Math.floor((filledBarLength + progress.length) / 2), '|')
       .padEnd(filledBarLength, '|')
       .padEnd(barLength, '_');
-    const ddocName = `${indexer.database}/${indexer.design_document}`.padEnd(DDOC_NAME_PAD, ' ');
+    const ddocName = `${indexer.database}/${indexer.ddoc}`.padEnd(DDOC_NAME_PAD, ' ');
 
     logger.info(`${ddocName}[${bar}]`);
   };
@@ -63,7 +83,7 @@ const logIndexersProgress = (indexers) => {
 const getIndexers = async (indexers = []) => {
   try {
     const activeTasks = await db.activeTasks();
-    const tasks = activeTasks.filter(task => task.type === 'indexer' && task.design_document.includes(':staged:'));
+    const tasks = activeTasks.filter(task => task.type === 'indexer' && DDOC_PREFIX.test(String(task.design_document)));
     // We assume all previous tasks have finished.
     indexers.forEach(setTasksToComplete);
     updateRunningTasks(indexers, tasks);

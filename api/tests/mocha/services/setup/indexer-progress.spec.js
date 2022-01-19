@@ -22,20 +22,26 @@ describe('indexer progress', () => {
   });
 
   describe('query', () => {
+    const dbName = (dbName) => {
+      const getShardRange = () => (parseInt(Math.random() * 100000000)).toString(16);
+      return `shards/${getShardRange()}-${getShardRange()}/${dbName}.${getShardRange()}`;
+    };
+    const ddocName = (ddocName, staged = true) => `_design/${staged ? ':staged:': ''}${ddocName}`;
+
     it('should get db active tasks, calculate progress and return indexers ', async () => {
       sinon.stub(db, 'activeTasks').resolves([
-        { database: 'd1', node: 'n1', design_document: ':staged:ddoc1', progress: 3, pid: 'd1-1-1', type: 'indexer' },
-        { database: 'd1', node: 'n1', design_document: ':staged:ddoc1', progress: 7, pid: 'd1-1-2', type: 'indexer' },
+        { database: 'd1', node: '1', design_document: ddocName('ddoc1'), progress: 3, pid: 'd1-1-1', type: 'indexer' },
+        { database: 'd1', node: '1', design_document: ddocName('ddoc1'), progress: 7, pid: 'd1-1-2', type: 'indexer' },
 
-        { database: 'd1', node: 'n1', design_document: ':staged:ddoc2', progress: 9, pid: 'd1-2-1', type: 'indexer' },
-        { database: 'd1', node: 'n1', design_document: ':staged:ddoc2', progress: 21, pid: 'd1-2-2', type: 'indexer' },
-        { database: 'd1', node: 'n1', design_document: ':staged:ddoc2', progress: 12, pid: 'd1-2-3', type: 'indexer' },
+        { database: 'd1', node: '1', design_document: ddocName('ddoc2'), progress: 9, pid: 'd1-2-1', type: 'indexer' },
+        { database: 'd1', node: '1', design_document: ddocName('ddoc2'), progress: 21, pid: 'd1-2-2', type: 'indexer' },
+        { database: 'd1', node: '1', design_document: ddocName('ddoc2'), progress: 12, pid: 'd1-2-3', type: 'indexer' },
 
-        { database: 'd2', node: 'n1', design_document: ':staged:ddoc1', progress: 4, pid: 'd2-1-1', type: 'indexer' },
-        { database: 'd2', node: 'n1', design_document: ':staged:ddoc1', progress: 12, pid: 'd2-1-2', type: 'indexer' },
+        { database: 'd2', node: '1', design_document: ddocName('ddoc1'), progress: 4, pid: 'd2-1-1', type: 'indexer' },
+        { database: 'd2', node: '1', design_document: ddocName('ddoc1'), progress: 12, pid: 'd2-1-2', type: 'indexer' },
 
-        { database: 'd3', node: 'n1', design_document: ':staged:ddoc2', progress: 2, pid: 'd3-2-1', type: 'indexer' },
-        { database: 'd3', node: 'n1', design_document: ':staged:ddoc2', progress: 8, pid: 'd3-2-2', type: 'indexer' },
+        { database: 'd3', node: '1', design_document: ddocName('ddoc2'), progress: 2, pid: 'd3-2-1', type: 'indexer' },
+        { database: 'd3', node: '1', design_document: ddocName('ddoc2'), progress: 8, pid: 'd3-2-2', type: 'indexer' },
       ]);
 
       const indexers = await viewIndexerProgress.query([]);
@@ -43,38 +49,38 @@ describe('indexer progress', () => {
       expect(indexers).to.deep.equal([
         {
           database: 'd1',
-          design_document: ':staged:ddoc1',
+          ddoc: 'ddoc1',
           tasks: {
-            'n1-d1-1-1': 3,
-            'n1-d1-1-2': 7,
+            '1-d1-1-1': 3,
+            '1-d1-1-2': 7,
           },
           progress: 5,
         },
         {
           database: 'd1',
-          design_document: ':staged:ddoc2',
+          ddoc: 'ddoc2',
           tasks: {
-            'n1-d1-2-1': 9,
-            'n1-d1-2-2': 21,
-            'n1-d1-2-3': 12,
+            '1-d1-2-1': 9,
+            '1-d1-2-2': 21,
+            '1-d1-2-3': 12,
           },
           progress: 14,
         },
         {
           database: 'd2',
-          design_document: ':staged:ddoc1',
+          ddoc: 'ddoc1',
           tasks: {
-            'n1-d2-1-1': 4,
-            'n1-d2-1-2': 12,
+            '1-d2-1-1': 4,
+            '1-d2-1-2': 12,
           },
           progress: 8,
         },
         {
           database: 'd3',
-          design_document: ':staged:ddoc2',
+          ddoc: 'ddoc2',
           tasks: {
-            'n1-d3-2-1': 2,
-            'n1-d3-2-2': 8,
+            '1-d3-2-1': 2,
+            '1-d3-2-2': 8,
           },
           progress: 5,
         },
@@ -82,16 +88,17 @@ describe('indexer progress', () => {
     });
 
     it('should ignore view warming tasks for ddocs that are not :staged:', async () => {
+      const node = 'nonode@nohost';
       sinon.stub(db, 'activeTasks').resolves([
-        { database: 'd1', node: 'n1', design_document: ':staged:ddoc1', progress: 12, pid: 'd1-1-1', type: 'indexer' },
-        { database: 'd1', node: 'n1', design_document: ':staged:ddoc1', progress: 98, pid: 'd1-1-2', type: 'indexer' },
+        { database: 'd1', node, design_document: ddocName('ddoc1'), progress: 12, pid: 'd1-1-1', type: 'indexer' },
+        { database: 'd1', node, design_document: ddocName('ddoc1'), progress: 98, pid: 'd1-1-2', type: 'indexer' },
 
-        { database: 'd1', node: 'n1', design_document: 'ddoc2', progress: 9, pid: 'd1-2-1', type: 'indexer' },
-        { database: 'd1', node: 'n1', design_document: 'ddoc2', progress: 21, pid: 'd1-2-2', type: 'indexer' },
-        { database: 'd1', node: 'n1', design_document: 'ddoc2', progress: 12, pid: 'd1-2-3', type: 'indexer' },
+        { database: 'd1', node, design_document: '_design/ddoc2', progress: 9, pid: 'd1-2-1', type: 'indexer' },
+        { database: 'd1', node, design_document: '_design/ddoc2', progress: 21, pid: 'd1-2-2', type: 'indexer' },
+        { database: 'd1', node, design_document: '_design/ddoc2', progress: 12, pid: 'd1-2-3', type: 'indexer' },
 
-        { database: 'd3', node: 'n1', design_document: ':staged:ddoc2', progress: 3, pid: 'd3-2-1', type: 'indexer' },
-        { database: 'd3', node: 'n1', design_document: ':staged:ddoc2', progress: 54, pid: 'd3-2-2', type: 'indexer' },
+        { database: 'd3', node, design_document: ddocName('ddoc2'), progress: 3, pid: 'd3-2-1', type: 'indexer' },
+        { database: 'd3', node, design_document: ddocName('ddoc2'), progress: 54, pid: 'd3-2-2', type: 'indexer' },
       ]);
 
       const indexers = await viewIndexerProgress.query([]);
@@ -99,19 +106,19 @@ describe('indexer progress', () => {
       expect(indexers).to.deep.equal([
         {
           database: 'd1',
-          design_document: ':staged:ddoc1',
+          ddoc: 'ddoc1',
           tasks: {
-            'n1-d1-1-1': 12,
-            'n1-d1-1-2': 98,
+            'nonode@nohost-d1-1-1': 12,
+            'nonode@nohost-d1-1-2': 98,
           },
           progress: 55,
         },
         {
           database: 'd3',
-          design_document: ':staged:ddoc2',
+          ddoc: 'ddoc2',
           tasks: {
-            'n1-d3-2-1': 3,
-            'n1-d3-2-2': 54,
+            'nonode@nohost-d3-2-1': 3,
+            'nonode@nohost-d3-2-2': 54,
           },
           progress: 29,
         },
@@ -122,7 +129,7 @@ describe('indexer progress', () => {
       const indexers = [
         {
           database: 'd1',
-          design_document: ':staged:ddoc1',
+          ddoc: 'ddoc1',
           tasks: {
             'n1-d1-1-1': 12,
             'n1-d1-1-2': 16,
@@ -131,7 +138,7 @@ describe('indexer progress', () => {
         },
         {
           database: 'd1',
-          design_document: ':staged:ddoc2',
+          ddoc: 'ddoc2',
           tasks: {
             'n1-d1-2-1': 39,
             'n1-d1-2-2': 43,
@@ -140,7 +147,7 @@ describe('indexer progress', () => {
         },
         {
           database: 'd2',
-          design_document: ':staged:ddoc1',
+          ddoc: 'ddoc1',
           tasks: {
             'n1-d2-1-1': 75,
             'n1-d2-1-2': 88,
@@ -149,7 +156,7 @@ describe('indexer progress', () => {
         },
         {
           database: 'd3',
-          design_document: ':staged:ddoc2',
+          ddoc: 'ddoc2',
           tasks: {
             'n1-d3-2-1': 25,
             'n1-d3-2-2': 36,
@@ -159,14 +166,54 @@ describe('indexer progress', () => {
       ];
 
       sinon.stub(db, 'activeTasks').resolves([
-        { database: 'd1', node: 'n1', design_document: ':staged:ddoc1', progress: 14, pid: 'd1-1-1', type: 'indexer' },
-        { database: 'd1', node: 'n1', design_document: ':staged:ddoc1', progress: 21, pid: 'd1-1-2', type: 'indexer' },
-
-        { database: 'd1', node: 'n1', design_document: ':staged:ddoc2', progress: 59, pid: 'd1-2-1', type: 'indexer' },
-        { database: 'd1', node: 'n1', design_document: ':staged:ddoc2', progress: 78, pid: 'd1-2-2', type: 'indexer' },
-
-        { database: 'd3', node: 'n1', design_document: ':staged:ddoc2', progress: 28, pid: 'd3-2-1', type: 'indexer' },
-        { database: 'd3', node: 'n1', design_document: ':staged:ddoc2', progress: 54, pid: 'd3-2-2', type: 'indexer' },
+        {
+          database: dbName('d1'),
+          node: 'n1',
+          design_document: ddocName('ddoc1'),
+          progress: 14,
+          pid: 'd1-1-1',
+          type: 'indexer'
+        },
+        {
+          database: dbName('d1'),
+          node: 'n1',
+          design_document: ddocName('ddoc1'),
+          progress: 21,
+          pid: 'd1-1-2',
+          type: 'indexer'
+        },
+        {
+          database: dbName('d1'),
+          node: 'n1',
+          design_document: ddocName('ddoc2'),
+          progress: 59,
+          pid: 'd1-2-1',
+          type: 'indexer'
+        },
+        {
+          database: dbName('d1'),
+          node: 'n1',
+          design_document: ddocName('ddoc2'),
+          progress: 78,
+          pid: 'd1-2-2',
+          type: 'indexer'
+        },
+        {
+          database: dbName('d3'),
+          node: 'n1',
+          design_document: ddocName('ddoc2'),
+          progress: 28,
+          pid: 'd3-2-1',
+          type: 'indexer'
+        },
+        {
+          database: dbName('d3'),
+          node: 'n1',
+          design_document: ddocName('ddoc2'),
+          progress: 54,
+          pid: 'd3-2-2',
+          type: 'indexer'
+        },
       ]);
 
       const updatedIndexers = await viewIndexerProgress.query(indexers);
@@ -174,7 +221,7 @@ describe('indexer progress', () => {
       expect(updatedIndexers).to.deep.equal([
         {
           database: 'd1',
-          design_document: ':staged:ddoc1',
+          ddoc: 'ddoc1',
           tasks: {
             'n1-d1-1-1': 14,
             'n1-d1-1-2': 21,
@@ -183,7 +230,7 @@ describe('indexer progress', () => {
         },
         {
           database: 'd1',
-          design_document: ':staged:ddoc2',
+          ddoc: 'ddoc2',
           tasks: {
             'n1-d1-2-1': 59,
             'n1-d1-2-2': 78,
@@ -192,7 +239,7 @@ describe('indexer progress', () => {
         },
         {
           database: 'd2',
-          design_document: ':staged:ddoc1',
+          ddoc: 'ddoc1',
           tasks: {
             'n1-d2-1-1': 100,
             'n1-d2-1-2': 100,
@@ -201,12 +248,59 @@ describe('indexer progress', () => {
         },
         {
           database: 'd3',
-          design_document: ':staged:ddoc2',
+          ddoc: 'ddoc2',
           tasks: {
             'n1-d3-2-1': 28,
             'n1-d3-2-2': 54,
           },
           progress: 41,
+        },
+      ]);
+    });
+
+    it('should work when indexing on multiple nodes', async () => {
+      const node1 = 'node1@127.0.0.1';
+      const node2 = 'node2@127.0.0.1';
+      sinon.stub(db, 'activeTasks').resolves([
+        { database: 'd1', node: node1, design_document: ddocName('1'), progress: 12, pid: 'd1-1-1', type: 'indexer' },
+        { database: 'd1', node: node1, design_document: ddocName('1'), progress: 98, pid: 'd1-1-2', type: 'indexer' },
+
+        { database: 'd1', node: node2, design_document: ddocName('1'), progress: 7, pid: 'd1-1-1', type: 'indexer' },
+        { database: 'd1', node: node2, design_document: ddocName('1'), progress: 22, pid: 'd1-1-2', type: 'indexer' },
+
+        { database: 'd2', node: node1, design_document: ddocName('1'), progress: 9, pid: 'd2-1-1', type: 'indexer' },
+        { database: 'd2', node: node1, design_document: ddocName('1'), progress: 21, pid: 'd2-1-2', type: 'indexer' },
+        { database: 'd2', node: node1, design_document: ddocName('1'), progress: 12, pid: 'd2-1-3', type: 'indexer' },
+
+        { database: 'd2', node: node2, design_document: ddocName('1'), progress: 3, pid: 'd2-1-1', type: 'indexer' },
+        { database: 'd2', node: node2, design_document: ddocName('1'), progress: 54, pid: 'd2-1-2', type: 'indexer' },
+      ]);
+
+      const indexers = await viewIndexerProgress.query([]);
+
+      expect(indexers).to.deep.equal([
+        {
+          database: 'd1',
+          ddoc: '1',
+          tasks: {
+            [`${node1}-d1-1-1`]: 12,
+            [`${node1}-d1-1-2`]: 98,
+            [`${node2}-d1-1-1`]: 7,
+            [`${node2}-d1-1-2`]: 22,
+          },
+          progress: 35,
+        },
+        {
+          database: 'd2',
+          ddoc: '1',
+          tasks: {
+            [`${node1}-d2-1-1`]: 9,
+            [`${node1}-d2-1-2`]: 21,
+            [`${node1}-d2-1-3`]: 12,
+            [`${node2}-d2-1-1`]: 3,
+            [`${node2}-d2-1-2`]: 54,
+          },
+          progress: 20,
         },
       ]);
     });
