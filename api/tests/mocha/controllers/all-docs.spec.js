@@ -62,7 +62,7 @@ describe('All Docs controller', () => {
         });
     });
 
-    it ('filters for offline requests', () => {
+    it('filters for offline requests', () => {
       service.filterOfflineRequest.resolves(['a', 'b']);
       return controller
         .request(testReq, testRes)
