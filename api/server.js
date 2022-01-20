@@ -1,5 +1,3 @@
-const environment = require('./src/environment');
-const serverChecks = require('@medic/server-checks');
 const logger = require('./src/logger');
 
 process
@@ -14,6 +12,8 @@ process
   });
 
 (async () => {
+  const environment = require('./src/environment');
+  const serverChecks = require('@medic/server-checks');
   const installer = require('./src/services/setup/install');
   const app = require('./src/routing');
   const configWatcher = require('./src/services/config-watcher');

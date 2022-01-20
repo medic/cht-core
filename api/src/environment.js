@@ -1,6 +1,7 @@
 const path = require('path');
 const url = require('url');
 const logger = require('./logger');
+const createUser = require('@medic/create-service-user');
 
 const { UNIT_TEST_ENV, COUCH_URL, BUILDS_URL } = process.env;
 const DEFAULT_BUILDS_URL = 'https://staging.dev.medicmobile.org/_couch/builds';
@@ -19,11 +20,12 @@ if (UNIT_TEST_ENV) {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL.replace(/\/$/, '');
   const parsedUrl = url.parse(couchUrl);
+  const serverUrl = couchUrl.slice(0, couchUrl.lastIndexOf('/'));
 
   module.exports = {
     couchUrl: couchUrl,
     buildsUrl: BUILDS_URL || DEFAULT_BUILDS_URL,
-    serverUrl: couchUrl.slice(0, couchUrl.lastIndexOf('/')),
+    serverUrl: serverUrl,
     protocol: parsedUrl.protocol,
     port: parsedUrl.port,
     host: parsedUrl.hostname,
@@ -59,3 +61,11 @@ module.exports.ddocsPath = path.join(module.exports.buildPath, 'ddocs');
 module.exports.upgradePath = path.join(module.exports.buildPath, 'upgrade');
 module.exports.resourcesPath = path.join(__dirname, '..', 'resources');
 module.exports.isTesting = module.exports.db === 'medic-test';
+
+const createSecretStorageFolder = () => {
+
+};
+
+const createUser = async () => {
+  const userData = await createUser.createUser('medic-api', serverUrl, )
+}
