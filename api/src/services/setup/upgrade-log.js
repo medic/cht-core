@@ -58,7 +58,6 @@ const getUpgradeLog = async () => {
   } catch (err) {
     if (err.code === 'ENOENT') {
       // file missing
-      // todo reconcile horti upgrades ?
       return;
     }
 
@@ -94,7 +93,7 @@ const pushState = (upgradeLog, state, date = new Date().getTime()) => {
  * @param {string} username
  * @return {Promise<UpgradeLog>}
  */
-const createUpgradeLog = async (toVersion='', fromVersion = '', username = '') => {
+const createUpgradeLog = async (action, toVersion = '', fromVersion = '', username = '') => {
   logger.info(`Staging ${toVersion}`);
   const startDate = new Date().getTime();
 
@@ -104,6 +103,7 @@ const createUpgradeLog = async (toVersion='', fromVersion = '', username = '') =
   const upgradeLog = {
     _id: getUpgradeLogId(toVersion, startDate),
     user: username,
+    action,
     from_version: fromVersion,
     to_version: toVersion,
     start_date: startDate,
@@ -164,6 +164,7 @@ const setErrored = () => update(UPGRADE_LOG_STATES.ERRORED);
 
 module.exports = {
   create: createUpgradeLog,
+  getUpgradeLog,
   getDeployInfo,
   setStaged,
   setIndexing,
