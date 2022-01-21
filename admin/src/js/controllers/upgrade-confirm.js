@@ -7,11 +7,20 @@ angular.module('controllers').controller('UpgradeConfirmCtrl',
     'use strict';
     'ngInject';
 
-    $scope.cancel = function() {
+    $scope.status = { };
+
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
 
-    $scope.submit = function() {
+    $scope.submit = () => {
+      if ($scope.model.confirmCallback) {
+        $scope.status.processing = true;
+        return $scope.model
+          .confirmCallback()
+          .then(() => $uibModalInstance.close(true));
+      }
+
       $uibModalInstance.close(true);
     };
   }
