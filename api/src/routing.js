@@ -372,9 +372,11 @@ app.get('/api/auth/:path', function(req, res) {
     });
 });
 
+app.get('/api/v1/upgrade', upgrade.upgradeInProgress);
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
 app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);
+app.delete('/api/v1/upgrade', jsonParser, upgrade.abort);
 app.all('/api/v1/upgrade/service-worker', upgrade.serviceWorker);
 
 app.post('/api/v1/sms/africastalking/incoming-messages', formParser, africasTalking.incomingMessages);
