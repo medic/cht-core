@@ -582,6 +582,60 @@ describe('validations', () => {
     });
   });
 
+  it('fail isBefore validation when test date is not a valid date', () => {
+    const validations = [
+      {
+        property: 'lmp_date',
+        rule: 'isBefore("4 weeks")',
+        message: [
+          {
+            content: 'Invalid date.',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'same',
+      lmp_date: 'x'
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.deepEqual(errors, [
+        {
+          code: 'invalid_lmp_date_isBefore',
+          message: 'Invalid date.',
+        },
+      ]);
+    });
+  });
+
+  it('fail isBefore validation when duration is not a number', () => {
+    const validations = [
+      {
+        property: 'lmp_date',
+        rule: 'isBefore("x")',
+        message: [
+          {
+            content: 'Invalid date.',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'same',
+      lmp_date: moment().subtract({weeks: 3, days: 6}).valueOf()
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.deepEqual(errors, [
+        {
+          code: 'invalid_lmp_date_isBefore',
+          message: 'Invalid date.',
+        },
+      ]);
+    });
+  });
+
   it('pass isAfter validation on doc when test date is 1 day after control date', () => {
     const validations = [
       {

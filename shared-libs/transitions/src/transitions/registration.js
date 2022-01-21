@@ -143,9 +143,9 @@ const getWeeksSinceLMP = doc => {
 * Given a doc, try to get the exact LMP date
 */
 const getLMPDate = doc => {
-  const props = ['lmpDate', 'date_lmp'];//lmpDate comes from smsParser
+  const props = ['lmp_date', 'date_lmp'];
   for (const prop of props) {
-    const lmp = doc.fields && doc.fields[prop];
+    const lmp = doc.fields && doc.fields[prop] && parseInt(doc.fields[prop]);
     if (!isNaN(lmp)) {//milliseconds since epoch
       return lmp;
     }
@@ -156,8 +156,7 @@ const setExpectedBirthDate = doc => {
   const lmpDate = getLMPDate(doc);
   if (lmpDate) {
     start = moment(lmpDate);
-  }
-  else {
+  } else {
     const lmp = getWeeksSinceLMP(doc);
     if (lmp === 0) {
       // means baby was already born, chw just wants a registration.

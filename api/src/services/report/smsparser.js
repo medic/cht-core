@@ -119,6 +119,11 @@ const parseNum = raw => {
   return Number(std);
 };
 
+const bsToEpoch = (bsYear, bsMonth, bsDay) => {
+  const gregDate = bs.toGreg_text(bsYear, bsMonth, bsDay);
+  return moment(gregDate).valueOf();
+};
+
 const lower = str => (str && str.toLowerCase ? str.toLowerCase() : str);
 
 exports.parseField = (field, raw) => {
@@ -170,8 +175,7 @@ exports.parseField = (field, raw) => {
     try {
       const separator = raw[raw.search(/[^0-9]/)];//non-numeric character
       const dateParts = raw.split(separator);
-      const gregDate = bs.toGreg_text(dateParts[0], dateParts[1], dateParts[2]);
-      return moment(gregDate).valueOf();
+      return bsToEpoch(dateParts[0], dateParts[1], dateParts[2]);
     }
     catch (exception) {
       logger.error('The provided date could not be converted. ' + exception.message);
@@ -211,6 +215,9 @@ exports.parse = (def, doc) => {
   let msgData;
   const formData = {};
   let addOmittedFields = false;
+  const hasBSDateField = def && def.fields && Object
+    .keys(def.fields)
+    .some(key => def.fields[key] && def.fields[key].type === 'bsYear');
 
   if (!def || !doc || !doc.message || !def.fields) {
     return {};
@@ -254,7 +261,7 @@ exports.parse = (def, doc) => {
     }
   }
 
-  if(Object.keys(def.fields).some(key => def.fields[key].type === 'bsYear')) {
+  if(hasBSDateField) {
     let bsYear;
     let bsMonth;
     let bsDay;
@@ -272,14 +279,14 @@ exports.parse = (def, doc) => {
       }
     }
 
-    if (bsYear && bsMonth && bsDay) {
-      try {
-        formData.lmpDate = moment(bs.toGreg_text(bsYear, bsMonth, bsDay)).valueOf();
-      }
-      catch (exception) {
-        logger.error('The provided date could not be converted. ' + exception.message);
-        formData.lmpDate = null;//should be caught by validation in registration
-      }
+    bsMonth = bsMonth || 1;
+    bsDay = bsDay || 1;
+    try {
+      formData.lmp_date = bsToEpoch(bsYear, bsMonth, bsDay);
+    }
+    catch (exception) {
+      logger.error('The provided date could not be converted. ' + exception.message);
+      formData.lmp_date = null;//should be caught by validation in registration
     }
   }
 

@@ -595,14 +595,21 @@ describe('sms parser', () => {
     chai.expect(data).to.deep.equal({patient_id: '12345', lmp_date: 1331510400000});
   });
 
+  it('invalid bsDate field yyyt 2: textforms', () => {
+    const doc = { message: '12345 2068-11-32' };
+    const def = definitions.forms.YYYT;
+    const data = smsparser.parse(def, doc);
+    chai.expect(data).to.deep.equal({patient_id: '12345', lmp_date: null});
+  });
+
   it('parse BS date parts yyys 2: textforms', () => {
     const doc = { message: '#ID 12345 #Y 2068 #M 11 #D 29' };
     const def = definitions.forms.YYYS;
     const data = smsparser.parse(def, doc);
     chai.expect(data).to.deep.equal({
       patient_id: 12345,
-      lmpYear: 2068, lmpMonth: 11, lmpDay: 29,
-      lmpDate: 1331510400000
+      lmp_year: 2068, lmp_month: 11, lmp_day: 29,
+      lmp_date: 1331510400000
     });
   });
 
@@ -612,8 +619,31 @@ describe('sms parser', () => {
     const data = smsparser.parse(def, doc);
     chai.expect(data).to.deep.equal({
       patient_id: '12345',
-      lmpYear: '2068', lmpMonth: '11', lmpDay: '29',
-      lmpDate: 1331510400000
+      lmp_year: '2068', lmp_month: '11', lmp_day: '29',
+      lmp_date: 1331510400000
+    });
+  });
+  
+
+  it('BS date parts with invalid bsYear yyys: compact textforms', () => {
+    const doc = { message: 'YYYS 12345 123 11 29' };
+    const def = definitions.forms.YYYS;
+    const data = smsparser.parse(def, doc);
+    chai.expect(data).to.deep.equal({
+      patient_id: '12345',
+      lmp_year: '123', lmp_month: '11', lmp_day: '29',
+      lmp_date: null
+    });
+  });
+
+  it('BS date parts without bsMonth & bsDay yyyr: compact textforms', () => {
+    const doc = { message: 'YYYR 12345 2068' };
+    const def = definitions.forms.YYYR;
+    const data = smsparser.parse(def, doc);
+    chai.expect(data).to.deep.equal({
+      patient_id: '12345',
+      lmp_year: '2068',
+      lmp_date: 1302739200000//2068-01-01 BS
     });
   });
 

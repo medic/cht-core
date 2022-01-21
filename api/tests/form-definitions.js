@@ -726,7 +726,7 @@ exports.forms = {
         type: 'string',
         required: true
       },
-      lmpYear: {
+      lmp_year: {
         labels: {
           short: 'Year',
           tiny: 'Y'
@@ -734,7 +734,7 @@ exports.forms = {
         type: 'bsYear',
         required: true
       },
-      lmpMonth: {
+      lmp_month: {
         labels: {
           short: 'Month',
           tiny: 'M'
@@ -742,12 +742,36 @@ exports.forms = {
         type: 'bsMonth',
         required: true
       },
-      lmpDay: {
+      lmp_day: {
         labels: {
           short: 'Day',
           tiny: 'D'
         },
         type: 'bsDay',
+        required: true
+      }
+    }
+  },
+  YYYR: {
+    meta: {
+      code: 'YYYR',
+      label: 'Test date parts in BS calendar without bsMonth, bsDay'
+    },
+    fields: {
+      patient_id: {
+        labels: {
+          long: 'Patient ID',
+          tiny: 'ID'
+        },
+        type: 'string',
+        required: true
+      },
+      lmp_year: {
+        labels: {
+          short: 'Year',
+          tiny: 'Y'
+        },
+        type: 'bsYear',
         required: true
       }
     }
