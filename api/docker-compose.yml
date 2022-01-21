@@ -1,0 +1,32 @@
+version: '3.7'
+services:
+  couch:
+    image: couchdb:2.3.1
+    environment:
+      COUCHDB_USER: cht
+      COUCHDB_PASSWORD: cht-password
+      NODENAME: couch
+    networks:
+      - cht-net
+
+  cht-api:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    container_name: cht-api
+    networks:
+      - cht-net
+    environment:
+      COUCH_NODE_NAME: couch
+      COUCHDB_USER: cht
+      COUCHDB_PASSWORD: cht-password
+      COUCHDB_SERVICE_NAME: couch
+      COUCHDB_PORT: 5984
+    depends_on:
+      - couch
+
+
+
+networks:
+  cht-net:
+    name: cht-net
