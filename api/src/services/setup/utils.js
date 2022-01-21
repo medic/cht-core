@@ -143,16 +143,19 @@ const deleteStagedDdocs = async () => {
 
 /**
  * Runs compaction and view cleanup for every database.
- * @return {Promise}
  */
-const cleanup = async () => {
-  const deferredJobs = [];
+const cleanup = () => {
   for (const database of DATABASES) {
     logger.info(`Running DB compact and view cleanup for ${database.name}`);
-    deferredJobs.push(database.db.compact(), database.db.viewCleanup());
+    Promise
+      .all([
+        database.db.compact(),
+        database.db.viewCleanup(),
+      ])
+      .catch(err => {
+        logger.error('Error while running cleanup: %o', err);
+      });
   }
-
-  return Promise.all(deferredJobs);
 };
 
 /**
@@ -263,7 +266,7 @@ const abortPreviousUpgrade = async () => {
  * @return {Promise}
  */
 const createUpgradeFolder = async () => {
-  await deleteUpgradeFolder();
+  await deleteUpgradeFolder(true);
   try {
     await fs.promises.mkdir(environment.upgradePath);
   } catch (err) {
@@ -272,11 +275,10 @@ const createUpgradeFolder = async () => {
   }
 };
 
-const deleteUpgradeFolder = async () => {
+const deleteUpgradeFolder = async (abort) => {
   try {
     await fs.promises.access(environment.upgradePath);
-
-    await abortPreviousUpgrade();
+    abort && await abortPreviousUpgrade();
 
     // todo change the contents of this function once we don't support node > 12
     // fs.promises.rmdir(environment.upgradePath, { recursive: true });
@@ -476,4 +478,5 @@ module.exports = {
   indexViews,
   unstageStagedDdocs,
   getBundledDdocs,
+  deleteUpgradeFolder,
 };

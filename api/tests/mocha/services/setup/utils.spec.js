@@ -284,14 +284,14 @@ describe('Setup utils', () => {
   });
 
   describe('cleanup', () => {
-    it('should start db compact and view cleanup for every database', async () => {
+    it('should start db compact and view cleanup for every database', () => {
       mockDb(db.medic);
       mockDb(db.sentinel);
       mockDb(db.medicLogs);
       mockDb(db.medicUsersMeta);
       sinon.stub(fs.promises, 'access').resolves();
 
-      await utils.cleanup();
+      utils.cleanup();
 
       expect(db.medic.compact.callCount).to.equal(1);
       expect(db.sentinel.compact.callCount).to.equal(1);
@@ -304,20 +304,16 @@ describe('Setup utils', () => {
       expect(db.medicUsersMeta.viewCleanup.callCount).to.equal(1);
     });
 
-    it('should throw an error when any cleanup task fails', async () => {
+    it('should catch errors', async () => {
       mockDb(db.medic);
       mockDb(db.sentinel);
       mockDb(db.medicLogs);
       mockDb(db.medicUsersMeta);
 
       db.sentinel.compact.rejects({ some: 'error' });
+      utils.cleanup();
 
-      try {
-        await utils.cleanup();
-        expect.fail('should have thrown');
-      } catch (err) {
-        expect(err).to.deep.equal({ some: 'error' });
-      }
+      await Promise.resolve();
     });
   });
 
@@ -513,7 +509,7 @@ describe('Setup utils', () => {
       sinon.stub(env, 'upgradePath').value('upgradePath');
       sinon.stub(upgradeLogService, 'setAborted').rejects();
 
-      await utils.createUpgradeFolder();
+      await utils.createUpgradeFolder(true);
 
       expect(fs.promises.access.callCount).to.equal(1);
       expect(fs.promises.access.args[0]).to.deep.equal(['upgradePath']);
