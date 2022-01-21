@@ -429,7 +429,7 @@ describe('pregnancy registration with exact LMP date', () => {
         join_responses: true,
         list: [          
           {
-            property: 'lmpDate',
+            property: 'lmp_date',
             rule: 'isAfter("-40 weeks")',
             message: [{
               content: 'Date should be later than 40 weeks ago.',
@@ -437,7 +437,7 @@ describe('pregnancy registration with exact LMP date', () => {
             }]
           },          
           {
-            property: 'lmpDate',
+            property: 'lmp_date',
             rule: 'isBefore("8 weeks")',
             message: [{
               content: 'Date should be older than 8 weeks ago.',
@@ -482,44 +482,11 @@ describe('pregnancy registration with exact LMP date', () => {
     }]);
   });
 
-  it('filter fails with empty doc', () => {
-    assert(!transition.filter({}));
-  });
-
-  it('filter fails with no clinic phone and private form', () => {
-    const doc = { form: 'l', type: 'data_record' };
-    sinon.stub(utils, 'getForm').returns({ public_form: false });
-    assert(!transition.filter(doc));
-  });
-
-  it('filter does not fail if doc has errors', () => {
-    const doc = { form: 'l', type: 'data_record', errors: ['some error '], contact: { phone: '+123' } };
-    sinon.stub(utils, 'getForm').returns({ public_form: true });
-    assert(transition.filter(doc));
-  });
-
-  it('filter fails if form is unknown', () => {
-    const doc = { form: 'x', type: 'data_record', contact: { phone: '+123' } };
-    assert(!transition.filter(doc));
-  });
-
-  it('filter succeeds with no clinic phone if public form', () => {
-    const doc = { form: 'l', type: 'data_record' };
-    sinon.stub(utils, 'getForm').returns({ public_form: true });
-    assert(transition.filter(doc));
-  });
-
-  it('filter succeeds with populated doc', () => {
-    const doc = { form: 'l', type: 'data_record', contact: { phone: '+123' } };
-    sinon.stub(utils, 'getForm').returns({});
-    assert(transition.filter(doc));
-  });
-
-  it('setExpectedBirthDate sets lmp_date and expected_date correctly for 2000-01-01', () => {
+  it('setExpectedBirthDate sets lmp_date and expected_date correctly for 8 weeks ago', () => {
     const doc = {
       fields:
       {
-        lmpDate: eightWeeksAgo.valueOf(),
+        lmp_date: eightWeeksAgo.valueOf(),
         type: 'data_record'
       }
     };
@@ -538,7 +505,7 @@ describe('pregnancy registration with exact LMP date', () => {
       form: 'l',
       type: 'data_record',
       fields: {
-        lmpDate: eightWeeksAgo.valueOf(),
+        lmp_date: eightWeeksAgo.valueOf(),
         patient_name: 'abc'
       }
     };
@@ -551,112 +518,6 @@ describe('pregnancy registration with exact LMP date', () => {
     });
   });
 
-  it('pregnancies on existing patients fail without valid patient id', () => {
-    sinon.stub(utils, 'getRegistrations').resolves([]);
-    sinon.stub(utils, 'getContactUuid').resolves();
-
-    const doc = {
-      form: 'ep',
-      type: 'data_record',
-      fields: {
-        patient_id: '12345',
-        lmpDate: eightWeeksAgo.valueOf(),
-      }
-    };
-
-    return transition.onMatch({ doc: doc }).then(function (changed) {
-      assert.equal(changed, true);
-      assert.equal(doc.errors.length, 1);
-      assert.equal(doc.errors[0].message, 'messages.generic.registration_not_found');
-    });
-  });
-
-  it('pregnancies on existing patients succeeds with a valid patient id', () => {
-    sinon.stub(utils, 'getRegistrations').resolves([]);
-
-    const doc = {
-      form: 'ep',
-      type: 'data_record',
-      fields: {
-        patient_id: '12345',
-        lmpDate: eightWeeksAgo.valueOf(),
-      },
-      patient: {
-        _id: 'uuid',
-        patient_id: '12345',
-        type: 'person'
-      }
-    };
-
-    return transition.onMatch({ doc: doc }).then(function (changed) {
-      assert.equal(changed, true);
-      assert(!doc.errors);
-    });
-  });
-
-  it('id only logic with valid name', () => {
-    sinon.stub(utils, 'getContactUuid').resolves('uuid');
-
-    sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
-
-    const doc = {
-      form: 'l',
-      type: 'data_record',
-      fields: {
-        patient_name: 'abc',
-        lmpDate: eightWeeksAgo.valueOf(),
-      },
-      getid: 'x'
-    };
-
-    return transition.onMatch({ doc: doc }).then(function (changed) {
-      assert.equal(changed, true);
-      assert.equal(doc.lmp_date, undefined);
-      assert(doc.patient_id);
-    });
-  });
-
-  it('id only logic with invalid name', () => {
-    sinon.stub(utils, 'getRegistrations').resolves([]);
-    sinon.stub(utils, 'getContactUuid').resolves('uuid');
-
-    const doc = {
-      form: 'l',
-      from: '+12345',
-      type: 'data_record',
-      fields: {
-        patient_name: '',
-        lmpDate: eightWeeksAgo.valueOf()
-      },
-      getid: 'x'
-    };
-
-    return transition.onMatch({ doc: doc }).then(function (changed) {
-      assert.equal(changed, true);
-      assert.equal(doc.patient_id, undefined);
-      assert(doc.tasks);
-      assert.equal(getMessage(doc), 'Invalid patient name.');
-    });
-  });
-
-  it('invalid name valid LMP date logic', () => {
-    const doc = {
-      form: 'l',
-      from: '+1234',
-      type: 'data_record',
-      fields: {
-        patient_name: '',
-        lmpDate: eightWeeksAgo.valueOf()
-      }
-    };
-
-    return transition.onMatch({ doc: doc }).then(function (changed) {
-      assert.equal(changed, true);
-      assert.equal(doc.patient_id, undefined);
-      assert.equal(getMessage(doc), 'Invalid patient name.');
-    });
-  });
-
   it('valid name invalid LMP date', () => {
     const doc = {
       form: 'l',
@@ -664,7 +525,7 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: 'hi',
-        lmpDate: 'x'
+        lmp_date: 'x'
       }
     };
 
@@ -677,14 +538,14 @@ describe('pregnancy registration with exact LMP date', () => {
     });
   });
 
-  it('invalid name invalid LMP logic', () => {
+  it('invalid name invalid LMP Date logic', () => {
     const doc = {
       form: 'l',
       from: '+123',
       type: 'data_record',
       fields: {
         patient_name: '',
-        lmpDate: null
+        lmp_date: null
       }
     };
 
@@ -697,38 +558,7 @@ describe('pregnancy registration with exact LMP date', () => {
         ' Date should be older than 8 weeks ago.');
     });
   });
-
-  it('mismatched form returns false', done => {
-    const doc = {
-      form: 'x',
-      type: 'data_record'
-    };
-    transition.onMatch({ doc: doc })
-      .then(() => {
-        done(new Error('Error should have been thrown'));
-      })
-      .catch(() => {
-        // expected
-        done();
-      });
-  });
-
-  it('missing all fields returns validation errors', () => {
-    const doc = {
-      form: 'l',
-      from: '+123',
-      type: 'data_record'
-    };
-    return transition.onMatch({ doc: doc }).then(function (changed) {
-      assert.equal(changed, true);
-      assert.equal(
-        getMessage(doc),
-        'Date should be older than 8 weeks ago. ' +
-        ' Invalid patient name.'
-      );
-    });
-  });
-
+  
   it('LMP date less than 8 weeks ago should fail', () => {
     const start = moment().subtract({ weeks: 7, days: 6 }).startOf('day');
     sinon.stub(utils, 'getContactUuid').resolves('uuid');
@@ -739,7 +569,7 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: 'abc',
-        lmpDate: start.valueOf()
+        lmp_date: start.valueOf()
       }
     };
 
@@ -759,7 +589,7 @@ describe('pregnancy registration with exact LMP date', () => {
       form: 'l',
       type: 'data_record',
       fields: {
-        lmpDate: start.valueOf(),
+        lmp_date: start.valueOf(),
         patient_name: 'abc'
       }
     };
