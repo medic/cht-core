@@ -23,6 +23,8 @@ angular.module('controllers').controller('UpgradeCtrl',
     $scope.versions = {};
 
     const UPGRADE_URL = '/api/v1/upgrade';
+    const UPGRADE_POLL_FREQ = 2000;
+    const BUILD_LIST_LIMIT = 50;
 
     const logError = (error, key) => {
       const err = error.responseText || error.statusText;
@@ -45,7 +47,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     const stopFollowingUpgrade = () => followUpgradeInterval && $interval.cancel(followUpgradeInterval);
     const followUpgrade = () => {
       stopFollowingUpgrade();
-      followUpgradeInterval = $interval(getCurrentUpgrade, 5000);
+      followUpgradeInterval = $interval(getCurrentUpgrade, UPGRADE_POLL_FREQ);
     };
 
     const getCurrentUpgrade = () => {
@@ -60,7 +62,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     const getBuilds = (buildsDb, options) => {
       options.descending = true;
-      options.limit = 50;
+      options.limit = BUILD_LIST_LIMIT;
 
       return buildsDb
         .query('builds/releases', options)
@@ -113,8 +115,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         }
 
         if ($scope.upgradeDoc) {
-          // This user is currently upgrading, don't bother loading builds for
-          // them to deploy to
+          // Upgrade in progress, don't bother loading builds
           followUpgrade();
           return;
         }
