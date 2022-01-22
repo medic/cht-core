@@ -256,7 +256,7 @@ export class FormatDataRecordService {
     if (def.type === 'boolean') {
       return val === true ? 'True' : 'False';
     }
-    if (def.type === 'date') {
+    if (def.type === 'date' || def.type === 'bsDate') {
       return this.formatDateField(data_record[key], key);
     }
     if (def.type === 'integer') {
