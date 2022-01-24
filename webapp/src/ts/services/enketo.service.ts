@@ -500,7 +500,7 @@ export class EnketoService {
     };
 
     const getRelativePath = (path) => {
-      const repeatReference = repeatPaths?.find(repeat => (new RegExp(`^${repeat}$|${repeat}/`).test(path)));
+      const repeatReference = repeatPaths?.find(repeat => repeat === path || path.startsWith(`${repeat}/`));
       if (repeatReference === path) {
         const lastNode = path.split('/').slice(-1);
         return lastNode;
