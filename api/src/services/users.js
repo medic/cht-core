@@ -545,6 +545,37 @@ const createUserEntities = async (user, response, appUrl) => {
   await tokenLogin.manageTokenLogin(user, appUrl, response);
 };
 
+const validateUserFields = (users) => {
+  const missingFieldsFailingIndexes = [];
+  const tokenLoginFailingIndexes = [];
+  const passwordFailingIndexes = [];
+  users.forEach((user, index) => {
+    const fields = missingFields(user);
+    const hasMissingFields = fields.length > 0;
+    if (hasMissingFields) {
+      missingFieldsFailingIndexes.push({ fields, index });
+      return;
+    }
+
+    const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
+    if (tokenLoginError) {
+      tokenLoginFailingIndexes.push({ tokenLoginError, index });
+      return;
+    }
+
+    const passwordError = validatePassword(user.password);
+    if (passwordError) {
+      passwordFailingIndexes.push({ passwordError, index });
+    }
+  });
+
+  return {
+    missingFieldsFailingIndexes,
+    tokenLoginFailingIndexes,
+    passwordFailingIndexes,
+  };
+};
+
 /*
  * Everything not exported directly is private.  Underscore prefix is only used
  * to export functions needed for testing.
@@ -612,29 +643,7 @@ module.exports = {
       return module.exports.createUser(users, appUrl);
     }
 
-    const missingFieldsFailingIndexes = [];
-    const tokenLoginFailingIndexes = [];
-    const passwordFailingIndexes = [];
-    users.forEach((user, index) => {
-      const fields = missingFields(user);
-      const hasMissingFields = fields.length > 0;
-      if (hasMissingFields) {
-        missingFieldsFailingIndexes.push({ fields, index });
-        return;
-      }
-
-      const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
-      if (tokenLoginError) {
-        tokenLoginFailingIndexes.push({ tokenLoginError, index });
-        return;
-      }
-
-      const passwordError = validatePassword(user.password);
-      if (passwordError) {
-        passwordFailingIndexes.push({ passwordError, index });
-      }
-    });
-
+    const { missingFieldsFailingIndexes, tokenLoginFailingIndexes, passwordFailingIndexes } = validateUserFields(users);
     if (missingFieldsFailingIndexes.length > 0) {
       let errorMessage = 'Missing required fields:\n';
       for (const { fields, index } of missingFieldsFailingIndexes) {
