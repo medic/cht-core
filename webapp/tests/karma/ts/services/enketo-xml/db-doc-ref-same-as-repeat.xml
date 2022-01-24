@@ -16,7 +16,7 @@
     <type>repeater</type>
     <some_property>some_value_2</some_property>
     <my_parent db-doc-ref="/data"/>
-    <repeat_doc_ref db-doc-ref="/data/repeat_section">
+    <repeat_doc_ref db-doc-ref="./repeat_section">
       value value
     </repeat_doc_ref>
   </repeat_section>
