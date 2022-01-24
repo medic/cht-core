@@ -776,7 +776,7 @@ describe('Users service', () => {
       }
     });
 
-    it('returns error if one of the users has a missing phone number', async () => {
+    it('returns error if one of the users has a missing phone number and should login by SMS', async () => {
       const tokenLoginConfig = { translation_key: 'sms', enabled: true };
       sinon.stub(config, 'get')
         .withArgs('token_login').returns(tokenLoginConfig)
@@ -805,7 +805,7 @@ describe('Users service', () => {
       }
     });
 
-    it('returns error if one of the users has an invalid phone number', async () => {
+    it('returns error if one of the users has an invalid phone number and should login by SMS', async () => {
       const tokenLoginConfig = { translation_key: 'sms', enabled: true };
       sinon.stub(config, 'get')
         .withArgs('token_login').returns(tokenLoginConfig)
@@ -838,7 +838,7 @@ describe('Users service', () => {
       }
     });
 
-    it('should normalize phone number and change password (if provided)', async () => {
+    it('should normalize phone number and change provided password if should login by SMS', async () => {
       const tokenLoginConfig = { message: 'sms', enabled: true };
       sinon.stub(config, 'get')
         .withArgs('token_login').returns(tokenLoginConfig)
@@ -1215,7 +1215,7 @@ describe('Users service', () => {
         type: 'national-manager'
       };
       sinon.stub(db.users, 'get').resolves('bob lives here already.');
-      sinon.stub(db.medic, 'get').resolves();
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
       const insert = sinon.stub(db.medic, 'put');
       const response = await service.createUsers([userData]);
       chai.expect(response[0].error.message).to.equal('Username "x" already taken.');
@@ -1232,7 +1232,7 @@ describe('Users service', () => {
         contact: { 'parent': 'x' },
         type: 'national-manager'
       };
-      sinon.stub(db.users, 'get').resolves();
+      sinon.stub(db.users, 'get').rejects({ status: 404 });
       sinon.stub(db.medic, 'get').resolves('jane lives here too.');
       const insert = sinon.stub(db.medic, 'put');
       const response = await service.createUsers([userData]);
