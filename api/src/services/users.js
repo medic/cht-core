@@ -675,20 +675,11 @@ module.exports = {
     );
     const hasFailures = promises.some(promise => promise.status === 'rejected');
     if (hasFailures) {
-      const failingIndexes = promises
-        .map((promise, index) => {
-          if (promise.status === 'rejected') {
-            return {
-              reason: promise.reason,
-              index,
-            };
-          }
-        })
-        .filter(reason => reason);
-
-      for (const { reason, index } of failingIndexes) {
-        response[index].error = reason.message;
-      }
+      promises.forEach((promise, index) => {
+        if (promise.status === 'rejected') {
+          response[index].error = promise.reason.message;
+        }
+      });
     }
 
     return response;
