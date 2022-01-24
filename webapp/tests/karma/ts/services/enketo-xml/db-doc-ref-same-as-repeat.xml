@@ -31,4 +31,7 @@
       </repeat_doc_ref>
     </child>
   </repeat_section>
+  <repeat_doc_ref db-doc-ref="/data/repeat_section">
+    value value
+  </repeat_doc_ref>
 </data>
