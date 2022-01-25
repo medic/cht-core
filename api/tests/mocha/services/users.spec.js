@@ -1140,29 +1140,41 @@ describe('Users service', () => {
       chai.expect(response).to.deep.equal([{}]);
     });
 
-    it('succeeds and response contains the user, contact and user settings fields', async () => {
-      const userData = {
-        username: 'x',
-        password: COMPLEX_PASSWORD,
-        place: 'foo',
-        contact: 'x',
-        type: 'national-manager'
-      };
-
+    it('succeeds and response contains the user, contact and user settings fields for each inserted user', async () => {
+      const users = [
+        {
+          username: 'user1',
+          place: 'foo',
+          contact: 'user1',
+          type: 'national-manager',
+          password: 'Sup3rSecret!',
+        },
+        {
+          username: 'user2',
+          place: 'foo',
+          contact: 'user2',
+          type: 'national-manager',
+          password: 'Sup3rSecret!',
+        },
+      ];
       const medicGet = sinon.stub(db.medic, 'get');
       const medicPut = sinon.stub(db.medic, 'put');
       const medicQuery = sinon.stub(db.medic, 'query');
       const usersPut = sinon.stub(db.users, 'put');
       service.__set__('validateNewUsername', sinon.stub().resolves());
-      medicGet.onFirstCall().rejects({ status: 404 });
-      usersPut.onFirstCall().callsFake(user => Promise.resolve({ id: user._id, rev: 1 }));
-      medicQuery.onFirstCall().resolves({ rows: [] });
-      medicGet.onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 });
       service.__set__('storeUpdatedPlace', sinon.stub().resolves());
-      medicPut.onFirstCall().callsFake(userSettings => Promise.resolve({ id: userSettings._id, rev: 1 }));
       sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
+      medicGet.withArgs('user1')
+        .onFirstCall().rejects({ status: 404 })
+        .onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 })
+        .withArgs('user2')
+        .onFirstCall().rejects({ status: 404 })
+        .onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 });
+      usersPut.callsFake(user => Promise.resolve({ id: user._id, rev: 1 }));
+      medicQuery.resolves({ rows: [] });
+      medicPut.callsFake(userSettings => Promise.resolve({ id: userSettings._id, rev: 1 }));
 
-      const response = await service.createUsers([userData]);
+      const response = await service.createUsers(users);
       chai.expect(response).to.deep.equal([
         {
           contact: {
@@ -1170,11 +1182,25 @@ describe('Users service', () => {
             rev: 1,
           },
           user: {
-            id: 'org.couchdb.user:x',
+            id: 'org.couchdb.user:user1',
             rev: 1,
           },
           'user-settings': {
-            id: 'org.couchdb.user:x',
+            id: 'org.couchdb.user:user1',
+            rev: 1,
+          },
+        },
+        {
+          contact: {
+            id: 'contact_id',
+            rev: 1,
+          },
+          user: {
+            id: 'org.couchdb.user:user2',
+            rev: 1,
+          },
+          'user-settings': {
+            id: 'org.couchdb.user:user2',
             rev: 1,
           },
         },
