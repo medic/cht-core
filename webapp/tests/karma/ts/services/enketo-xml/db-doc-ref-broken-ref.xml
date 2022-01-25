@@ -15,6 +15,7 @@
     <some_property>some_value_2</some_property>
     <my_parent db-doc-ref="/data"/>
     <repeat_doc_ref db-doc-ref="/data/repeat_sectioning">value2</repeat_doc_ref>
+    <ing>something</ing>
   </repeat_section>
   <repeat_section db-doc="true">
     <extra>data3</extra>

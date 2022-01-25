@@ -501,12 +501,12 @@ export class EnketoService {
 
     const getRelativePath = (path) => {
       const repeatReference = repeatPaths?.find(repeat => repeat === path || path.startsWith(`${repeat}/`));
-      if (repeatReference === path) {
-        const lastNode = path.split('/').slice(-1);
-        return lastNode;
-      }
-
       if (repeatReference) {
+        if (repeatReference === path) {
+          // when the path is the repeat element itself, return the repeat element node name
+          return path.split('/').slice(-1)[0];
+        }
+
         return path.replace(`${repeatReference}/`, '');
       }
 
