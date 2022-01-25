@@ -500,7 +500,12 @@ export class EnketoService {
     };
 
     const getRelativePath = (path) => {
-      const repeatReference = repeatPaths?.find(repeat => repeat === path || path.startsWith(`${repeat}/`));
+      if (!path) {
+        return;
+      }
+      path = path.trim();
+
+      const repeatReference = repeatPaths?.find(repeatPath => path === repeatPath || path.startsWith(`${repeatPath}/`));
       if (repeatReference) {
         if (repeatReference === path) {
           // when the path is the repeat element itself, return the repeat element node name
@@ -516,10 +521,7 @@ export class EnketoService {
     };
 
     const getClosestPath = (element, $element, path) => {
-      if (!path) {
-        return;
-      }
-      const relativePath = getRelativePath(path.trim());
+      const relativePath = getRelativePath(path);
       if (!relativePath) {
         return;
       }
@@ -536,7 +538,6 @@ export class EnketoService {
         return closestPath;
       } catch (err) {
         console.error('Error while evaluating closest path', closestPath, err);
-        return path;
       }
     };
 
@@ -564,7 +565,7 @@ export class EnketoService {
         const reference = $element.attr('db-doc-ref');
         const path = getClosestPath(element, $element, reference);
 
-        const refId = path && getId(path) || getId(reference);
+        const refId = (path && getId(path)) || getId(reference);
         $element.text(refId);
       });
 
