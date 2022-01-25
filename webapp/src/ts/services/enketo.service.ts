@@ -711,6 +711,13 @@ export class EnketoService {
   }
 
   save(formInternalId, form, geoHandle, docId?) {
+    // /inputs is ALWAYS relevant #4875
+    $('section.or-group-data[name$="/inputs"]').each((idx, element) => {
+      if(element.dataset) {
+        element.dataset.relevant = 'true()';
+      }
+    });
+
     return Promise
       .resolve(form.validate())
       .then((valid) => {
