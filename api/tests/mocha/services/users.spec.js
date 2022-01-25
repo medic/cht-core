@@ -788,7 +788,7 @@ describe('Users service', () => {
           {
             username: 'sally',
             roles: ['a', 'b'],
-            phone: '123',
+            phone: '+40 755 69-69-69',
             token_login: true,
           },
           {
