@@ -845,6 +845,60 @@ describe('Users API', () => {
           .then(() => expectPasswordLoginToWork(user));
       });
 
+      it('should create many users where one fails to be created w/o token_login', async () => {
+        const users = [
+          {
+            username: 'offline4',
+            password: password,
+            place: {
+              _id: 'fixture:offline4',
+              type: 'health_center',
+              name: 'Offline4 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline4',
+              name: 'Offline4User'
+            },
+            roles: ['district_admin', 'this', 'user', 'will', 'be', 'offline4']
+          },
+          {
+            username: 'invalid/username',
+            password: password,
+            place: {
+              _id: 'fixture:offline5',
+              type: 'health_center',
+              name: 'Offline5 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline5',
+              name: 'Offline5User'
+            },
+            roles: ['district_admin', 'this', 'user', 'will', 'fail']
+          },
+        ];
+        const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
+        await utils.updateSettings(settings, true);
+        await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
+        const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
+
+        chai.expect(response).to.shallowDeepEqual([
+          {
+            user: { id: getUserId(users[0].username) },
+            'user-settings': { id: getUserId(users[0].username) },
+            contact: { id: users[0].contact._id },
+          },
+          {
+            error: {
+              message:
+                'Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).',
+              translationKey: 'username.invalid'
+            },
+          },
+        ]);
+      });
+
       it('should create and update many users correctly w/o token_login', async () => {
         const users = [
           {
