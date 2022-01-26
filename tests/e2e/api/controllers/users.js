@@ -899,6 +899,72 @@ describe('Users API', () => {
         ]);
       });
 
+      it('should fail to create many users with invalid fields w/o token_login', async () => {
+        const users = [
+          {
+            username: 'offline5',
+            password: 'password',
+            place: {
+              _id: 'fixture:offline5',
+              type: 'health_center',
+              name: 'Offline5 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline5',
+              name: 'Offline5User'
+            },
+            roles: ['district_admin', 'this', 'user', 'will', 'be', 'invalid']
+          },
+          {
+            username: 'offline6',
+            place: {
+              _id: 'fixture:offline6',
+              type: 'health_center',
+              name: 'Offline6 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline6',
+              name: 'Offline6User'
+            },
+            roles: ['district_admin', 'this', 'user', 'will', 'be', 'invalid']
+          },
+          {
+            username: 'offline7',
+            password,
+            place: {
+              _id: 'fixture:offline7',
+              type: 'health_center',
+              name: 'Offline7 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline7',
+              name: 'Offline7User'
+            },
+            roles: ['district_admin', 'this', 'user', 'will', 'not', 'be', 'created']
+          },
+        ];
+        const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
+        await utils.updateSettings(settings, true);
+        await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
+
+        try {
+          await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
+          chai.assert.fail('Should have thrown');
+        } catch (error) {
+          const response = error.responseBody;
+          chai.expect(response.code).to.equal(400);
+          chai.expect(response.error).include('Missing fields password for user at index 1');
+          chai.expect(response.details).to.deep.equal({
+            failingIndexes: [
+              { fields: ['password'], index: 1 },
+            ],
+          });
+        }
+      });
+
       it('should create and update many users correctly w/o token_login', async () => {
         const users = [
           {
