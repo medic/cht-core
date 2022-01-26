@@ -762,7 +762,9 @@ describe('Users service', () => {
         chai.expect(error.details.failingIndexes[0].passwordError.message.translationKey).to.equal(
           'password.length.minimum',
         );
-        chai.expect(error.details.failingIndexes[0].passwordError.message.translationParams).to.have.property('minimum');
+        chai.expect(
+          error.details.failingIndexes[0].passwordError.message.translationParams,
+        ).to.have.property('minimum');
         chai.expect(error.details.failingIndexes[0].index).to.equal(0);
 
         // weak password
@@ -833,7 +835,9 @@ describe('Users service', () => {
         chai.expect(error.details.failingIndexes[0].tokenLoginError.msg).to.equal(
           'A valid phone number is required for SMS login.'
         );
-        chai.expect(error.details.failingIndexes[0].tokenLoginError.key).to.equal('configuration.enable.token.login.phone');
+        chai.expect(
+          error.details.failingIndexes[0].tokenLoginError.key,
+        ).to.equal('configuration.enable.token.login.phone');
         chai.expect(error.details.failingIndexes[0].index).to.equal(1);
       }
     });
