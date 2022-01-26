@@ -403,7 +403,8 @@ describe('pregnancy registration with weeks since LMP', () => {
 });
 
 describe('pregnancy registration with exact LMP date', () => {
-  const eightWeeksAgo = moment().subtract(8, 'weeks').startOf('day');
+  const today = moment('2000-01-01');
+  const eightWeeksAgo = today.clone().subtract(8, 'weeks').startOf('day');
   afterEach(() => sinon.restore());
 
   beforeEach(() => {
@@ -487,6 +488,7 @@ describe('pregnancy registration with exact LMP date', () => {
       fields:
       {
         lmp_date: eightWeeksAgo.valueOf(),
+        reported_date: today.valueOf(),
         type: 'data_record'
       }
     };
@@ -506,7 +508,8 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         lmp_date: eightWeeksAgo.valueOf(),
-        patient_name: 'abc'
+        patient_name: 'abc',
+        reported_date: today.valueOf()
       }
     };
 
@@ -525,13 +528,15 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: 'hi',
-        lmp_date: 'x'
+        lmp_date: 'x',
+        reported_date: today.valueOf()
       }
     };
 
     return transition.onMatch({ doc: doc }).then(function (changed) {
       assert.equal(changed, true);
       assert.equal(doc.patient_id, undefined);
+      assert.equal(doc.lmp_date, null);
       assert.equal(getMessage(doc),
         'Date should be later than 40 weeks ago. ' +
         ' Date should be older than 8 weeks ago.');
@@ -545,13 +550,15 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: '',
-        lmp_date: null
+        lmp_date: null,
+        reported_date: today.valueOf()
       }
     };
 
     return transition.onMatch({ doc: doc }).then(function (changed) {
       assert.equal(changed, true);
       assert.equal(doc.patient_id, undefined);
+      assert.equal(doc.lmp_date, null);
       assert.equal(getMessage(doc),
         'Invalid patient name. ' +
         ' Date should be later than 40 weeks ago. ' +
@@ -560,7 +567,6 @@ describe('pregnancy registration with exact LMP date', () => {
   });
   
   it('LMP date less than 8 weeks ago should fail', () => {
-    const start = moment().subtract({ weeks: 7, days: 6 }).startOf('day');
     sinon.stub(utils, 'getContactUuid').resolves('uuid');
     sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
 
@@ -569,7 +575,8 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: 'abc',
-        lmp_date: start.valueOf()
+        lmp_date: eightWeeksAgo.clone().add({day: 1}).valueOf(),
+        reported_date: today.valueOf()
       }
     };
 
@@ -581,7 +588,6 @@ describe('pregnancy registration with exact LMP date', () => {
   });
 
   it('LMP date more than 40 weeks ago should fail', () => {
-    const start = moment().subtract({ weeks: 40, days: 1 }).startOf('day');
     sinon.stub(utils, 'getContactUuid').resolves('uuid');
     sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
 
@@ -589,8 +595,9 @@ describe('pregnancy registration with exact LMP date', () => {
       form: 'l',
       type: 'data_record',
       fields: {
-        lmp_date: start.valueOf(),
-        patient_name: 'abc'
+        lmp_date: today.clone().subtract({weeks: 40, day: 1}).valueOf(),
+        patient_name: 'abc',
+        reported_date: today.valueOf()
       }
     };
     return transition.onMatch({ doc: doc }).then(function (changed) {

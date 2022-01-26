@@ -120,8 +120,14 @@ const parseNum = raw => {
 };
 
 const bsToEpoch = (bsYear, bsMonth, bsDay) => {
-  const gregDate = bs.toGreg_text(bsYear, bsMonth, bsDay);
-  return moment(gregDate).valueOf();
+  try {
+    const gregDate = bs.toGreg_text(bsYear, bsMonth, bsDay);
+    return moment(gregDate).valueOf();
+  }
+  catch (exception) {
+    logger.error('The provided date could not be converted: %o.', exception);
+    return null;//should be caught by validation in registration
+  }
 };
 
 const lower = str => (str && str.toLowerCase ? str.toLowerCase() : str);
@@ -167,20 +173,14 @@ exports.parseField = (field, raw) => {
     // YYYY-MM-DD assume muvuku format for now
     // store in milliseconds since Epoch
     return moment(raw).valueOf();
-  case 'bsDate':
+  case 'bsDate': {
     if (!raw) {
       return null;
     }
-    // store in milliseconds since Epoch
-    try {
-      const separator = raw[raw.search(/[^0-9]/)];//non-numeric character
-      const dateParts = raw.split(separator);
-      return bsToEpoch(dateParts[0], dateParts[1], dateParts[2]);
-    }
-    catch (exception) {
-      logger.error('The provided date could not be converted. ' + exception.message);
-      return null;//should be caught by validation in registration
-    }
+    const separator = raw[raw.search(/[^0-9]/)];//non-numeric character
+    const dateParts = raw.split(separator);
+    return bsToEpoch(dateParts[0], dateParts[1], dateParts[2]);
+  }
   case 'boolean': {
     if (raw === undefined) {
       return;
@@ -263,8 +263,8 @@ exports.parse = (def, doc) => {
 
   if(hasBSDateField) {
     let bsYear;
-    let bsMonth;
-    let bsDay;
+    let bsMonth = 1;
+    let bsDay = 1;
     for (const k of Object.keys(def.fields)) {
       switch (def.fields[k].type) {
       case 'bsYear':
@@ -278,16 +278,9 @@ exports.parse = (def, doc) => {
         break;
       }
     }
-
-    bsMonth = bsMonth || 1;
-    bsDay = bsDay || 1;
-    try {
-      formData.lmp_date = bsToEpoch(bsYear, bsMonth, bsDay);
-    }
-    catch (exception) {
-      logger.error('The provided date could not be converted. ' + exception.message);
-      formData.lmp_date = null;//should be caught by validation in registration
-    }
+    
+    formData.lmp_date = bsToEpoch(bsYear, bsMonth, bsDay);
+    
   }
 
   // pass along some system generated fields

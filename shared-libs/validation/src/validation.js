@@ -111,6 +111,38 @@ const getRules = (validations) => {
   return rules;
 };
 
+const compareDate = (doc, validation, checkAfter = false) => {
+  const fields = [...validation.funcArgs];
+  try {
+    const duration = _parseDuration(fields.pop());
+    if (!duration.isValid()) {
+      logger.error('date constraint validation: the duration is invalid');
+      return Promise.resolve(false);
+    }
+    const testDate = moment(doc[validation.field]);
+    const controlDate = checkAfter ?
+      moment(doc.reported_date).add(duration) :
+      moment(doc.reported_date).subtract(duration);
+    if (!testDate.isValid() || !controlDate.isValid()) {
+      logger.error('date constraint validation: the date is invalid');
+      return Promise.resolve(false);
+    }
+
+    if (checkAfter && testDate.isSameOrAfter(controlDate, 'days') ||
+     !checkAfter && testDate.isSameOrBefore(controlDate, 'days')) {
+      return Promise.resolve(true);
+    }
+
+    logger.error('date constraint validation failed');
+    return Promise.resolve(false);
+
+  }
+  catch (err) {
+    logger.error('date constraint validation: the date or duration is invalid: %o', err);
+    return Promise.resolve(false);
+  }
+};
+
 module.exports = {
   init: (options) => {
     db = options.db;
@@ -179,60 +211,9 @@ module.exports = {
       return Promise.resolve(false);
     },
 
-    isAfter: (doc, validation) => {
-      const fields = [...validation.funcArgs];
-      try {
-        const duration = _parseDuration(fields.pop());
-        if (!duration.isValid()) {
-          logger.error('isBefore validation: the duration is invalid');
-          return Promise.resolve(false);
-        }
-        const testDate = moment(doc[validation.field]);
-        const controlDate = moment(doc.reported_date).add(duration);
-        if (!testDate.isValid() || !controlDate.isValid()) {
-          logger.error('isBefore validation: date is invalid');
-          return Promise.resolve(false);
-        }
-        if (testDate.isSameOrAfter(controlDate, 'days')) {
-          return Promise.resolve(true);
-        }
+    isAfter: (doc, validation) => compareDate(doc, validation, true),
 
-        logger.error('isAfter validation failed: the date is older than specified');
-        return Promise.resolve(false);
-
-      }
-      catch (err) {
-        logger.error('isAfter validation: the date or duration is invalid: ' + err.message);
-        return Promise.resolve(false);
-      }
-    },
-
-    isBefore: (doc, validation) => {
-      const fields = [...validation.funcArgs];
-      try {
-        const duration = _parseDuration(fields.pop());
-        if (!duration.isValid()) {
-          logger.error('isBefore validation: the duration is invalid');
-          return Promise.resolve(false);
-        }
-        const testDate = moment(doc[validation.field]);
-        const controlDate = moment(doc.reported_date).subtract(duration);
-        if (!testDate.isValid() || !controlDate.isValid()) {
-          logger.error('isBefore validation: date is invalid');
-          return Promise.resolve(false);
-        }
-        if (testDate.isSameOrBefore(controlDate, 'days')) {
-          return Promise.resolve(true);
-        }
-        
-        logger.error('isBefore validation: the date is later than specified');
-        return Promise.resolve(false);
-      }
-      catch (err) {
-        logger.error('isBefore validation failed: the date or duration is invalid: ' + err.message);
-        return Promise.resolve(false);
-      }
-    }
+    isBefore: (doc, validation) => compareDate(doc, validation, false),
   },
   /**
    * Validation settings may consist of Pupil.js rules and custom rules.

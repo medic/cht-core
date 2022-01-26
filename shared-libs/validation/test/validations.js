@@ -532,7 +532,8 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 4, days: 1}).valueOf()
+      lmp_date: moment().subtract({weeks: 4, days: 1}).valueOf(),
+      reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 0);
@@ -548,7 +549,8 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 4}).valueOf()
+      lmp_date: moment().subtract({weeks: 4}).valueOf(),
+      reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 0);
@@ -570,7 +572,8 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 3, days: 6}).valueOf()
+      lmp_date: moment().subtract({weeks: 3, days: 6}).valueOf(),
+      reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
@@ -597,7 +600,8 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: 'x'
+      lmp_date: 'x',
+      reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
@@ -624,7 +628,8 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 3, days: 6}).valueOf()
+      lmp_date: moment().subtract({weeks: 3, days: 6}).valueOf(),
+      reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
@@ -645,7 +650,8 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 39, days: 6}).valueOf()
+      lmp_date: moment().subtract({weeks: 39, days: 6}).valueOf(),
+      reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 0);
@@ -661,7 +667,8 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 40}).valueOf()
+      lmp_date: moment().subtract({weeks: 40}).valueOf(),
+      reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 0);
@@ -683,7 +690,8 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 40, days: 1}).valueOf()
+      lmp_date: moment().subtract({weeks: 40, days: 1}).valueOf(),
+      reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
