@@ -69,7 +69,7 @@ const error400 = (msg, key, params) => {
       message: { message: msg, translationKey: key, translationParams: params },
     });
   } else {
-    Object.assign(error, key);
+    Object.assign(error, { details: key });
   }
 
   return error;

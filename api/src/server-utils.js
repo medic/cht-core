@@ -67,7 +67,7 @@ module.exports = {
     if (code >= 500 && code < 600) {
       return module.exports.serverError(err, req, res);
     }
-    respond(req, res, code, err.message || err.reason);
+    respond(req, res, code, err.message || err.reason, err.details);
   },
 
   /**

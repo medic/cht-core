@@ -708,28 +708,28 @@ describe('Users service', () => {
         chai.assert.fail('Should have thrown');
       } catch (error) {
         // empty
-        chai.expect(error.failingIndexes[0].fields).to.deep.equal(['username', 'password', 'type or roles']);
-        chai.expect(error.failingIndexes[0].index).to.equal(0);
+        chai.expect(error.details.failingIndexes[0].fields).to.deep.equal(['username', 'password', 'type or roles']);
+        chai.expect(error.details.failingIndexes[0].index).to.equal(0);
 
         // missing username
-        chai.expect(error.failingIndexes[1].fields).to.deep.equal(['username', 'type or roles']);
-        chai.expect(error.failingIndexes[1].index).to.equal(1);
+        chai.expect(error.details.failingIndexes[1].fields).to.deep.equal(['username', 'type or roles']);
+        chai.expect(error.details.failingIndexes[1].index).to.equal(1);
 
         // missing password
-        chai.expect(error.failingIndexes[2].fields).to.deep.equal(['password', 'type or roles']);
-        chai.expect(error.failingIndexes[2].index).to.equal(2);
+        chai.expect(error.details.failingIndexes[2].fields).to.deep.equal(['password', 'type or roles']);
+        chai.expect(error.details.failingIndexes[2].index).to.equal(2);
 
         // missing place
-        chai.expect(error.failingIndexes[3].fields).to.deep.equal(['type or roles']);
-        chai.expect(error.failingIndexes[3].index).to.equal(3);
+        chai.expect(error.details.failingIndexes[3].fields).to.deep.equal(['type or roles']);
+        chai.expect(error.details.failingIndexes[3].index).to.equal(3);
 
         // missing contact
-        chai.expect(error.failingIndexes[4].fields).to.deep.equal(['password', 'type or roles']);
-        chai.expect(error.failingIndexes[4].index).to.equal(4);
+        chai.expect(error.details.failingIndexes[4].fields).to.deep.equal(['password', 'type or roles']);
+        chai.expect(error.details.failingIndexes[4].index).to.equal(4);
 
         // missing contact.parent
-        chai.expect(error.failingIndexes[5].fields).to.deep.equal(['password', 'type or roles']);
-        chai.expect(error.failingIndexes[5].index).to.equal(5);
+        chai.expect(error.details.failingIndexes[5].fields).to.deep.equal(['password', 'type or roles']);
+        chai.expect(error.details.failingIndexes[5].index).to.equal(5);
 
         chai.expect(error.code).to.equal(400);
       }
@@ -756,21 +756,21 @@ describe('Users service', () => {
         chai.assert.fail('Should have thrown');
       } catch (error) {
         // short password
-        chai.expect(error.failingIndexes[0].passwordError.message.message).to.equal(
+        chai.expect(error.details.failingIndexes[0].passwordError.message.message).to.equal(
           'The password must be at least 8 characters long.',
         );
-        chai.expect(error.failingIndexes[0].passwordError.message.translationKey).to.equal(
+        chai.expect(error.details.failingIndexes[0].passwordError.message.translationKey).to.equal(
           'password.length.minimum',
         );
-        chai.expect(error.failingIndexes[0].passwordError.message.translationParams).to.have.property('minimum');
-        chai.expect(error.failingIndexes[0].index).to.equal(0);
+        chai.expect(error.details.failingIndexes[0].passwordError.message.translationParams).to.have.property('minimum');
+        chai.expect(error.details.failingIndexes[0].index).to.equal(0);
 
         // weak password
-        chai.expect(error.failingIndexes[1].passwordError.message.message).to.equal(
+        chai.expect(error.details.failingIndexes[1].passwordError.message.message).to.equal(
           'The password is too easy to guess. Include a range of types of characters to increase the score.',
         );
-        chai.expect(error.failingIndexes[1].passwordError.message.translationKey).to.equal('password.weak');
-        chai.expect(error.failingIndexes[1].index).to.equal(1);
+        chai.expect(error.details.failingIndexes[1].passwordError.message.translationKey).to.equal('password.weak');
+        chai.expect(error.details.failingIndexes[1].index).to.equal(1);
 
         chai.expect(error.code).to.equal(400);
       }
@@ -800,8 +800,8 @@ describe('Users service', () => {
         chai.assert.fail('Should have thrown');
       } catch (error) {
         chai.expect(error.code).to.equal(400);
-        chai.expect(error.failingIndexes[0].fields).to.deep.equal(['phone']);
-        chai.expect(error.failingIndexes[0].index).to.equal(1);
+        chai.expect(error.details.failingIndexes[0].fields).to.deep.equal(['phone']);
+        chai.expect(error.details.failingIndexes[0].index).to.equal(1);
       }
     });
 
@@ -830,11 +830,11 @@ describe('Users service', () => {
         chai.assert.fail('Should have thrown');
       } catch (error) {
         chai.expect(error.code).to.equal(400);
-        chai.expect(error.failingIndexes[0].tokenLoginError.msg).to.equal(
+        chai.expect(error.details.failingIndexes[0].tokenLoginError.msg).to.equal(
           'A valid phone number is required for SMS login.'
         );
-        chai.expect(error.failingIndexes[0].tokenLoginError.key).to.equal('configuration.enable.token.login.phone');
-        chai.expect(error.failingIndexes[0].index).to.equal(1);
+        chai.expect(error.details.failingIndexes[0].tokenLoginError.key).to.equal('configuration.enable.token.login.phone');
+        chai.expect(error.details.failingIndexes[0].index).to.equal(1);
       }
     });
 
