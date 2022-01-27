@@ -1,5 +1,6 @@
 const genericForm = require('../forms/generic-form.wdio.page');
 const commonElements = require('../common/common.wdio.page');
+
 const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
 const contentRowSelector = '#contacts-list .content-row';
@@ -7,9 +8,6 @@ const contentRow = () => $(contentRowSelector);
 const contentRows = () => $$(contentRowSelector);
 const contactName = () => $$(`${contentRowSelector} .heading h4 span`);
 const reportFilterSelector = '.card.reports .table-filter a';
-const reportRowSelector = '#reports-list .content-row';
-const reportRow = () => $(reportRowSelector);
-const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 const reportFilter = () => $(reportFilterSelector);
 const reportFilters = () => $$(reportFilterSelector);
 const taskFilterSelector = '.card.tasks .table-filter a';
@@ -32,10 +30,15 @@ const notes = (place) => $(`[name="/data/${place}/notes"]`);
 const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][value="false"]`);
 const contactCard = () => $('.card h2');
 const contactCardIcon = (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`);
-const rhsPeopleListSelector = () => $$('[test-id="person"] h4 span');
-const rhsReportListSelector = '[test-id="report"] h4 span';
+
+const rhsPeopleListSelector = () => $$('.card.children.persons h4 span');
+const rhsReportListSelector = '.card.reports mm-content-row h4 span';
+const rhsTaskListSelector = '.card.tasks mm-content-row h4 span';
+const rhsTaskListElement = () => $(rhsTaskListSelector);
+const rhsTaskListElementList = () => $$(rhsTaskListSelector);
 const rhsReportListElement = () => $(rhsReportListSelector);
 const rhsReportElementList = () => $$(rhsReportListSelector);
+
 const contactSummaryContainer = () => $('#contact_summary');
 const emptySelection = () => $('contacts-content .empty-selection');
 const editContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
@@ -66,6 +69,7 @@ const findRowByText = async (text) => {
 };
 
 const selectLHSRowByText = async (text, executeSearch= true) => {
+  await commonElements.waitForLoaderToDisappear();
   if (executeSearch) {
     await search(text);
   }
@@ -168,26 +172,22 @@ const getPrimaryContactName = async () => {
 
 const getAllLHSContactsNames = async () => {
   await (await contentRow()).waitForDisplayed();
-  return getTextForElements(contactName);
-};
-
-const getTextForElements = async (elements) => {
-  return Promise.all((await elements()).map(filter => filter.getText()));
-};
-
-const getAllReportsText = async () => {
-  await (await reportRow()).waitForDisplayed();
-  return getTextForElements(reportRowsText);
+  return commonElements.getTextForElements(contactName);
 };
 
 const getAllRHSPeopleNames = async () => {
   await (await name()).waitForDisplayed();
-  return getTextForElements(rhsPeopleListSelector);
+  return commonElements.getTextForElements(rhsPeopleListSelector);
 };
 
 const getAllRHSReportsNames = async () => {
   await (await rhsReportListElement()).waitForDisplayed();
-  return getTextForElements(rhsReportElementList);
+  return commonElements.getTextForElements(rhsReportElementList);
+};
+
+const getAllRHSTaskNames = async () => {
+  await (await rhsTaskListElement()).waitForDisplayed();
+  return commonElements.getTextForElements(rhsTaskListElementList);
 };
 
 const allContactsList = async () => {
@@ -224,7 +224,6 @@ module.exports = {
   addPlace,
   topContact,
   getPrimaryContactName,
-  getAllReportsText,
   getAllRHSPeopleNames,
   waitForContactLoaded,
   waitForContactUnloaded,
@@ -232,6 +231,9 @@ module.exports = {
   editPerson,
   getContactSummaryField,
   getAllRHSReportsNames,
+  rhsReportListElement,
+  getAllRHSTaskNames,
+  rhsTaskListElement,
   deletePerson,
   leftAddPlace,
   rightAddPlace,

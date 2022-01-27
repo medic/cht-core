@@ -226,6 +226,10 @@ const openAppManagement = async () => {
   await (await $('.navbar-brand')).waitForDisplayed();
 };
 
+const getTextForElements = async (elements) => {
+  return Promise.all((await elements()).map(filter => filter.getText()));
+};
+
 module.exports = {
   logout,
   logoutButton,
@@ -266,4 +270,5 @@ module.exports = {
   inactiveSnackbar,
   snackbarMessage,
   snackbarAction,
+  getTextForElements,
 };
