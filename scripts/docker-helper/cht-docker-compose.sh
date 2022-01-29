@@ -123,25 +123,11 @@ validate_env_file(){
 }
 
 get_running_container_count(){
-  result=0
-  containers="$1"
-  IFS=' ' read -ra containersArray <<< "$containers"
-  for container in "${containersArray[@]}"
-  do
-    if [ "$( docker ps -f name="${container}" | wc -l )" -eq 2 ]; then
-        (( result++ ))
-    fi
-  done
-  echo "$result"
+  docker ps -qf "name=^${COMPOSE_PROJECT_NAME}[-_]+.*[-_]+[0-9]" --format '{{.Names}}' | wc -l
 }
 
 get_global_running_container_count(){
-  # shellcheck disable=SC1083
-  if [ "$( docker ps --format={{.Names}} | wc -l )" -gt 0 ]; then
-    docker ps --format={{.Names}} | wc -l
-  else
-    echo "0"
-  fi
+  docker ps --format '{{.Names}}' | wc -l
 }
 
 volume_exists(){
@@ -187,12 +173,11 @@ get_docker_compose_yml_path(){
 }
 
 docker_up_or_restart(){
+  envFile=$1
+  composeFile=$2
   # some times this function called too quickly after a docker change, so
   # we sleep 3 secs here to let the docker container/volume stabilize
   sleep 3
-
-  envFile=$1
-  composeFile=$2
 
   # haproxy never starts on first "up" call, so you know, call it twice ;)
   docker-compose --env-file "${envFile}" -f "${composeFile}" down >/dev/null 2>&1
@@ -201,24 +186,18 @@ docker_up_or_restart(){
 }
 
 install_local_ip_cert(){
-  medicOs=$1
+  medicOs=$(get_container_name "medic-os")
 
   docker exec -it "${medicOs}" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem" >/dev/null 2>&1
   docker exec -it "${medicOs}" bash -c "curl -s -o chain.pem http://local-ip.co/cert/chain.pem" >/dev/null 2>&1
   docker exec -it "${medicOs}" bash -c "curl -s -o /srv/settings/medic-core/nginx/private/default.key http://local-ip.co/cert/server.key" >/dev/null 2>&1
-
-  # uncomment to test with expired certs
-#  docker exec -it "${medicOs}" bash -c "curl -s -o server.pem https://raw.githubusercontent.com/medic/nginx-local-ip/49f969777f2e288d1e5ed4af7186c4c2220cc971/cert/server.pem" >/dev/null 2>&1
-#  docker exec -it "${medicOs}" bash -c "curl -s -o chain.pem https://raw.githubusercontent.com/medic/nginx-local-ip/49f969777f2e288d1e5ed4af7186c4c2220cc971/cert/chain.pem" >/dev/null 2>&1
-#  docker exec -it "${medicOs}" bash -c "curl -s -o /srv/settings/medic-core/nginx/private/default.key https://raw.githubusercontent.com/medic/nginx-local-ip/49f969777f2e288d1e5ed4af7186c4c2220cc971/cert/server.key" >/dev/null 2>&1
-
   docker exec -it "${medicOs}" bash -c "cat server.pem chain.pem > /srv/settings/medic-core/nginx/private/default.crt" >/dev/null 2>&1
   docker exec -it "${medicOs}" bash -c "/boot/svc-restart medic-core nginx" >/dev/null 2>&1
 }
 
 # thanks https://github.com/medic/nginx-local-ip/blob/main/entrypoint.sh#L44 !
 local_ip_cert_expired(){
-  medicOs=$1
+  medicOs=$(get_container_name "medic-os")
   cert_expire_date=$(docker exec -i "${medicOs}" bash -c "/usr/bin/openssl x509 -enddate -noout -in /srv/settings/medic-core/nginx/private/default.crt | grep -oP 'notAfter=\K.+'")
   cert_expire_date_ISO=$(date -d "$cert_expire_date" '+%Y-%m-%d')
 
@@ -237,18 +216,16 @@ docker_down(){
 }
 
 docker_destroy(){
-  project=$1
-  containers=$2
-  IFS=' ' read -ra containersArray <<<"$containers"
+  all_containers=$(get_all_project_containers)
+  IFS=' ' read -ra containersArray <<<"$all_containers"
   for container in "${containersArray[@]}"; do
-    docker stop -t 0 "${container}" >/dev/null 2>&1
+    docker rm -f "${container}" >/dev/null 2>&1
   done
-  docker rm "${project}"_haproxy_1 "${project}"_medic-os_1 >/dev/null 2>&1
   docker volume rm "${project}"_medic-data >/dev/null 2>&1
   docker network rm "${project}"_medic-net >/dev/null 2>&1
 }
 
-get_cht_version() {
+get_cht_version(){
   url=$1
   urlWithPassAndPath="https://medic:password@$(echo "$url" | cut -c 9-9999)/medic/_design/medic "
   # todo - as of 20.04, ubuntu still doesn't actually ship with JQ default :(
@@ -280,7 +257,12 @@ get_load_avg() {
 
 get_container_process_count(){
   container=$1
-  echo $(docker top "${container}" | tail -n +2 | wc -l)
+  status=$(docker inspect --format="{{.State.Running}}" "$container" 2> /dev/null)
+  if [ "$status" = "true" ]; then
+    docker top "${container}" | tail -n +2 | wc -l
+  else
+    echo "0"
+  fi
 }
 
 log_iteration(){
@@ -317,7 +299,7 @@ log_iteration(){
     echo "$(date) pid=\"$$\" \
 item=\"end\" \
 project_name=\"$COMPOSE_PROJECT_NAME\" \
-" >& 1 >> $logname
+" >& 1 >> "$logname"
     return 0
 
   fi
@@ -332,18 +314,20 @@ port_https=\"$CHT_HTTPS\" \
 port_http=\"$CHT_HTTP\" \
 project_name=\"$COMPOSE_PROJECT_NAME\" \
 total_containers=\"$(get_global_running_container_count)\"\
-" >& 1 >> $logname
+" >& 1 >> "$logname"
   fi
 
+  # thanks https://gist.github.com/somada141/dce96cddb1f93161ee3f
+  all_containers=$(get_all_project_containers)
   container_stat=''
-  IFS=' ' read -ra containersArray <<<"$ALL_CONTAINERS"
+  IFS=' ' read -ra containersArray <<<"$all_containers"
   for container in "${containersArray[@]}"; do
     RUNNING=$(docker inspect --format="{{.State.Running}}" "${container}" 2> /dev/null)
     if [ "$RUNNING" == "true" ]; then
-      logs=$(docker logs -n1 ${container})
-      logs=$(echo $logs | tr -d '"')
+      logs=$(docker logs -n1 "${container}")
+      logs=$(echo "$logs" | tr -d '"')
 
-      # todo - maybe grab horti logs if container ends in "_medic-os_1"?
+      # todo - maybe grab horti logs if container contains "medic-os"?
       # docker exec -it helper_test_medic-os_1  tail -n3 /srv/storage/horticulturalist/logs/horticulturalist.lo
     else
       RUNNING="false"
@@ -356,7 +340,7 @@ total_containers=\"$(get_global_running_container_count)\"\
 
   echo "${line_head} \
 item=\"status\" \
-CHT_count=\"$(get_running_container_count "$ALL_CONTAINERS")\" \
+CHT_count=\"$(get_running_container_count)\" \
 port_stat=\"$port_status\" \
 http_code=\"$http_code\" \
 ssl_verify=\"$ssl_verify\" \
@@ -367,6 +351,14 @@ load_now=\"$load_now\" \
 $container_stat\
 " >& 1 >> $logname
 
+}
+
+get_all_project_containers(){
+  docker ps -aqf "name=^${COMPOSE_PROJECT_NAME}[-_]+.*[-_]+[0-9]" --format '{{.Names}}' | sed ':a;N;$!ba;s/\n/ /g'
+}
+get_container_name(){
+  container_type=$1
+  docker ps -aqf "name=^${COMPOSE_PROJECT_NAME}[-_]+${container_type}[-_]+[0-9]" --format '{{.Names}}'
 }
 
 counter=1
@@ -390,9 +382,6 @@ main (){
   declare -r APP_STRING="docker;docker-compose;grep;head;cut;tr;nc;curl;file;wc;awk;tail;dirname"
   declare -r MAX_REBOOTS=5
   declare -r DEFAULT_SLEEP=$((60 * $((reboot_count + 1))))
-  declare -r MEDIC_OS="${COMPOSE_PROJECT_NAME}_medic-os_1"
-  declare -r HAPROXY="${COMPOSE_PROJECT_NAME}_haproxy_1"
-  declare -r ALL_CONTAINERS="${MEDIC_OS} ${HAPROXY}"
   declare -r ALL_IMAGES="medicmobile/medic-os:cht-3.9.0-rc.2 medicmobile/haproxy:rc-1.17"
 
   # with constants set, let's ensure all the apps are present, exit if not
@@ -409,7 +398,7 @@ main (){
 
   # do all the various checks of stuffs
   volumeCount=$(volume_exists "$COMPOSE_PROJECT_NAME")
-  containerCount=$(get_running_container_count "$ALL_CONTAINERS")
+  containerCount=$(get_running_container_count)
   imageCount=$(get_images_count "$ALL_IMAGES")
   globalContainerCount=$(get_global_running_container_count)
   lanAddress=$(get_lan_ip)
@@ -425,7 +414,7 @@ main (){
   # if we're exiting, call down or destroy and quit proper
   if [ "$exitNext" = "destroy" ] || [ "$exitNext" = "down" ] || [ "$exitNext" = "happy" ]; then
     if [ "$exitNext" = "destroy" ]; then
-      docker_destroy "$COMPOSE_PROJECT_NAME" "$ALL_CONTAINERS"
+      docker_destroy
     elif [ "$exitNext" = "down" ]; then
       docker_down "$envFile" "$dockerComposePath"
     fi
@@ -441,7 +430,7 @@ main (){
   else
     chtVersion=$(get_cht_version "$chtUrl")
     self_signed=$(has_self_signed_cert "$chtUrl")
-    expired_cert=$(local_ip_cert_expired $MEDIC_OS)
+    expired_cert=$(local_ip_cert_expired)
   fi
 
   # derive overall healthy
@@ -549,19 +538,19 @@ main (){
     append "Installing local-ip.co certificate to fix..."
     last_action="Installing local-ip.co certificate..."
     endwin
-    install_local_ip_cert $MEDIC_OS &
+    install_local_ip_cert &
     return 0
   fi
 
   # check for expired cert, reinstall if so
-  expired_cert=$(local_ip_cert_expired $MEDIC_OS)
+  expired_cert=$(local_ip_cert_expired)
   if [[ "$expired_cert" = "1" ]] && [[ $tls_reinstalls = 0 ]]; then
     window "WARNING: CHT has expired certificate" "red" "100%"
     append "Re-installing local-ip.co certificate to fix..."
     last_action="Re-installing expired local-ip.co certificate..."
     endwin
     (( tls_reinstalls++ ))
-    install_local_ip_cert $MEDIC_OS &
+    install_local_ip_cert&
     return 0
   elif [[ "$expired_cert" = "1" ]]; then
     window "local-ip.co certificate renewed, but still expired" "red" "100%"
