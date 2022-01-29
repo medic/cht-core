@@ -199,7 +199,15 @@ install_local_ip_cert(){
 local_ip_cert_expired(){
   medicOs=$(get_container_name "medic-os")
   cert_expire_date=$(docker exec -i "${medicOs}" bash -c "/usr/bin/openssl x509 -enddate -noout -in /srv/settings/medic-core/nginx/private/default.crt | grep -oP 'notAfter=\K.+'")
-  cert_expire_date_ISO=$(date -d "$cert_expire_date" '+%Y-%m-%d')
+
+  # "system_profiler" exists only on MacOS, if it's not here, then run linux style command for
+  # load avg.  Otherwise use MacOS style command
+  if [ -n "$(required_apps_installed "system_profiler")" ];then
+    cert_expire_date_ISO=$(date -d "$cert_expire_date" '+%Y-%m-%d')
+  else
+    cert_expire_date_ISO=$(date -v "$cert_expire_date" '+%Y-%m-%d')
+  fi
+
 
   today_ISO=$(date '+%Y-%m-%d')
   if [[ "$cert_expire_date_ISO" < "$today_ISO" ]]; then
@@ -357,6 +365,7 @@ $container_stat\
 get_all_project_containers(){
   docker ps -aqf "name=^${COMPOSE_PROJECT_NAME}[-_]+.*[-_]+[0-9]" --format '{{.Names}}' | tr '\n' ' '
 }
+
 get_container_name(){
   container_type=$1
   docker ps -aqf "name=^${COMPOSE_PROJECT_NAME}[-_]+${container_type}[-_]+[0-9]" --format '{{.Names}}'
