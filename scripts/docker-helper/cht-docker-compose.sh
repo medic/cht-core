@@ -221,6 +221,7 @@ docker_destroy(){
   for container in "${containersArray[@]}"; do
     docker rm -f "${container}" >/dev/null 2>&1
   done
+  # todo - for some reason volume and network don't get deleted here :(
   docker volume rm "${project}"_medic-data >/dev/null 2>&1
   docker network rm "${project}"_medic-net >/dev/null 2>&1
 }
@@ -354,7 +355,7 @@ $container_stat\
 }
 
 get_all_project_containers(){
-  docker ps -aqf "name=^${COMPOSE_PROJECT_NAME}[-_]+.*[-_]+[0-9]" --format '{{.Names}}' | sed ':a;N;$!ba;s/\n/ /g'
+  docker ps -aqf "name=^${COMPOSE_PROJECT_NAME}[-_]+.*[-_]+[0-9]" --format '{{.Names}}' | tr '\n' ' '
 }
 get_container_name(){
   container_type=$1
