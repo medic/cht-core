@@ -68,10 +68,10 @@ const error400 = (msg, key, params) => {
     Object.assign(error, {
       message: { message: msg, translationKey: key, translationParams: params },
     });
-  } else {
-    Object.assign(error, { details: key });
+    return error;
   }
 
+  Object.assign(error, { details: key });
   return error;
 };
 
