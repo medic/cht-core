@@ -65,14 +65,12 @@ const error400 = (msg, key, params) => {
   error.code = 400;
 
   if (typeof key === 'string') {
-    Object.assign(error, {
+    return Object.assign(error, {
       message: { message: msg, translationKey: key, translationParams: params },
     });
-    return error;
   }
 
-  Object.assign(error, { details: key });
-  return error;
+  return Object.assign(error, { details: key });
 };
 
 const getType = user => {
