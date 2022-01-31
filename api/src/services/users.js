@@ -534,7 +534,8 @@ const validateUserContact = (data, user, userSettings) => {
   }
 };
 
-const createUserEntities = async (user, response, appUrl) => {
+const createUserEntities = async (user, appUrl) => {
+  const response = {};
   await validateNewUsername(user.username);
   await createPlace(user);
   await setContactParent(user);
@@ -543,6 +544,7 @@ const createUserEntities = async (user, response, appUrl) => {
   await createUser(user, response);
   await createUserSettings(user, response);
   await tokenLogin.manageTokenLogin(user, appUrl, response);
+  return response;
 };
 
 const validateUserFields = (users) => {
@@ -620,9 +622,7 @@ module.exports = {
       return Promise.reject(passwordError);
     }
 
-    const response = {};
-    await createUserEntities(data, response, appUrl);
-    return response;
+    return await createUserEntities(data, appUrl);
   },
 
   /**
@@ -668,19 +668,15 @@ module.exports = {
       return Promise.reject(error400(errorMessage, { failingIndexes: passwordFailingIndexes }));
     }
 
-    const response = Array(users.length).fill(null).map(() => ({}));
     // create all valid users even if some are failing
-    const promises = await allPromisesSettled(
-      users.map(async (user, index) => await createUserEntities(user, response[index], appUrl)),
-    );
-    const hasFailures = promises.some(promise => promise.status === 'rejected');
-    if (hasFailures) {
-      promises.forEach((promise, index) => {
-        if (promise.status === 'rejected') {
-          response[index].error = promise.reason.message;
-        }
-      });
-    }
+    const promises = await allPromisesSettled(users.map(async (user) => await createUserEntities(user, appUrl)));
+    const response = promises.map((promise) => {
+      if (promise.status === 'rejected') {
+        return { error: promise.reason.message };
+      }
+
+      return promise.value;
+    });
 
     return response;
   },
