@@ -670,15 +670,7 @@ module.exports = {
 
     // create all valid users even if some are failing
     const promises = await allPromisesSettled(users.map(async (user) => await createUserEntities(user, appUrl)));
-    const response = promises.map((promise) => {
-      if (promise.status === 'rejected') {
-        return { error: promise.reason.message };
-      }
-
-      return promise.value;
-    });
-
-    return response;
+    return promises.map((promise) => promise.status === 'rejected' ? { error: promise.reason.message } : promise.value);
   },
 
   /*
