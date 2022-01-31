@@ -645,26 +645,26 @@ module.exports = {
 
     const { missingFieldsFailingIndexes, tokenLoginFailingIndexes, passwordFailingIndexes } = validateUserFields(users);
     if (missingFieldsFailingIndexes.length > 0) {
-      let errorMessage = 'Missing required fields:\n';
-      for (const { fields, index } of missingFieldsFailingIndexes) {
-        errorMessage += `\nMissing fields ${fields.join(', ')} for user at index ${index}`;
-      }
+      const errorMessages = missingFieldsFailingIndexes.map(({ fields, index }) => {
+        return `Missing fields ${fields.join(', ')} for user at index ${index}`;
+      });
+      const errorMessage = ['Missing required fields:', ...errorMessages].join('\n');
       return Promise.reject(error400(errorMessage, { failingIndexes: missingFieldsFailingIndexes }));
     }
 
     if (tokenLoginFailingIndexes.length > 0) {
-      let errorMessage = 'Token login errors:\n';
-      for (const { tokenLoginError, index } of tokenLoginFailingIndexes) {
-        errorMessage += `\nError ${tokenLoginError.msg} for user at index ${index}`;
-      }
+      const errorMessages = tokenLoginFailingIndexes.map(({ tokenLoginError, index }) => {
+        return `Error ${tokenLoginError.msg} for user at index ${index}`;
+      });
+      const errorMessage = ['Token login errors:', ...errorMessages].join('\n');
       return Promise.reject(error400(errorMessage, { failingIndexes: tokenLoginFailingIndexes }));
     }
 
     if (passwordFailingIndexes.length > 0) {
-      let errorMessage = 'Password errors:\n';
-      for (const { passwordError, index } of passwordFailingIndexes) {
-        errorMessage += `\nError ${passwordError.message.message} for user at index ${index}`;
-      }
+      const errorMessages = tokenLoginFailingIndexes.map(({ passwordError, index }) => {
+        return `Error ${passwordError.message.message} for user at index ${index}`;
+      });
+      const errorMessage = ['Password errors:', ...errorMessages].join('\n');
       return Promise.reject(error400(errorMessage, { failingIndexes: passwordFailingIndexes }));
     }
 
