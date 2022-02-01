@@ -81,22 +81,22 @@ angular.module('controllers').controller('UpgradeCtrl',
       // NB: Once our build server is on CouchDB 2.0 we can combine these three calls
       //     See: http://docs.couchdb.org/en/2.0.0/api/ddoc/views.html#sending-multiple-queries-to-a-view
       return $q
-        .all({
-          branches: getBuilds(buildsDb, {
+        .all([
+          getBuilds(buildsDb, {
             startkey: [ 'branch', 'medic', 'medic', {}],
             endkey: [ 'branch', 'medic', 'medic'],
           }),
-          betas: getBuilds(buildsDb, {
+          getBuilds(buildsDb, {
             startkey: [ 'beta', 'medic', 'medic', {}],
             endkey: [ 'beta', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch, minVersion.beta ],
           }),
-          releases: getBuilds(buildsDb, {
+          getBuilds(buildsDb, {
             startkey: [ 'release', 'medic', 'medic', {}],
             endkey: [ 'release', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch],
           }),
-        })
-        .then((results) => {
-          $scope.versions = results;
+        ])
+        .then(([ branches, betas, releases ]) => {
+          $scope.versions = { branches, betas, releases };
         });
     };
 
@@ -149,7 +149,7 @@ angular.module('controllers').controller('UpgradeCtrl',
       const stageOnly = action === 'stage';
       const confirmCallback = () => upgrade(version, action);
 
-      Modal({
+      return Modal({
         templateUrl: 'templates/upgrade_confirm.html',
         controller: 'UpgradeConfirmCtrl',
         model: {
@@ -183,7 +183,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
       const confirmCallback = () => cancelUpgrade();
 
-      Modal({
+      return Modal({
         templateUrl: 'templates/upgrade_cancel.html',
         controller: 'UpgradeConfirmCtrl',
         model: {
