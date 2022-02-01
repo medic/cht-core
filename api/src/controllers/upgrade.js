@@ -10,15 +10,15 @@ const checkAuth = (req) => auth.check(req, REQUIRED_PERMISSIONS);
 const upgrade = (req, res, stageOnly) => {
   return checkAuth(req)
     .then(userCtx => {
-      const buildInfo = req.body.build;
-      if (!buildInfo) {
+      const version = req.body.version;
+      if (!version) {
         throw {
-          message: 'You must provide a build info body',
+          message: 'You must provide a version',
           status: 400
         };
       }
 
-      return service.upgrade(req.body.build, userCtx.user, stageOnly);
+      return service.upgrade(version, userCtx.user, stageOnly);
     })
     .then(() => res.json({ ok: true }))
     .catch(err => serverUtils.error(err, req, res));
@@ -30,17 +30,31 @@ const completeUpgrade = (req, res) => {
     .catch(err => serverUtils.error(err, req, res));
 };
 
-const progress = (req, res) => {
+const upgradeInProgress = (req, res) => {
   return checkAuth(req)
-    .then(() => service.progress())
-    .then(indexers => res.json(indexers));
+    .then(() => Promise.all([
+      service.upgradeInProgress(),
+      service.indexerProgress(),
+    ]))
+    .then(([upgradeDoc, indexers]) => {
+      res.json({ upgradeDoc, indexers });
+    })
+    .catch(err => serverUtils.error(err, req, res));
+};
+
+const abortUpgrade = (req, res) => {
+  return checkAuth(req)
+    .then(() => service.abort())
+    .then(() => res.json({ ok: true }))
+    .catch(err => serverUtils.error(err, req, res));
 };
 
 module.exports = {
   upgrade: (req, res) => upgrade(req, res, false),
   stage: (req, res) => upgrade(req, res, true),
   complete: completeUpgrade,
-  progress: progress,
+  upgradeInProgress: upgradeInProgress,
+  abort: abortUpgrade,
   serviceWorker: (req, res) => {
     return checkAuth(req)
       .then(() => configWatcher.updateServiceWorker())

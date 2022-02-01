@@ -27,10 +27,11 @@ describe('UpgradeLog service', () => {
       sinon.stub(db.medicLogs, 'put').resolves({ id: 'id', rev: 'rev', ok: true });
       sinon.stub(fs.promises, 'writeFile').resolves();
 
-      const log = await upgradeLogService.create('4.1.0', '4.0.0', 'anadmin');
+      const log = await upgradeLogService.create('action', '4.1.0', '4.0.0', 'anadmin');
       const expected = {
         _id: 'upgrade_log:4.1.0:5000',
         user: 'anadmin',
+        action: 'action',
         from_version: '4.0.0',
         to_version: '4.1.0',
         start_date: 5000,
@@ -58,6 +59,7 @@ describe('UpgradeLog service', () => {
       const expected = {
         _id: 'upgrade_log::10000',
         user: '',
+        action: undefined,
         from_version: '',
         to_version: '',
         start_date: 10000,
@@ -82,17 +84,18 @@ describe('UpgradeLog service', () => {
       sinon.stub(fs.promises, 'writeFile').resolves();
 
       try {
-        await upgradeLogService.create('a', 'b', 'c');
+        await upgradeLogService.create('act', 'to', 'from', 'usr');
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ status: 'error' });
 
         expect(db.medicLogs.put.callCount).to.equal(1);
         expect(db.medicLogs.put.args[0]).to.deep.equal([{
-          _id: 'upgrade_log:a:10000',
-          user: 'c',
-          from_version: 'b',
-          to_version: 'a',
+          _id: 'upgrade_log:to:10000',
+          user: 'usr',
+          action: 'act',
+          from_version: 'from',
+          to_version: 'to',
           start_date: 10000,
           state_history: [{ state: 'initiated', date: 10000 }],
           state: 'initiated',
@@ -108,17 +111,18 @@ describe('UpgradeLog service', () => {
       sinon.stub(fs.promises, 'writeFile').resolves();
 
       try {
-        await upgradeLogService.create('a', 'b', 'c');
+        await upgradeLogService.create('ac', 'to', 'from', 'user');
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ status: 'error' });
 
         expect(db.medicLogs.put.callCount).to.equal(1);
         expect(db.medicLogs.put.args[0]).to.deep.equal([{
-          _id: 'upgrade_log:a:10000',
-          user: 'c',
-          from_version: 'b',
-          to_version: 'a',
+          _id: 'upgrade_log:to:10000',
+          user: 'user',
+          action: 'ac',
+          from_version: 'from',
+          to_version: 'to',
           start_date: 10000,
           state_history: [{ state: 'initiated', date: 10000 }],
           state: 'initiated',

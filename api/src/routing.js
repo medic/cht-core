@@ -345,7 +345,7 @@ app.get('/api/deploy-info', async (req, res) => {
   if (!environment.getDeployInfo()) {
     try {
       const ddoc = await db.medic.get(upgradeUtils.getDdocId(environment.ddoc));
-      const deployInfo = Object.assign(ddoc.deploy_info, { version: ddoc.version });
+      const deployInfo = Object.assign({ version: ddoc.version }, ddoc.deploy_info);
       environment.setDeployInfo(deployInfo);
     } catch(err) {
       return serverUtils.serverError(err, req, res);
@@ -372,9 +372,11 @@ app.get('/api/auth/:path', function(req, res) {
     });
 });
 
+app.get('/api/v1/upgrade', upgrade.upgradeInProgress);
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
 app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);
+app.delete('/api/v1/upgrade', jsonParser, upgrade.abort);
 app.all('/api/v1/upgrade/service-worker', upgrade.serviceWorker);
 
 app.post('/api/v1/sms/africastalking/incoming-messages', formParser, africasTalking.incomingMessages);
