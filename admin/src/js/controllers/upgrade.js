@@ -1,7 +1,3 @@
-const _ = require('lodash/core');
-
-const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
-
 angular.module('controllers').controller('UpgradeCtrl',
   function(
     $http,
@@ -25,6 +21,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     const UPGRADE_URL = '/api/v1/upgrade';
     const UPGRADE_POLL_FREQ = 2000;
     const BUILD_LIST_LIMIT = 50;
+    const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
 
     const logError = (error, key) => {
       const err = error.responseText || error.statusText;
@@ -67,13 +64,13 @@ angular.module('controllers').controller('UpgradeCtrl',
       return buildsDb
         .query('builds/releases', options)
         .then((results) => {
-          results.rows.forEach(function(row) {
+          results.rows.forEach((row) => {
             if (!row.value.version) {
               row.value.version = row.id.replace(/^medic:medic:/, '');
             }
           });
 
-          return _.map(results.rows, 'value');
+          return results.rows.map(row => row.value);
         });
     };
 
@@ -127,7 +124,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         $scope.loading = false;
       });
 
-    $scope.potentiallyIncompatible = function(release) {
+    $scope.potentiallyIncompatible = (release) => {
       // Old builds may not have a base version, which means unless their version
       // is in the form 1.2.3[-maybe.4] (ie it's a branch) we can't tell and will
       // just presume maybe it's bad
@@ -155,7 +152,12 @@ angular.module('controllers').controller('UpgradeCtrl',
       Modal({
         templateUrl: 'templates/upgrade_confirm.html',
         controller: 'UpgradeConfirmCtrl',
-        model: { stageOnly, before: $scope.currentDeploy.version, after: version, confirmCallback }
+        model: {
+          stageOnly,
+          before: $scope.currentDeploy.version,
+          after: version,
+          confirmCallback,
+        },
       }).catch(() => {});
     };
 
@@ -184,7 +186,11 @@ angular.module('controllers').controller('UpgradeCtrl',
       Modal({
         templateUrl: 'templates/upgrade_cancel.html',
         controller: 'UpgradeConfirmCtrl',
-        model: { before: $scope.currentDeploy.version, after: $scope.upgradeDoc.to_version, confirmCallback }
+        model: {
+          before: $scope.currentDeploy.version,
+          after: $scope.upgradeDoc.to_version,
+          confirmCallback,
+        }
       }).catch(() => {});
     };
 
