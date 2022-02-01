@@ -1,3 +1,5 @@
+const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
+
 angular.module('controllers').controller('UpgradeCtrl',
   function(
     $http,
@@ -21,7 +23,6 @@ angular.module('controllers').controller('UpgradeCtrl',
     const UPGRADE_URL = '/api/v1/upgrade';
     const UPGRADE_POLL_FREQ = 2000;
     const BUILD_LIST_LIMIT = 50;
-    const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
 
     const logError = (error, key) => {
       const err = error.responseText || error.statusText;
