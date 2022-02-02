@@ -37,7 +37,7 @@ Once all issues have passed acceptance testing and have been merged into `master
   - [ ] Use [this script](https://github.com/medic/cht-core/blob/master/scripts/release-notes) to export the issues into our release note format. 
   - [ ] Manually document any known migration steps and known issues. 
   - [ ] Provide description, screenshots, videos, and anything else to help communicate particularly important changes. 
-  - [ ] Document any required or recommended upgrades to our other products (eg: medic-conf,  medic-gateway, medic-android).
+  - [ ] Document any required or recommended upgrades to our other products (eg: cht-conf, cht-gateway, cht-android).
   - [ ] Add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/releases/) and update the EOL date and status of previous releases. Also add a link in the `Release Notes` section to the new release page.
   - [ ] Assign the PR to:
     - The Director of Technology
