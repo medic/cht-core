@@ -126,7 +126,7 @@ const outputGroups = (groups) => {
 
 const output = ({ warnings, types }) => {
   console.log(`
-  ---
+---
 title: "${MILESTONE_NAME} release notes"
 linkTitle: "${MILESTONE_NAME}"
 weight:

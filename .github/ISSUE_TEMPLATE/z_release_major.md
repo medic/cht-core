@@ -57,6 +57,6 @@ Read the [release notes]({{url}}) for full details.
 
 Following our support policy, versions {{versions}} are no longer supported. Projects running these versions should start planning to upgrade in the near future. For more details read our [software support documentation](https://docs.communityhealthtoolkit.org/core/overview/supported-software/).
 
-Check our [milesones](https://github.com/medic/cht-core/milestones) to see what's scheduled for the next releases.
+Check out our [roadmap](https://github.com/orgs/medic/projects/112) to see what we're working on next.
 ```
 - [ ] Mark this issue "done" and close the Milestone.
