@@ -3,11 +3,11 @@ const logger = require('../src/lib/logger');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 PouchDB.plugin(require('pouchdb-replication'));
+const couchAdminUserService = require('@medic/couch-admin-user');
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
 const request = require('request');
-const url = require('url');
 
 if (UNIT_TEST_ENV) {
   const stubMe = functionName => () => {
@@ -57,24 +57,33 @@ if (UNIT_TEST_ENV) {
   module.exports.close = stubMe('close');
   module.exports.medicDbName = stubMe('medicDbName');
 } else if (COUCH_URL) {
-  // strip trailing slash from to prevent bugs in path matching
-  const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
-  const parsedUrl = url.parse(couchUrl);
-
-  module.exports.serverUrl = couchUrl.slice(0, couchUrl.lastIndexOf('/'));
-
-  const fetchFn = (url, opts) => {
+  const fetch = (url, opts) => {
     // Adding audit flags (haproxy) Service and user that made the request initially.
-    opts.headers.set('X-Medic-Service', 'sentinel');
-    opts.headers.set('X-Medic-User', 'sentinel');
+    opts.headers.set('X-CHT-Service', 'sentinel');
+    opts.headers.set('X-CHT-User', 'sentinel');
     return PouchDB.fetch(url, opts);
   };
 
-  module.exports.medic = new PouchDB(couchUrl, { fetch: fetchFn });
-  module.exports.medicDbName = parsedUrl.path.replace('/', '');
-  module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, {
-    fetch: fetchFn,
-  });
+  module.exports.initialize = async () => {
+    const couchUrl = new URL(COUCH_URL);
+    const serverUrl = new URL(COUCH_URL);
+    serverUrl.pathname = '';
+
+    const { username, password } = await couchAdminUserService.create('cht-sentinel', serverUrl.toString());
+
+    couchUrl.username = username;
+    couchUrl.password = password;
+
+    serverUrl.username = username;
+    serverUrl.password = password;
+
+    module.exports.couchUrl = couchUrl.toString();
+    module.exports.serverUrl = serverUrl.toString();
+    module.exports.medic = new PouchDB(couchUrl.toString(), { fetch });
+    module.exports.medicDbName = couchUrl.pathname;
+    module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch });
+    module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`, { fetch });
+  };
 
   module.exports.allDbs = () => new Promise((resolve, reject) => {
     request({ url: `${module.exports.serverUrl}/_all_dbs`, json: true }, (err, response, body) => {
@@ -93,8 +102,6 @@ if (UNIT_TEST_ENV) {
       logger.error('Error when closing db: %o', err);
     }
   };
-  module.exports.couchUrl = couchUrl;
-  module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`);
 } else {
   logger.warn(
     'Please define a COUCH_URL in your environment e.g. \n' +

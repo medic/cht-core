@@ -1,5 +1,5 @@
 {
-  "name": "@medic/create-service-user",
+  "name": "@medic/couch-admin-user",
   "version": "1.0.0",
   "description": "Creates CouchDb Admin users to be used by CHT services",
   "main": "src/index.js",

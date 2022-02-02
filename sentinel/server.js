@@ -40,9 +40,11 @@ const waitForApi = () =>
     waitLoop();
   });
 
+
+
 logger.info('Running server checks…');
-serverChecks
-  .check(db.serverUrl)
+db.initialize()
+  .then(() => serverChecks.check(db.serverUrl))
   .then(waitForApi)
   .then(() => {
     // Even requiring this boots translations, so has to be required after

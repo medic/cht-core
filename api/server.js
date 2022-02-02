@@ -1,4 +1,7 @@
 const logger = require('./src/logger');
+const environment = require('./src/environment');
+const db = require('./src/db');
+const serverChecks = require('@medic/server-checks');
 
 process
   .on('unhandledRejection', reason => {
@@ -12,8 +15,21 @@ process
   });
 
 (async () => {
-  const environment = require('./src/environment');
-  const serverChecks = require('@medic/server-checks');
+  try {
+    logger.info('Initializing environment');
+    await environment.initialize();
+    db.initialize();
+    logger.info('Environment initialized successfully');
+
+    logger.info('Running server checks…');
+    await serverChecks.check(environment.serverUrl);
+    logger.info('Checks passed successfully');
+  } catch (err) {
+    logger.error('Fatal error initialising medic-api environment');
+    logger.error('%o',err);
+    process.exit(1);
+  }
+
   const installer = require('./src/services/setup/install');
   const app = require('./src/routing');
   const configWatcher = require('./src/services/config-watcher');
@@ -27,10 +43,6 @@ process
 
   try
   {
-    logger.info('Running server checks…');
-    await serverChecks.check(environment.serverUrl);
-    logger.info('Checks passed successfully');
-
     logger.info('Running installation checks…');
     await installer.checkInstall();
     logger.info('Installation checks passed');
