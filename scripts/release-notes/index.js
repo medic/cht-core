@@ -126,14 +126,14 @@ const outputGroups = (groups) => {
 
 const output = ({ warnings, types }) => {
   console.log(`
-# ${MILESTONE_NAME} Release Notes
-
-- [Known issues](#known-issues)
-- [Upgrade notes](#upgrade-notes)
-- [Breaking changes](#breaking-changes)
-- [UI/UX changes](#uiux-changes)
-- [Highlights](#highlights)
-- [And more...](#and-more)
+  ---
+title: "${MILESTONE_NAME} release notes"
+linkTitle: "${MILESTONE_NAME}"
+weight:
+description: >
+relevantLinks: >
+toc_hide: true
+---
 
 ## Known issues
 
