@@ -1080,7 +1080,23 @@ describe('registration', () => {
       }
     };
 
-    const docs = [withWeeksSinceLMP, withLMP];
+    const withLMPDate = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: '+444999',
+      fields: {
+        patient_id: 'patient',
+        lmp_date: moment().utc('false').subtract(4, 'weeks').startOf('day').valueOf()
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    const docs = [withWeeksSinceLMP, withLMP, withLMPDate];
     const docIds = getIds(docs);
 
     return utils
@@ -1105,6 +1121,12 @@ describe('registration', () => {
         chai.expect(updated[1].lmp_date)
           .to.equal(moment().utc(false).startOf('day').subtract(4, 'weeks').toISOString());
         chai.expect(updated[1].expected_date)
+          .to.equal(moment().utc(false).startOf('day').add(36, 'weeks').toISOString());
+
+        chai.expect(updated[2].lmp_date).to.be.ok;
+        chai.expect(updated[2].lmp_date)
+          .to.equal(moment().utc(false).startOf('day').subtract(4, 'weeks').toISOString());
+        chai.expect(updated[2].expected_date)
           .to.equal(moment().utc(false).startOf('day').add(36, 'weeks').toISOString());
       });
   });
