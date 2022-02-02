@@ -16,14 +16,15 @@ process
 
 (async () => {
   try {
+    logger.info('Running server checks…');
+    await serverChecks.check();
+    logger.info('Checks passed successfully');
+
     logger.info('Initializing environment');
     await environment.initialize();
     db.initialize();
     logger.info('Environment initialized successfully');
 
-    logger.info('Running server checks…');
-    await serverChecks.check(environment.serverUrl);
-    logger.info('Checks passed successfully');
   } catch (err) {
     logger.error('Fatal error initialising medic-api environment');
     logger.error('%o',err);

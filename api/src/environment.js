@@ -1,5 +1,5 @@
 const path = require('path');
-const couchAdminUserService = require('@medic/couch-admin-user');
+const serverChecks = require('@medic/server-checks');
 
 const { UNIT_TEST_ENV, COUCH_URL, BUILDS_URL } = process.env;
 const DEFAULT_BUILDS_URL = 'https://staging.dev.medicmobile.org/_couch/builds';
@@ -15,17 +15,8 @@ const initialize = async () => {
       'If you are running unit tests use UNIT_TEST_ENV=1 in your environment.\n'
     );
   }
-
-  const couchUrl = new URL(COUCH_URL);
-  const serverUrl = new URL(COUCH_URL);
-  serverUrl.pathname = '';
-
-  const { username, password } = await couchAdminUserService.create('cht-admin', serverUrl.toString());
-  couchUrl.username = username;
-  couchUrl.password = password;
-
-  serverUrl.username = username;
-  serverUrl.password = password;
+  const username = 'cht-api';
+  const { couchUrl, serverUrl, password } = await serverChecks.getServerUrls(username);
 
   module.exports.couchUrl = couchUrl.toString();
   module.exports.serverUrl = serverUrl.toString();

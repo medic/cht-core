@@ -3,7 +3,7 @@ const logger = require('../src/lib/logger');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 PouchDB.plugin(require('pouchdb-replication'));
-const couchAdminUserService = require('@medic/couch-admin-user');
+const serverChecks = require('@medic/server-checks');
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
@@ -65,17 +65,8 @@ if (UNIT_TEST_ENV) {
   };
 
   module.exports.initialize = async () => {
-    const couchUrl = new URL(COUCH_URL);
-    const serverUrl = new URL(COUCH_URL);
-    serverUrl.pathname = '';
-
-    const { username, password } = await couchAdminUserService.create('cht-sentinel', serverUrl.toString());
-
-    couchUrl.username = username;
-    couchUrl.password = password;
-
-    serverUrl.username = username;
-    serverUrl.password = password;
+    const username = 'cht-sentinel';
+    const { couchUrl, serverUrl } = await serverChecks.getServerUrls(username);
 
     module.exports.couchUrl = couchUrl.toString();
     module.exports.serverUrl = serverUrl.toString();
