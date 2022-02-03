@@ -72,7 +72,7 @@ const couchDbNoAdminPartyModeCheck = () => {
           'see: https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#enabling-a-secure-couchdb'));
       }
     }).on('error', (e) => {
-      reject(`CouchDB doesn't seem to be running on ${url.format(noAuthUrl)}. ` +
+      reject(`CouchDB doesn't seem to be running on ${noAuthUrl.toString()}. ` +
         `Tried to connect but got an error:\n ${e.stack}`);
     });
   });
