@@ -132,19 +132,14 @@ const createUser = async (username, password, serverUrl) => {
 };
 
 const getServerUrls = async (username) => {
-  const couchUrl = new URL(COUCH_URL);
-  couchUrl.pathname = couchUrl.pathname.replace(/\/$/, '');
-  const dbName = couchUrl.pathname.replace(/^\//, '');
-
   const serverUrl = new URL(COUCH_URL);
+  const dbName = serverUrl.pathname.replace(/^\//, '').replace(/\/$/, '');
   serverUrl.pathname = '';
 
   await createUser(username, serverUrl.password, serverUrl.toString());
-
-  couchUrl.username = username;
   serverUrl.username = username;
 
-  return { serverUrl, couchUrl, dbName };
+  return { serverUrl, dbName };
 };
 
 module.exports = {

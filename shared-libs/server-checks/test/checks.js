@@ -299,7 +299,6 @@ describe('Server Checks service', () => {
 
       chai.expect(result.dbName).to.equal('theDb');
       chai.expect(result.serverUrl).to.deep.equal(new URL('http://myUser:pass@localhost:5984'));
-      chai.expect(result.couchUrl).to.deep.equal(new URL('http://myUser:pass@localhost:5984/theDb'));
       chai.expect(request.get.callCount).to.equal(1);
       chai.expect(request.get.args[0]).to.deep.equal(['http://admin:pass@localhost:5984/_membership', { json: true }]);
       chai.expect(request.put.callCount).to.equal(3);

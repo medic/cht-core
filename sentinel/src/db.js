@@ -66,13 +66,17 @@ if (UNIT_TEST_ENV) {
 
   module.exports.initialize = async () => {
     const username = 'cht-sentinel';
-    const { couchUrl, serverUrl, dbName } = await serverChecks.getServerUrls(username);
+    const { serverUrl, dbName } = await serverChecks.getServerUrls(username);
 
-    module.exports.couchUrl = couchUrl.toString();
+    const couchUrl = new URL(serverUrl);
+    couchUrl.pathname = dbName;
+
     module.exports.serverUrl = serverUrl.toString();
-    module.exports.medic = new PouchDB(couchUrl.toString(), { fetch });
+    module.exports.couchUrl = couchUrl.toString();
+
+    module.exports.medic = new PouchDB(module.exports.couchUrl, { fetch });
     module.exports.medicDbName = dbName;
-    module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch });
+    module.exports.sentinel = new PouchDB(`${module.exports.couchUrl}-sentinel`, { fetch });
     module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`, { fetch });
   };
 
