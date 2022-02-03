@@ -7,6 +7,7 @@ const environment = require('./environment');
 const db = require('./db');
 const logger = require('./logger');
 const loginController = require('./controllers/login');
+const manifestService = require('./services/manifest');
 
 const SWMETA_DOC_ID = 'service-worker-meta';
 const apiSrcDirectoryPath = __dirname;
@@ -58,6 +59,16 @@ const getLoginPageContents = async () => {
   }
 };
 
+const getManifestContents = async() => {
+  try {
+    return await manifestService.render();
+  } catch(err) {
+    logger.error('Error generating manifest.json %o', err);
+    // default to returning the file
+    return [path.join(apiSrcDirectoryPath, 'templates', 'manifest.json')];
+  }
+};
+
 // Use the swPrecache library to generate a service-worker script
 const writeServiceWorkerFile = async () => {
   const config = {
@@ -77,11 +88,15 @@ const writeServiceWorkerFile = async () => {
       path.join(staticDirectoryPath, 'fonts', 'enketo-icons-v2.woff'),
       path.join(staticDirectoryPath, 'fonts', 'NotoSans-Bold.ttf'),
       path.join(staticDirectoryPath, 'fonts', 'NotoSans-Regular.ttf'),
+      
+      // Public info
+      path.join(apiSrcDirectoryPath, 'public', '*.png'),
       path.join(apiSrcDirectoryPath, 'public/login', '*.{css,js}'),
     ],
     dynamicUrlToDependencies: {
       '/': [path.join(staticDirectoryPath, 'index.html')], // Webapp's entry point
       '/medic/login': await getLoginPageContents(),
+      '/manifest.json': await getManifestContents(),
       '/medic/_design/medic/_rewrite/': [path.join(apiSrcDirectoryPath, 'public', 'appcache-upgrade.html')],
     },
     ignoreUrlParametersMatching: [/redirect/, /username/],

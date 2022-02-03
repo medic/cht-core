@@ -42,6 +42,7 @@ const createUserDb = require('./controllers/create-user-db');
 const purgedDocsController = require('./controllers/purged-docs');
 const couchConfigController = require('./controllers/couch-config');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
+const manifestService = require('./services/manifest.js');
 const connectedUserLog = require('./middleware/connected-user-log').log;
 const staticResources = /\/(templates|static)\//;
 // CouchDB is very relaxed in matching routes
@@ -245,6 +246,15 @@ app.get('/favicon.ico', (req, res) => {
 
 app.use(express.static(path.join(__dirname, '../build/public')));
 app.use(express.static(extractedResourceDirectory));
+
+// TODO pull implementation into controller
+app.get('/manifest.json', (req, res, next) => {
+  return manifestService.render()
+    .then(body => {
+      res.send(body);
+    })
+    .catch(next);
+});
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
