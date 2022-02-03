@@ -1,10 +1,12 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const service = require('../src/checks');
+const rewire = require('rewire');
 const http = require('http');
-const request = require('request');
+const request = require('request-promise-native');
 
 /* eslint-disable no-console */
+
+let service;
 
 describe('Server Checks service', () => {
 
@@ -16,6 +18,7 @@ describe('Server Checks service', () => {
     originalProcess = process;
     sinon.spy(console, 'log');
     sinon.spy(console, 'error');
+    service = rewire('../src/checks');
   });
 
   afterEach(() => {
@@ -38,7 +41,7 @@ describe('Server Checks service', () => {
           env: {},
           exit: () => 0
         };
-        service._nodeVersionCheck();
+        service.__get__('nodeVersionCheck')();
         chai.assert.isTrue(console.log.called);
         chai.assert.equal(console.log.callCount, 2);
         chai.assert.isTrue(log(0).startsWith('Node Environment Options'));
@@ -47,7 +50,7 @@ describe('Server Checks service', () => {
 
       it('too old', () => {
         process = {versions: {node: '6.1.0'}, exit: () => 0};
-        service._nodeVersionCheck();
+        service.__get__('nodeVersionCheck')();
         chai.assert.isTrue(console.log.called);
         chai.assert.equal(console.log.callCount, 1);
         chai.assert.equal(console.error.callCount, 1);
@@ -61,23 +64,27 @@ describe('Server Checks service', () => {
 
       it('valid', () => {
         process = { env: {
-          COUCH_URL: 'something',
+          COUCH_URL: 'http://couch.db',
           COUCH_NODE_NAME: 'something'
         } };
+        service = rewire('../src/checks');
         return Promise.resolve()
-          .then(() => service._envVarsCheck())
+          .then(() => service.__get__('envVarsCheck')())
           .then(() => {
             chai.assert.equal(console.log.callCount, 2);
-            chai.assert.equal(log(0), 'COUCH_URL something');
+            chai.assert.equal(log(0), 'COUCH_URL http://couch.db/');
             chai.assert.equal(log(1), 'COUCH_NODE_NAME something');
           });
       });
 
       it('missing COUCH_NODE_NAME', () => {
         process = { env: { COUCH_URL: 'something' } };
-        return service._envVarsCheck().catch((err) => {
-          chai.assert.isTrue(err.startsWith('At least one required environment'));
-        });
+        return service
+          .__get__('envVarsCheck')()
+          .then(() => chai.assert.fail('should throw'))
+          .catch((err) => {
+            chai.assert.isTrue(err.startsWith('At least one required environment'));
+          });
       });
 
       it('does not log credentials', () => {
@@ -85,8 +92,10 @@ describe('Server Checks service', () => {
           COUCH_URL: 'http://admin:supersecret@localhost:5984',
           COUCH_NODE_NAME: 'something'
         } };
+        service = rewire('../src/checks');
         return Promise.resolve()
-          .then(() => service._envVarsCheck())
+          .then(() => service
+            .__get__('envVarsCheck')())
           .then(() => {
             chai.assert.equal(console.log.callCount, 2);
             chai.assert.equal(log(0), 'COUCH_URL http://localhost:5984/');
@@ -99,20 +108,24 @@ describe('Server Checks service', () => {
     describe('admin party', () => {
 
       it('disabled', () => {
-        process = {env: {COUCH_URL: 'http://localhost:5984'}};
-        sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
-        return service._couchDbNoAdminPartyModeCheck();
+        process = { env: { COUCH_URL: 'http://localhost:5984' }};
+        sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
+        return service.__get__('couchDbNoAdminPartyModeCheck')();
       });
 
       it('enabled', () => {
         process = {env: {COUCH_URL: 'http://localhost:5984'}};
+        service = rewire('../src/checks');
         sinon.stub(http, 'get').callsArgWith(1, {statusCode: 200});
-        return service._couchDbNoAdminPartyModeCheck().catch((err) => {
-          chai.assert.equal(console.error.callCount, 2);
-          chai.assert.equal(error(0), 'Expected a 401 when accessing db without authentication.');
-          chai.assert.equal(error(1), 'Instead we got a 200');
-          chai.assert.isTrue(err.toString().startsWith('Error: CouchDB security seems to be misconfigured'));
-        });
+        return service
+          .__get__('couchDbNoAdminPartyModeCheck')()
+          .then(() => chai.assert.fail('should throw'))
+          .catch((err) => {
+            chai.assert.equal(console.error.callCount, 2);
+            chai.assert.equal(error(0), 'Expected a 401 when accessing db without authentication.');
+            chai.assert.equal(error(1), 'Instead we got a 200');
+            chai.assert.isTrue(err.toString().startsWith('Error: CouchDB security seems to be misconfigured'));
+          });
       });
 
     });
@@ -120,15 +133,18 @@ describe('Server Checks service', () => {
     describe('couchdb version', () => {
 
       it('handles error', () => {
-        sinon.stub(request, 'get').callsArgWith(1, 'error');
-        return service._couchDbVersionCheck('something').catch(err => {
-          chai.assert.equal(err, 'error');
-        });
+        sinon.stub(request, 'get').rejects('error');
+        return service
+          .__get__('couchDbVersionCheck')('something')
+          .then(() => chai.assert.fail('should throw'))
+          .catch(err => {
+            chai.assert.equal(err, 'error');
+          });
       });
 
       it('logs version', () => {
-        sinon.stub(request, 'get').callsArgWith(1, null, null, {version: '2'});
-        return service._couchDbVersionCheck('something').then(() => {
+        sinon.stub(request, 'get').resolves({ version: '2' });
+        return service.__get__('couchDbVersionCheck')('something').then(() => {
           chai.assert.equal(log(0), 'CouchDB Version: 2');
         });
       });
@@ -150,8 +166,11 @@ describe('Server Checks service', () => {
       };
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
       sinon.stub(request, 'get')
-        .onCall(0).callsArgWith(1, null, null, { all_nodes: [ 'nonode@nohost' ], cluster_nodes: [ 'nonode@nohost' ] })
-        .onCall(1).callsArgWith(1, null, null, { version: '2' });
+        .onCall(0).resolves({ all_nodes: [ 'nonode@nohost' ], cluster_nodes: [ 'nonode@nohost' ] })
+        .onCall(1).resolves({ version: '2' });
+
+      service = rewire('../src/checks');
+
       return service.check('something');
     });
 
@@ -166,10 +185,15 @@ describe('Server Checks service', () => {
         exit: () => 0
       };
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
-      sinon.stub(request, 'get').callsArgWith(1, 'error');
-      return service.check('something').catch(err => {
-        chai.expect(err).to.equal('error');
-      });
+      sinon.stub(request, 'get').rejects('error');
+      service = rewire('../src/checks');
+
+      return service
+        .check('something')
+        .then(() => chai.assert.fail('should throw'))
+        .catch(err => {
+          chai.expect(err.name).to.equal('error');
+        });
     });
 
     it('invalid server', function() {
@@ -181,10 +205,13 @@ describe('Server Checks service', () => {
         exit: () => 0
       };
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
-      sinon.stub(request, 'get').callsArgWith(1, null, null, {version: '2'});
-      return service.check('something').catch(err => {
-        chai.assert.isTrue(err.startsWith('At least one required environment'));
-      });
+      sinon.stub(request, 'get').resolves({ version: '2' });
+      return service
+        .check('something')
+        .then(() => chai.assert.fail('should throw'))
+        .catch(err => {
+          chai.assert.isTrue(err.startsWith('At least one required environment'));
+        });
     });
 
   });
@@ -201,11 +228,15 @@ describe('Server Checks service', () => {
       };
       sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
       sinon.stub(request, 'get')
-        .onCall(0).callsArgWith(1, null, null, { all_nodes: [ 'nonode@nohost' ], cluster_nodes: [ 'nonode@nohost' ] })
-        .onCall(1).callsArgWith(1, null, null, { version: '2' });
-      return service.check('something').catch(err => {
-        chai.assert.isTrue(err.startsWith('Environment variable \'COUCH_NODE_NAME\' set to'));
-      });
+        .onCall(0).resolves({ all_nodes: [ 'nonode@nohost' ], cluster_nodes: [ 'nonode@nohost' ] })
+        .onCall(1).resolves({ version: '2' });
+      return service
+        .check('something')
+        .then(() => chai.assert.fail('should throw'))
+        .catch(err => {
+          console.log(err);
+          chai.assert.isTrue(err.message.startsWith('Environment variable \'COUCH_NODE_NAME\' set to'));
+        });
     });
 
     it('valid node name logged', function() {
@@ -219,19 +250,21 @@ describe('Server Checks service', () => {
       };
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
       sinon.stub(request, 'get')
-        .onCall(0).callsArgWith(1, null, null, { all_nodes: [ 'nonode@nohost' ], cluster_nodes: [ 'nonode@nohost' ] })
-        .onCall(1).callsArgWith(1, null, null, { version: '2' });
+        .onCall(0).resolves({ all_nodes: [ 'nonode@nohost' ], cluster_nodes: [ 'nonode@nohost' ] })
+        .onCall(1).resolves({ version: '2' });
+
+      service = rewire('../src/checks');
 
       return service.check('something').then(() => {
-        chai.assert.equal(console.log.callCount, 6);
-        chai.assert.equal(log(4), 'Environment variable "COUCH_NODE_NAME" matches server "nonode@nohost"');
+        chai.assert.equal(console.log.callCount, 7);
+        chai.assert.equal(log(5), 'Environment variable "COUCH_NODE_NAME" matches server "nonode@nohost"');
       });
     });
   });
 
   describe('getCouchDbVersion', () => {
     it('should return couchdb version', () => {
-      sinon.stub(request, 'get').callsArgWith(1, null, null, { version: '2.2.0' });
+      sinon.stub(request, 'get').resolves({ version: '2.2.0' });
       return service.getCouchDbVersion('someURL').then(version => {
         chai.expect(version).to.equal('2.2.0');
         chai.expect(request.get.callCount).to.equal(1);
@@ -240,12 +273,12 @@ describe('Server Checks service', () => {
     });
 
     it('should reject errors', () => {
-      sinon.stub(request, 'get').callsArgWith(1, 'someErr', null, null);
+      sinon.stub(request, 'get').rejects('someErr');
       return service
         .getCouchDbVersion('someOtherURL')
-        .then(() => chai.expect(false).to.equal('Should have thrown'))
+        .then(() => chai.expect.fail('Should have thrown'))
         .catch(err => {
-          chai.expect(err).to.equal('someErr');
+          chai.expect(err.name).to.equal('someErr');
           chai.expect(request.get.callCount).to.equal(1);
           chai.expect(request.get.args[0][0]).to.deep.equal({ url: 'someOtherURL', json: true });
         });

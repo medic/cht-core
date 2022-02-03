@@ -28,6 +28,7 @@ const getNoAuthURL = (serverUrl) => {
   noAuthUrl.username = '';
   return noAuthUrl;
 };
+
 const getMembershipUrl = (serverUrl) => {
   const url = new URL(serverUrl);
   url.pathname = '/_membership';
@@ -91,7 +92,7 @@ const couchNodeNamesMatch = async () => {
     return;
   }
 
-  const noAuthUrl = getNoAuthURL(getMembershipUrl(serverUrl));
+  const noAuthUrl = getNoAuthURL(getMembershipUrl(COUCH_URL));
   // we don't want to log user and password, so strip them when we log via getNoAuthURL();
   throw new Error(`Environment variable 'COUCH_NODE_NAME' set to "${COUCH_NODE_NAME}" but doesn't match ` +
                   `what's on CouchDB Membership endpoint at "${noAuthUrl.toString()}". See ` +
@@ -159,10 +160,4 @@ module.exports = {
   check,
   getServerUrls,
   getCouchDbVersion,
-  // todo
-  _nodeVersionCheck: () => nodeVersionCheck(),
-  _envVarsCheck: () => envVarsCheck(),
-  _couchDbNoAdminPartyModeCheck: () => couchDbNoAdminPartyModeCheck(),
-  _couchNodeNamesMatch: () => couchNodeNamesMatch(),
-  _couchDbVersionCheck: (serverUrl) => couchDbVersionCheck(serverUrl)
 };
