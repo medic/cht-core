@@ -81,7 +81,7 @@ if (UNIT_TEST_ENV) {
       return err ? reject(err) : resolve(body);
     });
   });
-  module.exports.get = db => new PouchDB(`${module.exports.serverUrl}/${db}`);
+  module.exports.get = db => new PouchDB(`${module.exports.serverUrl}/${db}`, { fetch });
   module.exports.close = db => {
     if (!db || db._destroyed || db._closed) {
       return;

@@ -62,16 +62,16 @@ describe('environment', () => {
 
     it('should create user and set urls', async () => {
       sinon.stub(serverChecks, 'getServerUrls').resolves({
-        couchUrl: new URL('http://couch.db:8234/db_name'),
-        serverUrl: new URL('http://couch.db:8234'),
+        couchUrl: new URL('http://adm:pas@couch.db:8234/db_name'),
+        serverUrl: new URL('http://adm:pas@couch.db:8234'),
         password: 'newpass',
         dbName: 'db_name',
       });
 
       await environment.initialize();
 
-      expect(environment.couchUrl).to.equal('http://couch.db:8234/db_name');
-      expect(environment.serverUrl).to.equal('http://couch.db:8234/');
+      expect(environment.couchUrl).to.equal('http://adm:pas@couch.db:8234/db_name');
+      expect(environment.serverUrl).to.equal('http://adm:pas@couch.db:8234/');
       expect(environment.protocol).to.equal('http:');
       expect(environment.port).to.equal('8234');
       expect(environment.host).to.equal('couch.db');
