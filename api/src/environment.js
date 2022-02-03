@@ -16,14 +16,14 @@ const initialize = async () => {
     );
   }
   const username = 'cht-api';
-  const { couchUrl, serverUrl, password } = await serverChecks.getServerUrls(username);
+  const { couchUrl, serverUrl, password, dbName } = await serverChecks.getServerUrls(username);
 
   module.exports.couchUrl = couchUrl.toString();
   module.exports.serverUrl = serverUrl.toString();
   module.exports.protocol = serverUrl.protocol;
   module.exports.port = serverUrl.port;
   module.exports.host = serverUrl.hostname;
-  module.exports.db = couchUrl.pathname;
+  module.exports.db = dbName;
   module.exports.username = username;
   module.exports.password = password;
 };

@@ -3,6 +3,9 @@ const request = require('request-promise-native');
 const fs = require('fs');
 const path = require('path');
 
+const chai = require('chai');
+chai.use(require('chai-exclude'));
+
 const saveServiceWorkerContents = async () => {
   // this is silly
   // Because the service worker is generated at runtime, we need to have API booted to generate the file.

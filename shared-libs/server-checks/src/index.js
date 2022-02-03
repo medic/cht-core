@@ -139,6 +139,7 @@ const getServerUrls = async (username) => {
 
   const couchUrl = new URL(envUrl);
   couchUrl.pathname = couchUrl.pathname.replace(/\/$/, '');
+  const dbName =  couchUrl.pathname.replace(/^\//, '');
 
   const serverUrl = new URL(envUrl);
   serverUrl.pathname = '';
@@ -151,7 +152,7 @@ const getServerUrls = async (username) => {
   serverUrl.username = username;
   serverUrl.password = password;
 
-  return { serverUrl, couchUrl, password };
+  return { serverUrl, couchUrl, password, dbName };
 };
 
 module.exports = {
