@@ -945,8 +945,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test-api-integration', 'Integration tests for medic-api', [
     'exec:check-env-vars',
-    'env:int-test',
     'exec:setup-api-integration',
+    'setup-api-integration',
     'mochaTest:api-integration',
   ]);
 
@@ -981,7 +981,7 @@ module.exports = function(grunt) {
     'static-analysis',
     'install-dependencies',
     'build',
-    'env:int-test',
+    'setup-api-integration',
     'mochaTest:api-integration',
     'unit',
   ]);
@@ -1067,6 +1067,10 @@ module.exports = function(grunt) {
     buildUtils.updateServiceWorker().then(done);
   });
   grunt.registerTask('set-ddocs-version', buildUtils.setDdocsVersion);
+  grunt.registerTask('setup-api-integration', function () {
+    const done = this.async();
+    require('./api/tests/integration/init').run().then(done);
+  });
 
   grunt.registerTask('publish-for-testing', 'Publish the staging doc to the testing server', [
     'couch-compile:staging',

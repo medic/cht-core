@@ -34,7 +34,7 @@ describe('db', () => {
     it('should initialize dbs', () => {
       const couchUrl = 'https://adm:pas@couch.db/medic';
       sinon.stub(environment, 'couchUrl').get(() => couchUrl);
-      sinon.stub(environment, 'serverUrl').get(() => 'https://adm:pas@couch.db');
+      sinon.stub(environment, 'serverUrl').get(() => 'https://adm:pas@couch.db/');
       sinon.stub(environment, 'buildsUrl').get(() => 'https://builds.db');
 
       db.initialize();
@@ -56,7 +56,7 @@ describe('db', () => {
 
   describe('get', () => {
     it('should create the database', () => {
-      sinon.stub(environment, 'serverUrl').get(() => 'https://couch.db');
+      sinon.stub(environment, 'serverUrl').get(() => 'https://couch.db/');
       const database = db.get('database');
       expect(database.name).to.equal('https://couch.db/database');
     });
