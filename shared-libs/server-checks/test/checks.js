@@ -284,4 +284,77 @@ describe('Server Checks service', () => {
         });
     });
   });
+
+  describe('getServerUrls', () => {
+    it('should create service user for every node and return updated urls', async () => {
+      process.env = {
+        COUCH_URL: 'http://admin:pass@localhost:5984/theDb',
+      };
+      service = rewire('../src/checks');
+
+      sinon.stub(request, 'get').resolves({ cluster_nodes: ['node1', 'node2', 'node3'] });
+      sinon.stub(request, 'put').resolves();
+
+      const result = await service.getServerUrls('myUser');
+
+      chai.expect(result.dbName).to.equal('theDb');
+      chai.expect(result.serverUrl).to.deep.equal(new URL('http://myUser:pass@localhost:5984'));
+      chai.expect(result.couchUrl).to.deep.equal(new URL('http://myUser:pass@localhost:5984/theDb'));
+      chai.expect(request.get.callCount).to.equal(1);
+      chai.expect(request.get.args[0]).to.deep.equal(['http://admin:pass@localhost:5984/_membership', { json: true }]);
+      chai.expect(request.put.callCount).to.equal(3);
+      chai.expect(request.put.args).to.deep.equal([
+        [{ url: 'http://admin:pass@localhost:5984/_node/node1/_config/admins/myUser', json: true, body: 'pass' }],
+        [{ url: 'http://admin:pass@localhost:5984/_node/node2/_config/admins/myUser', json: true, body: 'pass' }],
+        [{ url: 'http://admin:pass@localhost:5984/_node/node3/_config/admins/myUser', json: true, body: 'pass' }],
+      ]);
+    });
+
+    it('should throw error when get fails', async () => {
+      process.env = {
+        COUCH_URL: 'http://admin:pass@localhost:5984/theDb',
+      };
+      service = rewire('../src/checks');
+
+      sinon.stub(request, 'get').rejects({ an: 'error' });
+
+      try {
+        await service.getServerUrls('myUser');
+        chai.expect.fail('Should have thrown');
+      } catch (err) {
+        chai.expect(err).to.deep.equal({ an: 'error' });
+      }
+    });
+
+    it('should throw error when put fails', async () => {
+      process.env = {
+        COUCH_URL: 'http://admin:pass@localhost:5984/theDb',
+      };
+      service = rewire('../src/checks');
+
+      sinon.stub(request, 'get').resolves({ cluster_nodes: ['node1', 'node2'] });
+      sinon.stub(request, 'put').rejects({ error: 'whops' });
+
+      try {
+        await service.getServerUrls('admin');
+        chai.expect.fail('Should have thrown');
+      } catch (err) {
+        chai.expect(err).to.deep.equal({ error: 'whops' });
+      }
+    });
+
+    it('should throw error when url is invalid', async () => {
+      process.env = {
+        COUCH_URL: 'not a url',
+      };
+      service = rewire('../src/checks');
+
+      try {
+        await service.getServerUrls('admin');
+        chai.expect.fail('Should have thrown');
+      } catch (err) {
+        chai.expect(err.code).to.equal('ERR_INVALID_URL');
+      }
+    });
+  });
 });

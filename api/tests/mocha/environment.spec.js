@@ -64,7 +64,6 @@ describe('environment', () => {
       sinon.stub(serverChecks, 'getServerUrls').resolves({
         couchUrl: new URL('http://adm:pas@couch.db:8234/db_name'),
         serverUrl: new URL('http://adm:pas@couch.db:8234'),
-        password: 'newpass',
         dbName: 'db_name',
       });
 
@@ -77,7 +76,7 @@ describe('environment', () => {
       expect(environment.host).to.equal('couch.db');
       expect(environment.db).to.equal('db_name');
       expect(environment.username).to.equal('cht-api');
-      expect(environment.password).to.equal('newpass');
+      expect(environment.password).to.equal('pas');
 
       expect(serverChecks.getServerUrls.callCount).to.equal(1);
       expect(serverChecks.getServerUrls.args[0]).to.deep.equal(['cht-api']);

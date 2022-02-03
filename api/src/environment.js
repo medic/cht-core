@@ -27,7 +27,7 @@ const initialize = async () => {
     );
   }
   const username = 'cht-api';
-  const { couchUrl, serverUrl, password, dbName } = await serverChecks.getServerUrls(username);
+  const { couchUrl, serverUrl, dbName } = await serverChecks.getServerUrls(username);
 
   module.exports.couchUrl = couchUrl.toString();
   module.exports.serverUrl = serverUrl.toString();
@@ -36,7 +36,7 @@ const initialize = async () => {
   module.exports.host = serverUrl.hostname;
   module.exports.db = dbName;
   module.exports.username = username;
-  module.exports.password = password;
+  module.exports.password = serverUrl.password;
 };
 
 let deployInfo;

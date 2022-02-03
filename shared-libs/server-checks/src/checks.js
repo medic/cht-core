@@ -1,5 +1,4 @@
 const request = require('request-promise-native');
-const uuid = require('uuid').v4;
 const MIN_MAJOR = 8;
 
 const { COUCH_URL, COUCH_NODE_NAME } = process.env;
@@ -120,40 +119,32 @@ const check = () => {
 };
 
 const getNodes = async (serverUrl) => {
-  const response = await request.get(`${serverUrl}/_membership`, { json: true });
+  const response = await request.get(`${serverUrl}_membership`, { json: true });
   return response && response.cluster_nodes;
 };
 
-const createUser = async (username, serverUrl) => {
+const createUser = async (username, password, serverUrl) => {
   const nodes = await getNodes(serverUrl);
-  const password = uuid();
   for (const node of nodes) {
-    const url = `${serverUrl}/_node/${node}/_config/admins/${username}`;
-    await request.put({ url, json: true, method: 'PUT', body: password });
+    const url = `${serverUrl}_node/${node}/_config/admins/${username}`;
+    await request.put({ url, json: true, body: password });
   }
-
-  return password;
 };
 
 const getServerUrls = async (username) => {
-  const envUrl = process.env.COUCH_URL;
-
-  const couchUrl = new URL(envUrl);
+  const couchUrl = new URL(COUCH_URL);
   couchUrl.pathname = couchUrl.pathname.replace(/\/$/, '');
-  const dbName =  couchUrl.pathname.replace(/^\//, '');
+  const dbName = couchUrl.pathname.replace(/^\//, '');
 
-  const serverUrl = new URL(envUrl);
+  const serverUrl = new URL(COUCH_URL);
   serverUrl.pathname = '';
 
-  const password = await createUser(username, serverUrl.toString());
+  await createUser(username, serverUrl.password, serverUrl.toString());
 
   couchUrl.username = username;
-  couchUrl.password = password;
-
   serverUrl.username = username;
-  serverUrl.password = password;
 
-  return { serverUrl, couchUrl, password, dbName };
+  return { serverUrl, couchUrl, dbName };
 };
 
 module.exports = {
