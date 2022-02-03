@@ -141,6 +141,13 @@ module.exports = function(grunt) {
             UNIT_TEST_ENV: '1',
           },
         },
+      },
+      'int-test-env': {
+        options: {
+          add: {
+            INT_TEST_ENV: '1',
+          },
+        },
       }
     },
     less: {
@@ -355,7 +362,7 @@ module.exports = function(grunt) {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
       'setup-api-integration': {
-        cmd: `cd api && npm ci}`,
+        cmd: `cd api && npm ci`,
       },
       'npm-ci-shared-libs': {
         cmd: (production) => {
@@ -904,6 +911,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('e2e-integration', 'Deploy app for testing', [
     'e2e-env-setup',
+    'env:int-test-env',
     'exec:e2e-integration',
     'exec:eslint-sw'
   ]);
@@ -938,6 +946,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test-api-integration', 'Integration tests for medic-api', [
     'exec:check-env-vars',
+    'env:unit-test',
     'exec:setup-api-integration',
     'mochaTest:api-integration',
   ]);

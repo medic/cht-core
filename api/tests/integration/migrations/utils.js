@@ -5,6 +5,7 @@ const path = require('path');
 const readFileAsync = promisify(fs.readFile);
 const logger = require('../../../src/logger');
 const db = require('../../../src/db');
+db.initialize();
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));

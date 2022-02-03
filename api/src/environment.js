@@ -1,7 +1,7 @@
 const path = require('path');
 const serverChecks = require('@medic/server-checks');
 
-const { UNIT_TEST_ENV, COUCH_URL, BUILDS_URL } = process.env;
+const { UNIT_TEST_ENV, INT_TEST_ENV, COUCH_URL, BUILDS_URL } = process.env;
 const DEFAULT_BUILDS_URL = 'https://staging.dev.medicmobile.org/_couch/builds';
 
 module.exports.buildsUrl = BUILDS_URL || DEFAULT_BUILDS_URL;
@@ -16,6 +16,11 @@ if (UNIT_TEST_ENV) {
   module.exports.db = '';
   module.exports.username = '';
   module.exports.password = '';
+}
+
+if (INT_TEST_ENV) {
+  module.exports.couchUrl = COUCH_URL;
+  module.exports.serverUrl = COUCH_URL.replace(/medic\/?^/, '');
 }
 
 const initialize = async () => {

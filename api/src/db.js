@@ -65,7 +65,7 @@ if (UNIT_TEST_ENV) {
     opts.headers.set('X-CHT-Service', 'api');
     return PouchDB.fetch(url, opts);
   };
-  const getDbUrl = name => `${environment.serverUrl}/${name}`;
+  const getDbUrl = name => `${environment.serverUrl}${name}`;
 
   module.exports.initialize = () => {
     const DB = new PouchDB(environment.couchUrl, { fetch });
