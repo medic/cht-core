@@ -142,7 +142,7 @@ module.exports = function(grunt) {
           },
         },
       },
-      'int-test-env': {
+      'int-test': {
         options: {
           add: {
             INT_TEST_ENV: '1',
@@ -911,7 +911,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('e2e-integration', 'Deploy app for testing', [
     'e2e-env-setup',
-    'env:int-test-env',
     'exec:e2e-integration',
     'exec:eslint-sw'
   ]);
@@ -946,7 +945,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test-api-integration', 'Integration tests for medic-api', [
     'exec:check-env-vars',
-    'env:unit-test',
+    'env:int-test',
     'exec:setup-api-integration',
     'mochaTest:api-integration',
   ]);
@@ -982,6 +981,7 @@ module.exports = function(grunt) {
     'static-analysis',
     'install-dependencies',
     'build',
+    'env:int-test',
     'mochaTest:api-integration',
     'unit',
   ]);
