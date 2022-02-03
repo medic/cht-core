@@ -1,6 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const service = require('../src/index');
+const service = require('../src/checks');
 const http = require('http');
 const request = require('request');
 

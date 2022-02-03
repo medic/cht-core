@@ -7,6 +7,17 @@ const DEFAULT_BUILDS_URL = 'https://staging.dev.medicmobile.org/_couch/builds';
 module.exports.buildsUrl = BUILDS_URL || DEFAULT_BUILDS_URL;
 module.exports.ddoc = 'medic';
 
+if (UNIT_TEST_ENV) {
+  module.exports.couchUrl = '';
+  module.exports.serverUrl = '';
+  module.exports.protocol = '';
+  module.exports.port = '';
+  module.exports.host = '';
+  module.exports.db = '';
+  module.exports.username = '';
+  module.exports.password = '';
+}
+
 const initialize = async () => {
   if (!UNIT_TEST_ENV && !COUCH_URL) {
     throw new Error(

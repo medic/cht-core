@@ -2,7 +2,7 @@
   "name": "@medic/server-checks",
   "version": "1.0.1",
   "description": "Server startup checks.",
-  "main": "src/index.js",
+  "main": "src/checks.js",
   "scripts": {
     "test": "mocha ./test"
   },
