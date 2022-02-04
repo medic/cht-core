@@ -117,4 +117,32 @@ if (UNIT_TEST_ENV) {
       return tasks;
     });
   };
+
+  /**
+   * @param {Database} database
+   * @param {Array<DesignDocument>} docs
+   * @return {[{ id: string, rev: string }]}
+   */
+  module.exports.saveDocs = async (db, docs) => {
+    if (!db) {
+      throw new Error('Invalid database to delete from: %o', db);
+    }
+
+    if (!docs.length) {
+      return [];
+    }
+
+    const results = await db.bulkDocs(docs);
+    const errors = results
+      .filter(result => result.error)
+      .map(result => `saving ${result.id} failed with ${result.error}`);
+
+    if (!errors.length) {
+      return results;
+    }
+
+    // todo try one by one!
+
+    throw new Error(`Error while saving docs: ${errors.join(', ')}`);
+  };
 }

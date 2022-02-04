@@ -1,8 +1,4 @@
-const fs = require('fs');
-const path = require('path');
-
 const db = require('../../db');
-const environment = require('../../environment');
 const logger = require('../../logger');
 
 /**
@@ -20,49 +16,40 @@ const logger = require('../../logger');
  * @property {any} state_history[].details
  */
 
-if (!fs.promises) {
-  const promisify = require('util').promisify;
-  // temporary patching to work on Node 8.
-  // This code will never run on Node 8 in prod!
-  fs.promises = {
-    mkdir: promisify(fs.mkdir),
-    readdir: promisify(fs.readdir),
-    rmdir: promisify(fs.readdir),
-    unlink: promisify(fs.unlink),
-    access: promisify(fs.access),
-    writeFile: promisify(fs.writeFile),
-    readFile: promisify(fs.readFile),
-  };
-}
-
 const UPGRADE_LOG_STATES = {
   INITIATED: 'initiated',
   STAGED: 'staged',
   INDEXING: 'indexing',
   INDEXED: 'indexed',
   COMPLETING: 'completing',
+  FINALIZING: 'finalizing',
+  FINALIZED: 'finalized',
   COMPLETE: 'complete',
   ABORTED: 'aborted',
   ERRORED: 'errored',
 };
 
 const UPGRADE_LOG_NAME = 'upgrade_log';
-const UPGRADE_LOG_PATH = path.join(environment.upgradePath, 'upgrade-log.json');
 
-const getUpgradeLogId = (version, startDate) => `${UPGRADE_LOG_NAME}:${version}:${startDate}`;
+const getUpgradeLogId = (version, startDate) => `${UPGRADE_LOG_NAME}:${startDate}:${version}`;
 
+/**
+ * Gets last chronological upgrade log
+ * @returns UpgradeLog | undefined
+ */
 const getUpgradeLog = async () => {
-  try {
-    const content = await fs.promises.readFile(UPGRADE_LOG_PATH, 'utf-8');
-    return JSON.parse(content);
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      // file missing
-      return;
-    }
+  const results = await db.medicLogs.allDocs({
+    startkey: `${UPGRADE_LOG_NAME}\ufff0`,
+    descending: true,
+    limit: 1,
+    include_docs: true
+  });
 
-    logger.error('Error when getting current upgrade log contents: %o', err);
+  if (!results.rows.length) {
+    return;
   }
+
+  return results.rows[0].doc;
 };
 
 const getDeployInfo = async () => {
@@ -111,26 +98,18 @@ const createUpgradeLog = async (action, toVersion = '', fromVersion = '', userna
   pushState(upgradeLog, UPGRADE_LOG_STATES.INITIATED, startDate);
 
   await db.medicLogs.put(upgradeLog);
-  await fs.promises.writeFile(UPGRADE_LOG_PATH, JSON.stringify(upgradeLog));
-  return upgradeLog;
 };
 
 /**
  * @param {string} state
  */
 const update = async (state) => {
-  const upgradeLogFile = await getUpgradeLog();
-  if (!upgradeLogFile) {
+  const upgradeLog = await getUpgradeLog();
+  if (!upgradeLog) {
     logger.info('Upgrade log tracking file was not found.');
     return;
   }
-  /**
-   * @type UpgradeLog
-   */
-  const upgradeLog = await db.medicLogs.get(upgradeLogFile._id);
   pushState(upgradeLog, state);
-  await db.medicLogs.put(upgradeLog);
-  await fs.promises.writeFile(UPGRADE_LOG_PATH, JSON.stringify(upgradeLog));
   return upgradeLog;
 };
 
@@ -159,12 +138,20 @@ const setComplete = async () => {
   logger.info('Install complete');
 };
 
-const setAborted = () => update(UPGRADE_LOG_STATES.ABORTED);
+const setAborted = async () => {
+  const upgradeLog = await getUpgradeLog();
+  if (upgradeLog.state === UPGRADE_LOG_STATES.FINALIZED) { // todo
+    return;
+  }
+
+  await update(UPGRADE_LOG_STATES.ABORTED);
+};
+
 const setErrored = () => update(UPGRADE_LOG_STATES.ERRORED);
 
 module.exports = {
   create: createUpgradeLog,
-  getUpgradeLog,
+  get: getUpgradeLog(),
   getDeployInfo,
   setStaged,
   setIndexing,

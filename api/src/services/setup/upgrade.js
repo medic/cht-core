@@ -1,6 +1,6 @@
-const indexerProgressService = require('./indexer-progress');
-const upgradeLogService = require('./upgrade-log');
-const installer = require('./install');
+const viewIndexerProgress = require('./view-indexer-progress');
+const upgradeLog = require('./upgrade-log');
+const upgradeSteps = require('./upgrade-steps');
 const logger = require('../../logger');
 
 const upgrade = async (version, username, stageOnly) => {
@@ -9,24 +9,24 @@ const upgrade = async (version, username, stageOnly) => {
   }
 
   try {
-    await installer.prep(version, username, stageOnly);
+    await upgradeSteps.prep(version, username, stageOnly);
     safeInstall(version, stageOnly);
   } catch (err) {
-    await upgradeLogService.setErrored();
+    await upgradeLog.setErrored();
     throw err;
   }
 };
 
 const safeInstall = async (version, stageOnly) => {
   try {
-    await installer.stage(version);
-    await installer.indexStagedViews();
+    await upgradeSteps.stage(version);
+    await upgradeSteps.indexStagedViews();
     if (stageOnly) {
       return;
     }
     await complete();
   } catch (err) {
-    await upgradeLogService.setErrored();
+    await upgradeLog.setErrored();
     logger.error('Error thrown when indexing views %o', err);
   }
 };
@@ -37,10 +37,10 @@ const complete = async () => {
   // completing the install (overwriting the staged ddocs) is done when API starts up.
 };
 
-const abort = () => installer.abort();
+const abort = () => upgradeSteps.abort();
 
-const indexerProgress = () => indexerProgressService.query();
-const upgradeInProgress = () => upgradeLogService.getUpgradeLog();
+const indexerProgress = () => viewIndexerProgress.query();
+const upgradeInProgress = () => upgradeLog.get();
 
 module.exports = {
   upgrade,
