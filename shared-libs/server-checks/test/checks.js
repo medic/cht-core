@@ -230,6 +230,9 @@ describe('Server Checks service', () => {
       sinon.stub(request, 'get')
         .onCall(0).resolves({ all_nodes: [ 'nonode@nohost' ], cluster_nodes: [ 'nonode@nohost' ] })
         .onCall(1).resolves({ version: '2' });
+
+      service = rewire('../src/checks');
+
       return service
         .check('something')
         .then(() => chai.assert.fail('should throw'))
