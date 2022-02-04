@@ -29,6 +29,13 @@ const UPGRADE_LOG_STATES = {
   ERRORED: 'errored',
 };
 
+const isFinalState = (state) => {
+  return state === UPGRADE_LOG_STATES.FINALIZED ||
+         state === UPGRADE_LOG_STATES.COMPLETE ||
+         state === UPGRADE_LOG_STATES.ABORTED ||
+         state === UPGRADE_LOG_STATES.ERRORED;
+};
+
 const UPGRADE_LOG_NAME = 'upgrade_log';
 
 const getUpgradeLogId = (version, startDate) => `${UPGRADE_LOG_NAME}:${startDate}:${version}`;
@@ -38,8 +45,9 @@ const getUpgradeLogId = (version, startDate) => `${UPGRADE_LOG_NAME}:${startDate
  * @returns UpgradeLog | undefined
  */
 const getUpgradeLog = async () => {
+  const now = new Date().getTime();
   const results = await db.medicLogs.allDocs({
-    startkey: `${UPGRADE_LOG_NAME}\ufff0`,
+    startkey: `${UPGRADE_LOG_NAME}:${now}`,
     descending: true,
     limit: 1,
     include_docs: true
@@ -49,7 +57,12 @@ const getUpgradeLog = async () => {
     return;
   }
 
-  return results.rows[0].doc;
+  const upgradeLog = results.rows[0].doc;
+  if (isFinalState(upgradeLog.state)) {
+    logger.info('Last upgrade log is already final');
+    return;
+  }
+  return upgradeLog;
 };
 
 const getDeployInfo = async () => {

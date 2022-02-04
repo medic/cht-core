@@ -1,10 +1,8 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
 const rewire = require('rewire');
-const fs = require('fs');
 
 const db = require('../../../../src/db');
-const env = require('../../../../src/environment');
 
 let upgradeLogService;
 let clock;
@@ -12,7 +10,6 @@ let clock;
 describe('UpgradeLog service', () => {
   beforeEach(() => {
     clock = sinon.useFakeTimers();
-    sinon.stub(env, 'upgradePath').value('upgradePath');
     upgradeLogService = rewire('../../../../src/services/setup/upgrade-log');
   });
 
@@ -25,7 +22,6 @@ describe('UpgradeLog service', () => {
     it('should create log document and file', async () => {
       clock.tick(5000);
       sinon.stub(db.medicLogs, 'put').resolves({ id: 'id', rev: 'rev', ok: true });
-      sinon.stub(fs.promises, 'writeFile').resolves();
 
       const log = await upgradeLogService.create('action', '4.1.0', '4.0.0', 'anadmin');
       const expected = {
@@ -43,17 +39,11 @@ describe('UpgradeLog service', () => {
       expect(log).to.deep.equal(expected);
       expect(db.medicLogs.put.callCount).to.equal(1);
       expect(db.medicLogs.put.args[0]).to.deep.equal([expected]);
-      expect(fs.promises.writeFile.callCount).to.equal(1);
-      expect(fs.promises.writeFile.args[0]).to.deep.equal([
-        'upgradePath/upgrade-log.json',
-        JSON.stringify(expected),
-      ]);
     });
 
     it('should work without setting versions', async () => {
       clock.tick(10000);
       sinon.stub(db.medicLogs, 'put').resolves({ id: 'id', rev: 'rev', ok: true });
-      sinon.stub(fs.promises, 'writeFile').resolves();
 
       const log = await upgradeLogService.create();
       const expected = {
@@ -71,17 +61,11 @@ describe('UpgradeLog service', () => {
       expect(log).to.deep.equal(expected);
       expect(db.medicLogs.put.callCount).to.equal(1);
       expect(db.medicLogs.put.args[0]).to.deep.equal([expected]);
-      expect(fs.promises.writeFile.callCount).to.equal(1);
-      expect(fs.promises.writeFile.args[0]).to.deep.equal([
-        'upgradePath/upgrade-log.json',
-        JSON.stringify(expected),
-      ]);
     });
 
     it('should throw an error if db write fails', async () => {
       clock.tick(10000);
       sinon.stub(db.medicLogs, 'put').rejects({ status: 'error' });
-      sinon.stub(fs.promises, 'writeFile').resolves();
 
       try {
         await upgradeLogService.create('act', 'to', 'from', 'usr');
@@ -101,14 +85,12 @@ describe('UpgradeLog service', () => {
           state: 'initiated',
           updated_date: 10000,
         }]);
-        expect(fs.promises.writeFile.callCount).to.equal(0);
       }
     });
 
     it('should throw an error if fs write fails', async () => {
       clock.tick(10000);
       sinon.stub(db.medicLogs, 'put').rejects({ status: 'error' });
-      sinon.stub(fs.promises, 'writeFile').resolves();
 
       try {
         await upgradeLogService.create('ac', 'to', 'from', 'user');
@@ -128,7 +110,6 @@ describe('UpgradeLog service', () => {
           state: 'initiated',
           updated_date: 10000,
         }]);
-        expect(fs.promises.writeFile.callCount).to.equal(0);
       }
     });
   });
@@ -136,7 +117,6 @@ describe('UpgradeLog service', () => {
   describe('update', () => {
     it('should update the state of the upgrade log file', async () => {
       clock.tick(2000);
-      const fsUpgradeLog = { _id: 'upgrade_log_id' };
       const docUpugradeLog = {
         _id: 'upgrade_log_id',
         _rev: '1',
@@ -148,10 +128,8 @@ describe('UpgradeLog service', () => {
         updated_date: 1000,
         state_history: [{ state: 'initiated', date: 1000 }],
       };
-      sinon.stub(db.medicLogs, 'get').resolves(docUpugradeLog);
+      sinon.stub(db.medicLogs, 'allDocs').resolves({ rows: [{ doc: docUpugradeLog }] });
       sinon.stub(db.medicLogs, 'put');
-      sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(fsUpgradeLog));
-      sinon.stub(fs.promises, 'writeFile').resolves();
 
       const updatedLog = await upgradeLogService.__get__('update')('new state');
 
@@ -169,19 +147,14 @@ describe('UpgradeLog service', () => {
           { state: 'new state', date: 2000 },
         ],
       });
-      expect(fs.promises.readFile.callCount).to.equal(1);
-      expect(fs.promises.readFile.args[0]).to.deep.equal(['upgradePath/upgrade-log.json', 'utf-8']);
       expect(db.medicLogs.get.callCount).to.equal(1);
       expect(db.medicLogs.get.args[0]).to.deep.equal(['upgrade_log_id']);
       expect(db.medicLogs.put.callCount).to.equal(1);
       expect(db.medicLogs.put.args[0]).to.deep.equal([updatedLog]);
-      expect(fs.promises.writeFile.callCount).to.equal(1);
-      expect(fs.promises.writeFile.args[0]).to.deep.equal(['upgradePath/upgrade-log.json', JSON.stringify(updatedLog)]);
     });
 
     it('should work when there is no state history', async () => {
       clock.tick(1500);
-      const fsUpgradeLog = { _id: 'upgrade_log_id' };
       const docUpugradeLog = {
         _id: 'upgrade_log_id',
         _rev: '1',
@@ -192,10 +165,8 @@ describe('UpgradeLog service', () => {
         state: 'initiated',
         updated_date: 1000,
       };
-      sinon.stub(db.medicLogs, 'get').resolves(docUpugradeLog);
+      sinon.stub(db.medicLogs, 'allDocs').resolves({ rows: [{ doc: docUpugradeLog }] });
       sinon.stub(db.medicLogs, 'put');
-      sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(fsUpgradeLog));
-      sinon.stub(fs.promises, 'writeFile').resolves();
 
       const updatedLog = await upgradeLogService.__get__('update')('state');
 
@@ -214,32 +185,40 @@ describe('UpgradeLog service', () => {
       });
       expect(db.medicLogs.put.callCount).to.equal(1);
       expect(db.medicLogs.put.args[0]).to.deep.equal([updatedLog]);
-      expect(fs.promises.writeFile.callCount).to.equal(1);
-      expect(fs.promises.writeFile.args[0]).to.deep.equal(['upgradePath/upgrade-log.json', JSON.stringify(updatedLog)]);
     });
 
-    it('should do nothing if tracking file is not found', async () => {
-      sinon.stub(fs.promises, 'readFile').rejects({ code: 'ENOENT' });
+    it('should do nothing if tracking doc is not found', async () => {
+      sinon.stub(db.medicLogs, 'allDocs').resolves({ rows: [] });
 
       const result = await upgradeLogService.__get__('update')('state');
       expect(result).to.deep.equal(undefined);
     });
 
-    /*it('should throw an error if fs thrown a different error ', async () => {
-      sinon.stub(fs.promises, 'readFile').rejects({ code: 'WHATEVER' });
+    it('should do nothing if tracking doc is in finalized state', async () => {
+      sinon.stub(db.medicLogs, 'allDocs').resolves({ rows: [{ doc: { state: 'finalized' } }] });
 
-      try {
-        await upgradeLogService.__get__('update')('state');
-        expect.fail('should have thrown');
-      } catch (err) {
-        expect(err).to.deep.equal({ code: 'WHATEVER' });
-      }
-    });*/
+      const result = await upgradeLogService.__get__('update')('state');
+      expect(result).to.deep.equal(undefined);
+    });
+
+    it('should do nothing if tracking doc is in errored state', async () => {
+      sinon.stub(db.medicLogs, 'allDocs').resolves({ rows: [{ doc: { state: 'errored' } }] });
+
+      const result = await upgradeLogService.__get__('update')('state');
+      expect(result).to.deep.equal(undefined);
+    });
+
+    it('should do nothing if tracking doc is in aborted state', async () => {
+      sinon.stub(db.medicLogs, 'allDocs').resolves({ rows: [{ doc: { state: 'aborted' } }] });
+
+      const result = await upgradeLogService.__get__('update')('state');
+      expect(result).to.deep.equal(undefined);
+    });
   });
 
   describe('getDeployInfo', () => {
     it('should return info from current log', async () => {
-      sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({
+      const doc = {
         _id: 'upgrade_log:a:100',
         user: 'a user',
         state: 'whatever',
@@ -247,7 +226,8 @@ describe('UpgradeLog service', () => {
         to_version: 'b',
         start_date: 100,
         updated_date: 200,
-      }));
+      };
+      sinon.stub(db.medicLogs, 'allDocs').resolves({ rows: [{ doc }] });
 
       expect(await upgradeLogService.getDeployInfo()).to.deep.equal({
         user: 'a user',
@@ -256,7 +236,7 @@ describe('UpgradeLog service', () => {
     });
 
     it('should return "empty" values when current log is not found', async () => {
-      sinon.stub(fs.promises, 'readFile').rejects({ an: 'error' });
+      sinon.stub(db.medicLogs, 'allDocs').resolves({ rows: [] });
 
       expect(await upgradeLogService.getDeployInfo()).to.deep.equal({
         user: undefined,

@@ -37,7 +37,8 @@ if (UNIT_TEST_ENV) {
     'exists',
     'close',
     'allDbs',
-    'activeTasks'
+    'activeTasks',
+    'saveDocs',
   ];
 
   const notStubbed = (first, second) => {

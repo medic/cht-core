@@ -344,7 +344,7 @@ app.get('/api/deploy-info', async (req, res) => {
   // todo move this to some service or something
   if (!environment.getDeployInfo()) {
     try {
-      const ddoc = await db.medic.get(upgradeUtils.getDdocId(environment.ddoc));
+      const ddoc = await db.medic.get(environment.ddoc);
       const deployInfo = Object.assign(ddoc.deploy_info, { version: ddoc.version });
       environment.setDeployInfo(deployInfo);
     } catch(err) {
@@ -584,7 +584,6 @@ app.post(
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
 const dbDocHandler = require('./controllers/db-doc');
-const upgradeUtils = require('./services/setup/utils');
 const docPath = routePrefix + ':docId/{0,}';
 const attachmentPath = routePrefix + ':docId/+:attachmentId*';
 const ddocPath = routePrefix + '_design/+:ddocId*';
