@@ -41,20 +41,22 @@ describe('db', () => {
 
     it('should initialize dbs', async () => {
       const serverUrl = 'http://adm:pas@couch.db:9800/';
+      const couchUrl = 'http://adm:pas@couch.db:9800/dbname';
 
       sinon.stub(serverChecks, 'getServerUrls').resolves({
         serverUrl: new URL(serverUrl),
+        couchUrl: new URL(couchUrl),
         dbName: 'dbname',
       });
 
       await db.initialize();
 
-      expect(db.couchUrl).to.equal(`${serverUrl}dbname`);
+      expect(db.couchUrl).to.equal(couchUrl);
       expect(db.serverUrl).to.equal(serverUrl);
       expect(db.medic).to.be.ok;
-      expect(db.medic.name).to.equal(`${serverUrl}dbname`);
+      expect(db.medic.name).to.equal(couchUrl);
       expect(db.sentinel).to.be.ok;
-      expect(db.sentinel.name).to.equal(`${serverUrl}dbname-sentinel`);
+      expect(db.sentinel.name).to.equal(`${couchUrl}-sentinel`);
       expect(db.users).to.be.ok;
       expect(db.users.name).to.equal(`${serverUrl}/_users`);
       expect(db.medicDbName).to.equal('dbname');

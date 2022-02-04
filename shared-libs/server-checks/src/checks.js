@@ -1,5 +1,6 @@
 const request = require('request-promise-native');
 const MIN_MAJOR = 8;
+const SEGMENT_SEPARATOR = '/';
 
 const { COUCH_URL, COUCH_NODE_NAME } = process.env;
 
@@ -31,6 +32,12 @@ const getNoAuthURL = (serverUrl) => {
 const getMembershipUrl = (serverUrl) => {
   const url = new URL(serverUrl);
   url.pathname = '/_membership';
+  return url.toString();
+};
+
+const getAdminConfigUrl = (serverUrl, nodeName, username) => {
+  const url = new URL(serverUrl);
+  url.pathname = `_node/${nodeName}/_config/admins/${username}`;
   return url.toString();
 };
 
@@ -119,27 +126,34 @@ const check = () => {
 };
 
 const getNodes = async (serverUrl) => {
-  const response = await request.get(`${serverUrl}_membership`, { json: true });
+  const response = await request.get(getMembershipUrl(serverUrl), { json: true });
   return response && response.cluster_nodes;
 };
 
 const createUser = async (username, password, serverUrl) => {
   const nodes = await getNodes(serverUrl);
   for (const node of nodes) {
-    const url = `${serverUrl}_node/${node}/_config/admins/${username}`;
-    await request.put({ url, json: true, body: password });
+    await request.put({ url: getAdminConfigUrl(serverUrl, node, username), json: true, body: password });
   }
 };
 
 const getServerUrls = async (username) => {
   const serverUrl = new URL(COUCH_URL);
-  const dbName = serverUrl.pathname.replace(/^\//, '').replace(/\/$/, '');
-  serverUrl.pathname = '';
+  const couchUrl = new URL(COUCH_URL);
+
+  // gets path segments and strips double slashes
+  const pathSegments = serverUrl.pathname.split(SEGMENT_SEPARATOR).filter(segment => segment);
+  couchUrl.pathname = pathSegments.join('/');
+
+  const dbName = pathSegments.splice(pathSegments.length - 1)[0];
+  serverUrl.pathname = pathSegments.join(SEGMENT_SEPARATOR);
 
   await createUser(username, serverUrl.password, serverUrl.toString());
-  serverUrl.username = username;
 
-  return { serverUrl, dbName };
+  serverUrl.username = username;
+  couchUrl.username = username;
+
+  return { serverUrl, couchUrl, dbName };
 };
 
 module.exports = {

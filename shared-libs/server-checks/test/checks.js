@@ -290,9 +290,7 @@ describe('Server Checks service', () => {
 
   describe('getServerUrls', () => {
     it('should create service user for every node and return updated urls', async () => {
-      process.env = {
-        COUCH_URL: 'http://admin:pass@localhost:5984/theDb',
-      };
+      process.env = { COUCH_URL: 'http://admin:pass@localhost:5984/theDb' };
       service = rewire('../src/checks');
 
       sinon.stub(request, 'get').resolves({ cluster_nodes: ['node1', 'node2', 'node3'] });
@@ -312,12 +310,63 @@ describe('Server Checks service', () => {
       ]);
     });
 
-    it('should throw error when get fails', async () => {
-      process.env = {
-        COUCH_URL: 'http://admin:pass@localhost:5984/theDb',
-      };
+    it('should format the database name correctly when it has one trailing slash', async () => {
+      process.env = { COUCH_URL: 'http://admin:pass@localhost:5984/dbname/' };
       service = rewire('../src/checks');
 
+      sinon.stub(request, 'get').resolves({ cluster_nodes: ['node1'] });
+      sinon.stub(request, 'put').resolves();
+
+      const result = await service.getServerUrls('adminuser');
+
+      chai.expect(result.dbName).to.equal('dbname');
+      chai.expect(result.serverUrl).to.deep.equal(new URL('http://adminuser:pass@localhost:5984'));
+      chai.expect(result.couchUrl).to.deep.equal(new URL('http://adminuser:pass@localhost:5984/dbname'));
+    });
+
+    it('should format the database name correctly when it has lots of slashes', async () => {
+      process.env = { COUCH_URL: 'http://admin:pass@localhost:5984///adatabase////' };
+      service = rewire('../src/checks');
+
+      sinon.stub(request, 'get').resolves({ cluster_nodes: ['node1'] });
+      sinon.stub(request, 'put').resolves();
+
+      const result = await service.getServerUrls('newuser');
+
+      chai.expect(result.dbName).to.equal('adatabase');
+      chai.expect(result.serverUrl).to.deep.equal(new URL('http://newuser:pass@localhost:5984'));
+      chai.expect(result.couchUrl).to.deep.equal(new URL('http://newuser:pass@localhost:5984/adatabase'));
+    });
+
+    it('should work with multiple path segments', async () => {
+      process.env = { COUCH_URL: 'http://admin:pass@localhost:5984/path/to/database' };
+      service = rewire('../src/checks');
+
+      sinon.stub(request, 'get').resolves({ cluster_nodes: ['node1'] });
+      sinon.stub(request, 'put').resolves();
+
+      const result = await service.getServerUrls('newuser');
+
+      chai.expect(result.dbName).to.equal('database');
+      chai.expect(result.serverUrl).to.deep.equal(new URL('http://newuser:pass@localhost:5984/path/to'));
+      chai.expect(result.couchUrl).to.deep.equal(new URL('http://newuser:pass@localhost:5984/path/to/database'));
+    });
+
+    it('should work with multiple path segments and multiple slashes', async () => {
+      process.env = { COUCH_URL: 'http://admin:pass@localhost:5984//path//to//db//' };
+      service = rewire('../src/checks');
+
+      sinon.stub(request, 'get').resolves({ cluster_nodes: ['node1'] });
+      sinon.stub(request, 'put').resolves();
+
+      const result = await service.getServerUrls('newuser');
+
+      chai.expect(result.dbName).to.equal('db');
+      chai.expect(result.serverUrl).to.deep.equal(new URL('http://newuser:pass@localhost:5984/path/to'));
+      chai.expect(result.couchUrl).to.deep.equal(new URL('http://newuser:pass@localhost:5984/path/to/db'));
+    });
+
+    it('should throw error when get fails', async () => {
       sinon.stub(request, 'get').rejects({ an: 'error' });
 
       try {
@@ -329,11 +378,6 @@ describe('Server Checks service', () => {
     });
 
     it('should throw error when put fails', async () => {
-      process.env = {
-        COUCH_URL: 'http://admin:pass@localhost:5984/theDb',
-      };
-      service = rewire('../src/checks');
-
       sinon.stub(request, 'get').resolves({ cluster_nodes: ['node1', 'node2'] });
       sinon.stub(request, 'put').rejects({ error: 'whops' });
 
@@ -346,9 +390,7 @@ describe('Server Checks service', () => {
     });
 
     it('should throw error when url is invalid', async () => {
-      process.env = {
-        COUCH_URL: 'not a url',
-      };
+      process.env = { COUCH_URL: 'not a url' };
       service = rewire('../src/checks');
 
       try {

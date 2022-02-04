@@ -141,13 +141,6 @@ module.exports = function(grunt) {
             UNIT_TEST_ENV: '1',
           },
         },
-      },
-      'int-test': {
-        options: {
-          add: {
-            INT_TEST_ENV: '1',
-          },
-        },
       }
     },
     less: {

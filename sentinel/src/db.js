@@ -66,10 +66,7 @@ if (UNIT_TEST_ENV) {
 
   module.exports.initialize = async () => {
     const username = 'cht-sentinel';
-    const { serverUrl, dbName } = await serverChecks.getServerUrls(username);
-
-    const couchUrl = new URL(serverUrl);
-    couchUrl.pathname = dbName;
+    const { serverUrl, couchUrl, dbName } = await serverChecks.getServerUrls(username);
 
     module.exports.serverUrl = serverUrl.toString();
     module.exports.couchUrl = couchUrl.toString();
