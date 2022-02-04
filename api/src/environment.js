@@ -16,9 +16,10 @@ if (UNIT_TEST_ENV) {
   module.exports.db = '';
   module.exports.username = '';
   module.exports.password = '';
+  module.exports.isTesting = true;
 }
 
-const initialize = async () => {
+module.exports.initialize = async () => {
   if (!UNIT_TEST_ENV && !COUCH_URL) {
     throw new Error(
       'Please define a COUCH_URL in your environment e.g. \n' +
@@ -41,6 +42,7 @@ const initialize = async () => {
   module.exports.db = dbName;
   module.exports.username = username;
   module.exports.password = serverUrl.password;
+  module.exports.isTesting = dbName === 'medic-test';
 };
 
 let deployInfo;
@@ -57,5 +59,3 @@ module.exports.defaultDocsPath = path.join(module.exports.buildPath, 'default-do
 module.exports.ddocsPath = path.join(module.exports.buildPath, 'ddocs');
 module.exports.upgradePath = path.join(module.exports.buildPath, 'upgrade');
 module.exports.resourcesPath = path.join(__dirname, '..', 'resources');
-module.exports.isTesting = module.exports.db === 'medic-test';
-module.exports.initialize = initialize;
