@@ -106,6 +106,19 @@ describe('db', () => {
       }]);
     });
 
+    it('should work with multi-segment URLs', async () => {
+      sinon.stub(environment, 'serverUrl').get(() => 'https://couch.db/path/to');
+      sinon.stub(rpn, 'get').resolves('active_tasks');
+
+      expect(await db.activeTasks()).to.equal('active_tasks');
+
+      expect(rpn.get.callCount).to.equal(1);
+      expect(rpn.get.args[0]).to.deep.equal([{
+        url: 'https://couch.db/path/to/_active_tasks',
+        json: true,
+      }]);
+    });
+
     it('should throw error', async () => {
       sinon.stub(rpn, 'get').rejects(new Error('boom'));
       await expect(db.activeTasks()).to.be.eventually.rejected;
