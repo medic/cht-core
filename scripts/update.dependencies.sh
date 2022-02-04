@@ -1,35 +1,35 @@
 
 # install updates package
-#sudo npm i -g updates
+sudo npm i -g updates
 
 # run npm ci to install versions based on package.json
-#npm ci
-#npm ci --prefix ./admin
-#npm ci --prefix ./api
-#npm ci --prefix ./sentinel
-#npm ci --prefix ./webapp
-#npm ci --prefix ./shared-libs/bulk-docs-utils
-#npm ci --prefix ./shared-libs/cht-script-api
-#npm ci --prefix ./shared-libs/infodoc
-#npm ci --prefix ./shared-libs/memdown
-#npm ci --prefix ./shared-libs/outbound
-#npm ci --prefix ./shared-libs/purging-utils
-#npm ci --prefix ./shared-libs/rules-engine
-#npm ci --prefix ./shared-libs/server-checks
-#npm ci --prefix ./shared-libs/task-utils
-#npm ci --prefix ./shared-libs/transitions
-#npm ci --prefix ./shared-libs/validation
-#npm ci --prefix ./shared-libs/calendar-interval
-#npm ci --prefix ./shared-libs/contact-types-utils
-#npm ci --prefix ./shared-libs/lineage
-#npm ci --prefix ./shared-libs/message-utils
-#npm ci --prefix ./shared-libs/phone-number
-#npm ci --prefix ./shared-libs/registration-utils
-#npm ci --prefix ./shared-libs/search
-#npm ci --prefix ./shared-libs/settings
-#npm ci --prefix ./shared-libs/tombstone-utils
-#npm ci --prefix ./shared-libs/translation-utils
-#npm ci --prefix ./shared-libs/view-map-utils
+npm ci
+npm ci --prefix ./admin
+npm ci --prefix ./api
+npm ci --prefix ./sentinel
+npm ci --prefix ./webapp
+npm ci --prefix ./shared-libs/bulk-docs-utils
+npm ci --prefix ./shared-libs/cht-script-api
+npm ci --prefix ./shared-libs/infodoc
+npm ci --prefix ./shared-libs/memdown
+npm ci --prefix ./shared-libs/outbound
+npm ci --prefix ./shared-libs/purging-utils
+npm ci --prefix ./shared-libs/rules-engine
+npm ci --prefix ./shared-libs/server-checks
+npm ci --prefix ./shared-libs/task-utils
+npm ci --prefix ./shared-libs/transitions
+npm ci --prefix ./shared-libs/validation
+npm ci --prefix ./shared-libs/calendar-interval
+npm ci --prefix ./shared-libs/contact-types-utils
+npm ci --prefix ./shared-libs/lineage
+npm ci --prefix ./shared-libs/message-utils
+npm ci --prefix ./shared-libs/phone-number
+npm ci --prefix ./shared-libs/registration-utils
+npm ci --prefix ./shared-libs/search
+npm ci --prefix ./shared-libs/settings
+npm ci --prefix ./shared-libs/tombstone-utils
+npm ci --prefix ./shared-libs/translation-utils
+npm ci --prefix ./shared-libs/view-map-utils
 
 # record minor updates
 cat /dev/null > ../minor.txt
