@@ -38,7 +38,7 @@ const getPackagedVersion = async () => {
     if (!medicDdocs || !medicDdocs.docs) {
       throw new Error('Cannot find medic db ddocs among packaged ddocs.');
     }
-    const medicDdoc = medicDdocs.docs.find(ddoc => ddoc._id === environment.ddoc);
+    const medicDdoc = medicDdocs.docs.find(ddoc => ddoc._id === ddocsService.getId(environment.ddoc));
     if (!medicDdoc) {
       throw new Error('Cannot find medic ddoc among packaged ddocs.');
     }
@@ -88,12 +88,12 @@ const cleanup = () => {
  * @return {Array<DesignDocument>}
  */
 const setStagingData = (ddocs, deployInfo) => {
-  if (!ddocs.length) {
+  if (!ddocs || !ddocs.length) {
     return [];
   }
 
   return ddocs.map(ddoc => {
-    ddoc._id = ddocs.stageId(ddoc._id);
+    ddoc._id = ddocsService.stageId(ddoc._id);
     ddoc.deploy_info = deployInfo;
     return ddoc;
   });
@@ -117,6 +117,16 @@ const getStagingDoc = async (version) => {
     return stagingDoc;
   } catch (err) {
     logger.error(`Error while getting the staging doc for version ${version}`);
+    throw err;
+  }
+};
+
+const decodeAttachmentData = (data) => {
+  try {
+    const buffer = Buffer.from(data, 'base64');
+    return JSON.parse(buffer.toString('utf-8'));
+  } catch (err) {
+    logger.error('Error while decoding attachment data');
     throw err;
   }
 };
@@ -148,11 +158,10 @@ const downloadDdocDefinitions = async (version, packagedVersion) => {
     // a missing attachment means that the database is dropped in this version.
     // a migration should remove the unnecessary database.
     if (attachment) {
-      const buffer = Buffer.from(attachment.data);
-      const json = JSON.parse(buffer.toString());
-      ddocDefinitions[database] = getDdocsFromJson(json);
+      const json = decodeAttachmentData(attachment.data);
+      ddocDefinitions.set(database, getDdocsFromJson(json));
     } else {
-      logger.warn(`Attachment for ${database.name} was not found. Skipping.`);
+      logger.warn(`Attachment for ${database.jsonFileName} was not found. Skipping.`);
     }
   }
 
@@ -189,10 +198,15 @@ const freshInstall = async () => {
   }
 };
 
+/**
+ *
+ * @param {Map<Database, [DesignDocument]>} ddocDefinitions
+ * @return {Promise}
+ */
 const saveStagedDdocs = async (ddocDefinitions) => {
   const deployInfo = await upgradeLogService.getDeployInfo();
   for (const database of DATABASES) {
-    const ddocs = ddocDefinitions[database.jsonFileName];
+    const ddocs = ddocDefinitions.get(database);
     const ddocsToStage = setStagingData(ddocs, deployInfo);
 
     logger.info(`Saving ddocs for ${database.name}`);

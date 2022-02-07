@@ -33,17 +33,9 @@ const abort = async () => {
 };
 
 /**
- * Checks whether currently installed ddocs are the same as the bundled ddocs
- * If they are, does nothing
- * If comparison between bundled ddocs and uploaded ddocs fails, it compares staged ddocs with bundled ddocs.
- * If comparison between bundled ddocs and staged ddocs succeeds, it renames staged ddocs to overwrite uploaded ddocs.
- * If comparison between bundled ddocs and staged ddocs fails, it stqges the bundled ddocs and begins an install
- * @return {Promise}
- */
-/**
  * For a given version:
- * - wipes and recreates the upgrade folder
- * - creates the upgrade log file and doc to track the upgrade
+ * - set the previous upgrade_log doc to aborted state
+ * - creates the upgrade_log doc to track the upgrade
  *
  * For local version, when not on an initial installation, does nothing.
  * @param {string} version - semver version, defaults to local
@@ -57,19 +49,21 @@ const prep = async (version = upgradeUtils.PACKAGED_VERSION, username, stageOnly
   }
 
   if (version === upgradeUtils.PACKAGED_VERSION && !await upgradeUtils.freshInstall()) {
+    // partial installs don't require creating a new upgrade_log doc
     return;
   }
 
   await upgradeUtils.abortPreviousUpgrade();
-  const packagedVersion = await upgradeUtils.getPackagedVersion();
-  let action;
-  if (version !== packagedVersion && version !== upgradeUtils.PACKAGED_VERSION) {
-    action = stageOnly ? 'stage' : 'upgrade';
-    await upgradeLogService.create(action, version, packagedVersion, username);
-    return;
-  }
 
-  await upgradeLogService.create('install', packagedVersion);
+  const packagedVersion = await upgradeUtils.getPackagedVersion();
+  const upgradeToPackagedVersion = version === packagedVersion || version === upgradeUtils.PACKAGED_VERSION;
+
+  if (upgradeToPackagedVersion) {
+    await upgradeLogService.create('install', packagedVersion);
+  } else {
+    const action = stageOnly ? 'stage' : 'upgrade';
+    await upgradeLogService.create(action, version, packagedVersion, username);
+  }
 };
 
 /**

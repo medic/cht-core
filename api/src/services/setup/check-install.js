@@ -53,6 +53,14 @@ const logDdocCheck = (ddocValidation) => {
   logger.debug(`Found different ddocs: ${different.length ? different: 'none'}`);
 };
 
+/**
+ * Checks whether currently installed ddocs are the same as the bundled ddocs
+ * If they are, does nothing
+ * If comparison between bundled ddocs and uploaded ddocs fails, it compares staged ddocs with bundled ddocs.
+ * If comparison between bundled ddocs and staged ddocs succeeds, it renames staged ddocs to overwrite uploaded ddocs.
+ * If comparison between bundled ddocs and staged ddocs fails, it stqges the bundled ddocs and begins an install
+ * @return {Promise}
+ */
 const checkInstall = async () => {
   const ddocValidation = {};
 

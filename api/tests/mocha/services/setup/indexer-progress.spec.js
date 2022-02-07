@@ -13,7 +13,7 @@ const HALF_INTERVAL = INTERVAL / 2;
 describe('indexer progress', () => {
   beforeEach(() => {
     clock = sinon.useFakeTimers();
-    viewIndexerProgress = rewire('../../../../src/services/setup/indexer-progress');
+    viewIndexerProgress = rewire('../../../../src/services/setup/view-indexer-progress');
   });
 
   afterEach(() => {

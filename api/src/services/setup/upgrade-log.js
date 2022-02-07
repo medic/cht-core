@@ -29,9 +29,10 @@ const UPGRADE_LOG_STATES = {
   ERRORED: 'errored',
 };
 
+let currentUpgradeLogId;
+
 const isFinalState = (state) => {
   return state === UPGRADE_LOG_STATES.FINALIZED ||
-         state === UPGRADE_LOG_STATES.COMPLETE ||
          state === UPGRADE_LOG_STATES.ABORTED ||
          state === UPGRADE_LOG_STATES.ERRORED;
 };
@@ -40,14 +41,10 @@ const UPGRADE_LOG_NAME = 'upgrade_log';
 
 const getUpgradeLogId = (version, startDate) => `${UPGRADE_LOG_NAME}:${startDate}:${version}`;
 
-/**
- * Gets last chronological upgrade log
- * @returns UpgradeLog | undefined
- */
-const getUpgradeLog = async () => {
+const getLatestUpgradeLog = async () => {
   const now = new Date().getTime();
   const results = await db.medicLogs.allDocs({
-    startkey: `${UPGRADE_LOG_NAME}:${now}`,
+    startkey: `${UPGRADE_LOG_NAME}:${now}:`,
     descending: true,
     limit: 1,
     include_docs: true
@@ -57,16 +54,49 @@ const getUpgradeLog = async () => {
     return;
   }
 
-  const upgradeLog = results.rows[0].doc;
+  return results.rows[0].doc;
+};
+
+const getCurrentUpgradeLog = async () => {
+  try {
+    return await db.medicLogs.get(currentUpgradeLogId);
+  } catch (err) {
+    if (err.status === 404) {
+      return;
+    }
+    throw err;
+  }
+};
+
+/**
+ * Gets the current upgrade log. If not available in memory, gets last chronological upgrade log, if it is not in a
+ * final state.
+ * Returns undefined if neither are found.
+ * @returns UpgradeLog | undefined
+ */
+const getUpgradeLog = async () => {
+  const upgradeLog = currentUpgradeLogId ? await getCurrentUpgradeLog() : await getLatestUpgradeLog();
+  if (!upgradeLog) {
+    currentUpgradeLogId = undefined;
+    return;
+  }
+
   if (isFinalState(upgradeLog.state)) {
     logger.info('Last upgrade log is already final');
     return;
   }
+
+  currentUpgradeLogId = upgradeLog._id;
+
   return upgradeLog;
 };
 
+/**
+ * Returns the user and the _id of the current upgrqde log
+ * @return {Promise<{upgrade_log_id: string, user: string}>}
+ */
 const getDeployInfo = async () => {
-  const log = await getUpgradeLog() || {};
+  const log = await module.exports.get() || {};
   return {
     user: log.user,
     upgrade_log_id: log._id,
@@ -111,18 +141,35 @@ const createUpgradeLog = async (action, toVersion = '', fromVersion = '', userna
   pushState(upgradeLog, UPGRADE_LOG_STATES.INITIATED, startDate);
 
   await db.medicLogs.put(upgradeLog);
+  currentUpgradeLogId = upgradeLog._id;
+  return upgradeLog;
 };
 
 /**
+ * Updates the current upgrade log to set the new state
+ * Updates are skipped if the current log is already in a final state.
+ * If the new state is final, the log is no longer stored as "current"
  * @param {string} state
+ * @returns {Promise}
  */
 const update = async (state) => {
-  const upgradeLog = await getUpgradeLog();
+  const upgradeLog = await module.exports.get();
   if (!upgradeLog) {
     logger.info('Upgrade log tracking file was not found.');
     return;
   }
+
+  if (isFinalState(upgradeLog.state)) {
+    return;
+  }
+
   pushState(upgradeLog, state);
+  await db.medicLogs.put(upgradeLog);
+
+  if (isFinalState(upgradeLog.state) && currentUpgradeLogId === upgradeLog._id) {
+    currentUpgradeLogId = undefined;
+  }
+
   return upgradeLog;
 };
 
@@ -152,11 +199,7 @@ const setComplete = async () => {
 };
 
 const setAborted = async () => {
-  const upgradeLog = await getUpgradeLog();
-  if (upgradeLog.state === UPGRADE_LOG_STATES.FINALIZED) { // todo
-    return;
-  }
-
+  logger.info('Aborting uprade');
   await update(UPGRADE_LOG_STATES.ABORTED);
 };
 
@@ -164,7 +207,7 @@ const setErrored = () => update(UPGRADE_LOG_STATES.ERRORED);
 
 module.exports = {
   create: createUpgradeLog,
-  get: getUpgradeLog(),
+  get: getUpgradeLog,
   getDeployInfo,
   setStaged,
   setIndexing,
