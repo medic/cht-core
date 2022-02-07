@@ -1,3 +1,13 @@
+#!/bin/bash
+
+###############
+# Run this script in CHT-CORE-REPO-ROOT to update
+# minor dependencies.  Output will be found in
+# ../minor.txt and ../major.txt.  The first one shows
+# what was updated and installed.  The second one is
+# for review to show what manually needs to be reviewed
+# for major updates
+###############
 
 # install updates package
 sudo npm i -g updates
