@@ -114,13 +114,11 @@ angular.module('controllers').controller('UpgradeCtrl',
       // Old builds may not have a base version, which means unless their version
       // is in the form 1.2.3[-maybe.4] (ie it's a branch) we can't tell and will
       // just presume maybe it's bad
-      const currentVersion = Version.parse($scope.currentDeploy.base_version || $scope.currentDeploy.version);
-      // eslint-disable-next-line no-console
-      console.log('currentVersion', currentVersion);
       if (!release.base_version && !Version.parse(release.version)) {
         return true;
       }
 
+      const currentVersion = Version.parse($scope.currentDeploy.base_version || $scope.currentDeploy.version);
       if (!currentVersion) {
         // Unable to parse the current version information so all releases are
         // potentially incompatible
