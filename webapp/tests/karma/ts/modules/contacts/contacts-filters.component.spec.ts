@@ -10,7 +10,6 @@ import sinon from 'sinon';
 import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
-import { SimprintsFilterComponent } from '@mm-components/filters/simprints-filter/simprints-filter.component';
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
 
 describe('Reports Filters Component', () => {
@@ -29,7 +28,6 @@ describe('Reports Filters Component', () => {
           ContactsFiltersComponent,
           FreetextFilterComponent,
           ResetFiltersComponent,
-          SimprintsFilterComponent,
           SortFilterComponent,
         ],
         providers: [
