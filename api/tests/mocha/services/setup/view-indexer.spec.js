@@ -12,9 +12,13 @@ let viewIndexer;
 
 describe('View indexer service', () => {
   beforeEach(() => {
-    sinon.stub(databases, 'DATABASES').value(databases.DATABASES.map(dbObject => {
-      return Object.assign({}, dbObject, { name: `thedb${dbObject.name}` });
-    }));
+    const dbs = [
+      { db: db.medic, name: 'thedb' },
+      { db: db.sentinel, name: 'thedb-sentinel' },
+      { db: db.medicLogs, name: 'thedb-logs' },
+      { db: db.medicUsersMeta, name: 'thedb-users-meta' },
+    ];
+    sinon.stub(databases, 'DATABASES').value(dbs);
     sinon.stub(env, 'db').value('thedb');
     viewIndexer = rewire('../../../../src/services/setup/view-indexer');
   });
