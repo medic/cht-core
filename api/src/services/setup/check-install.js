@@ -79,7 +79,7 @@ const checkInstall = async () => {
   const allDbsStaged = Object.values(ddocValidation).every(check => check.stagedUpgrade || check.valid);
   if (allDbsStaged) {
     logger.info('Staged installation valid. Completing install');
-    return upgradeSteps.complete();
+    return upgradeSteps.finalize();
   }
 
   const someDbsStaged = Object.values(ddocValidation).every(check => check.partialStagedUpgrade || check.valid);
@@ -95,7 +95,7 @@ const checkInstall = async () => {
   await upgradeSteps.prep();
   await upgradeSteps.stage();
   await upgradeSteps.indexStagedViews();
-  await upgradeSteps.complete();
+  await upgradeSteps.finalize();
 };
 
 module.exports = {

@@ -4,18 +4,18 @@ const upgradeLogService = require('./upgrade-log');
 const viewIndexer = require('./view-indexer');
 
 /**
- * Completes the installation:
+ * Finalizes the installation:
  * - assigns deploy info do staged ddocs
  * - renames staged ddocs to their prod names
  * - sets upgrade log to complete.
  * - runs view cleanup and compaction
  * @return {Promise}
  */
-const complete = async () => {
-  await upgradeLogService.setCompleting();
+const finalize = async () => {
+  await upgradeLogService.setFinalizing();
   await upgradeUtils.unstageStagedDdocs();
   await upgradeUtils.deleteStagedDdocs();
-  await upgradeLogService.setComplete();
+  await upgradeLogService.setFinalized();
   await upgradeUtils.cleanup();
 };
 
@@ -43,20 +43,20 @@ const abort = async () => {
  * @param {Boolean} stageOnly
  * @return {Promise}
  */
-const prep = async (version = upgradeUtils.PACKAGED_VERSION, username, stageOnly = true) => {
-  if (!version || typeof version !== 'string') {
+const prep = async (version, username, stageOnly = true) => {
+  if (version && typeof version !== 'string') {
     throw new Error(`Invalid version: ${version}`);
   }
 
-  if (version === upgradeUtils.PACKAGED_VERSION && !await upgradeUtils.freshInstall()) {
+  const packagedVersion = await upgradeUtils.getPackagedVersion();
+  const upgradeToPackagedVersion = !version || version === packagedVersion;
+
+  if (upgradeToPackagedVersion && !await upgradeUtils.freshInstall()) {
     // partial installs don't require creating a new upgrade_log doc
     return;
   }
 
   await upgradeUtils.abortPreviousUpgrade();
-
-  const packagedVersion = await upgradeUtils.getPackagedVersion();
-  const upgradeToPackagedVersion = version === packagedVersion || version === upgradeUtils.PACKAGED_VERSION;
 
   if (upgradeToPackagedVersion) {
     await upgradeLogService.create('install', packagedVersion);
@@ -74,15 +74,15 @@ const prep = async (version = upgradeUtils.PACKAGED_VERSION, username, stageOnly
  * @param {string} version
  * @return {Promise}
  */
-const stage = async (version = upgradeUtils.PACKAGED_VERSION) => {
-  if (!version || typeof version !== 'string') {
+const stage = async (version) => {
+  if (version && typeof version !== 'string') {
     throw new Error(`Invalid version: ${version}`);
   }
 
   await upgradeUtils.deleteStagedDdocs();
 
   const packagedVersion = await upgradeUtils.getPackagedVersion();
-  const ddocs = await upgradeUtils.downloadDdocDefinitions(version, packagedVersion);
+  const ddocs = await upgradeUtils.getDdocDefinitions(version, packagedVersion);
 
   await upgradeUtils.saveStagedDdocs(ddocs);
   await upgradeLogService.setStaged();
@@ -104,6 +104,6 @@ module.exports = {
   prep,
   stage,
   indexStagedViews,
-  complete,
+  finalize,
   abort,
 };

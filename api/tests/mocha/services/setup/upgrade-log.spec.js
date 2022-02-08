@@ -497,6 +497,24 @@ describe('UpgradeLog service', () => {
     expect(update.args[0]).to.deep.equal(['complete']);
   });
 
+  it('should set status to finalizing', async () => {
+    const update = sinon.stub().resolves();
+    upgradeLogService.__set__('update', update);
+
+    await upgradeLogService.setFinalizing();
+    expect(update.callCount).to.equal(1);
+    expect(update.args[0]).to.deep.equal(['finalizing']);
+  });
+
+  it('should set status to finalized', async () => {
+    const update = sinon.stub().resolves();
+    upgradeLogService.__set__('update', update);
+
+    await upgradeLogService.setFinalized();
+    expect(update.callCount).to.equal(1);
+    expect(update.args[0]).to.deep.equal(['finalized']);
+  });
+
   it('should set status to aborted', async () => {
     const update = sinon.stub().resolves();
     upgradeLogService.__set__('update', update);

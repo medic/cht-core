@@ -9,9 +9,7 @@ const upgradeLogService = require('./upgrade-log');
 const { DATABASES, MEDIC_DATABASE } = require('./databases');
 const ddocsService = require('./ddocs');
 
-const PACKAGED_VERSION = 'local';
 const BUILD_DOC_PREFIX = 'medic:medic:';
-const FILE_NOT_FOUND_ERROR_CODE = 'ENOENT';
 
 if (!fs.promises) {
   const promisify = require('util').promisify;
@@ -57,12 +55,10 @@ const deleteStagedDdocs = async () => {
   logger.info('Deleting existent staged ddocs');
   for (const database of DATABASES) {
     const stagedDdocs = await ddocsService.getStagedDdocs(database);
-    if (!stagedDdocs.length) {
-      return;
+    if (stagedDdocs.length) {
+      stagedDdocs.forEach(doc => doc._deleted = true);
+      await db.saveDocs(database.db, stagedDdocs);
     }
-
-    stagedDdocs.forEach(doc => doc._deleted = true);
-    await db.saveDocs(database.db, stagedDdocs);
   }
 };
 
@@ -131,22 +127,40 @@ const decodeAttachmentData = (data) => {
   }
 };
 
+
 /**
- * For a local version, returns map of databases and bundled ddoc definitions
- * For an upgrade version, returns map of databases and ddoc definitions downloaded from the staging server
+ * For a local version, map of bundled ddoc definitions for every database
+ * For an upgrade version, map of bundled ddoc definitions for every database, downloaded from the staging server
  * @param {string} version
- * @param {string} packagedVersion
  * @return {Map<Database, Array>}
  */
-const downloadDdocDefinitions = async (version, packagedVersion) => {
-  const ddocDefinitions = new Map();
-
-  if (version === PACKAGED_VERSION || version === packagedVersion) {
-    for (const database of DATABASES) {
-      ddocDefinitions[database] = await getBundledDdocs(database);
-    }
-    return ddocDefinitions;
+const getDdocDefinitions = (version, localVersion) => {
+  if (!version || version === localVersion) {
+    return getLocalDdocDefinitions();
   }
+
+  return downloadDdocDefinitions(version);
+};
+
+/**
+ * Returns map of bundled ddoc definitions for every database
+ * @return {Map<Database, Array>}
+ */
+const getLocalDdocDefinitions = async () => {
+  const ddocDefinitions = new Map();
+  for (const database of DATABASES) {
+    ddocDefinitions.set(database, await getBundledDdocs(database));
+  }
+  return ddocDefinitions;
+};
+
+/**
+ * Returns map of bundled ddoc definitions for every database, downloaded from the staging server
+ * @param {string} version
+ * @return {Map<Database, Array>}
+ */
+const downloadDdocDefinitions = async (version) => {
+  const ddocDefinitions = new Map();
 
   const stagingDoc = await getStagingDoc(version);
 
@@ -169,21 +183,20 @@ const downloadDdocDefinitions = async (version, packagedVersion) => {
 };
 
 const getDdocJsonContents = async (path) => {
-  try {
-    const contents = await fs.promises.readFile(path, 'utf-8');
-    return JSON.parse(contents);
-  } catch (err) {
-    if (err.code !== FILE_NOT_FOUND_ERROR_CODE) {
-      throw err;
-    }
-  }
+  const contents = await fs.promises.readFile(path, 'utf-8');
+  return JSON.parse(contents);
 };
 
 const getDdocsFromJson = (json) => (json && json.docs) || [];
 
 const getBundledDdocs = async (database) => {
-  const ddocJson = await getDdocJsonContents(path.join(environment.ddocsPath, database.jsonFileName));
-  return getDdocsFromJson(ddocJson);
+  try {
+    const ddocJson = await getDdocJsonContents(path.join(environment.ddocsPath, database.jsonFileName));
+    return getDdocsFromJson(ddocJson);
+  } catch (err) {
+    logger.error('Error when trying to parse ddoc json contents: %o', err);
+    throw err;
+  }
 };
 
 const freshInstall = async () => {
@@ -250,12 +263,10 @@ const unstageStagedDdocs = async () => {
 };
 
 module.exports = {
-  PACKAGED_VERSION,
-
   cleanup,
 
   getPackagedVersion,
-  downloadDdocDefinitions,
+  getDdocDefinitions,
   freshInstall,
   deleteStagedDdocs,
   saveStagedDdocs,

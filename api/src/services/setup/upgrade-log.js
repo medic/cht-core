@@ -198,6 +198,16 @@ const setComplete = async () => {
   logger.info('Install complete');
 };
 
+const setFinalizing = async () => {
+  logger.info('Finalizing install');
+  await update(UPGRADE_LOG_STATES.FINALIZING);
+};
+
+const setFinalized = async () => {
+  await update(UPGRADE_LOG_STATES.FINALIZED);
+  logger.info('Install finalized');
+};
+
 const setAborted = async () => {
   logger.info('Aborting uprade');
   await update(UPGRADE_LOG_STATES.ABORTED);
@@ -214,6 +224,8 @@ module.exports = {
   setIndexed,
   setCompleting,
   setComplete,
+  setFinalizing,
+  setFinalized,
   setAborted,
   setErrored,
 };

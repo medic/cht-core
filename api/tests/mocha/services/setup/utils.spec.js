@@ -116,6 +116,30 @@ describe('Setup utils', () => {
         ]);
       }
     });
+
+    it('should do nothing when there are no staged ddocs', async () => {
+      ddocsService.getStagedDdocs.withArgs(DATABASES[0]).resolves([{ _id: 'one' }]);
+      ddocsService.getStagedDdocs.withArgs(DATABASES[1]).resolves([]);
+      ddocsService.getStagedDdocs.withArgs(DATABASES[2]).resolves([{ _id: 'three' }]);
+      ddocsService.getStagedDdocs.withArgs(DATABASES[3]).resolves([]);
+
+      db.saveDocs.resolves();
+
+      await utils.__get__('deleteStagedDdocs')();
+
+      expect(ddocsService.getStagedDdocs.callCount).to.equal(4);
+      expect(ddocsService.getStagedDdocs.args).to.deep.equal([
+        [DATABASES[0]],
+        [DATABASES[1]],
+        [DATABASES[2]],
+        [DATABASES[3]],
+      ]);
+      expect(db.saveDocs.callCount).to.equal(2);
+      expect(db.saveDocs.args).to.deep.equal([
+        [DATABASES[0].db, [{ _id: 'one', _deleted: true }]],
+        [DATABASES[2].db, [{ _id: 'three', _deleted: true }]],
+      ]);
+    });
   });
 
   describe('cleanup', () => {
@@ -151,9 +175,10 @@ describe('Setup utils', () => {
     });
   });
 
-  describe('downloadDdocDefinitions', () => {
+  describe('getDdocDefinitions', () => {
+    const genDdocsJson = (ddocs) => JSON.stringify({ docs: ddocs });
     const genAttachmentData = (ddocs) => {
-      const json = JSON.stringify({ docs: ddocs });
+      const json = genDdocsJson(ddocs);
       const buffer = Buffer.from(json);
       return buffer.toString('base64');
     };
@@ -162,138 +187,232 @@ describe('Setup utils', () => {
       sinon.stub(db.builds, 'get');
     });
 
-    it('download ddoc definitions', async () => {
-      const medicDdocs = [{ _id: 'ddoc1' }];
-      const logsDdocs = [{ _id: 'ddoc2' }];
-      const sentinelDdocs = [{ _id: 'ddoc3' }];
-      const usersDdocs = [{ _id: 'ddoc4' }];
+    describe('for local version install', () => {
+      it('should get bundled ddocs for every db', async () => {
+        sinon.stub(fs.promises, 'readFile');
+        sinon.stub(env, 'ddocsPath').value('localDdocs');
 
-      const version = 'version_number';
-      db.builds.get.resolves({
-        build_info: { },
-        version: version,
-        _attachments: {
-          'ddocs/medic.json': { data: genAttachmentData(medicDdocs) },
-          'ddocs/logs.json': { data: genAttachmentData(logsDdocs) },
-          'ddocs/sentinel.json': { data: genAttachmentData(sentinelDdocs) },
-          'ddocs/users-meta.json': { data: genAttachmentData(usersDdocs) },
-        },
+        const medicDdocs = [
+          { _id: '_design/medic', views: { medic1: {}, medic2: {} } },
+          { _id: '_design/medic-client', views: { client1: {}, client2: {} } },
+        ];
+        const sentinelDdocs = [{ _id: '_design/sentinel', views: { sentinel: {} } }];
+        const logsDdocs = [{ _id: '_design/logs', views: { logs1: {}, logs2: {} } }];
+        const usersMetaDdocs = [
+          { _id: '_design/meta1', views: { usersmeta1: {} } },
+          { _id: '_design/meta2', views: { usersmeta2: {} } },
+        ];
+
+        fs.promises.readFile.withArgs('localDdocs/medic.json').resolves(genDdocsJson(medicDdocs));
+        fs.promises.readFile.withArgs('localDdocs/sentinel.json').resolves(genDdocsJson(sentinelDdocs));
+        fs.promises.readFile.withArgs('localDdocs/logs.json').resolves(genDdocsJson(logsDdocs));
+        fs.promises.readFile.withArgs('localDdocs/users-meta.json').resolves(genDdocsJson(usersMetaDdocs));
+
+        const result = await utils.getDdocDefinitions();
+
+        expect(result.size).to.equal(4);
+        expect(result.get(DATABASES[0])).to.deep.equal(medicDdocs);
+        expect(result.get(DATABASES[1])).to.deep.equal(sentinelDdocs);
+        expect(result.get(DATABASES[2])).to.deep.equal(logsDdocs);
+        expect(result.get(DATABASES[3])).to.deep.equal(usersMetaDdocs);
+
+        expect(db.builds.get.callCount).to.equal(0);
+        expect(fs.promises.readFile.args).to.deep.equal([
+          ['localDdocs/medic.json', 'utf-8'],
+          ['localDdocs/sentinel.json', 'utf-8'],
+          ['localDdocs/logs.json', 'utf-8'],
+          ['localDdocs/users-meta.json', 'utf-8'],
+        ]);
       });
 
-      const result = await utils.downloadDdocDefinitions(version, 'other version');
+      it('should throw error when read fails', async () => {
+        sinon.stub(fs.promises, 'readFile');
+        sinon.stub(env, 'ddocsPath').value('localDdocs');
 
-      expect(result.get(DATABASES[0])).to.deep.equal(medicDdocs);
-      expect(result.get(DATABASES[1])).to.deep.equal(sentinelDdocs);
-      expect(result.get(DATABASES[2])).to.deep.equal(logsDdocs);
-      expect(result.get(DATABASES[3])).to.deep.equal(usersDdocs);
-      expect(result.size).to.equal(4);
+        const medicDdocs = [{ _id: 'ddoc1' }];
+        const logsDdocs = [{ _id: 'ddoc2' }];
+        const sentinelDdocs = [{ _id: 'ddoc3' }];
 
-      expect(db.builds.get.callCount).to.equal(1);
-      expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:${version}`, { attachments: true }]);
-    });
+        fs.promises.readFile.withArgs('localDdocs/medic.json').resolves(genDdocsJson(medicDdocs));
+        fs.promises.readFile.withArgs('localDdocs/sentinel.json').resolves(genDdocsJson(sentinelDdocs));
+        fs.promises.readFile.withArgs('localDdocs/logs.json').resolves(genDdocsJson(logsDdocs));
+        fs.promises.readFile.withArgs('localDdocs/users-meta.json').rejects({ error: 'booom' });
 
-    it('should skip ddocs for new dbs', async () => {
-      const version = 'version_number';
-      const medicDdocs = [{ _id: 'd1' }];
-      const logsDdocs = [{ _id: 'd2' }];
-      const sentinelDdocs = [{ _id: 'd3' }];
-      const usersDdocs = [{ _id: 'd4' }];
-      const newdb = [{ _id: 'd5' }];
-
-      db.builds.get.resolves({
-        build_info: { },
-        version: version,
-        _attachments: {
-          'ddocs/medic.json': { data: genAttachmentData(medicDdocs) },
-          'ddocs/logs.json': { data: genAttachmentData(logsDdocs) },
-          'ddocs/sentinel.json': { data: genAttachmentData(sentinelDdocs) },
-          'ddocs/users-meta.json': { data: genAttachmentData(usersDdocs) },
-          'ddocs/newdb.json': { data: genAttachmentData(newdb) },
-        },
+        try {
+          await utils.getDdocDefinitions('4.0.0', '4.0.0');
+          expect.fail('Should have thrown');
+        } catch (err) {
+          expect(err).to.deep.equal({ error: 'booom' });
+          expect(db.builds.get.callCount).to.equal(0);
+          expect(fs.promises.readFile.args).to.deep.equal([
+            ['localDdocs/medic.json', 'utf-8'],
+            ['localDdocs/sentinel.json', 'utf-8'],
+            ['localDdocs/logs.json', 'utf-8'],
+            ['localDdocs/users-meta.json', 'utf-8'],
+          ]);
+        }
       });
 
-      const result = await utils.downloadDdocDefinitions(version);
-      expect(result.get(DATABASES[0])).to.deep.equal(medicDdocs);
-      expect(result.get(DATABASES[1])).to.deep.equal(sentinelDdocs);
-      expect(result.get(DATABASES[2])).to.deep.equal(logsDdocs);
-      expect(result.get(DATABASES[3])).to.deep.equal(usersDdocs);
-      expect(result.size).to.equal(4);
+      it('should throw error when contents is invalid json', async () => {
+        sinon.stub(fs.promises, 'readFile');
+        sinon.stub(env, 'ddocsPath').value('localDdocs');
 
-      expect(db.builds.get.callCount).to.equal(1);
-      expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:${version}`, { attachments: true }]);
+        const medicDdocs = [{ _id: 'ddoc1' }];
+        const sentinelDdocs = [{ _id: 'ddoc3' }];
+
+        fs.promises.readFile.withArgs('localDdocs/medic.json').resolves(genDdocsJson(medicDdocs));
+        fs.promises.readFile.withArgs('localDdocs/sentinel.json').resolves(genDdocsJson(sentinelDdocs));
+        fs.promises.readFile.withArgs('localDdocs/logs.json').resolves('definitely not json');
+
+        try {
+          await utils.getDdocDefinitions('4.2.0-beta.7', '4.2.0-beta.7');
+          expect.fail('Should have thrown');
+        } catch (err) {
+          expect(err.message).to.match(/Unexpected token d in JSON at position 0/);
+          expect(db.builds.get.callCount).to.equal(0);
+          expect(fs.promises.readFile.args).to.deep.equal([
+            ['localDdocs/medic.json', 'utf-8'],
+            ['localDdocs/sentinel.json', 'utf-8'],
+            ['localDdocs/logs.json', 'utf-8'],
+          ]);
+        }
+      });
     });
 
-    it('should handle missing dbs', async () => {
-      const medicDdocs = [{ _id: 'd1' }];
-      const logsDdocs = [{ _id: 'd2' }];
-      const version = 'version_number';
-      db.builds.get.resolves({
-        build_info: { },
-        version: version,
-        _attachments: {
-          'ddocs/medic.json': { data: genAttachmentData(medicDdocs) },
-          'ddocs/logs.json': { data: genAttachmentData(logsDdocs) },
-        },
+    describe('for remote version install', () => {
+      it('download ddoc definitions', async () => {
+        const medicDdocs = [{ _id: 'ddoc1' }];
+        const logsDdocs = [{ _id: 'ddoc2' }];
+        const sentinelDdocs = [{ _id: 'ddoc3' }];
+        const usersDdocs = [{ _id: 'ddoc4' }];
+
+        const version = 'version_number';
+        db.builds.get.resolves({
+          build_info: { },
+          version: version,
+          _attachments: {
+            'ddocs/medic.json': { data: genAttachmentData(medicDdocs) },
+            'ddocs/logs.json': { data: genAttachmentData(logsDdocs) },
+            'ddocs/sentinel.json': { data: genAttachmentData(sentinelDdocs) },
+            'ddocs/users-meta.json': { data: genAttachmentData(usersDdocs) },
+          },
+        });
+
+        const result = await utils.getDdocDefinitions(version, 'other version');
+
+        expect(result.get(DATABASES[0])).to.deep.equal(medicDdocs);
+        expect(result.get(DATABASES[1])).to.deep.equal(sentinelDdocs);
+        expect(result.get(DATABASES[2])).to.deep.equal(logsDdocs);
+        expect(result.get(DATABASES[3])).to.deep.equal(usersDdocs);
+        expect(result.size).to.equal(4);
+
+        expect(db.builds.get.callCount).to.equal(1);
+        expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:${version}`, { attachments: true }]);
       });
 
-      const result = await utils.downloadDdocDefinitions(version);
-      expect(result.get(DATABASES[0])).to.deep.equal(medicDdocs);
-      expect(result.get(DATABASES[2])).to.deep.equal(logsDdocs);
-      expect(result.size).to.equal(2);
-    });
+      it('should skip ddocs for new dbs', async () => {
+        const version = 'version_number';
+        const medicDdocs = [{ _id: 'd1' }];
+        const logsDdocs = [{ _id: 'd2' }];
+        const sentinelDdocs = [{ _id: 'd3' }];
+        const usersDdocs = [{ _id: 'd4' }];
+        const newdb = [{ _id: 'd5' }];
 
-    it('should throw error when staging doc not found', async () => {
-      db.builds.get.rejects({ error: 'boom' });
+        db.builds.get.resolves({
+          build_info: { },
+          version: version,
+          _attachments: {
+            'ddocs/medic.json': { data: genAttachmentData(medicDdocs) },
+            'ddocs/logs.json': { data: genAttachmentData(logsDdocs) },
+            'ddocs/sentinel.json': { data: genAttachmentData(sentinelDdocs) },
+            'ddocs/users-meta.json': { data: genAttachmentData(usersDdocs) },
+            'ddocs/newdb.json': { data: genAttachmentData(newdb) },
+          },
+        });
 
-      try {
-        await utils.downloadDdocDefinitions('vers');
-        expect.fail('should have thrown');
-      } catch (err) {
-        expect(err).to.deep.equal({ error: 'boom' });
-      }
+        const result = await utils.getDdocDefinitions(version, 'local');
+        expect(result.get(DATABASES[0])).to.deep.equal(medicDdocs);
+        expect(result.get(DATABASES[1])).to.deep.equal(sentinelDdocs);
+        expect(result.get(DATABASES[2])).to.deep.equal(logsDdocs);
+        expect(result.get(DATABASES[3])).to.deep.equal(usersDdocs);
+        expect(result.size).to.equal(4);
 
-      expect(db.builds.get.callCount).to.equal(1);
-      expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:vers`, { attachments: true }]);
-    });
-
-    it('should throw an error when staging doc has no attachments', async () => {
-      const version = '4.0.0';
-      db.builds.get.resolves({
-        build_info: { },
-        version: version,
+        expect(db.builds.get.callCount).to.equal(1);
+        expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:${version}`, { attachments: true }]);
       });
 
-      try {
-        await utils.downloadDdocDefinitions(version);
-        expect.fail('should have thrown');
-      } catch (err) {
-        expect(err.message).to.equal('Staging ddoc is missing attachments');
-      }
+      it('should handle missing dbs', async () => {
+        const medicDdocs = [{ _id: 'd1' }];
+        const logsDdocs = [{ _id: 'd2' }];
+        const version = 'version_number';
+        db.builds.get.resolves({
+          build_info: { },
+          version: version,
+          _attachments: {
+            'ddocs/medic.json': { data: genAttachmentData(medicDdocs) },
+            'ddocs/logs.json': { data: genAttachmentData(logsDdocs) },
+          },
+        });
 
-      expect(db.builds.get.callCount).to.equal(1);
-      expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:4.0.0`, { attachments: true }]);
-    });
-
-    it('should throw an error when ddocs are corrupted', async () => {
-      const version = 'theversion';
-      db.builds.get.resolves({
-        build_info: { },
-        version: version,
-        _attachments: {
-          'ddocs/medic.json': { data: genAttachmentData([{ _id: 'aaa' }]) },
-          'ddocs/logs.json': { data: 'this is definitely invalid base64 json' },
-        },
+        const result = await utils.getDdocDefinitions(version, 'local version');
+        expect(result.get(DATABASES[0])).to.deep.equal(medicDdocs);
+        expect(result.get(DATABASES[2])).to.deep.equal(logsDdocs);
+        expect(result.size).to.equal(2);
       });
 
-      try {
-        await utils.downloadDdocDefinitions(version);
-        expect.fail('should have thrown');
-      } catch (err) {
-        expect(err.message).to.match(/Unexpected token/);
-      }
+      it('should throw error when staging doc not found', async () => {
+        db.builds.get.rejects({ error: 'boom' });
 
-      expect(db.builds.get.callCount).to.equal(1);
-      expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:${version}`, { attachments: true }]);
+        try {
+          await utils.getDdocDefinitions('vers');
+          expect.fail('should have thrown');
+        } catch (err) {
+          expect(err).to.deep.equal({ error: 'boom' });
+        }
+
+        expect(db.builds.get.callCount).to.equal(1);
+        expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:vers`, { attachments: true }]);
+      });
+
+      it('should throw an error when staging doc has no attachments', async () => {
+        const version = '4.0.0';
+        db.builds.get.resolves({
+          build_info: { },
+          version: version,
+        });
+
+        try {
+          await utils.getDdocDefinitions(version, 'not 4.0.0');
+          expect.fail('should have thrown');
+        } catch (err) {
+          expect(err.message).to.equal('Staging ddoc is missing attachments');
+        }
+
+        expect(db.builds.get.callCount).to.equal(1);
+        expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:4.0.0`, { attachments: true }]);
+      });
+
+      it('should throw an error when ddocs are corrupted', async () => {
+        const version = 'theversion';
+        db.builds.get.resolves({
+          build_info: { },
+          version: version,
+          _attachments: {
+            'ddocs/medic.json': { data: genAttachmentData([{ _id: 'aaa' }]) },
+            'ddocs/logs.json': { data: 'this is definitely invalid base64 json' },
+          },
+        });
+
+        try {
+          await utils.getDdocDefinitions(version, 'nottheversion');
+          expect.fail('should have thrown');
+        } catch (err) {
+          expect(err.message).to.match(/Unexpected token/);
+        }
+
+        expect(db.builds.get.callCount).to.equal(1);
+        expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:${version}`, { attachments: true }]);
+      });
     });
   });
 
@@ -457,6 +576,19 @@ describe('Setup utils', () => {
       sinon.stub(env, 'ddocsPath').value('ddocsPath');
       sinon.stub(env, 'ddoc').value('medic');
       sinon.stub(fs.promises, 'readFile').rejects({ code: 'ENOENT' });
+
+      try {
+        await utils.getPackagedVersion();
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ code: 'ENOENT' });
+      }
+    });
+
+    it('should throw error if json has no ddocs', async () => {
+      sinon.stub(env, 'ddocsPath').value('ddocsPath');
+      sinon.stub(env, 'ddoc').value('medic');
+      sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({ }));
 
       try {
         await utils.getPackagedVersion();
