@@ -3,7 +3,6 @@ const { expect } = require('chai');
 const rewire = require('rewire');
 
 const db = require('../../../../src/db');
-const {exportObject} = require('../../../../src/services/export-data');
 
 let upgradeLogService;
 let clock;

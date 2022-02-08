@@ -6,7 +6,6 @@ const upgradeUtils = require('../../../../src/services/setup/utils');
 const ddocsService = require('../../../../src/services/setup/ddocs');
 const databases = require('../../../../src/services/setup/databases');
 const upgradeSteps = require('../../../../src/services/setup/upgrade-steps');
-const {stub} = require('sinon');
 
 let checkInstall;
 'use strict';

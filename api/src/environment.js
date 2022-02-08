@@ -14,6 +14,7 @@ if (UNIT_TEST_ENV) {
     port: '',
     host: '',
     protocol: '',
+    buildsUrl: '',
   };
 } else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching

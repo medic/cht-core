@@ -2,7 +2,6 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const rewire = require('rewire');
 const fs = require('fs');
-const rpn = require('request-promise-native');
 
 const db = require('../../../../src/db');
 const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
@@ -168,7 +167,6 @@ describe('Setup utils', () => {
       const logsDdocs = [{ _id: 'ddoc2' }];
       const sentinelDdocs = [{ _id: 'ddoc3' }];
       const usersDdocs = [{ _id: 'ddoc4' }];
-      console.log(genAttachmentData(medicDdocs));
 
       const version = 'version_number';
       db.builds.get.resolves({
@@ -184,7 +182,6 @@ describe('Setup utils', () => {
 
       const result = await utils.downloadDdocDefinitions(version, 'other version');
 
-      console.log(result);
       expect(result.get(DATABASES[0])).to.deep.equal(medicDdocs);
       expect(result.get(DATABASES[1])).to.deep.equal(sentinelDdocs);
       expect(result.get(DATABASES[2])).to.deep.equal(logsDdocs);

@@ -2,14 +2,20 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const rewire = require('rewire');
 
-//const db = require('../src/db');
 let db;
 let unitTestEnv;
+
+const env = require('../../src/environment');
 
 describe('db', () => {
   beforeEach(() => {
     unitTestEnv = process.env.UNIT_TEST_ENV;
     delete process.env.UNIT_TEST_ENV;
+    sinon.stub(env, 'couchUrl').value('http://admin:pass@couch:5984/medic');
+    sinon.stub(env, 'buildsUrl').value('http://admin:pass@builds:5984/builds');
+    sinon.stub(env, 'serverUrl').value('http://admin:pass@couch:5984/');
+
+    db = rewire('../../src/db');
   });
 
   afterEach(() => {
@@ -47,7 +53,7 @@ describe('db', () => {
       ]);
 
       try {
-        db.saveDocs(db.medicLogs, docs);
+        await db.saveDocs(db.medicLogs, docs);
         expect.fail('should have thrown');
       } catch (err) {
         expect(err.message).to.equal(
@@ -63,7 +69,7 @@ describe('db', () => {
       sinon.stub(db.medic, 'bulkDocs').rejects({ some: 'err' });
 
       try {
-        db.saveDocs(db.medic, docs);
+        await db.saveDocs(db.medic, docs);
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ some: 'err' });
