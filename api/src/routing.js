@@ -55,6 +55,7 @@ const uuid = require('uuid');
 const compression = require('compression');
 const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/'; // jshint ignore:line
 const cookie = require('./services/cookie');
+const ddocs = require('./services/setup/ddocs');
 const app = express();
 
 // requires content-type application/json header
@@ -344,7 +345,7 @@ app.get('/api/deploy-info', async (req, res) => {
   // todo move this to some service or something
   if (!environment.getDeployInfo()) {
     try {
-      const ddoc = await db.medic.get(environment.ddoc);
+      const ddoc = await db.medic.get(ddocs.getId(environment.ddoc));
       const deployInfo = Object.assign(ddoc.deploy_info, { version: ddoc.version });
       environment.setDeployInfo(deployInfo);
     } catch(err) {
