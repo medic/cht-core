@@ -1,7 +1,8 @@
 #!/bin/bash
 #Requires jq
 export NODE_TLS_REJECT_UNAUTHORIZED=0
-
+echo Testing copy to s3
+/usr/local/bin/aws s3 cp ./csv s3:medic-e2e --recursive
 echo Triggering EC2 Run Instance Command and getting Instance ID
 instanceID=$(aws ec2 run-instances --image-id ami-065ba2b6b298ed80f --instance-type c5.2xlarge --security-group-ids sg-0fa20cd785acec256 --block-device-mappings file://block-device-mapping.json --user-data file://medic-os.sh --instance-initiated-shutdown-behavior terminate | jq .Instances[0].InstanceId -r )
 echo Instance id is $instanceID
@@ -46,8 +47,7 @@ cp -r ./csv ../../config/standard/
 
 cd ../../config/standard/
 
-echo Testing copy to s3
-/usr/local/bin/aws s3 cp ./forms s3:medic-e2e --recursive
+
 
 echo installing pip
 sudo apt-get -q install python-pip -y

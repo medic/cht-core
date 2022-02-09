@@ -1,9 +1,9 @@
 name: Scalability Workflow
 # This workflow is triggered on pushes to the repository.
 on:
-  push:
-    tags:
-      - "*-qa.*"
+  push
+    # tags:
+    #   - "*-qa.*"
 
 jobs:
   build:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set TAG_NAME var
-        run: echo "TAG_NAME=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+        run: echo "TAG_NAME=3.14.qa" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v2
       - name: Configure AWS Credentials
