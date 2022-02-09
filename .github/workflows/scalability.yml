@@ -1,10 +1,10 @@
 name: Scalability Workflow
 # This workflow is triggered on pushes to the repository.
 on:
-  push:
-    tags: 
-      - "*-beta.*"
-      
+  push
+    # tags:
+    #   - "*-beta.*"
+
 jobs:
   build:
     name: Set up Medic on EC2 and Execute Jmeter on another EC2
@@ -23,6 +23,6 @@ jobs:
       - name: Start EC2 and Medics
         run: cd tests/scalability && ./start_ec2_medic.sh $TAG_NAME
       - name: Execute Jmeter
-        env: 
+        env:
           SCALABILITY_ARN: ${{ secrets.SCALABILITY_ARN }}
-        run: cd tests/scalability && ./start_jmeter_ec2.sh 
+        run: cd tests/scalability && ./start_jmeter_ec2.sh
