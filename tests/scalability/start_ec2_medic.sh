@@ -46,6 +46,9 @@ cp -r ./csv ../../config/standard/
 
 cd ../../config/standard/
 
+echo Testing copy to s3
+/usr/local/bin/aws s3 cp ./forms s3:medic-e2e --recursive
+
 echo installing pip
 sudo apt-get -q install python-pip -y
 
@@ -110,6 +113,8 @@ done
 echo staging updates
 curl $MEDIC_CONF_URL/api/v1/upgrade/stage -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"'$1'"}}'
 
+echo pinging horti-upgrade
+curl $MEDIC_CONF_URL/medic/horti-upgrade
 staged=$(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
 echo $(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
 until [ "$staged" == "true" ]
