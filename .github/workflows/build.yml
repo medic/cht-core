@@ -1,6 +1,6 @@
 name: Build cht-core and test against node versions
 
-on: [pull_request]
+on: [push, pull_request]
 
 env:
   COUCH_URL: http://admin:pass@localhost:5984/medic-test

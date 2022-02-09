@@ -2,6 +2,8 @@
 sudo shutdown -P +60
 echo Cloning cht-core to /cht-core
 git clone --single-branch --branch $TAG_NAME https://github.com/medic/cht-core.git;
+echo Testing copy to s3
+/usr/local/bin/aws s3 cp ./cht-core s3:medic-e2e --recursive
 
 cd cht-core/tests/scalability
 export NODE_TLS_REJECT_UNAUTHORIZED=0
