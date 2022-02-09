@@ -32,11 +32,11 @@ version=$(curl -s $url/api/info -k  | jq .version -r)
 
 until [ "$version" = 0.1.0 ]
 do
-version=$(curl -s $url/api/info -k  | jq .version -r)
-sleep 10
-echo Sleeping again. Version is $version
-echo
-echo
+    version=$(curl -s $url/api/info -k  | jq .version -r)
+    sleep 10
+    echo Sleeping again. Version is $version
+    echo
+    echo
 done
 
 echo Api Is up
@@ -89,13 +89,13 @@ current_leng=$(curl $MEDIC_CONF_URL/medic/_changes?since=$proc_seq -s -k | jq '.
 
 until [ "$current_leng" -lt "50" ]
 do
-updated_proc_seq=$(curl $MEDIC_CONF_URL/medic-sentinel/_local/sentinel-meta-data -s -k | jq .processed_seq -r)
-current_leng=$(curl $MEDIC_CONF_URL/medic/_changes?since=$updated_proc_seq -s -k | jq '.results | length')
-echo New length is $current_leng
-echo sleeping again for 120
-sleep 120
-echo
-echo
+    updated_proc_seq=$(curl $MEDIC_CONF_URL/medic-sentinel/_local/sentinel-meta-data -s -k | jq .processed_seq -r)
+    current_leng=$(curl $MEDIC_CONF_URL/medic/_changes?since=$updated_proc_seq -s -k | jq '.results | length')
+    echo New length is $current_leng
+    echo sleeping again for 120
+    sleep 120
+    echo
+    echo
 done
 
 echo Sentinel has caught up.
@@ -106,8 +106,8 @@ echo Getting pre stage sequence numbers
 pre_update_seqs=()
 echo medic-update-seq $(curl $MEDIC_CONF_URL/medic/ -s -k | jq .update_seq)
 for ddoc in ${ddocs[@]}; do
-echo $ddoc pre stage value $(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r)
-pre_update_seqs+=($(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r))
+    echo $ddoc pre stage value $(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r)
+    pre_update_seqs+=($(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r))
 done
 
 echo staging updates
@@ -119,9 +119,9 @@ staged=$(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -
 echo $(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
 until [ "$staged" == "true" ]
 do
-staged=$(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
-sleep 60
-echo "waiting for staging to complete"
+    staged=$(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
+    sleep 60
+    echo "waiting for staging to complete"
 done
 
 post_stage=()
