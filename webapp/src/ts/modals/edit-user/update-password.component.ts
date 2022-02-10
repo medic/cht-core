@@ -1,25 +1,23 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import * as passwordTester from 'simple-password-tester';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 
+import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { UserSettingsService } from '@mm-services/user-settings.service';
-import { LanguageService } from '@mm-services/language.service';
-import { UpdateUserService } from '@mm-services/update-user.service';
+import { UpdatePasswordService } from '@mm-services/update-password.service';
 import { UserLoginService } from '@mm-services/user-login.service';
-import { EditUserAbstract } from '@mm-modals/edit-user/edit-user.component';
 import { TranslateService } from '@mm-services/translate.service';
 import { ConfirmPasswordUpdatedComponent } from '@mm-modals/edit-user/confirm-password-updated.component';
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
 
-
 @Component({
   selector: 'update-password',
   templateUrl: './update-password.component.html'
 })
-export class UpdatePasswordComponent extends EditUserAbstract implements OnInit {
+export class UpdatePasswordComponent extends MmModalAbstract {
 
   editUserModel: {
     username?;
@@ -37,60 +35,57 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
 
   constructor(
     bsModalRef: BsModalRef,
-    userSettingsService: UserSettingsService,
-    languageService: LanguageService,
-    private updateUserService: UpdateUserService,
+    private userSettingsService: UserSettingsService,
+    private updatePasswordService: UpdatePasswordService,
     private userLoginService: UserLoginService,
     private translateService:TranslateService,
     private modalService: ModalService,
   ) {
-    super(bsModalRef, userSettingsService, languageService);
-  }
-
-  async ngOnInit(): Promise<void> {
-    await super.onInit();
+    super(bsModalRef);
   }
 
   updatePassword() {
     this.errors = {};
     this.setProcessing();
     if (this.validatePasswordFields()) {
-      const password = this.editUserModel.password;
-      const updates = { password };
-      const username = this.editUserModel.username;
-      return this.updateUserService
-        .update(username, updates, username, this.editUserModel.currentPassword)
-        .then(() => {
-          return this.userLoginService
-            .login(username, password)
+      const newPassword = this.editUserModel.password;
+      const currentPassword = this.editUserModel.currentPassword;
+      return this.userSettingsService.get()
+        .then((user:any) => {
+          const username = user.name;
+          return this.updatePasswordService
+            .update(username, currentPassword, newPassword)
+            .then(() => {
+              return this.userLoginService
+                .login(username, newPassword)
+                .catch(err => {
+                  if (err.status === 302) {
+                    this.setFinished();
+                    this.close();
+                    this.modalService
+                      .show(ConfirmPasswordUpdatedComponent)
+                      .catch(() => {})
+                      .finally(() => this.windowReload());
+                  } else {
+                    this.windowReload();
+                  }
+                });
+            })
             .catch(err => {
-              if (err.status === 302) {
-                this.setFinished();
-                this.close();
-
-                this.modalService
-                  .show(ConfirmPasswordUpdatedComponent)
-                  .catch(() => {})
-                  .finally(() => this.windowReload());
+              if (err.status === 0) { //Offline Status
+                this.translateService.get('online.action.message').then(value => {
+                  this.errors.currentPassword = value;
+                  this.setError(err, value);
+                });
+              } else if (err.status === 401) {
+                this.translateService.get('password.incorrect').then(value => {
+                  this.errors.currentPassword = value;
+                  this.setError(err, value);
+                });
               } else {
-                this.windowReload();
+                this.setError(err, 'Error updating user');
               }
             });
-        })
-        .catch(err => {
-          if (err.status === 0) { //Offline Status
-            this.translateService.get('online.action.message').then(value => {
-              this.errors.currentPassword = value;
-              this.setError(err, value);
-            });
-          } else if (err.status === 401) {
-            this.translateService.get('password.incorrect').then(value => {
-              this.errors.currentPassword = value;
-              this.setError(err, value);
-            });
-          } else {
-            this.setError(err, 'Error updating user');
-          }
         });
     } else {
       this.setError();

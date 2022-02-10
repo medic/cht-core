@@ -1,9 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 
-import { EditUserAbstract } from '@mm-modals/edit-user/edit-user.component';
+import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { UserSettingsService } from '@mm-services/user-settings.service';
-import { UpdateUserService } from '@mm-services/update-user.service';
 import { LanguagesService } from '@mm-services/languages.service';
 import { SetLanguageService, LanguageService } from '@mm-services/language.service';
 
@@ -11,7 +10,7 @@ import { SetLanguageService, LanguageService } from '@mm-services/language.servi
   selector: 'update-password',
   templateUrl: './edit-user-settings.component.html'
 })
-export class EditUserSettingsComponent extends EditUserAbstract implements OnInit {
+export class EditUserSettingsComponent extends MmModalAbstract implements OnInit {
 
   @Input() editUserModel: {
     id?;
@@ -30,18 +29,43 @@ export class EditUserSettingsComponent extends EditUserAbstract implements OnIni
 
   constructor(
     bsModalRef: BsModalRef,
-    userSettingsService: UserSettingsService,
-    languageService: LanguageService,
-    private updateUserService: UpdateUserService,
+    private userSettingsService: UserSettingsService,
+    private languageService: LanguageService,
     private languagesService: LanguagesService,
     private setLanguageService: SetLanguageService,
   ) {
-    super(bsModalRef, userSettingsService, languageService);
+    super(bsModalRef);
   }
 
   async ngOnInit(): Promise<void> {
-    await super.onInit();
+    try {
+      this.editUserModel = await this.determineEditUserModel();
+    } catch(err) {
+      console.error('Error determining user model', err);
+    }
     this.enabledLocales = await this.languagesService.get();
+  }
+
+  determineEditUserModel(): Promise<any> {
+    return Promise
+      .all<any, any>([
+        this.userSettingsService.get(),
+        this.languageService.get()
+      ])
+      .then(([ user, language ]) => {
+        if (user) {
+          return {
+            id: user._id,
+            username: user.name,
+            fullname: user.fullname,
+            email: user.email,
+            phone: user.phone,
+            language: { code: language }
+          };
+        } else {
+          return {};
+        }
+      });
   }
 
   editUserSettings(): Promise<void> {
@@ -50,14 +74,15 @@ export class EditUserSettingsComponent extends EditUserAbstract implements OnIni
 
     return this.changedUpdates(this.editUserModel)
       .then((updates: any) => {
-        Promise
-          .resolve()
-          .then(() => {
-            if (this.haveUpdates(updates)) {
-              return this.updateUserService.update(
-                this.editUserModel.username,
-                updates
-              );
+        this.userSettingsService.get()
+          .then(userSettings => {
+            let hasUpdates = false;
+            Object.keys(updates).forEach(key => {
+              hasUpdates = true;
+              userSettings[key] = updates[key];
+            });
+            if (hasUpdates) {
+              return this.userSettingsService.put(userSettings);
             }
           })
           .then(() => {
@@ -77,10 +102,6 @@ export class EditUserSettingsComponent extends EditUserAbstract implements OnIni
 
   listTrackBy(index, locale) {
     return locale.code;
-  }
-
-  private haveUpdates(updates) {
-    return Object.keys(updates).length;
   }
 
   private changedUpdates(model) {
