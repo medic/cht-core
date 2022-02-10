@@ -2,7 +2,7 @@
 # set -e
 sudo shutdown -P +60
 echo Cloning cht-core to /cht-core
-git clone --single-branch --branch $TAG_NAME https://${GITHUB_TOKEN}@github.com/medic/cht-core.git;
+git clone --single-branch --branch $TAG_NAME https://oauth:${GITHUB_TOKEN}@github.com/medic/cht-core.git;
 
 
 cd cht-core/tests/scalability
@@ -42,9 +42,9 @@ echo "Uploading logs and screenshots to ${S3_PATH}..."
 /usr/local/bin/aws s3 cp ./report "$S3_PATH" --recursive
 #create new branch from
 git checkout -b jmeter-results-${TAG_NAME}
-$RELEASE = ${TAG_NAME} | cut -d "-" -f1
-git mv report/cli_run.jtl previous_results/${RELEASE}_gha.jtl
-# git add .report/*
+echo $TAG_NAME | cut -d "-" -f1
+# mv report/cli_run.jtl previous_results/${TAG_NAME | cut -d "-" -f1 }_gha.jtl
+git add report/*
 git commit -m'Adding jmeter restults'
 git push --set-upstream origin jmeter-results-${TAG_NAME}
 echo "FINISHED! "
