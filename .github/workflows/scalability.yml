@@ -1,9 +1,9 @@
 name: Scalability Workflow
 # This workflow is triggered on pushes to the repository.
 on:
-  push:
-    tags:
-      - "*-qa.*"
+  push
+    # tags:
+    #   - "*-qa.*"
 
 jobs:
   build:
