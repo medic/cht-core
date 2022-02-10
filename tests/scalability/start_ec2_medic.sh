@@ -28,6 +28,7 @@ url=https://$PublicDnsName
 echo "MEDIC_URL=$url" >> $GITHUB_ENV
 
 echo Begin Checking $url/api/info is up
+curl -s $url/api/info -k 
 version=$(curl -s $url/api/info -k  | jq .version -r)
 
 until [ "$version" = 0.1.0 ]
