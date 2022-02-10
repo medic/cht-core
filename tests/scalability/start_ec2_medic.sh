@@ -112,13 +112,11 @@ done
 echo staging updates
 curl $MEDIC_CONF_URL/api/v1/upgrade/stage -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"'$1'"}}'
 
-echo pinging horti-upgrade
-curl $MEDIC_CONF_URL/medic/horti-upgrade -k
-
-staged=$(curl $MEDIC_CONF_URL/medic/horti-upgrade -k | jq .staging_complete -r)
+staged=$(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
 echo $(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
 until [ "$staged" == "true" ]
 do
+    curl $MEDIC_CONF_URL/medic/horti-upgrade -k
     staged=$(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
     sleep 60
     echo "waiting for staging to complete"
