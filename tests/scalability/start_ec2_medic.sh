@@ -117,29 +117,29 @@ echo pinging horti-upgrade
 curl $MEDIC_CONF_URL/medic/horti-upgrade
 staged=$(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
 echo $(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
-until [ "$staged" == "true" ]
-do
-    staged=$(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
-    sleep 60
-    echo "waiting for staging to complete"
-done
+# until [ "$staged" == "true" ]
+# do
+#     staged=$(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
+#     sleep 60
+#     echo "waiting for staging to complete"
+# done
 
-post_stage=()
-echo medic-update-seq $(curl $MEDIC_CONF_URL/medic/ -s -k | jq .update_seq)
-for ddoc in ${ddocs[@]}; do
-echo $ddoc post stage value $(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r)
-post_stage+=($(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r))
-done
+# post_stage=()
+# echo medic-update-seq $(curl $MEDIC_CONF_URL/medic/ -s -k | jq .update_seq)
+# for ddoc in ${ddocs[@]}; do
+# echo $ddoc post stage value $(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r)
+# post_stage+=($(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r))
+# done
 
-echo Checking post stage sequences to pre stage
-for i in ${!pre_update_seqs[@]}; do
-if ! [ ${post_stage[$i]} -ge ${pre_update_seqs[$i]} ]
-then
-echo "The sequence for ${ddocs[$i]} did not get updated. It should have been warmed."
-echo "ending run"
-exit 1
-fi
-done
+# echo Checking post stage sequences to pre stage
+# for i in ${!pre_update_seqs[@]}; do
+# if ! [ ${post_stage[$i]} -ge ${pre_update_seqs[$i]} ]
+# then
+# echo "The sequence for ${ddocs[$i]} did not get updated. It should have been warmed."
+# echo "ending run"
+# exit 1
+# fi
+# done
 
-echo Sequence numbers were greater. Completing upgrade
-curl $MEDIC_CONF_URL/api/v1/upgrade/complete -k -X POST
+# echo Sequence numbers were greater. Completing upgrade
+# curl $MEDIC_CONF_URL/api/v1/upgrade/complete -k -X POST
