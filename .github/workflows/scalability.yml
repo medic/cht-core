@@ -21,7 +21,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SCALABILITY_SECRET_ACCESS_KEY }}
           aws-region: ca-central-1
       - name: Start EC2 and Medics
-        run: /usr/local/bin/aws s3 cp ./tests s3:medic-e2e --recursive
+        run: /usr/local/bin/aws s3 cp ./tests s3://medic-e2e --recursive
         # cd tests/scalability && ./start_ec2_medic.sh $TAG_NAME
       # - name: Execute Jmeter
       #   env:
