@@ -25,6 +25,4 @@ jobs:
       - name: Execute Jmeter
         env:
           SCALABILITY_ARN: ${{ secrets.SCALABILITY_ARN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          USERNAME: ${{github.actor}}
         run: cd tests/scalability && ./start_jmeter_ec2.sh

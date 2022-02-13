@@ -1,8 +1,8 @@
 #!/bin/bash
 # set -e
 sudo shutdown -P +60
-echo Set up github credentials for $USERNAME and $GITHUB_ACTOR
-git config --global user.name $USERNAME
+echo Set up github credentials for $GITHUB_ACTOR
+git config --global user.name $GITHUB_ACTOR
 
 git clone --single-branch --branch $TAG_NAME https://github.com/medic/cht-core.git;
 
@@ -43,10 +43,11 @@ sudo ./aws/install --upgrade
 echo "Uploading logs and screenshots to ${S3_PATH}..."
 /usr/local/bin/aws s3 cp ./report "$S3_PATH" --recursive
 #create new branch from
-git checkout -b jmeter-results-${TAG_NAME}
+git checkout -b jmeter-results-test-${TAG_NAME}
 echo $TAG_NAME | cut -d "-" -f1
-# mv report/cli_run.jtl previous_results/${TAG_NAME | cut -d "-" -f1 }_gha.jtl
-git add report/*
+git mv report/cli_run.jtl previous_results/${TAG_NAME | cut -d "-" -f1 }_gha.jtl
+#git add report/*
 git commit -m'Adding jmeter restults'
-git push --set-upstream origin jmeter-results-${TAG_NAME}
+zip -r report.zip report
+git push --set-upstream origin jmeter-results-test-${TAG_NAME}
 echo "FINISHED! "

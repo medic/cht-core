@@ -3,12 +3,8 @@
 # Add MEDIC_URL to script executing on ec2 init
 echo $MEDIC_URL
 echo $GITHUB_RUN_ID
-echo $GITHUB_TOKEN
-echo $USERNAME
 echo $GITHUB_ACTOR
 
-sed -i '2s~^~'GITHUB_TOKEN=$GITHUB_TOKEN'\n~' run_suite.sh
-sed -i '2s~^~'USERNAME=$USERNAME'\n~' run_suite.sh
 sed -i '2s~^~'MEDIC_URL=$MEDIC_URL'\n~' run_suite.sh
 sed -i '2s~^~'S3_PATH=s3://medic-e2e/scalability/$TAG_NAME-$GITHUB_RUN_ID'\n~' run_suite.sh
 sed -i '2s~^~'TAG_NAME=$TAG_NAME'\n~' run_suite.sh
