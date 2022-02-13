@@ -21,9 +21,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.SCALABILITY_SECRET_ACCESS_KEY }}
           aws-region: ca-central-1
       - name: Start EC2 and Medics
-        run: echo ${{github.env}} #cd tests/scalability && ./start_ec2_medic.sh $TAG_NAME
+        run: cd tests/scalability && ./start_ec2_medic.sh $TAG_NAME
       - name: Execute Jmeter
         env:
           SCALABILITY_ARN: ${{ secrets.SCALABILITY_ARN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: echo ${{github.actor}} #cd tests/scalability && ./start_jmeter_ec2.sh
+          USERNAME: ${{github.actor}}
+        run: cd tests/scalability && ./start_jmeter_ec2.sh
