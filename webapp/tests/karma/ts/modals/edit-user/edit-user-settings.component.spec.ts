@@ -110,7 +110,7 @@ describe('EditUserSettingsComponent', () => {
       severity: true,
     };
 
-    await component.editUserSettings();
+    component.editUserSettings();
 
     expect(component.status).to.deep.equal({
       processing: true,   // Processing ...

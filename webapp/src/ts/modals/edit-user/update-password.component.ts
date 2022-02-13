@@ -44,51 +44,47 @@ export class UpdatePasswordComponent extends MmModalAbstract {
     super(bsModalRef);
   }
 
-  updatePassword() {
+  async updatePassword() {
     this.errors = {};
     this.setProcessing();
-    if (this.validatePasswordFields()) {
-      const newPassword = this.editUserModel.password;
-      const currentPassword = this.editUserModel.currentPassword;
-      return this.userSettingsService.get()
-        .then((user:any) => {
-          const username = user.name;
-          return this.updatePasswordService
-            .update(username, currentPassword, newPassword)
-            .then(() => {
-              return this.userLoginService
-                .login(username, newPassword)
-                .catch(err => {
-                  if (err.status === 302) {
-                    this.setFinished();
-                    this.close();
-                    this.modalService
-                      .show(ConfirmPasswordUpdatedComponent)
-                      .catch(() => {})
-                      .finally(() => this.windowReload());
-                  } else {
-                    this.windowReload();
-                  }
-                });
-            })
-            .catch(err => {
-              if (err.status === 0) { //Offline Status
-                this.translateService.get('online.action.message').then(value => {
-                  this.errors.currentPassword = value;
-                  this.setError(err, value);
-                });
-              } else if (err.status === 401) {
-                this.translateService.get('password.incorrect').then(value => {
-                  this.errors.currentPassword = value;
-                  this.setError(err, value);
-                });
-              } else {
-                this.setError(err, 'Error updating user');
-              }
-            });
-        });
-    } else {
+    if (!await this.validatePasswordFields()) {
       this.setError();
+      return;
+    }
+    const newPassword = this.editUserModel.password;
+    const currentPassword = this.editUserModel.currentPassword;
+    try {
+      const user:any = await this.userSettingsService.get();
+      const username = user.name;
+      await this.updatePasswordService.update(username, currentPassword, newPassword);
+      try {
+        await this.userLoginService.login(username, newPassword);
+      } catch(err) {
+        if (err.status === 302) {
+          this.setFinished();
+          this.close();
+          this.modalService
+            .show(ConfirmPasswordUpdatedComponent)
+            .catch(() => {})
+            .finally(() => this.windowReload());
+        } else {
+          this.windowReload();
+        }
+      }
+    } catch(err) {
+      if (err.status === 0) { // offline status
+        const message = await this.translateService.get('online.action.message');
+        this.errors.currentPassword = message;
+        this.setError(err, message);
+        return;
+      }
+      if (err.status === 401) {
+        const message = await this.translateService.get('password.incorrect');
+        this.errors.currentPassword = message;
+        this.setError(err, message);
+        return;
+      }
+      this.setError(err, 'Error updating user');
     }
   }
 
@@ -96,54 +92,45 @@ export class UpdatePasswordComponent extends MmModalAbstract {
     window.location.reload(true);
   }
 
-  private validatePasswordFields() {
-    return this.validateRequired('password', 'Password') &&
-      this.validateRequired('currentPassword', 'Current Password') &&
-      this.validatePasswordStrength() &&
-      this.validateConfirmPasswordMatches();
+  private async validatePasswordFields() {
+    return await this.validateRequired('password', 'Password') &&
+      await this.validateRequired('currentPassword', 'Current Password') &&
+      await this.validatePasswordStrength() &&
+      await this.validateConfirmPasswordMatches();
   }
 
-  private validateRequired(fieldName, fieldDisplayName) {
-    if (!this.editUserModel[fieldName]) {
-      this.translateService
-        .fieldIsRequired(fieldDisplayName)
-        .then(value => {
-          this.errors[fieldName] = value;
-        })
-        .catch(err => {
-          console.error(`Error translating field display name '${fieldDisplayName}'`, err);
-        });
-      return false;
+  private async validateRequired(fieldName, fieldDisplayName) {
+    if (this.editUserModel[fieldName]) {
+      return true;
     }
-    return true;
+    try {
+      const value = await this.translateService.fieldIsRequired(fieldDisplayName);
+      this.errors[fieldName] = value;
+    } catch (err) {
+      console.error(`Error translating field display name '${fieldDisplayName}'`, err);
+    }
+    return false;
   }
 
-  private validatePasswordStrength() {
+  private async validatePasswordStrength() {
     const password = this.editUserModel.password || '';
     if (password.length < PASSWORD_MINIMUM_LENGTH) {
-      this.translateService
-        .get('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH })
-        .then((value) => {
-          this.errors.password = value;
-        });
+      const value = await this.translateService.get('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH });
+      this.errors.password = value;
       return false;
     }
     if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
-      this.translateService
-        .get('password.weak')
-        .then(value => {
-          this.errors.password = value;
-        });
+      const value = await this.translateService.get('password.weak');
+      this.errors.password = value;
       return false;
     }
     return true;
   }
 
-  private validateConfirmPasswordMatches() {
+  private async validateConfirmPasswordMatches() {
     if (this.editUserModel.password !== this.editUserModel.passwordConfirm) {
-      this.translateService.get('Passwords must match').then(value => {
-        this.errors.password = value;
-      });
+      const value = await this.translateService.get('Passwords must match');
+      this.errors.password = value;
       return false;
     }
     return true;
