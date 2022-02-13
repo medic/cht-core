@@ -45,11 +45,14 @@ echo "Uploading logs and screenshots to ${S3_PATH}..."
 #create new branch from
 git checkout -b jmeter-results-test-${TAG_NAME}
 echo $TAG_NAME | cut -d "-" -f1
-git mv report/cli_run.jtl previous_results/${TAG_NAME}_gha.jtl
-#git add report/*
+mv report/cli_run.jtl previous_results/${TAG_NAME}_gha.jtl
+git add previous_results/*
 git commit -m'Adding jmeter restults'
-zip -r report.zip report
-git add report.zip
-git commit -m 'adding report zip'
-git push --set-upstream https://$GITHUB_TOKEN@github.com/medic/cht-core.git jmeter-results-test-${TAG_NAME}
+# zip -r report.zip report
+# git add report.zip
+# git commit -m 'adding report zip'
+git config --global user.name $GITHUB_ACTOR
+git push --set-upstream origin jmeter-results-test-${TAG_NAME}
+#git push --set-upstream https://$GITHUB_TOKEN@github.com/medic/cht-core.git jmeter-results-test-${TAG_NAME}
+
 echo "FINISHED! "
