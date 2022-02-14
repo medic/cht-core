@@ -56,5 +56,5 @@ git clone --single-branch --branch $TAG_NAME https://github.com/medic/cht-core.g
 touch testing-ci.txt
 git add testing-ci.txt
 git commit -m'Adding some restults'
-git request-pull 
+git request-pull master origin
 echo "FINISHED! "
