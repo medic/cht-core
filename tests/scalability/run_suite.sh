@@ -14,7 +14,8 @@ git config --global hub.protocol https
 git config --global user.name $GITHUB_ACTOR
 
 echo Cloning cht-core to /cht-core
-hub clone --single-branch --branch $TAG_NAME cht-core.git
+#hub clone --single-branch --branch $TAG_NAME cht-core.git
+git clone --single-branch --branch $TAG_NAME https://github.com/medic/cht-core.git;
 
 # echo installing JAVA
 # sudo apt-get install default-jre -y
