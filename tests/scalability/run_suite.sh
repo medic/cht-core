@@ -37,5 +37,11 @@ unzip awscliv2.zip
 sudo ./aws/install
 echo "Uploading logs and screenshots to ${S3_PATH}..."
 /usr/local/bin/aws s3 cp ./report "$S3_PATH" --recursive
-/usr/local/bin/aws s3 cp ./report s3:medic-e2e --recursive
+mv report/cli_run.jtl previous_results/${TAG_NAME}.jtl
+git add report/*
+git commit -m'Adding jmeter restults'
+zip -r report.zip report
+git add report.zip
+git commit -m'Adding zip report'
+git push
 echo "FINISHED! "
