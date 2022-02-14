@@ -1,12 +1,19 @@
 #!/bin/bash
 sudo shutdown -P +60
-echo Cloning cht-core to /cht-core
-git clone --single-branch --branch $TAG_NAME https://github.com/medic/cht-core.git;
+# echo Cloning cht-core to /cht-core
+# git clone --single-branch --branch $TAG_NAME https://github.com/medic/cht-core.git;
 
 cd cht-core/tests/scalability
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 
 sudo apt-get update
+
+echo install Hub
+sudo snap install --classic hub
+git config --global hub.protocol https
+
+echo Cloning cht-core to /cht-core
+hub clone --single-branch --branch $TAG_NAME cht-core.git
 
 echo installing JAVA
 sudo apt-get install default-jre -y
@@ -43,5 +50,6 @@ git commit -m'Adding jmeter restults'
 zip -r report.zip report
 git add report.zip
 git commit -m'Adding zip report'
-git push
+#git push
+hub pull-request --no-edit --force
 echo "FINISHED! "
