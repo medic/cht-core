@@ -8,14 +8,14 @@ export NODE_TLS_REJECT_UNAUTHORIZED=0
 
 sudo apt-get update
 
-echo install Hub
-sudo snap install --classic hub
-git config --global hub.protocol https
+# echo install Hub
+# sudo snap install --classic hub
+# git config --global hub.protocol https
 git config --global user.name $GITHUB_ACTOR
 
 echo Cloning cht-core to /cht-core
-hub clone --single-branch --branch $TAG_NAME medic/cht-core
-#git clone --single-branch --branch $TAG_NAME https://github.com/medic/cht-core.git;
+#hub clone --single-branch --branch $TAG_NAME medic/cht-core
+git clone --single-branch --branch $TAG_NAME https://github.com/medic/cht-core.git;
 
 # echo installing JAVA
 # sudo apt-get install default-jre -y
@@ -56,5 +56,5 @@ hub clone --single-branch --branch $TAG_NAME medic/cht-core
 touch testing-ci.txt
 git add testing-ci.txt
 git commit -m'Adding some restults'
-hub pull-request --no-edit --force
+git pull-request
 echo "FINISHED! "
