@@ -373,10 +373,9 @@ app.get('/api/auth/:path', function(req, res) {
     });
 });
 
-app.post('/api/v1/upgrade', jsonParser, upgrade.upgradeV1);
-app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stageV1);
+app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
+app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
 app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);
-app.all('/api/v1/upgrade/service-worker', upgrade.serviceWorker);
 
 app.get('/api/v2/upgrade', upgrade.upgradeInProgress);
 app.post('/api/v2/upgrade', jsonParser, upgrade.upgrade);

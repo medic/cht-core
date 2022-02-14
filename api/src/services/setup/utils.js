@@ -9,8 +9,6 @@ const upgradeLogService = require('./upgrade-log');
 const { DATABASES, MEDIC_DATABASE } = require('./databases');
 const ddocsService = require('./ddocs');
 
-const BUILD_DOC_PREFIX = 'medic:medic:';
-
 if (!fs.promises) {
   const promisify = require('util').promisify;
   // temporary patching to work on Node 8.
@@ -88,11 +86,13 @@ const setStagingData = (ddocs, deployInfo) => {
     return [];
   }
 
-  return ddocs.map(ddoc => {
+  ddocs.forEach(ddoc => {
     ddoc._id = ddocsService.stageId(ddoc._id);
     ddoc.deploy_info = deployInfo;
-    return ddoc;
+    delete ddoc._rev;
   });
+
+  return ddocs;
 };
 
 const abortPreviousUpgrade = async () => {
@@ -103,16 +103,39 @@ const abortPreviousUpgrade = async () => {
   }
 };
 
-const getStagingDoc = async (version) => {
-  const stagingDocId = `${BUILD_DOC_PREFIX}${version}`;
+/**
+ * Checks whether the passed build info is valid.
+ * A falsy build info means we're installing the bundled version.
+ * Build infos require 3 properties: application, namespace and version, all needing to be strings, for example:
+ * { namespace: 'medic', application: 'medic', version: '4.0.0' }
+ * @param {BuildInfo|undefined} buildInfo
+ * @return {boolean}
+ */
+const validBuildInfo = (buildInfo) => {
+  if (!buildInfo) {
+    return true;
+  }
+
+  const requireFields = ['application', 'namespace', 'version'];
+  return !!buildInfo &&
+         _.isObject(buildInfo) &&
+         requireFields.every(field => buildInfo[field] && typeof buildInfo[field] === 'string');
+};
+
+/**
+ * @param {BuildInfo} buildInfo
+ * @return {Promise}
+ */
+const getStagingDoc = async (buildInfo) => {
+  const stagingDocId = `${buildInfo.namespace}:${buildInfo.application}:${buildInfo.version}`;
   try {
     const stagingDoc = await db.builds.get(stagingDocId, { attachments: true });
-    if (!stagingDoc._attachments || !_.isObject(stagingDoc._attachments)) {
+    if (_.isEmpty(stagingDoc._attachments)) {
       throw new Error('Staging ddoc is missing attachments');
     }
     return stagingDoc;
   } catch (err) {
-    logger.error(`Error while getting the staging doc for version ${version}`);
+    logger.error(`Error while getting the staging doc for version ${buildInfo.version}`);
     throw err;
   }
 };
@@ -131,15 +154,15 @@ const decodeAttachmentData = (data) => {
 /**
  * For a local version, map of bundled ddoc definitions for every database
  * For an upgrade version, map of bundled ddoc definitions for every database, downloaded from the staging server
- * @param {string} version
+ * @param {BuildInfo|undefined} buildInfo
  * @return {Map<Database, Array>}
  */
-const getDdocDefinitions = (version, localVersion) => {
-  if (!version || version === localVersion) {
+const getDdocDefinitions = (buildInfo) => {
+  if (!buildInfo) {
     return getLocalDdocDefinitions();
   }
 
-  return downloadDdocDefinitions(version);
+  return downloadDdocDefinitions(buildInfo);
 };
 
 /**
@@ -156,15 +179,15 @@ const getLocalDdocDefinitions = async () => {
 
 /**
  * Returns map of bundled ddoc definitions for every database, downloaded from the staging server
- * @param {string} version
+ * @param {BuildInfo} buildInfo
  * @return {Map<Database, Array>}
  */
-const downloadDdocDefinitions = async (version) => {
+const downloadDdocDefinitions = async (buildInfo) => {
   const ddocDefinitions = new Map();
 
-  const stagingDoc = await getStagingDoc(version);
+  const stagingDoc = await getStagingDoc(buildInfo);
 
-  // for simplicity, we're only pre-installing and warming "known" databases.
+  // for simplicity, only ddocs for "known" databases are staged and indexed.
   // for new databases, the final install will happen in the api preflight check.
   // since any new database will be empty, the impact of not warming views is minimal.
   for (const database of DATABASES) {
@@ -265,6 +288,7 @@ const unstageStagedDdocs = async () => {
 module.exports = {
   cleanup,
 
+  validBuildInfo,
   getPackagedVersion,
   getDdocDefinitions,
   freshInstall,

@@ -75,12 +75,14 @@ describe('upgrade service', () => {
       await indexStagedViews();
     });
 
-    it('should throw error when version is invalid', async () => {
+    it('should throw error when build info is invalid', async () => {
+      sinon.stub(upgradeLogService, 'setErrored').resolves();
       try {
-        await upgrade.upgrade();
+        await upgrade.upgrade('something');
         expect.fail('Should have thrown');
       } catch (err) {
-        expect(err.message).to.equal('Version is invalid');
+        expect(err.message).to.match(/Invalid build info/);
+        expect(upgradeLogService.setErrored.callCount).to.equal(1);
       }
     });
 

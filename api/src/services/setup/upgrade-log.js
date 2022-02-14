@@ -31,6 +31,9 @@ const UPGRADE_LOG_STATES = {
 
 let currentUpgradeLogId;
 
+const clearCachedId = () => currentUpgradeLogId = undefined;
+const setCachedId = (id) => currentUpgradeLogId = id;
+
 const isFinalState = (state) => {
   return state === UPGRADE_LOG_STATES.FINALIZED ||
          state === UPGRADE_LOG_STATES.ABORTED ||
@@ -77,16 +80,17 @@ const getCurrentUpgradeLog = async () => {
 const getUpgradeLog = async () => {
   const upgradeLog = currentUpgradeLogId ? await getCurrentUpgradeLog() : await getLatestUpgradeLog();
   if (!upgradeLog) {
-    currentUpgradeLogId = undefined;
+    clearCachedId();
     return;
   }
 
   if (isFinalState(upgradeLog.state)) {
-    logger.info('Last upgrade log is already final');
+    logger.info('Last upgrade log is already final.');
+    clearCachedId();
     return;
   }
 
-  currentUpgradeLogId = upgradeLog._id;
+  setCachedId(upgradeLog._id);
 
   return upgradeLog;
 };
@@ -141,7 +145,7 @@ const createUpgradeLog = async (action, toVersion = '', fromVersion = '', userna
   pushState(upgradeLog, UPGRADE_LOG_STATES.INITIATED, startDate);
 
   await db.medicLogs.put(upgradeLog);
-  currentUpgradeLogId = upgradeLog._id;
+  setCachedId(upgradeLog._id);
   return upgradeLog;
 };
 
@@ -155,7 +159,7 @@ const createUpgradeLog = async (action, toVersion = '', fromVersion = '', userna
 const update = async (state) => {
   const upgradeLog = await module.exports.get();
   if (!upgradeLog) {
-    logger.info('Upgrade log tracking file was not found.');
+    logger.info('Valid Upgrade log tracking file was not found. Not updating.');
     return;
   }
 
@@ -166,8 +170,8 @@ const update = async (state) => {
   pushState(upgradeLog, state);
   await db.medicLogs.put(upgradeLog);
 
-  if (isFinalState(upgradeLog.state) && currentUpgradeLogId === upgradeLog._id) {
-    currentUpgradeLogId = undefined;
+  if (isFinalState(state)) {
+    clearCachedId();
   }
 
   return upgradeLog;
@@ -209,7 +213,7 @@ const setFinalized = async () => {
 };
 
 const setAborted = async () => {
-  logger.info('Aborting uprade');
+  logger.info('Aborting upgrade');
   await update(UPGRADE_LOG_STATES.ABORTED);
 };
 

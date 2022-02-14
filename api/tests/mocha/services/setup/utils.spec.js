@@ -12,6 +12,8 @@ const ddocsService = require('../../../../src/services/setup/ddocs');
 let utils;
 let clock;
 
+const buildInfo = (version, namespace='medic', application='medic') => ({ version, namespace, application });
+
 const mockDb = (db) => {
   sinon.stub(db, 'allDocs');
   sinon.stub(db, 'bulkDocs');
@@ -239,7 +241,7 @@ describe('Setup utils', () => {
         fs.promises.readFile.withArgs('localDdocs/users-meta.json').rejects({ error: 'booom' });
 
         try {
-          await utils.getDdocDefinitions('4.0.0', '4.0.0');
+          await utils.getDdocDefinitions();
           expect.fail('Should have thrown');
         } catch (err) {
           expect(err).to.deep.equal({ error: 'booom' });
@@ -265,7 +267,7 @@ describe('Setup utils', () => {
         fs.promises.readFile.withArgs('localDdocs/logs.json').resolves('definitely not json');
 
         try {
-          await utils.getDdocDefinitions('4.2.0-beta.7', '4.2.0-beta.7');
+          await utils.getDdocDefinitions();
           expect.fail('Should have thrown');
         } catch (err) {
           expect(err.message).to.match(/Unexpected token d in JSON at position 0/);
@@ -288,7 +290,7 @@ describe('Setup utils', () => {
 
         const version = 'version_number';
         db.builds.get.resolves({
-          build_info: { },
+          build_info: buildInfo(version),
           version: version,
           _attachments: {
             'ddocs/medic.json': { data: genAttachmentData(medicDdocs) },
@@ -298,7 +300,7 @@ describe('Setup utils', () => {
           },
         });
 
-        const result = await utils.getDdocDefinitions(version, 'other version');
+        const result = await utils.getDdocDefinitions(buildInfo(version));
 
         expect(result.get(DATABASES[0])).to.deep.equal(medicDdocs);
         expect(result.get(DATABASES[1])).to.deep.equal(sentinelDdocs);
@@ -319,7 +321,7 @@ describe('Setup utils', () => {
         const newdb = [{ _id: 'd5' }];
 
         db.builds.get.resolves({
-          build_info: { },
+          build_info: buildInfo(version),
           version: version,
           _attachments: {
             'ddocs/medic.json': { data: genAttachmentData(medicDdocs) },
@@ -330,7 +332,7 @@ describe('Setup utils', () => {
           },
         });
 
-        const result = await utils.getDdocDefinitions(version, 'local');
+        const result = await utils.getDdocDefinitions(buildInfo(version));
         expect(result.get(DATABASES[0])).to.deep.equal(medicDdocs);
         expect(result.get(DATABASES[1])).to.deep.equal(sentinelDdocs);
         expect(result.get(DATABASES[2])).to.deep.equal(logsDdocs);
@@ -346,7 +348,7 @@ describe('Setup utils', () => {
         const logsDdocs = [{ _id: 'd2' }];
         const version = 'version_number';
         db.builds.get.resolves({
-          build_info: { },
+          build_info: buildInfo(version),
           version: version,
           _attachments: {
             'ddocs/medic.json': { data: genAttachmentData(medicDdocs) },
@@ -354,7 +356,7 @@ describe('Setup utils', () => {
           },
         });
 
-        const result = await utils.getDdocDefinitions(version, 'local version');
+        const result = await utils.getDdocDefinitions(buildInfo(version));
         expect(result.get(DATABASES[0])).to.deep.equal(medicDdocs);
         expect(result.get(DATABASES[2])).to.deep.equal(logsDdocs);
         expect(result.size).to.equal(2);
@@ -364,7 +366,7 @@ describe('Setup utils', () => {
         db.builds.get.rejects({ error: 'boom' });
 
         try {
-          await utils.getDdocDefinitions('vers');
+          await utils.getDdocDefinitions(buildInfo('vers'));
           expect.fail('should have thrown');
         } catch (err) {
           expect(err).to.deep.equal({ error: 'boom' });
@@ -382,7 +384,7 @@ describe('Setup utils', () => {
         });
 
         try {
-          await utils.getDdocDefinitions(version, 'not 4.0.0');
+          await utils.getDdocDefinitions(buildInfo(version));
           expect.fail('should have thrown');
         } catch (err) {
           expect(err.message).to.equal('Staging ddoc is missing attachments');
@@ -404,14 +406,14 @@ describe('Setup utils', () => {
         });
 
         try {
-          await utils.getDdocDefinitions(version, 'nottheversion');
+          await utils.getDdocDefinitions({ namespace: 'a', application: 'b', version });
           expect.fail('should have thrown');
         } catch (err) {
           expect(err.message).to.match(/Unexpected token/);
         }
 
         expect(db.builds.get.callCount).to.equal(1);
-        expect(db.builds.get.args[0]).to.deep.equal([`medic:medic:${version}`, { attachments: true }]);
+        expect(db.builds.get.args[0]).to.deep.equal([`a:b:${version}`, { attachments: true }]);
       });
     });
   });

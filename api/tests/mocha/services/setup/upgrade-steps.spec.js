@@ -8,6 +8,8 @@ const viewIndexer = require('../../../../src/services/setup/view-indexer');
 
 let upgradeSteps;
 
+const buildInfo = (version, namespace='medic', application='medic') => ({ version, namespace, application });
+
 describe('Upgrade steps', () => {
   afterEach(() => {
     sinon.restore();
@@ -104,7 +106,7 @@ describe('Upgrade steps', () => {
       } catch (err) {
         expect(err).to.deep.equal({ code: 500 });
         expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(1);
-        expect(upgradeUtils.abortPreviousUpgrade.callCount).to.equal(0);
+        expect(upgradeUtils.abortPreviousUpgrade.callCount).to.equal(1);
         expect(upgradeUtils.cleanup.callCount).to.equal(0);
       }
     });
@@ -118,6 +120,7 @@ describe('Upgrade steps', () => {
         expect.fail('Should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ error: 'gone' });
+        expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(0);
       }
     });
 
@@ -136,11 +139,11 @@ describe('Upgrade steps', () => {
   });
 
   describe('prep', () => {
-    it('should throw an error when version is not defined correctly', async () => {
+    it('should throw an error when build info is not defined correctly', async () => {
       try {
-        await upgradeSteps.prep(['not a version']);
+        await upgradeSteps.prep(['not a build info']);
       } catch (err) {
-        expect(err.message).to.equal('Invalid version: not a version');
+        expect(err.message).to.match(/Invalid build info/);
       }
     });
 
@@ -151,7 +154,7 @@ describe('Upgrade steps', () => {
         sinon.stub(upgradeUtils, 'abortPreviousUpgrade');
         sinon.stub(upgradeUtils, 'freshInstall').resolves(false);
 
-        await upgradeSteps.prep('4.0.1', 'martin', true);
+        await upgradeSteps.prep(buildInfo('4.0.1'), 'martin', true);
 
         expect(upgradeLogService.create.callCount).to.equal(1);
         expect(upgradeLogService.create.args[0]).to.deep.equal(['stage', '4.0.1', '4.0.0', 'martin']);
@@ -164,7 +167,7 @@ describe('Upgrade steps', () => {
         sinon.stub(upgradeUtils, 'abortPreviousUpgrade');
         sinon.stub(upgradeUtils, 'freshInstall').resolves(false);
 
-        await upgradeSteps.prep('4.0.2', 'jack', false);
+        await upgradeSteps.prep(buildInfo('4.0.2'), 'jack', false);
 
         expect(upgradeLogService.create.callCount).to.equal(1);
         expect(upgradeLogService.create.args[0]).to.deep.equal(['upgrade', '4.0.2', '4.0.1', 'jack']);
@@ -203,20 +206,6 @@ describe('Upgrade steps', () => {
         expect(upgradeLogService.create.callCount).to.equal(0);
         expect(upgradeUtils.abortPreviousUpgrade.callCount).to.equal(0);
       });
-
-      it('should do nothing when version matches packaged version', async () => {
-        sinon.stub(upgradeUtils, 'freshInstall').resolves(false);
-        sinon.stub(upgradeUtils, 'getPackagedVersion').resolves('myversion');
-        sinon.stub(upgradeLogService, 'create');
-        sinon.stub(upgradeUtils, 'abortPreviousUpgrade');
-
-        await upgradeSteps.prep('myversion');
-
-        expect(upgradeUtils.freshInstall.callCount).to.equal(1);
-        expect(upgradeUtils.getPackagedVersion.callCount).to.equal(1);
-        expect(upgradeLogService.create.callCount).to.equal(0);
-        expect(upgradeUtils.abortPreviousUpgrade.callCount).to.equal(0);
-      });
     });
   });
 
@@ -225,7 +214,7 @@ describe('Upgrade steps', () => {
       try {
         await upgradeSteps.stage(['not a version']);
       } catch (err) {
-        expect(err.message).to.equal('Invalid version: not a version');
+        expect(err.message).to.equal('Invalid build info');
       }
     });
 
@@ -237,10 +226,10 @@ describe('Upgrade steps', () => {
         sinon.stub(upgradeUtils, 'saveStagedDdocs');
         sinon.stub(upgradeLogService, 'setStaged');
 
-        await upgradeSteps.stage('4.0.1', 'martin');
+        await upgradeSteps.stage(buildInfo('4.0.1'), 'martin');
 
         expect(upgradeUtils.getDdocDefinitions.callCount).to.equal(1);
-        expect(upgradeUtils.getDdocDefinitions.args[0]).to.deep.equal(['4.0.1', '4.0.0']);
+        expect(upgradeUtils.getDdocDefinitions.args[0]).to.deep.equal([buildInfo('4.0.1')]);
         expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(1);
         expect(upgradeUtils.saveStagedDdocs.callCount).to.equal(1);
         expect(upgradeUtils.saveStagedDdocs.args[0]).to.deep.equal(['ddoc list']);
@@ -255,7 +244,7 @@ describe('Upgrade steps', () => {
         sinon.stub(upgradeLogService, 'setStaged');
 
         try {
-          await upgradeSteps.stage('4.0.2', 'john');
+          await upgradeSteps.stage(buildInfo('4.0.2'), 'john');
           expect.fail('Should have thrown');
         } catch (err) {
           expect(err).to.deep.equal({ some: 'error' });
@@ -263,7 +252,7 @@ describe('Upgrade steps', () => {
 
         expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(1);
         expect(upgradeUtils.getDdocDefinitions.callCount).to.equal(1);
-        expect(upgradeUtils.getDdocDefinitions.args[0]).to.deep.equal(['4.0.2', '4.0.1']);
+        expect(upgradeUtils.getDdocDefinitions.args[0]).to.deep.equal([buildInfo('4.0.2')]);
         expect(upgradeUtils.saveStagedDdocs.callCount).to.equal(0);
         expect(upgradeLogService.setStaged.callCount).to.equal(0);
       });
@@ -276,14 +265,14 @@ describe('Upgrade steps', () => {
         sinon.stub(upgradeLogService, 'setStaged');
 
         try {
-          await upgradeSteps.stage('4.2.0', 'carl');
+          await upgradeSteps.stage(buildInfo('4.2.0'), 'carl');
           expect.fail('Should have thrown');
         } catch (err) {
           expect(err).to.deep.equal({ error: true });
         }
 
         expect(upgradeUtils.getDdocDefinitions.callCount).to.equal(1);
-        expect(upgradeUtils.getDdocDefinitions.args[0]).to.deep.equal(['4.2.0', '4.1.0']);
+        expect(upgradeUtils.getDdocDefinitions.args[0]).to.deep.equal([buildInfo('4.2.0')]);
         expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(1);
         expect(upgradeUtils.saveStagedDdocs.callCount).to.equal(1);
         expect(upgradeUtils.saveStagedDdocs.args[0]).to.deep.equal([['the', 'ddoc', 'list']]);
@@ -293,15 +282,12 @@ describe('Upgrade steps', () => {
 
     describe('on install', () => {
       it('stage packaged ddocs', async () => {
-        sinon.stub(upgradeUtils, 'getPackagedVersion').resolves('4.0.0');
         sinon.stub(upgradeUtils, 'getDdocDefinitions').resolves({ db1: ['ddocs'], db2: ['ddocs'] });
         sinon.stub(upgradeUtils, 'deleteStagedDdocs');
         sinon.stub(upgradeUtils, 'saveStagedDdocs');
         sinon.stub(upgradeLogService, 'setStaged');
 
         await upgradeSteps.stage();
-
-        expect(upgradeUtils.getPackagedVersion.callCount).to.equal(1);
         expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(1);
         expect(upgradeUtils.saveStagedDdocs.callCount).to.equal(1);
         expect(upgradeUtils.saveStagedDdocs.args[0]).to.deep.equal([{ db1: ['ddocs'], db2: ['ddocs'] }]);
@@ -309,14 +295,13 @@ describe('Upgrade steps', () => {
       });
 
       it('should throw an error if staging fails', async () => {
-        sinon.stub(upgradeUtils, 'getPackagedVersion').resolves('4.1.0');
         sinon.stub(upgradeUtils, 'deleteStagedDdocs');
         sinon.stub(upgradeUtils, 'getDdocDefinitions').resolves('ddocs');
         sinon.stub(upgradeUtils, 'saveStagedDdocs').rejects({ error: 'boom' });
         sinon.stub(upgradeLogService, 'setStaged');
 
         try {
-          await upgradeSteps.stage('4.1.0');
+          await upgradeSteps.stage(buildInfo('4.1.0'));
           expect.fail('Should have thrown');
         } catch (err) {
           expect(err).to.deep.equal({ error: 'boom' });

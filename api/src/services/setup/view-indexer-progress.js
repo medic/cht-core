@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 const db = require('../../db');
 const logger = require('../../logger');
 
@@ -6,6 +8,11 @@ const QUERY_TASKS_INTERVAL = 5000;
 // 60 is roughly the nbr of chars displayed around the bar (ddoc name + debug padding)
 const INDEXER_BAR_PREFIX = 60;
 const DDOC_NAME_PAD = 35;
+const DDOC_PREFIX = /^_design\/:staged:/;
+// example "database" is "shards/a0000000-bfffffff/medic.1637673820" (shards/<shard_name>/<db_name>.???)
+const INDEXER_DB_RE = /^shards\/[^/]+\/([^.]+)\..*$/;
+
+let stopQueryingIndexes;
 
 const setTasksToComplete = (indexer) => {
   Object
@@ -15,8 +22,6 @@ const setTasksToComplete = (indexer) => {
     });
 };
 
-// example "database" is "shards/a0000000-bfffffff/medic.1637673820" (shards/<shard_name>/<db_name>.???)
-const INDEXER_DB_RE = /^shards\/[^/]+\/([^.]+)\..*$/;
 const getDatabaseName = (indexer) => {
   if (!indexer || !indexer.database || typeof indexer.database !== 'string') {
     return;
@@ -25,7 +30,7 @@ const getDatabaseName = (indexer) => {
   const match = indexer.database.match(INDEXER_DB_RE);
   return (match && match[1]) || indexer.database;
 };
-const DDOC_PREFIX = /^_design\/:staged:/;
+
 const getDdocName = (indexer) => {
   if (!indexer || !indexer.design_document || typeof indexer.design_document !== 'string') {
     return;
@@ -54,8 +59,7 @@ const updateRunningTasks = (indexers, activeTasks = []) => {
 };
 
 const calculateAverageProgress = (indexer) => {
-  const tasks = Object.keys(indexer.tasks);
-  indexer.progress = Math.round(tasks.reduce((progress, pid) => progress + indexer.tasks[pid], 0) / tasks.length);
+  indexer.progress = Math.round(_.mean(Object.values(indexer.tasks)));
 };
 
 // logs indexer progress in the console
@@ -96,6 +100,8 @@ const getIndexers = async (indexers = []) => {
 };
 
 const logProgress = () => {
+  stopLogging();
+
   let timeout;
   let indexers = [];
 
@@ -106,13 +112,23 @@ const logProgress = () => {
   };
 
   logIndexerProgress(indexers);
-  return () => {
+  stopQueryingIndexes = () => {
     clearTimeout(timeout);
     timeout = null;
   };
+
+  return stopQueryingIndexes;
+};
+
+const stopLogging = () => {
+  if (stopQueryingIndexes) {
+    stopQueryingIndexes();
+    stopQueryingIndexes = undefined;
+  }
 };
 
 module.exports = {
   log: logProgress,
   query: getIndexers,
+  stop: stopLogging,
 };

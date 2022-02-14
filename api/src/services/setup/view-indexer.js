@@ -55,23 +55,21 @@ const getViewsToIndex = async () => {
  * @return {Promise}
  */
 const indexView = async (dbName, ddocId, viewName) => {
-  let viewIndexed = false;
-
+  const indexing = true;
   do {
     try {
-      await rpn.get({
+      return await rpn.get({
         uri: `${environment.serverUrl}/${dbName}/${ddocId}/_view/${viewName}`,
         json: true,
         qs: { limit: 1 },
         timeout: 2000,
       });
-      viewIndexed = true;
     } catch (requestError) {
       if (!requestError || !requestError.error || requestError.error.code !== SOCKET_TIMEOUT_ERROR_CODE) {
         throw requestError;
       }
     }
-  } while (!viewIndexed);
+  } while (indexing);
 };
 
 module.exports = {

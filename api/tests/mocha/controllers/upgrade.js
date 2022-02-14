@@ -15,7 +15,7 @@ describe('Upgrade controller', () => {
   beforeEach(() => {
     req = {
       body: {
-        version: '4.0.0'
+        build: { version: '4.0.0' },
       }
     };
 
@@ -25,8 +25,8 @@ describe('Upgrade controller', () => {
 
     sinon.stub(auth, 'check');
     sinon.stub(serverUtils, 'error');
-    sinon.stub(service, 'upgrade').returns(Promise.resolve());
-    sinon.stub(service, 'complete').returns(Promise.resolve());
+    sinon.stub(service, 'upgrade').resolves();
+    sinon.stub(service, 'complete').resolves();
   });
 
   afterEach(() => sinon.restore());
@@ -64,7 +64,7 @@ describe('Upgrade controller', () => {
           auth.check.callCount.should.equal(1);
           serverUtils.error.callCount.should.equal(0);
           service.upgrade.callCount.should.equal(1);
-          service.upgrade.args[0][0].should.deep.equal(req.body.version);
+          service.upgrade.args[0][0].should.deep.equal(req.body.build);
           service.upgrade.args[0][1].should.equal('admin');
           service.upgrade.args[0][2].should.deep.equal(false);
           json.callCount.should.equal(1);
@@ -120,7 +120,7 @@ describe('Upgrade controller', () => {
           auth.check.callCount.should.equal(1);
           serverUtils.error.callCount.should.equal(0);
           service.upgrade.callCount.should.equal(1);
-          service.upgrade.args[0][0].should.deep.equal(req.body.version);
+          service.upgrade.args[0][0].should.deep.equal(req.body.build);
           service.upgrade.args[0][1].should.equal('admin');
           service.upgrade.args[0][2].should.deep.equal(true);
           json.callCount.should.equal(1);
@@ -133,7 +133,7 @@ describe('Upgrade controller', () => {
     it('Passes the call on to the service', () => {
       auth.check.returns(Promise.resolve({}));
 
-      return controller.complete({}, {})
+      return controller.complete(req, res)
         .then(() => {
           auth.check.callCount.should.equal(1);
           auth.check.args[0][1].should.deep.equal(['can_configure']);
@@ -198,7 +198,7 @@ describe('Upgrade controller', () => {
       serverUtils.error.callCount.should.equal(0);
     });
 
-    it('should catch service errors', async () => {
+    it('should catch upgradeInProgress service errors', async () => {
       auth.check.resolves();
       sinon.stub(service, 'upgradeInProgress').rejects({ the: 'upgrade' });
       sinon.stub(service, 'indexerProgress').resolves(['indexers']);
@@ -211,20 +211,7 @@ describe('Upgrade controller', () => {
       serverUtils.error.callCount.should.equal(1);
     });
 
-    it('should catch service errors', async () => {
-      auth.check.resolves();
-      sinon.stub(service, 'upgradeInProgress').rejects({ the: 'upgrade' });
-      sinon.stub(service, 'indexerProgress').resolves(['indexers']);
-
-      await controller.upgradeInProgress(req, res);
-
-      service.upgradeInProgress.callCount.should.equal(1);
-      service.indexerProgress.callCount.should.equal(1);
-      res.json.callCount.should.equal(0);
-      serverUtils.error.callCount.should.equal(1);
-    });
-
-    it('should catch service errors', async () => {
+    it('should catch indexerProgress service errors', async () => {
       auth.check.resolves();
       sinon.stub(service, 'upgradeInProgress').resolves({ the: 'upgrade' });
       sinon.stub(service, 'indexerProgress').rejects(['indexers']);

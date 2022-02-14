@@ -43,7 +43,7 @@ describe('Check install service', () => {
 
       const result = await checkInstall.__get__('checkInstallForDb')(db);
 
-      expect(result).to.deep.equal({ valid: true, missing: [], different: [] });
+      expect(result).to.deep.equal({ upToDate: true, missing: [], different: [] });
 
       expect(ddocsService.getDdocs.callCount).to.equal(1);
       expect(ddocsService.getDdocs.args[0]).to.deep.equal([db]);
@@ -330,7 +330,7 @@ describe('Check install service', () => {
       const dbs = [{ name: 'one'}, { name: 'two'}, { name: 'three' }];
       setDatabases(dbs);
 
-      const checkInstallForDb = sinon.stub().resolves({ valid: true });
+      const checkInstallForDb = sinon.stub().resolves({ upToDate: true });
       checkInstall.__set__('checkInstallForDb', checkInstallForDb);
 
       await checkInstall.run();
@@ -344,9 +344,9 @@ describe('Check install service', () => {
       setDatabases(dbs);
 
       const checkInstallForDb = sinon.stub();
-      checkInstallForDb.onCall(0).resolves({ valid: true });
+      checkInstallForDb.onCall(0).resolves({ upToDate: true });
       checkInstallForDb.onCall(1).resolves({ stagedUpgrade: true, partialStagedUpgrade: true });
-      checkInstallForDb.onCall(2).resolves({ valid: true });
+      checkInstallForDb.onCall(2).resolves({ upToDate: true });
       checkInstallForDb.onCall(3).resolves({ stagedUpgrade: true, partialStagedUpgrade: true });
       checkInstall.__set__('checkInstallForDb', checkInstallForDb);
 
@@ -443,7 +443,7 @@ describe('Check install service', () => {
       setDatabases(dbs);
 
       const checkInstallForDb = sinon.stub();
-      checkInstallForDb.onCall(0).resolves({ valid: true });
+      checkInstallForDb.onCall(0).resolves({ upToDate: true });
       checkInstallForDb.onCall(1).resolves({ stagedUpgrade: false, partialStagedUpgrade: true });
       checkInstallForDb.onCall(2).resolves({ stagedUpgrade: false, partialStagedUpgrade: true });
       checkInstallForDb.onCall(3).resolves({ stagedUpgrade: false, partialStagedUpgrade: true });
