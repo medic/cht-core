@@ -56,6 +56,6 @@ git clone --single-branch --branch $TAG_NAME https://github.com/medic/cht-core.g
 touch testing-ci.txt
 git add testing-ci.txt
 git commit -m'Adding some restults'
-#git switch -c jmeter-test-branch
+git switch -c jmeter-test-branch
 git request-pull HEAD~1 origin
 echo "FINISHED! "
