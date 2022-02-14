@@ -11,6 +11,7 @@ sudo apt-get update
 echo install Hub
 sudo snap install --classic hub
 git config --global hub.protocol https
+git config --global user.name $GITHUB_ACTOR
 
 echo Cloning cht-core to /cht-core
 hub clone --single-branch --branch $TAG_NAME cht-core.git
