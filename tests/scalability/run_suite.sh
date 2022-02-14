@@ -57,5 +57,6 @@ touch testing-ci.txt
 git add testing-ci.txt
 git commit -m'Adding some restults'
 git switch -c jmeter-test-branch
+git push --set-upstream origin jmeter-test-branch
 git request-pull HEAD~1 origin
 echo "FINISHED! "
