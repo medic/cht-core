@@ -51,7 +51,7 @@ git commit -m'Adding jmeter restults'
 # zip -r report.zip report
 # git add report.zip
 # git commit -m 'adding report zip'
-git config --global user.name $GITHUB_ACTOR
+git commit --amend --reset-author
 git push --set-upstream origin jmeter-results-test-${TAG_NAME}
 #git push --set-upstream https://$GITHUB_TOKEN@github.com/medic/cht-core.git jmeter-results-test-${TAG_NAME}
 
