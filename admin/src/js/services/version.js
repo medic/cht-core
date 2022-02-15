@@ -61,9 +61,14 @@ angular.module('services').factory('Version',
       return version1.beta - version2.beta;
     };
 
+    const currentVersion = function(currentDeploy) {
+      return versionInformation(currentDeploy.base_version || currentDeploy.version);
+    };
+
     return {
       minimumNextRelease: minimumNextRelease,
       parse: versionInformation,
-      compare: compare
+      compare: compare,
+      currentVersion: currentVersion
     };
   });
