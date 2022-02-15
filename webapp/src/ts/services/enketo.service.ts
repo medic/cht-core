@@ -292,12 +292,11 @@ export class EnketoService {
           return Promise.reject(new Error(JSON.stringify(loadErrors)));
         }
         const language = options.language;
-        this.currentForm.view.$.on(
-          'click',
-          'button.add-repeat-btn:enabled',
-          () => this.currentForm.langs.setAll(language),
-        );
         this.currentForm.langs.$formLanguages.val(language).trigger('change');
+        // re-set the enketo form's language when a DOM node is added/removed to the form
+        // TODO: remove this once the enketo uplift gets merged https://github.com/medic/cht-core/pull/7256
+        const observer = new MutationObserver(() => this.currentForm.langs.setAll(language));
+        observer.observe(this.currentForm.view.html, { childList: true, subtree: true });
       })
       .then(() => this.getFormTitle(titleKey, doc))
       .then((title) => {
