@@ -419,8 +419,7 @@ describe('Setup utils', () => {
   });
 
   describe('saveStagedDdocs', () => {
-    it('should stage ddocs for every db for packaged version', async () => {
-      sinon.stub(env, 'ddocsPath').value('localDdocs');
+    it('should stage ddocs for every db', async () => {
       const deployInfo = { user: 'usr', upgrade_log_id: 'theid' };
       Object.freeze(deployInfo);
       sinon.stub(upgradeLogService, 'getDeployInfo').resolves(deployInfo);
@@ -458,21 +457,21 @@ describe('Setup utils', () => {
       ]]);
     });
 
-    it('should stage ddocs for every db for upgrade version', async () => {
+    it('should delete eventual _rev properties', async () => {
       const deployInfo = { user: 'admin', upgrade_log_id: 'theid' };
       Object.freeze(deployInfo);
       sinon.stub(upgradeLogService, 'getDeployInfo').resolves(deployInfo);
 
       const ddocDefinitions = new Map();
       ddocDefinitions.set(DATABASES[0], [
-        { _id: '_design/medic', views: { medic: {} } },
-        { _id: '_design/medic-client', views: { clienta: {}, clientb: {} } },
+        { _id: '_design/medic', _rev: 1, views: { medic: {} } },
+        { _id: '_design/medic-client', _rev: 2, views: { clienta: {}, clientb: {} } },
       ]);
       ddocDefinitions.set(DATABASES[1], [{ _id: '_design/sentinel', views: { sentinel: {} } }]);
       ddocDefinitions.set(DATABASES[2], [{ _id: '_design/logs', views: { logs: {} } }]);
       ddocDefinitions.set(DATABASES[3], [
-        { _id: '_design/meta1', views: { usersmeta1: {} } },
-        { _id: '_design/meta2', views: { usersmeta2: {} } },
+        { _id: '_design/meta1', _rev: 100, views: { usersmeta1: {} } },
+        { _id: '_design/meta2', _rev: 582, views: { usersmeta2: {} } },
       ]);
 
       sinon.stub(db, 'saveDocs').resolves();
