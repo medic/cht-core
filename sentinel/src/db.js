@@ -68,8 +68,8 @@ if (UNIT_TEST_ENV) {
     const username = 'cht-sentinel';
     const { serverUrl, couchUrl, dbName } = await serverChecks.getServerUrls(username);
 
-    module.exports.serverUrl = serverUrl.toString();
-    module.exports.couchUrl = couchUrl.toString();
+    module.exports.serverUrl = serverUrl;
+    module.exports.couchUrl = couchUrl;
 
     module.exports.medic = new PouchDB(module.exports.couchUrl, { fetch });
     module.exports.medicDbName = dbName;

@@ -105,6 +105,48 @@ describe('Server Checks service', () => {
 
     });
 
+    describe('couch url path check', () => {
+      it('should allow urls with a single path segment', () => {
+        process = {
+          env: {
+            COUCH_URL: 'http://couch.db/dbname',
+          }
+        };
+        service = rewire('../src/checks');
+        chai.expect(service.__get__('couchDbUrlCheck')).not.to.throw;
+      });
+
+      it('should ignore empty path segments', () => {
+        process = {
+          env: {
+            COUCH_URL: 'http://couch.db/////dbname/////',
+          }
+        };
+        service = rewire('../src/checks');
+        chai.expect(service.__get__('couchDbUrlCheck')).not.to.throw;
+      });
+
+      it('should block urls with no path segments', () => {
+        process = {
+          env: {
+            COUCH_URL: 'http://couch.db/',
+          }
+        };
+        service = rewire('../src/checks');
+        chai.expect(service.__get__('couchDbUrlCheck')).to.throw(/segment/);
+      });
+
+      it('should block urls with multiple path segments', () => {
+        process = {
+          env: {
+            COUCH_URL: 'http://couch.db/path/to/db',
+          }
+        };
+        service = rewire('../src/checks');
+        chai.expect(service.__get__('couchDbUrlCheck')).to.throw(/must have only one path segment/);
+      });
+    });
+
     describe('admin party', () => {
 
       it('disabled', () => {
@@ -159,7 +201,7 @@ describe('Server Checks service', () => {
       process = {
         versions: {node: '9.11.1'},
         env: {
-          COUCH_URL: 'http://admin:pass@localhost:5984',
+          COUCH_URL: 'http://admin:pass@localhost:5984/medic',
           COUCH_NODE_NAME: 'nonode@nohost'
         },
         exit: () => 0
@@ -179,7 +221,7 @@ describe('Server Checks service', () => {
       process = {
         versions: {node: '9.11.1'},
         env: {
-          COUCH_URL: 'http://admin:pass@localhost:5984',
+          COUCH_URL: 'http://admin:pass@localhost:5984/medic',
           COUCH_NODE_NAME: 'nonode@nohost'
         },
         exit: () => 0
@@ -200,7 +242,28 @@ describe('Server Checks service', () => {
       process = {
         versions: {node: '9.11.1'},
         env: {
-          COUCH_URL: 'http://admin:pass@localhost:5984'
+          COUCH_URL: 'http://admin:pass@localhost:5984',
+          COUCH_NODE_NAME: 'nonode@nohost'
+        },
+        exit: () => 0
+      };
+      service = rewire('../src/checks');
+
+      sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
+      sinon.stub(request, 'get').resolves({ version: '2' });
+      return service
+        .check('something')
+        .then(() => chai.assert.fail('should throw'))
+        .catch(err => {
+          chai.expect(err.message).to.match(/Environment variable "COUCH_URL" must have only one path segment/);
+        });
+    });
+
+    it('no node name', function() {
+      process = {
+        versions: {node: '9.11.1'},
+        env: {
+          COUCH_URL: 'http://admin:pass@localhost:5984/medic',
         },
         exit: () => 0
       };
@@ -221,7 +284,7 @@ describe('Server Checks service', () => {
       process = {
         versions: {node: '9.11.1'},
         env: {
-          COUCH_URL: 'http://admin:pass@localhost:5984',
+          COUCH_URL: 'http://admin:pass@localhost:5984/medic',
           COUCH_NODE_NAME: 'bad_node_name'
         },
         exit: () => 0
@@ -246,7 +309,7 @@ describe('Server Checks service', () => {
       process = {
         versions: {node: '9.11.1'},
         env: {
-          COUCH_URL: 'http://admin:pass@localhost:5984',
+          COUCH_URL: 'http://admin:pass@localhost:5984/medic',
           COUCH_NODE_NAME: 'nonode@nohost'
         },
         exit: () => 0
@@ -299,7 +362,7 @@ describe('Server Checks service', () => {
       const result = await service.getServerUrls('myUser');
 
       chai.expect(result.dbName).to.equal('theDb');
-      chai.expect(result.serverUrl).to.deep.equal(new URL('http://myUser:pass@localhost:5984'));
+      chai.expect(result.serverUrl).to.equal('http://myUser:pass@localhost:5984/');
       chai.expect(request.get.callCount).to.equal(1);
       chai.expect(request.get.args[0]).to.deep.equal(['http://admin:pass@localhost:5984/_membership', { json: true }]);
       chai.expect(request.put.callCount).to.equal(3);
@@ -320,8 +383,8 @@ describe('Server Checks service', () => {
       const result = await service.getServerUrls('adminuser');
 
       chai.expect(result.dbName).to.equal('dbname');
-      chai.expect(result.serverUrl).to.deep.equal(new URL('http://adminuser:pass@localhost:5984'));
-      chai.expect(result.couchUrl).to.deep.equal(new URL('http://adminuser:pass@localhost:5984/dbname'));
+      chai.expect(result.serverUrl).to.deep.equal('http://adminuser:pass@localhost:5984/');
+      chai.expect(result.couchUrl).to.deep.equal('http://adminuser:pass@localhost:5984/dbname');
     });
 
     it('should format the database name correctly when it has lots of slashes', async () => {
@@ -334,36 +397,8 @@ describe('Server Checks service', () => {
       const result = await service.getServerUrls('newuser');
 
       chai.expect(result.dbName).to.equal('adatabase');
-      chai.expect(result.serverUrl).to.deep.equal(new URL('http://newuser:pass@localhost:5984'));
-      chai.expect(result.couchUrl).to.deep.equal(new URL('http://newuser:pass@localhost:5984/adatabase'));
-    });
-
-    it('should work with multiple path segments', async () => {
-      process.env = { COUCH_URL: 'http://admin:pass@localhost:5984/path/to/database' };
-      service = rewire('../src/checks');
-
-      sinon.stub(request, 'get').resolves({ cluster_nodes: ['node1'] });
-      sinon.stub(request, 'put').resolves();
-
-      const result = await service.getServerUrls('newuser');
-
-      chai.expect(result.dbName).to.equal('database');
-      chai.expect(result.serverUrl).to.deep.equal(new URL('http://newuser:pass@localhost:5984/path/to'));
-      chai.expect(result.couchUrl).to.deep.equal(new URL('http://newuser:pass@localhost:5984/path/to/database'));
-    });
-
-    it('should work with multiple path segments and multiple slashes', async () => {
-      process.env = { COUCH_URL: 'http://admin:pass@localhost:5984//path//to//db//' };
-      service = rewire('../src/checks');
-
-      sinon.stub(request, 'get').resolves({ cluster_nodes: ['node1'] });
-      sinon.stub(request, 'put').resolves();
-
-      const result = await service.getServerUrls('newuser');
-
-      chai.expect(result.dbName).to.equal('db');
-      chai.expect(result.serverUrl).to.deep.equal(new URL('http://newuser:pass@localhost:5984/path/to'));
-      chai.expect(result.couchUrl).to.deep.equal(new URL('http://newuser:pass@localhost:5984/path/to/db'));
+      chai.expect(result.serverUrl).to.equal('http://newuser:pass@localhost:5984/');
+      chai.expect(result.couchUrl).to.equal('http://newuser:pass@localhost:5984/adatabase');
     });
 
     it('should throw error when get fails', async () => {

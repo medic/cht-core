@@ -1,6 +1,5 @@
 const request = require('request-promise-native');
 const MIN_MAJOR = 8;
-const SEGMENT_SEPARATOR = '/';
 
 const { COUCH_URL, COUCH_NODE_NAME } = process.env;
 
@@ -28,6 +27,9 @@ const getNoAuthURL = (serverUrl) => {
   noAuthUrl.username = '';
   return noAuthUrl;
 };
+
+// also strips duplicate slashes
+const getPathSegments = (url) => url.pathname.split('/').filter(segment => segment);
 
 const getMembershipUrl = (serverUrl) => {
   const url = new URL(serverUrl);
@@ -120,6 +122,7 @@ const check = () => {
   return Promise.resolve()
     .then(nodeVersionCheck)
     .then(envVarsCheck)
+    .then(couchDbUrlCheck)
     .then(couchDbNoAdminPartyModeCheck)
     .then(couchNodeNamesMatch)
     .then(couchDbVersionCheck);
@@ -137,23 +140,35 @@ const createUser = async (username, password, serverUrl) => {
   }
 };
 
+const couchDbUrlCheck = () => {
+  const couchUrl = new URL(COUCH_URL);
+  const pathSegments = getPathSegments(couchUrl);
+
+  if (pathSegments.length !== 1) {
+    throw new Error('Environment variable "COUCH_URL" must have only one path segment. ' +
+                    'Please make sure your CouchDb is accessible through a URL that matches: ' +
+                    '<protocol>://<username>:<password>@<host>:<port>/<db name>');
+  }
+};
+
 const getServerUrls = async (username) => {
   const serverUrl = new URL(COUCH_URL);
+  serverUrl.pathname = '/';
+
   const couchUrl = new URL(COUCH_URL);
-
-  // gets path segments and strips double slashes
-  const pathSegments = serverUrl.pathname.split(SEGMENT_SEPARATOR).filter(segment => segment);
-  couchUrl.pathname = pathSegments.join('/');
-
-  const dbName = pathSegments.splice(pathSegments.length - 1)[0];
-  serverUrl.pathname = pathSegments.join(SEGMENT_SEPARATOR);
+  const dbName = getPathSegments(couchUrl)[0];
+  couchUrl.pathname = `/${dbName}`;
 
   await createUser(username, serverUrl.password, serverUrl.toString());
 
   serverUrl.username = username;
   couchUrl.username = username;
 
-  return { serverUrl, couchUrl, dbName };
+  return {
+    serverUrl: serverUrl.toString(),
+    couchUrl: couchUrl.toString(),
+    dbName,
+  };
 };
 
 module.exports = {

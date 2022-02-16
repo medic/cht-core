@@ -43,11 +43,7 @@ describe('db', () => {
       const serverUrl = 'http://adm:pas@couch.db:9800/';
       const couchUrl = 'http://adm:pas@couch.db:9800/dbname';
 
-      sinon.stub(serverChecks, 'getServerUrls').resolves({
-        serverUrl: new URL(serverUrl),
-        couchUrl: new URL(couchUrl),
-        dbName: 'dbname',
-      });
+      sinon.stub(serverChecks, 'getServerUrls').resolves({ serverUrl, couchUrl, dbName: 'dbname' });
 
       await db.initialize();
 

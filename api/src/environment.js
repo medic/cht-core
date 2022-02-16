@@ -30,15 +30,17 @@ module.exports.initialize = async () => {
   const username = 'cht-api';
   const { serverUrl, couchUrl, dbName } = await serverChecks.getServerUrls(username);
 
-  module.exports.serverUrl = serverUrl.toString();
-  module.exports.couchUrl = couchUrl.toString();
-
-  module.exports.protocol = serverUrl.protocol;
-  module.exports.port = serverUrl.port;
-  module.exports.host = serverUrl.hostname;
+  module.exports.serverUrl = serverUrl;
+  module.exports.couchUrl = couchUrl;
   module.exports.db = dbName;
-  module.exports.username = username;
-  module.exports.password = serverUrl.password;
+
+  const url = new URL(serverUrl);
+  module.exports.protocol = url.protocol;
+  module.exports.port = url.port;
+  module.exports.host = url.hostname;
+  module.exports.username = url.username;
+  module.exports.password = url.password;
+
   module.exports.isTesting = dbName === 'medic-test';
 };
 
