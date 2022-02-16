@@ -69,7 +69,8 @@ describe('RepeatForm', () => {
 
     await inputCount.setValue(3);
     await browser.execute((inputCountPath) => {
-      document.querySelector(inputCountPath).dispatchEvent(new Event("change", { bubbles: true }));
+      // eslint-disable-next-line no-undef
+      document.querySelector(inputCountPath).dispatchEvent(new Event('change', { bubbles: true }));
     }, inputCountPath);
     expect(await inputCount.getValue()).to.equal('3');
     cityLabels = await $$(cityLabelPath);
