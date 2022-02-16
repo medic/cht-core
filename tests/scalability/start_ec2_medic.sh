@@ -1,7 +1,4 @@
 #!/bin/bash
-# Fail job when script errors
-set -e
-
 #Requires jq
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 
