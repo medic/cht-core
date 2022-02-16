@@ -45,13 +45,14 @@ describe('RepeatForm', () => {
   });
 
   const selectorPrefix = '#report-form .active';
-  const stateLabelPath = `${selectorPrefix}.question-label[data-itext-id="/repeat-translation/basic/state_1:label"]`;
-  const cityLabelPath = `${selectorPrefix}.question-label[data-itext-id="/repeat-translation/basic/rep/city_1:label"]`;
-  const melbourneLabelPath = `${selectorPrefix}[data-itext-id="/repeat-translation/basic/rep/city_1/melbourne:label"]`;
+  const stateLabelPath = `${selectorPrefix}.question-label[data-itext-id="/repeat_translation/basic/state_1:label"]`;
+  const cityLabelPath = `${selectorPrefix}.question-label[data-itext-id="/repeat_translation/basic/rep/city_1:label"]`;
+  const melbourneLabelPath = `${selectorPrefix}[data-itext-id="/repeat_translation/basic/rep/city_1/melbourne:label"]`;
+  const inputCountPath = `${selectorPrefix}[data-itext-id="/repeat_translation/basic/count:label"] ~ input`;
 
-  it('should display the initial form and its repeated content in Swahili', async () => {
-    const swUserName = 'Jina la mtumizi';
-    await loginPage.changeLanguage('sw', swUserName);
+  it('should display the initial form and its repeated content in Nepali', async () => {
+    const neUserName = 'प्रयोगकर्ताको नाम';
+    await loginPage.changeLanguage('ne', neUserName);
     await loginPage.login({ username: auth.username, password: auth.password, createUser: true });
     await commonPage.goToBase();
     await commonPage.goToReports();
@@ -59,15 +60,26 @@ describe('RepeatForm', () => {
     await (await reportsPage.formActionsLink(formDocument.internalId)).click();
 
     const stateLabel = await $(stateLabelPath);
-    expect(await stateLabel.getText()).to.equal('Select a state: - SV');
+    expect(await stateLabel.getText()).to.equal('Select a state: - NE');
 
-    await reportsPage.repeatForm();
+    let cityLabels = await $$(cityLabelPath);
+    expect(cityLabels.length).to.equal(1);
+    const inputCount = await $(inputCountPath);
+    expect(await inputCount.getValue()).to.equal('1');
 
-    const cityLabel = await $(cityLabelPath);
-    expect(await cityLabel.getText()).to.equal('Select a city: - SV');
+    await inputCount.setValue(3);
+    await browser.execute((inputCountPath) => {
+      document.querySelector(inputCountPath).dispatchEvent(new Event("change", { bubbles: true }));
+    }, inputCountPath);
+    expect(await inputCount.getValue()).to.equal('3');
+    cityLabels = await $$(cityLabelPath);
+    expect(cityLabels.length).to.equal(3);
+    await Promise.all(cityLabels.map(
+      async cityLabel => expect(await cityLabel.getText()).to.equal('Select a city: - NE'),
+    ));
 
     const melbourneLabel = await $(melbourneLabelPath);
-    expect(await melbourneLabel.getText()).to.equal('ML');
+    expect(await melbourneLabel.getText()).to.equal('ML (NE)');
   });
 
   it('should display the initial form and its repeated content in English', async () => {
@@ -82,7 +94,10 @@ describe('RepeatForm', () => {
     const stateLabel = await $(stateLabelPath);
     expect(await stateLabel.getText()).to.equal('Select a state:');
 
-    await reportsPage.repeatForm();
+    const inputCount = await $(inputCountPath);
+    expect(await inputCount.getValue()).to.equal('1');
+    await inputCount.setValue(2);
+    expect(await inputCount.getValue()).to.equal('2');
 
     const cityLabel = await $(cityLabelPath);
     expect(await cityLabel.getText()).to.equal('Select a city:');
