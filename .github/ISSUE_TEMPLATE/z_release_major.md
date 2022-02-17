@@ -35,7 +35,7 @@ Once all issues have passed acceptance testing and have been merged into `master
 ```
 *Release testing has started for {{version}} of {{product}}*
 
-To get a sneak peak at this upcoming release, you can install `<major>.<minor>.<patch>-beta.1` on your testing environment.
+To get a sneak peak at this upcoming release, you can install `<major>.<minor>.<patch>-beta.1` on your testing environment. We suggest you test your forms and workflows with this release candidate version and raise any issues that you experience. This helps to to discover any potential regressions that wouldn't otherwise be caught during release testing.
 
 Keep an eye on the forum for the release announcement in the next couple of weeks!
 ```
