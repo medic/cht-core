@@ -95,16 +95,26 @@ describe('RepeatForm', () => {
 
     const stateLabel = await $(stateLabelPath);
     expect(await stateLabel.getText()).to.equal('Select a state:');
-
     const inputCount = await $(inputCountPath);
     expect(await inputCount.getValue()).to.equal('1');
-    await inputCount.setValue(2);
-    expect(await inputCount.getValue()).to.equal('2');
+    let cityLabels = await $$(cityLabelPath);
+    expect(cityLabels.length).to.equal(1);
+    let melbourneLabels = await $$(melbourneLabelPath);
+    expect(melbourneLabels.length).to.equal(1);
 
-    const cityLabel = await $(cityLabelPath);
-    expect(await cityLabel.getText()).to.equal('Select a city:');
+    await inputCount.setValue(3);
+    await stateLabel.click(); // trigger a blur event to trigger the enketo form change listener
 
-    const melbourneLabel = await $(melbourneLabelPath);
-    expect(await melbourneLabel.getText()).to.equal('Melbourne');
+    cityLabels = await $$(cityLabelPath);
+    expect(await inputCount.getValue()).to.equal('3');
+    expect(cityLabels.length).to.equal(3);
+    await Promise.all(cityLabels.map(
+        async cityLabel => expect(await cityLabel.getText()).to.equal('Select a city:'),
+    ));
+    melbourneLabels = await $$(melbourneLabelPath);
+    expect(melbourneLabels.length).to.equal(3);
+    await Promise.all(melbourneLabels.map(
+        async melbourneLabel => expect(await melbourneLabel.getText()).to.equal('Melbourne'),
+    ));
   });
 });
