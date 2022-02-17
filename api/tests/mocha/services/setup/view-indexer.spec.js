@@ -110,6 +110,7 @@ describe('View indexer service', () => {
       sinon.stub(env, 'serverUrl').value('http://localhost');
       sinon.stub(rpn, 'get').rejects({ error: { code: 'ESOCKETTIMEDOUT' } });
       rpn.get.onCall(20).resolves();
+      viewIndexer.__set__('continueIndexing', true);
 
       await viewIndexer.__get__('indexView')('other', '_design/mydesign', 'viewname');
 
@@ -127,6 +128,7 @@ describe('View indexer service', () => {
       sinon.stub(env, 'serverUrl').value('http://localhost');
       sinon.stub(rpn, 'get').rejects({ error: { code: 'ESOCKETTIMEDOUT' } });
       rpn.get.onCall(10).rejects({ name: 'error' });
+      viewIndexer.__set__('continueIndexing', true);
 
       try {
         await viewIndexer.__get__('indexView')('other', '_design/mydesign', 'viewname');
@@ -135,6 +137,30 @@ describe('View indexer service', () => {
         expect(err).to.deep.equal({ name: 'error' });
         expect(rpn.get.callCount).to.equal(11);
       }
+    });
+
+    it('should not throw errors when indexing should stop', async () => {
+      sinon.stub(env, 'serverUrl').value('http://localhost');
+      sinon.stub(rpn, 'get').rejects({ error: { code: 'ESOCKETTIMEDOUT' } });
+      rpn.get.onCall(10).callsFake(() => {
+        viewIndexer.stopIndexing();
+        return Promise.reject({ name: 'error' });
+      });
+      viewIndexer.__set__('continueIndexing', true);
+
+      await viewIndexer.__get__('indexView')('other', '_design/mydesign', 'viewname');
+      expect(rpn.get.callCount).to.equal(11);
+    });
+  });
+
+  describe('stopIndexing', () => {
+    it('should set flag to stop indexing', () => {
+      viewIndexer.__set__('continueIndexing', true);
+      viewIndexer.stopIndexing();
+      expect(viewIndexer.__get__('continueIndexing')).to.equal(false);
+
+      viewIndexer.stopIndexing();
+      expect(viewIndexer.__get__('continueIndexing')).to.equal(false);
     });
   });
 

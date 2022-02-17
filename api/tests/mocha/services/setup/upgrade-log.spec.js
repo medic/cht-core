@@ -450,6 +450,15 @@ describe('UpgradeLog service', () => {
     expect(update.args[0]).to.deep.equal(['finalized']);
   });
 
+  it('should set status to aborting', async () => {
+    const update = sinon.stub().resolves();
+    upgradeLogService.__set__('update', update);
+
+    await upgradeLogService.setAborting();
+    expect(update.callCount).to.equal(1);
+    expect(update.args[0]).to.deep.equal(['aborting']);
+  });
+
   it('should set status to aborted', async () => {
     const update = sinon.stub().resolves();
     upgradeLogService.__set__('update', update);
