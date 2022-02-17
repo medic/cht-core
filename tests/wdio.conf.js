@@ -230,17 +230,25 @@ const baseConfig = {
     await browser.url('/');
     await browser.cdp('Log', 'enable');
     await browser.cdp('Runtime', 'enable');
+    // dedupe the messages to work around to known issue: https://github.com/webdriverio/webdriverio/issues/6347
+    let lastMessage = '';
     browser.on('Runtime.consoleAPICalled', (data) => {
       if (data && logLevels.indexOf(data.type) >= 0) {
         const logEntry = `[${data.type}] Console Api Event: ${JSON.stringify(data.args)}\n`;
-        fs.appendFileSync(browserLogPath, logEntry);
+        if (logEntry !== lastMessage) {
+          fs.appendFileSync(browserLogPath, logEntry);
+          lastMessage = logEntry;
+        }
       }
     });
     browser.on('Log.entryAdded', (params) => {
       if(params && params.entry) {
         const entry = params.entry;
         const logEntry = `[${entry.level}]: ${entry.source} ${entry.text} url: ${entry.url} at ${entry.timestamp}\n`;
-        fs.appendFileSync(browserLogPath, logEntry);
+        if (logEntry !== lastMessage) {
+          fs.appendFileSync(browserLogPath, logEntry);
+          lastMessage = logEntry;
+        }
       }
     });
   },
