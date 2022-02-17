@@ -7,6 +7,7 @@ const { DATABASES } = require('./databases');
 const ddocsService = require('./ddocs');
 
 const SOCKET_TIMEOUT_ERROR_CODE = 'ESOCKETTIMEDOUT';
+let continueIndexing;
 
 const indexViews = async (viewsToIndex) => {
   if (!Array.isArray(viewsToIndex)) {
@@ -55,7 +56,7 @@ const getViewsToIndex = async () => {
  * @return {Promise}
  */
 const indexView = async (dbName, ddocId, viewName) => {
-  const indexing = true;
+  continueIndexing = true;
   do {
     try {
       return await rpn.get({
@@ -65,14 +66,23 @@ const indexView = async (dbName, ddocId, viewName) => {
         timeout: 2000,
       });
     } catch (requestError) {
+      if (!continueIndexing) {
+        return;
+      }
+
       if (!requestError || !requestError.error || requestError.error.code !== SOCKET_TIMEOUT_ERROR_CODE) {
         throw requestError;
       }
     }
-  } while (indexing);
+  } while (continueIndexing);
+};
+
+const stopIndexing = () => {
+  continueIndexing = false;
 };
 
 module.exports = {
   indexViews,
   getViewsToIndex,
+  stopIndexing,
 };

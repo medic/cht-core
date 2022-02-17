@@ -325,13 +325,13 @@ describe('indexer progress', () => {
       const getIndexers = sinon.stub();
       viewIndexerProgress.__set__('getIndexers', getIndexers);
 
-      const doneIndexing = [
-        { database: 'd1', design_document: 'ddoc1', progress: 100 },
-        { database: 'd1', design_document: 'ddoc2', progress: 100 },
-        { database: 'd2', design_document: 'ddoc1', progress: 100 },
-        { database: 'd3', design_document: 'ddoc1', progress: 100 },
+      const almostDoneIndexing = [
+        { database: 'd1', design_document: 'ddoc1', progress: 98 },
+        { database: 'd1', design_document: 'ddoc2', progress: 98 },
+        { database: 'd2', design_document: 'ddoc1', progress: 98 },
+        { database: 'd3', design_document: 'ddoc1', progress: 98 },
       ];
-      getIndexers.resolves(doneIndexing);
+      getIndexers.resolves(almostDoneIndexing);
 
       getIndexers.onCall(0).resolves([
         { database: 'd1', design_document: 'ddoc1', progress: 20 },
@@ -392,12 +392,12 @@ describe('indexer progress', () => {
       clock.tick(INTERVAL);
 
       expect(getIndexers.callCount).to.equal(5);
-      expect(getIndexers.args[4]).to.deep.equal([doneIndexing]);
+      expect(getIndexers.args[4]).to.deep.equal([almostDoneIndexing]);
       await Promise.resolve();
       clock.tick(INTERVAL);
 
       expect(getIndexers.callCount).to.equal(6);
-      expect(getIndexers.args[5]).to.deep.equal([doneIndexing]);
+      expect(getIndexers.args[5]).to.deep.equal([almostDoneIndexing]);
       await Promise.resolve();
       clock.tick(HALF_INTERVAL);
 
@@ -409,6 +409,92 @@ describe('indexer progress', () => {
       await Promise.resolve();
       clock.tick(INTERVAL);
       expect(getIndexers.callCount).to.equal(6);
+    });
+
+    it('should stop indexing when all jobs are at 100%', async () => {
+      const getIndexers = sinon.stub();
+      viewIndexerProgress.__set__('getIndexers', getIndexers);
+
+      const doneIndexing = [
+        { database: 'd1', design_document: 'ddoc1', progress: 100 },
+        { database: 'd1', design_document: 'ddoc2', progress: 100 },
+        { database: 'd2', design_document: 'ddoc1', progress: 100 },
+        { database: 'd3', design_document: 'ddoc1', progress: 100 },
+      ];
+      getIndexers.resolves(doneIndexing);
+
+      getIndexers.onCall(0).resolves([
+        { database: 'd1', design_document: 'ddoc1', progress: 20 },
+        { database: 'd1', design_document: 'ddoc2', progress: 15 },
+        { database: 'd2', design_document: 'ddoc1', progress: 100 },
+        { database: 'd3', design_document: 'ddoc1', progress: 52 },
+      ]);
+      getIndexers.onCall(1).resolves([
+        { database: 'd1', design_document: 'ddoc1', progress: 35 },
+        { database: 'd1', design_document: 'ddoc2', progress: 28 },
+        { database: 'd2', design_document: 'ddoc1', progress: 100 },
+        { database: 'd3', design_document: 'ddoc1', progress: 75 },
+      ]);
+
+      getIndexers.onCall(2).resolves([
+        { database: 'd1', design_document: 'ddoc1', progress: 85 },
+        { database: 'd1', design_document: 'ddoc2', progress: 57 },
+        { database: 'd2', design_document: 'ddoc1', progress: 100 },
+        { database: 'd3', design_document: 'ddoc1', progress: 100 },
+      ]);
+
+      viewIndexerProgress.log();
+
+      expect(getIndexers.callCount).to.equal(1);
+      expect(getIndexers.args[0]).to.deep.equal([[]]);
+      await Promise.resolve();
+      clock.tick(HALF_INTERVAL);
+
+      expect(getIndexers.callCount).to.equal(1);
+      clock.tick(HALF_INTERVAL);
+
+      expect(getIndexers.callCount).to.equal(2);
+      expect(getIndexers.args[1]).to.deep.equal([[
+        { database: 'd1', design_document: 'ddoc1', progress: 20 },
+        { database: 'd1', design_document: 'ddoc2', progress: 15 },
+        { database: 'd2', design_document: 'ddoc1', progress: 100 },
+        { database: 'd3', design_document: 'ddoc1', progress: 52 },
+      ]]);
+      await Promise.resolve();
+      clock.tick(INTERVAL);
+      expect(getIndexers.callCount).to.equal(3);
+      expect(getIndexers.args[2]).to.deep.equal([[
+        { database: 'd1', design_document: 'ddoc1', progress: 35 },
+        { database: 'd1', design_document: 'ddoc2', progress: 28 },
+        { database: 'd2', design_document: 'ddoc1', progress: 100 },
+        { database: 'd3', design_document: 'ddoc1', progress: 75 },
+      ]]);
+      await Promise.resolve();
+      clock.tick(INTERVAL);
+      expect(getIndexers.callCount).to.equal(4);
+      expect(getIndexers.args[3]).to.deep.equal([[
+        { database: 'd1', design_document: 'ddoc1', progress: 85 },
+        { database: 'd1', design_document: 'ddoc2', progress: 57 },
+        { database: 'd2', design_document: 'ddoc1', progress: 100 },
+        { database: 'd3', design_document: 'ddoc1', progress: 100 },
+      ]]);
+      await Promise.resolve();
+      clock.tick(INTERVAL);
+
+      expect(getIndexers.callCount).to.equal(4);
+      await Promise.resolve();
+      clock.tick(INTERVAL);
+
+      expect(getIndexers.callCount).to.equal(4);
+      await Promise.resolve();
+      clock.tick(HALF_INTERVAL);
+
+      await Promise.resolve();
+      clock.tick(HALF_INTERVAL);
+      expect(getIndexers.callCount).to.equal(4);
+      await Promise.resolve();
+      clock.tick(INTERVAL);
+      expect(getIndexers.callCount).to.equal(4);
     });
 
     it('should not queue next call until view indexer call resolved', async () => {

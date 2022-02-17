@@ -21,22 +21,23 @@ const finalize = async () => {
 };
 
 /**
- * Aborts the current installation:
+ * Cancels the current installation:
  * - deletes stated ddocs
  * - deletes the upgrade folder
- * - set log to aborted state
+ * - set log to cancelling and then cancelled state
  * @return {Promise}
  */
 const abort = async () => {
-  await viewIndexerProgress.stop();
-  await upgradeUtils.abortPreviousUpgrade();
+  await upgradeLogService.setAborting();
+  viewIndexer.stopIndexing();
   await upgradeUtils.deleteStagedDdocs();
+  await upgradeLogService.setAborted();
   await upgradeUtils.cleanup();
 };
 
 /**
  * For a given version:
- * - set the previous upgrade_log doc to aborted state
+ * - set the previous upgrade_log doc to cancelled state
  * - creates the upgrade_log doc to track the upgrade
  *
  * For local version, when not on an initial installation, does nothing.

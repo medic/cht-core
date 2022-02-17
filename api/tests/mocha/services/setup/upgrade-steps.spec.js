@@ -85,48 +85,62 @@ describe('Upgrade steps', () => {
   describe('abort', () => {
     it('should delete staged ddocs, delete upgrade folder and cleanup', async () => {
       sinon.stub(upgradeUtils, 'deleteStagedDdocs');
-      sinon.stub(upgradeUtils, 'abortPreviousUpgrade');
+      sinon.stub(upgradeLogService, 'setAborted');
+      sinon.stub(upgradeLogService, 'setAborting');
+      sinon.stub(viewIndexer, 'stopIndexing');
       sinon.stub(upgradeUtils, 'cleanup');
 
       await upgradeSteps.abort();
 
       expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(1);
-      expect(upgradeUtils.abortPreviousUpgrade.callCount).to.equal(1);
+      expect(upgradeLogService.setAborting.callCount).to.equal(1);
+      expect(upgradeLogService.setAborted.callCount).to.equal(1);
       expect(upgradeUtils.cleanup.callCount).to.equal(1);
+      expect(viewIndexer.stopIndexing.callCount).to.equal(1);
     });
 
     it('should throw error if staged deletion fails', async () => {
       sinon.stub(upgradeUtils, 'deleteStagedDdocs').rejects({ code: 500 });
-      sinon.stub(upgradeUtils, 'abortPreviousUpgrade');
+      sinon.stub(upgradeLogService, 'setAborting');
+      sinon.stub(upgradeLogService, 'setAborted');
       sinon.stub(upgradeUtils, 'cleanup');
+      sinon.stub(viewIndexer, 'stopIndexing');
 
       try {
         await upgradeSteps.abort();
         expect.fail('Should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ code: 500 });
+        expect(viewIndexer.stopIndexing.callCount).to.equal(1);
         expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(1);
-        expect(upgradeUtils.abortPreviousUpgrade.callCount).to.equal(1);
+        expect(upgradeLogService.setAborting.callCount).to.equal(1);
         expect(upgradeUtils.cleanup.callCount).to.equal(0);
+        expect(upgradeLogService.setAborted.callCount).to.equal(0);
       }
     });
 
-    it('should throw error if abort fails', async () => {
+    it('should throw error if changing upgrade log state fails', async () => {
       sinon.stub(upgradeUtils, 'deleteStagedDdocs');
-      sinon.stub(upgradeUtils, 'abortPreviousUpgrade').rejects({ error: 'gone' });
+      sinon.stub(upgradeLogService, 'setAborting').rejects({ error: 'gone' });
+      sinon.stub(upgradeLogService, 'setAborted');
+      sinon.stub(viewIndexer, 'stopIndexing');
 
       try {
         await upgradeSteps.abort();
         expect.fail('Should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ error: 'gone' });
+        expect(viewIndexer.stopIndexing.callCount).to.equal(0);
         expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(0);
+        expect(upgradeLogService.setAborted.callCount).to.equal(0);
       }
     });
 
     it('should throw error if cleanup fails', async () => {
       sinon.stub(upgradeUtils, 'deleteStagedDdocs');
-      sinon.stub(upgradeUtils, 'abortPreviousUpgrade');
+      sinon.stub(upgradeLogService, 'setAborted');
+      sinon.stub(upgradeLogService, 'setAborting');
+      sinon.stub(viewIndexer, 'stopIndexing');
       sinon.stub(upgradeUtils, 'cleanup').rejects({ error: 'boom' });
 
       try {

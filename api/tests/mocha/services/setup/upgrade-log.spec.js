@@ -21,7 +21,7 @@ describe('UpgradeLog service', () => {
   });
 
   describe('create', () => {
-    it('should create log document and store the ID in memory', async () => {
+    it('should create log document', async () => {
       clock.tick(5000);
       sinon.stub(db.medicLogs, 'put').resolves({ id: 'id', rev: 'rev', ok: true });
 
@@ -41,7 +41,6 @@ describe('UpgradeLog service', () => {
       expect(log).to.deep.equal(expected);
       expect(db.medicLogs.put.callCount).to.equal(1);
       expect(db.medicLogs.put.args[0]).to.deep.equal([expected]);
-      expect(upgradeLogService.__get__('currentUpgradeLogId')).to.equal(expected._id);
     });
 
     it('should work without setting versions', async () => {
@@ -118,25 +117,6 @@ describe('UpgradeLog service', () => {
   });
 
   describe('get', () => {
-    it('should get the current upgrade from memory', async () => {
-      const log = {
-        _id: 'upgrade_log:1234:4.1.3',
-        state: 'indexed',
-      };
-      Object.freeze(log);
-
-      upgradeLogService.__set__('currentUpgradeLogId', log._id);
-      upgradeLogService.__set__('isFinalState', sinon.stub().returns(false));
-      sinon.stub(db.medicLogs, 'get').resolves(log);
-
-      const result = await upgradeLogService.get();
-
-      expect(result).to.deep.equal(log);
-      expect(db.medicLogs.get.callCount).to.equal(1);
-      expect(db.medicLogs.get.args[0]).to.deep.equal([log._id]);
-      expect(upgradeLogService.__get__('isFinalState').args).to.deep.equal([[log.state]]);
-    });
-
     it('should get the latest non-final upgrade', async () => {
       const log = {
         _id: 'upgrade_log:1234:4.1.3',
@@ -145,7 +125,6 @@ describe('UpgradeLog service', () => {
       Object.freeze(log);
       clock.tick(1500);
 
-      upgradeLogService.__set__('currentUpgradeLogId', undefined);
       upgradeLogService.__set__('isFinalState', sinon.stub().returns(false));
       sinon.stub(db.medicLogs, 'allDocs').resolves({ rows: [{ doc: log }] });
 
@@ -159,37 +138,6 @@ describe('UpgradeLog service', () => {
         limit: 1,
         include_docs: true
       }]);
-      expect(upgradeLogService.__get__('isFinalState').args).to.deep.equal([[log.state]]);
-    });
-
-    it('should return nothing if in-memory document is not found', async () => {
-      const id = 'upgrade_log:1235:4.0.0';
-      upgradeLogService.__set__('currentUpgradeLogId', id);
-      sinon.stub(db.medicLogs, 'get').rejects({ status: 404 });
-
-      const result = await upgradeLogService.get();
-
-      expect(result).to.deep.equal(undefined);
-      expect(db.medicLogs.get.callCount).to.equal(1);
-      expect(db.medicLogs.get.args[0]).to.deep.equal([id]);
-    });
-
-    it('should return nothing if in-memory document is in a final state', async () => {
-      const log = {
-        _id: 'upgrade_log:1234:4.1.3',
-        state: 'finalized',
-      };
-      Object.freeze(log);
-
-      upgradeLogService.__set__('currentUpgradeLogId', log._id);
-      upgradeLogService.__set__('isFinalState', sinon.stub().returns(true));
-      sinon.stub(db.medicLogs, 'get').resolves(log);
-
-      const result = await upgradeLogService.get();
-
-      expect(result).to.deep.equal(undefined);
-      expect(db.medicLogs.get.callCount).to.equal(1);
-      expect(db.medicLogs.get.args[0]).to.deep.equal([log._id]);
       expect(upgradeLogService.__get__('isFinalState').args).to.deep.equal([[log.state]]);
     });
 
@@ -241,21 +189,8 @@ describe('UpgradeLog service', () => {
       expect(upgradeLogService.__get__('isFinalState').args).to.deep.equal([[log.state]]);
     });
 
-    it('should throw get errors', async () => {
-      upgradeLogService.__set__('currentUpgradeLogId', '43242');
-      sinon.stub(db.medicLogs, 'get').rejects({ the: 'error' });
-
-      try {
-        await upgradeLogService.get();
-        expect.fail('Should have thrown');
-      } catch (err) {
-        expect(err).to.deep.equal({ the: 'error' });
-      }
-    });
-
     it('should throw all docs errors', async () => {
       clock.tick(5984);
-      upgradeLogService.__set__('currentUpgradeLogId', undefined);
       sinon.stub(db.medicLogs, 'allDocs').rejects({ an: 'error' });
 
       try {
@@ -287,6 +222,7 @@ describe('UpgradeLog service', () => {
       expect(upgradeLogService.__get__('isFinalState')('indexed')).to.equal(false);
       expect(upgradeLogService.__get__('isFinalState')('completing')).to.equal(false);
       expect(upgradeLogService.__get__('isFinalState')('complete')).to.equal(false);
+      expect(upgradeLogService.__get__('isFinalState')('aborting')).to.equal(false);
     });
   });
 
@@ -360,10 +296,10 @@ describe('UpgradeLog service', () => {
       });
       expect(db.medicLogs.put.callCount).to.equal(1);
       expect(db.medicLogs.put.args[0]).to.deep.equal([updatedLog]);
-      expect(upgradeLogService.__get__('isFinalState').args).to.deep.equal([['initiated'], ['state']]);
+      expect(upgradeLogService.__get__('isFinalState').args).to.deep.equal([['initiated']]);
     });
 
-    it('should reset the currentUpgradeLogId when updating to final state', async () => {
+    it('should update to final state', async () => {
       clock.tick(1500);
       const docUpugradeLog = {
         _id: 'upgrade_log_id',
@@ -399,8 +335,7 @@ describe('UpgradeLog service', () => {
       });
       expect(db.medicLogs.put.callCount).to.equal(1);
       expect(db.medicLogs.put.args[0]).to.deep.equal([updatedLog]);
-      expect(upgradeLogService.__get__('isFinalState').args).to.deep.equal([['initiated'], ['errored']]);
-      expect(upgradeLogService.__get__('currentUpgradeLogId')).to.equal(undefined);
+      expect(upgradeLogService.__get__('isFinalState').args).to.deep.equal([['initiated']]);
     });
 
     it('should do nothing if tracking doc is not found', async () => {

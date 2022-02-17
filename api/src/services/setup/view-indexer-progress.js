@@ -12,14 +12,16 @@ const DDOC_PREFIX = /^_design\/:staged:/;
 // example "database" is "shards/a0000000-bfffffff/medic.1637673820" (shards/<shard_name>/<db_name>.???)
 const INDEXER_DB_RE = /^shards\/[^/]+\/([^.]+)\..*$/;
 
-let stopQueryingIndexes;
-
 const setTasksToComplete = (indexer) => {
   Object
     .keys(indexer.tasks)
     .forEach(pid => {
       indexer.tasks[pid] = 100;
     });
+};
+
+const allTasksComplete = (indexers) => {
+  return indexers.every(indexer => indexer.progress === 100);
 };
 
 const getDatabaseName = (indexer) => {
@@ -100,35 +102,34 @@ const getIndexers = async (indexers = []) => {
 };
 
 const logProgress = () => {
-  stopLogging();
-
   let timeout;
   let indexers = [];
+
+  const stopQueryingIndexes = () => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+  };
 
   const logIndexerProgress = async () => {
     indexers = await getIndexers(indexers);
     logIndexersProgress(indexers);
+
+    if (indexers.length && allTasksComplete(indexers)) {
+      stopQueryingIndexes();
+      return;
+    }
+
     timeout = setTimeout(() => logIndexerProgress(indexers, timeout), QUERY_TASKS_INTERVAL);
   };
 
   logIndexerProgress(indexers);
-  stopQueryingIndexes = () => {
-    clearTimeout(timeout);
-    timeout = null;
-  };
 
   return stopQueryingIndexes;
-};
-
-const stopLogging = () => {
-  if (stopQueryingIndexes) {
-    stopQueryingIndexes();
-    stopQueryingIndexes = undefined;
-  }
 };
 
 module.exports = {
   log: logProgress,
   query: getIndexers,
-  stop: stopLogging,
 };

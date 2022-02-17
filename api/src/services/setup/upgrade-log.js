@@ -25,14 +25,10 @@ const UPGRADE_LOG_STATES = {
   FINALIZING: 'finalizing',
   FINALIZED: 'finalized',
   COMPLETE: 'complete',
+  ABORTING: 'aborting',
   ABORTED: 'aborted',
   ERRORED: 'errored',
 };
-
-let currentUpgradeLogId;
-
-const clearCachedId = () => currentUpgradeLogId = undefined;
-const setCachedId = (id) => currentUpgradeLogId = id;
 
 const isFinalState = (state) => {
   return state === UPGRADE_LOG_STATES.FINALIZED ||
@@ -44,6 +40,10 @@ const UPGRADE_LOG_NAME = 'upgrade_log';
 
 const getUpgradeLogId = (version, startDate) => `${UPGRADE_LOG_NAME}:${startDate}:${version}`;
 
+/**
+ * Returns that most recently dated upgrade log.
+ * @return {Promise<UpgradeLog | undefined>}
+ */
 const getLatestUpgradeLog = async () => {
   const now = new Date().getTime();
   const results = await db.medicLogs.allDocs({
@@ -60,37 +60,19 @@ const getLatestUpgradeLog = async () => {
   return results.rows[0].doc;
 };
 
-const getCurrentUpgradeLog = async () => {
-  try {
-    return await db.medicLogs.get(currentUpgradeLogId);
-  } catch (err) {
-    if (err.status === 404) {
-      return;
-    }
-    throw err;
-  }
-};
-
 /**
  * Gets the current upgrade log. If not available in memory, gets last chronological upgrade log, if it is not in a
  * final state.
  * Returns undefined if neither are found.
- * @returns UpgradeLog | undefined
+ * @return {Promise<UpgradeLog | undefined>}
  */
 const getUpgradeLog = async () => {
-  const upgradeLog = currentUpgradeLogId ? await getCurrentUpgradeLog() : await getLatestUpgradeLog();
-  if (!upgradeLog) {
-    clearCachedId();
-    return;
-  }
+  const upgradeLog = await getLatestUpgradeLog();
 
-  if (isFinalState(upgradeLog.state)) {
+  if (upgradeLog && isFinalState(upgradeLog.state)) {
     logger.info('Last upgrade log is already final.');
-    clearCachedId();
     return;
   }
-
-  setCachedId(upgradeLog._id);
 
   return upgradeLog;
 };
@@ -145,7 +127,6 @@ const createUpgradeLog = async (action, toVersion = '', fromVersion = '', userna
   pushState(upgradeLog, UPGRADE_LOG_STATES.INITIATED, startDate);
 
   await db.medicLogs.put(upgradeLog);
-  setCachedId(upgradeLog._id);
   return upgradeLog;
 };
 
@@ -169,10 +150,6 @@ const update = async (state) => {
 
   pushState(upgradeLog, state);
   await db.medicLogs.put(upgradeLog);
-
-  if (isFinalState(state)) {
-    clearCachedId();
-  }
 
   return upgradeLog;
 };
@@ -212,8 +189,13 @@ const setFinalized = async () => {
   logger.info('Install finalized');
 };
 
-const setAborted = async () => {
+const setAborting = async () => {
   logger.info('Aborting upgrade');
+  await update(UPGRADE_LOG_STATES.ABORTING);
+};
+
+const setAborted = async () => {
+  logger.info('Upgrade aborted');
   await update(UPGRADE_LOG_STATES.ABORTED);
 };
 
@@ -230,6 +212,7 @@ module.exports = {
   setComplete,
   setFinalizing,
   setFinalized,
+  setAborting,
   setAborted,
   setErrored,
 };

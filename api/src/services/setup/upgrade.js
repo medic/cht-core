@@ -43,9 +43,8 @@ const safeInstall = async (buildInfo, stageOnly) => {
     }
     await complete(buildInfo);
   } catch (err) {
-    // todo Think of a way to elegantly handle view deletion when the upgrade is aborted
     await upgradeLog.setErrored();
-    logger.error('Error thrown when indexing views %o', err);
+    logger.error('Error thrown while installing: %o', err);
   }
 };
 
