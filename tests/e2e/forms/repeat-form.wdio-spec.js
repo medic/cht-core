@@ -68,13 +68,10 @@ describe('RepeatForm', () => {
     expect(await inputCount.getValue()).to.equal('1');
 
     await inputCount.setValue(3);
-    await browser.execute((inputCountPath) => {
-      // eslint-disable-next-line no-undef
-      document.querySelector(inputCountPath).dispatchEvent(new Event('change', { bubbles: true }));
-    }, inputCountPath);
-    expect(await inputCount.getValue()).to.equal('3');
+    await stateLabel.click(); // trigger a blur event to trigger the enketo form change listener
     cityLabels = await $$(cityLabelPath);
     expect(cityLabels.length).to.equal(3);
+    expect(await inputCount.getValue()).to.equal('3');
     await Promise.all(cityLabels.map(
       async cityLabel => expect(await cityLabel.getText()).to.equal('Select a city: - NE'),
     ));
