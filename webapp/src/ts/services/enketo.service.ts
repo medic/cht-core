@@ -500,8 +500,18 @@ export class EnketoService {
     };
 
     const getRelativePath = (path) => {
-      const repeatReference = repeatPaths?.find(repeatPath => path.startsWith(repeatPath));
+      if (!path) {
+        return;
+      }
+      path = path.trim();
+
+      const repeatReference = repeatPaths?.find(repeatPath => path === repeatPath || path.startsWith(`${repeatPath}/`));
       if (repeatReference) {
+        if (repeatReference === path) {
+          // when the path is the repeat element itself, return the repeat element node name
+          return path.split('/').slice(-1)[0];
+        }
+
         return path.replace(`${repeatReference}/`, '');
       }
 
@@ -511,7 +521,7 @@ export class EnketoService {
     };
 
     const getClosestPath = (element, $element, path) => {
-      const relativePath = getRelativePath(path.trim());
+      const relativePath = getRelativePath(path);
       if (!relativePath) {
         return;
       }
@@ -522,7 +532,13 @@ export class EnketoService {
       }
       const uniqueElementSelector = `${element.nodeName}[@id="${element.id}"]`;
 
-      return `//${uniqueElementSelector}/ancestor-or-self::*/descendant-or-self::${relativePath}`;
+      const closestPath = `//${uniqueElementSelector}/ancestor-or-self::*/descendant-or-self::${relativePath}`;
+      try {
+        recordDoc.evaluate(closestPath, recordDoc);
+        return closestPath;
+      } catch (err) {
+        console.error('Error while evaluating closest path', closestPath, err);
+      }
     };
 
     // Chrome 30 doesn't support $xml.outerHTML: #3880
@@ -549,7 +565,7 @@ export class EnketoService {
         const reference = $element.attr('db-doc-ref');
         const path = getClosestPath(element, $element, reference);
 
-        const refId = path && getId(path) || getId(reference);
+        const refId = (path && getId(path)) || getId(reference);
         $element.text(refId);
       });
 

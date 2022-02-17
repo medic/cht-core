@@ -1,3 +1,6 @@
+const commonElements = require('../common/common.wdio.page');
+const utils = require('../../utils');
+
 const reportListID = '#reports-list';
 const reportBodyDetailsSelector = '#reports-content .report-body .details';
 const reportBodyDetails = () => $(reportBodyDetailsSelector);
@@ -11,6 +14,9 @@ const firstReport = () => $(`${reportListID} li:first-child`);
 const reportList = () => $(`${reportListID}`);
 const allReports = () => $$(`${reportListID} li`);
 const reportsByUUID = (uuid) => $$(`li[data-record-id="${uuid}"]`);
+const reportRowSelector = `${reportListID} .content-row`;
+const reportRow = () => $(reportRowSelector);
+const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 
 const submitReportButton = () => $('.action-container .general-actions:not(.ng-hide) .fa-plus');
 const deleteAllButton = () => $('.action-container .detail-actions .delete-all');
@@ -191,8 +197,23 @@ const filterByDate = async (startDate, endDate) => {
 
 const firstReportDetailField = () => $('#reports-content .details ul li:first-child p');
 
+const getAllReportsText = async () => {
+  await (await reportRow()).waitForDisplayed();
+  return commonElements.getTextForElements(reportRowsText);
+};
+
+const getCurrentReportId = async () => {
+  const currentUrl = await browser.getUrl();
+  const reportBaseUrl = utils.getBaseUrl() + 'reports/';
+  if (!currentUrl.startsWith(reportBaseUrl)) {
+    return;
+  }
+
+  return currentUrl.slice(reportBaseUrl.length);
+};
 
 module.exports = {
+  getCurrentReportId,
   reportList,
   firstReport,
   submitterName,
@@ -230,4 +251,5 @@ module.exports = {
   filterByDate,
   allReports,
   reportsByUUID,
+  getAllReportsText,
 };

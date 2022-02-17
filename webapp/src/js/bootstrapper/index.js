@@ -64,9 +64,16 @@
         fetch(`${utils.getBaseUrl()}/api/v1/users-info`, fetchOpts).then(res => res.json())
       ])
       .then(([ local, remote ]) => {
-        if (remote && remote.code && remote.code !== 200) {
+        const statusCode = remote && remote.code;
+
+        if (statusCode === 401) {
+          throw remote;
+        }
+
+        if (statusCode !== 200) {
           console.warn('Error fetching users-info - ignoring', remote);
         }
+
         localDocCount = local.total_rows;
         remoteDocCount = remote.total_docs;
 
@@ -143,11 +150,15 @@
     }
   };
 
-  const redirectToLogin = function(dbInfo, err, callback) {
+  const redirectToLogin = (dbInfo) => {
     console.warn('User must reauthenticate');
+
+    if (!document.cookie.includes('login=force')) {
+      document.cookie = 'login=force;path=/';
+    }
+
     const currentUrl = encodeURIComponent(window.location.href);
-    err.redirect = '/' + dbInfo.name + '/login?redirect=' + currentUrl;
-    return callback(err);
+    window.location.href = '/' + dbInfo.name + '/login?redirect=' + currentUrl;
   };
 
   // TODO Use a shared library for this duplicated code #4021
@@ -197,9 +208,7 @@
     const userCtx = getUserCtx();
     const hasForceLoginCookie = document.cookie.includes('login=force');
     if (!userCtx || hasForceLoginCookie) {
-      const err = new Error('User must reauthenticate');
-      err.status = 401;
-      return redirectToLogin(dbInfo, err, callback);
+      return redirectToLogin(dbInfo);
     }
 
     if (hasFullDataAccess(userCtx)) {
@@ -296,11 +305,12 @@
         localDb.close();
         remoteDb.close();
         localMetaDb.close();
-        if (err) {
-          if (err.status === 401) {
-            return redirectToLogin(dbInfo, err, callback);
-          }
 
+        if (err) {
+          const errorCode = err.status || err.code;
+          if (errorCode === 401) {
+            return redirectToLogin(dbInfo);
+          }
           setUiError(err);
         }
 
