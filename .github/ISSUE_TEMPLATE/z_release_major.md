@@ -46,7 +46,7 @@ Keep an eye on the forum for the release announcement in the next couple of week
   - [ ] Manually document any known migration steps and known issues.
   - [ ] Provide description, screenshots, videos, and anything else to help communicate particularly important changes.
   - [ ] Document any required or recommended upgrades to our other products (eg: cht-conf, cht-gateway, cht-android).
-  - [ ] Add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/releases/) and update the EOL date and status of previous releases. Also add a link in the `Release Notes` section to the new release page.
+  - [ ] Add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions) and update the EOL date and status of previous releases. Also add a link in the `Release Notes` section to the new release page.
   - [ ] Assign the PR to:
     - The Director of Technology
     - An SRE to review and confirm the documentation on upgrade instructions and breaking changes is sufficient
@@ -63,7 +63,7 @@ New features include {{key_features}}. We've also implemented loads of other imp
 
 Read the [release notes]({{url}}) for full details.
 
-Following our support policy, versions {{versions}} are no longer supported. Projects running these versions should start planning to upgrade in the near future. For more details read our [software support documentation](https://docs.communityhealthtoolkit.org/core/overview/supported-software/).
+Following our support policy, versions {{versions}} are no longer supported. Projects running these versions should start planning to upgrade in the near future. For more details read our [software support documentation](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions).
 
 Check out our [roadmap](https://github.com/orgs/medic/projects/112) to see what we're working on next.
 ```
