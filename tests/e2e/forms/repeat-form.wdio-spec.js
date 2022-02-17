@@ -109,12 +109,12 @@ describe('RepeatForm', () => {
     expect(await inputCount.getValue()).to.equal('3');
     expect(cityLabels.length).to.equal(3);
     await Promise.all(cityLabels.map(
-        async cityLabel => expect(await cityLabel.getText()).to.equal('Select a city:'),
+      async cityLabel => expect(await cityLabel.getText()).to.equal('Select a city:'),
     ));
     melbourneLabels = await $$(melbourneLabelPath);
     expect(melbourneLabels.length).to.equal(3);
     await Promise.all(melbourneLabels.map(
-        async melbourneLabel => expect(await melbourneLabel.getText()).to.equal('Melbourne'),
+      async melbourneLabel => expect(await melbourneLabel.getText()).to.equal('Melbourne'),
     ));
   });
 });
