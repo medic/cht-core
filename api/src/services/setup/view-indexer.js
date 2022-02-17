@@ -10,6 +10,8 @@ const SOCKET_TIMEOUT_ERROR_CODE = 'ESOCKETTIMEDOUT';
 let continueIndexing;
 
 const indexViews = async (viewsToIndex) => {
+  continueIndexing = true;
+
   if (!Array.isArray(viewsToIndex)) {
     await upgradeLogService.setIndexed();
     return;
@@ -56,7 +58,6 @@ const getViewsToIndex = async () => {
  * @return {Promise}
  */
 const indexView = async (dbName, ddocId, viewName) => {
-  continueIndexing = true;
   do {
     try {
       return await rpn.get({
