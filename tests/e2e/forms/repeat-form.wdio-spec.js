@@ -61,23 +61,27 @@ describe('RepeatForm', () => {
 
     const stateLabel = await $(stateLabelPath);
     expect(await stateLabel.getText()).to.equal('Select a state: - NE');
-
-    let cityLabels = await $$(cityLabelPath);
-    expect(cityLabels.length).to.equal(1);
     const inputCount = await $(inputCountPath);
     expect(await inputCount.getValue()).to.equal('1');
+    let cityLabels = await $$(cityLabelPath);
+    expect(cityLabels.length).to.equal(1);
+    let melbourneLabels = await $$(melbourneLabelPath);
+    expect(melbourneLabels.length).to.equal(1);
 
     await inputCount.setValue(3);
     await stateLabel.click(); // trigger a blur event to trigger the enketo form change listener
+
     cityLabels = await $$(cityLabelPath);
-    expect(cityLabels.length).to.equal(3);
     expect(await inputCount.getValue()).to.equal('3');
+    expect(cityLabels.length).to.equal(3);
     await Promise.all(cityLabels.map(
       async cityLabel => expect(await cityLabel.getText()).to.equal('Select a city: - NE'),
     ));
-
-    const melbourneLabel = await $(melbourneLabelPath);
-    expect(await melbourneLabel.getText()).to.equal('ML (NE)');
+    melbourneLabels = await $$(melbourneLabelPath);
+    expect(melbourneLabels.length).to.equal(3);
+    await Promise.all(melbourneLabels.map(
+      async melbourneLabel => expect(await melbourneLabel.getText()).to.equal('ML (NE)'),
+    ));
   });
 
   it('should display the initial form and its repeated content in English', async () => {
