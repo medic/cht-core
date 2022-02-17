@@ -10,7 +10,6 @@ const loginPage = require('../../page-objects/login/login.wdio.page');
 const sentinelUtils = require('../sentinel/utils');
 const formsUtils = require('./forms');
 
-
 /* global window */
 
 describe('Muting', () => {
