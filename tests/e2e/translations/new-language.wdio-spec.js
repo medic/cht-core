@@ -10,7 +10,6 @@ const messagesPage = require('../../page-objects/messages/messages.wdio.page');
 const NEW_LANG_NAME = 'Afrikaans';
 const NEW_LANG_CODE = 'afr';
 
-
 describe('Adding new language', () => {
   const addTranslations = async () => {
     await utils.addTranslations(NEW_LANG_CODE,{
