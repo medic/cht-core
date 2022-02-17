@@ -53,68 +53,60 @@ describe('RepeatForm', () => {
   it('should display the initial form and its repeated content in Nepali', async () => {
     const neUserName = 'प्रयोगकर्ताको नाम';
     await loginPage.changeLanguage('ne', neUserName);
-    await loginPage.login({ username: auth.username, password: auth.password, createUser: true });
-    await commonPage.goToBase();
-    await commonPage.goToReports();
-    await (await reportsPage.submitReportButton()).click();
-    await (await reportsPage.formActionsLink(formDocument.internalId)).click();
+    await login();
 
     const stateLabel = await $(stateLabelPath);
     expect(await stateLabel.getText()).to.equal('Select a state: - NE');
     const inputCount = await $(inputCountPath);
     expect(await inputCount.getValue()).to.equal('1');
-    let cityLabels = await $$(cityLabelPath);
-    expect(cityLabels.length).to.equal(1);
-    let melbourneLabels = await $$(melbourneLabelPath);
-    expect(melbourneLabels.length).to.equal(1);
+    await assertLabels({ selector: cityLabelPath, count: 1, labelText: 'Select a city: - NE' });
+    await assertLabels({ selector: melbourneLabelPath, count: 1, labelText: 'ML (NE)' });
 
-    await inputCount.setValue(3);
-    await stateLabel.click(); // trigger a blur event to trigger the enketo form change listener
+    await repeatForm(3);
 
-    cityLabels = await $$(cityLabelPath);
-    expect(await inputCount.getValue()).to.equal('3');
-    expect(cityLabels.length).to.equal(3);
-    await Promise.all(cityLabels.map(
-      async cityLabel => expect(await cityLabel.getText()).to.equal('Select a city: - NE'),
-    ));
-    melbourneLabels = await $$(melbourneLabelPath);
-    expect(melbourneLabels.length).to.equal(3);
-    await Promise.all(melbourneLabels.map(
-      async melbourneLabel => expect(await melbourneLabel.getText()).to.equal('ML (NE)'),
-    ));
+    await assertLabels({ selector: cityLabelPath, count: 3, labelText: 'Select a city: - NE' });
+    await assertLabels({ selector: melbourneLabelPath, count: 3, labelText: 'ML (NE)' });
   });
 
   it('should display the initial form and its repeated content in English', async () => {
     const enUserName = 'User name';
     await loginPage.changeLanguage('en', enUserName);
-    await loginPage.login({ username: auth.username, password: auth.password, createUser: true });
-    await commonPage.goToBase();
-    await commonPage.goToReports();
-    await (await reportsPage.submitReportButton()).click();
-    await (await reportsPage.formActionsLink(formDocument.internalId)).click();
+    await login();
 
     const stateLabel = await $(stateLabelPath);
     expect(await stateLabel.getText()).to.equal('Select a state:');
     const inputCount = await $(inputCountPath);
     expect(await inputCount.getValue()).to.equal('1');
-    let cityLabels = await $$(cityLabelPath);
-    expect(cityLabels.length).to.equal(1);
-    let melbourneLabels = await $$(melbourneLabelPath);
-    expect(melbourneLabels.length).to.equal(1);
+    await assertLabels({ selector: cityLabelPath, count: 1, labelText: 'Select a city:' });
+    await assertLabels({ selector: melbourneLabelPath, count: 1, labelText: 'Melbourne' });
 
-    await inputCount.setValue(3);
-    await stateLabel.click(); // trigger a blur event to trigger the enketo form change listener
+    await repeatForm(3);
 
-    cityLabels = await $$(cityLabelPath);
-    expect(await inputCount.getValue()).to.equal('3');
-    expect(cityLabels.length).to.equal(3);
-    await Promise.all(cityLabels.map(
-      async cityLabel => expect(await cityLabel.getText()).to.equal('Select a city:'),
-    ));
-    melbourneLabels = await $$(melbourneLabelPath);
-    expect(melbourneLabels.length).to.equal(3);
-    await Promise.all(melbourneLabels.map(
-      async melbourneLabel => expect(await melbourneLabel.getText()).to.equal('Melbourne'),
-    ));
+    await assertLabels({ selector: cityLabelPath, count: 3, labelText: 'Select a city:' });
+    await assertLabels({ selector: melbourneLabelPath, count: 3, labelText: 'Melbourne' });
   });
+
+  async function assertLabels({ selector, count, labelText }) {
+    const labels = await $$(selector);
+    expect(labels.length).to.equal(count);
+    await Promise.all(labels.map(
+      async label => expect(await label.getText()).to.equal(labelText),
+    ));
+  }
+
+  async function login() {
+    await loginPage.login({ username: auth.username, password: auth.password, createUser: true });
+    await commonPage.goToBase();
+    await commonPage.goToReports();
+    await (await reportsPage.submitReportButton()).click();
+    await (await reportsPage.formActionsLink(formDocument.internalId)).click();
+  }
+
+  async function repeatForm(count) {
+    const inputCount = await $(inputCountPath);
+    await inputCount.setValue(count);
+    const stateLabel = await $(stateLabelPath);
+    await stateLabel.click(); // trigger a blur event to trigger the enketo form change listener
+    expect(await inputCount.getValue()).to.equal(count.toString());
+  }
 });
