@@ -192,8 +192,8 @@ module.exports = function(grunt) {
       },
       'api-ddocs': {
         expand: true,
-        cwd: 'ddocs/',
-        src: 'build/ddocs/*.json',
+        cwd: 'build/ddocs/',
+        src: '*.json',
         dest: 'api/build/ddocs/',
       },
       'webapp-static': {
@@ -322,9 +322,6 @@ module.exports = function(grunt) {
           });
           return 'echo "Node module dependencies updated"';
         },
-      },
-      'set-ddoc-version': {
-        cmd: () => `echo "${buildUtils.getVersion()}" > build/ddocs/medic-db/medic/version`,
       },
       'api-dev': {
         cmd:
@@ -611,6 +608,7 @@ module.exports = function(grunt) {
         files: ['ddocs/medic-db/**/*'],
         tasks: [
           'copy:ddocs',
+          'set-ddocs-version',
           'couch-compile:primary',
           'couch-push:localhost',
           'notify:deployed',
@@ -621,6 +619,7 @@ module.exports = function(grunt) {
         files: ['ddocs/*-db/**/*', '!ddocs/medic-db/**/*'],
         tasks: [
           'copy:ddocs',
+          'set-ddocs-version',
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
@@ -852,7 +851,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build-ddocs', 'Builds the ddocs', [
     'copy:ddocs',
-    'exec:set-ddoc-version',
+    'set-ddocs-version',
     'set-build-info',
     'couch-compile:primary',
     'couch-compile:secondary',
@@ -935,6 +934,7 @@ module.exports = function(grunt) {
     'couch-compile:secondary',
     'couch-compile:primary',
     'couch-push:test',
+    'copy:api-ddocs',
     'protractor:performance-tests-and-services',
   ]);
 
@@ -1076,6 +1076,7 @@ module.exports = function(grunt) {
     const done = this.async();
     buildUtils.updateServiceWorker().then(done);
   });
+  grunt.registerTask('set-ddocs-version', buildUtils.setDdocsVersion);
 
   grunt.registerTask('publish-for-testing', 'Publish the staging doc to the testing server', [
     'couch-compile:staging',

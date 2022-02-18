@@ -4,7 +4,6 @@ const translationUtils = require('@medic/translation-utils');
 const viewMapUtils = require('@medic/view-map-utils');
 const settingsService = require('./settings');
 const translations = require('../translations');
-const ddocExtraction = require('../ddoc-extraction');
 const generateXform = require('./generate-xform');
 const generateServiceWorker = require('../generate-service-worker');
 const config = require('../config');
@@ -78,15 +77,6 @@ const handleDdocChange = () => {
     .run()
     .catch(err => {
       logger.error('Failed to update translation docs: %o', err);
-    })
-    .then(() => ddocExtraction.run())
-    .catch(err => {
-      logger.error('Something went wrong trying to extract ddocs: %o', err);
-      process.exit(1);
-    })
-    .catch(err => {
-      logger.error('Something went wrong trying to extract resources: %o', err);
-      process.exit(1);
     });
 };
 
