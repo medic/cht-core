@@ -13,8 +13,8 @@
     "os": false
   },
   "engines": {
-    "node": ">=12.14.0",
-    "npm": ">=6.4.1"
+    "node": ">=16.12.0",
+    "npm": ">=8.3.1"
   },
   "dependencies": {
     "@angular/animations": "^12.2.1",
