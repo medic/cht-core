@@ -24,14 +24,4 @@ describe('environment', () => {
   it('getResourcesPath should return resources path', () => {
     expect(environment.resourcesPath).to.equal(path.resolve(__dirname, '../../resources'));
   });
-
-  it('should set, get and update deploy info correctly', () => {
-    expect(environment.getDeployInfo()).to.equal(undefined);
-    environment.setDeployInfo({ version: 'my version' });
-    expect(environment.getDeployInfo()).to.deep.equal({ version: 'my version' });
-    environment.setDeployInfo(false);
-    expect(environment.getDeployInfo()).to.equal(false);
-    environment.setDeployInfo({ version: 'new version', timestamp: 100 });
-    expect(environment.getDeployInfo()).to.deep.equal({ version: 'new version', timestamp: 100 });
-  });
 });

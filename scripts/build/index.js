@@ -14,6 +14,7 @@ const DEFAULT_API_PORT = 5988;
 
 const buildPath = path.resolve(__dirname, '..', '..', 'build');
 const stagingPath = path.resolve(buildPath, 'staging');
+const ddocsBuildPath = path.resolve(buildPath, 'ddocs');
 
 const getCouchConfig = () => {
   if (!COUCH_URL) {
@@ -41,20 +42,23 @@ const getApiUrl = (pathname = '') => {
   return apiUrl.toString();
 };
 
+const releaseName = TAG || BRANCH || 'local-development';
+
 const getVersion = () => {
   if (TAG) {
     return TAG;
   }
-  let version = packageJson.version;
   if (BRANCH === 'master') {
-    version += `-alpha.${BUILD_NUMBER}`;
+    return `${packageJson.version}-alpha.${BUILD_NUMBER}`;
   }
-  return version;
+  if (BRANCH) {
+    return `${packageJson.version}-${BRANCH}.${BUILD_NUMBER}`;
+  }
+  return `${packageJson.version}-dev.${new Date().getTime()}`;
 };
 
-const releaseName = TAG || BRANCH || 'local-development';
 const setBuildInfo = () => {
-  const buildInfoPath = path.resolve(buildPath, 'ddocs', 'medic-db', 'medic', 'build_info');
+  const buildInfoPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'build_info');
   mkdirSync(buildInfoPath);
   // the validate_doc_update from staging.dev requires all of these fields
   fs.writeFileSync(path.resolve(buildInfoPath, 'version'), releaseName);
@@ -80,10 +84,9 @@ const populateStagingDoc = () => {
   const ddocAttachmentsPath = path.resolve(stagingPath, '_attachments', 'ddocs');
   mkdirSync(ddocAttachmentsPath);
 
-  const buildDdocsPath = path.resolve(buildPath, 'ddocs');
-  fs.readdirSync(buildDdocsPath, { withFileTypes: true }).forEach(file => {
+  fs.readdirSync(ddocsBuildPath, { withFileTypes: true }).forEach(file => {
     if (!file.isDirectory()) {
-      fs.copyFileSync(path.resolve(buildDdocsPath, file.name), path.resolve(ddocAttachmentsPath, file.name));
+      fs.copyFileSync(path.resolve(ddocsBuildPath, file.name), path.resolve(ddocAttachmentsPath, file.name));
     }
   });
 
@@ -92,7 +95,7 @@ const populateStagingDoc = () => {
 };
 
 const copyBuildInfoToStagingDoc = () => {
-  const medicBuildInfoPath = path.resolve(buildPath, 'ddocs', 'medic-db', 'medic', 'build_info');
+  const medicBuildInfoPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'build_info');
   const stagingBuildInfoPath = path.resolve(stagingPath, 'build_info');
   mkdirSync(stagingBuildInfoPath);
 
@@ -104,7 +107,7 @@ const copyBuildInfoToStagingDoc = () => {
 };
 
 const updateServiceWorker = () => {
-  const updateSWUrl = getApiUrl('/api/v1/upgrade/service-worker');
+  const updateSWUrl = getApiUrl('/api/v2/upgrade/service-worker');
 
   return rpn.get(updateSWUrl).catch(err => {
     if (err.status === 401) {
@@ -115,17 +118,32 @@ const updateServiceWorker = () => {
     }
 
     if (err.error && err.error.code === 'ECONNREFUSED') {
-      console.warn('API could not be reached, so the service-worker has not been updated.');
+      console.warn('API could not be reached, so the service-worker has not been updated. ');
       return;
     }
 
     throw err;
   });
 };
+const setDdocsVersion = () => {
+  const version = getVersion();
+  const databases = fs.readdirSync(ddocsBuildPath);
+  databases.forEach(database => {
+    const dbPath = path.resolve(ddocsBuildPath, database);
+    if (!fs.lstatSync(dbPath).isDirectory()) {
+      return;
+    }
+    const ddocs = fs.readdirSync(dbPath);
+    ddocs.forEach(ddoc => {
+      fs.writeFileSync(path.resolve(dbPath, ddoc, 'version'), version);
+    });
+  });
+};
+
 
 module.exports = {
+  setDdocsVersion,
   getCouchConfig,
-  getVersion,
   setBuildInfo,
   createStagingDoc,
   populateStagingDoc,

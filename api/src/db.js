@@ -14,7 +14,8 @@ if (UNIT_TEST_ENV) {
     'users',
     'medicUsersMeta',
     'sentinel',
-    'medicLogs'
+    'medicLogs',
+    'builds',
   ];
   const DB_FUNCTIONS_TO_STUB = [
     'allDocs',
@@ -27,13 +28,17 @@ if (UNIT_TEST_ENV) {
     'getAttachment',
     'changes',
     'info',
-    'close'
+    'close',
+    'compact',
+    'viewCleanup',
   ];
   const GLOBAL_FUNCTIONS_TO_STUB = [
     'get',
     'exists',
     'close',
     'allDbs',
+    'activeTasks',
+    'saveDocs',
   ];
 
   const notStubbed = (first, second) => {
@@ -73,9 +78,10 @@ if (UNIT_TEST_ENV) {
   module.exports.vault = new PouchDB(`${environment.couchUrl}-vault`, { fetch });
   module.exports.vault.info(); // create the db if it doesn't exist
   module.exports.users = new PouchDB(getDbUrl('/_users'));
+  module.exports.builds = new PouchDB(environment.buildsUrl);
 
   // Get the DB with the given name
-  module.exports.get = name => new PouchDB(getDbUrl(name));
+  module.exports.get = name => new PouchDB(getDbUrl(name), { fetch });
   module.exports.close = db => {
     if (!db || db._destroyed || db._closed) {
       return;
@@ -101,4 +107,45 @@ if (UNIT_TEST_ENV) {
   };
 
   module.exports.allDbs = () => rpn.get({ uri: `${environment.serverUrl}/_all_dbs`, json: true });
+
+  module.exports.activeTasks = () => {
+    return rpn({
+      url: `${environment.serverUrl}/_active_tasks`,
+      json: true
+    }).then(tasks => {
+      // TODO: consider how to filter these just to the active database.
+      // On CouchDB 2.x you only get the shard name, which looks like:
+      // shards/80000000-ffffffff/medic.1525076838
+      // On CouchDB 1.x (I think) you just get the exact DB name
+      return tasks;
+    });
+  };
+
+  /**
+   * @param {Database} database
+   * @param {Array<DesignDocument>} docs
+   * @return {[{ id: string, rev: string }]}
+   */
+  module.exports.saveDocs = async (db, docs) => {
+    if (!db) {
+      throw new Error('Invalid database to delete from: %o', db);
+    }
+
+    if (!docs.length) {
+      return [];
+    }
+
+    const results = await db.bulkDocs(docs);
+    const errors = results
+      .filter(result => result.error)
+      .map(result => `saving ${result.id} failed with ${result.error}`);
+
+    if (!errors.length) {
+      return results;
+    }
+
+    // todo try one by one!
+
+    throw new Error(`Error while saving docs: ${errors.join(', ')}`);
+  };
 }
