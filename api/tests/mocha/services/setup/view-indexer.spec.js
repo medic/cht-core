@@ -162,6 +162,41 @@ describe('View indexer service', () => {
       viewIndexer.stopIndexing();
       expect(viewIndexer.__get__('continueIndexing')).to.equal(false);
     });
+
+    it('should stop indexer queries', async () => {
+      sinon.stub(upgradeLogService, 'setIndexing');
+      sinon.stub(upgradeLogService, 'setIndexed');
+
+      viewIndexer.__set__('continueIndexing', true);
+      const nextTick = () => new Promise(r => setTimeout(r));
+      const timeoutFn = () => new Promise((resolve, reject) =>
+        setTimeout(() => reject({ error: { code: 'ESOCKETTIMEDOUT' } }))
+      ); // sinon stubs that resolve actually act like they would be synchronous
+      sinon.stub(rpn, 'get').callsFake(timeoutFn);
+
+      const viewToIndexFunctions = [
+        () => viewIndexer.__get__('indexView')('other', '_design/mydesign', 'v1'),
+        () => viewIndexer.__get__('indexView')('other', '_design/mydesign', 'v2'),
+        () => viewIndexer.__get__('indexView')('other', '_design/mydesign', 'v3'),
+      ];
+
+      const viewIndexingFinished = viewIndexer.indexViews(viewToIndexFunctions);
+
+      await nextTick();
+      expect(upgradeLogService.setIndexing.callCount).to.equal(1);
+      expect(rpn.get.callCount).to.equal(3);
+      await nextTick();
+      expect(rpn.get.callCount).to.equal(6);
+      await nextTick();
+      expect(rpn.get.callCount).to.equal(9);
+
+      viewIndexer.stopIndexing();
+      await Promise.resolve();
+
+      await viewIndexingFinished;
+
+      expect(upgradeLogService.setIndexed.callCount).to.equal(0);
+    });
   });
 
   describe('indexViewsFn', () => {

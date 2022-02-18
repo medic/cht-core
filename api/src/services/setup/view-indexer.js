@@ -19,7 +19,9 @@ const indexViews = async (viewsToIndex) => {
 
   await upgradeLogService.setIndexing();
   const indexResult = await Promise.all(viewsToIndex.map(indexView => indexView()));
-  await upgradeLogService.setIndexed();
+  if (continueIndexing) {
+    await upgradeLogService.setIndexed();
+  }
 
   return indexResult;
 };
