@@ -14,7 +14,7 @@ process
   });
 
 (async () => {
-  const installer = require('./src/services/setup/install');
+  const checkInstall = require('./src/services/setup/check-install');
   const app = require('./src/routing');
   const configWatcher = require('./src/services/config-watcher');
   const migrations = require('./src/migrations');
@@ -32,7 +32,7 @@ process
     logger.info('Checks passed successfully');
 
     logger.info('Running installation checks…');
-    await installer.checkInstall();
+    await checkInstall.run();
     logger.info('Installation checks passed');
 
     logger.info('Extracting initial documents…');
