@@ -1,12 +1,14 @@
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
 
-const service = require('../services/upgrade');
+const service = require('../services/setup/upgrade');
 const configWatcher = require('../services/config-watcher');
 
+const REQUIRED_PERMISSIONS = ['can_configure'];
+const checkAuth = (req) => auth.check(req, REQUIRED_PERMISSIONS);
+
 const upgrade = (req, res, stageOnly) => {
-  return auth
-    .check(req, 'can_upgrade')
+  return checkAuth(req)
     .then(userCtx => {
       const buildInfo = req.body.build;
       if (!buildInfo) {
@@ -16,29 +18,46 @@ const upgrade = (req, res, stageOnly) => {
         };
       }
 
-      return service
-        .upgrade(req.body.build, userCtx.name, {stageOnly: stageOnly})
-        .then(() => res.json({ ok: true }));
+      return service.upgrade(buildInfo, userCtx.user, stageOnly);
     })
+    .then(() => res.json({ ok: true }))
+    .catch(err => serverUtils.error(err, req, res));
+};
+
+const completeUpgrade = (req, res) => {
+  return checkAuth(req)
+    .then(() => service.complete(req.body.build))
+    .then(() => res.json({ ok: true }))
+    .catch(err => serverUtils.error(err, req, res));
+};
+
+const upgradeInProgress = (req, res) => {
+  return checkAuth(req)
+    .then(() => Promise.all([
+      service.upgradeInProgress(),
+      service.indexerProgress(),
+    ]))
+    .then(([upgradeDoc, indexers]) => {
+      res.json({ upgradeDoc, indexers });
+    })
+    .catch(err => serverUtils.error(err, req, res));
+};
+
+const abortUpgrade = (req, res) => {
+  return checkAuth(req)
+    .then(() => service.abort())
+    .then(() => res.json({ ok: true }))
     .catch(err => serverUtils.error(err, req, res));
 };
 
 module.exports = {
   upgrade: (req, res) => upgrade(req, res, false),
   stage: (req, res) => upgrade(req, res, true),
-  complete: (req, res) => {
-    return auth
-      .check(req, 'can_upgrade')
-      .then(() => {
-        return service
-          .complete()
-          .then(() => res.json({ ok: true }));
-      })
-      .catch(err => serverUtils.error(err, req, res));
-  },
+  complete: completeUpgrade,
+  upgradeInProgress: upgradeInProgress,
+  abort: abortUpgrade,
   serviceWorker: (req, res) => {
-    return auth
-      .check(req, 'can_configure')
+    return checkAuth(req)
       .then(() => configWatcher.updateServiceWorker())
       .then(() => res.json({ ok: true }))
       .catch(err => serverUtils.error(err, req, res));

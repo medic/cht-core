@@ -57,6 +57,7 @@ const uuid = require('uuid');
 const compression = require('compression');
 const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/'; // jshint ignore:line
 const cookie = require('./services/cookie');
+const deployInfo = require('./services/deploy-info');
 const app = express();
 const MAX_REQUEST_SIZE = '32mb';
 
@@ -353,11 +354,16 @@ app.get('/api/info', function(req, res) {
   res.json({ version: p.version });
 });
 
-app.get('/api/deploy-info', (req, res) => {
+app.get('/api/deploy-info', async (req, res) => {
   if (!req.userCtx) {
     return serverUtils.notLoggedIn(req, res);
   }
-  res.json(environment.getDeployInfo());
+
+  try {
+    res.json(await deployInfo.get());
+  } catch (err) {
+    serverUtils.serverError(err, req, res);
+  }
 });
 
 app.get('/api/v1/monitoring', deprecation.deprecate('/api/v2/monitoring'), monitoring.getV1);
@@ -380,7 +386,13 @@ app.get('/api/auth/:path', function(req, res) {
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
 app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);
-app.all('/api/v1/upgrade/service-worker', upgrade.serviceWorker);
+
+app.get('/api/v2/upgrade', upgrade.upgradeInProgress);
+app.post('/api/v2/upgrade', jsonParser, upgrade.upgrade);
+app.post('/api/v2/upgrade/stage', jsonParser, upgrade.stage);
+app.post('/api/v2/upgrade/complete', jsonParser, upgrade.complete);
+app.delete('/api/v2/upgrade', jsonParser, upgrade.abort);
+app.all('/api/v2/upgrade/service-worker', upgrade.serviceWorker);
 
 app.post('/api/v1/sms/africastalking/incoming-messages', formParser, africasTalking.incomingMessages);
 app.post('/api/v1/sms/africastalking/delivery-reports', formParser, africasTalking.deliveryReports);

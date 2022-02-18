@@ -228,15 +228,15 @@ describe('routing', () => {
       });
     });
 
-    // todo re-enable this test once we extract ddocs for all databases in horticulturalist
-    xit('should display deploy-info to authenticated users', () => {
+    it('should display deploy-info to authenticated users', () => {
       return Promise.all([
         utils.request(Object.assign({ path: '/api/deploy-info' }, onlineRequestOptions)),
         utils.request(Object.assign({ path: '/api/deploy-info' }, offlineRequestOptions)),
         utils.requestOnTestDb('/_design/medic-client')
       ]).then(([ deployInfoOnline, deployInfoOffline, ddoc ]) => {
-        expect(deployInfoOnline).to.deep.equal(ddoc.deploy_info);
-        expect(deployInfoOffline).to.deep.equal(ddoc.deploy_info);
+        const deployInfo = Object.assign(ddoc.deploy_info, { version: ddoc.version });
+        expect(deployInfoOnline).to.deep.equal(deployInfo);
+        expect(deployInfoOffline).to.deep.equal(deployInfo);
       });
     });
   });
