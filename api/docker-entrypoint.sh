@@ -26,7 +26,7 @@ main(){
   welcome_message
   export COUCH_URL=http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SERVICE_NAME:$COUCHDB_PORT/medic
 
-  node /src/server.js
+  node /api/server.js
 }
 
 "$@"
