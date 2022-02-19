@@ -1,33 +1,27 @@
-FROM alpine:3.15.0
+FROM node:16alpine-3.15
 
 RUN apk add --update --no-cache \
   build-base \
-  nodejs-current \
   curl \
-  npm \
+  npm-8.3.0-r0 \
   tzdata \
   libxslt \
   bash \
   jq    \
   git
 
-WORKDIR /app
+WORKDIR /api
 
-COPY api api/
-RUN cd api && npm ci --verbose
-COPY shared-libs ./api/node_modules/@medic
-COPY api/src/public/ /app/api/build/public/
+COPY api/src/ /src/
+COPY /api/server.js /src/server.js
+COPY api/package.json /package.json
+COPY api/package-lock.json /package-lock.json
+COPY api/README.md /README.md
+COPY api/LICENSE /LICENSE
 
-SHELL ["/bin/bash", "-c"]
-RUN for i in $(ls -d /app/api/node_modules/@medic/*); \
-                do \
-                cd "$i" && \
-                npm ci && \
-                echo "$i"; done
+RUN npm ci --production
+RUN npm dedupe
 
 ENV NODE_PATH=/app/api/node_modules
-
-# Copy common functions
-COPY  scipts/bash_functions/functions.sh  /app/api/functions.sh
 
 ENTRYPOINT ["/bin/bash", "/app/api/docker-entrypoint.sh", "main"]
