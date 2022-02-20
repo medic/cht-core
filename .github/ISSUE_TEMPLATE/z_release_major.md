@@ -20,7 +20,7 @@ When development is ready to begin one of the engineers should be nominated as a
 
 - [ ] Set the version number in `package.json` and `package-lock.json` and submit a PR. The easiest way to do this is to use `npm --no-git-tag-version version <major|minor>`.
 - [ ] Raise a new issue called `Update dependencies for <version>` with a description that links to [the documentation](https://docs.communityhealthtoolkit.org/core/guides/update-dependencies/). This should be done early in the release cycle so find a volunteer to take this on and assign it to them.
-- [ ] Write an update in the weekly Product Team call agenda summarising development and acceptance testing progress and identifying any blockers (the [milestone-status](https://github.com/medic/support-scripts/tree/master/milestone-status) script can be used to get a breakdown of the issues). The release Engineer is to update this every week until the version is released.
+- [ ] Write an update in the weekly [Medic Product Team call agenda](https://docs.google.com/document/d/14AuJ7SerLuOPESBjQlJqpBtzwSAoVf5ykTT7fjyJBT0/edit) summarising development and acceptance testing progress and identifying any blockers (the [milestone-status](https://github.com/medic/support-scripts/tree/master/milestone-status) script can be used to get a breakdown of the issues). The release Engineer is to update this every week until the version is released.
 
 # Releasing - Release Engineer
 
@@ -31,14 +31,22 @@ Once all issues have passed acceptance testing and have been merged into `master
 @core_devs I've just created the `<major>.<minor>.x` release branch. Please be aware that any further changes intended for this release will have to be merged to `master` then backported. Thanks!
 ```
 - [ ] Build a beta named `<major>.<minor>.<patch>-beta.1` by pushing a git tag and when CI completes successfully notify the QA team that it's ready for release testing.
+- [ ] Announce the start of release testing on the [CHT forum](https://forum.communityhealthtoolkit.org/c/product/releases/26), under the "Product - Releases" category using this template:
+```
+*Release testing has started for {{version}} of {{product}}*
+
+To get a sneak peak at this upcoming release, you can install `<major>.<minor>.<patch>-beta.1` on your testing environment. We suggest you test your forms and workflows with this release candidate version and raise any issues that you experience. This helps to to discover any potential regressions that wouldn't otherwise be caught during release testing.
+
+Keep an eye on the forum for the release announcement in the next couple of weeks!
+```
 - [ ] Add release notes to the [Core Framework Releases](https://docs.communityhealthtoolkit.org/core/releases/) page:
-  - [ ] Create a new document for the release in the [releases folder](https://github.com/medic/cht-docs/tree/main/content/en/core/releases). 
-  - [ ] Ensure all issues are in the GH Milestone, that they're correctly labelled (in particular: they have the right Type, "UI/UX" if they change the UI, and "Breaking change" if appropriate), and have human readable descriptions. 
-  - [ ] Use [this script](https://github.com/medic/cht-core/blob/master/scripts/release-notes) to export the issues into our release note format. 
-  - [ ] Manually document any known migration steps and known issues. 
-  - [ ] Provide description, screenshots, videos, and anything else to help communicate particularly important changes. 
+  - [ ] Create a new document for the release in the [releases folder](https://github.com/medic/cht-docs/tree/main/content/en/core/releases).
+  - [ ] Ensure all issues are in the GH Milestone, that they're correctly labelled (in particular: they have the right Type, "UI/UX" if they change the UI, and "Breaking change" if appropriate), and have human readable descriptions.
+  - [ ] Use [this script](https://github.com/medic/cht-core/blob/master/scripts/release-notes) to export the issues into our release note format.
+  - [ ] Manually document any known migration steps and known issues.
+  - [ ] Provide description, screenshots, videos, and anything else to help communicate particularly important changes.
   - [ ] Document any required or recommended upgrades to our other products (eg: cht-conf, cht-gateway, cht-android).
-  - [ ] Add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/releases/) and update the EOL date and status of previous releases. Also add a link in the `Release Notes` section to the new release page.
+  - [ ] Add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions) and update the EOL date and status of previous releases. Also add a link in the `Release Notes` section to the new release page.
   - [ ] Assign the PR to:
     - The Director of Technology
     - An SRE to review and confirm the documentation on upgrade instructions and breaking changes is sufficient
@@ -55,8 +63,9 @@ New features include {{key_features}}. We've also implemented loads of other imp
 
 Read the [release notes]({{url}}) for full details.
 
-Following our support policy, versions {{versions}} are no longer supported. Projects running these versions should start planning to upgrade in the near future. For more details read our [software support documentation](https://docs.communityhealthtoolkit.org/core/overview/supported-software/).
+Following our support policy, versions {{versions}} are no longer supported. Projects running these versions should start planning to upgrade in the near future. For more details read our [software support documentation](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions).
 
 Check out our [roadmap](https://github.com/orgs/medic/projects/112) to see what we're working on next.
 ```
+- [ ] Add one last update to the [Medic Product Team call agenda](https://docs.google.com/document/d/14AuJ7SerLuOPESBjQlJqpBtzwSAoVf5ykTT7fjyJBT0/edit) and use this meeting to lead an internal release retrospective covering what went well and areas to improve for next time.
 - [ ] Mark this issue "done" and close the Milestone.
