@@ -34,8 +34,9 @@ They live in the `tests` directories of each app. Run them with grunt: `grunt un
 1. Run `npm ci`
 2. Run `grunt`
 3. Run `npm run wdio-local`
+4. Run `npx allure open` to view the test reports
 
-#### View the CI fail
+#### View the CI report
 
 1. Download the CI run artifact zip file
 2. Extract it anyhere
