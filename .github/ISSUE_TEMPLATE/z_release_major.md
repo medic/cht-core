@@ -67,5 +67,5 @@ Following our support policy, versions {{versions}} are no longer supported. Pro
 
 Check out our [roadmap](https://github.com/orgs/medic/projects/112) to see what we're working on next.
 ```
-- [ ] Add one last update to the [Medic Product Team call agenda](https://docs.google.com/document/d/14AuJ7SerLuOPESBjQlJqpBtzwSAoVf5ykTT7fjyJBT0/edit) and lead a release retrospective covering what went well and areas to improve for next time.
+- [ ] Add one last update to the [Medic Product Team call agenda](https://docs.google.com/document/d/14AuJ7SerLuOPESBjQlJqpBtzwSAoVf5ykTT7fjyJBT0/edit) and use this meeting to lead an internal release retrospective covering what went well and areas to improve for next time.
 - [ ] Mark this issue "done" and close the Milestone.
