@@ -500,12 +500,7 @@ export class EnketoService {
     };
 
     const getRelativePath = (path) => {
-      const repeatReference = repeatPaths?.find(repeat => (new RegExp(`^${repeat}$|${repeat}/`).test(path)));
-      if (repeatReference === path) {
-        const lastNode = path.split('/').slice(-1);
-        return lastNode;
-      }
-
+      const repeatReference = repeatPaths?.find(repeatPath => path.startsWith(repeatPath));
       if (repeatReference) {
         return path.replace(`${repeatReference}/`, '');
       }
@@ -516,9 +511,6 @@ export class EnketoService {
     };
 
     const getClosestPath = (element, $element, path) => {
-      if (!path) {
-        return;
-      }
       const relativePath = getRelativePath(path.trim());
       if (!relativePath) {
         return;
@@ -530,14 +522,7 @@ export class EnketoService {
       }
       const uniqueElementSelector = `${element.nodeName}[@id="${element.id}"]`;
 
-      const closestPath = `//${uniqueElementSelector}/ancestor-or-self::*/descendant-or-self::${relativePath}`;
-      try {
-        recordDoc.evaluate(closestPath, recordDoc);
-        return closestPath;
-      } catch (err) {
-        console.error('Error while evaluating closest path', closestPath, err);
-        return path;
-      }
+      return `//${uniqueElementSelector}/ancestor-or-self::*/descendant-or-self::${relativePath}`;
     };
 
     // Chrome 30 doesn't support $xml.outerHTML: #3880
