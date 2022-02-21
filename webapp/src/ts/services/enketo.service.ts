@@ -295,8 +295,10 @@ export class EnketoService {
         this.currentForm.langs.$formLanguages.val(language).trigger('change');
         // re-set the enketo form's language when a DOM node is added/removed to the form
         // TODO: remove this once the enketo uplift gets merged https://github.com/medic/cht-core/pull/7256
-        const observer = new MutationObserver(() => this.currentForm.langs.setAll(language));
-        observer.observe(this.currentForm.view.html, { childList: true, subtree: true });
+        this.currentForm.view.$.on(
+          'change',
+          () => this.currentForm.langs.setAll(language),
+        );
       })
       .then(() => this.getFormTitle(titleKey, doc))
       .then((title) => {
