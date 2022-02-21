@@ -171,7 +171,12 @@ describe('Upgrade steps', () => {
         await upgradeSteps.prep(buildInfo('4.0.1'), 'martin', true);
 
         expect(upgradeLogService.create.callCount).to.equal(1);
-        expect(upgradeLogService.create.args[0]).to.deep.equal(['stage', buildInfo('4.0.1'), buildInfo('4.0.0'), 'martin']);
+        expect(upgradeLogService.create.args[0]).to.deep.equal([
+          'stage',
+          buildInfo('4.0.1'),
+          buildInfo('4.0.0'),
+          'martin',
+        ]);
         expect(upgradeUtils.abortPreviousUpgrade.callCount).to.equal(1);
       });
 
@@ -184,7 +189,12 @@ describe('Upgrade steps', () => {
         await upgradeSteps.prep(buildInfo('4.0.2'), 'jack', false);
 
         expect(upgradeLogService.create.callCount).to.equal(1);
-        expect(upgradeLogService.create.args[0]).to.deep.equal(['upgrade', buildInfo('4.0.2'), buildInfo('4.0.1'), 'jack']);
+        expect(upgradeLogService.create.args[0]).to.deep.equal([
+          'upgrade',
+          buildInfo('4.0.2'),
+          buildInfo('4.0.1'),
+          'jack',
+        ]);
         expect(upgradeUtils.abortPreviousUpgrade.callCount).to.equal(1);
       });
     });
