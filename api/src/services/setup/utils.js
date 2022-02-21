@@ -1,4 +1,3 @@
-const rpn = require('request-promise-native');
 const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
@@ -7,13 +6,8 @@ const db = require('../../db');
 const logger = require('../../logger');
 const environment = require('../../environment');
 const upgradeLogService = require('./upgrade-log');
-
-const PACKAGED_VERSION = 'local';
-const DDOC_PREFIX = '_design/';
-const BUILD_DOC_PREFIX = 'medic:medic:';
-const STAGED_DDOC_PREFIX = `${DDOC_PREFIX}:staged:`;
-const SOCKET_TIMEOUT_ERROR_CODE = 'ESOCKETTIMEDOUT';
-const FILE_NOT_FOUND_ERROR_CODE = 'ENOENT';
+const { DATABASES, MEDIC_DATABASE } = require('./databases');
+const ddocsService = require('./ddocs');
 
 if (!fs.promises) {
   const promisify = require('util').promisify;
@@ -31,57 +25,16 @@ if (!fs.promises) {
 }
 
 /**
- * @typedef {Object} DesignDocument
- * @property {string} _id
- * @property {string} _rev
- * @property {string} version
- * @property {Object} views
+ * Returns version of bundled medic/medic ddoc
+ * @return {Promise<string>}
  */
-
-/**
- * @typedef {Object} Database
- * @property {string} name
- * @property {PouchDB} db
- * @property {string} jsonFileName
- */
-
-const MEDIC_DATABASE = {
-  name: environment.db,
-  db: db.medic,
-  jsonFileName: 'medic.json',
-};
-
-/**
- * @type {Array<Database>}
- */
-const DATABASES = [
-  MEDIC_DATABASE,
-  {
-    name: `${environment.db}-sentinel`,
-    db: db.sentinel,
-    jsonFileName: 'sentinel.json',
-  },
-  {
-    name: `${environment.db}-logs`,
-    db: db.medicLogs,
-    jsonFileName: 'logs.json',
-  },
-  {
-    name: `${environment.db}-users-meta`,
-    db: db.medicUsersMeta,
-    jsonFileName: 'users-meta.json',
-  },
-];
-
-const isStagedDdoc = ddocId => ddocId.startsWith(STAGED_DDOC_PREFIX);
 const getPackagedVersion = async () => {
   try {
     const medicDdocs = await getDdocJsonContents(path.join(environment.ddocsPath, MEDIC_DATABASE.jsonFileName));
     if (!medicDdocs || !medicDdocs.docs) {
       throw new Error('Cannot find medic db ddocs among packaged ddocs.');
     }
-    const medicDdocId = getDdocId(environment.ddoc);
-    const medicDdoc = medicDdocs.docs.find(ddoc => ddoc._id === medicDdocId);
+    const medicDdoc = medicDdocs.docs.find(ddoc => ddoc._id === ddocsService.getId(environment.ddoc));
     if (!medicDdoc) {
       throw new Error('Cannot find medic ddoc among packaged ddocs.');
     }
@@ -93,51 +46,17 @@ const getPackagedVersion = async () => {
 };
 
 /**
- * @param {Database} database
- * @param {Array<DesignDocument>} docs
- * @return {Promise}
- */
-const deleteDocs = (database, docs) => {
-  if (!docs.length) {
-    return Promise.resolve([]);
-  }
-  docs.forEach(doc => doc._deleted = true);
-  return saveDocs(database, docs);
-};
-
-/**
- * @param {Database} database
- * @param {Array<DesignDocument>} docs
- * @return {Promise}
- */
-const saveDocs = async (database , docs) => {
-  if (!docs.length) {
-    return [];
-  }
-
-  const results = await database.db.bulkDocs(docs);
-  const errors = results
-    .filter(result => result.error)
-    .map(result => `saving ${result.id} failed with ${result.error}`);
-
-  if (!errors.length) {
-    return results;
-  }
-
-  // todo try one by one!
-
-  throw new Error(`Error while saving docs: ${errors.join(', ')}`);
-};
-
-/**
  * Deletes uploaded staged ddocs
  * @return {Promise}
  */
 const deleteStagedDdocs = async () => {
   logger.info('Deleting existent staged ddocs');
   for (const database of DATABASES) {
-    const stagedDdocs = await getStagedDdocs(database);
-    await deleteDocs(database, stagedDdocs);
+    const stagedDdocs = await ddocsService.getStagedDdocs(database);
+    if (stagedDdocs.length) {
+      stagedDdocs.forEach(doc => doc._deleted = true);
+      await db.saveDocs(database.db, stagedDdocs);
+    }
   }
 };
 
@@ -157,98 +76,23 @@ const cleanup = () => {
       });
   }
 };
-
-/**
- * @param {Database} database
- * @return {Promise<Array<DesignDocument>>}
- */
-const getStagedDdocs = async (database) => {
-  const result = await database.db.allDocs({
-    startkey: STAGED_DDOC_PREFIX,
-    endkey: `${STAGED_DDOC_PREFIX}\ufff0`,
-    include_docs: true,
-  });
-  return result.rows.map(row => row.doc);
-};
-
-/**
- * @param {Database} database
- * @param {Boolean} includeDocs
- * @return {Promise<Array<DesignDocument>>}
- */
-const getDdocs = async (database) => {
-  const opts = { startkey: DDOC_PREFIX, endkey: `${DDOC_PREFIX}\ufff0`, include_docs: true };
-  const result = await database.db.allDocs(opts);
-  return result.rows.map(row => row.doc);
-};
-
-/**
- * Returns a promise that resolves when a view is indexed.
- * Retries querying the view until no error is thrown
- * @param {String} dbName
- * @param {String} ddocId
- * @param {String} viewName
- * @return {Promise}
- */
-const indexView = async (dbName, ddocId, viewName) => {
-  let viewIndexed = false;
-
-  do {
-    try {
-      await rpn.get({
-        uri: `${environment.serverUrl}/${dbName}/${ddocId}/_view/${viewName}`,
-        json: true,
-        qs: { limit: 1 },
-        timeout: 2000,
-      });
-      viewIndexed = true;
-    } catch (requestError) {
-      if (!requestError || !requestError.error || requestError.error.code !== SOCKET_TIMEOUT_ERROR_CODE) {
-        throw requestError;
-      }
-    }
-  } while (!viewIndexed);
-};
-
 /**
  * Updates json ddocs to add the :staged: ddoc name prefix
  * @param {Object<{ docs: Array<DesignDocument> }>} json
  * @return {Array<DesignDocument>}
  */
-const getDdocsToStageFromJson = (ddocs, deployInfo) => {
-  if (!ddocs.length) {
+const setStagingData = (ddocs, deployInfo) => {
+  if (!ddocs || !ddocs.length) {
     return [];
   }
 
-  return ddocs.map(ddoc => {
-    ddoc._id = ddoc._id.replace(DDOC_PREFIX, STAGED_DDOC_PREFIX);
+  ddocs.forEach(ddoc => {
+    ddoc._id = ddocsService.stageId(ddoc._id);
     ddoc.deploy_info = deployInfo;
-    return ddoc;
+    delete ddoc._rev;
   });
-};
 
-/**
- * Returns an array of functions that, when called, start indexing all views of staged ddocs
- * and return view indexing promises
- * @return {Promise<[function]>}
- */
-const getViewsToIndex = async () => {
-  const viewsToIndex = [];
-
-  for (const database of DATABASES) {
-    const stagedDdocs = await getStagedDdocs(database);
-    stagedDdocs.forEach(ddoc => {
-      if (!ddoc.views || !_.isObject(ddoc.views)) {
-        return;
-      }
-
-      const ddocViewIndexPromises = Object
-        .keys(ddoc.views)
-        .map(viewName => indexView.bind({}, database.name, ddoc._id, viewName));
-      viewsToIndex.push(...ddocViewIndexPromises);
-    });
-  }
-  return viewsToIndex;
+  return ddocs;
 };
 
 const abortPreviousUpgrade = async () => {
@@ -260,64 +104,90 @@ const abortPreviousUpgrade = async () => {
 };
 
 /**
- * Creates the upgrade folder. This folder will contain the ddoc definitions for the new version, along with
- * the json contents of the upgrade log doc that tracks upgrade progress.
- * If the staging folder already exists, the previous upgrade is aborted and the folder is re-created.
+ * Checks whether the passed build info is valid.
+ * A falsy build info means we're installing the bundled version.
+ * Build infos require 3 properties: application, namespace and version, all needing to be strings, for example:
+ * { namespace: 'medic', application: 'medic', version: '4.0.0' }
+ * @param {BuildInfo|undefined} buildInfo
+ * @return {boolean}
+ */
+const validBuildInfo = (buildInfo) => {
+  if (!buildInfo) {
+    return true;
+  }
+
+  const requireFields = ['application', 'namespace', 'version'];
+  return !!buildInfo &&
+         _.isObject(buildInfo) &&
+         requireFields.every(field => buildInfo[field] && typeof buildInfo[field] === 'string');
+};
+
+/**
+ * @param {BuildInfo} buildInfo
  * @return {Promise}
  */
-const createUpgradeFolder = async () => {
-  await deleteUpgradeFolder(true);
-  try {
-    await fs.promises.mkdir(environment.upgradePath);
-  } catch (err) {
-    logger.error('Error while trying to create the staged ddoc folder');
-    throw err;
-  }
-};
-
-const deleteUpgradeFolder = async (abort) => {
-  try {
-    await fs.promises.access(environment.upgradePath);
-    abort && await abortPreviousUpgrade();
-
-    // todo change the contents of this function once we don't support node > 12
-    // fs.promises.rmdir(environment.upgradePath, { recursive: true });
-    const files = await fs.promises.readdir(environment.upgradePath);
-    for (const file of files) {
-      await fs.promises.unlink(path.join(environment.upgradePath, file));
-    }
-    await fs.promises.rmdir(environment.upgradePath);
-  } catch (err) {
-    // if folder doesn't exist, this is fine!
-    if (err.code !== FILE_NOT_FOUND_ERROR_CODE) {
-      logger.error('Error while deleting staged ddoc folder');
-      throw err;
-    }
-  }
-};
-
-const getStagingDdoc = async (version) => {
-  const stagingDocId = `${BUILD_DOC_PREFIX}${version}`;
+const getStagingDoc = async (buildInfo) => {
+  const stagingDocId = `${buildInfo.namespace}:${buildInfo.application}:${buildInfo.version}`;
   try {
     const stagingDoc = await db.builds.get(stagingDocId, { attachments: true });
-    if (!stagingDoc._attachments || !_.isObject(stagingDoc._attachments)) {
+    if (_.isEmpty(stagingDoc._attachments)) {
       throw new Error('Staging ddoc is missing attachments');
     }
     return stagingDoc;
   } catch (err) {
-    logger.error(`Error while getting the staging doc for version ${version}`);
+    logger.error(`Error while getting the staging doc for version ${buildInfo.version}`);
     throw err;
   }
 };
 
+const decodeAttachmentData = (data) => {
+  try {
+    const buffer = Buffer.from(data, 'base64');
+    return JSON.parse(buffer.toString('utf-8'));
+  } catch (err) {
+    logger.error('Error while decoding attachment data');
+    throw err;
+  }
+};
+
+
 /**
- * For a given version, downloads the staging document and saves all ddoc attachments in the staging folder.
- * @param version
- * @return {Promise}
+ * For a local version, map of bundled ddoc definitions for every database
+ * For an upgrade version, map of bundled ddoc definitions for every database, downloaded from the staging server
+ * @param {BuildInfo|undefined} buildInfo
+ * @return {Map<Database, Array>}
  */
-const downloadDdocDefinitions = async (version) => {
-  const stagingDoc = await getStagingDdoc(version);
-  // for simplicity, we're only pre-installing and warming "known" databases.
+const getDdocDefinitions = (buildInfo) => {
+  if (!buildInfo) {
+    return getLocalDdocDefinitions();
+  }
+
+  return downloadDdocDefinitions(buildInfo);
+};
+
+/**
+ * Returns map of bundled ddoc definitions for every database
+ * @return {Map<Database, Array>}
+ */
+const getLocalDdocDefinitions = async () => {
+  const ddocDefinitions = new Map();
+  for (const database of DATABASES) {
+    ddocDefinitions.set(database, await getBundledDdocs(database));
+  }
+  return ddocDefinitions;
+};
+
+/**
+ * Returns map of bundled ddoc definitions for every database, downloaded from the staging server
+ * @param {BuildInfo} buildInfo
+ * @return {Map<Database, Array>}
+ */
+const downloadDdocDefinitions = async (buildInfo) => {
+  const ddocDefinitions = new Map();
+
+  const stagingDoc = await getStagingDoc(buildInfo);
+
+  // for simplicity, only ddocs for "known" databases are staged and indexed.
   // for new databases, the final install will happen in the api preflight check.
   // since any new database will be empty, the impact of not warming views is minimal.
   for (const database of DATABASES) {
@@ -325,34 +195,36 @@ const downloadDdocDefinitions = async (version) => {
     // a missing attachment means that the database is dropped in this version.
     // a migration should remove the unnecessary database.
     if (attachment) {
-      const stagingDdocPath = path.join(environment.upgradePath, database.jsonFileName);
-      await fs.promises.writeFile(stagingDdocPath, attachment.data, 'base64');
+      const json = decodeAttachmentData(attachment.data);
+      ddocDefinitions.set(database, getDdocsFromJson(json));
     } else {
-      logger.warn(`Attachment for ${database.name} was not found. Skipping.`);
+      logger.warn(`Attachment for ${database.jsonFileName} was not found. Skipping.`);
     }
   }
+
+  return ddocDefinitions;
 };
 
 const getDdocJsonContents = async (path) => {
-  try {
-    const contents = await fs.promises.readFile(path, 'utf-8');
-    return JSON.parse(contents);
-  } catch (err) {
-    if (err.code !== FILE_NOT_FOUND_ERROR_CODE) {
-      throw err;
-    }
-  }
+  const contents = await fs.promises.readFile(path, 'utf-8');
+  return JSON.parse(contents);
 };
 
-const getBundledDdocs = async (database, version = PACKAGED_VERSION) => {
-  const ddocsFolderPath = version === PACKAGED_VERSION ? environment.ddocsPath : environment.upgradePath;
-  const ddocJson = await getDdocJsonContents(path.join(ddocsFolderPath, database.jsonFileName));
-  return ddocJson && ddocJson.docs || [];
+const getDdocsFromJson = (json) => (json && json.docs) || [];
+
+const getBundledDdocs = async (database) => {
+  try {
+    const ddocJson = await getDdocJsonContents(path.join(environment.ddocsPath, database.jsonFileName));
+    return getDdocsFromJson(ddocJson);
+  } catch (err) {
+    logger.error('Error when trying to parse ddoc json contents: %o', err);
+    throw err;
+  }
 };
 
 const freshInstall = async () => {
   try {
-    await db.medic.get(getDdocId(environment.ddoc));
+    await db.medic.get(ddocsService.getId(environment.ddoc));
     return false;
   } catch (err) {
     if (err.status === 404) {
@@ -362,28 +234,20 @@ const freshInstall = async () => {
   }
 };
 
-const saveStagedDdocs = async (version) => {
+/**
+ *
+ * @param {Map<Database, [DesignDocument]>} ddocDefinitions
+ * @return {Promise}
+ */
+const saveStagedDdocs = async (ddocDefinitions) => {
   const deployInfo = await upgradeLogService.getDeployInfo();
   for (const database of DATABASES) {
-    const bundledDdocs = await getBundledDdocs(database, version);
-    const ddocsToStage = getDdocsToStageFromJson(bundledDdocs, deployInfo);
+    const ddocs = ddocDefinitions.get(database);
+    const ddocsToStage = setStagingData(ddocs, deployInfo);
 
     logger.info(`Saving ddocs for ${database.name}`);
-    await saveDocs(database, ddocsToStage);
+    await db.saveDocs(database.db, ddocsToStage);
   }
-};
-
-const indexViews = async (viewsToIndex) => {
-  if (!Array.isArray(viewsToIndex)) {
-    await upgradeLogService.setIndexed();
-    return;
-  }
-
-  await upgradeLogService.setIndexing();
-  const indexResult = await Promise.all(viewsToIndex.map(indexView => indexView()));
-  await upgradeLogService.setIndexed();
-
-  return indexResult;
 };
 
 /**
@@ -394,89 +258,43 @@ const indexViews = async (viewsToIndex) => {
 const unstageStagedDdocs = async () => {
   const deployTime = new Date().getTime();
   for (const database of DATABASES) {
-    const ddocs = await getDdocs(database, true);
+    const ddocs = await ddocsService.getDdocs(database);
     const ddocsToSave = [];
 
     for (const ddoc of ddocs) {
-      if (!isStagedDdoc(ddoc._id)) {
+      if (!ddocsService.isStaged(ddoc._id)) {
         continue;
       }
 
-      const ddocId = ddoc._id.replace(STAGED_DDOC_PREFIX, DDOC_PREFIX);
-
-      const ddocToReplace = ddocs.find(existentDdoc => ddocId === existentDdoc._id);
+      const unstagedId = ddocsService.unstageId(ddoc._id);
+      const ddocToReplace = ddocs.find(existentDdoc => unstagedId === existentDdoc._id);
       if (ddocToReplace) {
         ddoc._rev = ddocToReplace._rev;
       } else {
         delete ddoc._rev;
       }
 
-      ddoc._id = ddocId;
+      ddoc._id = unstagedId;
       ddoc.deploy_info = ddoc.deploy_info || {};
       ddoc.deploy_info.timestamp = deployTime;
 
       ddocsToSave.push(ddoc);
     }
 
-    await saveDocs(database, ddocsToSave);
+    await db.saveDocs(database.db, ddocsToSave);
   }
 };
 
-const getDdocName = ddocId => ddocId.replace(STAGED_DDOC_PREFIX, '').replace(DDOC_PREFIX, '');
-const getDdocId = ddocName => `${DDOC_PREFIX}${ddocName}`;
-
-/**
- * Compares a list of bundled ddocs with a list of uploaded ddocs.
- * Returns a list of missing ddocs ids and a list of different ddocs ids.
- * A ddoc is missing if it is bundled and not uploaded.
- * A ddoc is different the version of the bundled ddoc is different from the version of the uploaded ddoc.
- * @param {Array<{ _id, version: string }>} bundled Array of bundled ddocs
- * @param {Array<{ _id, version: string }>} uploaded Array of uploaded ddocs
- * @return {{missing: Array<string>, different: Array<string>}}
- */
-const compareDdocs = (bundled, uploaded) => {
-  const missing = [];
-  const different = [];
-
-  const findCorrespondingDdoc = (ddocA, ddocsB) => {
-    const ddocAName = getDdocName(ddocA._id);
-    return ddocsB.find(ddocB => getDdocName(ddocB._id) === ddocAName);
-  };
-
-  bundled.forEach(bundledDdoc => {
-    const uploadedDdoc = findCorrespondingDdoc(bundledDdoc, uploaded);
-    if (!uploadedDdoc) {
-      missing.push(bundledDdoc._id);
-      return;
-    }
-
-    if (bundledDdoc.version !== uploadedDdoc.version) {
-      different.push(bundledDdoc._id);
-    }
-  });
-
-  return { missing, different };
-};
-
 module.exports = {
-  DATABASES,
-  PACKAGED_VERSION,
-
   cleanup,
 
-  getDdocs,
-  isStagedDdoc,
-  compareDdocs,
-  getDdocId,
-  createUpgradeFolder,
+  validBuildInfo,
   getPackagedVersion,
-  downloadDdocDefinitions,
+  getDdocDefinitions,
   freshInstall,
   deleteStagedDdocs,
   saveStagedDdocs,
-  getViewsToIndex,
-  indexViews,
   unstageStagedDdocs,
   getBundledDdocs,
-  deleteUpgradeFolder,
+  abortPreviousUpgrade,
 };

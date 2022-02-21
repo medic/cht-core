@@ -107,7 +107,7 @@ const copyBuildInfoToStagingDoc = () => {
 };
 
 const updateServiceWorker = () => {
-  const updateSWUrl = getApiUrl('/api/v1/upgrade/service-worker');
+  const updateSWUrl = getApiUrl('/api/v2/upgrade/service-worker');
 
   return rpn.get(updateSWUrl).catch(err => {
     if (err.status === 401) {
