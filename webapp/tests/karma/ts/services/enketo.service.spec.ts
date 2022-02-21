@@ -1327,28 +1327,27 @@ describe('Enketo service', () => {
           form: 'V',
           'fields.name': 'Sally',
           'fields.lmp': '10',
-          'fields.repeat_doc_ref' : actual[1]._id, // this ref is outside any repeat
         });
         expect(actual[1]).to.deep.include({
           extra: 'data1',
           type: 'repeater',
           some_property: 'some_value_1',
           my_parent: actual[0]._id,
-          repeat_doc_ref: actual[1]._id,
+          repeat_doc_ref: actual[1]._id, // yup, this is how it should be.
         });
         expect(actual[2]).to.deep.include({
           extra: 'data2',
           type: 'repeater',
           some_property: 'some_value_2',
           my_parent: actual[0]._id,
-          repeat_doc_ref: actual[2]._id,
+          repeat_doc_ref: actual[2]._id, // yup, this is how it should be.
         });
         expect(actual[3]).to.deep.nested.include({
           extra: 'data3',
           type: 'repeater',
           some_property: 'some_value_3',
           my_parent: actual[0]._id,
-          'child.repeat_doc_ref': actual[3]._id,
+          'child.repeat_doc_ref': actual[3]._id, // yup, this is how it should be.
         });
       });
     });
