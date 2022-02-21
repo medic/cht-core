@@ -56,12 +56,15 @@ describe('Adding new language', () => {
     await browser.waitUntil(async () => await (await commonPo.analyticsTab()).getText() === 'Analytiks');
 
     //check for translations
+    //Waiting for text to show for stability - expect sometimes checks before the text appears and gets ''
     await commonPo.goToMessages();
     await commonPo.waitForPageLoaded();
-    expect(await (await messagesPage.messagesList()).getText()).to.equal('Geen boodskappe gevind nie');
+    await browser.waitUntil(async () =>
+      await (await messagesPage.messagesList()).getText() === 'Geen boodskappe gevind nie'
+    );
     await commonPo.goToReports();
-    expect(await (await reportsPage.reportList()).getText()).to.equal('Geen verslae gevind nie');
+    await browser.waitUntil(async () => await (await reportsPage.reportList()).getText() === 'Geen verslae gevind nie');
     await commonPo.goToPeople();
-    expect(await (await contactsPage.contactList()).getText()).to.equal('Geen mense gevind nie');
+    await browser.waitUntil(async () => await (await contactsPage.contactList()).getText() === 'Geen mense gevind nie');
   });
 });
