@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const commonElements = require('../common/common.wdio.page');
 const addUserButton = () => $('a#add-user');
 const cancelUserModalButton = () => $('[test-id="modal-cancel-btn"]');
 const addUserDialog = () => $('div#edit-user-profile');
@@ -40,7 +41,7 @@ const closeUserDialog = async () => {
   await (await addUserDialog()).waitForDisplayed({ reverse: true });
 };
 
-const inputAddUserFields = async (username, fullname, role, place, associatedContact, password, 
+const inputAddUserFields = async (username, fullname, role, place, associatedContact, password,
   confirmPassword = password) => {
   await (await userName()).addValue(username);
   await (await userFullName()).addValue(fullname);
@@ -53,7 +54,7 @@ const inputAddUserFields = async (username, fullname, role, place, associatedCon
   if (!_.isEmpty(associatedContact)) {
     await selectContact(associatedContact);
   }
-  
+
   await (await userPassword()).addValue(password);
   await (await userConfirmPassword()).addValue(confirmPassword);
 };
@@ -92,11 +93,7 @@ const logout = async () => {
 
 const getAllUsernames = async () => {
   await (await usernameText()).waitForDisplayed();
-  return getTextForElements(usernameTextList);
-};
-
-const getTextForElements = async (elements) => {
-  return Promise.all((await elements()).map(filter => filter.getText()));
+  return commonElements.getTextForElements(usernameTextList);
 };
 
 const getUsernameErrorText = async () => {

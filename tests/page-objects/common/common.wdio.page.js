@@ -288,6 +288,10 @@ const getDefaultLanguages = async () => {
   return [headingText, await messagesLang(), defaultLang];
 };
 
+const getTextForElements = async (elements) => {
+  return Promise.all((await elements()).map(filter => filter.getText()));
+};
+
 module.exports = {
   logout,
   logoutButton,
