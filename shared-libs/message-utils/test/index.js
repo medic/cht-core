@@ -2,8 +2,8 @@ const sinon = require('sinon');
 const moment = require('moment');
 const expect = require('chai').expect;
 const should = require('chai').should();
-const uuid = require('uuid');
-const utils = require('../src/index');
+const rewire = require('rewire');
+const utils = rewire('../src/index');
 
 const MAX_GSM_LENGTH = 160;
 const MAX_UNICODE_LENGTH = 70;
@@ -694,7 +694,7 @@ describe('messageUtils', () => {
   describe('generate', () => {
 
     it('adds uuid', () => {
-      sinon.stub(uuid, 'v4').returns('some-uuid');
+      utils.__set__('uuid', { v4 : sinon.stub().returns('some-uuid') });
       const config = {};
       const translate = null;
       const doc = {};

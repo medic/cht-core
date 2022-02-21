@@ -226,10 +226,11 @@ export class AgePipe implements PipeTransform {
 export class DayMonthPipe implements PipeTransform {
   constructor(
     private sanitizer: DomSanitizer,
+    private formatDateService:FormatDateService,
   ) {}
 
   transform(date) {
-    return this.sanitizer.bypassSecurityTrustHtml('<span>' + moment(date).format('D MMM') + '</span>');
+    return this.sanitizer.bypassSecurityTrustHtml('<span>' + this.formatDateService.dayMonth(date) + '</span>');
   }
 }
 

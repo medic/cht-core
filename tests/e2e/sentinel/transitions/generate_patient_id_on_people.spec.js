@@ -1,7 +1,7 @@
 const chai = require('chai');
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 const { expect } = require('chai');
 
 describe('generate_patient_id_on_people', () => {

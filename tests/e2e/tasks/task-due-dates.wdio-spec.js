@@ -1,5 +1,4 @@
 const path = require('path');
-const chai = require('chai');
 
 const utils = require('../../utils');
 const sentinelUtils = require('../sentinel/utils');
@@ -45,8 +44,9 @@ const getTasksInfos = async (tasks) => {
 const updateSettings = async (updates = {}) => {
   await chtConfUtils.initializeConfigDir();
   const tasksFilePath = path.join(__dirname, 'tasks-due-dates-config', 'tasks.js');
-  updates.tasks = await chtConfUtils.compileNoolsConfig(tasksFilePath);
 
+  const { tasks } = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
+  updates.tasks = tasks;
   await utils.updateSettings(updates, 'api');
   await commonPage.sync(true);
   await browser.refresh();
@@ -73,7 +73,7 @@ describe('Task list due dates', () => {
     await tasksPage.goToTasksTab();
     const infos = await getTasksInfos(await tasksPage.getTasks());
 
-    chai.expect(infos).to.have.deep.members([
+    expect(infos).to.have.deep.members([
       { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false },
       { contactName: 'Bob', formTitle: 'person_create_5', dueDateText: '', overdue: false },
       { contactName: 'Bob', formTitle: 'person_create_2', dueDateText: '2 days left', overdue: false },
@@ -91,7 +91,7 @@ describe('Task list due dates', () => {
     await tasksPage.goToTasksTab();
     const infos = await getTasksInfos(await tasksPage.getTasks());
 
-    chai.expect(infos).to.have.deep.members([
+    expect(infos).to.have.deep.members([
       { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false },
       { contactName: 'Bob', formTitle: 'person_create_5', dueDateText: '', overdue: false },
       { contactName: 'Bob', formTitle: 'person_create_2', dueDateText: '2 days left', overdue: false },
@@ -110,7 +110,7 @@ describe('Task list due dates', () => {
     await tasksPage.goToTasksTab();
     const infos = await getTasksInfos(await tasksPage.getTasks());
 
-    chai.expect(infos).to.have.deep.members([
+    expect(infos).to.have.deep.members([
       { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false },
       { contactName: 'Bob', formTitle: 'person_create_5', dueDateText: '', overdue: false },
       { contactName: 'Bob', formTitle: 'person_create_2', dueDateText: '2 days left', overdue: false },

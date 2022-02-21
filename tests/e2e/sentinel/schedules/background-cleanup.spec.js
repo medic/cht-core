@@ -1,7 +1,7 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const chai = require('chai');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 
 const docToKeep = { _id: uuid() };
 const docToDelete = { _id: uuid() };

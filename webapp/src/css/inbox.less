@@ -418,8 +418,7 @@ body {
   }
 
   .reset-filter,
-  .sort-results,
-  .simprints-filter {
+  .sort-results {
     line-height: 38px;
     > a {
       color: @text-normal-color;
@@ -1218,21 +1217,6 @@ a.fa:hover {
   }
 }
 
-.simprints-stars {
-  &:after {
-    font-family: FontAwesome;
-  }
-  &.tier-1:after {
-    content: '\f005\f005\f005\f005\f005'; /* 5 stars full */
-  }
-  &.tier-2:after {
-    content: '\f005\f005\f005\f005\f006'; /* 4 stars full, 1 empty */
-  }
-  &.tier-3:after {
-    content: '\f005\f005\f005\f006\f006'; /* 3 star full, 2 empty */
-  }
-}
-
 .upgrade-config .status {
   text-align: center;
 }
@@ -1465,11 +1449,8 @@ a.fa:hover {
     .header {
       display: none;
     }
-    &,
-    &.hide-mobile-tab-labels {
-      .content .page {
-        top: 46px;
-      }
+    .content .page {
+      top: 46px;
     }
     .left-pane {
       left: -100%;
@@ -1541,10 +1522,13 @@ a.fa:hover {
       padding-left: 2px;
       a {
         min-width: 40px;
+        .button-label {
+          font-size: @font-extra-extra-small;
+        }
       }
-      .configuration-tab {
-        display: none;
-      }
+
+      // Use bigger font when there are 4 or less tabs.
+      .elements-label(a, button-label, 4, @font-extra-small);
     }
     .mm-badge-overlay {
       right: 10%;
@@ -1578,17 +1562,6 @@ a.fa:hover {
   .app-root.testing {
     .page {
       top: 55px;
-    }
-  }
-  .hide-mobile-tab-labels {
-    .button-label {
-      display: none;
-    }
-    .header .inner {
-      height: 50px;
-    }
-    .content .page {
-      top: 101px;
     }
   }
 }

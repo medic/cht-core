@@ -105,13 +105,13 @@ describe('Navigation tests : ', () => {
       await commonElements.waitForLoaderToDisappear();
     });
 
-    it('No tab text labels displayed  on mobile view for over 3 tabs', async () => {
+    it('should display tab labels on mobile view, when all tabs are enabled', async () => {
       const tabTexts = await element.all(by.css('.button-label')).getText();
       expect(tabTexts.length).toBe(5);
-      expect(tabTexts).toEqual([ '', '', '', '', '' ]);
+      expect(tabTexts).toEqual([ 'Messages', 'Tasks', 'Reports', 'People', 'Targets' ]);
     });
 
-    it('Display page tab text labels even on mobile view, whenever there are 3 or fewer tabs', async () => {
+    it('should display tab labels on mobile view, when some tabs are enabled', async () => {
       //change permissions
       const originalSettings = await utils.getSettings();
       const permissions = originalSettings.permissions;

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -10,14 +10,13 @@ import sinon from 'sinon';
 import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
-import { SimprintsFilterComponent } from '@mm-components/filters/simprints-filter/simprints-filter.component';
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
 
 describe('Reports Filters Component', () => {
   let component: ContactsFiltersComponent;
   let fixture: ComponentFixture<ContactsFiltersComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     return TestBed
       .configureTestingModule({
         imports: [
@@ -29,7 +28,6 @@ describe('Reports Filters Component', () => {
           ContactsFiltersComponent,
           FreetextFilterComponent,
           ResetFiltersComponent,
-          SimprintsFilterComponent,
           SortFilterComponent,
         ],
         providers: [

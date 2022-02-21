@@ -1,6 +1,6 @@
 # Development Setup
 
-These instructions are for developers who want to contribute to the Core Framework (this repository). If you only need to run the Framework (ie with a Reference App configuration), or you are a developer building configurations, you can follow the [easy deployment instructions](./INSTALL.md) instead.
+These instructions are for developers who want to contribute to the Core Framework (this repository). If you only need to run the Framework (ie with a Reference App configuration), or you are a developer building configurations, you can follow the [easy deployment instructions](https://docs.communityhealthtoolkit.org/apps/tutorials/local-setup/) instead.
 
 Before getting started, read about our [development workflow](https://docs.communityhealthtoolkit.org/contribute/code/workflow/) and the [architecture overview](https://docs.communityhealthtoolkit.org/core/overview/architecture/). With the setup instructions below the tools will run directly on your machine, rather than via Docker.
 
@@ -19,12 +19,12 @@ You will need to install the following:
 - xsltproc
 - python 2.7
 
-To run end-to-end tests you will also need:
+To run end-to-end (e2e) tests you will also need:
 
-- Java JDK
+- Java JDK 11
 - Docker
 
-Installation instructions for these tools differ heavily based on your operating system and aren't covered here.
+Installation instructions for these tools differ heavily based on your operating system and aren't covered here. Note that currently e2e tests need Java 11 and fail on newer versions.
 
 ### CouchDB on Docker
 
@@ -50,7 +50,7 @@ Medic recommends you familiarise yourself with other Docker commands to make doc
 
 ### CouchDB on Ubuntu
 
-While we recommend use Docker to install CouchDB for development, it is still possible to install CouchDB on bare metal in Ubuntu, but there are some caveats: 
+While we recommend use Docker to install CouchDB for development, it is still possible to install CouchDB on bare metal in Ubuntu, but there are some caveats:
 
 * For Ubuntu 18.04 and earlier, you need to specify in `apt` version to install with the `-V` flag.  For example, on a clean 18.04 install you would run:
     ```bash
@@ -180,10 +180,19 @@ Follow the steps below to use an Android device with a development build of your
 1. Assuming your IP is `192.168.0.3`, start `nginx-local-ip` to connect to:
     * The CHT API running via `grunt` or `horti`, execute `APP_URL=http://192.168.0.3:5988 docker-compose up` and then access it at [https://192-168-0-3.my.local-ip.co/](https://192-168-0-3.my.local-ip.co/)
     * The CHT API running via `docker`, the ports are remapped, so execute `HTTP=8080 HTTPS=8443 APP_URL=https://192.168.0.3 docker-compose up` and then access it at [https://192-168-0-3.my.local-ip.co:8443/](https://192-168-0-3.my.local-ip.co:8443/)
+1. The HTTP/HTTPS ports (`80`/`443`) need to accept traffic from the IP address of your host machine and your local webapp port (e.g. `5988`) needs to accept traffic from the IP address of the `nginx-local-ip` container (on the Docker network). If you are using the UFW firewall (in a Linux environment) you can allow traffic on these ports with the following commands:
+
+(Since local IP addresses can change over time, ranges are used in these rules so that the firewall configuration does not have to be updated each time a new address is assigned.)
+
+```.sh
+$ sudo ufw allow proto tcp from 192.168.0.0/16 to any port 80,443
+$ sudo ufw allow proto tcp from  172.16.0.0/16 to any port 5988
+```
+
 
 ### Remote Proxies
 
-`ngrok` and `pagekite` are remote proxies that route local traffic between your client and the CHT via a remote SSL terminator. While easy and handy, they introduce latency and are sometimes throttled.  
+`ngrok` and `pagekite` are remote proxies that route local traffic between your client and the CHT via a remote SSL terminator. While easy and handy, they introduce latency and are sometimes throttled.
 
 #### ngrok
 

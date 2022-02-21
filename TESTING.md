@@ -18,21 +18,29 @@ They live in the `tests` directories of each app. Run them with grunt: `grunt un
 ## Stack overview
 
 ### Requirements
-Follow the guide [DEVELOPMENT.md](DEVELOPMENT.md)
-JDK installed for Selenium.
-Docker to run couchdb.
+
+1. Follow the guide [DEVELOPMENT.md](DEVELOPMENT.md)
+2. JDK installed for Selenium.
+3. Docker to run couchdb.
 
 ### Local Run
 
 `grunt e2e` installs and runs chromedriver, starts couchdb in docker, pushes the compiled app to couchdb, starts api, starts sentinel, and then runs protractor tests against your local environment. 
 
-### WebdriverIO Local Run
+### WebdriverIO
 
-Run `npm ci`
-Run `grunt`
-Run `npm run wdio-local`
-Viewing the report 
-Run `npx allure open`
+#### Run locally
+
+1. Run `npm ci`
+2. Run `grunt`
+3. Run `npm run wdio-local`
+4. Run `npx allure open` to view the test reports
+
+#### View the CI report
+
+1. Download the CI run artifact zip file
+2. Extract it anyhere
+3. From your cht-core directory, run `npx allure open <path>/allure-report/`.
 
 ### Github Actions Protractor Run 
 
@@ -47,7 +55,7 @@ The main difference now is that `grunt ci-webdriver` is executed now instead of 
 ### File Structure
 Test files should represent a feature within the application. Using `describe` to identify the feature and `it` to detail the individual functions of the feature.
 
-EX: `describe('Users can login )`  `it(with valid credentials)`
+EX: `describe('Users can login')`  `it('with valid credentials')`.
 
 ### Page Object Model
 We are leveraging the [page object model](https://www.thoughtworks.com/insights/blog/using-page-objects-overcome-protractors-shortcomings) for structure. When identifying elements they should be added to a page object and not within a test file. Add functions that perform actions to the page within the page object. Keep expects outside of page objects. The tests should be self-documenting. 
@@ -64,18 +72,33 @@ Adding a test identifier a good option for cases where a CSS selector would othe
 ## Debugging
 Documented here are two ways to run individual tests and have your IDE break on the specific test.
 
-### Visual Studio Code
+When debugging it can be helpful to disable the headless browser mode so that you can see the browser window as the tests run. To do this, remove `--headless` from the [tests/conf.js](tests/conf.js) file for the Protractor tests and the [tests/wdio.conf.js](tests/wdio.conf.js) file for the WebdriverID tests.
 
-#### Setting up Vscode for e2e debugging. 
+### WebdriverIO
+
+To run just a single test file in WebdriverIO, update the `specs` config in [tests/wdio.conf.js](tests/wdio.conf.js) to refer to the desired test file.
+
+#### IntelliJ Based
+
+1. In a terminal, run `grunt`
+1. In Intellij, open the [package.json](package.json) file
+1. Scroll to the scripts section and click the ▶ button next to `wdio-local`
+1. Select `Debug 'wdio-local'`
+
+### Protractor
+
+#### Visual Studio Code
+
+##### Setting up Vscode for e2e debugging.
 
 1. This assumes you have gone through the [development](https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md) setup guide. 
 1. Copy the vscode launch.json and tasks.json files from this [location](https://github.com/medic/medic-release-testing/tree/master/ide_config/vscode).
 1. Paste those files into a directory called .vscode within your cht-core repo. 
 1. Click the debug icon on the left tool bar.
 1. Select launch e2e.
-1. This will now run as if you ran the command `grunt e2e-deploy` and start the `scripts/e2e/e2e-servers` script. Then launch protractor to debug the test(s). 
+1. This will now run as if you ran the command `grunt e2e-deploy` and start the `tests/scripts/e2e-servers` script. Then launch protractor to debug the test(s). 
 
-#### Debugging a single test by using the "grep" feature.
+##### Debugging a single test by using the "grep" feature.
 
 1. Open launch.json.
 1. Update the grep argument with the name of your test to the args array.
@@ -84,8 +107,7 @@ Documented here are two ways to run individual tests and have your IDE break on 
 1. Click the debug icon on the left tool bar.
 1. Select launch e2e.
 
-
-### IntelliJ Based
+#### IntelliJ Based
 
 1. Click the run menu across the top.
 1. Click Edit Configurations.

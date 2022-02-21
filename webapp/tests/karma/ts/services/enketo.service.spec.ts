@@ -3,6 +3,8 @@ import sinon from 'sinon';
 import { expect, assert } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import * as _ from 'lodash-es';
+import { toBik_text } from 'bikram-sambat';
+import * as moment from 'moment';
 
 import { DbService } from '@mm-services/db.service';
 import { Form2smsService } from '@mm-services/form2sms.service';
@@ -23,6 +25,7 @@ import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { TranslateService } from '@mm-services/translate.service';
+import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -62,6 +65,8 @@ describe('Enketo service', () => {
   let LineageModelGenerator;
   let transitionsService;
   let translateService;
+  let zScoreService;
+  let zScoreUtil;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -104,6 +109,8 @@ describe('Enketo service', () => {
       instant: sinon.stub().returnsArg(0),
       get: sinon.stub(),
     };
+    zScoreUtil = sinon.stub();
+    zScoreService = { getScoreUtil: sinon.stub().resolves(zScoreUtil) };
 
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
 
@@ -135,7 +142,7 @@ describe('Enketo service', () => {
             findXFormAttachmentName: sinon.stub().resolves('mydoc')
           }
         },
-        { provide: ZScoreService, useValue: { getScoreUtil: sinon.stub().resolves(sinon.stub())} },
+        { provide: ZScoreService, useValue: zScoreService },
         { provide: TransitionsService, useValue: transitionsService },
         { provide: TranslateService, useValue: translateService },
       ],
@@ -151,6 +158,30 @@ describe('Enketo service', () => {
   afterEach(() => {
     sinon.restore();
     delete window.CHTCore;
+  });
+
+  describe('init', () => {
+    it('should init zscore and xpath extensions', async () => {
+      sinon.stub(medicXpathExtensions, 'init');
+
+      sinon.resetHistory();
+      await service.init();
+
+      expect(zScoreService.getScoreUtil.callCount).to.equal(1);
+      expect(medicXpathExtensions.init.callCount).to.equal(1);
+      expect(medicXpathExtensions.init.args[0]).to.deep.equal([zScoreUtil, toBik_text, moment]);
+    });
+
+    it('should catch errors', async () => {
+      sinon.stub(medicXpathExtensions, 'init');
+      zScoreService.getScoreUtil.rejects({ omg: 'error' });
+
+      sinon.resetHistory();
+      await service.init();
+
+      expect(zScoreService.getScoreUtil.callCount).to.equal(1);
+      expect(medicXpathExtensions.init.callCount).to.equal(0);
+    });
   });
 
   describe('render', () => {
@@ -1264,6 +1295,113 @@ describe('Enketo service', () => {
           'fields.repeat_section[1].repeat_doc_ref': actual[1]._id,
           'fields.repeat_section[2].extra': 'data3',
           'fields.repeat_section[2].repeat_doc_ref': actual[1]._id,
+        });
+      });
+    });
+
+    it('db-doc-ref with repeats with db-doc as repeat', () => {
+      form.validate.resolves(true);
+      const content = loadXML('db-doc-ref-same-as-repeat');
+      form.getDataStr.returns(content);
+
+      dbBulkDocs.resolves([
+        { ok: true, id: '6', rev: '1-abc' },
+        { ok: true, id: '7', rev: '1-def' },
+      ]);
+      dbGetAttachment.resolves(`<form/>`);
+      FileReader.utf8.resolves(`
+        <data>
+          <repeat nodeset="/data/repeat_section"></repeat>
+        </data>
+      `);
+      UserContact.resolves({ _id: '123', phone: '555' });
+      return service.save('V', form).then(actual => {
+        expect(form.validate.callCount).to.equal(1);
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(UserContact.callCount).to.equal(1);
+
+        expect(actual.length).to.equal(4);
+
+        expect(actual[0]).to.deep.nested.include({
+          form: 'V',
+          'fields.name': 'Sally',
+          'fields.lmp': '10',
+          'fields.repeat_doc_ref' : actual[1]._id, // this ref is outside any repeat
+        });
+        expect(actual[1]).to.deep.include({
+          extra: 'data1',
+          type: 'repeater',
+          some_property: 'some_value_1',
+          my_parent: actual[0]._id,
+          repeat_doc_ref: actual[1]._id,
+        });
+        expect(actual[2]).to.deep.include({
+          extra: 'data2',
+          type: 'repeater',
+          some_property: 'some_value_2',
+          my_parent: actual[0]._id,
+          repeat_doc_ref: actual[2]._id,
+        });
+        expect(actual[3]).to.deep.nested.include({
+          extra: 'data3',
+          type: 'repeater',
+          some_property: 'some_value_3',
+          my_parent: actual[0]._id,
+          'child.repeat_doc_ref': actual[3]._id,
+        });
+      });
+    });
+
+    it('db-doc-ref with repeats with invalid ref', () => {
+      form.validate.resolves(true);
+      const content = loadXML('db-doc-ref-broken-ref');
+      form.getDataStr.returns(content);
+
+      dbBulkDocs.resolves([
+        { ok: true, id: '6', rev: '1-abc' },
+        { ok: true, id: '7', rev: '1-def' },
+      ]);
+      dbGetAttachment.resolves(`<form/>`);
+      FileReader.utf8.resolves(`
+        <data>
+          <repeat nodeset="/data/repeat_section"></repeat>
+        </data>
+      `);
+      UserContact.resolves({ _id: '123', phone: '555' });
+      return service.save('V', form).then(actual => {
+        expect(form.validate.callCount).to.equal(1);
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(UserContact.callCount).to.equal(1);
+
+        expect(actual.length).to.equal(4);
+
+        expect(actual[0]).to.deep.nested.include({
+          form: 'V',
+          'fields.name': 'Sally',
+          'fields.lmp': '10',
+        });
+        expect(actual[1]).to.deep.include({
+          extra: 'data1',
+          type: 'repeater',
+          some_property: 'some_value_1',
+          my_parent: actual[0]._id,
+          repeat_doc_ref: 'value1',
+        });
+        expect(actual[2]).to.deep.include({
+          extra: 'data2',
+          type: 'repeater',
+          some_property: 'some_value_2',
+          my_parent: actual[0]._id,
+          repeat_doc_ref: 'value2',
+        });
+        expect(actual[3]).to.deep.include({
+          extra: 'data3',
+          type: 'repeater',
+          some_property: 'some_value_3',
+          my_parent: actual[0]._id,
+          repeat_doc_ref: 'value3',
         });
       });
     });

@@ -4,11 +4,10 @@ import { createSingleValueAction, createMultiValueAction } from './actionUtils';
 
 export const Actions = {
   updateReplicationStatus: createSingleValueAction('UPDATE_REPLICATION_STATUS', 'replicationStatus'),
-  setMinimalTabs: createSingleValueAction('SET_MINIMAL_TABS', 'minimalTabs'),
   setAndroidAppVersion: createSingleValueAction('SET_ANDROID_APP_VERSION', 'androidAppVersion'),
   setCurrentTab: createSingleValueAction('SET_CURRENT_TAB', 'currentTab'),
   setSnapshotData: createSingleValueAction('SET_SNAPSHOT_DATA', 'snapshotData'),
-  setSnackbarContent: createSingleValueAction('SET_SNACKBAR_CONTENT', 'content'),
+  setSnackbarContent: createMultiValueAction('SET_SNACKBAR_CONTENT'),
   setLoadingContent: createSingleValueAction('SET_LOADING_CONTENT', 'loadingContent'),
   setShowContent: createSingleValueAction('SET_SHOW_CONTENT', 'showContent'),
   setShowActionBar: createSingleValueAction('SET_SHOW_ACTION_BAR', 'showActionBar'),
@@ -22,7 +21,6 @@ export const Actions = {
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
   setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
-  setIsAdmin: createSingleValueAction('SET_IS_ADMIN', 'isAdmin'),
   setTitle: createSingleValueAction('SET_TITLE', 'title'),
   setPrivacyPolicyAccepted: createSingleValueAction('SET_PRIVACY_POLICY_ACCEPTED', 'accepted'),
   setShowPrivacyPolicy: createSingleValueAction('SET_SHOW_PRIVACY_POLICY', 'show'),
@@ -48,10 +46,6 @@ export class GlobalActions {
     return this.store.dispatch(Actions.updateReplicationStatus(replicationStatus));
   }
 
-  setMinimalTabs(minimal) {
-    return this.store.dispatch(Actions.setMinimalTabs(minimal));
-  }
-
   setAndroidAppVersion(androidAppVersion) {
     return this.store.dispatch(Actions.setAndroidAppVersion(androidAppVersion));
   }
@@ -64,8 +58,8 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setSnapshotData(snapshotData));
   }
 
-  setSnackbarContent(content) {
-    return this.store.dispatch(Actions.setSnackbarContent(content));
+  setSnackbarContent(message, action?) {
+    return this.store.dispatch(Actions.setSnackbarContent({ message, action }));
   }
 
   setLoadingContent(loading) {
@@ -108,10 +102,6 @@ export class GlobalActions {
 
   setSelectMode(selectMode) {
     return this.store.dispatch(Actions.setSelectMode(selectMode));
-  }
-
-  setIsAdmin(isAdmin) {
-    return this.store.dispatch(Actions.setIsAdmin(isAdmin));
   }
 
   setLoadingShowContent(id) {
