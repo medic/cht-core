@@ -3,7 +3,7 @@ The `dynamic-rapidpro-workspace-settings` is a parameterised reusable GitHub act
 
 ### Background
 This action is relevant for CHT apps that have either [outbound](https://docs.communityhealthtoolkit.org/apps/reference/app-settings/outbound/) integrations with RapidPro or logic that requires RapidPro workspace data GUIDs.
-Normally, you would want to a staging deployment use the staging workspace and a production deployment to use the corresponding production workspace. This action automates the process of updating `app_settings.json` to use relevant UUIDs.
+Normally, you would want a staging deployment to use the staging workspace and a production deployment to use the corresponding production workspace. This action automates the process of updating `app_settings.json` to use relevant UUIDs.
 
 ### How it works
 1. It adds the configured `value_key` to CouchDB’s config storage to securely store the [credentials](https://docs.communityhealthtoolkit.org/apps/reference/app-settings/outbound/#credentials).
@@ -26,7 +26,7 @@ module.exports = RAPIDPRO_FLOWS;
 > **This action can be executed jointly with other Github actions like [deploy-with-medic-conf](https://github.com/medic/cht-core/tree/master/.github/actions/deploy-with-medic-conf). However, it must be executed before other actions to update dependencies prior to compiling app settings.** 
 
 ## CHT App Requirements
-* medic-conf@3.3 or above
+* cht-conf@3.3 or above
 
 ## Example GitHub Action Step
 
