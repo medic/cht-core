@@ -16,6 +16,7 @@
     "dot-notation": ["error", { "allowKeywords": true }],
     "func-call-spacing": ["error", "never"],
     "linebreak-style": ["error", "unix"],
+    "lines-between-class-members": ["error", "always", { "exceptAfterSingleLine": true }],
     "no-alert": "error",
     "no-extra-bind": "error",
     "no-lone-blocks": "error",

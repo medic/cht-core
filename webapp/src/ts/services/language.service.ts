@@ -30,6 +30,7 @@ export class LanguageCookieService {
     this.setLanguageCache(this.cookieService.get(this.LOCALE_COOKIE_KEY));
     return this.language;
   }
+
   /**
    * Set the language for the current session.
    * @param value the language code, eg. 'en', 'es' ...

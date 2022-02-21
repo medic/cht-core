@@ -26,6 +26,7 @@ export class XmlFormsContextUtilsService {
   ageInMonths(contact) {
     return this.getDateDiff(contact, 'months');
   }
+
   ageInYears(contact) {
     return this.getDateDiff(contact, 'years');
   }
