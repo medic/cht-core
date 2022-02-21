@@ -27,7 +27,9 @@ const upgrade = (req, res, stageOnly) => {
 const completeUpgrade = (req, res) => {
   return checkAuth(req)
     .then(() => service.complete(req.body.build))
-    .then(() => res.json({ ok: true }))
+    .then(() => {
+      res.json({ ok: true });
+    })
     .catch(err => serverUtils.error(err, req, res));
 };
 

@@ -14,7 +14,7 @@ angular.module('controllers').controller('UpgradeConfirmCtrl',
     };
 
     $scope.submit = () => {
-      if ($scope.model.confirmCallback) {
+      if ($scope.model && $scope.model.confirmCallback) {
         $scope.status.processing = true;
         return $scope.model
           .confirmCallback()

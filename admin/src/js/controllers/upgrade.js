@@ -3,10 +3,10 @@ const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
 angular.module('controllers').controller('UpgradeCtrl',
   function(
     $http,
-    $interval,
     $log,
     $q,
     $scope,
+    $timeout,
     $translate,
     $window,
     Modal,
@@ -19,8 +19,9 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     $scope.loading = true;
     $scope.versions = {};
+    const buildsDb = pouchDB(BUILDS_DB);
 
-    const UPGRADE_URL = '/api/v1/upgrade';
+    const UPGRADE_URL = '/api/v2/upgrade';
     const UPGRADE_POLL_FREQ = 2000;
     const BUILD_LIST_LIMIT = 50;
 
@@ -41,19 +42,16 @@ angular.module('controllers').controller('UpgradeCtrl',
         .catch(err => logError(err, 'instance.upgrade.error.deploy_info_fetch'));
     };
 
-    let followUpgradeInterval;
-    const stopFollowingUpgrade = () => followUpgradeInterval && $interval.cancel(followUpgradeInterval);
-    const followUpgrade = () => {
-      stopFollowingUpgrade();
-      followUpgradeInterval = $interval(getCurrentUpgrade, UPGRADE_POLL_FREQ);
-    };
-
     const getCurrentUpgrade = () => {
       return $http
         .get(UPGRADE_URL)
         .then(({ data: { upgradeDoc, indexers } }) => {
           $scope.upgradeDoc = upgradeDoc;
           $scope.indexerProgress = indexers;
+
+          if (upgradeDoc) {
+            $timeout(getCurrentUpgrade, UPGRADE_POLL_FREQ);
+          }
         })
         .catch(err => logError(err, 'instance.upgrade.error.get_upgrade'));
     };
@@ -76,7 +74,6 @@ angular.module('controllers').controller('UpgradeCtrl',
     };
 
     const loadBuilds = () => {
-      const buildsDb = pouchDB(BUILDS_DB);
       const minVersion = Version.minimumNextRelease($scope.currentDeploy.version);
 
       // NB: Once our build server is on CouchDB 2.0 we can combine these three calls
@@ -114,7 +111,6 @@ angular.module('controllers').controller('UpgradeCtrl',
 
         if ($scope.upgradeDoc) {
           // Upgrade in progress, don't bother loading builds
-          followUpgrade();
           return;
         }
 
@@ -146,9 +142,9 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     $scope.reloadPage = () => $window.location.reload();
 
-    $scope.upgrade = (version, action) => {
+    $scope.upgrade = (build, action) => {
       const stageOnly = action === 'stage';
-      const confirmCallback = () => upgrade(version, action);
+      const confirmCallback = () => upgrade(build, action);
 
       return Modal({
         templateUrl: 'templates/upgrade_confirm.html',
@@ -156,23 +152,21 @@ angular.module('controllers').controller('UpgradeCtrl',
         model: {
           stageOnly,
           before: $scope.currentDeploy.version,
-          after: version,
+          after: build.version,
           confirmCallback,
         },
       }).catch(() => {});
     };
 
-    const upgrade = (version, action) => {
-      followUpgrade();
+    const upgrade = (build, action) => {
       $scope.error = false;
 
       const url = action ? `${UPGRADE_URL}/${action}` : UPGRADE_URL;
 
       return $http
-        .post(url, { version })
+        .post(url, { build })
         .then(() => getCurrentUpgrade())
         .catch((err) => {
-          stopFollowingUpgrade();
           return logError(err, 'instance.upgrade.error.deploy');
         });
     };
@@ -189,7 +183,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         controller: 'UpgradeConfirmCtrl',
         model: {
           before: $scope.currentDeploy.version,
-          after: $scope.upgradeDoc.to_version,
+          after: $scope.upgradeDoc.to && $scope.upgradeDoc.to.version,
           confirmCallback,
         }
       }).catch(() => {});
@@ -198,11 +192,8 @@ angular.module('controllers').controller('UpgradeCtrl',
     const cancelUpgrade = () => {
       return $http
         .delete(UPGRADE_URL)
-        .then(() => {
-          stopFollowingUpgrade();
-          $scope.upgradeDoc = null;
-          return loadBuilds();
-        })
+        .then(() => getCurrentUpgrade())
+        .then(() => loadBuilds())
         .catch((err) => logError(err, 'instance.upgrade.error.cancel'));
     };
   }

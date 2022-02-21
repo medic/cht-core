@@ -9,26 +9,11 @@ const upgradeLogService = require('./upgrade-log');
 const { DATABASES, MEDIC_DATABASE } = require('./databases');
 const ddocsService = require('./ddocs');
 
-if (!fs.promises) {
-  const promisify = require('util').promisify;
-  // temporary patching to work on Node 8.
-  // This code will never run on Node 8 in prod!
-  fs.promises = {
-    mkdir: promisify(fs.mkdir),
-    readdir: promisify(fs.readdir),
-    rmdir: promisify(fs.readdir),
-    unlink: promisify(fs.unlink),
-    access: promisify(fs.access),
-    writeFile: promisify(fs.writeFile),
-    readFile: promisify(fs.readFile),
-  };
-}
-
 /**
  * Returns version of bundled medic/medic ddoc
  * @return {Promise<string>}
  */
-const getPackagedVersion = async () => {
+const getPackagedBuildInfo = async () => {
   try {
     const medicDdocs = await getDdocJsonContents(path.join(environment.ddocsPath, MEDIC_DATABASE.jsonFileName));
     if (!medicDdocs || !medicDdocs.docs) {
@@ -38,7 +23,7 @@ const getPackagedVersion = async () => {
     if (!medicDdoc) {
       throw new Error('Cannot find medic ddoc among packaged ddocs.');
     }
-    return medicDdoc.version;
+    return medicDdoc.build_info;
   } catch (err) {
     logger.error('Error when trying to determine packaged version: %o', err);
     throw err;
@@ -289,7 +274,7 @@ module.exports = {
   cleanup,
 
   validBuildInfo,
-  getPackagedVersion,
+  getPackagedBuildInfo,
   getDdocDefinitions,
   freshInstall,
   deleteStagedDdocs,

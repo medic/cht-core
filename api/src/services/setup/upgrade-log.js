@@ -104,24 +104,24 @@ const pushState = (upgradeLog, state, date = new Date().getTime()) => {
 
 /**
  * Creates, saves and returns contents of a new upgrade log file
- * @param {string} toVersion
- * @param {string} fromVersion
+ * @param {BuildInfo} toBuild
+ * @param {BuildInfo|undefined} fromBuild
  * @param {string} username
  * @return {Promise<UpgradeLog>}
  */
-const createUpgradeLog = async (action, toVersion = '', fromVersion = '', username = '') => {
-  logger.info(`Staging ${toVersion}`);
+const createUpgradeLog = async (action, toBuild , fromBuild , username = '') => {
+  logger.info(`Staging ${toBuild.build}`);
   const startDate = new Date().getTime();
 
   /**
    * @type UpgradeLog
    */
   const upgradeLog = {
-    _id: getUpgradeLogId(toVersion, startDate),
+    _id: getUpgradeLogId(toBuild.version, startDate),
     user: username,
     action,
-    from_version: fromVersion,
-    to_version: toVersion,
+    from: fromBuild,
+    to: toBuild,
     start_date: startDate,
   };
   pushState(upgradeLog, UPGRADE_LOG_STATES.INITIATED, startDate);
