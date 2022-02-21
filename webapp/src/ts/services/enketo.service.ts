@@ -7,6 +7,7 @@ import { toBik_text } from 'bikram-sambat';
 import * as moment from 'moment';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
+import * as enketoConstants from './../../js/enketo/constants';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
 import { AddAttachmentService } from '@mm-services/add-attachment.service';
 import { DbService } from '@mm-services/db.service';
@@ -713,6 +714,21 @@ export class EnketoService {
       });
   }
 
+  private validateAttachments(docs) {
+    let attachmentsSize = 0;
+
+    docs.forEach(doc => Object
+      .keys(doc?._attachments)
+      .forEach(name => attachmentsSize += doc._attachments[name]?.data?.size || 0)
+    );
+
+    if (attachmentsSize > enketoConstants.maxAttachmentSize) {
+      return Promise.reject(new Error('The uploaded files exceed total size limit.'));
+    }
+
+    return docs;
+  }
+
   save(formInternalId, form, geoHandle, docId?) {
     return Promise
       .resolve(form.validate())
@@ -736,6 +752,7 @@ export class EnketoService {
         this.getFormXml(formInternalId),
       ])
       .then(([doc, formXml]) => this.xmlToDocs(doc, formXml, form.getDataStr({ irrelevant: false })))
+      .then(docs => this.validateAttachments(docs))
       .then((docs) => this.saveGeo(geoHandle, docs))
       .then((docs) => this.transitionsService.applyTransitions(docs))
       .then((docs) => this.saveDocs(docs))

@@ -1,7 +1,8 @@
 {
+  const enketoConstants = require( './constants' );
   const fileManager = require( 'enketo-core/src/js/file-manager' );
   fileManager.isTooLarge = function( file ) {
-    return file && file.size > 32 * 1024;
+    return file && file.size > enketoConstants.maxAttachmentSize;
   };
 
   const widgets = [
