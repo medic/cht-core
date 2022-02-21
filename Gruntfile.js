@@ -313,6 +313,7 @@ module.exports = function(grunt) {
             'config/**/*.js',
             'scripts/**/*.js',
             'webapp/src/ts/**/*.component.html',
+            'gh-actions/**/*.js',
           ];
           const ignore = [
             'webapp/src/ts/providers/xpath-element-path.provider.ts',

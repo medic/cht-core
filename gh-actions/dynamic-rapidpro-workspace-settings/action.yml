@@ -1,0 +1,59 @@
+name: 'Update rapidpro workspace settings'
+inputs:
+  directory:
+    description: The path to the directory containing the configuration to be updated.
+    required: true
+    default: '.'
+
+  hostname:
+    description: The hostname of the instance to receive the configuration.
+    required: true
+
+  couch_node_name:
+    description: The name of your CouchDB's node.
+    required: true
+
+  couch_username:
+    description: The username of an administrator account on the instance at "inputs.hostname". This user will make the deployment.
+    required: true
+
+  couch_password:
+    description: The password for user with name "inputs.couch_username"
+    required: true
+
+  rp_hostname:
+    description: The base URL for your Rapidpro workspace.
+    required: true
+  
+  rp_api_token:
+    description: The authorization token for your workspace (the real password configured in CouchDB's admin config).
+    required: true
+
+  value_key:
+    description: The password key configured in CouchDB's admin config.
+    required: true
+
+  rp_contact_group:
+    description: The UUID of the contact group to update in app-settings (optional).
+    required: true
+
+  rp_flows:
+    description: The list of flows for your workspace.
+    required: true
+
+  write_patient_state_flow:
+    description: The UUID of the flow to write patient state.
+    required: true
+
+outputs:
+  app-settings: 
+    description: Updated app-settings.json
+    value: ${{ steps.update-app-settings.outputs }}
+
+  rp_flows: 
+    description: A flows.js file to be used in compile-app-settings
+    value: ${{ steps.generate-flows-js.outputs }}
+
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
