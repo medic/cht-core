@@ -26,13 +26,10 @@ angular.module('controllers').controller('UpgradeCtrl',
     const BUILD_LIST_LIMIT = 50;
 
     const logError = (error, key) => {
-      console.log('logging error', error);
       const err = error.responseText || error.statusText;
       return $translate(key).then((msg) => {
         $log.error(msg, err);
         $scope.error = msg;
-      }).catch(err => {
-        console.warn('Cant translate', err);
       });
     };
 
@@ -58,7 +55,6 @@ angular.module('controllers').controller('UpgradeCtrl',
           $scope.error = undefined;
         })
         .catch(err => {
-          console.warn('WHAT????');
           $timeout(getCurrentUpgrade, UPGRADE_POLL_FREQ);
           return logError(err, 'instance.upgrade.error.get_upgrade');
         });
