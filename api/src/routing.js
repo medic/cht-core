@@ -243,11 +243,8 @@ app.get('/favicon.ico', (req, res) => {
   });
 });
 
-// TODO handle '/icon.png' (or call it something else)
-
 app.use(express.static(path.join(__dirname, '../build/public')));
 app.use(express.static(extractedResourceDirectory));
-
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);

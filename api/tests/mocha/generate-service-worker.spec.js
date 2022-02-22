@@ -64,6 +64,7 @@ describe('generate service worker', () => {
             '/tmp/fonts/enketo-icons-v2.woff',
             '/tmp/fonts/NotoSans-Bold.ttf',
             '/tmp/fonts/NotoSans-Regular.ttf',
+            path.join(apiPath, 'public/icon.png'),
             path.join(apiPath, 'public/login/*.{css,js}'),
           ],
           dynamicUrlToDependencies: {
@@ -178,6 +179,7 @@ describe('generate service worker', () => {
             '/tmp/fonts/enketo-icons-v2.woff',
             '/tmp/fonts/NotoSans-Bold.ttf',
             '/tmp/fonts/NotoSans-Regular.ttf',
+            path.join(apiPath, 'public/icon.png'),
             path.join(apiPath, 'public/login/*.{css,js}'),
           ],
           dynamicUrlToDependencies: {

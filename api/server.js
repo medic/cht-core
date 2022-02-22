@@ -63,13 +63,13 @@ process
     await migrations.run();
     logger.info('Database migrations completed successfully');
 
-    logger.info('Generating service worker');
-    await generateServiceWorker.run();
-    logger.info('Service worker generated successfully');
-
     logger.info('Generating manifest');
     await manifest.generate();
     logger.info('Manifest generated successfully');
+
+    logger.info('Generating service worker');
+    await generateServiceWorker.run();
+    logger.info('Service worker generated successfully');
 
     logger.info('Updating xforms…');
     await generateXform.updateAll();
