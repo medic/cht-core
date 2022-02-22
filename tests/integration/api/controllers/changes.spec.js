@@ -314,7 +314,7 @@ describe('changes handler', () => {
               timer = new Date().getTime();
               heartbeats.push({ chunk, interval: timer - oldTimer });
             });
-            res.on('end', () => {
+            res.on('close', () => {
               resolve({ body, heartbeats });
             });
           });
@@ -329,7 +329,7 @@ describe('changes handler', () => {
 
           if (options.timeout) {
             // have to manually abort this, sending a `heartbeat` disables the `timeout` mechanism in CouchDB
-            setTimeout(() => req.abort(), options.timeout);
+            setTimeout(() => req.destroy(), options.timeout);
           }
 
         });

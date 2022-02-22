@@ -8,8 +8,8 @@
     "url": "git://github.com/medic/cht-core.git"
   },
   "engines": {
-    "node": ">=8.11.0",
-    "npm": ">=6.4.1"
+    "node": ">=16.12.0",
+    "npm": ">=8.3.1"
   },
   "scripts": {
     "test": "grunt eslint && grunt unit && grunt test-api-integration && grunt e2e",
@@ -34,6 +34,7 @@
     "@angular/compiler-cli": "^12.2.1",
     "@angular/localize": "^12.2.1",
     "@medic/eslint-config": "^1.1.0",
+    "@medic/memdown": "file:shared-libs/memdown",
     "@types/chai": "^4.2.22",
     "@types/jquery": "^3.5.6",
     "@types/lodash": "^4.14.175",
@@ -56,9 +57,11 @@
     "browserify-ngannotate": "^2.0.0",
     "bundlesize": "^0.18.1",
     "chai": "^4.3.4",
+    "chai-as-promised": "^7.1.1",
     "chai-exclude": "^2.1.0",
     "chai-shallow-deep-equal": "^1.4.6",
     "cht-conf": "^3.8.0",
+    "doctoc": "^2.0.1",
     "eslint": "^7.32.0",
     "eslint-plugin-angular": "^4.0.1",
     "eslint-plugin-async": "^0.1.1",
@@ -93,6 +96,7 @@
     "grunt-text-replace": "^0.4.0",
     "jasmine-spec-reporter": "^7.0.0",
     "jit-grunt": "^0.10.0",
+    "jsverify": "^0.8.4",
     "karma": "^6.3.4",
     "karma-chrome-launcher": "^3.1.0",
     "karma-coverage": "^2.0.3",
@@ -111,6 +115,7 @@
     "nodemon": "^2.0.13",
     "postcss": "^8.3.6",
     "pouchdb-adapter-http": "^7.2.2",
+    "pouchdb-adapter-memory": "^7.2.2",
     "pouchdb-core": "^7.2.2",
     "pouchdb-mapreduce": "^7.2.2",
     "protractor": "^7.0.0",
@@ -154,6 +159,5 @@
       "path": "./api/build/static/webapp/styles.css",
       "maxSize": "70 kB"
     }
-  ],
-  "dependencies": {}
+  ]
 }

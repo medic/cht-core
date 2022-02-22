@@ -6,8 +6,8 @@ env:
   COUCH_URL: http://admin:pass@localhost:5984/medic-test
   COUCH_NODE_NAME: nonode@nohost
   BUILDS_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_testing' || '_couch/builds_external' }}
-  STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }} 
-  MARKET_URL_READ: 'https://staging.dev.medicmobile.org' 
+  STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }}
+  MARKET_URL_READ: 'https://staging.dev.medicmobile.org'
   MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
 
 jobs:
@@ -33,10 +33,10 @@ jobs:
         echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
         echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
     - uses: actions/checkout@v2
-    - name: Use Node.js 12.x
+    - name: Use Node.js 16.x
       uses: actions/setup-node@v1
       with:
-        node-version: 12.x
+        node-version: 16.x
     - name: Couch Start
       run: ./scripts/ci/couch-start
     - name: Create logs directory
@@ -64,10 +64,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js 12.x
+    - name: Use Node.js 16.x
       uses: actions/setup-node@v1
       with:
-        node-version: 12.x
+        node-version: 16.x
     - name: Grunt Install
       run: npm install -g grunt-cli
     - name: NPM
@@ -104,7 +104,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: ['8.x', '10.x', '12.x']
+        node-version: ['16.x']
         grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-e2e-cht']
 
     steps:
@@ -121,10 +121,10 @@ jobs:
       run: |
         echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
         echo "TEST_SUITE=integration" >> $GITHUB_ENV
-    - name: Use Node.js 12.x
+    - name: Use Node.js 16.x
       uses: actions/setup-node@v1
       with:
-        node-version: 12.x
+        node-version: 16.x
     - uses: actions/checkout@v2
     - name: Create logs directory
       run: mkdir tests/logs
@@ -140,17 +140,17 @@ jobs:
     - name: Horti Setup
       run: |
         echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
-        docker-compose -f scripts/ci/horti-compose.yml up -d 
-        sh scripts/wait_for_response_code.sh 5988 200 api
+        docker-compose -f scripts/ci/horti-compose.yml up -d
+        sh scripts/e2e/wait_for_response_code.sh 5988 200 api
     # Restarting horti to install on a different builds server.
-    # Used for installing the current release then installing the beta. 
+    # Used for installing the current release then installing the beta.
     - name: Install Latest Build After Installing Latest In Previous Startup
       run: |
         cp tests/logs/horti.log tests/logs/horti_first_run.log
         docker stop horti
         docker logs horti > tests/logs/horti_before_recreate_container.log 2>&1
-        INSTALL_LATEST=yes docker-compose -f scripts/ci/horti-compose.yml up -d 
-        sh scripts/wait_for_response_code.sh 5988 200 api
+        INSTALL_LATEST=yes docker-compose -f scripts/ci/horti-compose.yml up -d
+        sh scripts/e2e/wait_for_response_code.sh 5988 200 api
       if: startsWith(github.ref, 'refs/tags/')
     - name: Test it!
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}

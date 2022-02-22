@@ -24,21 +24,6 @@ const getSharedLibDirs = () => {
     .filter(file => fs.lstatSync(`shared-libs/${file}`).isDirectory());
 };
 
-const copySharedLibs = [
-  'rm -rf ../shared-libs/*/node_modules/@medic',
-  'mkdir ./node_modules/@medic',
-  'cp -RP ../shared-libs/* ./node_modules/@medic'
-].join( '&& ');
-
-const linkSharedLibs = dir => {
-  const sharedLibPath = lib => path.resolve(__dirname, 'shared-libs', lib);
-  const symlinkPath = lib => path.resolve(__dirname, dir, 'node_modules', '@medic', lib);
-  return [
-    'mkdir ./node_modules/@medic',
-    ...getSharedLibDirs().map(lib => `ln -s ${sharedLibPath(lib)} ${symlinkPath(lib)}`)
-  ].join(' && ');
-};
-
 module.exports = function(grunt) {
   'use strict';
 
@@ -298,7 +283,6 @@ module.exports = function(grunt) {
             [
               `cd ${module}`,
               `npm ci --production`,
-              `${copySharedLibs}`,
               `npm dedupe`,
               `npm pack`,
               `ls -l medic-${module}-0.1.0.tgz`,
@@ -314,9 +298,6 @@ module.exports = function(grunt) {
             const filePath = `${module}/package.json`;
             const pkg = this.file.readJSON(filePath);
             pkg.bundledDependencies = Object.keys(pkg.dependencies);
-            if (pkg.sharedLibs) {
-              pkg.sharedLibs.forEach(lib => pkg.bundledDependencies.push(`@medic/${lib}`));
-            }
             this.file.write(filePath, JSON.stringify(pkg, undefined, '  ') + '\n');
             console.log(`Updated 'bundledDependencies' for ${filePath}`); // eslint-disable-line no-console
           });
@@ -374,7 +355,7 @@ module.exports = function(grunt) {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
       'setup-api-integration': {
-        cmd: `cd api && npm ci && ${linkSharedLibs('api')}`,
+        cmd: `cd api && npm ci}`,
       },
       'npm-ci-shared-libs': {
         cmd: (production) => {
@@ -389,7 +370,7 @@ module.exports = function(grunt) {
       },
       'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && ${linkSharedLibs(dir)} && cd ..`)
+          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {
