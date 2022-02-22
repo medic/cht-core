@@ -383,16 +383,15 @@ describe('messages', () => {
 
   it('describe isMessageFromGateway', () => {
     const tests = [
-      ['+640275552636', '64-27-555-2636', true],
-      ['+640275552637', '64-27-555-2636', false],
+      ['+40733535353', '40-733-535-353', true],
+      ['+40733535355', '40-733-535-353', false],
       // missing country code matches
       ['+41446681800', '446681800', true]
     ];
-    tests.forEach(function(t) {
-      const s = sinon.stub(config, 'get');
-      s.withArgs('gateway_number').returns(t[0]);
-      assert.equal(messages.isMessageFromGateway(t[1]), t[2]);
-      s.restore();
+    sinon.stub(config, 'get');
+    tests.forEach(([configured, requested, result]) => {
+      config.get.withArgs('gateway_number').returns(configured);
+      assert.equal(messages.isMessageFromGateway(requested), result, `failed for ${requested}`);
     });
   });
 });

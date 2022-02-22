@@ -157,7 +157,6 @@ const info = (roles) => {
     .then(tempDb => purgeDb = tempDb)
     .then(() => purgeDb.info())
     .catch(err => catchDbNotFoundError(err, purgeDb))
-    // finally would be nice but it doesn't work in node 8 :(
     .then(info => {
       db.close(purgeDb);
       return info || false; // fetch needs valid JSON.

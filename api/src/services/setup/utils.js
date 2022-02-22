@@ -9,21 +9,6 @@ const upgradeLogService = require('./upgrade-log');
 const { DATABASES, MEDIC_DATABASE } = require('./databases');
 const ddocsService = require('./ddocs');
 
-if (!fs.promises) {
-  const promisify = require('util').promisify;
-  // temporary patching to work on Node 8.
-  // This code will never run on Node 8 in prod!
-  fs.promises = {
-    mkdir: promisify(fs.mkdir),
-    readdir: promisify(fs.readdir),
-    rmdir: promisify(fs.readdir),
-    unlink: promisify(fs.unlink),
-    access: promisify(fs.access),
-    writeFile: promisify(fs.writeFile),
-    readFile: promisify(fs.readFile),
-  };
-}
-
 /**
  * Returns version of bundled medic/medic ddoc
  * @return {Promise<string>}
