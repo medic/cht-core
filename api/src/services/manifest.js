@@ -4,54 +4,36 @@ const path = require('path');
 
 const _ = require('lodash');
 
-const db = require('../db');
-const logger = require('../logger');
+const environment = require('../environment');
+const brandingService = require('./branding');
 
-const FILEPATH = path.join(__dirname, '..', 'templates', 'manifest.json');
-let templateCache;
+const EXTRACTED_RESOURCES_PATH = environment.getExtractedResourcesPath();
+const MANIFEST_OUTPUT_PATH = path.join(EXTRACTED_RESOURCES_PATH, 'manifest.json');
+const TEMPLATE_PATH = path.join(__dirname, '..', 'templates', 'manifest.json');
 
-// TODO this is copied and pasted from controllers/login.js - make a branding service?
-const getInlineImage = (data, contentType) => `data:${contentType};base64,${data}`;
-
-const getDefaultBranding = async () => {
-  const logoPath = path.join(__dirname, '..', 'resources', 'logo', 'medic-logo-light-full.svg');
-  const logo = await promisify(fs.readFile)(logoPath, {});
-  const data = Buffer.from(logo).toString('base64');
-  return {
-    name: 'Medic',
-    logo: getInlineImage(data, 'image/svg+xml')
-  };
+const getTemplate = async () => {
+  const file = await promisify(fs.readFile)(TEMPLATE_PATH, { encoding: 'utf-8' });
+  return _.template(file);
 };
 
-const getBranding = async () => {
-  try {
-    const doc = await db.medic.get('branding', { attachments: true });
-    const image = doc._attachments[doc.resources.logo];
-    return {
-      name: doc.title,
-      logo: getInlineImage(image.data, image.content_type)
-    };
-  } catch(e) {
-    logger.warn('Could not find branding doc on CouchDB: %o', e);
-    return await getDefaultBranding();
-  }
-};
-
-const getTemplate = () => {
-  if (templateCache) {
-    return templateCache;
-  }
-  templateCache = promisify(fs.readFile)(FILEPATH, { encoding: 'utf-8' })
-    .then(file => _.template(file));
-  return templateCache;
-};
-
-const render = async (branding) => {
+const writeJson = async (branding) => {
   const template = await getTemplate();
-  return template({ branding });
+  const json = template({ branding });
+  return await promisify(fs.writeFile)(MANIFEST_OUTPUT_PATH, json);
 };
 
-module.exports.render = async () => {
-  const branding = await getBranding();
-  return await render(branding);
+const writeIcon = async (doc) => {
+  const name = doc && doc.resources && doc.resources.icon;
+  const attachment = name && doc._attachments[name];
+  if (attachment) {
+    const contents = Buffer.from(attachment.data, 'base64');
+    const outputPath = path.join(EXTRACTED_RESOURCES_PATH, name);
+    await promisify(fs.writeFile)(outputPath, contents);
+  }
+};
+
+module.exports.generate = async () => {
+  const branding = await brandingService.get();
+  await writeJson(branding);
+  await writeIcon(branding.doc);
 };

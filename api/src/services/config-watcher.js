@@ -8,6 +8,7 @@ const ddocExtraction = require('../ddoc-extraction');
 const resourceExtraction = require('../resource-extraction');
 const generateXform = require('./generate-xform');
 const generateServiceWorker = require('../generate-service-worker');
+const manifest = require('./manifest');
 const config = require('../config');
 
 const MEDIC_DDOC_ID = '_design/medic';
@@ -119,7 +120,12 @@ const handleFormChange = (change) => {
 };
 
 const handleBrandingChanges = () => {
-  return updateServiceWorker();
+  return updateManifest()
+    .then(() => updateServiceWorker());
+};
+
+const updateManifest = () => {
+  return manifest.generate();
 };
 
 const updateServiceWorker = () => {
