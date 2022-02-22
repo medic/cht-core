@@ -11,13 +11,9 @@ const EXTRACTED_RESOURCES_PATH = environment.getExtractedResourcesPath();
 const MANIFEST_OUTPUT_PATH = path.join(EXTRACTED_RESOURCES_PATH, 'manifest.json');
 const TEMPLATE_PATH = path.join(__dirname, '..', 'templates', 'manifest.json');
 
-const getTemplate = async () => {
-  const file = await promisify(fs.readFile)(TEMPLATE_PATH, { encoding: 'utf-8' });
-  return _.template(file);
-};
-
 const writeJson = async (branding) => {
-  const template = await getTemplate();
+  const file = await promisify(fs.readFile)(TEMPLATE_PATH, { encoding: 'utf-8' });
+  const template = _.template(file);
   const json = template({ branding });
   return await promisify(fs.writeFile)(MANIFEST_OUTPUT_PATH, json);
 };

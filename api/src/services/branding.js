@@ -23,8 +23,9 @@ const getName = (doc) => (doc && doc.title) || 'CHT';
 const getLogo = async (doc) => {
   let data;
   let contentType;
-  if (doc) {
-    const image = doc._attachments[doc.resources.logo];
+  const name = doc && doc.resources && doc.resources.logo;
+  if (name) {
+    const image = doc._attachments[name];
     data = image.data;
     contentType = image.content_type;
   } else {
