@@ -74,15 +74,11 @@ const abort = () => {
 
 const indexerProgress = () => viewIndexerProgress.query();
 // todo: how to "resume" an upgrade
-const upgradeInProgress = async () => {
-  const log = await upgradeLog.get();
-  if (upgrading) {
-    return log;
+const upgradeInProgress = () => {
+  if (!upgrading) {
+    return;
   }
-
-  if (log && !upgrading) {
-    await upgradeSteps.abort();
-  }
+  return upgradeLog.get();
 };
 
 module.exports = {

@@ -208,26 +208,15 @@ describe('upgrade service', () => {
       expect(upgrade.__get__('upgrading')).to.equal(true);
     });
 
-    it('should return nothing when no log and not upgrading', async () => {
+    it('should return nothing when not upgrading', async () => {
       expect(upgrade.__get__('upgrading')).to.equal(undefined);
-      sinon.stub(upgradeLogService, 'get').resolves();
+      sinon.stub(upgradeLogService, 'get');
 
       const result = await upgrade.upgradeInProgress();
 
       expect(result).to.deep.equal(undefined);
+      expect(upgradeLogService.get.callCount).to.equal(0);
       expect(upgrade.__get__('upgrading')).to.equal(undefined);
-    });
-
-    it('should abort current upgrade when log is found but not upgrading', async () => {
-      expect(upgrade.__get__('upgrading')).to.equal(undefined);
-      sinon.stub(upgradeLogService, 'get').resolves({ an: 'upgradeLog' });
-      sinon.stub(upgradeSteps, 'abort').resolves();
-
-      const result = await upgrade.upgradeInProgress();
-
-      expect(result).to.deep.equal(undefined);
-      expect(upgrade.__get__('upgrading')).to.equal(undefined);
-      expect(upgradeSteps.abort.callCount).to.equal(1);
     });
   });
 });
