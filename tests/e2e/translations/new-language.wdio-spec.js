@@ -56,7 +56,6 @@ describe('Adding new language', () => {
     await browser.waitUntil(async () => await (await commonPo.analyticsTab()).getText() === 'Analytiks');
 
     //check for translations
-    //Waiting for text to show for stability - expect sometimes checks before the text appears and gets ''
     await commonPo.goToMessages();
     await commonPo.waitForPageLoaded();
     await browser.waitUntil(async () =>
