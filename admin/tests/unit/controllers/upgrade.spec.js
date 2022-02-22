@@ -45,7 +45,7 @@ describe('UpgradeCtrl controller', () => {
         return $controller('UpgradeCtrl', {
           $q: Q,
           $scope: scope,
-          $translate: sinon.stub().resolves(''),
+          $translate: sinon.stub().callsFake(value => Promise.resolve(value)),
         });
       };
     });
@@ -262,6 +262,73 @@ describe('UpgradeCtrl controller', () => {
     expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(4);
     await timeout.flush(2000);
     expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(4);
+  });
+
+  it('should continue following when request errors', async () => {
+    const nextTick = () => new Promise(r => setTimeout(r));
+    const deployInfo = { the: 'deplopy info', version: '4.1.0' };
+    const upgradeDoc = {
+      from: { version: '4.1.0' },
+      to: { version: '4.2.0' },
+    };
+    Object.freeze(deployInfo);
+    Object.freeze(upgradeDoc);
+
+    http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
+    http.get.withArgs('/api/v2/upgrade')
+      .onCall(0).resolves({ data: { upgradeDoc, indexers: [] } })
+      .onCall(1).rejects({ error: 502 })
+      .onCall(2).rejects({ error: 'something' })
+      .onCall(3).rejects({ an: 'error' })
+      .onCall(4).resolves({ data: { upgradeDoc: undefined } });
+
+    createController();
+    await scope.setupPromise;
+
+    expect(scope.loading).to.equal(false);
+    expect(buildsDb.query.callCount).to.equal(0);
+
+    expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(1);
+    expect(scope.upgradeDoc).to.deep.equal(upgradeDoc);
+    expect(scope.indexerProgress).to.deep.equal([]);
+
+    timeout.flush(2000);
+    await nextTick();
+
+    expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
+    expect(scope.upgradeDoc).to.deep.equal(upgradeDoc);
+    expect(scope.indexerProgress).to.deep.equal([]);
+    expect(scope.error).to.equal('instance.upgrade.error.get_upgrade');
+
+    timeout.flush(2000);
+    await nextTick();
+
+    expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(3);
+    expect(scope.upgradeDoc).to.deep.equal(upgradeDoc);
+    expect(scope.indexerProgress).to.deep.equal([]);
+    expect(scope.error).to.equal('instance.upgrade.error.get_upgrade');
+
+    timeout.flush(2000);
+    await nextTick();
+
+    expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(4);
+    expect(scope.upgradeDoc).to.deep.equal(upgradeDoc);
+    expect(scope.indexerProgress).to.deep.equal([]);
+
+    timeout.flush(2000);
+    await nextTick();
+
+    expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(5);
+    expect(scope.upgradeDoc).to.deep.equal(undefined);
+    expect(scope.indexerProgress).to.deep.equal(undefined);
+    expect(scope.error).to.equal(undefined);
+
+    await timeout.flush(2000);
+    expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(5);
+    await timeout.flush(2000);
+    expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(5);
+    await timeout.flush(2000);
+    expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(5);
   });
 
   describe('upgrade', () => {
