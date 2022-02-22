@@ -125,7 +125,9 @@ const handleBrandingChanges = () => {
 };
 
 const updateManifest = () => {
-  return manifest.generate();
+  return manifest.generate().catch(err => {
+    logger.error('Failed to generate manifest: %o', err);
+  });
 };
 
 const updateServiceWorker = () => {

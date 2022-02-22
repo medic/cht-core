@@ -13,6 +13,7 @@ const generateServiceWorker = require('../../../src/generate-service-worker');
 const generateXform = require('../../../src/services/generate-xform');
 const config = require('../../../src/config');
 const bootstrap = require('../../../src/services/config-watcher');
+const manifest = require('../../../src/services/manifest');
 
 let on;
 const emitChange = (change) => {
@@ -35,6 +36,7 @@ describe('Configuration', () => {
     sinon.stub(settingsService, 'get');
     sinon.stub(settingsService, 'update');
     sinon.stub(generateServiceWorker, 'run');
+    sinon.stub(manifest, 'generate');
     sinon.stub(environment, 'getExtractedResourcesPath')
       .returns(path.resolve(__dirname, './../../../../build/ddocs/medic/_attachments'));
     sinon.spy(config, 'set');
@@ -265,6 +267,7 @@ describe('Configuration', () => {
 
     describe('branding changes', () => {
       it('generates service worker when branding doc is updated', () => {
+        manifest.generate.resolves();
         generateServiceWorker.run.resolves();
 
         return emitChange({ id: 'branding' }).then(() => {
@@ -277,7 +280,9 @@ describe('Configuration', () => {
       });
 
       it('should terminate process on service worker errors', () => {
+        manifest.generate.resolves();
         generateServiceWorker.run.rejects();
+
         sinon.stub(process, 'exit');
 
         return emitChange({ id: 'branding' }).then(() => {
