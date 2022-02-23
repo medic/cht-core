@@ -78,9 +78,9 @@ describe('manifest.json', () => {
     branding.resources = {};
     branding._attachments = {};
     const logoName = 'icon-chw-selected.svg';
-    const faviconName = 'favicon.webp';
+    const faviconName = 'favicon.ico';
     const logoPath = path.join(__dirname, '../../webapp/src/img', logoName);
-    const faviconPath = path.join(__dirname, '../../api/src/public', faviconName);
+    const faviconPath = path.join(__dirname, '../../api/src/resources', faviconName);
     await addAttachment(branding, 'logo', logoPath, logoName, 'image/svg+xml');
     await addAttachment(branding, 'favicon', faviconPath, faviconName, 'image/x-icon');
     await updateBranding(branding);

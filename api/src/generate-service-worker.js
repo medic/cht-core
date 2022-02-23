@@ -77,9 +77,6 @@ const writeServiceWorkerFile = async () => {
       path.join(staticDirectoryPath, 'fonts', 'enketo-icons-v2.woff'),
       path.join(staticDirectoryPath, 'fonts', 'NotoSans-Bold.ttf'),
       path.join(staticDirectoryPath, 'fonts', 'NotoSans-Regular.ttf'),
-
-      // Public info
-      path.join(apiSrcDirectoryPath, 'public', 'icon.png'),
       path.join(apiSrcDirectoryPath, 'public/login', '*.{css,js}'),
     ],
     dynamicUrlToDependencies: {
