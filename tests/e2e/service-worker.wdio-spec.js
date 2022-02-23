@@ -93,7 +93,7 @@ describe('Service worker cache', () => {
     const cacheDetails = await getCachedRequests();
 
     expect(cacheDetails.name.startsWith('sw-precache-v3-cache-')).to.be.true;
-    expect(cacheDetails.urls).to.deep.eq([
+    expect(cacheDetails.urls).to.have.members([
       '/',
       '/audio/alert.mp3',
       '/fontawesome-webfont.woff2',
