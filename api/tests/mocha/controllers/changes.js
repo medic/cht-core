@@ -121,7 +121,7 @@ describe('Changes controller', () => {
       this.complete = complete;
 
       this.then = promise.then.bind(promise);
-      this['catch'] = promise['catch'].bind(promise);
+      this.catch = promise.catch.bind(promise);
       this
         .then(result => complete(null, result), complete)
         .catch(err => complete(err));

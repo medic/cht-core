@@ -145,7 +145,7 @@ describe('Bulk Docs controller', () => {
       });
     });
 
-    it ('filters for offline requests', () => {
+    it('filters for offline requests', () => {
       testReq.body = { docs: ['some', 'longer', 'doc', 'list'] };
       service.filterOfflineRequest.resolves(['some', 'doc', 'list']);
       return controller

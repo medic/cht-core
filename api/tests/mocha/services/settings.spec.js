@@ -28,7 +28,7 @@ describe('settings service', () => {
     it('does replace if replace is set and overwrite is not set', () => {
       const update = sinon.stub(db.medic, 'put').resolves();
       const newSettings = Object.assign({}, settings);
-      delete newSettings['a'];
+      delete newSettings.a;
       replace = 1;
 
       return service
@@ -43,7 +43,7 @@ describe('settings service', () => {
     it('does overwrite if replace is set and overwrite is set', () => {
       const update = sinon.stub(db.medic, 'put').resolves();
       const newSettings = Object.assign({}, settings);
-      delete newSettings['a'];
+      delete newSettings.a;
       replace = 1;
       overwrite = 1;
 
