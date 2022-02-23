@@ -23,7 +23,7 @@ const writeIcon = async (doc) => {
   const attachment = name && doc._attachments[name];
   if (attachment) {
     const contents = Buffer.from(attachment.data, 'base64');
-    const outputPath = path.join(EXTRACTED_RESOURCES_PATH, name);
+    const outputPath = path.join(EXTRACTED_RESOURCES_PATH, 'img', name);
     await promisify(fs.writeFile)(outputPath, contents);
   }
 };

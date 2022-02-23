@@ -6,7 +6,7 @@
   "theme_color": "#323232",
   "icons": [
     {
-      "src": "/{{ branding.icon }}",
+      "src": "/img/{{ branding.icon }}",
       "sizes": "any",
       "purpose": "any"
     },

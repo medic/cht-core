@@ -78,7 +78,7 @@ const login = async () => {
   await commonPage.waitForPageLoaded();
 };
 
-const SW_SUCCESSFULL_REGEX = /Service worker generated successfully/;
+const SW_SUCCESSFUL_REGEX = /Service worker generated successfully/;
 
 describe('Service worker cache', () => {
   before(async () => {
@@ -100,6 +100,7 @@ describe('Service worker cache', () => {
       '/fonts/NotoSans-Bold.ttf',
       '/fonts/NotoSans-Regular.ttf',
       '/fonts/enketo-icons-v2.woff',
+      '/img/icon.png',
       '/img/icon-chw-selected.svg',
       '/img/icon-chw.svg',
       '/img/icon-nurse-selected.svg',
@@ -124,7 +125,7 @@ describe('Service worker cache', () => {
   });
 
   it('branding updates trigger login page refresh', async () => {
-    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFULL_REGEX);
+    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFUL_REGEX);
     const branding = await utils.getDoc('branding');
     branding.title = 'Not Medic';
     await utils.saveDoc(branding);
@@ -139,7 +140,7 @@ describe('Service worker cache', () => {
   });
 
   it('login page translation updates trigger login page refresh', async () => {
-    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFULL_REGEX);
+    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFUL_REGEX);
     await utils.addTranslations('en', {
       'User Name': 'NotUsername',
       'login': 'NotLogin',
@@ -157,7 +158,7 @@ describe('Service worker cache', () => {
   });
 
   it('adding new languages triggers login page refresh', async () => {
-    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFULL_REGEX);
+    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFUL_REGEX);
     await utils.addTranslations('ro', {
       'User Name': 'Utilizator',
       'Password': 'Parola',
@@ -182,7 +183,7 @@ describe('Service worker cache', () => {
 
     const cacheDetails = await getCachedRequests(true);
 
-    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFULL_REGEX);
+    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFUL_REGEX);
     await utils.addTranslations('en', {
       'ran': 'dom',
       'some': 'thing',
