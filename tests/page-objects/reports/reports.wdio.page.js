@@ -141,7 +141,7 @@ const deleteSelectedReports = async () => {
   await (await confirmButton()).click();
   await (await completeButton()).click();
   await (await completeButton()).waitForDisplayed({reverse:true});
-  await (await firstReport ()).waitForDisplayed();
+  await (await firstReport()).waitForDisplayed();
   return await $$(reportBody);
 };
 
@@ -171,14 +171,14 @@ const selectReports = async (uuids) => {
   return await $$(reportBody);
 };
 
-const startSelectMode = async (savedUuids)=> {
+const startSelectMode = async (savedUuids) => {
   const selectModeButton = () => $('.action-container .select-mode-start');
   await (await selectModeButton()).click();
   const checkbox = (await reportByUUID(savedUuids[0])).$(checkCss);
   await checkbox.waitForDisplayed();
 };
 
-const stopSelectMode = async (savedUuids)=> {
+const stopSelectMode = async (savedUuids) => {
   await (await $('.action-container .select-mode-stop')).click();
   const checkbox = (await reportByUUID(savedUuids[0])).$(checkCss);
   await  checkbox.waitForDisplayed({reverse: true});
