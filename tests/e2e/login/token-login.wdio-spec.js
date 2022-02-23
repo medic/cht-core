@@ -62,10 +62,6 @@ describe('Token login', () => {
     await utils.revertDb([], true);
   });
 
-  after(async () => {
-    await utils.revertDb([], 'api');
-  });
-
   it('should redirect the user to the app if already logged in', async () => {
     await loginPage.cookieLogin();
     await browser.url(getUrl('this is a random string'));
