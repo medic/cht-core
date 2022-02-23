@@ -104,10 +104,10 @@ const validateContact = (id, placeID) => {
   return db.medic.get(id)
     .then(doc => {
       if (!people.isAPerson(doc)) {
-        return Promise.reject(error400('Wrong type, contact is not a person.','contact.type.wrong'));
+        return Promise.reject(error400('Wrong type, contact is not a person.', 'contact.type.wrong'));
       }
       if (!hasParent(doc, placeID)) {
-        return Promise.reject(error400('Contact is not within place.','configuration.user.place.contact'));
+        return Promise.reject(error400('Contact is not within place.', 'configuration.user.place.contact'));
       }
       return doc;
     });
@@ -259,7 +259,7 @@ const setContactParent = data => {
     return places.getPlace(data.contact.parent)
       .then(place => {
         if (!hasParent(place, data.place)) {
-          return Promise.reject(error400('Contact is not within place.','configuration.user.place.contact'));
+          return Promise.reject(error400('Contact is not within place.', 'configuration.user.place.contact'));
         }
         // save result to contact object
         data.contact.parent = lineage.minifyLineage(place);

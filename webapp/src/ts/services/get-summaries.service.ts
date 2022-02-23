@@ -14,6 +14,7 @@ export class GetSummariesService {
     private sessionService:SessionService,
   ) {
   }
+
   private readonly SUBJECT_FIELDS = [ 'patient_id', 'patient_name', 'place_id' ];
 
   private getLineage(contact) {

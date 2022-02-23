@@ -139,7 +139,7 @@ describe('Send message', () => {
       await messagesPo.enterCheckAndSelect(ALICE.name, 2, contactNameSelector, ALICE.name);
       await messagesPo.messageText(smsMsg('contact'));
       await messagesPo.submitMessage();
-      await messagesPo.clickLhsEntry(ALICE._id,ALICE.name);
+      await messagesPo.clickLhsEntry(ALICE._id, ALICE.name);
 
       expect(await messagesPo.allMessages().count()).toBe(1);
       expect(await messagesPo.lastMessageText()).toBe(smsMsg('contact'));

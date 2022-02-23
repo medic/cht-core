@@ -59,7 +59,9 @@ describe('ServerSidePurge', () => {
     });
 
     it('should return eval-ed when purge fn is correct', () => {
-      const purgeFn = function(n) { return n * n; };
+      const purgeFn = function(n) {
+        return n * n;
+      };
       config.get.returns({ fn: purgeFn.toString() });
       const result = service.__get__('getPurgeFn')();
       chai.expect(config.get.callCount).to.equal(1);
@@ -400,7 +402,7 @@ describe('ServerSidePurge', () => {
       'medic-client/contacts_by_type',
       {
         limit: limit,
-        start_key: JSON.stringify(key ? key : (id ? `key${id}` : '')),
+        start_key: JSON.stringify(key || (id ? `key${id}` : '')),
         startkey_docid: id,
         include_docs: true,
       },
@@ -680,7 +682,7 @@ describe('ServerSidePurge', () => {
         return Promise.resolve({ rows: contacts.slice(startkey_docid, limit + startkey_docid) });
       });
       sinon.stub(db.medic, 'query').callsFake((_, opts) => {
-        if (opts['keys'].find(key => contactsToSkip.includes(key))) {
+        if (opts.keys.find(key => contactsToSkip.includes(key))) {
           return Promise.resolve({ rows: reports });
         }
         return Promise.resolve({ rows: reports.slice(0, 6000)}); // never increase
@@ -912,20 +914,20 @@ describe('ServerSidePurge', () => {
 
         chai.expect(purgeFn.callCount).to.equal(8);
         chai.expect(purgeFn.args[0]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'first', type: 'district_hospital' },
           [],
           []
         ]);
         chai.expect(purgeFn.args[1]).to.deep.equal([
-          { roles: roles['b'] },
+          { roles:roles.b },
           { _id: 'first', type: 'district_hospital' },
           [],
           []
         ]);
 
         chai.expect(purgeFn.args[2]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [
             { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' },
@@ -937,7 +939,7 @@ describe('ServerSidePurge', () => {
           ]
         ]);
         chai.expect(purgeFn.args[3]).to.deep.equal([
-          { roles: roles['b'] },
+          { roles:roles.b },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [
             { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' },
@@ -950,7 +952,7 @@ describe('ServerSidePurge', () => {
         ]);
 
         chai.expect(purgeFn.args[4]).to.deep.equalInAnyOrder([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'f2', type: 'person' },
           [
             { _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'f2' },
@@ -959,7 +961,7 @@ describe('ServerSidePurge', () => {
           []
         ]);
         chai.expect(purgeFn.args[5]).to.deep.equalInAnyOrder([
-          { roles: roles['b'] },
+          { roles:roles.b },
           { _id: 'f2', type: 'person' },
           [
             { _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'f2' },
@@ -969,7 +971,7 @@ describe('ServerSidePurge', () => {
         ]);
 
         chai.expect(purgeFn.args[6]).to.deep.equalInAnyOrder([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'f4', type: 'clinic', place_id: 's4' },
           [],
           [
@@ -978,7 +980,7 @@ describe('ServerSidePurge', () => {
           ]
         ]);
         chai.expect(purgeFn.args[7]).to.deep.equalInAnyOrder([
-          { roles: roles['b'] },
+          { roles:roles.b },
           { _id: 'f4', type: 'clinic', place_id: 's4' },
           [],
           [
@@ -1081,14 +1083,14 @@ describe('ServerSidePurge', () => {
 
         chai.expect(purgeFn.callCount).to.equal(8);
         chai.expect(purgeFn.args[0]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'first', type: 'district_hospital' },
           [],
           []
         ]);
 
         chai.expect(purgeFn.args[2]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _deleted: true },
           [
             { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' },
@@ -1101,14 +1103,14 @@ describe('ServerSidePurge', () => {
         ]);
 
         chai.expect(purgeFn.args[4]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _deleted: true },
           [{ _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'f2' }],
           [{ _id: 'f2-r2', type: 'data_record', sms_message: 'b' }]
         ]);
 
         chai.expect(purgeFn.args[6]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'f3', type: 'health_center' },
           [],
           [
@@ -1183,35 +1185,35 @@ describe('ServerSidePurge', () => {
 
         chai.expect(purgeFn.callCount).to.equal(10);
         chai.expect(purgeFn.args[0]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'first', type: 'district_hospital' },
           [],
           []
         ]);
 
         chai.expect(purgeFn.args[2]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' }],
           [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a', contact: { _id: 'f1' } }]
         ]);
 
         chai.expect(purgeFn.args[4]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'f2', type: 'person', patient_id: 's2' },
           [{ _id: 'f2-r3', type: 'data_record', form: 'a', patient_id: 's2' }],
           [{ _id: 'f2-m1', type: 'data_record', contact: { _id: 'f2' } }]
         ]);
 
         chai.expect(purgeFn.args[6]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           {},
           [{ _id: 'f2-r1', type: 'data_record', form: 'a', contact: { _id: 'f2' } }],
           []
         ]);
 
         chai.expect(purgeFn.args[8]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           {},
           [{ _id: 'f2-r2', type: 'data_record', form: 'b', contact: { _id: 'f2' } }],
           []
@@ -1285,28 +1287,28 @@ describe('ServerSidePurge', () => {
 
         chai.expect(purgeFn.callCount).to.equal(8);
         chai.expect(purgeFn.args[0]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'first', type: 'district_hospital' },
           [],
           []
         ]);
 
         chai.expect(purgeFn.args[2]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1', needs_signoff: true }],
           [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }]
         ]);
 
         chai.expect(purgeFn.args[4]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'f2', type: 'person' },
           [],
           []
         ]);
 
         chai.expect(purgeFn.args[6]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           {},
           [{ _id: 'f2-r3', type: 'data_record', form: 'a', needs_signoff: true, contact: { _id: 'f2' } }],
           []
@@ -1372,13 +1374,13 @@ describe('ServerSidePurge', () => {
         .onCall(0).returns(dbA)
         .onCall(1).returns(dbB);
 
-      purgeFn.withArgs({ roles: roles['a'] }, { _id: 'first', type: 'district_hospital' }).returns([]);
-      purgeFn.withArgs({ roles: roles['b'] }, { _id: 'first', type: 'district_hospital' }).returns([]);
-      purgeFn.withArgs({ roles: roles['a'] }, { _id: 'f1', type: 'clinic', place_id: 's1' }).returns(['f1-m1']);
-      purgeFn.withArgs({ roles: roles['b'] }, { _id: 'f1', type: 'clinic', place_id: 's1' })
+      purgeFn.withArgs({ roles: roles.a }, { _id: 'first', type: 'district_hospital' }).returns([]);
+      purgeFn.withArgs({ roles:roles.b }, { _id: 'first', type: 'district_hospital' }).returns([]);
+      purgeFn.withArgs({ roles: roles.a }, { _id: 'f1', type: 'clinic', place_id: 's1' }).returns(['f1-m1']);
+      purgeFn.withArgs({ roles:roles.b }, { _id: 'f1', type: 'clinic', place_id: 's1' })
         .returns(['f1-m1', 'f1-r1']);
-      purgeFn.withArgs({ roles: roles['a'] }, { _id: 'f2', type: 'person' }).returns(['f2-m1', 'f2-r1']);
-      purgeFn.withArgs({ roles: roles['b'] }, { _id: 'f2', type: 'person' }).returns(['f2-r1']);
+      purgeFn.withArgs({ roles: roles.a }, { _id: 'f2', type: 'person' }).returns(['f2-m1', 'f2-r1']);
+      purgeFn.withArgs({ roles:roles.b }, { _id: 'f2', type: 'person' }).returns(['f2-r1']);
 
       return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(dbA.changes.callCount).to.equal(1);
@@ -1457,13 +1459,13 @@ describe('ServerSidePurge', () => {
         .onCall(0).returns(dbA)
         .onCall(1).returns(dbB);
 
-      purgeFn.withArgs({ roles: roles['a'] }, { _id: 'first', type: 'district_hospital' }).returns(['a', 'b']);
-      purgeFn.withArgs({ roles: roles['b'] }, { _id: 'first', type: 'district_hospital' }).returns(['c', 'd']);
-      purgeFn.withArgs({ roles: roles['a'] }, { _id: 'f1', type: 'clinic', place_id: 's1' }).returns(['f1-m1']);
-      purgeFn.withArgs({ roles: roles['b'] }, { _id: 'f1', type: 'clinic', place_id: 's1' })
+      purgeFn.withArgs({ roles: roles.a }, { _id: 'first', type: 'district_hospital' }).returns(['a', 'b']);
+      purgeFn.withArgs({ roles:roles.b }, { _id: 'first', type: 'district_hospital' }).returns(['c', 'd']);
+      purgeFn.withArgs({ roles: roles.a }, { _id: 'f1', type: 'clinic', place_id: 's1' }).returns(['f1-m1']);
+      purgeFn.withArgs({ roles:roles.b }, { _id: 'f1', type: 'clinic', place_id: 's1' })
         .returns(['f1-m1', 'random']);
-      purgeFn.withArgs({ roles: roles['a'] }, { _id: 'f2', type: 'clinic' }).returns(['f2-m1']);
-      purgeFn.withArgs({ roles: roles['b'] }, { _id: 'f2', type: 'clinic' }).returns(['f2']);
+      purgeFn.withArgs({ roles: roles.a }, { _id: 'f2', type: 'clinic' }).returns(['f2-m1']);
+      purgeFn.withArgs({ roles:roles.b }, { _id: 'f2', type: 'clinic' }).returns(['f2']);
 
       return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(dbA.changes.callCount).to.equal(1);
@@ -1482,21 +1484,21 @@ describe('ServerSidePurge', () => {
 
         chai.expect(purgeFn.callCount).to.equal(6);
         chai.expect(purgeFn.args[0]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'first', type: 'district_hospital' },
           [],
           []
         ]);
 
         chai.expect(purgeFn.args[2]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' }],
           [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }]
         ]);
 
         chai.expect(purgeFn.args[4]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'f2', type: 'clinic' },
           [],
           []
@@ -1550,12 +1552,12 @@ describe('ServerSidePurge', () => {
         .onCall(0).returns(dbA)
         .onCall(1).returns(dbB);
 
-      purgeFn.withArgs({ roles: roles['a'] }, { _id: 'first', type: 'district_hospital' }).returns('string');
-      purgeFn.withArgs({ roles: roles['b'] }, { _id: 'first', type: 'district_hospital' }).returns({});
-      purgeFn.withArgs({ roles: roles['a'] }, { _id: 'f1', type: 'clinic' }).returns([]);
-      purgeFn.withArgs({ roles: roles['b'] }, { _id: 'f1', type: 'clinic' }).returns(23);
-      purgeFn.withArgs({ roles: roles['a'] }, { _id: 'f2', type: 'clinic' }).returns(false);
-      purgeFn.withArgs({ roles: roles['b'] }, { _id: 'f2', type: 'clinic' }).returns(null);
+      purgeFn.withArgs({ roles: roles.a }, { _id: 'first', type: 'district_hospital' }).returns('string');
+      purgeFn.withArgs({ roles:roles.b }, { _id: 'first', type: 'district_hospital' }).returns({});
+      purgeFn.withArgs({ roles: roles.a }, { _id: 'f1', type: 'clinic' }).returns([]);
+      purgeFn.withArgs({ roles:roles.b }, { _id: 'f1', type: 'clinic' }).returns(23);
+      purgeFn.withArgs({ roles: roles.a }, { _id: 'f2', type: 'clinic' }).returns(false);
+      purgeFn.withArgs({ roles:roles.b }, { _id: 'f2', type: 'clinic' }).returns(null);
 
       return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(dbA.bulkDocs.callCount).to.equal(1);
@@ -1617,21 +1619,21 @@ describe('ServerSidePurge', () => {
 
         chai.expect(purgeFn.callCount).to.equal(6);
         chai.expect(purgeFn.args[0]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'first', type: 'district_hospital' },
           [],
           []
         ]);
 
         chai.expect(purgeFn.args[2]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' }],
           [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }]
         ]);
 
         chai.expect(purgeFn.args[4]).to.deep.equal([
-          { roles: roles['a'] },
+          { roles: roles.a },
           { _id: 'f2', type: 'person' },
           [],
           []
@@ -1815,15 +1817,15 @@ describe('ServerSidePurge', () => {
       return service.__get__('purgeUnallocatedRecords')(roles, purgeFn).then(() => {
         chai.expect(db.queryMedic.callCount).to.equal(2);
         chai.expect(purgeFn.callCount).to.equal(12);
-        chai.expect(purgeFn.args[0]).to.deep.equal([{ roles: roles['a'] }, {}, [{ _id: 'r1', form: 'a' }], []]);
-        chai.expect(purgeFn.args[1]).to.deep.equal([{ roles: roles['b'] }, {}, [{ _id: 'r1', form: 'a' }], []]);
-        chai.expect(purgeFn.args[2]).to.deep.equal([{ roles: roles['a'] }, {}, [{ _id: 'r2', form: 'a' }], []]);
-        chai.expect(purgeFn.args[3]).to.deep.equal([{ roles: roles['b'] }, {}, [{ _id: 'r2', form: 'a' }], []]);
-        chai.expect(purgeFn.args[4]).to.deep.equal([{ roles: roles['a'] }, {}, [], [{ _id: 'r3' }]]);
-        chai.expect(purgeFn.args[5]).to.deep.equal([{ roles: roles['b'] }, {}, [], [{ _id: 'r3' }]]);
-        chai.expect(purgeFn.args[6]).to.deep.equal([{ roles: roles['a'] }, {}, [{ _id: 'r4', form: 'a' }], []]);
-        chai.expect(purgeFn.args[8]).to.deep.equal([{ roles: roles['a'] }, {}, [], [{ _id: 'r5' }]]);
-        chai.expect(purgeFn.args[10]).to.deep.equal([{ roles: roles['a'] }, {}, [{ _id: 'r6', form: 'a' }], []]);
+        chai.expect(purgeFn.args[0]).to.deep.equal([{ roles: roles.a }, {}, [{ _id: 'r1', form: 'a' }], []]);
+        chai.expect(purgeFn.args[1]).to.deep.equal([{ roles:roles.b }, {}, [{ _id: 'r1', form: 'a' }], []]);
+        chai.expect(purgeFn.args[2]).to.deep.equal([{ roles: roles.a }, {}, [{ _id: 'r2', form: 'a' }], []]);
+        chai.expect(purgeFn.args[3]).to.deep.equal([{ roles:roles.b }, {}, [{ _id: 'r2', form: 'a' }], []]);
+        chai.expect(purgeFn.args[4]).to.deep.equal([{ roles: roles.a }, {}, [], [{ _id: 'r3' }]]);
+        chai.expect(purgeFn.args[5]).to.deep.equal([{ roles:roles.b }, {}, [], [{ _id: 'r3' }]]);
+        chai.expect(purgeFn.args[6]).to.deep.equal([{ roles: roles.a }, {}, [{ _id: 'r4', form: 'a' }], []]);
+        chai.expect(purgeFn.args[8]).to.deep.equal([{ roles: roles.a }, {}, [], [{ _id: 'r5' }]]);
+        chai.expect(purgeFn.args[10]).to.deep.equal([{ roles: roles.a }, {}, [{ _id: 'r6', form: 'a' }], []]);
       });
     });
 
@@ -1862,13 +1864,13 @@ describe('ServerSidePurge', () => {
         { id: 'purged:r6', changes: [{ rev: 'r6-rev' }], deleted: true },
       ]});
 
-      purgeFn.withArgs({ roles: roles['a'] }, {}, [{ _id: 'r2', form: 'a' }], []).returns(['r2']);
-      purgeFn.withArgs({ roles: roles['a'] }, {}, [], [{ _id: 'r3' }]).returns(['r3']);
-      purgeFn.withArgs({ roles: roles['a'] }, {}, [], [{ _id: 'r5' }]).returns(['r5']);
+      purgeFn.withArgs({ roles: roles.a }, {}, [{ _id: 'r2', form: 'a' }], []).returns(['r2']);
+      purgeFn.withArgs({ roles: roles.a }, {}, [], [{ _id: 'r3' }]).returns(['r3']);
+      purgeFn.withArgs({ roles: roles.a }, {}, [], [{ _id: 'r5' }]).returns(['r5']);
 
-      purgeFn.withArgs({ roles: roles['b'] }, {}, [], [{ _id: 'r3' }]).returns(['r3']);
-      purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r4', form: 'a' }], []).returns(['r4']);
-      purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r6', form: 'a' }], []).returns(['r6']);
+      purgeFn.withArgs({ roles:roles.b }, {}, [], [{ _id: 'r3' }]).returns(['r3']);
+      purgeFn.withArgs({ roles:roles.b }, {}, [{ _id: 'r4', form: 'a' }], []).returns(['r4']);
+      purgeFn.withArgs({ roles:roles.b }, {}, [{ _id: 'r6', form: 'a' }], []).returns(['r6']);
 
       return service.__get__('purgeUnallocatedRecords')(roles, purgeFn).then(() => {
         chai.expect(db.queryMedic.callCount).to.equal(2);
@@ -1911,11 +1913,11 @@ describe('ServerSidePurge', () => {
 
       dbB.changes.resolves({ results: []});
 
-      purgeFn.withArgs({ roles: roles['a'] }, {}, [{ _id: 'r1', form: 'a' }], []).returns(['r1', 'r4', 'random']);
-      purgeFn.withArgs({ roles: roles['a'] }, {}, [{ _id: 'r2', form: 'a' }], []).returns(['r3', 'r4', 'r2']);
+      purgeFn.withArgs({ roles: roles.a }, {}, [{ _id: 'r1', form: 'a' }], []).returns(['r1', 'r4', 'random']);
+      purgeFn.withArgs({ roles: roles.a }, {}, [{ _id: 'r2', form: 'a' }], []).returns(['r3', 'r4', 'r2']);
 
-      purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r1', form: 'a' }], []).returns(['random', '10', '11']);
-      purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r2', form: 'a' }], []).returns(['oops', 'fifty', '22']);
+      purgeFn.withArgs({ roles:roles.b }, {}, [{ _id: 'r1', form: 'a' }], []).returns(['random', '10', '11']);
+      purgeFn.withArgs({ roles:roles.b }, {}, [{ _id: 'r2', form: 'a' }], []).returns(['oops', 'fifty', '22']);
 
       return service.__get__('purgeUnallocatedRecords')(roles, purgeFn).then(() => {
         chai.expect(db.queryMedic.callCount).to.equal(2);
@@ -1950,13 +1952,13 @@ describe('ServerSidePurge', () => {
 
       dbB.changes.resolves({ results: []});
 
-      purgeFn.withArgs({ roles: roles['a'] }, {}, [{ _id: 'r1', form: 'a' }], []).returns('rnd');
-      purgeFn.withArgs({ roles: roles['a'] }, {}, [{ _id: 'r2', form: 'a' }], []).returns({});
-      purgeFn.withArgs({ roles: roles['a'] }, {}, [{ _id: 'r3', form: 'a' }], []).returns(22);
+      purgeFn.withArgs({ roles: roles.a }, {}, [{ _id: 'r1', form: 'a' }], []).returns('rnd');
+      purgeFn.withArgs({ roles: roles.a }, {}, [{ _id: 'r2', form: 'a' }], []).returns({});
+      purgeFn.withArgs({ roles: roles.a }, {}, [{ _id: 'r3', form: 'a' }], []).returns(22);
 
-      purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r1', form: 'a' }], []).returns(false);
-      purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r2', form: 'a' }], []).returns(null);
-      purgeFn.withArgs({ roles: roles['b'] }, {}, [{ _id: 'r3', form: 'a' }], []).returns([]);
+      purgeFn.withArgs({ roles:roles.b }, {}, [{ _id: 'r1', form: 'a' }], []).returns(false);
+      purgeFn.withArgs({ roles:roles.b }, {}, [{ _id: 'r2', form: 'a' }], []).returns(null);
+      purgeFn.withArgs({ roles:roles.b }, {}, [{ _id: 'r3', form: 'a' }], []).returns([]);
 
       return service.__get__('purgeUnallocatedRecords')(roles, purgeFn).then(() => {
         chai.expect(db.queryMedic.callCount).to.equal(2);

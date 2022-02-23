@@ -18,7 +18,7 @@ const {
 } = process.env;
 
 const releaseName = TAG || BRANCH || 'local-development';
-const ESLINT_COMMAND = './node_modules/.bin/eslint --color';
+const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
 
 const couchConfig = (() => {
   if (!COUCH_URL) {
@@ -721,7 +721,7 @@ module.exports = function(grunt) {
             suite: 'mobile',
             capabilities: {
               chromeOptions: {
-                'args': ['headless','disable-gpu'],
+                'args': ['headless', 'disable-gpu'],
                 mobileEmulation: { 'deviceName': 'Nexus 5' }
               }
             }

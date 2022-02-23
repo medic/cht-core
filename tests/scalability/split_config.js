@@ -57,7 +57,7 @@ function splitUsers(users, workerCount) {
 
 const usersList = splitUsers(config.users, workerCount);
 
-usersList.forEach((userList,index) => {
+usersList.forEach((userList, index) => {
   const json = JSON.stringify({
     url:config.url,
     users: userList

@@ -15,9 +15,11 @@ export class TransitionsService {
     private mutingTransition:MutingTransition,
   ) {
   }
+
   private readonly AVAILABLE_TRANSITIONS = [
     { name: 'muting', transition: this.mutingTransition }
   ];
+
   private loadedTransitions = [];
 
   private inited;

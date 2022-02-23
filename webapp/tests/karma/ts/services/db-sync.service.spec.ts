@@ -380,7 +380,7 @@ describe('DBSync service', () => {
         clock.tick(2000);
         const error = { message: 'Failed to fetch', result: { docs_read: 22 } };
         fromReject(error);
-        from.events['error'](error);
+        from.events.error(error);
         await nextTick();
 
         clock.tick(1000);
@@ -424,7 +424,7 @@ describe('DBSync service', () => {
         clock.tick(2000);
         const error = { message: 'Unexpected token S in JSON at position 0', result: { docs_read: 22 } };
         fromReject(error);
-        from.events['error'](error);
+        from.events.error(error);
         await nextTick();
 
         clock.tick(1000);
@@ -470,7 +470,7 @@ describe('DBSync service', () => {
         clock.tick(500);
         const error = { message: 'Failed to fetch', result: { docs_read: 12 } };
         fromReject(error);
-        from.events['error'](error);
+        from.events.error(error);
         await nextTick();
 
         clock.tick(500);
@@ -514,7 +514,7 @@ describe('DBSync service', () => {
         clock.tick(500);
         const error = { message: 'BOOM', result: { docs_read: 12 } };
         fromReject(error);
-        from.events['error'](error);
+        from.events.error(error);
         await nextTick();
 
         clock.tick(500);
@@ -556,7 +556,7 @@ describe('DBSync service', () => {
         clock.tick(2000);
         const error = { message: 'Failed to fetch', result: { docs_read: 22 } };
         toReject(error);
-        to.events['error'](error);
+        to.events.error(error);
         await nextTick();
 
         clock.tick(1000);
@@ -599,7 +599,7 @@ describe('DBSync service', () => {
         clock.tick(1000);
         const error = { message: 'Failed to fetch', result: { docs_read: 12 } };
         toReject(error);
-        to.events['error'](error);
+        to.events.error(error);
         await nextTick();
 
         clock.tick(7000);
@@ -643,7 +643,7 @@ describe('DBSync service', () => {
         clock.tick(700);
         const error = { message: 'Not failed to fetch', result: { docs_read: 6 } };
         toReject(error);
-        to.events['error'](error);
+        to.events.error(error);
         fromResolve({ docs_read: 400 });
 
         return syncResult.then(() => {
@@ -684,13 +684,13 @@ describe('DBSync service', () => {
         clock.tick(100);
         const errorTo = { message: 'Not failed to fetch', result: { docs_read: 6 } };
         toReject(errorTo);
-        to.events['error'](errorTo);
+        to.events.error(errorTo);
         await nextTick();
 
         clock.tick(100);
         const errorFrom = { message: 'Not failed to fetch', result: { docs_read: 12 } };
         fromReject(errorFrom);
-        from.events['error'](errorFrom);
+        from.events.error(errorFrom);
 
         return syncResult.then(() => {
           expectSyncCall(1);

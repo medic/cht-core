@@ -62,7 +62,7 @@ const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp) => {
  * Examine the existing task documents which were previously emitted by the same contact
  * Cancel any doc that is in a non-terminal state and does not have an emission to keep it alive
  */
-const getCancellationUpdates = (freshDocs, existingTaskDocs = [], calculatedAt) => {
+const getCancellationUpdates = (freshDocs, existingTaskDocs = [], calculatedAt = 0) => {
   const existingNonTerminalTaskDocs = existingTaskDocs.filter(doc => !TaskStates.isTerminal(doc.state));
   const currentEmissionIds = new Set(freshDocs.map(doc => doc.emission._id));
 

@@ -19,7 +19,7 @@ describe('FormatDate service', () => {
         return {
           relativeTime: relativeTime,
           pastFuture: pastFuture,
-          longDateFormat: () => { return LONG_DATE_FORMAT; }
+          longDateFormat: sinon.stub().returns(LONG_DATE_FORMAT),
         };
       });
     });
@@ -29,7 +29,9 @@ describe('FormatDate service', () => {
     });
   });
 
-  afterEach(() => { sinon.restore(); });
+  afterEach(() => {
+    sinon.restore();
+  });
 
   describe('age', () => {
 

@@ -47,7 +47,7 @@ describe('pregnancy home visit tests', () => {
   const pregnancyHomeVisitUnknownLMPTask = {
     pre: 6,
     post: 7,
-    triggers: Array(21).fill().map((item, index) => (1 + index) * 2),//[2, 4, 6, ..., 40, 42]
+    triggers: Array(21).fill().map((item, index) => (1 + index) * 2), //[2, 4, 6, ..., 40, 42]
     triggerUnit: 'weeks'
   };
 

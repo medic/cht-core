@@ -8,7 +8,7 @@ const reportsPage = require('../../page-objects/reports/reports.po');
 
 describe('Adding new language', () => {
   const addTranslations = async () => {
-    await utils.addTranslations('afr',{
+    await utils.addTranslations('afr', {
       'No messages found':'Geen boodskappe gevind nie',
       'No contacts found':'Geen mense gevind nie',
       'reports.none':'Geen verslae gevind nie',
@@ -31,7 +31,7 @@ describe('Adding new language', () => {
     expect(languageName).toBe('Afrikaans');
   });
 
-  it('should be set as Default language ',async () => {
+  it('should be set as Default language ', async () => {
     await languagesPage.setDefaultLanguage('Afrikaans');
     await languagesPage.setOutgoingMessageLanguage('Afrikaans');
     expect(await languagesPage.isLanguageSelected(languagesPage.defaultLocaleOption, 'afr')).toBe('true');

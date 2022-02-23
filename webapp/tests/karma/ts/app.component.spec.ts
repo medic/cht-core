@@ -84,7 +84,7 @@ describe('AppComponent', () => {
   let globalActions;
   let analyticsActions;
   let originalPouchDB;
-  const changesListener = {};
+  const changesListener:any = {};
   let consoleErrorStub;
 
   beforeEach(waitForAsync(() => {
@@ -475,8 +475,8 @@ describe('AppComponent', () => {
 
       expect(changesListener['branding-icon']).to.be.an('object');
       expect(changesListener['sync-status']).to.be.an('object');
-      expect(changesListener['translations']).to.be.an('object');
-      expect(changesListener['ddoc']).to.be.an('object');
+      expect(changesListener.translations).to.be.an('object');
+      expect(changesListener.ddoc).to.be.an('object');
       expect(changesListener['user-context']).to.be.an('object');
     });
 
@@ -530,7 +530,7 @@ describe('AppComponent', () => {
   describe('language reloading', () => {
     it('filter should only match translations docs', async () => {
       await getComponent();
-      const filter = changesListener['translations'].filter;
+      const filter = changesListener.translations.filter;
       expect(filter).to.be.a('function');
 
       expect(filter({ id: 'messages-en' })).to.equal(true);
@@ -544,7 +544,7 @@ describe('AppComponent', () => {
       languageService.get.resolves('enabled_locale');
       await getComponent();
       sinon.resetHistory();
-      const callback = changesListener['translations'].callback;
+      const callback = changesListener.translations.callback;
       expect(callback).to.be.a('function');
 
       await callback({ id: 'messages-locale' });
@@ -558,7 +558,7 @@ describe('AppComponent', () => {
       languageService.get.resolves('enabled_locale');
       await getComponent();
       sinon.resetHistory();
-      const callback = changesListener['translations'].callback;
+      const callback = changesListener.translations.callback;
       expect(callback).to.be.a('function');
 
       await callback({ id: 'messages-enabled_locale' });

@@ -151,7 +151,7 @@ describe('About Component', () => {
     });
   }));
 
-  it ('should display partner logo if it exists', fakeAsync(() => {
+  it('should display partner logo if it exists', fakeAsync(() => {
     resourceIconsService.getDocResources.resolves(['Medic']);
     versionService.getLocal.resolves({ version: '3.5.0', rev: '12' });
     versionService.getRemoteRev.resolves('15');

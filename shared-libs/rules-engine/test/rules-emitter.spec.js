@@ -152,8 +152,9 @@ describe('rules-emitter', () => {
   it('session is disposed when marshalDocsIntoNoolsFacts throws', async () => {
     const settingsDoc = settingsWithRules(' ');
     rulesEmitter.initialize(settingsDoc);
-    rulesEmitter.__with__({ marshalDocsIntoNoolsFacts: () => { throw 'fake'; }})(() => {
-      expect(() => rulesEmitter.getEmissionsFor([], [])).to.throw('fake');
+    const err = new Error('fake');
+    rulesEmitter.__with__({ marshalDocsIntoNoolsFacts: sinon.stub().throws(err) })(() => {
+      expect(rulesEmitter.getEmissionsFor.bind({}, [[], []])).to.throw('fake');
       // unsure how to assert that the memory is freed in this scenario
     });
   });

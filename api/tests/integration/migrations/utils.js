@@ -67,7 +67,7 @@ const matches = (expected, actual) => {
 const assertDb = expected => {
   return db.get('medic-test').allDocs({ include_docs: true })
     .then(results => {
-      let actual = results.rows.map(row =>_.omit(row.doc, ['_rev']));
+      let actual = results.rows.map(row => _.omit(row.doc, ['_rev']));
       expected.sort(byId);
       actual.sort(byId);
 

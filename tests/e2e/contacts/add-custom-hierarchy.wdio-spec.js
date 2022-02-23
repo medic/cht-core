@@ -135,7 +135,8 @@ describe('Creating custom places', () => {
       {
         heading: 'mid-level Plural',
         contactNames: ['midLevel']
-      }];
+      },
+    ];
     expect(displayedListOfContacts).to.deep.equal(expected);
   });
 });

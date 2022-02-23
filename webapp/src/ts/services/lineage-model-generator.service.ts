@@ -79,6 +79,7 @@ export class LineageModelGeneratorService {
   report(id) {
     return this.ngZone.runOutsideAngular(() => this._report(id));
   }
+
   /**
    * Fetch a contact and its lineage by the given uuid. Returns a
    * report model.

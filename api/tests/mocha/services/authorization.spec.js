@@ -1239,8 +1239,8 @@ describe('Authorization service', () => {
         viewResults = {
           replicationKeys: [{
             key: userCtx.contact_id,
-            value: { submitter: 'submitter', type: 'data_record', private: true }}
-          ],
+            value: { submitter: 'submitter', type: 'data_record', private: true }
+          }],
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
@@ -1249,8 +1249,8 @@ describe('Authorization service', () => {
         viewResults = {
           replicationKeys: [{
             key: userCtx.contact.patient_id,
-            value: { submitter: 'submitter', type: 'data_record', private: true }}
-          ],
+            value: { submitter: 'submitter', type: 'data_record', private: true }
+          }],
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
@@ -1620,7 +1620,7 @@ describe('Authorization service', () => {
   describe('convertTombstoneIds', () => {
     it('converts tombstone ids to their corresponding doc ids', () => {
       tombstoneUtils.isTombstoneId.callsFake(id => id.indexOf('tombstone') !== -1);
-      tombstoneUtils.extractStub.callsFake(id => ({ id: id.replace('tombstone','') }));
+      tombstoneUtils.extractStub.callsFake(id => ({ id: id.replace('tombstone', '') }));
 
       service.convertTombstoneIds(['1', '2', 'tombstone-a', 'b-tombstone', '3', '5'])
         .should.deep.equal(['1', '2', '-a', 'b-', '3', '5']);
@@ -2364,10 +2364,10 @@ describe('Authorization service', () => {
           ]);
           db.medic.allDocs.callCount.should.equal(9);
           db.medic.allDocs.args[0].should.deep.equal([{
-            keys: ['patient1doc','c1', 'p1','facility_id', 'patient2doc', 'c2', 'p2', 'p3'],
+            keys: ['patient1doc', 'c1', 'p1', 'facility_id', 'patient2doc', 'c2', 'p2', 'p3'],
             include_docs: true
           }]);
-          ['patient1doc','c1', 'p1','facility_id', 'patient2doc', 'c2', 'p2', 'p3'].forEach((id, idx) => {
+          ['patient1doc', 'c1', 'p1', 'facility_id', 'patient2doc', 'c2', 'p2', 'p3'].forEach((id, idx) => {
             db.medic.allDocs.args[idx + 1]
               .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
           });
@@ -2640,10 +2640,10 @@ describe('Authorization service', () => {
           ]);
           db.medic.allDocs.callCount.should.equal(3);
           db.medic.allDocs.args[0].should.deep.equal([{
-            keys: ['patient1doc','c1'],
+            keys: ['patient1doc', 'c1'],
             include_docs: true
           }]);
-          ['patient1doc','c1'].forEach((id, idx) => {
+          ['patient1doc', 'c1'].forEach((id, idx) => {
             db.medic.allDocs.args[idx + 1]
               .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
           });
@@ -2761,10 +2761,10 @@ describe('Authorization service', () => {
           ]);
           db.medic.allDocs.callCount.should.equal(5);
           db.medic.allDocs.args[0].should.deep.equal([{
-            keys: ['patient1doc','c1', 'p1', 'facility_id'],
+            keys: ['patient1doc', 'c1', 'p1', 'facility_id'],
             include_docs: true
           }]);
-          ['patient1doc','c1', 'p1', 'facility_id'].forEach((id, idx) => {
+          ['patient1doc', 'c1', 'p1', 'facility_id'].forEach((id, idx) => {
             db.medic.allDocs.args[idx + 1]
               .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
           });
@@ -2980,7 +2980,7 @@ describe('Authorization service', () => {
             },
             {
               id: 'c2____rev2____tombstone', doc: { _id: 'c2____rev2____tombstone', type: 'tombstone',
-                tombstone: { _id: 'c2', _rev: 'rev2' , type: 'clinic',
+                tombstone: { _id: 'c2', _rev: 'rev2', type: 'clinic',
                   parent: { _id: 'p2', parent: { _id: 'facility_id' } } } }
             },
           ]});
@@ -3525,10 +3525,10 @@ describe('Authorization service', () => {
             ]);
             db.medic.allDocs.callCount.should.equal(8);
             db.medic.allDocs.args[0].should.deep.equal([{
-              keys: ['patient1doc____rev____tombstone','c1', 'p1','facility_id', 'patient2doc', 'c2', 'p2', 'p3'],
+              keys: ['patient1doc____rev____tombstone', 'c1', 'p1', 'facility_id', 'patient2doc', 'c2', 'p2', 'p3'],
               include_docs: true
             }]);
-            ['c1', 'p1','facility_id', 'patient2doc', 'c2', 'p2', 'p3'].forEach((id, idx) => {
+            ['c1', 'p1', 'facility_id', 'patient2doc', 'c2', 'p2', 'p3'].forEach((id, idx) => {
               db.medic.allDocs.args[idx + 1]
                 .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
             });
