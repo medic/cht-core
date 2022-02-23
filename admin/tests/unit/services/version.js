@@ -68,4 +68,23 @@ describe('version', () => {
       chai.expect(service.compare(v(2, 0, 0, 1), v(2, 0, 0))).to.be.above(0);
     });
   });
+
+  describe('currentVersion', () => {
+    it('Returns the current version of the app', () => {
+      const deploy_info = {
+        'timestamp': '2022-02-15T08:27:25.997Z',
+        'user': 'horticulturalist cli',
+        'version': '1.0.0'
+      };
+      chai.expect(service.currentVersion(deploy_info)).to.deep.equal(v(1,0,0));
+    });
+    it('returns the base_version if it is defined', () => {
+      const deploy_info = {
+        'timestamp': '2022-02-15T08:27:25.997Z',
+        'user': 'horticulturalist cli',
+        'base_version': '1.0.0'
+      };
+      chai.expect(service.currentVersion(deploy_info)).to.deep.equal(v(1,0,0));
+    });
+  });
 });
