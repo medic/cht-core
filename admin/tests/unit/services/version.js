@@ -76,7 +76,7 @@ describe('version', () => {
         'user': 'horticulturalist cli',
         'version': '1.0.0'
       };
-      chai.expect(service.currentVersion(deploy_info)).to.deep.equal(v(1,0,0));
+      chai.expect(service.currentVersion(deploy_info)).to.deep.equal(v(1,  0,  0));
     });
     it('returns the base_version if it is defined', () => {
       const deploy_info = {
@@ -84,7 +84,7 @@ describe('version', () => {
         'user': 'horticulturalist cli',
         'base_version': '1.0.0'
       };
-      chai.expect(service.currentVersion(deploy_info)).to.deep.equal(v(1,0,0));
+      chai.expect(service.currentVersion(deploy_info)).to.deep.equal(v(1, 0, 0));
     });
   });
 });
