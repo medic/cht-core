@@ -26,9 +26,8 @@ angular.module('controllers').controller('UpgradeCtrl',
     const BUILD_LIST_LIMIT = 50;
 
     const logError = (error, key) => {
-      const err = error.responseText || error.statusText;
       return $translate(key).then((msg) => {
-        $log.error(msg, err);
+        $log.error(msg, error);
         $scope.error = msg;
       });
     };
@@ -67,13 +66,12 @@ angular.module('controllers').controller('UpgradeCtrl',
       return buildsDb
         .query('builds/releases', options)
         .then((results) => {
-          results.rows.forEach((row) => {
+          return results.rows.map(row => {
             if (!row.value.version) {
               row.value.version = row.id.replace(/^medic:medic:/, '');
             }
+            return row.value;
           });
-
-          return results.rows.map(row => row.value);
         });
     };
 
@@ -158,6 +156,7 @@ angular.module('controllers').controller('UpgradeCtrl',
           before: $scope.currentDeploy.version,
           after: build.version,
           confirmCallback,
+          errorKey: 'instance.upgrade.error.deploy'
         },
       }).catch(() => {});
     };
@@ -169,36 +168,33 @@ angular.module('controllers').controller('UpgradeCtrl',
 
       return $http
         .post(url, { build })
-        .then(() => getCurrentUpgrade())
-        .catch((err) => {
-          return logError(err, 'instance.upgrade.error.deploy');
-        });
+        .then(() => getCurrentUpgrade());
     };
 
-    $scope.cancelUpgrade = () => {
+    $scope.abortUpgrade = () => {
       if (!$scope.upgradeDoc) {
         return;
       }
 
-      const confirmCallback = () => cancelUpgrade();
+      const confirmCallback = () => abortUpgrade();
 
       return Modal({
-        templateUrl: 'templates/upgrade_cancel.html',
+        templateUrl: 'templates/upgrade_abort.html',
         controller: 'UpgradeConfirmCtrl',
         model: {
           before: $scope.currentDeploy.version,
           after: $scope.upgradeDoc.to && $scope.upgradeDoc.to.version,
           confirmCallback,
+          errorKey: 'instance.upgrade.error.abort',
         }
       }).catch(() => {});
     };
 
-    const cancelUpgrade = () => {
+    const abortUpgrade = () => {
       return $http
         .delete(UPGRADE_URL)
         .then(() => getCurrentUpgrade())
-        .then(() => loadBuilds())
-        .catch((err) => logError(err, 'instance.upgrade.error.abort'));
+        .then(() => loadBuilds());
     };
   }
 );

@@ -45,7 +45,7 @@ describe('UpgradeCtrl controller', () => {
         return $controller('UpgradeCtrl', {
           $q: Q,
           $scope: scope,
-          $translate: sinon.stub().callsFake(value => Promise.resolve(value)),
+          $translate: sinon.stub().resolvesArg(0),
         });
       };
     });
@@ -458,7 +458,7 @@ describe('UpgradeCtrl controller', () => {
       expect(scope.upgradeDoc).to.deep.equal({ up: 'grade' });
     });
 
-    it('should catch errors', async () => {
+    it('should throw errors', async () => {
       modal.resolves();
       buildsDb.query.resolves({
         rows: [
@@ -484,13 +484,20 @@ describe('UpgradeCtrl controller', () => {
         controller: 'UpgradeConfirmCtrl',
         'model.stageOnly': false,
         'model.before': '4.1.0',
-        'model.after': '4.2.0'
+        'model.after': '4.2.0',
+        'model.errorKey': 'instance.upgrade.error.deploy',
       });
       const upgradeCb = modal.args[0][0].model.confirmCallback;
       expect(http.post.callCount).to.equal(0);
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(1);
 
-      await upgradeCb();
+      try {
+        await upgradeCb();
+        expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ an: 'error' });
+      }
+
       expect(http.post.callCount).to.equal(1);
       expect(http.post.args[0]).to.deep.equal([
         '/api/v2/upgrade',
@@ -500,8 +507,8 @@ describe('UpgradeCtrl controller', () => {
     });
   });
 
-  describe('cancel upgrade', () => {
-    it('should not cancel upgrade if upgrade is not in progress', async () => {
+  describe('abort upgrade', () => {
+    it('should not cancel abort if upgrade is not in progress', async () => {
       modal.resolves();
       buildsDb.query.resolves({});
       const deployInfo = { the: 'deplopy info', version: '4.1.0' };
@@ -511,13 +518,13 @@ describe('UpgradeCtrl controller', () => {
       createController();
       await scope.setupPromise;
 
-      await scope.cancelUpgrade();
+      await scope.abortUpgrade();
 
       expect(modal.callCount).to.equal(0);
       expect(http.delete.callCount).to.equal(0);
     });
 
-    it('should cancel upgrade and load builds', async () => {
+    it('should abort upgrade and load builds', async () => {
       modal.resolves();
       buildsDb.query.resolves({ rows: [] });
       version.minimumNextRelease.returns({ });
@@ -534,20 +541,21 @@ describe('UpgradeCtrl controller', () => {
 
       expect(buildsDb.query.callCount).to.equal(0);
 
-      await scope.cancelUpgrade();
+      await scope.abortUpgrade();
 
       expect(modal.callCount).to.equal(1);
       expect(http.delete.callCount).to.equal(0);
 
       expect(modal.args[0][0]).to.deep.nested.include({
-        templateUrl: 'templates/upgrade_cancel.html',
+        templateUrl: 'templates/upgrade_abort.html',
         controller: 'UpgradeConfirmCtrl',
         'model.before': '4.2.0',
-        'model.after': '4.3.0'
+        'model.after': '4.3.0',
+        'model.errorKey': 'instance.upgrade.error.abort',
       });
-      const cancelCb = modal.args[0][0].model.confirmCallback;
+      const abortCb = modal.args[0][0].model.confirmCallback;
 
-      await cancelCb();
+      await abortCb();
 
       expect(http.delete.callCount).to.equal(1);
       expect(http.delete.args[0]).to.deep.equal(['/api/v2/upgrade']);
@@ -556,7 +564,7 @@ describe('UpgradeCtrl controller', () => {
       expect(buildsDb.query.callCount).to.equal(3);
     });
 
-    it('should catch errors', async () => {
+    it('should throw errors', async () => {
       modal.resolves();
       buildsDb.query.resolves({ rows: [] });
       version.minimumNextRelease.returns({ });
@@ -566,27 +574,33 @@ describe('UpgradeCtrl controller', () => {
       http.get.withArgs('/api/v2/upgrade')
         .onCall(0).resolves({ data: { upgradeDoc } })
         .onCall(1).resolves({ data: { upgradeDoc: undefined } });
-      http.delete.rejects();
+      http.delete.rejects({ the: 'error' });
 
       createController();
       await scope.setupPromise;
 
       expect(buildsDb.query.callCount).to.equal(0);
 
-      await scope.cancelUpgrade();
+      await scope.abortUpgrade();
 
       expect(modal.callCount).to.equal(1);
       expect(http.delete.callCount).to.equal(0);
 
       expect(modal.args[0][0]).to.deep.nested.include({
-        templateUrl: 'templates/upgrade_cancel.html',
+        templateUrl: 'templates/upgrade_abort.html',
         controller: 'UpgradeConfirmCtrl',
         'model.before': '4.2.0',
-        'model.after': '4.3.0'
+        'model.after': '4.3.0',
+        'model.errorKey': 'instance.upgrade.error.abort',
       });
-      const cancelCb = modal.args[0][0].model.confirmCallback;
+      const abortCb = modal.args[0][0].model.confirmCallback;
 
-      await cancelCb();
+      try {
+        await abortCb();
+        expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ the: 'error' });
+      }
 
       expect(http.delete.callCount).to.equal(1);
       expect(http.delete.args[0]).to.deep.equal(['/api/v2/upgrade']);

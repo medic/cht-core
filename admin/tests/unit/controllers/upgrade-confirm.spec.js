@@ -21,6 +21,7 @@ describe('UpgradeConfirmCtrl controller', () => {
         return $controller('UpgradeConfirmCtrl', {
           $scope: scope,
           $uibModalInstance: $uibModalInstance,
+          $translate: sinon.stub().resolvesArg(0),
         });
       };
     });
@@ -64,15 +65,43 @@ describe('UpgradeConfirmCtrl controller', () => {
       confirmCallback: sinon.stub().callsFake(() => new Promise(r => callbackResolve = r)),
     };
 
-    scope.submit();
+    const submitPromise = scope.submit();
     expect($uibModalInstance.close.callCount).to.equal(0);
     expect($uibModalInstance.dismiss.callCount).to.equal(0);
     expect(scope.model.confirmCallback.callCount).to.deep.equal(1);
     expect(scope.status).to.deep.equal({ processing: true });
 
     callbackResolve();
-    await Promise.resolve();
+    await submitPromise;
+
     expect($uibModalInstance.close.callCount).to.equal(1);
     expect($uibModalInstance.dismiss.callCount).to.equal(0);
+  });
+
+  it('should set an errored state if error is thrown', async () => {
+    await createController();
+    let callbackReject;
+
+    scope.model = {
+      confirmCallback: sinon.stub().callsFake(() => new Promise((res, rej) => callbackReject = rej)),
+      errorKey: 'my_error_key',
+    };
+
+    const submitPromise = scope.submit();
+    expect($uibModalInstance.close.callCount).to.equal(0);
+    expect($uibModalInstance.dismiss.callCount).to.equal(0);
+    expect(scope.model.confirmCallback.callCount).to.deep.equal(1);
+    expect(scope.status).to.deep.equal({ processing: true });
+
+    callbackReject();
+    await submitPromise;
+
+    expect($uibModalInstance.close.callCount).to.equal(0);
+    expect($uibModalInstance.dismiss.callCount).to.equal(0);
+
+    expect(scope.status).to.deep.equal({
+      error: 'my_error_key',
+      processing: false,
+    });
   });
 });
