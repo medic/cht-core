@@ -777,6 +777,79 @@ describe('XmlForms service', () => {
 
     });
 
+    it('does not return a form with a truthy expression if the user does not have relevant permissions', () => {
+      const given = [
+        {
+          id: 'visit',
+          doc: {
+            _id: 'visit',
+            internalId: 'visit',
+            _attachments: { xml: { something: true } },
+            context: {
+              expression: 'true',
+              permission: [ 'national_admin' ]
+            },
+          },
+        },
+        {
+          id: 'registration',
+          doc: {
+            _id: 'visit',
+            internalId: 'visit',
+            _attachments: { xml: { something: true } },
+            context: {
+              expression: 'true',
+              permission: [ 'district_admin' ]
+            },
+          },
+        }
+      ];
+      dbQuery.resolves({ rows: given });
+      hasAuth.withArgs([ 'national_admin' ]).resolves(true);
+      UserContact.resolves();
+      const service = getService();
+      return service.list().then(actual => {
+        expect(actual.length).to.equal(1);
+        expect(actual[0]).to.deep.equal(given[0].doc);
+      });
+    });
+
+    it('does not return a form with a false expression if the user has the relevant permissions', () => {
+      const given = [
+        {
+          id: 'visit',
+          doc: {
+            _id: 'visit',
+            internalId: 'visit',
+            _attachments: { xml: { something: true } },
+            context: {
+              expression: 'false',
+              permission: [ 'national_admin' ]
+            },
+          },
+        },
+        {
+          id: 'registration',
+          doc: {
+            _id: 'visit',
+            internalId: 'visit',
+            _attachments: { xml: { something: true } },
+            context: {
+              expression: 'false',
+              permission: [ 'district_admin' ]
+            },
+          },
+        }
+      ];
+      dbQuery.resolves({ rows: given });
+      hasAuth.withArgs([ 'national_admin' ]).resolves(true);
+      UserContact.resolves();
+      const service = getService();
+      return service.list().then(actual => {
+        expect(actual.length).to.equal(0);
+      });
+    });
+
   });
 
   describe('listen', () => {

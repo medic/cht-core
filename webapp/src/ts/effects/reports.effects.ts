@@ -5,7 +5,6 @@ import { from, of } from 'rxjs';
 import { map, exhaustMap, filter, catchError, withLatestFrom, concatMap, tap, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
-import * as lineageFactory from '@medic/lineage';
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-generator.service';
@@ -310,11 +309,6 @@ export class ReportsEffects {
             return;
           }
 
-          if (report.doc.contact) {
-            const minifiedContact = lineageFactory().minifyLineage(report.doc.contact);
-            this.reportActions.setFirstSelectedReportDocProperty({ contact: minifiedContact });
-          }
-
           const clearVerification = report.doc.verified === verified;
           if (clearVerification) {
             this.reportActions.setFirstSelectedReportDocProperty({
@@ -333,10 +327,15 @@ export class ReportsEffects {
             .get()
             .get(report.doc._id)
             .then(existingRecord => {
-              this.reportActions.setFirstSelectedReportDocProperty({ _rev: existingRecord._rev });
+              const doc = getFirstSelectedReport().doc;
+              const verifiedRecord = {
+                ...existingRecord,
+                verified: doc.verified,
+                verified_date: doc.verified_date,
+              };
               return this.dbService
                 .get()
-                .put(getFirstSelectedReport().doc);
+                .put(verifiedRecord);
             })
             .catch(err => console.error('Error verifying message', err))
             .finally(() => {

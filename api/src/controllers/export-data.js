@@ -29,6 +29,18 @@ const writeExportHeaders = (res, type, format) => {
     .set('Content-Disposition', 'attachment; filename=' + filename);
 };
 
+const getVerifiedValue = (value) => {
+  if (value === 'true') {
+    return true;
+  }
+
+  if (value === 'false') {
+    return false;
+  }
+
+  return null;
+};
+
 module.exports = {
   get: (req, res) => {
     /**
@@ -41,8 +53,10 @@ module.exports = {
       if (filters.date && filters.date.to) {
         filters.date.to = parseInt(filters.date.to);
       }
-      if (filters.verified) {
-        filters.verified = (filters.verified === 'true');
+      if (Object.prototype.hasOwnProperty.call(filters, 'verified')) { // can be equal to empty string
+        filters.verified = Array.isArray(filters.verified) ?
+          filters.verified.map(getVerifiedValue) :
+          [ getVerifiedValue(filters.verified) ];
       }
       if (filters.valid) {
         filters.valid = (filters.valid === 'true');

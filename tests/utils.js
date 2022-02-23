@@ -242,7 +242,7 @@ const closeReloadModal = () => {
     .then(() => dialog.click());
 };
 
-const setUserContactDoc = () => {
+const setUserContactDoc = (attempt=0) => {
   const {
     DB_NAME: dbName,
     USER_CONTACT_ID: docId,
@@ -259,7 +259,13 @@ const setUserContactDoc = () => {
       path: `/${dbName}/${docId}`,
       body: newDoc,
       method: 'PUT',
-    }));
+    }))
+    .catch(err => {
+      if (attempt > 3) {
+        throw err;
+      }
+      return setUserContactDoc(attempt + 1);
+    });
 };
 
 const revertDb = async (except, ignoreRefresh) => {

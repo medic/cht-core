@@ -22,7 +22,7 @@ describe('PrivacyPoliciesService', () => {
     localDb = { get: sinon.stub(), put: sinon.stub() };
     dbService = { get: () => localDb };
     languageService = { get: sinon.stub() };
-    userSettingsService = { get: sinon.stub() };
+    userSettingsService = { get: sinon.stub(), put: sinon.stub() };
     sanitizer = {
       sanitize: sinon.stub().callsFake((context, html) => html)
     };
@@ -243,14 +243,14 @@ describe('PrivacyPoliciesService', () => {
   describe('accept', () => {
     it('should create acceptance log when it does not exist', async () => {
       userSettingsService.get.resolves({ _id: 'user_id', known: true });
-      localDb.put.callsFake(args => Promise.resolve(args[0]));
+      userSettingsService.put.resolves();
       clock = sinon.useFakeTimers(6000);
 
       await service.accept({ language: 'en', digest: 'the_digest' });
 
       expect(userSettingsService.get.callCount).to.equal(1);
-      expect(localDb.put.callCount).to.equal(1);
-      expect(localDb.put.args[0]).to.deep.equal([{
+      expect(userSettingsService.put.callCount).to.equal(1);
+      expect(userSettingsService.put.args[0]).to.deep.equal([{
         _id: 'user_id',
         known: true,
         privacy_policy_acceptance_log: [{
@@ -272,14 +272,14 @@ describe('PrivacyPoliciesService', () => {
           accepted_at: 1234,
         }],
       });
-      localDb.put.callsFake(args => Promise.resolve(args[0]));
+      userSettingsService.put.resolves();
       clock = sinon.useFakeTimers(9568);
 
       await service.accept({ language: 'en', digest: 'dig' });
 
       expect(userSettingsService.get.callCount).to.equal(1);
-      expect(localDb.put.callCount).to.equal(1);
-      expect(localDb.put.args[0]).to.deep.equal([{
+      expect(userSettingsService.put.callCount).to.equal(1);
+      expect(userSettingsService.put.args[0]).to.deep.equal([{
         _id: 'user_id',
         _rev: '223',
         known: true,
@@ -309,14 +309,14 @@ describe('PrivacyPoliciesService', () => {
           accepted_at: 1234,
         }],
       });
-      localDb.put.callsFake(args => Promise.resolve(args[0]));
+      userSettingsService.put.resolves();
       clock = sinon.useFakeTimers(6987);
 
       await service.accept({ language: 'en', digest: 'my_digest' });
 
       expect(userSettingsService.get.callCount).to.equal(1);
-      expect(localDb.put.callCount).to.equal(1);
-      expect(localDb.put.args[0]).to.deep.equal([{
+      expect(userSettingsService.put.callCount).to.equal(1);
+      expect(userSettingsService.put.args[0]).to.deep.equal([{
         _id: 'user_id',
         _rev: '223',
         known: true,
@@ -346,14 +346,14 @@ describe('PrivacyPoliciesService', () => {
           accepted_at: 1234,
         }],
       });
-      localDb.put.rejects({ my: 'err' });
+      userSettingsService.put.rejects({ my: 'err' });
       clock = sinon.useFakeTimers(6987);
 
       return service
         .accept({ language: 'en', digest: 'my_digest' })
         .then(() => assert.fail('Should hve thrown'))
         .catch(err => {
-          expect(localDb.put.callCount).to.equal(1);
+          expect(userSettingsService.put.callCount).to.equal(1);
           expect(err).to.deep.equal({ my: 'err' });
         });
     });

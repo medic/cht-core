@@ -1,4 +1,4 @@
-import { find as _find, assignIn as _assignIn } from 'lodash-es';
+import { find as _find, cloneDeep as _cloneDeep } from 'lodash-es';
 import {
   Component,
   NgZone,
@@ -265,17 +265,18 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
     this.globalActions.setLeftActionBar({
       hasResults: this.hasReports,
-      exportFn: this.exportFn.bind({}, this.ngZone, this.exportService),
+      exportFn: this.exportFn.bind({}, this.ngZone, this.exportService, this.filters),
     });
   }
 
-  private exportFn(ngZone, exportService, e) {
-    const exportFilters = _assignIn({}, this.filters);
+  private exportFn(ngZone, exportService, filters, e) {
+    const exportFilters = _cloneDeep(filters);
     ['forms', 'facilities'].forEach((type) => {
       if (exportFilters[type]) {
         delete exportFilters[type].options;
       }
     });
+
     const $link = $(e.target).closest('a');
     $link.addClass('mm-icon-disabled');
     ngZone.runOutsideAngular(() => {
@@ -283,6 +284,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
         $link.removeClass('mm-icon-disabled');
       }, 2000);
     });
+
     exportService.export('reports', exportFilters, { humanReadable: true });
   }
 

@@ -885,7 +885,85 @@ describe('Reports effects', () => {
         doc: {
           _id: 'report',
           _rev: 2,
-          contact: { _id: 'contact', name: 'name', parent: { _id: 'parent', type: 'clinic' } },
+          contact: {
+            parent: {
+              type: 'health_center',
+              is_name_generated: 'false',
+              name: 'health center',
+              external_id: '',
+              notes: '',
+              contact: {
+                type: 'person',
+                name: 'contact',
+                short_name: '',
+                date_of_birth: '1990-02-01',
+                date_of_birth_method: '',
+                ephemeral_dob: {
+                  dob_calendar: '1990-02-01',
+                  dob_method: '',
+                  ephemeral_months: '7',
+                  ephemeral_years: '2021',
+                  dob_approx: '2021-07-06',
+                  dob_raw: '1990-02-01',
+                  dob_iso: '1990-02-01'
+                },
+                sex: 'female',
+                phone: '+33612345678',
+                phone_alternate: '',
+                role: 'patient',
+                external_id: '',
+                notes: '',
+                meta: {
+                  created_by: 'admin',
+                  created_by_person_uuid: '',
+                  created_by_place_uuid: ''
+                },
+                reported_date: 1625563997559,
+                patient_id: '64038',
+                _id: 'contact',
+                _rev: 2
+              },
+              geolocation: '',
+              meta: {
+                created_by: 'admin',
+                created_by_person_uuid: '',
+                created_by_place_uuid: ''
+              },
+              reported_date: 1625561218242,
+              place_id: '34435',
+              _id: 'parent',
+              _rev: 4
+            },
+            type: 'person',
+            name: 'contact',
+            short_name: '',
+            date_of_birth: '1990-02-01',
+            date_of_birth_method: '',
+            ephemeral_dob: {
+              dob_calendar: '1990-02-01',
+              dob_method: '',
+              ephemeral_months: '7',
+              ephemeral_years: '2021',
+              dob_approx: '2021-07-06',
+              dob_raw: '1990-02-01',
+              dob_iso: '1990-02-01'
+            },
+            sex: 'female',
+            phone: '+33612345678',
+            phone_alternate: '',
+            role: 'patient',
+            external_id: '',
+            notes: '',
+            meta: {
+              created_by: 'admin',
+              created_by_person_uuid: '',
+              created_by_place_uuid: ''
+            },
+            reported_date: 1625563997559,
+            patient_id: '64038',
+            _id: 'contact',
+            _rev: 2
+          },
         },
       }];
       authService.has.resolves(true);
@@ -894,7 +972,7 @@ describe('Reports effects', () => {
 
       sinon.stub(Date, 'now').returns(1000); // using faketimers breaks fakeAsync's tick :(
       dbService.put.resolves();
-      dbService.get.resolves({ _id: 'report', _rev: 3 });
+      dbService.get.resolves({ _id: 'report', _rev: 3, contact: { _id: 'contact', parent: { _id: 'parent' } } });
 
       actions$ = of(ReportActionList.verifyReport(false));
       effects.verifyReport.subscribe();
@@ -928,7 +1006,7 @@ describe('Reports effects', () => {
       // Getting the report from the db causes a new report to be selected
       dbService.get.callsFake(() => {
         actions$ = concat(actions$, of(ReportActionList.selectReport({id: 'report1', silent: false})));
-        return Promise.resolve({ _id: 'report', _rev: 3 });
+        return Promise.resolve({ _id: 'report', _rev: 3, contact: { _id: 'contact', parent: { _id: 'parent' } } });
       });
       // Updating the report causes it to be re-selected
       dbService.put.callsFake(() => {
@@ -996,8 +1074,10 @@ describe('Reports effects', () => {
       expect(setSelected.args).to.deep.equal([[{_id: 'report2', model: true}]]);
 
       // Make sure we only end up setting the data we expect onto the report
-      expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(3);
-      expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).args[2]).to.deep.equal([{ _rev: 3 }]);
+      expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(1);
+      expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).args[0]).to.deep.equal(
+        [{ verified: false, verified_date: 1000 }],
+      );
       expect((<any>ReportsActions.prototype.setFirstSelectedReportFormattedProperty).callCount).to.equal(1);
       expect((<any>ReportsActions.prototype.setFirstSelectedReportFormattedProperty).args[0]).to.deep.equal(
         [{ oldVerified: undefined, verified: false }]);
@@ -1104,7 +1184,7 @@ describe('Reports effects', () => {
         canEdit ? authService.has.resolves(true) : authService.has.resolves(false);
         confirm ? modalService.show.resolves() : modalService.show.rejects();
         dbService.put.resolves();
-        dbService.get.resolves({ _rev: '1' });
+        dbService.get.resolves({ _id: 'def', name: 'hello', _rev: '1', form: 'P' });
         store.overrideSelector(Selectors.getSelectedReports, selectedReports);
         store.refreshState();
 
@@ -1124,13 +1204,11 @@ describe('Reports effects', () => {
             verified_date: expectedDate,
             verified: expectVerified,
           }]);
-          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(2);
+          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(1);
           expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).args[0]).to.deep.equal([{
             verified: expectVerified,
             verified_date: expectedDate,
           }]);
-          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).args[1])
-            .to.deep.equal([{ _rev: '1'}]);
           expect((<any>ServicesActions.prototype.setLastChangedDoc).callCount).to.equal(1);
           expect((<any>ServicesActions.prototype.setLastChangedDoc).args[0]).to.deep.equal([
             { _id: 'def', name: 'hello', form: 'P', verified: initial },

@@ -16,7 +16,18 @@ const reportsByUUID = (uuid) => {
 
 const reportListID = '#reports-list';
 
+const getCurrentReportId = async () => {
+  const currentUrl = await browser.getCurrentUrl();
+  const reportBaseUrl = utils.getBaseUrl() + 'reports/';
+  if (!currentUrl.startsWith(reportBaseUrl)) {
+    return;
+  }
+
+  return currentUrl.slice(reportBaseUrl.length);
+};
+
 module.exports = {
+  getCurrentReportId,
   relativeDate: () => element(by.css('#reports-content .item-summary .relative-date-content')),
   firstForm,
   submitReport,
