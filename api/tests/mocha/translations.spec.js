@@ -11,8 +11,8 @@ let translations;
 
 describe('translations', () => {
   beforeEach(() => {
-    sinon.stub(fs, 'readdir');
-    sinon.stub(fs, 'readFile');
+    sinon.stub(fs.promises, 'readdir');
+    sinon.stub(fs.promises, 'readFile');
     sinon.stub(properties, 'parse');
     sinon.stub(environment, 'resourcesPath').value('/path/to/resources/');
     translations = rewire('../../src/translations');
@@ -23,64 +23,64 @@ describe('translations', () => {
   });
 
   it('run returns errors from reading files', () => {
-    fs.readdir.callsArgWith(1, { some: 'error' });
+    fs.promises.readdir.rejects({ some: 'error' });
     return translations.run().catch(err => {
       chai.expect(err).to.deep.equal({ some: 'error' });
     });
   });
 
   it('run does nothing if no files', () => {
-    fs.readdir.callsArgWith(1, null, []);
+    fs.promises.readdir.resolves([]);
 
     return translations.run().then(() => {
-      chai.expect(fs.readdir.callCount).to.equal(1);
-      chai.expect(fs.readFile.callCount).to.equal(0);
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(0);
     });
   });
 
   it('run does nothing if no translation files', () => {
-    fs.readdir.callsArgWith(1, null, ['logo.png']);
+    fs.promises.readdir.resolves(['logo.png']);
     return translations.run().then(() => {
-      chai.expect(fs.readdir.callCount).to.equal(1);
-      chai.expect(fs.readFile.callCount).to.equal(0);
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(0);
     });
   });
 
   it('run returns errors from reading file', () => {
-    fs.readdir.callsArgWith(1, null, ['messages-en.properties']);
-    fs.readFile.callsArgWith(2, { error: 'omg' });
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.rejects({ error: 'omg' });
     return translations.run().catch(err => {
-      chai.expect(fs.readdir.callCount).to.equal(1);
-      chai.expect(fs.readdir.args[0][0]).to.equal('/path/to/resources/translations');
-      chai.expect(fs.readFile.callCount).to.equal(1);
-      chai.expect(fs.readFile.args[0][0]).to.equal('/path/to/resources/translations/messages-en.properties');
-      chai.expect(fs.readFile.args[0][1]).to.equal('utf8');
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readdir.args[0][0]).to.equal('/path/to/resources/translations');
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.args[0][0]).to.equal('/path/to/resources/translations/messages-en.properties');
+      chai.expect(fs.promises.readFile.args[0][1]).to.equal('utf8');
       chai.expect(err).to.deep.equal({ error: 'omg' });
     });
   });
 
   it('run returns errors from properties parse', () => {
-    fs.readdir.callsArgWith(1, null, ['messages-en.properties']);
-    fs.readFile.callsArgWith(2, null, 'some buffer');
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.resolves('some buffer');
     properties.parse.callsArgWith(1, 'boom');
     return translations.run().catch(err => {
       chai.expect(err).to.equal('boom');
-      chai.expect(fs.readdir.callCount).to.equal(1);
-      chai.expect(fs.readFile.callCount).to.equal(1);
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
       chai.expect(properties.parse.callCount).to.equal(1);
       chai.expect(properties.parse.args[0][0]).to.equal('some buffer');
     });
   });
 
   it('run returns errors from getting translation docs', () => {
-    fs.readdir.callsArgWith(1, null, ['messages-en.properties']);
-    fs.readFile.callsArgWith(2, null, 'some buffer');
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.resolves('some buffer');
     properties.parse.callsArgWith(1, null, { first: '1st' });
     sinon.stub(db.medic, 'allDocs').rejects('boom');
     return translations.run().catch(err => {
       chai.expect(err.name).to.equal('boom');
-      chai.expect(fs.readdir.callCount).to.equal(1);
-      chai.expect(fs.readFile.callCount).to.equal(1);
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
       chai.expect(properties.parse.callCount).to.equal(1);
       chai.expect(db.medic.allDocs.callCount).to.equal(1);
       chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
@@ -92,8 +92,8 @@ describe('translations', () => {
   });
 
   it('overwrites translations that have changed', () => {
-    fs.readdir.callsArgWith(1, null, ['messages-en.properties']);
-    fs.readFile.callsArgWith(2, null, 'some buffer');
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.resolves('some buffer');
 
     const docs = [ { doc: {
       _id: 'messages-en',
@@ -106,8 +106,8 @@ describe('translations', () => {
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
     sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
-      chai.expect(fs.readdir.callCount).to.equal(1);
-      chai.expect(fs.readFile.callCount).to.equal(1);
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
       chai.expect(properties.parse.callCount).to.equal(1);
       chai.expect(db.medic.allDocs.callCount).to.equal(1);
       chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
@@ -123,8 +123,8 @@ describe('translations', () => {
   });
 
   it('returns errors from db bulk', () => {
-    fs.readdir.callsArgWith(1, null, ['messages-en.properties']);
-    fs.readFile.callsArgWith(2, null, 'some buffer');
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.resolves('some buffer');
 
     const docs = [ { doc: {
       _id: 'messages-en',
@@ -137,8 +137,8 @@ describe('translations', () => {
     sinon.stub(db.medic, 'bulkDocs').rejects('boom');
     return translations.run().catch(err => {
       chai.expect(err.name).to.equal('boom');
-      chai.expect(fs.readdir.callCount).to.equal(1);
-      chai.expect(fs.readFile.callCount).to.equal(1);
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
       chai.expect(properties.parse.callCount).to.equal(1);
       chai.expect(db.medic.allDocs.callCount).to.equal(1);
       chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
@@ -146,8 +146,8 @@ describe('translations', () => {
   });
 
   it('overwrites updated translations where not modified by configuration', () => {
-    fs.readdir.callsArgWith(1, null, ['messages-en.properties']);
-    fs.readFile.callsArgWith(2, null, 'some buffer');
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.resolves('some buffer');
 
     const docs = [ { doc: {
       _id: 'messages-en',
@@ -160,8 +160,8 @@ describe('translations', () => {
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
     sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
-      chai.expect(fs.readdir.callCount).to.equal(1);
-      chai.expect(fs.readFile.callCount).to.equal(1);
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
       chai.expect(properties.parse.callCount).to.equal(1);
       chai.expect(db.medic.allDocs.callCount).to.equal(1);
       chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
@@ -182,8 +182,8 @@ describe('translations', () => {
 
   it('do not update if existing and attached translation is empty', () => {
     // this is a special case broken by checking falsey
-    fs.readdir.callsArgWith(1, null, ['messages-en.properties']);
-    fs.readFile.callsArgWith(2, null, 'some buffer');
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.resolves('some buffer');
 
     const docs = [ { doc: {
       _id: 'messages-en',
@@ -200,8 +200,8 @@ describe('translations', () => {
   });
 
   it('creates new language', () => {
-    fs.readdir.callsArgWith(1, null, ['messages-fr.properties']);
-    fs.readFile.callsArgWith(2, null, 'some buffer');
+    fs.promises.readdir.resolves(['messages-fr.properties']);
+    fs.promises.readFile.resolves('some buffer');
 
     const docs = [ { doc: {
       _id: 'messages-en',
@@ -214,8 +214,8 @@ describe('translations', () => {
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
     sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
-      chai.expect(fs.readdir.callCount).to.equal(1);
-      chai.expect(fs.readFile.callCount).to.equal(1);
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
       chai.expect(properties.parse.callCount).to.equal(1);
       chai.expect(db.medic.allDocs.callCount).to.equal(1);
       chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
@@ -237,8 +237,8 @@ describe('translations', () => {
   });
 
   it('does not recreate deleted language', () => {
-    fs.readdir.callsArgWith(1, null, ['messages-fr.properties']);
-    fs.readFile.callsArgWith(2, null, 'some buffer');
+    fs.promises.readdir.resolves(['messages-fr.properties']);
+    fs.promises.readFile.resolves('some buffer');
 
     const docs = [ { doc: {
       _id: 'messages-en',
@@ -251,8 +251,8 @@ describe('translations', () => {
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
     sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
-      chai.expect(fs.readdir.callCount).to.equal(1);
-      chai.expect(fs.readFile.callCount).to.equal(1);
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
       chai.expect(properties.parse.callCount).to.equal(1);
       chai.expect(db.medic.allDocs.callCount).to.equal(1);
       chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
@@ -274,8 +274,8 @@ describe('translations', () => {
   });
 
   it('overwrites multiple translation files', () => {
-    fs.readdir.callsArgWith(1, null, ['messages-en.properties', 'messages-fr.properties']);
-    fs.readFile.callsArgWith(2, null, 'some buffer');
+    fs.promises.readdir.resolves(['messages-en.properties', 'messages-fr.properties']);
+    fs.promises.readFile.resolves('some buffer');
 
     const docs = [
       { doc: {
@@ -301,10 +301,10 @@ describe('translations', () => {
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
     sinon.stub(db.medic, 'bulkDocs').resolves(1);
     return translations.run().then(() => {
-      chai.expect(fs.readdir.callCount).to.equal(1);
-      chai.expect(fs.readFile.callCount).to.equal(2);
-      chai.expect(fs.readFile.args[0][0]).to.equal('/path/to/resources/translations/messages-en.properties');
-      chai.expect(fs.readFile.args[1][0]).to.equal('/path/to/resources/translations/messages-fr.properties');
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(2);
+      chai.expect(fs.promises.readFile.args[0][0]).to.equal('/path/to/resources/translations/messages-en.properties');
+      chai.expect(fs.promises.readFile.args[1][0]).to.equal('/path/to/resources/translations/messages-fr.properties');
       chai.expect(properties.parse.callCount).to.equal(2);
       chai.expect(db.medic.allDocs.callCount).to.equal(1);
       chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
@@ -334,8 +334,8 @@ describe('translations', () => {
   });
 
   it('defaults null translation values to the key - #3753', () => {
-    fs.readdir.callsArgWith(1, null, ['messages-en.properties']);
-    fs.readFile.callsArgWith(2, null, 'some buffer');
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.resolves('some buffer');
 
     const docs = [
       { doc: {
@@ -350,8 +350,8 @@ describe('translations', () => {
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
     sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
-      chai.expect(fs.readdir.callCount).to.equal(1);
-      chai.expect(fs.readFile.callCount).to.equal(1);
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
       chai.expect(properties.parse.callCount).to.equal(1);
       chai.expect(db.medic.allDocs.callCount).to.equal(1);
       chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
@@ -370,8 +370,8 @@ describe('translations', () => {
   });
 
   it('defaults undefined translation values to the key - #3753', () => {
-    fs.readdir.callsArgWith(1, null, ['messages-en.properties', 'messages-ne.properties']);
-    fs.readFile.callsArgWith(2, null, 'some buffer');
+    fs.promises.readdir.resolves(['messages-en.properties', 'messages-ne.properties']);
+    fs.promises.readFile.resolves('some buffer');
 
     const docs = [
       { doc: {
@@ -393,8 +393,8 @@ describe('translations', () => {
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
     sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
-      chai.expect(fs.readdir.callCount).to.equal(1);
-      chai.expect(fs.readFile.callCount).to.equal(2);
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(2);
       chai.expect(properties.parse.callCount).to.equal(2);
       chai.expect(db.medic.allDocs.callCount).to.equal(1);
       chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
@@ -413,8 +413,8 @@ describe('translations', () => {
   });
 
   it('converts all non-string values to string', () => {
-    fs.readdir.callsArgWith(1, null, ['messages-en.properties']);
-    fs.readFile.callsArgWith(2, null, 'some buffer');
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.resolves('some buffer');
 
     const docs = [
       { doc: {
@@ -429,8 +429,8 @@ describe('translations', () => {
     sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
     sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
-      chai.expect(fs.readdir.callCount).to.equal(1);
-      chai.expect(fs.readFile.callCount).to.equal(1);
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
       chai.expect(properties.parse.callCount).to.equal(1);
       chai.expect(db.medic.allDocs.callCount).to.equal(1);
       chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
