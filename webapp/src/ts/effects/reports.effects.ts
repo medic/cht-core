@@ -224,7 +224,7 @@ export class ReportsEffects {
     return this.actions$.pipe(
       ofType(ReportActionList.selectAll),
       withLatestFrom(this.store.select(Selectors.getFilters)),
-      tap(([,filters]) => {
+      tap(([, filters]) => {
         return this.searchService
           .search('reports', filters, { limit: 500, hydrateContactNames: true })
           .then((summaries) => {

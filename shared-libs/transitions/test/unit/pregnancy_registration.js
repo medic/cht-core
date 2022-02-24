@@ -60,7 +60,7 @@ describe('pregnancy registration', () => {
           }
         ]
       }
-    },{
+    }, {
       // Pregnancy for existing patient
       form: 'ep',
       type: 'pregnancy',
@@ -120,18 +120,18 @@ describe('pregnancy registration', () => {
   });
 
   it('filter fails if form is unknown', () => {
-    const doc = { form: 'x' , type: 'data_record', contact: { phone: '+123' }};
+    const doc = { form: 'x', type: 'data_record', contact: { phone: '+123' }};
     assert(!transition.filter(doc));
   });
 
   it('filter succeeds with no clinic phone if public form', () => {
-    const doc = { form: 'p' , type: 'data_record'};
+    const doc = { form: 'p', type: 'data_record'};
     sinon.stub(utils, 'getForm').returns({ public_form: true });
     assert(transition.filter(doc));
   });
 
   it('filter succeeds with populated doc', () => {
-    const doc = { form: 'p' , type: 'data_record', contact: { phone: '+123' }};
+    const doc = { form: 'p', type: 'data_record', contact: { phone: '+123' }};
     sinon.stub(utils, 'getForm').returns({});
     assert(transition.filter(doc));
   });

@@ -33,7 +33,7 @@ export class AndroidAppLauncherService {
         console.error(error);
         this.resolve = null;
         const details = `ChtAndroidApp=${JSON.stringify(chtAndroidApp)}, Enabled=${this.isEnabled()}`;
-        const message = `AndroidAppLauncherService :: Error when launching Android app. ${ details }`;
+        const message = `AndroidAppLauncherService :: Error when launching Android app. ${details}`;
         reject(message);
       }
     });

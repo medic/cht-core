@@ -25,7 +25,7 @@ const getPerson = id => {
 const isAPerson = person => contactTypeUtils.isPerson(config.get(), person);
 
 const getDefaultPersonType = () => {
-  const type = contactTypeUtils.getTypeById(config.get(),'person');
+  const type = contactTypeUtils.getTypeById(config.get(), 'person');
   return type && type.id;
 };
 

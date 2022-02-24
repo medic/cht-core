@@ -85,7 +85,8 @@ describe('task-states', () => {
           {
             state: 'Ready',
             timestamp: NOW,
-          }],
+          }
+        ],
       });
     });
 

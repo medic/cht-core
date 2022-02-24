@@ -473,14 +473,14 @@ describe('TokenLogin service', () => {
 
   describe('manageTokenLogin', () => {
     it('should do nothing when undefined', () => {
-      return service.manageTokenLogin({}, '',{ user: { id: 'user' } }).then(actual => {
+      return service.manageTokenLogin({}, '', { user: { id: 'user' } }).then(actual => {
         chai.expect(actual).to.deep.equal({ user: { id: 'user' } });
       });
     });
 
     it('should do nothing when no config', () => {
       sinon.stub(config, 'get').withArgs('token_login').returns();
-      return service.manageTokenLogin({ token_login: true }, '',{ user: { id: 'user' } }).then(actual => {
+      return service.manageTokenLogin({ token_login: true }, '', { user: { id: 'user' } }).then(actual => {
         chai.expect(actual).to.deep.equal({ user: { id: 'user' } });
       });
     });

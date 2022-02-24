@@ -7,7 +7,7 @@ const serverChecks = require('@medic/server-checks');
 process
   .on('unhandledRejection', reason => {
     logger.error('Unhandled Rejection:');
-    logger.error('%o',reason);
+    logger.error('%o', reason);
   })
   .on('uncaughtException', err => {
     logger.error('UNCAUGHT EXCEPTION!');
@@ -55,6 +55,6 @@ serverChecks
   })
   .catch(err => {
     logger.error('Fatal error intialising medic-sentinel');
-    logger.error('%o',err);
+    logger.error('%o', err);
     process.exit(1);
   });

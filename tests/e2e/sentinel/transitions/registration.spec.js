@@ -52,7 +52,7 @@ const contacts = [
     type: 'contact',
     contact_type: 'person',
     patient_id: 'the_supervisor',
-    parent: { _id: 'district_hospital' } ,
+    parent: { _id: 'district_hospital' },
     phone: '+00000000',
     reported_date: new Date().getTime()
   },
@@ -62,7 +62,7 @@ const contacts = [
     type: 'contact',
     contact_type: 'person',
     patient_id: 'the_middle_man',
-    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } ,
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     phone: '+11111111',
     reported_date: new Date().getTime()
   }

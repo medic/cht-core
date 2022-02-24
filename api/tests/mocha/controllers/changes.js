@@ -121,7 +121,7 @@ describe('Changes controller', () => {
       this.complete = complete;
 
       this.then = promise.then.bind(promise);
-      this['catch'] = promise['catch'].bind(promise);
+      this.catch = promise.catch.bind(promise);
       this
         .then(result => complete(null, result), complete)
         .catch(err => complete(err));
@@ -969,10 +969,10 @@ describe('Changes controller', () => {
           emitter.emit('change', { id: 4, changes: [] }, 0, 5);
           emitter.emit('change', { id: 5, changes: [] }, 0, 6);
           feed.results.length.should.equal(3);
-          feed.results.should.deep.equal([ { id: 1, changes: [] }, { id: 2, changes: [] },{ id: 3, changes: [] } ]);
+          feed.results.should.deep.equal([ { id: 1, changes: [] }, { id: 2, changes: [] }, { id: 3, changes: [] } ]);
           testRes.write.callCount.should.equal(1);
           testRes.write.args[0][0].should.equal(JSON.stringify(
-            { results: [ { id: 1, changes: [] }, { id: 2, changes: [] },{ id: 3, changes: [] } ], last_seq: 4 }
+            { results: [ { id: 1, changes: [] }, { id: 2, changes: [] }, { id: 3, changes: [] } ], last_seq: 4 }
           ));
           controller._getLongpollFeeds().length.should.equal(0);
         });
@@ -1605,7 +1605,7 @@ describe('Changes controller', () => {
         .then(() => {
           clock.tick(40000);
           testRes.write.callCount.should.equal(12);
-          for (let i = 0; i < 12 ; i++) {
+          for (let i = 0; i < 12; i++) {
             testRes.write.args[i][0].should.equal('\n');
           }
           controller._getLongpollFeeds().length.should.equal(1);

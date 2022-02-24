@@ -1,7 +1,7 @@
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 
-describe('Hamburger Menu tests' , async () => {
+describe('Hamburger Menu tests', async () => {
   before(async () => {
     await loginPage.cookieLogin();
   });

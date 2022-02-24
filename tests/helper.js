@@ -48,7 +48,7 @@ module.exports = {
     await handleUpdateModalNative();
     try {
       const msg = `First attempt to click failed. Element is ${element.locator()}`;
-      await browser.wait(EC.elementToBeClickable(element),12000, msg);
+      await browser.wait(EC.elementToBeClickable(element), 12000, msg);
       await element.click();
     } catch (err) {
       await browser.sleep(1000);
@@ -291,7 +291,7 @@ module.exports = {
   waitElementToDisappearNative: async (elm, timeout) => {
     const locator = elm.locator();
     timeout = timeout || 15000;
-    await browser.wait(EC.invisibilityOf(elm),timeout, `waitElementToDisappear timed out looking for ${locator}`);
+    await browser.wait(EC.invisibilityOf(elm), timeout, `waitElementToDisappear timed out looking for ${locator}`);
   },
 
   waitElementToPresent: (elm, timeout) => {

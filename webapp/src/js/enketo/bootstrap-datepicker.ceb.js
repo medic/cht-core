@@ -2,7 +2,7 @@
  * Philippines Bisaya/Cebuano translation for bootstrap-datepicker
  */
 (function($){
-  $.fn.datepicker.dates['ceb'] = {
+  $.fn.datepicker.dates.ceb = {
     days: ['Domingo', 'Lunes', 'Martes', 'Miyerkules', 'Huwebes', 'Biyernes', 'Sabado'],
     daysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     daysMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],

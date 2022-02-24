@@ -1,7 +1,7 @@
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 
-describe('Navigation tests' , async () => {
+describe('Navigation tests', async () => {
   beforeEach(async () => {
     await loginPage.cookieLogin();
   });

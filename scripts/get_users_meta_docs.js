@@ -34,7 +34,7 @@ Example:
 
 const mode = argv.mode;
 const type = argv.type;
-const couchUrl = argv['_'][0] || 'http://admin:pass@localhost:5984/medic-users-meta';
+const couchUrl = argv._[0] || 'http://admin:pass@localhost:5984/medic-users-meta';
 
 const db = PouchDB(couchUrl);
 
@@ -60,8 +60,8 @@ const fetchNextDocs = async (startkey) => {
 };
 
 const actionChoices = [
-  { name: 'Display next', value: 'next' }, 
-  { name: 'Save current in working directory', value: 'save_current' }, 
+  { name: 'Display next', value: 'next' },
+  { name: 'Save current in working directory', value: 'save_current' },
   { name: 'Save all in working directory', value: 'save_all' },
   { name: 'Quit', value: 'quit' }
 ];
@@ -78,7 +78,7 @@ const actionQuestions = [{
   try {
     if (mode === 'batch') {
       let startkey;
-      for (let i = 0;; i++) {
+      for (let i = 0; ; i++) {
         const result = await fetchNextDocs(startkey);
         startkey = result.nextStartKey;
         const docs = result.docs;
@@ -136,7 +136,7 @@ const actionQuestions = [{
           } else if (response.action === 'save_all') {
             const filePath = path.join(path.resolve(__dirname), `${type}.json`);
             let startkey;
-            for (let i = 0;; i++) {
+            for (let i = 0; ; i++) {
               const result = await fetchNextDocs(startkey);
               startkey = result.nextStartKey;
               docs = result.docs;
@@ -151,7 +151,7 @@ const actionQuestions = [{
               }
             }
             console.log('\x1b[31m%s\x1b[0m', `Documents saved to ${filePath}`);
-          }  
+          }
         } while (response.action !== 'quit');
       }
     }

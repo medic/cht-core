@@ -29,7 +29,7 @@ describe('monitoring', () => {
       const usersInfo = await getInfo('_users');
 
       const result = await utils.request({ path: '/api/v1/monitoring' });
-      chai.expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation','node']).to.deep.equal({
+      chai.expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation', 'node']).to.deep.equal({
         version: {
           app: await getAppVersion(),
           couchdb: await getCouchDBVersion(),
@@ -101,7 +101,7 @@ describe('monitoring', () => {
       const usersInfo = await getInfo('_users');
 
       const result = await utils.request({ path: '/api/v2/monitoring' });
-      chai.expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation','node']).to.deep.equal({
+      chai.expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation', 'node']).to.deep.equal({
         version: {
           app: await getAppVersion(),
           couchdb: await getCouchDBVersion(),

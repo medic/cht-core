@@ -41,3 +41,4 @@ tests/integration/results/
 allure*
 tests/config-temp
 cht-docker-compose.log
+.eslintcache

@@ -100,8 +100,8 @@ const waitForContactUnloaded = async () => {
   await (await emptySelection()).waitForDisplayed();
 };
 
-const addPlace = async (type, placeName , contactName ) => {
-  const dashedType = type.replace('_','-');
+const addPlace = async (type, placeName, contactName ) => {
+  const dashedType = type.replace('_', '-');
   await (await actionResourceIcon(dashedType)).waitForDisplayed();
   await (await actionResourceIcon(dashedType)).click();
 

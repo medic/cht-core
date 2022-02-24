@@ -75,7 +75,7 @@ describe('Search service', function() {
       return service('reports', {})
         .then(function(actual) {
           chai.expect(actual.docIds.length).to.equal(2);
-          chai.expect(actual).to.deep.equal({ docIds: [3,4] });
+          chai.expect(actual).to.deep.equal({ docIds: [3, 4] });
           chai.expect(GenerateSearchRequests.generate.callCount).to.equal(1);
           chai.expect(DB.query.callCount).to.equal(1);
           chai.expect(DB.query.args[0][0]).to.equal('medic-client/reports_by_date');
@@ -214,7 +214,7 @@ describe('Search service', function() {
     });
 
     it('does not slice with negative end index when skip is greater than nbr of results #4610', function() {
-      const viewResult = { rows: Array.apply(null, Array(50)).map(function (val, i) { return { id: i, value: i };})};
+      const viewResult = { rows: Array.apply(null, Array(50)).map((val, i) => ({ id: i, value: i })) };
 
       GenerateSearchRequests.generate.returns([
         { view: 'get_stuff', params: { key: [ 'a' ] } },

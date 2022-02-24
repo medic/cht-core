@@ -192,7 +192,7 @@ describe('Auth directive', () => {
       expect(authServiceMock.any.callCount).to.equal(0);
     }));
 
-    it('should be shown with at least one allowed permission',waitForAsync(async () => {
+    it('should be shown with at least one allowed permission', waitForAsync(async () => {
       authServiceMock.any.resolves(true);
       const element = await overrideTemplate('<a mmAuth [mmAuthAny]="[\'perm1\', \'perm2\']"></a>');
 

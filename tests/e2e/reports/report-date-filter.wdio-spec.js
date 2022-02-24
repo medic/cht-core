@@ -96,7 +96,7 @@ describe('Filters reports', () => {
     await commonElements.goToReports();
     await (await reportsTab.firstReport()).waitForDisplayed();
 
-    await reportsTab.filterByDate(moment('05/16/2016','MM/DD/YYYY'), moment('05/17/2016','MM/DD/YYYY'));
+    await reportsTab.filterByDate(moment('05/16/2016', 'MM/DD/YYYY'), moment('05/17/2016', 'MM/DD/YYYY'));
     await (await reportsTab.firstReport()).waitForDisplayed();
 
     expect(await (await reportsTab.allReports()).length).to.equal(2);

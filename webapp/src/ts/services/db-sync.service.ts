@@ -98,6 +98,7 @@ export class DBSyncService {
       onChange: (replicationResult?) => this.rulesEngineService.monitorExternalChanges(replicationResult),
     }
   ];
+
   private globalActions: GlobalActions;
   private inProgressSync;
   private knownOnlineState = window.navigator.onLine;
@@ -106,6 +107,7 @@ export class DBSyncService {
     sync: undefined,
     meta: undefined,
   };
+
   private readonly observable = new Subject<SyncState>();
 
   isEnabled() {
@@ -169,9 +171,11 @@ export class DBSyncService {
   private getCurrentSeq() {
     return this.dbService.get().info().then(info => info.update_seq + '');
   }
+
   private getLastReplicatedSeq() {
     return window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY);
   }
+
   private getLastReplicationDate() {
     return window.localStorage.getItem(LAST_REPLICATED_DATE_KEY);
   }

@@ -22,7 +22,7 @@ const openAddLanguageModal = async () => {
   await helper.waitElementToBeVisibleNative(addLanguageModal);
 };
 
-const addNewLanguage = async (code, name) =>{
+const addNewLanguage = async (code, name) => {
   await helper.clickElementNative(addLanguageButton);
   await helper.waitElementToBeVisibleNative(addLanguageModal);
   await languageCodeInput.sendKeys(code);
@@ -30,7 +30,7 @@ const addNewLanguage = async (code, name) =>{
   await languageSubmitButton.click();
 };
 
-const languageDisplayed = async (code) =>{
+const languageDisplayed = async (code) => {
   const languageDiv = element(by.css(`#locale-${code}`));
   const languageName = await helper.getTextFromElementNative(languageDiv);
   return languageName;

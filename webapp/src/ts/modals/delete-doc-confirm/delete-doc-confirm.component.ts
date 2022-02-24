@@ -52,7 +52,7 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
     this.subscriptions.unsubscribe();
   }
 
-  private getRoute(url = '', doc) {
+  private getRoute(doc, url = '') {
     const contacts = 'contacts';
     const reports = 'reports';
 
@@ -76,7 +76,7 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
       .put(doc)
       .then(() => {
         const text = this.translateService.instant('document.deleted');
-        const route = this.getRoute(this.router.url, doc);
+        const route = this.getRoute(doc, this.router.url);
         this.globalActions.setSnackbarContent(text);
         this.close();
 
