@@ -10,7 +10,7 @@
 
     <p class="status"
       translate="instance.upgrade.upgrading"
-      translate-values="{ before: currentDeploy.version, after: upgradeDoc.to_version }"></p>
+      translate-values="{ before: currentDeploy.version, after: upgradeDoc.to.version }"></p>
 
     <ul ng-show="upgradeDoc.state_history.length" class="table table-striped col">
       <li ng-repeat="entry in upgradeDoc.state_history" class="row">
@@ -34,7 +34,7 @@
 
     <div ng-show="upgradeDoc.state === 'indexed' && upgradeDoc.action === 'stage'">
       <p class="col-xs-10" translate>instance.stage.complete</p>
-      <button class="col-xs-1 btn btn-primary" ng-click="upgrade(upgradeDoc.to_version, 'complete')" translate>instance.upgrade.install</button>
+      <button class="col-xs-1 btn btn-primary" ng-click="upgrade(upgradeDoc.to, 'complete')" translate>instance.upgrade.install</button>
     </div>
     <div ng-show="upgradeDoc.state === 'complete'">
       <p class="col-xs-10" translate>instance.upgrade.complete</p>

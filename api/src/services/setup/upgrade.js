@@ -10,7 +10,7 @@ let upgrading;
  * @property {string} namespace - default "medic"
  * @property {string} application - default "medic"
  * @property {string} version - tag, branch or local
- * @property {string} build - unique tag for a build that respects semver
+ * @property {string} build - unique tag for a build. Semver valid.
  */
 
 /**
