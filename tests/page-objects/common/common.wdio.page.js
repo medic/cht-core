@@ -12,18 +12,18 @@ const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
 const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
-const activeSnackbar = () => $('#snackbar.active');
-const inactiveSnackbar = () => $('#snackbar:not(.active)');
-const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message')).getText();
-const snackbarAction = () => $('#snackbar.active .snackbar-action');
-const settings = () => $$('.configuration a>span');
-const wizardTitle = () => $('#guided-setup .modal-header > h2');
+
 //languages
 const languagePreferenceHeading = () => $('#language-preference-heading');
 const selectedPreferenceHeading = () => $('#language-preference-heading > h4:nth-child(1) > span:nth-child(3)');
 const messagesLanguage = () => $('.locale a.selected span');
 const defaultLanguage = () => $('.locale-outgoing a.selected span');
 
+
+const activeSnackbar = () => $('#snackbar.active');
+const inactiveSnackbar = () => $('#snackbar:not(.active)');
+const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message')).getText();
+const snackbarAction = () => $('#snackbar.active .snackbar-action');
 
 const isHamburgerMenuOpen = async () => {
   return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
@@ -234,47 +234,6 @@ const openAppManagement = async () => {
   await (await $('.navbar-brand')).waitForDisplayed();
 };
 
-const getTextForElements = async (elements) => {
-  return Promise.all((await elements()).map(filter => filter.getText()));
-};
-const openMenu = async () => {
-  await (await messagesTab()).waitForDisplayed();
-  const menuAlreadyOpen = hamburgerMenuOptions.length &&
-                          hamburgerMenuOptions.first() &&
-                          await hamburgerMenuOptions.first().waitForDisplayed();
-  if (!menuAlreadyOpen) {
-    await (await hamburgerMenu()).click();
-  }
-  await hamburgerMenuOptions.first().waitForDisplayed();
-};
-
-const findElementByTextAndClick = async (elements, expectedText) => {
-  //await elements.waitForDisplayed();
-  const expectedTexts = Array.isArray(expectedText) ? expectedText : [expectedText];
-
-  await elements.each(async (element) => {
-    const text = await element.getText();
-    const trimmedText = text.toLowerCase().trim();
-    const includesAny = expectedTexts.some(expectedText => trimmedText.includes(expectedText));
-    if (!includesAny) {
-      return;
-    }
-
-    await element.click();
-  });
-};
-
-const openSubmenu = (menuName) => {
-  return findElementByTextAndClick(hamburgerMenuOptions, menuName);
-};
-
-const checkUserSettings = async () => {
-  await openSubmenu(['user settings', 'edit.user.settings']);
-  const optionNames = await (await settings()).getText();
-  expect(optionNames[0]).toContain('password');
-  expect(optionNames[1].toLowerCase()).toEqual('edit user profile');
-};
-
 const getDefaultLanguages = async () => {
   await (await hamburgerMenu()).click();
   await openConfigurationWizardAndFetchProperties();
@@ -332,8 +291,6 @@ module.exports = {
   inactiveSnackbar,
   snackbarMessage,
   snackbarAction,
+  getDefaultLanguages,
   getTextForElements,
-  checkUserSettings,
-  messagesList,
-  getDefaultLanguages
 };
