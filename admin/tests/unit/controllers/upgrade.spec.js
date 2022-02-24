@@ -10,6 +10,7 @@ describe('UpgradeCtrl controller', () => {
   let createController;
   let http;
   let timeout;
+  let translate;
 
   beforeEach(() => {
     module('adminApp');
@@ -30,6 +31,8 @@ describe('UpgradeCtrl controller', () => {
       post: sinon.stub(),
       delete: sinon.stub(),
     };
+    translate = sinon.stub().resolvesArg(0);
+    translate.onReady = sinon.stub().resolves();
 
     module($provide => {
       $provide.value('Modal', modal);
@@ -45,7 +48,7 @@ describe('UpgradeCtrl controller', () => {
         return $controller('UpgradeCtrl', {
           $q: Q,
           $scope: scope,
-          $translate: sinon.stub().resolvesArg(0),
+          $translate: translate,
         });
       };
     });
@@ -553,9 +556,9 @@ describe('UpgradeCtrl controller', () => {
         'model.after': '4.3.0',
         'model.errorKey': 'instance.upgrade.error.abort',
       });
-      const abortCb = modal.args[0][0].model.confirmCallback;
+      const abortDb = modal.args[0][0].model.confirmCallback;
 
-      await abortCb();
+      await abortDb();
 
       expect(http.delete.callCount).to.equal(1);
       expect(http.delete.args[0]).to.deep.equal(['/api/v2/upgrade']);

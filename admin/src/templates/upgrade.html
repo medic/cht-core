@@ -12,6 +12,10 @@
       translate="instance.upgrade.upgrading"
       translate-values="{ before: currentDeploy.version, after: upgradeDoc.to.version }"></p>
 
+    <div ng-show="error">
+      <p class="alert alert-danger error">{{error}}</p>
+    </div>
+
     <ul ng-show="upgradeDoc.state_history.length" class="table table-striped col">
       <li ng-repeat="entry in upgradeDoc.state_history" class="row">
         <div>
@@ -43,11 +47,11 @@
     <button class="col-xs-2 btn btn-danger" ng-click="abortUpgrade()" translate>instance.upgrade.cancel</button>
   </div>
 
-  <div ng-show="error">
-    <p class="col-xs-12 alert alert-danger error">{{error}}</p>
-  </div>
-
   <div ng-hide="upgradeDoc">
+
+    <div ng-show="error">
+      <p class="alert alert-danger error">{{error}}</p>
+    </div>
 
     <div>
       <legend translate>instance.upgrade.current_version</legend>

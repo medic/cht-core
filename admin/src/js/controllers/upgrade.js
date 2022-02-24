@@ -26,10 +26,13 @@ angular.module('controllers').controller('UpgradeCtrl',
     const BUILD_LIST_LIMIT = 50;
 
     const logError = (error, key) => {
-      return $translate(key).then((msg) => {
-        $log.error(msg, error);
-        $scope.error = msg;
-      });
+      return $translate
+        .onReady()
+        .then(() => $translate(key))
+        .then((msg) => {
+          $log.error(msg, error);
+          $scope.error = msg;
+        });
     };
 
     const getExistingDeployment = () => {
