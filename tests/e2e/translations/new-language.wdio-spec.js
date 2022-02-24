@@ -12,7 +12,7 @@ const NEW_LANG_CODE = 'afr';
 
 describe('Adding new language', () => {
   const addTranslations = async () => {
-    await utils.addTranslations(NEW_LANG_CODE,{
+    await utils.addTranslations(NEW_LANG_CODE, {
       'No messages found':'Geen boodskappe gevind nie',
       'No contacts found':'Geen mense gevind nie',
       'reports.none':'Geen verslae gevind nie',
@@ -32,7 +32,7 @@ describe('Adding new language', () => {
     expect(languageName.trim()).to.equal(NEW_LANG_NAME);
   });
 
-  it('should be set as Default language ',async () => {
+  it('should be set as Default language ', async () => {
     expect(await languagesPage.selectLanguage(languagesPage.defaultLanguageDropdown, NEW_LANG_CODE)).to.be.true;
     expect(await languagesPage.selectLanguage(languagesPage.outgoingLanguageDropdown, NEW_LANG_CODE)).to.be.true;
   });

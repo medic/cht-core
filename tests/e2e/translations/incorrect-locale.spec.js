@@ -35,8 +35,8 @@ describe('Incorrect locale', () => {
     await utils.afterEach();
   });
 
-    // open user settings modal
-  it('should work with incorrect locale',async () => {
+  // open user settings modal
+  it('should work with incorrect locale', async () => {
     await commonElements.openMenuNative();
     await commonElements.checkUserSettings();
 

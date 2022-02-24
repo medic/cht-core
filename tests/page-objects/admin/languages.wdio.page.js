@@ -16,7 +16,7 @@ const goToLanguagesTab = async () => {
   await (await addLanguageButton()).waitForDisplayed();
 };
 
-const addNewLanguage = async (code, name) =>{
+const addNewLanguage = async (code, name) => {
   await (await addLanguageButton()).click();
   await (await addLanguageModal()).waitForDisplayed();
   await (await languageCodeInput()).waitForDisplayed();
@@ -26,7 +26,7 @@ const addNewLanguage = async (code, name) =>{
   await (await languageSubmitButton()).waitForDisplayed({reverse:true});
 };
 
-const languageDisplayed = async (code) =>{
+const languageDisplayed = async (code) => {
   const languageDiv = () => $(`#locale-${code}`);
   const languageName = await (await languageDiv()).getText();
   return languageName;
