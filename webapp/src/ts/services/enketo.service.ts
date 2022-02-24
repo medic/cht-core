@@ -299,6 +299,11 @@ export class EnketoService {
           'change',
           () => this.currentForm.langs.setAll(language),
         );
+        this.currentForm.view.$.on(
+          'click',
+          'button.add-repeat-btn:enabled',
+          () => this.currentForm.langs.setAll(language),
+        );
       })
       .then(() => this.getFormTitle(titleKey, doc))
       .then((title) => {

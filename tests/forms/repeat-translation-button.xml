@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+    <h:head>
+        <h:title>Repeat</h:title>
+        <model>
+            <itext>
+                <translation lang="en">
+                    <text id="/repeat_translation/basic/rep/city_1/melbourne:label">
+                        <value>Melbourne</value>
+                    </text>
+                    <text id="/repeat_translation/basic/rep/city_1:label">
+                        <value>Select a city:</value>
+                    </text>
+                    <text id="/repeat_translation/basic/state_1/VIC:label">
+                        <value>Victoria</value>
+                    </text>
+                    <text id="/repeat_translation/basic/state_1:label">
+                        <value>Select a state:</value>
+                    </text>
+                    <text id="/repeat_translation/basic:label">
+                        <value>Cascading Selects:</value>
+                    </text>
+                </translation>
+                <translation lang="sw">
+                    <text id="/repeat_translation/basic/rep/city_1/melbourne:label">
+                        <value>ML (SV)</value>
+                    </text>
+                    <text id="/repeat_translation/basic/rep/city_1:label">
+                        <value>Select a city: - SV</value>
+                    </text>
+                    <text id="/repeat_translation/basic/state_1/VIC:label">
+                        <value>VIC (SV)</value>
+                    </text>
+                    <text id="/repeat_translation/basic/state_1:label">
+                        <value>Select a state: - SV</value>
+                    </text>
+                    <text id="/repeat_translation/basic:label">
+                        <value>Cascading Selects: - SV</value>
+                    </text>
+                </translation>
+            </itext>
+            <instance>
+                <repeat id="repeat_translation" prefix="J1!repeat_translation!" delimiter="#" version="2019-08-09">
+                    <basic>
+                        <state_1/>
+                        <rep jr:template="">
+                            <city_1/>
+                        </rep>
+                    </basic>
+                    <meta tag="hidden">
+                        <instanceID/>
+                    </meta>
+                </repeat>
+            </instance>
+            <instance id="contact-summary"/>
+            <bind nodeset="/repeat_translation/basic/state_1" type="select1"/>
+            <bind nodeset="/repeat_translation/basic/rep/city_1" type="select1"/>
+            <bind nodeset="/repeat_translation/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+        </model>
+    </h:head>
+    <h:body class="pages">
+        <group appearance="field-list" ref="/repeat_translation/basic">
+            <label ref="jr:itext('/repeat_translation/basic:label')"/>
+            <select1 ref="/repeat_translation/basic/state_1">
+                <label ref="jr:itext('/repeat_translation/basic/state_1:label')"/>
+                <item>
+                    <label ref="jr:itext('/repeat_translation/basic/state_1/VIC:label')"/>
+                    <value>VIC</value>
+                </item>
+            </select1>
+            <group ref="/repeat_translation/basic/rep">
+                <label></label>
+                <repeat nodeset="/repeat_translation/basic/rep">
+                    <select1 ref="/repeat_translation/basic/rep/city_1">
+                        <label ref="jr:itext('/repeat_translation/basic/rep/city_1:label')"/>
+                        <item>
+                            <label ref="jr:itext('/repeat_translation/basic/rep/city_1/melbourne:label')"/>
+                            <value>melbourne</value>
+                        </item>
+                    </select1>
+                </repeat>
+            </group>
+        </group>
+    </h:body>
+</h:html>
