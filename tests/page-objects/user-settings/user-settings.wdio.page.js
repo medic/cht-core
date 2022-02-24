@@ -13,7 +13,7 @@ const selectLanguage = async (code) => {
   await browser.waitUntil(async () => await (await languageDropDown()).getValue() === 'en');
   await (await languageDropDown()).selectByAttribute('value', code);
   await (await submiButton()).click();
-  await (await submiButton()).waitForDisplayed({timeout:30000, reverse:true});
+  await (await submiButton()).waitForDisplayed({timeout:60000, reverse:true});
 };
 
 module.exports = {
