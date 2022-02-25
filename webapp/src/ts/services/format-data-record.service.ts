@@ -219,14 +219,14 @@ export class FormatDataRecordService {
     }
     let formatted;
     let relative;
-    if (['child_birth_date', 'birth_date'].includes(field)) {
+    if (['child_birth_date', 'birth_date', 'lmp_date', 'expected_date'].includes(field)) {
       formatted = this.formatDateService.date(date);
       relative = this.formatDateService.relative(date, { withoutTime: true });
     } else {
       formatted = this.formatDateService.datetime(date);
       relative = this.formatDateService.relative(date);
     }
-    return formatted + '(' + relative + ')';
+    return formatted + ' (' + relative + ')';
   }
 
   /*

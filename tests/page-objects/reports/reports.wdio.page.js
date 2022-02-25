@@ -18,6 +18,11 @@ const reportRowSelector = `${reportListID} .content-row`;
 const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 
+const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`
+const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
+const reportDetailsFieldLabel = (pos) => $(`${reportDetailsFieldsSelector}:nth-child(${pos}) label span`);
+const reportDetailsFieldValue = (pos) => $(`${reportDetailsFieldsSelector}:nth-child(${pos}) p span`);
+
 const submitReportButton = () => $('.action-container .general-actions:not(.ng-hide) .fa-plus');
 const deleteAllButton = () => $('.action-container .detail-actions .delete-all');
 const dateFilter = () => $('#date-filter');
@@ -212,6 +217,18 @@ const getCurrentReportId = async () => {
   return currentUrl.slice(reportBaseUrl.length);
 };
 
+const getReportDetailFieldValueByLabel = async (label) => {
+  await reportBodyDetails().waitForDisplayed();
+  const fieldsCount = (await reportDetailsFields()).length;
+  for (let i = 1; i <= fieldsCount; i++) {
+    const fieldLabel = await reportDetailsFieldLabel(i).getText();
+    if (fieldLabel === label) {
+      return reportDetailsFieldValue(i).getText();
+    }
+  }
+};
+
+
 module.exports = {
   getCurrentReportId,
   reportList,
@@ -252,4 +269,5 @@ module.exports = {
   allReports,
   reportsByUUID,
   getAllReportsText,
+  getReportDetailFieldValueByLabel
 };
