@@ -18,7 +18,7 @@ const reportRowSelector = `${reportListID} .content-row`;
 const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 
-const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`
+const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
 const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
 const reportDetailsFieldLabel = (pos) => $(`${reportDetailsFieldsSelector}:nth-child(${pos}) label span`);
 const reportDetailsFieldValue = (pos) => $(`${reportDetailsFieldsSelector}:nth-child(${pos}) p span`);

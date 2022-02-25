@@ -135,9 +135,7 @@ const compareDate = (doc, validation, checkAfter = false) => {
 
     logger.error('date constraint validation failed');
     return Promise.resolve(false);
-
-  }
-  catch (err) {
+  } catch (err) {
     logger.error('date constraint validation: the date or duration is invalid: %o', err);
     return Promise.resolve(false);
   }

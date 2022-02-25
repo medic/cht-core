@@ -123,8 +123,7 @@ const bsToEpoch = (bsYear, bsMonth, bsDay) => {
   try {
     const gregDate = bs.toGreg_text(bsYear, bsMonth, bsDay);
     return moment(gregDate).valueOf();
-  }
-  catch (exception) {
+  } catch (exception) {
     logger.error('The provided date could not be converted: %o.', exception);
     return null;//should be caught by validation in registration
   }
