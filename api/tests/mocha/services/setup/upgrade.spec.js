@@ -24,11 +24,7 @@ describe('upgrade service', () => {
       let indexStagedViews;
       sinon.stub(upgradeSteps, 'indexStagedViews').returns(new Promise(r => indexStagedViews = r));
 
-      expect(upgrade.__get__('upgrading')).to.equal(undefined);
-
       const upgradePromise = upgrade.upgrade('theversion', 'admin', true);
-
-      expect(upgrade.__get__('upgrading')).to.equal(true);
 
       expect(upgradeSteps.prep.callCount).to.equal(1);
       expect(upgradeSteps.prep.args[0]).to.deep.equal(['theversion', 'admin', true]);
@@ -91,7 +87,6 @@ describe('upgrade service', () => {
       } catch (err) {
         expect(err.message).to.match(/Invalid build info/);
         expect(upgradeLogService.setErrored.callCount).to.equal(1);
-        expect(upgrade.__get__('upgrading')).to.equal(false);
       }
     });
 
@@ -104,7 +99,6 @@ describe('upgrade service', () => {
       } catch (err) {
         expect(err).to.deep.equal({ prep: false });
         expect(upgradeLogService.setErrored.callCount).to.equal(1);
-        expect(upgrade.__get__('upgrading')).to.equal(false);
       }
     });
 
@@ -130,7 +124,6 @@ describe('upgrade service', () => {
       await Promise.resolve();
       expect(upgradeLogService.setErrored.callCount).to.equal(1);
       expect(upgradeSteps.indexStagedViews.callCount).to.equal(0);
-      expect(upgrade.__get__('upgrading')).to.equal(false);
     });
 
     it('should set the upgrade as errored when indexing views fails despite of stage only', async () => {
@@ -153,7 +146,6 @@ describe('upgrade service', () => {
       indexStagedViews({ code: 'omg' });
       await Promise.resolve();
       expect(upgradeLogService.setErrored.callCount).to.equal(1);
-      expect(upgrade.__get__('upgrading')).to.equal(false);
     });
   });
 
@@ -206,17 +198,6 @@ describe('upgrade service', () => {
 
       expect(result).to.deep.equal({ an: 'upgradeLog' });
       expect(upgrade.__get__('upgrading')).to.equal(true);
-    });
-
-    it('should return nothing when not upgrading', async () => {
-      expect(upgrade.__get__('upgrading')).to.equal(undefined);
-      sinon.stub(upgradeLogService, 'get');
-
-      const result = await upgrade.upgradeInProgress();
-
-      expect(result).to.deep.equal(undefined);
-      expect(upgradeLogService.get.callCount).to.equal(0);
-      expect(upgrade.__get__('upgrading')).to.equal(undefined);
     });
   });
 });

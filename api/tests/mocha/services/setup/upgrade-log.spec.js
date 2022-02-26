@@ -365,6 +365,16 @@ describe('UpgradeLog service', () => {
 
       expect(upgradeLogService.__get__('isFinalState').args).to.deep.equal([[doc.state]]);
     });
+
+    it('should do nothing if tracking doc is in desired state', async () => {
+      const doc = { state: 'desired' };
+
+      upgradeLogService.__set__('isFinalState', sinon.stub().returns(false));
+      sinon.stub(upgradeLogService, 'get').resolves(doc);
+
+      const result = await upgradeLogService.__get__('update')('desired');
+      expect(result).to.deep.equal(undefined);
+    });
   });
 
   describe('getDeployInfo', () => {
@@ -484,5 +494,14 @@ describe('UpgradeLog service', () => {
     await upgradeLogService.setErrored();
     expect(update.callCount).to.equal(1);
     expect(update.args[0]).to.deep.equal(['errored']);
+  });
+
+  it('should set status to interrupted', async () => {
+    const update = sinon.stub().resolves();
+    upgradeLogService.__set__('update', update);
+
+    await upgradeLogService.setInterrupted();
+    expect(update.callCount).to.equal(1);
+    expect(update.args[0]).to.deep.equal(['interrupted']);
   });
 });

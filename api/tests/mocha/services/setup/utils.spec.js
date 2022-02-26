@@ -770,4 +770,48 @@ describe('Setup utils', () => {
       expect(upgradeLogService.setAborted.callCount).to.equal(1);
     });
   });
+
+  describe('interruptPreviousUpgrade', () => {
+    it('should set upgrade log state to interrupted', async () => {
+      sinon.stub(upgradeLogService, 'get').resolves({ _id: 'upgrade_log' });
+      sinon.stub(upgradeLogService, 'setInterrupted').resolves();
+
+      await utils.interruptPreviousUpgrade();
+
+      expect(upgradeLogService.get.callCount).to.equal(1);
+      expect(upgradeLogService.setInterrupted.callCount).to.equal(1);
+    });
+
+    it('should do nothing when there is no upgrade log to update', async () => {
+      sinon.stub(upgradeLogService, 'get').resolves();
+      await utils.interruptPreviousUpgrade();
+    });
+
+    it('should catch get errors', async () => {
+      sinon.stub(upgradeLogService, 'get').rejects('boom');
+      await utils.interruptPreviousUpgrade();
+    });
+
+    it('should catch update errors', async () => {
+      sinon.stub(upgradeLogService, 'get').resolves({ _id: 'upgrade_log' });
+      sinon.stub(upgradeLogService, 'setInterrupted').rejects('something');
+
+      await utils.interruptPreviousUpgrade();
+
+      expect(upgradeLogService.get.callCount).to.equal(1);
+      expect(upgradeLogService.setInterrupted.callCount).to.equal(1);
+    });
+
+    it('should not change state if action is stage and views are indexed', async () => {
+      sinon.stub(upgradeLogService, 'get').resolves({
+        _id: 'upgrade_log',
+        action: 'stage',
+        state: 'indexed',
+      });
+
+      await utils.interruptPreviousUpgrade();
+
+      expect(upgradeLogService.get.callCount).to.equal(1);
+    });
+  });
 });

@@ -62,9 +62,9 @@ const prep = async (buildInfo, username, stageOnly = true) => {
   await upgradeUtils.abortPreviousUpgrade();
 
   if (!buildInfo) {
-    await upgradeLogService.create('install', packagedBuildInfo);
+    await upgradeLogService.create(upgradeLogService.actions.INSTALL, packagedBuildInfo);
   } else {
-    const action = stageOnly ? 'stage' : 'upgrade';
+    const action = stageOnly ? upgradeLogService.actions.STAGE : upgradeLogService.actions.UPGRADE;
     await upgradeLogService.create(action, buildInfo, packagedBuildInfo, username);
   }
 };

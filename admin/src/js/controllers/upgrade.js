@@ -193,6 +193,14 @@ angular.module('controllers').controller('UpgradeCtrl',
       }).catch(() => {});
     };
 
+    $scope.retryUpgrade = () => {
+      if (!$scope.upgradeDoc) {
+        return;
+      }
+      const action = $scope.upgradeDoc.action === 'stage' ? 'stage' : undefined;
+      return $scope.upgrade($scope.upgradeDoc.to, action);
+    };
+
     const abortUpgrade = () => {
       return $http
         .delete(UPGRADE_URL)

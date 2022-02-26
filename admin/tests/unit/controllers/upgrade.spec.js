@@ -612,4 +612,150 @@ describe('UpgradeCtrl controller', () => {
       expect(buildsDb.query.callCount).to.equal(0);
     });
   });
+
+  describe('retry upgrade', () => {
+    it('should retry a staged upgrade', async () => {
+      modal.resolves();
+      const upgradeDoc = {
+        to: { the: 'buildinfo', version: '4.2.0' },
+        action: 'stage',
+      };
+      const deployInfo = { the: 'deplopy info', version: '4.1.0' };
+      http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
+      http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc, indexers: [] } });
+      http.post.withArgs('/api/v2/upgrade/stage').resolves();
+
+      createController();
+      await scope.setupPromise;
+
+      await scope.retryUpgrade();
+
+      expect(modal.callCount).to.equal(1);
+      expect(modal.args[0][0]).to.deep.nested.include({
+        templateUrl: 'templates/upgrade_confirm.html',
+        controller: 'UpgradeConfirmCtrl',
+        'model.stageOnly': true,
+        'model.before': '4.1.0',
+        'model.after': '4.2.0'
+      });
+      const upgradeCb = modal.args[0][0].model.confirmCallback;
+      expect(http.post.callCount).to.equal(0);
+      expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(1);
+
+      await upgradeCb();
+      expect(http.post.callCount).to.equal(1);
+      expect(http.post.args[0]).to.deep.equal([
+        '/api/v2/upgrade/stage',
+        { build: { the: 'buildinfo', version: '4.2.0' } },
+      ]);
+      expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
+      expect(scope.upgradeDoc).to.deep.equal(upgradeDoc);
+    });
+
+    it('should retry a full upgrade', async () => {
+      modal.resolves();
+      const upgradeDoc = {
+        to: { the: 'buildinfo', version: '4.3.0' },
+        action: 'upgrade',
+      };
+
+      const deployInfo = { the: 'deplopy info', version: '4.2.0' };
+      http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
+      http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc, indexers: [] } });
+      http.post.withArgs('/api/v2/upgrade').resolves();
+
+      createController();
+      await scope.setupPromise;
+
+      await scope.retryUpgrade();
+
+      expect(modal.callCount).to.equal(1);
+      expect(modal.args[0][0]).to.deep.nested.include({
+        templateUrl: 'templates/upgrade_confirm.html',
+        controller: 'UpgradeConfirmCtrl',
+        'model.stageOnly': false,
+        'model.before': '4.2.0',
+        'model.after': '4.3.0'
+      });
+      const upgradeCb = modal.args[0][0].model.confirmCallback;
+      expect(http.post.callCount).to.equal(0);
+      expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(1);
+
+      await upgradeCb();
+      expect(http.post.callCount).to.equal(1);
+      expect(http.post.args[0]).to.deep.equal([
+        '/api/v2/upgrade',
+        { build: { the: 'buildinfo', version: '4.3.0' } },
+      ]);
+      expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
+      expect(scope.upgradeDoc).to.deep.equal(upgradeDoc);
+    });
+
+    it('should do nothing if no upgrade doc', async () => {
+      modal.resolves();
+      buildsDb.query.resolves({
+        rows: [
+          { id: 'medic:medic:branch1', value: { version: 'branch1' } },
+          { id: 'medic:medic:branch2', value: { version: 'branch2' } },
+        ],
+      });
+      const deployInfo = { the: 'deplopy info', version: '4.1.0' };
+      http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
+      http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc: undefined  } });
+
+      createController();
+      await scope.setupPromise;
+
+      await scope.retryUpgrade();
+
+      expect(modal.callCount).to.equal(0);
+      expect(scope.upgradeDoc).to.deep.equal(undefined);
+    });
+
+    it('should throw errors', async () => {
+      modal.resolves();
+      const upgradeDoc = {
+        to: { the: 'buildinfo', version: '4.3.0' },
+        action: 'upgrade',
+      };
+      const deployInfo = { the: 'deplopy info', version: '4.1.0' };
+      http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
+      http.get.withArgs('/api/v2/upgrade').onCall(0).resolves({ data: { upgradeDoc  } });
+
+      http.post.withArgs('/api/v2/upgrade').rejects({ an: 'error' });
+
+      createController();
+      await scope.setupPromise;
+
+      await scope.retryUpgrade();
+
+      expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(1);
+      expect(modal.callCount).to.equal(1);
+      expect(modal.args[0][0]).to.deep.nested.include({
+        templateUrl: 'templates/upgrade_confirm.html',
+        controller: 'UpgradeConfirmCtrl',
+        'model.stageOnly': false,
+        'model.before': '4.1.0',
+        'model.after': '4.3.0',
+        'model.errorKey': 'instance.upgrade.error.deploy',
+      });
+      const upgradeCb = modal.args[0][0].model.confirmCallback;
+      expect(http.post.callCount).to.equal(0);
+      expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(1);
+
+      try {
+        await upgradeCb();
+        expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ an: 'error' });
+      }
+
+      expect(http.post.callCount).to.equal(1);
+      expect(http.post.args[0]).to.deep.equal([
+        '/api/v2/upgrade',
+        { build: { the: 'buildinfo', version: '4.3.0' } },
+      ]);
+      expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(1);
+    });
+  });
 });

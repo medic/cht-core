@@ -3,8 +3,6 @@ const upgradeLog = require('./upgrade-log');
 const upgradeSteps = require('./upgrade-steps');
 const logger = require('../../logger');
 
-let upgrading;
-
 /**
  * @typedef {Object} BuildInfo
  * @property {string} namespace - default "medic"
@@ -24,11 +22,9 @@ let upgrading;
  */
 const upgrade = async (buildInfo, username, stageOnly) => {
   try {
-    upgrading = true;
     await upgradeSteps.prep(buildInfo, username, stageOnly);
     safeInstall(buildInfo, stageOnly);
   } catch (err) {
-    upgrading = false;
     await upgradeLog.setErrored();
     throw err;
   }
@@ -48,7 +44,6 @@ const safeInstall = async (buildInfo, stageOnly) => {
     }
     await complete(buildInfo);
   } catch (err) {
-    upgrading = false;
     await upgradeLog.setErrored();
     logger.error('Error thrown while installing: %o', err);
   }
@@ -60,7 +55,6 @@ const safeInstall = async (buildInfo, stageOnly) => {
  */
 const complete = async (buildInfo) => {
   // todo
-  upgrading = false;
   logger.debug('%o', buildInfo); // don't complain about unused variables
   // test if build info matches
   // this is going to send a request to the bridge container to pull new source code
@@ -68,16 +62,12 @@ const complete = async (buildInfo) => {
 };
 
 const abort = () => {
-  upgrading = false;
   return upgradeSteps.abort();
 };
 
 const indexerProgress = () => viewIndexerProgress.query();
 // todo: how to "resume" an upgrade
 const upgradeInProgress = () => {
-  if (!upgrading) {
-    return;
-  }
   return upgradeLog.get();
 };
 

@@ -88,6 +88,27 @@ const abortPreviousUpgrade = async () => {
   }
 };
 
+const interruptPreviousUpgrade = async () => {
+  try {
+    const upgradeLog = await upgradeLogService.get();
+    if (!upgradeLog) {
+      return;
+    }
+
+    if (
+      upgradeLog.action === upgradeLogService.actions.STAGE &&
+      upgradeLog.state === upgradeLogService.states.INDEXED
+    ) {
+      // don't interrupt when we're only staging and views are already indexed
+      return;
+    }
+
+    await upgradeLogService.setInterrupted();
+  } catch (err) {
+    logger.error('Error while setting previous upgrade as interrupted %o', err);
+  }
+};
+
 /**
  * Checks whether the passed build info is valid.
  * A falsy build info means we're installing the bundled version.
@@ -282,4 +303,5 @@ module.exports = {
   unstageStagedDdocs,
   getBundledDdocs,
   abortPreviousUpgrade,
+  interruptPreviousUpgrade,
 };
