@@ -555,20 +555,27 @@ describe('Setup utils', () => {
     });
   });
 
-  describe('getPackagedVersion', () => {
+  describe('getPackagedBuildInfo', () => {
     it('should get the version from the packaged medic ddoc', async () => {
       const medicDdoc = {
         _id: '_design/medic',
-        version: '4.0.0',
+        build_info: {
+          application: 'medic',
+          namespace: 'medic',
+          version: 'master',
+          base_version: '3.15',
+          author: 'grunt',
+          build: '3.15.0-master.sometimestamp',
+        },
       };
       sinon.stub(env, 'ddoc').value('medic');
       sinon.stub(env, 'ddocsPath').value('ddocsPath');
 
       sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({ docs: [medicDdoc] }));
 
-      const version = await utils.getPackagedVersion();
+      const buildInfo = await utils.getPackagedBuildInfo();
 
-      expect(version).to.equal('4.0.0');
+      expect(buildInfo).to.deep.equal(medicDdoc.build_info);
       expect(fs.promises.readFile.callCount).to.equal(1);
       expect(fs.promises.readFile.args[0]).to.deep.equal(['ddocsPath/medic.json', 'utf-8']);
     });
@@ -579,7 +586,7 @@ describe('Setup utils', () => {
       sinon.stub(fs.promises, 'readFile').rejects({ code: 'ENOENT' });
 
       try {
-        await utils.getPackagedVersion();
+        await utils.getPackagedBuildInfo();
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ code: 'ENOENT' });
@@ -592,7 +599,7 @@ describe('Setup utils', () => {
       sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({ }));
 
       try {
-        await utils.getPackagedVersion();
+        await utils.getPackagedBuildInfo();
         expect.fail('should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Cannot find medic db ddocs among packaged ddocs.');
@@ -606,7 +613,7 @@ describe('Setup utils', () => {
       sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({ docs: jsonDdocs }));
 
       try {
-        await utils.getPackagedVersion();
+        await utils.getPackagedBuildInfo();
         expect.fail('should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Cannot find medic ddoc among packaged ddocs.');
@@ -761,6 +768,50 @@ describe('Setup utils', () => {
       sinon.stub(upgradeLogService, 'setAborted').rejects({ the: 'error' });
       await utils.abortPreviousUpgrade();
       expect(upgradeLogService.setAborted.callCount).to.equal(1);
+    });
+  });
+
+  describe('interruptPreviousUpgrade', () => {
+    it('should set upgrade log state to interrupted', async () => {
+      sinon.stub(upgradeLogService, 'get').resolves({ _id: 'upgrade_log' });
+      sinon.stub(upgradeLogService, 'setInterrupted').resolves();
+
+      await utils.interruptPreviousUpgrade();
+
+      expect(upgradeLogService.get.callCount).to.equal(1);
+      expect(upgradeLogService.setInterrupted.callCount).to.equal(1);
+    });
+
+    it('should do nothing when there is no upgrade log to update', async () => {
+      sinon.stub(upgradeLogService, 'get').resolves();
+      await utils.interruptPreviousUpgrade();
+    });
+
+    it('should catch get errors', async () => {
+      sinon.stub(upgradeLogService, 'get').rejects('boom');
+      await utils.interruptPreviousUpgrade();
+    });
+
+    it('should catch update errors', async () => {
+      sinon.stub(upgradeLogService, 'get').resolves({ _id: 'upgrade_log' });
+      sinon.stub(upgradeLogService, 'setInterrupted').rejects('something');
+
+      await utils.interruptPreviousUpgrade();
+
+      expect(upgradeLogService.get.callCount).to.equal(1);
+      expect(upgradeLogService.setInterrupted.callCount).to.equal(1);
+    });
+
+    it('should not change state if action is stage and views are indexed', async () => {
+      sinon.stub(upgradeLogService, 'get').resolves({
+        _id: 'upgrade_log',
+        action: 'stage',
+        state: 'indexed',
+      });
+
+      await utils.interruptPreviousUpgrade();
+
+      expect(upgradeLogService.get.callCount).to.equal(1);
     });
   });
 });

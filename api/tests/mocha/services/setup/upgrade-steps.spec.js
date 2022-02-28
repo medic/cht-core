@@ -163,7 +163,7 @@ describe('Upgrade steps', () => {
 
     describe('on upgrade', () => {
       it('should abort previous upgrade, create log when staging', async () => {
-        sinon.stub(upgradeUtils, 'getPackagedVersion').resolves('4.0.0');
+        sinon.stub(upgradeUtils, 'getPackagedBuildInfo').resolves(buildInfo('4.0.0'));
         sinon.stub(upgradeLogService, 'create');
         sinon.stub(upgradeUtils, 'abortPreviousUpgrade');
         sinon.stub(upgradeUtils, 'freshInstall').resolves(false);
@@ -171,12 +171,17 @@ describe('Upgrade steps', () => {
         await upgradeSteps.prep(buildInfo('4.0.1'), 'martin', true);
 
         expect(upgradeLogService.create.callCount).to.equal(1);
-        expect(upgradeLogService.create.args[0]).to.deep.equal(['stage', '4.0.1', '4.0.0', 'martin']);
+        expect(upgradeLogService.create.args[0]).to.deep.equal([
+          'stage',
+          buildInfo('4.0.1'),
+          buildInfo('4.0.0'),
+          'martin',
+        ]);
         expect(upgradeUtils.abortPreviousUpgrade.callCount).to.equal(1);
       });
 
       it('should abort previous upgrade, create log', async () => {
-        sinon.stub(upgradeUtils, 'getPackagedVersion').resolves('4.0.1');
+        sinon.stub(upgradeUtils, 'getPackagedBuildInfo').resolves(buildInfo('4.0.1'));
         sinon.stub(upgradeLogService, 'create');
         sinon.stub(upgradeUtils, 'abortPreviousUpgrade');
         sinon.stub(upgradeUtils, 'freshInstall').resolves(false);
@@ -184,14 +189,19 @@ describe('Upgrade steps', () => {
         await upgradeSteps.prep(buildInfo('4.0.2'), 'jack', false);
 
         expect(upgradeLogService.create.callCount).to.equal(1);
-        expect(upgradeLogService.create.args[0]).to.deep.equal(['upgrade', '4.0.2', '4.0.1', 'jack']);
+        expect(upgradeLogService.create.args[0]).to.deep.equal([
+          'upgrade',
+          buildInfo('4.0.2'),
+          buildInfo('4.0.1'),
+          'jack',
+        ]);
         expect(upgradeUtils.abortPreviousUpgrade.callCount).to.equal(1);
       });
     });
 
     describe('on fresh install', () => {
       it('should create upgrade folder and create upgrade log', async () => {
-        sinon.stub(upgradeUtils, 'getPackagedVersion').resolves('4.0.0');
+        sinon.stub(upgradeUtils, 'getPackagedBuildInfo').resolves(buildInfo('4.0.0'));
         sinon.stub(upgradeUtils, 'freshInstall').resolves(true);
         sinon.stub(upgradeUtils, 'abortPreviousUpgrade');
         sinon.stub(upgradeLogService, 'create');
@@ -199,9 +209,9 @@ describe('Upgrade steps', () => {
         await upgradeSteps.prep();
 
         expect(upgradeUtils.freshInstall.callCount).to.equal(1);
-        expect(upgradeUtils.getPackagedVersion.callCount).to.equal(1);
+        expect(upgradeUtils.getPackagedBuildInfo.callCount).to.equal(1);
         expect(upgradeLogService.create.callCount).to.equal(1);
-        expect(upgradeLogService.create.args[0]).to.deep.equal(['install', '4.0.0']);
+        expect(upgradeLogService.create.args[0]).to.deep.equal(['install', buildInfo('4.0.0')]);
         expect(upgradeUtils.abortPreviousUpgrade.callCount).to.equal(1);
       });
     });
@@ -209,14 +219,14 @@ describe('Upgrade steps', () => {
     describe('on update install', () => {
       it('should do nothing', async () => {
         sinon.stub(upgradeUtils, 'freshInstall').resolves(false);
-        sinon.stub(upgradeUtils, 'getPackagedVersion');
+        sinon.stub(upgradeUtils, 'getPackagedBuildInfo');
         sinon.stub(upgradeLogService, 'create');
         sinon.stub(upgradeUtils, 'abortPreviousUpgrade');
 
         await upgradeSteps.prep();
 
         expect(upgradeUtils.freshInstall.callCount).to.equal(1);
-        expect(upgradeUtils.getPackagedVersion.callCount).to.equal(1);
+        expect(upgradeUtils.getPackagedBuildInfo.callCount).to.equal(1);
         expect(upgradeLogService.create.callCount).to.equal(0);
         expect(upgradeUtils.abortPreviousUpgrade.callCount).to.equal(0);
       });
@@ -234,7 +244,7 @@ describe('Upgrade steps', () => {
 
     describe('on upgrade', () => {
       it('get ddoc definitions, stage new ddocs', async () => {
-        sinon.stub(upgradeUtils, 'getPackagedVersion').resolves('4.0.0');
+        sinon.stub(upgradeUtils, 'getPackagedBuildInfo').resolves('4.0.0');
         sinon.stub(upgradeUtils, 'getDdocDefinitions').resolves('ddoc list');
         sinon.stub(upgradeUtils, 'deleteStagedDdocs');
         sinon.stub(upgradeUtils, 'saveStagedDdocs');
@@ -251,7 +261,7 @@ describe('Upgrade steps', () => {
       });
 
       it('should throw an error when staging ddoc for version is not found', async () => {
-        sinon.stub(upgradeUtils, 'getPackagedVersion').resolves('4.0.1');
+        sinon.stub(upgradeUtils, 'getPackagedBuildInfo').resolves('4.0.1');
         sinon.stub(upgradeUtils, 'getDdocDefinitions').rejects({ some: 'error' });
         sinon.stub(upgradeUtils, 'deleteStagedDdocs');
         sinon.stub(upgradeUtils, 'saveStagedDdocs');
@@ -272,7 +282,7 @@ describe('Upgrade steps', () => {
       });
 
       it('should throw an error if staging fails', async () => {
-        sinon.stub(upgradeUtils, 'getPackagedVersion').resolves('4.1.0');
+        sinon.stub(upgradeUtils, 'getPackagedBuildInfo').resolves('4.1.0');
         sinon.stub(upgradeUtils, 'getDdocDefinitions').resolves(['the', 'ddoc', 'list']);
         sinon.stub(upgradeUtils, 'deleteStagedDdocs');
         sinon.stub(upgradeUtils, 'saveStagedDdocs').rejects({ error: true });

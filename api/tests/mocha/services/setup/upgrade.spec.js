@@ -1,13 +1,17 @@
 const sinon = require('sinon');
+const rewire = require('rewire');
 const { expect } = require('chai');
 
 const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
 const upgradeSteps = require('../../../../src/services/setup/upgrade-steps');
 const viewIndexerProgress = require('../../../../src/services/setup/view-indexer-progress');
-const upgrade = require('../../../../src/services/setup/upgrade');
 
+let upgrade;
 
 describe('upgrade service', () => {
+  beforeEach(() => {
+    upgrade = rewire('../../../../src/services/setup/upgrade');
+  });
   afterEach(() => {
     sinon.restore();
   });
@@ -161,6 +165,39 @@ describe('upgrade service', () => {
         expect(err).to.deep.equal({ omg: 'it fails' });
         expect(viewIndexerProgress.query.callCount).to.equal(1);
       }
+    });
+  });
+
+  describe('abort', () => {
+    it('should abort the upgrade', async () => {
+      sinon.stub(upgradeSteps, 'abort').resolves();
+
+      await upgrade.abort();
+
+      expect(upgradeSteps.abort.callCount).to.equal(1);
+    });
+
+    it('should throw error if abort fails', async () => {
+      sinon.stub(upgradeSteps, 'abort').rejects({ an: 'error' });
+
+      try {
+        await upgrade.abort();
+        expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ an: 'error' });
+      }
+    });
+  });
+
+  describe('upgradeInProgress', () => {
+    it('should return current upgrade log when upgrading', async () => {
+      upgrade.__set__('upgrading', true);
+      sinon.stub(upgradeLogService, 'get').resolves({ an: 'upgradeLog' });
+
+      const result = await upgrade.upgradeInProgress();
+
+      expect(result).to.deep.equal({ an: 'upgradeLog' });
+      expect(upgrade.__get__('upgrading')).to.equal(true);
     });
   });
 });
