@@ -1,0 +1,12 @@
+<mm-modal
+  status="status"
+  danger="true"
+  title-key="'instance.upgrade.cancel'"
+  submit-key="'Confirm'"
+  submitting-key="'instance.upgrade.cancelling'"
+  on-cancel="cancel()"
+  on-submit="submit()"
+>
+  <p translate-values="{ before: '{{model.before}}', after: '{{model.after}}' }" translate>instance.upgrade.cancel.summary</p>
+  <p translate>instance.upgrade.cancel.note</p>
+</mm-modal>

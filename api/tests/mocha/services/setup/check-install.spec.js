@@ -332,11 +332,13 @@ describe('Check install service', () => {
 
       const checkInstallForDb = sinon.stub().resolves({ upToDate: true });
       checkInstall.__set__('checkInstallForDb', checkInstallForDb);
+      sinon.stub(upgradeUtils, 'interruptPreviousUpgrade');
 
       await checkInstall.run();
 
       expect(checkInstallForDb.callCount).to.equal(3);
       expect(checkInstallForDb.args).to.deep.equal([ [dbs[0]], [dbs[1]], [dbs[2]] ]);
+      expect(upgradeUtils.interruptPreviousUpgrade.callCount).to.equal(1);
     });
 
     it('should complete install if some dbs are staged and some are valid', async () => {

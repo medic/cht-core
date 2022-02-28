@@ -52,7 +52,7 @@ const prep = async (buildInfo, username, stageOnly = true) => {
     throw new Error(`Invalid build info`);
   }
 
-  const packagedVersion = await upgradeUtils.getPackagedVersion();
+  const packagedBuildInfo = await upgradeUtils.getPackagedBuildInfo();
 
   if (!buildInfo && !await upgradeUtils.freshInstall()) {
     // partial installs don't require creating a new upgrade_log doc
@@ -62,10 +62,10 @@ const prep = async (buildInfo, username, stageOnly = true) => {
   await upgradeUtils.abortPreviousUpgrade();
 
   if (!buildInfo) {
-    await upgradeLogService.create('install', packagedVersion);
+    await upgradeLogService.create(upgradeLogService.actions.INSTALL, packagedBuildInfo);
   } else {
-    const action = stageOnly ? 'stage' : 'upgrade';
-    await upgradeLogService.create(action, buildInfo.version, packagedVersion, username);
+    const action = stageOnly ? upgradeLogService.actions.STAGE : upgradeLogService.actions.UPGRADE;
+    await upgradeLogService.create(action, buildInfo, packagedBuildInfo, username);
   }
 };
 
