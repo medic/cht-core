@@ -1,39 +1,34 @@
 const request = require('request-promise-native');
-const RESULT_PARSE_REGEX = /^"(.*)"\n?$/;
-
-// This API gives weird psuedo-JSON results:
-//   "password"\n
-// Should be just `password`
-const parseResponse = response => response.match(RESULT_PARSE_REGEX)[1];
 
 const getCouchNodeName = () => process.env.COUCH_NODE_NAME;
 
-const getCredentials = (key) => {
-  try {
-    const couchConfigUrl = getCouchConfigUrl();
-    return request
-      .get(`${couchConfigUrl}/medic-credentials/${key}`)
-      .then(parseResponse)
-      .catch(err => {
-        if (err.statusCode === 404) {
-          // No credentials defined
-          return;
-        }
-        // Throw it regardless so the process gets halted, we just error above for higher specificity
-        throw err;
-      });
-
-  } catch (error) {
-    return Promise.reject(error);
-  }
+const getCouchUrl = () => {
+  const couchUrl = process.env.COUCH_URL;
+  return couchUrl && couchUrl.replace(/\/$/, '');
 };
 
 const getServerUrl = () => {
-  if (!process.env.COUCH_URL) {
-    return;
+  const couchUrl = process.env.COUCH_URL;
+  return couchUrl && couchUrl.slice(0, couchUrl.lastIndexOf('/'));
+};
+
+const getCredentials = (key) => {
+  const couchUrl = getCouchUrl();
+  if (!couchUrl) {
+    return Promise.reject(new Error('Failed to find the CouchDB server'));
   }
-  const couchUrl = process.env.COUCH_URL.replace(/\/$/, '');
-  return couchUrl.slice(0, couchUrl.lastIndexOf('/'));
+  const vaultDbUrl = `${couchUrl}-vault`;
+  return request
+    .get(`${vaultDbUrl}/${key}`) // do we allow spaces in credential keys?
+    .then(doc => doc && doc.password)
+    .catch(err => {
+      if (err.statusCode === 404) {
+        // No credentials defined
+        return;
+      }
+      // Throw it regardless so the process gets halted, we just error above for higher specificity
+      throw err;
+    });
 };
 
 const getCouchConfigUrl = () => {

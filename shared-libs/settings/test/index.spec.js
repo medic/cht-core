@@ -18,119 +18,87 @@ describe('Settings Shared Library', () => {
 
   describe('getCredentials', () => {
 
-    it('should throw error if no server url is set', () => {
+    it('should throw error if no server url is set', async () => {
       environment.COUCH_URL = '';
-      environment.COUCH_NODE_NAME = '';
 
-      return lib
-        .getCredentials()
-        .then(() => expect.fail('exception expected'))
-        .catch(err => {
-          expect(err.message).to.equal('Failed to find the CouchDB server');
-        });
+      try {
+        await lib.getCredentials();
+        expect.fail('exception expected')
+      } catch (err) {
+        expect(err.message).to.equal('Failed to find the CouchDB server');
+      }
     });
 
-    it('should throw error if no node name is set', () => {
+    it('should throw error from request', async () => {
       environment.COUCH_URL = 'http://user:pass@server.com/medic';
-      environment.COUCH_NODE_NAME = '';
-
-      return lib
-        .getCredentials()
-        .then(() => expect.fail('exception expected'))
-        .catch(err => {
-          expect(err.message).to.equal('Failed to find the CouchDB node name');
-        });
-    });
-
-    it('should throw error from request', () => {
-      environment.COUCH_URL = 'http://user:pass@server.com/medic';
-      environment.COUCH_NODE_NAME = 'nonode@nohost';
       sinon.stub(request, 'get').rejects({ statusCode: 403, message: 'no perms' });
-      
-      return lib
-        .getCredentials()
-        .then(() => expect.fail('exception expected'))
-        .catch(err => {
-          expect(request.get.callCount).to.equal(1);
-          expect(err.message).to.equal('no perms');
-        });
+
+      try {
+        await lib.getCredentials();
+        return expect.fail('exception expected');
+      } catch (err) {
+        expect(request.get.callCount).to.equal(1);
+        expect(err.message).to.equal('no perms');
+      }
     });
 
-    it('should handle when permissions are not defined', () => {
+    it('should handle when permissions are not defined', async () => {
       environment.COUCH_URL = 'http://user:pass@server.com/medic';
-      environment.COUCH_NODE_NAME = 'nonode@nohost';
       sinon.stub(request, 'get').rejects({ statusCode: 404 });
-      
-      return lib
-        .getCredentials('mykey')
-        .then(actual => {
-          expect(actual).to.equal(undefined);
-        });
+
+      const actual = await lib.getCredentials('mykey');
+      expect(actual).to.equal(undefined);
     });
 
-    it('should handle empty credentials', () => {
+    it('should handle empty credentials', async () => {
       environment.COUCH_URL = 'http://user:pass@server.com/medic';
-      environment.COUCH_NODE_NAME = 'nonode@nohost';
-      sinon.stub(request, 'get').resolves('""\n');
-      
-      return lib
-        .getCredentials('mykey')
-        .then(actual => {
-          expect(actual).to.equal('');
-        });
+      sinon.stub(request, 'get').resolves({});
+
+      const actual = await lib.getCredentials('mykey');
+      expect(actual).to.be.undefined;
     });
 
-    it('should parse response format', () => {
+    it('should parse response format', async () => {
       environment.COUCH_URL = 'http://server.com/medic';
-      environment.COUCH_NODE_NAME = 'nonode@noname';
-      sinon.stub(request, 'get').resolves('"mypass"\n');
-      
-      return lib
-        .getCredentials('mykey')
-        .then(actual => {
-          expect(actual).to.equal('mypass');
-          expect(request.get.callCount).to.equal(1);
-          expect(request.get.args[0][0]).to.equal('http://server.com/_node/nonode@noname/_config/medic-credentials/mykey');
-        });
+      sinon.stub(request, 'get').resolves({ password: 'mypass' }); // TODO string or JSON response?
+
+      const actual = await lib.getCredentials('mykey');
+      expect(actual).to.equal('mypass');
+      expect(request.get.callCount).to.equal(1);
+      expect(request.get.args[0][0]).to.equal('http://server.com/medic-vault/mykey');
     });
 
   });
 
   describe('getCouchConfig', () => {
 
-    it('should return the expected value', () => {
+    it('should return the expected value', async () => {
       environment.COUCH_URL = 'http://user:pass@localhost:6929/medic';
       environment.COUCH_NODE_NAME = 'nonode@noname';
       sinon.stub(request, 'get').resolves('couch config');
 
-      return lib
-        .getCouchConfig('attachments')
-        .then(actual => {
-          expect(actual).to.equal('couch config');
-          expect(request.get.callCount).to.equal(1);
-          expect(request.get.args[0][0].url).to.equal('http://user:pass@localhost:6929/_node/nonode@noname/_config/attachments');
-        });
+      const actual = await lib.getCouchConfig('attachments');
+      expect(actual).to.equal('couch config');
+      expect(request.get.callCount).to.equal(1);
+      expect(request.get.args[0][0].url).to.equal('http://user:pass@localhost:6929/_node/nonode@noname/_config/attachments');
     });
 
   });
 
   describe('updateAdminPassword', () => {
 
-    it('should save password', () => {
+    it('should save password', async () => {
       environment.COUCH_URL = 'http://user:pass@localhost:6929/medic';
       environment.COUCH_NODE_NAME = 'nonode@noname';
       sinon.stub(request, 'put').resolves('-pbkdf2-8266a0adb');
 
-      return lib
-        .updateAdminPassword('admin1', 'pass1234')
-        .then(result => {
-          expect(result).to.equal('-pbkdf2-8266a0adb');
-          expect(request.put.callCount).to.equal(1);
-          expect(request.put.args[0][0]).to.deep.equal({
-            body: '"pass1234"',
-            url: 'http://user:pass@localhost:6929/_node/nonode@noname/_config/admins/admin1',
-          });
-        });
+      const result = await lib.updateAdminPassword('admin1', 'pass1234');
+      expect(result).to.equal('-pbkdf2-8266a0adb');
+      expect(request.put.callCount).to.equal(1);
+      expect(request.put.args[0][0]).to.deep.equal({
+        body: '"pass1234"',
+        url: 'http://user:pass@localhost:6929/_node/nonode@noname/_config/admins/admin1',
+      });
     });
 
   });
