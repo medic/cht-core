@@ -74,7 +74,7 @@ const getLatestUpgradeLog = async () => {
  * Returns undefined if neither are found.
  * @return {Promise<UpgradeLog | undefined>}
  */
-const   getUpgradeLog = async () => {
+const getUpgradeLog = async () => {
   const upgradeLog = await getLatestUpgradeLog();
 
   if (upgradeLog && isFinalState(upgradeLog.state)) {
