@@ -7,32 +7,8 @@ const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 
-const countForm = fs.readFileSync(`${__dirname}/../../forms/repeat-translation-count.xml`, 'utf8');
-const countFormDocument = {
-  _id: 'form:repeat-translation-count',
-  internalId: 'repeat-translation-count',
-  title: 'Repeat count',
-  type: 'form',
-  _attachments: {
-    xml: {
-      content_type: 'application/octet-stream',
-      data: Buffer.from(countForm).toString('base64')
-    }
-  }
-};
-const buttonForm = fs.readFileSync(`${__dirname}/../../forms/repeat-translation-button.xml`, 'utf8');
-const buttonFormDocument = {
-  _id: 'form:repeat-translation-button',
-  internalId: 'repeat-translation-button',
-  title: 'Repeat button',
-  type: 'form',
-  _attachments: {
-    xml: {
-      content_type: 'application/octet-stream',
-      data: Buffer.from(buttonForm).toString('base64')
-    }
-  }
-};
+const countFormDocument = readFormDocument('repeat-translation-count');
+const buttonFormDocument = readFormDocument('repeat-translation-button');
 const userContactDoc = {
   _id: constants.USER_CONTACT_ID,
   name: 'Jack',
@@ -176,3 +152,20 @@ describe('RepeatForm', () => {
     await (await reportsPage.formActionsLink(formInternalId)).click();
   }
 });
+
+function readFormDocument(formId) {
+  const form = fs.readFileSync(`${__dirname}/../../forms/${formId}.xml`, 'utf8');
+  const formDocument = {
+    _id: `form:${formId}`,
+    internalId: formId,
+    title: `Form ${formId}`,
+    type: 'form',
+    _attachments: {
+      xml: {
+        content_type: 'application/octet-stream',
+        data: Buffer.from(form).toString('base64')
+      }
+    }
+  };
+  return formDocument;
+}
