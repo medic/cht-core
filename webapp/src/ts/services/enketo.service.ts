@@ -293,17 +293,23 @@ export class EnketoService {
         }
         const language = options.language;
         this.currentForm.langs.$formLanguages.val(language).trigger('change');
-        // re-set the enketo form's language when a DOM node is added/removed to the form
+        // re-set the enketo form's language when a DOM node is added to the form and the form has been edited
         // TODO: remove this once the enketo uplift gets merged https://github.com/medic/cht-core/pull/7256
-        this.currentForm.view.$.on(
-          'change',
-          () => this.currentForm.langs.setAll(language),
-        );
         this.currentForm.view.$.on(
           'click',
           'button.add-repeat-btn:enabled',
           () => this.currentForm.langs.setAll(language),
         );
+        let hasFormChanged = false;
+        this.currentForm.view.$.on('change', () => hasFormChanged = true);
+        const observer = new MutationObserver((mutations) => {
+          const hasNewNodes = mutations.some(mutation => mutation.addedNodes.length > 0);
+          if (hasFormChanged && hasNewNodes) {
+            this.currentForm.langs.setAll(language);
+          }
+          hasFormChanged = false;
+        });
+        observer.observe(this.currentForm.view.html, { childList: true, subtree: true });
       })
       .then(() => this.getFormTitle(titleKey, doc))
       .then((title) => {
