@@ -13,7 +13,7 @@ const ddocsService = require('./ddocs');
  * Returns version of bundled medic/medic ddoc
  * @return {Promise<string>}
  */
-const getPackagedVersion = async () => {
+const getPackagedBuildInfo = async () => {
   try {
     const medicDdocs = await getDdocJsonContents(path.join(environment.ddocsPath, MEDIC_DATABASE.jsonFileName));
     if (!medicDdocs || !medicDdocs.docs) {
@@ -23,7 +23,7 @@ const getPackagedVersion = async () => {
     if (!medicDdoc) {
       throw new Error('Cannot find medic ddoc among packaged ddocs.');
     }
-    return medicDdoc.version;
+    return medicDdoc.build_info;
   } catch (err) {
     logger.error('Error when trying to determine packaged version: %o', err);
     throw err;
@@ -85,6 +85,27 @@ const abortPreviousUpgrade = async () => {
     await upgradeLogService.setAborted();
   } catch (err) {
     logger.warn('Error aborting previous upgrade: %o', err);
+  }
+};
+
+const interruptPreviousUpgrade = async () => {
+  try {
+    const upgradeLog = await upgradeLogService.get();
+    if (!upgradeLog) {
+      return;
+    }
+
+    if (
+      upgradeLog.action === upgradeLogService.actions.STAGE &&
+      upgradeLog.state === upgradeLogService.states.INDEXED
+    ) {
+      // don't interrupt when we're only staging and views are already indexed
+      return;
+    }
+
+    await upgradeLogService.setInterrupted();
+  } catch (err) {
+    logger.error('Error while setting previous upgrade as interrupted %o', err);
   }
 };
 
@@ -274,7 +295,7 @@ module.exports = {
   cleanup,
 
   validBuildInfo,
-  getPackagedVersion,
+  getPackagedBuildInfo,
   getDdocDefinitions,
   freshInstall,
   deleteStagedDdocs,
@@ -282,4 +303,5 @@ module.exports = {
   unstageStagedDdocs,
   getBundledDdocs,
   abortPreviousUpgrade,
+  interruptPreviousUpgrade,
 };

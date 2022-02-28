@@ -5,9 +5,10 @@ const logger = require('../../logger');
 
 /**
  * @typedef {Object} BuildInfo
- * @property {string} namespace
- * @property {string} application
- * @property {string} version
+ * @property {string} namespace - default "medic"
+ * @property {string} application - default "medic"
+ * @property {string} version - tag, branch or local
+ * @property {string} build - unique tag for a build. Semver valid.
  */
 
 /**
@@ -54,17 +55,21 @@ const safeInstall = async (buildInfo, stageOnly) => {
  */
 const complete = async (buildInfo) => {
   // todo
-
   logger.debug('%o', buildInfo); // don't complain about unused variables
   // test if build info matches
   // this is going to send a request to the bridge container to pull new source code
   // completing the install (overwriting the staged ddocs) is done when API starts up.
 };
 
-const abort = () => upgradeSteps.abort();
+const abort = () => {
+  return upgradeSteps.abort();
+};
 
 const indexerProgress = () => viewIndexerProgress.query();
-const upgradeInProgress = () => upgradeLog.get();
+// todo: how to "resume" an upgrade
+const upgradeInProgress = () => {
+  return upgradeLog.get();
+};
 
 module.exports = {
   upgrade,

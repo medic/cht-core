@@ -7,6 +7,15 @@ const db = require('../../../../src/db');
 let upgradeLogService;
 let clock;
 
+const buildInfo = (version) => ({
+  application: 'medic',
+  namespace: 'medic',
+  base_version: '3.15',
+  version: version,
+  author: 'grunt',
+  build: `3.15.0-${version}`,
+});
+
 describe('UpgradeLog service', () => {
   'use strict';
 
@@ -25,13 +34,13 @@ describe('UpgradeLog service', () => {
       clock.tick(5000);
       sinon.stub(db.medicLogs, 'put').resolves({ id: 'id', rev: 'rev', ok: true });
 
-      const log = await upgradeLogService.create('action', '4.1.0', '4.0.0', 'anadmin');
+      const log = await upgradeLogService.create('action', buildInfo('4.1.0'), buildInfo('4.0.0'), 'anadmin');
       const expected = {
         _id: 'upgrade_log:5000:4.1.0',
         user: 'anadmin',
         action: 'action',
-        from_version: '4.0.0',
-        to_version: '4.1.0',
+        from: buildInfo('4.0.0'),
+        to: buildInfo('4.1.0'),
         start_date: 5000,
         state_history: [{ state: 'initiated', date: 5000 }],
         state: 'initiated',
@@ -43,17 +52,17 @@ describe('UpgradeLog service', () => {
       expect(db.medicLogs.put.args[0]).to.deep.equal([expected]);
     });
 
-    it('should work without setting versions', async () => {
+    it('should work without from build', async () => {
       clock.tick(10000);
       sinon.stub(db.medicLogs, 'put').resolves({ id: 'id', rev: 'rev', ok: true });
 
-      const log = await upgradeLogService.create();
+      const log = await upgradeLogService.create(undefined, buildInfo('4.0.1'));
       const expected = {
-        _id: 'upgrade_log:10000:',
+        _id: 'upgrade_log:10000:4.0.1',
         user: '',
         action: undefined,
-        from_version: '',
-        to_version: '',
+        from: undefined,
+        to: buildInfo('4.0.1'),
         start_date: 10000,
         state_history: [{ state: 'initiated', date: 10000 }],
         state: 'initiated',
@@ -70,7 +79,7 @@ describe('UpgradeLog service', () => {
       sinon.stub(db.medicLogs, 'put').rejects({ status: 'error' });
 
       try {
-        await upgradeLogService.create('act', 'to', 'from', 'usr');
+        await upgradeLogService.create('act', buildInfo('to'), buildInfo('from'), 'usr');
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ status: 'error' });
@@ -80,8 +89,8 @@ describe('UpgradeLog service', () => {
           _id: 'upgrade_log:10000:to',
           user: 'usr',
           action: 'act',
-          from_version: 'from',
-          to_version: 'to',
+          from: buildInfo('from'),
+          to: buildInfo('to'),
           start_date: 10000,
           state_history: [{ state: 'initiated', date: 10000 }],
           state: 'initiated',
@@ -95,7 +104,7 @@ describe('UpgradeLog service', () => {
       sinon.stub(db.medicLogs, 'put').rejects({ status: 'error' });
 
       try {
-        await upgradeLogService.create('ac', 'to', 'from', 'user');
+        await upgradeLogService.create('ac', buildInfo('to'), buildInfo('from'), 'user');
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ status: 'error' });
@@ -105,8 +114,8 @@ describe('UpgradeLog service', () => {
           _id: 'upgrade_log:10000:to',
           user: 'user',
           action: 'ac',
-          from_version: 'from',
-          to_version: 'to',
+          from: buildInfo('from'),
+          to: buildInfo('to'),
           start_date: 10000,
           state_history: [{ state: 'initiated', date: 10000 }],
           state: 'initiated',
@@ -356,6 +365,16 @@ describe('UpgradeLog service', () => {
 
       expect(upgradeLogService.__get__('isFinalState').args).to.deep.equal([[doc.state]]);
     });
+
+    it('should do nothing if tracking doc is in desired state', async () => {
+      const doc = { state: 'desired' };
+
+      upgradeLogService.__set__('isFinalState', sinon.stub().returns(false));
+      sinon.stub(upgradeLogService, 'get').resolves(doc);
+
+      const result = await upgradeLogService.__get__('update')('desired');
+      expect(result).to.deep.equal(undefined);
+    });
   });
 
   describe('getDeployInfo', () => {
@@ -475,5 +494,14 @@ describe('UpgradeLog service', () => {
     await upgradeLogService.setErrored();
     expect(update.callCount).to.equal(1);
     expect(update.args[0]).to.deep.equal(['errored']);
+  });
+
+  it('should set status to interrupted', async () => {
+    const update = sinon.stub().resolves();
+    upgradeLogService.__set__('update', update);
+
+    await upgradeLogService.setInterrupted();
+    expect(update.callCount).to.equal(1);
+    expect(update.args[0]).to.deep.equal(['interrupted']);
   });
 });

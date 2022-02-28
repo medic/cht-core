@@ -1,49 +1,61 @@
-<div class="upgrade-config col-sm-12" ng-hide="currentDeploy || loading" mm-auth="can_upgrade">
+<div class="upgrade-config col-sm-12" ng-hide="currentDeploy || loading" mm-auth="can_configure">
   <legend translate>instance.upgrade.no_horti</legend>
   <p translate>instance.upgrade.no_horti.detail</p>
 </div>
 
-<div class="upgrade-config col-sm-12" ng-show="currentDeploy" mm-auth="can_upgrade">
-  <div ng-show="deployDoc">
-    <legend ng-hide="deployDoc.action === 'stage'" translate>instance.upgrade.deployment</legend>
-    <legend ng-show="deployDoc.action === 'stage'" translate>instance.stage.deployment</legend>
+<div class="upgrade-config col-sm-12" ng-show="currentDeploy" mm-auth="can_configure">
+  <div ng-show="upgradeDoc">
+    <legend ng-hide="upgradeDoc.action === 'stage'" translate>instance.upgrade.deployment</legend>
+    <legend ng-show="upgradeDoc.action === 'stage'" translate>instance.stage.deployment</legend>
 
     <p class="status"
       translate="instance.upgrade.upgrading"
-      translate-values="{ before: currentDeploy.version, after: deployDoc.build_info.version }"></p>
+      translate-values="{ before: currentDeploy.version, after: upgradeDoc.to.version }"></p>
 
-    <ul ng-show="deployDoc.log.length" class="table table-striped col">
-      <li ng-repeat="entry in deployDoc.log" class="row">
-        <div ng-if="entry.type === 'stage'">
-          <div class="col-xs-3">{{entry.datetime | date:'medium'}}</div>
-          <div class="col-xs-9">{{entry.message.key | translate}}</div>
+    <div ng-show="error">
+      <p class="alert alert-warning error">{{error}}</p>
+    </div>
+
+    <ul ng-show="upgradeDoc.state_history.length" class="table table-striped col">
+      <li ng-repeat="entry in upgradeDoc.state_history" class="row">
+        <div>
+          <div class="col-xs-3">{{entry.date | date:'medium'}}</div>
+          <div class="col-xs-9">{{'instance.upgrade.state.' + entry.state | translate}}</div>
         </div>
-        <ul class="col-xs-12" ng-if="entry.type === 'warm_log'">
-          <li ng-repeat="indexer in entry.indexers">
-            <div class="col-xs-3">{{indexer.design_document}}</div>
-            <div class="col-xs-9 progress">
-              <div class="progress-bar" role="progressbar" style="width: {{indexer.progress}}%;" aria-valuenow="{{indexer.progress}}" aria-valuemin="0" aria-valuemax="100">{{indexer.progress}}%</div>
-            </div>
-          </li>
-        </ul>
+        <div>
+          <ul class="col-xs-12" ng-if="entry.state === 'indexing'">
+            <li ng-repeat="indexer in indexerProgress">
+              <div class="col-xs-3">{{indexer.database}}/{{indexer.ddoc}}</div>
+              <div class="col-xs-9 progress">
+                <div class="progress-bar" role="progressbar" style="width: {{indexer.progress}}%;" aria-valuenow="{{indexer.progress}}" aria-valuemin="0" aria-valuemax="100">{{indexer.progress}}%</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
       </li>
     </ul>
 
-    <div ng-show="deployDoc.staging_complete && deployDoc.action === 'stage'">
-      <p class="col-xs-11" translate>instance.stage.complete</p>
-      <button class="col-xs-1 btn btn-primary" ng-click="upgrade(deployDoc.build_info.version, 'complete')" translate>instance.upgrade.install</button>
+    <div ng-show="upgradeDoc.state === 'indexed' && upgradeDoc.action === 'stage'">
+      <p class="col-xs-10" translate>instance.stage.complete</p>
+      <button class="col-xs-1 btn btn-primary" ng-click="upgrade(upgradeDoc.to, 'complete')" translate>instance.upgrade.install</button>
     </div>
-    <div ng-show="deployDoc._deleted">
+    <div ng-show="upgradeDoc.state === 'complete'">
       <p class="col-xs-10" translate>instance.upgrade.complete</p>
       <button class="col-xs-2 btn btn-primary" ng-click="reloadPage()" translate>reload.app</button>
     </div>
+    <div ng-show="upgradeDoc.state === 'interrupted'">
+      <p class="alert alert-warning" translate>instance.upgrade.interrupted</p>
+      <button class="col-xs-2 btn btn-default pull-right" ng-click="retryUpgrade()" translate>instance.upgrade.retry</button>
+    </div>
+    <button class="col-xs-2 btn btn-danger" ng-click="abortUpgrade()" translate>instance.upgrade.cancel</button>
   </div>
 
-  <div ng-show="error">
-    <p class="alert alert-danger error">{{error}}</p>
-  </div>
+  <div ng-hide="upgradeDoc">
 
-  <div ng-hide="deployDoc">
+    <div ng-show="error">
+      <p class="alert alert-danger error">{{error}}</p>
+    </div>
 
     <div>
       <legend translate>instance.upgrade.current_version</legend>
@@ -60,16 +72,16 @@
 
     <div><p translate>upgrade.description</p></div>
 
-    <div class="col-sm-12" ng-show="loading || (deployDoc && !deployDoc._deleted && (deployDoc.action !== 'stage' || !deployDoc.staging_complete))">
+    <div class="col-sm-12" ng-show="loading">
       <div class="loader"></div>
     </div>
 
-    <div ng-hide="loading || (deployDoc && !deployDoc._deleted && (deployDoc.action !== 'stage' || !deployDoc.staging_complete))">
+    <div ng-hide="loading">
 
       <div class="upgrade-grid">
         <legend translate>instance.upgrade.releases</legend>
         <p ng-hide="versions.releases.length" translate>instance.upgrade.no_new_releases</p>
-        <div ng-show="versions.releases.length">
+        <div ng-show="versions.betas.length">
           <div class="row selection-heading">
             <div class="col-xs-5" translate>instance.upgrade.version</div>
             <div class="col-xs-7" translate>instance.upgrade.date</div>
@@ -90,24 +102,6 @@
           </div>
 
           <div class="alert alert-warning" role="alert" translate>instance.upgrade.pre_releases_warning</div>
-
-          <div ng-show="isUsingFeatureRelease" class="upgrade-grid">
-            <legend translate>instance.upgrade.feature_releases</legend>
-            <div>
-              <p ng-hide="versions.featureReleases.length" translate>instance.upgrade.no_feature_releases</p>
-              <div ng-show="versions.featureReleases.length">
-                <div class="row selection-heading">
-                  <div class="col-xs-5" translate>instance.upgrade.version</div>
-                  <div class="col-xs-7" translate>instance.upgrade.date</div>
-                </div>
-                <ul>
-                  <li ng-repeat="release in versions.featureReleases" class="row">
-                    <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" />
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
 
           <div class="upgrade-grid">
             <legend translate>instance.upgrade.betas</legend>

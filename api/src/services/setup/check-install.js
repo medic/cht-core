@@ -72,7 +72,7 @@ const checkInstall = async () => {
   if (allDbsUpToDate) {
     logger.info('Installation valid.');
     // todo poll views to start view warming anyway?
-    // all good
+    await upgradeUtils.interruptPreviousUpgrade();
     return;
   }
 

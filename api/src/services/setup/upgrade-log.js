@@ -5,8 +5,9 @@ const logger = require('../../logger');
  * @typedef {Object} UpgradeLog
  * @property {string} _id
  * @property {string} user - username of user initiating the upgrade (eg. "mary")
- * @property {string} from_version - eg "4.0.3"
- * @property {string} to_version - eg "4.1.2"
+ * @property {string} action - install, stage or upgrade
+ * @property {BuildInfo} from
+ * @property {BuildInfo} to
  * @property {number} start_date - timestamp when upgrade was initiated
  * @property {number} updated_date - timestamp when the log was last updated
  * @property {string} state - latest upgrade state
@@ -28,6 +29,13 @@ const UPGRADE_LOG_STATES = {
   ABORTING: 'aborting',
   ABORTED: 'aborted',
   ERRORED: 'errored',
+  INTERRUPTED: 'interrupted',
+};
+
+const UPGRADE_ACTIONS = {
+  INSTALL: 'install',
+  STAGE: 'stage',
+  UPGRADE: 'upgrade',
 };
 
 const isFinalState = (state) => {
@@ -104,24 +112,25 @@ const pushState = (upgradeLog, state, date = new Date().getTime()) => {
 
 /**
  * Creates, saves and returns contents of a new upgrade log file
- * @param {string} toVersion
- * @param {string} fromVersion
+ * @param {string} action - install, stage or upgrade
+ * @param {BuildInfo} toBuild
+ * @param {BuildInfo|undefined} fromBuild
  * @param {string} username
  * @return {Promise<UpgradeLog>}
  */
-const createUpgradeLog = async (action, toVersion = '', fromVersion = '', username = '') => {
-  logger.info(`Staging ${toVersion}`);
+const createUpgradeLog = async (action, toBuild , fromBuild , username = '') => {
+  logger.info(`Staging ${toBuild.build}`);
   const startDate = new Date().getTime();
 
   /**
    * @type UpgradeLog
    */
   const upgradeLog = {
-    _id: getUpgradeLogId(toVersion, startDate),
+    _id: getUpgradeLogId(toBuild.version, startDate),
     user: username,
     action,
-    from_version: fromVersion,
-    to_version: toVersion,
+    from: fromBuild,
+    to: toBuild,
     start_date: startDate,
   };
   pushState(upgradeLog, UPGRADE_LOG_STATES.INITIATED, startDate);
@@ -145,6 +154,10 @@ const update = async (state) => {
   }
 
   if (isFinalState(upgradeLog.state)) {
+    return;
+  }
+
+  if (upgradeLog.state === state) {
     return;
   }
 
@@ -199,6 +212,11 @@ const setAborted = async () => {
   await update(UPGRADE_LOG_STATES.ABORTED);
 };
 
+const setInterrupted = async () => {
+  logger.info('Upgrade interrupted');
+  await update(UPGRADE_LOG_STATES.INTERRUPTED);
+};
+
 const setErrored = () => update(UPGRADE_LOG_STATES.ERRORED);
 
 module.exports = {
@@ -215,4 +233,8 @@ module.exports = {
   setAborting,
   setAborted,
   setErrored,
+  setInterrupted,
+
+  actions: UPGRADE_ACTIONS,
+  states: UPGRADE_LOG_STATES,
 };
