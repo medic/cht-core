@@ -241,9 +241,10 @@ export class EnketoService {
         }
 
         try {
+          const xmlStr = pojo2xml({ context: summary.context });
           return {
             id: 'contact-summary',
-            xmlStr: pojo2xml({ context: summary.context })
+            xml: new DOMParser().parseFromString(xmlStr, 'text/xml')
           };
         } catch (e) {
           console.error('Error while converting app_summary.contact_summary.context to xml.');
