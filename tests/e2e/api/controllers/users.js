@@ -1125,7 +1125,7 @@ describe('Users API', () => {
         await utils.updateSettings(settings, true);
         await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
         const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
-        response.map((responseUser, index) => {
+        response.forEach((responseUser, index) => {
           chai.expect(responseUser).to.shallowDeepEqual({
             user: { id: getUserId(users[index].username) },
             'user-settings': { id: getUserId(users[index].username) },
