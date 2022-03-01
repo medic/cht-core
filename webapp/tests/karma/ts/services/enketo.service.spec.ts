@@ -95,6 +95,7 @@ describe('Enketo service', () => {
     EnketoForm.returns({
       view: {
         $: { on: sinon.stub() },
+        html: document.createElement('div'),
       },
       init: enketoInit,
       langs: {

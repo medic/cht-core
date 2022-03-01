@@ -27,8 +27,6 @@ const datePickerEnd = () => $('.daterangepicker [name="daterangepicker_end"]');
 const formActionsLink = (formId) => {
   return $(`.action-container .general-actions .dropup.open .dropdown-menu li a[href="#/reports/add/${formId}"]`);
 };
-const addRepeatButton = () => $('.btn.btn-default.add-repeat-btn');
-const repeatForm = async () => (await addRepeatButton()).click();
 const unreadCount = () => $('#reports-tab .mm-badge');
 const formTitle = () => $('#report-form #form-title');
 const submitButton = () => $('#report-form .form-footer .btn.submit');
@@ -223,8 +221,6 @@ module.exports = {
   selectedCaseIdLabel,
   submitReportButton,
   formActionsLink,
-  addRepeatButton,
-  repeatForm,
   getUnreadCount,
   goToReportById,
   sentTask,
