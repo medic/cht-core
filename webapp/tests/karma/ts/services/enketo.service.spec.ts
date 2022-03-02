@@ -25,6 +25,7 @@ import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { GlobalActions } from '@mm-actions/global';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 
 describe('Enketo service', () => {
@@ -69,6 +70,7 @@ describe('Enketo service', () => {
   let xmlFormGetWithAttachment;
   let zScoreService;
   let zScoreUtil;
+  let globalActions;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -116,7 +118,7 @@ describe('Enketo service', () => {
     };
     zScoreUtil = sinon.stub();
     zScoreService = { getScoreUtil: sinon.stub().resolves(zScoreUtil) };
-
+    globalActions = { setSnackbarContent: sinon.stub(GlobalActions.prototype, 'setSnackbarContent') };
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
 
     TestBed.configureTestingModule({
@@ -1438,93 +1440,144 @@ describe('Enketo service', () => {
       });
     });
 
-    it('saves attachments', () => {
-      const jqFind = $.fn.find;
-      sinon.stub($.fn, 'find');
-      //@ts-ignore
-      $.fn.find.callsFake(jqFind);
-
-      $.fn.find
+    describe('Saving attachments', () => {
+      it('should save attachments', () => {
+        const jqFind = $.fn.find;
+        sinon.stub($.fn, 'find');
         //@ts-ignore
-        .withArgs('input[type=file][name="/my-form/my_file"]')
-        .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
+        $.fn.find.callsFake(jqFind);
 
-      form.validate.resolves(true);
-      const content = loadXML('file-field');
+        $.fn.find
+          //@ts-ignore
+          .withArgs('input[type=file][name="/my-form/my_file"]')
+          .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
 
-      form.getDataStr.returns(content);
-      UserContact.resolves({ _id: 'my-user', phone: '8989' });
-      dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
-      return service.save('my-form', form, () => Promise.resolve(true)).then(() => {
-        expect(AddAttachment.callCount).to.equal(2);
+        form.validate.resolves(true);
+        const content = loadXML('file-field');
 
-        expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
-        expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
-        expect(AddAttachment.args[0][3]).to.equal('image');
+        form.getDataStr.returns(content);
+        dbGetAttachment.resolves('<form/>');
+        UserContact.resolves({ _id: 'my-user', phone: '8989' });
+        dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+        // @ts-ignore
+        const saveDocsSpy = sinon.spy(EnketoService.prototype, 'saveDocs');
 
-        expect(AddAttachment.args[1][1]).to.equal('content');
+        return service
+          .save('my-form', form, () => Promise.resolve(true))
+          .then(() => {
+            expect(AddAttachment.calledTwice);
+            expect(saveDocsSpy.calledOnce);
+
+            expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
+            expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
+            expect(AddAttachment.args[0][3]).to.equal('image');
+
+            expect(AddAttachment.args[1][1]).to.equal('content');
+            expect(globalActions.setSnackbarContent.notCalled);
+          });
       });
-    });
 
-    it('removes binary data from content', () => {
-      form.validate.resolves(true);
-      const content = loadXML('binary-field');
+      it('should throw exception if attachments are big', () => {
+        translateService.get.returnsArg(0);
+        form.validate.resolves(true);
+        dbGetAttachment.resolves('<form/>');
+        UserContact.resolves({ _id: 'my-user', phone: '8989' });
+        // @ts-ignore
+        const saveDocsStub = sinon.stub(EnketoService.prototype, 'saveDocs');
+        // @ts-ignore
+        const xmlToDocsStub = sinon.stub(EnketoService.prototype, 'xmlToDocs').resolves([
+          { _id: '1a' },
+          { _id: '1b', _attachments: {} },
+          {
+            _id: '1c',
+            _attachments: {
+              a_file: { data: { size: 10 * 1024 * 1024 } },
+              b_file: { data: 'SSdtIGJhdG1hbg==' },
+              c_file: { data: { size: 20 * 1024 * 1024 } },
+            }
+          },
+          {
+            _id: '1d',
+            _attachments: {
+              a_file: { content_type: 'image/png' }
+            }
+          }
+        ]);
 
-      const expected =
-        `<my-form>
+        return service
+          .save('my-form', form, () => Promise.resolve(true))
+          .then(() => expect.fail('Should have thrown exception.'))
+          .catch(error => {
+            expect(xmlToDocsStub.calledOnce);
+            expect(error.message).to.equal('enketo.error.max_attachment_size');
+            expect(saveDocsStub.notCalled);
+            expect(globalActions.setSnackbarContent.calledOnce);
+            expect(globalActions.setSnackbarContent.args[0]).to.have.members([ 'enketo.error.max_attachment_size' ]);
+          });
+      });
+
+      it('should remove binary data from content', () => {
+        form.validate.resolves(true);
+        const content = loadXML('binary-field');
+
+        const expected =
+          `<my-form>
   <name>Mary</name>
   <age>10</age>
   <gender>f</gender>
   <my_file type="binary"/>
 </my-form>`;
 
-      form.getDataStr.returns(content);
-      UserContact.resolves({ _id: 'my-user', phone: '8989' });
-      dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
-      return service.save('my-form', form, () => Promise.resolve(true)).then(() => {
-        expect(AddAttachment.callCount).to.equal(2);
+        form.getDataStr.returns(content);
+        dbGetAttachment.resolves('<form/>');
+        UserContact.resolves({ _id: 'my-user', phone: '8989' });
+        dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+        return service.save('my-form', form, () => Promise.resolve(true)).then(() => {
+          expect(AddAttachment.callCount).to.equal(2);
 
-        expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
-        expect(AddAttachment.args[0][2]).to.deep.equal('some image data');
-        expect(AddAttachment.args[0][3]).to.equal('image/png');
+          expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
+          expect(AddAttachment.args[0][2]).to.deep.equal('some image data');
+          expect(AddAttachment.args[0][3]).to.equal('image/png');
 
-        expect(AddAttachment.args[1][1]).to.equal('content');
-        expect(AddAttachment.args[1][2]).to.equal(expected);
+          expect(AddAttachment.args[1][1]).to.equal('content');
+          expect(AddAttachment.args[1][2]).to.equal(expected);
+        });
       });
-    });
 
-    it('attachment names are relative to the form name not the root node name', () => {
-      const jqFind = $.fn.find;
-      sinon.stub($.fn, 'find');
-      //@ts-ignore
-      $.fn.find.callsFake(jqFind);
-      $.fn.find
+      it('should assign attachment names relative to the form name not the root node name', () => {
+        const jqFind = $.fn.find;
+        sinon.stub($.fn, 'find');
         //@ts-ignore
-        .withArgs('input[type=file][name="/my-root-element/my_file"]')
-        .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
-      $.fn.find
-        //@ts-ignore
-        .withArgs('input[type=file][name="/my-root-element/sub_element/sub_sub_element/other_file"]')
-        .returns([{ files: [{ type: 'mytype', foo: 'baz' }] }]);
-      form.validate.resolves(true);
-      const content = loadXML('deep-file-fields');
+        $.fn.find.callsFake(jqFind);
+        $.fn.find
+          //@ts-ignore
+          .withArgs('input[type=file][name="/my-root-element/my_file"]')
+          .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
+        $.fn.find
+          //@ts-ignore
+          .withArgs('input[type=file][name="/my-root-element/sub_element/sub_sub_element/other_file"]')
+          .returns([{ files: [{ type: 'mytype', foo: 'baz' }] }]);
+        form.validate.resolves(true);
+        const content = loadXML('deep-file-fields');
 
-      form.getDataStr.returns(content);
-      UserContact.resolves({ _id: 'my-user', phone: '8989' });
-      dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
-      return service.save('my-form-internal-id', form, () => Promise.resolve(true)).then(() => {
-        expect(AddAttachment.callCount).to.equal(3);
+        form.getDataStr.returns(content);
+        dbGetAttachment.resolves('<form/>');
+        UserContact.resolves({ _id: 'my-user', phone: '8989' });
+        dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+        return service.save('my-form-internal-id', form, () => Promise.resolve(true)).then(() => {
+          expect(AddAttachment.callCount).to.equal(3);
 
-        expect(AddAttachment.args[0][1]).to.equal('user-file/my-form-internal-id/my_file');
-        expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
-        expect(AddAttachment.args[0][3]).to.equal('image');
+          expect(AddAttachment.args[0][1]).to.equal('user-file/my-form-internal-id/my_file');
+          expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
+          expect(AddAttachment.args[0][3]).to.equal('image');
 
-        expect(AddAttachment.args[1][1])
-          .to.equal('user-file/my-form-internal-id/sub_element/sub_sub_element/other_file');
-        expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'mytype', foo: 'baz' });
-        expect(AddAttachment.args[1][3]).to.equal('mytype');
+          expect(AddAttachment.args[1][1])
+            .to.equal('user-file/my-form-internal-id/sub_element/sub_sub_element/other_file');
+          expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'mytype', foo: 'baz' });
+          expect(AddAttachment.args[1][3]).to.equal('mytype');
 
-        expect(AddAttachment.args[2][1]).to.equal('content');
+          expect(AddAttachment.args[2][1]).to.equal('content');
+        });
       });
     });
 
