@@ -14,11 +14,10 @@ process
   });
 
 (async () => {
-
+  const checkInstall = require('./src/services/setup/check-install');
   const app = require('./src/routing');
   const configWatcher = require('./src/services/config-watcher');
   const migrations = require('./src/migrations');
-  const ddocExtraction = require('./src/ddoc-extraction');
   const generateXform = require('./src/services/generate-xform');
   const translations = require('./src/translations');
   const serverUtils = require('./src/server-utils');
@@ -32,9 +31,9 @@ process
     await serverChecks.check(environment.serverUrl);
     logger.info('Checks passed successfully');
 
-    logger.info('Extracting ddoc…');
-    await ddocExtraction.run();
-    logger.info('DDoc extraction completed successfully');
+    logger.info('Running installation checks…');
+    await checkInstall.run();
+    logger.info('Installation checks passed');
 
     logger.info('Extracting initial documents…');
     await uploadDefaultDocs.run();

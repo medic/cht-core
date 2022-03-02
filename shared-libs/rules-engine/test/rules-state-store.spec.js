@@ -295,8 +295,8 @@ describe('rules-state-store', () => {
     });
 
     it('some contacts', async () => {
+      clock = sinon.useFakeTimers();
       const now = moment();
-      clock = sinon.useFakeTimers(now.valueOf());
       await rulesStateStore.build({});
       await rulesStateStore.markFresh(0, ['a', 'b', 'c', 'd']);
       const tenDays = 10 * 24 * 60 * 60 * 1000;
