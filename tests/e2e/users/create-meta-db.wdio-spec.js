@@ -25,8 +25,12 @@ describe('Create user meta db : ', () => {
     await usersPage.saveUser();
     await commonElements.goToMessages();
     await commonElements.logout();
+    console.warn('~~~~~~~~ logged out of admin');
+    console.warn('~~~~~~~~ logging in as fulltester');
     await loginPage.login({ username, password });
+    console.warn('~~~~~~~~ logged in as fulltester');
     await commonElements.waitForPageLoaded();
+    console.warn('~~~~~~~~ page loaded');
 
     const doc = { _id: 'this is a random uuid' };
     await utils.requestOnTestMetaDb(_.defaults({ method: 'POST', body: doc }, options));

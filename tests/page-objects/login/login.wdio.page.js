@@ -14,8 +14,10 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
   await (await passwordField()).setValue(password);
   await changeLocale(locale);
   await (await loginButton()).click();
+  console.warn('~~~~~~~~ login form submitted');
   if (loadPage) {
     await commonPage.waitForLoaders();
+    console.warn('~~~~~~~~ spinners finished');
   }
 
   if (createUser) {
