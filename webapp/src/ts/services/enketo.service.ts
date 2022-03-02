@@ -7,6 +7,7 @@ import { toBik_text } from 'bikram-sambat';
 import * as moment from 'moment';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
+import * as enketoConstants from './../../js/enketo/constants';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
 import { AddAttachmentService } from '@mm-services/add-attachment.service';
 import { DbService } from '@mm-services/db.service';
@@ -27,6 +28,7 @@ import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
+import { GlobalActions } from '@mm-actions/global';
 
 @Injectable({
   providedIn: 'root'
@@ -55,10 +57,12 @@ export class EnketoService {
     private ngZone:NgZone,
   ) {
     this.inited = this.init();
+    this.globalActions = new GlobalActions(store);
     this.servicesActions = new ServicesActions(this.store);
   }
 
-  private servicesActions;
+  private globalActions: GlobalActions;
+  private servicesActions: ServicesActions;
   private readonly HTML_ATTACHMENT_NAME = 'form.html';
   private readonly MODEL_ATTACHMENT_NAME = 'model.xml';
   private readonly objUrls = [];
@@ -725,6 +729,32 @@ export class EnketoService {
       });
   }
 
+  private async validateAttachments(docs) {
+    const oversizeDoc = docs.find(doc => {
+      let attachmentsSize = 0;
+
+      if (doc._attachments) {
+        Object
+          .keys(doc._attachments)
+          .forEach(name => {
+            const data = doc._attachments[name]?.data; // It can be Base64 (binary) or object (file)
+            const size = typeof data === 'string' ? data.length : (data?.size || 0);
+            attachmentsSize += size;
+          });
+      }
+
+      return attachmentsSize > enketoConstants.maxAttachmentSize;
+    });
+
+    if (oversizeDoc) {
+      const errorMessage = await this.translateService.get('enketo.error.max_attachment_size');
+      this.globalActions.setSnackbarContent(errorMessage);
+      return Promise.reject(new Error(errorMessage));
+    }
+
+    return docs;
+  }
+
   save(formInternalId, form, geoHandle, docId?) {
     return Promise
       .resolve(form.validate())
@@ -748,6 +778,7 @@ export class EnketoService {
         this.getFormXml(formInternalId),
       ])
       .then(([doc, formXml]) => this.xmlToDocs(doc, formXml, form.getDataStr({ irrelevant: false })))
+      .then(docs => this.validateAttachments(docs))
       .then((docs) => this.saveGeo(geoHandle, docs))
       .then((docs) => this.transitionsService.applyTransitions(docs))
       .then((docs) => this.saveDocs(docs))
