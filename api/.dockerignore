@@ -1,1 +1,8 @@
-tests
+/api/tests
+/.github
+/tests
+/release-forms
+/demo-forms
+/scripts
+**/.git
+**/.gitignore
