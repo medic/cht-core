@@ -41,10 +41,12 @@ export class SessionService {
       .delete('/_session')
       .toPromise()
       .catch(() => {
-        // Set cookie to force login before using app
-        this.cookieService.set('login', 'force', undefined, '/');
+
+
       })
       .then(() => {
+        // Set cookie to force login before using app
+        this.cookieService.set('login', 'force', undefined, '/');
         this.navigateToLogin();
       });
   }
