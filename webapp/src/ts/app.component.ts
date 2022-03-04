@@ -44,6 +44,7 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
+import { TrainingCardsComponent } from '@mm-modals/training-cards/training-cards.component';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -287,6 +288,11 @@ export class AppComponent implements OnInit {
     this.startWealthQuintiles();
     this.enableTooltips();
     this.initAnalyticsModules();
+
+    // TODO remove this test modal code
+    this.modalService
+      .show(TrainingCardsComponent)
+      .catch(e => console.warn('oh something happened', e));
   }
 
   private initTransitions() {
