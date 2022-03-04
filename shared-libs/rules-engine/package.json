@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@medic/memdown": "file:../memdown",
-    "chai": "^4.3.4",
+    "chai": "^4.3.6",
     "chai-exclude": "^2.1.0",
     "mocha": "^7.2.0",
     "moment": "^2.29.1",
