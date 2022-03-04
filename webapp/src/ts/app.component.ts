@@ -6,7 +6,7 @@ import { setTheme as setBootstrapTheme } from 'ngx-bootstrap/utils';
 import { combineLatest } from 'rxjs';
 
 import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
-import { Selectors } from './selectors';
+import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -17,7 +17,7 @@ import { LocationService } from '@mm-services/location.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { FeedbackService } from '@mm-services/feedback.service';
-import { environment } from './environments/environment';
+import { environment } from '@mm-environments/environment';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { JsonFormsService } from '@mm-services/json-forms.service';

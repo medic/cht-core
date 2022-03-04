@@ -84,7 +84,7 @@ export class EnketoService {
       });
   }
 
-  private replaceJavarosaMediaWithLoaders(formDoc, formHtml) {
+  private replaceJavarosaMediaWithLoaders(formHtml) {
     formHtml.find('[data-media-src]').each((idx, element) => {
       const $img = $(element);
       const lang = $img.attr('lang');
@@ -435,7 +435,7 @@ export class EnketoService {
     return this
       .transformXml(formDoc)
       .then(doc => {
-        this.replaceJavarosaMediaWithLoaders(formDoc, doc.html);
+        this.replaceJavarosaMediaWithLoaders(doc.html);
         const xmlFormContext: XmlFormContext = {
           doc,
           wrapper: $selector,
@@ -820,7 +820,7 @@ interface XmlFormContext {
 
 export interface EnketoFormContext {
   selector: string;
-  formDoc: string;
+  formDoc: Record<string, any>;
   instanceData: Record<string, any>;
   editedListener: () => void;
   valuechangeListener: () => void;
