@@ -1,46 +1,75 @@
-const indexerProgressService = require('./indexer-progress');
-const upgradeLogService = require('./upgrade-log');
-const installer = require('./install');
+const viewIndexerProgress = require('./view-indexer-progress');
+const upgradeLog = require('./upgrade-log');
+const upgradeSteps = require('./upgrade-steps');
 const logger = require('../../logger');
 
-const upgrade = async (version, username, stageOnly) => {
-  if (!version) {
-    throw new Error('Version is invalid');
-  }
+/**
+ * @typedef {Object} BuildInfo
+ * @property {string} namespace - default "medic"
+ * @property {string} application - default "medic"
+ * @property {string} version - tag, branch or local
+ * @property {string} build - unique tag for a build. Semver valid.
+ */
 
+/**
+ * Initiates an upgrade.
+ * Returns immediately after prep, because this is called by a user-initiated action that should get a quick response,
+ * and starts the upgrade process outside the promise chain.
+ * @param {BuildInfo} buildInfo
+ * @param {string} username
+ * @param {boolean} stageOnly
+ * @return {Promise<void>}
+ */
+const upgrade = async (buildInfo, username, stageOnly) => {
   try {
-    await installer.prep(version, username, stageOnly);
-    safeInstall(version, stageOnly);
+    await upgradeSteps.prep(buildInfo, username, stageOnly);
+    safeInstall(buildInfo, stageOnly);
   } catch (err) {
-    await upgradeLogService.setErrored();
+    await upgradeLog.setErrored();
     throw err;
   }
 };
 
-const safeInstall = async (version, stageOnly) => {
+/**
+ * @param {BuildInfo} buildInfo
+ * @param {boolean} stageOnly
+ * @return {Promise<void>}
+ */
+const safeInstall = async (buildInfo, stageOnly) => {
   try {
-    await installer.stage(version);
-    await installer.indexStagedViews();
+    await upgradeSteps.stage(buildInfo);
+    await upgradeSteps.indexStagedViews();
     if (stageOnly) {
       return;
     }
-    await complete();
+    await complete(buildInfo);
   } catch (err) {
-    await upgradeLogService.setErrored();
-    logger.error('Error thrown when indexing views %o', err);
+    await upgradeLog.setErrored();
+    logger.error('Error thrown while installing: %o', err);
   }
 };
 
-const complete = async () => {
+/**
+ * @param {BuildInfo} buildInfo
+ * @return {Promise<void>}
+ */
+const complete = async (buildInfo) => {
   // todo
+  logger.debug('%o', buildInfo); // don't complain about unused variables
+  // test if build info matches
   // this is going to send a request to the bridge container to pull new source code
   // completing the install (overwriting the staged ddocs) is done when API starts up.
 };
 
-const abort = () => installer.abort();
+const abort = () => {
+  return upgradeSteps.abort();
+};
 
-const indexerProgress = () => indexerProgressService.query();
-const upgradeInProgress = () => upgradeLogService.getUpgradeLog();
+const indexerProgress = () => viewIndexerProgress.query();
+// todo: how to "resume" an upgrade
+const upgradeInProgress = () => {
+  return upgradeLog.get();
+};
 
 module.exports = {
   upgrade,

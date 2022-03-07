@@ -55,6 +55,7 @@ const uuid = require('uuid');
 const compression = require('compression');
 const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/'; // jshint ignore:line
 const cookie = require('./services/cookie');
+const deployInfo = require('./services/deploy-info');
 const app = express();
 
 // requires content-type application/json header
@@ -341,18 +342,11 @@ app.get('/api/deploy-info', async (req, res) => {
     return serverUtils.notLoggedIn(req, res);
   }
 
-  // todo move this to some service or something
-  if (!environment.getDeployInfo()) {
-    try {
-      const ddoc = await db.medic.get(upgradeUtils.getDdocId(environment.ddoc));
-      const deployInfo = Object.assign({ version: ddoc.version }, ddoc.deploy_info);
-      environment.setDeployInfo(deployInfo);
-    } catch(err) {
-      return serverUtils.serverError(err, req, res);
-    }
+  try {
+    res.json(await deployInfo.get());
+  } catch (err) {
+    serverUtils.serverError(err, req, res);
   }
-
-  res.json(environment.getDeployInfo());
 });
 
 app.get('/api/v1/monitoring', deprecation.deprecate('/api/v2/monitoring'), monitoring.getV1);
@@ -372,12 +366,16 @@ app.get('/api/auth/:path', function(req, res) {
     });
 });
 
-app.get('/api/v1/upgrade', upgrade.upgradeInProgress);
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
 app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);
-app.delete('/api/v1/upgrade', jsonParser, upgrade.abort);
-app.all('/api/v1/upgrade/service-worker', upgrade.serviceWorker);
+
+app.get('/api/v2/upgrade', upgrade.upgradeInProgress);
+app.post('/api/v2/upgrade', jsonParser, upgrade.upgrade);
+app.post('/api/v2/upgrade/stage', jsonParser, upgrade.stage);
+app.post('/api/v2/upgrade/complete', jsonParser, upgrade.complete);
+app.delete('/api/v2/upgrade', jsonParser, upgrade.abort);
+app.all('/api/v2/upgrade/service-worker', upgrade.serviceWorker);
 
 app.post('/api/v1/sms/africastalking/incoming-messages', formParser, africasTalking.incomingMessages);
 app.post('/api/v1/sms/africastalking/delivery-reports', formParser, africasTalking.deliveryReports);
@@ -584,7 +582,6 @@ app.post(
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
 const dbDocHandler = require('./controllers/db-doc');
-const upgradeUtils = require('./services/setup/utils');
 const docPath = routePrefix + ':docId/{0,}';
 const attachmentPath = routePrefix + ':docId/+:attachmentId*';
 const ddocPath = routePrefix + '_design/+:ddocId*';

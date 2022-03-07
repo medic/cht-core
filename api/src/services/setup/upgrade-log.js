@@ -1,16 +1,13 @@
-const fs = require('fs');
-const path = require('path');
-
 const db = require('../../db');
-const environment = require('../../environment');
 const logger = require('../../logger');
 
 /**
  * @typedef {Object} UpgradeLog
  * @property {string} _id
  * @property {string} user - username of user initiating the upgrade (eg. "mary")
- * @property {string} from_version - eg "4.0.3"
- * @property {string} to_version - eg "4.1.2"
+ * @property {string} action - install, stage or upgrade
+ * @property {BuildInfo} from
+ * @property {BuildInfo} to
  * @property {number} start_date - timestamp when upgrade was initiated
  * @property {number} updated_date - timestamp when the log was last updated
  * @property {string} state - latest upgrade state
@@ -20,53 +17,80 @@ const logger = require('../../logger');
  * @property {any} state_history[].details
  */
 
-if (!fs.promises) {
-  const promisify = require('util').promisify;
-  // temporary patching to work on Node 8.
-  // This code will never run on Node 8 in prod!
-  fs.promises = {
-    mkdir: promisify(fs.mkdir),
-    readdir: promisify(fs.readdir),
-    rmdir: promisify(fs.readdir),
-    unlink: promisify(fs.unlink),
-    access: promisify(fs.access),
-    writeFile: promisify(fs.writeFile),
-    readFile: promisify(fs.readFile),
-  };
-}
-
 const UPGRADE_LOG_STATES = {
   INITIATED: 'initiated',
   STAGED: 'staged',
   INDEXING: 'indexing',
   INDEXED: 'indexed',
   COMPLETING: 'completing',
+  FINALIZING: 'finalizing',
+  FINALIZED: 'finalized',
   COMPLETE: 'complete',
+  ABORTING: 'aborting',
   ABORTED: 'aborted',
   ERRORED: 'errored',
+  INTERRUPTED: 'interrupted',
+};
+
+const UPGRADE_ACTIONS = {
+  INSTALL: 'install',
+  STAGE: 'stage',
+  UPGRADE: 'upgrade',
+};
+
+const isFinalState = (state) => {
+  return state === UPGRADE_LOG_STATES.FINALIZED ||
+         state === UPGRADE_LOG_STATES.ABORTED ||
+         state === UPGRADE_LOG_STATES.ERRORED;
 };
 
 const UPGRADE_LOG_NAME = 'upgrade_log';
-const UPGRADE_LOG_PATH = path.join(environment.upgradePath, 'upgrade-log.json');
 
-const getUpgradeLogId = (version, startDate) => `${UPGRADE_LOG_NAME}:${version}:${startDate}`;
+const getUpgradeLogId = (version, startDate) => `${UPGRADE_LOG_NAME}:${startDate}:${version}`;
 
-const getUpgradeLog = async () => {
-  try {
-    const content = await fs.promises.readFile(UPGRADE_LOG_PATH, 'utf-8');
-    return JSON.parse(content);
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      // file missing
-      return;
-    }
+/**
+ * Returns that most recently dated upgrade log.
+ * @return {Promise<UpgradeLog | undefined>}
+ */
+const getLatestUpgradeLog = async () => {
+  const now = new Date().getTime();
+  const results = await db.medicLogs.allDocs({
+    startkey: `${UPGRADE_LOG_NAME}:${now}:`,
+    descending: true,
+    limit: 1,
+    include_docs: true
+  });
 
-    logger.error('Error when getting current upgrade log contents: %o', err);
+  if (!results.rows.length) {
+    return;
   }
+
+  return results.rows[0].doc;
 };
 
+/**
+ * Gets the current upgrade log. If not available in memory, gets last chronological upgrade log, if it is not in a
+ * final state.
+ * Returns undefined if neither are found.
+ * @return {Promise<UpgradeLog | undefined>}
+ */
+const getUpgradeLog = async () => {
+  const upgradeLog = await getLatestUpgradeLog();
+
+  if (upgradeLog && isFinalState(upgradeLog.state)) {
+    logger.info('Last upgrade log is already final.');
+    return;
+  }
+
+  return upgradeLog;
+};
+
+/**
+ * Returns the user and the _id of the current upgrqde log
+ * @return {Promise<{upgrade_log_id: string, user: string}>}
+ */
 const getDeployInfo = async () => {
-  const log = await getUpgradeLog() || {};
+  const log = await module.exports.get() || {};
   return {
     user: log.user,
     upgrade_log_id: log._id,
@@ -88,49 +112,58 @@ const pushState = (upgradeLog, state, date = new Date().getTime()) => {
 
 /**
  * Creates, saves and returns contents of a new upgrade log file
- * @param {string} toVersion
- * @param {string} fromVersion
+ * @param {string} action - install, stage or upgrade
+ * @param {BuildInfo} toBuild
+ * @param {BuildInfo|undefined} fromBuild
  * @param {string} username
  * @return {Promise<UpgradeLog>}
  */
-const createUpgradeLog = async (action, toVersion = '', fromVersion = '', username = '') => {
-  logger.info(`Staging ${toVersion}`);
+const createUpgradeLog = async (action, toBuild , fromBuild , username = '') => {
+  logger.info(`Staging ${toBuild.build}`);
   const startDate = new Date().getTime();
 
   /**
    * @type UpgradeLog
    */
   const upgradeLog = {
-    _id: getUpgradeLogId(toVersion, startDate),
+    _id: getUpgradeLogId(toBuild.version, startDate),
     user: username,
     action,
-    from_version: fromVersion,
-    to_version: toVersion,
+    from: fromBuild,
+    to: toBuild,
     start_date: startDate,
   };
   pushState(upgradeLog, UPGRADE_LOG_STATES.INITIATED, startDate);
 
   await db.medicLogs.put(upgradeLog);
-  await fs.promises.writeFile(UPGRADE_LOG_PATH, JSON.stringify(upgradeLog));
   return upgradeLog;
 };
 
 /**
+ * Updates the current upgrade log to set the new state
+ * Updates are skipped if the current log is already in a final state.
+ * If the new state is final, the log is no longer stored as "current"
  * @param {string} state
+ * @returns {Promise}
  */
 const update = async (state) => {
-  const upgradeLogFile = await getUpgradeLog();
-  if (!upgradeLogFile) {
-    logger.info('Upgrade log tracking file was not found.');
+  const upgradeLog = await module.exports.get();
+  if (!upgradeLog) {
+    logger.info('Valid Upgrade log tracking file was not found. Not updating.');
     return;
   }
-  /**
-   * @type UpgradeLog
-   */
-  const upgradeLog = await db.medicLogs.get(upgradeLogFile._id);
+
+  if (isFinalState(upgradeLog.state)) {
+    return;
+  }
+
+  if (upgradeLog.state === state) {
+    return;
+  }
+
   pushState(upgradeLog, state);
   await db.medicLogs.put(upgradeLog);
-  await fs.promises.writeFile(UPGRADE_LOG_PATH, JSON.stringify(upgradeLog));
+
   return upgradeLog;
 };
 
@@ -159,18 +192,49 @@ const setComplete = async () => {
   logger.info('Install complete');
 };
 
-const setAborted = () => update(UPGRADE_LOG_STATES.ABORTED);
+const setFinalizing = async () => {
+  logger.info('Finalizing install');
+  await update(UPGRADE_LOG_STATES.FINALIZING);
+};
+
+const setFinalized = async () => {
+  await update(UPGRADE_LOG_STATES.FINALIZED);
+  logger.info('Install finalized');
+};
+
+const setAborting = async () => {
+  logger.info('Aborting upgrade');
+  await update(UPGRADE_LOG_STATES.ABORTING);
+};
+
+const setAborted = async () => {
+  logger.info('Upgrade aborted');
+  await update(UPGRADE_LOG_STATES.ABORTED);
+};
+
+const setInterrupted = async () => {
+  logger.info('Upgrade interrupted');
+  await update(UPGRADE_LOG_STATES.INTERRUPTED);
+};
+
 const setErrored = () => update(UPGRADE_LOG_STATES.ERRORED);
 
 module.exports = {
   create: createUpgradeLog,
-  getUpgradeLog,
+  get: getUpgradeLog,
   getDeployInfo,
   setStaged,
   setIndexing,
   setIndexed,
   setCompleting,
   setComplete,
+  setFinalizing,
+  setFinalized,
+  setAborting,
   setAborted,
   setErrored,
+  setInterrupted,
+
+  actions: UPGRADE_ACTIONS,
+  states: UPGRADE_LOG_STATES,
 };

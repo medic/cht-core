@@ -37,7 +37,8 @@ if (UNIT_TEST_ENV) {
     'exists',
     'close',
     'allDbs',
-    'activeTasks'
+    'activeTasks',
+    'saveDocs',
   ];
 
   const notStubbed = (first, second) => {
@@ -104,9 +105,46 @@ if (UNIT_TEST_ENV) {
       .catch(() => false);
   };
 
-  module.exports.allDbs = () => rpn.get({ url: `${environment.serverUrl}/_all_dbs`, json: true });
+  module.exports.allDbs = () => rpn.get({ uri: `${environment.serverUrl}/_all_dbs`, json: true });
 
   module.exports.activeTasks = () => {
-    return rpn.get({ url: `${environment.serverUrl}/_active_tasks`, json: true });
+    return rpn({
+      url: `${environment.serverUrl}/_active_tasks`,
+      json: true
+    }).then(tasks => {
+      // TODO: consider how to filter these just to the active database.
+      // On CouchDB 2.x you only get the shard name, which looks like:
+      // shards/80000000-ffffffff/medic.1525076838
+      // On CouchDB 1.x (I think) you just get the exact DB name
+      return tasks;
+    });
+  };
+
+  /**
+   * @param {Database} database
+   * @param {Array<DesignDocument>} docs
+   * @return {[{ id: string, rev: string }]}
+   */
+  module.exports.saveDocs = async (db, docs) => {
+    if (!db) {
+      throw new Error('Invalid database to delete from: %o', db);
+    }
+
+    if (!docs.length) {
+      return [];
+    }
+
+    const results = await db.bulkDocs(docs);
+    const errors = results
+      .filter(result => result.error)
+      .map(result => `saving ${result.id} failed with ${result.error}`);
+
+    if (!errors.length) {
+      return results;
+    }
+
+    // todo try one by one!
+
+    throw new Error(`Error while saving docs: ${errors.join(', ')}`);
   };
 }

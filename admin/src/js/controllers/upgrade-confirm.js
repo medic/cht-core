@@ -1,6 +1,8 @@
 angular.module('controllers').controller('UpgradeConfirmCtrl',
   function (
+    $log,
     $scope,
+    $translate,
     $uibModalInstance
   ) {
 
@@ -14,14 +16,22 @@ angular.module('controllers').controller('UpgradeConfirmCtrl',
     };
 
     $scope.submit = () => {
-      if ($scope.model.confirmCallback) {
-        $scope.status.processing = true;
-        return $scope.model
-          .confirmCallback()
-          .then(() => $uibModalInstance.close(true));
+      if (!$scope.model || !$scope.model.confirmCallback) {
+        return $uibModalInstance.close(true);
       }
 
-      $uibModalInstance.close(true);
+      $scope.status.processing = true;
+      return $scope.model
+        .confirmCallback()
+        .then(() => $uibModalInstance.close(true))
+        .catch(err => {
+          $log.error('Error when confirming', err);
+          const key = $scope.model.errorKey || 'instance.upgrade.error.confirm';
+          return $translate(key).then(msg => {
+            $scope.status.error = msg;
+            $scope.status.processing = false;
+          });
+        });
     };
   }
 );

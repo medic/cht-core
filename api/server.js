@@ -15,6 +15,7 @@ process
   });
 
 (async () => {
+  const checkInstall = require('./src/services/setup/check-install');
   try {
     logger.info('Running server checks…');
     await serverChecks.check();
@@ -45,7 +46,7 @@ process
   try
   {
     logger.info('Running installation checks…');
-    await installer.checkInstall();
+    await checkInstall.run();
     logger.info('Installation checks passed');
 
     logger.info('Extracting initial documents…');

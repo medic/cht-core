@@ -10,15 +10,15 @@ const checkAuth = (req) => auth.check(req, REQUIRED_PERMISSIONS);
 const upgrade = (req, res, stageOnly) => {
   return checkAuth(req)
     .then(userCtx => {
-      const version = req.body.version;
-      if (!version) {
+      const buildInfo = req.body.build;
+      if (!buildInfo) {
         throw {
-          message: 'You must provide a version',
+          message: 'You must provide a build info body',
           status: 400
         };
       }
 
-      return service.upgrade(version, userCtx.user, stageOnly);
+      return service.upgrade(buildInfo, userCtx.user, stageOnly);
     })
     .then(() => res.json({ ok: true }))
     .catch(err => serverUtils.error(err, req, res));
@@ -26,7 +26,10 @@ const upgrade = (req, res, stageOnly) => {
 
 const completeUpgrade = (req, res) => {
   return checkAuth(req)
-    .then(() => service.complete().then(() => res.json({ ok: true })))
+    .then(() => service.complete(req.body.build))
+    .then(() => {
+      res.json({ ok: true });
+    })
     .catch(err => serverUtils.error(err, req, res));
 };
 

@@ -10,7 +10,11 @@
 
     <p class="status"
       translate="instance.upgrade.upgrading"
-      translate-values="{ before: currentDeploy.version, after: upgradeDoc.to_version }"></p>
+      translate-values="{ before: currentDeploy.version, after: upgradeDoc.to.version }"></p>
+
+    <div ng-show="error">
+      <p class="alert alert-warning error">{{error}}</p>
+    </div>
 
     <ul ng-show="upgradeDoc.state_history.length" class="table table-striped col">
       <li ng-repeat="entry in upgradeDoc.state_history" class="row">
@@ -34,20 +38,24 @@
 
     <div ng-show="upgradeDoc.state === 'indexed' && upgradeDoc.action === 'stage'">
       <p class="col-xs-10" translate>instance.stage.complete</p>
-      <button class="col-xs-1 btn btn-primary" ng-click="upgrade(upgradeDoc.to_version, 'complete')" translate>instance.upgrade.install</button>
-      <button class="col-xs-2 btn btn-danger" ng-click="cancelUpgrade()" translate>instance.upgrade.cancel</button>
+      <button class="col-xs-1 btn btn-primary" ng-click="upgrade(upgradeDoc.to, 'complete')" translate>instance.upgrade.install</button>
     </div>
     <div ng-show="upgradeDoc.state === 'complete'">
       <p class="col-xs-10" translate>instance.upgrade.complete</p>
       <button class="col-xs-2 btn btn-primary" ng-click="reloadPage()" translate>reload.app</button>
     </div>
-  </div>
-
-  <div ng-show="error">
-    <p class="alert alert-danger error">{{error}}</p>
+    <div ng-show="upgradeDoc.state === 'interrupted'">
+      <p class="alert alert-warning" translate>instance.upgrade.interrupted</p>
+      <button class="col-xs-2 btn btn-default pull-right" ng-click="retryUpgrade()" translate>instance.upgrade.retry</button>
+    </div>
+    <button class="col-xs-2 btn btn-danger" ng-click="abortUpgrade()" translate>instance.upgrade.cancel</button>
   </div>
 
   <div ng-hide="upgradeDoc">
+
+    <div ng-show="error">
+      <p class="alert alert-danger error">{{error}}</p>
+    </div>
 
     <div>
       <legend translate>instance.upgrade.current_version</legend>
@@ -64,11 +72,11 @@
 
     <div><p translate>upgrade.description</p></div>
 
-    <div class="col-sm-12" ng-show="loading || (deployDoc && !deployDoc._deleted && (deployDoc.action !== 'stage' || !deployDoc.staging_complete))">
+    <div class="col-sm-12" ng-show="loading">
       <div class="loader"></div>
     </div>
 
-    <div ng-hide="loading || (deployDoc && !deployDoc._deleted && (deployDoc.action !== 'stage' || !deployDoc.staging_complete))">
+    <div ng-hide="loading">
 
       <div class="upgrade-grid">
         <legend translate>instance.upgrade.releases</legend>
