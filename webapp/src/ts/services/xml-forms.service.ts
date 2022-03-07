@@ -5,6 +5,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
+import { FileReaderService } from '@mm-services/file-reader.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
@@ -21,6 +22,7 @@ export class XmlFormsService {
     private changesService:ChangesService,
     private contactTypesService:ContactTypesService,
     private dbService:DbService,
+    private fileReaderService: FileReaderService,
     private userContactService:UserContactService,
     private xmlFormsContextUtilsService:XmlFormsContextUtilsService,
     private parseProvider:ParseProvider,
@@ -195,6 +197,17 @@ export class XmlFormsService {
   }
 
   /**
+   * @memberof XmlForms
+   * @param {Object} doc The document find the xform attachment for
+   * @returns {String} The name of the xform attachment.
+   */
+  private findXFormAttachmentName(doc) {
+    return doc &&
+      doc._attachments &&
+      Object.keys(doc._attachments).find(name => name === 'xml' || name.endsWith('.xml'));
+  }
+
+  /**
    * Invokes the given callback with an array of docs containing xforms
    * which the user is allowed to complete. Listens for changes and invokes
    * the callback again when needed.
@@ -261,15 +274,20 @@ export class XmlFormsService {
       });
   }
 
-  /**
-   * @memberof XmlForms
-   * @param {Object} doc The document find the xform attachment for
-   * @returns {String} The name of the xform attachment.
-   */
-  findXFormAttachmentName(doc) {
-    return doc &&
-      doc._attachments &&
-      Object.keys(doc._attachments).find(name => name === 'xml' || name.endsWith('.xml'));
+  getDocAndFormAttachment(internalId) {
+    return this.get(internalId)
+      .then(doc => {
+        const attachmentName = this.findXFormAttachmentName(doc);
+        return this.dbService.get().getAttachment(internalId, attachmentName)
+          .then(blob => this.fileReaderService.utf8(blob))
+          .then(xml => ({ doc, xml }))
+          .catch(err => {
+            if (err.status === 404) {
+              return Promise.reject(new Error(`The form "${internalId}" doesn't have an xform attachment`));
+            }
+            throw err;
+          });
+      });
   }
 
   /**

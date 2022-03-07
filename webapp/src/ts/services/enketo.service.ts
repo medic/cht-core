@@ -120,11 +120,6 @@ export class EnketoService {
       .then(blob => this.fileReaderService.utf8(blob));
   }
 
-  private getFormAttachment(doc) {
-    console.log(doc);
-    return this.getAttachment(doc._id, this.xmlFormsService.findXFormAttachmentName(doc));
-  }
-
   private transformXml(form) {
     return Promise
       .all([
@@ -469,7 +464,7 @@ export class EnketoService {
     return this.renderForm(formContext);
   }
 
-  private xmlToDocs(doc, formXml, record) {
+  private xmlToDocs(doc, formXml, xmlVersion, record) {
     const recordDoc = $.parseXML(record);
     const $record = $($(recordDoc).children()[0]);
     const repeatPaths = this.enketoTranslationService.getRepeatPaths(formXml);
@@ -581,6 +576,9 @@ export class EnketoService {
       .get();
 
     doc._id = getId('/*');
+    if (xmlVersion) {
+      doc.form_version = xmlVersion;
+    }
     doc.hidden_fields = this.enketoTranslationService.getHiddenFieldList(record);
 
     const attach = (elem, file, type, alreadyEncoded, xpath?) => {
@@ -728,16 +726,12 @@ export class EnketoService {
     return Promise
       .all([
         getDocPromise,
-        this.xmlFormsService.get(formInternalId)
+        this.xmlFormsService.getDocAndFormAttachment(formInternalId)
       ])
-      .then(([doc, formDoc]) =>
-        this.xmlToDocs(doc, this.getFormAttachment(formDoc), form.getDataStr({ irrelevant: false })).map(
-          doc => {
-            return {
-              form_version: formDoc.xmlVersion,
-              ...doc
-            };
-          }))
+      .then(([doc, formDoc]) => {
+        const dataString = form.getDataStr({ irrelevant: false });
+        return this.xmlToDocs(doc, formDoc.xml, formDoc.doc.xmlVersion, dataString);
+      })
       .then((docs) => this.saveGeo(geoHandle, docs))
       .then((docs) => this.transitionsService.applyTransitions(docs))
       .then((docs) => this.saveDocs(docs))
