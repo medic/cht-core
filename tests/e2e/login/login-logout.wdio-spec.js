@@ -1,5 +1,6 @@
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
+const modalPage = require('../../page-objects/common/modal.wdio.page');
 const auth = require('../../auth')();
 
 
@@ -28,8 +29,8 @@ describe('Login and logout tests', () => {
   };
 
   afterEach(async () => {
-    await browser.deleteCookies();
-    await browser.refresh();
+    await browser.reloadSession();
+    await browser.url('/');
   });
 
   it('should show locale selector on login page', async () => {
@@ -50,20 +51,69 @@ describe('Login and logout tests', () => {
   });
 
   it('should show a warning before log out', async () => {
-    await loginPage.cookieLogin({
-      username: auth.username,
-      password: auth.password,
-    });
+    await loginPage.cookieLogin(auth);
     const warning = await commonPage.getLogoutMessage();
     expect(warning).to.equal('Are you sure you want to log out?');
   });
 
   it('should log in using username and password fields', async () => {
-    await loginPage.login({
-      username: auth.username,
-      password: auth.password,
-    });
+    await loginPage.login(auth);
     await (await commonPage.analyticsTab()).waitForDisplayed();
     await (await commonPage.messagesTab()).waitForDisplayed();
+  });
+
+  it('should set correct cookies', async () => {
+    await loginPage.login(auth);
+    await (await commonPage.analyticsTab()).waitForDisplayed();
+
+    const cookies = await browser.getCookies();
+    expect(cookies.length).to.equal(3);
+
+    const authSessionCookie = cookies.find(cookie => cookie.name === 'AuthSession');
+    expect(authSessionCookie).to.include({
+      httpOnly: true,
+      session: false,
+      sameSite: 'Lax',
+      domain: 'localhost',
+      secure: false,
+      path: '/'
+    });
+    expect(authSessionCookie.expires).to.be.greaterThan(0);
+
+    const userCtxCookie = cookies.find(cookie => cookie.name === 'userCtx');
+    expect(userCtxCookie).to.include({
+      session: false,
+      sameSite: 'Lax',
+      domain: 'localhost',
+      path: '/',
+      secure: false,
+    });
+    const userCtxCookieValue = JSON.parse(decodeURIComponent(userCtxCookie.value));
+    expect(userCtxCookieValue).to.include({ name: 'admin' });
+    expect(userCtxCookieValue.roles).to.include('_admin');
+
+    const localeCookie = cookies.find(cookie => cookie.name === 'locale');
+    expect(localeCookie).to.include({
+      session: false,
+      sameSite: 'Lax',
+      domain: 'localhost',
+      path: '/',
+      secure: false,
+      value: 'en',
+    });
+  });
+
+  it('should display the "session expired" modal and redirect to login page', async () => {
+    // Login and ensure it's redirected to webapp
+    await loginPage.login(auth);
+    await commonPage.closeTour();
+    await (await commonPage.messagesTab()).waitForDisplayed();
+    // Delete cookies and trigger a request to the server
+    await browser.deleteCookies('AuthSession');
+    await commonPage.goToReports();
+
+    expect(await (await modalPage.body()).getText()).to.equal('Your session has expired, please login to continue.');
+    await (await modalPage.submit()).click();
+    expect((await browser.getUrl()).includes('/medic/login')).to.be.true;
   });
 });

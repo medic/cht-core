@@ -13,13 +13,11 @@ const state = {
     snapshotData: { snapshot: 'data' },
     snackbarContent: 'this is just some text',
     loadingContent: 'is loading content',
-    minimalTabs: 'uses minimal tabs',
     showContent: 'is showing content',
     selectMode: 'is in select mode',
     showActionBar: 'is showing action bar',
     forms: ['these', 'are', 'some', 'forms'],
     filters: { some: 'filters' },
-    isAdmin: 'is it an admin',
     navigation: {
       cancelCallback: function() {},
       preventNavigation: 'prevent',
@@ -153,10 +151,6 @@ describe('Selectors', () => {
       expect(Selectors.getLoadingContent(state)).to.equal(clonedState.global.loadingContent);
     });
 
-    it('should getMinimalTabs', () => {
-      expect(Selectors.getMinimalTabs(state)).to.equal(clonedState.global.minimalTabs);
-    });
-
     it('should getShowContent', () => {
       expect(Selectors.getShowContent(state)).to.equal(clonedState.global.showContent);
     });
@@ -175,10 +169,6 @@ describe('Selectors', () => {
 
     it('should getFilters', () => {
       expect(Selectors.getFilters(state)).to.deep.equal(clonedState.global.filters);
-    });
-
-    it('should getIsAdmin', () => {
-      expect(Selectors.getIsAdmin(state)).to.equal(clonedState.global.isAdmin);
     });
 
     it('should getCancelCallback', () => {

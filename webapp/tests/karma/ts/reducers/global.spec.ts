@@ -1,3 +1,4 @@
+import sinon from 'sinon';
 import { expect } from 'chai';
 
 import { Actions } from '@mm-actions/global';
@@ -35,13 +36,21 @@ describe('Global Reducer', () => {
     });
   });
 
-  it('should update minimal tabs', () => {
-    expect(globalReducer(state, Actions.setMinimalTabs(true))).to.deep.equal({ minimalTabs: true });
-    expect(globalReducer(state, Actions.setMinimalTabs(false))).to.deep.equal({ minimalTabs: false });
+  it('should update snackbar content with a message', () => {
+    const message = 'this is just a random text';
+    expect(globalReducer(state, Actions.setSnackbarContent({ message }))).to.deep.equal({
+      snackbarContent: { message, action: undefined },
+    });
   });
 
-  it('should update snackbar content', () => {
-    const content = 'this is just a random text';
+  it('should update snackbar content with a message and an action', () => {
+    const content = {
+      message: 'this is just a random text',
+      action: {
+        label: 'click me',
+        onClick: sinon.stub(),
+      },
+    };
     expect(globalReducer(state, Actions.setSnackbarContent(content))).to.deep.equal({
       snackbarContent: content,
     });
@@ -118,11 +127,6 @@ describe('Global Reducer', () => {
 
     state = globalReducer(state, Actions.setFilter({ forms: [{ id: 'f2' }, { id: 'f3' }] }));
     expect(state).to.deep.equal({ filters: { search: 'aaaaa', forms: [{ id: 'f2' }, { id: 'f3' }] } });
-  });
-
-  it('should set is Admin', () => {
-    expect(globalReducer(state, Actions.setIsAdmin(true))).to.deep.equal({ isAdmin: true });
-    expect(globalReducer(state, Actions.setIsAdmin(false))).to.deep.equal({ isAdmin: false });
   });
 
   it('should set left action bar', () => {

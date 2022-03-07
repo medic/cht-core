@@ -1,5 +1,3 @@
-const chai = require('chai');
-
 const searchPage = require('../../page-objects/search/search.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const utils = require('../../utils');
@@ -64,14 +62,14 @@ describe('Test Contact Search Functionality', async () => {
 
     // Searching with keyword
     await searchPage.performSearch('sittu');
-    chai.expect(await contactPage.getAllLHSContactsNames()).to.have.members([
+    expect(await contactPage.getAllLHSContactsNames()).to.have.members([
       sittuPerson.name,
       sittuHospital.name,
     ]);
 
     // Clearing the search
     await searchPage.clearSearch();
-    chai.expect(await contactPage.getAllLHSContactsNames()).to.have.members([
+    expect(await contactPage.getAllLHSContactsNames()).to.have.members([
       potuHospital.name,
       sittuHospital.name,
       places[0].name,
@@ -81,11 +79,11 @@ describe('Test Contact Search Functionality', async () => {
   it('search should clear RHS selected contact', async () => {
     await contactPage.selectLHSRowByText(potuHospital.name, false);
     await contactPage.waitForContactLoaded();
-    chai.expect(await (await contactPage.contactCard()).getText()).to.equal(potuHospital.name);
+    expect(await (await contactPage.contactCard()).getText()).to.equal(potuHospital.name);
 
     await searchPage.performSearch('sittu');
     await contactPage.waitForContactUnloaded();
     const url = await browser.getUrl();
-    chai.expect(url.endsWith('/contacts')).to.equal(true);
+    expect(url.endsWith('/contacts')).to.equal(true);
   });
 });

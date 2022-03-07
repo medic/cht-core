@@ -1,6 +1,6 @@
 const Factory = require('rosie').Factory;
 const fs = require('fs');
-const xmlPath = `${__dirname}/../../../../demo-forms/custom_contacts/forms/contact/ngo-create.xml`;
+const xmlPath = `${__dirname}/../../../forms/ngo-create.xml`;
 
 const custom_type_doctor = {
   id: 'doctor',

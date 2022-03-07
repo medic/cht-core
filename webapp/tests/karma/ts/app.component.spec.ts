@@ -1,4 +1,4 @@
-import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import sinon from 'sinon';
@@ -87,7 +87,7 @@ describe('AppComponent', () => {
   const changesListener = {};
   let consoleErrorStub;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     // set this in index.html
     window.startupTimes = {};
 
@@ -144,7 +144,6 @@ describe('AppComponent', () => {
       setPrivacyPolicyAccepted: sinon.stub(GlobalActions.prototype, 'setPrivacyPolicyAccepted'),
       setShowPrivacyPolicy: sinon.stub(GlobalActions.prototype, 'setShowPrivacyPolicy'),
       setForms: sinon.stub(GlobalActions.prototype, 'setForms'),
-      setIsAdmin: sinon.stub(GlobalActions.prototype, 'setIsAdmin')
     };
     analyticsActions = {
       setAnalyticsModules: sinon.stub(AnalyticsActions.prototype, 'setAnalyticsModules')
@@ -249,9 +248,6 @@ describe('AppComponent', () => {
     // start recurring processes
     expect(recurringProcessManagerService.startUpdateRelativeDate.callCount).to.equal(1);
     expect(recurringProcessManagerService.startUpdateReadDocsCount.callCount).to.equal(0);
-
-    expect(globalActions.setIsAdmin.callCount).to.equal(1);
-    expect(globalActions.setIsAdmin.args[0][0]).to.equal(true);
   });
 
   it('should subscribe to xmlFormService when initing forms', async () => {

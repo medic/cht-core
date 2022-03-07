@@ -28,7 +28,7 @@ Record at least one measurement that you think should be improved. Ex. 5 seconds
 - Instance: (eg: alpha.dev.medicmobile.org, etc)
 - Browser: (eg: Firefox, Chrome, incognito mode, etc, which worked, which didn't)
 - Client platform: (eg: Windows, MacOS, Linux)
-- App: (eg: webapp, admin, sentinel, api, couch2pg, medic-conf, etc)
+- App: (eg: webapp, admin, sentinel, api, couch2pg, cht-conf, etc)
 - Version: (eg: 2.15.0, 3.0.0, etc)
 
 **Additional context**

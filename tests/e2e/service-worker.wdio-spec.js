@@ -75,7 +75,7 @@ const chw = {
 const login = async () => {
   await browser.throttle('online');
   await loginPage.login(chw);
-  await (await commonPage.analyticsTab()).waitForDisplayed();
+  await commonPage.waitForPageLoaded();
 };
 
 const SW_SUCCESSFULL_REGEX = /Service worker generated successfully/;
@@ -108,7 +108,6 @@ describe('Service worker cache', () => {
       '/img/icon-pregnant.svg',
       '/img/layers.png',
       '/img/setup-wizard-demo.png',
-      '/img/simprints.png',
       '/login/script.js',
       '/login/style.css',
       '/main.js',

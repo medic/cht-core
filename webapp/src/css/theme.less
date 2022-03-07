@@ -82,15 +82,8 @@ a {
   }
 }
 
-.select2-container .select2-selection--single {
-  height: 34px;
-}
-
-.select2-container--default .select2-selection--single {
-  border: 1px solid #ccc;
-  .select2-selection__arrow b {
-    margin-top: 0;
-  }
+.select2-missing + span.select2-container .select2-selection__rendered {
+  color: @inactive-color;
 }
 
 .popover .popover-title {

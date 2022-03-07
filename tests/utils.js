@@ -104,7 +104,11 @@ const revertTranslations = async () => {
     delete originalTranslations[doc.code];
   });
 
-  await module.exports.saveDocs(docs);
+  await module.exports.requestOnTestDb({
+    path: '/_bulk_docs',
+    method: 'POST',
+    body: { docs },
+  });
 };
 
 const revertSettings = () => {
@@ -162,7 +166,7 @@ const deleteAll = (except) => {
     })
     .then(({ rows }) =>
       rows
-        .filter(({ doc }) => !ignoreFns.find(fn => fn(doc)))
+        .filter(({ doc }) => doc && !ignoreFns.find(fn => fn(doc)))
         .map(({ doc }) => {
           doc._deleted = true;
           doc.type = 'tombstone'; // circumvent tombstones being created when DB is cleaned up
@@ -238,7 +242,7 @@ const closeReloadModal = () => {
     .then(() => dialog.click());
 };
 
-const setUserContactDoc = () => {
+const setUserContactDoc = (attempt=0) => {
   const {
     DB_NAME: dbName,
     USER_CONTACT_ID: docId,
@@ -255,7 +259,13 @@ const setUserContactDoc = () => {
       path: `/${dbName}/${docId}`,
       body: newDoc,
       method: 'PUT',
-    }));
+    }))
+    .catch(err => {
+      if (attempt > 3) {
+        throw err;
+      }
+      return setUserContactDoc(attempt + 1);
+    });
 };
 
 const revertDb = async (except, ignoreRefresh) => {
@@ -280,11 +290,16 @@ const revertDb = async (except, ignoreRefresh) => {
 const getCreatedUsers = async () => {
   const adminUserId = COUCH_USER_ID_PREFIX + auth.username;
   const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
-  return users.rows.filter(user => user.id !== adminUserId)
+  return users.rows
+    .filter(user => user.id !== adminUserId)
     .map((user) => ({ ...user, username: user.id.replace(COUCH_USER_ID_PREFIX, '') }));
 };
 
 const deleteUsers = async (users, meta = false) => {
+  if (!users.length) {
+    return;
+  }
+
   const usernames = users.map(user => COUCH_USER_ID_PREFIX + user.username);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
   const medicDocs = await request({

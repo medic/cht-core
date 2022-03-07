@@ -2,9 +2,7 @@
   <div class="inner">
     <contacts-filters
       (search)="search()"
-      (simIdentify)="simprintsIdentify()"
       (sort)="sort($event)"
-      [simprintsEnabled]="simprintsEnabled"
       [disabled]="false"
       [sortDirection]="sortDirection"
       [lastVisitedDateExtras]="lastVisitedDateExtras">
@@ -38,7 +36,7 @@
                   <span *ngIf="contact.dod" [innerHTML]="contact.dod | dateOfDeath"></span>
                 </div>
                 <div *ngIf="contact.visits" class="visits" [class.danger]="contact.visits.status === 'pending'" [class.warning]="contact.visits.status === 'started'" [class.success]="contact.visits.status === 'done'">
-                  <span>{{contact.visits.count}}</span>
+                  <span>{{contact.visits.count | localizeNumber}}</span>
                 </div>
               </div>
 
@@ -49,8 +47,6 @@
                   <span>{{contact.visits.summary}}</span>
                 </div>
               </div>
-
-              <div *ngIf="contact.simprintsTier" class="simprints-stars tier-{{contact.simprintsTier}}"></div>
             </div>
           </a>
         </li>
