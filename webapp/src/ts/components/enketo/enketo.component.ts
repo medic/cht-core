@@ -11,6 +11,8 @@ export class EnketoComponent {
   @Input() editing;
   // object: object with 'saving', and 'error' properties to update form status
   @Input() status;
+  // boolean: (optional) flag to hide cancel button.
+  @Input() hideCancel;
   // function: to be called when cancelling out of the form
   @Output() onCancel: EventEmitter<any> = new EventEmitter();
   // function: to be called when submitting the form

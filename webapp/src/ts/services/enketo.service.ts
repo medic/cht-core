@@ -319,11 +319,15 @@ export class EnketoService {
       .then((title) => {
         this.setFormTitle(wrapper, title);
         wrapper.show();
+        wrapper
+          .find('input')
+          .on('keydown', this.handleKeypressOnInputField);
 
-        wrapper.find('input').on('keydown', this.handleKeypressOnInputField);
+        if (!this.isFormInModal(wrapper)) {
+          // handle page turning using browser history
+          window.history.replaceState({ enketo_page_number: 0 }, '');
+        }
 
-        // handle page turning using browser history
-        window.history.replaceState({ enketo_page_number: 0 }, '');
         this.overrideNavigationButtons(this.currentForm, wrapper);
         this.addPopStateHandler(this.currentForm, wrapper);
         this.forceRecalculate(this.currentForm);
@@ -344,10 +348,10 @@ export class EnketoService {
     }
   }
 
-  private setFormTitle(wrapper, title) {
+  private setFormTitle($wrapper, title) {
     // manually translate the title as enketo-core doesn't have any way to do this
     // https://github.com/enketo/enketo-core/issues/405
-    const $title = wrapper.find('#form-title');
+    const $title = $wrapper.find('#form-title');
     if (title) {
       // overwrite contents
       $title.text(title);
@@ -358,6 +362,8 @@ export class EnketoService {
   }
 
   private overrideNavigationButtons(form, $wrapper) {
+    const isModal = this.isFormInModal($wrapper);
+
     $wrapper
       .find('.btn.next-page')
       .off('.pagemode')
@@ -365,7 +371,7 @@ export class EnketoService {
         form.pages
           .next()
           .then((newPageIndex) => {
-            if(typeof newPageIndex === 'number') {
+            if (typeof newPageIndex === 'number' && !isModal) {
               window.history.pushState({ enketo_page_number: newPageIndex }, '');
             }
             this.forceRecalculate(form);
@@ -377,10 +383,22 @@ export class EnketoService {
       .find('.btn.previous-page')
       .off('.pagemode')
       .on('click.pagemode', () => {
-        window.history.back();
+        if (isModal) {
+          form.pages.prev();
+        } else {
+          window.history.back();
+        }
         this.forceRecalculate(form);
         return false;
       });
+  }
+
+  private isFormInModal($wrapper) {
+    if (!$wrapper || !$wrapper.length) {
+      return false;
+    }
+
+    return $wrapper.closest('.modal .modal-body').length > 0;
   }
 
   private addPopStateHandler(form, $wrapper) {

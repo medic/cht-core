@@ -10,6 +10,7 @@ import { EnketoService } from '@mm-services/enketo.service';
   templateUrl: './training-cards.component.html'
 })
 export class TrainingCardsComponent extends MmModalAbstract implements AfterViewInit {
+
   constructor(
     bsModalRef: BsModalRef,
     private ngZone: NgZone,
@@ -55,9 +56,9 @@ export class TrainingCardsComponent extends MmModalAbstract implements AfterView
   private renderForm(form) {
     return this.enketoService
       .render(
-        'training-cards-form',
+        '#training-cards-form',
         form,
-        null,
+        undefined,
         this.markFormEdited.bind(this),
         this.resetFormError.bind(this),
       )

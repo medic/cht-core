@@ -2,8 +2,8 @@
   id="training-cards"
   [titleKey]="'THIS IS A TEST'"
   [submitKey]="'TEST'"
-  (onCancel)="cancel()"
+  [cancelKey]="false"
   (onSubmit)="submit()"
->
-  <mm-enketo formId="training-cards-form"></mm-enketo>
+  [hideFooter]="true">
+  <mm-enketo formId="training-cards-form" [hideCancel]="true"></mm-enketo>
 </mm-modal>

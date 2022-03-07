@@ -25,6 +25,7 @@ export class MmModal {
   @Output() onSubmit: EventEmitter<any> = new EventEmitter();
   @Input() disableSubmit;
   @Input() danger;
+  @Input() hideFooter;
 
 
   constructor() {
