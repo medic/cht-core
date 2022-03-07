@@ -121,7 +121,7 @@ describe('db', () => {
 
     it('should throw error', async () => {
       sinon.stub(rpn, 'get').rejects(new Error('boom'));
-      await expect(db.activeTasks()).to.be.eventually.rejected;
+      await expect(db.activeTasks()).to.be.rejected;
       expect(rpn.get.callCount).to.equal(1);
     });
   });
@@ -135,7 +135,7 @@ describe('db', () => {
 
       expect(rpn.get.callCount).to.equal(1);
       expect(rpn.get.args[0]).to.deep.equal([{
-        url: 'https://couch.db/_all_dbs',
+        uri: 'https://couch.db/_all_dbs',
         json: true,
       }]);
     });
@@ -150,27 +150,30 @@ describe('db', () => {
   describe('saveDocs', () => {
     it('should save all docs and return results', async () => {
       const docs = [{ _id: 1 }, { _id: 2 }, { _id: 3 }];
-      sinon.stub(db.medicLogs, 'bulkDocs').resolves([{ id: 1, ok: true }, { id: 2, ok: true }, { id: 3, ok: true }]);
+      const database = {
+        bulkDocs: sinon.stub().resolves([{ id: 1, ok: true }, { id: 2, ok: true }, { id: 3, ok: true }]),
+      };
 
-      const result = await db.saveDocs(db.medicLogs, docs);
+      const result = await db.saveDocs(database, docs);
 
       expect(result).to.deep.equal([{ id: 1, ok: true }, { id: 2, ok: true }, { id: 3, ok: true }]);
-      expect(db.medicLogs.bulkDocs.callCount).to.equal(1);
-      expect(db.medicLogs.bulkDocs.args[0]).to.deep.equal([docs]);
+      expect(database.bulkDocs.callCount).to.equal(1);
+      expect(database.bulkDocs.args[0]).to.deep.equal([docs]);
     });
 
     it('should do nothing if passed an empty array', async () => {
-      sinon.stub(db.medic, 'bulkDocs');
-      const result = await db.saveDocs(db.medic, []);
+      const database = { bulkDocs: sinon.stub() };
+      const result = await db.saveDocs(database, []);
 
       expect(result).to.deep.equal([]);
 
-      expect(db.medic.bulkDocs.callCount).to.equal(0);
+      expect(database.bulkDocs.callCount).to.equal(0);
     });
 
     it('should throw errors if saving any doc fails', async () => {
       const docs = [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }];
-      sinon.stub(db.medicLogs, 'bulkDocs').resolves([
+      const database = { bulkDocs: sinon.stub() };
+      database.bulkDocs.resolves([
         { id: 1, error: 'conflict' },
         { id: 2, ok: true },
         { id: 3, error: 'unauthorized' },
@@ -178,23 +181,23 @@ describe('db', () => {
       ]);
 
       try {
-        await db.saveDocs(db.medicLogs, docs);
+        await db.saveDocs(database, docs);
         expect.fail('should have thrown');
       } catch (err) {
         expect(err.message).to.equal(
           'Error while saving docs: saving 1 failed with conflict, saving 3 failed with unauthorized'
         );
-        expect(db.medicLogs.bulkDocs.callCount).to.equal(1);
-        expect(db.medicLogs.bulkDocs.args[0]).to.deep.equal([docs]);
+        expect(database.bulkDocs.callCount).to.equal(1);
+        expect(database.bulkDocs.args[0]).to.deep.equal([docs]);
       }
     });
 
     it('should throw an error if bulkDocs call fails', async () => {
       const docs = [{ _id: 1 }, { _id: 2 }, { _id: 3 }];
-      sinon.stub(db.medic, 'bulkDocs').rejects({ some: 'err' });
+      const database = { bulkDocs: sinon.stub().rejects({ some: 'err' }) };
 
       try {
-        await db.saveDocs(db.medic, docs);
+        await db.saveDocs(database, docs);
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ some: 'err' });

@@ -108,7 +108,7 @@ if (UNIT_TEST_ENV) {
   module.exports.allDbs = () => rpn.get({ uri: `${environment.serverUrl}/_all_dbs`, json: true });
 
   module.exports.activeTasks = () => {
-    return rpn({
+    return rpn.get({
       url: `${environment.serverUrl}/_active_tasks`,
       json: true
     }).then(tasks => {
