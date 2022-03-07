@@ -15,7 +15,6 @@ process
   });
 
 (async () => {
-  const checkInstall = require('./src/services/setup/check-install');
   try {
     logger.info('Running server checks…');
     await serverChecks.check();
@@ -32,7 +31,7 @@ process
     process.exit(1);
   }
 
-  const installer = require('./src/services/setup/install');
+  const checkInstall = require('./src/services/setup/check-install');
   const app = require('./src/routing');
   const configWatcher = require('./src/services/config-watcher');
   const migrations = require('./src/migrations');
