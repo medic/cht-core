@@ -303,13 +303,11 @@ describe('bootstrapper', () => {
     });
   });
 
+  // fails with Uncaught UnhandledPromiseRejection: This error originated either by throwing inside of an as
+  // when running node 16 and mocha 7. just works on node 16 and mocha 8
   it('returns redirect to login error when no userCtx cookie found', done => {
     localGet.withArgs('_design/medic-client').rejects();
     sinon.stub(purger, 'setOptions');
-
-    const localReplicateResult = Promise.reject({ status: 401 });
-    localReplicateResult.on = () => {};
-    localReplicate.returns(localReplicateResult);
 
     localAllDocs.resolves({ total_rows: 0 });
     fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
@@ -332,7 +330,7 @@ describe('bootstrapper', () => {
     sinon.stub(purger, 'info').resolves('some-info');
     sinon.stub(purger, 'checkpoint').resolves();
 
-    const localReplicateResult = Promise.reject({ status: 401 });
+    const localReplicateResult = new Promise((resolve, reject) => setTimeout(() => reject({ status: 401 })));
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
 

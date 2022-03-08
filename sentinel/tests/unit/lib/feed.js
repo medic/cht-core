@@ -265,7 +265,7 @@ describe('feed', () => {
       });
       sinon.spy(logger, 'debug');
       sinon.spy(feed._changeQueue, 'resume');
-      sinon.stub(metadata, 'getTransitionSeq');
+      sinon.stub(metadata, 'getTransitionSeq').resolves();
       sinon.stub(metadata, 'setTransitionSeq').resolves();
 
       feed._enqueue({ id: 'somechange', seq: 65558 });
