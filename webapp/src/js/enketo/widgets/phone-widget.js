@@ -71,7 +71,7 @@ class PhoneWidget extends Widget {
   }
 
   static get selector() {
-    return 'input[type="tel"]';
+    return 'input[type="tel"][data-type-xml="tel"]';
   }
 }
 
