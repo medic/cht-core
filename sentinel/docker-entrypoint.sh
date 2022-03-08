@@ -133,4 +133,4 @@ if is_setup_needed; then
 fi
 
 export COUCH_URL=http://medic-sentinel:$(cat /srv/storage/medic-sentinel/passwd/medic-sentinel)@$HAPROXY_SVC:5984/medic
-node /app/sentinel/server.js
+node /sentinel/server.js
