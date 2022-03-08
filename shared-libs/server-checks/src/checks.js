@@ -39,7 +39,7 @@ const getMembershipUrl = (serverUrl) => {
 
 const getAdminConfigUrl = (serverUrl, nodeName, username) => {
   const url = new URL(serverUrl);
-  url.pathname = `_node/${nodeName}/_config/admins/${username}`;
+  url.pathname = `/_node/${nodeName}/_config/admins/${username}`;
   return url.toString();
 };
 
@@ -130,7 +130,7 @@ const check = () => {
 
 const getNodes = async (serverUrl) => {
   const response = await request.get(getMembershipUrl(serverUrl), { json: true });
-  return response && response.cluster_nodes;
+  return response && response.all_nodes;
 };
 
 const createUser = async (username, password, serverUrl) => {

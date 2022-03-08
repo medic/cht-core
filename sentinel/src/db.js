@@ -71,10 +71,10 @@ if (UNIT_TEST_ENV) {
     module.exports.serverUrl = serverUrl;
     module.exports.couchUrl = couchUrl;
 
-    module.exports.medic = new PouchDB(module.exports.couchUrl, { fetch });
+    module.exports.medic = new PouchDB(couchUrl, { fetch });
     module.exports.medicDbName = dbName;
-    module.exports.sentinel = new PouchDB(`${module.exports.couchUrl}-sentinel`, { fetch });
-    module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`, { fetch });
+    module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch });
+    module.exports.users = new PouchDB(`${serverUrl}/_users`, { fetch });
   };
 
   module.exports.allDbs = () => new Promise((resolve, reject) => {

@@ -44,12 +44,6 @@ module.exports.initialize = async () => {
   module.exports.isTesting = dbName === 'medic-test';
 };
 
-let deployInfo;
-module.exports.setDeployInfo = (newDeployInfo = {}) => {
-  deployInfo = newDeployInfo;
-};
-
-module.exports.getDeployInfo = () => deployInfo;
 module.exports.buildPath = path.join(__dirname, '..', 'build');
 module.exports.staticPath = path.join(module.exports.buildPath, 'static');
 module.exports.webappPath = path.join(module.exports.staticPath, 'webapp');

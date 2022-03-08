@@ -121,7 +121,7 @@ describe('db', () => {
 
     it('should throw error', async () => {
       sinon.stub(rpn, 'get').rejects(new Error('boom'));
-      await expect(db.activeTasks()).to.be.rejected;
+      await expect(db.activeTasks()).to.be.rejectedWith('boom');
       expect(rpn.get.callCount).to.equal(1);
     });
   });
@@ -142,7 +142,7 @@ describe('db', () => {
 
     it('should throw error', async () => {
       sinon.stub(rpn, 'get').rejects(new Error('boom'));
-      await expect(db.allDbs()).to.be.eventually.rejected;
+      await expect(db.allDbs()).to.be.rejectedWith('boom');
       expect(rpn.get.callCount).to.equal(1);
     });
   });

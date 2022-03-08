@@ -356,7 +356,7 @@ describe('Server Checks service', () => {
       process.env = { COUCH_URL: 'http://admin:pass@localhost:5984/theDb' };
       service = rewire('../src/checks');
 
-      sinon.stub(request, 'get').resolves({ cluster_nodes: ['node1', 'node2', 'node3'] });
+      sinon.stub(request, 'get').resolves({ all_nodes: ['node1', 'node2', 'node3'] });
       sinon.stub(request, 'put').resolves();
 
       const result = await service.getServerUrls('myUser');
@@ -377,7 +377,7 @@ describe('Server Checks service', () => {
       process.env = { COUCH_URL: 'http://admin:pass@localhost:5984/dbname/' };
       service = rewire('../src/checks');
 
-      sinon.stub(request, 'get').resolves({ cluster_nodes: ['node1'] });
+      sinon.stub(request, 'get').resolves({ all_nodes: ['node1'] });
       sinon.stub(request, 'put').resolves();
 
       const result = await service.getServerUrls('adminuser');
@@ -391,7 +391,7 @@ describe('Server Checks service', () => {
       process.env = { COUCH_URL: 'http://admin:pass@localhost:5984///adatabase////' };
       service = rewire('../src/checks');
 
-      sinon.stub(request, 'get').resolves({ cluster_nodes: ['node1'] });
+      sinon.stub(request, 'get').resolves({ all_nodes: ['node1'] });
       sinon.stub(request, 'put').resolves();
 
       const result = await service.getServerUrls('newuser');
@@ -413,7 +413,7 @@ describe('Server Checks service', () => {
     });
 
     it('should throw error when put fails', async () => {
-      sinon.stub(request, 'get').resolves({ cluster_nodes: ['node1', 'node2'] });
+      sinon.stub(request, 'get').resolves({ all_nodes: ['node1', 'node2'] });
       sinon.stub(request, 'put').rejects({ error: 'whops' });
 
       try {
