@@ -33,9 +33,9 @@ describe('db', () => {
 
     it('should initialize dbs', () => {
       const couchUrl = 'https://adm:pas@couch.db/medic';
-      sinon.stub(environment, 'couchUrl').get(() => couchUrl);
-      sinon.stub(environment, 'serverUrl').get(() => 'https://adm:pas@couch.db/');
-      sinon.stub(environment, 'buildsUrl').get(() => 'https://builds.db');
+      sinon.stub(environment, 'couchUrl').value(couchUrl);
+      sinon.stub(environment, 'serverUrl').value('https://adm:pas@couch.db/');
+      sinon.stub(environment, 'buildsUrl').value('https://builds.db');
 
       db.initialize();
 
@@ -56,7 +56,7 @@ describe('db', () => {
 
   describe('get', () => {
     it('should create the database', () => {
-      sinon.stub(environment, 'serverUrl').get(() => 'https://couch.db/');
+      sinon.stub(environment, 'serverUrl').value('https://couch.db/');
       const database = db.get('database');
       expect(database.name).to.equal('https://couch.db/database');
     });
@@ -94,7 +94,7 @@ describe('db', () => {
 
   describe('activeTasks', () => {
     it('should return active tasks', async () => {
-      sinon.stub(environment, 'serverUrl').get(() => 'https://couch.db');
+      sinon.stub(environment, 'serverUrl').value('https://couch.db');
       sinon.stub(rpn, 'get').resolves('active_tasks');
 
       expect(await db.activeTasks()).to.equal('active_tasks');
@@ -102,19 +102,6 @@ describe('db', () => {
       expect(rpn.get.callCount).to.equal(1);
       expect(rpn.get.args[0]).to.deep.equal([{
         url: 'https://couch.db/_active_tasks',
-        json: true,
-      }]);
-    });
-
-    it('should work with multi-segment URLs', async () => {
-      sinon.stub(environment, 'serverUrl').get(() => 'https://couch.db/path/to');
-      sinon.stub(rpn, 'get').resolves('active_tasks');
-
-      expect(await db.activeTasks()).to.equal('active_tasks');
-
-      expect(rpn.get.callCount).to.equal(1);
-      expect(rpn.get.args[0]).to.deep.equal([{
-        url: 'https://couch.db/path/to/_active_tasks',
         json: true,
       }]);
     });
@@ -128,7 +115,7 @@ describe('db', () => {
 
   describe('allDbs', () => {
     it('should return all databases', async () => {
-      sinon.stub(environment, 'serverUrl').get(() => 'https://couch.db');
+      sinon.stub(environment, 'serverUrl').value('https://couch.db');
       sinon.stub(rpn, 'get').resolves(['db1', 'db2']);
 
       expect(await db.allDbs()).to.deep.equal(['db1', 'db2']);
