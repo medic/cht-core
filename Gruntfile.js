@@ -354,7 +354,7 @@ module.exports = function(grunt) {
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
-      'setup-api-integration': {
+      'npm-ci-api': {
         cmd: `cd api && npm ci`,
       },
       'npm-ci-shared-libs': {
@@ -938,7 +938,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test-api-integration', 'Integration tests for medic-api', [
     'exec:check-env-vars',
-    'exec:setup-api-integration',
+    'exec:npm-ci-api',
     'setup-api-integration',
     'mochaTest:api-integration',
   ]);

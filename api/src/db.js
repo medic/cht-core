@@ -63,7 +63,7 @@ if (UNIT_TEST_ENV) {
 } else {
   const fetch = (url, opts) => {
     // Adding audit flag (haproxy) Service that made the request initially.
-    opts.headers.set('X-CHT-Service', 'api');
+    opts.headers.set('X-Medic-Service', 'api');
     return PouchDB.fetch(url, opts);
   };
   const getDbUrl = name => `${environment.serverUrl}${name}`;

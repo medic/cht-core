@@ -3,6 +3,8 @@ const environment = require('./src/environment');
 const db = require('./src/db');
 const serverChecks = require('@medic/server-checks');
 
+const { COUCH_URL, COUCH_NODE_NAME } = process.env;
+
 process
   .on('unhandledRejection', reason => {
     logger.error('UNHANDLED REJECTION!');
@@ -17,11 +19,11 @@ process
 (async () => {
   try {
     logger.info('Running server checks…');
-    await serverChecks.check();
+    await serverChecks.check(COUCH_URL, COUCH_NODE_NAME);
     logger.info('Checks passed successfully');
 
     logger.info('Initializing environment');
-    await environment.initialize();
+    await environment.initialize(COUCH_URL);
     db.initialize();
     logger.info('Environment initialized successfully');
 

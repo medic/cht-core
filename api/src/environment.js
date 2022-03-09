@@ -1,7 +1,7 @@
 const path = require('path');
 const serverChecks = require('@medic/server-checks');
 
-const { UNIT_TEST_ENV, COUCH_URL, BUILDS_URL } = process.env;
+const { UNIT_TEST_ENV, BUILDS_URL } = process.env;
 const DEFAULT_BUILDS_URL = 'https://staging.dev.medicmobile.org/_couch/builds';
 
 module.exports.buildsUrl = BUILDS_URL || DEFAULT_BUILDS_URL;
@@ -19,7 +19,7 @@ if (UNIT_TEST_ENV) {
   module.exports.isTesting = true;
 }
 
-module.exports.initialize = async () => {
+module.exports.initialize = async (COUCH_URL) => {
   if (!UNIT_TEST_ENV && !COUCH_URL) {
     throw new Error(
       'Please define a COUCH_URL in your environment e.g. \n' +
@@ -28,7 +28,7 @@ module.exports.initialize = async () => {
     );
   }
   const username = 'cht-api';
-  const { serverUrl, couchUrl, dbName } = await serverChecks.getServerUrls(username);
+  const { serverUrl, couchUrl, dbName } = await serverChecks.getServerUrls(COUCH_URL, username);
 
   module.exports.serverUrl = serverUrl;
   module.exports.couchUrl = couchUrl;

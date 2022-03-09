@@ -45,7 +45,7 @@ describe('db', () => {
 
       sinon.stub(serverChecks, 'getServerUrls').resolves({ serverUrl, couchUrl, dbName: 'dbname' });
 
-      await db.initialize();
+      await db.initialize('http://medic:pas@couch.db:9800/dbname');
 
       expect(db.couchUrl).to.equal(couchUrl);
       expect(db.serverUrl).to.equal(serverUrl);

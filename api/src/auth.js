@@ -205,7 +205,7 @@ module.exports = {
    * @param      {Object}    Credentials object as created by basicAuthCredentials
    */
   validateBasicAuth: ({ username, password }) => {
-    const authUrl = url.parse(process.env.COUCH_URL);
+    const authUrl = url.parse(environment.couchUrl);
     delete authUrl.pathname;
     authUrl.auth = `${username}:${password}`;
 

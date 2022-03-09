@@ -1,8 +1,6 @@
 const request = require('request-promise-native');
 const MIN_MAJOR = 8;
 
-const { COUCH_URL, COUCH_NODE_NAME } = process.env;
-
 /* eslint-disable no-console */
 
 const nodeVersionCheck = () => {
@@ -21,7 +19,6 @@ const nodeVersionCheck = () => {
 };
 
 const getNoAuthURL = (serverUrl) => {
-  serverUrl = serverUrl || COUCH_URL;
   const noAuthUrl = new URL(serverUrl);
   noAuthUrl.password = '';
   noAuthUrl.username = '';
@@ -43,29 +40,27 @@ const getAdminConfigUrl = (serverUrl, nodeName, username) => {
   return url.toString();
 };
 
-const envVarsCheck = () => {
-  const envValueAndExample = [
-    ['COUCH_URL', 'http://admin:pass@localhost:5984/medic'],
-    ['COUCH_NODE_NAME', 'couchdb@127.0.0.1']
-  ];
-
+const envVarsCheck = (COUCH_URL, COUCH_NODE_NAME) => {
   const failures = [];
-  envValueAndExample.forEach(([envconst, example]) => {
-    if (!process.env[envconst]) {
-      failures.push(`${envconst} must be set. For example: ${envconst}=${example}`);
-    } else {
-      const value = envconst === 'COUCH_URL' ? getNoAuthURL().toString() : process.env[envconst];
-      console.log(envconst, value);
-    }
-  });
+
+  if (!COUCH_URL) {
+    failures.push(`COUCH_URL must be set. For example: COUCH_URL='http://admin:pass@localhost:5984/medic'`);
+  } else {
+    console.log('COUCH_URL', getNoAuthURL(COUCH_URL).toString());
+  }
+  if (!COUCH_NODE_NAME) {
+    failures.push(`COUCH_NODE_NAME must be set. For example: COUCH_NODE_NAME='couchdb@127.0.0.1'`);
+  } else {
+    console.log('COUCH_NODE_NAME', COUCH_NODE_NAME);
+  }
 
   if (failures.length) {
     return Promise.reject('At least one required environment variable was not set:\n' + failures.join('\n'));
   }
 };
 
-const couchDbNoAdminPartyModeCheck = () => {
-  const noAuthUrl = getNoAuthURL();
+const couchDbNoAdminPartyModeCheck = (COUCH_URL) => {
+  const noAuthUrl = getNoAuthURL(COUCH_URL);
   // require either 'http' or 'https' by removing the ":" from noAuthUrl.protocol
   const net = require(noAuthUrl.protocol.replace(':', ''));
 
@@ -93,7 +88,7 @@ const checkNodeName = (nodeName, membership) => {
     membership.all_nodes.includes(nodeName);
 };
 
-const couchNodeNamesMatch = async () => {
+const couchNodeNamesMatch = async (COUCH_URL, COUCH_NODE_NAME) => {
   const response = await request.get(getMembershipUrl(COUCH_URL), { json: true });
   if (checkNodeName(COUCH_NODE_NAME, response)) {
     console.log(`Environment variable "COUCH_NODE_NAME" matches server "${COUCH_NODE_NAME}"`);
@@ -112,20 +107,20 @@ const getCouchDbVersion = async (serverUrl) => {
   return response.version;
 };
 
-const couchDbVersionCheck = () => {
+const couchDbVersionCheck = (COUCH_URL) => {
   return getCouchDbVersion(COUCH_URL).then(version => {
     console.log(`CouchDB Version: ${version}`);
   });
 };
 
-const check = () => {
+const check = (COUCH_URL, COUCH_NODE_NAME) => {
   return Promise.resolve()
     .then(nodeVersionCheck)
-    .then(envVarsCheck)
-    .then(couchDbUrlCheck)
-    .then(couchDbNoAdminPartyModeCheck)
-    .then(couchNodeNamesMatch)
-    .then(couchDbVersionCheck);
+    .then(() => envVarsCheck(COUCH_URL, COUCH_NODE_NAME))
+    .then(() => couchDbUrlCheck(COUCH_URL))
+    .then(() => couchDbNoAdminPartyModeCheck(COUCH_URL))
+    .then(() => couchNodeNamesMatch(COUCH_URL, COUCH_NODE_NAME))
+    .then(() => couchDbVersionCheck(COUCH_URL));
 };
 
 const getNodes = async (serverUrl) => {
@@ -133,14 +128,14 @@ const getNodes = async (serverUrl) => {
   return response && response.all_nodes;
 };
 
-const createUser = async (username, password, serverUrl) => {
+const createAdmin = async (username, password, serverUrl) => {
   const nodes = await getNodes(serverUrl);
   for (const node of nodes) {
     await request.put({ url: getAdminConfigUrl(serverUrl, node, username), json: true, body: password });
   }
 };
 
-const couchDbUrlCheck = () => {
+const couchDbUrlCheck = (COUCH_URL) => {
   const couchUrl = new URL(COUCH_URL);
   const pathSegments = getPathSegments(couchUrl);
 
@@ -151,7 +146,7 @@ const couchDbUrlCheck = () => {
   }
 };
 
-const getServerUrls = async (username) => {
+const getServerUrls = async (COUCH_URL, username) => {
   const serverUrl = new URL(COUCH_URL);
   serverUrl.pathname = '/';
 
@@ -159,7 +154,7 @@ const getServerUrls = async (username) => {
   const dbName = getPathSegments(couchUrl)[0];
   couchUrl.pathname = `/${dbName}`;
 
-  await createUser(username, serverUrl.password, serverUrl.toString());
+  await createAdmin(username, serverUrl.password, serverUrl.toString());
 
   serverUrl.username = username;
   couchUrl.username = username;

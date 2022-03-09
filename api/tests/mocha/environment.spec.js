@@ -58,7 +58,7 @@ describe('environment', () => {
         dbName: 'db_name',
       });
 
-      await environment.initialize();
+      await environment.initialize('http://medic:pas@couch.db:8234/');
 
       expect(environment.couchUrl).to.equal('http://cht-api:pas@couch.db:8234/db_name');
       expect(environment.serverUrl).to.equal('http://cht-api:pas@couch.db:8234/');
@@ -71,20 +71,17 @@ describe('environment', () => {
       expect(environment.isTesting).to.equal(false);
 
       expect(serverChecks.getServerUrls.callCount).to.equal(1);
-      expect(serverChecks.getServerUrls.args[0]).to.deep.equal(['cht-api']);
+      expect(serverChecks.getServerUrls.args[0]).to.deep.equal(['http://medic:pas@couch.db:8234/', 'cht-api']);
     });
 
     it('should set testing property', async () => {
-      process.env.COUCH_URL = 'http://admin:pass@couch.db:8234/medic-test';
-      environment = rewire('../../src/environment');
-
       sinon.stub(serverChecks, 'getServerUrls').resolves({
         serverUrl: 'http://cht-api:pas@couch.db:8234/',
         couchUrl: 'http://cht-api:pas@couch.db:8234/medic-test',
         dbName: 'medic-test',
       });
 
-      await environment.initialize();
+      await environment.initialize('http://admin:pass@couch.db:8234/medic-test');
 
       expect(environment.couchUrl).to.equal('http://cht-api:pas@couch.db:8234/medic-test');
       expect(environment.serverUrl).to.equal('http://cht-api:pas@couch.db:8234/');

@@ -18,6 +18,11 @@ describe('Server Checks service', () => {
     originalProcess = process;
     sinon.spy(console, 'log');
     sinon.spy(console, 'error');
+    process = {
+      versions: { node: '16.0.0' },
+      env: { NODE_OPTIONS: { } },
+      exit: sinon.stub(),
+    };
     service = rewire('../src/checks');
   });
 
@@ -37,9 +42,11 @@ describe('Server Checks service', () => {
 
       it('valid', () => {
         process = {
-          versions: {node: '9.11.1'},
-          env: {},
-          exit: () => 0
+          versions: { node: '9.11.1' },
+          env: {
+            NODE_OPTIONS: { },
+          },
+          exit: sinon.stub(),
         };
         service.__get__('nodeVersionCheck')();
         chai.assert.isTrue(console.log.called);
@@ -49,13 +56,14 @@ describe('Server Checks service', () => {
       });
 
       it('too old', () => {
-        process = {versions: {node: '6.1.0'}, exit: () => 0};
+        process = { versions: { node: '6.1.0' }, exit: sinon.stub() };
         service.__get__('nodeVersionCheck')();
         chai.assert.isTrue(console.log.called);
         chai.assert.equal(console.log.callCount, 1);
         chai.assert.equal(console.error.callCount, 1);
         chai.assert.equal(log(0), 'Error: Node version 6.1.0 is not supported, minimum is 8.0.0');
         chai.assert.equal(error(0), 'Fatal error initialising');
+        chai.assert.equal(process.exit.callCount, 1);
       });
 
     });
@@ -63,13 +71,8 @@ describe('Server Checks service', () => {
     describe('env vars', () => {
 
       it('valid', () => {
-        process = { env: {
-          COUCH_URL: 'http://couch.db',
-          COUCH_NODE_NAME: 'something'
-        } };
-        service = rewire('../src/checks');
         return Promise.resolve()
-          .then(() => service.__get__('envVarsCheck')())
+          .then(() => service.__get__('envVarsCheck')('http://couch.db', 'something'))
           .then(() => {
             chai.assert.equal(console.log.callCount, 2);
             chai.assert.equal(log(0), 'COUCH_URL http://couch.db/');
@@ -78,9 +81,8 @@ describe('Server Checks service', () => {
       });
 
       it('missing COUCH_NODE_NAME', () => {
-        process = { env: { COUCH_URL: 'something' } };
         return service
-          .__get__('envVarsCheck')()
+          .__get__('envVarsCheck')('http://couch.db')
           .then(() => chai.assert.fail('should throw'))
           .catch((err) => {
             chai.assert.isTrue(err.startsWith('At least one required environment'));
@@ -88,14 +90,8 @@ describe('Server Checks service', () => {
       });
 
       it('does not log credentials', () => {
-        process = { env: {
-          COUCH_URL: 'http://admin:supersecret@localhost:5984',
-          COUCH_NODE_NAME: 'something'
-        } };
-        service = rewire('../src/checks');
         return Promise.resolve()
-          .then(() => service
-            .__get__('envVarsCheck')())
+          .then(() => service.__get__('envVarsCheck')('http://admin:supersecret@localhost:5984', 'something'))
           .then(() => {
             chai.assert.equal(console.log.callCount, 2);
             chai.assert.equal(log(0), 'COUCH_URL http://localhost:5984/');
@@ -107,60 +103,36 @@ describe('Server Checks service', () => {
 
     describe('couch url path check', () => {
       it('should allow urls with a single path segment', () => {
-        process = {
-          env: {
-            COUCH_URL: 'http://couch.db/dbname',
-          }
-        };
-        service = rewire('../src/checks');
-        chai.expect(service.__get__('couchDbUrlCheck')).not.to.throw;
+        const couchUrl = 'http://couch.db/dbname';
+        chai.expect(() => service.__get__('couchDbUrlCheck')(couchUrl)).not.to.throw;
       });
 
       it('should ignore empty path segments', () => {
-        process = {
-          env: {
-            COUCH_URL: 'http://couch.db/////dbname/////',
-          }
-        };
-        service = rewire('../src/checks');
-        chai.expect(service.__get__('couchDbUrlCheck')).not.to.throw;
+        const couchUrl = 'http://couch.db/////dbname/////';
+        chai.expect(() => service.__get__('couchDbUrlCheck')(couchUrl)).not.to.throw;
       });
 
       it('should block urls with no path segments', () => {
-        process = {
-          env: {
-            COUCH_URL: 'http://couch.db/',
-          }
-        };
-        service = rewire('../src/checks');
-        chai.expect(service.__get__('couchDbUrlCheck')).to.throw(/segment/);
+        chai.expect(() => service.__get__('couchDbUrlCheck')('http://couch.db/')).to.throw(/segment/);
       });
 
       it('should block urls with multiple path segments', () => {
-        process = {
-          env: {
-            COUCH_URL: 'http://couch.db/path/to/db',
-          }
-        };
-        service = rewire('../src/checks');
-        chai.expect(service.__get__('couchDbUrlCheck')).to.throw(/must have only one path segment/);
+        const couchUrl = 'http://couch.db/path/to/db';
+        chai.expect(() => service.__get__('couchDbUrlCheck')(couchUrl)).to.throw(/must have only one path segment/);
       });
     });
 
     describe('admin party', () => {
 
       it('disabled', () => {
-        process = { env: { COUCH_URL: 'http://localhost:5984' }};
         sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
-        return service.__get__('couchDbNoAdminPartyModeCheck')();
+        return service.__get__('couchDbNoAdminPartyModeCheck')('http://localhost:5984');
       });
 
       it('enabled', () => {
-        process = {env: {COUCH_URL: 'http://localhost:5984'}};
-        service = rewire('../src/checks');
-        sinon.stub(http, 'get').callsArgWith(1, {statusCode: 200});
+        sinon.stub(http, 'get').callsArgWith(1, { statusCode: 200 });
         return service
-          .__get__('couchDbNoAdminPartyModeCheck')()
+          .__get__('couchDbNoAdminPartyModeCheck')('http://localhost:5984')
           .then(() => chai.assert.fail('should throw'))
           .catch((err) => {
             chai.assert.equal(console.error.callCount, 2);
@@ -169,11 +141,9 @@ describe('Server Checks service', () => {
             chai.assert.isTrue(err.toString().startsWith('Error: CouchDB security seems to be misconfigured'));
           });
       });
-
     });
 
     describe('couchdb version', () => {
-
       it('handles error', () => {
         sinon.stub(request, 'get').rejects('error');
         return service
@@ -198,130 +168,72 @@ describe('Server Checks service', () => {
   describe('entry point check', () => {
 
     it('valid server', function() {
-      process = {
-        versions: {node: '9.11.1'},
-        env: {
-          COUCH_URL: 'http://admin:pass@localhost:5984/medic',
-          COUCH_NODE_NAME: 'nonode@nohost'
-        },
-        exit: () => 0
-      };
-      sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
+      sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
       sinon.stub(request, 'get')
         .onCall(0).resolves({ all_nodes: [ 'nonode@nohost' ], cluster_nodes: [ 'nonode@nohost' ] })
         .onCall(1).resolves({ version: '2' });
 
-      service = rewire('../src/checks');
-
-      return service.check('something');
+      return service.check('http://admin:pass@localhost:5984/medic', 'nonode@nohost');
     });
 
-
-    it('invalid couchdb version', function() {
-      process = {
-        versions: {node: '9.11.1'},
-        env: {
-          COUCH_URL: 'http://admin:pass@localhost:5984/medic',
-          COUCH_NODE_NAME: 'nonode@nohost'
-        },
-        exit: () => 0
-      };
-      sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
+    it('invalid couchdb version', () => {
+      sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
       sinon.stub(request, 'get').rejects('error');
-      service = rewire('../src/checks');
 
       return service
-        .check('something')
+        .check('http://admin:pass@localhost:5984/medic', 'nonode@nohost')
         .then(() => chai.assert.fail('should throw'))
         .catch(err => {
           chai.expect(err.name).to.equal('error');
         });
     });
 
-    it('invalid server', function() {
-      process = {
-        versions: {node: '9.11.1'},
-        env: {
-          COUCH_URL: 'http://admin:pass@localhost:5984',
-          COUCH_NODE_NAME: 'nonode@nohost'
-        },
-        exit: () => 0
-      };
-      service = rewire('../src/checks');
-
+    it('invalid server', () => {
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
       sinon.stub(request, 'get').resolves({ version: '2' });
       return service
-        .check('something')
+        .check('http://admin:pass@localhost:5984', 'nonode@nohost')
         .then(() => chai.assert.fail('should throw'))
         .catch(err => {
           chai.expect(err.message).to.match(/Environment variable "COUCH_URL" must have only one path segment/);
         });
     });
 
-    it('no node name', function() {
-      process = {
-        versions: {node: '9.11.1'},
-        env: {
-          COUCH_URL: 'http://admin:pass@localhost:5984/medic',
-        },
-        exit: () => 0
-      };
+    it('no node name', () => {
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
       sinon.stub(request, 'get').resolves({ version: '2' });
+
       return service
-        .check('something')
+        .check('http://admin:pass@localhost:5984/medic')
         .then(() => chai.assert.fail('should throw'))
         .catch(err => {
           chai.assert.isTrue(err.startsWith('At least one required environment'));
         });
     });
-
   });
 
   describe('Validate env node names', () => {
     it('invalid node name is caught', function() {
-      process = {
-        versions: {node: '9.11.1'},
-        env: {
-          COUCH_URL: 'http://admin:pass@localhost:5984/medic',
-          COUCH_NODE_NAME: 'bad_node_name'
-        },
-        exit: () => 0
-      };
       sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
       sinon.stub(request, 'get')
         .onCall(0).resolves({ all_nodes: [ 'nonode@nohost' ], cluster_nodes: [ 'nonode@nohost' ] })
         .onCall(1).resolves({ version: '2' });
 
-      service = rewire('../src/checks');
-
       return service
-        .check('something')
+        .check('http://admin:pass@localhost:5984/medic', 'bad_node_name')
         .then(() => chai.assert.fail('should throw'))
         .catch(err => {
-          console.log(err);
           chai.assert.isTrue(err.message.startsWith('Environment variable \'COUCH_NODE_NAME\' set to'));
         });
     });
 
     it('valid node name logged', function() {
-      process = {
-        versions: {node: '9.11.1'},
-        env: {
-          COUCH_URL: 'http://admin:pass@localhost:5984/medic',
-          COUCH_NODE_NAME: 'nonode@nohost'
-        },
-        exit: () => 0
-      };
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
       sinon.stub(request, 'get')
         .onCall(0).resolves({ all_nodes: [ 'nonode@nohost' ], cluster_nodes: [ 'nonode@nohost' ] })
         .onCall(1).resolves({ version: '2' });
 
-      service = rewire('../src/checks');
-
-      return service.check('something').then(() => {
+      return service.check('http://admin:pass@localhost:5984/medic', 'nonode@nohost').then(() => {
         chai.assert.equal(console.log.callCount, 7);
         chai.assert.equal(log(5), 'Environment variable "COUCH_NODE_NAME" matches server "nonode@nohost"');
       });
@@ -331,6 +243,7 @@ describe('Server Checks service', () => {
   describe('getCouchDbVersion', () => {
     it('should return couchdb version', () => {
       sinon.stub(request, 'get').resolves({ version: '2.2.0' });
+
       return service.getCouchDbVersion('someURL').then(version => {
         chai.expect(version).to.equal('2.2.0');
         chai.expect(request.get.callCount).to.equal(1);
@@ -352,14 +265,11 @@ describe('Server Checks service', () => {
   });
 
   describe('getServerUrls', () => {
-    it('should create service user for every node and return updated urls', async () => {
-      process.env = { COUCH_URL: 'http://admin:pass@localhost:5984/theDb' };
-      service = rewire('../src/checks');
-
+    it('should create service admin for every node and return updated urls', async () => {
       sinon.stub(request, 'get').resolves({ all_nodes: ['node1', 'node2', 'node3'] });
       sinon.stub(request, 'put').resolves();
 
-      const result = await service.getServerUrls('myUser');
+      const result = await service.getServerUrls('http://admin:pass@localhost:5984/theDb', 'myUser');
 
       chai.expect(result.dbName).to.equal('theDb');
       chai.expect(result.serverUrl).to.equal('http://myUser:pass@localhost:5984/');
@@ -374,13 +284,10 @@ describe('Server Checks service', () => {
     });
 
     it('should format the database name correctly when it has one trailing slash', async () => {
-      process.env = { COUCH_URL: 'http://admin:pass@localhost:5984/dbname/' };
-      service = rewire('../src/checks');
-
       sinon.stub(request, 'get').resolves({ all_nodes: ['node1'] });
       sinon.stub(request, 'put').resolves();
 
-      const result = await service.getServerUrls('adminuser');
+      const result = await service.getServerUrls('http://admin:pass@localhost:5984/dbname/', 'adminuser');
 
       chai.expect(result.dbName).to.equal('dbname');
       chai.expect(result.serverUrl).to.deep.equal('http://adminuser:pass@localhost:5984/');
@@ -388,13 +295,10 @@ describe('Server Checks service', () => {
     });
 
     it('should format the database name correctly when it has lots of slashes', async () => {
-      process.env = { COUCH_URL: 'http://admin:pass@localhost:5984///adatabase////' };
-      service = rewire('../src/checks');
-
       sinon.stub(request, 'get').resolves({ all_nodes: ['node1'] });
       sinon.stub(request, 'put').resolves();
 
-      const result = await service.getServerUrls('newuser');
+      const result = await service.getServerUrls('http://admin:pass@localhost:5984///adatabase////', 'newuser');
 
       chai.expect(result.dbName).to.equal('adatabase');
       chai.expect(result.serverUrl).to.equal('http://newuser:pass@localhost:5984/');
@@ -405,7 +309,7 @@ describe('Server Checks service', () => {
       sinon.stub(request, 'get').rejects({ an: 'error' });
 
       try {
-        await service.getServerUrls('myUser');
+        await service.getServerUrls('http://admin:pass@localhost:5984/dbname/', 'myUser');
         chai.expect.fail('Should have thrown');
       } catch (err) {
         chai.expect(err).to.deep.equal({ an: 'error' });
@@ -417,7 +321,7 @@ describe('Server Checks service', () => {
       sinon.stub(request, 'put').rejects({ error: 'whops' });
 
       try {
-        await service.getServerUrls('admin');
+        await service.getServerUrls('http://admin:pass@localhost:5984/dbname/', 'admin');
         chai.expect.fail('Should have thrown');
       } catch (err) {
         chai.expect(err).to.deep.equal({ error: 'whops' });
@@ -425,11 +329,8 @@ describe('Server Checks service', () => {
     });
 
     it('should throw error when url is invalid', async () => {
-      process.env = { COUCH_URL: 'not a url' };
-      service = rewire('../src/checks');
-
       try {
-        await service.getServerUrls('admin');
+        await service.getServerUrls('not a url', 'admin');
         chai.expect.fail('Should have thrown');
       } catch (err) {
         chai.expect(err.code).to.equal('ERR_INVALID_URL');
