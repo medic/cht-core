@@ -1,0 +1,121 @@
+version: "3.7"
+
+networks:
+  couchdb-cluster:
+    name: couchdb-cluster
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.33.33.0/24"
+
+services:
+  medic-api:
+    image: medicmobile/cht-api:dockerize-test14
+    environment:
+      - "COUCH_URL=${COUCH_URL:-http://admin:password@haproxy:5984/medic}"
+      - "COUCH_NODE_NAME=${COUCH_NODE_NAME:-couchdb@172.33.33.11}"
+    networks:
+      - couchdb-cluster
+    depends_on:
+      - couchdb1
+      - couchdb2
+      - couchdb3
+
+  medic-sentinel:
+    image: medicmobile/cht-sentinel:dockerize-test3
+    environment:
+      - "COUCH_URL=${COUCH_URL:-http://admin:password@haproxy:5984/medic}"
+      - "COUCH_NODE_NAME=${COUCH_NODE_NAME:-couchdb@172.33.33.11}"
+      - "API_SVC_NAME=${API_SVC_NAME:-medic-api}"
+    networks:
+      - couchdb-cluster
+
+  nginx:
+    image: medicmobile/cht-nginx:arch-v3-nginx
+    environment:
+      CERTIFICATE_MODE: "${CERTIFICATE_MODE:-SELF_SIGNED}"
+      COMMON_NAME: "${COMMON_NAME:-test-nginx.dev.medicmobile.org}"
+      EMAIL: "${EMAIL:-domains@medic.org}"
+      COUNTRY: "${COUNTRY:-US}"
+      STATE: "${STATE:-California}"
+      LOCALITY: "${LOCALITY:-San Francisco}"
+      ORGANISATION: "${ORGANISATION:-medic}"
+      DEPARTMENT: "${DEPARTMENT:-SRE}"
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - cht-ssl:/root/.acme.sh/
+    depends_on:
+      - medic-api
+      - haproxy
+    networks:
+      - couchdb-cluster
+
+  haproxy:
+    image: medicmobile/cht-haproxy:archv3-test2
+    environment:
+      - "HAPROXY_IP=${HAPROXY_IP:-172.33.33.14}"
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
+      - "COUCHDB1_SERVER_IP=${COUCHDB1_SERVER_IP:-172.33.33.11}"
+      - "COUCHDB2_SERVER_IP=${COUCHDB2_SERVER_IP:-172.33.33.12}"
+      - "COUCHDB3_SERVER_IP=${COUCHDB3_SERVER_IP:-172.33.33.13}"
+    networks:
+      couchdb-cluster:
+        ipv4_address: 172.33.33.14
+    depends_on:
+      - couchdb1
+      - couchdb2
+      - couchdb3
+
+
+  couchdb1:
+    image: medicmobile/cht-couchdb:clustered-test4
+    volumes:
+    - ./srv1:/opt/couchdb/data
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "NODENAME=172.33.33.11"
+      - "CLUSTER_PEER_IPS=172.33.33.12,172.33.33.13"
+    restart: always
+    networks:
+      couchdb-cluster:
+        ipv4_address: 172.33.33.11
+
+  couchdb2:
+    image: medicmobile/cht-couchdb:clustered-test4
+    volumes:
+    - ./srv2:/opt/couchdb/data
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "NODENAME=172.33.33.12"
+    restart: always
+    networks:
+      couchdb-cluster:
+        ipv4_address: 172.33.33.12
+
+  couchdb3:
+    image: medicmobile/cht-couchdb:clustered-test4
+    volumes:
+    - ./srv3:/opt/couchdb/data
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "NODENAME=172.33.33.13"
+    restart: always
+    networks:
+      couchdb-cluster:
+        ipv4_address: 172.33.33.13
+
+volumes:
+  cht-ssl:
