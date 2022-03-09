@@ -34,6 +34,12 @@ const getMembershipUrl = (serverUrl) => {
   return url.toString();
 };
 
+const getServerUrl = (couchUrl) => {
+  const url = new URL(couchUrl);
+  url.pathname = '/';
+  return url.toString();
+};
+
 const getAdminConfigUrl = (serverUrl, nodeName, username) => {
   const url = new URL(serverUrl);
   url.pathname = `/_node/${nodeName}/_config/admins/${username}`;
@@ -108,7 +114,8 @@ const getCouchDbVersion = async (serverUrl) => {
 };
 
 const couchDbVersionCheck = (COUCH_URL) => {
-  return getCouchDbVersion(COUCH_URL).then(version => {
+  const serverUrl = getServerUrl(COUCH_URL); // main database might not exist at first load
+  return getCouchDbVersion(serverUrl).then(version => {
     console.log(`CouchDB Version: ${version}`);
   });
 };
@@ -147,8 +154,7 @@ const couchDbUrlCheck = (COUCH_URL) => {
 };
 
 const getServerUrls = async (COUCH_URL, username) => {
-  const serverUrl = new URL(COUCH_URL);
-  serverUrl.pathname = '/';
+  const serverUrl = new URL(getServerUrl(COUCH_URL));
 
   const couchUrl = new URL(COUCH_URL);
   const dbName = getPathSegments(couchUrl)[0];

@@ -147,7 +147,7 @@ describe('Server Checks service', () => {
       it('handles error', () => {
         sinon.stub(request, 'get').rejects('error');
         return service
-          .__get__('couchDbVersionCheck')('something')
+          .__get__('couchDbVersionCheck')('http://localhost:5984')
           .then(() => chai.assert.fail('should throw'))
           .catch(err => {
             chai.assert.equal(err, 'error');
@@ -156,8 +156,9 @@ describe('Server Checks service', () => {
 
       it('logs version', () => {
         sinon.stub(request, 'get').resolves({ version: '2' });
-        return service.__get__('couchDbVersionCheck')('something').then(() => {
+        return service.__get__('couchDbVersionCheck')('http://localhost:5984/medic').then(() => {
           chai.assert.equal(log(0), 'CouchDB Version: 2');
+          chai.expect(request.get.args).to.deep.equal([[{ json: true, url: 'http://localhost:5984/' }]]);
         });
       });
 
