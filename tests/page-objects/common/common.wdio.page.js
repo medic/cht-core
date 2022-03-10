@@ -64,7 +64,7 @@ const navigateToLogoutModal = async () => {
 const logout = async () => {
   await navigateToLogoutModal();
   await (await modal.confirm()).click();
-  await browser.pause(1000); // wait for login page js to execute
+  await browser.pause(100); // wait for login page js to execute
 };
 
 const getLogoutMessage = async () => {
