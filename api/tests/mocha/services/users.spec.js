@@ -1273,6 +1273,350 @@ describe('Users service', () => {
     });
   });
 
+  describe('validateUsers', () => {
+    it('validates the user if the body is not an array', async () => {
+      const userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: 'foo',
+        contact: 'x',
+        type: 'national-manager'
+      };
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      sinon.stub(people, '_getPerson').rejects({ code: 404 });
+      sinon.stub(places, 'getPlace').rejects({ status: 404, message: 'Failed to find place.' });
+      const response = await service.validateUsers(userData);
+      chai.expect(response).to.deep.equal([userData]);
+    });
+
+    it('returns error if one of the users has missing fields', async () => {
+      try {
+        await service.validateUsers([
+          {},
+          { password: 'x', place: 'x', contact: { parent: 'x' }},
+          { username: 'x', place: 'x', contact: { parent: 'x' }},
+          { username: 'x', password: 'x', contact: { parent: 'x' }},
+          { username: 'x', place: 'x', contact: { parent: 'x' }},
+          { username: 'x', place: 'x', contact: {}},
+        ]);
+        chai.assert.fail('Should have thrown');
+      } catch (error) {
+        // empty
+        chai.expect(error.details.failingIndexes.missingFieldsFailingIndexes[0].fields)
+          .to.deep.equal(['username', 'password', 'type or roles']);
+        chai.expect(error.details.failingIndexes.missingFieldsFailingIndexes[0].index).to.equal(0);
+
+        // missing username
+        chai.expect(error.details.failingIndexes.missingFieldsFailingIndexes[1].fields)
+          .to.deep.equal(['username', 'type or roles']);
+        chai.expect(error.details.failingIndexes.missingFieldsFailingIndexes[1].index).to.equal(1);
+
+        // missing password
+        chai.expect(error.details.failingIndexes.missingFieldsFailingIndexes[2].fields)
+          .to.deep.equal(['password', 'type or roles']);
+        chai.expect(error.details.failingIndexes.missingFieldsFailingIndexes[2].index).to.equal(2);
+
+        // missing place
+        chai.expect(error.details.failingIndexes.missingFieldsFailingIndexes[3].fields)
+          .to.deep.equal(['type or roles']);
+        chai.expect(error.details.failingIndexes.missingFieldsFailingIndexes[3].index).to.equal(3);
+
+        // missing contact
+        chai.expect(error.details.failingIndexes.missingFieldsFailingIndexes[4].fields)
+          .to.deep.equal(['password', 'type or roles']);
+        chai.expect(error.details.failingIndexes.missingFieldsFailingIndexes[4].index).to.equal(4);
+
+        // missing contact.parent
+        chai.expect(error.details.failingIndexes.missingFieldsFailingIndexes[5].fields)
+          .to.deep.equal(['password', 'type or roles']);
+        chai.expect(error.details.failingIndexes.missingFieldsFailingIndexes[5].index).to.equal(5);
+
+        chai.expect(error.code).to.equal(400);
+      }
+    });
+
+    it('returns error if one of the users has password errors', async () => {
+      try {
+        await service.validateUsers([
+          {
+            username: 'x',
+            place: 'x',
+            contact: { parent: 'x' },
+            type: 'national-manager',
+            password: 'short',
+          },
+          {
+            username: 'x',
+            place: 'x',
+            contact: { parent: 'x' },
+            type: 'national-manager',
+            password: 'password',
+          },
+        ]);
+        chai.assert.fail('Should have thrown');
+      } catch (error) {
+        // short password
+        chai.expect(error.details.failingIndexes.passwordFailingIndexes[0].passwordError.message.message)
+          .to.equal('The password must be at least 8 characters long.');
+        chai.expect(error.details.failingIndexes.passwordFailingIndexes[0].passwordError.message.translationKey)
+          .to.equal('password.length.minimum');
+        chai.expect(error.details.failingIndexes.passwordFailingIndexes[0].passwordError.message.translationParams)
+          .to.have.property('minimum');
+        chai.expect(error.details.failingIndexes.passwordFailingIndexes[0].index).to.equal(0);
+
+        // weak password
+        chai.expect(error.details.failingIndexes.passwordFailingIndexes[1].passwordError.message.message)
+          .to.equal('The password is too easy to guess. Include a range of types of characters to increase the score.');
+        chai.expect(error.details.failingIndexes.passwordFailingIndexes[1].passwordError.message.translationKey)
+          .to.equal('password.weak');
+        chai.expect(error.details.failingIndexes.passwordFailingIndexes[1].index).to.equal(1);
+
+        chai.expect(error.code).to.equal(400);
+      }
+    });
+
+    it('returns error if one of the users has a missing phone number and should login by SMS', async () => {
+      const tokenLoginConfig = { translation_key: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('url');
+      sinon.stub(auth, 'isOffline').returns(false);
+
+      try {
+        await service.validateUsers([
+          {
+            username: 'sally',
+            roles: ['a', 'b'],
+            phone: '+40 755 69-69-69',
+            token_login: true,
+          },
+          {
+            username: 'sally',
+            roles: ['a', 'b'],
+            token_login: true,
+          },
+        ]);
+        chai.assert.fail('Should have thrown');
+      } catch (error) {
+        chai.expect(error.code).to.equal(400);
+        chai.expect(error.details.failingIndexes.missingFieldsFailingIndexes[0].fields).to.deep.equal(['phone']);
+        chai.expect(error.details.failingIndexes.missingFieldsFailingIndexes[0].index).to.equal(1);
+      }
+    });
+
+    it('returns error if one of the users has an invalid phone number and should login by SMS', async () => {
+      const tokenLoginConfig = { translation_key: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('url');
+      sinon.stub(auth, 'isOffline').returns(false);
+
+      try {
+        await service.validateUsers([
+          {
+            username: 'sally',
+            roles: ['a', 'b'],
+            phone: '+40 755 69-69-69',
+            token_login: true,
+          },
+          {
+            username: 'sally',
+            roles: ['a', 'b'],
+            phone: '123',
+            token_login: true,
+          },
+        ]);
+        chai.assert.fail('Should have thrown');
+      } catch (error) {
+        chai.expect(error.code).to.equal(400);
+        chai.expect(error.details.failingIndexes.tokenLoginFailingIndexes[0].tokenLoginError.msg).to.equal(
+          'A valid phone number is required for SMS login.'
+        );
+        chai.expect(
+          error.details.failingIndexes.tokenLoginFailingIndexes[0].tokenLoginError.key,
+        ).to.equal('configuration.enable.token.login.phone');
+        chai.expect(error.details.failingIndexes.tokenLoginFailingIndexes[0].index).to.equal(1);
+      }
+    });
+
+    it('validates the user when login by SMS is enabled', async () => {
+      const tokenLoginConfig = { message: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('');
+
+      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(db.users, 'get').withArgs('org.couchdb.user:sally').rejects({ status: 404 });
+      sinon.stub(db.medic, 'get').withArgs('org.couchdb.user:sally').rejects({ status: 404 });
+
+      const users = [{
+        username: 'sally',
+        roles: ['a', 'b'],
+        phone: '+40 755 69-69-69',
+        password: 'random',
+        token_login: true,
+      }];
+
+      const response = await service.validateUsers(users, 'http://realhost');
+      chai.expect(response).to.deep.equal(users);
+    });
+
+    describe('errors at insertion', () => {
+      it('returns responses with errors if contact.parent validation fails', async () => {
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: { name: 'x' },
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('validateNewPlace', sinon.stub().resolves());
+        service.__set__('validateNewContactParent', sinon.stub().rejects(new Error('kablooey')));
+
+        const response = await service.validateUsers([userData]);
+        chai.expect(response[0].error).to.equal('kablooey');
+      });
+
+      it('returns responses with errors if place validation fails', async () => {
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: { name: 'x' },
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('validateNewPlace', sinon.stub().rejects(new Error('fail')));
+
+        const response = await service.validateUsers([userData]);
+        chai.expect(response[0].error).to.equal('fail');
+      });
+
+      it('returns responses with errors if username validation fails', async () => {
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: { name: 'x' },
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
+        service.__set__('validateNewUsername', sinon.stub().rejects(new Error('fail username validation')));
+
+        const response = await service.validateUsers([userData]);
+        chai.expect(response[0].error).to.equal('fail username validation');
+      });
+
+      it('returns responses with errors if contact validation fails', async () => {
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: { name: 'x' },
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('validateNewPlace', sinon.stub().resolves());
+        service.__set__('validateNewContactParent', sinon.stub().resolves());
+        service.__set__('validateNewContact', sinon.stub().rejects(new Error('fail contact validation')));
+
+        const response = await service.validateUsers([userData]);
+        chai.expect(response[0].error).to.equal('fail contact validation');
+      });
+    });
+
+    it('succeeds and returns responses if some users fail to be validated', async () => {
+      const validateNewContactParentStub = sinon.stub();
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('validateNewPlace', sinon.stub().resolves());
+      service.__set__('validateNewContactParent', validateNewContactParentStub);
+      service.__set__('validateNewContact', sinon.stub().resolves());
+      validateNewContactParentStub
+        .onCall(0).resolves()
+        .onCall(1).rejects(new Error('Parent contact is invalid'));
+
+      const users = [
+        {
+          username: 'user1',
+          place: 'user1-place',
+          contact: { parent: 'user1-contact' },
+          type: 'national-manager',
+          password: 'Sup3rSecret!',
+        },
+        {
+          username: 'user2',
+          place: 'user2-place',
+          contact: { parent: 'user2-contact' },
+          type: 'national-manager',
+          password: 'Sup3rSecret!',
+        },
+      ];
+      const response = await service.validateUsers(users);
+
+      chai.expect(response[0]).to.deep.equal(users[0]);
+      chai.expect(response[1].error).to.equal('Parent contact is invalid');
+    });
+
+    it('succeeds and response contains the user for each inserted user', async () => {
+      const users = [
+        {
+          username: 'user1',
+          place: 'foo',
+          contact: 'user1',
+          type: 'national-manager',
+          password: 'Sup3rSecret!',
+        },
+        {
+          username: 'user2',
+          place: 'foo',
+          contact: 'user2',
+          type: 'national-manager',
+          password: 'Sup3rSecret!',
+        },
+      ];
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('validateNewPlace', sinon.stub().resolves());
+      service.__set__('validateNewContactParent', sinon.stub().resolves());
+      service.__set__('validateNewContact', sinon.stub().resolves());
+
+      const response = await service.validateUsers(users);
+      chai.expect(response).to.deep.equal(users);
+    });
+
+    it('errors if username exists in _users db', async () => {
+      const userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: { name: 'x' },
+        contact: { 'parent': 'x' },
+        type: 'national-manager'
+      };
+      sinon.stub(db.users, 'get').resolves('bob lives here already.');
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      const response = await service.validateUsers([userData]);
+      chai.expect(response[0].error.message).to.equal('Username "x" already taken.');
+      chai.expect(response[0].error.translationKey).to.equal('username.taken');
+      chai.expect(response[0].error.translationParams).to.have.property('username');
+    });
+
+    it('errors if username exists in medic db', async () => {
+      const userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: { name: 'x' },
+        contact: { 'parent': 'x' },
+        type: 'national-manager'
+      };
+      sinon.stub(db.users, 'get').rejects({ status: 404 });
+      sinon.stub(db.medic, 'get').resolves('jane lives here too.');
+      const response = await service.validateUsers([userData]);
+      chai.expect(response[0].error.message).to.equal('Username "x" already taken.');
+      chai.expect(response[0].error.translationKey).to.equal('username.taken');
+      chai.expect(response[0].error.translationParams).to.have.property('username');
+    });
+  });
+
   describe('setContactParent', () => {
 
     it('resolves contact parent in waterfall', () => {

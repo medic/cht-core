@@ -189,6 +189,21 @@ const createUser = (data, response) => {
   });
 };
 
+const validateNewContact = async (user) => {
+  if (!user.contact) {
+    return;
+  }
+
+  const contactId = getDocID(user.contact);
+  try {
+    await people._getPerson(contactId);
+  } catch (error) {
+    if (error.code !== 404) {
+      throw error;
+    }
+  }
+};
+
 const createContact = (data, response) => {
   if (!data.contact) {
     return;
@@ -211,6 +226,20 @@ const createUserSettings = (data, response) => {
       rev: body.rev
     };
   });
+};
+
+const validateNewPlace = async (user) => {
+  if (!user.place) {
+    return;
+  }
+
+  try {
+    await places.getPlace(user.place);
+  } catch (error) {
+    if (error.status !== 404) {
+      throw error;
+    }
+  }
 };
 
 const createPlace = data => {
@@ -244,6 +273,33 @@ const storeUpdatedPlace = (data, retry = 0) => {
       }
       throw err;
     });
+};
+
+const validateNewContactParent = async (user) => {
+  if (!user.contact) {
+    return;
+  }
+
+  const contactId = getDocID(user.contact);
+  if (contactId) {
+    // assigning to existing contact
+    const placeId = getDocID(user.place);
+    try {
+      return await validateContact(contactId, placeId);
+    } catch (error) {
+      if (error.status !== 404) {
+        throw error;
+      }
+    }
+  }
+
+  if (user.contact.parent) {
+    // contact parent must exist
+    const place = await places.getPlace(user.contact.parent);
+    if (!hasParent(place, user.place)) {
+      throw error400('Contact is not within place.', 'configuration.user.place.contact');
+    }
+  }
 };
 
 const setContactParent = data => {
@@ -545,6 +601,14 @@ const createUserEntities = async (user, appUrl) => {
   return response;
 };
 
+const validateUserEntities = async (user) => {
+  await validateNewUsername(user.username);
+  await validateNewPlace(user);
+  await validateNewContactParent(user);
+  await validateNewContact(user);
+  return user;
+};
+
 const validateUserFields = (users) => {
   const missingFieldsFailingIndexes = [];
   const tokenLoginFailingIndexes = [];
@@ -668,6 +732,38 @@ module.exports = {
 
     // create all valid users even if some are failing
     const promises = await allPromisesSettled(users.map(async (user) => await createUserEntities(user, appUrl)));
+    return promises.map((promise) => promise.status === 'rejected' ? { error: promise.reason.message } : promise.value);
+  },
+
+  async validateUsers(users, appUrl) {
+    if (!Array.isArray(users)) {
+      return module.exports.validateUsers([users], appUrl);
+    }
+
+    const { missingFieldsFailingIndexes, tokenLoginFailingIndexes, passwordFailingIndexes } = validateUserFields(users);
+    const hasValidationErrors = missingFieldsFailingIndexes.length > 0 ||
+        tokenLoginFailingIndexes.length > 0 ||
+        passwordFailingIndexes.length > 0;
+    if (hasValidationErrors) {
+      const errorMessages = [];
+      missingFieldsFailingIndexes.forEach(({ fields, index }) => {
+        errorMessages.push(`Missing required fields ${fields.join(', ')} for user at index ${index}`);
+      });
+
+      tokenLoginFailingIndexes.forEach(({ tokenLoginError, index }) => {
+        errorMessages.push(`Token login error ${tokenLoginError.msg} for user at index ${index}`);
+      });
+
+      passwordFailingIndexes.forEach(({ passwordError, index }) => {
+        errorMessages.push(`Password error ${passwordError.message.message} for user at index ${index}`);
+      });
+
+      const errorMessage = errorMessages.join('\n');
+      const failingIndexes = { missingFieldsFailingIndexes, tokenLoginFailingIndexes, passwordFailingIndexes };
+      return Promise.reject(error400(errorMessage, { failingIndexes }));
+    }
+
+    const promises = await allPromisesSettled(users.map(user => validateUserEntities(user, appUrl)));
     return promises.map((promise) => promise.status === 'rejected' ? { error: promise.reason.message } : promise.value);
   },
 
