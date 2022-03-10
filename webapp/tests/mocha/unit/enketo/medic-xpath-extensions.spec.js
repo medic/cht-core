@@ -104,4 +104,45 @@ describe('medic-xpath-extensions', function() {
       assert.equal(func['difference-in-months'](nonsense, valid).v, '');
     });
   });
+
+  describe('#format-date()', () => {
+    [
+      [ { t:'str', v:'2015-9-2' }, '%Y-%m-%d', '2015-09-02'],
+      [ { t:'str', v:'1999-12-12' }, '%Y-%m-%d', '1999-12-12'],
+      [ { t:'str', v:'2015-9-2' }, '%y-%n-%e', '15-9-2'],
+      [ { t:'str', v:'1999-12-12' }, '%y-%n-%e', '99-12-12'],
+      [ { t:'str', v:'1999-12-12' }, '%a %b Do', 'Sun Dec 12th'],
+      [ { t:'date', v:new Date('2015-10-01T00:00:00.000') }, '(%Y/%m/%d)', '(2015/10/01)'],
+      [ { t:'num', v:11111 }, '%Y%%m%%d', '2000%06%03'],
+      [ { t:'arr', v:[{ textContent: '2014-09-22' }] }, '%Y-%m-%d %Y%m%d', '2014-09-22 20140922'],
+    ].forEach(([date, format, expected]) => {
+      it(`should format the ${date.t} [${JSON.stringify(date.v)}] according to the mask [${format}]`, () => {
+        assert.equal(func['format-date'](date, { t:'str', v:format }).v, expected);
+      });
+    });
+
+    [
+      { t:'str', v:'' },
+      { t:'date', v:null },
+      { t:'num', v:NaN },
+      { t:'str', v:'NaN' },
+      { t:'str', v:'invalid' },
+      { t:'str', v:'11:11' },
+      { t:'bool', v:true },
+      { t:'num', v:'-1' },
+      { t:'nonsense', v:[{ textContent: '2014-09-22' }] },
+      { t:'arr', v:[{ textContent: 'nonsense' }] },
+      { t:'arr', v:['2014-09-22'] }
+    ].forEach(date => {
+      it(`should return an empty string when the date value is [${date.v}]`, () => {
+        assert.equal(func['format-date'](date, { t:'str', v:'%Y-%m-%d' }).v, '');
+      });
+    });
+
+    [[{ t:'str', v:'1999-12-12' }], []].forEach(params => {
+      it(`should throw an error when ${params.length} arguments is provided`, () => {
+        assert.throws(() => func['format-date'](...params),'format-date() :: not enough args');
+      });
+    });
+  });
 });

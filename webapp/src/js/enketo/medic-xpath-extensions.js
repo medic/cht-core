@@ -121,6 +121,25 @@ const convertToBikramSambat = (value) => {
   return { t: 'str', v: convertedDate };
 };
 
+const formatDate = (date, format) => {
+  const dateMoment = asMoment(date);
+  if(!dateMoment.isValid()) {
+    return '';
+  }
+
+  // Transform format from xform spec to Moment.
+  const formatStr = asString(format)
+    .replace(/%Y/g, 'YYYY')
+    .replace(/%y/g, 'YY')
+    .replace(/%m/g, 'MM')
+    .replace(/%n/g, 'M')
+    .replace(/%b/g, 'MMM')
+    .replace(/%d/g, 'DD')
+    .replace(/%e/g, 'D')
+    .replace(/%a/g, 'ddd');
+  return dateMoment.format(formatStr);
+};
+
 module.exports = {
   getTimezoneOffsetAsTime: getTimezoneOffsetAsTime,
   toISOLocalString: toISOLocalString,
@@ -155,6 +174,12 @@ module.exports = {
 
       const months = d2Moment.diff(d1Moment, 'months');
       return XPR.number(months);
+    },
+    'format-date': function(date, format) {
+      if(arguments.length < 2) {
+        throw new Error('format-date() :: not enough args');
+      }
+      return XPR.string(formatDate(date, format));
     },
   },
   process: {
