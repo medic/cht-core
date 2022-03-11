@@ -1,9 +1,17 @@
-<mm-modal
-  id="training-cards"
-  [titleKey]="'THIS IS A TEST'"
-  [submitKey]="'TEST'"
-  [cancelKey]="false"
-  (onSubmit)="submit()"
-  [hideFooter]="true">
-  <mm-enketo formId="training-cards-form" [hideCancel]="true"></mm-enketo>
+<mm-modal id="training-cards" [titleKey]="'THIS IS A TEST'" [hideFooter]="true">
+
+  <div class="item-content empty-selection" *ngIf="loadingContent">
+    <div><div class="loader"></div></div>
+  </div>
+
+  <div class="item-content empty-selection" *ngIf="!loadingContent && contentError">
+    <div>{{ errorTranslationKey | translate }}</div>
+  </div>
+
+  <div class="item-content" [hidden]="loadingContent || contentError">
+    <div class="body">
+      <mm-enketo formId="training-cards-form" [status]="enketoStatus" (onSubmit)="saveForm()" (onCancel)="cancel()"></mm-enketo>
+    </div>
+  </div>
+
 </mm-modal>
