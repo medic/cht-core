@@ -1,68 +1,67 @@
 const rewire = require('rewire');
 const { expect } = require('chai');
 const process = require('process');
-const cp = require('child_process');
 const path = require('path');
+const sinon = require('sinon');
+const utils = rewire('../utils');
 const secrets = require('./env');
-const mock = require('mock-fs');
-const { updateAppSettings, fs } = require('../utils');
+const settings = require('./app_settings.json');
+const flows = require('./flows');
 
-// const action = require('../index');
-let app;
-let settings;
-let flowsFileName;
-let search;
 describe('rapidpro action test suite', () => {
-  // console.log(process.env['GITHUB_WORKSPACE']);
-  before(async () => { 
-    // set up app settings here
-    
-  });
-
-  after(async () => { 
-    // clear app settings document
-    mock.restore();
-  });
-
+  const mockedAxiosResponse = {
+    data: {},
+    status: 200,
+    statusText: 'OK'
+  };
   beforeEach(() => {
-    // set up the environment variables
+    sinon.stub(process, 'env');
     process.env['GITHUB_WORKSPACE'] = path.join(__dirname, '../');
-    app = rewire('../utils.js');
-    search = app.__get__('search');
-    settings = require('./app_settings.json');
-    flowsFileName = `flows.js`;
-  });
-  
-  afterEach(() => { 
-    // check there are no errors and clear the environmental variables
-    
+    sinon.stub(utils, 'setMedicCredentials').returns(mockedAxiosResponse);
   });
 
-  it('should create a flows.js file', async () => {
-    const writeFlowsFile = app.__get__('writeFlowsFile');
-    writeFlowsFile(process.env['GITHUB_WORKSPACE'], 'test', flowsFileName, secrets.flows);
+  afterEach(() => {
+    sinon.restore();
   });
 
-  it('should successfully update medic-credentials in couchdb', async () => {
-    expect(!!'true').to.be.true;
+  it('method getCouchDbUrl should return a formatted url and setMedicCredentials should put it in CouchDB', async () => {
+    // check the expected url is set
+    const url = utils.getCouchDbUrl(secrets.hostname, secrets.couch_node_name, secrets.value_key, secrets.couch_username, secrets.couch_password);
+    expect(url.hostname).to.be.equal(secrets.hostname);
+    expect(url.username).to.be.equal(secrets.couch_username);
+    expect(url.password).to.be.equal(secrets.couch_password);
+
+    // set the medic credentials in couchDB
+    const response = await utils.setMedicCredentials(url, secrets.rp_api_token);
+    expect(response.status).to.be.equal(200);
+    expect(response.data).to.be.deep.equal({});
   });
 
-  it('should update app settings with the given secrets', async () => {
-    expect(!!'true').to.be.true;
-    // read the file
-    // run function
-    // check content is altered
-    const settingsFile = `app_settings.json`;
-    const directory = `test`;
-    await updateAppSettings(process.env['GITHUB_WORKSPACE'], secrets.rp_hostname, secrets.value_key, secrets.rp_contact_group, secrets.write_patient_state_flow, directory, settingsFile);
-    settings = require('./app_settings.json');
-    expect(search(settings, 'base_url')).to.equal(secrets.rp_hostname);
+  it('method getInputs should return an object containing required secrets', async () => {
+    const inputs = utils.getInputs(secrets);
+    expect(inputs.rp_contact_group).to.equal(secrets.rp_contact_group);
   });
 
-  /*
-  - mock the parameters and the call
-  - check what sent and whether it is the expected
-  it('test setMedicCredentials()', async () => {
-    expect(!!'true').to.be.true;
-  });*/
+  it('method getReplacedContent should update app settings with the given secrets', async () => {
+    // check updated outbound modules
+    const appSettings = await utils.getReplacedContent(settings, secrets);
+    expect(search(JSON.parse(appSettings), 'base_url')).to.equal(secrets.rp_hostname);
+
+    // check updated flows.js
+    const rapidproFlows = await utils.getReplacedContent(flows, secrets.rp_flows);
+    expect(search(JSON.parse(rapidproFlows), 'sample_flow_2_uuid')).to.equal(secrets.rp_flows.sample_flow_2_uuid);
+  });
 });
+
+/**
+ * Finds a value from nested JavaScript object using a key.
+ * @param {object} haystack the JavaScript object
+ * @param {string}  needle the key to search
+ */
+const search = (haystack, needle) =>
+  needle in haystack
+    ? haystack[needle]
+    : Object.values(haystack).reduce((acc, val) => {
+      if (acc !== undefined) return acc;
+      if (typeof val === 'object') return search(val, needle);
+    }, undefined);

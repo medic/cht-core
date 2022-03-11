@@ -3,11 +3,11 @@
     "new phone_owner contact creates rapidpro contact": {
       "relevant_to": "doc.contact_type === 'phone_owner'",
       "destination": {
-        "base_url": "https://rapidpro.app.medicmobile.org",
+        "base_url": "{{rp_hostname}}",
         "auth": {
           "type": "header",
           "name": "Authorization",
-          "value_key": "rapidpro.app"
+          "value_key": "{{value_key}}"
         },
         "path": "/api/v2/contacts.json"
       },
@@ -19,7 +19,7 @@
           "expr": "[ 'tel:' + doc.phone ]"
         },
         "groups": {
-          "expr": "[ '6ed89f27-3482-4bcc-ab27-f66d2f708f7b' ]"
+          "expr": "{{rp_contact_group}}"
         },
         "fields.medic_id": {
           "expr": "doc._id"
@@ -59,17 +59,17 @@
     "report triggers patient-state-change workflow": {
       "relevant_to": "doc.type === 'data_record' && doc.fields && doc.fields.rapidpro",
       "destination": {
-        "base_url": "https://rapidpro.app.medicmobile.org",
+        "base_url": "{{rp_hostname}}",
         "auth": {
           "type": "header",
           "name": "Authorization",
-          "value_key": "rapidpro.app"
+          "value_key": "{{value_key}}"
         },
         "path": "/api/v2/flow_starts.json"
       },
       "mapping": {
         "flow": {
-          "expr": "'f23d5b4b-0ca6-4b57-8166-8931caf2f582'"
+          "expr": "{{write_patient_state_flow}}"
         },
         "urns": {
           "expr": "['tel:+10001234567']"
@@ -99,17 +99,17 @@
     "patient triggers patient-state-change workflow": {
       "relevant_to": "doc.type === 'person' && doc.rapidpro",
       "destination": {
-        "base_url": "https://rapidpro.app.medicmobile.org",
+        "base_url": "{{rp_hostname}}",
         "auth": {
           "type": "header",
           "name": "Authorization",
-          "value_key": "rapidpro.app"
+          "value_key": "{{value_key}}"
         },
         "path": "/api/v2/flow_starts.json"
       },
       "mapping": {
         "flow": {
-          "expr": "'f23d5b4b-0ca6-4b57-8166-8931caf2f582'"
+          "expr": "{{write_patient_state_flow}}"
         },
         "urns": {
           "expr": "['tel:+10001234567']"

@@ -1,21 +1,35 @@
 const core = require('@actions/core');
-const {getCouchDbUrl, setMedicCredentials, writeFlowsFile, updateAppSettings} = require('./utils');
+const github = require('@actions/github');
+const fs = require('fs');
+const path = require('path');
+const {getReplacedContent, getCouchDbUrl, setMedicCredentials, getInputs, getFormattedFlows} = require('./utils');
 
 const githubWorkspacePath = process.env['GITHUB_WORKSPACE'];
-const couch_username = core.getInput('couch_username');
-const couch_password = core.getInput('couch_password');
-const hostname = core.getInput('hostname');
-const couch_node_name = core.getInput('couch_node_name'); 
-const rp_hostname = core.getInput('rp_hostname');
-const value_key = core.getInput('value_key');
-const rp_contact_group = core.getInput('rp_contact_group');
-const write_patient_state_flow = core.getInput('write_patient_state_flow');  
-const rp_api_token = core.getInput('rp_api_token');
-const rp_flows = core.getInput('rp_flows');
-const directory = core.getInput('directory');
-const settingsFile = `app_settings.json`;
-const flowsFile = `flows.js`;
 
-setMedicCredentials(getCouchDbUrl(hostname, couch_node_name, value_key, couch_username, couch_password), rp_api_token);
-writeFlowsFile(githubWorkspacePath, directory, flowsFile, rp_flows);
-updateAppSettings(githubWorkspacePath, rp_hostname, value_key, rp_contact_group, write_patient_state_flow, rp_api_token, rp_flows, directory, settingsFile);
+const settingsFile = 'app_settings.json';
+const flowsFile = 'flows.js';
+const secrets = getInputs(core);
+
+const run = async () => {
+  try {
+    if (!githubWorkspacePath) {
+      throw new Error('GITHUB_WORKSPACE not defined');
+    }
+    const codeRepository = path.resolve(path.resolve(githubWorkspacePath), secrets.directory);
+    process.chdir(codeRepository);
+    const url = getCouchDbUrl(secrets.hostname, secrets.couch_node_name, secrets.value_key, secrets.couch_username, secrets.couch_password);
+    const settings = getReplacedContent(`${codeRepository}/${settingsFile}`, secrets);
+    const flows = getReplacedContent(`${codeRepository}/${settingsFile}`, secrets.rp_flows);
+    
+    await setMedicCredentials(url, secrets.rp_api_token);
+    await fs.writeFileSync(`${codeRepository}/${settingsFile}`, settings);
+    await fs.writeFileSync(`${codeRepository}/${flowsFile}`, getFormattedFlows(flows));
+
+    const payload = JSON.stringify(github.context.payload, undefined, 2);
+    console.log(`The event payload: ${payload}`);  
+  } catch (error) {
+    core.setFailed(error.message);
+  }
+};
+
+run();
