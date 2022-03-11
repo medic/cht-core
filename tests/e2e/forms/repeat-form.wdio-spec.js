@@ -9,6 +9,7 @@ const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 
 const countFormDocument = readFormDocument('repeat-translation-count');
 const buttonFormDocument = readFormDocument('repeat-translation-button');
+const selectFormDocument = readFormDocument('repeat-translation-select');
 const userContactDoc = {
   _id: constants.USER_CONTACT_ID,
   name: 'Jack',
@@ -25,7 +26,7 @@ const userContactDoc = {
 
 describe('RepeatForm', () => {
   before(async () => {
-    await utils.seedTestData(userContactDoc, [countFormDocument, buttonFormDocument]);
+    await utils.seedTestData(userContactDoc, [countFormDocument, buttonFormDocument, selectFormDocument]);
   });
 
   afterEach(async () => {
@@ -130,6 +131,34 @@ describe('RepeatForm', () => {
     async function repeatForm() {
       const addRepeatButton = await $('.btn.btn-default.add-repeat-btn');
       await addRepeatButton.click();
+    }
+  });
+
+  describe('Repeat form with select', () => {
+    it('should display the initial form and its repeated content in the default language', async () => {
+      const swUserName = 'Jina la mtumizi';
+      await loginPage.changeLanguage('sw', swUserName);
+      await login();
+      await openRepeatForm(selectFormDocument.internalId);
+
+      const washingtonInputPath = '#report-form input[name="/cascading_select/selected_state"][value="washington"]';
+      const washingtonLabelPath = `${washingtonInputPath} ~ .option-label.active`;
+      expect(await (await $(washingtonLabelPath)).getText()).to.equal('Washington');
+
+      await (await $(washingtonInputPath)).click();
+      const kingInputPath = '#report-form input[name="/cascading_select/selected_county"][value="king"]';
+      const kingLabelPath = `${kingInputPath} ~ .option-label.active`;
+      expect(await (await $(kingLabelPath)).getText()).to.equal('King');
+
+      await (await $(kingInputPath)).click();
+      const seattleLabelPath = getCityLabelPath('seattle');
+      const redmondLabelPath = getCityLabelPath('redmond');
+      expect(await (await $(seattleLabelPath)).getText()).to.equal('Seattle');
+      expect(await (await $(redmondLabelPath)).getText()).to.equal('Redmond');
+    });
+
+    function getCityLabelPath(cityValue) {
+      return `#report-form input[name="/cascading_select/selected_city"][value="${cityValue}"] ~ .option-label.active`;
     }
   });
 
