@@ -27,8 +27,7 @@ process
   const generateServiceWorker = require('./src/generate-service-worker');
   const apiPort = process.env.API_PORT || 5988;
 
-  try
-  {
+  try {
     logger.info('Running server checks…');
     await serverChecks.check(environment.serverUrl);
     logger.info('Checks passed successfully');
@@ -72,7 +71,7 @@ process
 
   } catch (err) {
     logger.error('Fatal error initialising medic-api');
-    logger.error('%o',err);
+    logger.error('%o', err);
     process.exit(1);
   }
 

@@ -12,7 +12,7 @@ describe('Export Data Service', () => {
 
   const mockRequest = (type, filters={}, options={}) => {
     const chunks = []; 
-    return new Promise((resolve,reject) => {
+    return new Promise((resolve, reject) => {
       service.exportStream(type, filters, options)
         .on('error', err => {
           reject(err);

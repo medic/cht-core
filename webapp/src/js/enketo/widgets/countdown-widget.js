@@ -122,7 +122,9 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
   function animate(start) {
     const offset = Date.now() - start;
 
-    if(!running) { return; }
+    if(!running) {
+      return;
+    }
 
     if(offset < LIM*2) {
       drawAnimation(offset);

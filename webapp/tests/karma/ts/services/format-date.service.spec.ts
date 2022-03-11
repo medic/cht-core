@@ -59,7 +59,7 @@ describe('FormatDate service', () => {
 
   it('should init config on construct', () => {
     expect(longDateFormat.callCount).to.equal(2);
-    expect(longDateFormat.args).to.deep.equal([['LT'],['LTS']]);
+    expect(longDateFormat.args).to.deep.equal([['LT'], ['LTS']]);
   });
 
   describe('init', () => {
@@ -73,7 +73,7 @@ describe('FormatDate service', () => {
 
       expect(settingsService.get.callCount).to.equal(1);
       expect(longDateFormat.callCount).to.equal(2);
-      expect(longDateFormat.args).to.deep.equal([['LT'],['LTS']]);
+      expect(longDateFormat.args).to.deep.equal([['LT'], ['LTS']]);
 
       const now = moment();
       expect(service.date(now)).to.equal(now.format('Y-M-D'));

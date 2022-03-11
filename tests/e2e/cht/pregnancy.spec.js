@@ -106,7 +106,7 @@ describe('Pregnancy workflow on cht : ', () => {
     await helper.clickElementNative(contactsPage.newActions);
     await helper.clickElementNative(contactsPage.formById('delivery'));
     await helper.waitUntilReadyNative(genericFormPo.formTitle);
-    await formFiller(deliveryReport.build().fields, 'delivery',chtDelivery.pages);
+    await formFiller(deliveryReport.build().fields, 'delivery', chtDelivery.pages);
     const pastPregnancyCard = await contactsPage.cardElementByHeaderText('Past pregnancy');
     await helper.waitUntilReadyNative(pastPregnancyCard);
     const [dateDelivered,

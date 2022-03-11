@@ -18,21 +18,29 @@ They live in the `tests` directories of each app. Run them with grunt: `grunt un
 ## Stack overview
 
 ### Requirements
-Follow the guide [DEVELOPMENT.md](DEVELOPMENT.md)
-JDK installed for Selenium.
-Docker to run couchdb.
+
+1. Follow the guide [DEVELOPMENT.md](DEVELOPMENT.md)
+2. JDK installed for Selenium.
+3. Docker to run couchdb.
 
 ### Local Run
 
 `grunt e2e` installs and runs chromedriver, starts couchdb in docker, pushes the compiled app to couchdb, starts api, starts sentinel, and then runs protractor tests against your local environment. 
 
-### WebdriverIO Local Run
+### WebdriverIO
 
-Run `npm ci`
-Run `grunt`
-Run `npm run wdio-local`
-Viewing the report 
-Run `npx allure open`
+#### Run locally
+
+1. Run `npm ci`
+2. Run `grunt`
+3. Run `npm run wdio-local`
+4. Run `npx allure open` to view the test reports
+
+#### View the CI report
+
+1. Download the CI run artifact zip file
+2. Extract it anyhere
+3. From your cht-core directory, run `npx allure open <path>/allure-report/`.
 
 ### Github Actions Protractor Run 
 

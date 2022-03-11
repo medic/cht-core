@@ -25,7 +25,7 @@ describe('EditTranslationCtrl controller', function() {
       return $controller('EditTranslationCtrl', {
         '$scope': scope,
         '$uibModalInstance': uibModalInstance,
-        'DB': function() { return { bulkDocs: bulkDocs }; }
+        'DB': sinon.stub().returns({ bulkDocs }),
       });
     };
   }));

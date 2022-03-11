@@ -73,7 +73,7 @@ describe('RapidPro SMS Gateway', () => {
     broadcastsEndpointRequests = [];
     messagesEndpointRequests = [];
   });
-  afterEach(() => utils.revertDb([],true));
+  afterEach(() => utils.revertDb([], true));
 
   describe('Webapp Terminating messages', () => {
     const endpoint = '/api/v1/sms/radpidpro/incoming-messages';

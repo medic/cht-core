@@ -82,7 +82,7 @@ module.exports = {
     const wizardTitleText = await helper.getTextFromElementNative(wizardTitle);
     expect(wizardTitleText.toLowerCase()).toContain('wizard');
     expect(await helper.getTextFromElementNative(defaultCountryCode)).toEqual('Canada (+1)');
-    const texts = ['setup.start','Finish'];
+    const texts = ['setup.start', 'Finish'];
     const displayed = await helper.getTextFromElementNative(finishBtn);
     expect(texts).toContain(displayed);
     await skipSetup.click();
@@ -90,7 +90,7 @@ module.exports = {
 
   getDefaultLanguages: async () => {
     await module.exports.openMenuNative();
-    await openSubmenu(['configuration wizard','easy setup wizard ']);
+    await openSubmenu(['configuration wizard', 'easy setup wizard ']);
     await helper.waitUntilReadyNative(wizardTitle);
     await helper.waitUntilTranslated(wizardTitle);
     await helper.clickElementNative(languagePreferenceHeading);

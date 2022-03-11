@@ -21,7 +21,15 @@ import { PipesService } from '@mm-services/pipes.service';
 const isString = v => typeof v === 'string';
 const isDef = v => v !== void 0;
 const ifDef = (v, d) => v === void 0 ? d : v;
-const plus = (a, b) => void 0 === a ? b : void 0 === b ? a : a + b;
+const plus = (a, b) => {
+  if (void 0 === a) {
+    return b;
+  }
+  if (void 0 === b) {
+    return a;
+  }
+  return a + b;
+};
 const minus = (a, b) => ifDef(a, 0) - ifDef(b, 0);
 const noop = () => {};
 

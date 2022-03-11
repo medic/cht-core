@@ -9,6 +9,7 @@ const getRoles = require('./types-and-roles');
 const auth = require('../auth');
 const tokenLogin = require('./token-login');
 const moment = require('moment');
+const { allPromisesSettled } = require('../promise-utils');
 
 const USER_PREFIX = 'org.couchdb.user:';
 const DOC_IDS_WARN_LIMIT = 10000;
@@ -59,9 +60,18 @@ const illegalDataModificationAttempts = data =>
 /*
  * Set error codes to 400 to minimize 500 errors and stacktraces in the logs.
  */
-const error400 = (msg, key, params) => ({
-  code: 400, message: { message: msg, translationKey: key, translationParams: params }
-});
+const error400 = (msg, key, params) => {
+  const error = new Error(msg);
+  error.code = 400;
+
+  if (typeof key === 'string') {
+    return Object.assign(error, {
+      message: { message: msg, translationKey: key, translationParams: params },
+    });
+  }
+
+  return Object.assign(error, { details: key });
+};
 
 const getType = user => {
   if (user.roles && user.roles.length) {
@@ -104,10 +114,10 @@ const validateContact = (id, placeID) => {
   return db.medic.get(id)
     .then(doc => {
       if (!people.isAPerson(doc)) {
-        return Promise.reject(error400('Wrong type, contact is not a person.','contact.type.wrong'));
+        return Promise.reject(error400('Wrong type, contact is not a person.', 'contact.type.wrong'));
       }
       if (!hasParent(doc, placeID)) {
-        return Promise.reject(error400('Contact is not within place.','configuration.user.place.contact'));
+        return Promise.reject(error400('Contact is not within place.', 'configuration.user.place.contact'));
       }
       return doc;
     });
@@ -259,7 +269,7 @@ const setContactParent = data => {
     return places.getPlace(data.contact.parent)
       .then(place => {
         if (!hasParent(place, data.place)) {
-          return Promise.reject(error400('Contact is not within place.','configuration.user.place.contact'));
+          return Promise.reject(error400('Contact is not within place.', 'configuration.user.place.contact'));
         }
         // save result to contact object
         data.contact.parent = lineage.minifyLineage(place);
@@ -522,6 +532,50 @@ const validateUserContact = (data, user, userSettings) => {
   }
 };
 
+const createUserEntities = async (user, appUrl) => {
+  const response = {};
+  await validateNewUsername(user.username);
+  await createPlace(user);
+  await setContactParent(user);
+  await createContact(user, response);
+  await storeUpdatedPlace(user);
+  await createUser(user, response);
+  await createUserSettings(user, response);
+  await tokenLogin.manageTokenLogin(user, appUrl, response);
+  return response;
+};
+
+const validateUserFields = (users) => {
+  const missingFieldsFailingIndexes = [];
+  const tokenLoginFailingIndexes = [];
+  const passwordFailingIndexes = [];
+  users.forEach((user, index) => {
+    const fields = missingFields(user);
+    const hasMissingFields = fields.length > 0;
+    if (hasMissingFields) {
+      missingFieldsFailingIndexes.push({ fields, index });
+      return;
+    }
+
+    const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
+    if (tokenLoginError) {
+      tokenLoginFailingIndexes.push({ tokenLoginError, index });
+      return;
+    }
+
+    const passwordError = validatePassword(user.password);
+    if (passwordError) {
+      passwordFailingIndexes.push({ passwordError, index });
+    }
+  });
+
+  return {
+    missingFieldsFailingIndexes,
+    tokenLoginFailingIndexes,
+    passwordFailingIndexes,
+  };
+};
+
 /*
  * Everything not exported directly is private.  Underscore prefix is only used
  * to export functions needed for testing.
@@ -547,7 +601,7 @@ module.exports = {
    * @param {String} appUrl - request protocol://hostname
    * @api public
    */
-  createUser: (data, appUrl) => {
+  createUser: async (data, appUrl) => {
     const missing = missingFields(data);
     if (missing.length > 0) {
       return Promise.reject(error400(
@@ -565,16 +619,56 @@ module.exports = {
     if (passwordError) {
       return Promise.reject(passwordError);
     }
-    const response = {};
-    return validateNewUsername(data.username)
-      .then(() => createPlace(data))
-      .then(() => setContactParent(data))
-      .then(() => createContact(data, response))
-      .then(() => storeUpdatedPlace(data))
-      .then(() => createUser(data, response))
-      .then(() => createUserSettings(data, response))
-      .then(() => tokenLogin.manageTokenLogin(data, appUrl, response))
-      .then(() => response);
+
+    return await createUserEntities(data, appUrl);
+  },
+
+  /**
+   * Take the request data and create valid users, user-settings and contacts
+   * objects. Returns the response body in the callback.
+   * @param {Object|Object[]} users
+   * @param {string} users[].username
+   * @param {string=} users[].phone Not required if the password is provided.
+   * @param {string=} users[].password Not required if the phone number is provided.
+   * @param {string[]} users[].roles
+   * @param {(Object|string)=} users[].place Can either be a place object or an existing place id.
+   * @param {(Object|string)=} users[].contact Can either be a contact object or an existing place id.
+   * @param {string=} users[].type Deprecated. Used to infer user's roles
+   * @param {string} appUrl   request protocol://hostname
+   */
+  async createUsers(users, appUrl) {
+    if (!Array.isArray(users)) {
+      return module.exports.createUser(users, appUrl);
+    }
+
+    const { missingFieldsFailingIndexes, tokenLoginFailingIndexes, passwordFailingIndexes } = validateUserFields(users);
+    if (missingFieldsFailingIndexes.length > 0) {
+      const errorMessages = missingFieldsFailingIndexes.map(({ fields, index }) => {
+        return `Missing fields ${fields.join(', ')} for user at index ${index}`;
+      });
+      const errorMessage = ['Missing required fields:', ...errorMessages].join('\n');
+      return Promise.reject(error400(errorMessage, { failingIndexes: missingFieldsFailingIndexes }));
+    }
+
+    if (tokenLoginFailingIndexes.length > 0) {
+      const errorMessages = tokenLoginFailingIndexes.map(({ tokenLoginError, index }) => {
+        return `Error ${tokenLoginError.msg} for user at index ${index}`;
+      });
+      const errorMessage = ['Token login errors:', ...errorMessages].join('\n');
+      return Promise.reject(error400(errorMessage, { failingIndexes: tokenLoginFailingIndexes }));
+    }
+
+    if (passwordFailingIndexes.length > 0) {
+      const errorMessages = tokenLoginFailingIndexes.map(({ passwordError, index }) => {
+        return `Error ${passwordError.message.message} for user at index ${index}`;
+      });
+      const errorMessage = ['Password errors:', ...errorMessages].join('\n');
+      return Promise.reject(error400(errorMessage, { failingIndexes: passwordFailingIndexes }));
+    }
+
+    // create all valid users even if some are failing
+    const promises = await allPromisesSettled(users.map(async (user) => await createUserEntities(user, appUrl)));
+    return promises.map((promise) => promise.status === 'rejected' ? { error: promise.reason.message } : promise.value);
   },
 
   /*

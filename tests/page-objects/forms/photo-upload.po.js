@@ -40,7 +40,8 @@ const docs = [
         data: Buffer.from(xml).toString('base64')
       }
     }
-  }];
+  }
+];
 
 module.exports = {
   configureForm: (userContactDoc, done) => {

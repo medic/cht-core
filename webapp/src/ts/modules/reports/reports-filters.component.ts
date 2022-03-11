@@ -29,12 +29,16 @@ export class ReportsFiltersComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild(FormTypeFilterComponent)
   formTypeFilter:FormTypeFilterComponent;
+
   @ViewChild(FacilityFilterComponent)
   facilityFilter:FacilityFilterComponent;
+
   @ViewChild(DateFilterComponent)
   dateFilter:DateFilterComponent;
+
   @ViewChild(FreetextFilterComponent)
   freetextFilter:FreetextFilterComponent;
+
   @ViewChild(StatusFilterComponent)
   statusFilter:StatusFilterComponent;
 

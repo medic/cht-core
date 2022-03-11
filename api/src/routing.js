@@ -180,7 +180,7 @@ app.use(
 // requires `res` `Content-Type` to be compressible (see https://github.com/jshttp/mime-db/blob/master/db.json)
 // default threshold is 1KB
 
-const additionalCompressibleTypes = ['application/x-font-ttf','font/ttf'];
+const additionalCompressibleTypes = ['application/x-font-ttf', 'font/ttf'];
 app.use(compression({
   filter: (req, res) => {
     if (additionalCompressibleTypes.includes(res.getHeader('Content-Type'))) {
@@ -238,7 +238,7 @@ app.get('/favicon.ico', (req, res) => {
       res.send(blob);
     });
   }).catch(err => {
-    res.sendFile('resources/ico/favicon.ico' , { root : __dirname });
+    res.sendFile('resources/ico/favicon.ico', { root : __dirname });
     logger.warn('Branding doc or/and favicon missing: %o', err);
   });
 });

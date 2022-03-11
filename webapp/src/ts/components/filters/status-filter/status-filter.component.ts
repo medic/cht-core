@@ -19,6 +19,7 @@ export class StatusFilterComponent implements AbstractFilter {
     valid: ['valid', 'invalid'],
     verified: ['unverified', 'errors', 'correct'],
   };
+
   allStatuses = [...this.statuses.valid, ...this.statuses.verified];
 
   @Input() disabled;

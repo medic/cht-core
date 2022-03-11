@@ -86,6 +86,6 @@ describe('Submit Default Delivery Report', () => {
     }
 
     assert.equal(_.uniq(deadBabyUUIds).length, noOfDeadBabies);
-    assert.equal(_.uniq(aliveBabyUUIds).length,noOfAliveBabies);
+    assert.equal(_.uniq(aliveBabyUUIds).length, noOfAliveBabies);
   });
 });

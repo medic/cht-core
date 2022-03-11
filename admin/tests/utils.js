@@ -63,9 +63,7 @@ window.KarmaUtils = {
       $provide.value('ContactViewModelGenerator', () => {});
       $provide.value('ReportViewModelGenerator', () => {});
       $provide.value('LiveList', mockLiveList);
-      $provide.value('Session', {
-        userCtx: () => { return {}; }
-      });
+      $provide.value('Session', { userCtx: sinon.stub().returns({}) });
     });
   }
 };

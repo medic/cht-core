@@ -45,42 +45,151 @@ describe('Export Data controller', () => {
         });
     });
 
-    it('corrects filter & option types', () => {
-      const req = {
-        params: {
-          type: 'reports'
-        },
-        body: {
-          filters: {
-            date: { from: '1525813200000', to: '1528232399999' },
-            valid: 'true',
-            verified: 'false'
-          }
-        }
-      };
-      const res = {
-        set: set,
-        flushHeaders: sinon.stub(),
-        end: sinon.stub()
-      };
-      auth.check.resolves();
-      auth.getUserCtx.returns(Promise.resolve({}));
-      auth.isOnlineOnly.returns(true);
-      sinon.stub(service, 'exportStream');
-
-      return controller.get(req, res).then(() => {
-        service.exportStream.callCount.should.equal(1);
-        service.exportStream.args[0].should.deep.equal([
-          'reports',
-          {
-            date: { from: 1525813200000, to: 1528232399999 },
-            valid: true,
-            verified: false
+    describe('corrects filter & option types', () => {
+      it('corrects dates, valid true, verified false', () => {
+        const req = {
+          params: {
+            type: 'reports'
           },
-          {
-            humanReadable: false
+          body: {
+            filters: {
+              date: { from: '1525813200000', to: '1528232399999' },
+              valid: 'true',
+              verified: 'false'
+            }
           }
-        ]);
+        };
+        const res = {
+          set: set,
+          flushHeaders: sinon.stub(),
+          end: sinon.stub()
+        };
+        auth.check.resolves();
+        auth.getUserCtx.returns(Promise.resolve({}));
+        auth.isOnlineOnly.returns(true);
+        sinon.stub(service, 'exportStream');
+
+        return controller.get(req, res).then(() => {
+          service.exportStream.callCount.should.equal(1);
+          service.exportStream.args[0].should.deep.equal([
+            'reports',
+            {
+              date: { from: 1525813200000, to: 1528232399999 },
+              valid: true,
+              verified: [ false ],
+            },
+            {
+              humanReadable: false
+            }
+          ]);
+        });
+      });
+
+      it('correct valid false, verified true', () => {
+        const req = {
+          params: {
+            type: 'reports'
+          },
+          body: {
+            filters: {
+              valid: 'false',
+              verified: 'true'
+            }
+          }
+        };
+        const res = {
+          set: set,
+          flushHeaders: sinon.stub(),
+          end: sinon.stub()
+        };
+        auth.check.resolves();
+        auth.getUserCtx.returns(Promise.resolve({}));
+        auth.isOnlineOnly.returns(true);
+        sinon.stub(service, 'exportStream');
+
+        return controller.get(req, res).then(() => {
+          service.exportStream.callCount.should.equal(1);
+          service.exportStream.args[0].should.deep.equal([
+            'reports',
+            {
+              valid: false,
+              verified: [ true ],
+            },
+            {
+              humanReadable: false
+            }
+          ]);
+        });
+      });
+
+      it('correct verified empty', () => {
+        const req = {
+          params: {
+            type: 'reports'
+          },
+          body: {
+            filters: {
+              verified: ''
+            }
+          }
+        };
+        const res = {
+          set: set,
+          flushHeaders: sinon.stub(),
+          end: sinon.stub()
+        };
+        auth.check.resolves();
+        auth.getUserCtx.returns(Promise.resolve({}));
+        auth.isOnlineOnly.returns(true);
+        sinon.stub(service, 'exportStream');
+
+        return controller.get(req, res).then(() => {
+          service.exportStream.callCount.should.equal(1);
+          service.exportStream.args[0].should.deep.equal([
+            'reports',
+            {
+              verified: [ null ],
+            },
+            {
+              humanReadable: false
+            }
+          ]);
+        });
+      });
+
+      it('correct verified array', () => {
+        const req = {
+          params: {
+            type: 'reports'
+          },
+          body: {
+            filters: {
+              verified: [ 'true', 'false', '' ],
+            }
+          }
+        };
+        const res = {
+          set: set,
+          flushHeaders: sinon.stub(),
+          end: sinon.stub()
+        };
+        auth.check.resolves();
+        auth.getUserCtx.returns(Promise.resolve({}));
+        auth.isOnlineOnly.returns(true);
+        sinon.stub(service, 'exportStream');
+
+        return controller.get(req, res).then(() => {
+          service.exportStream.callCount.should.equal(1);
+          service.exportStream.args[0].should.deep.equal([
+            'reports',
+            {
+              verified: [ true, false, null ],
+            },
+            {
+              humanReadable: false
+            }
+          ]);
+        });
       });
     });
 
@@ -104,7 +213,7 @@ describe('Export Data controller', () => {
       auth.getUserCtx.returns(Promise.resolve({}));
       auth.isOnlineOnly.returns(true);
       sinon.stub(db.medicUsersMeta, 'allDocs').returns(Promise.reject(new Error('db not found')));
-      
+
       return controller.get(req, res).then(() => {
         // defer execution to allow the stream to write first
         setTimeout(() => {

@@ -275,7 +275,6 @@ export class AppComponent implements OnInit {
       .then(() => this.checkDateService.check(true))
       .then(() => this.startRecurringProcesses());
 
-    this.globalActions.setIsAdmin(this.sessionService.isAdmin());
     this.watchBrandingChanges();
     this.watchDDocChanges();
     this.watchUserContextChanges();
@@ -559,7 +558,7 @@ export class AppComponent implements OnInit {
   private initRulesEngine() {
     return this.rulesEngineService
       .isEnabled()
-      .then(isEnabled => console.info(`RulesEngine Status: ${ isEnabled ? 'Enabled' : 'Disabled' }`))
+      .then(isEnabled => console.info(`RulesEngine Status: ${isEnabled ? 'Enabled' : 'Disabled'}`))
       .catch(err => console.error('RuleEngine failed to initialize', err));
   }
 

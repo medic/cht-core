@@ -89,7 +89,7 @@ describe('Reports effects', () => {
   });
 
   describe('selectReport', () => {
-    it('should not be triggered by random actions', waitForAsync (() => {
+    it('should not be triggered by random actions', waitForAsync(() => {
       actions$ = of([
         ReportActionList.markReportRead(''),
         ReportActionList.removeSelectedReport({}),
@@ -99,7 +99,7 @@ describe('Reports effects', () => {
       expect(reportViewModelGeneratorService.get.callCount).to.equal(0);
     }));
 
-    it('should skip when no provided id', waitForAsync (() => {
+    it('should skip when no provided id', waitForAsync(() => {
       actions$ = of(ReportActionList.selectReport({  }));
       effects.selectReport.subscribe();
       expect(reportViewModelGeneratorService.get.callCount).to.equal(0);
@@ -201,7 +201,7 @@ describe('Reports effects', () => {
       settingSelected = sinon.stub(GlobalActions.prototype, 'settingSelected');
     });
 
-    it('should not be triggered by random actions', waitForAsync (() => {
+    it('should not be triggered by random actions', waitForAsync(() => {
       actions$ = of([
         ReportActionList.markReportRead(''),
         ReportActionList.removeSelectedReport({}),
@@ -460,7 +460,7 @@ describe('Reports effects', () => {
       expect(setRightActionBar.args[0]).to.deep.equal([{}]);
     }));
 
-    it('should set empty model when in select mode and selected docs', waitForAsync (() => {
+    it('should set empty model when in select mode and selected docs', waitForAsync(() => {
       store.overrideSelector(Selectors.getSelectMode, true);
       store.overrideSelector(Selectors.getSelectedReportsDocs, [{ _id: 'doc' }]);
       store.overrideSelector(Selectors.getVerifyingReport, false);
@@ -471,7 +471,7 @@ describe('Reports effects', () => {
       expect(setRightActionBar.args[0]).to.deep.equal([{}]);
     }));
 
-    it('should set empty model when not in select mode and no selected docs', waitForAsync (() => {
+    it('should set empty model when not in select mode and no selected docs', waitForAsync(() => {
       store.overrideSelector(Selectors.getSelectMode, false);
       store.overrideSelector(Selectors.getSelectedReportsDocs, []);
       store.overrideSelector(Selectors.getVerifyingReport, false);
@@ -482,7 +482,7 @@ describe('Reports effects', () => {
       expect(setRightActionBar.args[0]).to.deep.equal([{}]);
     }));
 
-    it('should set correct model when not in select mode and selected doc without contact', waitForAsync (() => {
+    it('should set correct model when not in select mode and selected doc without contact', waitForAsync(() => {
       const report = {
         _id: 'report',
         verified: false,
@@ -501,7 +501,7 @@ describe('Reports effects', () => {
       });
     }));
 
-    it('should set correct model when not in select mode and selected doc with false contact', waitForAsync (() => {
+    it('should set correct model when not in select mode and selected doc with false contact', waitForAsync(() => {
       const report = {
         _id: 'report',
         verified: 'true',

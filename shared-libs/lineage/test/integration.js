@@ -526,19 +526,20 @@ const fixtures = [
   contactWithArrayLinks,
 ];
 const deleteDocs = ids => {
-  return db.allDocs({
-    keys: ids,
-    include_docs: true
-  }).then(data => {
-    const docs = data.rows.map(row => {
-      const doc = row.doc;
-      if (doc) {
-        doc._deleted = true;
-        return doc;
-      }
-    }).filter(doc => doc);
-    return db.bulkDocs(docs);
-  });
+  return db
+    .allDocs({
+      keys: ids,
+      include_docs: true
+    })
+    .then(data => {
+      const docs = data.rows
+        .filter(row => row.doc)
+        .map(row => {
+          row.doc._deleted = true;
+          return row.doc;
+        });
+      return db.bulkDocs(docs);
+    });
 };
 
 describe('Lineage', function() {
