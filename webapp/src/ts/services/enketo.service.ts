@@ -305,7 +305,7 @@ export class EnketoService {
         const observer = new MutationObserver((mutations) => {
           const hasNewNodes = mutations.some(mutation => mutation.addedNodes.length > 0);
           if (hasFormChanged && hasNewNodes) {
-            this.currentForm.langs.setAll(language);
+            this.currentForm.langs.$formLanguages.val(language).trigger('change');
           }
           hasFormChanged = false;
         });
