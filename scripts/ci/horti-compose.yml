@@ -15,7 +15,7 @@ services:
       - COUCHDB_PASSWORD=pass
     networks:
      - e2e
-      
+
   horti:
     container_name: horti
     image: ubuntu:18.04
@@ -25,7 +25,6 @@ services:
     environment:
       - COUCH=http://admin:pass@couch:5984
       - COUCH_URL=http://admin:pass@couch:5984/medic-test
-      - COUCH_NODE_NAME=nonode@nohost
       - HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER
       - BUILD=medic:medic:test-$BUILD_NUMBER
       - NODE_VERSION=$NODE
@@ -45,4 +44,4 @@ services:
 
 networks:
   e2e:
-   name: e2e 
+   name: e2e

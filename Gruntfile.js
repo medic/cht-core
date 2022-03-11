@@ -4,7 +4,6 @@ const fs = require('fs');
 const path = require('path');
 
 const {
-  COUCH_NODE_NAME,
   MARKET_URL,
   BUILDS_SERVER,
   BUILD_NUMBER,
@@ -319,19 +318,12 @@ module.exports = function(grunt) {
                       grep -Ev '^\\s*//' &&
                   echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
       },
-      'setup-admin': {
-        cmd:
-          ` curl -X PUT ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/admins/admin')} -d '"${couchConfig.password}"'` +
-          ` && curl -X PUT --data '"true"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/chttpd/require_valid_user')}` +
-          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/httpd/max_http_request_size')}` +
-          ` && curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}`
-      },
       'setup-test-database': {
         cmd: [
           `docker run -d -p 4984:5984 -p 4986:5986 --rm --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data couchdb:2`,
           'sh scripts/e2e/wait_for_response_code.sh 4984 200 couch',
           `curl 'http://localhost:4984/_cluster_setup' -H 'Content-Type: application/json' --data-binary '{"action":"enable_single_node","username":"admin","password":"pass","bind_address":"0.0.0.0","port":5984,"singlenode":true}'`,
-          'COUCH_URL=http://admin:pass@localhost:4984/medic COUCH_NODE_NAME=nonode@nohost grunt secure-couchdb', // yo dawg, I heard you like grunt...
+          'COUCH_URL=http://admin:pass@localhost:4984/medic', // yo dawg, I heard you like grunt...
           // Useful for debugging etc, as it allows you to use Fauxton easily
           `curl -X PUT "http://admin:pass@localhost:4984/_node/nonode@nohost/_config/httpd/WWW-Authenticate" -d '"Basic realm=\\"administrator\\""' -H "Content-Type: application/json"`
         ].join('&& ')
@@ -385,9 +377,9 @@ module.exports = function(grunt) {
           'scripts/e2e/start_webdriver.sh'
       },
       'check-env-vars':
-        'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
+        'if [ -z $COUCH_URL ]; then ' +
         'echo "Missing required env var.  Check that all are set: ' +
-        'COUCH_URL, COUCH_NODE_NAME" && exit 1; fi',
+        'COUCH_URL" && exit 1; fi',
       'check-version': `node scripts/ci/check-versions.js`,
       'undo-patches': {
         cmd: function() {

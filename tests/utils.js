@@ -552,8 +552,15 @@ const hostURL = (port = 80) => {
   return url.href;
 };
 
+const getCouchNodeName = async () => {
+  const serverUrl = `http://${constants.API_HOST}:${constants.API_PORT}`;
+  const membership = await request.get({ url: `${serverUrl}/_membership`, json: true });
+  return membership.all_nodes[0];
+};
+
 module.exports = {
   hostURL,
+  getCouchNodeName,
   parseCookieResponse,
   deprecated,
   db: db,

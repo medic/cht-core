@@ -42,7 +42,7 @@ const waitForApi = () =>
 
 logger.info('Running server checks…');
 serverChecks
-  .check(db.serverUrl)
+  .check(db.couchUrl)
   .then(waitForApi)
   .then(() => {
     // Even requiring this boots translations, so has to be required after

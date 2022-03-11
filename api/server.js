@@ -28,7 +28,7 @@ process
   try
   {
     logger.info('Running server checks…');
-    await serverChecks.check(environment.serverUrl);
+    await serverChecks.check(environment.couchUrl);
     logger.info('Checks passed successfully');
 
     logger.info('Running installation checks…');

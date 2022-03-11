@@ -178,7 +178,7 @@ describe('Changes controller', () => {
     });
 
     it('should check if changes requests can be limited', () => {
-      environment.serverUrl = 'someURL';
+      sinon.stub(environment, 'serverUrl').value('someURL');
       serverChecks.getCouchDbVersion.resolves('2.2.0');
       return controller._init().then(() => {
         serverChecks.getCouchDbVersion.callCount.should.equal(1);
@@ -188,7 +188,7 @@ describe('Changes controller', () => {
     });
 
     it('should check if changes requests can be limited', () => {
-      environment.serverUrl = 'someOtherURL';
+      sinon.stub(environment, 'serverUrl').value('someURL');
       serverChecks.getCouchDbVersion.resolves('2.3.0');
       return controller._init().then(() => {
         serverChecks.getCouchDbVersion.callCount.should.equal(1);
