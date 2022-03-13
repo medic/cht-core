@@ -95,7 +95,7 @@ describe('Enketo service', () => {
     Search = sinon.stub();
     LineageModelGenerator = { contact: sinon.stub() };
     xmlFormGet = sinon.stub().resolves({ _id: 'abc' });
-    xmlFormGetWithAttachment = sinon.stub().resolves({ doc: { _id: 'abc', xml: '<form/>' }});
+    xmlFormGetWithAttachment = sinon.stub().resolves({ doc: { _id: 'abc', xml: '<form/>' } });
     window.EnketoForm = EnketoForm;
     window.URL.createObjectURL = createObjectURL;
     EnketoForm.returns({
@@ -105,11 +105,11 @@ describe('Enketo service', () => {
       },
       init: enketoInit,
       langs: {
-        setAll: () => {},
+        setAll: () => { },
         $formLanguages: $('<select><option value="en">en</option></select>'),
       },
-      calc: { update: () => {} },
-      output: { update: () => {} },
+      calc: { update: () => { } },
+      output: { update: () => { } },
     });
     transitionsService = { applyTransitions: sinon.stub().resolvesArg(0) };
     translateService = {
@@ -1359,7 +1359,7 @@ describe('Enketo service', () => {
           form: 'V',
           'fields.name': 'Sally',
           'fields.lmp': '10',
-          'fields.repeat_doc_ref' : actual[1]._id, // this ref is outside any repeat
+          'fields.repeat_doc_ref': actual[1]._id, // this ref is outside any repeat
         });
         expect(actual[1]).to.deep.include({
           extra: 'data1',
@@ -1452,29 +1452,39 @@ describe('Enketo service', () => {
           .withArgs('input[type=file][name="/my-form/my_file"]')
           .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
 
+        
         form.validate.resolves(true);
         const content = loadXML('file-field');
-
         form.getDataStr.returns(content);
-        dbGetAttachment.resolves('<form/>');
+
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
-        dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
-        // @ts-ignore
-        const saveDocsSpy = sinon.spy(EnketoService.prototype, 'saveDocs');
+        dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
+        return service.save('my-form', form, () => Promise.resolve(true)).then(() => {
+          expect(AddAttachment.callCount).to.equal(2);
+          form.validate.resolves(true);
+          const content = loadXML('file-field');
 
-        return service
-          .save('my-form', form, () => Promise.resolve(true))
-          .then(() => {
-            expect(AddAttachment.calledTwice);
-            expect(saveDocsSpy.calledOnce);
+          form.getDataStr.returns(content);
+          dbGetAttachment.resolves('<form/>');
+          UserContact.resolves({ _id: 'my-user', phone: '8989' });
+          dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
+          // @ts-ignore
+          const saveDocsSpy = sinon.spy(EnketoService.prototype, 'saveDocs');
 
-            expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
-            expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
-            expect(AddAttachment.args[0][3]).to.equal('image');
+          return service
+            .save('my-form', form, () => Promise.resolve(true))
+            .then(() => {
+              expect(AddAttachment.calledTwice);
+              expect(saveDocsSpy.calledOnce);
 
-            expect(AddAttachment.args[1][1]).to.equal('content');
-            expect(globalActions.setSnackbarContent.notCalled);
-          });
+              expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
+              expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
+              expect(AddAttachment.args[0][3]).to.equal('image');
+
+              expect(AddAttachment.args[1][1]).to.equal('content');
+              expect(globalActions.setSnackbarContent.notCalled);
+            });
+        });
       });
 
       it('should throw exception if attachments are big', () => {
@@ -1512,7 +1522,7 @@ describe('Enketo service', () => {
             expect(error.message).to.equal('enketo.error.max_attachment_size');
             expect(saveDocsStub.notCalled);
             expect(globalActions.setSnackbarContent.calledOnce);
-            expect(globalActions.setSnackbarContent.args[0]).to.have.members([ 'enketo.error.max_attachment_size' ]);
+            expect(globalActions.setSnackbarContent.args[0]).to.have.members(['enketo.error.max_attachment_size']);
           });
       });
 
@@ -1529,9 +1539,8 @@ describe('Enketo service', () => {
 </my-form>`;
 
         form.getDataStr.returns(content);
-        dbGetAttachment.resolves('<form/>');
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
-        dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+        dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
         return service.save('my-form', form, () => Promise.resolve(true)).then(() => {
           expect(AddAttachment.callCount).to.equal(2);
 
@@ -1561,9 +1570,8 @@ describe('Enketo service', () => {
         const content = loadXML('deep-file-fields');
 
         form.getDataStr.returns(content);
-        dbGetAttachment.resolves('<form/>');
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
-        dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+        dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
         return service.save('my-form-internal-id', form, () => Promise.resolve(true)).then(() => {
           expect(AddAttachment.callCount).to.equal(3);
 
@@ -1579,12 +1587,11 @@ describe('Enketo service', () => {
           expect(AddAttachment.args[2][1]).to.equal('content');
         });
       });
-    });
 
-    it('should pass docs to transitions and save results', () => {
-      form.validate.resolves(true);
-      const content =
-        `<data xmlns:jr="http://openrosa.org/javarosa">
+      it('should pass docs to transitions and save results', () => {
+        form.validate.resolves(true);
+        const content =
+          `<data xmlns:jr="http://openrosa.org/javarosa">
             <name>Sally</name>
             <lmp>10</lmp>
             <repeat_doc db-doc="true" jr:template="">
@@ -1600,154 +1607,155 @@ describe('Enketo service', () => {
               <some_property>some_value_3</some_property>
             </repeat_doc>
           </data>`;
-      form.getDataStr.returns(content);
+        form.getDataStr.returns(content);
 
-      dbBulkDocs.callsFake(docs => Promise.resolve(docs.map(doc => ({
-        ok: true, id: doc._id, rev: '2'
-      }))));
-      UserContact.resolves({ _id: '123', phone: '555' });
-      const geoHandle = sinon.stub().resolves({ geo: 'data' });
-      transitionsService.applyTransitions.callsFake((docs) => {
-        const clones = _.cloneDeep(docs); // cloning for clearer assertions, as the main array gets mutated
-        clones.forEach(clone => clone.transitioned = true);
-        clones.push({ _id: 'new doc', type: 'existent doc updated by the transition' });
-        return Promise.resolve(clones);
-      });
+        dbBulkDocs.callsFake(docs => Promise.resolve(docs.map(doc => ({
+          ok: true, id: doc._id, rev: '2'
+        }))));
+        UserContact.resolves({ _id: '123', phone: '555' });
+        const geoHandle = sinon.stub().resolves({ geo: 'data' });
+        transitionsService.applyTransitions.callsFake((docs) => {
+          const clones = _.cloneDeep(docs); // cloning for clearer assertions, as the main array gets mutated
+          clones.forEach(clone => clone.transitioned = true);
+          clones.push({ _id: 'new doc', type: 'existent doc updated by the transition' });
+          return Promise.resolve(clones);
+        });
 
-      return service.save('V', form, geoHandle).then(actual => {
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(transitionsService.applyTransitions.callCount).to.equal(1);
-        expect(UserContact.callCount).to.equal(1);
+        return service.save('V', form, geoHandle).then(actual => {
+          expect(form.validate.callCount).to.equal(1);
+          expect(form.getDataStr.callCount).to.equal(1);
+          expect(dbBulkDocs.callCount).to.equal(1);
+          expect(transitionsService.applyTransitions.callCount).to.equal(1);
+          expect(UserContact.callCount).to.equal(1);
 
-        expect(transitionsService.applyTransitions.args[0][0].length).to.equal(4);
-        expect(transitionsService.applyTransitions.args[0][0])
-          .excludingEvery(['_id', 'reported_date', 'timestamp'])
-          .to.deep.equal([
-            {
-              contact: {},
-              content_type: 'xml',
-              fields: { name: 'Sally', lmp: '10' },
-              hidden_fields: [],
-              form: 'V',
-              from: '555',
-              geolocation: { geo: 'data' },
-              geolocation_log: [{ recording: { geo: 'data' } }],
-              type: 'data_record',
-            },
-            {
-              geolocation: { geo: 'data' },
-              geolocation_log: [{ recording: { geo: 'data' } }],
-              type: 'repeater',
-              some_property: 'some_value_1',
-            },
-            {
-              geolocation: { geo: 'data' },
-              geolocation_log: [{ recording: { geo: 'data' } }],
-              type: 'repeater',
-              some_property: 'some_value_2',
-            },
-            {
-              geolocation: { geo: 'data' },
-              geolocation_log: [{ recording: { geo: 'data' } }],
-              type: 'repeater',
-              some_property: 'some_value_3',
-            },
-          ]);
+          expect(transitionsService.applyTransitions.args[0][0].length).to.equal(4);
+          expect(transitionsService.applyTransitions.args[0][0])
+            .excludingEvery(['_id', 'reported_date', 'timestamp'])
+            .to.deep.equal([
+              {
+                contact: {},
+                content_type: 'xml',
+                fields: { name: 'Sally', lmp: '10' },
+                hidden_fields: [],
+                form: 'V',
+                from: '555',
+                geolocation: { geo: 'data' },
+                geolocation_log: [{ recording: { geo: 'data' } }],
+                type: 'data_record',
+              },
+              {
+                geolocation: { geo: 'data' },
+                geolocation_log: [{ recording: { geo: 'data' } }],
+                type: 'repeater',
+                some_property: 'some_value_1',
+              },
+              {
+                geolocation: { geo: 'data' },
+                geolocation_log: [{ recording: { geo: 'data' } }],
+                type: 'repeater',
+                some_property: 'some_value_2',
+              },
+              {
+                geolocation: { geo: 'data' },
+                geolocation_log: [{ recording: { geo: 'data' } }],
+                type: 'repeater',
+                some_property: 'some_value_3',
+              },
+            ]);
 
-        expect(actual.length).to.equal(5);
-        expect(actual)
-          .excludingEvery(['_id', 'reported_date', 'timestamp', '_rev'])
-          .to.deep.equal([
-            {
-              contact: {},
-              content_type: 'xml',
-              fields: { name: 'Sally', lmp: '10' },
-              hidden_fields: [],
-              form: 'V',
-              from: '555',
-              geolocation: { geo: 'data' },
-              geolocation_log: [{ recording: { geo: 'data' } }],
-              type: 'data_record',
-              transitioned: true,
-            },
-            {
-              geolocation: { geo: 'data' },
-              geolocation_log: [{ recording: { geo: 'data' } }],
-              type: 'repeater',
-              some_property: 'some_value_1',
-              transitioned: true,
-            },
-            {
-              geolocation: { geo: 'data' },
-              geolocation_log: [{ recording: { geo: 'data' } }],
-              type: 'repeater',
-              some_property: 'some_value_2',
-              transitioned: true,
-            },
-            {
-              geolocation: { geo: 'data' },
-              geolocation_log: [{ recording: { geo: 'data' } }],
-              type: 'repeater',
-              some_property: 'some_value_3',
-              transitioned: true,
-            },
-            {
-              // docs that transitions push don't have geodata, this is intentional!
-              type: 'existent doc updated by the transition',
-            },
-          ]);
+          expect(actual.length).to.equal(5);
+          expect(actual)
+            .excludingEvery(['_id', 'reported_date', 'timestamp', '_rev'])
+            .to.deep.equal([
+              {
+                contact: {},
+                content_type: 'xml',
+                fields: { name: 'Sally', lmp: '10' },
+                hidden_fields: [],
+                form: 'V',
+                from: '555',
+                geolocation: { geo: 'data' },
+                geolocation_log: [{ recording: { geo: 'data' } }],
+                type: 'data_record',
+                transitioned: true,
+              },
+              {
+                geolocation: { geo: 'data' },
+                geolocation_log: [{ recording: { geo: 'data' } }],
+                type: 'repeater',
+                some_property: 'some_value_1',
+                transitioned: true,
+              },
+              {
+                geolocation: { geo: 'data' },
+                geolocation_log: [{ recording: { geo: 'data' } }],
+                type: 'repeater',
+                some_property: 'some_value_2',
+                transitioned: true,
+              },
+              {
+                geolocation: { geo: 'data' },
+                geolocation_log: [{ recording: { geo: 'data' } }],
+                type: 'repeater',
+                some_property: 'some_value_3',
+                transitioned: true,
+              },
+              {
+                // docs that transitions push don't have geodata, this is intentional!
+                type: 'existent doc updated by the transition',
+              },
+            ]);
+        });
       });
     });
-  });
 
-  describe('renderContactForm', () => {
-    beforeEach(() => {
-      service.setFormTitle = sinon.stub();
-      dbGetAttachment.resolves('<form/>');
-      translateService.get.callsFake((key) => `translated key ${key}`);
-      TranslateFrom.callsFake((sentence) => `translated sentence ${sentence}`);
-    });
-
-    const callbackMock = () => { };
-    const instanceData = {
-      health_center: {
-        type: 'contact',
-        contact_type: 'health_center',
-        parent: 'parent',
-      },
-    };
-    const formDoc = {
-      ...mockEnketoDoc('myform'),
-      title: 'New Area',
-    };
-
-    it('should translate titleKey when provided', async () => {
-      await service.renderContactForm({
-        selector: $('<div></div>'),
-        formDoc,
-        instanceData,
-        editedListener: callbackMock,
-        valuechangeListener: callbackMock,
-        titleKey: 'contact.type.health_center.new',
+    describe('renderContactForm', () => {
+      beforeEach(() => {
+        service.setFormTitle = sinon.stub();
+        dbGetAttachment.resolves('<form/>');
+        translateService.get.callsFake((key) => `translated key ${key}`);
+        TranslateFrom.callsFake((sentence) => `translated sentence ${sentence}`);
       });
 
-      expect(service.setFormTitle.callCount).to.be.equal(1);
-      expect(service.setFormTitle.args[0][1]).to.be.equal('translated key contact.type.health_center.new');
-    });
+      const callbackMock = () => { };
+      const instanceData = {
+        health_center: {
+          type: 'contact',
+          contact_type: 'health_center',
+          parent: 'parent',
+        },
+      };
+      const formDoc = {
+        ...mockEnketoDoc('myform'),
+        title: 'New Area',
+      };
 
-    it('should fallback to translate document title when the titleKey is not available', async () => {
-      await service.renderContactForm({
-        selector: $('<div></div>'),
-        formDoc,
-        instanceData,
-        editedListener: callbackMock,
-        valuechangeListener: callbackMock,
+      it('should translate titleKey when provided', async () => {
+        await service.renderContactForm({
+          selector: $('<div></div>'),
+          formDoc,
+          instanceData,
+          editedListener: callbackMock,
+          valuechangeListener: callbackMock,
+          titleKey: 'contact.type.health_center.new',
+        });
+
+        expect(service.setFormTitle.callCount).to.be.equal(1);
+        expect(service.setFormTitle.args[0][1]).to.be.equal('translated key contact.type.health_center.new');
       });
 
-      expect(service.setFormTitle.callCount).to.be.equal(1);
-      expect(service.setFormTitle.args[0][1]).to.be.equal('translated sentence New Area');
+      it('should fallback to translate document title when the titleKey is not available', async () => {
+        await service.renderContactForm({
+          selector: $('<div></div>'),
+          formDoc,
+          instanceData,
+          editedListener: callbackMock,
+          valuechangeListener: callbackMock,
+        });
+
+        expect(service.setFormTitle.callCount).to.be.equal(1);
+        expect(service.setFormTitle.args[0][1]).to.be.equal('translated sentence New Area');
+      });
     });
   });
 });
