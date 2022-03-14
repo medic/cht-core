@@ -73,7 +73,7 @@ const asString = (r) => {
     return r.v.toString();
   }
   if(r.v.length && !(r.v[0] === null || r.v[0] === undefined)) {
-    return r.v[0].textContent || '' ;
+    return r.v[0].textContent || '';
   }
   return '';
 };

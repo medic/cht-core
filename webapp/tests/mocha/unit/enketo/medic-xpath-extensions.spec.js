@@ -141,7 +141,7 @@ describe('medic-xpath-extensions', function() {
 
     [[{ t:'str', v:'1999-12-12' }], []].forEach(params => {
       it(`should throw an error when ${params.length} arguments is provided`, () => {
-        assert.throws(() => func['format-date'](...params),'format-date() :: not enough args');
+        assert.throws(() => func['format-date'](...params), 'format-date() :: not enough args');
       });
     });
   });
