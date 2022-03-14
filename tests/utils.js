@@ -554,7 +554,7 @@ const hostURL = (port = 80) => {
 
 const getCouchNodeName = async () => {
   const serverUrl = `http://${constants.API_HOST}:${constants.API_PORT}`;
-  const membership = await request.get({ url: `${serverUrl}/_membership`, json: true });
+  const membership = await request('/_membership');
   return membership.all_nodes[0];
 };
 

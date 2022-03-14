@@ -320,9 +320,8 @@ module.exports = function(grunt) {
       },
       'setup-test-database': {
         cmd: [
-          `docker run -d -p 4984:5984 -p 4986:5986 --rm --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data couchdb:2`,
-          'sh scripts/e2e/wait_for_response_code.sh 4984 200 couch',
-          `curl 'http://localhost:4984/_cluster_setup' -H 'Content-Type: application/json' --data-binary '{"action":"enable_single_node","username":"admin","password":"pass","bind_address":"0.0.0.0","port":5984,"singlenode":true}'`,
+          `docker run -d -p 4984:5984 -p 4986:5986 -e COUCHDB_PASSWORD='pass' -e COUCHDB_USER=admin --rm --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data medicmobile/cht-couchdb:clustered-test4`,
+          'sh scripts/e2e/wait_for_response_code.sh 4984 401 couch',
           'COUCH_URL=http://admin:pass@localhost:4984/medic', // yo dawg, I heard you like grunt...
           // Useful for debugging etc, as it allows you to use Fauxton easily
           `curl -X PUT "http://admin:pass@localhost:4984/_node/nonode@nohost/_config/httpd/WWW-Authenticate" -d '"Basic realm=\\"administrator\\""' -H "Content-Type: application/json"`
