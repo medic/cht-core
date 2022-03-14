@@ -1,7 +1,5 @@
-const request = require('request-promise-native');
-const url = require('url');
 const db = require('../db');
-const environment = require('../environment');
+const settings = require('@medic/settings');
 const DB_ADMIN_ROLE = '_admin';
 
 const updateUser = (admins, row) => {
@@ -22,21 +20,7 @@ const updateUser = (admins, row) => {
     });
 };
 
-const getAdmins = function() {
-  return request.get({
-    url: url.format({
-      protocol: environment.protocol,
-      hostname: environment.host,
-      port: environment.port,
-      pathname: '_node/' + process.env.COUCH_NODE_NAME + '/_config/admins',
-    }),
-    auth: {
-      user: environment.username,
-      pass: environment.password
-    },
-    json: true
-  });
-};
+const getAdmins = () => settings.getCouchConfig('admins');
 
 module.exports = {
   name: 'extract-user-settings-roles',
