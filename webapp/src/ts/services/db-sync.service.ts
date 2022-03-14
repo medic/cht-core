@@ -12,6 +12,7 @@ import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
+import { HttpClient } from '@angular/common/http';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
@@ -75,6 +76,7 @@ export class DBSyncService {
     private telemetryService:TelemetryService,
     private store:Store,
     private translateService:TranslateService,
+    private http: HttpClient,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -191,19 +193,30 @@ export class DBSyncService {
     window.localStorage.setItem(TO_PURGE_LIST_KEY, JSON.stringify(unique));
   }
 
+  private changesFetch() {
+    return this.http.get('/purging/changes').toPromise();
+  }
+
+  private checkpoint(seq) {
+    if (!seq) {
+      return Promise.resolve();
+    }
+    return this.http.get('purging/checkpoint', { params: { seq } }).toPromise();
+  }
+
+
   private updateDocsToPurge() {
     // TODO check when last checked and don't run if recent
-    purger.changesFetch()
-      .then(response => {
+    this.changesFetch()
+      .then((response:any) => {
         const { purged_ids: ids, last_seq: lastSeq } = response;
-        console.log('response', response);
         if (!ids || !ids.length) {
           return;
         }
         const toPurgeList = this.getToPurgeList();
         toPurgeList.push(...ids);
         this.setToPurgeList(toPurgeList);
-        return purger.checkpoint(lastSeq).then(() => {
+        return this.checkpoint(lastSeq).then(() => {
           setTimeout(this.updateDocsToPurge, 1000);
         });
       })
@@ -278,7 +291,9 @@ export class DBSyncService {
       .catch(err => {
         telemetryEntry.recordFailure(err, this.knownOnlineState);
       })
-      .then(() => this.ngZone.runOutsideAngular(() => purger.writePurgeMetaCheckpoint(local, currentSeq)));
+      .then(() => this.ngZone.runOutsideAngular(() => {
+        purger.writeMetaPurgeLog(local, { syncedSeq: currentSeq });
+      }));
   }
 
   private sendUpdate(syncState: SyncState) {

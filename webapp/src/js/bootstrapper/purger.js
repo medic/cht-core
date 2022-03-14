@@ -9,16 +9,6 @@ const META_BATCHES = 10; // purge 10 * 100 documents on every startup
 const TO_PURGE_LIST_KEY = 'cht-to-purge-list';
 
 const sortedUniqueRoles = roles => JSON.stringify([...new Set(roles)].sort());
-const purgeFetch = (url) => {
-  return fetch(url, { headers: opts.remote_headers, credentials: 'same-origin' })
-    .then(res => res.json())
-    .then(res => {
-      if (res && res.code && res.code !== 200) {
-        throw new Error('Error fetching purge data: ' + JSON.stringify(res));
-      }
-      return res;
-    });
-};
 
 const getPurgeLog = (localDb) => {
   return localDb.get(PURGE_LOG_DOC_ID).catch(err => {
@@ -32,73 +22,17 @@ const getPurgeLog = (localDb) => {
   });
 };
 
-let opts;
-const setOptions = options => {
-  opts = options;
-};
-
 const info = () => {
-  return purgeFetch(`${utils.getBaseUrl()}/purging`).then(res => res && res.update_seq);
-};
-
-const checkpoint = (seq) => {
-  if (!seq) {
-    return Promise.resolve();
-  }
-  return purgeFetch(`${utils.getBaseUrl()}/purging/checkpoint?seq=${seq}`);
-};
-
-const daysToMs = (days) => 1000 * 60 * 60 * 24 * days;
-const shouldPurge = (localDb, userCtx) => {
-  return Promise
-    .all([ localDb.get('settings'), getPurgeLog(localDb), info() ])
-    .then(([ { settings: { purge } }, purgelog, info ]) => {
-      // purge not running on the server
-      if (!purge) {
-        console.debug('Not purging: Purge not configured.');
-        return false;
-      }
-
-      if (!info) {
-        console.debug('Not purging: Purge has not run on the server.');
-        return false;
-      }
-
-      // if user roles have changed
-      if (purgelog && purgelog.roles && purgelog.roles !== sortedUniqueRoles(userCtx.roles)) {
-        console.debug('Purging: user roles changed since last purge');
-        return true;
-      }
-
-      let dayInterval = parseInt(purge.run_every_days);
-
-      if (Number.isNaN(dayInterval)) {
-        dayInterval = 7;
-      }
-
-      const lastPurge = purgelog.date;
-      const purgedRecently = lastPurge && (new Date().getTime() - daysToMs(dayInterval)) < lastPurge;
-      if (purgedRecently) {
-        console.debug('Not purging: purge ran recently');
-        return false;
-      }
-
-      console.debug('Purging');
-      return true;
-    })
-    .catch(err => {
-      console.warn('Not purging:', err);
-      return false;
-    });
+  return utils.fetchJSON('/purging').then(res => {
+    if (res && res.code && res.code !== 200) {
+      throw new Error('Error fetching purge data: ' + JSON.stringify(res));
+    }
+    return res && res.update_seq;
+  });
 };
 
 const shouldPurgeMeta = (localDb) => {
   return getPurgeLog(localDb).then(purgeLog => !!purgeLog.synced_seq);
-};
-
-const changesFetch = () => {
-  const baseUrl = utils.getBaseUrl();
-  return purgeFetch(`${baseUrl}/purging/changes`);
 };
 
 const getToPurgeList = () => {
@@ -150,10 +84,6 @@ const purge = (localDb, userCtx, toPurge) => {
 
 const purgeMeta = (localDb) => {
   return getPurgeLog(localDb).then(purgeLog => batchedMetaPurge(localDb, purgeLog.purged_seq, purgeLog.synced_seq));
-};
-
-const writePurgeMetaCheckpoint = (localDb, currentSeq) => {
-  return writeMetaPurgeLog(localDb, { syncedSeq: currentSeq });
 };
 
 const writePurgeLog = (localDb, totalPurged, userCtx) => {
@@ -250,14 +180,9 @@ const purgeIds = (db, ids) => {
 };
 
 module.exports = {
-  setOptions,
   info,
-  changesFetch,
-  checkpoint,
-  shouldPurge, // TODO can we delete this altogether?
   shouldPurgeMeta,
   getToPurgeList,
   purge,
   purgeMeta,
-  writePurgeMetaCheckpoint,
 };

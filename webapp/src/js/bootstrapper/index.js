@@ -54,14 +54,10 @@
 
   const docCountPoll = (localDb) => {
     setUiStatus('POLL_REPLICATION');
-    const fetchOpts = {
-      credentials: 'same-origin',
-      headers: { 'Accept': 'application/json' }
-    };
     return Promise
       .all([
         localDb.allDocs({ limit: 1 }),
-        fetch(`${utils.getBaseUrl()}/api/v1/users-info`, fetchOpts).then(res => res.json())
+        utils.fetchJSON('/api/v1/users-info')
       ])
       .then(([ local, remote ]) => {
         const statusCode = remote && remote.code;
@@ -103,10 +99,8 @@
       });
   };
 
-  const setReplicationId = (POUCHDB_OPTIONS, localDb) => {
-    return localDb.id().then(id => {
-      POUCHDB_OPTIONS.remote_headers['medic-replication-id'] = id;
-    });
+  const setReplicationId = (localDb) => {
+    return localDb.id().then(id => utils.setReplicationId(id));
   };
 
   const createPurgingCheckpoint = () => {
@@ -204,6 +198,7 @@
   const getSettingsDoc = localDb => localDb.get('settings');
 
   module.exports = function(POUCHDB_OPTIONS, callback) {
+
     const dbInfo = getDbInfo();
     const userCtx = getUserCtx();
     const hasForceLoginCookie = document.cookie.includes('login=force');
@@ -233,9 +228,8 @@
 
     let isInitialReplicationNeeded;
     Promise
-      .all([swRegistration, testReplicationNeeded(), setReplicationId(POUCHDB_OPTIONS, localDb)])
+      .all([swRegistration, testReplicationNeeded(), setReplicationId(localDb)])
       .then(resolved => {
-        purger.setOptions(POUCHDB_OPTIONS);
         isInitialReplicationNeeded = !!resolved[1];
 
         if (isInitialReplicationNeeded) {

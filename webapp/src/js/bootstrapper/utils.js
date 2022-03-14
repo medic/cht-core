@@ -5,7 +5,12 @@
 // string per key (no arrays), and we'd have to manage clearing logic manually
 // (globals only persist for this reboot, which is what we're after).
 //
-const feedback = msg => {
+let replicationId;
+const setReplicationId = id => {
+  replicationId = id;
+};
+
+const feedback = (msg) => {
   if (!window.bootstrapFeedback) {
     window.bootstrapFeedback = [msg];
   } else {
@@ -20,9 +25,24 @@ const getBaseUrl = () => {
   return `${location.protocol}//${location.hostname}${port}`;
 };
 
+const fetchJSON = (path) => {
+  const baseUrl = getBaseUrl();
+  const opts = {
+    credentials: 'same-origin',
+    headers: {
+      'Accept': 'application/json',
+      'medic-replication-id': replicationId
+    }
+  };
+  return fetch(`${baseUrl}${path}`, opts)
+    .then(res => res.json());
+};
+
 module.exports = {
   // Store a piece of feedback to be later sent as a feedback document when (if)
   // the application boots, via the Feedback service.
-  feedback: feedback,
-  getBaseUrl: getBaseUrl,
+  feedback,
+  getBaseUrl,
+  fetchJSON,
+  setReplicationId
 };
