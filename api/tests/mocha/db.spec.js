@@ -1,4 +1,5 @@
 const sinon = require('sinon');
+require('chai').use(require('chai-as-promised'));
 const { expect } = require('chai');
 const rewire = require('rewire');
 const rpn = require('request-promise-native');

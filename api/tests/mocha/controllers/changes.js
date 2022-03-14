@@ -188,7 +188,7 @@ describe('Changes controller', () => {
     });
 
     it('should check if changes requests can be limited', () => {
-      sinon.stub(environment, 'serverUrl').value('someURL');
+      sinon.stub(environment, 'serverUrl').value('someOtherURL');
       serverChecks.getCouchDbVersion.resolves('2.3.0');
       return controller._init().then(() => {
         serverChecks.getCouchDbVersion.callCount.should.equal(1);

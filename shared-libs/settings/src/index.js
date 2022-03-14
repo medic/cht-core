@@ -8,14 +8,18 @@ const parseResponse = response => response.match(RESULT_PARSE_REGEX)[1];
 
 const getCouchNodeName = async () => {
   const serverUrl = getServerUrl();
-  const membership = await request.get({ url: `${serverUrl}/_membership` });
+  const membership = await request.get({ url: `${serverUrl}_membership`, json: true });
   return membership.all_nodes[0];
 };
 
 const getServerUrl = () => {
-  const url = new URL(process.env.COUCH_URL);
-  url.pathname = '/';
-  return url.toString();
+  try {
+    const url = new URL(process.env.COUCH_URL);
+    url.pathname = '/';
+    return url.toString();
+  } catch (err) {
+    return;
+  }
 };
 
 const getCredentials = async (key) => {
@@ -29,7 +33,7 @@ const getCredentials = async (key) => {
   }
 
   try {
-    const response = await request.get(`${serverUrl}/_node/${nodeName}/_config/medic-credentials/${key}`);
+    const response = await request.get(`${serverUrl}_node/${nodeName}/_config/medic-credentials/${key}`);
     return parseResponse(response);
   } catch (err) {
     if (err.statusCode === 404) {
@@ -43,7 +47,7 @@ const getCredentials = async (key) => {
 const getCouchConfig = async  (param) => {
   const serverUrl = getServerUrl();
   const nodeName = await getCouchNodeName();
-  return await request.get({ url: `${serverUrl}/_node/${nodeName}/_config/${param}`, json: true });
+  return await request.get({ url: `${serverUrl}_node/${nodeName}/_config/${param}`, json: true });
 };
 
 module.exports = {
