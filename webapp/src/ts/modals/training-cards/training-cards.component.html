@@ -1,4 +1,4 @@
-<mm-modal id="training-cards" [titleKey]="'THIS IS A TEST'" [hideFooter]="true">
+<mm-modal id="id" [titleKey]="modalTitleKey | translate" (onCancel)="cancel()" [hideFooter]="hideModalFooter">
 
   <div class="item-content empty-selection" *ngIf="loadingContent">
     <div><div class="loader"></div></div>
@@ -10,7 +10,7 @@
 
   <div class="item-content" [hidden]="loadingContent || contentError">
     <div class="body">
-      <mm-enketo formId="training-cards-form" [status]="enketoStatus" (onSubmit)="saveForm()" (onCancel)="cancel()"></mm-enketo>
+      <mm-enketo [formId]="formWrapperId" [status]="enketoStatus" (onSubmit)="saveForm()" (onCancel)="cancel()"></mm-enketo>
     </div>
   </div>
 

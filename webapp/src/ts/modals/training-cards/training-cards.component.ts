@@ -33,15 +33,18 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, A
   static id = 'training-cards-modal';
   private geoHandle:any;
   private globalActions;
-  subscription: Subscription = new Subscription();
-  form;
-  formInternalId;
+  private form;
+  private formInternalId;
+  formWrapperId = 'training-cards-form';
+  modalTitleKey = 'training_cards.modal.title';
   loadingContent;
   contentError;
+  hideModalFooter;
   errorTranslationKey
   enketoError;
   enketoStatus;
   enketoSaving;
+  subscription: Subscription = new Subscription();
 
   ngOnInit() {
     // todo this.telemetryData = { preRender: Date.now() };
@@ -71,50 +74,30 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, A
     return this.ngZone.runOutsideAngular(() => this._loadForm());
   }
 
-  private _loadForm() {
-    this.loadingContent = true;
-    this.geoHandle && this.geoHandle.cancel();
-    this.geoHandle = this.geolocationService.init();
-    this.xmlFormsService
-      .get(this.formInternalId)
-      .then(form => {
-        console.warn('HOLA - hey look what I found: ', form); // Todo remove this
-        return this.ngZone.run(() => this.renderForm(form));
-      })
-      .catch(error => {
-        this.setError(error);
-        console.error('Error fetching form.', error);
-      });
+  private async _loadForm() {
+    try {
+      this.loadingContent = true;
+      this.hideModalFooter = true;
+      this.geoHandle && this.geoHandle.cancel();
+      this.geoHandle = this.geolocationService.init();
+      const form = await this.xmlFormsService.get(this.formInternalId);
+      return this.ngZone.run(() => this.renderForm(form));
+    } catch(error) {
+      this.setError(error);
+      console.error('Error fetching form.', error);
+    }
   }
 
-  private renderForm(form) {
-    return this.enketoService
-      .render(
-        '#training-cards-form',
-        form,
-        undefined,
-        undefined,
-        this.resetFormError.bind(this),
-      )
-      .then(form => {
-        this.form = form;
-        this.loadingContent = false;
-      })
-      .then(() => {
-        /* TODO
-        this.telemetryData.postRender = Date.now();
-        this.telemetryData.action = model.doc ? 'edit' : 'add';
-        this.telemetryData.form = model.formInternalId;
-
-        this.telemetryService.record(
-          `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:render`,
-          this.telemetryData.postRender - this.telemetryData.preRender);
-         */
-      })
-      .catch(error => {
-        this.setError(error);
-        console.error('Error loading form.', error);
-      });
+  private async renderForm(form) {
+    try {
+      const selector = `#${this.formWrapperId}`;
+      this.form = await this.enketoService.render(selector, form, undefined, undefined, this.resetFormError.bind(this));
+      this.loadingContent = false;
+      this.recordTelemetryPostRender();
+    } catch(error) {
+      this.setError(error);
+      console.error('Error rendering form.', error);
+    }
   }
 
   private subscribeToStore() {
@@ -140,6 +123,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, A
     this.formInternalId = 'pnc_danger_sign_follow_up_baby'; // Todo remove this default
     this.form = null;
     this.loadingContent = true;
+    this.hideModalFooter = true;
   }
 
   private resetFormError() {
@@ -151,60 +135,69 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, A
   setError(error) {
     this.errorTranslationKey = error.translationKey || 'error.loading.form';
     this.loadingContent = false;
+    this.hideModalFooter = false;
     this.contentError = true;
   }
 
-  submit() {
-    // Todo this is on submit modal, do we need it?
-    this.close();
-    window.location.reload();
-  }
-
-  saveForm() {
+  async saveForm() {
     if (this.enketoSaving) {
-      console.debug('Attempted to call TrainingCardsComponent:save more than once');
+      console.debug('Attempted to call TrainingCardsComponent:saveForm more than once');
       return;
     }
 
-    /** ToDo
-    this.telemetryData.preSave = Date.now();
-    this.telemetryService.record(
-      `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
-      this.telemetryData.preSave - this.telemetryData.postRender);
-    */
-
+    this.recordTelemetryPreSave();
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
 
-    return this.enketoService
-      .save(this.formInternalId, this.form, this.geoHandle)
-      .then(docs => {
-        console.debug('Saved form and associated docs', docs);
-        // Todo change this translation key
-        this.globalActions.setSnackbarContent(this.translateService.instant('report.created'));
-        this.globalActions.setEnketoSavingStatus(false);
-        this.enketoService.unload(this.form);
-      })
-      .then(() => {
-        /** todo
-        this.telemetryData.postSave = Date.now();
+    try {
+      const docs = await this.enketoService.save(this.formInternalId, this.form, this.geoHandle);
+      console.debug('Saved form and associated docs', docs);
+      this.globalActions.setSnackbarContent(this.translateService.instant('training_cards.form.saved'));
+      this.globalActions.setEnketoSavingStatus(false);
+      this.enketoService.unload(this.form);
+      this.recordTelemetryPostSave();
+      this.close();
+
+    } catch(error) {
+      this.globalActions.setEnketoSavingStatus(false);
+      console.error('Error submitting form data: ', error);
+      const message = await this.translateService.get('training_cards.error.save');
+      this.globalActions.setEnketoError(message);
+    }
+  }
+
+  private recordTelemetryPostRender() {
+    /* TODO telemetry
+        this.telemetryData.postRender = Date.now();
+        this.telemetryData.action = model.doc ? 'edit' : 'add';
+        this.telemetryData.form = model.formInternalId;
 
         this.telemetryService.record(
-          `enketo:tasks:${this.telemetryData.form}:${this.telemetryData.action}:save`,
-          this.telemetryData.postSave - this.telemetryData.preSave);
-        */
-        // Todo close modal in all places that makes sense
-      })
-      .catch(error => {
-        this.globalActions.setEnketoSavingStatus(false);
-        console.error('Error submitting form data: ', error);
-        this.translateService
-          .get('error.report.save')
-          .then(text => this.globalActions.setEnketoError(text));
-      });
+          `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:render`,
+          this.telemetryData.postRender - this.telemetryData.preRender);
+    */
+  }
+
+  private recordTelemetryPreSave() {
+    /** ToDo telemetry
+     this.telemetryData.preSave = Date.now();
+     this.telemetryService.record(
+     `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
+     this.telemetryData.preSave - this.telemetryData.postRender);
+     */
+  }
+
+  private recordTelemetryPostSave() {
+    /** todo telemetry
+     this.telemetryData.postSave = Date.now();
+
+     this.telemetryService.record(
+     `enketo:tasks:${this.telemetryData.form}:${this.telemetryData.action}:save`,
+     this.telemetryData.postSave - this.telemetryData.preSave);
+     */
   }
 
   cancel() {
-    // ToDo
+    this.close();
   }
 }
