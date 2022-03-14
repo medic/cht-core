@@ -3,14 +3,24 @@ const sinon = require('sinon');
 const request = require('request-promise-native');
 const rewire = require('rewire');
 
-const lib = rewire('../src/');
+let lib;
+let orgProcess;
+
 const membershipMatcher = sinon.match({ url: sinon.match('membership') });
 const configMatcher = sinon.match({ url: sinon.match('config') });
 
 describe('Settings shared lib - getCredentials function', () => {
   'use strict';
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+    lib.__set__('process', orgProcess);
+  });
+
+  beforeEach(() => {
+    lib = rewire('../src/');
+    orgProcess = lib.__get__('process');
+  });
 
   it('errors if no server url set', () => {
     lib.__set__('process', { env: { } });
@@ -92,7 +102,14 @@ describe('Settings shared lib - getCredentials function', () => {
 });
 
 describe('Settings shared lib - getCouchConfig function', () => {
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+    lib.__set__('process', orgProcess);
+  });
+  beforeEach(() => {
+    lib = rewire('../src/');
+    orgProcess = lib.__get__('process');
+  });
 
   it('returns the expected value', () => {
     lib.__set__('process', { env: { COUCH_URL: 'http://user:pass@localhost:6929' } });
