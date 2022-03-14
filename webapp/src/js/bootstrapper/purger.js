@@ -1,9 +1,12 @@
+// TODO a lot of this should become an angular service...
+
 const utils = require('./utils');
 
 const PURGE_LOG_DOC_ID = '_local/purgelog';
 const MAX_HISTORY_LENGTH = 10;
 const BATCH_SIZE = 100;
 const META_BATCHES = 10; // purge 10 * 100 documents on every startup
+const TO_PURGE_LIST_KEY = 'cht-to-purge-list';
 
 const sortedUniqueRoles = roles => JSON.stringify([...new Set(roles)].sort());
 const purgeFetch = (url) => {
@@ -93,9 +96,22 @@ const shouldPurgeMeta = (localDb) => {
   return getPurgeLog(localDb).then(purgeLog => !!purgeLog.synced_seq);
 };
 
-const purge = (localDb, userCtx) => {
-  const handlers = {};
+const changesFetch = () => {
   const baseUrl = utils.getBaseUrl();
+  return purgeFetch(`${baseUrl}/purging/changes`);
+};
+
+const getToPurgeList = () => {
+  const stored = window.localStorage.getItem(TO_PURGE_LIST_KEY);
+  return stored ? JSON.parse(stored) : [];
+};
+
+const clearToPurgeList = () => {
+  window.localStorage.removeItem(TO_PURGE_LIST_KEY);
+};
+
+const purge = (localDb, userCtx, toPurge) => {
+  const handlers = {};
   let totalPurged = 0;
 
   const emit = (name, event) => {
@@ -103,30 +119,24 @@ const purge = (localDb, userCtx) => {
     (handlers[name] || []).forEach(callback => callback(event));
   };
 
-  const batchedPurge = () => {
-    return purgeFetch(`${baseUrl}/purging/changes`)
-      .then(response => {
-        const { purged_ids: ids, last_seq: lastSeq } = response;
-
-        if (!ids || !ids.length) {
-          return;
-        }
-
-        return purgeIds(localDb, ids)
-          .then(nbr => {
-            totalPurged += nbr;
-            emit('progress', { purged: totalPurged });
-            return checkpoint(lastSeq);
-          })
-          .then(() => batchedPurge());
-      });
+  const batchedPurge = (ids) => {
+    if (!ids || !ids.length) {
+      return;
+    }
+    const batch = ids.slice(0, BATCH_SIZE);
+    return purgeIds(localDb, batch)
+      .then(nbr => {
+        totalPurged += nbr;
+        emit('progress', { purged: totalPurged });
+      })
+      .then(() => batchedPurge(ids.slice(BATCH_SIZE)));
   };
 
   emit('start');
-  const p = Promise
-    .resolve()
-    .then(() => batchedPurge())
+  const p = Promise.resolve()
+    .then(() => batchedPurge(toPurge))
     .then(() => writePurgeLog(localDb, totalPurged, userCtx))
+    .then(() => clearToPurgeList())
     .then(() => emit('done', { totalPurged }));
 
   p.on = (type, callback) => {
@@ -242,9 +252,11 @@ const purgeIds = (db, ids) => {
 module.exports = {
   setOptions,
   info,
+  changesFetch,
   checkpoint,
-  shouldPurge,
+  shouldPurge, // TODO can we delete this altogether?
   shouldPurgeMeta,
+  getToPurgeList,
   purge,
   purgeMeta,
   writePurgeMetaCheckpoint,

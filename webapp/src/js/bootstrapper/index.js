@@ -253,26 +253,20 @@
         }
       })
       .then(() => {
+        const toPurge = purger.getToPurgeList();
+        if (!toPurge || !toPurge.length) {
+          return;
+        }
+        const purgeStarted = performance.now();
         return purger
-          .shouldPurge(localDb, userCtx)
-          .then(shouldPurge => {
-            window.startupTimes.purging = shouldPurge;
-
-            if (!shouldPurge) {
-              return;
-            }
-
-            const purgeStarted = performance.now();
-            return purger
-              .purge(localDb, userCtx)
-              .on('start', () => setUiStatus('PURGE_INIT'))
-              .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
-              .catch(err => {
-                console.error('Error attempting to purge', err);
-                window.startupTimes.purgingFailed = err.message;
-              })
-              .then(() => window.startupTimes.purge = performance.now() - purgeStarted);
-          });
+          .purge(localDb, userCtx, toPurge)
+          .on('start', () => setUiStatus('PURGE_INIT'))
+          .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
+          .catch(err => {
+            console.error('Error attempting to purge', err);
+            window.startupTimes.purgingFailed = err.message;
+          })
+          .then(() => window.startupTimes.purge = performance.now() - purgeStarted);
       })
       .then(() => {
         let purgeMetaStarted;

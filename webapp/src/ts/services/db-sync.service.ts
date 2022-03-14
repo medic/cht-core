@@ -18,6 +18,7 @@ const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-c
 const DDOC_PREFIX = ['_design/'];
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
+const TO_PURGE_LIST_KEY = 'cht-to-purge-list';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
@@ -180,6 +181,37 @@ export class DBSyncService {
     return window.localStorage.getItem(LAST_REPLICATED_DATE_KEY);
   }
 
+  private getToPurgeList() {
+    const stored = window.localStorage.getItem(TO_PURGE_LIST_KEY);
+    return stored ? JSON.parse(stored) : [];
+  }
+
+  private setToPurgeList(list) {
+    const unique = Array.from(new Set(list));
+    window.localStorage.setItem(TO_PURGE_LIST_KEY, JSON.stringify(unique));
+  }
+
+  private updateDocsToPurge() {
+    // TODO check when last checked and don't run if recent
+    purger.changesFetch()
+      .then(response => {
+        const { purged_ids: ids, last_seq: lastSeq } = response;
+        console.log('response', response);
+        if (!ids || !ids.length) {
+          return;
+        }
+        const toPurgeList = this.getToPurgeList();
+        toPurgeList.push(...ids);
+        this.setToPurgeList(toPurgeList);
+        return purger.checkpoint(lastSeq).then(() => {
+          setTimeout(this.updateDocsToPurge, 1000);
+        });
+      })
+      .catch(err => {
+        console.info('Error fetching purge list', err);
+      });
+  }
+
   private syncMedic(force?) {
     if (!this.knownOnlineState && !force) {
       return Promise.resolve();
@@ -198,6 +230,7 @@ export class DBSyncService {
               // no errors
               this.syncIsRecent = true;
               window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
+              this.updateDocsToPurge();
             } else if (currentSeq === this.getLastReplicatedSeq()) {
               // no changes to send, but may have some to receive
               syncState = { state: SyncStatus.Unknown };
