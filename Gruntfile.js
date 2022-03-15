@@ -318,13 +318,17 @@ module.exports = function(grunt) {
                       grep -Ev '^\\s*//' &&
                   echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
       },
+      'setup-admin': {
+        cmd:
+          ` curl -X PUT ${couchConfig.withPathNoAuth(`_node/_local/_config/admins/${couchConfig.username}`)} -d '"${couchConfig.password}"'` +
+          ` && curl -X PUT --data '"true"' ${couchConfig.withPathNoAuth('_node/_local/_config/chttpd/require_valid_user')}` +
+          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/_local/_config/httpd/max_http_request_size')}` +
+          ` && curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}`
+      },
       'setup-test-database': {
         cmd: [
           `docker run -d -p 4984:5984 -p 4986:5986 -e COUCHDB_PASSWORD='pass' -e COUCHDB_USER=admin --rm --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data medicmobile/cht-couchdb:clustered-test4`,
           'sh scripts/e2e/wait_for_response_code.sh 4984 401 couch',
-          'COUCH_URL=http://admin:pass@localhost:4984/medic', // yo dawg, I heard you like grunt...
-          // Useful for debugging etc, as it allows you to use Fauxton easily
-          `curl -X PUT "http://admin:pass@localhost:4984/_node/nonode@nohost/_config/httpd/WWW-Authenticate" -d '"Basic realm=\\"administrator\\""' -H "Content-Type: application/json"`
         ].join('&& ')
       },
       'wait_for_api_down': {
@@ -346,7 +350,7 @@ module.exports = function(grunt) {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
       'setup-api-integration': {
-        cmd: `cd api && npm ci}`,
+        cmd: `cd api && npm ci`,
       },
       'npm-ci-shared-libs': {
         cmd: (production) => {

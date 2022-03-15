@@ -68,14 +68,14 @@ if (UNIT_TEST_ENV) {
   };
 
   const DB = new PouchDB(environment.couchUrl, { fetch });
-  const getDbUrl = name => `${environment.serverUrl}${name}`;
+  const getDbUrl = name => `${environment.serverUrl}/${name}`;
 
   DB.setMaxListeners(0);
   module.exports.medic = DB;
   module.exports.medicUsersMeta = new PouchDB(`${environment.couchUrl}-users-meta`, { fetch });
   module.exports.medicLogs = new PouchDB(`${environment.couchUrl}-logs`, { fetch });
   module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch });
-  module.exports.users = new PouchDB(getDbUrl('_users'), { fetch });
+  module.exports.users = new PouchDB(getDbUrl('/_users'), { fetch });
   module.exports.builds = new PouchDB(environment.buildsUrl);
 
   // Get the DB with the given name
@@ -105,14 +105,14 @@ if (UNIT_TEST_ENV) {
   };
 
   module.exports.allDbs = () => rpn.get({
-    uri: `${environment.serverUrl}_all_dbs`,
+    uri: `${environment.serverUrl}/_all_dbs`,
     json: true
   });
 
   module.exports.activeTasks = () => {
     return rpn
       .get({
-        url: `${environment.serverUrl}_active_tasks`,
+        url: `${environment.serverUrl}/_active_tasks`,
         json: true
       })
       .then(tasks => {

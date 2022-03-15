@@ -128,6 +128,7 @@ const updateServiceWorker = () => {
     throw err;
   });
 };
+
 const setDdocsVersion = () => {
   const version = getVersion();
   const databases = fs.readdirSync(ddocsBuildPath);
