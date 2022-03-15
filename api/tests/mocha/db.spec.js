@@ -119,7 +119,7 @@ describe('db', () => {
 
   describe('activeTasks', () => {
     it('should return active tasks', async () => {
-      sinon.stub(env, 'serverUrl').value('https://couch.db');
+      sinon.stub(env, 'serverUrl').value('https://couch.db/');
       sinon.stub(rpn, 'get').resolves('active_tasks');
 
       expect(await db.activeTasks()).to.equal('active_tasks');
@@ -140,7 +140,7 @@ describe('db', () => {
 
   describe('allDbs', () => {
     it('should return all databases', async () => {
-      sinon.stub(env, 'serverUrl').value('https://couch.db');
+      sinon.stub(env, 'serverUrl').value('https://couch.db/');
       sinon.stub(rpn, 'get').resolves(['db1', 'db2']);
 
       expect(await db.allDbs()).to.deep.equal(['db1', 'db2']);

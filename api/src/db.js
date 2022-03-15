@@ -105,16 +105,17 @@ if (UNIT_TEST_ENV) {
   };
 
   module.exports.allDbs = () => rpn.get({
-    uri: `${environment.serverUrl}/_all_dbs`,
+    uri: `${environment.serverUrl}_all_dbs`,
     json: true
   });
 
   module.exports.activeTasks = () => {
     return rpn
       .get({
-        url: `${environment.serverUrl}/_active_tasks`,
+        url: `${environment.serverUrl}_active_tasks`,
         json: true
-      }).then(tasks => {
+      })
+      .then(tasks => {
         // TODO: consider how to filter these just to the active database.
         // On CouchDB 2.x you only get the shard name, which looks like:
         // shards/80000000-ffffffff/medic.1525076838

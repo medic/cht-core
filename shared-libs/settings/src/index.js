@@ -44,7 +44,7 @@ const getCredentials = async (key) => {
   }
 };
 
-const getCouchConfig = async  (param) => {
+const getCouchConfig = async (param) => {
   const serverUrl = getServerUrl();
   const nodeName = await getCouchNodeName();
   return await request.get({ url: `${serverUrl}_node/${nodeName}/_config/${param}`, json: true });
