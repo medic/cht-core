@@ -33,8 +33,8 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, A
   static id = 'training-cards-modal';
   private geoHandle:any;
   private globalActions;
-  private form;
-  private formInternalId;
+  form;
+  formInternalId;
   formWrapperId = 'training-cards-form';
   modalTitleKey = 'training_cards.modal.title';
   loadingContent;
@@ -83,7 +83,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, A
       const form = await this.xmlFormsService.get(this.formInternalId);
       return this.ngZone.run(() => this.renderForm(form));
     } catch(error) {
-      this.setError(error);
+      this.setError();
       console.error('Error fetching form.', error);
     }
   }
@@ -95,7 +95,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, A
       this.loadingContent = false;
       this.recordTelemetryPostRender();
     } catch(error) {
-      this.setError(error);
+      this.setError();
       console.error('Error rendering form.', error);
     }
   }
@@ -120,7 +120,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, A
   private reset() {
     this.resetFormError();
     this.contentError = false;
-    this.formInternalId = 'pnc_danger_sign_follow_up_baby'; // Todo remove this default
+    this.formInternalId = null;
     this.form = null;
     this.loadingContent = true;
     this.hideModalFooter = true;
@@ -132,8 +132,8 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, A
     }
   }
 
-  setError(error) {
-    this.errorTranslationKey = error.translationKey || 'error.loading.form';
+  setError() {
+    this.errorTranslationKey = 'training_cards.error.loading';
     this.loadingContent = false;
     this.hideModalFooter = false;
     this.contentError = true;
