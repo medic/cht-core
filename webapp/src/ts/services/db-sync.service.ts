@@ -7,19 +7,18 @@ import * as purger from '../../js/bootstrapper/purger';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
 import { DbService } from '@mm-services/db.service';
+import { PurgeService } from '@mm-services/purge.service';
 import { AuthService } from '@mm-services/auth.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
-import { HttpClient } from '@angular/common/http';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
 const DDOC_PREFIX = ['_design/'];
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
-const TO_PURGE_LIST_KEY = 'cht-to-purge-list';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
@@ -76,7 +75,7 @@ export class DBSyncService {
     private telemetryService:TelemetryService,
     private store:Store,
     private translateService:TranslateService,
-    private http: HttpClient,
+    private purgeService:PurgeService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -183,48 +182,6 @@ export class DBSyncService {
     return window.localStorage.getItem(LAST_REPLICATED_DATE_KEY);
   }
 
-  private getToPurgeList() {
-    const stored = window.localStorage.getItem(TO_PURGE_LIST_KEY);
-    return stored ? JSON.parse(stored) : [];
-  }
-
-  private setToPurgeList(list) {
-    const unique = Array.from(new Set(list));
-    window.localStorage.setItem(TO_PURGE_LIST_KEY, JSON.stringify(unique));
-  }
-
-  private changesFetch() {
-    return this.http.get('/purging/changes').toPromise();
-  }
-
-  private checkpoint(seq) {
-    if (!seq) {
-      return Promise.resolve();
-    }
-    return this.http.get('purging/checkpoint', { params: { seq } }).toPromise();
-  }
-
-
-  private updateDocsToPurge() {
-    // TODO check when last checked and don't run if recent
-    this.changesFetch()
-      .then((response:any) => {
-        const { purged_ids: ids, last_seq: lastSeq } = response;
-        if (!ids || !ids.length) {
-          return;
-        }
-        const toPurgeList = this.getToPurgeList();
-        toPurgeList.push(...ids);
-        this.setToPurgeList(toPurgeList);
-        return this.checkpoint(lastSeq).then(() => {
-          setTimeout(this.updateDocsToPurge, 1000);
-        });
-      })
-      .catch(err => {
-        console.info('Error fetching purge list', err);
-      });
-  }
-
   private syncMedic(force?) {
     if (!this.knownOnlineState && !force) {
       return Promise.resolve();
@@ -243,7 +200,7 @@ export class DBSyncService {
               // no errors
               this.syncIsRecent = true;
               window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
-              this.updateDocsToPurge();
+              this.purgeService.updateDocsToPurge();
             } else if (currentSeq === this.getLastReplicatedSeq()) {
               // no changes to send, but may have some to receive
               syncState = { state: SyncStatus.Unknown };

@@ -1,5 +1,3 @@
-// TODO a lot of this should become an angular service...
-
 const utils = require('./utils');
 
 const PURGE_LOG_DOC_ID = '_local/purgelog';
@@ -185,4 +183,6 @@ module.exports = {
   getToPurgeList,
   purge,
   purgeMeta,
+  writeMetaPurgeLog,
+  TO_PURGE_LIST_KEY,
 };
