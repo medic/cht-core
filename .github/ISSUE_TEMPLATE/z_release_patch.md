@@ -30,6 +30,7 @@ Once all issues have passed acceptance testing and have been merged into `master
     - [ ] Use [this script](https://github.com/medic/cht-core/blob/master/scripts/release-notes) to export the issues into our release note format.
     - [ ] Manually document any known migration steps and known issues.
     - [ ] Add a link to the new release page in the [Release Notes](https://docs.communityhealthtoolkit.org/core/releases/#release-notes) section.
+    - [ ] Go to the applicable prior release and add an entry for fixes in this patch release as "Known Issues".
     - [ ] Assign the PR to:
         - The Director of Technology
         - An SRE to review and confirm the documentation on upgrade instructions and breaking changes is sufficient
