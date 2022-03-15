@@ -138,12 +138,11 @@ const report = {
 
 describe('africas talking api', () => {
 
-  beforeAll(async () => {
-    const couchNodeName = await utils.getCouchNodeName();
+  beforeAll(() => {
     return utils.request({
       port: constants.COUCH_PORT,
       method: 'PUT',
-      path: `/_node/${couchNodeName}/_config/medic-credentials/africastalking.com:incoming`,
+      path: `/_node/_local/_config/medic-credentials/africastalking.com:incoming`,
       body: `${INCOMING_KEY}`
     });
   });

@@ -6,9 +6,6 @@ const rewire = require('rewire');
 let lib;
 let orgProcess;
 
-const membershipMatcher = sinon.match({ url: sinon.match('membership') });
-const configMatcher = sinon.match({ url: sinon.match('config') });
-
 describe('Settings shared lib - getCredentials function', () => {
   'use strict';
 
@@ -32,36 +29,16 @@ describe('Settings shared lib - getCredentials function', () => {
       });
   });
 
-  it('errors if no node is found', () => {
-    lib.__set__('process', { env: { COUCH_URL: 'http://server.com/medic' } });
-    sinon.stub(request, 'get').resolves({ all_nodes: [] });
-    return lib
-      .getCredentials()
-      .then(() => chai.expect.fail('Should have thrown'))
-      .catch(err => {
-        chai.expect(request.get.callCount).to.equal(1);
-        chai.expect(err.message).to.equal('Failed to find the CouchDB node name');
-      });
-  });
-
   it('returns error from request', () => {
     lib.__set__('process', { env: { COUCH_URL: 'http://server.com/medic' } });
-    sinon.stub(request, 'get');
-    request.get
-      .withArgs(membershipMatcher)
-      .resolves({ all_nodes: [ 'nonode@noname' ] });
-    request.get
-      .withArgs(sinon.match('config'))
-      .rejects({ statusCode: 403, message: 'no perms' });
+    sinon.stub(request, 'get').rejects({ statusCode: 403, message: 'no perms' });
     return lib
       .getCredentials('key')
       .then(() => chai.expect.fail('Should have thrown'))
       .catch(err => {
         chai.expect(err.message).to.equal('no perms');
-        chai.expect(request.get.callCount).to.equal(2);
         chai.expect(request.get.args).to.deep.equal([
-          [{ url: 'http://server.com/_membership', json: true }],
-          ['http://server.com/_node/nonode@noname/_config/medic-credentials/key']
+          ['http://server.com/_node/_local/_config/medic-credentials/key']
         ]);
 
       });
@@ -69,9 +46,7 @@ describe('Settings shared lib - getCredentials function', () => {
 
   it('handles permissions not defined', () => {
     lib.__set__('process', { env: { COUCH_URL: 'http://server.com/medic' } });
-    sinon.stub(request, 'get');
-    request.get.withArgs(membershipMatcher).resolves({ all_nodes: [ 'nonode@noname' ] });
-    request.get.withArgs(sinon.match('config')).rejects({ statusCode: 404 });
+    sinon.stub(request, 'get').rejects({ statusCode: 404 });
     return lib.getCredentials('mykey').then(actual => {
       chai.expect(actual).to.equal(undefined);
     });
@@ -79,9 +54,7 @@ describe('Settings shared lib - getCredentials function', () => {
 
   it('handles empty credentials', () => {
     lib.__set__('process', { env: { COUCH_URL: 'http://server.com/medic' } });
-    sinon.stub(request, 'get');
-    request.get.withArgs(membershipMatcher).resolves({ all_nodes: [ 'nonode@noname' ] });
-    request.get.withArgs(sinon.match('config')).resolves('""\n');
+    sinon.stub(request, 'get').resolves('""\n');
     return lib.getCredentials('mykey').then(actual => {
       chai.expect(actual).to.equal('');
     });
@@ -89,13 +62,11 @@ describe('Settings shared lib - getCredentials function', () => {
 
   it('parses response format', () => {
     lib.__set__('process', { env: { COUCH_URL: 'http://server.com/medic' } });
-    sinon.stub(request, 'get');
-    request.get.withArgs(membershipMatcher).resolves({ all_nodes: [ 'nonode@noname' ] });
-    request.get.withArgs(sinon.match('config')).resolves('"mypass"\n');
+    sinon.stub(request, 'get').resolves('"mypass"\n');
     return lib.getCredentials('mykey').then(actual => {
       chai.expect(actual).to.equal('mypass');
-      chai.expect(request.get.callCount).to.equal(2);
-      chai.expect(request.get.args[1][0]).to.equal('http://server.com/_node/nonode@noname/_config/medic-credentials/mykey');
+      chai.expect(request.get.callCount).to.equal(1);
+      chai.expect(request.get.args[0][0]).to.equal('http://server.com/_node/_local/_config/medic-credentials/mykey');
     });
   });
 
@@ -113,13 +84,11 @@ describe('Settings shared lib - getCouchConfig function', () => {
 
   it('returns the expected value', () => {
     lib.__set__('process', { env: { COUCH_URL: 'http://user:pass@localhost:6929' } });
-    sinon.stub(request, 'get');
-    request.get.withArgs(membershipMatcher).resolves({ all_nodes: [ 'nonode@noname' ] });
-    request.get.withArgs(configMatcher).resolves('couch config');
+    sinon.stub(request, 'get').resolves('couch config');
     return lib.getCouchConfig('attachments').then(actual => {
       chai.expect(actual).to.equal('couch config');
-      chai.expect(request.get.callCount).to.equal(2);
-      chai.expect(request.get.args[1][0].url).to.equal('http://user:pass@localhost:6929/_node/nonode@noname/_config/attachments');
+      chai.expect(request.get.callCount).to.equal(1);
+      chai.expect(request.get.args[0][0].url).to.equal('http://user:pass@localhost:6929/_node/_local/_config/attachments');
     });
   });
 });

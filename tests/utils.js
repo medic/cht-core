@@ -552,14 +552,8 @@ const hostURL = (port = 80) => {
   return url.href;
 };
 
-const getCouchNodeName = async () => {
-  const membership = await request('/_membership');
-  return membership.all_nodes[0];
-};
-
 module.exports = {
   hostURL,
-  getCouchNodeName,
   parseCookieResponse,
   deprecated,
   db: db,

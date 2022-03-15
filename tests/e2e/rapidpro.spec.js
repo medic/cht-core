@@ -44,22 +44,20 @@ const stopMockApp = () => {
 const INCOMING_KEY = 'thecakeisalie';
 const OUTGOING_KEY = 'ermahgerd';
 
-const setIncomingKey = async () => {
-  const couchNodeName = await utils.getCouchNodeName();
+const setIncomingKey = () => {
   return utils.request({
     port: constants.COUCH_PORT,
     method: 'PUT',
-    path: `/_node/${couchNodeName}/_config/medic-credentials/rapidpro:incoming`,
+    path: `/_node/_local/_config/medic-credentials/rapidpro:incoming`,
     body: `${INCOMING_KEY}`
   });
 };
 
-const setOutgoingKey = async () => {
-  const couchNodeName = await utils.getCouchNodeName();
+const setOutgoingKey = () => {
   return utils.request({
     port: constants.COUCH_PORT,
     method: 'PUT',
-    path: `/_node/${couchNodeName}/_config/medic-credentials/rapidpro:outgoing`,
+    path: `/_node/_local/_config/medic-credentials/rapidpro:outgoing`,
     body: `${OUTGOING_KEY}`
   });
 };
