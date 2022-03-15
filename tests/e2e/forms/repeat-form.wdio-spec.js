@@ -141,24 +141,28 @@ describe('RepeatForm', () => {
       await login();
       await openRepeatForm(selectFormDocument.internalId);
 
-      const washingtonInputPath = '#report-form input[name="/cascading_select/selected_state"][value="washington"]';
-      const washingtonLabelPath = `${washingtonInputPath} ~ .option-label.active`;
-      expect(await (await $(washingtonLabelPath)).getText()).to.equal('Washington');
+      const { input: washingtonInput, label: washingtonLabel } = await getField('selected_state', 'washington');
+      expect(await washingtonLabel.getText()).to.equal('Washington');
 
-      await (await $(washingtonInputPath)).click();
-      const kingInputPath = '#report-form input[name="/cascading_select/selected_county"][value="king"]';
-      const kingLabelPath = `${kingInputPath} ~ .option-label.active`;
-      expect(await (await $(kingLabelPath)).getText()).to.equal('King');
+      await washingtonInput.click();
+      const { input: kingInput, label: kingLabel } = await getField('selected_county', 'king');
+      expect(await kingLabel.getText()).to.equal('King');
 
-      await (await $(kingInputPath)).click();
-      const seattleLabelPath = getCityLabelPath('seattle');
-      const redmondLabelPath = getCityLabelPath('redmond');
-      expect(await (await $(seattleLabelPath)).getText()).to.equal('Seattle');
-      expect(await (await $(redmondLabelPath)).getText()).to.equal('Redmond');
+      await kingInput.click();
+      const { label: seattleLabel } = await getField('selected_city', 'seattle');
+      const { label: redmondLabel } = await getField('selected_city', 'redmond');
+      expect(await seattleLabel.getText()).to.equal('Seattle');
+      expect(await redmondLabel.getText()).to.equal('Redmond');
     });
 
-    function getCityLabelPath(cityValue) {
-      return `#report-form input[name="/cascading_select/selected_city"][value="${cityValue}"] ~ .option-label.active`;
+    async function getField(fieldName, fieldValue) {
+      const fieldInputPath = `#report-form input[name="/cascading_select/${fieldName}"][value="${fieldValue}"]`;
+      const fieldLabelPath = `${fieldInputPath} ~ .option-label.active`;
+
+      return {
+        input: await $(fieldInputPath),
+        label: await $(fieldLabelPath),
+      };
     }
   });
 
