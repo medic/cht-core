@@ -297,6 +297,7 @@ module.exports = function(grunt) {
           .map(service =>
             [
               `echo ${DOCKERHUB_TOKEN} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin`,
+              `echo ${DOCKERHUB_TOKEN} | docker login docker.io -u ${DOCKERHUB_USERNAME} --password-stdin`,
               `docker image push ${buildUtils.getImageTag(service)}`,
             ].join(' && ')
           )
