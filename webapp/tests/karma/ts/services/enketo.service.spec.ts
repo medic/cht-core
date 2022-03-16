@@ -1449,14 +1449,12 @@ describe('Enketo service', () => {
         dbGetAttachment.resolves('<form/>');
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
         dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
-        // @ts-ignore
-        const saveDocsSpy = sinon.spy(EnketoService.prototype, 'saveDocs');
 
         return service
           .save('my-form', form, () => Promise.resolve(true))
           .then(() => {
             expect(AddAttachment.calledTwice);
-            expect(saveDocsSpy.calledOnce);
+            expect(dbBulkDocs.calledOnce);
 
             expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
             expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
@@ -1468,14 +1466,22 @@ describe('Enketo service', () => {
       });
 
       it('should throw exception if attachments are big', () => {
-        translateService.get.returnsArg(0);
+        translateService.get.resolvesArg(0);
         form.validate.resolves(true);
         dbGetAttachment.resolves('<form/>');
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
-        // @ts-ignore
-        const saveDocsStub = sinon.stub(EnketoService.prototype, 'saveDocs');
-        // @ts-ignore
-        const xmlToDocsStub = sinon.stub(EnketoService.prototype, 'xmlToDocs').resolves([
+
+        const jqFind = $.fn.find;
+        sinon.stub($.fn, 'find');
+        //@ts-ignore
+        $.fn.find.callsFake(jqFind);
+
+        $.fn.find
+          //@ts-ignore
+          .withArgs('input[type=file][name="/my-form/my_file"]')
+          .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
+
+        const docsToStoreStub = sinon.stub().returns([
           { _id: '1a' },
           { _id: '1b', _attachments: {} },
           {
@@ -1493,14 +1499,22 @@ describe('Enketo service', () => {
             }
           }
         ]);
+        $.fn.find
+          //@ts-ignore
+          .withArgs('[db-doc=true]')
+          .returns({ map: sinon.stub().returns({ get: docsToStoreStub}) });
+
+        const content = loadXML('file-field');
+        form.getDataStr.returns(content);
 
         return service
           .save('my-form', form, () => Promise.resolve(true))
           .then(() => expect.fail('Should have thrown exception.'))
           .catch(error => {
-            expect(xmlToDocsStub.calledOnce);
+            expect(docsToStoreStub.calledOnce);
             expect(error.message).to.equal('enketo.error.max_attachment_size');
-            expect(saveDocsStub.notCalled);
+            expect(dbBulkDocs.notCalled);
+            expect(AddAttachment.notCalled);
             expect(globalActions.setSnackbarContent.calledOnce);
             expect(globalActions.setSnackbarContent.args[0]).to.have.members([ 'enketo.error.max_attachment_size' ]);
           });
@@ -1692,8 +1706,20 @@ describe('Enketo service', () => {
   });
 
   describe('renderContactForm', () => {
+    let titleTextStub;
+
     beforeEach(() => {
-      service.setFormTitle = sinon.stub();
+      titleTextStub = sinon.stub();
+
+      const jqFind = $.fn.find;
+      sinon.stub($.fn, 'find');
+      //@ts-ignore
+      $.fn.find.callsFake(jqFind);
+
+      $.fn.find
+        //@ts-ignore
+        .withArgs('#form-title')
+        .returns({ text: titleTextStub });
       dbGetAttachment.resolves('<form/>');
       translateService.get.callsFake((key) => `translated key ${key}`);
       TranslateFrom.callsFake((sentence) => `translated sentence ${sentence}`);
@@ -1722,8 +1748,8 @@ describe('Enketo service', () => {
         titleKey: 'contact.type.health_center.new',
       });
 
-      expect(service.setFormTitle.callCount).to.be.equal(1);
-      expect(service.setFormTitle.args[0][1]).to.be.equal('translated key contact.type.health_center.new');
+      expect(titleTextStub.callCount).to.be.equal(1);
+      expect(titleTextStub.args[0][0]).to.be.equal('translated key contact.type.health_center.new');
     });
 
     it('should fallback to translate document title when the titleKey is not available', async () => {
@@ -1735,8 +1761,8 @@ describe('Enketo service', () => {
         valuechangeListener: callbackMock,
       });
 
-      expect(service.setFormTitle.callCount).to.be.equal(1);
-      expect(service.setFormTitle.args[0][1]).to.be.equal('translated sentence New Area');
+      expect(titleTextStub.callCount).to.be.equal(1);
+      expect(titleTextStub.args[0][0]).to.be.equal('translated sentence New Area');
     });
   });
 });
