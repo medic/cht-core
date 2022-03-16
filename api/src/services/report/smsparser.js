@@ -129,6 +129,13 @@ const bsToEpoch = (bsYear, bsMonth, bsDay) => {
   }
 };
 
+const getFieldByType = (def, type) => {
+  if (!def || !def.fields) {
+    return;
+  }
+  return Object.keys(def.fields).find(k => def.fields[k].type === type);
+}
+
 const lower = str => (str && str.toLowerCase ? str.toLowerCase() : str);
 
 exports.parseField = (field, raw) => {
@@ -214,9 +221,9 @@ exports.parse = (def, doc) => {
   let msgData;
   const formData = {};
   let addOmittedFields = false;
-  const hasBSDateField = def && def.fields && Object
+  const aggregateBSDate = def && def.fields && Object
     .keys(def.fields)
-    .some(key => def.fields[key] && def.fields[key].type === 'bsYear');
+    .some(key => def.fields[key] && def.fields[key].type === 'bsAggreDate');
 
   if (!def || !doc || !doc.message || !def.fields) {
     return {};
@@ -260,7 +267,7 @@ exports.parse = (def, doc) => {
     }
   }
 
-  if(hasBSDateField) {
+  if(aggregateBSDate) {
     let bsYear;
     let bsMonth = 1;
     let bsDay = 1;
@@ -277,9 +284,13 @@ exports.parse = (def, doc) => {
         break;
       }
     }
+
+    if(!bsYear) {
+      return;//TODO: bsYear is required when using aggregated BS date
+    }
     
-    formData.lmp_date = bsToEpoch(bsYear, bsMonth, bsDay);
-    
+    const dateField = getFieldByType(def, 'bsAggreDate');
+    formData[dateField] = bsToEpoch(bsYear, bsMonth, bsDay);
   }
 
   // pass along some system generated fields

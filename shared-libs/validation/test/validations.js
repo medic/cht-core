@@ -540,6 +540,25 @@ describe('validations', () => {
     });
   });
 
+  it('pass isBefore validation on doc when lmp_date is a field', () => {
+    const validations = [
+      {
+        property: 'lmp_date',
+        rule: 'isBefore("4 weeks")',
+      },
+    ];
+    const doc = {
+      _id: 'same',      
+      fields: {
+        lmp_date: moment().subtract({weeks: 4, days: 1}).valueOf()
+      },
+      reported_date: moment().valueOf()
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 0);
+    });
+  });
+
   it('pass isBefore validation on doc when the test and control dates are same', () => {
     const validations = [
       {

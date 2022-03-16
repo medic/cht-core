@@ -749,6 +749,14 @@ exports.forms = {
         },
         type: 'bsDay',
         required: true
+      },
+      lmp_date: {
+        labels: {
+          short: 'LMP Date',
+          tiny: 'LMP'
+        },
+        type: 'bsAggreDate',
+        required: true
       }
     }
   },
@@ -772,6 +780,14 @@ exports.forms = {
           tiny: 'Y'
         },
         type: 'bsYear',
+        required: true
+      },
+      lmp_date: {
+        labels: {
+          short: 'LMP Date',
+          tiny: 'LMP'
+        },
+        type: 'bsAggreDate',
         required: true
       }
     }

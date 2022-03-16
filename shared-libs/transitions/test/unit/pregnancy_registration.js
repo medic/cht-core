@@ -487,10 +487,10 @@ describe('pregnancy registration with exact LMP date', () => {
     const doc = {
       fields:
       {
-        lmp_date: eightWeeksAgo.valueOf(),
-        reported_date: today.valueOf(),
-        type: 'data_record'
-      }
+        lmp_date: eightWeeksAgo.valueOf()
+      },
+      reported_date: today.valueOf(),
+      type: 'data_record'
     };
 
     transition.setExpectedBirthDate(doc);
@@ -506,10 +506,10 @@ describe('pregnancy registration with exact LMP date', () => {
     const doc = {
       form: 'l',
       type: 'data_record',
+      reported_date: today.valueOf(),
       fields: {
         lmp_date: eightWeeksAgo.valueOf(),
-        patient_name: 'abc',
-        reported_date: today.valueOf()
+        patient_name: 'abc'
       }
     };
 
@@ -528,9 +528,9 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: 'hi',
-        lmp_date: 'x',
-        reported_date: today.valueOf()
-      }
+        lmp_date: 'x'
+      },      
+      reported_date: today.valueOf()
     };
 
     return transition.onMatch({ doc: doc }).then(function (changed) {
@@ -550,9 +550,9 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: '',
-        lmp_date: null,
-        reported_date: today.valueOf()
-      }
+        lmp_date: null
+      },
+      reported_date: today.valueOf()
     };
 
     return transition.onMatch({ doc: doc }).then(function (changed) {
@@ -575,9 +575,9 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         patient_name: 'abc',
-        lmp_date: eightWeeksAgo.clone().add({day: 1}).valueOf(),
-        reported_date: today.valueOf()
-      }
+        lmp_date: eightWeeksAgo.clone().add({day: 1}).valueOf()
+      },
+      reported_date: today.valueOf()
     };
 
     return transition.onMatch({ doc: doc }).then(function (changed) {
@@ -596,9 +596,9 @@ describe('pregnancy registration with exact LMP date', () => {
       type: 'data_record',
       fields: {
         lmp_date: today.clone().subtract({weeks: 40, day: 1}).valueOf(),
-        patient_name: 'abc',
-        reported_date: today.valueOf()
-      }
+        patient_name: 'abc'
+      },
+      reported_date: today.valueOf()
     };
     return transition.onMatch({ doc: doc }).then(function (changed) {
       assert.equal(changed, true);

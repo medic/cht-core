@@ -128,8 +128,10 @@ const compareDate = (doc, validation, checkAfter = false) => {
       return Promise.resolve(false);
     }
 
-    if (checkAfter && testDate.isSameOrAfter(controlDate, 'days') ||
-     !checkAfter && testDate.isSameOrBefore(controlDate, 'days')) {
+    if (checkAfter && testDate.isSameOrAfter(controlDate, 'days')) {
+      return Promise.resolve(true);
+    }
+    if (!checkAfter && testDate.isSameOrBefore(controlDate, 'days')) {
       return Promise.resolve(true);
     }
 

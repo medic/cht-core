@@ -44,19 +44,18 @@ const momentToBikYMD = (mDate) => {
 };
 
 const formId = 'B';
-const formTitle = 'LMP with BS Date';
 const tenWeeksAgo = moment().subtract({ weeks: 10 });
 
 const forms = {
   B: {
     meta: {
       code: formId,
-      label: formTitle
+      label: 'LMP with BS Date',
     },
     fields: {
       name: {
         type: 'string',
-        labels: { short: 'Name'}
+        labels: { short: 'Name' }
       },
       lmp_date: {
         type: 'bsDate',
@@ -205,7 +204,7 @@ describe('Bikram Sambat date display', () => {
     expect(await contactsPage.getContactSummaryField('another')).to.equal('other text 0123456789');
   });
 
-  it('SMS report shows LMP as date field correctly', async () => {
+  it('SMS report shows bsDate type as date field correctly', async () => {
     await gatewayApiUtils.api.postMessage({
       id: 'lmp-id',
       from: '+9779876543210',

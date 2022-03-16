@@ -609,7 +609,7 @@ describe('sms parser', () => {
     chai.expect(data).to.deep.equal({
       patient_id: 12345,
       lmp_year: 2068, lmp_month: 11, lmp_day: 29,
-      lmp_date: 1331510400000
+      bs_date: 1331510400000
     });
   });
 
@@ -620,7 +620,7 @@ describe('sms parser', () => {
     chai.expect(data).to.deep.equal({
       patient_id: '12345',
       lmp_year: '2068', lmp_month: '11', lmp_day: '29',
-      lmp_date: 1331510400000
+      bs_date: 1331510400000
     });
   });
   
@@ -632,7 +632,7 @@ describe('sms parser', () => {
     chai.expect(data).to.deep.equal({
       patient_id: '12345',
       lmp_year: '123', lmp_month: '11', lmp_day: '29',
-      lmp_date: null
+      bs_date: null
     });
   });
 
@@ -643,7 +643,7 @@ describe('sms parser', () => {
     chai.expect(data).to.deep.equal({
       patient_id: '12345',
       lmp_year: '2068',
-      lmp_date: 1302739200000//2068-01-01 BS
+      bs_date: 1302739200000 //2068-01-01 BS
     });
   });
 

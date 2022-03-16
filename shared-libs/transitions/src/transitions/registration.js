@@ -143,12 +143,12 @@ const getWeeksSinceLMP = doc => {
 * Given a doc, try to get the exact LMP date
 */
 const getLMPDate = doc => {
-  const props = ['lmp_date', 'date_lmp'];
-  for (const prop of props) {
-    const lmp = doc.fields && doc.fields[prop] && parseInt(doc.fields[prop]);
-    if (!isNaN(lmp)) {//milliseconds since epoch
-      return lmp;
-    }
+  const type = 'date';
+  const fields =  config.get('forms')[doc.form].fields;
+  const dateFieldName = Object.keys(fields).find(field => fields[field].type === type);
+  const lmp = doc.fields && doc.fields[dateFieldName] && parseInt(doc.fields[dateFieldName]);
+  if (!isNaN(lmp)) {//milliseconds since epoch
+    return lmp;
   }
 };
 const setExpectedBirthDate = doc => {
