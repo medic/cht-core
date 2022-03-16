@@ -99,12 +99,10 @@
       });
   };
 
-  const setReplicationId = (localDb) => {
-    return localDb.id().then(id => utils.setReplicationId(id));
-  };
-
-  const createPurgingCheckpoint = () => {
-    return purger.info().then(purger.checkpoint);
+  const setReplicationId = (POUCHDB_OPTIONS, localDb) => {
+    return localDb.id().then(id => {
+      POUCHDB_OPTIONS.remote_headers['medic-replication-id'] = id;
+    });
   };
 
   const initialReplication = function(localDb, remoteDb) {
@@ -228,14 +226,14 @@
 
     let isInitialReplicationNeeded;
     Promise
-      .all([swRegistration, testReplicationNeeded(), setReplicationId(localDb)])
+      .all([swRegistration, testReplicationNeeded(), setReplicationId(POUCHDB_OPTIONS, localDb)])
       .then(resolved => {
+        utils.setOptions(POUCHDB_OPTIONS);
         isInitialReplicationNeeded = !!resolved[1];
 
         if (isInitialReplicationNeeded) {
           const replicationStarted = performance.now();
           return docCountPoll(localDb)
-            .then(() => createPurgingCheckpoint())
             .then(() => initialReplication(localDb, remoteDb))
             .then(testReplicationNeeded)
             .then(isReplicationStillNeeded => {

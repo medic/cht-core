@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { TO_PURGE_LIST_KEY } from '../../js/bootstrapper/purger';
+import { appendToPurgeList } from '../../js/bootstrapper/purger';
 
-const PURGE_LIST_MAX_LENGTH = 1000;
 const PURGE_REQUEST_DELAY = 1000; // 1 second
 
 @Injectable({
@@ -16,16 +15,6 @@ export class PurgeService {
   }
 
   private needsUpdating = true;
-
-  private getToPurgeList() {
-    const stored = window.localStorage.getItem(TO_PURGE_LIST_KEY);
-    return stored ? JSON.parse(stored) : [];
-  }
-
-  private setToPurgeList(list) {
-    const unique = Array.from(new Set(list));
-    window.localStorage.setItem(TO_PURGE_LIST_KEY, JSON.stringify(unique));
-  }
 
   private changesFetch() {
     return this.http.get('/purging/changes').toPromise();
@@ -43,11 +32,9 @@ export class PurgeService {
     if (!ids || !ids.length) {
       return;
     }
-    const toPurgeList = this.getToPurgeList();
-    toPurgeList.push(...ids);
-    this.setToPurgeList(toPurgeList);
+    const full = appendToPurgeList(ids);
     await this.checkpoint(lastSeq);
-    if (toPurgeList.length >= PURGE_LIST_MAX_LENGTH) {
+    if (full) {
       return;
     }
     setTimeout(() => {

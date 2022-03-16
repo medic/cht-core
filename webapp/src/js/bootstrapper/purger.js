@@ -5,6 +5,7 @@ const MAX_HISTORY_LENGTH = 10;
 const BATCH_SIZE = 100;
 const META_BATCHES = 10; // purge 10 * 100 documents on every startup
 const TO_PURGE_LIST_KEY = 'cht-to-purge-list';
+const PURGE_LIST_MAX_LENGTH = 1000;
 
 const sortedUniqueRoles = roles => JSON.stringify([...new Set(roles)].sort());
 
@@ -20,22 +21,29 @@ const getPurgeLog = (localDb) => {
   });
 };
 
-const info = () => {
-  return utils.fetchJSON('/purging').then(res => {
-    if (res && res.code && res.code !== 200) {
-      throw new Error('Error fetching purge data: ' + JSON.stringify(res));
-    }
-    return res && res.update_seq;
-  });
-};
-
 const shouldPurgeMeta = (localDb) => {
   return getPurgeLog(localDb).then(purgeLog => !!purgeLog.synced_seq);
 };
 
+const appendToPurgeList = (ids) => {
+  const toPurgeList = getToPurgeList();
+  if (ids && ids.length) {
+    toPurgeList.push(...ids);
+    const unique = Array.from(new Set(toPurgeList));
+    window.localStorage.setItem(TO_PURGE_LIST_KEY, JSON.stringify(unique));
+  }
+  return toPurgeList.length >= PURGE_LIST_MAX_LENGTH; // is list full?
+}
+
 const getToPurgeList = () => {
   const stored = window.localStorage.getItem(TO_PURGE_LIST_KEY);
-  return stored ? JSON.parse(stored) : [];
+  try {
+    const parsed = JSON.parse(stored);
+    return parsed || [];
+  } catch(e) {
+    console.error('Error parsing toPurgeList', e);
+    return [];
+  }
 };
 
 const clearToPurgeList = () => {
@@ -178,9 +186,9 @@ const purgeIds = (db, ids) => {
 };
 
 module.exports = {
-  info,
   shouldPurgeMeta,
   getToPurgeList,
+  appendToPurgeList,
   purge,
   purgeMeta,
   writeMetaPurgeLog,
