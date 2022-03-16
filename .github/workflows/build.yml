@@ -144,7 +144,7 @@ jobs:
       run: npm ci
     - name: CHT Setup
       run: |
-        docker-compose -f scripts/ci/cht-compose.yml up -d
+        docker-compose -f scripts/ci/cht-compose-test.yml up -d
         sh scripts/e2e/wait_for_response_code.sh 5988 200 api
     - name: Test it!
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
