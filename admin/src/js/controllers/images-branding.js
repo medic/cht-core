@@ -14,14 +14,9 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
     const DOC_ID = 'branding';
     const MAX_FILE_SIZE = 100000; // 100KB
 
-    $('#logo-upload .choose').on('click', _ev => {
-      _ev.preventDefault();
-      $('#logo-upload .uploader').click();
-    });
-
-    $('#favicon-upload .choose').on('click', _ev => {
-      _ev.preventDefault();
-      $('#favicon-upload .uploader').click();
+    $('#images-branding .choose').on('click', ev => {
+      ev.preventDefault();
+      $(ev.target).closest('.form-group').find('.uploader').click();
     });
 
     $scope.loading = true;
@@ -31,6 +26,7 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
         .then(doc => {
           $scope.doc = doc;
           $scope.favicon = doc._attachments[doc.resources.favicon];
+          $scope.icon = doc._attachments[doc.resources.icon];
         })
         .catch(err => {
           $log.error('Error fetching resources file', err);
@@ -85,10 +81,12 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
 
     const updateFavicon = () => updateImage(getFile('#favicon-upload'), 'favicon');
 
+    const updateIcon = () => updateImage(getFile('#icon-upload'), 'icon');
+
     const removeObsoleteAttachments = () => {
       const current = $scope.doc._attachments;
       const updated = {};
-      ['logo', 'favicon'].forEach(key => {
+      ['logo', 'favicon', 'icon'].forEach(key => {
         const name = $scope.doc.resources[key];
         if (name) {
           updated[name] = current[name];
@@ -108,7 +106,8 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
 
       if (!validateTitle() ||
           !updateLogo() ||
-          !updateFavicon()) {
+          !updateFavicon() ||
+          !updateIcon()) {
         return;
       }
 
