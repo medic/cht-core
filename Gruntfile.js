@@ -8,8 +8,8 @@ const {
   BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
-  DOCKERHUB_USERNAME,
-  // DOCKERHUB_TOKEN,
+  // DOCKERHUB_USERNAME,
+  DOCKERHUB_TOKEN,
 } = process.env;
 
 const DEV = !BUILD_NUMBER;
@@ -304,9 +304,8 @@ module.exports = function(grunt) {
           .map(service =>
             [
               // `echo ${DOCKERHUB_TOKEN} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin`,
-              // `echo ${DOCKERHUB_TOKEN} | docker login docker.io -u ${DOCKERHUB_USERNAME} --password-stdin`,
-              `docker image ls`,
-              `echo ${DOCKERHUB_USERNAME}`,
+              `docker logout`,
+              `echo ${DOCKERHUB_TOKEN} | docker login docker.io -u dockermedic --password-stdin`,
               `docker push ${buildUtils.getImageTag(service)}`,
             ].join(' && ')
           )
