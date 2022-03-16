@@ -44,8 +44,6 @@ jobs:
       run: npm ci
     - name: Grunt Install
       run: npm install -g grunt-cli
-    - name: Configure Couch
-      run: ./scripts/ci/couch-config
     - name: Grunt CI-Compile
       run: |
         node --stack_size=10000 `which grunt` ci-compile-github
