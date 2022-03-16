@@ -56,6 +56,10 @@ class Androiddatepicker extends Widget {
         const $el = $( el );
         $el.attr( 'type', 'text' );
 
+        // Prevent accidentally triggering the keyboard when the input element gets focus.
+        // (When a page is opened, Enketo focuses on the first element on the page.)
+        $el.prop('readonly', true);
+
         $el.on( 'click', function() {
           // Assign a random ID every time we trigger the click listener.
           // This avoids any potential collisions from e.g. cloned elements.
