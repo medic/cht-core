@@ -38,18 +38,24 @@ const setExistentReportDates = async (dates) => {
   return utils.saveDocs(reports);
 };
 
+const momentToBikParts = (mDate) => {
+  return bikramSambat.toBik(moment(mDate).format('YYYY-MM-DD'));
+};
+
 const momentToBikYMD = (mDate) => {
-  const bsDate = bikramSambat.toBik(moment(mDate).format('YYYY-MM-DD'));
+  const bsDate = momentToBikParts(mDate);
   return `${bsDate.year}-${bsDate.month}-${bsDate.day}`;
 };
 
-const formId = 'B';
+const formIdBS = 'B';
+const formIdBSParts = 'C';
 const tenWeeksAgo = moment().subtract({ weeks: 10 });
+const nineWeeksAgo = moment().subtract({ weeks: 9 });
 
 const forms = {
   B: {
     meta: {
-      code: formId,
+      code: formIdBS,
       label: 'LMP with BS Date',
     },
     fields: {
@@ -63,12 +69,31 @@ const forms = {
       }
     }
   },
+  C: {
+    meta: {
+      code: formIdBSParts,
+      label: 'LMP with BS date parts'
+    },
+    fields: {
+      name: { type: 'string', labels: { short: 'Name' } },
+      lmp_year: { type: 'bsYear' },
+      lmp_month: { type: 'bsMonth' },
+      lmp_day: { type: 'bsDay' },
+      lmp_date: { type: 'bsAggreDate', labels: { short: 'LMP Date' } }
+    }
+  }
 };
 
-const registrations = [{
-  form: formId,
-  events: [{ name: 'on_create', trigger: 'add_expected_date' }]
-}];
+const registrations = [
+  {
+    form: formIdBS,
+    events: [{ name: 'on_create', trigger: 'add_expected_date' }]
+  },
+  {
+    form: formIdBSParts,
+    events: [{ name: 'on_create', trigger: 'add_expected_date' }]
+  }
+];
 
 const transitions = {
   registration: true
@@ -202,21 +227,49 @@ describe('Bikram Sambat date display', () => {
     expect(await contactsPage.getContactSummaryField('phone')).to.equal('+४०७५५४५६४५६');
     expect(await contactsPage.getContactSummaryField('field')).to.equal('text ०१२३४५६७८९');
     expect(await contactsPage.getContactSummaryField('another')).to.equal('other text 0123456789');
-  });
+  });  
 
   it('SMS report shows bsDate type as date field correctly', async () => {
+    await setLanguage(NEPALI_LOCALE_CODE);
+    moment.locale(NEPALI_LOCALE_CODE);
+
     await gatewayApiUtils.api.postMessage({
-      id: 'lmp-id',
+      id: 'lmp-id-bs',
       from: '+9779876543210',
-      content: `${formId} Shrestha ${momentToBikYMD(tenWeeksAgo)}`
+      content: `${formIdBS} Shrestha ${momentToBikYMD(tenWeeksAgo)}`
     });
 
+    await commonPage.goToPeople();
     await commonPage.goToReports();
     const firstReport = reportsPage.firstReport();
     firstReport.click();
 
     const dateFormat = bikramSambat.toBik_text(tenWeeksAgo);
     const relativeFormat = moment(tenWeeksAgo.toDate()).fromNow();
+    const lmpDateValue = await reportsPage.getReportDetailFieldValueByLabel('LMP Date');
+    expect(lmpDateValue).to.equal(`${dateFormat} (${relativeFormat})`);
+  });
+
+  it('SMS report shows bsAggreDate type as date field correctly', async () => {
+    await setLanguage(NEPALI_LOCALE_CODE);
+    moment.locale(NEPALI_LOCALE_CODE);
+
+    await gatewayApiUtils.api.postMessage({
+      id: 'lmp-id-bs-parts',
+      from: '+9779876543210',
+      content: `${formIdBSParts} Shrestha ` +
+      `${momentToBikParts(nineWeeksAgo).year} ` +
+      `${momentToBikParts(nineWeeksAgo).month} ` +
+      `${momentToBikParts(nineWeeksAgo).day}`
+    });
+
+    await commonPage.goToPeople();
+    await commonPage.goToReports();
+    const firstReport = reportsPage.firstReport();
+    firstReport.click();
+
+    const dateFormat = bikramSambat.toBik_text(nineWeeksAgo);
+    const relativeFormat = moment(nineWeeksAgo.toDate()).fromNow();
     const lmpDateValue = await reportsPage.getReportDetailFieldValueByLabel('LMP Date');
     expect(lmpDateValue).to.equal(`${dateFormat} (${relativeFormat})`);
   });
