@@ -8,6 +8,8 @@ const {
   BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
+  DOCKERHUB_USERNAME,
+  DOCKERHUB_TOKEN,
 } = process.env;
 
 const DEV = !BUILD_NUMBER;
@@ -276,7 +278,7 @@ module.exports = function(grunt) {
         stdio: 'inherit', // enable colors!
       },
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
-      'build-service-containers': {
+      'build-service-images': {
         cmd: () => ['api', 'sentinel']
           .map(service =>
             [
@@ -286,6 +288,15 @@ module.exports = function(grunt) {
               `cd ../`,
               `docker build -f ./${service}/Dockerfile --tag ${buildUtils.getImageTag(service)} .`,
               `docker image tag ${buildUtils.getImageTag(service)} ${buildUtils.getImageTag(service)}`,
+            ].join(' && ')
+          )
+          .join(' && '),
+      },
+      'push-service-images': {
+        cmd: () => ['api', 'sentinel']
+          .map(service =>
+            [
+              `echo ${DOCKERHUB_TOKEN} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin`,
               `docker image push ${buildUtils.getImageTag(service)}`,
             ].join(' && ')
           )
@@ -792,6 +803,7 @@ module.exports = function(grunt) {
     'build-config',
     'create-staging-doc',
     'populate-staging-doc',
+    'build-service-images',
   ]);
 
   grunt.registerTask('build-dev', 'Build the static resources', [
@@ -842,7 +854,7 @@ module.exports = function(grunt) {
     'copy-static-files-to-api',
     'uglify:api',
     'cssmin:api',
-    'exec:build-service-containers',
+    'exec:build-service-images',
   ]);
 
   grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
@@ -1041,7 +1053,7 @@ module.exports = function(grunt) {
   grunt.registerTask('set-ddocs-version', buildUtils.setDdocsVersion);
 
   grunt.registerTask('publish-for-testing', 'Build and publish service images, publish the staging doc to the testing server', [
-    'build-service-images',
+    'exec:push-service-images',
     'couch-compile:staging',
     'couch-push:testing',
   ]);
