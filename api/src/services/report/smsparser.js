@@ -134,7 +134,7 @@ const getFieldByType = (def, type) => {
     return;
   }
   return Object.keys(def.fields).find(k => def.fields[k].type === type);
-}
+};
 
 const lower = str => (str && str.toLowerCase ? str.toLowerCase() : str);
 
