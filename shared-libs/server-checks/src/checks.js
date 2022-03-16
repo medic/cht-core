@@ -18,8 +18,8 @@ const nodeVersionCheck = () => {
   }
 };
 
-const getNoAuthURL = (serverUrl) => {
-  const noAuthUrl = new URL(serverUrl);
+const getNoAuthURL = (couchUrl) => {
+  const noAuthUrl = new URL(couchUrl);
   noAuthUrl.password = '';
   noAuthUrl.username = '';
   return noAuthUrl;
@@ -44,8 +44,8 @@ const checkServerUrl = (serverUrl) => {
   }
 };
 
-const couchDbNoAdminPartyModeCheck = (serverUrl) => {
-  const noAuthUrl = getNoAuthURL(serverUrl);
+const couchDbNoAdminPartyModeCheck = (couchUrl) => {
+  const noAuthUrl = getNoAuthURL(couchUrl);
 
   // require either 'http' or 'https' by removing the ":" from noAuthUrl.protocol
   const net = require(noAuthUrl.protocol.replace(':', ''));
@@ -69,25 +69,48 @@ const couchDbNoAdminPartyModeCheck = (serverUrl) => {
   });
 };
 
-const getCouchDbVersion = (serverUrl) => {
-  return request.get({ url: serverUrl, json: true }).then(response => response.version);
+const getCouchDbVersion = (couchUrl) => {
+  return request.get({ url: couchUrl, json: true }).then(response => response.version);
 };
 
-const couchDbVersionCheck = (serverUrl) => {
-  return getCouchDbVersion(serverUrl).then(version => {
+const couchDbVersionCheck = (couchUrl) => {
+  return getCouchDbVersion(couchUrl).then(version => {
     console.log(`CouchDB Version: ${version}`);
   });
 };
 
-const check = (serverUrl) => {
+const couchDbCheck = async (couchUrl) => {
+  let retries = 100;
+  let lastErr;
+  const retryTimeout = () => new Promise(resolve => setTimeout(resolve, 1000));
+  const serverUrl = new URL(couchUrl);
+  serverUrl.pathname = '/';
+
+
+  do {
+    try {
+      retries--;
+      await couchDbVersionCheck(serverUrl.toString());
+      await couchDbNoAdminPartyModeCheck(serverUrl.toString());
+      return;
+    } catch (err) {
+      lastErr = err;
+      console.log('CouchDb check failed', err);
+      await retryTimeout();
+    }
+  } while (retries);
+
+  throw lastErr;
+};
+
+const check = (couchUrl) => {
   return Promise.resolve()
     .then(nodeVersionCheck)
-    .then(() => checkServerUrl(serverUrl))
-    .then(() => couchDbNoAdminPartyModeCheck(serverUrl))
-    .then(() => couchDbVersionCheck(serverUrl));
+    .then(() => checkServerUrl(couchUrl))
+    .then(() => couchDbCheck(couchUrl));
 };
 
 module.exports = {
-  check: (serverUrl) => check(serverUrl),
-  getCouchDbVersion: (serverUrl) => getCouchDbVersion(serverUrl),
+  check: (couchUrl) => check(couchUrl),
+  getCouchDbVersion: (couchUrl) => getCouchDbVersion(couchUrl),
 };

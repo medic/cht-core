@@ -13,16 +13,21 @@ describe('Server Checks service', () => {
   'use strict';
 
   let originalProcess;
+  let originalSetTimeout;
+  let clock;
 
   beforeEach(() => {
     originalProcess = process;
     sinon.spy(console, 'log');
     sinon.spy(console, 'error');
+    originalSetTimeout = setTimeout;
+    clock = sinon.useFakeTimers();
     service = rewire('../src/checks');
   });
 
   afterEach(() => {
     sinon.restore();
+    clock.restore();
     process = originalProcess;
   });
 
@@ -126,7 +131,7 @@ describe('Server Checks service', () => {
 
   describe('entry point check', () => {
 
-    it('valid server', function() {
+    it('valid server', async () => {
       process = {
         versions: { node: '16.11.1' },
         env: { NODE_OPTIONS: { }},
@@ -134,11 +139,37 @@ describe('Server Checks service', () => {
       };
       sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
       sinon.stub(request, 'get').resolves({ version: '2' });
-      return service.check('http://admin:pass@localhost:5984/medic');
+      await service.check('http://admin:pass@localhost:5984/medic');
+
+      chai.expect(http.get.args[0][0]).to.equal('http://localhost:5984/');
+      chai.expect(request.get.args[0][0]).to.deep.equal({ json: true, url: 'http://admin:pass@localhost:5984/' });
+    });
+
+    it('valid server after a while', async () => {
+      process = {
+        versions: { node: '16.11.1' },
+        env: { NODE_OPTIONS: { }},
+        exit: sinon.stub(),
+      };
+
+      sinon.stub(http, 'get').callsArgWith(1, { statusCode: 200 });
+      sinon.stub(request, 'get').rejects({ an: 'error' });
+
+      request.get.onCall(70).resolves({ version: '2' });
+      request.get.onCall(71).resolves({ version: '2' });
+      request.get.onCall(72).resolves({ version: '2' });
+      http.get.onCall(2).callsArgWith(1, { statusCode: 401 });
+
+      const promise = service.check('http://admin:pass@localhost:5984/medic');
+      Array.from({ length: 100 }).map(() => originalSetTimeout(() => clock.tick(1000)));
+      await promise;
+
+      chai.expect(request.get.callCount).to.equal(73);
+      chai.expect(http.get.callCount).to.deep.equal(3);
     });
 
 
-    it('invalid couchdb version', function() {
+    it('invalid couchdb version', async () => {
       process = {
         versions: { node: '16.11.1' },
         env: { NODE_OPTIONS: { }},
@@ -146,12 +177,40 @@ describe('Server Checks service', () => {
       };
       sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
       sinon.stub(request, 'get').rejects({ an: 'error' });
-      return service.check('http://admin:pass@localhost:5984/medic').catch(err => {
+
+      try {
+        const promise = service.check('http://admin:pass@localhost:5984/medic');
+        // request will be retried 100 times
+        Array.from({ length: 100 }).map(() => originalSetTimeout(() => clock.tick(1000)));
+        await promise;
+        chai.expect.fail('Should have thrown');
+      } catch (err) {
         chai.expect(err).to.deep.equal({ an: 'error' });
-      });
+        chai.expect(request.get.callCount).to.equal(100);
+      }
     });
 
-    it('invalid server', function() {
+    it('couchdb in admin party', async () => {
+      process = {
+        versions: { node: '16.11.1' },
+        env: { NODE_OPTIONS: { }},
+        exit: sinon.stub(),
+      };
+      sinon.stub(http, 'get').callsArgWith(1, { statusCode: 200 });
+      sinon.stub(request, 'get').resolves({ version: '2' });
+
+      try {
+        const promise = service.check('http://admin:pass@localhost:5984/medic');
+        // request will be retried 100 times
+        Array.from({ length: 100 }).map(() => originalSetTimeout(() => clock.tick(1000)));
+        await promise;
+        chai.expect.fail('Should have thrown');
+      } catch (err) {
+        chai.expect(request.get.callCount).to.equal(100);
+      }
+    });
+
+    it('invalid server', () => {
       process = {
         versions: { node: '16.11.1' },
         env: { NODE_OPTIONS: { }},
@@ -159,12 +218,15 @@ describe('Server Checks service', () => {
       };
       sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
       sinon.stub(request, 'get').resolves({ version: '2' });
-      return service.check().catch(err => {
-        chai.assert.include(err.message, 'Environment variable "COUCH_URL" is required');
-      });
+      return service
+        .check()
+        .then(() => chai.expect.fail('Should have thrown'))
+        .catch(err => {
+          chai.assert.include(err.message, 'Environment variable "COUCH_URL" is required');
+        });
     });
 
-    it('too many segments', function() {
+    it('too many segments', () => {
       process = {
         versions: { node: '16.11.1' },
         env: { NODE_OPTIONS: { }},

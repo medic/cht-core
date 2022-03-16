@@ -4,6 +4,8 @@ const COUCH_HOST = 'localhost';
 const COUCH_PORT = IS_CI ? 5984 : 4984;
 const API_PORT = IS_CI ? 5988 : 4988;
 
+const path = require('path');
+
 module.exports = {
   IS_CI: IS_CI,
 
@@ -32,5 +34,11 @@ module.exports = {
     type: 'person',
     reported_date: 1541679811408,
   },
-  BASE_URL: `http://${COUCH_HOST}:${API_PORT}/`
+  BASE_URL: `http://${COUCH_HOST}:${API_PORT}/`,
+
+  DOCKER_COMPOSE_FILE: path.resolve(__dirname, '..', 'scripts', 'ci', 'cht-compose-test.yml'),
+  DOCKER_SERVICE_NAME: {
+    api: 'cht-api',
+    sentinel: 'cht-sentinel',
+  },
 };

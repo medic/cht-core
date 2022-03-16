@@ -43,6 +43,7 @@ const getApiUrl = (pathname = '') => {
 };
 
 const releaseName = TAG || BRANCH || 'local-development';
+const buildTime = new Date().getTime();
 
 const getVersion = () => {
   if (TAG) {
@@ -54,8 +55,10 @@ const getVersion = () => {
   if (BRANCH) {
     return `${packageJson.version}-${BRANCH}.${BUILD_NUMBER}`;
   }
-  return `${packageJson.version}-dev.${new Date().getTime()}`;
+  return `${packageJson.version}-dev.${buildTime}`;
 };
+
+const getImageTag = (service) => `dockermedic/cht-${service}:${getVersion()}`;
 
 const setBuildInfo = () => {
   const buildInfoPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'build_info');
@@ -152,4 +155,6 @@ module.exports = {
   createStagingDoc,
   populateStagingDoc,
   updateServiceWorker,
+  getImageTag,
+  getVersion,
 };

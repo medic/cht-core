@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  couch:
+    image: medicmobile/cht-couchdb:clustered-test4
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=pass
+    restart: always
+    ports:
+      - "5984:5984"
+    networks:
+      - e2e
+
+  cht-api:
+    image: dockermedic/cht-api:$IMAGE_TAG
+    container_name: cht-api
+    depends_on:
+      - couch
+    ports:
+      - "5988:5988"
+    environment:
+      - COUCH_URL=http://admin:pass@couch:5984/medic-test
+      - COUCH_NODE_NAME=couchdb@127.0.0.1
+      - HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER
+    networks:
+      - e2e
+
+  cht-sentinel:
+    image: dockermedic/cht-sentinel:$IMAGE_TAG
+    container_name: cht-sentinel
+    depends_on:
+      - couch
+    environment:
+      - COUCH_URL=http://admin:pass@couch:5984/medic-test
+      - COUCH_NODE_NAME=couchdb@127.0.0.1
+      - API_HOST=cht-api
+    networks:
+      - e2e
+
+networks:
+  e2e:
+    name: e2e

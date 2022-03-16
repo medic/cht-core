@@ -276,32 +276,19 @@ module.exports = function(grunt) {
         stdio: 'inherit', // enable colors!
       },
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
-      'pack-node-modules': {
-        cmd: ['api', 'sentinel']
-          .map(module =>
+      'build-service-containers': {
+        cmd: () => ['api', 'sentinel']
+          .map(service =>
             [
-              `cd ${module}`,
+              `cd ${service}`,
               `npm ci --production`,
               `npm dedupe`,
-              `npm pack`,
-              `ls -l medic-${module}-0.1.0.tgz`,
-              `mv medic-*.tgz ../build/staging/_attachments/`,
-              `cd ..`,
+              `cd ../`,
+              `docker build -f ./${service}/Dockerfile --tag ${buildUtils.getImageTag(service)} .`,
+              `docker image push ${buildUtils.getImageTag(service)}`,
             ].join(' && ')
           )
           .join(' && '),
-      },
-      'bundle-dependencies': {
-        cmd: () => {
-          ['api', 'sentinel'].forEach(module => {
-            const filePath = `${module}/package.json`;
-            const pkg = this.file.readJSON(filePath);
-            pkg.bundledDependencies = Object.keys(pkg.dependencies);
-            this.file.write(filePath, JSON.stringify(pkg, undefined, '  ') + '\n');
-            console.log(`Updated 'bundledDependencies' for ${filePath}`); // eslint-disable-line no-console
-          });
-          return 'echo "Node module dependencies updated"';
-        },
       },
       'api-dev': {
         cmd:
@@ -349,7 +336,7 @@ module.exports = function(grunt) {
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
-      'setup-api-integration': {
+      'npm-ci-api': {
         cmd: `cd api && npm ci`,
       },
       'npm-ci-shared-libs': {
@@ -803,7 +790,6 @@ module.exports = function(grunt) {
     'build-admin',
     'build-config',
     'create-staging-doc',
-    'build-node-modules',
     'populate-staging-doc',
   ]);
 
@@ -851,12 +837,11 @@ module.exports = function(grunt) {
     'notify:deployed',
   ]);
 
-  grunt.registerTask('build-node-modules', 'Build and pack api and sentinel bundles', [
+  grunt.registerTask('build-service-images', 'Build and publish api and sentinel images', [
     'copy-static-files-to-api',
     'uglify:api',
     'cssmin:api',
-    'exec:bundle-dependencies',
-    'exec:pack-node-modules',
+    'exec:build-service-containers',
   ]);
 
   grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
@@ -906,7 +891,7 @@ module.exports = function(grunt) {
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
     'exec:clean-test-database',
     'exec:setup-test-database',
-    'build-node-modules',
+    'build-service-images',
     'couch-compile:secondary',
     'couch-compile:primary',
     'couch-push:test',
@@ -933,7 +918,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test-api-integration', 'Integration tests for medic-api', [
     'exec:check-env-vars',
-    'exec:setup-api-integration',
+    'exec:npm-ci-api',
     'mochaTest:api-integration',
   ]);
 
@@ -1054,7 +1039,8 @@ module.exports = function(grunt) {
   });
   grunt.registerTask('set-ddocs-version', buildUtils.setDdocsVersion);
 
-  grunt.registerTask('publish-for-testing', 'Publish the staging doc to the testing server', [
+  grunt.registerTask('publish-for-testing', 'Build and publish service images, publish the staging doc to the testing server', [
+    'build-service-images',
     'couch-compile:staging',
     'couch-push:testing',
   ]);

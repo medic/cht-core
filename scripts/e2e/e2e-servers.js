@@ -10,6 +10,8 @@ const utils = require('../../tests/utils');
 // This is a dev dependency in the root package.json
 const express = require('express');
 
+const COMPOSE_FILE = path.resolve(__dirname, '..', 'ci', 'cht-compose-test.yml');
+
 const WRITE_TIMESTAMPS = false;
 const WRITE_TO_CONSOLE = false;
 
@@ -31,15 +33,20 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
   }
 
   try {
-    const logStream = fs.createWriteStream(`tests/logs/${serviceName}.e2e.log`, { flags: append ? 'a' : 'w' });
-
     let server;
     if (constants.IS_CI) {
-      server = spawn('horti-svc-start', [
-        `${require('os').homedir()}/.horticulturalist/deployments`,
-        `medic-${serviceName}`
+      server = spawn('docker-compose', [
+        '-f', COMPOSE_FILE,
+        'start', `cht-${serviceName}`
       ]);
+
+      server.on('error', (err) => reject(err));
+      server.stdout.on('data', (chunk) => console.log(chunk.toString()));
+      server.stderr.on('data', (chunk) => console.log(chunk.toString()));
+
+      server.on('close', resolve);
     } else {
+      const logStream = fs.createWriteStream(`tests/logs/${serviceName}.e2e.log`, { flags: append ? 'a' : 'w' });
       // runs your local checked out api / sentinel
       server = fork(`server.js`, {
         stdio: 'pipe',
@@ -52,12 +59,12 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
           PATH: process.env.PATH,
         },
       });
-    }
 
-    const writeToLogStream = data => writeToStream(logStream, data);
-    server.stdout.on('data', writeToLogStream);
-    server.stderr.on('data', writeToLogStream);
-    server.on('close', code => writeToLogStream(`${serviceName} process exited with code ${code}`));
+      const writeToLogStream = data => writeToStream(logStream, data);
+      server.stdout.on('data', writeToLogStream);
+      server.stderr.on('data', writeToLogStream);
+      server.on('close', code => writeToLogStream(`${serviceName} process exited with code ${code}`));
+    }
 
     processes[serviceName] = server;
     resolve();
@@ -66,13 +73,18 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
   }
 });
 
-const stopServer = (serviceName) => new Promise(res => {
+const stopServer = (serviceName) => new Promise((res, rej) => {
   if (constants.IS_CI) {
-    const pid = spawn('horti-svc-stop', [
-      `medic-${serviceName}`
+    const pid = spawn('docker-compose', [
+      '-f', COMPOSE_FILE,
+      'stop', `cht-${serviceName}`, '-t', 1
     ]);
 
-    pid.on('exit', res);
+    pid.on('error', (err) => rej(err));
+    pid.stdout.on('data', (chunk) => console.log(chunk.toString()));
+    pid.stderr.on('data', (chunk) => console.log(chunk.toString()));
+
+    pid.on('close', res);
   } else {
     processes[serviceName] && processes[serviceName].kill();
     res();
