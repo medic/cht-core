@@ -49,8 +49,8 @@ const momentToBikYMD = (mDate) => {
 
 const formIdBS = 'B';
 const formIdBSParts = 'C';
-const tenWeeksAgo = moment().subtract({ weeks: 10 });
-const nineWeeksAgo = moment().subtract({ weeks: 9 });
+const nineWeeksAgo = moment().subtract({ weeks: 9 }).startOf('day');
+const tenWeeksAgo = moment().subtract({ weeks: 10 }).startOf('day');
 
 const forms = {
   B: {
