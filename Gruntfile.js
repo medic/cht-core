@@ -278,6 +278,13 @@ module.exports = function(grunt) {
         stdio: 'inherit', // enable colors!
       },
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
+      'clean-docker-cache': {
+        cmd: () => [
+          'docker image ls',
+          'docker container prune',
+          'docker image prune -a',
+        ].join(' && '),
+      },
       'build-service-images': {
         cmd: () => ['api', 'sentinel']
           .map(service =>
@@ -296,8 +303,8 @@ module.exports = function(grunt) {
         cmd: () => ['api', 'sentinel']
           .map(service =>
             [
-              `echo ${DOCKERHUB_TOKEN} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin`,
-              `echo ${DOCKERHUB_TOKEN} | docker login docker.io -u ${DOCKERHUB_USERNAME} --password-stdin`,
+              // `echo ${DOCKERHUB_TOKEN} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin`,
+              // `echo ${DOCKERHUB_TOKEN} | docker login docker.io -u ${DOCKERHUB_USERNAME} --password-stdin`,
               `docker image push ${buildUtils.getImageTag(service)}`,
             ].join(' && ')
           )
@@ -1053,6 +1060,7 @@ module.exports = function(grunt) {
   grunt.registerTask('set-ddocs-version', buildUtils.setDdocsVersion);
 
   grunt.registerTask('publish-for-testing', 'Build and publish service images, publish the staging doc to the testing server', [
+    'clean-docker-cache',
     'build-service-images',
     'exec:push-service-images',
     'couch-compile:staging',
