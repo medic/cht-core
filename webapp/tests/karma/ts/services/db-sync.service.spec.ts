@@ -112,7 +112,7 @@ describe('DBSync service', () => {
     };
     remoteMetaDb = {};
     remoteMedicDb = {};
-    purgeService = { updateDocsToPurge: sinon.stub() }
+    purgeService = { updateDocsToPurge: sinon.stub() };
 
     db = sinon.stub().returns(localMedicDb);
     db.withArgs({ remote: true }).returns(remoteMedicDb);

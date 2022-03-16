@@ -3,6 +3,9 @@ import { HttpClient } from '@angular/common/http';
 
 import { TO_PURGE_LIST_KEY } from '../../js/bootstrapper/purger';
 
+const PURGE_LIST_MAX_LENGTH = 1000;
+const PURGE_REQUEST_DELAY = 1000; // 1 second
+
 @Injectable({
   providedIn: 'root'
 })
@@ -44,7 +47,12 @@ export class PurgeService {
     toPurgeList.push(...ids);
     this.setToPurgeList(toPurgeList);
     await this.checkpoint(lastSeq);
-    setTimeout(() => { this.updateDocsToPurgeRecursively() }, 1000);
+    if (toPurgeList.length >= PURGE_LIST_MAX_LENGTH) {
+      return;
+    }
+    setTimeout(() => {
+      this.updateDocsToPurgeRecursively();
+    }, PURGE_REQUEST_DELAY);
   }
 
   async updateDocsToPurge() {
