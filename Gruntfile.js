@@ -1060,7 +1060,7 @@ module.exports = function(grunt) {
   grunt.registerTask('set-ddocs-version', buildUtils.setDdocsVersion);
 
   grunt.registerTask('publish-for-testing', 'Build and publish service images, publish the staging doc to the testing server', [
-    'clean-docker-cache',
+    'exec:clean-docker-cache',
     'build-service-images',
     'exec:push-service-images',
     'couch-compile:staging',
