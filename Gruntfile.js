@@ -804,7 +804,6 @@ module.exports = function(grunt) {
     'build-config',
     'create-staging-doc',
     'populate-staging-doc',
-    'build-service-images',
   ]);
 
   grunt.registerTask('build-dev', 'Build the static resources', [
@@ -1054,6 +1053,7 @@ module.exports = function(grunt) {
   grunt.registerTask('set-ddocs-version', buildUtils.setDdocsVersion);
 
   grunt.registerTask('publish-for-testing', 'Build and publish service images, publish the staging doc to the testing server', [
+    'build-service-images',
     'exec:push-service-images',
     'couch-compile:staging',
     'couch-push:testing',
