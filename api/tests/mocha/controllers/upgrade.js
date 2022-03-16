@@ -33,7 +33,7 @@ describe('Upgrade controller', () => {
       return controller.upgrade(req, {})
         .then(() => {
           auth.check.callCount.should.equal(1);
-          auth.check.args[0][1].should.equal('can_configure');
+          auth.check.args[0][1].should.equal('can_upgrade');
           serverUtils.error.callCount.should.equal(1);
         });
     });
@@ -91,7 +91,7 @@ describe('Upgrade controller', () => {
       return controller.complete({}, {})
         .then(() => {
           auth.check.callCount.should.equal(1);
-          auth.check.args[0][1].should.equal('can_configure');
+          auth.check.args[0][1].should.equal('can_upgrade');
           service.complete.callCount.should.equal(1);
         });
     });
