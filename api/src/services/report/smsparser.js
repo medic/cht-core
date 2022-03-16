@@ -285,8 +285,9 @@ exports.parse = (def, doc) => {
       }
     }
 
-    if(!bsYear) {
-      return;//TODO: bsYear is required when using aggregated BS date
+    if(!bsYear) {      
+      logger.error('Can not aggregate bsAggreDate without bsYear');
+      return;
     }
     
     const dateField = getFieldByType(def, 'bsAggreDate');
