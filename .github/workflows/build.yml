@@ -49,6 +49,9 @@ jobs:
     - name: Grunt CI-Compile
       run: |
         node --stack_size=10000 `which grunt` ci-compile-github
+    - uses: satackey/action-docker-layer-caching@v0.0.11
+        # Ignore the failure of a step and avoid terminating the job.
+      continue-on-error: true
     - name: Publish for testing
       run: |
         node --stack_size=10000 `which grunt` publish-for-testing

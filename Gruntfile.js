@@ -1063,7 +1063,7 @@ module.exports = function(grunt) {
   grunt.registerTask('publish-for-testing', 'Build and publish service images, publish the staging doc to the testing server', [
     // 'exec:clean-docker-cache',
     'build-service-images',
-    'exec:push-service-images',
+    // 'exec:push-service-images',
     'couch-compile:staging',
     'couch-push:testing',
   ]);
