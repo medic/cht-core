@@ -8,7 +8,7 @@ const {
   BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
-  // DOCKERHUB_USERNAME,
+  DOCKERHUB_USERNAME,
   // DOCKERHUB_TOKEN,
 } = process.env;
 
@@ -306,6 +306,7 @@ module.exports = function(grunt) {
               // `echo ${DOCKERHUB_TOKEN} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin`,
               // `echo ${DOCKERHUB_TOKEN} | docker login docker.io -u ${DOCKERHUB_USERNAME} --password-stdin`,
               `docker image ls`,
+              `echo ${DOCKERHUB_USERNAME}`,
               `docker push ${buildUtils.getImageTag(service)}`,
             ].join(' && ')
           )
@@ -1061,7 +1062,7 @@ module.exports = function(grunt) {
   grunt.registerTask('set-ddocs-version', buildUtils.setDdocsVersion);
 
   grunt.registerTask('publish-for-testing', 'Build and publish service images, publish the staging doc to the testing server', [
-    'exec:clean-docker-cache',
+    // 'exec:clean-docker-cache',
     'build-service-images',
     'exec:push-service-images',
     'couch-compile:staging',
