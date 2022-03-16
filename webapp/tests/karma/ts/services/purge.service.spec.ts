@@ -57,18 +57,22 @@ describe('Purge service', () => {
     const firstResponse = { purged_ids: ['a', 'b'], last_seq: 'xyz' };
     const secondResponse = { purged_ids: [], last_seq: 'something else' };
     httpClient.get
-      .withArgs('/purging/changes').onCall(0).returns(of(firstResponse))
-      .withArgs('/purging/changes').onCall(1).returns(of(secondResponse));
-    httpClient.get.withArgs('/purging/checkpoint').returns(of());
+      .onCall(0).returns(of(firstResponse))
+      .onCall(1).returns(of())
+      .onCall(2).returns(of(secondResponse));
     service.updateDocsToPurge();
     tick();
     expect(httpClient.get.callCount).to.equal(2);
     expect(setItem.callCount).to.equal(1);
-    tick(1050); // wait for second batch
+    tick(1000); // wait for second batch
     expect(httpClient.get.callCount).to.equal(3);
+    expect(httpClient.get.args[0][0]).to.equal('/purging/changes');
+    expect(httpClient.get.args[1][0]).to.equal('/purging/checkpoint');
+    expect(httpClient.get.args[1][1].params.seq).to.equal('xyz');
+    expect(httpClient.get.args[2][0]).to.equal('/purging/changes');
     expect(setItem.callCount).to.equal(1);
-    // TODO check that setitem was written as expected
-    // TODO check that the checkpointer was sent correctly
+    expect(setItem.args[0][0]).to.equal('cht-to-purge-list');
+    expect(setItem.args[0][1]).to.equal('["a","b"]');
   }));
 
 });

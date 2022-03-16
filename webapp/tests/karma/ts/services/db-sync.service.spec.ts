@@ -12,6 +12,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { PurgeService } from '@mm-services/purge.service';
 
 describe('DBSync service', () => {
   let service:DBSyncService;
@@ -35,6 +36,7 @@ describe('DBSync service', () => {
   let checkDateService;
   let telemetryService;
   let translateService;
+  let purgeService;
   let store;
 
   let localMedicDb;
@@ -110,6 +112,7 @@ describe('DBSync service', () => {
     };
     remoteMetaDb = {};
     remoteMedicDb = {};
+    purgeService = { updateDocsToPurge: sinon.stub() }
 
     db = sinon.stub().returns(localMedicDb);
     db.withArgs({ remote: true }).returns(remoteMedicDb);
@@ -131,6 +134,7 @@ describe('DBSync service', () => {
         { provide: TranslateService, useValue: translateService },
         { provide: Store, useValue: store },
         { provide: CheckDateService, useValue: checkDateService },
+        { provide: PurgeService, useValue: purgeService }
       ]
     });
 
@@ -165,6 +169,7 @@ describe('DBSync service', () => {
         expect(checkDateService.check.callCount).to.equal(1);
         expect(checkDateService.check.args[0]).to.deep.equal([]);
         expectSyncMetaCall(1);
+        expect(purgeService.updateDocsToPurge.callCount).to.equal(1);
       });
     });
 

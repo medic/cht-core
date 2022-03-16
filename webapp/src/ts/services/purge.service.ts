@@ -30,7 +30,7 @@ export class PurgeService {
 
   private checkpoint(seq) {
     if (seq) {
-      return this.http.get('purging/checkpoint', { params: { seq } }).toPromise();
+      return this.http.get('/purging/checkpoint', { params: { seq } }).toPromise();
     }
   }
 
@@ -44,7 +44,7 @@ export class PurgeService {
     toPurgeList.push(...ids);
     this.setToPurgeList(toPurgeList);
     await this.checkpoint(lastSeq);
-    setTimeout(this.updateDocsToPurgeRecursively, 1000);
+    setTimeout(() => { this.updateDocsToPurgeRecursively() }, 1000);
   }
 
   async updateDocsToPurge() {
