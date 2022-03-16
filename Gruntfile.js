@@ -305,7 +305,8 @@ module.exports = function(grunt) {
             [
               // `echo ${DOCKERHUB_TOKEN} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin`,
               // `echo ${DOCKERHUB_TOKEN} | docker login docker.io -u ${DOCKERHUB_USERNAME} --password-stdin`,
-              `docker image push ${buildUtils.getImageTag(service)}`,
+              `docker image ls`,
+              `docker push ${buildUtils.getImageTag(service)}`,
             ].join(' && ')
           )
           .join(' && '),
