@@ -249,28 +249,6 @@ describe('Purging on login', () => {
     await helper.waitUntilReadyNative(goodFormReport);
     expect(await browser.isElementPresent(goodFormReport)).toBeTrue;
     expect(await browser.isElementPresent(reports.reportByUUID(badFormId))).toBeFalse;
-
-    let result = await getPurgeLog();
-    // purge ran but after initial replication, nothing to purge
-    chai.expect(result._rev).to.equal('0-1');
-    chai.expect(result.roles).to.equal(JSON.stringify(restrictedUser.roles.sort()));
-    chai.expect(result.history.length).to.equal(1);
-    chai.expect(result.count).to.equal(0);
-    chai.expect(result.history[0]).to.deep.equal({
-      count: 0,
-      roles: result.roles,
-      date: result.date
-    });
-    const purgeDate = result.date;
-
-    await utils.resetBrowser();
-    await commonElements.calmNative();
-    await browser.waitForAngular();
-    result = await getPurgeLog();
-
-    // purge didn't run again on next refresh
-    chai.expect(result._rev).to.equal('0-1');
-    chai.expect(result.date).to.equal(purgeDate);
     await utils.saveDocs(subsequentReports);
 
     await commonElements.syncNative();
@@ -293,20 +271,15 @@ describe('Purging on login', () => {
     await commonElements.syncNative();
     await utils.refreshToGetNewSettings();
 
-    result = await getPurgeLog();
+    const result = await getPurgeLog();
     // purge ran again and it purged the bad form
-    chai.expect(result._rev).to.equal('0-2');
+    chai.expect(result._rev).to.equal('0-1');
     chai.expect(result.roles).to.equal(JSON.stringify(restrictedUser.roles.sort()));
-    chai.expect(result.history.length).to.equal(2);
+    chai.expect(result.history.length).to.equal(1);
     chai.expect(result.count).to.equal(1);
-    chai.expect(result.history[1].date).to.equal(purgeDate);
-    chai.expect(result.history[0]).to.deep.equal({
-      count: 1,
-      roles: result.roles,
-      date: result.date
-    });
-    await commonElements.goToReportsNative();
+    chai.expect(result.history[0].date).to.equal(purgeDate);
 
+    await commonElements.goToReportsNative();
     expect(await browser.isElementPresent(reports.reportByUUID(goodFormId))).toBeTrue;
     expect(await browser.isElementPresent(reports.reportByUUID(goodFormId2))).toBeTrue;
     expect(await browser.isElementPresent(reports.reportByUUID(badFormId))).toBeFalse;
