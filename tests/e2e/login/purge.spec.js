@@ -264,7 +264,7 @@ describe('Purging on login', () => {
     };
     await utils.revertSettings(true);
     const seq = await sentinelUtils.getCurrentSeq();
-    await utils.updateSettings({ purge: purgeSettings}, true);
+    await utils.updateSettings({ purge: purgeSettings }, true);
     await restartSentinel();
     await sentinelUtils.waitForPurgeCompletion(seq);
     // get new settings that say to purge on every boot!
@@ -273,6 +273,7 @@ describe('Purging on login', () => {
 
     const result = await getPurgeLog();
     // purge ran again and it purged the bad form
+    chai.expect(JSON.stringify(result)).to.deep.equal('intentional');
     chai.expect(result._rev).to.equal('0-1');
     chai.expect(result.roles).to.equal(JSON.stringify(restrictedUser.roles.sort()));
     chai.expect(result.history.length).to.equal(1);
