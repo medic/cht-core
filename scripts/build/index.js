@@ -58,7 +58,10 @@ const getVersion = () => {
   return `${packageJson.version}-dev.${buildTime}`;
 };
 
-const getImageTag = (service) => `medicmobile/cht-${service}:${getVersion().replace(/\//g, '-')}`;
+const getImageTag = (service) => {
+  const tag = getVersion().replace(/\//g, '-');
+  return service ? `medicmobile/cht-${service}:${tag}` : tag;
+};
 
 const setBuildInfo = () => {
   const buildInfoPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'build_info');

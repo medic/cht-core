@@ -19,6 +19,7 @@ const sentinel = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_P
 const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-logs`, { auth });
 let browserLogStream;
 const userSettings = require('./factories/cht/users/user-settings');
+const buildUtils = require('../scripts/build');
 
 let originalSettings;
 const originalTranslations = {};
@@ -504,66 +505,26 @@ const prepServices = async (defaultSettings) => {
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
 };
 
-const startServices = () => {
+const dockerComposeCmd = (...params) => {
   return new Promise((resolve, reject) => {
-    const server = spawn('docker-compose', [ '-f', COMPOSE_FILE, 'up', `-d` ]);
+    const env = { ...process.env, VERSION: process.env.VERSION || buildUtils.getImageTag() };
+    const cmd = spawn('docker-compose', [ '-f', COMPOSE_FILE, ...params ], { env });
 
-    server.on('error', (err) => {
+    cmd.on('error', (err) => {
       console.error(err);
       reject(err);
     });
-    server.stdout.on('data', (chunk) => console.log(chunk.toString()));
-    server.stderr.on('data', (chunk) => console.error(chunk.toString()));
+    cmd.stdout.on('data', (chunk) => console.log(chunk.toString()));
+    cmd.stderr.on('data', (chunk) => console.error(chunk.toString()));
 
-    server.on('close', resolve);
+    cmd.on('close', resolve);
   });
 };
 
-const stopServices = () => {
-  return new Promise((resolve, reject) => {
-    const server = spawn('docker-compose', [ '-f', COMPOSE_FILE, 'down', `--remove-orphans` ]);
-
-    server.on('error', (err) => {
-      console.error(err);
-      reject(err);
-    });
-    server.stdout.on('data', (chunk) => console.log(chunk.toString()));
-    server.stderr.on('data', (chunk) => console.error(chunk.toString()));
-
-    server.on('close', resolve);
-  });
-};
-
-const startService = (service) => {
-  return new Promise((resolve, reject) => {
-    const server = spawn('docker-compose', [ '-f', COMPOSE_FILE, 'start', `cht-${service}` ]);
-
-    server.on('error', (err) => {
-      console.error(err);
-      reject(err);
-    });
-    server.stdout.on('data', (chunk) => console.log(chunk.toString()));
-    server.stderr.on('data', (chunk) => console.error(chunk.toString()));
-
-    server.on('close', resolve);
-  });
-};
-
-const stopService = (service) => {
-  return new Promise((resolve, reject) => {
-    const server = spawn('docker-compose', [ '-f', COMPOSE_FILE, 'stop', '-t', 1, `cht-${service}` ]);
-    console.log(['docker-compose', '-f', COMPOSE_FILE, 'stop', '-t', 1, `cht-${service}` ].join(' '));
-
-    server.on('error', (err) => {
-      console.error(err);
-      reject(err);
-    });
-    server.stdout.on('data', (chunk) => console.log(chunk.toString()));
-    server.stderr.on('data', (chunk) => console.error(chunk.toString()));
-
-    server.on('close', resolve);
-  });
-};
+const startServices = () => dockerComposeCmd('up', '-d');
+const stopServices = () => dockerComposeCmd('down', '--remove-orphans');
+const startService = (service) => dockerComposeCmd('start', `cht-${service}`);
+const stopService = (service) => dockerComposeCmd('stop', `cht-${service}`);
 
 const protractorLogin = async (browser, timeout = 20) => {
   await browser.driver.get(getLoginUrl());

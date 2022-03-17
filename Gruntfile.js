@@ -142,6 +142,13 @@ module.exports = function(grunt) {
             UNIT_TEST_ENV: '1',
           },
         },
+      },
+      'version': {
+        options: {
+          add: {
+            VERSION: buildUtils.getVersion(),
+          },
+        },
       }
     },
     less: {
@@ -854,6 +861,7 @@ module.exports = function(grunt) {
     'uglify:api',
     'cssmin:api',
     'exec:build-service-images',
+    'env:version',
   ]);
 
   grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
@@ -1052,7 +1060,6 @@ module.exports = function(grunt) {
   grunt.registerTask('set-ddocs-version', buildUtils.setDdocsVersion);
 
   grunt.registerTask('publish-for-testing', 'Build and publish service images, publish the staging doc to the testing server', [
-    // 'exec:clean-docker-cache',
     'build-service-images',
     // 'exec:push-service-images',
     'couch-compile:staging',

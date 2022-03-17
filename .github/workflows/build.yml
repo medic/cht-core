@@ -150,14 +150,8 @@ jobs:
       run:  npm install -g cht-conf
     - name: npm CI
       run: npm ci
-    - name: Set image version
-      run: |
-        node scripts/ci/get-version.js
-        echo "VERSION=$(node scripts/ci/get-version.js)" >> $GITHUB_ENV
     - name: CHT Setup
       run: |
-#        echo $VERSION
-#        node scripts/e2e/e2e-servers.js > tests/logs/e2e-server.log &
         docker-compose -f scripts/ci/cht-compose-test.yml up -d
         sh scripts/e2e/wait_for_response_code.sh 5988 200 api
     - name: Test it!
