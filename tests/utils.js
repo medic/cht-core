@@ -393,6 +393,53 @@ const waitForSettingsUpdateLogs = (type) => {
   return module.exports.waitForApiLogs(/Settings updated/);
 };
 
+/**
+ * Collector that listens to the given container logs and collects lines that match at least one of the a
+ * given regular expressions
+ *
+ * To use, call before the action you wish to catch, and then execute the returned function after
+ * the action should have taken place. The function will return a promise that will succeed with
+ * the list of captured lines, or fail if there have been any errors with log capturing.
+ *
+ * @param      {string}    logFilename  filename of file in local logs directory
+ * @param      {[RegExp]}  regex        matching expression(s) run against lines
+ * @return     {function}  fn that returns a promise
+ */
+const collectLogs = (container, ...regex) => {
+  const lines = [];
+  const errors = [];
+
+  const params = `logs ${container} -f --tail=0`;
+  const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
+
+  proc.stdout.on('data', (data) => {
+    data = data.toString();
+    if (regex.find(r => r.test(data))) {
+      lines.push(data);
+    }
+  });
+  proc.stderr.on('err', err => errors.push(err.toString()));
+
+  return () => {
+    proc.stdout.destroy();
+    proc.stderr.destroy();
+    proc.kill('SIGINT');
+
+    if (errors.length) {
+      return Promise.reject({ message: 'CollectLogs errored', errors: errors });
+    }
+
+    return Promise.resolve(lines);
+  };
+};
+
+/**
+ * Watches a docker log until at least one line matches one of the given regular expressions.
+ * Watch expires after 10 seconds.
+ * @param {String} container - name of the container to watch
+ * @param {[RegExp]} regex - matching expression(s) run against lines
+ * @returns {Object} that contains the promise to resolve when logs lines are matched and a cancel function
+ */
 const waitForDockerLogs = (container, ...regex) => {
   let timeout;
   const params = `logs ${container} -f --tail=0`;
@@ -412,7 +459,6 @@ const waitForDockerLogs = (container, ...regex) => {
 
     const checkOutput = (data) => {
       data = data.toString();
-      console.log(data);
       if (regex.find(r => r.test(data))) {
         kill();
         clearTimeout(timeout);
@@ -944,44 +990,6 @@ module.exports = {
   startSentinel: () => startService('sentinel'),
 
   /**
-   * Collector that listens to the given logfile and collects lines that match at least one of the a
-   * given regular expressions
-   *
-   * To use, call before the action you wish to catch, and then execute the returned function after
-   * the action should have taken place. The function will return a promise that will succeed with
-   * the list of captured lines, or fail if there have been any errors with log capturing.
-   *
-   * @param      {string}    logFilename  filename of file in local logs directory
-   * @param      {[RegExp]}  regex        matching expression(s) run against lines
-   * @return     {function}  fn that returns a promise
-   */
-  collectLogs: (logFilename, ...regex) => {
-    const lines = [];
-    const errors = [];
-
-    const tail = new Tail(`./tests/logs/${logFilename}`);
-    tail.on('line', data => {
-      if (regex.find(r => r.test(data))) {
-        lines.push(data);
-      }
-    });
-    tail.on('error', err => {
-      errors.push(err);
-    });
-    tail.watch();
-
-    return function () {
-      tail.unwatch();
-
-      if (errors.length) {
-        return Promise.reject({ message: 'CollectLogs errored', errors: errors });
-      }
-
-      return Promise.resolve(lines);
-    };
-  },
-
-  /**
    * Watches a given logfile until at least one line matches one of the given regular expressions.
    * Watch expires after 10 seconds.
    * @param {String} logFilename - filename of file in local logs directory
@@ -1116,12 +1124,9 @@ module.exports = {
   sentinelLogFile: 'sentinel.e2e.log',
 
   waitForDockerLogs,
+  collectLogs,
 
-  waitForApiLogs: (...regex) => {
-    return module.exports.waitForDockerLogs('cht-api', ...regex);
-  },
-
-  waitForSentinelLogs: (...regex) => {
-    return module.exports.waitForDockerLogs('cht-sentinel', ...regex);
-  },
+  waitForApiLogs: (...regex) => module.exports.waitForDockerLogs('cht-api', ...regex),
+  waitForSentinelLogs: (...regex) => module.exports.waitForDockerLogs('cht-sentinel', ...regex),
+  collectSentinelLogs: (...regex) => collectLogs('cht-sentinel', ...regex),
 };
