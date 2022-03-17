@@ -133,7 +133,9 @@ const getFieldByType = (def, type) => {
   if (!def || !def.fields) {
     return;
   }
-  return Object.keys(def.fields).find(k => def.fields[k].type === type);
+  return Object
+    .keys(def.fields)
+    .find(k => def.fields[k] && def.fields[k].type === type);
 };
 
 const lower = str => (str && str.toLowerCase ? str.toLowerCase() : str);
@@ -221,10 +223,7 @@ exports.parse = (def, doc) => {
   let msgData;
   const formData = {};
   let addOmittedFields = false;
-  const aggregateBSDate = def && def.fields && Object
-    .keys(def.fields)
-    .some(key => def.fields[key] && def.fields[key].type === 'bsAggreDate');
-
+  const aggregateBSDateField = getFieldByType(def, 'bsAggreDate');
   if (!def || !doc || !doc.message || !def.fields) {
     return {};
   }
@@ -267,7 +266,7 @@ exports.parse = (def, doc) => {
     }
   }
 
-  if(aggregateBSDate) {
+  if(aggregateBSDateField) {
     let bsYear;
     let bsMonth = 1;
     let bsDay = 1;
@@ -290,8 +289,7 @@ exports.parse = (def, doc) => {
       return;
     }
     
-    const dateField = getFieldByType(def, 'bsAggreDate');
-    formData[dateField] = bsToEpoch(bsYear, bsMonth, bsDay);
+    formData[aggregateBSDateField] = bsToEpoch(bsYear, bsMonth, bsDay);
   }
 
   // pass along some system generated fields

@@ -151,13 +151,7 @@ const getLMPDate = doc => {
     }
   }
 };
-const setExpectedBirthDate = doc => {
-  let start;
-  const lmpDate = getLMPDate(doc);
-  if (lmpDate) {
-    start = moment(lmpDate);
-  } else {
-    const lmp = getWeeksSinceLMP(doc);
+
 const setExpectedBirthDate = doc => {
   let start;
   const lmpDate = getLMPDate(doc);
@@ -171,26 +165,12 @@ const setExpectedBirthDate = doc => {
     }
   }
 
-  if (!start) {    
+  if (!start) {// means baby was already born, chw just wants a registration.
     doc.lmp_date = null;
     doc.expected_date = null;
     return;
   }
 
-  doc.lmp_date = start.toISOString();
-  doc.expected_date = start
-    .clone()
-    .add(40, 'weeks')
-    .toISOString();
-};
-      // means baby was already born, chw just wants a registration.
-      doc.lmp_date = null;
-      doc.expected_date = null;
-      return;
-    }
-    start = moment(doc.reported_date).startOf('day');
-    start.subtract(lmp, 'weeks');
-  }
   doc.lmp_date = start.toISOString();
   doc.expected_date = start
     .clone()

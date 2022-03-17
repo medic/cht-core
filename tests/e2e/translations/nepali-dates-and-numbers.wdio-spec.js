@@ -239,10 +239,10 @@ describe('Bikram Sambat date display', () => {
       content: `${formIdBS} Shrestha ${momentToBikYMD(tenWeeksAgo)}`
     });
 
-    await commonPage.goToPeople();
+    await browser.refresh();
     await commonPage.goToReports();
-    const firstReport = reportsPage.firstReport();
-    firstReport.click();
+    const firstReport = await reportsPage.firstReport();
+    await firstReport.click();
 
     const dateFormat = bikramSambat.toBik_text(tenWeeksAgo);
     const relativeFormat = moment(tenWeeksAgo.toDate()).fromNow();
@@ -263,10 +263,10 @@ describe('Bikram Sambat date display', () => {
       `${momentToBikParts(nineWeeksAgo).day}`
     });
 
-    await commonPage.goToPeople();
+    await browser.refresh();
     await commonPage.goToReports();
-    const firstReport = reportsPage.firstReport();
-    firstReport.click();
+    const firstReport = await reportsPage.firstReport();
+    await firstReport.click();
 
     const dateFormat = bikramSambat.toBik_text(nineWeeksAgo);
     const relativeFormat = moment(nineWeeksAgo.toDate()).fromNow();
