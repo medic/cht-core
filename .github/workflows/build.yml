@@ -142,10 +142,6 @@ jobs:
         echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV            
         echo "TEST_SUITE=integration" >> $GITHUB_ENV 
         echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
-    - name: Set image version
-      run: |
-        node scripts/ci/get-version.js
-        echo "VERSION=$(node scripts/ci/get-version.js)" >> $GITHUB_ENV
     - name: Create logs directory
       run: mkdir tests/logs
     - name: Install pyxform
@@ -154,6 +150,10 @@ jobs:
       run:  npm install -g cht-conf
     - name: npm CI
       run: npm ci
+    - name: Set image version
+      run: |
+        node scripts/ci/get-version.js
+        echo "VERSION=$(node scripts/ci/get-version.js)" >> $GITHUB_ENV
     - name: CHT Setup
       run: |
         echo $VERSION
