@@ -143,7 +143,9 @@ jobs:
         echo "TEST_SUITE=integration" >> $GITHUB_ENV 
         echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
     - name: Set image version
-      run: echo "VERSION=$(node scripts/ci/get-version.js )" >> $GITHUB_ENV
+      run: |
+        node scripts/ci/get-version.js
+        echo "VERSION=$(node scripts/ci/get-version.js)" >> $GITHUB_ENV
     - name: Create logs directory
       run: mkdir tests/logs
     - name: Install pyxform
@@ -154,7 +156,7 @@ jobs:
       run: npm ci
     - name: CHT Setup
       run: |
-        echo $IMAGE_TAG
+        echo $VERSION
         node scripts/e2e-servers.js > /tests/logs/e2e-server.log &
         docker-compose -f scripts/ci/cht-compose-test.yml up -d
         sh scripts/e2e/wait_for_response_code.sh 5988 200 api
