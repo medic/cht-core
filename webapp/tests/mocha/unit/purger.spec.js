@@ -2,7 +2,6 @@ const sinon = require('sinon');
 const chai = require('chai');
 
 const purger = require('../../../src/js/bootstrapper/purger');
-const utils = require('../../../src/js/bootstrapper/utils');
 
 let localDb;
 let userCtx;
