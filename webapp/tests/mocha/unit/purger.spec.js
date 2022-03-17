@@ -1,13 +1,11 @@
 const sinon = require('sinon');
 const chai = require('chai');
-const moment = require('moment');
 
 const purger = require('../../../src/js/bootstrapper/purger');
 const utils = require('../../../src/js/bootstrapper/utils');
 
 let localDb;
 let userCtx;
-let fetch;
 
 describe('Purger', () => {
 
@@ -27,7 +25,6 @@ describe('Purger', () => {
       },
     };
 
-    fetch = sinon.stub(utils, 'fetchJSON');
     localDb = {
       get: sinon.stub(),
       allDocs: sinon.stub(),

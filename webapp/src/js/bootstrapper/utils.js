@@ -28,11 +28,11 @@ const getBaseUrl = () => {
 
 const fetchJSON = (path) => {
   const baseUrl = getBaseUrl();
-  const opts = {
+  const options = {
     credentials: 'same-origin',
     headers: opts.remote_headers
   };
-  return fetch(`${baseUrl}${path}`, opts)
+  return fetch(`${baseUrl}${path}`, options)
     .then(res => res.json());
 };
 

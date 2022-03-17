@@ -1,5 +1,3 @@
-const utils = require('./utils');
-
 const PURGE_LOG_DOC_ID = '_local/purgelog';
 const MAX_HISTORY_LENGTH = 10;
 const BATCH_SIZE = 100;
@@ -33,7 +31,7 @@ const appendToPurgeList = (ids) => {
     window.localStorage.setItem(TO_PURGE_LIST_KEY, JSON.stringify(unique));
   }
   return toPurgeList.length >= PURGE_LIST_MAX_LENGTH; // is list full?
-}
+};
 
 const getToPurgeList = () => {
   const stored = window.localStorage.getItem(TO_PURGE_LIST_KEY);
