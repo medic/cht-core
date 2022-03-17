@@ -154,7 +154,7 @@ jobs:
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
     - name: Dump logs
       run: |
-        docker logs couch > tests/logs/couch_container.log 2>&1 &&
+        docker logs couch > tests/logs/couch.log 2>&1 &&
         docker logs cht-api > tests/logs/cht-api.log 2>&1
         docker logs cht-sentinel > tests/logs/cht-sentinel.log 2>&1
       if: ${{ always() }}

@@ -522,7 +522,7 @@ const dockerComposeCmd = (...params) => {
 };
 
 const startServices = () => dockerComposeCmd('up', '-d');
-const stopServices = () => dockerComposeCmd('down', '--remove-orphans');
+const stopServices = () => dockerComposeCmd('down'/*, '--remove-orphans'*/);
 const startService = (service) => dockerComposeCmd('start', `cht-${service}`);
 const stopService = (service) => dockerComposeCmd('stop', `cht-${service}`);
 
