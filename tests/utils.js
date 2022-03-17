@@ -26,6 +26,7 @@ let e2eDebug;
 const hasModal = () => element(by.css('#update-available')).isPresent();
 const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 
+const COMPOSE_FILE = path.resolve(__dirname, 'cht-compose-test.yml');
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
@@ -393,7 +394,7 @@ const waitForSettingsUpdateLogs = (type) => {
 
 const waitForDockerLogs = (container, ...regex) => {
   let timeout;
-  const params = `-f ${constants.DOCKER_COMPOSE_FILE} logs ${container} -f --tail=0`;
+  const params = `-f ${COMPOSE_FILE} logs ${container} -f --tail=0`;
   const proc = spawn('docker-compose', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
 
   const kill = () => {
@@ -495,25 +496,73 @@ const saveBrowserLogs = () => {
 
 
 const prepServices = async (defaultSettings) => {
-  if (constants.IS_CI) {
-    console.log('On CI, waiting for horti to first boot api');
-    // CI' horti will be installing and then deploying api and sentinel, and those logs are
-    // getting pushed into horti.log Once horti has bootstrapped we want to restart everything so
-    // that the service processes get restarted with their logs separated and pointing to the
-    // correct logs for testing
-    await listenForApi();
-    // console.log('Horti booted API, rebooting under our logging structure');
-    //await rpn.post('http://localhost:31337/all/restart');
-  } else {
-    // Locally we just need to start them and can do so straight away
-    await rpn.post('http://localhost:31337/all/start');
-  }
-
+  await startServices();
   await listenForApi();
   if (defaultSettings) {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
+};
+
+const startServices = () => {
+  return new Promise((resolve, reject) => {
+    const server = spawn('docker-compose', [ '-f', COMPOSE_FILE, 'up', `-d` ]);
+
+    server.on('error', (err) => {
+      console.error(err);
+      reject(err);
+    });
+    server.stdout.on('data', (chunk) => console.log(chunk.toString()));
+    server.stderr.on('data', (chunk) => console.error(chunk.toString()));
+
+    server.on('close', resolve);
+  });
+};
+
+const stopServices = () => {
+  return new Promise((resolve, reject) => {
+    const server = spawn('docker-compose', [ '-f', COMPOSE_FILE, 'down', `--remove-orphans` ]);
+
+    server.on('error', (err) => {
+      console.error(err);
+      reject(err);
+    });
+    server.stdout.on('data', (chunk) => console.log(chunk.toString()));
+    server.stderr.on('data', (chunk) => console.error(chunk.toString()));
+
+    server.on('close', resolve);
+  });
+};
+
+const startService = (service) => {
+  return new Promise((resolve, reject) => {
+    const server = spawn('docker-compose', [ '-f', COMPOSE_FILE, 'start', `cht-${service}` ]);
+
+    server.on('error', (err) => {
+      console.error(err);
+      reject(err);
+    });
+    server.stdout.on('data', (chunk) => console.log(chunk.toString()));
+    server.stderr.on('data', (chunk) => console.error(chunk.toString()));
+
+    server.on('close', resolve);
+  });
+};
+
+const stopService = (service) => {
+  return new Promise((resolve, reject) => {
+    const server = spawn('docker-compose', [ '-f', COMPOSE_FILE, 'stop', '-t', 1, `cht-${service}` ]);
+    console.log(['docker-compose', '-f', COMPOSE_FILE, 'stop', '-t', 1, `cht-${service}` ].join(' '));
+
+    server.on('error', (err) => {
+      console.error(err);
+      reject(err);
+    });
+    server.stdout.on('data', (chunk) => console.log(chunk.toString()));
+    server.stderr.on('data', (chunk) => console.error(chunk.toString()));
+
+    server.on('close', resolve);
+  });
 };
 
 const protractorLogin = async (browser, timeout = 20) => {
@@ -543,11 +592,6 @@ const setupUserDoc = (userName = auth.username, userDoc = userSettings.build()) 
       const finalDoc = Object.assign(doc, userDoc);
       return module.exports.saveDoc(finalDoc);
     });
-};
-
-
-const tearDownServices = () => {
-  return rpn.post('http://localhost:31337/die');
 };
 
 const parseCookieResponse = (cookieString) => {
@@ -927,8 +971,8 @@ module.exports = {
 
   setDebug: debug => e2eDebug = debug,
 
-  stopSentinel: () => rpn.post('http://localhost:31337/sentinel/stop'),
-  startSentinel: () => rpn.post('http://localhost:31337/sentinel/start'),
+  stopSentinel: () => stopService('sentinel'),
+  startSentinel: () => startService('sentinel'),
 
   /**
    * Collector that listens to the given logfile and collects lines that match at least one of the a
@@ -1090,9 +1134,9 @@ module.exports = {
   protractorLogin: protractorLogin,
 
   saveBrowserLogs: saveBrowserLogs,
-  tearDownServices,
+  tearDownServices: stopServices,
   endSession: async (exitCode) => {
-    await tearDownServices();
+    await stopServices();
     return module.exports.reporter.afterLaunch(exitCode);
   },
 
@@ -1105,10 +1149,11 @@ module.exports = {
   waitForDockerLogs,
 
   waitForApiLogs: (...regex) => {
-    if (constants.IS_CI) {
-      return module.exports.waitForDockerLogs(constants.DOCKER_SERVICE_NAME.api, ...regex);
-    }
-    return module.exports.waitForLogs(module.exports.apiLogFile, ...regex);
+    // if (constants.IS_CI) {
+    //   return module.exports.waitForDockerLogs(constants.DOCKER_SERVICE_NAME.api, ...regex);
+    // }
+    // return module.exports.waitForLogs(module.exports.apiLogFile, ...regex);
+    return module.exports.waitForDockerLogs(constants.DOCKER_SERVICE_NAME.api, ...regex);
   },
 
   waitForSentinelLogs: (...regex) => {
