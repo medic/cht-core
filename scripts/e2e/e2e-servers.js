@@ -37,7 +37,10 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
     if (constants.IS_CI) {
       server = spawn('docker-compose', [ '-f', COMPOSE_FILE, 'start', `cht-${serviceName}` ]);
 
-      server.on('error', (err) => reject(err));
+      server.on('error', (err) => {
+        console.error(err);
+        reject(err);
+      });
       server.stdout.on('data', (chunk) => console.log(chunk.toString()));
       server.stderr.on('data', (chunk) => console.error(chunk.toString()));
 
@@ -61,9 +64,9 @@ const startServer = (serviceName, append) => new Promise((resolve, reject) => {
       server.stdout.on('data', writeToLogStream);
       server.stderr.on('data', writeToLogStream);
       server.on('close', code => writeToLogStream(`${serviceName} process exited with code ${code}`));
-    }
 
-    processes[serviceName] = server;
+      processes[serviceName] = server;
+    }
     resolve();
   } catch (err) {
     reject(err);
@@ -75,7 +78,10 @@ const stopServer = (serviceName) => new Promise((res, rej) => {
     const pid = spawn('docker-compose', [ '-f', COMPOSE_FILE, 'stop', '-t', 1, `cht-${serviceName}` ]);
     console.log(['docker-compose', '-f', COMPOSE_FILE, 'stop', '-t', 1, `cht-${serviceName}` ].join(' '));
 
-    pid.on('error', (err) => rej(err));
+    pid.on('error', (err) => {
+      console.error(err);
+      rej(err);
+    });
     pid.stdout.on('data', (chunk) => console.log(chunk.toString()));
     pid.stderr.on('data', (chunk) => console.error(chunk.toString()));
 
