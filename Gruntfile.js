@@ -287,7 +287,8 @@ module.exports = function(grunt) {
               `npm dedupe`,
               `cd ../`,
               `docker build -f ./${service}/Dockerfile --tag ${buildUtils.getImageTag(service)} .`,
-              `docker save ${buildUtils.getImageTag(service)} /images/${buildUtils.getImageTag(service)}.tar`,
+              `mkdir -p images`,
+              `docker save ${buildUtils.getImageTag(service)} > images/${buildUtils.getImageTag(service)}.tar`,
             ].join(' && ')
           )
           .join(' && '),

@@ -56,7 +56,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: cht-images
-        path: /images/
+        path: images/
 
   config-tests:
     needs: build
@@ -132,10 +132,10 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: cht-images
-        path: /images/
+        path: images/
     - name: Load docker images
       run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
-      working-directory: /images/
+      working-directory: images/
     - name: Set CI Vars
       run: |
         echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
