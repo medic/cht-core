@@ -157,7 +157,7 @@ jobs:
     - name: CHT Setup
       run: |
         echo $VERSION
-        node scripts/e2e-servers.js > /tests/logs/e2e-server.log &
+        node scripts/e2e-servers.js > tests/logs/e2e-server.log &
         docker-compose -f scripts/ci/cht-compose-test.yml up -d
         sh scripts/e2e/wait_for_response_code.sh 5988 200 api
     - name: Test it!
