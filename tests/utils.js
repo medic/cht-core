@@ -395,8 +395,8 @@ const waitForSettingsUpdateLogs = (type) => {
 
 const waitForDockerLogs = (container, ...regex) => {
   let timeout;
-  const params = `-f ${COMPOSE_FILE} logs ${container} -f --tail=0`;
-  const proc = spawn('docker-compose', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
+  const params = `logs ${container} -f --tail=0`;
+  const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
 
   const kill = () => {
     proc.stdout.destroy();
@@ -412,6 +412,7 @@ const waitForDockerLogs = (container, ...regex) => {
 
     const checkOutput = (data) => {
       data = data.toString();
+      console.log(data);
       if (regex.find(r => r.test(data))) {
         kill();
         clearTimeout(timeout);
@@ -497,6 +498,7 @@ const saveBrowserLogs = () => {
 
 
 const prepServices = async (defaultSettings) => {
+  await stopServices(true);
   await startServices();
   await listenForApi();
   if (defaultSettings) {
@@ -522,7 +524,13 @@ const dockerComposeCmd = (...params) => {
 };
 
 const startServices = () => dockerComposeCmd('up', '-d');
-const stopServices = () => dockerComposeCmd('down'/*, '--remove-orphans'*/);
+
+const stopServices = (removeOrphans) => {
+  if (removeOrphans) {
+    return dockerComposeCmd('down', '--remove-orphans');
+  }
+  return dockerComposeCmd('down');
+};
 const startService = (service) => dockerComposeCmd('start', `cht-${service}`);
 const stopService = (service) => dockerComposeCmd('stop', `cht-${service}`);
 
@@ -1110,17 +1118,10 @@ module.exports = {
   waitForDockerLogs,
 
   waitForApiLogs: (...regex) => {
-    // if (constants.IS_CI) {
-    //   return module.exports.waitForDockerLogs(constants.DOCKER_SERVICE_NAME.api, ...regex);
-    // }
-    // return module.exports.waitForLogs(module.exports.apiLogFile, ...regex);
-    return module.exports.waitForDockerLogs(constants.DOCKER_SERVICE_NAME.api, ...regex);
+    return module.exports.waitForDockerLogs('cht-api', ...regex);
   },
 
   waitForSentinelLogs: (...regex) => {
-    if (constants.IS_CI) {
-      return module.exports.waitForDockerLogs(constants.DOCKER_SERVICE_NAME.sentinel, ...regex);
-    }
-    return module.exports.waitForLogs(module.exports.sentinelLogFile, ...regex);
+    return module.exports.waitForDockerLogs('cht-sentinel', ...regex);
   },
 };

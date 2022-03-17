@@ -35,10 +35,4 @@ module.exports = {
     reported_date: 1541679811408,
   },
   BASE_URL: `http://${COUCH_HOST}:${API_PORT}/`,
-
-  DOCKER_COMPOSE_FILE: path.resolve(__dirname, '..', 'scripts', 'ci', 'cht-compose-test.yml'),
-  DOCKER_SERVICE_NAME: {
-    api: 'cht-api',
-    sentinel: 'cht-sentinel',
-  },
 };
