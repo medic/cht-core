@@ -199,19 +199,28 @@ describe('Purging on login', () => {
 
   let originalTimeout;
   beforeAll(async () => {
+    console.error('1');
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
+    console.error('2');
     await commonElements.goToMessagesNative();
+    console.error('3');
     await utils.saveDocs(initialReports.concat(initialDocs));
+    console.error('4');
     await utils.request({
       path: `/_users/org.couchdb.user:${restrictedUserName}`,
       method: 'PUT',
       body: restrictedUser
     });
+    console.error('5');
     const seq = await sentinelUtils.getCurrentSeq();
+    console.error('6');
     await utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }, true);
+    console.error('7');
     await restartSentinel();
+    console.error('8');
     await sentinelUtils.waitForPurgeCompletion(seq);
+    console.error('9');
   });
 
   afterAll(async () => {
