@@ -9,7 +9,7 @@ const {
   BUILD_NUMBER,
   CI,
   // DOCKERHUB_USERNAME,
-  DOCKERHUB_TOKEN,
+  // DOCKERHUB_TOKEN,
 } = process.env;
 
 const DEV = !BUILD_NUMBER;
@@ -278,13 +278,6 @@ module.exports = function(grunt) {
         stdio: 'inherit', // enable colors!
       },
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
-      'clean-docker-cache': {
-        cmd: () => [
-          'docker image ls',
-          'docker container prune',
-          'docker image prune -a',
-        ].join(' && '),
-      },
       'build-service-images': {
         cmd: () => ['api', 'sentinel']
           .map(service =>
@@ -294,7 +287,7 @@ module.exports = function(grunt) {
               `npm dedupe`,
               `cd ../`,
               `docker build -f ./${service}/Dockerfile --tag ${buildUtils.getImageTag(service)} .`,
-              `docker image tag ${buildUtils.getImageTag(service)} ${buildUtils.getImageTag(service)}`,
+              `docker save ${buildUtils.getImageTag(service)} /images/${buildUtils.getImageTag(service)}.tar`,
             ].join(' && ')
           )
           .join(' && '),
@@ -303,9 +296,6 @@ module.exports = function(grunt) {
         cmd: () => ['api', 'sentinel']
           .map(service =>
             [
-              // `echo ${DOCKERHUB_TOKEN} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin`,
-              // `docker logout`,
-              `echo ${DOCKERHUB_TOKEN} | docker login docker.io -u dockermedic --password-stdin`,
               `docker push ${buildUtils.getImageTag(service)}`,
             ].join(' && ')
           )

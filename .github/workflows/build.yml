@@ -49,12 +49,14 @@ jobs:
     - name: Grunt CI-Compile
       run: |
         node --stack_size=10000 `which grunt` ci-compile-github
-    - uses: satackey/action-docker-layer-caching@v0.0.11
-        # Ignore the failure of a step and avoid terminating the job.
-      continue-on-error: true
     - name: Publish for testing
       run: |
         node --stack_size=10000 `which grunt` publish-for-testing
+    - name: Upload docker images as artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: cht-images
+        path: /images/
 
   config-tests:
     needs: build
@@ -126,6 +128,14 @@ jobs:
       with:
         node-version: 16.x
     - uses: actions/checkout@v2
+    - name: Download docker images artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: cht-images
+        path: /images/
+    - name: Load docker images
+      run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
+      working-directory: /images/
     - name: Set CI Vars
       run: |
         echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
