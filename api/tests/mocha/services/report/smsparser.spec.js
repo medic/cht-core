@@ -3,6 +3,7 @@ const chai = require('chai');
 const definitions = require('../../../form-definitions');
 const config = require('../../../../src/config');
 const smsparser = require('../../../../src/services/report/smsparser');
+const moment = require('moment');
 
 describe('sms parser', () => {
 
@@ -504,7 +505,7 @@ describe('sms parser', () => {
       }
     };
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({testdate: 1331510400000});
+    chai.expect(data).to.deep.equal({ testdate: moment('2012-03-12').valueOf() });
   });
 
   it('parse date field: textforms', () => {
@@ -531,7 +532,11 @@ describe('sms parser', () => {
     const doc = { message: '1!YYYZ!##2012-03-12' };
     const def = definitions.forms.YYYZ;
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({one:null, two:null, birthdate: 1331510400000});
+    chai.expect(data).to.deep.equal({
+      one: null,
+      two: null,
+      birthdate: moment('2012-03-12').valueOf()
+    });
   });
 
   it('parse date field yyyz 2: textforms', () => {
@@ -542,7 +547,7 @@ describe('sms parser', () => {
   });
 
   it('parse bsDate field: muvuku', () => {
-    const doc = { message: '1!0000!2068-11-29' };
+    const doc = { message: '1!0000!2068-11-29' };//
     const def = {
       meta: {
         code: '0000'
@@ -558,7 +563,7 @@ describe('sms parser', () => {
       }
     };
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({testdate: 1331510400000});
+    chai.expect(data).to.deep.equal({testdate: moment('2012-03-12').valueOf()});
   });
 
   it('parse bsDate field: compact textforms', () => {
@@ -578,21 +583,27 @@ describe('sms parser', () => {
       }
     };
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({testdate: 1331510400000});
+    chai.expect(data).to.deep.equal({testdate: moment('2012-03-12').valueOf()});
   });
 
   it('parse bsDate field yyyt: muvuku', () => {
     const doc = { message: '1!YYYT!12345#2068-11-29' };
     const def = definitions.forms.YYYT;
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({patient_id: '12345', lmp_date: 1331510400000});
+    chai.expect(data).to.deep.equal({
+      patient_id: '12345',
+      lmp_date: moment('2012-03-12').valueOf()
+    });
   });
 
   it('parse bsDate field yyyt 2: textforms', () => {
     const doc = { message: '12345 2068-11-29' };
     const def = definitions.forms.YYYT;
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({patient_id: '12345', lmp_date: 1331510400000});
+    chai.expect(data).to.deep.equal({
+      patient_id: '12345',
+      lmp_date: moment('2012-03-12').valueOf()
+    });
   });
 
   it('invalid bsDate field yyyt 2: textforms', () => {
@@ -609,7 +620,7 @@ describe('sms parser', () => {
     chai.expect(data).to.deep.equal({
       patient_id: 12345,
       lmp_year: 2068, lmp_month: 11, lmp_day: 29,
-      lmp_date: 1331510400000
+      lmp_date: moment('2012-03-12').valueOf()
     });
   });
 
@@ -620,7 +631,7 @@ describe('sms parser', () => {
     chai.expect(data).to.deep.equal({
       patient_id: '12345',
       lmp_year: '2068', lmp_month: '11', lmp_day: '29',
-      lmp_date: 1331510400000
+      lmp_date: moment('2012-03-12').valueOf()
     });
   });
   
@@ -643,7 +654,7 @@ describe('sms parser', () => {
     chai.expect(data).to.deep.equal({
       patient_id: '12345',
       lmp_year: '2068',
-      lmp_date: 1302739200000 //2068-01-01 BS
+      lmp_date: moment('2011-04-14').valueOf() //2068-01-01 BS
     });
   });
 
