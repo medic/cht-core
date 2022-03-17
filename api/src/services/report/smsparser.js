@@ -185,7 +185,7 @@ exports.parseField = (field, raw) => {
     }
     const separator = raw[raw.search(/[^0-9]/)];//non-numeric character
     const dateParts = raw.split(separator);
-    return bsToEpoch(dateParts[0], dateParts[1], dateParts[2]);
+    return bsToEpoch(...dateParts);
   }
   case 'boolean': {
     if (raw === undefined) {
