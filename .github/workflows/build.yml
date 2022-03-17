@@ -139,12 +139,11 @@ jobs:
     - name: Set CI Vars
       run: |
         echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
-        echo "VERSION=$(npm pkg get version | sed 's/"//g')" >> $GITHUB_ENV      
+        echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV            
         echo "TEST_SUITE=integration" >> $GITHUB_ENV 
         echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
-    - name: Set image tag
-      run: echo "IMAGE_TAG=$VERSION-$BRANCH.$BUILD_NUMBER" >> $GITHUB_ENV
+    - name: Set image version
+      run: echo "VERSION=$(node scripts/ci/get-version.js )" >> $GITHUB_ENV
     - name: Create logs directory
       run: mkdir tests/logs
     - name: Install pyxform
@@ -156,6 +155,7 @@ jobs:
     - name: CHT Setup
       run: |
         echo $IMAGE_TAG
+        node scripts/e2e-servers.js > /tests/logs/e2e-server.log &
         docker-compose -f scripts/ci/cht-compose-test.yml up -d
         sh scripts/e2e/wait_for_response_code.sh 5988 200 api
     - name: Test it!
