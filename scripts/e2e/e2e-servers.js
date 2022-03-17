@@ -88,10 +88,6 @@ const stopServer = (serviceName) => new Promise((res, rej) => {
   delete processes[serviceName];
 });
 
-if(!fs.existsSync('tests/logs')) {
-  fs.mkdirSync('tests/logs');
-}
-
 const app = express();
 
 const started = {
