@@ -7,6 +7,10 @@ describe('Offline first', () => {
     await commonElements.goToMessagesNative();
   });
 
+  afterAll(async () => {
+    await browser.throttle('online'); // remove throttling
+  });
+
   it('should be able to load with throttled connection', async () => {
     await browser.throttle({ latency: 60000 }); // take a minute to respond to any request
     await utils.resetBrowser();

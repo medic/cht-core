@@ -277,7 +277,6 @@ describe('Purging on login', () => {
     chai.expect(result.roles).to.equal(JSON.stringify(restrictedUser.roles.sort()));
     chai.expect(result.history.length).to.equal(1);
     chai.expect(result.count).to.equal(1);
-    chai.expect(result.history[0].date).to.equal(purgeDate);
 
     await commonElements.goToReportsNative();
     expect(await browser.isElementPresent(reports.reportByUUID(goodFormId))).toBeTrue;
