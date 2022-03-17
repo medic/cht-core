@@ -288,7 +288,7 @@ module.exports = function(grunt) {
               `cd ../`,
               `docker build -f ./${service}/Dockerfile --tag ${buildUtils.getImageTag(service)} .`,
               `mkdir -p images`,
-              `docker save ${buildUtils.getImageTag(service)} > images/${buildUtils.getImageTag(service)}.tar`,
+              `docker save ${buildUtils.getImageTag(service)} > images/${service}.tar`,
             ].join(' && ')
           )
           .join(' && '),
