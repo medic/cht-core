@@ -264,8 +264,7 @@ const setUserContactDoc = () => {
 };
 
 const revertDb = async (except, ignoreRefresh) => {
-  const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
-  await new Promise(r => setTimeout(r, 1000));
+  const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
@@ -449,6 +448,9 @@ const waitForDockerLogs = (container, ...regex) => {
     proc.kill('SIGINT');
   };
 
+  let watchingLogs;
+  const watchLogsPromise = new Promise(resolve => watchingLogs = resolve);
+
   let logs = '';
 
   const promise = new Promise((resolve, reject) => {
@@ -459,6 +461,7 @@ const waitForDockerLogs = (container, ...regex) => {
     }, 6000);
 
     const checkOutput = (data) => {
+      watchingLogs();
       data = data.toString();
       logs += data;
       if (regex.find(r => r.test(data))) {
@@ -472,13 +475,13 @@ const waitForDockerLogs = (container, ...regex) => {
     proc.stderr.on('data', checkOutput);
   });
 
-  return {
+  return watchLogsPromise.then(() => ({
     promise,
     cancel: () => {
       clearTimeout(timeout);
       kill();
-    },
-  };
+    }
+  }));
 };
 
 const apiRetry = () => {
@@ -860,17 +863,15 @@ module.exports = {
    *                                       api logs, if value equals 'sentinel', will watch sentinel logs instead.
    * @return {Promise}        completion promise
    */
-  updateSettings: (updates, ignoreReload) => {
+  updateSettings: async (updates, ignoreReload) => {
     const watcher = ignoreReload &&
       Object.keys(updates).length &&
-      waitForSettingsUpdateLogs(ignoreReload);
-
-    return updateSettings(updates).then(() => {
-      if (!ignoreReload) {
-        return refreshToGetNewSettings();
-      }
-      return watcher && watcher.promise;
-    });
+      await waitForSettingsUpdateLogs(ignoreReload);
+    await updateSettings(updates);
+    if (!ignoreReload) {
+      return await refreshToGetNewSettings();
+    }
+    return watcher && await watcher.promise;
   },
   /**
    * Revert settings and refresh if required
@@ -879,22 +880,21 @@ module.exports = {
    *                                       and resolve when new settings are loaded.
    * @return {Promise}       completion promise
    */
-  revertSettings: ignoreRefresh => {
-    const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
-    return revertSettings().then((needsRefresh) => {
-      console.log('needsRefresh', needsRefresh, watcher);
-      if (!ignoreRefresh) {
-        return refreshToGetNewSettings();
-      }
+  revertSettings: async ignoreRefresh => {
+    const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
+    const needsRefresh = await revertSettings();
 
-      if (!needsRefresh) {
-        console.log('cancel watcher');
-        watcher && watcher.cancel();
-        return;
-      }
+    if (!ignoreRefresh) {
+      return await refreshToGetNewSettings();
+    }
 
-      return watcher.promise;
-    });
+    if (!needsRefresh) {
+      console.log('cancel watcher');
+      watcher && watcher.cancel();
+      return;
+    }
+
+    return await watcher.promise;
   },
 
   seedTestData: (userContactDoc, documents) => {
