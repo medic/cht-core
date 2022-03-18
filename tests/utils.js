@@ -265,6 +265,7 @@ const setUserContactDoc = () => {
 
 const revertDb = async (except, ignoreRefresh) => {
   const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
+  await new Promise(r => setTimeout(r, 1000));
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
