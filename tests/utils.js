@@ -411,13 +411,17 @@ const collectLogs = (container, ...regex) => {
   const params = `logs ${container} -f --tail=0`;
   const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
 
+  let watchingLogs;
+  const watchLogsPromise = new Promise(resolve => watchingLogs = resolve);
+
   proc.stdout.on('data', (data) => {
+    watchingLogs();
     data = data.toString();
     regex.forEach(r => r.test(data) && matches.push(data));
   });
   proc.stderr.on('err', err => errors.push(err.toString()));
 
-  return () => {
+  const collect = () => {
     proc.stdout.destroy();
     proc.stderr.destroy();
     proc.kill('SIGINT');
@@ -428,6 +432,8 @@ const collectLogs = (container, ...regex) => {
 
     return Promise.resolve(matches);
   };
+
+  return watchLogsPromise.then(() => collect);
 };
 
 /**
@@ -450,6 +456,7 @@ const waitForDockerLogs = (container, ...regex) => {
 
   let watchingLogs;
   const watchLogsPromise = new Promise(resolve => watchingLogs = resolve);
+  setTimeout(() => watchingLogs(), 2000);
 
   let logs = '';
 
@@ -889,7 +896,7 @@ module.exports = {
     }
 
     if (!needsRefresh) {
-      console.log('cancel watcher');
+      console.log('cancel watcher', new Date().getTime());
       watcher && watcher.cancel();
       return;
     }
