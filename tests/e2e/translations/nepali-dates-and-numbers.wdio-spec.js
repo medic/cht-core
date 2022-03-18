@@ -253,14 +253,13 @@ describe('Bikram Sambat date display', () => {
   it('SMS report shows bsAggreDate type as date field correctly', async () => {
     await setLanguage(NEPALI_LOCALE_CODE);
     moment.locale(NEPALI_LOCALE_CODE);
+    const lmpBSParts = momentToBikParts(nineWeeksAgo);
 
     await gatewayApiUtils.api.postMessage({
       id: 'lmp-id-bs-parts',
       from: '+9779876543210',
       content: `${formIdBSParts} Shrestha ` +
-      `${momentToBikParts(nineWeeksAgo).year} ` +
-      `${momentToBikParts(nineWeeksAgo).month} ` +
-      `${momentToBikParts(nineWeeksAgo).day}`
+      `${lmpBSParts.year} ${lmpBSParts.month} ${lmpBSParts.day}`
     });
 
     await browser.refresh();
