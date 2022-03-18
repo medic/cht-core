@@ -252,6 +252,7 @@ describe('Muting', () => {
 
     afterEach(async () => {
       await commonElements.syncNative();
+      console.log('revert settings after each');
       await utils.revertSettings(true);
       await unmuteContacts();
       await utils.refreshToGetNewSettings();

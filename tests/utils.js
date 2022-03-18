@@ -463,8 +463,8 @@ const waitForDockerLogs = (container, ...regex) => {
       logs += data;
       if (regex.find(r => r.test(data))) {
         resolve();
-        kill();
         clearTimeout(timeout);
+        kill();
       }
     };
 
@@ -475,8 +475,8 @@ const waitForDockerLogs = (container, ...regex) => {
   return {
     promise,
     cancel: () => {
-      kill();
       clearTimeout(timeout);
+      kill();
     },
   };
 };
