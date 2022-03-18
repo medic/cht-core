@@ -279,6 +279,8 @@ describe('Purging on login', () => {
     expect(await browser.isElementPresent(reports.reportByUUID(goodFormId2))).toBeTrue;
     expect(await browser.isElementPresent(reports.reportByUUID(badFormId2))).toBeTrue;
 
+    await browser.driver.setNetworkConditions({ offline: true, latency: 0, throughput: 0 });
+
     const purgeSettings = {
       fn: purgeFn.toString(),
       text_expression: 'every 1 seconds',
@@ -286,10 +288,13 @@ describe('Purging on login', () => {
     };
     await utils.revertSettings(true);
     const seq = await sentinelUtils.getCurrentSeq();
-    await utils.updateSettings({ purge: purgeSettings}, true);
+    await utils.updateSettings({ purge: purgeSettings }, true);
     await restartSentinel();
     await sentinelUtils.waitForPurgeCompletion(seq);
     // get new settings that say to purge on every boot!
+
+    //await browser.driver.deleteNetworkConditions();
+    await browser.driver.setNetworkConditions({ latency: 0, throughput: 25600 }, 'No throttling');
     await commonElements.syncNative();
     await utils.refreshToGetNewSettings();
 
