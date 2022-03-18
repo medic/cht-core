@@ -457,7 +457,7 @@ const waitForDockerLogs = (container, ...regex) => {
 
     const checkOutput = (data) => {
       data = data.toString();
-      console.log(data);
+      console.log(data, 'regex', ...regex);
       if (regex.find(r => r.test(data))) {
         resolve();
         kill();
