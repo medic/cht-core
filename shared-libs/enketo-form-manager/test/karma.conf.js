@@ -1,9 +1,17 @@
-/* eslint-env node */
-const path = require("path");
+// Karma configuration file, see link for more information
+// https://karma-runner.github.io/1.0/config/configuration-file.html
+const path = require('path');
 module.exports = function(config) {
   config.set({
     basePath: '../',
     frameworks: ['mocha'],
+    plugins: [
+      require('karma-mocha'),
+      require('karma-chrome-launcher'),
+      require('karma-mocha-reporter'),
+      require('karma-coverage'),
+      require('karma-webpack'),
+    ],
     client: {
       captureConsole: true,
     },
@@ -31,7 +39,9 @@ module.exports = function(config) {
       terminal: true,
     },
     files: [
-      { pattern: 'test/enketo-form-manager.spec.js', watched: false },
+      'node_modules/jquery/dist/jquery.js',
+      'test/enketo-form-manager.spec.js',
+      // 'test/enketo-xml/visit.xml'
     ],
     preprocessors: {
       'test/enketo-form-manager.spec.js': ['webpack'],
@@ -39,6 +49,15 @@ module.exports = function(config) {
     webpack: {
       mode: 'development',
       devtool: false,
+      watch: true,
+      module: {
+        rules: [
+          {
+            test: /\.xml$/i,
+            use: 'raw-loader',
+          },
+        ],
+      },
     },
     coverageReporter: {
       reporters: [

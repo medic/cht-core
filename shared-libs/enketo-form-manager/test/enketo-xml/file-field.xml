@@ -1,0 +1,6 @@
+<my-form>
+  <name>Mary</name>
+  <age>10</age>
+  <gender>f</gender>
+  <my_file type="file">some image name.png</my_file>
+</my-form>

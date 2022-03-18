@@ -1,6 +1,7 @@
 const uuid = require('uuid').v4;
 const pojo2xml = require('pojo2xml');
 const enketoConstants = require('./constants');
+const $ = require('jquery');
 
 const HTML_ATTACHMENT_NAME = 'form.html';
 const MODEL_ATTACHMENT_NAME = 'model.xml';

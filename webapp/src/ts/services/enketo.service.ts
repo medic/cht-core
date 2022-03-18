@@ -75,7 +75,7 @@ export class EnketoService {
         addAttachmentService,
         enketoTranslationService,
         getReportContentService,
-        xmlFormsService,
+        xmlFormsService
       ),
       transitionsService,
       new GlobalActions(store),
