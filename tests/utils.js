@@ -459,6 +459,7 @@ const waitForDockerLogs = (container, ...regex) => {
       data = data.toString();
       console.log(data, 'regex', ...regex);
       if (regex.find(r => r.test(data))) {
+        console.log('match found');
         resolve();
         kill();
         clearTimeout(timeout);
