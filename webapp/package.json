@@ -67,5 +67,8 @@
     "**/pouchdb-browser": "^7.2.2",
     "**/moment": "^2.26.2"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "sharedLibs": [
+    "enketo-form"
+  ]
 }

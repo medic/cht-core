@@ -12,7 +12,7 @@ import {
   TranslationServices,
   XmlServices,
   EnketoFormManager
-} from '../../js/enketo-utils';
+} from '@medic/enketo-form-manager';
 import { AddAttachmentService } from '@mm-services/add-attachment.service';
 import { DbService } from '@mm-services/db.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
