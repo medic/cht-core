@@ -449,17 +449,19 @@ const waitForDockerLogs = (container, ...regex) => {
     proc.kill('SIGINT');
   };
 
+  let logs = '';
+
   const promise = new Promise((resolve, reject) => {
     timeout = setTimeout(() => {
+      console.log(logs, ...regex);
       reject(new Error('Timed out looking for details in logs.'));
       kill();
     }, 6000);
 
     const checkOutput = (data) => {
       data = data.toString();
-      console.log(data, 'regex', ...regex);
+      logs += data;
       if (regex.find(r => r.test(data))) {
-        console.log('match found');
         resolve();
         kill();
         clearTimeout(timeout);
