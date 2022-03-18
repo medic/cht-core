@@ -406,7 +406,7 @@ const waitForSettingsUpdateLogs = (type) => {
  * @return     {function}  fn that returns a promise
  */
 const collectLogs = (container, ...regex) => {
-  const lines = [];
+  const matches = [];
   const errors = [];
 
   const params = `logs ${container} -f --tail=0`;
@@ -414,9 +414,12 @@ const collectLogs = (container, ...regex) => {
 
   proc.stdout.on('data', (data) => {
     data = data.toString();
-    if (regex.find(r => r.test(data))) {
-      lines.push(data);
-    }
+    const lines = data.split('\n');
+    lines.forEach(line => {
+      if (regex.find(r => r.test(line))) {
+        matches.push(line);
+      }
+    });
   });
   proc.stderr.on('err', err => errors.push(err.toString()));
 
@@ -429,7 +432,7 @@ const collectLogs = (container, ...regex) => {
       return Promise.reject({ message: 'CollectLogs errored', errors: errors });
     }
 
-    return Promise.resolve(lines);
+    return Promise.resolve(matches);
   };
 };
 
