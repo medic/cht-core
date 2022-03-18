@@ -882,11 +882,13 @@ module.exports = {
   revertSettings: ignoreRefresh => {
     const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
     return revertSettings().then((needsRefresh) => {
+      console.log('needsRefresh', needsRefresh, watcher);
       if (!ignoreRefresh) {
         return refreshToGetNewSettings();
       }
 
       if (!needsRefresh) {
+        console.log('cancel watcher');
         watcher && watcher.cancel();
         return;
       }
@@ -990,45 +992,6 @@ module.exports = {
 
   stopSentinel: () => stopService('sentinel'),
   startSentinel: () => startService('sentinel'),
-
-  /**
-   * Watches a given logfile until at least one line matches one of the given regular expressions.
-   * Watch expires after 10 seconds.
-   * @param {String} logFilename - filename of file in local logs directory
-   * @param {[RegExp]} regex - matching expression(s) run against lines
-   * @returns {Object} that contains the promise to resolve when logs lines are matched and a cancel function
-   */
-  waitForLogs: (logFilename, ...regex) => {
-    const tail = new Tail(`./tests/logs/${logFilename}`);
-    let timeout;
-    const promise = new Promise((resolve, reject) => {
-      timeout = setTimeout(() => {
-        tail.unwatch();
-        reject({ message: 'Timed out looking for details in log files.' });
-      }, 6000);
-
-      tail.on('line', data => {
-        if (regex.find(r => r.test(data))) {
-          tail.unwatch();
-          clearTimeout(timeout);
-          resolve();
-        }
-      });
-      tail.on('error', err => {
-        tail.unwatch();
-        clearTimeout(timeout);
-        reject(err);
-      });
-    });
-
-    return {
-      promise,
-      cancel: () => {
-        tail.unwatch();
-        clearTimeout(timeout);
-      },
-    };
-  },
 
   // delays executing a function that returns a promise with the provided interval (in ms)
   delayPromise: (promiseFn, interval) => {
