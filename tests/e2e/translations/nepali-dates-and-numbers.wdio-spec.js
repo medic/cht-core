@@ -227,7 +227,7 @@ describe('Bikram Sambat date display', () => {
     expect(await contactsPage.getContactSummaryField('phone')).to.equal('+४०७५५४५६४५६');
     expect(await contactsPage.getContactSummaryField('field')).to.equal('text ०१२३४५६७८९');
     expect(await contactsPage.getContactSummaryField('another')).to.equal('other text 0123456789');
-  });  
+  });
 
   it('SMS report shows bsDate type as date field correctly', async () => {
     await setLanguage(NEPALI_LOCALE_CODE);
@@ -239,10 +239,10 @@ describe('Bikram Sambat date display', () => {
       content: `${formIdBS} Shrestha ${momentToBikYMD(tenWeeksAgo)}`
     });
 
-    await browser.refresh();
+    await commonPage.goToPeople();
     await commonPage.goToReports();
-    const firstReport = await reportsPage.firstReport();
-    await firstReport.click();
+    const firstReport = reportsPage.firstReport();
+    firstReport.click();
 
     const dateFormat = bikramSambat.toBik_text(tenWeeksAgo);
     const relativeFormat = moment(tenWeeksAgo.toDate()).fromNow();
@@ -262,10 +262,10 @@ describe('Bikram Sambat date display', () => {
       `${lmpBSParts.year} ${lmpBSParts.month} ${lmpBSParts.day}`
     });
 
-    await browser.refresh();
+    await commonPage.goToPeople();
     await commonPage.goToReports();
-    const firstReport = await reportsPage.firstReport();
-    await firstReport.click();
+    const firstReport = reportsPage.firstReport();
+    firstReport.click();
 
     const dateFormat = bikramSambat.toBik_text(nineWeeksAgo);
     const relativeFormat = moment(nineWeeksAgo.toDate()).fromNow();
