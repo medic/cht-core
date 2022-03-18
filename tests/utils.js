@@ -8,7 +8,6 @@ const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter'
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
 const fs = require('fs');
 const path = require('path');
-const Tail = require('tail').Tail;
 const { execSync, spawn } = require('child_process');
 
 const PouchDB = require('pouchdb-core');
