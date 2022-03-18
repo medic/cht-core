@@ -401,7 +401,7 @@ const waitForSettingsUpdateLogs = (type) => {
  * the action should have taken place. The function will return a promise that will succeed with
  * the list of captured lines, or fail if there have been any errors with log capturing.
  *
- * @param      {string}    logFilename  filename of file in local logs directory
+ * @param      {string}    container    container name
  * @param      {[RegExp]}  regex        matching expression(s) run against lines
  * @return     {function}  fn that returns a promise
  */
@@ -414,12 +414,7 @@ const collectLogs = (container, ...regex) => {
 
   proc.stdout.on('data', (data) => {
     data = data.toString();
-    const lines = data.split('\n');
-    lines.forEach(line => {
-      if (regex.find(r => r.test(line))) {
-        matches.push(line);
-      }
-    });
+    regex.forEach(r => r.test(data) && matches.push(data));
   });
   proc.stderr.on('err', err => errors.push(err.toString()));
 
@@ -456,16 +451,17 @@ const waitForDockerLogs = (container, ...regex) => {
 
   const promise = new Promise((resolve, reject) => {
     timeout = setTimeout(() => {
+      reject(new Error('Timed out looking for details in logs.'));
       kill();
-      reject({ message: 'Timed out looking for details in log files.' });
     }, 6000);
 
     const checkOutput = (data) => {
       data = data.toString();
+      console.log(data);
       if (regex.find(r => r.test(data))) {
+        resolve();
         kill();
         clearTimeout(timeout);
-        resolve();
       }
     };
 
