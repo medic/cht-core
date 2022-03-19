@@ -590,7 +590,7 @@ const stopServices = (removeOrphans) => {
   return dockerComposeCmd('down');
 };
 const startService = (service) => dockerComposeCmd('start', `cht-${service}`);
-const stopService = (service) => dockerComposeCmd('stop', `cht-${service}`);
+const stopService = (service) => dockerComposeCmd('stop', `cht-${service}`, '-t', 0);
 
 const protractorLogin = async (browser, timeout = 20) => {
   await browser.driver.get(getLoginUrl());

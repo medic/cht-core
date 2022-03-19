@@ -221,7 +221,7 @@ describe('Purging on login', () => {
     await loginPage.loginNative(auth.username, auth.password);
     await utils.deleteUsers([restrictedUserName]);
     await sentinelUtils.deletePurgeDbs();
-    await commonElements.calmNative();
+    await utils.resetBrowserNative();
   });
 
   beforeEach(utils.beforeEach);
@@ -293,8 +293,7 @@ describe('Purging on login', () => {
     await sentinelUtils.waitForPurgeCompletion(seq);
     // get new settings that say to purge on every boot!
 
-    //await browser.driver.deleteNetworkConditions();
-    await browser.driver.setNetworkConditions({ latency: 0, throughput: 25600 }, 'No throttling');
+    await browser.driver.setNetworkConditions({ latency: 0, throughput: 1000 * 1000 }, 'No throttling');
     await commonElements.syncNative();
     await utils.refreshToGetNewSettings();
 
