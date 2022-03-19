@@ -1084,8 +1084,7 @@ module.exports = {
 
   saveBrowserLogs: saveBrowserLogs,
   tearDownServices: stopServices,
-  endSession: async (exitCode) => {
-    await stopServices();
+  endSession: (exitCode) => {
     return module.exports.reporter.afterLaunch(exitCode);
   },
 

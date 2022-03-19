@@ -338,7 +338,6 @@ const baseConfig = {
    * @param {<Object>} results object containing test results
    */
   onComplete: function () {
-    utils.tearDownServices();
     const reportError = new Error('Could not generate Allure report');
     const timeoutError = new Error('Timeout generating report');
     const generation = allure(['generate', 'allure-results', '--clean']);
