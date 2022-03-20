@@ -441,7 +441,7 @@ const collectLogs = (container, ...regex) => {
  * Watch expires after 10 seconds.
  * @param {String} container - name of the container to watch
  * @param {[RegExp]} regex - matching expression(s) run against lines
- * @returns {Object} that contains the promise to resolve when logs lines are matched and a cancel function
+ * @returns {Promise<Object>} that contains the promise to resolve when logs lines are matched and a cancel function
  */
 const waitForDockerLogs = (container, ...regex) => {
   let timeout;
@@ -454,9 +454,14 @@ const waitForDockerLogs = (container, ...regex) => {
     proc.kill('SIGINT');
   };
 
+  // there's a race condition where it takes a little while until logs start being tracked.
+  // if we immediately do the log-generating action after calling the docker command, there's a high chance
+  // log watching starts AFTER the action was performed.
+  // If the service produces logs actively, wait until the first log line is received, otherwise, wait for
+  // 2 seconds.
   let watchingLogs;
   const watchLogsPromise = new Promise(resolve => watchingLogs = resolve);
-  //setTimeout(() => watchingLogs(), 2000);
+  setTimeout(watchingLogs, 2000);
 
   let logs = '';
 
@@ -596,7 +601,6 @@ const getDockerLogs = (container) => {
     cmd.stderr.pipe(logWriteStream);
 
     cmd.on('close', () => {
-      logWriteStream.end();
       resolve();
     });
   });
