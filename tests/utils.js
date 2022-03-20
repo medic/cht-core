@@ -456,13 +456,13 @@ const waitForDockerLogs = (container, ...regex) => {
 
   let watchingLogs;
   const watchLogsPromise = new Promise(resolve => watchingLogs = resolve);
-  setTimeout(() => watchingLogs(), 2000);
+  //setTimeout(() => watchingLogs(), 2000);
 
   let logs = '';
 
   const promise = new Promise((resolve, reject) => {
     timeout = setTimeout(() => {
-      console.log(logs, ...regex);
+      console.log('Found logs', logs, 'watched for', ...regex);
       reject(new Error('Timed out looking for details in logs.'));
       kill();
     }, 6000);
@@ -581,13 +581,40 @@ const dockerComposeCmd = (...params) => {
   });
 };
 
-const startServices = () => dockerComposeCmd('up', '-d');
+const getDockerLogs = (container) => {
+  const logFile = path.resolve(__dirname, 'logs', `${container}.log`);
+  const logWriteStream = fs.createWriteStream(logFile);
 
-const stopServices = (removeOrphans) => {
+  return new Promise((resolve, reject) => {
+    const cmd = spawn('docker', ['logs', container]);
+
+    cmd.on('error', (err) => {
+      console.error(err);
+      reject(err);
+    });
+    cmd.stdout.pipe(logWriteStream);
+    cmd.stderr.pipe(logWriteStream);
+
+    cmd.on('close', () => {
+      logWriteStream.end();
+      resolve();
+    });
+  });
+};
+
+const saveLogs = async () => {
+  await getDockerLogs('cht-api');
+  await getDockerLogs('cht-sentinel');
+  await getDockerLogs('couch');
+};
+
+const startServices = () => dockerComposeCmd('up', '-d');
+const stopServices = async (removeOrphans) => {
   if (removeOrphans) {
     return dockerComposeCmd('down', '--remove-orphans');
   }
-  return dockerComposeCmd('down');
+  await saveLogs();
+  return dockerComposeCmd('stop');
 };
 const startService = (service) => dockerComposeCmd('start', `cht-${service}`);
 const stopService = (service) => dockerComposeCmd('stop', '-t', 0, `cht-${service}`);
@@ -896,7 +923,6 @@ module.exports = {
     }
 
     if (!needsRefresh) {
-      console.log('cancel watcher', new Date().getTime());
       watcher && watcher.cancel();
       return;
     }
@@ -1084,7 +1110,8 @@ module.exports = {
 
   saveBrowserLogs: saveBrowserLogs,
   tearDownServices: stopServices,
-  endSession: (exitCode) => {
+  endSession: async (exitCode) => {
+    await module.exports.tearDownServices();
     return module.exports.reporter.afterLaunch(exitCode);
   },
 
