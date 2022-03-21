@@ -2,7 +2,7 @@
 const { Factory } = require('rosie');
 const { faker } = require('@faker-js/faker');
 Factory.define('secrets').attrs({
-  hostname: faker.internet.domainName(),
+  hostname: faker.internet.url(),
   couch_node_name: faker.internet.domainName(),
   couch_username: faker.internet.userName(),
   couch_password: faker.internet.password(),
@@ -11,7 +11,7 @@ Factory.define('secrets').attrs({
   value_key: faker.datatype.uuid(),
   rp_contact_group: faker.datatype.uuid(),
   write_patient_state_flow: faker.datatype.uuid(),
-  directory: '.',
+  directory: 'test',
   rp_flows: {
     sample_flow_1_uuid: faker.datatype.uuid(),
     sample_flow_2_uuid: faker.datatype.uuid()
@@ -19,6 +19,13 @@ Factory.define('secrets').attrs({
 });
 
 const secrets = Factory.build(`secrets`);
-secrets.getInput = (key) => secrets[key];
+secrets.getInput = key => secrets[key];
+secrets.info = message => message;
+secrets.setFailed = status => {
+  return {
+    error: true,
+    message: status
+  }
+};
 
 module.exports = secrets;

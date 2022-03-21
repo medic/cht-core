@@ -1,12 +1,12 @@
-const rewire = require('rewire');
 const { expect } = require('chai');
-const process = require('process');
 const path = require('path');
 const sinon = require('sinon');
-const utils = rewire('../utils');
+const utils = require('../utils');
 const secrets = require('./env');
 const settings = require('./app_settings.json');
 const flows = require('./flows');
+const fs = require('fs');
+let sandbox = sinon.createSandbox();
 
 describe('rapidpro action test suite', () => {
   const mockedAxiosResponse = {
@@ -15,19 +15,19 @@ describe('rapidpro action test suite', () => {
     statusText: 'OK'
   };
   beforeEach(() => {
-    sinon.stub(process, 'env');
-    process.env['GITHUB_WORKSPACE'] = path.join(__dirname, '../');
-    sinon.stub(utils, 'setMedicCredentials').returns(mockedAxiosResponse);
+    sandbox.stub(process, 'env').value({ 'GITHUB_WORKSPACE': path.join(__dirname, '../') });
+    sandbox.stub(utils, 'setMedicCredentials').resolves(mockedAxiosResponse);
+    sandbox.stub(fs, 'writeFileSync').returns({});
   });
 
   afterEach(() => {
-    sinon.restore();
+    sandbox.restore();
   });
 
   it('method getCouchDbUrl should return a formatted url and setMedicCredentials should put it in CouchDB', async () => {
     // check the expected url is set
     const url = utils.getCouchDbUrl(secrets.hostname, secrets.couch_node_name, secrets.value_key, secrets.couch_username, secrets.couch_password);
-    expect(url.hostname).to.be.equal(secrets.hostname);
+    expect(url.origin).to.be.equal(secrets.hostname);
     expect(url.username).to.be.equal(secrets.couch_username);
     expect(url.password).to.be.equal(secrets.couch_password);
 
@@ -37,19 +37,51 @@ describe('rapidpro action test suite', () => {
     expect(response.data).to.be.deep.equal({});
   });
 
+  it('method getCouchDbUrl should throw an error if an invalid url is given', async () => {
+    try{
+      utils.getCouchDbUrl('some_invalid_url', secrets.couch_node_name, secrets.value_key, secrets.couch_username, secrets.couch_password);
+    }catch(err){
+      expect(err.message).to.include('Invalid URL');
+    }
+  });
+
   it('method getInputs should return an object containing required secrets', async () => {
     const inputs = utils.getInputs(secrets);
-    expect(inputs.rp_contact_group).to.equal(secrets.rp_contact_group);
+    utils.fields.forEach(field => {
+      expect(inputs[field]).to.equal(secrets[field]);
+    });
+  });
+
+  it('method getInputs should fail if no argument is passed', async () => {
+    try{
+      utils.getInputs();
+    }catch(err){
+      expect(err.message).to.include('Cannot read property');
+    }
   });
 
   it('method getReplacedContent should update app settings with the given secrets', async () => {
-    // check updated outbound modules
+    // check updated outbound modules - check all values
     const appSettings = await utils.getReplacedContent(settings, secrets);
-    expect(search(JSON.parse(appSettings), 'base_url')).to.equal(secrets.rp_hostname);
+    const parsedSettings = JSON.parse(appSettings);
+    expect(search(parsedSettings, 'base_url')).to.equal(secrets.rp_hostname);
 
     // check updated flows.js
     const rapidproFlows = await utils.getReplacedContent(flows, secrets.rp_flows);
-    expect(search(JSON.parse(rapidproFlows), 'sample_flow_2_uuid')).to.equal(secrets.rp_flows.sample_flow_2_uuid);
+    const parsedFlows = JSON.parse(rapidproFlows);
+    for (const elem in parsedFlows) {
+      expect(parsedFlows[elem]).to.equal(secrets.rp_flows[elem]);
+    }
+  });
+
+  it('integration test using the run method should complete successfully', async () => {
+    const result = await utils.run(process.env.GITHUB_WORKSPACE, secrets, fs, settings, flows);
+    expect(result).to.be.true;
+  });
+
+  it('integration test should fail if github workspace is not defined', async () => {
+    const result = await utils.run(null, secrets, fs, settings, flows);
+    expect(result).to.be.false;
   });
 });
 
