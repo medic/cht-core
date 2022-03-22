@@ -59,7 +59,8 @@ const getVersion = () => {
 };
 
 const getImageTag = (service) => {
-  const tag = getVersion().replace(/\//g, '-');
+  const version = process.env.VERSION || getVersion();
+  const tag = version.replace(/\//g, '-');
   return service ? `medicmobile/cht-${service}:${tag}` : tag;
 };
 

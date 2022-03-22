@@ -851,10 +851,11 @@ module.exports = function(grunt) {
     'notify:deployed',
   ]);
 
-  grunt.registerTask('build-service-images', 'Build and publish api and sentinel images', [
+  grunt.registerTask('build-service-images', 'Build api and sentinel images', [
     'copy-static-files-to-api',
     'uglify:api',
     'cssmin:api',
+    'env:version',
     'exec:build-service-images',
   ]);
 
@@ -870,8 +871,9 @@ module.exports = function(grunt) {
 
   grunt.registerTask('e2e-env-setup', 'Deploy app for testing', [
     'build-service-images',
-    'env:version',
+    'test-env',
   ]);
+  grunt.registerTask('test-env', () => console.log(process.env.VERSION));
 
   grunt.registerTask('e2e-web', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',

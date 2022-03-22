@@ -6,3 +6,5 @@
 !/sentinel/
 /sentinel/tests/
 !/shared-libs/
+/shared-libs/**/test/
+/shared-libs/**/tests/

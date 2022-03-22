@@ -15,5 +15,6 @@ WORKDIR /sentinel
 
 COPY sentinel/ /sentinel
 COPY shared-libs /shared-libs
+ENV NODE_PATH=/sentinel/node_modules
 
 ENTRYPOINT ["/bin/bash", "/sentinel/docker-entrypoint.sh", "main"]

@@ -15,5 +15,6 @@ WORKDIR /api
 
 COPY api/ /api
 COPY shared-libs /shared-libs
+ENV NODE_PATH=/api/node_modules
 
 ENTRYPOINT ["/bin/bash", "/api/docker-entrypoint.sh", "main"]
