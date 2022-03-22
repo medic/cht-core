@@ -8,8 +8,6 @@ const {
   BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
-  // DOCKERHUB_USERNAME,
-  // DOCKERHUB_TOKEN,
 } = process.env;
 
 const DEV = !BUILD_NUMBER;
