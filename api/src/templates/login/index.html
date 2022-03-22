@@ -12,6 +12,10 @@
     <div class="center">
       <form id="form" action="/medic/login" method="POST">
         <img class="logo" src="{{ branding.logo }}" title="{{ branding.name }}">
+        <p id="unsupported-browser" class="hidden">
+          Your browser is not officially supported by the CHT.<br />
+          <a target="_blank" href="https://docs.communityhealthtoolkit.org/core/releases/#requirements">See requirements</a>
+        </p>
         <label for="user" translate="User Name"></label>
         <input id="user" name="user" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
         <label for="password" translate="Password"></label>
@@ -33,6 +37,7 @@
       </div>
       <% } %>
     </div>
+    <script src="/login/bowser.js"></script>
     <script src="/login/script.js"></script>
   </body>
 </html>

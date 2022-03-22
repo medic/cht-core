@@ -187,6 +187,7 @@ module.exports = function(grunt) {
         files: {
           // public api files
           'api/build/public/login/script.js': 'api/build/public/login/script.js',
+          'api/build/public/login/bowser.js': 'api/build/public/login/bowser.js',
         }
       }
     },

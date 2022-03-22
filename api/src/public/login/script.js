@@ -189,6 +189,14 @@ const checkSession = function() {
   }
 };
 
+const isUsingSupportedBrowser = () => {
+  const parser = window.bowser.getParser(window.navigator.userAgent);
+  return parser.satisfies({
+    chrome: '>=53',
+    firefox: '>=98', // latest at the time
+  });
+};
+
 document.addEventListener('DOMContentLoaded', function() {
   translations = parseTranslations();
   selectedLocale = getLocale();
@@ -211,6 +219,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/service-worker.js');
     }
+  }
+
+  if (!isUsingSupportedBrowser()) {
+    document.getElementById('unsupported-browser').classList.remove('hidden');
   }
 });
 
