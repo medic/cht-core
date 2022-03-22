@@ -865,15 +865,13 @@ module.exports = function(grunt) {
 
   // Test tasks
   grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
-    // 'start-webdriver',
+    'start-webdriver',
     'e2e-env-setup'
   ]);
 
   grunt.registerTask('e2e-env-setup', 'Deploy app for testing', [
     'build-service-images',
-    'test-env',
   ]);
-  grunt.registerTask('test-env', () => console.log(process.env.VERSION));
 
   grunt.registerTask('e2e-web', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
