@@ -53,6 +53,5 @@ const getElementTreeXPath = function(element) {
 };
 
 module.exports = {
-  getElementXPath,
-  getElementTreeXPath
+  getElementXPath
 };

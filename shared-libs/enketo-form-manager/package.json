@@ -2,7 +2,7 @@
   "name": "@medic/enketo-form-manager",
   "version": "1.0.0",
   "description": "Utility for managing Enketo forms in the CHT",
-  "main": "src/enketo-form-manager.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "karma start test/karma.conf.js --single-run"
   },

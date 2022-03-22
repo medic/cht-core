@@ -6,15 +6,15 @@ import * as moment from 'moment';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
 import {
   ContactServices,
+  EnketoFormManager,
+  EnketoPrepopulationDataService,
   FileServices,
   FormDataServices,
   TranslationServices,
   XmlServices,
-  EnketoFormManager
 } from '@medic/enketo-form-manager';
 import { AddAttachmentService } from '@mm-services/add-attachment.service';
 import { DbService } from '@mm-services/db.service';
-import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
@@ -32,6 +32,7 @@ import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { GlobalActions } from '@mm-actions/global';
+import {UserSettingsService} from '@mm-services/user-settings.service';
 
 @Injectable({
   providedIn: 'root'
@@ -42,7 +43,7 @@ export class EnketoService {
     addAttachmentService:AddAttachmentService,
     contactSummaryService:ContactSummaryService,
     dbService:DbService,
-    enketoPrepopulationDataService:EnketoPrepopulationDataService,
+    userSettingsService:UserSettingsService,
     enketoTranslationService:EnketoTranslationService,
     extractLineageService:ExtractLineageService,
     fileReaderService:FileReaderService,
@@ -64,7 +65,7 @@ export class EnketoService {
       new FileServices(dbService, fileReaderService),
       new FormDataServices(
         contactSummaryService,
-        enketoPrepopulationDataService,
+        new EnketoPrepopulationDataService(enketoTranslationService, userSettingsService),
         languageService,
         lineageModelGeneratorService,
         searchService

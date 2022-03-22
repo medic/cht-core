@@ -1,20 +1,13 @@
-import { Injectable } from '@angular/core';
-import { isString as _isString } from 'lodash-es';
+const { isString: _isString } = require('lodash');
 
-import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
-
-@Injectable({
-  providedIn: 'root'
-})
-export class EnketoPrepopulationDataService {
-  constructor(
-    private enketoTranslationService:EnketoTranslationService,
-    private userSettingsService:UserSettingsService,
-  ) {}
+class EnketoPrepopulationDataService {
+  constructor(enketoTranslationService, userSettingsService) {
+    this.enketoTranslationService = enketoTranslationService;
+    this.userSettingsService = userSettingsService;
+  }
 
   get(model, data) {
-    if (data && _isString(data)) {
+    if(data && _isString(data)) {
       return Promise.resolve(data);
     }
 
@@ -23,17 +16,16 @@ export class EnketoPrepopulationDataService {
       .then((user) => {
         const xml = $($.parseXML(model));
         const bindRoot = xml.find('model instance').children().first();
-
         const userRoot = bindRoot.find('>inputs>user');
 
-        if (data) {
+        if(data) {
           this.enketoTranslationService.bindJsonToXml(bindRoot, data, (name) => {
             // Either a direct child or a direct child of inputs
             return '>%, >inputs>%'.replace(/%/g, name);
           });
         }
 
-        if (userRoot.length) {
+        if(userRoot.length) {
           this.enketoTranslationService.bindJsonToXml(userRoot, user);
         }
 
@@ -41,3 +33,5 @@ export class EnketoPrepopulationDataService {
       });
   }
 }
+
+module.exports = EnketoPrepopulationDataService;

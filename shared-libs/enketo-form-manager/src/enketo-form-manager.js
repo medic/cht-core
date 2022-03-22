@@ -1,7 +1,7 @@
 const uuid = require('uuid').v4;
 const pojo2xml = require('pojo2xml');
 const $ = require('jquery');
-const { getElementXPath, getElementTreeXPath } = require('./xpath-element-path');
+const { getElementXPath } = require('./xpath-element-path');
 const enketoConstants = require('./constants');
 
 const HTML_ATTACHMENT_NAME = 'form.html';
@@ -622,11 +622,15 @@ class FormDataServices {
     lineageModelGeneratorService,
     searchService
   ) {
+    this.contactSummaryService = contactSummaryService;
     this.enketoPrepopulationDataService = enketoPrepopulationDataService;
     this.languageService = languageService;
     this.searchService = searchService;
     this.lineageModelGeneratorService = lineageModelGeneratorService;
-    this.contactSummaryService = contactSummaryService;
+  }
+
+  get contactSummary() {
+    return this.contactSummaryService;
   }
 
   get enketoPrepopulationData() {
@@ -643,10 +647,6 @@ class FormDataServices {
 
   get lineageModelGenerator() {
     return this.lineageModelGeneratorService;
-  }
-
-  get contactSummary() {
-    return this.contactSummaryService;
   }
 }
 

@@ -16,7 +16,6 @@ import { UserContactService } from '@mm-services/user-contact.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { LanguageService } from '@mm-services/language.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
-import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 import { AddAttachmentService } from '@mm-services/add-attachment.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
@@ -59,7 +58,6 @@ describe('Enketo service', () => {
   let form;
   let AddAttachment;
   let EnketoForm;
-  let EnketoPrepopulationData;
   let Search;
   let LineageModelGenerator;
   let transitionsService;
@@ -86,7 +84,6 @@ describe('Enketo service', () => {
     };
     AddAttachment = sinon.stub();
     EnketoForm = sinon.stub();
-    EnketoPrepopulationData = sinon.stub();
     Search = sinon.stub();
     LineageModelGenerator = { contact: sinon.stub() };
     window.EnketoForm = EnketoForm;
@@ -132,7 +129,6 @@ describe('Enketo service', () => {
         { provide: UserSettingsService, useValue: { get: UserSettings } },
         { provide: LanguageService, useValue: { get: Language } },
         { provide: TranslateFromService, useValue: { get: TranslateFrom } },
-        { provide: EnketoPrepopulationDataService, useValue: { get: EnketoPrepopulationData } },
         { provide: AddAttachmentService, useValue: { add: AddAttachment } },
         {
           provide: XmlFormsService,
@@ -191,11 +187,11 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
       enketoInit.returns([]);
-      FileReader.utf8.resolves('<some-blob name="xml"/>');
-      EnketoPrepopulationData.resolves('<xml></xml>');
+      FileReader.utf8.resolves('<model><instance><some-blob name="xml"/></instance></model>');
+      UserSettings.resolves({ name: 'Jim' });
       return service.render($('<div></div>'), mockEnketoDoc('myform')).then(() => {
         expect(UserContact.callCount).to.equal(1);
-        expect(EnketoPrepopulationData.callCount).to.equal(1);
+        expect(UserSettings.callCount).to.equal(1);
         expect(FileReader.utf8.callCount).to.equal(2);
         expect(FileReader.utf8.args[0][0]).to.equal('<div>my form</div>');
         expect(FileReader.utf8.args[1][0]).to.equal(VISIT_MODEL);

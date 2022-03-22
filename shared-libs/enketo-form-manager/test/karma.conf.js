@@ -41,9 +41,11 @@ module.exports = function(config) {
     files: [
       'node_modules/jquery/dist/jquery.js',
       'test/enketo-form-manager.spec.js',
+      'test/enketo-prepopulation-data-service.spec.js',
     ],
     preprocessors: {
       'test/enketo-form-manager.spec.js': ['webpack'],
+      'test/enketo-prepopulation-data-service.spec.js': ['webpack'],
     },
     webpack: {
       mode: 'development',
