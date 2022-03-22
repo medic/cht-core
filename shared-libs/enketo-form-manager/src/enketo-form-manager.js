@@ -725,11 +725,7 @@ class EnketoFormManager {
         instanceData,
       };
 
-      return this.renderForm(formContext)
-        .then(form => {
-          this.currentForm = form;
-          return form;
-        });
+      return this.renderForm(formContext);
     });
   }
 
@@ -789,6 +785,7 @@ class EnketoFormManager {
       };
       return renderFromXmls(this.currentForm, this.formDataServices, this.translationServices, xmlFormContext);
     }).then((form) => {
+      this.currentForm = form;
       const formContainer = $selector.find('.container').first();
       const replaceMediaLoaders = (formContainer, formDoc) => {
         formContainer.find('[data-media-src]').each((idx, element) => {
