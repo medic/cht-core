@@ -9,6 +9,7 @@ import { Selectors } from '@mm-selectors/index';
 import { SessionService } from '@mm-services/session.service';
 import { VersionService } from '@mm-services/version.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 
 @Component({
   templateUrl: './about.component.html'
@@ -37,6 +38,7 @@ export class AboutComponent implements OnInit, OnDestroy {
     private sessionService: SessionService,
     private versionService: VersionService,
     private translateService: TranslateService,
+    private browserDetectorService: BrowserDetectorService,
     private router: Router
   ) { }
 
@@ -58,6 +60,10 @@ export class AboutComponent implements OnInit, OnDestroy {
     clearTimeout(this.doorTimeout);
     clearInterval(this.dataUsageUpdate);
     this.subscription.unsubscribe();
+  }
+
+  public isUsingSupportedBrowser() {
+    return this.browserDetectorService.isUsingSupportedBrowser();
   }
 
   private subscribeToStore() {
