@@ -3,7 +3,6 @@ import { Store } from '@ngrx/store';
 import { toBik_text } from 'bikram-sambat';
 import * as moment from 'moment';
 
-import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
 import {
   ContactServices,
@@ -78,8 +77,7 @@ export class EnketoService {
         xmlFormsService
       ),
       transitionsService,
-      new GlobalActions(store),
-      Xpath
+      new GlobalActions(store)
     );
 
     this.inited = this.init();

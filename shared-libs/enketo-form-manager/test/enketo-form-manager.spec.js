@@ -26,7 +26,6 @@ describe('Enketo Form Manager', () => {
   let xmlServices;
   let transitionsService = {};
   let globalActions = {};
-  let xpath = {};
   let enketoFormMgr;
 
   let form;
@@ -126,10 +125,6 @@ describe('Enketo Form Manager', () => {
     globalActions = {
       setSnackbarContent: sinon.stub()
     };
-    xpath = {
-      getElementXPath: sinon.stub()
-        .callsFake(element => '//*[@id="' + element.id + '"]')
-    };
 
     enketoFormMgr = new EnketoFormManager(
       contactServices,
@@ -138,8 +133,7 @@ describe('Enketo Form Manager', () => {
       translationServices,
       xmlServices,
       transitionsService,
-      globalActions,
-      xpath
+      globalActions
     );
 
     form = {
@@ -880,7 +874,6 @@ describe('Enketo Form Manager', () => {
         const content = loadXML('file-field');
 
         form.getDataStr.returns(content);
-        xpath.getElementXPath.returns('/my-form/my_file');
 
         return enketoFormMgr
           .save('my-form', form, () => Promise.resolve(true))
@@ -909,7 +902,6 @@ describe('Enketo Form Manager', () => {
           //@ts-ignore
           .withArgs('input[type=file][name="/my-form/my_file"]')
           .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
-        xpath.getElementXPath.returns('/my-form/my_file');
 
         const docsToStoreStub = sinon.stub().returns([
           { _id: '1a' },
@@ -962,7 +954,6 @@ describe('Enketo Form Manager', () => {
 </my-form>`;
 
         form.getDataStr.returns(content);
-        xpath.getElementXPath.returns('/my-form/my_file');
         return enketoFormMgr.save('my-form', form, () => Promise.resolve(true)).then(() => {
           expect(xmlServices.addAttachment.add.callCount).to.equal(2);
 
@@ -991,8 +982,6 @@ describe('Enketo Form Manager', () => {
         const content = loadXML('deep-file-fields');
 
         form.getDataStr.returns(content);
-        xpath.getElementXPath.onFirstCall().returns('/my-root-element/my_file');
-        xpath.getElementXPath.onSecondCall().returns('/my-root-element/sub_element/sub_sub_element/other_file');
         return enketoFormMgr.save('my-form-internal-id', form, () => Promise.resolve(true)).then(() => {
           expect(xmlServices.addAttachment.add.callCount).to.equal(3);
 

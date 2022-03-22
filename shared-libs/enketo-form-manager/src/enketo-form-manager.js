@@ -1,7 +1,8 @@
 const uuid = require('uuid').v4;
 const pojo2xml = require('pojo2xml');
-const enketoConstants = require('./constants');
 const $ = require('jquery');
+const { getElementXPath, getElementTreeXPath } = require('./xpath-element-path');
+const enketoConstants = require('./constants');
 
 const HTML_ATTACHMENT_NAME = 'form.html';
 const MODEL_ATTACHMENT_NAME = 'model.xml';
@@ -356,7 +357,7 @@ const create = (contactServices, formInternalId) => {
   });
 };
 
-const xmlToDocs = (Xpath, xmlServices, doc, formXml, record) => {
+const xmlToDocs = (xmlServices, doc, formXml, record) => {
   const recordDoc = $.parseXML(record);
   const $record = $($(recordDoc).children()[0]);
   const repeatPaths = xmlServices.enketoTranslation.getRepeatPaths(formXml);
@@ -388,15 +389,15 @@ const xmlToDocs = (Xpath, xmlServices, doc, formXml, record) => {
   };
 
   const getRelativePath = (path) => {
-    if (!path) {
+    if(!path) {
       return;
     }
     path = path.trim();
 
     if(repeatPaths) {
       const repeatReference = repeatPaths.find(repeatPath => path === repeatPath || path.startsWith(`${repeatPath}/`));
-      if (repeatReference) {
-        if (repeatReference === path) {
+      if(repeatReference) {
+        if(repeatReference === path) {
           // when the path is the repeat element itself, return the repeat element node name
           return path.split('/').slice(-1)[0];
         }
@@ -405,7 +406,7 @@ const xmlToDocs = (Xpath, xmlServices, doc, formXml, record) => {
       }
     }
 
-    if (path.startsWith('./')) {
+    if(path.startsWith('./')) {
       return path.replace('./', '');
     }
   };
@@ -426,7 +427,7 @@ const xmlToDocs = (Xpath, xmlServices, doc, formXml, record) => {
     try {
       recordDoc.evaluate(closestPath, recordDoc);
       return closestPath;
-    } catch (err) {
+    } catch(err) {
       // eslint-disable-next-line no-console
       console.error('Error while evaluating closest path', closestPath, err);
     }
@@ -464,7 +465,7 @@ const xmlToDocs = (Xpath, xmlServices, doc, formXml, record) => {
     .find('[db-doc=true]')
     .map((idx, element) => {
       const docToStore = xmlServices.enketoTranslation.reportRecordToJs(getOuterHTML(element));
-      docToStore._id = getId(Xpath.getElementXPath(element));
+      docToStore._id = getId(getElementXPath(element));
       docToStore.reported_date = Date.now();
       return docToStore;
     })
@@ -474,7 +475,7 @@ const xmlToDocs = (Xpath, xmlServices, doc, formXml, record) => {
   doc.hidden_fields = xmlServices.enketoTranslation.getHiddenFieldList(record);
 
   const attach = (elem, file, type, alreadyEncoded, xpath) => {
-    xpath = xpath || Xpath.getElementXPath(elem);
+    xpath = xpath || getElementXPath(elem);
     // replace instance root element node name with form internal ID
     const filename = 'user-file' +
       (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
@@ -484,7 +485,7 @@ const xmlToDocs = (Xpath, xmlServices, doc, formXml, record) => {
   $record
     .find('[type=file]')
     .each((idx, element) => {
-      const xpath = Xpath.getElementXPath(element);
+      const xpath = getElementXPath(element);
       const $input = $('input[type=file][name="' + xpath + '"]');
       const file = $input[0].files[0];
       if(file) {
@@ -697,8 +698,7 @@ class EnketoFormManager {
     translationServices,
     xmlServices,
     transitionsService,
-    globalActions,
-    Xpath
+    globalActions
   ) {
     this.contactServices = contactServices;
     this.fileServices = fileServices;
@@ -707,7 +707,6 @@ class EnketoFormManager {
     this.xmlServices = xmlServices;
     this.transitionsService = transitionsService;
     this.globalActions = globalActions;
-    this.Xpath = Xpath;
 
     this.currentForm = null;
     this.objUrls = [];
@@ -739,7 +738,6 @@ class EnketoFormManager {
         getFormXml(this.fileServices, this.xmlServices.xmlForms, formInternalId),
       ])
       .then(([doc, formXml]) => xmlToDocs(
-        this.Xpath,
         this.xmlServices,
         doc,
         formXml,
