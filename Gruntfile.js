@@ -858,7 +858,6 @@ module.exports = function(grunt) {
     'uglify:api',
     'cssmin:api',
     'exec:build-service-images',
-    'env:version',
   ]);
 
   grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
@@ -867,25 +866,22 @@ module.exports = function(grunt) {
 
   // Test tasks
   grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
-    'start-webdriver',
+    // 'start-webdriver',
     'e2e-env-setup'
   ]);
 
   grunt.registerTask('e2e-env-setup', 'Deploy app for testing', [
-    'exec:clean-test-database',
-    'exec:setup-test-database',
-    'couch-push:test',
+    'build-service-images',
+    'env:version',
   ]);
 
   grunt.registerTask('e2e-web', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
     'protractor:e2e-web-tests',
-    'exec:clean-test-database',
   ]);
   grunt.registerTask('e2e-mobile', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
     'protractor:e2e-mobile-tests',
-    'exec:clean-test-database',
   ]);
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
