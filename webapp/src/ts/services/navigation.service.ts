@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 
-import { RouteSnapshotService } from '@mm-services/./route-snapshot.service';
+import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { Selectors } from '@mm-selectors/index';
 import { HeaderTabsService } from '@mm-services/header-tabs.service';
 

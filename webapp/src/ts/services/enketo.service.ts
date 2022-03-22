@@ -84,7 +84,7 @@ export class EnketoService {
       });
   }
 
-  private replaceJavarosaMediaWithLoaders(formDoc, formHtml) {
+  private replaceJavarosaMediaWithLoaders(formHtml) {
     formHtml.find('[data-media-src]').each((idx, element) => {
       const $img = $(element);
       const lang = $img.attr('lang');
@@ -440,7 +440,7 @@ export class EnketoService {
     return this
       .transformXml(formDoc)
       .then(doc => {
-        this.replaceJavarosaMediaWithLoaders(formDoc, doc.html);
+        this.replaceJavarosaMediaWithLoaders(doc.html);
         const xmlFormContext: XmlFormContext = {
           doc,
           wrapper: $selector,
@@ -831,14 +831,14 @@ interface XmlFormContext {
     hasContactSummary: boolean;
   };
   wrapper: JQuery;
-  instanceData: Record<string, any>;
+  instanceData: string|Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey: string;
 }
 
 export interface EnketoFormContext {
   selector: string;
-  formDoc: string;
-  instanceData: Record<string, any>;
+  formDoc: Record<string, any>;
+  instanceData: string|Record<string, any>; // String for report forms, Record<> for contact forms.
   editedListener: () => void;
   valuechangeListener: () => void;
   titleKey?: string;
