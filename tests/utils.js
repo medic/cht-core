@@ -408,7 +408,7 @@ const collectLogs = (container, ...regex) => {
   const matches = [];
   const errors = [];
 
-  const params = `logs ${container} -f --tail=0`;
+  const params = `logs ${container} -f --tail=1`;
   const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
 
   let watchingLogs;
@@ -419,7 +419,10 @@ const collectLogs = (container, ...regex) => {
     data = data.toString();
     regex.forEach(r => r.test(data) && matches.push(data));
   });
-  proc.stderr.on('err', err => errors.push(err.toString()));
+  proc.stderr.on('err', err => {
+    watchingLogs();
+    errors.push(err.toString());
+  });
 
   const collect = () => {
     proc.stdout.destroy();
@@ -445,7 +448,7 @@ const collectLogs = (container, ...regex) => {
  */
 const waitForDockerLogs = (container, ...regex) => {
   let timeout;
-  const params = `logs ${container} -f --tail=0`;
+  const params = `logs ${container} -f --tail=1`;
   const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
 
   const kill = () => {
@@ -461,8 +464,6 @@ const waitForDockerLogs = (container, ...regex) => {
   // 2 seconds.
   let watchingLogs;
   const watchLogsPromise = new Promise(resolve => watchingLogs = resolve);
-  setTimeout(watchingLogs, 2000);
-
   let logs = '';
 
   const promise = new Promise((resolve, reject) => {
