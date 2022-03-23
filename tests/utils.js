@@ -597,7 +597,7 @@ const getDockerLogs = (container) => {
     const cmd = spawn('docker', ['logs', container]);
 
     cmd.on('error', (err) => {
-      console.error(err);
+      console.error('Error while collecting container logs', err);
       reject(err);
     });
     cmd.stdout.pipe(logWriteStream);
