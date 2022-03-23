@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "ncc build index.js -o dist --source-map",
-    "test": "test"
+    "test": "mocha test/*.spec.js --timeout 10000 --slow 500"
   },
   "author": "Medic Inc.",
   "license": "ISC",
@@ -14,15 +14,10 @@
     "@actions/github": "^5.0.0",
     "axios": "^0.21.4",
     "chai": "^4.3.6",
-    "chai-url": "^1.0.4",
-    "child_process": "^1.0.2",
     "fs": "^0.0.1-security",
     "mocha": "^9.2.1",
-    "mock-fs": "^5.1.2",
     "path": "^0.12.7",
-    "process": "^0.11.10",
     "replace-in-file": "^6.2.0",
-    "rewire": "^6.0.0",
     "rosie": "^2.1.0",
     "sinon": "^13.0.1",
     "util": "^0.12.4"

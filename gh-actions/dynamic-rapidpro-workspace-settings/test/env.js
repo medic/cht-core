@@ -20,12 +20,5 @@ Factory.define('secrets').attrs({
 
 const secrets = Factory.build(`secrets`);
 secrets.getInput = key => secrets[key];
-secrets.info = message => message;
-secrets.setFailed = status => {
-  return {
-    error: true,
-    message: status
-  }
-};
 
 module.exports = secrets;

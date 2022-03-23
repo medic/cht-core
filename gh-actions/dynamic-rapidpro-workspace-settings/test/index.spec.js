@@ -6,62 +6,58 @@ const secrets = require('./env');
 const settings = require('./app_settings.json');
 const flows = require('./flows');
 const fs = require('fs');
+const axios = require('axios').default;
+
 let sandbox = sinon.createSandbox();
 
-describe('rapidpro action test suite', () => {
+describe(`rapidpro action test suite`, () => {
   const mockedAxiosResponse = {
     data: {},
     status: 200,
     statusText: 'OK'
   };
+  
   beforeEach(() => {
     sandbox.stub(process, 'env').value({ 'GITHUB_WORKSPACE': path.join(__dirname, '../') });
-    sandbox.stub(utils, 'setMedicCredentials').resolves(mockedAxiosResponse);
     sandbox.stub(fs, 'writeFileSync').returns({});
+    sandbox.stub(process, 'stdout');
+    sandbox.stub(axios, 'put').resolves(mockedAxiosResponse);
+    // sandbox.stub(utils, 'setMedicCredentials').resolves(mockedAxiosResponse);
   });
 
   afterEach(() => {
     sandbox.restore();
   });
 
-  it('method getCouchDbUrl should return a formatted url and setMedicCredentials should put it in CouchDB', async () => {
+  it(`should get a formatted url to set medic-credentials`, async () => {
     // check the expected url is set
     const url = utils.getCouchDbUrl(secrets.hostname, secrets.couch_node_name, secrets.value_key, secrets.couch_username, secrets.couch_password);
     expect(url.origin).to.be.equal(secrets.hostname);
     expect(url.username).to.be.equal(secrets.couch_username);
     expect(url.password).to.be.equal(secrets.couch_password);
-
-    // set the medic credentials in couchDB
-    const response = await utils.setMedicCredentials(url, secrets.rp_api_token);
-    expect(response.status).to.be.equal(200);
-    expect(response.data).to.be.deep.equal({});
   });
 
-  it('method getCouchDbUrl should throw an error if an invalid url is given', async () => {
-    try{
+  it(`should fail if an invalid url is given`, async () => {
+    expect( function () {
       utils.getCouchDbUrl('some_invalid_url', secrets.couch_node_name, secrets.value_key, secrets.couch_username, secrets.couch_password);
-    }catch(err){
-      expect(err.message).to.include('Invalid URL');
-    }
+    }).to.throw( Error );
   });
 
-  it('method getInputs should return an object containing required secrets', async () => {
+  it(`should return an object containing required secrets`, async () => {
     const inputs = utils.getInputs(secrets);
     utils.fields.forEach(field => {
       expect(inputs[field]).to.equal(secrets[field]);
     });
   });
 
-  it('method getInputs should fail if no argument is passed', async () => {
-    try{
+  it(`should fail if no argument is passed to get required secrets`, async () => {
+    expect( function () {
       utils.getInputs();
-    }catch(err){
-      expect(err.message).to.include('Cannot read property');
-    }
+    }).to.throw( Error );
   });
 
-  it('method getReplacedContent should update app settings with the given secrets', async () => {
-    // check updated outbound modules - check all values
+  it(`should update content using the given data`, async () => {
+    // check updated app_settings.json
     const appSettings = await utils.getReplacedContent(settings, secrets);
     const parsedSettings = JSON.parse(appSettings);
     expect(search(parsedSettings, 'base_url')).to.equal(secrets.rp_hostname);
@@ -74,14 +70,22 @@ describe('rapidpro action test suite', () => {
     }
   });
 
-  it('integration test using the run method should complete successfully', async () => {
-    const result = await utils.run(process.env.GITHUB_WORKSPACE, secrets, fs, settings, flows);
-    expect(result).to.be.true;
+  it(`should fail to update if content or data is not defined`, async () => {
+    try {
+      await utils.getReplacedContent(settings);
+    } catch (err) {
+      expect(err).to.include(new Error());
+    }
   });
 
-  it('integration test should fail if github workspace is not defined', async () => {
-    const result = await utils.run(null, secrets, fs, settings, flows);
-    expect(result).to.be.false;
+  it(`run method should complete successfully`, async () => {
+    const response = await utils.run(process.env.GITHUB_WORKSPACE, secrets, fs, settings, flows);
+    expect(response).to.be.true;
+  });
+
+  it(`run should fail if github workspace is not defined`, async () => {
+    await utils.run(null, secrets, fs, settings, flows);
+    expect(process.exitCode).to.equal(1);
   });
 });
 
