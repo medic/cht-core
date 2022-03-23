@@ -24,8 +24,8 @@ describe('Enketo Form Manager', () => {
   let formDataService;
   let translationServices;
   let xmlServices;
-  let transitionsService = {};
-  let globalActions = {};
+  let transitionsService;
+  let globalActions;
   let enketoFormMgr;
 
   let form;
@@ -68,14 +68,11 @@ describe('Enketo Form Manager', () => {
       })
     };
     const fileReaderService = {
-      utf8: sinon.stub().resolves('<some-blob name="xml"/>')
+      utf8: sinon.stub().resolves('<model><instance><some-blob name="xml"/></instance></model>')
     };
     fileServices = new FileServices(dbService, fileReaderService);
 
     const contactSummaryService = { get: sinon.stub() };
-    const enketoPrepopulationDataService = {
-      get: sinon.stub().resolves('<xml></xml>')
-    };
     const languageService = {
       get: sinon.stub().resolves('en')
     };
@@ -83,11 +80,14 @@ describe('Enketo Form Manager', () => {
     const searchService = { search: sinon.stub() };
     formDataService = new FormDataServices(
       contactSummaryService,
-      enketoPrepopulationDataService,
+      null,
       languageService,
       lineageModelGeneratorService,
       searchService
     );
+    formDataService.enketoPrepopulationDataService =  {
+      get: sinon.stub().resolves('<xml></xml>')
+    };
 
     const translateService = {
       get: sinon.stub()
@@ -100,11 +100,6 @@ describe('Enketo Form Manager', () => {
     const addAttachmentService = {
       add: sinon.stub()
     };
-    const enketoTranslationService = {
-      getRepeatPaths: sinon.stub(),
-      getHiddenFieldList: sinon.stub().returns([]),
-      reportRecordToJs: sinon.stub().returns({ name: 'Sally', lmp: '10' })
-    };
     const getReportContentService = {
       REPORT_ATTACHMENT_NAME: 'content'
     };
@@ -114,7 +109,6 @@ describe('Enketo Form Manager', () => {
     };
     xmlServices = new XmlServices(
       addAttachmentService,
-      enketoTranslationService,
       getReportContentService,
       xmlFormsService
     );
@@ -647,12 +641,6 @@ describe('Enketo Form Manager', () => {
       const content = loadXML('hidden-field');
       form.getDataStr.returns(content);
       dbBulkDocs.resolves([ { ok: true, id: '(generated-in-service)', rev: '1-abc' } ]);
-      xmlServices.enketoTranslationService.getHiddenFieldList.returns(['secret_code_name']);
-      xmlServices.enketoTranslationService.reportRecordToJs.returns({
-        name: 'Sally',
-        lmp: '10',
-        secret_code_name: 'S4L'
-      });
 
       return enketoFormMgr.save('V', form, null, null).then(actual => {
         actual = actual[0];
@@ -720,22 +708,6 @@ describe('Enketo Form Manager', () => {
           return { ok: true, id: doc._id, rev: `1-${doc._id}-abc` };
         }));
       });
-      xmlServices.enketoTranslationService.getHiddenFieldList.returns(['secret_code_name']);
-      xmlServices.enketoTranslationService.reportRecordToJs.onFirstCall().returns({
-        id: '999',
-        some_property_1: 'some_value_1',
-        secret_code_name: 'S4L'
-      });
-      xmlServices.enketoTranslationService.reportRecordToJs.onSecondCall().returns({
-        id: '888',
-        some_property_2: 'some_value_2',
-        secret_code_name: 'S4L'
-      });
-      xmlServices.enketoTranslationService.reportRecordToJs.onThirdCall().returns({
-        name: 'Sally',
-        lmp: '10',
-        secret_code_name: 'S4L'
-      });
 
       return enketoFormMgr.save('V', form, null, null).then(actual => {
         const endTime = Date.now() + 1;//console.log(JSON.stringify(actual))
@@ -789,22 +761,6 @@ describe('Enketo Form Manager', () => {
         { ok: true, id: '7', rev: '1-def' },
         { ok: true, id: '8', rev: '1-ghi' }
       ]);
-      xmlServices.enketoTranslationService.getHiddenFieldList.returns(['secret_code_name']);
-      xmlServices.enketoTranslationService.reportRecordToJs.onFirstCall().returns({
-        id: '999',
-        some_property_1: 'some_value_1',
-        secret_code_name: 'S4L'
-      });
-      xmlServices.enketoTranslationService.reportRecordToJs.onSecondCall().returns({
-        id: '888',
-        some_property_2: 'some_value_2',
-        secret_code_name: 'S4L'
-      });
-      xmlServices.enketoTranslationService.reportRecordToJs.onThirdCall().returns({
-        name: 'Sally',
-        lmp: '10',
-        secret_code_name: 'S4L'
-      });
       const geoData = {
         latitude: 1,
         longitude: 2,
@@ -1025,23 +981,6 @@ describe('Enketo Form Manager', () => {
         clones.forEach(clone => clone.transitioned = true);
         clones.push({ _id: 'new doc', type: 'existent doc updated by the transition' });
         return Promise.resolve(clones);
-      });
-
-      xmlServices.enketoTranslationService.reportRecordToJs.onFirstCall().returns({
-        some_property: 'some_value_1',
-        type: 'repeater'
-      });
-      xmlServices.enketoTranslationService.reportRecordToJs.onSecondCall().returns({
-        some_property: 'some_value_2',
-        type: 'repeater'
-      });
-      xmlServices.enketoTranslationService.reportRecordToJs.onThirdCall().returns({
-        some_property: 'some_value_3',
-        type: 'repeater'
-      });
-      xmlServices.enketoTranslationService.reportRecordToJs.onCall(3).returns({
-        name: 'Sally',
-        lmp: '10',
       });
 
       return enketoFormMgr.save('V', form, geoHandle).then(actual => {

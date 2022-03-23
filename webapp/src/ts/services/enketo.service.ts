@@ -7,7 +7,6 @@ import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
 import {
   ContactServices,
   EnketoFormManager,
-  EnketoPrepopulationDataService,
   FileServices,
   FormDataServices,
   TranslationServices,
@@ -15,7 +14,6 @@ import {
 } from '@medic/enketo-form-manager';
 import { AddAttachmentService } from '@mm-services/add-attachment.service';
 import { DbService } from '@mm-services/db.service';
-import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { GetReportContentService } from '@mm-services/get-report-content.service';
@@ -44,7 +42,6 @@ export class EnketoService {
     contactSummaryService:ContactSummaryService,
     dbService:DbService,
     userSettingsService:UserSettingsService,
-    enketoTranslationService:EnketoTranslationService,
     extractLineageService:ExtractLineageService,
     fileReaderService:FileReaderService,
     getReportContentService:GetReportContentService,
@@ -65,7 +62,7 @@ export class EnketoService {
       new FileServices(dbService, fileReaderService),
       new FormDataServices(
         contactSummaryService,
-        new EnketoPrepopulationDataService(enketoTranslationService, userSettingsService),
+        userSettingsService,
         languageService,
         lineageModelGeneratorService,
         searchService
@@ -73,7 +70,6 @@ export class EnketoService {
       new TranslationServices(translateService, translateFromService),
       new XmlServices(
         addAttachmentService,
-        enketoTranslationService,
         getReportContentService,
         xmlFormsService
       ),

@@ -6,12 +6,12 @@ const {
   XmlServices,
   EnketoFormManager
 } = require('./enketo-form-manager');
-const EnketoPrepopulationDataService = require('./enketo-prepopulation-data-service');
+const { EnketoTranslationUtils } = require('./enketo-translator');
 
 module.exports = {
   ContactServices,
   EnketoFormManager,
-  EnketoPrepopulationDataService,
+  EnketoTranslationUtils,
   FileServices,
   FormDataServices,
   TranslationServices,

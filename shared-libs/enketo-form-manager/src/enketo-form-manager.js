@@ -3,6 +3,8 @@ const pojo2xml = require('pojo2xml');
 const $ = require('jquery');
 const { getElementXPath } = require('./xpath-element-path');
 const enketoConstants = require('./constants');
+const EnketoPrepopulationDataService = require('./enketo-prepopulation-data-service');
+const { EnketoTranslator } = require('./enketo-translator');
 
 const HTML_ATTACHMENT_NAME = 'form.html';
 const MODEL_ATTACHMENT_NAME = 'model.xml';
@@ -360,7 +362,7 @@ const create = (contactServices, formInternalId) => {
 const xmlToDocs = (xmlServices, doc, formXml, record) => {
   const recordDoc = $.parseXML(record);
   const $record = $($(recordDoc).children()[0]);
-  const repeatPaths = xmlServices.enketoTranslation.getRepeatPaths(formXml);
+  const repeatPaths = EnketoTranslator.getRepeatPaths(formXml);
 
   const mapOrAssignId = (e, id) => {
     if(!id) {
@@ -464,7 +466,7 @@ const xmlToDocs = (xmlServices, doc, formXml, record) => {
   const docsToStore = $record
     .find('[db-doc=true]')
     .map((idx, element) => {
-      const docToStore = xmlServices.enketoTranslation.reportRecordToJs(getOuterHTML(element));
+      const docToStore = EnketoTranslator.reportRecordToJs(getOuterHTML(element));
       docToStore._id = getId(getElementXPath(element));
       docToStore.reported_date = Date.now();
       return docToStore;
@@ -472,7 +474,7 @@ const xmlToDocs = (xmlServices, doc, formXml, record) => {
     .get();
 
   doc._id = getId('/*');
-  doc.hidden_fields = xmlServices.enketoTranslation.getHiddenFieldList(record);
+  doc.hidden_fields = EnketoTranslator.getHiddenFieldList(record);
 
   const attach = (elem, file, type, alreadyEncoded, xpath) => {
     xpath = xpath || getElementXPath(elem);
@@ -509,7 +511,7 @@ const xmlToDocs = (xmlServices, doc, formXml, record) => {
 
   docsToStore.unshift(doc);
 
-  doc.fields = xmlServices.enketoTranslation.reportRecordToJs(record, formXml);
+  doc.fields = EnketoTranslator.reportRecordToJs(record, formXml);
   return docsToStore;
 };
 
@@ -617,13 +619,13 @@ class FileServices {
 class FormDataServices {
   constructor(
     contactSummaryService,
-    enketoPrepopulationDataService,
+    userSettingsService,
     languageService,
     lineageModelGeneratorService,
     searchService
   ) {
     this.contactSummaryService = contactSummaryService;
-    this.enketoPrepopulationDataService = enketoPrepopulationDataService;
+    this.enketoPrepopulationDataService = new EnketoPrepopulationDataService(userSettingsService);
     this.languageService = languageService;
     this.searchService = searchService;
     this.lineageModelGeneratorService = lineageModelGeneratorService;
@@ -636,6 +638,8 @@ class FormDataServices {
   get enketoPrepopulationData() {
     return this.enketoPrepopulationDataService;
   }
+
+  // set enketoPrepopulationDat
 
   get language() {
     return this.languageService;
@@ -666,19 +670,14 @@ class TranslationServices {
 }
 
 class XmlServices {
-  constructor(addAttachmentService, enketoTranslationService, getReportContentService, xmlFormsService) {
+  constructor(addAttachmentService, getReportContentService, xmlFormsService) {
     this.addAttachmentService = addAttachmentService;
-    this.enketoTranslationService = enketoTranslationService;
     this.getReportContentService = getReportContentService;
     this.xmlFormsService = xmlFormsService;
   }
 
   get addAttachment() {
     return this.addAttachmentService;
-  }
-
-  get enketoTranslation() {
-    return this.enketoTranslationService;
   }
 
   get getReportContent() {

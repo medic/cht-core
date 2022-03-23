@@ -156,7 +156,7 @@ describe('EnketoPrepopulationData service', () => {
       });
     });
 
-    service = new EnketoPrepopulationDataService({ bindJsonToXml }, { get: UserSettings });
+    service = new EnketoPrepopulationDataService({ get: UserSettings });
   });
 
   afterEach(() => {
