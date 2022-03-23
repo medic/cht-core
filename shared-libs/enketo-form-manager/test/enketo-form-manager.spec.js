@@ -608,38 +608,38 @@ describe('Enketo Form Manager', () => {
           expect(xmlServices.addAttachment.add.args[0][3]).to.equal('application/xml');
         });
       });
-    });
 
-    it('creates report with erroring geolocation', () => {
-      const content = loadXML('sally-lmp');
-      form.getDataStr.returns(content);
-      const geoError = {
-        code: 42,
-        message: 'geolocation failed for some reason'
-      };
-      return enketoFormMgr.save('V', form, () => Promise.reject(geoError  )).then(actual => {
-        actual = actual[0];
+      it('creates report with erroring geolocation', () => {
+        const content = loadXML('sally-lmp');
+        form.getDataStr.returns(content);
+        const geoError = {
+          code: 42,
+          message: 'geolocation failed for some reason'
+        };
+        return enketoFormMgr.save('V', form, () => Promise.reject(geoError  )).then(actual => {
+          actual = actual[0];
 
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(contactServices.userContact.get.callCount).to.equal(1);
-        expect(actual._id).to.match(/(\w+-)\w+/);
-        expect(actual._rev).to.equal('1-abc');
-        expect(actual.fields.name).to.equal('Sally');
-        expect(actual.fields.lmp).to.equal('10');
-        expect(actual.form).to.equal('V');
-        expect(actual.type).to.equal('data_record');
-        expect(actual.content_type).to.equal('xml');
-        expect(actual.contact._id).to.equal('123');
-        expect(actual.from).to.equal('555');
-        expect(actual.geolocation).to.deep.equal(geoError);
-        expect(dbGetAttachment.callCount).to.equal(1);
-        expect(dbGetAttachment.args[0][0]).to.equal('abc');
-        expect(xmlServices.addAttachment.add.callCount).to.equal(1);
-        expect(xmlServices.addAttachment.add.args[0][0]._id).to.equal(actual._id);
-        expect(xmlServices.addAttachment.add.args[0][1]).to.equal('content');
-        expect(xmlServices.addAttachment.add.args[0][2]).to.equal(content.replace(/\n$/, ''));
-        expect(xmlServices.addAttachment.add.args[0][3]).to.equal('application/xml');
+          expect(form.getDataStr.callCount).to.equal(1);
+          expect(dbBulkDocs.callCount).to.equal(1);
+          expect(contactServices.userContact.get.callCount).to.equal(1);
+          expect(actual._id).to.match(/(\w+-)\w+/);
+          expect(actual._rev).to.equal('1-abc');
+          expect(actual.fields.name).to.equal('Sally');
+          expect(actual.fields.lmp).to.equal('10');
+          expect(actual.form).to.equal('V');
+          expect(actual.type).to.equal('data_record');
+          expect(actual.content_type).to.equal('xml');
+          expect(actual.contact._id).to.equal('123');
+          expect(actual.from).to.equal('555');
+          expect(actual.geolocation).to.deep.equal(geoError);
+          expect(dbGetAttachment.callCount).to.equal(1);
+          expect(dbGetAttachment.args[0][0]).to.equal('abc');
+          expect(xmlServices.addAttachment.add.callCount).to.equal(1);
+          expect(xmlServices.addAttachment.add.args[0][0]._id).to.equal(actual._id);
+          expect(xmlServices.addAttachment.add.args[0][1]).to.equal('content');
+          expect(xmlServices.addAttachment.add.args[0][2]).to.equal(content.replace(/\n$/, ''));
+          expect(xmlServices.addAttachment.add.args[0][3]).to.equal('application/xml');
+        });
       });
     });
 
