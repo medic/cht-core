@@ -6,7 +6,7 @@ const settingsService = require('./settings');
 const translations = require('../translations');
 const ddocExtraction = require('../ddoc-extraction');
 const resourceExtraction = require('../resource-extraction');
-const generateXform = require('./generate-xform');
+const updateXform = require('./update-xform');
 const generateServiceWorker = require('../generate-service-worker');
 const config = require('../config');
 
@@ -113,7 +113,7 @@ const handleTranslationsChange = () => {
 
 const handleFormChange = (change) => {
   logger.info('Detected form change - generating attachments');
-  return generateXform.update(change.id).catch(err => {
+  return updateXform.update(change.id).catch(err => {
     logger.error('Failed to update xform: %o', err);
   });
 };

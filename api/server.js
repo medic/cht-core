@@ -19,7 +19,7 @@ process
   const configWatcher = require('./src/services/config-watcher');
   const migrations = require('./src/migrations');
   const ddocExtraction = require('./src/ddoc-extraction');
-  const generateXform = require('./src/services/generate-xform');
+  const updateXform = require('./src/services/update-xform');
   const resourceExtraction = require('./src/resource-extraction');
   const translations = require('./src/translations');
   const serverUtils = require('./src/server-utils');
@@ -66,7 +66,7 @@ process
     logger.info('Service worker generated successfully');
 
     logger.info('Updating xforms…');
-    await generateXform.updateAll();
+    await updateXform.updateAll();
     logger.info('xforms updated successfully');
 
   } catch (err) {

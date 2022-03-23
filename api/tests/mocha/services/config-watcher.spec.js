@@ -10,7 +10,7 @@ const resourceExtraction = require('../../../src/resource-extraction');
 const settingsService = require('../../../src/services/settings');
 const translations = require('../../../src/translations');
 const generateServiceWorker = require('../../../src/generate-service-worker');
-const generateXform = require('../../../src/services/generate-xform');
+const updateXform = require('../../../src/services/update-xform');
 const config = require('../../../src/config');
 const bootstrap = require('../../../src/services/config-watcher');
 
@@ -312,20 +312,20 @@ describe('Configuration', () => {
 
     describe('form changes', () => {
       it('handles xform changes', () => {
-        sinon.stub(generateXform, 'update').resolves();
+        sinon.stub(updateXform, 'update').resolves();
 
         return emitChange({ id: 'form:something:something' }).then(() => {
-          chai.expect(generateXform.update.callCount).to.equal(1);
-          chai.expect(generateXform.update.args[0]).to.deep.equal(['form:something:something']);
+          chai.expect(updateXform.update.callCount).to.equal(1);
+          chai.expect(updateXform.update.args[0]).to.deep.equal(['form:something:something']);
         });
       });
 
       it('should not terminate the process on form gen errors', () => {
-        sinon.stub(generateXform, 'update').rejects();
+        sinon.stub(updateXform, 'update').rejects();
 
         return emitChange({ id: 'form:id' }).then(() => {
-          chai.expect(generateXform.update.callCount).to.equal(1);
-          chai.expect(generateXform.update.args[0]).to.deep.equal(['form:id']);
+          chai.expect(updateXform.update.callCount).to.equal(1);
+          chai.expect(updateXform.update.args[0]).to.deep.equal(['form:id']);
         });
       });
     });
