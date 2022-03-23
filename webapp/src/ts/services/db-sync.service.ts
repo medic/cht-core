@@ -200,7 +200,7 @@ export class DBSyncService {
               // no errors
               this.syncIsRecent = true;
               window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
-              this.purgeService.updateDocsToPurge();
+
             } else if (currentSeq === this.getLastReplicatedSeq()) {
               // no changes to send, but may have some to receive
               syncState = { state: SyncStatus.Unknown };
@@ -213,13 +213,19 @@ export class DBSyncService {
             if (syncState.to === SyncStatus.Success) {
               window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
             }
-
-            if (force) {
-              this.displayUserFeedback(syncState);
-            }
-
-            this.sendUpdate(syncState);
+            return syncState;
           });
+        })
+        .then(syncState => {
+          return this.purgeService.updateDocsToPurge()
+            .catch(err => console.warn('Error updating to purge list', err))
+            .then(() => syncState);
+        })
+        .then(syncState => {
+          if (force) {
+            this.displayUserFeedback(syncState);
+          }
+          this.sendUpdate(syncState);
         })
         .finally(() => {
           this.inProgressSync = undefined;
