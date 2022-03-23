@@ -4,7 +4,7 @@ const $ = require('jquery');
 const { getElementXPath } = require('./xpath-element-path');
 const enketoConstants = require('./constants');
 const EnketoPrepopulationDataService = require('./enketo-prepopulation-data-service');
-const { EnketoTranslator } = require('./enketo-translator');
+const { EnketoDataTranslator } = require('./enketo-data-translator');
 
 const HTML_ATTACHMENT_NAME = 'form.html';
 const MODEL_ATTACHMENT_NAME = 'model.xml';
@@ -362,7 +362,7 @@ const create = (contactServices, formInternalId) => {
 const xmlToDocs = (xmlServices, doc, formXml, record) => {
   const recordDoc = $.parseXML(record);
   const $record = $($(recordDoc).children()[0]);
-  const repeatPaths = EnketoTranslator.getRepeatPaths(formXml);
+  const repeatPaths = EnketoDataTranslator.getRepeatPaths(formXml);
 
   const mapOrAssignId = (e, id) => {
     if(!id) {
@@ -466,7 +466,7 @@ const xmlToDocs = (xmlServices, doc, formXml, record) => {
   const docsToStore = $record
     .find('[db-doc=true]')
     .map((idx, element) => {
-      const docToStore = EnketoTranslator.reportRecordToJs(getOuterHTML(element));
+      const docToStore = EnketoDataTranslator.reportRecordToJs(getOuterHTML(element));
       docToStore._id = getId(getElementXPath(element));
       docToStore.reported_date = Date.now();
       return docToStore;
@@ -474,7 +474,7 @@ const xmlToDocs = (xmlServices, doc, formXml, record) => {
     .get();
 
   doc._id = getId('/*');
-  doc.hidden_fields = EnketoTranslator.getHiddenFieldList(record);
+  doc.hidden_fields = EnketoDataTranslator.getHiddenFieldList(record);
 
   const attach = (elem, file, type, alreadyEncoded, xpath) => {
     xpath = xpath || getElementXPath(elem);
@@ -511,7 +511,7 @@ const xmlToDocs = (xmlServices, doc, formXml, record) => {
 
   docsToStore.unshift(doc);
 
-  doc.fields = EnketoTranslator.reportRecordToJs(record, formXml);
+  doc.fields = EnketoDataTranslator.reportRecordToJs(record, formXml);
   return docsToStore;
 };
 

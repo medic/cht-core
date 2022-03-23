@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { EnketoTranslationUtils } from '../../js/enketo/enketo-translator';
+import { EnketoDataTranslationUtils } from '../../js/enketo/enketo-data-translator';
 
 @Injectable({
   providedIn: 'root'
@@ -7,7 +7,7 @@ import { EnketoTranslationUtils } from '../../js/enketo/enketo-translator';
 
 export class EnketoTranslationService {
   private findChildNode(root, childNodeName) {
-    return EnketoTranslationUtils
+    return EnketoDataTranslationUtils
       .withElements(root.childNodes)
       .find((node:any) => node.nodeName === childNodeName);
   }
@@ -20,12 +20,12 @@ export class EnketoTranslationService {
 
     const repeats = {};
 
-    EnketoTranslationUtils.withElements(repeatNode.childNodes).forEach((repeated:any) => {
+    EnketoDataTranslationUtils.withElements(repeatNode.childNodes).forEach((repeated:any) => {
       const key = repeated.nodeName + '_data';
       if(!repeats[key]) {
         repeats[key] = [];
       }
-      repeats[key].push(EnketoTranslationUtils.nodesToJs(repeated.childNodes));
+      repeats[key].push(EnketoDataTranslationUtils.nodesToJs(repeated.childNodes));
     });
 
     return repeats;
@@ -56,16 +56,16 @@ export class EnketoTranslationService {
 
     const NODE_NAMES_TO_IGNORE = ['meta', 'inputs', 'repeat'];
 
-    EnketoTranslationUtils
+    EnketoDataTranslationUtils
       .withElements(root.childNodes)
       .filter((node:any) => !NODE_NAMES_TO_IGNORE.includes(node.nodeName) && node.childElementCount > 0)
       .forEach((child:any) => {
         if (!result.doc) {
           // First child is the main result, rest are siblings
-          result.doc = EnketoTranslationUtils.nodesToJs(child.childNodes);
+          result.doc = EnketoDataTranslationUtils.nodesToJs(child.childNodes);
           return;
         }
-        result.siblings[child.nodeName] = EnketoTranslationUtils.nodesToJs(child.childNodes);
+        result.siblings[child.nodeName] = EnketoDataTranslationUtils.nodesToJs(child.childNodes);
       });
 
     return result;

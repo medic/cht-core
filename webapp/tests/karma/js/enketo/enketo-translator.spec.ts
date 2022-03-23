@@ -1,9 +1,9 @@
 import { assert } from 'chai';
 import $ from 'jquery';
 
-import { EnketoTranslator } from '../../../../src/js/enketo/enketo-translator';
+import { EnketoDataTranslator } from '../../../../src/js/enketo/enketo-data-translator';
 
-describe('EnketoTranslator', () => {
+describe('EnketoDataTranslator', () => {
   describe('#reportRecordToJs()', () => {
     it('should convert nested nodes to nested JSON', () => {
       // given
@@ -33,7 +33,7 @@ describe('EnketoTranslator', () => {
         </treatments>`;
 
       // when
-      const js = EnketoTranslator.reportRecordToJs(xml);
+      const js = EnketoDataTranslator.reportRecordToJs(xml);
 
       // then
       assert.deepEqual(js, {
@@ -122,7 +122,7 @@ describe('EnketoTranslator', () => {
 </h:html>`;
 
       // when
-      const js = EnketoTranslator.reportRecordToJs(record, form);
+      const js = EnketoDataTranslator.reportRecordToJs(record, form);
 
       // then
       assert.deepEqual(js, {
@@ -146,7 +146,7 @@ describe('EnketoTranslator', () => {
         </doc>`;
 
       // when
-      const hidden_fields = EnketoTranslator.getHiddenFieldList(xml);
+      const hidden_fields = EnketoDataTranslator.getHiddenFieldList(xml);
 
       // then
       assert.deepEqual(hidden_fields, []);
@@ -163,7 +163,7 @@ describe('EnketoTranslator', () => {
         </doc>`;
 
       // when
-      const hidden_fields = EnketoTranslator.getHiddenFieldList(xml);
+      const hidden_fields = EnketoDataTranslator.getHiddenFieldList(xml);
 
       // then
       assert.deepEqual(hidden_fields, [ 'secret_code_name_one', 'secret_code_name_two' ]);
@@ -182,7 +182,7 @@ describe('EnketoTranslator', () => {
         </doc>`;
 
       // when
-      const hidden_fields = EnketoTranslator.getHiddenFieldList(xml);
+      const hidden_fields = EnketoDataTranslator.getHiddenFieldList(xml);
 
       // then
       assert.deepEqual(hidden_fields, [ 'secret' ]);
@@ -201,7 +201,7 @@ describe('EnketoTranslator', () => {
         </doc>`;
 
       // when
-      const hidden_fields = EnketoTranslator.getHiddenFieldList(xml);
+      const hidden_fields = EnketoDataTranslator.getHiddenFieldList(xml);
 
       // then
       assert.deepEqual(hidden_fields, [ 'secret.first', 'lmp' ]);
@@ -233,7 +233,7 @@ describe('EnketoTranslator', () => {
       };
 
       // when
-      EnketoTranslator.bindJsonToXml(element, data);
+      EnketoDataTranslator.bindJsonToXml(element, data);
 
       // then
       assert.equal(element.find('name').text(), 'Davesville');
@@ -270,7 +270,7 @@ describe('EnketoTranslator', () => {
       };
 
       // when
-      EnketoTranslator.bindJsonToXml(element, data);
+      EnketoDataTranslator.bindJsonToXml(element, data);
 
       // then
       assert.equal(element.find('name').text(), 'Davesville');
@@ -311,7 +311,7 @@ describe('EnketoTranslator', () => {
       };
 
       // when
-      EnketoTranslator.bindJsonToXml(element, data);
+      EnketoDataTranslator.bindJsonToXml(element, data);
 
       // then
       assert.equal(element.find('district_hospital > name').text(), 'Davesville');
@@ -351,7 +351,7 @@ describe('EnketoTranslator', () => {
         },
       };
 
-      EnketoTranslator.bindJsonToXml(element, data);
+      EnketoDataTranslator.bindJsonToXml(element, data);
 
       assert.equal(element.find('contact > name').text(), '',
         'The contact name should not get the value of the district hospital');
@@ -377,7 +377,7 @@ describe('EnketoTranslator', () => {
         },
       };
 
-      EnketoTranslator.bindJsonToXml(element, data);
+      EnketoDataTranslator.bindJsonToXml(element, data);
 
       assert.equal(element.find('smang').text(), DEEP_TEST_VALUE);
     });
