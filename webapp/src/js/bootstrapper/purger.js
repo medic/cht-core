@@ -167,6 +167,7 @@ const purgeIds = (db, ids) => {
         }
       });
       nbrPurged = purgedDocs.length;
+      console.debug(`~~~~~ purging :`, purgedDocs.length);
       return db.bulkDocs(purgedDocs);
     })
     .then(results => {
@@ -176,6 +177,7 @@ const purgeIds = (db, ids) => {
           errors += result.id + ' with ' + result.message + '; ';
         }
       });
+      console.debug(`~~~~~ errors :`, JSON.stringify(errors));
       if (errors) {
         throw new Error(`Not all documents purged successfully: ${errors}`);
       }
