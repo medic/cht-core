@@ -1,7 +1,7 @@
-const { assert } = require('chai');
-const $ = require('jquery');
+import { assert } from 'chai';
+import $ from 'jquery';
 
-const { EnketoTranslator } = require('../src/enketo-translator');
+import { EnketoTranslator } from '../../../../src/js/enketo/enketo-translator';
 
 describe('EnketoTranslator', () => {
   describe('#reportRecordToJs()', () => {

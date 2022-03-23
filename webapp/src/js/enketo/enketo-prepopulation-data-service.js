@@ -1,5 +1,5 @@
 const { isString: _isString } = require('lodash');
-const { EnketoTranslator } = require('../src/enketo-translator');
+const { EnketoTranslator } = require('./enketo-translator');
 
 class EnketoPrepopulationDataService {
   constructor(userSettingsService) {

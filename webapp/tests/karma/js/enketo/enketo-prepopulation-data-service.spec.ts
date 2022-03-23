@@ -1,8 +1,8 @@
-const sinon = require('sinon');
-const { expect, assert } = require('chai');
-const $ = require('jquery');
+import sinon from 'sinon';
+import { expect, assert } from 'chai';
+import $ from 'jquery';
 
-const EnketoPrepopulationDataService = require('../src/enketo-prepopulation-data-service');
+import EnketoPrepopulationDataService from '../../../../src/js/enketo/enketo-prepopulation-data-service';
 
 describe('EnketoPrepopulationData service', () => {
   let service;

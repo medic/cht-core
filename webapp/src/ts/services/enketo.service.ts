@@ -11,7 +11,7 @@ import {
   FormDataServices,
   TranslationServices,
   XmlServices,
-} from '@medic/enketo-form-manager';
+} from '../../js/enketo/enketo-form-manager';
 import { AddAttachmentService } from '@mm-services/add-attachment.service';
 import { DbService } from '@mm-services/db.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';

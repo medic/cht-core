@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { EnketoTranslationUtils } from '@medic/enketo-form-manager';
+import { EnketoTranslationUtils } from '../../js/enketo/enketo-translator';
 
 @Injectable({
   providedIn: 'root'

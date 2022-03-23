@@ -1,19 +1,19 @@
-const {
+import { expect, assert } from 'chai';
+import $ from 'jquery';
+import sinon from 'sinon';
+import _ from 'lodash';
+import chai from 'chai';
+import chaiExclude from 'chai-exclude';
+chai.use(chaiExclude);
+
+import {
   ContactServices,
   FileServices,
   FormDataServices,
   TranslationServices,
   XmlServices,
   EnketoFormManager
-} = require('../src/enketo-form-manager');
-const { expect, assert } = require('chai');
-const $ = require('jquery');
-const sinon = require('sinon');
-const _ = require('lodash');
-
-const chai = require('chai');
-const chaiExclude = require('chai-exclude');
-chai.use(chaiExclude);
+} from '../../../../src/js/enketo/enketo-form-manager';
 
 describe('Enketo Form Manager', () => {
   let contactServices;
