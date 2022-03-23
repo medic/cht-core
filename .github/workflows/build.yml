@@ -8,7 +8,7 @@ env:
   STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }}
   MARKET_URL_READ: 'https://staging.dev.medicmobile.org'
   MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
-  EXTERNAL_CONTRIBUTOR: ${{ secrets.DOCKERHUB_USERNAME == '' }}
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
 
 jobs:
 
@@ -22,7 +22,7 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: ${{ !env.EXTERNAL_CONTRIBUTOR }}
+      if: ${{ env.DOCKERHUB_USERNAME != '' }}
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
     - name: Set CI Vars
@@ -53,7 +53,7 @@ jobs:
       with:
         name: cht-images
         path: images/
-      if: ${{ env.EXTERNAL_CONTRIBUTOR }}
+      if: ${{ env.DOCKERHUB_USERNAME == '' }}
 
   config-tests:
     needs: build
@@ -114,7 +114,7 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: ${{ !env.EXTERNAL_CONTRIBUTOR }}
+      if: ${{ env.DOCKERHUB_USERNAME != '' }}
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
     - name: Use Node.js 16.x
@@ -127,11 +127,11 @@ jobs:
       with:
         name: cht-images
         path: images/
-      if: ${{ env.EXTERNAL_CONTRIBUTOR }}
+      if: ${{ env.DOCKERHUB_USERNAME == '' }}
     - name: Load docker images
       run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
       working-directory: images/
-      if: ${{ env.EXTERNAL_CONTRIBUTOR }}
+      if: ${{ env.DOCKERHUB_USERNAME == '' }}
     - name: Set CI Vars
       run: |
         echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV

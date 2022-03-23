@@ -8,7 +8,7 @@ const {
   BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
-  EXTERNAL_CONTRIBUTOR,
+  DOCKERHUB_USERNAME,
 } = process.env;
 
 const DEV = !BUILD_NUMBER;
@@ -1050,10 +1050,10 @@ module.exports = function(grunt) {
 
   grunt.registerTask('publish-service-images', 'Publish service images', (() => {
     if (!BUILD_NUMBER) {
-      return []; // local run
+      return [];
     }
 
-    if (EXTERNAL_CONTRIBUTOR) {
+    if (DOCKERHUB_USERNAME) {
       return ['exec:push-service-images'];
     }
 
