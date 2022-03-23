@@ -131,10 +131,6 @@ describe('purge', () => {
     expect(allReports.length).to.equal(homeVisits.length + pregnancies.length);
     expect(allReports.some(report => report.form === 'purge')).to.equal(false);
 
-    let purgeLog = await getPurgeLog();
-    expect(purgeLog.count).to.equal(0);
-    expect(purgeLog.history.length).to.equal(1);
-
     // Purging occurs normally when refreshing
     await updateSettings(purgeHomeVisitFn, true);
     await runPurging();
@@ -149,8 +145,8 @@ describe('purge', () => {
     expect(allReports.length).to.equal(pregnancies.length);
     expect(allReports.every(report => report.form === 'pregnancy')).to.equal(true);
 
-    purgeLog = await getPurgeLog();
+    const purgeLog = await getPurgeLog();
     expect(purgeLog.count).to.equal(homeVisits.length);
-    expect(purgeLog.history.length).to.equal(2);
+    expect(purgeLog.history.length).to.equal(1);
   });
 });
