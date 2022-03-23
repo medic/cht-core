@@ -85,7 +85,7 @@ describe('Enketo Form Manager', () => {
       lineageModelGeneratorService,
       searchService
     );
-    formDataService.enketoPrepopulationDataService =  {
+    formDataService.enketoDataPrepopulatorService =  {
       get: sinon.stub().resolves('<xml></xml>')
     };
 
@@ -183,7 +183,7 @@ describe('Enketo Form Manager', () => {
         .render($('<div></div>'), mockEnketoDoc('myform'))
         .then(() => {
           expect(contactServices.userContact.get.callCount).to.equal(1);
-          expect(formDataService.enketoPrepopulationData.get.callCount).to.equal(1);
+          expect(formDataService.enketoDataPrepopulator.get.callCount).to.equal(1);
           expect(fileServices.fileReader.utf8.callCount).to.equal(2);
           expect(fileServices.fileReader.utf8.args[0][0]).to.equal('<div>my form</div>');
           expect(fileServices.fileReader.utf8.args[1][0]).to.equal(VISIT_MODEL);
@@ -251,7 +251,7 @@ describe('Enketo Form Manager', () => {
       fileServices.fileReader.utf8
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
-      formDataService.enketoPrepopulationData.get.resolves(data);
+      formDataService.enketoDataPrepopulator.get.resolves(data);
       formDataService.languageService.get.resolves('sw');
       return enketoFormMgr.render($('<div></div>'), mockEnketoDoc('myform'), data).then(() => {
         expect(formDataService.languageService.get.callCount).to.equal(1);
@@ -265,7 +265,7 @@ describe('Enketo Form Manager', () => {
       fileServices.fileReader.utf8
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
-      formDataService.enketoPrepopulationData.get.resolves(data);
+      formDataService.enketoDataPrepopulator.get.resolves(data);
       return enketoFormMgr.render($('<div></div>'), mockEnketoDoc('myform'), data).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].modelStr).to.equal('my model');
@@ -278,7 +278,7 @@ describe('Enketo Form Manager', () => {
       fileServices.fileReader.utf8
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
-      formDataService.enketoPrepopulationData.get.resolves(data);
+      formDataService.enketoDataPrepopulator.get.resolves(data);
       const instanceData = {
         inputs: {
           patient_id: 123,

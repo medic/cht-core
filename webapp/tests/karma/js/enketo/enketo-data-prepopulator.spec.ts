@@ -2,7 +2,7 @@ import sinon from 'sinon';
 import { expect, assert } from 'chai';
 import $ from 'jquery';
 
-import EnketoPrepopulationDataService from '../../../../src/js/enketo/enketo-prepopulation-data-service';
+import EnketoDataPrepopulator from '../../../../src/js/enketo/enketo-data-prepopulator';
 
 describe('EnketoPrepopulationData service', () => {
   let service;
@@ -156,7 +156,7 @@ describe('EnketoPrepopulationData service', () => {
       });
     });
 
-    service = new EnketoPrepopulationDataService({ get: UserSettings });
+    service = new EnketoDataPrepopulator({ get: UserSettings });
   });
 
   afterEach(() => {

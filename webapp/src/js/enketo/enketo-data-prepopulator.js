@@ -1,7 +1,7 @@
 const { isString: _isString } = require('lodash');
 const { EnketoDataTranslator } = require('./enketo-data-translator');
 
-class EnketoPrepopulationDataService {
+class EnketoDataPrepopulator {
   constructor(userSettingsService) {
     this.userSettingsService = userSettingsService;
   }
@@ -34,4 +34,4 @@ class EnketoPrepopulationDataService {
   }
 }
 
-module.exports = EnketoPrepopulationDataService;
+module.exports = EnketoDataPrepopulator;

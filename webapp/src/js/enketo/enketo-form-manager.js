@@ -3,7 +3,7 @@ const pojo2xml = require('pojo2xml');
 const $ = require('jquery');
 const { getElementXPath } = require('./xpath-element-path');
 const enketoConstants = require('./constants');
-const EnketoPrepopulationDataService = require('./enketo-prepopulation-data-service');
+const EnketoDataPrepopulator = require('./enketo-data-prepopulator');
 const { EnketoDataTranslator } = require('./enketo-data-translator');
 
 const HTML_ATTACHMENT_NAME = 'form.html';
@@ -133,7 +133,7 @@ const getContactSummary = (formDataServices, doc, instanceData) => {
 const getEnketoForm = (formDataServices, wrapper, doc, instanceData) => {
   return Promise
     .all([
-      formDataServices.enketoPrepopulationData.get(doc.model, instanceData),
+      formDataServices.enketoDataPrepopulator.get(doc.model, instanceData),
       getContactSummary(formDataServices, doc, instanceData),
       formDataServices.language.get()
     ])
@@ -625,7 +625,7 @@ class FormDataServices {
     searchService
   ) {
     this.contactSummaryService = contactSummaryService;
-    this.enketoPrepopulationDataService = new EnketoPrepopulationDataService(userSettingsService);
+    this.enketoDataPrepopulatorService = new EnketoDataPrepopulator(userSettingsService);
     this.languageService = languageService;
     this.searchService = searchService;
     this.lineageModelGeneratorService = lineageModelGeneratorService;
@@ -635,11 +635,9 @@ class FormDataServices {
     return this.contactSummaryService;
   }
 
-  get enketoPrepopulationData() {
-    return this.enketoPrepopulationDataService;
+  get enketoDataPrepopulator() {
+    return this.enketoDataPrepopulatorService;
   }
-
-  // set enketoPrepopulationDat
 
   get language() {
     return this.languageService;
