@@ -62,6 +62,7 @@ const purge = (localDb, userCtx, toPurge) => {
       return;
     }
     const batch = ids.slice(0, BATCH_SIZE);
+    emit('purging batch', { batch: JSON.stringify(batch) });
     return purgeIds(localDb, batch)
       .then(nbr => {
         totalPurged += nbr;
