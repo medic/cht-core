@@ -123,10 +123,8 @@ describe('purge', () => {
     await commonElements.sync();
     const purgingRequests = parsePurgingLogEntries(await purgingRequestsPromise());
     expect(purgingRequests).to.deep.equal([
-      '/purging',
+      '/purging/changes',
       '/purging/checkpoint',
-      '/purging',
-      '/purging/changes', // we still request once, and get zero changes because we're up to date
     ]);
 
     let allReports = await getAllReports();
