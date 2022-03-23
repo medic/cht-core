@@ -14,7 +14,6 @@ const baseConfig = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
   exclude: [
     '**/*wdio-spec.js',
-    '**/purge.spec.js', // TODO revert
     'e2e/api/**/*.js',
     'e2e/sentinel/**/*.js',
     'e2e/transitions/**/*.js',

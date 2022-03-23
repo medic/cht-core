@@ -56,21 +56,6 @@ const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentine
 
 const bootstrapperStatus = () => $('.bootstrap-layer .status');
 
-const hasLocalDocs = () => {
-  const localDbName = `medic-user-${user.username}`;
-  return browser.executeAsync((localDbName, callback) => {
-    const db = window.PouchDB(localDbName);
-    db
-      .allDocs({ keys: ['_design/medic-client', 'settings'] })
-      .then(results => callback(results.rows.every(row => !row.error)))
-      .catch(err => callback(err));
-  }, localDbName);
-};
-
-const waitForReplicationProgress = async () => {
-  await browser.waitUntil(hasLocalDocs, { interval: 50 });
-};
-
 const waitForPurgingProgress = async () => {
   const purgingInfo = 'Cleaned';
   await browser.waitUntil(
@@ -97,11 +82,6 @@ const getAllReports = () => browser.executeAsync(callback => {
     .catch(callback);
 });
 
-const pageLoaded = async () => {
-  await commonElements.waitForPageLoaded();
-  return 'page-loaded';
-};
-
 const updateSettings = async (purgeFn, revert) => {
   if (revert) {
     await utils.revertSettings(true);
@@ -124,8 +104,8 @@ const parsePurgingLogEntries = (logEntries) => {
   });
 };
 
-describe('initial replication', () => {
-  it('interruption in initial replication should not trigger purging', async () => {
+describe('purge', () => {
+  it('purging runs on sync and startup', async () => {
     await updateSettings(purgeFn); // settings should be at the beginning of the changes feed
 
     await utils.saveDocs([district, healthCenter, contact, patient]);
@@ -137,19 +117,10 @@ describe('initial replication', () => {
 
     await runPurging();
 
-    const purgingRequestsPromise = utils.collectLogs(utils.apiLogFile, /REQ.*purging/);
-    await browser.throttle('Good3G');
     await loginPage.login({ username: user.username, password: user.password, loadPage: false });
 
-    await waitForReplicationProgress();
-    await browser.refresh();
-
-    const event = await Promise.race([
-      waitForPurgingProgress().catch(), // waitUntil will throw on timeout
-      pageLoaded(),
-    ]);
-    expect(event).to.equal('page-loaded');
-
+    const purgingRequestsPromise = utils.collectLogs(utils.apiLogFile, /REQ.*purging/);
+    await commonElements.sync();
     const purgingRequests = parsePurgingLogEntries(await purgingRequestsPromise());
     expect(purgingRequests).to.deep.equal([
       '/purging',
@@ -157,9 +128,6 @@ describe('initial replication', () => {
       '/purging',
       '/purging/changes', // we still request once, and get zero changes because we're up to date
     ]);
-
-    await browser.throttle('online');
-    await commonElements.sync();
 
     let allReports = await getAllReports();
     expect(allReports.length).to.equal(homeVisits.length + pregnancies.length);
