@@ -51,19 +51,7 @@ const pregnancies = Array
   .from({ length: 125 })
   .map(() => genericReportFactory.build({ form: 'pregnancy' }, { patient, submitter: contact }));
 
-
 const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
-
-const bootstrapperStatus = () => $('.bootstrap-layer .status');
-
-const waitForPurgingProgress = async () => {
-  const purgingInfo = 'Cleaned';
-  await browser.waitUntil(
-    async () => (await (await bootstrapperStatus()).getText()).trim().startsWith(purgingInfo),
-    { interval: 50, timeout: 5000 },
-  );
-  return 'purging';
-};
 
 const getPurgeLog = () => browser.executeAsync(callback => {
   window.CHTCore.DB
@@ -138,7 +126,6 @@ describe('purge', () => {
     await commonElements.sync(true);
     await browser.refresh();
 
-    await waitForPurgingProgress();
     await commonElements.waitForPageLoaded();
 
     allReports = await getAllReports();
