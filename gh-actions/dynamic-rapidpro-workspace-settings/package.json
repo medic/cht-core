@@ -4,7 +4,7 @@
   "description": "dynamic-rapidpro-workspace Shared GitHub Action",
   "main": "index.js",
   "scripts": {
-    "build": "ncc build index.js -o dist --source-map",
+    "build": "ncc build index.js --license licenses.txt",
     "test": "mocha test/*.spec.js --timeout 10000 --slow 500"
   },
   "author": "Medic Inc.",
