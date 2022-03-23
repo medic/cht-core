@@ -131,14 +131,6 @@ describe('Enketo Form Manager', () => {
     );
 
     form = {
-      // view: {
-      //   $: { on: sinon.stub() },
-      //   html: document.createElement('div'),
-      // },
-      // langs: {
-      //   setAll: () => {},
-      //   $formLanguages: $('<select><option value="en">en</option></select>'),
-      // },
       calc: { update: sinon.stub() },
       getDataStr: sinon.stub(),
       init: sinon.stub(),
@@ -812,6 +804,428 @@ describe('Enketo Form Manager', () => {
         expect(actualThing2.geolocation).to.deep.equal(geoData);
 
         expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
+      });
+    });
+
+    it('creates extra docs with references', () => {
+      const content = loadXML('extra-docs-with-references');
+      form.getDataStr.returns(content);
+      dbBulkDocs.resolves([
+        { ok: true, id: '6', rev: '1-abc' },
+        { ok: true, id: '7', rev: '1-def' },
+        { ok: true, id: '8', rev: '1-ghi' }
+      ]);
+
+      return enketoFormMgr.save('V', form).then(actual => {
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(contactServices.userContact.get.callCount).to.equal(1);
+
+        expect(actual.length).to.equal(3);
+        const reportId = actual[0]._id;
+        const doc1_id = actual[1]._id;
+        const doc2_id = actual[2]._id;
+
+        const actualReport = actual[0];
+
+        expect(actualReport._id).to.match(/(\w+-)\w+/);
+        expect(actualReport.fields.name).to.equal('Sally');
+        expect(actualReport.fields.lmp).to.equal('10');
+        expect(actualReport.fields.secret_code_name).to.equal('S4L');
+        expect(actualReport.fields.my_self_0).to.equal(reportId);
+        expect(actualReport.fields.my_child_01).to.equal(doc1_id);
+        expect(actualReport.fields.my_child_02).to.equal(doc2_id);
+        expect(actualReport.form).to.equal('V');
+        expect(actualReport.type).to.equal('data_record');
+        expect(actualReport.content_type).to.equal('xml');
+        expect(actualReport.contact._id).to.equal('123');
+        expect(actualReport.from).to.equal('555');
+        expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+
+        expect(actualReport.fields.doc1).to.equal(undefined);
+        expect(actualReport.fields.doc2).to.equal(undefined);
+
+        const actualThing1 = actual[1];
+        expect(actualThing1._id).to.match(/(\w+-)\w+/);
+        expect(actualThing1.some_property_1).to.equal('some_value_1');
+        expect(actualThing1.my_self_1).to.equal(doc1_id);
+        expect(actualThing1.my_parent_1).to.equal(reportId);
+        expect(actualThing1.my_sibling_1).to.equal(doc2_id);
+
+        const actualThing2 = actual[2];
+        expect(actualThing2._id).to.match(/(\w+-)\w+/);
+        expect(actualThing2.some_property_2).to.equal('some_value_2');
+        expect(actualThing2.my_self_2).to.equal(doc2_id);
+        expect(actualThing2.my_parent_2).to.equal(reportId);
+        expect(actualThing2.my_sibling_2).to.equal(doc1_id);
+
+        expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
+      });
+    });
+
+    it('creates extra docs with repeats', () => {
+      const content = loadXML('extra-docs-with-repeat');
+      form.getDataStr.returns(content);
+      dbBulkDocs.resolves([
+        { ok: true, id: '6', rev: '1-abc' },
+        { ok: true, id: '7', rev: '1-def' },
+        { ok: true, id: '8', rev: '1-ghi' },
+        { ok: true, id: '9', rev: '1-ghi' }
+      ]);
+      return enketoFormMgr.save('V', form).then(actual => {
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(contactServices.userContact.get.callCount).to.equal(1);
+
+        expect(actual.length).to.equal(4);
+        const reportId = actual[0]._id;
+
+        const actualReport = actual[0];
+
+        expect(actualReport._id).to.match(/(\w+-)\w+/);
+        expect(actualReport.fields.name).to.equal('Sally');
+        expect(actualReport.fields.lmp).to.equal('10');
+        expect(actualReport.fields.secret_code_name).to.equal('S4L');
+        expect(actualReport.form).to.equal('V');
+        expect(actualReport.type).to.equal('data_record');
+        expect(actualReport.content_type).to.equal('xml');
+        expect(actualReport.contact._id).to.equal('123');
+        expect(actualReport.from).to.equal('555');
+        expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+
+        for (let i=1; i<=3; ++i) {
+          const repeatDocN = actual[i];
+          expect(repeatDocN._id).to.match(/(\w+-)\w+/);
+          expect(repeatDocN.my_parent).to.equal(reportId);
+          expect(repeatDocN.some_property).to.equal('some_value_'+i);
+        }
+
+        expect(_.uniq(_.map(actual, '_id')).length).to.equal(4);
+      });
+    });
+
+    it('db-doc-ref with repeats', () => {
+      const content = loadXML('db-doc-ref-in-repeat');
+      form.getDataStr.returns(content);
+
+      dbBulkDocs.resolves([
+        { ok: true, id: '6', rev: '1-abc' },
+        { ok: true, id: '7', rev: '1-def' },
+        { ok: true, id: '8', rev: '1-ghi' },
+        { ok: true, id: '9', rev: '1-ghi' }
+      ]);
+      fileServices.fileReader.utf8.resolves(`
+        <data>
+          <repeat nodeset="/data/repeat_section"></repeat>
+        </data>
+      `);
+      return enketoFormMgr.save('V', form).then(actual => {
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(contactServices.userContact.get.callCount).to.equal(1);
+
+        expect(actual.length).to.equal(4);
+        const doc = actual[0];
+
+        expect(doc).to.deep.nested.include({
+          form: 'V',
+          'fields.name': 'Sally',
+          'fields.lmp': '10',
+          'fields.secret_code_name': 'S4L',
+          'fields.repeat_section[0].extra': 'data1',
+          'fields.repeat_section[0].repeat_doc_ref': actual[1]._id,
+          'fields.repeat_section[1].extra': 'data2',
+          'fields.repeat_section[1].repeat_doc_ref': actual[2]._id,
+          'fields.repeat_section[2].extra': 'data3',
+          'fields.repeat_section[2].repeat_doc_ref': actual[3]._id,
+        });
+      });
+    });
+
+    it('db-doc-ref with deep repeats', () => {
+      const content = loadXML('db-doc-ref-in-deep-repeat');
+      form.getDataStr.returns(content);
+
+      dbBulkDocs.resolves([
+        { ok: true, id: '6', rev: '1-abc' },
+        { ok: true, id: '7', rev: '1-def' },
+        { ok: true, id: '8', rev: '1-ghi' },
+        { ok: true, id: '9', rev: '1-ghi' }
+      ]);
+      fileServices.fileReader.utf8.resolves(`
+        <data>
+          <repeat nodeset="/data/repeat_section"></repeat>
+        </data>
+      `);
+      return enketoFormMgr.save('V', form).then(actual => {
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(contactServices.userContact.get.callCount).to.equal(1);
+
+        expect(actual.length).to.equal(4);
+        const doc = actual[0];
+
+        expect(doc).to.deep.nested.include({
+          form: 'V',
+          'fields.name': 'Sally',
+          'fields.lmp': '10',
+          'fields.secret_code_name': 'S4L',
+          'fields.repeat_section[0].extra': 'data1',
+          'fields.repeat_section[0].some.deep.structure.repeat_doc_ref': actual[1]._id,
+          'fields.repeat_section[1].extra': 'data2',
+          'fields.repeat_section[1].some.deep.structure.repeat_doc_ref': actual[2]._id,
+          'fields.repeat_section[2].extra': 'data3',
+          'fields.repeat_section[2].some.deep.structure.repeat_doc_ref': actual[3]._id,
+        });
+      });
+    });
+
+    it('db-doc-ref with deep repeats and non-db-doc repeats', () => {
+      const content = loadXML('db-doc-ref-in-deep-repeats-extra-repeats');
+      form.getDataStr.returns(content);
+
+      dbBulkDocs.resolves([
+        { ok: true, id: '6', rev: '1-abc' },
+        { ok: true, id: '7', rev: '1-def' },
+        { ok: true, id: '8', rev: '1-ghi' },
+        { ok: true, id: '9', rev: '1-ghi' }
+      ]);
+      fileServices.fileReader.utf8.resolves(`
+        <data>
+          <repeat nodeset="/data/repeat_section"></repeat>
+        </data>
+      `);
+      return enketoFormMgr.save('V', form).then(actual => {
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(contactServices.userContact.get.callCount).to.equal(1);
+
+        expect(actual.length).to.equal(4);
+        const doc = actual[0];
+
+        expect(doc).to.deep.nested.include({
+          form: 'V',
+          'fields.name': 'Sally',
+          'fields.lmp': '10',
+          'fields.secret_code_name': 'S4L',
+          'fields.repeat_section[0].extra': 'data1',
+          'fields.repeat_section[0].some.deep.structure.repeat_doc_ref': actual[1]._id,
+          'fields.repeat_section[1].extra': 'data2',
+          'fields.repeat_section[1].some.deep.structure.repeat_doc_ref': actual[2]._id,
+          'fields.repeat_section[2].extra': 'data3',
+          'fields.repeat_section[2].some.deep.structure.repeat_doc_ref': actual[3]._id,
+        });
+      });
+    });
+
+    it('db-doc-ref with repeats and local references', () => {
+      const content = loadXML('db-doc-ref-in-repeats-with-local-references');
+      form.getDataStr.returns(content);
+
+      dbBulkDocs.resolves([
+        { ok: true, id: '6', rev: '1-abc' },
+        { ok: true, id: '7', rev: '1-def' },
+        { ok: true, id: '8', rev: '1-ghi' },
+        { ok: true, id: '9', rev: '1-ghi' }
+      ]);
+      fileServices.fileReader.utf8.resolves(`
+        <data>
+          <repeat nodeset="/data/repeat_section"></repeat>
+        </data>
+      `);
+      return enketoFormMgr.save('V', form).then(actual => {
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(contactServices.userContact.get.callCount).to.equal(1);
+
+        expect(actual.length).to.equal(4);
+        const doc = actual[0];
+
+        expect(doc).to.deep.nested.include({
+          form: 'V',
+          'fields.name': 'Sally',
+          'fields.lmp': '10',
+          'fields.secret_code_name': 'S4L',
+          'fields.repeat_section[0].extra': 'data1',
+          'fields.repeat_section[0].repeat_doc_ref': actual[1]._id,
+          'fields.repeat_section[1].extra': 'data2',
+          'fields.repeat_section[1].repeat_doc_ref': actual[2]._id,
+          'fields.repeat_section[2].extra': 'data3',
+          'fields.repeat_section[2].repeat_doc_ref': actual[3]._id,
+        });
+      });
+    });
+
+    it('db-doc-ref with deep repeats and local references', () => {
+      const content = loadXML('db-doc-ref-in-deep-repeats-with-local-references');
+      form.getDataStr.returns(content);
+
+      dbBulkDocs.resolves([
+        { ok: true, id: '6', rev: '1-abc' },
+        { ok: true, id: '7', rev: '1-def' },
+        { ok: true, id: '8', rev: '1-ghi' },
+        { ok: true, id: '9', rev: '1-ghi' }
+      ]);
+      fileServices.fileReader.utf8.resolves(`
+        <data>
+          <repeat nodeset="/data/repeat_section"></repeat>
+        </data>
+      `);
+      return enketoFormMgr.save('V', form).then(actual => {
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(contactServices.userContact.get.callCount).to.equal(1);
+
+        expect(actual.length).to.equal(4);
+        const doc = actual[0];
+
+        expect(doc).to.deep.nested.include({
+          form: 'V',
+          'fields.name': 'Sally',
+          'fields.lmp': '10',
+          'fields.secret_code_name': 'S4L',
+          'fields.repeat_section[0].extra': 'data1',
+          'fields.repeat_section[0].some.deep.structure.repeat_doc_ref': actual[1]._id,
+          'fields.repeat_section[1].extra': 'data2',
+          'fields.repeat_section[1].some.deep.structure.repeat_doc_ref': actual[2]._id,
+          'fields.repeat_section[2].extra': 'data3',
+          'fields.repeat_section[2].some.deep.structure.repeat_doc_ref': actual[3]._id,
+        });
+      });
+    });
+
+    it('db-doc-ref with repeats with refs outside of repeat', () => {
+      const content = loadXML('db-doc-ref-outside-of-repeat');
+      form.getDataStr.returns(content);
+
+      dbBulkDocs.resolves([
+        { ok: true, id: '6', rev: '1-abc' },
+        { ok: true, id: '7', rev: '1-def' },
+      ]);
+      fileServices.fileReader.utf8.resolves(`
+        <data>
+          <repeat nodeset="/data/repeat_section"></repeat>
+        </data>
+      `);
+      return enketoFormMgr.save('V', form).then(actual => {
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(contactServices.userContact.get.callCount).to.equal(1);
+
+        expect(actual.length).to.equal(2);
+        const doc = actual[0];
+
+        expect(doc).to.deep.nested.include({
+          form: 'V',
+          'fields.name': 'Sally',
+          'fields.lmp': '10',
+          'fields.secret_code_name': 'S4L',
+          'fields.repeat_section[0].extra': 'data1',
+          'fields.repeat_section[0].repeat_doc_ref': actual[1]._id,
+          'fields.repeat_section[1].extra': 'data2',
+          'fields.repeat_section[1].repeat_doc_ref': actual[1]._id,
+          'fields.repeat_section[2].extra': 'data3',
+          'fields.repeat_section[2].repeat_doc_ref': actual[1]._id,
+        });
+      });
+    });
+
+    it('db-doc-ref with repeats with db-doc as repeat', () => {
+      const content = loadXML('db-doc-ref-same-as-repeat');
+      form.getDataStr.returns(content);
+
+      dbBulkDocs.resolves([
+        { ok: true, id: '6', rev: '1-abc' },
+        { ok: true, id: '7', rev: '1-def' },
+      ]);
+      fileServices.fileReader.utf8.resolves(`
+        <data>
+          <repeat nodeset="/data/repeat_section"></repeat>
+        </data>
+      `);
+      return enketoFormMgr.save('V', form).then(actual => {
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(contactServices.userContact.get.callCount).to.equal(1);
+
+        expect(actual.length).to.equal(4);
+
+        expect(actual[0]).to.deep.nested.include({
+          form: 'V',
+          'fields.name': 'Sally',
+          'fields.lmp': '10',
+          'fields.repeat_doc_ref' : actual[1]._id, // this ref is outside any repeat
+        });
+        expect(actual[1]).to.deep.include({
+          extra: 'data1',
+          type: 'repeater',
+          some_property: 'some_value_1',
+          my_parent: actual[0]._id,
+          repeat_doc_ref: actual[1]._id,
+        });
+        expect(actual[2]).to.deep.include({
+          extra: 'data2',
+          type: 'repeater',
+          some_property: 'some_value_2',
+          my_parent: actual[0]._id,
+          repeat_doc_ref: actual[2]._id,
+        });
+        expect(actual[3]).to.deep.nested.include({
+          extra: 'data3',
+          type: 'repeater',
+          some_property: 'some_value_3',
+          my_parent: actual[0]._id,
+          'child.repeat_doc_ref': actual[3]._id,
+        });
+      });
+    });
+
+    it('db-doc-ref with repeats with invalid ref', () => {
+      const content = loadXML('db-doc-ref-broken-ref');
+      form.getDataStr.returns(content);
+
+      dbBulkDocs.resolves([
+        { ok: true, id: '6', rev: '1-abc' },
+        { ok: true, id: '7', rev: '1-def' },
+      ]);
+      fileServices.fileReader.utf8.resolves(`
+        <data>
+          <repeat nodeset="/data/repeat_section"></repeat>
+        </data>
+      `);
+      return enketoFormMgr.save('V', form).then(actual => {
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(contactServices.userContact.get.callCount).to.equal(1);
+
+        expect(actual.length).to.equal(4);
+
+        expect(actual[0]).to.deep.nested.include({
+          form: 'V',
+          'fields.name': 'Sally',
+          'fields.lmp': '10',
+        });
+        expect(actual[1]).to.deep.include({
+          extra: 'data1',
+          type: 'repeater',
+          some_property: 'some_value_1',
+          my_parent: actual[0]._id,
+          repeat_doc_ref: 'value1',
+        });
+        expect(actual[2]).to.deep.include({
+          extra: 'data2',
+          type: 'repeater',
+          some_property: 'some_value_2',
+          my_parent: actual[0]._id,
+          repeat_doc_ref: 'value2',
+        });
+        expect(actual[3]).to.deep.include({
+          extra: 'data3',
+          type: 'repeater',
+          some_property: 'some_value_3',
+          my_parent: actual[0]._id,
+          repeat_doc_ref: 'value3',
+        });
       });
     });
 
