@@ -204,6 +204,19 @@ describe('Service worker cache', () => {
     await browser.throttle('online');
   });
 
+  it('should load the page while on a very slow connection', async () => {
+    const turtleMode = {
+      offline: false,
+      latency: 60000, // take a minute to respond to any request
+      downloadThroughput: -1,
+      uploadThroughput: -1
+    };
+    await browser.throttle(turtleMode);
+    await browser.refresh();
+    await (await commonPage.analyticsTab()).waitForDisplayed();
+    await browser.throttle('online');
+  });
+
   it('confirm fetch yields cached result', async () => {
     const expectCachedState = async (expectCached, path, headers = {}) => {
       const result = await doFetch(path, headers);
