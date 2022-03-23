@@ -392,8 +392,14 @@ const waitForSettingsUpdateLogs = (type) => {
   return module.exports.waitForApiLogs(/Settings updated/);
 };
 
+const killSpawnedProcess = (proc) => {
+  proc.stdout.destroy();
+  proc.stderr.destroy();
+  proc.kill('SIGINT');
+};
+
 /**
- * Collector that listens to the given container logs and collects lines that match at least one of the a
+ * Collector that listens to the given container logs and collects lines that match at least one of the
  * given regular expressions
  *
  * To use, call before the action you wish to catch, and then execute the returned function after
@@ -402,41 +408,44 @@ const waitForSettingsUpdateLogs = (type) => {
  *
  * @param      {string}    container    container name
  * @param      {[RegExp]}  regex        matching expression(s) run against lines
- * @return     {function}  fn that returns a promise
+ * @return     {Promise<function>}      promise that returns a function that returns a promise
  */
 const collectLogs = (container, ...regex) => {
   const matches = [];
   const errors = [];
+  let logs = '';
 
+  // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
+  // after watching results in a race condition, where the log is created before watching started.
+  // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
+  // steps of testing afterwards.
   const params = `logs ${container} -f --tail=1`;
   const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
-
-  let watchingLogs;
-  const watchLogsPromise = new Promise(resolve => watchingLogs = resolve);
+  let receivedFirstLine;
+  const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
 
   proc.stdout.on('data', (data) => {
-    watchingLogs();
+    receivedFirstLine();
     data = data.toString();
+    logs += data;
     regex.forEach(r => r.test(data) && matches.push(data));
   });
   proc.stderr.on('err', err => {
-    watchingLogs();
+    receivedFirstLine();
     errors.push(err.toString());
   });
 
   const collect = () => {
-    proc.stdout.destroy();
-    proc.stderr.destroy();
-    proc.kill('SIGINT');
+    killSpawnedProcess(proc);
 
     if (errors.length) {
-      return Promise.reject({ message: 'CollectLogs errored', errors: errors });
+      return Promise.reject({ message: 'CollectLogs errored', errors, logs });
     }
 
     return Promise.resolve(matches);
   };
 
-  return watchLogsPromise.then(() => collect);
+  return firstLineReceivedPromise.then(() => collect);
 };
 
 /**
@@ -448,39 +457,32 @@ const collectLogs = (container, ...regex) => {
  */
 const waitForDockerLogs = (container, ...regex) => {
   let timeout;
+  let logs = '';
+
+  // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
+  // after watching results in a race condition, where the log is created before watching started.
+  // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
+  // steps of testing afterwards.
   const params = `logs ${container} -f --tail=1`;
   const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
-
-  const kill = () => {
-    proc.stdout.destroy();
-    proc.stderr.destroy();
-    proc.kill('SIGINT');
-  };
-
-  // there's a race condition where it takes a little while until logs start being tracked.
-  // if we immediately do the log-generating action after calling the docker command, there's a high chance
-  // log watching starts AFTER the action was performed.
-  // If the service produces logs actively, wait until the first log line is received, otherwise, wait for
-  // 2 seconds.
-  let watchingLogs;
-  const watchLogsPromise = new Promise(resolve => watchingLogs = resolve);
-  let logs = '';
+  let receivedFirstLine;
+  const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
 
   const promise = new Promise((resolve, reject) => {
     timeout = setTimeout(() => {
       console.log('Found logs', logs, 'watched for', ...regex);
       reject(new Error('Timed out looking for details in logs.'));
-      kill();
+      killSpawnedProcess(proc);
     }, 6000);
 
     const checkOutput = (data) => {
-      watchingLogs();
+      receivedFirstLine();
       data = data.toString();
       logs += data;
       if (regex.find(r => r.test(data))) {
         resolve();
         clearTimeout(timeout);
-        kill();
+        killSpawnedProcess(proc);
       }
     };
 
@@ -488,11 +490,11 @@ const waitForDockerLogs = (container, ...regex) => {
     proc.stderr.on('data', checkOutput);
   });
 
-  return watchLogsPromise.then(() => ({
+  return firstLineReceivedPromise.then(() => ({
     promise,
     cancel: () => {
       clearTimeout(timeout);
-      kill();
+      killSpawnedProcess(proc);
     }
   }));
 };

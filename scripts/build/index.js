@@ -9,6 +9,7 @@ const {
   BRANCH,
   BUILD_NUMBER,
   API_PORT,
+  DOCKERHUB_USERNAME,
 } = process.env;
 const DEFAULT_API_PORT = 5988;
 
@@ -61,7 +62,8 @@ const getVersion = () => {
 const getImageTag = (service) => {
   const version = process.env.VERSION || getVersion();
   const tag = version.replace(/\//g, '-');
-  return service ? `medicmobile/cht-${service}:${tag}` : tag;
+  const repo = DOCKERHUB_USERNAME || 'medicmobile';
+  return service ? `${repo}/cht-${service}:${tag}` : tag;
 };
 
 const setBuildInfo = () => {

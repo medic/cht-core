@@ -8,6 +8,7 @@ const {
   BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
+  DOCKERHUB_USERNAME,
 } = process.env;
 
 const DEV = !BUILD_NUMBER;
@@ -16,6 +17,7 @@ const buildUtils = require('./scripts/build');
 const couchConfig = buildUtils.getCouchConfig();
 
 const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
+const SERVICES = ['api', 'sentinel'];
 
 const getSharedLibDirs = () => {
   return fs
@@ -284,7 +286,7 @@ module.exports = function(grunt) {
       },
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
       'build-service-images': {
-        cmd: () => ['api', 'sentinel']
+        cmd: () => SERVICES
           .map(service =>
             [
               `cd ${service}`,
@@ -292,6 +294,14 @@ module.exports = function(grunt) {
               `npm dedupe`,
               `cd ../`,
               `docker build -f ./${service}/Dockerfile --tag ${buildUtils.getImageTag(service)} .`,
+            ].join(' && ')
+          )
+          .join(' && '),
+      },
+      'save-service-images': {
+        cmd: () => SERVICES
+          .map(service =>
+            [
               `mkdir -p images`,
               `docker save ${buildUtils.getImageTag(service)} > images/${service}.tar`,
             ].join(' && ')
@@ -299,12 +309,8 @@ module.exports = function(grunt) {
           .join(' && '),
       },
       'push-service-images': {
-        cmd: () => ['api', 'sentinel']
-          .map(service =>
-            [
-              `docker push ${buildUtils.getImageTag(service)}`,
-            ].join(' && ')
-          )
+        cmd: () => SERVICES
+          .map(service => `docker push ${buildUtils.getImageTag(service)}`)
           .join(' && '),
       },
       'api-dev': {
@@ -1042,9 +1048,21 @@ module.exports = function(grunt) {
   });
   grunt.registerTask('set-ddocs-version', buildUtils.setDdocsVersion);
 
+  grunt.registerTask('publish-service-images', 'Publish service images', (() => {
+    if (!BUILD_NUMBER) {
+      return [];
+    }
+
+    if (DOCKERHUB_USERNAME) {
+      return ['exec:push-service-images'];
+    }
+
+    return ['exec:save-service-images'];
+  })());
+
   grunt.registerTask('publish-for-testing', 'Build and publish service images, publish the staging doc to the testing server', [
     'build-service-images',
-    // 'exec:push-service-images',
+    'publish-service-images',
     'couch-compile:staging',
     'couch-push:testing',
   ]);
