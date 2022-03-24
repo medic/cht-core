@@ -1,4 +1,4 @@
 module.exports = {
-  sample_flow_1_uuid: '204f095c-a873-4d2f-9bdc-0555a6ddb0b9',
-  sample_flow_2_uuid: '39c0c61a-399a-4015-9f92-12bbcbe6cffd'
+  sample_flow_1_uuid: '466afcd7-f1b6-481e-9c95-d8bbf778cd4d',
+  sample_flow_2_uuid: '255d6dcc-03fb-418a-a6b3-a055dd6bfa67'
 };

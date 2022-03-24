@@ -4562,7 +4562,7 @@ const { render } = __nccwpck_require__(9980);
 const axios = (__nccwpck_require__(4110)["default"]);
 const util = __nccwpck_require__(3837)
 
-const fields = ['hostname', 'couch_node_name', 'couch_username', 'couch_password', 'rp_hostname', 'value_key', 'rp_contact_group', 'write_patient_state_flow', 'rp_api_token', 'rp_flows', 'directory']
+const fields = ['hostname', 'couch_node_name', 'couch_username', 'couch_password', 'rp_hostname', 'value_key', 'rp_contact_group', 'write_patient_state_flow', 'rp_api_token', 'rp_flows', 'directory', 'app_settings_file', 'flows_file']
 
 const getReplacedContent = async (content, data) =>{
   try{
@@ -4597,7 +4597,7 @@ const getInputs = (core) => {
 
 const getFormattedFlows = flows => `module.exports = ${util.inspect(flows)};\n`;
 
-const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => {
+const run = async (githubWorkspacePath, params, fs) => {
   try {
     if (!githubWorkspacePath) {
       throw new Error('GITHUB_WORKSPACE not defined');
@@ -4606,12 +4606,12 @@ const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => 
     const codeRepository = path.resolve(path.resolve(githubWorkspacePath), secrets.directory);
     process.chdir(codeRepository);
     const url = getCouchDbUrl(secrets.hostname, secrets.couch_node_name, secrets.value_key, secrets.couch_username, secrets.couch_password);
-    const appSettings = fs.readFileSync(`${codeRepository}/${settingsFile}`, 'utf8');
+    const appSettings = fs.readFileSync(`${codeRepository}/${secrets.app_settings_file}`, 'utf8');
     const settings = await getReplacedContent(JSON.parse(appSettings), secrets);
-    await axios.put(url.href, `"${secrets.rp_api_token}"`);
-    
-    fs.writeFileSync(`${codeRepository}/${settingsFile}`, settings);
-    fs.writeFileSync(`${codeRepository}/${flowsFile}`, getFormattedFlows(secrets.rp_flows));
+
+    await axios.put(url.href, `"${secrets.rp_api_token}"`);    
+    fs.writeFileSync(`${codeRepository}/${secrets.app_settings_file}`, settings);
+    fs.writeFileSync(`${codeRepository}/${secrets.flows_file}`, getFormattedFlows(secrets.rp_flows));
     core.info('Successful');
     return true;
   } catch (error) {
@@ -8940,7 +8940,7 @@ const githubWorkspacePath = process.env['GITHUB_WORKSPACE'];
 const settingsFile = 'app_settings.json';
 const flowsFile = 'flows.js';
 
-run(githubWorkspacePath, core, fs, settingsFile, flowsFile);
+run(githubWorkspacePath, core, fs);
 
 })();
 

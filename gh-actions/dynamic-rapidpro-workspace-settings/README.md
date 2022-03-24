@@ -14,13 +14,11 @@ Normally, you would want a staging deployment to use the staging workspace and a
 3. It replaces contents of a file, `flows.js`, in the project repository with flow UUIDs obtained from RapidPro workspace through the API. To extract the UUIDs, you can simply use the API explorer, under `/api/v2/flows.json`. A sample `flows.js` would be as follows:
 
 ```
-const RAPIDPRO_FLOWS = {
+module.exports = {
   sample_flow_1_uuid: '3f6a48d3-703a-493b-bb10-f4a38a442cda',
   sample_flow_2_uuid: '064107cf-9bc5-4042-a657-825fdb5a92a4',
   ...
 };
-
-module.exports = RAPIDPRO_FLOWS;
 ```
 
 > **This action can be executed jointly with other Github actions like [deploy-with-medic-conf](https://github.com/medic/cht-core/tree/master/.github/actions/deploy-with-medic-conf). However, it must be executed before other actions to update dependencies prior to compiling app settings.** 
@@ -41,7 +39,7 @@ jobs:
 
     steps:
     - name: Update rapidpro workspace in app-settings 
-      uses: 'medic/cht-core/.github/actions/dynamic-rapidpro-workspace-settings@master'
+      uses: 'medic/gh-actions/dynamic-rapidpro-workspace-settings@main'
       with:
         directory: 'my_app_folder'
         hostname: myapp.staging.company.org
@@ -54,6 +52,8 @@ jobs:
         rp_contact_group: ${{ secrets.RAPIDPRO_STAGING_GROUP }}
         rp_flows: ${{ secrets.RAPIDPRO_STAGING_FLOWS }}
         write_patient_state_flow: ${{ secrets.RAPIDPRO_STAGING_WRITE_PATIENT_STATE_FLOW }}
+        app_settings_file: app_settings.json
+        flows_file: flows.js
 ```
 
 ### Example Action Input Variables From RapidPro Workspace

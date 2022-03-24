@@ -19,10 +19,9 @@ describe(`rapidpro action test suite`, () => {
   
   beforeEach(() => {
     sandbox.stub(process, 'env').value({ 'GITHUB_WORKSPACE': path.join(__dirname, '../') });
-    // sandbox.stub(fs, 'writeFileSync').returns({});
+    sandbox.stub(fs, 'writeFileSync').returns({});
     sandbox.stub(process, 'stdout');
     sandbox.stub(axios, 'put').resolves(mockedAxiosResponse);
-    // sandbox.stub(utils, 'setMedicCredentials').resolves(mockedAxiosResponse);
   });
 
   afterEach(() => {
@@ -57,7 +56,6 @@ describe(`rapidpro action test suite`, () => {
   });
 
   it(`should update content using the given data`, async () => {
-    // check updated app_settings.json
     const appSettings = await utils.getReplacedContent(settings, secrets);
     const parsedSettings = JSON.parse(appSettings);
     expect(search(parsedSettings, 'base_url')).to.equal(secrets.rp_hostname);
@@ -72,12 +70,12 @@ describe(`rapidpro action test suite`, () => {
   });
 
   it(`run method should complete successfully`, async () => {
-    const response = await utils.run(process.env.GITHUB_WORKSPACE, secrets, fs, 'app_settings.json', 'flows.js');
+    const response = await utils.run(process.env.GITHUB_WORKSPACE, secrets, fs);
     expect(response).to.be.true;
   });
 
   it(`run should fail if github workspace is not defined`, async () => {
-    await utils.run(null, secrets, fs, settings, flows);
+    await utils.run(null, secrets, fs);
     expect(process.exitCode).to.equal(1);
   });
 });
