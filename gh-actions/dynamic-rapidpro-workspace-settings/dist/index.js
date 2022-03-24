@@ -8963,7 +8963,6 @@ const fs = __nccwpck_require__(7147);
 const { run } = __nccwpck_require__(9686);
 
 const githubWorkspacePath = process.env['GITHUB_WORKSPACE'];
-const codeRepository = path.resolve(path.resolve(githubWorkspacePath), core.getInput('directory'));
 
 const settingsFile = 'app_settings.json';
 const flowsFile = 'flows.js';
