@@ -8,7 +8,7 @@ Factory.define('secrets').attrs({
   couch_password: faker.internet.password(),
   rp_hostname: faker.internet.url(),
   rp_api_token: faker.datatype.uuid(),
-  value_key: faker.datatype.uuid(),
+  value_key: 'rapidpro.dev',
   rp_contact_group: faker.datatype.uuid(),
   write_patient_state_flow: faker.datatype.uuid(),
   directory: 'test',

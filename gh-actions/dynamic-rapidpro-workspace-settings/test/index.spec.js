@@ -61,13 +61,6 @@ describe(`rapidpro action test suite`, () => {
     const appSettings = await utils.getReplacedContent(settings, secrets);
     const parsedSettings = JSON.parse(appSettings);
     expect(search(parsedSettings, 'base_url')).to.equal(secrets.rp_hostname);
-
-    // check updated flows.js
-    const rapidproFlows = await utils.getReplacedContent(flows, secrets.rp_flows);
-    const parsedFlows = JSON.parse(rapidproFlows);
-    for (const elem in parsedFlows) {
-      expect(parsedFlows[elem]).to.equal(secrets.rp_flows[elem]);
-    }
   });
 
   it(`should fail to update if content or data is not defined`, async () => {
@@ -79,7 +72,7 @@ describe(`rapidpro action test suite`, () => {
   });
 
   it(`run method should complete successfully`, async () => {
-    const response = await utils.run(process.env.GITHUB_WORKSPACE, secrets, fs, settings, flows);
+    const response = await utils.run(process.env.GITHUB_WORKSPACE, secrets, fs, 'app_settings.json', 'flows.js');
     expect(response).to.be.true;
   });
 

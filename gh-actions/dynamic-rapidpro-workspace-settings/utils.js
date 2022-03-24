@@ -37,7 +37,7 @@ const getInputs = (core) => {
   return inputs;
 };
 
-const getFormattedFlows = flows => `module.exports = ${util.inspect(JSON.parse(flows))};\n`;
+const getFormattedFlows = flows => `module.exports = ${util.inspect(flows)};\n`;
 
 const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => {
   try {
@@ -49,15 +49,11 @@ const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => 
     process.chdir(codeRepository);
     const url = getCouchDbUrl(secrets.hostname, secrets.couch_node_name, secrets.value_key, secrets.couch_username, secrets.couch_password);
     const appSettings = fs.readFileSync(`${codeRepository}/${settingsFile}`, 'utf8');
-    const flowsData = fs.readFileSync(`${codeRepository}/${flowsFile}`, 'utf8');
-    const settings = await getReplacedContent(appSettings, secrets);
-    const flows = await getReplacedContent(flowsData, secrets.rp_flows);
+    const settings = getReplacedContent(JSON.parse(appSettings), secrets);
+    await axios.put(url.href, {data: `"${secrets.rp_api_token}"`});
     
-    const response = await axios.put(url.href, {data: `"${secrets.rp_api_token}"`});
-
-    console.log(url.href, response);
     fs.writeFileSync(`${codeRepository}/${settingsFile}`, settings);
-    fs.writeFileSync(`${codeRepository}/${flowsFile}`, getFormattedFlows(flows));
+    fs.writeFileSync(`${codeRepository}/${flowsFile}`, getFormattedFlows(secrets.rp_flows));
     core.info('Successful');
     return true;
   } catch (error) {
