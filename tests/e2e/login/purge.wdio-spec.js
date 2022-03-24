@@ -113,6 +113,7 @@ describe('purge', () => {
     expect(purgingRequests).to.deep.equal([
       '/purging/changes',
       '/purging/checkpoint',
+      '/purging/changes',
     ]);
 
     let allReports = await getAllReports();
