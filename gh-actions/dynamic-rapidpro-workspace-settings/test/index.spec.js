@@ -19,7 +19,7 @@ describe(`rapidpro action test suite`, () => {
   
   beforeEach(() => {
     sandbox.stub(process, 'env').value({ 'GITHUB_WORKSPACE': path.join(__dirname, '../') });
-    sandbox.stub(fs, 'writeFileSync').returns({});
+    // sandbox.stub(fs, 'writeFileSync').returns({});
     sandbox.stub(process, 'stdout');
     sandbox.stub(axios, 'put').resolves(mockedAxiosResponse);
     // sandbox.stub(utils, 'setMedicCredentials').resolves(mockedAxiosResponse);
