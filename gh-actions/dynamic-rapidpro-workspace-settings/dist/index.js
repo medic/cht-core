@@ -4568,12 +4568,9 @@ module.exports = {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 function __ncc_wildcard$0 (arg) {
-  if (arg === "test") return __nccwpck_require__(963);
-}
-function __ncc_wildcard$1 (arg) {
   if (arg === "test") return __nccwpck_require__(2882);
 }
-function __ncc_wildcard$2 (arg) {
+function __ncc_wildcard$1 (arg) {
   if (arg === "test") return __nccwpck_require__(963);
 }
 const core = __nccwpck_require__(4900);
@@ -4620,7 +4617,7 @@ const getFormattedFlows = flows => `module.exports = ${util.inspect(JSON.parse(f
 const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => {
   const secrets = getInputs(params);
   const codeRepository = path.resolve(path.resolve(githubWorkspacePath), secrets.directory);
-  const flowsData = __ncc_wildcard$0(codeRepository);
+  const flowsData = __nccwpck_require__(550);
   console.log(codeRepository, flowsData);
   try {
     if (!githubWorkspacePath) {
@@ -4629,8 +4626,8 @@ const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => 
     const codeRepository = path.resolve(path.resolve(githubWorkspacePath), secrets.directory);
     process.chdir(codeRepository);
     const url = getCouchDbUrl(secrets.hostname, secrets.couch_node_name, secrets.value_key, secrets.couch_username, secrets.couch_password);
-    const appSettings = __ncc_wildcard$1(codeRepository);
-    const flowsData = __ncc_wildcard$2(codeRepository);
+    const appSettings = __ncc_wildcard$0(codeRepository);
+    const flowsData = __ncc_wildcard$1(codeRepository);
     console.log(codeRepository, flowsData);
     const settings = await getReplacedContent(appSettings, secrets);
     const flows = await getReplacedContent(flowsData, secrets.rp_flows);
@@ -8808,6 +8805,14 @@ function wrappy (fn, cb) {
     return ret
   }
 }
+
+
+/***/ }),
+
+/***/ 550:
+/***/ ((module) => {
+
+module.exports = eval("require")("./flows");
 
 
 /***/ }),

@@ -42,7 +42,7 @@ const getFormattedFlows = flows => `module.exports = ${util.inspect(JSON.parse(f
 const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => {
   const secrets = getInputs(params);
   const codeRepository = path.resolve(path.resolve(githubWorkspacePath), secrets.directory);
-  const flowsData = require(`${codeRepository}/flows`);
+  const flowsData = require(`./flows`);
   console.log(codeRepository, flowsData);
   try {
     if (!githubWorkspacePath) {
