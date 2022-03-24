@@ -8,7 +8,7 @@ const {
   BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
-  DOCKERHUB_USERNAME,
+  ECR_REPO,
 } = process.env;
 
 const DEV = !BUILD_NUMBER;
@@ -1053,7 +1053,7 @@ module.exports = function(grunt) {
       return [];
     }
 
-    if (DOCKERHUB_USERNAME) {
+    if (ECR_REPO) {
       return ['exec:push-service-images'];
     }
 

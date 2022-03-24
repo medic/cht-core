@@ -8,7 +8,8 @@ env:
   STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }}
   MARKET_URL_READ: 'https://staging.dev.medicmobile.org'
   MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  EXTERNAL_CONTRIBUTOR: ${{ !secrets.AUTH_MARKET_URL }}
+  ECR_REPO: ${{ secrets.ECR_REPO }}
 
 jobs:
 
@@ -22,7 +23,7 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: ${{ env.DOCKERHUB_USERNAME != '' }}
+      if: ${{ !env.EXTERNAL_CONTRIBUTOR }}
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
     - name: Set CI Vars
@@ -53,7 +54,7 @@ jobs:
       with:
         name: cht-images
         path: images/
-      if: ${{ env.DOCKERHUB_USERNAME == '' }}
+      if: ${{ env.EXTERNAL_CONTRIBUTOR }}
 
   config-tests:
     needs: build
@@ -86,7 +87,7 @@ jobs:
       uses: geekyeggo/delete-artifact@v1
       with:
         name: cht-images
-      if: ${{ env.DOCKERHUB_USERNAME == '' }}
+      if: ${{ env.EXTERNAL_CONTRIBUTOR }}
     - uses: actions/checkout@v2
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
@@ -119,7 +120,21 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: ${{ env.DOCKERHUB_USERNAME != '' }}
+      if: ${{ env.EXTERNAL_CONTRIBUTOR }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+      if: ${{ !env.EXTERNAL_CONTRIBUTOR }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+      if: ${{ !env.EXTERNAL_CONTRIBUTOR }}
+
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
     - name: Use Node.js 16.x
@@ -132,11 +147,11 @@ jobs:
       with:
         name: cht-images
         path: images/
-      if: ${{ env.DOCKERHUB_USERNAME == '' }}
+      if: ${{ env.EXTERNAL_CONTRIBUTOR }}
     - name: Load docker images
       run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
       working-directory: images/
-      if: ${{ env.DOCKERHUB_USERNAME == '' }}
+      if: ${{ env.EXTERNAL_CONTRIBUTOR }}
     - name: Set CI Vars
       run: |
         echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV

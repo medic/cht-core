@@ -14,7 +14,7 @@ services:
       - e2e
 
   cht-api:
-    image: ${DOCKERHUB_USERNAME:-medicmobile}/cht-api:$VERSION
+    image: ${ECR_REPO:-medicmobile}/cht-api:$VERSION
     container_name: cht-api
     depends_on:
       - couch
@@ -27,7 +27,7 @@ services:
       - e2e
 
   cht-sentinel:
-    image: ${DOCKERHUB_USERNAME:-medicmobile}/cht-sentinel:$VERSION
+    image: ${ECR_REPO:-medicmobile}/cht-sentinel:$VERSION
     container_name: cht-sentinel
     depends_on:
       - couch
