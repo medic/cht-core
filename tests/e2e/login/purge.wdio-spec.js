@@ -122,10 +122,11 @@ describe('purge', () => {
     // Purging occurs normally when refreshing
     await updateSettings(purgeHomeVisitFn, true);
     await runPurging();
+    await browser.refresh(); // refresh to clear the purge once only flag
+    await commonElements.waitForPageLoaded();
 
-    await commonElements.sync(true);
+    await commonElements.sync(true); // get the new list of ids to purge
     await browser.refresh();
-
     await commonElements.waitForPageLoaded();
 
     allReports = await getAllReports();

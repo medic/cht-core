@@ -1,6 +1,6 @@
 const PURGE_LOG_DOC_ID = '_local/purgelog';
 const MAX_HISTORY_LENGTH = 10;
-const BATCH_SIZE = 100;
+const BATCH_SIZE = 75;
 const META_BATCHES = 10; // purge 10 * 100 documents on every startup
 const TO_PURGE_LIST_KEY = 'cht-to-purge-list';
 const PURGE_LIST_MAX_LENGTH = 1000;
