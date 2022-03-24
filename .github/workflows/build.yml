@@ -8,7 +8,7 @@ env:
   STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }}
   MARKET_URL_READ: 'https://staging.dev.medicmobile.org'
   MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
-  EXTERNAL_CONTRIBUTOR: ${{ !secrets.AUTH_MARKET_URL }}
+  EXTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL == '' }}
   ECR_REPO: ${{ secrets.ECR_REPO }}
 
 jobs:
