@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { appendToPurgeList } from '../../js/bootstrapper/purger';
+import { POUCHDB_OPTIONS } from '../constants';
 
 // const PURGE_REQUEST_DELAY = 1000; // 1 second
+
+
 
 @Injectable({
   providedIn: 'root'
@@ -17,13 +19,18 @@ export class PurgeService {
   private needsUpdating = true;
 
   private changesFetch() {
-    return this.http.get('/purging/changes').toPromise();
+    const headers = new HttpHeaders({
+      'medic-replication-id': POUCHDB_OPTIONS.remote_headers['medic-replication-id']
+    });
+    return this.http.get('/purging/changes', { headers }).toPromise();
   }
 
   private checkpoint(seq) {
     if (seq) {
-      return this.http.get('/purging/checkpoint', { params: { seq } }).toPromise();
-      // TODO this is 400ing? needs the replication id param
+      const headers = new HttpHeaders({
+        'medic-replication-id': POUCHDB_OPTIONS.remote_headers['medic-replication-id']
+      });
+      return this.http.get('/purging/checkpoint', { params: { seq }, headers }).toPromise();
     }
   }
 
