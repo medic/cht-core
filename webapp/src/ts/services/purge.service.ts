@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { appendToPurgeList } from '../../js/bootstrapper/purger';
 
-const PURGE_REQUEST_DELAY = 1000; // 1 second
+// const PURGE_REQUEST_DELAY = 1000; // 1 second
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +22,7 @@ export class PurgeService {
 
   private checkpoint(seq) {
     if (seq) {
-      return this.http.get('/purging/checkpoint', { params: { seq } }).toPromise();
+      return this.http.get('/purging/checkpoint', { params: { seq } }).toPromise(); // TODO this is 400ing? needs the replication id param
     }
   }
 
@@ -37,9 +37,10 @@ export class PurgeService {
     if (full) {
       return;
     }
-    setTimeout(() => {
-      this.updateDocsToPurgeRecursively(); // TODO do we want to iterate or just increase the limit for the request?
-    }, PURGE_REQUEST_DELAY);
+    return this.updateDocsToPurgeRecursively(); // TODO do something better here - just trying to get the e2e test passing
+    //setTimeout(() => {
+    //  this.updateDocsToPurgeRecursively(); // TODO do we want to iterate or just increase the limit for the request?
+    //}, PURGE_REQUEST_DELAY);
   }
 
   async updateDocsToPurge() {
