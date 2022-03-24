@@ -22,7 +22,8 @@ export class PurgeService {
 
   private checkpoint(seq) {
     if (seq) {
-      return this.http.get('/purging/checkpoint', { params: { seq } }).toPromise(); // TODO this is 400ing? needs the replication id param
+      return this.http.get('/purging/checkpoint', { params: { seq } }).toPromise();
+      // TODO this is 400ing? needs the replication id param
     }
   }
 
@@ -37,9 +38,11 @@ export class PurgeService {
     if (full) {
       return;
     }
-    return this.updateDocsToPurgeRecursively(); // TODO do something better here - just trying to get the e2e test passing
+    return this.updateDocsToPurgeRecursively();
+    // TODO do something better here - just trying to get the e2e test passing
     //setTimeout(() => {
-    //  this.updateDocsToPurgeRecursively(); // TODO do we want to iterate or just increase the limit for the request?
+    //  this.updateDocsToPurgeRecursively();
+    // TODO do we want to iterate or just increase the limit for the request?
     //}, PURGE_REQUEST_DELAY);
   }
 
