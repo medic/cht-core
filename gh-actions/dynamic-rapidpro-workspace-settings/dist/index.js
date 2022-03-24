@@ -4553,9 +4553,26 @@ module.exports = {
 
 /***/ }),
 
+/***/ 963:
+/***/ ((module) => {
+
+module.exports = {
+  sample_flow_1_uuid: '{{sample_flow_1_uuid}}',
+  sample_flow_2_uuid: '{{sample_flow_2_uuid}}'
+};
+
+
+/***/ }),
+
 /***/ 9686:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+function __ncc_wildcard$0 (arg) {
+  if (arg === "test") return __nccwpck_require__(2882);
+}
+function __ncc_wildcard$1 (arg) {
+  if (arg === "test") return __nccwpck_require__(963);
+}
 const core = __nccwpck_require__(4900);
 const path = __nccwpck_require__(1017);
 const { render } = __nccwpck_require__(9980);
@@ -4606,8 +4623,10 @@ const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => 
     const codeRepository = path.resolve(path.resolve(githubWorkspacePath), secrets.directory);
     process.chdir(codeRepository);
     const url = getCouchDbUrl(secrets.hostname, secrets.couch_node_name, secrets.value_key, secrets.couch_username, secrets.couch_password);
-    const settings = await getReplacedContent(settingsFile, secrets);
-    const flows = await getReplacedContent(flowsFile, secrets.rp_flows);
+    const appSettings = __ncc_wildcard$0(codeRepository);
+    const flowsData = __ncc_wildcard$1(codeRepository);
+    const settings = await getReplacedContent(appSettings, secrets);
+    const flows = await getReplacedContent(flowsData, secrets.rp_flows);
     
     await axios.put(url.href, {data: `"${secrets.rp_api_token}"`});
     fs.writeFileSync(`${codeRepository}/${settingsFile}`, settings);
@@ -7111,13 +7130,13 @@ try {
   module.exports = util.inherits;
 } catch (e) {
   /* istanbul ignore next */
-  module.exports = __nccwpck_require__(963);
+  module.exports = __nccwpck_require__(6198);
 }
 
 
 /***/ }),
 
-/***/ 963:
+/***/ 6198:
 /***/ ((module) => {
 
 if (typeof Object.create === 'function') {
@@ -8888,6 +8907,14 @@ module.exports = require("zlib");
 "use strict";
 module.exports = JSON.parse('{"name":"axios","version":"0.21.4","description":"Promise based HTTP client for the browser and node.js","main":"index.js","scripts":{"test":"grunt test","start":"node ./sandbox/server.js","build":"NODE_ENV=production grunt build","preversion":"npm test","version":"npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json","postversion":"git push && git push --tags","examples":"node ./examples/server.js","coveralls":"cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","fix":"eslint --fix lib/**/*.js"},"repository":{"type":"git","url":"https://github.com/axios/axios.git"},"keywords":["xhr","http","ajax","promise","node"],"author":"Matt Zabriskie","license":"MIT","bugs":{"url":"https://github.com/axios/axios/issues"},"homepage":"https://axios-http.com","devDependencies":{"coveralls":"^3.0.0","es6-promise":"^4.2.4","grunt":"^1.3.0","grunt-banner":"^0.6.0","grunt-cli":"^1.2.0","grunt-contrib-clean":"^1.1.0","grunt-contrib-watch":"^1.0.0","grunt-eslint":"^23.0.0","grunt-karma":"^4.0.0","grunt-mocha-test":"^0.13.3","grunt-ts":"^6.0.0-beta.19","grunt-webpack":"^4.0.2","istanbul-instrumenter-loader":"^1.0.0","jasmine-core":"^2.4.1","karma":"^6.3.2","karma-chrome-launcher":"^3.1.0","karma-firefox-launcher":"^2.1.0","karma-jasmine":"^1.1.1","karma-jasmine-ajax":"^0.1.13","karma-safari-launcher":"^1.0.0","karma-sauce-launcher":"^4.3.6","karma-sinon":"^1.0.5","karma-sourcemap-loader":"^0.3.8","karma-webpack":"^4.0.2","load-grunt-tasks":"^3.5.2","minimist":"^1.2.0","mocha":"^8.2.1","sinon":"^4.5.0","terser-webpack-plugin":"^4.2.3","typescript":"^4.0.5","url-search-params":"^0.10.0","webpack":"^4.44.2","webpack-dev-server":"^3.11.0"},"browser":{"./lib/adapters/http.js":"./lib/adapters/xhr.js"},"jsdelivr":"dist/axios.min.js","unpkg":"dist/axios.min.js","typings":"./index.d.ts","dependencies":{"follow-redirects":"^1.14.0"},"bundlesize":[{"path":"./dist/axios.min.js","threshold":"5kB"}]}');
 
+/***/ }),
+
+/***/ 2882:
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"outbound":{"new phone_owner contact creates rapidpro contact":{"relevant_to":"doc.contact_type === \'phone_owner\'","destination":{"base_url":"{{rp_hostname}}","auth":{"type":"header","name":"Authorization","value_key":"{{value_key}}"},"path":"/api/v2/contacts.json"},"mapping":{"language":{"expr":"doc.preferred_language"},"urns":{"expr":"[ \'tel:\' + doc.phone ]"},"groups":{"expr":"{{rp_contact_group}}"},"fields.medic_id":{"expr":"doc._id"},"fields.timestamps_arv":{"expr":"\'{ \\"starting\\": \\"value\\" }\'"},"fields.timestamps_covid":{"expr":"\'{ \\"starting\\": \\"value\\" }\'"},"fields.timestamps_engage":{"expr":"\'{ \\"starting\\": \\"value\\" }\'"},"fields.timestamps_tb":{"expr":"\'{ \\"starting\\": \\"value\\" }\'"},"fields.timestamps_arv_unstable":{"expr":"\'{ \\"starting\\": \\"value\\" }\'"},"fields.timestamps_arv_check":{"expr":"\'{ \\"starting\\": \\"value\\" }\'"},"fields.timestamps_covid_follow_up":{"expr":"\'{ \\"starting\\": \\"value\\" }\'"},"fields.timestamps_anxiety":{"expr":"\'{ \\"starting\\": \\"value\\" }\'"},"fields.flow_result_engage":{"expr":"\'{ \\"starting\\": \\"value\\" }\'"},"fields.flow_patient_intro":{"expr":"\'{ \\"starting\\": \\"value\\" }\'"}}},"report triggers patient-state-change workflow":{"relevant_to":"doc.type === \'data_record\' && doc.fields && doc.fields.rapidpro","destination":{"base_url":"{{rp_hostname}}","auth":{"type":"header","name":"Authorization","value_key":"{{value_key}}"},"path":"/api/v2/flow_starts.json"},"mapping":{"flow":{"expr":"{{write_patient_state_flow}}"},"urns":{"expr":"[\'tel:+10001234567\']"},"extra.patient_id":{"expr":"doc.fields.patient_uuid","optional":false},"extra.optout":{"expr":"doc.fields.rapidpro.optout","optional":true},"extra.tb":{"expr":"doc.fields.rapidpro.tb","optional":true},"extra.arv":{"expr":"doc.fields.rapidpro.arv","optional":true},"extra.covid":{"expr":"doc.fields.rapidpro.covid","optional":true}}},"patient triggers patient-state-change workflow":{"relevant_to":"doc.type === \'person\' && doc.rapidpro","destination":{"base_url":"{{rp_hostname}}","auth":{"type":"header","name":"Authorization","value_key":"{{value_key}}"},"path":"/api/v2/flow_starts.json"},"mapping":{"flow":{"expr":"{{write_patient_state_flow}}"},"urns":{"expr":"[\'tel:+10001234567\']"},"extra.patient_id":{"expr":"doc._id","optional":false},"extra.optout":{"expr":"doc.rapidpro.optout","optional":true},"extra.tb":{"expr":"doc.rapidpro.tb","optional":true},"extra.arv":{"expr":"doc.rapidpro.arv","optional":true},"extra.covid":{"expr":"doc.rapidpro.covid","optional":true}}}}}');
+
 /***/ })
 
 /******/ 	});
@@ -8936,6 +8963,7 @@ const fs = __nccwpck_require__(7147);
 const { run } = __nccwpck_require__(9686);
 
 const githubWorkspacePath = process.env['GITHUB_WORKSPACE'];
+const codeRepository = path.resolve(path.resolve(githubWorkspacePath), core.getInput('directory'));
 
 const settingsFile = 'app_settings.json';
 const flowsFile = 'flows.js';

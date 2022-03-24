@@ -48,8 +48,10 @@ const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => 
     const codeRepository = path.resolve(path.resolve(githubWorkspacePath), secrets.directory);
     process.chdir(codeRepository);
     const url = getCouchDbUrl(secrets.hostname, secrets.couch_node_name, secrets.value_key, secrets.couch_username, secrets.couch_password);
-    const settings = await getReplacedContent(settingsFile, secrets);
-    const flows = await getReplacedContent(flowsFile, secrets.rp_flows);
+    const appSettings = require(`${codeRepository}/app_settings.json`);
+    const flowsData = require(`${codeRepository}/flows`);
+    const settings = await getReplacedContent(appSettings, secrets);
+    const flows = await getReplacedContent(flowsData, secrets.rp_flows);
     
     await axios.put(url.href, {data: `"${secrets.rp_api_token}"`});
     fs.writeFileSync(`${codeRepository}/${settingsFile}`, settings);
