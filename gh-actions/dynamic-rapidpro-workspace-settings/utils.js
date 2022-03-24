@@ -52,9 +52,10 @@ const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => 
     const flowsData = fs.readFileSync(`${codeRepository}/${flowsFile}`, 'utf8');
     const settings = await getReplacedContent(appSettings, secrets);
     const flows = await getReplacedContent(flowsData, secrets.rp_flows);
-    console.log(flowsData);
     
-    await axios.put(url.href, {data: `"${secrets.rp_api_token}"`});
+    const response = await axios.put(url.href, {data: `"${secrets.rp_api_token}"`});
+
+    console.log(url.href, response);
     fs.writeFileSync(`${codeRepository}/${settingsFile}`, settings);
     fs.writeFileSync(`${codeRepository}/${flowsFile}`, getFormattedFlows(flows));
     core.info('Successful');
