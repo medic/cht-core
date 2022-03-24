@@ -58,6 +58,7 @@ const purge = (localDb, userCtx, toPurge) => {
   };
 
   const batchedPurge = (ids) => {
+    console.debug(`~~~~~ batchedPurge :`, ids);
     if (!ids || !ids.length) {
       return;
     }
