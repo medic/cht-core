@@ -50,8 +50,7 @@ const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => 
     const url = getCouchDbUrl(secrets.hostname, secrets.couch_node_name, secrets.value_key, secrets.couch_username, secrets.couch_password);
     const appSettings = fs.readFileSync(`${codeRepository}/${settingsFile}`, 'utf8');
     const settings = await getReplacedContent(JSON.parse(appSettings), secrets);
-    console.log(settings, getFormattedFlows(secrets.rp_flows));
-    // await axios.put(url.href, {data: `"${secrets.rp_api_token}"`});
+    await axios.put(url.href, `"${secrets.rp_api_token}"`);
     
     fs.writeFileSync(`${codeRepository}/${settingsFile}`, settings);
     fs.writeFileSync(`${codeRepository}/${flowsFile}`, getFormattedFlows(secrets.rp_flows));
