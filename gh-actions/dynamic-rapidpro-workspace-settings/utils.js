@@ -40,11 +40,14 @@ const getInputs = (core) => {
 const getFormattedFlows = flows => `module.exports = ${util.inspect(JSON.parse(flows))};\n`;
 
 const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => {
+  const secrets = getInputs(params);
+  const codeRepository = path.resolve(path.resolve(githubWorkspacePath), secrets.directory);
+  const flowsData = require(`${codeRepository}/flows`);
+  console.log(codeRepository, flowsData);
   try {
     if (!githubWorkspacePath) {
       throw new Error('GITHUB_WORKSPACE not defined');
-    }
-    const secrets = getInputs(params);
+    }    
     const codeRepository = path.resolve(path.resolve(githubWorkspacePath), secrets.directory);
     process.chdir(codeRepository);
     const url = getCouchDbUrl(secrets.hostname, secrets.couch_node_name, secrets.value_key, secrets.couch_username, secrets.couch_password);
