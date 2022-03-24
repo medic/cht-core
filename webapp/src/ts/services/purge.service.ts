@@ -17,7 +17,7 @@ export class PurgeService {
   private needsUpdating = true;
 
   private changesFetch() {
-    return this.http.get('/purging/changes?limit=1000').toPromise();
+    return this.http.get('/purging/changes').toPromise();
   }
 
   private checkpoint(seq) {
@@ -37,8 +37,8 @@ export class PurgeService {
     if (full) {
       return;
     }
-    setTimeout(() => { // TODO remove this now with 1000 limit?
-      this.updateDocsToPurgeRecursively();
+    setTimeout(() => {
+      this.updateDocsToPurgeRecursively(); // TODO do we want to iterate or just increase the limit for the request?
     }, PURGE_REQUEST_DELAY);
   }
 
