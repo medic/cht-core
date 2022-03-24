@@ -4598,7 +4598,6 @@ const getInputs = (core) => {
 const getFormattedFlows = flows => `module.exports = ${util.inspect(JSON.parse(flows))};\n`;
 
 const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => {
-  console.log(codeRepository, flowsData);
   try {
     if (!githubWorkspacePath) {
       throw new Error('GITHUB_WORKSPACE not defined');
@@ -4609,7 +4608,6 @@ const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => 
     const url = getCouchDbUrl(secrets.hostname, secrets.couch_node_name, secrets.value_key, secrets.couch_username, secrets.couch_password);
     const appSettings = fs.readFileSync(`${codeRepository}/${settingsFile}`, 'utf8');
     const flowsData = fs.readFileSync(`${codeRepository}/${flowsFile}`, 'utf8');
-    console.log(codeRepository, flowsData);
     const settings = await getReplacedContent(appSettings, secrets);
     const flows = await getReplacedContent(flowsData, secrets.rp_flows);
     
