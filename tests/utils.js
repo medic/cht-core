@@ -621,7 +621,7 @@ const saveLogs = async () => {
   await getDockerLogs('couch-e2e');
 };
 
-const startServices = () => dockerComposeCmd('up', '-d')
+const startServices = () => dockerComposeCmd('up', '-d');
 const stopServices = async (removeOrphans) => {
   if (removeOrphans) {
     return dockerComposeCmd('down', '--remove-orphans');
