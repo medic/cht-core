@@ -169,8 +169,7 @@ jobs:
     - name: Set CI Vars
       run: |
         echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV            
-        echo "TEST_SUITE=integration" >> $GITHUB_ENV 
+        echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV                    
         echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
     - name: Create logs directory
       run: mkdir tests/logs

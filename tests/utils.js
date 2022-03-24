@@ -575,7 +575,13 @@ const prepServices = async (defaultSettings) => {
 
 const dockerComposeCmd = (...params) => {
   return new Promise((resolve, reject) => {
-    const env = { ...process.env, VERSION: process.env.VERSION || buildUtils.getImageTag() };
+    const env = {
+      ...process.env,
+      VERSION: process.env.VERSION || buildUtils.getImageTag(),
+      COUCH_PORT: constants.COUCH_PORT,
+      API_PORT: constants.API_PORT,
+    };
+
     const cmd = spawn('docker-compose', [ '-f', COMPOSE_FILE, ...params ], { env });
 
     cmd.on('error', (err) => {
@@ -612,10 +618,10 @@ const getDockerLogs = (container) => {
 const saveLogs = async () => {
   await getDockerLogs('cht-api');
   await getDockerLogs('cht-sentinel');
-  await getDockerLogs('couch');
+  await getDockerLogs('couch-e2e');
 };
 
-const startServices = () => dockerComposeCmd('up', '-d');
+const startServices = () => dockerComposeCmd('up', '-d')
 const stopServices = async (removeOrphans) => {
   if (removeOrphans) {
     return dockerComposeCmd('down', '--remove-orphans');

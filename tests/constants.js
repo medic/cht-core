@@ -1,4 +1,4 @@
-const IS_CI = !!process.env.TEST_SUITE;
+const IS_CI = !!process.env.CI;
 
 const COUCH_HOST = 'localhost';
 const COUCH_PORT = IS_CI ? 5984 : 4984;

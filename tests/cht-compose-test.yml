@@ -1,15 +1,15 @@
 version: '3.9'
 
 services:
-  couch:
+  couch-e2e:
     image: medicmobile/cht-couchdb:clustered-test4
-    container_name: couch
+    container_name: couch-e2e
     environment:
       - COUCHDB_USER=admin
       - COUCHDB_PASSWORD=pass
     restart: always
     ports:
-      - "5984:5984"
+      - "${COUCH_PORT:-5984}:5984"
     networks:
       - e2e
 
@@ -19,9 +19,9 @@ services:
     depends_on:
       - couch
     ports:
-      - "5988:5988"
+      - "${API_PORT:-5988}:5988"
     environment:
-      - COUCH_URL=http://admin:pass@couch:5984/medic-test
+      - COUCH_URL=http://admin:pass@couch-e2e:5984/medic-test
       - HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER
     networks:
       - e2e
@@ -32,7 +32,7 @@ services:
     depends_on:
       - couch
     environment:
-      - COUCH_URL=http://admin:pass@couch:5984/medic-test
+      - COUCH_URL=http://admin:pass@couch-e2e:5984/medic-test
       - API_HOST=cht-api
     networks:
       - e2e
