@@ -17,7 +17,7 @@ export class PurgeService {
   private needsUpdating = true;
 
   private changesFetch() {
-    return this.http.get('/purging/changes').toPromise();
+    return this.http.get('/purging/changes?limit=1000').toPromise();
   }
 
   private checkpoint(seq) {
@@ -37,7 +37,7 @@ export class PurgeService {
     if (full) {
       return;
     }
-    setTimeout(() => {
+    setTimeout(() => { // TODO remove this now with 1000 limit?
       this.updateDocsToPurgeRecursively();
     }, PURGE_REQUEST_DELAY);
   }
