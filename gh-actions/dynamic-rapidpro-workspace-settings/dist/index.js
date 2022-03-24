@@ -4568,7 +4568,7 @@ module.exports = {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 function __ncc_wildcard$0 (arg) {
-  if (arg === "test") return __nccwpck_require__(963);
+  if (arg === "test") return __nccwpck_require__(2882);
 }
 function __ncc_wildcard$1 (arg) {
   if (arg === "test") return __nccwpck_require__(2882);
@@ -4620,7 +4620,8 @@ const getFormattedFlows = flows => `module.exports = ${util.inspect(JSON.parse(f
 const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => {
   const secrets = getInputs(params);
   const codeRepository = path.resolve(path.resolve(githubWorkspacePath), secrets.directory);
-  const flowsData = __ncc_wildcard$0(codeRepository);
+  const appSettings = __ncc_wildcard$0(codeRepository);
+  const flowsData = fs.readFileSync(`${codeRepository}/flows.js`, 'utf8');
   console.log(codeRepository, flowsData);
   try {
     if (!githubWorkspacePath) {
