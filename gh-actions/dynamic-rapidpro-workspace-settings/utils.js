@@ -50,6 +50,7 @@ const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => 
     const url = getCouchDbUrl(secrets.hostname, secrets.couch_node_name, secrets.value_key, secrets.couch_username, secrets.couch_password);
     const appSettings = require(`${codeRepository}/app_settings.json`);
     const flowsData = require(`${codeRepository}/flows`);
+    console.log(codeRepository, flowsData);
     const settings = await getReplacedContent(appSettings, secrets);
     const flows = await getReplacedContent(flowsData, secrets.rp_flows);
     

@@ -4625,6 +4625,7 @@ const run = async (githubWorkspacePath, params, fs, settingsFile, flowsFile) => 
     const url = getCouchDbUrl(secrets.hostname, secrets.couch_node_name, secrets.value_key, secrets.couch_username, secrets.couch_password);
     const appSettings = __ncc_wildcard$0(codeRepository);
     const flowsData = __ncc_wildcard$1(codeRepository);
+    console.log(codeRepository, flowsData);
     const settings = await getReplacedContent(appSettings, secrets);
     const flows = await getReplacedContent(flowsData, secrets.rp_flows);
     
