@@ -136,6 +136,9 @@ describe('Enketo Form Manager', () => {
       init: sinon.stub(),
       model: { getStr: sinon.stub().returns(VISIT_MODEL) },
       output: { update: sinon.stub() },
+      validate: sinon.stub(),
+      // TODO Remove this when not needed
+      relevant: { update: sinon.stub() }
     };
 
     EnketoForm = sinon.stub().returns(form);
@@ -418,6 +421,48 @@ describe('Enketo Form Manager', () => {
         expect(formDataService.contactSummary.get.args[0][2].length).to.equal(0);
         expect(consoleWarnMock.callCount).to.equal(1);
         expect(consoleWarnMock.args[0][0].startsWith('Enketo failed to get lineage of contact')).to.be.true;
+      });
+    });
+  });
+
+  describe('validate', () => {
+    let inputRelevant;
+    let inputNonRelevant;
+
+    beforeEach(() => {
+      inputRelevant = { dataset: { relevant: 'true' } };
+      inputNonRelevant = { dataset: { relevant: 'false' } };
+      const toArray = sinon.stub().returns([inputRelevant, { }, inputNonRelevant]);
+      const jqFind = $.fn.find;
+      sinon.stub($.fn, 'find');
+      //@ts-ignore
+      $.fn.find.callsFake(jqFind);
+      $.fn.find
+        //@ts-ignore
+        .withArgs('section[name$="/inputs"]')
+        .returns({ toArray });
+    });
+
+    it('rejects on invalid form', () => {
+      form.validate.resolves(false);
+
+      return enketoFormMgr.validate(form)
+        .then(() => assert.fail('An error should have been thrown.'))
+        .catch(actual => {
+          expect(actual.message).to.equal('Form is invalid');
+          expect(inputRelevant.dataset.relevant).to.equal('true');
+          expect(inputNonRelevant.dataset.relevant).to.equal('false');
+          expect(form.validate.callCount).to.equal(1);
+        });
+    });
+
+    it('sets inputs group to relevant on valid form', () => {
+      form.validate.resolves(true);
+
+      return enketoFormMgr.validate(form).then(() => {
+        expect(inputRelevant.dataset.relevant).to.equal('true()');
+        expect(inputNonRelevant.dataset.relevant).to.equal('true()');
+        expect(form.validate.callCount).to.equal(1);
       });
     });
   });

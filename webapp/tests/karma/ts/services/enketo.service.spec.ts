@@ -206,15 +206,6 @@ describe('Enketo service', () => {
 
   describe('save', () => {
 
-    it('rejects on invalid form', done => {
-      form.validate.resolves(false);
-      service.save('V', form).catch(actual => {
-        expect(actual.message).to.equal('Form is invalid');
-        expect(form.validate.callCount).to.equal(1);
-        done();
-      });
-    });
-
     it('creates report', () => {
       form.validate.resolves(true);
       const content = loadXML('sally-lmp');

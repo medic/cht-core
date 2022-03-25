@@ -725,6 +725,32 @@ class EnketoFormManager {
     });
   }
 
+  validate(form) {
+    // /inputs is ALWAYS relevant #4875
+    const inputs = $('section[name$="/inputs"]')
+      .toArray()
+      .filter(element => element.dataset)
+      .map(element => {
+        const relevant = element.dataset.relevant;
+        element.dataset.relevant = 'true()';
+        return { element, relevant };
+      });
+    return Promise
+      .resolve(form.validate())
+      .then((valid) => {
+        if (!valid) {
+          inputs.forEach(({ element, relevant }) => {
+            element.dataset.relevant = relevant;
+          });
+
+          // TODO This is a hack to get the view to recalculate.
+          // Need to figure out something better maybe.
+          form.relevant.update(null, false);
+          throw new Error('Form is invalid');
+        }
+      });
+  }
+
   save(formInternalId, form, geoHandle, docId) {
     const getDocPromise = docId ? update(this.fileServices.db, docId) :
       create(this.contactServices, formInternalId);
