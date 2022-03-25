@@ -136,6 +136,6 @@ describe('purge', () => {
 
     const purgeLog = await getPurgeLog();
     expect(purgeLog.count).to.equal(homeVisits.length);
-    expect(purgeLog.history.length).to.equal(1);
+    expect(purgeLog.history.length).to.equal(2);
   });
 });
