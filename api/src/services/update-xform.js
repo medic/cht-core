@@ -13,7 +13,7 @@ const updateAttachment = (doc, updated, name, type) => {
     doc._attachments[name] &&
     doc._attachments[name].data &&
     doc._attachments[name].data.toString();
-  if (attachmentData === updated) {
+  if(attachmentData === updated) {
     return false;
   }
   doc._attachments[name] = {
@@ -32,7 +32,7 @@ const updateAttachmentsIfRequired = (doc, updated) => {
 const updateAttachments = (accumulator, doc) => {
   return accumulator.then(results => {
     const form = getEnketoForm(doc);
-    if (!form) {
+    if(!form) {
       results.push(null); // not an enketo form - no update required
       return results;
     }
@@ -62,10 +62,10 @@ module.exports = {
    */
   update: docId => {
     return db.medic.get(docId, { attachments: true, binary: true })
-      .then(doc => updateAllAttachments([ doc ]))
+      .then(doc => updateAllAttachments([doc]))
       .then(docs => {
         const doc = docs.length && docs[0];
-        if (doc) {
+        if(doc) {
           logger.info(`Updating form with ID "${docId}"`);
           return db.medic.put(doc);
         } else {
@@ -80,19 +80,19 @@ module.exports = {
   updateAll: () => {
     return formsService.getFormDocs()
       .then(docs => {
-        if (!docs.length) {
+        if(!docs.length) {
           return [];
         }
         return updateAllAttachments(docs);
       })
       .then(toSave => {
         logger.info(`Updating ${toSave.length} enketo form${toSave.length === 1 ? '' : 's'}`);
-        if (!toSave.length) {
+        if(!toSave.length) {
           return;
         }
         return db.medic.bulkDocs(toSave).then(results => {
           const failures = results.filter(result => !result.ok);
-          if (failures.length) {
+          if(failures.length) {
             logger.error('Bulk save failed with: %o', failures);
             throw new Error('Failed to save updated xforms to the database');
           }

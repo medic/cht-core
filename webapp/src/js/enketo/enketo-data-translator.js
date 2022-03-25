@@ -2,7 +2,7 @@ const getHiddenFieldListRecursive = (nodes, prefix, current) => {
   nodes.forEach(node => {
     const path = prefix + node.nodeName;
     const attr = node.attributes.getNamedItem('tag');
-    if (attr && attr.value === 'hidden') {
+    if(attr && attr.value === 'hidden') {
       current.push(path);
     } else {
       const children = EnketoDataTranslationUtils.withElements(node.childNodes);
@@ -12,10 +12,10 @@ const getHiddenFieldListRecursive = (nodes, prefix, current) => {
 };
 
 const findCurrentElement = (elem, name, childMatcher) => {
-  if (childMatcher) {
+  if(childMatcher) {
     const matcher = childMatcher(name);
     const found = elem.find(matcher);
-    if (found.length > 1) {
+    if(found.length > 1) {
       // eslint-disable-next-line no-console
       console.warn(`Enketo bindJsonToXml: Using the matcher "${matcher}" we found ${found.length} elements. ` +
         'We should only ever bind one.', elem);
@@ -31,8 +31,8 @@ class EnketoDataTranslator {
     Object.keys(data).forEach((key) => {
       const value = data[key];
       const current = findCurrentElement(elem, key, childMatcher);
-      if (value !== null && typeof value === 'object') {
-        if (current.children().length) {
+      if(value !== null && typeof value === 'object') {
+        if(current.children().length) {
           // childMatcher intentionally does not recurse. It exists to
           // allow the initial layer of binding to be flexible.
           EnketoDataTranslator.bindJsonToXml(current, value);
@@ -45,9 +45,9 @@ class EnketoDataTranslator {
     });
   }
 
-  static getHiddenFieldList (model) {
+  static getHiddenFieldList(model) {
     model = $.parseXML(model).firstChild;
-    if (!model) {
+    if(!model) {
       return;
     }
     const children = EnketoDataTranslationUtils.withElements(model.childNodes);
@@ -67,7 +67,7 @@ class EnketoDataTranslator {
 
   static reportRecordToJs(record, formXml) {
     const root = $.parseXML(record).firstChild;
-    if (!formXml) {
+    if(!formXml) {
       return EnketoDataTranslationUtils.nodesToJs(root.childNodes);
     }
     const repeatPaths = EnketoDataTranslator.getRepeatPaths(formXml);
@@ -88,7 +88,7 @@ class EnketoDataTranslationUtils {
     const result = {};
     EnketoDataTranslationUtils.withElements(data).forEach((n) => {
       const dbDocAttribute = n.attributes.getNamedItem('db-doc');
-      if (dbDocAttribute && dbDocAttribute.value === 'true') {
+      if(dbDocAttribute && dbDocAttribute.value === 'true') {
         return;
       }
 
@@ -97,17 +97,17 @@ class EnketoDataTranslationUtils {
       let value;
 
       const hasChildren = EnketoDataTranslationUtils.withElements(n.childNodes).length > 0;
-      if (hasChildren) {
+      if(hasChildren) {
         value = EnketoDataTranslationUtils.nodesToJs(n.childNodes, repeatPaths, updatedPath);
-      } else if (typeAttribute && typeAttribute.value === 'binary') {
+      } else if(typeAttribute && typeAttribute.value === 'binary') {
         // this is attached to the doc instead of inlined
         value = '';
       } else {
         value = n.textContent;
       }
 
-      if (repeatPaths.indexOf(updatedPath) !== -1) {
-        if (!result[n.nodeName]) {
+      if(repeatPaths.indexOf(updatedPath) !== -1) {
+        if(!result[n.nodeName]) {
           result[n.nodeName] = [];
         }
         result[n.nodeName].push(value);

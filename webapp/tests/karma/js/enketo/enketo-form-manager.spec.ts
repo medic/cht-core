@@ -4,8 +4,6 @@ import sinon from 'sinon';
 import _ from 'lodash';
 import chai from 'chai';
 import chaiExclude from 'chai-exclude';
-chai.use(chaiExclude);
-
 import {
   ContactServices,
   FileServices,
@@ -14,6 +12,8 @@ import {
   XmlServices,
   EnketoFormManager
 } from '../../../../src/js/enketo/enketo-form-manager';
+
+chai.use(chaiExclude);
 
 describe('Enketo Form Manager', () => {
   let contactServices;
@@ -55,7 +55,7 @@ describe('Enketo Form Manager', () => {
     contactServices = new ContactServices(extractLineageService, userContactService);
 
     dbBulkDocs = sinon.stub()
-      .callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+      .callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
     dbGet = sinon.stub();
     dbGetAttachment = sinon.stub()
       .onFirstCall().resolves('<div>my form</div>')
@@ -85,7 +85,7 @@ describe('Enketo Form Manager', () => {
       lineageModelGeneratorService,
       searchService
     );
-    formDataService.enketoDataPrepopulatorService =  {
+    formDataService.enketoDataPrepopulatorService = {
       get: sinon.stub().resolves('<xml></xml>')
     };
 
@@ -165,7 +165,7 @@ describe('Enketo Form Manager', () => {
     });
 
     it('return error when form initialisation fails', () => {
-      const expected = [ 'nope', 'still nope' ];
+      const expected = ['nope', 'still nope'];
       form.init.returns(expected);
       return enketoFormMgr
         .render($('<div></div>'), mockEnketoDoc('myform'))
@@ -310,8 +310,8 @@ describe('Enketo Form Manager', () => {
         }
       };
       formDataService.contactSummary.get.resolves({ context: { pregnant: true } });
-      formDataService.search.search.resolves([ { _id: 'somereport' }]);
-      formDataService.lineageModelGenerator.contact.resolves({ lineage: [ { _id: 'someparent' } ] });
+      formDataService.search.search.resolves([{ _id: 'somereport' }]);
+      formDataService.lineageModelGenerator.contact.resolves({ lineage: [{ _id: 'someparent' }] });
       return enketoFormMgr.render($('<div></div>'), mockEnketoDoc('myform'), instanceData).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
@@ -352,7 +352,7 @@ describe('Enketo Form Manager', () => {
       formDataService.contactSummary.get.resolves({
         context: {
           pregnant: true,
-          previousChildren: [ { dob: 2016 }, { dob: 2013 }, { dob: 2010 } ],
+          previousChildren: [{ dob: 2016 }, { dob: 2013 }, { dob: 2010 }],
           notes: `always <uses> reserved "characters" & 'words'`
         }
       });
@@ -410,7 +410,7 @@ describe('Enketo Form Manager', () => {
         }
       };
       formDataService.contactSummary.get.resolves({ context: { pregnant: true } });
-      formDataService.search.search.resolves([ { _id: 'somereport' }]);
+      formDataService.search.search.resolves([{ _id: 'somereport' }]);
       return enketoFormMgr.render($('<div></div>'), mockEnketoDoc('myform'), instanceData).then(() => {
         expect(formDataService.lineageModelGenerator.contact.callCount).to.equal(1);
         expect(formDataService.lineageModelGenerator.contact.args[0][0]).to.equal('fffff');
@@ -557,7 +557,7 @@ describe('Enketo Form Manager', () => {
           geolocation: originalGeoData,
           geolocation_log: [originalGeoLogEntry]
         });
-        dbBulkDocs.resolves([ { ok: true, id: '6', rev: '2-abc' } ]);
+        dbBulkDocs.resolves([{ ok: true, id: '6', rev: '2-abc' }]);
         const geoData = {
           latitude: 10,
           longitude: 11,
@@ -602,7 +602,7 @@ describe('Enketo Form Manager', () => {
           code: 42,
           message: 'geolocation failed for some reason'
         };
-        return enketoFormMgr.save('V', form, () => Promise.reject(geoError  )).then(actual => {
+        return enketoFormMgr.save('V', form, () => Promise.reject(geoError)).then(actual => {
           actual = actual[0];
 
           expect(form.getDataStr.callCount).to.equal(1);
@@ -632,7 +632,7 @@ describe('Enketo Form Manager', () => {
     it('creates report with hidden fields', () => {
       const content = loadXML('hidden-field');
       form.getDataStr.returns(content);
-      dbBulkDocs.resolves([ { ok: true, id: '(generated-in-service)', rev: '1-abc' } ]);
+      dbBulkDocs.resolves([{ ok: true, id: '(generated-in-service)', rev: '1-abc' }]);
 
       return enketoFormMgr.save('V', form, null, null).then(actual => {
         actual = actual[0];
@@ -649,7 +649,7 @@ describe('Enketo Form Manager', () => {
         expect(actual.content_type).to.equal('xml');
         expect(actual.contact._id).to.equal('123');
         expect(actual.from).to.equal('555');
-        expect(actual.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+        expect(actual.hidden_fields).to.deep.equal(['secret_code_name']);
       });
     });
 
@@ -666,7 +666,7 @@ describe('Enketo Form Manager', () => {
         type: 'data_record',
         reported_date: 500,
       });
-      dbBulkDocs.resolves([ { ok: true, id: '6', rev: '2-abc' } ]);
+      dbBulkDocs.resolves([{ ok: true, id: '6', rev: '2-abc' }]);
       return enketoFormMgr.save('V', form, null, '6').then(actual => {
         actual = actual[0];
 
@@ -721,7 +721,7 @@ describe('Enketo Form Manager', () => {
         expect(actualReport.content_type).to.equal('xml');
         expect(actualReport.contact._id).to.equal('123');
         expect(actualReport.from).to.equal('555');
-        expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+        expect(actualReport.hidden_fields).to.deep.equal(['secret_code_name']);
 
         expect(actualReport.fields.doc1).to.equal(undefined);
         expect(actualReport.fields.doc2).to.equal(undefined);
@@ -781,7 +781,7 @@ describe('Enketo Form Manager', () => {
         expect(actualReport.content_type).to.equal('xml');
         expect(actualReport.contact._id).to.equal('123');
         expect(actualReport.from).to.equal('555');
-        expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+        expect(actualReport.hidden_fields).to.deep.equal(['secret_code_name']);
 
         expect(actualReport.fields.doc1).to.equal(undefined);
         expect(actualReport.fields.doc2).to.equal(undefined);
@@ -840,7 +840,7 @@ describe('Enketo Form Manager', () => {
         expect(actualReport.content_type).to.equal('xml');
         expect(actualReport.contact._id).to.equal('123');
         expect(actualReport.from).to.equal('555');
-        expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+        expect(actualReport.hidden_fields).to.deep.equal(['secret_code_name']);
 
         expect(actualReport.fields.doc1).to.equal(undefined);
         expect(actualReport.fields.doc2).to.equal(undefined);
@@ -891,13 +891,13 @@ describe('Enketo Form Manager', () => {
         expect(actualReport.content_type).to.equal('xml');
         expect(actualReport.contact._id).to.equal('123');
         expect(actualReport.from).to.equal('555');
-        expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+        expect(actualReport.hidden_fields).to.deep.equal(['secret_code_name']);
 
-        for (let i=1; i<=3; ++i) {
+        for (let i = 1; i <= 3; ++i) {
           const repeatDocN = actual[i];
           expect(repeatDocN._id).to.match(/(\w+-)\w+/);
           expect(repeatDocN.my_parent).to.equal(reportId);
-          expect(repeatDocN.some_property).to.equal('some_value_'+i);
+          expect(repeatDocN.some_property).to.equal('some_value_' + i);
         }
 
         expect(_.uniq(_.map(actual, '_id')).length).to.equal(4);
@@ -1154,7 +1154,7 @@ describe('Enketo Form Manager', () => {
           form: 'V',
           'fields.name': 'Sally',
           'fields.lmp': '10',
-          'fields.repeat_doc_ref' : actual[1]._id, // this ref is outside any repeat
+          'fields.repeat_doc_ref': actual[1]._id, // this ref is outside any repeat
         });
         expect(actual[1]).to.deep.include({
           extra: 'data1',
@@ -1294,7 +1294,7 @@ describe('Enketo Form Manager', () => {
         $.fn.find
           //@ts-ignore
           .withArgs('[db-doc=true]')
-          .returns({ map: sinon.stub().returns({ get: docsToStoreStub}) });
+          .returns({ map: sinon.stub().returns({ get: docsToStoreStub }) });
 
         const content = loadXML('file-field');
         form.getDataStr.returns(content);
@@ -1308,7 +1308,7 @@ describe('Enketo Form Manager', () => {
             expect(dbBulkDocs.notCalled);
             expect(xmlServices.addAttachment.add.notCalled);
             expect(globalActions.setSnackbarContent.calledOnce);
-            expect(globalActions.setSnackbarContent.args[0]).to.have.members([ 'enketo.error.max_attachment_size' ]);
+            expect(globalActions.setSnackbarContent.args[0]).to.have.members(['enketo.error.max_attachment_size']);
           });
       });
 
@@ -1517,7 +1517,7 @@ describe('Enketo Form Manager', () => {
       title: 'New Area',
     };
 
-    it('should translate titleKey when provided', async () => {
+    it('should translate titleKey when provided', async() => {
       await enketoFormMgr.renderForm({
         selector: $('<div></div>'),
         formDoc,
@@ -1531,7 +1531,7 @@ describe('Enketo Form Manager', () => {
       expect(titleTextStub.args[0][0]).to.be.equal('translated key contact.type.health_center.new');
     });
 
-    it('should fallback to translate document title when the titleKey is not available', async () => {
+    it('should fallback to translate document title when the titleKey is not available', async() => {
       await enketoFormMgr.renderForm({
         selector: $('<div></div>'),
         formDoc,

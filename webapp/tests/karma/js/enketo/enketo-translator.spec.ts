@@ -166,7 +166,7 @@ describe('EnketoDataTranslator', () => {
       const hidden_fields = EnketoDataTranslator.getHiddenFieldList(xml);
 
       // then
-      assert.deepEqual(hidden_fields, [ 'secret_code_name_one', 'secret_code_name_two' ]);
+      assert.deepEqual(hidden_fields, ['secret_code_name_one', 'secret_code_name_two']);
     });
 
     it('hides sections tagged `hidden`', () => {
@@ -185,7 +185,7 @@ describe('EnketoDataTranslator', () => {
       const hidden_fields = EnketoDataTranslator.getHiddenFieldList(xml);
 
       // then
-      assert.deepEqual(hidden_fields, [ 'secret' ]);
+      assert.deepEqual(hidden_fields, ['secret']);
     });
 
     it('recurses to find `hidden` children', () => {
@@ -204,7 +204,7 @@ describe('EnketoDataTranslator', () => {
       const hidden_fields = EnketoDataTranslator.getHiddenFieldList(xml);
 
       // then
-      assert.deepEqual(hidden_fields, [ 'secret.first', 'lmp' ]);
+      assert.deepEqual(hidden_fields, ['secret.first', 'lmp']);
     });
   });
 
