@@ -3,12 +3,12 @@ name: Build cht-core and test against node versions
 on: [push, pull_request]
 
 env:
+  INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
   COUCH_URL: http://admin:pass@localhost:5984/medic-test
-  BUILDS_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_testing' || '_couch/builds_external' }}
-  STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }}
+  BUILDS_SERVER: ${{ env.INTERNAL_CONTRIBUTOR && '_couch/builds_testing' || '_couch/builds_external' }}
+  STAGING_SERVER: ${{ env.INTERNAL_CONTRIBUTOR && '_couch/builds' || '_couch/builds_external' }}
   MARKET_URL_READ: 'https://staging.dev.medicmobile.org'
   MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
-  INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
   ECR_REPO: ${{ secrets.ECR_REPO }}
 
 jobs:
