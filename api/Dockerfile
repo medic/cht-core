@@ -8,8 +8,7 @@ RUN apk add --update --no-cache \
   tzdata \
   libxslt \
   bash \
-  jq    \
-  git
+  jq
 
 WORKDIR /api
 

@@ -177,17 +177,13 @@ describe('Server Checks service', () => {
       };
       sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
       sinon.stub(request, 'get').rejects({ an: 'error' });
+      request.get.onCall(100).resolves({ version: '2' });
 
-      try {
-        const promise = service.check('http://admin:pass@localhost:5984/medic');
-        // request will be retried 100 times
-        Array.from({ length: 100 }).map(() => originalSetTimeout(() => clock.tick(1000)));
-        await promise;
-        chai.expect.fail('Should have thrown');
-      } catch (err) {
-        chai.expect(err).to.deep.equal({ an: 'error' });
-        chai.expect(request.get.callCount).to.equal(100);
-      }
+      const promise = service.check('http://admin:pass@localhost:5984/medic');
+      // request will be retried 100 times
+      Array.from({ length: 100 }).map(() => originalSetTimeout(() => clock.tick(1000)));
+      await promise;
+      chai.expect(request.get.callCount).to.equal(101);
     });
 
     it('couchdb in admin party', async () => {
@@ -197,17 +193,13 @@ describe('Server Checks service', () => {
         exit: sinon.stub(),
       };
       sinon.stub(http, 'get').callsArgWith(1, { statusCode: 200 });
+      http.get.onCall(300).callsArgWith(1, { statusCode: 401 });
       sinon.stub(request, 'get').resolves({ version: '2' });
 
-      try {
-        const promise = service.check('http://admin:pass@localhost:5984/medic');
-        // request will be retried 100 times
-        Array.from({ length: 100 }).map(() => originalSetTimeout(() => clock.tick(1000)));
-        await promise;
-        chai.expect.fail('Should have thrown');
-      } catch (err) {
-        chai.expect(request.get.callCount).to.equal(100);
-      }
+      const promise = service.check('http://admin:pass@localhost:5984/medic');
+      Array.from({ length: 300 }).map(() => originalSetTimeout(() => clock.tick(1000)));
+      await promise;
+      chai.expect(request.get.callCount).to.equal(301);
     });
 
     it('invalid server', () => {

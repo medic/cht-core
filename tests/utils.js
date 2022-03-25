@@ -583,15 +583,21 @@ const dockerComposeCmd = (...params) => {
     };
 
     const cmd = spawn('docker-compose', [ '-f', COMPOSE_FILE, ...params ], { env });
+    const output = [];
+    const log = (data, error) => {
+      data = data.toString();
+      output.push(data);
+      error ? console.error(data) : console.log(data);
+    };
 
     cmd.on('error', (err) => {
       console.error(err);
       reject(err);
     });
-    cmd.stdout.on('data', (chunk) => console.log(chunk.toString()));
-    cmd.stderr.on('data', (chunk) => console.error(chunk.toString()));
+    cmd.stdout.on('data', log);
+    cmd.stderr.on('data', log);
 
-    cmd.on('close', resolve);
+    cmd.on('close', () => resolve(output));
   });
 };
 
@@ -621,7 +627,14 @@ const saveLogs = async () => {
   await getDockerLogs('couch-e2e');
 };
 
-const startServices = () => dockerComposeCmd('up', '-d');
+const startServices = async () => {
+  await dockerComposeCmd('up', '-d');
+  const services = await dockerComposeCmd('ps', '-q');
+  if (!services.length) {
+    throw new Error('Errors when starting services');
+  }
+};
+
 const stopServices = async (removeOrphans) => {
   if (removeOrphans) {
     return dockerComposeCmd('down', '--remove-orphans');
@@ -677,9 +690,6 @@ const parseCookieResponse = (cookieString) => {
 };
 
 const dockerGateway = () => {
-  if (!constants.IS_CI) {
-    return;
-  }
   try {
     return JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
   } catch (error) {

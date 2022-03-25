@@ -22,7 +22,7 @@ services:
       - "${API_PORT:-5988}:5988"
     environment:
       - COUCH_URL=http://admin:pass@couch-e2e:5984/medic-test
-      - HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER
+      - HORTI_BUILDS_SERVER=${MARKET_URL_READ:-https://staging.dev.medicmobile.org}/${BUILDS_SERVER:-_couch/builds}
     networks:
       - e2e
 

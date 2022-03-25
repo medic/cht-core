@@ -1,7 +1,7 @@
 **
 !/api/
 /api/tests/
-/api/build/webapp/service-worker.js
+/api/build/static/webapp/service-worker.js
 /*/.nyc_output/
 !/sentinel/
 /sentinel/tests/

@@ -50,7 +50,6 @@ const couchDbNoAdminPartyModeCheck = (couchUrl) => {
   // require either 'http' or 'https' by removing the ":" from noAuthUrl.protocol
   const net = require(noAuthUrl.protocol.replace(':', ''));
 
-  console.log(noAuthUrl.toString());
   return new Promise((resolve, reject) => {
     net.get(noAuthUrl.toString(), ({ statusCode }) => {
       // We expect to be rejected because we didn't provide auth
@@ -80,27 +79,21 @@ const couchDbVersionCheck = (couchUrl) => {
 };
 
 const couchDbCheck = async (couchUrl) => {
-  let retries = 100;
-  let lastErr;
   const retryTimeout = () => new Promise(resolve => setTimeout(resolve, 1000));
   const serverUrl = new URL(couchUrl);
   serverUrl.pathname = '/';
 
-
   do {
     try {
-      retries--;
       await couchDbVersionCheck(serverUrl.toString());
       await couchDbNoAdminPartyModeCheck(serverUrl.toString());
       return;
     } catch (err) {
-      lastErr = err;
       console.log('CouchDb check failed', err);
       await retryTimeout();
     }
-  } while (retries);
-
-  throw lastErr;
+    // eslint-disable-next-line no-constant-condition
+  } while (true);
 };
 
 const check = (couchUrl) => {

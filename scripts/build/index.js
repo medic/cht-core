@@ -56,11 +56,16 @@ const getVersion = () => {
   if (BRANCH) {
     return `${packageJson.version}-${BRANCH}.${BUILD_NUMBER}`;
   }
+
+  if (process.env.VERSION) {
+    return process.env.VERSION;
+  }
+
   return `${packageJson.version}-dev.${buildTime}`;
 };
 
 const getImageTag = (service) => {
-  const version = process.env.VERSION || getVersion();
+  const version = getVersion();
   const tag = version.replace(/\//g, '-');
   const repo = ECR_REPO || 'medicmobile';
   return service ? `${repo}/cht-${service}:${tag}` : tag;

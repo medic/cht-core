@@ -6,10 +6,8 @@ RUN apk add --update --no-cache \
   nodejs~=16 \
   npm~=8 \
   tzdata \
-  libxslt \
   bash \
-  jq    \
-  git
+  jq
 
 WORKDIR /sentinel
 
