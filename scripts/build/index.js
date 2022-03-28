@@ -2,6 +2,7 @@ const packageJson = require('../../package.json');
 const path = require('path');
 const fs = require('fs');
 const rpn = require('request-promise-native');
+const mustache = require('mustache');
 
 const {
   TAG,
@@ -15,6 +16,7 @@ const DEFAULT_API_PORT = 5988;
 
 const buildPath = path.resolve(__dirname, '..', '..', 'build');
 const stagingPath = path.resolve(buildPath, 'staging');
+const stagingAttachmentsPath = path.resolve(stagingPath, '_attachments');
 const ddocsBuildPath = path.resolve(buildPath, 'ddocs');
 
 const getCouchConfig = () => {
@@ -46,15 +48,12 @@ const getApiUrl = (pathname = '') => {
 const releaseName = TAG || BRANCH || 'local-development';
 const buildTime = new Date().getTime();
 
-const getVersion = () => {
+const getVersion = (release) => {
   if (TAG) {
     return TAG;
   }
-  if (BRANCH === 'master') {
-    return `${packageJson.version}-alpha.${BUILD_NUMBER}`;
-  }
   if (BRANCH) {
-    return `${packageJson.version}-${BRANCH}.${BUILD_NUMBER}`;
+    return getBranchVersion(release);
   }
 
   if (process.env.VERSION) {
@@ -64,11 +63,19 @@ const getVersion = () => {
   return `${packageJson.version}-dev.${buildTime}`;
 };
 
-const getImageTag = (service) => {
-  const version = getVersion();
+const getBranchVersion = (release) => {
+  const base = BRANCH === 'master' ? `${packageJson.version}-alpha` : `${packageJson.version}-${BRANCH}`;
+  return release ? base : `${base}.${BUILD_NUMBER}`;
+};
+
+const getRepo = (repo) => {
+  return repo || ECR_REPO || 'medicmobile';
+};
+
+const getImageTag = (service, repo = ECR_REPO, release = false) => {
+  const version = getVersion(release);
   const tag = version.replace(/\//g, '-');
-  const repo = ECR_REPO || 'medicmobile';
-  return service ? `${repo}/cht-${service}:${tag}` : tag;
+  return service ? `${getRepo(repo)}/cht-${service}:${tag}` : tag;
 };
 
 const setBuildInfo = () => {
@@ -94,11 +101,11 @@ const createStagingDoc = () => {
   mkdirSync(stagingPath);
 
   fs.writeFileSync(path.resolve(stagingPath, '_id'), `medic:medic:test-${BUILD_NUMBER}`);
-  mkdirSync(path.resolve(stagingPath, '_attachments'));
+  mkdirSync(stagingAttachmentsPath);
 };
 
 const populateStagingDoc = () => {
-  const ddocAttachmentsPath = path.resolve(stagingPath, '_attachments', 'ddocs');
+  const ddocAttachmentsPath = path.resolve(stagingAttachmentsPath, 'ddocs');
   mkdirSync(ddocAttachmentsPath);
 
   fs.readdirSync(ddocsBuildPath, { withFileTypes: true }).forEach(file => {
@@ -109,6 +116,8 @@ const populateStagingDoc = () => {
 
   // the validate_doc_update from staging.dev requires full build info in the staging document.
   copyBuildInfoToStagingDoc();
+  saveDockerComposeFile();
+  saveServiceTags();
 };
 
 const copyBuildInfoToStagingDoc = () => {
@@ -121,6 +130,39 @@ const copyBuildInfoToStagingDoc = () => {
       fs.copyFileSync(path.resolve(medicBuildInfoPath, file.name), path.resolve(stagingBuildInfoPath, file.name));
     }
   });
+};
+
+const saveDockerComposeFile = () => {
+  const templatePath = path.resolve(__dirname, 'cht-compose.yml.template');
+  const template = fs.readFileSync(templatePath, 'utf-8');
+
+  const view = {
+    couchdb_image: 'medicmobile/cht-couchdb:clustered-test4',
+    repo: getRepo(),
+    tag: getImageTag(undefined, undefined, true),
+  };
+
+  const output = mustache.render(template, view);
+
+  const dockerComposeFolder = path.resolve(stagingAttachmentsPath, 'docker-compose');
+  mkdirSync(dockerComposeFolder);
+  const dockerComposeFilePath = path.resolve(dockerComposeFolder, 'cht-compose.yml');
+  fs.writeFileSync(dockerComposeFilePath, output);
+};
+
+const saveServiceTags = () => {
+  const tags = [
+    {
+      container_name: 'cht-api',
+      image: getImageTag('api', undefined, true),
+    },
+    {
+      container_name: 'cht-sentinel',
+      image: getImageTag('sentinel', undefined, true),
+    },
+  ];
+  const tagsFilePath = path.resolve(stagingPath, 'tags.json');
+  fs.writeFileSync(tagsFilePath, JSON.stringify(tags));
 };
 
 const updateServiceWorker = () => {
@@ -168,4 +210,5 @@ module.exports = {
   updateServiceWorker,
   getImageTag,
   getVersion,
+  SERVICES: ['api', 'sentinel'],
 };

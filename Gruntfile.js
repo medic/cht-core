@@ -17,7 +17,6 @@ const buildUtils = require('./scripts/build');
 const couchConfig = buildUtils.getCouchConfig();
 
 const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
-const SERVICES = ['api', 'sentinel'];
 
 const getSharedLibDirs = () => {
   return fs
@@ -286,7 +285,7 @@ module.exports = function(grunt) {
       },
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
       'build-service-images': {
-        cmd: () => SERVICES
+        cmd: () => buildUtils.SERVICES
           .map(service =>
             [
               `cd ${service}`,
@@ -299,7 +298,7 @@ module.exports = function(grunt) {
           .join(' && '),
       },
       'save-service-images': {
-        cmd: () => SERVICES
+        cmd: () => buildUtils.SERVICES
           .map(service =>
             [
               `mkdir -p images`,
@@ -309,7 +308,7 @@ module.exports = function(grunt) {
           .join(' && '),
       },
       'push-service-images': {
-        cmd: () => SERVICES
+        cmd: () => buildUtils.SERVICES
           .map(service => `docker push ${buildUtils.getImageTag(service)}`)
           .join(' && '),
       },

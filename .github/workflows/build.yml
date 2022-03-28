@@ -114,6 +114,7 @@ jobs:
         cd scripts/ci
         npm ci
         node ./publish.js
+        node ./tag-docker-images.js
 
   tests:
     needs: build
