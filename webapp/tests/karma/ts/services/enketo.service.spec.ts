@@ -525,10 +525,21 @@ describe('Enketo service', () => {
   describe('save', () => {
 
     it('rejects on invalid form', done => {
+      const inputRelevant = { dataset: { relevant: 'true' } };
+      const inputNonRelevant = { dataset: { relevant: 'false' } };
+      const inputNoDataset = {};
+      const toArray = sinon.stub().returns([inputRelevant, inputNoDataset, inputNonRelevant]);
+      // @ts-ignore
+      sinon.stub($.fn, 'find').returns({ toArray });
       form.validate.resolves(false);
+      form.relevant = { update: sinon.stub() };
       service.save('V', form).catch(actual => {
         expect(actual.message).to.equal('Form is invalid');
         expect(form.validate.callCount).to.equal(1);
+        expect(inputRelevant.dataset.relevant).to.equal('true');
+        expect(inputNonRelevant.dataset.relevant).to.equal('false');
+        // @ts-ignore
+        expect(inputNoDataset.dataset).to.be.undefined;
         done();
       });
     });

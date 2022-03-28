@@ -758,16 +758,22 @@ export class EnketoService {
 
   save(formInternalId, form, geoHandle, docId?) {
     // /inputs is ALWAYS relevant #4875
-    $('section[name$="/inputs"]').each((idx, element) => {
-      if(element.dataset) {
+    const inputs = $('section[name$="/inputs"]')
+      .toArray()
+      .filter(element => element.dataset)
+      .map(element => {
+        const relevant = element.dataset.relevant;
         element.dataset.relevant = 'true()';
-      }
-    });
+        return { element, relevant };
+      });
 
     return Promise
       .resolve(form.validate())
       .then((valid) => {
         if (!valid) {
+          inputs.forEach(({ element, relevant }) => element.dataset.relevant = relevant);
+          // Refresh the form with proper relevant values
+          form.relevant.update(null, false);
           throw new Error('Form is invalid');
         }
 
