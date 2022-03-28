@@ -74,7 +74,6 @@ describe('PurgedDocs controller', () => {
       });
     });
 
-    // TODO why not? replication id should be required, right???
     it('should not throw errors when no limit or checkpointer id is provided', () => {
       req = { userCtx: { name: 'a', roles: ['role1'] } };
       sinon.stub(authorization, 'getAuthorizationContext').resolves({ userCtx: req.userCtx });
