@@ -739,12 +739,8 @@ class EnketoFormManager {
       .resolve(form.validate())
       .then((valid) => {
         if (!valid) {
-          inputs.forEach(({ element, relevant }) => {
-            element.dataset.relevant = relevant;
-          });
-
-          // TODO This is a hack to get the view to recalculate.
-          // Need to figure out something better maybe.
+          inputs.forEach(({ element, relevant }) => element.dataset.relevant = relevant);
+          // Refresh the form with proper relevant values
           form.relevant.update(null, false);
           throw new Error('Form is invalid');
         }

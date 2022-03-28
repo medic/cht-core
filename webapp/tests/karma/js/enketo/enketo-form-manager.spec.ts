@@ -137,7 +137,6 @@ describe('Enketo Form Manager', () => {
       model: { getStr: sinon.stub().returns(VISIT_MODEL) },
       output: { update: sinon.stub() },
       validate: sinon.stub(),
-      // TODO Remove this when not needed
       relevant: { update: sinon.stub() }
     };
 
@@ -428,19 +427,15 @@ describe('Enketo Form Manager', () => {
   describe('validate', () => {
     let inputRelevant;
     let inputNonRelevant;
+    let inputNoDataset;
 
     beforeEach(() => {
       inputRelevant = { dataset: { relevant: 'true' } };
       inputNonRelevant = { dataset: { relevant: 'false' } };
-      const toArray = sinon.stub().returns([inputRelevant, { }, inputNonRelevant]);
-      const jqFind = $.fn.find;
-      sinon.stub($.fn, 'find');
-      //@ts-ignore
-      $.fn.find.callsFake(jqFind);
-      $.fn.find
-        //@ts-ignore
-        .withArgs('section[name$="/inputs"]')
-        .returns({ toArray });
+      inputNoDataset = {};
+      const toArray = sinon.stub().returns([inputRelevant, inputNoDataset, inputNonRelevant]);
+      // @ts-ignore
+      sinon.stub($.fn, 'find').returns({ toArray });
     });
 
     it('rejects on invalid form', () => {
@@ -452,6 +447,7 @@ describe('Enketo Form Manager', () => {
           expect(actual.message).to.equal('Form is invalid');
           expect(inputRelevant.dataset.relevant).to.equal('true');
           expect(inputNonRelevant.dataset.relevant).to.equal('false');
+          expect(inputNoDataset.dataset).to.be.undefined;
           expect(form.validate.callCount).to.equal(1);
         });
     });
@@ -462,6 +458,7 @@ describe('Enketo Form Manager', () => {
       return enketoFormMgr.validate(form).then(() => {
         expect(inputRelevant.dataset.relevant).to.equal('true()');
         expect(inputNonRelevant.dataset.relevant).to.equal('true()');
+        expect(inputNoDataset.dataset).to.be.undefined;
         expect(form.validate.callCount).to.equal(1);
       });
     });

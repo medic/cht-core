@@ -136,7 +136,8 @@ export class EnketoService {
   }
 
   save(formInternalId, form, geoHandle, docId?) {
-    return this.enketoFormMgr.validate(form)
+    return this.enketoFormMgr
+      .validate(form)
       .then(() => {
         $('form.or').trigger('beforesave');
 
