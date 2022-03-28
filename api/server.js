@@ -14,6 +14,16 @@ process
   });
 
 (async () => {
+  try {
+    logger.info('Running server checks…');
+    await serverChecks.check(environment.couchUrl);
+    logger.info('Checks passed successfully');
+  } catch (err) {
+    logger.error('Fatal error initialising medic-api');
+    logger.error('%o',err);
+    process.exit(1);
+  }
+
   const checkInstall = require('./src/services/setup/check-install');
   const app = require('./src/routing');
   const configWatcher = require('./src/services/config-watcher');
@@ -27,10 +37,6 @@ process
 
   try
   {
-    logger.info('Running server checks…');
-    await serverChecks.check(environment.serverUrl);
-    logger.info('Checks passed successfully');
-
     logger.info('Running installation checks…');
     await checkInstall.run();
     logger.info('Installation checks passed');

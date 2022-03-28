@@ -1,0 +1,10 @@
+**
+!/api/
+/api/tests/
+/api/build/static/webapp/service-worker.js
+/*/.nyc_output/
+!/sentinel/
+/sentinel/tests/
+!/shared-libs/
+/shared-libs/**/test/
+/shared-libs/**/tests/

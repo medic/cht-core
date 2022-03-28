@@ -48,7 +48,7 @@ const setIncomingKey = () => {
   return utils.request({
     port: constants.COUCH_PORT,
     method: 'PUT',
-    path: `/_node/${constants.COUCH_NODE_NAME}/_config/medic-credentials/rapidpro:incoming`,
+    path: `/_node/_local/_config/medic-credentials/rapidpro:incoming`,
     body: `${INCOMING_KEY}`
   });
 };
@@ -57,7 +57,7 @@ const setOutgoingKey = () => {
   return utils.request({
     port: constants.COUCH_PORT,
     method: 'PUT',
-    path: `/_node/${constants.COUCH_NODE_NAME}/_config/medic-credentials/rapidpro:outgoing`,
+    path: `/_node/_local/_config/medic-credentials/rapidpro:outgoing`,
     body: `${OUTGOING_KEY}`
   });
 };

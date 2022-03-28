@@ -1,5 +1,4 @@
 const utils = require('../utils');
-const request = require('request-promise-native');
 const fs = require('fs');
 const path = require('path');
 
@@ -33,8 +32,8 @@ exports.mochaHooks = {
     await saveServiceWorkerContents();
   },
 
-  afterAll:async () => {
-    await request.post('http://localhost:31337/die');
+  afterAll: async () => {
+    await utils.tearDownServices();
     console.log('Test done. Signing off ...');
   }
 };

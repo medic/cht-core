@@ -65,14 +65,12 @@ While we recommend use Docker to install CouchDB for development, it is still po
 
 Medic needs the following environment variables to be declared:
  - `COUCH_URL`: the full authenticated url to the `medic` DB. Locally this would be  `http://myadminuser:myadminpass@localhost:5984/medic`
- - `COUCH_NODE_NAME`: the name of your CouchDB's node. The Docker image default is `nonode@nohost`. Other installations may use `couchdb@127.0.0.1`. You can find out by querying [CouchDB's membership API](https://docs.couchdb.org/en/stable/api/server/common.html#membership)
  - (optionally) `API_PORT`: the port API will run on. If not defined we use `5988`
  - (optionally) `CHROME_BIN`: only required if `grunt unit` or `grunt e2e` complain that they can't find Chrome.
 
 How to permanently define environment variables depends on your OS and shell (e.g. for bash you can put them `~/.bashrc`). You can temporarily define them with `export`:
 
 ```sh
-export COUCH_NODE_NAME=nonode@nohost
 export COUCH_URL=http://myadminuser:myadminpass@localhost:5984/medic
 ```
 
@@ -93,7 +91,7 @@ First, add an admin user (unless you did via the docker `-e` switches as describ
 Once you have an admin user you can proceed with securing CouchDB:
 
 ```shell
-COUCH_URL=http://myadminuser:myadminpass@localhost:5984/medic COUCH_NODE_NAME=nonode@nohost grunt secure-couchdb
+COUCH_URL=http://myadminuser:myadminpass@localhost:5984/medic grunt secure-couchdb
 ```
 
 At this point, CouchDB should block unauthorised access:
@@ -107,7 +105,7 @@ curl http://localhost:5984 # should fail
 To be able to use Fauxton with authenticated users:
 
 ```shell
-curl -X PUT "http://myadminuser:myadminpass@localhost:5984/_node/$COUCH_NODE_NAME/_config/httpd/WWW-Authenticate" \
+curl -X PUT "http://myadminuser:myadminpass@localhost:5984/_node/_local/_config/httpd/WWW-Authenticate" \
   -d '"Basic realm=\"administrator\""' -H "Content-Type: application/json"
 ```
 

@@ -81,7 +81,7 @@ if (UNIT_TEST_ENV) {
       return err ? reject(err) : resolve(body);
     });
   });
-  module.exports.get = db => new PouchDB(`${module.exports.serverUrl}/${db}`);
+  module.exports.get = db => new PouchDB(`${module.exports.serverUrl}/${db}`, { fetch: fetchFn });
   module.exports.close = db => {
     if (!db || db._destroyed || db._closed) {
       return;
@@ -94,7 +94,7 @@ if (UNIT_TEST_ENV) {
     }
   };
   module.exports.couchUrl = couchUrl;
-  module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`);
+  module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`, { fetch: fetchFn });
 } else {
   logger.warn(
     'Please define a COUCH_URL in your environment e.g. \n' +

@@ -454,7 +454,8 @@ describe('mark_for_outbound', () => {
       return utils
         .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
-        .then(() => collect = utils.collectLogs('sentinel.e2e.log', /Mapping error.+_idddddddddddddddd/))
+        .then(() => utils.collectSentinelLogs(/Mapping error.+_idddddddddddddddd/))
+        .then((result) => collect = result)
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(() => collect())
         .then(logs => {
@@ -487,7 +488,8 @@ describe('mark_for_outbound', () => {
       return utils
         .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
-        .then(() => collect = utils.collectLogs('sentinel.e2e.log', /Failed to push/, /Response body.+error response/))
+        .then(() => utils.collectSentinelLogs(/Failed to push/, /Response body.+error response/))
+        .then((result) => collect = result)
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(() => collect())
         .then(logs => {
@@ -521,7 +523,8 @@ describe('mark_for_outbound', () => {
       return utils
         .updateSettings(config, 'sentinel')
         .then(() => utils.saveDoc(report))
-        .then(() => collect = utils.collectLogs('sentinel.e2e.log', /Failed to push.+ECONNREFUSED/))
+        .then(() => utils.collectSentinelLogs(/Failed to push.+ECONNREFUSED/))
+        .then((result) => collect = result)
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(() => collect())
         .then(logs => {

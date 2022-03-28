@@ -1,4 +1,4 @@
-const IS_CI = !!process.env.TEST_SUITE;
+const IS_CI = !!process.env.CI;
 
 const COUCH_HOST = 'localhost';
 const COUCH_PORT = IS_CI ? 5984 : 4984;
@@ -17,7 +17,6 @@ module.exports = {
   // locally we spin up a different CouchDB for e2e tests
   COUCH_PORT,
   COUCH_HOST,
-  COUCH_NODE_NAME: IS_CI ? process.env.COUCH_NODE_NAME : 'nonode@nohost',
 
   // test database to avoid writing to the dev db
   // TODO: we don't need to do this anymore since it's in its own docker container
@@ -33,5 +32,5 @@ module.exports = {
     type: 'person',
     reported_date: 1541679811408,
   },
-  BASE_URL: `http://${COUCH_HOST}:${API_PORT}/`
+  BASE_URL: `http://${COUCH_HOST}:${API_PORT}/`,
 };
