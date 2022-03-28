@@ -41,5 +41,6 @@ const getImageTag = (service, repo = ECR_REPO, release = false) => {
 module.exports = {
   getImageTag,
   getVersion,
+  getRepo,
   SERVICES: ['api', 'sentinel'],
 };
