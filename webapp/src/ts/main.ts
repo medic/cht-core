@@ -15,7 +15,7 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import pouchdbDebug from 'pouchdb-debug';
 
 import { AppModule } from './app.module';
-import { environment } from './environments/environment';
+import { environment } from '@mm-environments/environment';
 import { POUCHDB_OPTIONS } from './constants';
 
 import * as bootstrapper from '../js/bootstrapper';

@@ -160,8 +160,8 @@ export class EnketoService {
 
 export interface EnketoFormContext {
   selector: string;
-  formDoc: string;
-  instanceData: Record<string, any>;
+  formDoc: Record<string, any>;
+  instanceData: string|Record<string, any>; // String for report forms, Record<> for contact forms.
   editedListener: () => void;
   valuechangeListener: () => void;
   titleKey?: string;

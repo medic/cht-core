@@ -1,5 +1,5 @@
 import { Store } from '@ngrx/store';
-import { createSingleValueAction } from './actionUtils';
+import { createSingleValueAction } from '@mm-actions/actionUtils';
 
 export const Actions = {
   setSelectedTargetAggregate: createSingleValueAction('SET_SELECTED_TARGET_AGGREGATE', 'selected'),
