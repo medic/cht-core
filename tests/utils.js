@@ -18,7 +18,7 @@ const sentinel = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_P
 const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-logs`, { auth });
 let browserLogStream;
 const userSettings = require('./factories/cht/users/user-settings');
-const buildUtils = require('../scripts/build');
+const buildVersions = require('../scripts/build/versions');
 
 let originalSettings;
 const originalTranslations = {};
@@ -577,7 +577,7 @@ const dockerComposeCmd = (...params) => {
   return new Promise((resolve, reject) => {
     const env = {
       ...process.env,
-      VERSION: process.env.VERSION || buildUtils.getImageTag(),
+      VERSION: process.env.VERSION || buildVersions.getImageTag(),
       COUCH_PORT: constants.COUCH_PORT,
       API_PORT: constants.API_PORT,
     };
