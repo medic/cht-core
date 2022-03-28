@@ -31,7 +31,7 @@ const patient = personFactory.build({
   patient_id: 'the_patient_id',
   parent: { _id: 'health_center', parent: { _id: 'district' } },
 });
-const user = userFactory.build({ username: 'offlineuser', place: 'health_center' });
+const user = userFactory.build({ username: 'offlineuser-purge', place: 'health_center' });
 
 const purgeFn = (userCtx, contact, reports) => {
   return reports.filter(r => r.form === 'purge').map(r => r._id);
