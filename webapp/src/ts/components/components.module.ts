@@ -5,13 +5,15 @@ import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
-import { HeaderComponent } from './header/header.component';
-import { PipesModule } from '../pipes/pipes.module';
-import { DirectivesModule } from '../directives/directives.module';
-import { SnackbarComponent } from './snackbar/snackbar.component';
-import { ContentRowListItemComponent } from './content-row-list-item/content-row-list-item.component';
-import { ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent } from './status-icons/status-icons.template';
-
+import { HeaderComponent } from '@mm-components/header/header.component';
+import { PipesModule } from '@mm-pipes/pipes.module';
+import { DirectivesModule } from '@mm-directives/directives.module';
+import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
+import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
+import {
+  ReportVerifyValidIconComponent,
+  ReportVerifyInvalidIconComponent
+} from '@mm-components/status-icons/status-icons.template';
 import {
   MultiDropdownFilterComponent
 } from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';

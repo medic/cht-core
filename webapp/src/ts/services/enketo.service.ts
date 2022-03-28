@@ -84,7 +84,7 @@ export class EnketoService {
       });
   }
 
-  private replaceJavarosaMediaWithLoaders(formDoc, formHtml) {
+  private replaceJavarosaMediaWithLoaders(formHtml) {
     formHtml.find('[data-media-src]').each((idx, element) => {
       const $img = $(element);
       const lang = $img.attr('lang');
@@ -265,15 +265,15 @@ export class EnketoService {
         this.languageService.get()
       ])
       .then(([ instanceStr, contactSummary, language ]) => {
-        const data:any = {
+        const options: EnketoOptions = {
           modelStr: doc.model,
           instanceStr: instanceStr
         };
         if (contactSummary) {
-          data.external = [ contactSummary ];
+          options.external = [ contactSummary ];
         }
         const form = wrapper.find('form')[0];
-        return new window.EnketoForm(form, data, { language });
+        return new window.EnketoForm(form, options, { language });
       });
   }
 
@@ -416,7 +416,7 @@ export class EnketoService {
     return this
       .transformXml(formDoc)
       .then(doc => {
-        this.replaceJavarosaMediaWithLoaders(formDoc, doc.html);
+        this.replaceJavarosaMediaWithLoaders(doc.html);
         const xmlFormContext: XmlFormContext = {
           doc,
           wrapper: $selector,
@@ -820,6 +820,17 @@ export class EnketoService {
   }
 }
 
+interface ContactSummary {
+  id: string;
+  xmlStr: string;
+}
+
+interface EnketoOptions {
+  modelStr: string;
+  instanceStr: string;
+  external?: ContactSummary[];
+}
+
 interface XmlFormContext {
   doc: {
     html: JQuery;
@@ -828,14 +839,14 @@ interface XmlFormContext {
     hasContactSummary: boolean;
   };
   wrapper: JQuery;
-  instanceData: Record<string, any>;
+  instanceData: string|Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey: string;
 }
 
 export interface EnketoFormContext {
   selector: string;
-  formDoc: string;
-  instanceData: Record<string, any>;
+  formDoc: Record<string, any>;
+  instanceData: string|Record<string, any>; // String for report forms, Record<> for contact forms.
   editedListener: () => void;
   valuechangeListener: () => void;
   titleKey?: string;

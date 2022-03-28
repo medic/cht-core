@@ -9,6 +9,7 @@ const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 
 const countFormDocument = readFormDocument('repeat-translation-count');
 const buttonFormDocument = readFormDocument('repeat-translation-button');
+const selectFormDocument = readFormDocument('repeat-translation-select');
 const userContactDoc = {
   _id: constants.USER_CONTACT_ID,
   name: 'Jack',
@@ -25,7 +26,7 @@ const userContactDoc = {
 
 describe('RepeatForm', () => {
   before(async () => {
-    await utils.seedTestData(userContactDoc, [countFormDocument, buttonFormDocument]);
+    await utils.seedTestData(userContactDoc, [countFormDocument, buttonFormDocument, selectFormDocument]);
   });
 
   afterEach(async () => {
@@ -130,6 +131,38 @@ describe('RepeatForm', () => {
     async function repeatForm() {
       const addRepeatButton = await $('.btn.btn-default.add-repeat-btn');
       await addRepeatButton.click();
+    }
+  });
+
+  describe('Repeat form with select', () => {
+    it('should display the initial form and its repeated content in the default language', async () => {
+      const swUserName = 'Jina la mtumizi';
+      await loginPage.changeLanguage('sw', swUserName);
+      await login();
+      await openRepeatForm(selectFormDocument.internalId);
+
+      const { input: washingtonInput, label: washingtonLabel } = await getField('selected_state', 'washington');
+      expect(await washingtonLabel.getText()).to.equal('Washington');
+
+      await washingtonInput.click();
+      const { input: kingInput, label: kingLabel } = await getField('selected_county', 'king');
+      expect(await kingLabel.getText()).to.equal('King');
+
+      await kingInput.click();
+      const { label: seattleLabel } = await getField('selected_city', 'seattle');
+      const { label: redmondLabel } = await getField('selected_city', 'redmond');
+      expect(await seattleLabel.getText()).to.equal('Seattle');
+      expect(await redmondLabel.getText()).to.equal('Redmond');
+    });
+
+    async function getField(fieldName, fieldValue) {
+      const fieldInputPath = `#report-form input[name="/cascading_select/${fieldName}"][value="${fieldValue}"]`;
+      const fieldLabelPath = `${fieldInputPath} ~ .option-label.active`;
+
+      return {
+        input: await $(fieldInputPath),
+        label: await $(fieldLabelPath),
+      };
     }
   });
 

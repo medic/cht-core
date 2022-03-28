@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
-import { ErrorComponent } from './error.component';
+
+import { ErrorComponent } from '@mm-modules/error/error.component';
 
 export const routes:Routes = [
   { path: 'error/:code', component: ErrorComponent, data: { name: 'error', tab: 'error' }},

@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { HeaderLogoPipe, PartnerImagePipe, ResourceIconPipe } from './resource-icon.pipe';
+import { HeaderLogoPipe, PartnerImagePipe, ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import {
   AgePipe,
   AutoreplyPipe,
@@ -15,10 +15,10 @@ import {
   StatePipe,
   TaskDueDatePipe,
   WeeksPregnantPipe
-} from './date.pipe';
+} from '@mm-pipes/date.pipe';
 import {
   ClinicPipe, LineagePipe, SummaryPipe, TitlePipe
-} from './message.pipe';
+} from '@mm-pipes/message.pipe';
 import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
 import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
 import { SafeHtmlPipe } from '@mm-pipes/safe-html.pipe';
