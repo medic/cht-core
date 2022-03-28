@@ -3,11 +3,12 @@ const bodyParser = require('body-parser');
 const uuid = require('uuid').v4;
 const _ = require('lodash');
 
-const commonElements = require('../../../page-objects/common/common.po.js');
-const messagesElements = require('../../../page-objects/messages/messages.po');
-const reportsElements = require('../../../page-objects/reports/reports.po');
-const helper = require('../../../helper');
-const utils = require('../../../utils');
+const commonElements = require('../page-objects/common/common.po.js');
+const messagesElements = require('../page-objects/messages/messages.po');
+const reportsElements = require('../page-objects/reports/reports.po');
+const helper = require('../helper');
+const constants = require('../constants');
+const utils = require('../utils');
 
 // Mock rapidpro server
 const mockApp = express();
@@ -44,11 +45,21 @@ const INCOMING_KEY = 'thecakeisalie';
 const OUTGOING_KEY = 'ermahgerd';
 
 const setIncomingKey = () => {
-  return utils.saveCredentials('rapidpro:incoming', INCOMING_KEY);
+  return utils.request({
+    port: constants.COUCH_PORT,
+    method: 'PUT',
+    path: `/_node/_local/_config/medic-credentials/rapidpro:incoming`,
+    body: `${INCOMING_KEY}`
+  });
 };
 
 const setOutgoingKey = () => {
-  return utils.saveCredentials('rapidpro:outgoing', OUTGOING_KEY);
+  return utils.request({
+    port: constants.COUCH_PORT,
+    method: 'PUT',
+    path: `/_node/_local/_config/medic-credentials/rapidpro:outgoing`,
+    body: `${OUTGOING_KEY}`
+  });
 };
 
 describe('RapidPro SMS Gateway', () => {
@@ -62,7 +73,7 @@ describe('RapidPro SMS Gateway', () => {
     broadcastsEndpointRequests = [];
     messagesEndpointRequests = [];
   });
-  afterEach(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb([],true));
 
   describe('Webapp Terminating messages', () => {
     const endpoint = '/api/v1/sms/radpidpro/incoming-messages';

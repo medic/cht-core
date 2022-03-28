@@ -8,7 +8,7 @@ const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter'
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
 const fs = require('fs');
 const path = require('path');
-const Tail = require('tail').Tail;
+const { execSync, spawn } = require('child_process');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -18,14 +18,15 @@ const sentinel = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_P
 const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-logs`, { auth });
 let browserLogStream;
 const userSettings = require('./factories/cht/users/user-settings');
+const buildUtils = require('../scripts/build');
 
 let originalSettings;
 const originalTranslations = {};
 let e2eDebug;
 const hasModal = () => element(by.css('#update-available')).isPresent();
-const { execSync } = require('child_process');
 const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 
+const COMPOSE_FILE = path.resolve(__dirname, 'cht-compose-test.yml');
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
@@ -242,7 +243,7 @@ const closeReloadModal = () => {
     .then(() => dialog.click());
 };
 
-const setUserContactDoc = (attempt=0) => {
+const setUserContactDoc = () => {
   const {
     DB_NAME: dbName,
     USER_CONTACT_ID: docId,
@@ -259,17 +260,11 @@ const setUserContactDoc = (attempt=0) => {
       path: `/${dbName}/${docId}`,
       body: newDoc,
       method: 'PUT',
-    }))
-    .catch(err => {
-      if (attempt > 3) {
-        throw err;
-      }
-      return setUserContactDoc(attempt + 1);
-    });
+    }));
 };
 
 const revertDb = async (except, ignoreRefresh) => {
-  const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
+  const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
@@ -290,16 +285,11 @@ const revertDb = async (except, ignoreRefresh) => {
 const getCreatedUsers = async () => {
   const adminUserId = COUCH_USER_ID_PREFIX + auth.username;
   const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
-  return users.rows
-    .filter(user => user.id !== adminUserId)
+  return users.rows.filter(user => user.id !== adminUserId)
     .map((user) => ({ ...user, username: user.id.replace(COUCH_USER_ID_PREFIX, '') }));
 };
 
 const deleteUsers = async (users, meta = false) => {
-  if (!users.length) {
-    return;
-  }
-
   const usernames = users.map(user => COUCH_USER_ID_PREFIX + user.username);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
   const medicDocs = await request({
@@ -396,16 +386,117 @@ const deprecated = (name, replacement) => {
 
 const waitForSettingsUpdateLogs = (type) => {
   if (type === 'sentinel') {
-    return module.exports.waitForLogs(
-      module.exports.sentinelLogFile,
-      /Reminder messages allowed between/,
-    );
+    return module.exports.waitForSentinelLogs(/Reminder messages allowed between/);
   }
 
-  return module.exports.waitForLogs(
-    module.exports.apiLogFile,
-    /Settings updated/,
-  );
+  return module.exports.waitForApiLogs(/Settings updated/);
+};
+
+const killSpawnedProcess = (proc) => {
+  proc.stdout.destroy();
+  proc.stderr.destroy();
+  proc.kill('SIGINT');
+};
+
+/**
+ * Collector that listens to the given container logs and collects lines that match at least one of the
+ * given regular expressions
+ *
+ * To use, call before the action you wish to catch, and then execute the returned function after
+ * the action should have taken place. The function will return a promise that will succeed with
+ * the list of captured lines, or fail if there have been any errors with log capturing.
+ *
+ * @param      {string}    container    container name
+ * @param      {[RegExp]}  regex        matching expression(s) run against lines
+ * @return     {Promise<function>}      promise that returns a function that returns a promise
+ */
+const collectLogs = (container, ...regex) => {
+  const matches = [];
+  const errors = [];
+  let logs = '';
+
+  // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
+  // after watching results in a race condition, where the log is created before watching started.
+  // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
+  // steps of testing afterwards.
+  const params = `logs ${container} -f --tail=1`;
+  const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
+  let receivedFirstLine;
+  const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
+
+  proc.stdout.on('data', (data) => {
+    receivedFirstLine();
+    data = data.toString();
+    logs += data;
+    regex.forEach(r => r.test(data) && matches.push(data));
+  });
+  proc.stderr.on('err', err => {
+    receivedFirstLine();
+    errors.push(err.toString());
+  });
+
+  const collect = () => {
+    killSpawnedProcess(proc);
+
+    if (errors.length) {
+      return Promise.reject({ message: 'CollectLogs errored', errors, logs });
+    }
+
+    return Promise.resolve(matches);
+  };
+
+  return firstLineReceivedPromise.then(() => collect);
+};
+
+/**
+ * Watches a docker log until at least one line matches one of the given regular expressions.
+ * Watch expires after 10 seconds.
+ * @param {String} container - name of the container to watch
+ * @param {[RegExp]} regex - matching expression(s) run against lines
+ * @returns {Promise<Object>} that contains the promise to resolve when logs lines are matched and a cancel function
+ */
+const waitForDockerLogs = (container, ...regex) => {
+  let timeout;
+  let logs = '';
+
+  // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
+  // after watching results in a race condition, where the log is created before watching started.
+  // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
+  // steps of testing afterwards.
+  const params = `logs ${container} -f --tail=1`;
+  const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
+  let receivedFirstLine;
+  const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
+
+  const promise = new Promise((resolve, reject) => {
+    timeout = setTimeout(() => {
+      console.log('Found logs', logs, 'watched for', ...regex);
+      reject(new Error('Timed out looking for details in logs.'));
+      killSpawnedProcess(proc);
+    }, 6000);
+
+    const checkOutput = (data) => {
+      receivedFirstLine();
+      data = data.toString();
+      logs += data;
+      if (regex.find(r => r.test(data))) {
+        resolve();
+        clearTimeout(timeout);
+        killSpawnedProcess(proc);
+      }
+    };
+
+    proc.stdout.on('data', checkOutput);
+    proc.stderr.on('data', checkOutput);
+  });
+
+  return firstLineReceivedPromise.then(() => ({
+    promise,
+    cancel: () => {
+      clearTimeout(timeout);
+      killSpawnedProcess(proc);
+    }
+  }));
 };
 
 const apiRetry = () => {
@@ -473,26 +564,86 @@ const saveBrowserLogs = () => {
 
 
 const prepServices = async (defaultSettings) => {
-  if (constants.IS_CI) {
-    console.log('On CI, waiting for horti to first boot api');
-    // CI' horti will be installing and then deploying api and sentinel, and those logs are
-    // getting pushed into horti.log Once horti has bootstrapped we want to restart everything so
-    // that the service processes get restarted with their logs separated and pointing to the
-    // correct logs for testing
-    await listenForApi();
-    console.log('Horti booted API, rebooting under our logging structure');
-    await rpn.post('http://localhost:31337/all/restart');
-  } else {
-    // Locally we just need to start them and can do so straight away
-    await rpn.post('http://localhost:31337/all/start');
-  }
-
+  await stopServices(true);
+  await startServices();
   await listenForApi();
   if (defaultSettings) {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
 };
+
+const dockerComposeCmd = (...params) => {
+  return new Promise((resolve, reject) => {
+    const env = {
+      ...process.env,
+      VERSION: process.env.VERSION || buildUtils.getImageTag(),
+      COUCH_PORT: constants.COUCH_PORT,
+      API_PORT: constants.API_PORT,
+    };
+
+    const cmd = spawn('docker-compose', [ '-f', COMPOSE_FILE, ...params ], { env });
+    const output = [];
+    const log = (data, error) => {
+      data = data.toString();
+      output.push(data);
+      error ? console.error(data) : console.log(data);
+    };
+
+    cmd.on('error', (err) => {
+      console.error(err);
+      reject(err);
+    });
+    cmd.stdout.on('data', log);
+    cmd.stderr.on('data', log);
+
+    cmd.on('close', () => resolve(output));
+  });
+};
+
+const getDockerLogs = (container) => {
+  const logFile = path.resolve(__dirname, 'logs', `${container}.log`);
+  const logWriteStream = fs.createWriteStream(logFile);
+
+  return new Promise((resolve, reject) => {
+    const cmd = spawn('docker', ['logs', container]);
+
+    cmd.on('error', (err) => {
+      console.error('Error while collecting container logs', err);
+      reject(err);
+    });
+    cmd.stdout.pipe(logWriteStream);
+    cmd.stderr.pipe(logWriteStream);
+
+    cmd.on('close', () => {
+      resolve();
+    });
+  });
+};
+
+const saveLogs = async () => {
+  await getDockerLogs('cht-api');
+  await getDockerLogs('cht-sentinel');
+  await getDockerLogs('couch-e2e');
+};
+
+const startServices = async () => {
+  await dockerComposeCmd('up', '-d');
+  const services = await dockerComposeCmd('ps', '-q');
+  if (!services.length) {
+    throw new Error('Errors when starting services');
+  }
+};
+
+const stopServices = async (removeOrphans) => {
+  if (removeOrphans) {
+    return dockerComposeCmd('down', '--remove-orphans');
+  }
+  await saveLogs();
+  return dockerComposeCmd('stop');
+};
+const startService = (service) => dockerComposeCmd('start', `cht-${service}`);
+const stopService = (service) => dockerComposeCmd('stop', '-t', 0, `cht-${service}`);
 
 const protractorLogin = async (browser, timeout = 20) => {
   await browser.driver.get(getLoginUrl());
@@ -523,11 +674,6 @@ const setupUserDoc = (userName = auth.username, userDoc = userSettings.build()) 
     });
 };
 
-
-const tearDownServices = () => {
-  return rpn.post('http://localhost:31337/die');
-};
-
 const parseCookieResponse = (cookieString) => {
   return cookieString.map((cookie) => {
     const cookieObject = {};
@@ -544,9 +690,6 @@ const parseCookieResponse = (cookieString) => {
 };
 
 const dockerGateway = () => {
-  if (!constants.IS_CI) {
-    return;
-  }
   try {
     return JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
   } catch (error) {
@@ -739,15 +882,12 @@ module.exports = {
 
   deleteDocs: ids => {
     return module.exports.getDocs(ids).then(docs => {
-      docs = docs.filter(doc => !!doc);
-      if (docs.length) {
-        docs.forEach(doc => doc._deleted = true);
-        return module.exports.requestOnTestDb({
-          path: '/_bulk_docs',
-          method: 'POST',
-          body: { docs },
-        });
-      }
+      docs.forEach(doc => doc._deleted = true);
+      return module.exports.requestOnTestDb({
+        path: '/_bulk_docs',
+        method: 'POST',
+        body: { docs },
+      });
     });
   },
 
@@ -780,17 +920,15 @@ module.exports = {
    *                                       api logs, if value equals 'sentinel', will watch sentinel logs instead.
    * @return {Promise}        completion promise
    */
-  updateSettings: (updates, ignoreReload) => {
+  updateSettings: async (updates, ignoreReload) => {
     const watcher = ignoreReload &&
       Object.keys(updates).length &&
-      waitForSettingsUpdateLogs(ignoreReload);
-
-    return updateSettings(updates).then(() => {
-      if (!ignoreReload) {
-        return refreshToGetNewSettings();
-      }
-      return watcher && watcher.promise;
-    });
+      await waitForSettingsUpdateLogs(ignoreReload);
+    await updateSettings(updates);
+    if (!ignoreReload) {
+      return await refreshToGetNewSettings();
+    }
+    return watcher && await watcher.promise;
   },
   /**
    * Revert settings and refresh if required
@@ -799,20 +937,20 @@ module.exports = {
    *                                       and resolve when new settings are loaded.
    * @return {Promise}       completion promise
    */
-  revertSettings: ignoreRefresh => {
-    const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
-    return revertSettings().then((needsRefresh) => {
-      if (!ignoreRefresh) {
-        return refreshToGetNewSettings();
-      }
+  revertSettings: async ignoreRefresh => {
+    const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
+    const needsRefresh = await revertSettings();
 
-      if (!needsRefresh) {
-        watcher && watcher.cancel();
-        return;
-      }
+    if (!ignoreRefresh) {
+      return await refreshToGetNewSettings();
+    }
 
-      return watcher.promise;
-    });
+    if (!needsRefresh) {
+      watcher && watcher.cancel();
+      return;
+    }
+
+    return await watcher.promise;
   },
 
   seedTestData: (userContactDoc, documents) => {
@@ -908,98 +1046,8 @@ module.exports = {
 
   setDebug: debug => e2eDebug = debug,
 
-  stopSentinel: () => rpn.post('http://localhost:31337/sentinel/stop'),
-  startSentinel: () => rpn.post('http://localhost:31337/sentinel/start'),
-
-  /**
-   * Collector that listens to the given logfile and collects lines that match at least one of the a
-   * given regular expressions
-   *
-   * To use, call before the action you wish to catch, and then execute the returned function after
-   * the action should have taken place. The function will return a promise that will succeed with
-   * the list of captured lines, or fail if there have been any errors with log capturing.
-   *
-   * @param      {string}    logFilename  filename of file in local logs directory
-   * @param      {[RegExp]}  regex        matching expression(s) run against lines
-   * @return     {function}  fn that returns a promise
-   */
-  collectLogs: (logFilename, ...regex) => {
-    const lines = [];
-    const errors = [];
-
-    const tail = new Tail(`./tests/logs/${logFilename}`);
-    tail.on('line', data => {
-      if (regex.find(r => r.test(data))) {
-        lines.push(data);
-      }
-    });
-    tail.on('error', err => {
-      errors.push(err);
-    });
-    tail.watch();
-
-    return function () {
-      tail.unwatch();
-
-      if (errors.length) {
-        return Promise.reject({ message: 'CollectLogs errored', errors: errors });
-      }
-
-      return Promise.resolve(lines);
-    };
-  },
-
-  saveCredentials: (key, password) => {
-    const options = {
-      path: `/api/v1/credentials/${key}`,
-      method: 'PUT',
-      body: password,
-      json: false,
-      headers: {
-        'Content-Type': 'text/plain'
-      }
-    };
-    return request(options);
-  },
-
-  /**
-   * Watches a given logfile until at least one line matches one of the given regular expressions.
-   * Watch expires after 10 seconds.
-   * @param {String} logFilename - filename of file in local logs directory
-   * @param {[RegExp]} regex - matching expression(s) run against lines
-   * @returns {Object} that contains the promise to resolve when logs lines are matched and a cancel function
-   */
-  waitForLogs: (logFilename, ...regex) => {
-    const tail = new Tail(`./tests/logs/${logFilename}`);
-    let timeout;
-    const promise = new Promise((resolve, reject) => {
-      timeout = setTimeout(() => {
-        tail.unwatch();
-        reject({ message: 'Timed out looking for details in log files.' });
-      }, 6000);
-
-      tail.on('line', data => {
-        if (regex.find(r => r.test(data))) {
-          tail.unwatch();
-          clearTimeout(timeout);
-          resolve();
-        }
-      });
-      tail.on('error', err => {
-        tail.unwatch();
-        clearTimeout(timeout);
-        reject(err);
-      });
-    });
-
-    return {
-      promise,
-      cancel: () => {
-        tail.unwatch();
-        clearTimeout(timeout);
-      },
-    };
-  },
+  stopSentinel: () => stopService('sentinel'),
+  startSentinel: () => startService('sentinel'),
 
   // delays executing a function that returns a promise with the provided interval (in ms)
   delayPromise: (promiseFn, interval) => {
@@ -1084,9 +1132,9 @@ module.exports = {
   protractorLogin: protractorLogin,
 
   saveBrowserLogs: saveBrowserLogs,
-  tearDownServices,
+  tearDownServices: stopServices,
   endSession: async (exitCode) => {
-    await tearDownServices();
+    await module.exports.tearDownServices();
     return module.exports.reporter.afterLaunch(exitCode);
   },
 
@@ -1095,4 +1143,11 @@ module.exports = {
 
   apiLogFile: 'api.e2e.log',
   sentinelLogFile: 'sentinel.e2e.log',
+
+  waitForDockerLogs,
+  collectLogs,
+
+  waitForApiLogs: (...regex) => module.exports.waitForDockerLogs('cht-api', ...regex),
+  waitForSentinelLogs: (...regex) => module.exports.waitForDockerLogs('cht-sentinel', ...regex),
+  collectSentinelLogs: (...regex) => collectLogs('cht-sentinel', ...regex),
 };

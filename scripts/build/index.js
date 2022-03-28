@@ -9,6 +9,7 @@ const {
   BRANCH,
   BUILD_NUMBER,
   API_PORT,
+  ECR_REPO,
 } = process.env;
 const DEFAULT_API_PORT = 5988;
 
@@ -43,6 +44,7 @@ const getApiUrl = (pathname = '') => {
 };
 
 const releaseName = TAG || BRANCH || 'local-development';
+const buildTime = new Date().getTime();
 
 const getVersion = () => {
   if (TAG) {
@@ -54,7 +56,19 @@ const getVersion = () => {
   if (BRANCH) {
     return `${packageJson.version}-${BRANCH}.${BUILD_NUMBER}`;
   }
-  return `${packageJson.version}-dev.${new Date().getTime()}`;
+
+  if (process.env.VERSION) {
+    return process.env.VERSION;
+  }
+
+  return `${packageJson.version}-dev.${buildTime}`;
+};
+
+const getImageTag = (service) => {
+  const version = getVersion();
+  const tag = version.replace(/\//g, '-');
+  const repo = ECR_REPO || 'medicmobile';
+  return service ? `${repo}/cht-${service}:${tag}` : tag;
 };
 
 const setBuildInfo = () => {
@@ -128,6 +142,7 @@ const updateServiceWorker = () => {
     throw err;
   });
 };
+
 const setDdocsVersion = () => {
   const version = getVersion();
   const databases = fs.readdirSync(ddocsBuildPath);
@@ -151,4 +166,6 @@ module.exports = {
   createStagingDoc,
   populateStagingDoc,
   updateServiceWorker,
+  getImageTag,
+  getVersion,
 };

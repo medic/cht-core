@@ -14,6 +14,16 @@ process
   });
 
 (async () => {
+  try {
+    logger.info('Running server checks…');
+    await serverChecks.check(environment.couchUrl);
+    logger.info('Checks passed successfully');
+  } catch (err) {
+    logger.error('Fatal error initialising medic-api');
+    logger.error('%o',err);
+    process.exit(1);
+  }
+
   const checkInstall = require('./src/services/setup/check-install');
   const app = require('./src/routing');
   const configWatcher = require('./src/services/config-watcher');
@@ -23,14 +33,10 @@ process
   const serverUtils = require('./src/server-utils');
   const uploadDefaultDocs = require('./src/upload-default-docs');
   const generateServiceWorker = require('./src/generate-service-worker');
-  const manifest = require('./src/services/manifest');
   const apiPort = process.env.API_PORT || 5988;
 
-  try {
-    logger.info('Running server checks…');
-    await serverChecks.check(environment.serverUrl);
-    logger.info('Checks passed successfully');
-
+  try
+  {
     logger.info('Running installation checks…');
     await checkInstall.run();
     logger.info('Installation checks passed');
@@ -52,10 +58,6 @@ process
     await migrations.run();
     logger.info('Database migrations completed successfully');
 
-    logger.info('Generating manifest');
-    await manifest.generate();
-    logger.info('Manifest generated successfully');
-
     logger.info('Generating service worker');
     await generateServiceWorker.run();
     logger.info('Service worker generated successfully');
@@ -66,7 +68,7 @@ process
 
   } catch (err) {
     logger.error('Fatal error initialising medic-api');
-    logger.error('%o', err);
+    logger.error('%o',err);
     process.exit(1);
   }
 

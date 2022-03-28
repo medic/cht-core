@@ -1,8 +1,8 @@
 const { expect } = require('chai');
 const URL = require('url');
-const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/login/login.wdio.page');
-const commonPage = require('../../../page-objects/common/common.wdio.page');
+const utils = require('../utils');
+const loginPage = require('../page-objects/login/login.wdio.page');
+const commonPage = require('../page-objects/common/common.wdio.page');
 
 /* global caches fetch Response navigator */
 
@@ -78,7 +78,7 @@ const login = async () => {
   await commonPage.waitForPageLoaded();
 };
 
-const SW_SUCCESSFUL_REGEX = /Service worker generated successfully/;
+const SW_SUCCESSFULL_REGEX = /Service worker generated successfully/;
 
 describe('Service worker cache', () => {
   before(async () => {
@@ -93,14 +93,13 @@ describe('Service worker cache', () => {
     const cacheDetails = await getCachedRequests();
 
     expect(cacheDetails.name.startsWith('sw-precache-v3-cache-')).to.be.true;
-    expect(cacheDetails.urls).to.have.members([
+    expect(cacheDetails.urls).to.deep.eq([
       '/',
       '/audio/alert.mp3',
       '/fontawesome-webfont.woff2',
       '/fonts/NotoSans-Bold.ttf',
       '/fonts/NotoSans-Regular.ttf',
       '/fonts/enketo-icons-v2.woff',
-      '/img/icon.png',
       '/img/icon-chw-selected.svg',
       '/img/icon-chw.svg',
       '/img/icon-nurse-selected.svg',
@@ -109,6 +108,7 @@ describe('Service worker cache', () => {
       '/img/icon-pregnant.svg',
       '/img/layers.png',
       '/img/setup-wizard-demo.png',
+      '/img/simprints.png',
       '/login/script.js',
       '/login/style.css',
       '/main.js',
@@ -124,7 +124,7 @@ describe('Service worker cache', () => {
   });
 
   it('branding updates trigger login page refresh', async () => {
-    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFUL_REGEX);
+    const waitForLogs = utils.waitForApiLogs(SW_SUCCESSFULL_REGEX);
     const branding = await utils.getDoc('branding');
     branding.title = 'Not Medic';
     await utils.saveDoc(branding);
@@ -139,7 +139,7 @@ describe('Service worker cache', () => {
   });
 
   it('login page translation updates trigger login page refresh', async () => {
-    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFUL_REGEX);
+    const waitForLogs = utils.waitForApiLogs(SW_SUCCESSFULL_REGEX);
     await utils.addTranslations('en', {
       'User Name': 'NotUsername',
       'login': 'NotLogin',
@@ -157,7 +157,7 @@ describe('Service worker cache', () => {
   });
 
   it('adding new languages triggers login page refresh', async () => {
-    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFUL_REGEX);
+    const waitForLogs = utils.waitForApiLogs(SW_SUCCESSFULL_REGEX);
     await utils.addTranslations('ro', {
       'User Name': 'Utilizator',
       'Password': 'Parola',
@@ -182,7 +182,7 @@ describe('Service worker cache', () => {
 
     const cacheDetails = await getCachedRequests(true);
 
-    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFUL_REGEX);
+    const waitForLogs = utils.waitForApiLogs(SW_SUCCESSFULL_REGEX);
     await utils.addTranslations('en', {
       'ran': 'dom',
       'some': 'thing',
@@ -200,19 +200,6 @@ describe('Service worker cache', () => {
 
   it('should load the page while offline', async () => {
     await browser.throttle('offline');
-    await browser.refresh();
-    await (await commonPage.analyticsTab()).waitForDisplayed();
-    await browser.throttle('online');
-  });
-
-  it('should load the page while on a very slow connection', async () => {
-    const turtleMode = {
-      offline: false,
-      latency: 60000, // take a minute to respond to any request
-      downloadThroughput: -1,
-      uploadThroughput: -1
-    };
-    await browser.throttle(turtleMode);
     await browser.refresh();
     await (await commonPage.analyticsTab()).waitForDisplayed();
     await browser.throttle('online');
