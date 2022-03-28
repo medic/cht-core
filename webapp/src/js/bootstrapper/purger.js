@@ -2,18 +2,13 @@ const PURGE_LOG_DOC_ID = '_local/purgelog';
 const MAX_HISTORY_LENGTH = 10;
 const BATCH_SIZE = 100;
 const META_BATCHES = 10; // purge 10 * 100 documents on every startup
-const TO_PURGE_LIST_KEY = 'cht-to-purge-list';
-const PURGE_LIST_MAX_LENGTH = 1000;
 
 const sortedUniqueRoles = roles => JSON.stringify([...new Set(roles)].sort());
 
 const getPurgeLog = (localDb) => {
   return localDb.get(PURGE_LOG_DOC_ID).catch(err => {
     if (err.status === 404) {
-      return {
-        _id: PURGE_LOG_DOC_ID,
-        history: [],
-      };
+      return { _id: PURGE_LOG_DOC_ID };
     }
     throw err;
   });
@@ -23,38 +18,36 @@ const shouldPurgeMeta = (localDb) => {
   return getPurgeLog(localDb).then(purgeLog => !!purgeLog.synced_seq);
 };
 
-const appendToPurgeList = (ids) => {
-  const toPurgeList = getToPurgeList();
-  if (ids && ids.length) {
-    toPurgeList.push(...ids);
-    const unique = Array.from(new Set(toPurgeList));
-    window.localStorage.setItem(TO_PURGE_LIST_KEY, JSON.stringify(unique));
+const appendToPurgeList = (localDb, ids) => {
+  if (!ids || !ids.length) {
+    return Promise.resolve();
   }
-  return toPurgeList.length >= PURGE_LIST_MAX_LENGTH; // is list full?
+  return getPurgeLog(localDb)
+    .then(log => {
+      if (log.to_purge && log.to_purge.length) {
+        ids = Array.from(new Set(log.to_purge.concat(ids)));
+      }
+      log.to_purge = ids;
+      return localDb.put(log).then(() => log);
+    });
 };
 
-const getToPurgeList = () => {
-  const stored = window.localStorage.getItem(TO_PURGE_LIST_KEY);
-  try {
-    const parsed = JSON.parse(stored);
-    return parsed || [];
-  } catch(e) {
-    console.error('Error parsing toPurgeList', e);
-    return [];
-  }
+const clearToPurgeList = (localDb) => {
+  return getPurgeLog(localDb)
+    .then(log => {
+      log.to_purge = [];
+      return localDb.put(log);
+    });
 };
 
-const clearToPurgeList = () => {
-  window.localStorage.removeItem(TO_PURGE_LIST_KEY);
-};
+const purgeMain = (localDb, userCtx) => {
 
-const purge = (localDb, userCtx, toPurge) => {
-  const handlers = {};
   let totalPurged = 0;
+  const eventListeners = {};
 
   const emit = (name, event) => {
     console.debug(`Emitting '${name}' event with:`, event);
-    (handlers[name] || []).forEach(callback => callback(event));
+    (eventListeners[name] || []).forEach(callback => callback(event));
   };
 
   const batchedPurge = (ids) => {
@@ -72,16 +65,25 @@ const purge = (localDb, userCtx, toPurge) => {
       .then(() => batchedPurge(ids.slice(BATCH_SIZE)));
   };
 
-  emit('start');
   const p = Promise.resolve()
-    .then(() => batchedPurge(toPurge))
-    .then(() => writePurgeLog(localDb, totalPurged, userCtx))
-    .then(() => clearToPurgeList())
-    .then(() => emit('done', { totalPurged }));
+    .then(() => {
+      return getPurgeLog(localDb)
+        .then(log => {
+          console.log('~~~~~~~~~~~~~', log);
+          if (!log.to_purge || !log.to_purge.length) {
+            return;
+          }
+          emit('start');
+          return batchedPurge(log.to_purge)
+            .then(() => writePurgeLog(localDb, totalPurged, userCtx))
+            .then(() => clearToPurgeList(localDb))
+            .then(() => emit('done', { totalPurged }));
+        });
+    });
 
   p.on = (type, callback) => {
-    handlers[type] = handlers[type] || [];
-    handlers[type].push(callback);
+    eventListeners[type] = eventListeners[type] || [];
+    eventListeners[type].push(callback);
     return p;
   };
 
@@ -89,7 +91,33 @@ const purge = (localDb, userCtx, toPurge) => {
 };
 
 const purgeMeta = (localDb) => {
-  return getPurgeLog(localDb).then(purgeLog => batchedMetaPurge(localDb, purgeLog.purged_seq, purgeLog.synced_seq));
+
+  const eventListeners = {};
+
+  const emit = (name, event) => {
+    console.debug(`Emitting '${name}' event with:`, event);
+    (eventListeners[name] || []).forEach(callback => callback(event));
+  };
+
+  const p = Promise.resolve()
+    .then(() => shouldPurgeMeta(localDb))
+    .then(shouldPurge => {
+      emit('should-purge', shouldPurge);
+      if (shouldPurge) {
+        emit('start');
+        return getPurgeLog(localDb)
+          .then(purgeLog => batchedMetaPurge(localDb, purgeLog.purged_seq, purgeLog.synced_seq))
+          .then(() => emit('done'));
+      }
+    });
+
+  p.on = (type, callback) => {
+    eventListeners[type] = eventListeners[type] || [];
+    eventListeners[type].push(callback);
+    return p;
+  };
+
+  return p;
 };
 
 const writePurgeLog = (localDb, totalPurged, userCtx) => {
@@ -100,6 +128,9 @@ const writePurgeLog = (localDb, totalPurged, userCtx) => {
       roles: sortedUniqueRoles(userCtx.roles)
     };
     Object.assign(purgeLog, info);
+    if (!purgeLog.history) {
+      purgeLog.history = [];
+    }
     purgeLog.history.unshift(info);
     if (purgeLog.history.length > MAX_HISTORY_LENGTH) {
       const diff = purgeLog.history.length - MAX_HISTORY_LENGTH;
@@ -192,11 +223,8 @@ const purgeIds = (db, ids) => {
 };
 
 module.exports = {
-  shouldPurgeMeta,
-  getToPurgeList,
-  appendToPurgeList,
-  purge,
+  purgeMain,
   purgeMeta,
+  appendToPurgeList,
   writeMetaPurgeLog,
-  TO_PURGE_LIST_KEY,
 };

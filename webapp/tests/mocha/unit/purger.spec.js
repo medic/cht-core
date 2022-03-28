@@ -10,11 +10,6 @@ describe('Purger', () => {
 
   beforeEach(done => {
     window = {
-      localStorage: {
-        setItem: sinon.stub(),
-        getItem: sinon.stub(),
-        removeItem: sinon.stub(),
-      },
       location: {
         protocol: 'http:',
         hostname: 'localhost',
@@ -36,123 +31,72 @@ describe('Purger', () => {
 
   describe('appendToPurgeList', () => {
 
-    it('should handle null list', () => {
-      window.localStorage.setItem.returns();
-      window.localStorage.getItem.returns('[]');
-      const result = purger.appendToPurgeList();
-      chai.expect(result).to.equal(false);
-      chai.expect(window.localStorage.setItem.callCount).to.equal(0);
+    it('should handle null list', async () => {
+      await purger.appendToPurgeList(localDb, null);
+      chai.expect(localDb.get.callCount).to.equal(0);
     });
 
-    it('should handle empty list', () => {
-      window.localStorage.setItem.returns();
-      window.localStorage.getItem.returns('[]');
-      const result = purger.appendToPurgeList([]);
-      chai.expect(result).to.equal(false);
-      chai.expect(window.localStorage.setItem.callCount).to.equal(0);
+    it('should handle empty list', async () => {
+      await purger.appendToPurgeList(localDb, []);
+      chai.expect(localDb.get.callCount).to.equal(0);
     });
 
-    it('stores list', () => {
-      window.localStorage.setItem.returns();
-      window.localStorage.getItem.returns('[]');
-      const result = purger.appendToPurgeList(['a', 'b']);
-      chai.expect(result).to.equal(false);
-      chai.expect(window.localStorage.setItem.callCount).to.equal(1);
-      chai.expect(window.localStorage.setItem.args[0][0]).to.equal('cht-to-purge-list');
-      chai.expect(window.localStorage.setItem.args[0][1]).to.equal('["a","b"]');
+    it('stores list', async () => {
+      localDb.get.resolves({});
+      localDb.put.resolves();
+      await purger.appendToPurgeList(localDb, ['a', 'b']);
+      chai.expect(localDb.put.callCount).to.equal(1);
+      chai.expect(localDb.put.args[0][0].to_purge).to.deep.equal([ 'a', 'b' ]);
     });
 
-    it('updates list', () => {
-      window.localStorage.setItem.returns();
-      window.localStorage.getItem.returns('["c","d"]');
-      const result = purger.appendToPurgeList(['a', 'b']);
-      chai.expect(result).to.equal(false);
-      chai.expect(window.localStorage.setItem.callCount).to.equal(1);
-      chai.expect(window.localStorage.setItem.args[0][0]).to.equal('cht-to-purge-list');
-      chai.expect(window.localStorage.setItem.args[0][1]).to.equal('["c","d","a","b"]');
+    it('updates list', async () => {
+      localDb.get.resolves({ to_purge: [ 'c', 'd' ] });
+      localDb.put.resolves();
+      await purger.appendToPurgeList(localDb, ['a', 'b']);
+      chai.expect(localDb.put.args[0][0].to_purge).to.deep.equal([ 'c', 'd', 'a', 'b' ]);
     });
 
-    it('removes duplicates', () => {
-      window.localStorage.setItem.returns();
-      window.localStorage.getItem.returns('["c","a"]');
-      const result = purger.appendToPurgeList(['a', 'b']);
-      chai.expect(result).to.equal(false);
-      chai.expect(window.localStorage.setItem.callCount).to.equal(1);
-      chai.expect(window.localStorage.setItem.args[0][0]).to.equal('cht-to-purge-list');
-      chai.expect(window.localStorage.setItem.args[0][1]).to.equal('["c","a","b"]');
-    });
-
-    it('returns true when full', () => {
-      const toPurge = Array.from(Array(999).keys()).map(k => `${k}`);
-      window.localStorage.setItem.returns();
-      window.localStorage.getItem.returns(JSON.stringify(toPurge));
-      const result = purger.appendToPurgeList(['a', 'b']);
-      chai.expect(result).to.equal(true);
-      chai.expect(window.localStorage.setItem.callCount).to.equal(1);
+    it('removes duplicates', async () => {
+      localDb.get.resolves({ to_purge: [ 'c', 'a' ] });
+      localDb.put.resolves();
+      await purger.appendToPurgeList(localDb, ['a', 'b']);
+      chai.expect(localDb.put.args[0][0].to_purge).to.deep.equal([ 'c', 'a', 'b' ]);
     });
 
   });
 
-  describe('getToPurgeList', () => {
-
-    it('should return empty list when localstorage is null', () => {
-      window.localStorage.getItem.returns(null);
-      const result = purger.getToPurgeList();
-      chai.expect(result.length).to.equal(0);
-    });
-
-    it('should return empty list when localstorage is empty string', () => {
-      window.localStorage.getItem.returns('');
-      const result = purger.getToPurgeList();
-      chai.expect(result.length).to.equal(0);
-    });
-
-    it('should return empty list when localstorage is empty array', () => {
-      window.localStorage.getItem.returns('[]');
-      const result = purger.getToPurgeList();
-      chai.expect(result.length).to.equal(0);
-    });
-
-    it('should return empty list when localstorage does not parse', () => {
-      window.localStorage.getItem.returns('["lskdfj');
-      const result = purger.getToPurgeList();
-      chai.expect(result.length).to.equal(0);
-    });
-
-    it('should return list when localstorage returns list', () => {
-      window.localStorage.getItem.returns('["a", "b"]');
-      const result = purger.getToPurgeList();
-      chai.expect(result.length).to.equal(2);
-      chai.expect(result[0]).to.equal('a');
-      chai.expect(result[1]).to.equal('b');
-    });
-
-  });
-
-  describe('purge', () => {
+  describe('purgeMain', () => {
     let clock;
     beforeEach(() => clock = sinon.useFakeTimers());
     afterEach(() => clock.restore());
 
-    it('should "purge" all returned ids and creates purgelog when finished', () => {
-      const toPurge = ['id1', 'id2', 'id3'];
+    it('should do nothing when no purge log found', () => {
+      localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
+      return purger.purgeMain(localDb, userCtx).then(() => {
+        chai.expect(localDb.allDocs.callCount).to.equal(0);
+        chai.expect(localDb.put.callCount).to.equal(0);
+      });
+    });
 
+    it('should "purge" all returned ids and updates purgelog when finished', () => {
+      const toPurge = [ 'id1', 'id2', 'id3' ];
       localDb.allDocs
-        .withArgs({ keys: ['id1', 'id2', 'id3'] })
+        .withArgs({ keys: toPurge })
         .resolves({ rows: [
           { id: 'id1', key: 'id1', value: { rev: '11-abc' } },
           { id: 'id2', key: 'id2', value: { rev: '12-abc' } },
           { id: 'id3', key: 'id3', value: { rev: '13-abc' } },
         ]});
-
       localDb.bulkDocs.resolves([]);
-      localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
+      localDb.get.resolves({
+        _id: '_local/purgelog',
+        to_purge: toPurge
+      });
       localDb.put.resolves();
       clock.tick(10000);
       userCtx.roles = ['two', 'one', 'two', 'one', 'three'];
-      window.localStorage.removeItem.returns();
 
-      return purger.purge(localDb, userCtx, toPurge).then(() => {
+      return purger.purgeMain(localDb, userCtx).then(() => {
         chai.expect(localDb.allDocs.callCount).to.equal(1);
         chai.expect(localDb.allDocs.args[0]).to.deep.equal([{ keys: ['id1', 'id2', 'id3'] }]);
         chai.expect(localDb.bulkDocs.callCount).to.equal(1);
@@ -161,24 +105,22 @@ describe('Purger', () => {
           { _id: 'id2', _rev: '12-abc', _deleted: true, purged: true },
           { _id: 'id3', _rev: '13-abc', _deleted: true, purged: true },
         ]]);
-        chai.expect(localDb.get.callCount).to.equal(1);
-        chai.expect(localDb.get.args[0]).to.deep.equal(['_local/purgelog']);
-        chai.expect(localDb.put.callCount).to.equal(1);
-        chai.expect(localDb.put.args[0]).to.deep.equal([{
+        chai.expect(localDb.get.callCount).to.equal(3);
+        chai.expect(localDb.get.args[0][0]).to.equal('_local/purgelog');
+        chai.expect(localDb.put.callCount).to.equal(2);
+        chai.expect(localDb.put.args[0][0]).to.deep.equal({
           _id: '_local/purgelog',
           date: 10000,
           count: 3,
           roles: JSON.stringify(['one', 'three', 'two']),
-          history: [ { date: 10000, count: 3, roles: JSON.stringify(['one', 'three', 'two']) } ]
-        }]);
-        chai.expect(window.localStorage.removeItem.callCount).to.equal(1);
-        chai.expect(window.localStorage.removeItem.args[0][0]).to.equal('cht-to-purge-list');
+          history: [ { date: 10000, count: 3, roles: JSON.stringify(['one', 'three', 'two']) } ],
+          to_purge: []
+        });
       });
     });
 
     it('should skip updating docs that are not found', () => {
       const toPurge = ['id1', 'id2', 'id3', 'id4'];
-
       localDb.allDocs
         .withArgs({ keys: toPurge })
         .resolves({ rows: [
@@ -211,22 +153,23 @@ describe('Purger', () => {
           { date: 200, count: 5, roles: rolesJsonTwo },
           { date: 100, count: 5, roles: rolesJsonTwo },
           { date: 0, count: 5, roles: rolesJsonTwo },
-        ]
+        ],
+        to_purge: toPurge
       });
       localDb.put.resolves();
       clock.tick(5000);
       userCtx.roles = ['c', 'b', 'a', 'a', 'b', '1', '3'];
 
-      return purger.purge(localDb, userCtx, toPurge).then(() => {
+      return purger.purgeMain(localDb, userCtx).then(() => {
         chai.expect(localDb.allDocs.callCount).to.equal(1);
         chai.expect(localDb.allDocs.args[0]).to.deep.equal([{ keys: ['id1', 'id2', 'id3', 'id4'] }]);
         chai.expect(localDb.bulkDocs.callCount).to.equal(1);
         chai.expect(localDb.bulkDocs.args[0])
           .to.deep.equal([[{ _id: 'id3', _rev: '13-abc', _deleted: true, purged: true }]]);
 
-        chai.expect(localDb.get.callCount).to.equal(1);
+        chai.expect(localDb.get.callCount).to.equal(3);
         chai.expect(localDb.get.args[0]).to.deep.equal(['_local/purgelog']);
-        chai.expect(localDb.put.callCount).to.equal(1);
+        chai.expect(localDb.put.callCount).to.equal(2);
         chai.expect(localDb.put.args[0]).to.deep.equal([{
           _id: '_local/purgelog',
           date: 5000,
@@ -243,13 +186,19 @@ describe('Purger', () => {
             { date: 600, count: 5, roles: rolesJson },
             { date: 500, count: 5, roles: rolesJson },
             { date: 400, count: 5, roles: rolesJson },
-          ]
+          ],
+          to_purge: []
         }]);
       });
     });
 
     it('should throw an error when purge save is not successful', () => {
       const toPurge = ['id1', 'id2', 'id3'];
+
+      localDb.get.resolves({
+        _id: '_local/purgelog',
+        to_purge: toPurge
+      });
 
       localDb.allDocs
         .withArgs({ keys: toPurge })
@@ -265,48 +214,12 @@ describe('Purger', () => {
         { id: 'id3', error: 'whatever' }
       ]);
 
-      return purger.purge(localDb, userCtx, toPurge).catch((err) => {
+      return purger.purgeMain(localDb, userCtx).catch((err) => {
         chai.expect(err.message.startsWith('Not all documents purged successfully')).to.equal(true);
         chai.expect(localDb.allDocs.callCount).to.equal(1);
         chai.expect(localDb.bulkDocs.callCount).to.equal(1);
-        chai.expect(localDb.get.callCount).to.equal(0);
+        chai.expect(localDb.get.callCount).to.equal(1);
         chai.expect(localDb.put.callCount).to.equal(0);
-      });
-    });
-  });
-
-  describe('shouldPurgeMeta', () => {
-    beforeEach(() => {
-      localDb = {
-        get: sinon.stub(),
-        put: sinon.stub(),
-        changes: sinon.stub(),
-        bulkDocs: sinon.stub(),
-      };
-    });
-
-    it('should return false if no purgelog document exists', () => {
-      localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
-      return purger.shouldPurgeMeta(localDb).then(result => {
-        chai.expect(result).to.be.false;
-        chai.expect(localDb.get.callCount).to.equal(1);
-        chai.expect(localDb.get.args[0]).to.deep.equal(['_local/purgelog']);
-      });
-    });
-
-    it('should return false if purge log document exists, but lacks a synced seq', () => {
-      localDb.get.withArgs('_local/purgelog').resolves({ _id: '_local/purgelog' });
-      return purger.shouldPurgeMeta(localDb).then(result => {
-        chai.expect(result).to.be.false;
-      });
-    });
-
-    it('should return true when purgelog exists and synced_seq is set', () => {
-      localDb.get.withArgs('_local/purgelog').resolves({ _id: '_local/purgelog', synced_seq: 1000 });
-      return purger.shouldPurgeMeta(localDb).then(result => {
-        chai.expect(result).to.be.true;
-        chai.expect(localDb.get.callCount).to.equal(1);
-        chai.expect(localDb.get.args[0]).to.deep.equal(['_local/purgelog']);
       });
     });
   });
@@ -320,6 +233,20 @@ describe('Purger', () => {
         bulkDocs: sinon.stub(),
         allDocs: sinon.stub(),
       };
+    });
+
+    it('does nothing if no purgelog doc exists', () => {
+      localDb.get.withArgs('_local/purgelog').rejects({ status: 404 });
+      return purger.purgeMeta(localDb).then(() => {
+        chai.expect(localDb.changes.callCount).to.equal(0);
+      });
+    });
+
+    it('does nothing purge log document exists, but lacks a synced seq', () => {
+      localDb.get.withArgs('_local/purgelog').resolves({ _id: '_local/purgelog' });
+      return purger.purgeMeta(localDb).then(() => {
+        chai.expect(localDb.changes.callCount).to.equal(0);
+      });
     });
 
     it('should iterate over 1000 changes between two sequences', () => {

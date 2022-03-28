@@ -245,44 +245,27 @@
         }
       })
       .then(() => {
-        const toPurge = purger.getToPurgeList();
-        if (!toPurge || !toPurge.length) {
-          return;
-        }
         const purgeStarted = performance.now();
         return purger
-          .purge(localDb, userCtx, toPurge)
+          .purgeMain(localDb, userCtx)
           .on('start', () => setUiStatus('PURGE_INIT'))
           .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
+          .on('done', () => window.startupTimes.purge = performance.now() - purgeStarted)
           .catch(err => {
-            console.error('Error attempting to purge', err);
+            console.error('Error attempting to purge main db - continuing', err);
             window.startupTimes.purgingFailed = err.message;
-          })
-          .then(() => window.startupTimes.purge = performance.now() - purgeStarted);
+          });
       })
       .then(() => {
-        let purgeMetaStarted;
+        const purgeMetaStarted = performance.now();
         return purger
-          .shouldPurgeMeta(localMetaDb)
-          .then(shouldPurgeMeta => {
-            window.startupTimes.purgingMeta = shouldPurgeMeta;
-
-            if (!shouldPurgeMeta) {
-              return;
-            }
-
-            purgeMetaStarted = performance.now();
-            setUiStatus('PURGE_META');
-            return purger.purgeMeta(localMetaDb);
-          })
+          .purgeMeta(localMetaDb)
+          .on('should-purge', shouldPurge => window.startupTimes.purgingMeta = shouldPurge)
+          .on('start', () => setUiStatus('PURGE_META'))
+          .on('done', () => window.startupTimes.purgeMeta = performance.now() - purgeMetaStarted)
           .catch(err => {
-            console.error('Error attempting to purge meta', err);
+            console.error('Error attempting to purge meta db - continuing', err);
             window.startupTimes.purgingMetaFailed = err.message;
-          })
-          .then(() => {
-            if (purgeMetaStarted) {
-              window.startupTimes.purgeMeta = performance.now() - purgeMetaStarted;
-            }
           });
       })
       .then(() => setUiStatus('STARTING_APP'))
