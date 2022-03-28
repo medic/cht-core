@@ -75,9 +75,7 @@ if (UNIT_TEST_ENV) {
   module.exports.medicUsersMeta = new PouchDB(`${environment.couchUrl}-users-meta`, { fetch });
   module.exports.medicLogs = new PouchDB(`${environment.couchUrl}-logs`, { fetch });
   module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch });
-  module.exports.vault = new PouchDB(`${environment.couchUrl}-vault`, { fetch });
-  module.exports.vault.info(); // create the db if it doesn't exist
-  module.exports.users = new PouchDB(getDbUrl('/_users'));
+  module.exports.users = new PouchDB(getDbUrl('/_users'), { fetch });
   module.exports.builds = new PouchDB(environment.buildsUrl);
 
   // Get the DB with the given name
@@ -96,7 +94,7 @@ if (UNIT_TEST_ENV) {
 
   // Resolves with the PouchDB object if the DB with the given name exists
   module.exports.exists = name => {
-    const db = new PouchDB(getDbUrl(name), { skip_setup: true });
+    const db = new PouchDB(getDbUrl(name), { skip_setup: true, fetch });
     return db.info()
       .then(result => {
         // In at least PouchDB 7.0.0, info() on a non-existent db doesn't throw,
@@ -106,19 +104,24 @@ if (UNIT_TEST_ENV) {
       .catch(() => false);
   };
 
-  module.exports.allDbs = () => rpn.get({ uri: `${environment.serverUrl}/_all_dbs`, json: true });
+  module.exports.allDbs = () => rpn.get({
+    uri: `${environment.serverUrl}/_all_dbs`,
+    json: true
+  });
 
   module.exports.activeTasks = () => {
-    return rpn({
-      url: `${environment.serverUrl}/_active_tasks`,
-      json: true
-    }).then(tasks => {
-      // TODO: consider how to filter these just to the active database.
-      // On CouchDB 2.x you only get the shard name, which looks like:
-      // shards/80000000-ffffffff/medic.1525076838
-      // On CouchDB 1.x (I think) you just get the exact DB name
-      return tasks;
-    });
+    return rpn
+      .get({
+        url: `${environment.serverUrl}/_active_tasks`,
+        json: true
+      })
+      .then(tasks => {
+        // TODO: consider how to filter these just to the active database.
+        // On CouchDB 2.x you only get the shard name, which looks like:
+        // shards/80000000-ffffffff/medic.1525076838
+        // On CouchDB 1.x (I think) you just get the exact DB name
+        return tasks;
+      });
   };
 
   /**

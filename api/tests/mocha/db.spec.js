@@ -1,6 +1,8 @@
 const sinon = require('sinon');
+require('chai').use(require('chai-as-promised'));
 const { expect } = require('chai');
 const rewire = require('rewire');
+const rpn = require('request-promise-native');
 
 let db;
 let unitTestEnv;
@@ -74,6 +76,86 @@ describe('db', () => {
       } catch (err) {
         expect(err).to.deep.equal({ some: 'err' });
       }
+    });
+  });
+
+  describe('get', () => {
+    it('should create the database', () => {
+      sinon.stub(env, 'serverUrl').value('https://couch.db');
+      const database = db.get('database');
+      expect(database.name).to.equal('https://couch.db/database');
+    });
+  });
+
+  describe('close', () => {
+    it('should call db.close', () => {
+      const database = { close: sinon.stub() };
+      db.close(database);
+      expect(database.close.callCount).to.equal(1);
+    });
+
+    it('should not fail when db is not defined', () => {
+      db.close();
+      db.close({});
+    });
+
+    it('should not close when already closed', () => {
+      const database = { close: sinon.stub(), _closed: true };
+      db.close(database);
+      expect(database.close.callCount).to.equal(0);
+    });
+
+    it('should not close when destroyed', () => {
+      const database = { close: sinon.stub(), _destroyed: true };
+      db.close(database);
+      expect(database.close.callCount).to.equal(0);
+    });
+
+    it('should catch close errors', () => {
+      const database = { close: sinon.stub().throws({ error: 'omg' }) };
+      db.close(database);
+    });
+  });
+
+  describe('activeTasks', () => {
+    it('should return active tasks', async () => {
+      sinon.stub(env, 'serverUrl').value('https://couch.db');
+      sinon.stub(rpn, 'get').resolves('active_tasks');
+
+      expect(await db.activeTasks()).to.equal('active_tasks');
+
+      expect(rpn.get.callCount).to.equal(1);
+      expect(rpn.get.args[0]).to.deep.equal([{
+        url: 'https://couch.db/_active_tasks',
+        json: true,
+      }]);
+    });
+
+    it('should throw error', async () => {
+      sinon.stub(rpn, 'get').rejects(new Error('boom'));
+      await expect(db.activeTasks()).to.be.rejectedWith('boom');
+      expect(rpn.get.callCount).to.equal(1);
+    });
+  });
+
+  describe('allDbs', () => {
+    it('should return all databases', async () => {
+      sinon.stub(env, 'serverUrl').value('https://couch.db');
+      sinon.stub(rpn, 'get').resolves(['db1', 'db2']);
+
+      expect(await db.allDbs()).to.deep.equal(['db1', 'db2']);
+
+      expect(rpn.get.callCount).to.equal(1);
+      expect(rpn.get.args[0]).to.deep.equal([{
+        uri: 'https://couch.db/_all_dbs',
+        json: true,
+      }]);
+    });
+
+    it('should throw error', async () => {
+      sinon.stub(rpn, 'get').rejects(new Error('boom'));
+      await expect(db.allDbs()).to.be.rejectedWith('boom');
+      expect(rpn.get.callCount).to.equal(1);
     });
   });
 });

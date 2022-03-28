@@ -1,8 +1,9 @@
-const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/common/common.po.js');
-const messagesElements = require('../../../page-objects/messages/messages.po');
-const reportsElements = require('../../../page-objects/reports/reports.po');
-const helper = require('../../../helper');
+const utils = require('../utils');
+const constants = require('../constants');
+const commonElements = require('../page-objects/common/common.po.js');
+const messagesElements = require('../page-objects/messages/messages.po');
+const reportsElements = require('../page-objects/reports/reports.po');
+const helper = require('../helper');
 const querystring = require('querystring');
 
 const messageGatewayRef1 = 'f0f237ab-dd34-44a8-9f17-caaa022be947';
@@ -16,8 +17,7 @@ const messageContent1 = 'Thank you for registering Shannon. Their pregnancy ID i
 const messageContent2 = 'Please remind Shannon (28551) to visit the health facility for ANC visit this week. ' +
   'When she does let us know with "V 28551". Thanks!';
 
-const CREDENTIAL_PASS = 'yabbadabbadoo';
-const CREDENTIAL_KEY = 'africastalking.com:incoming';
+const INCOMING_KEY = 'yabbadabbadoo';
 
 const report = {
   type: 'data_record',
@@ -138,14 +138,21 @@ const report = {
 
 describe('africas talking api', () => {
 
-  beforeAll(() => utils.saveCredentials(CREDENTIAL_KEY, CREDENTIAL_PASS));
+  beforeAll(() => {
+    return utils.request({
+      port: constants.COUCH_PORT,
+      method: 'PUT',
+      path: `/_node/_local/_config/medic-credentials/africastalking.com:incoming`,
+      body: `${INCOMING_KEY}`
+    });
+  });
 
   describe('- gateway submits new WT sms messages', () => {
     const submitSms = body => {
       const content = querystring.stringify(body);
       return utils.request({
         method: 'POST',
-        path: `/api/v1/sms/africastalking/incoming-messages?key=${CREDENTIAL_PASS}`,
+        path: `/api/v1/sms/africastalking/incoming-messages?key=${INCOMING_KEY}`,
         body: content,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -198,7 +205,7 @@ describe('africas talking api', () => {
       const content = querystring.stringify(body);
       return utils.request({
         method: 'POST',
-        path: `/api/v1/sms/africastalking/delivery-reports?key=${CREDENTIAL_PASS}`,
+        path: `/api/v1/sms/africastalking/delivery-reports?key=${INCOMING_KEY}`,
         body: content,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -224,7 +231,7 @@ describe('africas talking api', () => {
 
     afterEach(() => utils.deleteDoc(savedDoc));
 
-    xit('- shows content', async () => {
+    it('- shows content', async () => {
       await commonElements.goToReportsNative();
       const firstReport = reportsElements.firstReport();
 

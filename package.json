@@ -14,9 +14,8 @@
   "scripts": {
     "test": "grunt eslint && grunt unit && grunt test-api-integration && grunt e2e",
     "webdriver": "webdriver-manager update && webdriver-manager start",
-    "wdio-setup": "rm -rf allure-results allure-report && grunt e2e-env-setup",
-    "wdio-local": "npm run wdio-setup && wdio run ./tests/wdio.conf.js",
-    "wdio-standard-local": "npm run wdio-setup && wdio run ./tests/wdio-standard.conf.js",
+    "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/wdio.conf.js",
+    "wdio-standard-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/wdio-standard.conf.js",
     "e2e-integration": "mocha --config tests/integration/.mocharc.js ",
     "wdio": "wdio run ./tests/wdio.conf.js",
     "wdio-standard": "wdio run ./tests/wdio-standard.conf.js"

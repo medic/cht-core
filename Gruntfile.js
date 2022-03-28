@@ -4,11 +4,11 @@ const fs = require('fs');
 const path = require('path');
 
 const {
-  COUCH_NODE_NAME,
   MARKET_URL,
   BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
+  ECR_REPO,
 } = process.env;
 
 const DEV = !BUILD_NUMBER;
@@ -17,6 +17,7 @@ const buildUtils = require('./scripts/build');
 const couchConfig = buildUtils.getCouchConfig();
 
 const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
+const SERVICES = ['api', 'sentinel'];
 
 const getSharedLibDirs = () => {
   return fs
@@ -139,6 +140,13 @@ module.exports = function(grunt) {
         options: {
           add: {
             UNIT_TEST_ENV: '1',
+          },
+        },
+      },
+      'version': {
+        options: {
+          add: {
+            VERSION: buildUtils.getVersion(),
           },
         },
       }
@@ -277,32 +285,33 @@ module.exports = function(grunt) {
         stdio: 'inherit', // enable colors!
       },
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
-      'pack-node-modules': {
-        cmd: ['api', 'sentinel']
-          .map(module =>
+      'build-service-images': {
+        cmd: () => SERVICES
+          .map(service =>
             [
-              `cd ${module}`,
+              `cd ${service}`,
               `npm ci --production`,
               `npm dedupe`,
-              `npm pack`,
-              `ls -l medic-${module}-0.1.0.tgz`,
-              `mv medic-*.tgz ../build/staging/_attachments/`,
-              `cd ..`,
+              `cd ../`,
+              `docker build -f ./${service}/Dockerfile --tag ${buildUtils.getImageTag(service)} .`,
             ].join(' && ')
           )
           .join(' && '),
       },
-      'bundle-dependencies': {
-        cmd: () => {
-          ['api', 'sentinel'].forEach(module => {
-            const filePath = `${module}/package.json`;
-            const pkg = this.file.readJSON(filePath);
-            pkg.bundledDependencies = Object.keys(pkg.dependencies);
-            this.file.write(filePath, JSON.stringify(pkg, undefined, '  ') + '\n');
-            console.log(`Updated 'bundledDependencies' for ${filePath}`); // eslint-disable-line no-console
-          });
-          return 'echo "Node module dependencies updated"';
-        },
+      'save-service-images': {
+        cmd: () => SERVICES
+          .map(service =>
+            [
+              `mkdir -p images`,
+              `docker save ${buildUtils.getImageTag(service)} > images/${service}.tar`,
+            ].join(' && ')
+          )
+          .join(' && '),
+      },
+      'push-service-images': {
+        cmd: () => SERVICES
+          .map(service => `docker push ${buildUtils.getImageTag(service)}`)
+          .join(' && '),
       },
       'api-dev': {
         cmd:
@@ -321,19 +330,15 @@ module.exports = function(grunt) {
       },
       'setup-admin': {
         cmd:
-          ` curl -X PUT ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/admins/admin')} -d '"${couchConfig.password}"'` +
-          ` && curl -X PUT --data '"true"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/chttpd/require_valid_user')}` +
-          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/httpd/max_http_request_size')}` +
+          ` curl -X PUT ${couchConfig.withPathNoAuth(`_node/_local/_config/admins/${couchConfig.username}`)} -d '"${couchConfig.password}"'` +
+          ` && curl -X PUT --data '"true"' ${couchConfig.withPathNoAuth('_node/_local/_config/chttpd/require_valid_user')}` +
+          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/_local/_config/httpd/max_http_request_size')}` +
           ` && curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}`
       },
       'setup-test-database': {
         cmd: [
-          `docker run -d -p 4984:5984 -p 4986:5986 --rm --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data couchdb:2`,
-          'sh scripts/e2e/wait_for_response_code.sh 4984 200 couch',
-          `curl 'http://localhost:4984/_cluster_setup' -H 'Content-Type: application/json' --data-binary '{"action":"enable_single_node","username":"admin","password":"pass","bind_address":"0.0.0.0","port":5984,"singlenode":true}'`,
-          'COUCH_URL=http://admin:pass@localhost:4984/medic COUCH_NODE_NAME=nonode@nohost grunt secure-couchdb', // yo dawg, I heard you like grunt...
-          // Useful for debugging etc, as it allows you to use Fauxton easily
-          `curl -X PUT "http://admin:pass@localhost:4984/_node/nonode@nohost/_config/httpd/WWW-Authenticate" -d '"Basic realm=\\"administrator\\""' -H "Content-Type: application/json"`
+          `docker run -d -p 4984:5984 -p 4986:5986 -e COUCHDB_PASSWORD=pass -e COUCHDB_USER=admin --rm --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data medicmobile/cht-couchdb:clustered-test4`,
+          'sh scripts/e2e/wait_for_response_code.sh 4984 401 couch',
         ].join('&& ')
       },
       'wait_for_api_down': {
@@ -348,14 +353,11 @@ module.exports = function(grunt) {
         ].join('&& '),
         exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
-      'e2e-servers': {
-        cmd: `${DEV ? 'node ./scripts/e2e/e2e-servers.js &' : 'echo running in CI' }`
-      },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
-      'setup-api-integration': {
-        cmd: `cd api && npm ci}`,
+      'npm-ci-api': {
+        cmd: `cd api && npm ci`,
       },
       'npm-ci-shared-libs': {
         cmd: (production) => {
@@ -385,9 +387,9 @@ module.exports = function(grunt) {
           'scripts/e2e/start_webdriver.sh'
       },
       'check-env-vars':
-        'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
+        'if [ -z $COUCH_URL ]; then ' +
         'echo "Missing required env var.  Check that all are set: ' +
-        'COUCH_URL, COUCH_NODE_NAME" && exit 1; fi',
+        'COUCH_URL" && exit 1; fi',
       'check-version': `node scripts/ci/check-versions.js`,
       'undo-patches': {
         cmd: function() {
@@ -808,7 +810,6 @@ module.exports = function(grunt) {
     'build-admin',
     'build-config',
     'create-staging-doc',
-    'build-node-modules',
     'populate-staging-doc',
   ]);
 
@@ -856,12 +857,12 @@ module.exports = function(grunt) {
     'notify:deployed',
   ]);
 
-  grunt.registerTask('build-node-modules', 'Build and pack api and sentinel bundles', [
+  grunt.registerTask('build-service-images', 'Build api and sentinel images', [
     'copy-static-files-to-api',
     'uglify:api',
     'cssmin:api',
-    'exec:bundle-dependencies',
-    'exec:pack-node-modules',
+    'env:version',
+    'exec:build-service-images',
   ]);
 
   grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
@@ -875,21 +876,16 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('e2e-env-setup', 'Deploy app for testing', [
-    'exec:clean-test-database',
-    'exec:setup-test-database',
-    'couch-push:test',
-    'exec:e2e-servers',
+    'build-service-images',
   ]);
 
   grunt.registerTask('e2e-web', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
     'protractor:e2e-web-tests',
-    'exec:clean-test-database',
   ]);
   grunt.registerTask('e2e-mobile', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
     'protractor:e2e-mobile-tests',
-    'exec:clean-test-database',
   ]);
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
@@ -911,7 +907,7 @@ module.exports = function(grunt) {
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
     'exec:clean-test-database',
     'exec:setup-test-database',
-    'build-node-modules',
+    'build-service-images',
     'couch-compile:secondary',
     'couch-compile:primary',
     'couch-push:test',
@@ -938,7 +934,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test-api-integration', 'Integration tests for medic-api', [
     'exec:check-env-vars',
-    'exec:setup-api-integration',
+    'exec:npm-ci-api',
     'mochaTest:api-integration',
   ]);
 
@@ -979,41 +975,34 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'start-webdriver',
-    'exec:e2e-servers',
     'protractor:e2e-web-tests',
     //'protractor:e2e-mobile-tests',
   ]);
   grunt.registerTask('ci-e2e-mobile', 'Run e2e tests for CI', [
     'start-webdriver',
-    'exec:e2e-servers',
     'protractor:e2e-mobile-tests',
   ]);
 
   grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
-    'exec:e2e-servers',
     'exec:e2e-integration',
     'exec:eslint-sw',
   ]);
 
   grunt.registerTask('ci-e2e-cht', 'Run e2e tests for CI', [
     'start-webdriver',
-    'exec:e2e-servers',
     'protractor:e2e-cht-release-tests'
   ]);
 
   grunt.registerTask('ci-webdriver-default', 'Run e2e tests using webdriverIO for default config', [
-    'exec:e2e-servers',
     'exec:wdio-run-default'
   ]);
 
   grunt.registerTask('ci-webdriver-standard', 'Run e2e tests using webdriverIO for standard config', [
-    'exec:e2e-servers',
     'exec:wdio-run-standard'
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
     'start-webdriver',
-    'exec:e2e-servers',
     'protractor:performance-tests-and-services',
   ]);
 
@@ -1059,7 +1048,21 @@ module.exports = function(grunt) {
   });
   grunt.registerTask('set-ddocs-version', buildUtils.setDdocsVersion);
 
-  grunt.registerTask('publish-for-testing', 'Publish the staging doc to the testing server', [
+  grunt.registerTask('publish-service-images', 'Publish service images', (() => {
+    if (!BUILD_NUMBER) {
+      return [];
+    }
+
+    if (ECR_REPO) {
+      return ['exec:push-service-images'];
+    }
+
+    return ['exec:save-service-images'];
+  })());
+
+  grunt.registerTask('publish-for-testing', 'Build and publish service images, publish the staging doc to the testing server', [
+    'build-service-images',
+    'publish-service-images',
     'couch-compile:staging',
     'couch-push:testing',
   ]);
