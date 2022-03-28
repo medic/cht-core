@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const rpn = require('request-promise-native');
 const mustache = require('mustache');
+const versions = require('./versions');
 
 const {
   TAG,
@@ -10,7 +11,6 @@ const {
   BRANCH,
   BUILD_NUMBER,
   API_PORT,
-  ECR_REPO,
 } = process.env;
 const DEFAULT_API_PORT = 5988;
 
@@ -46,37 +46,6 @@ const getApiUrl = (pathname = '') => {
 };
 
 const releaseName = TAG || BRANCH || 'local-development';
-const buildTime = new Date().getTime();
-
-const getVersion = (release) => {
-  if (TAG) {
-    return TAG;
-  }
-  if (BRANCH) {
-    return getBranchVersion(release);
-  }
-
-  if (process.env.VERSION) {
-    return process.env.VERSION;
-  }
-
-  return `${packageJson.version}-dev.${buildTime}`;
-};
-
-const getBranchVersion = (release) => {
-  const base = BRANCH === 'master' ? `${packageJson.version}-alpha` : `${packageJson.version}-${BRANCH}`;
-  return release ? base : `${base}.${BUILD_NUMBER}`;
-};
-
-const getRepo = (repo) => {
-  return repo || ECR_REPO || 'medicmobile';
-};
-
-const getImageTag = (service, repo = ECR_REPO, release = false) => {
-  const version = getVersion(release);
-  const tag = version.replace(/\//g, '-');
-  return service ? `${getRepo(repo)}/cht-${service}:${tag}` : tag;
-};
 
 const setBuildInfo = () => {
   const buildInfoPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'build_info');
@@ -138,8 +107,8 @@ const saveDockerComposeFile = () => {
 
   const view = {
     couchdb_image: 'medicmobile/cht-couchdb:clustered-test4',
-    repo: getRepo(),
-    tag: getImageTag(undefined, undefined, true),
+    repo: versions.getRepo(),
+    tag: versions.getImageTag(undefined, undefined, true),
   };
 
   const output = mustache.render(template, view);
@@ -154,11 +123,11 @@ const saveServiceTags = () => {
   const tags = [
     {
       container_name: 'cht-api',
-      image: getImageTag('api', undefined, true),
+      image: versions.getImageTag('api', undefined, true),
     },
     {
       container_name: 'cht-sentinel',
-      image: getImageTag('sentinel', undefined, true),
+      image: versions.getImageTag('sentinel', undefined, true),
     },
   ];
   const tagsFilePath = path.resolve(stagingPath, 'tags.json');
@@ -186,7 +155,7 @@ const updateServiceWorker = () => {
 };
 
 const setDdocsVersion = () => {
-  const version = getVersion();
+  const version = versions.getVersion();
   const databases = fs.readdirSync(ddocsBuildPath);
   databases.forEach(database => {
     const dbPath = path.resolve(ddocsBuildPath, database);
@@ -208,7 +177,4 @@ module.exports = {
   createStagingDoc,
   populateStagingDoc,
   updateServiceWorker,
-  getImageTag,
-  getVersion,
-  SERVICES: ['api', 'sentinel'],
 };
