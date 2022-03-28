@@ -51,12 +51,10 @@ const purgeMain = (localDb, userCtx) => {
   };
 
   const batchedPurge = (ids) => {
-    console.debug(`~~~~~ batchedPurge :`, ids);
     if (!ids || !ids.length) {
       return;
     }
     const batch = ids.slice(0, BATCH_SIZE);
-    emit('purging batch', { batch: JSON.stringify(batch) });
     return purgeIds(localDb, batch)
       .then(nbr => {
         totalPurged += nbr;
@@ -69,7 +67,6 @@ const purgeMain = (localDb, userCtx) => {
     .then(() => {
       return getPurgeLog(localDb)
         .then(log => {
-          console.log('~~~~~~~~~~~~~', log);
           if (!log.to_purge || !log.to_purge.length) {
             return;
           }
@@ -193,17 +190,12 @@ const purgeIds = (db, ids) => {
     .allDocs({ keys: ids })
     .then(result => {
       const purgedDocs = [];
-      console.debug(`~~~~~ got rows :`, result.rows.length);
-      if (result.rows.length) {
-        console.debug(`~~~~~ first row :`, result.rows[0]);
-      }
       result.rows.forEach(row => {
         if (row.id && row.value && !row.value.deleted) {
           purgedDocs.push({ _id: row.id, _rev: row.value.rev, _deleted: true, purged: true });
         }
       });
       nbrPurged = purgedDocs.length;
-      console.debug(`~~~~~ purging :`, purgedDocs.length);
       return db.bulkDocs(purgedDocs);
     })
     .then(results => {
@@ -213,7 +205,6 @@ const purgeIds = (db, ids) => {
           errors += result.id + ' with ' + result.message + '; ';
         }
       });
-      console.debug(`~~~~~ errors :`, JSON.stringify(errors));
       if (errors) {
         throw new Error(`Not all documents purged successfully: ${errors}`);
       }

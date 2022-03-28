@@ -25,7 +25,7 @@ export class TestingComponent implements OnInit {
     private feedbackService: FeedbackService,
     private sessionService: SessionService,
     private cookieService: CookieService,
-    private purgeService:PurgeService,
+    private purgeService: PurgeService,
   ) { }
 
   ngOnInit(): void {
