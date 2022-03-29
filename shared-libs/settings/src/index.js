@@ -1,5 +1,7 @@
 const request = require('request-promise-native');
 
+const getCredentialId = key => `credential:${key}`;
+
 const getCouchNodeName = () => process.env.COUCH_NODE_NAME;
 
 const getCouchUrl = () => {
@@ -12,15 +14,11 @@ const getServerUrl = () => {
   return couchUrl && couchUrl.slice(0, couchUrl.lastIndexOf('/'));
 };
 
-const getCredentials = (key) => {
-  const couchUrl = getCouchUrl();
-  if (!couchUrl) {
-    return Promise.reject(new Error('Failed to find the CouchDB server'));
-  }
-  const vaultDbUrl = `${couchUrl}-vault`;
+const getVaultUrl = (key) => `${getCouchUrl()}-vault/${getCredentialId(key)}`;
+
+const getCredentialsDoc = (key) => {
   return request
-    .get(`${vaultDbUrl}/${key}`) // do we allow spaces in credential keys?
-    .then(doc => doc && doc.password)
+    .get(`${getVaultUrl(key)}`, { json: true }) // TODO do we allow spaces in credential keys?
     .catch(err => {
       if (err.statusCode === 404) {
         // No credentials defined
@@ -28,6 +26,24 @@ const getCredentials = (key) => {
       }
       // Throw it regardless so the process gets halted, we just error above for higher specificity
       throw err;
+    });
+};
+
+const getCredentials = (key) => {
+  return getCredentialsDoc(key)
+    .then(doc => doc && doc.password);
+};
+
+// TODO unit test
+const setCredentials = (key, password) => {
+  return getCredentialsDoc(key)
+    .then(doc => {
+      if (!doc) {
+        doc = { _id: getCredentialId(key) };
+      }
+      doc.password = password;
+
+      return request.put(`${getVaultUrl(key)}`, { json: true, body: doc });
     });
 };
 
@@ -65,6 +81,7 @@ const updateAdminPassword = (userName, password) => {
 
 module.exports = {
   getCredentials,
+  setCredentials,
   getCouchConfig,
   updateAdminPassword,
 };
