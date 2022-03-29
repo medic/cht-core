@@ -18,23 +18,28 @@ describe('Settings Shared Library', () => {
 
   describe('getCredentials', () => {
 
-    it('should throw error if no server url is set', () => {
-      environment.COUCH_URL = '';
+    beforeEach(() => {
+      environment.COUCH_URL = 'http://user:pass@server.com/medic';
+    });
+
+    it('rejects if no key given', () => {
+      sinon.stub(request, 'get').rejects({ statusCode: 403, message: 'no perms' });
 
       return lib
         .getCredentials()
         .then(() => expect.fail('exception expected'))
         .catch(err => {
-          expect(err.message).to.equal('Failed to find the CouchDB server');
+          expect(request.get.callCount).to.equal(0);
+          expect(err.message).to.equal('You must pass the key for the credentials you want');
         });
     });
 
+
     it('should throw error from request', () => {
-      environment.COUCH_URL = 'http://user:pass@server.com/medic';
       sinon.stub(request, 'get').rejects({ statusCode: 403, message: 'no perms' });
 
       return lib
-        .getCredentials()
+        .getCredentials('mykey')
         .then(() => expect.fail('exception expected'))
         .catch(err => {
           expect(request.get.callCount).to.equal(1);
@@ -43,7 +48,6 @@ describe('Settings Shared Library', () => {
     });
 
     it('should handle when permissions are not defined', () => {
-      environment.COUCH_URL = 'http://user:pass@server.com/medic';
       sinon.stub(request, 'get').rejects({ statusCode: 404 });
 
       return lib
@@ -54,7 +58,6 @@ describe('Settings Shared Library', () => {
     });
 
     it('should handle empty credentials', () => {
-      environment.COUCH_URL = 'http://user:pass@server.com/medic';
       sinon.stub(request, 'get').resolves({});
 
       return lib
@@ -64,7 +67,7 @@ describe('Settings Shared Library', () => {
         });
     });
 
-    it('should parse response format', () => {
+    it('should fetch the password from the doc', () => {
       environment.COUCH_URL = 'http://server.com/medic';
       sinon.stub(request, 'get').resolves({ password: 'mypass' });
 
@@ -73,11 +76,67 @@ describe('Settings Shared Library', () => {
         .then(actual => {
           expect(actual).to.equal('mypass');
           expect(request.get.callCount).to.equal(1);
-          expect(request.get.args[0][0]).to.equal('http://server.com/medic-vault/mykey');
+          expect(request.get.args[0][0]).to.equal('http://server.com/medic-vault/credential:mykey');
         });
     });
 
   });
+
+  describe('setCredentials', () => {
+
+    beforeEach(() => {
+      environment.COUCH_URL = 'http://user:pass@server.com/medic';
+    });
+
+    it('rejects if no key given', () => {
+      sinon.stub(request, 'get');
+      return lib.setCredentials()
+        .then(() => expect.fail('exception expected'))
+        .catch(err => {
+          expect(request.get.callCount).to.equal(0);
+          expect(err.message).to.equal('You must pass the key for the credentials you want');
+        });
+    });
+
+    it('rejects with error from request', () => {
+      sinon.stub(request, 'get').rejects({ message: 'down', statusCode: 503 });
+      return lib.setCredentials('mykey', 'mypass')
+        .then(() => expect.fail('exception expected'))
+        .catch(err => {
+          expect(request.get.callCount).to.equal(1);
+          expect(request.get.args[0][0]).to.equal('http://user:pass@server.com/medic-vault/credential:mykey');
+          expect(err.message).to.equal('down');
+        });
+    });
+
+    it('handles creating doc', () => {
+      sinon.stub(request, 'get').rejects({ message: 'missing', statusCode: 404 });
+      sinon.stub(request, 'put').resolves();
+      return lib.setCredentials('mykey', 'mypass')
+        .then(() => {
+          expect(request.get.callCount).to.equal(1);
+          expect(request.get.args[0][0]).to.equal('http://user:pass@server.com/medic-vault/credential:mykey');
+          expect(request.put.callCount).to.equal(1);
+          expect(request.put.args[0][0]).to.equal('http://user:pass@server.com/medic-vault/credential:mykey');
+          expect(request.put.args[0][1].body).to.deep.equal({ _id: 'credential:mykey', password: 'mypass' });
+        });
+    });
+
+    it('handles updating doc', () => {
+      sinon.stub(request, 'get').resolves({ _id: 'credential:mykey', _rev: '1', password: 'old' });
+      sinon.stub(request, 'put').resolves();
+      return lib.setCredentials('mykey', 'mypass')
+        .then(() => {
+          expect(request.get.callCount).to.equal(1);
+          expect(request.get.args[0][0]).to.equal('http://user:pass@server.com/medic-vault/credential:mykey');
+          expect(request.put.callCount).to.equal(1);
+          expect(request.put.args[0][0]).to.equal('http://user:pass@server.com/medic-vault/credential:mykey');
+          expect(request.put.args[0][1].body).to.deep.equal({ _id: 'credential:mykey', _rev: '1', password: 'mypass' });
+        });
+    });
+
+  });
+
 
   describe('getCouchConfig', () => {
 
