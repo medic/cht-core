@@ -34,6 +34,7 @@ const monitoring = require('./controllers/monitoring');
 const africasTalking = require('./controllers/africas-talking');
 const rapidPro = require('./controllers/rapidpro');
 const infodoc = require('./controllers/infodoc');
+const credentials = require('./controllers/credentials');
 const authorization = require('./middleware/authorization');
 const deprecation = require('./middleware/deprecation');
 const hydration = require('./controllers/hydration');
@@ -495,6 +496,16 @@ app.get(
   authorization.handleAuthErrors,
   authorization.onlineUserPassThrough,
   purgedDocsController.checkpoint
+);
+
+// TODO update cht-docs, eg:
+//   curl -X PUT -H "Content-Type: text/plain" -d 'pass' http://admin:pass@localhost:5988/api/v1/credentials/kie
+app.put(
+  '/api/v1/credentials/:key',
+  authorization.handleAuthErrors,
+  authorization.offlineUserFirewall,
+  textParser,
+  credentials.put
 );
 
 app.get('/api/v1/users-doc-count', replicationLimitLogController.get);

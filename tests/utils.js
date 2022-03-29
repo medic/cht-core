@@ -948,9 +948,9 @@ module.exports = {
 
   saveCredentials: (key, password) => {
     const options = {
-      path: `/${constants.DB_NAME}-vault/${key}`,
+      path: `/api/v1/credentials/${key}`,
       method: 'PUT',
-      body: JSON.stringify({ password })
+      body: password
     };
     return request(options);
   },
