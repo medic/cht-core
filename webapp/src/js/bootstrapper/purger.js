@@ -32,10 +32,12 @@ const appendToPurgeList = (localDb, ids) => {
     });
 };
 
-const clearToPurgeList = (localDb) => {
+const removeFromToPurgeList = (localDb, docIds) => {
   return getPurgeLog(localDb)
     .then(log => {
-      log.to_purge = [];
+      log.to_purge = log.to_purge.filter(id => {
+        return docIds.indexOf(id) === -1;
+      });
       return localDb.put(log);
     });
 };
@@ -60,6 +62,7 @@ const purgeMain = (localDb, userCtx) => {
         totalPurged += nbr;
         emit('progress', { purged: totalPurged });
       })
+      .then(() => removeFromToPurgeList(localDb, batch))
       .then(() => batchedPurge(ids.slice(BATCH_SIZE)));
   };
 
@@ -73,7 +76,6 @@ const purgeMain = (localDb, userCtx) => {
           emit('start');
           return batchedPurge(log.to_purge)
             .then(() => writePurgeLog(localDb, totalPurged, userCtx))
-            .then(() => clearToPurgeList(localDb))
             .then(() => emit('done', { totalPurged }));
         });
     });

@@ -43,19 +43,20 @@ export class PurgeService {
   }
 
   async updateDocsToPurge() {
-    if (this.needsUpdating) {
-      this.needsUpdating = false; // check once per session
-      try {
-        const response:any = await this.changesFetch();
-        const { purged_ids: ids, last_seq: lastSeq } = response;
-        if (!ids || !ids.length) {
-          return;
-        }
-        await appendToPurgeList(this.dbService.get(), ids);
-        await this.checkpoint(lastSeq);
-      } catch(e) {
-        console.info('Error fetching purge list', e);
+    if (!this.needsUpdating) {
+      return;
+    }
+    this.needsUpdating = false; // check once per session
+    try {
+      const response:any = await this.changesFetch();
+      const { purged_ids: ids, last_seq: lastSeq } = response;
+      if (!ids || !ids.length) {
+        return;
       }
+      await appendToPurgeList(this.dbService.get(), ids);
+      await this.checkpoint(lastSeq);
+    } catch(e) {
+      console.info('Error fetching purge list', e);
     }
   }
 }

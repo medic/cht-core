@@ -78,7 +78,7 @@ describe('Purger', () => {
       });
     });
 
-    it('should "purge" all returned ids and updates purgelog when finished', () => {
+    it('should "purge" all returned ids and updates purgelog', () => {
       const toPurge = [ 'id1', 'id2', 'id3' ];
       localDb.allDocs
         .withArgs({ keys: toPurge })
@@ -116,6 +116,67 @@ describe('Purger', () => {
           history: [ { date: 10000, count: 3, roles: JSON.stringify(['one', 'three', 'two']) } ],
           to_purge: []
         });
+      });
+    });
+
+    it('purge delete works in batches', () => {
+      const toPurge = Array.from(Array(150).keys()).map(i => `id${i}`);
+      const firstBatch = toPurge.slice(0, 100);
+      const secondBatch = toPurge.slice(100);
+
+      localDb.allDocs
+        .withArgs({ keys: firstBatch })
+        .resolves({ rows: firstBatch.map(id => ({ id: id, key: id, value: { rev: '11-abc' } }))})
+        .withArgs({ keys: secondBatch })
+        .resolves({ rows: secondBatch.map(id => ({ id: id, key: id, value: { rev: '11-abc' } }))});
+
+      localDb.bulkDocs.resolves([]);
+      localDb.get
+        .onCall(0).resolves({ // check if anything needs purging
+          _id: '_local/purgelog',
+          to_purge: toPurge
+        })
+        .onCall(1).resolves({ // update after purging batch 1
+          _id: '_local/purgelog',
+          to_purge: toPurge
+        })
+        .onCall(2).resolves({ // update after purging batch 2
+          _id: '_local/purgelog',
+          to_purge: toPurge.slice(100)
+        })
+        .onCall(3).resolves({ // writing history
+          _id: '_local/purgelog',
+          to_purge: []
+        });
+      localDb.put.resolves();
+      clock.tick(10000);
+      userCtx.roles = ['two', 'one', 'two', 'one', 'three'];
+
+      return purger.purgeMain(localDb, userCtx).then(() => {
+        chai.expect(localDb.allDocs.callCount).to.equal(2);
+        chai.expect(localDb.bulkDocs.callCount).to.equal(2);
+        chai.expect(localDb.bulkDocs.args[0][0].length).to.equal(100);
+        chai.expect(localDb.bulkDocs.args[1][0].length).to.equal(50);
+        chai.expect(localDb.get.callCount).to.equal(4);
+        chai.expect(localDb.get.args[0][0]).to.equal('_local/purgelog');
+        chai.expect(localDb.put.callCount).to.equal(3);
+        chai.expect(localDb.put.args[0][0].to_purge).to.deep.equal(secondBatch);
+        chai.expect(localDb.put.args[1][0].to_purge).to.deep.equal([]);
+        chai.expect(localDb.put.args[2][0]).to.deep.equal({
+          _id: '_local/purgelog',
+          count: 150,
+          date: 10000,
+          history: [
+            {
+              count: toPurge.length,
+              date: 10000,
+              roles: '["one","three","two"]'
+            }
+          ],
+          roles: '["one","three","two"]',
+          to_purge: []
+
+        }); // writing history
       });
     });
 
