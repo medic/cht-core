@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
-import { assert, expect } from 'chai';
+import { expect } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import { toBik_text } from 'bikram-sambat';
 import * as moment from 'moment';
@@ -268,22 +268,22 @@ describe('Enketo service', () => {
       return service
         .saveContactForm(form, null, type)
         .then(() => {
-          assert.equal(dbGet.callCount, 1);
-          assert.equal(dbGet.args[0][0], 'abc');
+          expect(dbGet.callCount).to.equal(1);
+          expect(dbGet.args[0][0]).to.equal('abc');
 
-          assert.equal(dbBulkDocs.callCount, 1);
+          expect(dbBulkDocs.callCount).to.equal(1);
 
           const savedDocs = dbBulkDocs.args[0][0];
 
-          assert.equal(savedDocs.length, 1);
-          assert.deepEqual(savedDocs[0].contact, {
+          expect(savedDocs.length).to.equal(1);
+          expect(savedDocs[0].contact).to.deep.equal({
             _id: 'abc',
             parent: {
               _id: 'def'
             }
           });
-          assert.equal(setLastChangedDoc.callCount, 1);
-          assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
+          expect(setLastChangedDoc.callCount).to.equal(1);
+          expect(setLastChangedDoc.args[0]).to.deep.equal([savedDocs[0]]);
         });
     });
   });
