@@ -1,5 +1,5 @@
 const { isString: _isString } = require('lodash');
-const { EnketoDataTranslator } = require('./enketo-data-translator');
+const { bindJsonToXml } = require('./enketo-data-translator');
 
 class EnketoDataPrepopulator {
   constructor(userSettingsService) {
@@ -19,14 +19,14 @@ class EnketoDataPrepopulator {
         const userRoot = bindRoot.find('>inputs>user');
 
         if(data) {
-          EnketoDataTranslator.bindJsonToXml(bindRoot, data, (name) => {
+          bindJsonToXml(bindRoot, data, (name) => {
             // Either a direct child or a direct child of inputs
             return '>%, >inputs>%'.replace(/%/g, name);
           });
         }
 
         if(userRoot.length) {
-          EnketoDataTranslator.bindJsonToXml(userRoot, user);
+          bindJsonToXml(userRoot, user);
         }
 
         return new XMLSerializer().serializeToString(bindRoot[0]);

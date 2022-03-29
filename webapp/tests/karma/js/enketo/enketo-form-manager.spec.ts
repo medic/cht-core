@@ -1560,7 +1560,7 @@ describe('Enketo Form Manager', () => {
     };
 
     it('should translate titleKey when provided', async() => {
-      await enketoFormMgr.renderForm({
+      await enketoFormMgr.renderContactForm({
         selector: $('<div></div>'),
         formDoc,
         instanceData,
@@ -1574,7 +1574,7 @@ describe('Enketo Form Manager', () => {
     });
 
     it('should fallback to translate document title when the titleKey is not available', async() => {
-      await enketoFormMgr.renderForm({
+      await enketoFormMgr.renderContactForm({
         selector: $('<div></div>'),
         formDoc,
         instanceData,

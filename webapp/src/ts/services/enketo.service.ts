@@ -126,7 +126,7 @@ export class EnketoService {
   }
 
   renderContactForm(formContext: EnketoFormContext) {
-    return this.enketoFormMgr.renderForm(formContext)
+    return this.enketoFormMgr.renderContactForm(formContext)
       .then(form => this.registerListeners(
         formContext.selector,
         form,

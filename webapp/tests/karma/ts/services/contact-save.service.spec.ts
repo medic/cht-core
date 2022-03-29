@@ -3,10 +3,10 @@ import sinon from 'sinon';
 import { assert } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import { cloneDeep } from 'lodash-es';
+import EnketoDataTranslator from '../../../../src/js/enketo/enketo-data-translator';
 
 import { DbService } from '@mm-services/db.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
 import { ServicesActions } from '@mm-actions/services';
@@ -18,16 +18,13 @@ describe('ContactSave service', () => {
   let bulkDocs;
   let get;
   let contactTypesService;
-  let enketoTranslationService;
   let extractLineageService;
   let transitionsService;
   let setLastChangedDoc;
   let clock;
 
   beforeEach(() => {
-    enketoTranslationService = {
-      contactRecordToJs: sinon.stub(),
-    };
+    EnketoDataTranslator.contactRecordToJs = sinon.stub();
 
     contactTypesService = { isHardcodedType: sinon.stub().returns(false) };
     extractLineageService = { extract: sinon.stub() };
@@ -41,7 +38,6 @@ describe('ContactSave service', () => {
         provideMockStore(),
         { provide: DbService, useValue: { get: () => ({ get, bulkDocs }) } },
         { provide: ContactTypesService, useValue: contactTypesService },
-        { provide: EnketoTranslationService, useValue: enketoTranslationService },
         { provide: ExtractLineageService, useValue: extractLineageService },
         { provide: TransitionsService, useValue: transitionsService },
       ]
@@ -60,7 +56,7 @@ describe('ContactSave service', () => {
     const docId = null;
     const type = 'some-contact-type';
 
-    enketoTranslationService.contactRecordToJs.returns({
+    EnketoDataTranslator.contactRecordToJs.returns({
       doc: { _id: 'main1', type: 'main', contact: 'abc' }
     });
     bulkDocs.resolves([]);
@@ -94,7 +90,7 @@ describe('ContactSave service', () => {
     const docId = null;
     const type = 'some-contact-type';
 
-    enketoTranslationService.contactRecordToJs.returns({
+    EnketoDataTranslator.contactRecordToJs.returns({
       doc: { _id: 'main1', type: 'main', contact: { _id: 'abc', name: 'Richard' } }
     });
     bulkDocs.resolves([]);
@@ -128,7 +124,7 @@ describe('ContactSave service', () => {
     const docId = null;
     const type = 'some-contact-type';
 
-    enketoTranslationService.contactRecordToJs.returns({
+    EnketoDataTranslator.contactRecordToJs.returns({
       doc: { _id: 'main1', type: 'main', contact: 'NEW'},
       siblings: {
         contact: { _id: 'sis1', type: 'sister', parent: 'PARENT', },
@@ -174,7 +170,7 @@ describe('ContactSave service', () => {
     const docId = 'main1';
     const type = 'some-contact-type';
 
-    enketoTranslationService.contactRecordToJs.returns({
+    EnketoDataTranslator.contactRecordToJs.returns({
       doc: {
         _id: 'main1',
         type: 'contact',
@@ -239,7 +235,7 @@ describe('ContactSave service', () => {
     const docId = null;
     const type = 'some-contact-type';
 
-    enketoTranslationService.contactRecordToJs.returns({
+    EnketoDataTranslator.contactRecordToJs.returns({
       doc: { _id: 'main1', type: 'main', contact: { _id: 'abc', name: 'Richard' } }
     });
     bulkDocs.resolves([]);

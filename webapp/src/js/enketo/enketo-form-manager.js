@@ -4,7 +4,7 @@ const $ = require('jquery');
 const { getElementXPath } = require('./xpath-element-path');
 const enketoConstants = require('./constants');
 const EnketoDataPrepopulator = require('./enketo-data-prepopulator');
-const { EnketoDataTranslator } = require('./enketo-data-translator');
+const EnketoDataTranslator = require('./enketo-data-translator');
 
 const HTML_ATTACHMENT_NAME = 'form.html';
 const MODEL_ATTACHMENT_NAME = 'model.xml';
@@ -302,7 +302,7 @@ const addPopStateHandler = (form, $wrapper) => {
   });
 };
 
-const renderFromXmls = (currentForm, formDataServices, translationServices, xmlFormContext) => {
+const renderFromXmls = (formDataServices, translationServices, xmlFormContext) => {
   const { doc, instanceData, titleKey, wrapper } = xmlFormContext;
 
   const formContainer = wrapper.find('.container').first();
@@ -721,8 +721,12 @@ class EnketoFormManager {
         instanceData,
       };
 
-      return this.renderForm(formContext);
+      return this._renderForm(formContext);
     });
+  }
+
+  renderContactForm(formContext) {
+    return this._renderForm(formContext);
   }
 
   validate(form) {
@@ -783,7 +787,11 @@ class EnketoFormManager {
     this.objUrls.length = 0;
   }
 
-  renderForm(formContext) {
+  setupNavButtons(currentForm, $wrapper, currentIndex) {
+    setupNavButtons(currentForm, $wrapper, currentIndex);
+  }
+
+  _renderForm(formContext) {
     const {
       formDoc,
       instanceData,
@@ -800,7 +808,7 @@ class EnketoFormManager {
         instanceData,
         titleKey,
       };
-      return renderFromXmls(this.currentForm, this.formDataServices, this.translationServices, xmlFormContext);
+      return renderFromXmls(this.formDataServices, this.translationServices, xmlFormContext);
     }).then((form) => {
       this.currentForm = form;
       const formContainer = $selector.find('.container').first();
@@ -838,10 +846,6 @@ class EnketoFormManager {
       window.CHTCore.debugFormModel = () => form.model.getStr();
       return form;
     });
-  }
-
-  setupNavButtons(currentForm, $wrapper, currentIndex) {
-    setupNavButtons(currentForm, $wrapper, currentIndex);
   }
 }
 

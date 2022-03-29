@@ -2,9 +2,9 @@ import { v4 as uuidV4 } from 'uuid';
 import { Injectable, NgZone } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { reduce as _reduce, isObject as _isObject, defaults as _defaults } from 'lodash-es';
+import { contactRecordToJs } from '../../js/enketo/enketo-data-translator';
 
 import { DbService } from '@mm-services/db.service';
-import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -21,7 +21,6 @@ export class ContactSaveService {
     private store:Store,
     private contactTypesService:ContactTypesService,
     private dbService:DbService,
-    private enketoTranslationService:EnketoTranslationService,
     private extractLineageService:ExtractLineageService,
     private transitionsService:TransitionsService,
     private ngZone:NgZone,
@@ -177,7 +176,7 @@ export class ContactSaveService {
     return this.ngZone.runOutsideAngular(() => {
       return (docId ? this.dbService.get().get(docId) : Promise.resolve())
         .then(original => {
-          const submitted = this.enketoTranslationService.contactRecordToJs(form.getDataStr({ irrelevant: false }));
+          const submitted = contactRecordToJs(form.getDataStr({ irrelevant: false }));
           return this.prepareSubmittedDocsForSave(original, submitted, type);
         })
         .then((preparedDocs) => this.applyTransitions(preparedDocs))
