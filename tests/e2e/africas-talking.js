@@ -1,5 +1,4 @@
 const utils = require('../utils');
-const constants = require('../constants');
 const commonElements = require('../page-objects/common/common.po.js');
 const messagesElements = require('../page-objects/messages/messages.po');
 const reportsElements = require('../page-objects/reports/reports.po');
@@ -146,7 +145,7 @@ describe('africas talking api', () => {
       const content = querystring.stringify(body);
       return utils.request({
         method: 'POST',
-        path: `/api/v1/sms/africastalking/incoming-messages?key=${INCOMING_KEY}`,
+        path: `/api/v1/sms/africastalking/incoming-messages?key=${CREDENTIAL_KEY}`,
         body: content,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -199,7 +198,7 @@ describe('africas talking api', () => {
       const content = querystring.stringify(body);
       return utils.request({
         method: 'POST',
-        path: `/api/v1/sms/africastalking/delivery-reports?key=${INCOMING_KEY}`,
+        path: `/api/v1/sms/africastalking/delivery-reports?key=${CREDENTIAL_KEY}`,
         body: content,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
