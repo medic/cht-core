@@ -17,6 +17,9 @@ const getServerUrl = () => {
 const getVaultUrl = (key) => `${getCouchUrl()}-vault/${getCredentialId(key)}`;
 
 const getCredentialsDoc = (key) => {
+  if (!key) {
+    return Promise.reject(new Error('You must pass the key for the credentials you want'));
+  }
   return request
     .get(`${getVaultUrl(key)}`, { json: true }) // TODO do we allow spaces in credential keys?
     .catch(err => {
@@ -34,7 +37,6 @@ const getCredentials = (key) => {
     .then(doc => doc && doc.password);
 };
 
-// TODO unit test
 const setCredentials = (key, password) => {
   return getCredentialsDoc(key)
     .then(doc => {
