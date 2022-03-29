@@ -1080,6 +1080,15 @@ module.exports = {
   stopSentinel: () => stopService('sentinel'),
   startSentinel: () => startService('sentinel'),
 
+  saveCredentials: (key, password) => {
+    const options = {
+      path: `/api/v1/credentials/${key}`,
+      method: 'PUT',
+      body: password
+    };
+    return request(options, { debug: true });
+  },
+
   // delays executing a function that returns a promise with the provided interval (in ms)
   delayPromise: (promiseFn, interval) => {
     return new Promise((resolve, reject) => {
