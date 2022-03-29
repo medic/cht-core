@@ -1084,7 +1084,10 @@ module.exports = {
     const options = {
       path: `/api/v1/credentials/${key}`,
       method: 'PUT',
-      body: password
+      body: password,
+      headers: {
+        'Content-Type': 'text/plain'
+      }
     };
     return request(options, { debug: true });
   },
