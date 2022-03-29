@@ -952,7 +952,7 @@ module.exports = {
       method: 'PUT',
       body: password
     };
-    return request(options);
+    return request(options, { debug: true });
   },
 
   /**
