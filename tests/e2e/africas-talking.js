@@ -17,7 +17,8 @@ const messageContent1 = 'Thank you for registering Shannon. Their pregnancy ID i
 const messageContent2 = 'Please remind Shannon (28551) to visit the health facility for ANC visit this week. ' +
   'When she does let us know with "V 28551". Thanks!';
 
-const INCOMING_KEY = 'yabbadabbadoo';
+const CREDENTIAL_PASS = 'yabbadabbadoo';
+const CREDENTIAL_KEY = 'africastalking.com:incoming';
 
 const report = {
   type: 'data_record',
@@ -138,14 +139,7 @@ const report = {
 
 describe('africas talking api', () => {
 
-  beforeAll(() => {
-    return utils.request({
-      port: constants.COUCH_PORT,
-      method: 'PUT',
-      path: `/_node/${constants.COUCH_NODE_NAME}/_config/medic-credentials/africastalking.com:incoming`,
-      body: `${INCOMING_KEY}`
-    });
-  });
+  beforeAll(() => utils.saveCredentials(CREDENTIAL_KEY, CREDENTIAL_PASS));
 
   describe('- gateway submits new WT sms messages', () => {
     const submitSms = body => {

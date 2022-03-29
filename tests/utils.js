@@ -946,6 +946,15 @@ module.exports = {
     };
   },
 
+  saveCredentials: (key, password) => {
+    const options = {
+      path: `/${constants.DB_NAME}-vault/${key}`,
+      method: 'PUT',
+      body: JSON.stringify({ password })
+    };
+    return request(options);
+  },
+
   /**
    * Watches a given logfile until at least one line matches one of the given regular expressions.
    * Watch expires after 10 seconds.

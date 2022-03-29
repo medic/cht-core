@@ -92,6 +92,9 @@ const textParser = bodyParser.text({limit: '32mb', type: [ 'text/plain', 'applic
 app.set('strict routing', true);
 app.set('trust proxy', true);
 
+// TODO add an endpoint for saving credentials, but not for getting them
+// TODO create medic-vault and set auth just like medic-logs
+
 // When testing random stuff in-browser, it can be useful to access the database
 // from different domains (e.g. localhost:5988 vs localhost:8080).  Adding the
 // --allow-cors commandline switch will enable this from within a web browser.
