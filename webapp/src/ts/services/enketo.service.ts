@@ -27,6 +27,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -40,6 +41,7 @@ export class EnketoService {
     store:Store,
     addAttachmentService:AddAttachmentService,
     contactSummaryService:ContactSummaryService,
+    contactTypesService:ContactTypesService,
     dbService:DbService,
     userSettingsService:UserSettingsService,
     extractLineageService:ExtractLineageService,
@@ -58,7 +60,7 @@ export class EnketoService {
     private ngZone:NgZone,
   ) {
     this.enketoFormMgr = new EnketoFormManager(
-      new ContactServices(extractLineageService, userContactService),
+      new ContactServices(extractLineageService, userContactService, contactTypesService),
       new FileServices(dbService, fileReaderService),
       new FormDataServices(
         contactSummaryService,
@@ -151,6 +153,17 @@ export class EnketoService {
             });
         });
       });
+  }
+
+  saveContactForm(form, docId, type) {
+    return this.ngZone.runOutsideAngular(() => {
+      return this.enketoFormMgr.saveContactForm(form, docId, type)
+        .then(docs => {
+          const primaryDoc = docs.preparedDocs.find(doc => doc.type === type);
+          this.servicesActions.setLastChangedDoc(primaryDoc || docs.preparedDocs[0]);
+          return docs;
+        });
+    });
   }
 
   unload(form) {

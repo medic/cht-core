@@ -1526,6 +1526,24 @@ describe('Enketo Form Manager', () => {
     });
   });
 
+  describe('saveContactForm', () => {
+    it('saves contact form and sets last changed doc', () => {
+      const docId = '12345';
+      const docType = 'doc-type';
+      const savedDocs = {};
+      const contactSave = sinon.stub().resolves(savedDocs);
+      enketoFormMgr.contactSaver.save = contactSave;
+
+      return enketoFormMgr
+        .saveContactForm(form, docId, docType)
+        .then((docs) => {
+          expect(docs).to.deep.equal(savedDocs);
+          expect(contactSave.callCount).to.equal(1);
+          expect(contactSave.args).to.deep.equal([[form, docId, docType]]);
+        });
+    });
+  });
+
   describe('renderContactForm', () => {
     let titleTextStub;
 

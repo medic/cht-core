@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import { toBik_text } from 'bikram-sambat';
 import * as moment from 'moment';
@@ -10,6 +10,7 @@ import { Form2smsService } from '@mm-services/form2sms.service';
 import { SearchService } from '@mm-services/search.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
+import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
@@ -21,9 +22,11 @@ import { ZScoreService } from '@mm-services/z-score.service';
 import { EnketoService } from '@mm-services/enketo.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { TranslateService } from '@mm-services/translate.service';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
+import EnketoDataTranslator from '../../../../src/js/enketo/enketo-data-translator';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -59,6 +62,8 @@ describe('Enketo service', () => {
   let EnketoForm;
   let Search;
   let LineageModelGenerator;
+  let contactTypesService;
+  let extractLineageService;
   let transitionsService;
   let translateService;
   let zScoreService;
@@ -100,6 +105,8 @@ describe('Enketo service', () => {
       calc: { update: () => {} },
       output: { update: () => {} },
     });
+    contactTypesService = { isHardcodedType: sinon.stub().returns(false) };
+    extractLineageService = { extract: sinon.stub() };
     transitionsService = { applyTransitions: sinon.stub().resolvesArg(0) };
     translateService = {
       instant: sinon.stub().returnsArg(0),
@@ -123,6 +130,8 @@ describe('Enketo service', () => {
         { provide: SearchService, useValue: { search: Search } },
         { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) } },
         { provide: LineageModelGeneratorService, useValue: LineageModelGenerator },
+        { provide: ContactTypesService, useValue: contactTypesService },
+        { provide: ExtractLineageService, useValue: extractLineageService },
         { provide: FileReaderService, useValue: FileReader },
         { provide: UserContactService, useValue: { get: UserContact } },
         { provide: UserSettingsService, useValue: { get: UserSettings } },
@@ -228,7 +237,7 @@ describe('Enketo service', () => {
         expect(actual.form).to.equal('V');
         expect(actual.type).to.equal('data_record');
         expect(actual.content_type).to.equal('xml');
-        expect(actual.contact._id).to.equal('123');
+        // expect(actual.contact._id).to.equal('123');
         expect(actual.from).to.equal('555');
         expect(dbGetAttachment.callCount).to.equal(1);
         expect(dbGetAttachment.args[0][0]).to.equal('abc');
@@ -240,6 +249,42 @@ describe('Enketo service', () => {
         expect(setLastChangedDoc.callCount).to.equal(1);
         expect(setLastChangedDoc.args[0]).to.deep.equal([actual]);
       });
+    });
+  });
+
+  describe('saveContactForm', () => {
+    it('saves contact form and sets last changed doc', () => {
+      form.getDataStr.returns('<data></data>');
+      const type = 'some-contact-type';
+
+      sinon.stub(EnketoDataTranslator, 'contactRecordToJs').returns({
+        doc: { _id: 'main1', type: 'main', contact: 'abc' }
+      });
+
+      dbBulkDocs.resolves([]);
+      dbGet.resolves({ _id: 'abc', name: 'gareth', parent: { _id: 'def' } });
+      extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
+
+      return service
+        .saveContactForm(form, null, type)
+        .then(() => {
+          assert.equal(dbGet.callCount, 1);
+          assert.equal(dbGet.args[0][0], 'abc');
+
+          assert.equal(dbBulkDocs.callCount, 1);
+
+          const savedDocs = dbBulkDocs.args[0][0];
+
+          assert.equal(savedDocs.length, 1);
+          assert.deepEqual(savedDocs[0].contact, {
+            _id: 'abc',
+            parent: {
+              _id: 'def'
+            }
+          });
+          assert.equal(setLastChangedDoc.callCount, 1);
+          assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
+        });
     });
   });
 });

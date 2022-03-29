@@ -5,6 +5,7 @@ const { getElementXPath } = require('./xpath-element-path');
 const enketoConstants = require('./constants');
 const EnketoDataPrepopulator = require('./enketo-data-prepopulator');
 const EnketoDataTranslator = require('./enketo-data-translator');
+const ContactSaver = require('./contact-saver');
 
 const HTML_ATTACHMENT_NAME = 'form.html';
 const MODEL_ATTACHMENT_NAME = 'model.xml';
@@ -587,9 +588,10 @@ const saveDocs = (dbService, docs) => {
 };
 
 class ContactServices {
-  constructor(extractLineageService, userContactService) {
+  constructor(extractLineageService, userContactService, contactTypesService) {
     this.extractLineageService = extractLineageService;
     this.userContactService = userContactService;
+    this.contactTypesService = contactTypesService;
   }
 
   get extractLineage() {
@@ -598,6 +600,10 @@ class ContactServices {
 
   get userContact() {
     return this.userContactService;
+  }
+
+  get contactTypes() {
+    return this.contactTypesService;
   }
 }
 
@@ -705,6 +711,8 @@ class EnketoFormManager {
     this.transitionsService = transitionsService;
     this.globalActions = globalActions;
 
+    this.contactSaver = new ContactSaver(contactServices, fileServices, transitionsService);
+
     this.currentForm = null;
     this.objUrls = [];
   }
@@ -770,6 +778,10 @@ class EnketoFormManager {
       .then((docs) => saveGeo(geoHandle, docs))
       .then((docs) => this.transitionsService.applyTransitions(docs))
       .then((docs) => saveDocs(this.fileServices.db, docs));
+  }
+
+  saveContactForm(form, docId, type) {
+    return this.contactSaver.save(form, docId, type);
   }
 
   unload(form) {
