@@ -1085,6 +1085,7 @@ module.exports = {
       path: `/api/v1/credentials/${key}`,
       method: 'PUT',
       body: password,
+      json: false,
       headers: {
         'Content-Type': 'text/plain'
       }
