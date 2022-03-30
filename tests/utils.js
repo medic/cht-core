@@ -1089,7 +1089,7 @@ module.exports = {
         'Content-Type': 'text/plain'
       }
     };
-    return request(options, { debug: true });
+    return request(options);
   },
 
   // delays executing a function that returns a promise with the provided interval (in ms)
