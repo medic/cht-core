@@ -65,6 +65,7 @@ if (UNIT_TEST_ENV) {
   const DB = new PouchDB(environment.couchUrl, { fetch });
   const getDbUrl = name => `${environment.serverUrl}/${name}`;
 
+  // TODO test that non-admins can't access vault
   DB.setMaxListeners(0);
   module.exports.medic = DB;
   module.exports.medicUsersMeta = new PouchDB(`${environment.couchUrl}-users-meta`, { fetch });
