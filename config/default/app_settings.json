@@ -261,9 +261,6 @@
     "can_write_wealth_quintiles": [],
     "can_aggregate_targets": [
       "chw_supervisor"
-    ],
-    "can_upgrade": [
-      "program_officer"
     ]
   },
   "changes_controller": {
