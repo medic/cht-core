@@ -105,9 +105,9 @@ describe('Purger', () => {
           { _id: 'id2', _rev: '12-abc', _deleted: true, purged: true },
           { _id: 'id3', _rev: '13-abc', _deleted: true, purged: true },
         ]]);
-        chai.expect(localDb.get.callCount).to.equal(3);
+        chai.expect(localDb.get.callCount).to.equal(2);
         chai.expect(localDb.get.args[0][0]).to.equal('_local/purgelog');
-        chai.expect(localDb.put.callCount).to.equal(2);
+        chai.expect(localDb.put.callCount).to.equal(1);
         chai.expect(localDb.put.args[0][0]).to.deep.equal({
           _id: '_local/purgelog',
           date: 10000,
@@ -138,13 +138,9 @@ describe('Purger', () => {
         })
         .onCall(1).resolves({ // update after purging batch 1
           _id: '_local/purgelog',
-          to_purge: toPurge
-        })
-        .onCall(2).resolves({ // update after purging batch 2
-          _id: '_local/purgelog',
           to_purge: toPurge.slice(100)
         })
-        .onCall(3).resolves({ // writing history
+        .onCall(2).resolves({ // update after purging batch 2
           _id: '_local/purgelog',
           to_purge: []
         });
@@ -157,26 +153,37 @@ describe('Purger', () => {
         chai.expect(localDb.bulkDocs.callCount).to.equal(2);
         chai.expect(localDb.bulkDocs.args[0][0].length).to.equal(100);
         chai.expect(localDb.bulkDocs.args[1][0].length).to.equal(50);
-        chai.expect(localDb.get.callCount).to.equal(4);
+        chai.expect(localDb.get.callCount).to.equal(3);
         chai.expect(localDb.get.args[0][0]).to.equal('_local/purgelog');
-        chai.expect(localDb.put.callCount).to.equal(3);
-        chai.expect(localDb.put.args[0][0].to_purge).to.deep.equal(secondBatch);
-        chai.expect(localDb.put.args[1][0].to_purge).to.deep.equal([]);
-        chai.expect(localDb.put.args[2][0]).to.deep.equal({
+        chai.expect(localDb.put.callCount).to.equal(2);
+        chai.expect(localDb.put.args[0][0]).to.deep.equal({
           _id: '_local/purgelog',
-          count: 150,
+          count: firstBatch.length,
           date: 10000,
           history: [
             {
-              count: toPurge.length,
+              count: firstBatch.length,
+              date: 10000,
+              roles: '["one","three","two"]'
+            }
+          ],
+          roles: '["one","three","two"]',
+          to_purge: secondBatch
+        });
+        chai.expect(localDb.put.args[1][0]).to.deep.equal({
+          _id: '_local/purgelog',
+          count: secondBatch.length,
+          date: 10000,
+          history: [
+            {
+              count: secondBatch.length,
               date: 10000,
               roles: '["one","three","two"]'
             }
           ],
           roles: '["one","three","two"]',
           to_purge: []
-
-        }); // writing history
+        });
       });
     });
 
@@ -195,26 +202,25 @@ describe('Purger', () => {
 
       const rolesJson = JSON.stringify(['1', '2', '3']);
       const rolesJsonTwo = JSON.stringify(['1', '2', '3', '4']);
+
+      const history = Array.from(Array(23).keys()).map(i => {
+        return {
+          date: 4000 - (i * 100),
+          count: i * 2,
+          roles: i < 5 ? rolesJsonTwo : rolesJson
+        };
+      });
+      const expectedHistory = JSON.parse(JSON.stringify(history)).slice(0, 19); // clone
+      expectedHistory.unshift(
+        { date: 5000, count: 1, roles: JSON.stringify(['1', '3', 'a', 'b', 'c']) }
+      );
+
       localDb.get.withArgs('_local/purgelog').resolves({
         _id: '_local/purgelog',
         date: 1200,
         count: 3,
         roles: rolesJson,
-        history: [
-          { date: 1200, count: 3, roles: rolesJson },
-          { date: 1100, count: 0, roles: rolesJson },
-          { date: 1000, count: 5, roles: rolesJson },
-          { date: 900, count: 5, roles: rolesJson },
-          { date: 800, count: 5, roles: rolesJson },
-          { date: 700, count: 5, roles: rolesJson },
-          { date: 600, count: 5, roles: rolesJson },
-          { date: 500, count: 5, roles: rolesJson },
-          { date: 400, count: 5, roles: rolesJson },
-          { date: 300, count: 5, roles: rolesJsonTwo },
-          { date: 200, count: 5, roles: rolesJsonTwo },
-          { date: 100, count: 5, roles: rolesJsonTwo },
-          { date: 0, count: 5, roles: rolesJsonTwo },
-        ],
+        history: history,
         to_purge: toPurge
       });
       localDb.put.resolves();
@@ -228,26 +234,16 @@ describe('Purger', () => {
         chai.expect(localDb.bulkDocs.args[0])
           .to.deep.equal([[{ _id: 'id3', _rev: '13-abc', _deleted: true, purged: true }]]);
 
-        chai.expect(localDb.get.callCount).to.equal(3);
+        chai.expect(localDb.get.callCount).to.equal(2);
         chai.expect(localDb.get.args[0]).to.deep.equal(['_local/purgelog']);
-        chai.expect(localDb.put.callCount).to.equal(2);
+        chai.expect(localDb.put.callCount).to.equal(1);
+
         chai.expect(localDb.put.args[0]).to.deep.equal([{
           _id: '_local/purgelog',
           date: 5000,
           count: 1,
           roles: JSON.stringify(['1', '3', 'a', 'b', 'c']),
-          history: [
-            { date: 5000, count: 1, roles: JSON.stringify(['1', '3', 'a', 'b', 'c']) },
-            { date: 1200, count: 3, roles: rolesJson },
-            { date: 1100, count: 0, roles: rolesJson },
-            { date: 1000, count: 5, roles: rolesJson },
-            { date: 900, count: 5, roles: rolesJson },
-            { date: 800, count: 5, roles: rolesJson },
-            { date: 700, count: 5, roles: rolesJson },
-            { date: 600, count: 5, roles: rolesJson },
-            { date: 500, count: 5, roles: rolesJson },
-            { date: 400, count: 5, roles: rolesJson },
-          ],
+          history: expectedHistory,
           to_purge: []
         }]);
       });

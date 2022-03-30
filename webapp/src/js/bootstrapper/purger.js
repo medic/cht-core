@@ -1,5 +1,5 @@
 const PURGE_LOG_DOC_ID = '_local/purgelog';
-const MAX_HISTORY_LENGTH = 10;
+const MAX_HISTORY_LENGTH = 20;
 const BATCH_SIZE = 100;
 const META_BATCHES = 10; // purge 10 * 100 documents on every startup
 
@@ -32,16 +32,6 @@ const appendToPurgeList = (localDb, ids) => {
     });
 };
 
-const removeFromToPurgeList = (localDb, docIds) => {
-  return getPurgeLog(localDb)
-    .then(log => {
-      log.to_purge = log.to_purge.filter(id => {
-        return docIds.indexOf(id) === -1;
-      });
-      return localDb.put(log);
-    });
-};
-
 const purgeMain = (localDb, userCtx) => {
 
   let totalPurged = 0;
@@ -61,8 +51,8 @@ const purgeMain = (localDb, userCtx) => {
       .then(nbr => {
         totalPurged += nbr;
         emit('progress', { purged: totalPurged });
+        return writePurgeLog(localDb, userCtx, nbr, batch);
       })
-      .then(() => removeFromToPurgeList(localDb, batch))
       .then(() => batchedPurge(ids.slice(BATCH_SIZE)));
   };
 
@@ -75,7 +65,6 @@ const purgeMain = (localDb, userCtx) => {
           }
           emit('start');
           return batchedPurge(log.to_purge)
-            .then(() => writePurgeLog(localDb, totalPurged, userCtx))
             .then(() => emit('done', { totalPurged }));
         });
     });
@@ -119,24 +108,25 @@ const purgeMeta = (localDb) => {
   return p;
 };
 
-const writePurgeLog = (localDb, totalPurged, userCtx) => {
-  return getPurgeLog(localDb).then(purgeLog => {
+const writePurgeLog = (localDb, userCtx, totalPurged, docIds) => {
+  return getPurgeLog(localDb).then(log => {
     const info = {
       date: new Date().getTime(),
       count: totalPurged,
       roles: sortedUniqueRoles(userCtx.roles)
     };
-    Object.assign(purgeLog, info);
-    if (!purgeLog.history) {
-      purgeLog.history = [];
+    Object.assign(log, info);
+    if (!log.history) {
+      log.history = [];
     }
-    purgeLog.history.unshift(info);
-    if (purgeLog.history.length > MAX_HISTORY_LENGTH) {
-      const diff = purgeLog.history.length - MAX_HISTORY_LENGTH;
-      purgeLog.history.splice(diff * -1, diff);
+    log.history.unshift(info);
+    if (log.history.length > MAX_HISTORY_LENGTH) {
+      log.history = log.history.slice(0, MAX_HISTORY_LENGTH);
     }
-
-    return localDb.put(purgeLog);
+    log.to_purge = (log.to_purge || []).filter(id => {
+      return !docIds.includes(id);
+    });
+    return localDb.put(log);
   });
 };
 
