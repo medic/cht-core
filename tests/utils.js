@@ -955,7 +955,7 @@ module.exports = {
         'Content-Type': 'text/plain'
       }
     };
-    return request(options, { debug: true });
+    return request(options);
   },
 
   /**

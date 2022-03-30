@@ -145,7 +145,7 @@ describe('africas talking api', () => {
       const content = querystring.stringify(body);
       return utils.request({
         method: 'POST',
-        path: `/api/v1/sms/africastalking/incoming-messages?key=${CREDENTIAL_KEY}`,
+        path: `/api/v1/sms/africastalking/incoming-messages?key=${CREDENTIAL_PASS}`,
         body: content,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -198,7 +198,7 @@ describe('africas talking api', () => {
       const content = querystring.stringify(body);
       return utils.request({
         method: 'POST',
-        path: `/api/v1/sms/africastalking/delivery-reports?key=${CREDENTIAL_KEY}`,
+        path: `/api/v1/sms/africastalking/delivery-reports?key=${CREDENTIAL_PASS}`,
         body: content,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
