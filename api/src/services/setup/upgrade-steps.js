@@ -103,10 +103,18 @@ const indexStagedViews = async () => {
   stopQueryingIndexers();
 };
 
+const complete = async (buildInfo) => {
+  const stagingDoc = await upgradeUtils.getStagingDoc(buildInfo);
+  const payload = upgradeUtils.getUpgradeServicePayload(stagingDoc);
+
+  return upgradeUtils.makeUpgradeRequest(payload);
+};
+
 module.exports = {
   prep,
   stage,
   indexStagedViews,
   finalize,
+  complete,
   abort,
 };

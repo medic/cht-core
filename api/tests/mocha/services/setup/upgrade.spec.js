@@ -53,6 +53,7 @@ describe('upgrade service', () => {
       sinon.stub(upgradeSteps, 'stage').returns(new Promise(r => stage = r));
       let indexStagedViews;
       sinon.stub(upgradeSteps, 'indexStagedViews').returns(new Promise(r => indexStagedViews = r));
+      sinon.stub(upgradeSteps, 'complete').resolves();
 
       const upgradePromise = upgrade.upgrade('a_version', 'usr', false);
 

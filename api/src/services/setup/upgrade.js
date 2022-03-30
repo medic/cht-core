@@ -56,6 +56,7 @@ const safeInstall = async (buildInfo, stageOnly) => {
 const complete = async (buildInfo) => {
   // todo
   logger.debug('%o', buildInfo); // don't complain about unused variables
+  return upgradeSteps.complete(buildInfo);
   // test if build info matches
   // this is going to send a request to the bridge container to pull new source code
   // completing the install (overwriting the staged ddocs) is done when API starts up.
