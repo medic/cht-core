@@ -94,6 +94,8 @@ const parsePurgingLogEntries = (logEntries) => {
 
 describe('purge', () => {
   it('purging runs on sync and startup', async () => {
+    let purgeLog;
+
     await updateSettings(purgeFn); // settings should be at the beginning of the changes feed
 
     await utils.saveDocs([district, healthCenter, contact, patient]);
@@ -126,6 +128,9 @@ describe('purge', () => {
     await commonElements.waitForPageLoaded();
 
     await commonElements.sync(true); // get the new list of ids to purge
+    purgeLog = await getPurgeLog();
+    expect(purgeLog.to_purge.length).to.equal(homeVisits.length);
+
     await browser.refresh();
     await commonElements.waitForPageLoaded();
 
@@ -133,8 +138,14 @@ describe('purge', () => {
     expect(allReports.length).to.equal(pregnancies.length);
     expect(allReports.every(report => report.form === 'pregnancy')).to.equal(true);
 
-    const purgeLog = await getPurgeLog();
+    purgeLog = await getPurgeLog();
     expect(purgeLog.count).to.equal(homeVisits.length);
+    expect(purgeLog.roles).to.equal(JSON.stringify(['chw']));
     expect(purgeLog.history.length).to.equal(2);
+    expect(purgeLog.history[0].count).to.equal(homeVisits.length);
+    expect(purgeLog.history[0].roles).to.equal(JSON.stringify(['chw']));
+    expect(purgeLog.history[1].count).to.equal(reportsToPurge.length);
+    expect(purgeLog.history[1].roles).to.equal(JSON.stringify(['chw']));
+    expect(purgeLog.to_purge.length).to.equal(0); // queue is empty
   });
 });
