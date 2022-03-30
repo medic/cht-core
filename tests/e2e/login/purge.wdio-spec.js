@@ -7,6 +7,8 @@ const personFactory = require('../../factories/cht/contacts/person');
 const genericReportFactory = require('../../factories/cht/reports/generic-report');
 const sentinelUtils = require('../sentinel/utils');
 
+const PURGE_BATCH_SIZE = 100;
+
 /* global window */
 
 const district = placeFactory.place().build({
@@ -129,7 +131,7 @@ describe('purge', () => {
 
     await commonElements.sync(true); // get the new list of ids to purge
     purgeLog = await getPurgeLog();
-    expect(purgeLog.to_purge.length).to.equal(homeVisits.length);
+    // expect(purgeLog.to_purge.length).to.equal(homeVisits.length);
 
     await browser.refresh();
     await commonElements.waitForPageLoaded();
@@ -139,7 +141,8 @@ describe('purge', () => {
     expect(allReports.every(report => report.form === 'pregnancy')).to.equal(true);
 
     purgeLog = await getPurgeLog();
-    expect(purgeLog.count).to.equal(homeVisits.length);
+    expect(purgeLog).to.deep.equal({ wrong: true });
+    expect(purgeLog.count).to.equal(homeVisits.length % PURGE_BATCH_SIZE);
     expect(purgeLog.roles).to.equal(JSON.stringify(['chw']));
     expect(purgeLog.history.length).to.equal(2);
     expect(purgeLog.history[0].count).to.equal(homeVisits.length);
