@@ -131,7 +131,7 @@ describe('purge', () => {
 
     await commonElements.sync(true); // get the new list of ids to purge
     purgeLog = await getPurgeLog();
-    // expect(purgeLog.to_purge.length).to.equal(homeVisits.length);
+    expect(purgeLog.to_purge.length).to.equal(homeVisits.length);
 
     await browser.refresh();
     await commonElements.waitForPageLoaded();
@@ -141,14 +141,12 @@ describe('purge', () => {
     expect(allReports.every(report => report.form === 'pregnancy')).to.equal(true);
 
     purgeLog = await getPurgeLog();
-    expect(purgeLog).to.deep.equal({ wrong: true });
-    expect(purgeLog.count).to.equal(homeVisits.length % PURGE_BATCH_SIZE);
+    expect(purgeLog.count).to.equal(homeVisits.length - PURGE_BATCH_SIZE);
     expect(purgeLog.roles).to.equal(JSON.stringify(['chw']));
-    expect(purgeLog.history.length).to.equal(2);
-    expect(purgeLog.history[0].count).to.equal(homeVisits.length);
-    expect(purgeLog.history[0].roles).to.equal(JSON.stringify(['chw']));
-    expect(purgeLog.history[1].count).to.equal(reportsToPurge.length);
-    expect(purgeLog.history[1].roles).to.equal(JSON.stringify(['chw']));
+    expect(purgeLog.history.length).to.equal(3);
+    expect(purgeLog.history[0].count).to.equal(homeVisits.length - PURGE_BATCH_SIZE);
+    expect(purgeLog.history[1].count).to.equal(PURGE_BATCH_SIZE);
+    expect(purgeLog.history[2].count).to.equal(0);
     expect(purgeLog.to_purge.length).to.equal(0); // queue is empty
   });
 });
