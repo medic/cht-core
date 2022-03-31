@@ -78,6 +78,13 @@ export class SessionService {
     if (!userCtx || !userCtx.name) {
       return this.logout();
     }
+
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted && !document.cookie.match(COOKIE_NAME)) {
+        this.navigateToLogin();
+      }
+    });
+
     return this.http
       .get<{ userCtx: { name:string; roles:string[] } }>('/_session', { responseType: 'json' })
       .toPromise()
