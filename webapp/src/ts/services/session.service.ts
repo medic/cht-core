@@ -55,7 +55,12 @@ export class SessionService {
    */
   userCtx () {
     if (!this.userCtxCookieValue) {
-      this.userCtxCookieValue = JSON.parse(this.cookieService.get(COOKIE_NAME));
+      try {
+        this.userCtxCookieValue = JSON.parse(this.cookieService.get(COOKIE_NAME));
+      } catch(error) {
+        console.error('Cookie parsing error', error);
+        this.userCtxCookieValue = null;
+      }
     }
 
     return this.userCtxCookieValue;
