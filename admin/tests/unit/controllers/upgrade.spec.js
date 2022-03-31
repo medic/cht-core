@@ -11,6 +11,9 @@ describe('UpgradeCtrl controller', () => {
   let http;
   let timeout;
   let translate;
+  let window;
+
+  const nextTick = () => new Promise(r => setTimeout(r));
 
   beforeEach(() => {
     module('adminApp');
@@ -43,12 +46,16 @@ describe('UpgradeCtrl controller', () => {
 
     inject(($controller, _$timeout_) => {
       timeout = _$timeout_;
+      window = {
+        location: { reload: sinon.stub() },
+      };
       createController = () => {
         scope = {};
         return $controller('UpgradeCtrl', {
           $q: Q,
           $scope: scope,
           $translate: translate,
+          $window: window,
         });
       };
     });
@@ -268,7 +275,6 @@ describe('UpgradeCtrl controller', () => {
   });
 
   it('should continue following when request errors', async () => {
-    const nextTick = () => new Promise(r => setTimeout(r));
     const deployInfo = { the: 'deplopy info', version: '4.1.0' };
     const upgradeDoc = {
       from: { version: '4.1.0' },
@@ -377,7 +383,7 @@ describe('UpgradeCtrl controller', () => {
       expect(scope.upgradeDoc).to.deep.equal({ up: 'grade' });
     });
 
-    it('should perform an upgrade', async () => {
+    it('should perform an upgrade and reload the page', async () => {
       modal.resolves();
       buildsDb.query.resolves({
         rows: [
@@ -386,10 +392,14 @@ describe('UpgradeCtrl controller', () => {
         ],
       });
       const deployInfo = { the: 'deplopy info', version: '4.1.0' };
-      http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
+      const deployInfoUpgraded = { the: 'deplopy info', version: '4.2.0' };
+      http.get.withArgs('/api/deploy-info')
+        .onCall(0).resolves({ data: deployInfo })
+        .onCall(1).resolves({ data: deployInfoUpgraded });
       http.get.withArgs('/api/v2/upgrade')
         .onCall(0).resolves({ data: { upgradeDoc: undefined  } })
-        .onCall(1).resolves({ data: { upgradeDoc: { up: 'grade' }, indexers: [] } });
+        .onCall(1).resolves({ data: { upgradeDoc: { up: 'grade' }, indexers: [] } })
+        .onCall(2).resolves({ data: { upgradeDoc: undefined, indexers: [] } });
       http.post.withArgs('/api/v2/upgrade').resolves();
 
       createController();
@@ -417,51 +427,21 @@ describe('UpgradeCtrl controller', () => {
       ]);
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
       expect(scope.upgradeDoc).to.deep.equal({ up: 'grade' });
+
+      expect(window.location.reload.callCount).to.equal(0);
+
+      timeout.flush(2000);
+
+      expect(window.location.reload.callCount).to.equal(0);
+
+
+      expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(3);
+      await nextTick();
+      expect(http.get.withArgs('/api/deploy-info').callCount).to.equal(2);
+      expect(window.location.reload.callCount).to.equal(1);
     });
 
-    it('should complete an upgrade', async () => {
-      modal.resolves();
-      buildsDb.query.resolves({
-        rows: [
-          { id: 'medic:medic:branch1', value: { version: 'branch1' } },
-          { id: 'medic:medic:branch2', value: { version: 'branch2' } },
-        ],
-      });
-      const deployInfo = { the: 'deplopy info', version: '4.1.0' };
-      http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
-      http.get.withArgs('/api/v2/upgrade')
-        .onCall(0).resolves({ data: { upgradeDoc: undefined  } })
-        .onCall(1).resolves({ data: { upgradeDoc: { up: 'grade' }, indexers: [] } });
-      http.post.withArgs('/api/v2/upgrade/complete').resolves();
-
-      createController();
-      await scope.setupPromise;
-
-      await scope.upgrade({ version: '4.2.0' }, 'complete');
-
-      expect(modal.callCount).to.equal(1);
-      expect(modal.args[0][0]).to.deep.nested.include({
-        templateUrl: 'templates/upgrade_confirm.html',
-        controller: 'UpgradeConfirmCtrl',
-        'model.stageOnly': false,
-        'model.before': '4.1.0',
-        'model.after': '4.2.0'
-      });
-      const upgradeCb = modal.args[0][0].model.confirmCallback;
-      expect(http.post.callCount).to.equal(0);
-      expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(1);
-
-      await upgradeCb();
-      expect(http.post.callCount).to.equal(1);
-      expect(http.post.args[0]).to.deep.equal([
-        '/api/v2/upgrade/complete',
-        { build: { version: '4.2.0' } },
-      ]);
-      expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
-      expect(scope.upgradeDoc).to.deep.equal({ up: 'grade' });
-    });
-
-    it('should throw errors', async () => {
+    it('should throw 500 errors on complete', async () => {
       modal.resolves();
       buildsDb.query.resolves({
         rows: [
@@ -473,12 +453,12 @@ describe('UpgradeCtrl controller', () => {
       http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
       http.get.withArgs('/api/v2/upgrade').onCall(0).resolves({ data: { upgradeDoc: undefined  } });
 
-      http.post.withArgs('/api/v2/upgrade').rejects({ an: 'error' });
+      http.post.withArgs('/api/v2/upgrade/complete').rejects({ an: 'error', status: 500 });
 
       createController();
       await scope.setupPromise;
 
-      await scope.upgrade({ version: '4.2.0' });
+      await scope.upgrade({ version: '4.2.0' }, 'complete');
 
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(1);
       expect(modal.callCount).to.equal(1);
@@ -498,15 +478,122 @@ describe('UpgradeCtrl controller', () => {
         await upgradeCb();
         expect.fail('Should have thrown');
       } catch (err) {
+        expect(err).to.deep.equal({ an: 'error', status: 500 });
+      }
+
+      expect(http.post.callCount).to.equal(1);
+      expect(http.post.args[0]).to.deep.equal([
+        '/api/v2/upgrade/complete',
+        { build: { version: '4.2.0' } },
+      ]);
+      expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(1);
+    });
+
+    it('should throw any error when action is not complete', async () => {
+      modal.resolves();
+      buildsDb.query.resolves({
+        rows: [
+          { id: 'medic:medic:branch1', value: { version: 'branch1' } },
+          { id: 'medic:medic:branch2', value: { version: 'branch2' } },
+        ],
+      });
+      const deployInfo = { the: 'deplopy info', version: '4.1.0' };
+      http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
+      http.get.withArgs('/api/v2/upgrade').onCall(0).resolves({ data: { upgradeDoc: undefined  } });
+
+      http.post.withArgs('/api/v2/upgrade/stage').rejects({ an: 'error' });
+
+      createController();
+      await scope.setupPromise;
+
+      await scope.upgrade({ version: '4.2.0' }, 'stage');
+
+      expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(1);
+      expect(modal.callCount).to.equal(1);
+      expect(modal.args[0][0]).to.deep.nested.include({
+        templateUrl: 'templates/upgrade_confirm.html',
+        controller: 'UpgradeConfirmCtrl',
+        'model.stageOnly': true,
+        'model.before': '4.1.0',
+        'model.after': '4.2.0',
+        'model.errorKey': 'instance.upgrade.error.deploy',
+      });
+      const upgradeCb = modal.args[0][0].model.confirmCallback;
+      expect(http.post.callCount).to.equal(0);
+      expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(1);
+
+      try {
+        await upgradeCb();
+        expect.fail('Should have thrown');
+      } catch (err) {
         expect(err).to.deep.equal({ an: 'error' });
       }
 
       expect(http.post.callCount).to.equal(1);
       expect(http.post.args[0]).to.deep.equal([
-        '/api/v2/upgrade',
+        '/api/v2/upgrade/stage',
         { build: { version: '4.2.0' } },
       ]);
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(1);
+    });
+
+    it('should complete an upgrade and reload page', async () => {
+      modal.resolves();
+      buildsDb.query.resolves({
+        rows: [
+          { id: 'medic:medic:branch1', value: { version: 'branch1' } },
+          { id: 'medic:medic:branch2', value: { version: 'branch2' } },
+        ],
+      });
+      const deployInfo = { the: 'deplopy info', version: '4.1.0' };
+      http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
+      http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc: undefined  } });
+      http.get.withArgs('/setup/poll').rejects({ error: 'whatever' });
+      http.get.withArgs('/setup/poll').onCall(5).resolves();
+      http.post.withArgs('/api/v2/upgrade/complete').rejects({ the: 'timeout error' });
+
+      createController();
+      await scope.setupPromise;
+
+      await scope.upgrade({ version: '4.2.0' }, 'complete');
+
+      expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(1);
+      expect(modal.callCount).to.equal(1);
+      expect(modal.args[0][0]).to.deep.nested.include({
+        templateUrl: 'templates/upgrade_confirm.html',
+        controller: 'UpgradeConfirmCtrl',
+        'model.stageOnly': false,
+        'model.before': '4.1.0',
+        'model.after': '4.2.0',
+        'model.errorKey': 'instance.upgrade.error.deploy',
+      });
+      const upgradeCb = modal.args[0][0].model.confirmCallback;
+      expect(http.post.callCount).to.equal(0);
+      expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(1);
+
+      const promise = upgradeCb();
+      await timeout.flush(1000);
+      await nextTick();
+      await timeout.flush(1000);
+      await nextTick();
+      await timeout.flush(1000);
+      await nextTick();
+      await timeout.flush(1000);
+      await nextTick();
+      await timeout.flush(1000);
+      await nextTick();
+      await timeout.flush(1000);
+      await nextTick();
+      await promise;
+
+      expect(http.post.callCount).to.equal(1);
+      expect(http.post.args[0]).to.deep.equal([
+        '/api/v2/upgrade/complete',
+        { build: { version: '4.2.0' } },
+      ]);
+
+      expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
+      expect(http.get.withArgs('/setup/poll').callCount).to.equal(6);
     });
   });
 
@@ -712,7 +799,7 @@ describe('UpgradeCtrl controller', () => {
       expect(scope.upgradeDoc).to.deep.equal(undefined);
     });
 
-    it('should throw errors', async () => {
+    it('should throw 500 errors', async () => {
       modal.resolves();
       const upgradeDoc = {
         to: { the: 'buildinfo', version: '4.3.0' },
@@ -722,7 +809,7 @@ describe('UpgradeCtrl controller', () => {
       http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
       http.get.withArgs('/api/v2/upgrade').onCall(0).resolves({ data: { upgradeDoc  } });
 
-      http.post.withArgs('/api/v2/upgrade').rejects({ an: 'error' });
+      http.post.withArgs('/api/v2/upgrade').rejects({ an: 'error', status: 500 });
 
       createController();
       await scope.setupPromise;
@@ -747,7 +834,7 @@ describe('UpgradeCtrl controller', () => {
         await upgradeCb();
         expect.fail('Should have thrown');
       } catch (err) {
-        expect(err).to.deep.equal({ an: 'error' });
+        expect(err).to.deep.equal({ an: 'error', status: 500 });
       }
 
       expect(http.post.callCount).to.equal(1);

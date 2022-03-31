@@ -13,6 +13,7 @@ const logger = require('../../logger');
  * @return {Promise}
  */
 const finalize = async () => {
+  await upgradeLogService.setComplete();
   await upgradeLogService.setFinalizing();
   await upgradeUtils.unstageStagedDdocs();
   await upgradeUtils.deleteStagedDdocs();
@@ -104,6 +105,7 @@ const indexStagedViews = async () => {
 };
 
 const complete = async (buildInfo) => {
+  await upgradeLogService.setCompleting();
   const stagingDoc = await upgradeUtils.getStagingDoc(buildInfo);
   const payload = upgradeUtils.getUpgradeServicePayload(stagingDoc);
 

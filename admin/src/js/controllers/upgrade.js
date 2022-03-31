@@ -22,6 +22,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     const buildsDb = pouchDB(BUILDS_DB);
 
     const UPGRADE_URL = '/api/v2/upgrade';
+    const POLL_URL = '/setup/poll';
     const UPGRADE_POLL_FREQ = 2000;
     const BUILD_LIST_LIMIT = 50;
 
@@ -39,6 +40,10 @@ angular.module('controllers').controller('UpgradeCtrl',
       return $http
         .get('/api/deploy-info')
         .then(({ data: deployInfo }) => {
+          if ($scope.currentDeploy && $scope.currentDeploy.version !== deployInfo.version) {
+            return $scope.reloadPage();
+          }
+
           $scope.currentDeploy = deployInfo;
         })
         .catch(err => logError(err, 'instance.upgrade.error.deploy_info_fetch'));
@@ -48,6 +53,9 @@ angular.module('controllers').controller('UpgradeCtrl',
       return $http
         .get(UPGRADE_URL)
         .then(({ data: { upgradeDoc, indexers } }) => {
+          if ($scope.upgradeDoc && !upgradeDoc) {
+            getExistingDeployment();
+          }
           $scope.upgradeDoc = upgradeDoc;
           $scope.indexerProgress = indexers;
 
@@ -164,6 +172,15 @@ angular.module('controllers').controller('UpgradeCtrl',
       }).catch(() => {});
     };
 
+    const waitUntilApiStarts = () => {
+      return $http
+        .get(POLL_URL)
+        .catch(() => {
+          const waitOneSecond = () => new Promise(r => $timeout(r, 1000));
+          return waitOneSecond().then(() => waitUntilApiStarts());
+        });
+    };
+
     const upgrade = (build, action) => {
       $scope.error = false;
 
@@ -171,6 +188,14 @@ angular.module('controllers').controller('UpgradeCtrl',
 
       return $http
         .post(url, { build })
+        .catch(err => {
+          // todo which status do we get with nginx???
+          if (err && (!err.status || err.status !== 500) && action === 'complete') {
+            // refresh page after API is back up
+            return waitUntilApiStarts().then(() => $scope.reloadPage());
+          }
+          throw err;
+        })
         .then(() => getCurrentUpgrade());
     };
 

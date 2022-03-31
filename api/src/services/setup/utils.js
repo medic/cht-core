@@ -297,10 +297,11 @@ const unstageStagedDdocs = async () => {
 const getUpgradeServicePayload = (stagingDoc) => {
   const dockerCompose = {};
   const attachmentPrefix = 'docker-compose';
+
   Object
-    .entries(stagingDoc._attachments['docker-compose'])
-    .filter((name) => name.startsWith(attachmentPrefix))
-    .forEach((name, contents) => {
+    .entries(stagingDoc._attachments)
+    .filter(([name]) => name.startsWith(attachmentPrefix))
+    .forEach(([name, contents]) => {
       const buffer = Buffer.from(contents.data, 'base64');
       const fileName = name.replace(attachmentPrefix, '');
       dockerCompose[fileName] = buffer.toString('utf-8');

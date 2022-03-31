@@ -21,6 +21,7 @@ describe('Upgrade steps', () => {
 
   describe('finalize', () => {
     it('should overwrite ddocs and cleanup', async () => {
+      sinon.stub(upgradeLogService, 'setComplete');
       sinon.stub(upgradeLogService, 'setFinalizing');
       sinon.stub(upgradeUtils, 'unstageStagedDdocs');
       sinon.stub(upgradeUtils, 'deleteStagedDdocs');
@@ -29,6 +30,7 @@ describe('Upgrade steps', () => {
 
       await upgradeSteps.finalize();
 
+      expect(upgradeLogService.setComplete.callCount).to.equal(1);
       expect(upgradeLogService.setFinalizing.callCount).to.equal(1);
       expect(upgradeUtils.unstageStagedDdocs.callCount).to.equal(1);
       expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(1);
@@ -38,6 +40,7 @@ describe('Upgrade steps', () => {
 
     it('should throw an error if unstage fails', async () => {
       sinon.stub(upgradeLogService, 'setFinalizing');
+      sinon.stub(upgradeLogService, 'setComplete');
       sinon.stub(upgradeUtils, 'unstageStagedDdocs').rejects({ reason: 'omg' });
 
       try {
@@ -45,6 +48,7 @@ describe('Upgrade steps', () => {
         expect.fail('Should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ reason: 'omg' });
+        expect(upgradeLogService.setComplete.callCount).to.equal(1);
         expect(upgradeLogService.setFinalizing.callCount).to.equal(1);
         expect(upgradeUtils.unstageStagedDdocs.callCount).to.equal(1);
       }
@@ -52,6 +56,7 @@ describe('Upgrade steps', () => {
 
     it('should throw an error if deleting staged ddocs fails', async () => {
       sinon.stub(upgradeLogService, 'setFinalizing');
+      sinon.stub(upgradeLogService, 'setComplete');
       sinon.stub(upgradeUtils, 'unstageStagedDdocs');
       sinon.stub(upgradeUtils, 'deleteStagedDdocs').rejects({ error: 'thing' });
 
@@ -67,6 +72,7 @@ describe('Upgrade steps', () => {
     });
 
     it('should throw an error if cleanup fails', async () => {
+      sinon.stub(upgradeLogService, 'setComplete');
       sinon.stub(upgradeLogService, 'setFinalizing');
       sinon.stub(upgradeUtils, 'unstageStagedDdocs');
       sinon.stub(upgradeUtils, 'deleteStagedDdocs');
