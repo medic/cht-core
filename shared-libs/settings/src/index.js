@@ -33,6 +33,7 @@ const getCredentialsDoc = (key) => {
 };
 
 // TODO use node crypto and couchdb secret to encrypt/decrypt the password
+// eg: curl /_node/_local/_config/chttpd_auth/secret
 const getCredentials = (key) => {
   return getCredentialsDoc(key)
     .then(doc => doc && doc.password);
