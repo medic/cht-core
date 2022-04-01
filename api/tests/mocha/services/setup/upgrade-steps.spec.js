@@ -390,4 +390,56 @@ describe('Upgrade steps', () => {
       expect(viewIndexer.getViewsToIndex.callCount).to.equal(1);
     });
   });
+
+  describe('complete', () => {
+    it('should get staging doc, prep payload and make upgrade request', async () => {
+      sinon.stub(upgradeLogService, 'setCompleting');
+      sinon.stub(upgradeUtils, 'getStagingDoc').resolves({ the: 'staging_doc' });
+      sinon.stub(upgradeUtils, 'getUpgradeServicePayload').returns({ the: 'payload' });
+      sinon.stub(upgradeUtils, 'makeUpgradeRequest').resolves('response');
+
+      const buildInfo = { version: '4.0.0' };
+
+      expect(await upgradeSteps.complete({ ...buildInfo })).to.equal('response');
+
+      expect(upgradeLogService.setCompleting.callCount).to.equal(1);
+      expect(upgradeUtils.getStagingDoc.callCount).to.deep.equal(1);
+      expect(upgradeUtils.getStagingDoc.args[0]).to.deep.equal([buildInfo]);
+      expect(upgradeUtils.getUpgradeServicePayload.callCount).to.equal(1);
+      expect(upgradeUtils.getUpgradeServicePayload.args[0]).to.deep.equal([{ the: 'staging_doc' }]);
+      expect(upgradeUtils.makeUpgradeRequest.callCount).to.equal(1);
+      expect(upgradeUtils.makeUpgradeRequest.args[0]).to.deep.equal([{ the: 'payload' }]);
+    });
+
+    it('should throw missing staging doc errors', async () => {
+      sinon.stub(upgradeLogService, 'setCompleting');
+      sinon.stub(upgradeUtils, 'getStagingDoc').rejects({ status: 404 });
+
+      const buildInfo = { version: '4.0.0' };
+
+      await expect(upgradeSteps.complete(buildInfo)).to.be.rejected.and.eventually.deep.equal({ status: 404 });
+    });
+
+    it('should throw getUpgradeServicePayload errors', async () => {
+      sinon.stub(upgradeLogService, 'setCompleting');
+      sinon.stub(upgradeUtils, 'getStagingDoc').resolves({ the: 'staging_doc' });
+      sinon.stub(upgradeUtils, 'getUpgradeServicePayload').throws(new Error('some type error'));
+
+      const buildInfo = { version: '4.0.0' };
+      await expect(upgradeSteps.complete(buildInfo)).to.be.rejectedWith('some type error');
+      expect(upgradeLogService.setCompleting.callCount).to.equal(1);
+      expect(upgradeUtils.getStagingDoc.callCount).to.deep.equal(1);
+    });
+
+    it('should throw makeUpgradeRequest errors', async () => {
+      sinon.stub(upgradeLogService, 'setCompleting');
+      sinon.stub(upgradeUtils, 'getStagingDoc').resolves({ the: 'staging_doc' });
+      sinon.stub(upgradeUtils, 'getUpgradeServicePayload').returns({ the: 'payload' });
+      sinon.stub(upgradeUtils, 'makeUpgradeRequest').rejects({ error: 'boom' });
+
+      const buildInfo = { version: '4.0.0' };
+
+      await expect(upgradeSteps.complete(buildInfo)).to.be.rejected.and.eventually.deep.equal({ error: 'boom' });
+    });
+  });
 });

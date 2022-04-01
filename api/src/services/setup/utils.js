@@ -296,7 +296,7 @@ const unstageStagedDdocs = async () => {
 
 const getUpgradeServicePayload = (stagingDoc) => {
   const dockerCompose = {};
-  const attachmentPrefix = 'docker-compose';
+  const attachmentPrefix = 'docker-compose/';
 
   Object
     .entries(stagingDoc._attachments)
@@ -314,6 +314,14 @@ const getUpgradeServicePayload = (stagingDoc) => {
 };
 
 const makeUpgradeRequest = (payload) => {
+  let url;
+  try {
+    url = new URL(UPGRADE_SERVICE_URL);
+    url.pathname = '/upgrade';
+  } catch (err) {
+    throw new Error(`Invalid UPGRADE_SERVICE_URL: ${UPGRADE_SERVICE_URL}`);
+  }
+
   return rpn.post({ url: `${UPGRADE_SERVICE_URL}/upgrade`, json: true, body: payload });
 };
 
