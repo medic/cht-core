@@ -11,7 +11,7 @@ describe('UpgradeCtrl controller', () => {
   let http;
   let timeout;
   let translate;
-  let window;
+  let state;
 
   const nextTick = () => new Promise(r => setTimeout(r));
 
@@ -36,26 +36,27 @@ describe('UpgradeCtrl controller', () => {
     };
     translate = sinon.stub().resolvesArg(0);
     translate.onReady = sinon.stub().resolves();
+    state = {
+      params: {},
+      go: sinon.stub(),
+    };
 
     module($provide => {
       $provide.value('Modal', modal);
       $provide.value('Version', version);
       $provide.value('pouchDB', pouchDb);
       $provide.value('$http', http);
+      $provide.value('$state', state);
     });
 
     inject(($controller, _$timeout_) => {
       timeout = _$timeout_;
-      window = {
-        location: { reload: sinon.stub() },
-      };
       createController = () => {
         scope = {};
         return $controller('UpgradeCtrl', {
           $q: Q,
           $scope: scope,
           $translate: translate,
-          $window: window,
         });
       };
     });
@@ -428,17 +429,18 @@ describe('UpgradeCtrl controller', () => {
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
       expect(scope.upgradeDoc).to.deep.equal({ up: 'grade' });
 
-      expect(window.location.reload.callCount).to.equal(0);
+      expect(state.go.callCount).to.equal(0);
 
       timeout.flush(2000);
 
-      expect(window.location.reload.callCount).to.equal(0);
+      expect(state.go.callCount).to.equal(0);
 
 
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(3);
       await nextTick();
       expect(http.get.withArgs('/api/deploy-info').callCount).to.equal(2);
-      expect(window.location.reload.callCount).to.equal(1);
+      expect(state.go.callCount).to.equal(1);
+      expect(state.go.args[0]).to.deep.equal(['upgrade', { upgraded: true }]);
     });
 
     it('should throw 500 errors on complete', async () => {

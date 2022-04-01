@@ -6,6 +6,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     $log,
     $q,
     $scope,
+    $state,
     $timeout,
     $translate,
     $window,
@@ -19,6 +20,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     $scope.loading = true;
     $scope.versions = {};
+    $scope.upgraded = $state.params.upgraded;
     const buildsDb = pouchDB(BUILDS_DB);
 
     const UPGRADE_URL = '/api/v2/upgrade';
@@ -41,7 +43,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         .get('/api/deploy-info')
         .then(({ data: deployInfo }) => {
           if ($scope.currentDeploy && $scope.currentDeploy.version !== deployInfo.version) {
-            return $scope.reloadPage();
+            return reloadPage();
           }
 
           $scope.currentDeploy = deployInfo;
@@ -153,7 +155,9 @@ angular.module('controllers').controller('UpgradeCtrl',
       return Version.compare(currentVersion, releaseVersion) > 0;
     };
 
-    $scope.reloadPage = () => $window.location.reload();
+    const reloadPage = () => {
+      $state.go('upgrade', { upgraded: true });
+    };
 
     $scope.upgrade = (build, action) => {
       const stageOnly = action === 'stage';
@@ -192,7 +196,7 @@ angular.module('controllers').controller('UpgradeCtrl',
           // todo which status do we get with nginx???
           if (err && (!err.status || err.status !== 500) && action === 'complete') {
             // refresh page after API is back up
-            return waitUntilApiStarts().then(() => $scope.reloadPage());
+            return waitUntilApiStarts().then(() => reloadPage());
           }
           throw err;
         })
