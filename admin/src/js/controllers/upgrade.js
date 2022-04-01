@@ -9,7 +9,6 @@ angular.module('controllers').controller('UpgradeCtrl',
     $state,
     $timeout,
     $translate,
-    $window,
     Modal,
     Version,
     pouchDB
