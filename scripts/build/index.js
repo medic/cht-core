@@ -11,6 +11,7 @@ const {
   BRANCH,
   BUILD_NUMBER,
   API_PORT,
+  ECR_REPO,
 } = process.env;
 const DEFAULT_API_PORT = 5988;
 
@@ -46,6 +47,7 @@ const getApiUrl = (pathname = '') => {
 };
 
 const releaseName = TAG || BRANCH || 'local-development';
+const buildTime = new Date().getTime();
 
 const setBuildInfo = () => {
   const buildInfoPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'build_info');
