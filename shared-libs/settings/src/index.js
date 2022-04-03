@@ -1,6 +1,10 @@
 const request = require('request-promise-native');
+const crypto = require('crypto');
 
-const getCredentialId = key => `credential:${key}`;
+const IV_LENGTH = 16;
+const CRYTPO_ALGO = 'aes-256-cbc';
+
+const getCredentialId = id => `credential:${id}`;
 
 const getCouchNodeName = () => process.env.COUCH_NODE_NAME;
 
@@ -14,14 +18,14 @@ const getServerUrl = () => {
   return couchUrl && couchUrl.slice(0, couchUrl.lastIndexOf('/'));
 };
 
-const getVaultUrl = (key) => `${getCouchUrl()}-vault/${getCredentialId(key)}`;
+const getVaultUrl = (id) => `${getCouchUrl()}-vault/${getCredentialId(id)}`;
 
-const getCredentialsDoc = (key) => {
-  if (!key) {
+const getCredentialsDoc = (id) => {
+  if (!id) {
     return Promise.reject(new Error('You must pass the key for the credentials you want'));
   }
   return request
-    .get(`${getVaultUrl(key)}`, { json: true }) // TODO do we allow spaces in credential keys?
+    .get(`${getVaultUrl(id)}`, { json: true }) // TODO do we allow spaces in credential keys?
     .catch(err => {
       if (err.statusCode === 404) {
         // No credentials defined
@@ -32,22 +36,58 @@ const getCredentialsDoc = (key) => {
     });
 };
 
-// TODO use node crypto and couchdb secret to encrypt/decrypt the password
-// eg: curl /_node/_local/_config/chttpd_auth/secret
-const getCredentials = (key) => {
-  return getCredentialsDoc(key)
-    .then(doc => doc && doc.password);
+const getKey = () => {
+  const url = `${getCouchConfigUrl()}/chttpd_auth/secret`;
+  return request.get(url, { json: true }); // TODO need to e2e test this
 };
 
-const setCredentials = (key, password) => {
-  return getCredentialsDoc(key)
-    .then(doc => {
-      if (!doc) {
-        doc = { _id: getCredentialId(key) };
-      }
-      doc.password = password;
+const encrypt = (text) => {
+  return getKey()
+    .then(key => {
+      const iv = crypto.randomBytes(IV_LENGTH);
+      const cipher = crypto.createCipheriv(CRYTPO_ALGO, Buffer.from(key), iv);
+      const start = cipher.update(text);
+      const end = cipher.final();
+      const encrypted = Buffer.concat([ start, end ]);
+      return iv.toString('hex') + ':' + encrypted.toString('hex');
+    });
+};
 
-      return request.put(`${getVaultUrl(key)}`, { json: true, body: doc });
+const decrypt = (text) => {
+  return getKey()
+    .then(key => {
+      const parts = text.split(':');
+      const iv = Buffer.from(parts.shift(), 'hex');
+      const encryptedText = Buffer.from(parts.join(':'), 'hex');
+      const decipher = crypto.createDecipheriv(CRYTPO_ALGO, Buffer.from(key), iv);
+      const start = decipher.update(encryptedText);
+      const final = decipher.final();
+      return Buffer.concat([ start, final ]).toString();
+    });
+};
+
+const getCredentials = (id) => {
+  return getCredentialsDoc(id)
+    .then(doc => {
+      const encrypted = doc && doc.password;
+      if (!encrypted) {
+        return;
+      }
+      return decrypt(encrypted);
+    });
+};
+
+const setCredentials = (id, password) => {
+  return Promise.all([
+    getCredentialsDoc(id),
+    encrypt(password)
+  ])
+    .then(([ doc, encrypted ]) => {
+      if (!doc) {
+        doc = { _id: getCredentialId(id) };
+      }
+      doc.password = encrypted;
+      return request.put(`${getVaultUrl(id)}`, { json: true, body: doc });
     });
 };
 

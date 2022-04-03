@@ -1,17 +1,19 @@
-const sinon = require('sinon');
 const request = require('request-promise-native');
-const chai = require('chai');
-const { expect } = chai;
+const crypto = require('crypto');
+
+const sinon = require('sinon');
+const { expect } = require('chai');
 
 const lib = require('../src/');
 
 describe('Settings Shared Library', () => {
-  const environment = {};
+  const environment = {
+    COUCH_URL: 'http://user:pass@server.com/medic',
+    COUCH_NODE_NAME: '_local'
+  };
 
   beforeEach(() => {
-    sinon
-      .stub(process, 'env')
-      .value(environment);
+    sinon.stub(process, 'env').value(environment);
   });
 
   afterEach(() => sinon.restore());
@@ -19,7 +21,7 @@ describe('Settings Shared Library', () => {
   describe('getCredentials', () => {
 
     beforeEach(() => {
-      environment.COUCH_URL = 'http://user:pass@server.com/medic';
+
     });
 
     it('rejects if no key given', () => {
@@ -47,7 +49,7 @@ describe('Settings Shared Library', () => {
         });
     });
 
-    it('should handle when permissions are not defined', () => {
+    it('should handle when credentials are not defined', () => {
       sinon.stub(request, 'get').rejects({ statusCode: 404 });
 
       return lib
@@ -69,14 +71,29 @@ describe('Settings Shared Library', () => {
 
     it('should fetch the password from the doc', () => {
       environment.COUCH_URL = 'http://server.com/medic';
-      sinon.stub(request, 'get').resolves({ password: 'mypass' });
+      const iv = crypto.randomBytes(16).toString('hex');
+      const encryptedPass = crypto.randomBytes(16).toString('hex');
+      const cipher = {
+        update: sinon.stub().returns(Buffer.from('start')),
+        final: sinon.stub().returns(Buffer.from('end'))
+      };
+      sinon.stub(request, 'get')
+        .withArgs('http://server.com/medic-vault/credential:mykey').resolves({ password: `${iv}:${encryptedPass}` })
+        .withArgs('http://server.com/_node/_local/_config/chttpd_auth/secret').resolves('mysecret');
+      sinon.stub(crypto, 'createDecipheriv').returns(cipher);
 
       return lib
         .getCredentials('mykey')
         .then(actual => {
-          expect(actual).to.equal('mypass');
-          expect(request.get.callCount).to.equal(1);
-          expect(request.get.args[0][0]).to.equal('http://server.com/medic-vault/credential:mykey');
+          expect(actual).to.equal('startend');
+          expect(request.get.callCount).to.equal(2);
+          expect(crypto.createDecipheriv.callCount).to.equal(1);
+          expect(crypto.createDecipheriv.args[0][0]).to.equal('aes-256-cbc');
+          expect(crypto.createDecipheriv.args[0][1].toString()).to.equal('mysecret');
+          expect(crypto.createDecipheriv.args[0][2].toString('hex')).to.equal(iv);
+          expect(cipher.update.callCount).to.equal(1);
+          expect(cipher.update.args[0][0].toString('hex')).to.equal(encryptedPass);
+          expect(cipher.final.callCount).to.equal(1);
         });
     });
 
@@ -84,16 +101,25 @@ describe('Settings Shared Library', () => {
 
   describe('setCredentials', () => {
 
+    let cipher;
+
     beforeEach(() => {
-      environment.COUCH_URL = 'http://user:pass@server.com/medic';
+      cipher = {
+        update: sinon.stub().returns(Buffer.from('start')),
+        final: sinon.stub().returns(Buffer.from('end'))
+      };
+      sinon.stub(crypto, 'randomBytes').returns('myiv');
+      sinon.stub(crypto, 'createCipheriv').returns(cipher);
     });
 
-    it('rejects if no key given', () => {
-      sinon.stub(request, 'get');
+    it('rejects if no id given', () => {
+      sinon.stub(request, 'get')
+        .withArgs('http://server.com/medic-vault/credential:mykey').resolves({ password: `oldiv:oldpass` })
+        .withArgs('http://server.com/_node/_local/_config/chttpd_auth/secret').resolves('mysecret');
       return lib.setCredentials()
         .then(() => expect.fail('exception expected'))
         .catch(err => {
-          expect(request.get.callCount).to.equal(0);
+          expect(request.get.callCount).to.equal(1);
           expect(err.message).to.equal('You must pass the key for the credentials you want');
         });
     });
@@ -103,35 +129,60 @@ describe('Settings Shared Library', () => {
       return lib.setCredentials('mykey', 'mypass')
         .then(() => expect.fail('exception expected'))
         .catch(err => {
-          expect(request.get.callCount).to.equal(1);
-          expect(request.get.args[0][0]).to.equal('http://user:pass@server.com/medic-vault/credential:mykey');
+          expect(request.get.callCount).to.equal(2);
+          expect(request.get.args[0][0]).to.equal('http://server.com/medic-vault/credential:mykey');
           expect(err.message).to.equal('down');
         });
     });
 
     it('handles creating doc', () => {
-      sinon.stub(request, 'get').rejects({ message: 'missing', statusCode: 404 });
+      sinon.stub(request, 'get')
+        .withArgs('http://server.com/medic-vault/credential:mykey').rejects({ message: 'missing', statusCode: 404 })
+        .withArgs('http://server.com/_node/_local/_config/chttpd_auth/secret').resolves('mysecret');
       sinon.stub(request, 'put').resolves();
       return lib.setCredentials('mykey', 'mypass')
         .then(() => {
-          expect(request.get.callCount).to.equal(1);
-          expect(request.get.args[0][0]).to.equal('http://user:pass@server.com/medic-vault/credential:mykey');
+          expect(request.get.callCount).to.equal(2);
           expect(request.put.callCount).to.equal(1);
-          expect(request.put.args[0][0]).to.equal('http://user:pass@server.com/medic-vault/credential:mykey');
-          expect(request.put.args[0][1].body).to.deep.equal({ _id: 'credential:mykey', password: 'mypass' });
+          expect(request.put.args[0][0]).to.equal('http://server.com/medic-vault/credential:mykey');
+          expect(request.put.args[0][1].body).to.deep.equal({
+            _id: 'credential:mykey',
+            password: 'myiv:' + Buffer.from('startend').toString('hex')
+          });
+          expect(crypto.randomBytes.callCount).to.equal(1);
+          expect(crypto.createCipheriv.callCount).to.equal(1);
+          expect(crypto.createCipheriv.args[0][0]).to.equal('aes-256-cbc');
+          expect(crypto.createCipheriv.args[0][1].toString()).to.equal('mysecret');
+          expect(crypto.createCipheriv.args[0][2].toString('hex')).to.equal('myiv');
+          expect(cipher.update.callCount).to.equal(1);
+          expect(cipher.update.args[0][0]).to.equal('mypass');
+          expect(cipher.final.callCount).to.equal(1);
         });
     });
 
     it('handles updating doc', () => {
-      sinon.stub(request, 'get').resolves({ _id: 'credential:mykey', _rev: '1', password: 'old' });
+      sinon.stub(request, 'get')
+        .withArgs('http://server.com/medic-vault/credential:mykey').resolves({ _id: 'credential:mykey', _rev: '1', password: 'old' })
+        .withArgs('http://server.com/_node/_local/_config/chttpd_auth/secret').resolves('mysecret');
       sinon.stub(request, 'put').resolves();
       return lib.setCredentials('mykey', 'mypass')
         .then(() => {
-          expect(request.get.callCount).to.equal(1);
-          expect(request.get.args[0][0]).to.equal('http://user:pass@server.com/medic-vault/credential:mykey');
+          expect(request.get.callCount).to.equal(2);
           expect(request.put.callCount).to.equal(1);
-          expect(request.put.args[0][0]).to.equal('http://user:pass@server.com/medic-vault/credential:mykey');
-          expect(request.put.args[0][1].body).to.deep.equal({ _id: 'credential:mykey', _rev: '1', password: 'mypass' });
+          expect(request.put.args[0][0]).to.equal('http://server.com/medic-vault/credential:mykey');
+          expect(request.put.args[0][1].body).to.deep.equal({
+            _id: 'credential:mykey',
+            _rev: '1',
+            password: 'myiv:' + Buffer.from('startend').toString('hex')
+          });
+          expect(crypto.randomBytes.callCount).to.equal(1);
+          expect(crypto.createCipheriv.callCount).to.equal(1);
+          expect(crypto.createCipheriv.args[0][0]).to.equal('aes-256-cbc');
+          expect(crypto.createCipheriv.args[0][1].toString()).to.equal('mysecret');
+          expect(crypto.createCipheriv.args[0][2].toString('hex')).to.equal('myiv');
+          expect(cipher.update.callCount).to.equal(1);
+          expect(cipher.update.args[0][0]).to.equal('mypass');
+          expect(cipher.final.callCount).to.equal(1);
         });
     });
 
