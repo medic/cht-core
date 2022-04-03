@@ -25,7 +25,7 @@ const getCredentialsDoc = (id) => {
     return Promise.reject(new Error('You must pass the key for the credentials you want'));
   }
   return request
-    .get(`${getVaultUrl(id)}`, { json: true }) // TODO do we allow spaces in credential keys?
+    .get(`${getVaultUrl(id)}`, { json: true })
     .catch(err => {
       if (err.statusCode === 404) {
         // No credentials defined
@@ -37,8 +37,8 @@ const getCredentialsDoc = (id) => {
 };
 
 const getKey = () => {
-  const url = `${getCouchConfigUrl()}/chttpd_auth/secret`;
-  return request.get(url, { json: true }); // TODO need to e2e test this
+  const url = `${getCouchConfigUrl()}/couch_httpd_auth/secret`;
+  return request.get(url, { json: true });
 };
 
 const encrypt = (text) => {

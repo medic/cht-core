@@ -79,7 +79,7 @@ describe('Settings Shared Library', () => {
       };
       sinon.stub(request, 'get')
         .withArgs('http://server.com/medic-vault/credential:mykey').resolves({ password: `${iv}:${encryptedPass}` })
-        .withArgs('http://server.com/_node/_local/_config/chttpd_auth/secret').resolves('mysecret');
+        .withArgs('http://server.com/_node/_local/_config/couch_httpd_auth/secret').resolves('mysecret');
       sinon.stub(crypto, 'createDecipheriv').returns(cipher);
 
       return lib
@@ -115,7 +115,7 @@ describe('Settings Shared Library', () => {
     it('rejects if no id given', () => {
       sinon.stub(request, 'get')
         .withArgs('http://server.com/medic-vault/credential:mykey').resolves({ password: `oldiv:oldpass` })
-        .withArgs('http://server.com/_node/_local/_config/chttpd_auth/secret').resolves('mysecret');
+        .withArgs('http://server.com/_node/_local/_config/couch_httpd_auth/secret').resolves('mysecret');
       return lib.setCredentials()
         .then(() => expect.fail('exception expected'))
         .catch(err => {
@@ -138,7 +138,7 @@ describe('Settings Shared Library', () => {
     it('handles creating doc', () => {
       sinon.stub(request, 'get')
         .withArgs('http://server.com/medic-vault/credential:mykey').rejects({ message: 'missing', statusCode: 404 })
-        .withArgs('http://server.com/_node/_local/_config/chttpd_auth/secret').resolves('mysecret');
+        .withArgs('http://server.com/_node/_local/_config/couch_httpd_auth/secret').resolves('mysecret');
       sinon.stub(request, 'put').resolves();
       return lib.setCredentials('mykey', 'mypass')
         .then(() => {
@@ -163,7 +163,7 @@ describe('Settings Shared Library', () => {
     it('handles updating doc', () => {
       sinon.stub(request, 'get')
         .withArgs('http://server.com/medic-vault/credential:mykey').resolves({ _id: 'credential:mykey', _rev: '1', password: 'old' })
-        .withArgs('http://server.com/_node/_local/_config/chttpd_auth/secret').resolves('mysecret');
+        .withArgs('http://server.com/_node/_local/_config/couch_httpd_auth/secret').resolves('mysecret');
       sinon.stub(request, 'put').resolves();
       return lib.setCredentials('mykey', 'mypass')
         .then(() => {
