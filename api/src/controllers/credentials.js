@@ -6,10 +6,14 @@ const auth = require('../auth');
 
 const checkAuth = req => {
   return auth.getUserCtx(req)
-    .then(userCtx => auth.isDbAdmin(userCtx));
+    .then(userCtx => auth.isDbAdmin(userCtx))
+    .then(isDbAdmin => {
+      if (!isDbAdmin) {
+        return Promise.reject({ code: 403, reason: 'Insufficient permissions' });
+      }
+    });
 };
 
-// TODO unit test
 module.exports = {
   put: (req, res) => {
     const key = req.params.key;

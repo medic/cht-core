@@ -495,8 +495,6 @@ app.get(
   purgedDocsController.checkpoint
 );
 
-// TODO update cht-docs, eg:
-//   curl -X PUT -H "Content-Type: text/plain" -d 'pass' http://admin:pass@localhost:5988/api/v1/credentials/kie
 app.put(
   '/api/v1/credentials/:key',
   authorization.handleAuthErrors,
