@@ -10,7 +10,7 @@ const upgradeLogService = require('./upgrade-log');
 const { DATABASES, MEDIC_DATABASE } = require('./databases');
 const ddocsService = require('./ddocs');
 
-const UPGRADE_SERVICE_URL = process.env.UPGRADE_SERVICE_URL || 'http://cht-upgrade-service:5100';
+const UPGRADE_SERVICE_URL = process.env.UPGRADE_SERVICE_URL || 'http://localhost:5008';
 
 /**
  * Returns version of bundled medic/medic ddoc

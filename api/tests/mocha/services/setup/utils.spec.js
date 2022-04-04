@@ -892,7 +892,7 @@ describe('Setup utils', () => {
       expect(await utils.makeUpgradeRequest(payload)).to.deep.equal('response');
       expect(rpn.post.callCount).to.equal(1);
       expect(rpn.post.args[0]).to.deep.equal([{
-        url: 'http://cht-upgrade-service:5100/upgrade',
+        url: 'http://localhost:5008/upgrade',
         json: true,
         body: payload,
       }]);

@@ -23,6 +23,7 @@ services:
     environment:
       - COUCH_URL=http://$COUCHDB_USER:$COUCHDB_PASSWORD@couchdb:5984/medic
       - BUILDS_URL=${MARKET_URL_READ:-https://staging.dev.medicmobile.org}/${BUILDS_SERVER:-_couch/builds}
+      - UPGRADE_SERVICE_URL=${UPGRADE_SERVICE_URL:-http://localhost:5100}
     networks:
       - cht-net
 
