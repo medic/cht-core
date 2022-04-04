@@ -37,14 +37,16 @@ angular.module('controllers').controller('UpgradeCtrl',
         });
     };
 
-    const getExistingDeployment = () => {
+    const getExistingDeployment = (expectUpgrade) => {
       return $http
         .get('/api/deploy-info')
         .then(({ data: deployInfo }) => {
-          if ($scope.currentDeploy && $scope.currentDeploy.version !== deployInfo.version) {
-            return reloadPage();
+          if (expectUpgrade && $scope.currentDeploy) {
+            if ($scope.currentDeploy.version !== deployInfo.version) {
+              return reloadPage();
+            }
+            logError('instance.upgrade.error.deploy', 'instance.upgrade.error.deploy');
           }
-
           $scope.currentDeploy = deployInfo;
         })
         .catch(err => logError(err, 'instance.upgrade.error.deploy_info_fetch'));
@@ -55,8 +57,9 @@ angular.module('controllers').controller('UpgradeCtrl',
         .get(UPGRADE_URL)
         .then(({ data: { upgradeDoc, indexers } }) => {
           if ($scope.upgradeDoc && !upgradeDoc) {
-            getExistingDeployment();
+            getExistingDeployment(true);
           }
+
           $scope.upgradeDoc = upgradeDoc;
           $scope.indexerProgress = indexers;
 
