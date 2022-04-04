@@ -735,7 +735,7 @@ describe('routing', () => {
           .request(Object.assign({ path: '/medic-user-whatever-meta' }, getOfflineRequestOptions('PUT')))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: '/medic-vault' }, onlineRequestOptions))
+          .request(Object.assign({ path: `/${constants.DB_NAME}-vault` }, onlineRequestOptions))
           .catch(err => err),
       ]).then(results => {
         results.forEach(result => {
