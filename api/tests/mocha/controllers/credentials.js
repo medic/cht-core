@@ -5,7 +5,7 @@ const serverUtils = require('../../../src/server-utils');
 const controller = require('../../../src/controllers/credentials');
 const chai = require('chai');
 
-describe.only('Credentials controller', () => {
+describe('Credentials controller', () => {
 
   let req;
   let res;
