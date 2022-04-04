@@ -734,6 +734,9 @@ describe('routing', () => {
         utils
           .request(Object.assign({ path: '/medic-user-whatever-meta' }, getOfflineRequestOptions('PUT')))
           .catch(err => err),
+        utils
+          .request(Object.assign({ path: '/medic-vault' }, onlineRequestOptions))
+          .catch(err => err),
       ]).then(results => {
         results.forEach(result => {
           expect(result.statusCode).to.equal(403);
