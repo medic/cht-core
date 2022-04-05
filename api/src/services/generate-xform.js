@@ -78,7 +78,7 @@ const convertDynamicUrls = (original) => original.replace(
   '</a>');
 
 const convertEmbeddedHtml = (original) => original
-  .replace(/&lt;\s*(\/|)\s*([\s\S]*?)\s*&gt;/gm, '<$1$2>')
+  .replace(/&lt;\s*(\/)?\s*([\s\S]*?)\s*&gt;/gm, '<$1$2>')
   .replace(/&quot;/g, '"')
   .replace(/&#039;/g, '\'')
   .replace(/&amp;/g, '&');
