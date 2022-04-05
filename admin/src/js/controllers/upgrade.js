@@ -178,14 +178,13 @@ angular.module('controllers').controller('UpgradeCtrl',
       }).catch(() => {});
     };
 
-    const waitUntilApiStarts = () => {
-      return $http
+    const waitUntilApiStarts = () => new Promise((resolve) => {
+      const pollApi = () => $http
         .get(POLL_URL)
-        .catch(() => {
-          const waitOneSecond = () => new Promise(r => $timeout(r, 1000));
-          return waitOneSecond().then(() => waitUntilApiStarts());
-        });
-    };
+        .then(() => resolve())
+        .catch(() => $timeout(pollApi, 1000));
+      pollApi();
+    });
 
     const upgrade = (build, action) => {
       $scope.error = false;

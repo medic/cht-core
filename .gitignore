@@ -40,4 +40,5 @@ config/*/forms/contact/*.xlsx
 tests/integration/results/
 allure*
 tests/config-temp
+tests/cht-compose-test.yml
 .eslintcache

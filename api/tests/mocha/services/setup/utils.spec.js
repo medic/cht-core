@@ -901,13 +901,13 @@ describe('Setup utils', () => {
     it('should call env upgrade service url', async () => {
       const payload = { tags: {}, 'docker-compose': {} };
       sinon.stub(rpn, 'post').resolves('response');
-      process.env.UPGRADE_SERVICE_URL = 'http://someURL';
+      process.env.UPGRADE_SERVICE_URL = 'http://someurl';
       utils = rewire('../../../../src/services/setup/utils');
 
       expect(await utils.makeUpgradeRequest(payload)).to.deep.equal('response');
       expect(rpn.post.callCount).to.equal(1);
       expect(rpn.post.args[0]).to.deep.equal([{
-        url: 'http://someURL/upgrade',
+        url: 'http://someurl/upgrade',
         json: true,
         body: payload,
       }]);

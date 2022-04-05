@@ -109,6 +109,11 @@ const saveDockerComposeFile = () => {
     couchdb_image: 'medicmobile/cht-couchdb:clustered-test4',
     repo: versions.getRepo(),
     tag: versions.getImageTag(undefined, undefined, true),
+    network: 'cht-net',
+    couchdb_container_name: 'cht-couch',
+    api_container_name: 'cht-api',
+    sentinel_container_name: 'cht-sentinel',
+    db_name: 'medic',
   };
 
   const output = mustache.render(template, view);
