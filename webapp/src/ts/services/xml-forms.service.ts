@@ -278,7 +278,7 @@ export class XmlFormsService {
     return this.get(internalId)
       .then(doc => {
         const attachmentName = this.findXFormAttachmentName(doc);
-        return this.dbService.get().getAttachment(internalId, attachmentName)
+        return this.dbService.get().getAttachment(doc._id, attachmentName)
           .then(blob => this.fileReaderService.utf8(blob))
           .then(xml => ({ doc, xml }))
           .catch(err => {

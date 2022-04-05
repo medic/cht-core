@@ -1098,7 +1098,11 @@ describe('XmlForms service', () => {
     it('fails if no forms found', () => {
       const internalId = 'birth';
       dbQuery.resolves([]);
-      dbGet.resolves({ internalId: 'death', _attachments: { 'something.xml': { stub: true } } });
+      dbGet.resolves({
+        _id: 'form:death',
+        _attachments: { 'something.xml': { stub: true } },
+        internalId: 'birth'
+      });
       dbGetAttachment.rejects({ status: 404 });
       const service = getService();
       return service
@@ -1113,7 +1117,11 @@ describe('XmlForms service', () => {
 
     it('returns doc and xml', () => {
       const internalId = 'birth';
-      const formDoc = { internalId: 'death', _attachments: { xml: { stub: true } } };
+      const formDoc = {
+        _id: 'form:death',
+        _attachments: { xml: { stub: true } },
+        internalId: 'birth'
+      };
       dbQuery.resolves([]);
       dbGet.resolves(formDoc);
       dbGetAttachment.resolves('someblob');
@@ -1125,7 +1133,7 @@ describe('XmlForms service', () => {
           expect(result.doc).to.deep.equal(formDoc);
           expect(result.xml).to.deep.equal('<form/>');
           expect(dbGetAttachment.callCount).to.equal(1);
-          expect(dbGetAttachment.args[0][0]).to.equal('birth');
+          expect(dbGetAttachment.args[0][0]).to.equal('form:death');
           expect(dbGetAttachment.args[0][1]).to.equal('xml');
           expect(fileReaderService.callCount).to.equal(1);
           expect(fileReaderService.args[0][0]).to.equal('someblob');
