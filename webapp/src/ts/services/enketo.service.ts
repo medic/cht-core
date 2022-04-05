@@ -757,23 +757,10 @@ export class EnketoService {
   }
 
   save(formInternalId, form, geoHandle, docId?) {
-    // /inputs is ALWAYS relevant #4875
-    const inputs = $('section[name$="/inputs"]')
-      .toArray()
-      .filter(element => element.dataset)
-      .map(element => {
-        const relevant = element.dataset.relevant;
-        element.dataset.relevant = 'true()';
-        return { element, relevant };
-      });
-
     return Promise
       .resolve(form.validate())
       .then((valid) => {
         if (!valid) {
-          inputs.forEach(({ element, relevant }) => element.dataset.relevant = relevant);
-          // Refresh the form with proper relevant values
-          form.relevant.update(null, false);
           throw new Error('Form is invalid');
         }
 
@@ -791,7 +778,14 @@ export class EnketoService {
         getDocPromise,
         this.getFormXml(formInternalId),
       ])
-      .then(([doc, formXml]) => this.xmlToDocs(doc, formXml, form.getDataStr({ irrelevant: false })))
+      .then(([doc, formXml]) => {
+        // /inputs is ALWAYS relevant #4875
+        $('section[name$="/inputs"]')
+          .toArray()
+          .filter(element => element.dataset)
+          .forEach(element => element.dataset.relevant = 'true()');
+        return this.xmlToDocs(doc, formXml, form.getDataStr({ irrelevant: false }));
+      })
       .then(docs => this.validateAttachments(docs))
       .then((docs) => this.saveGeo(geoHandle, docs))
       .then((docs) => this.transitionsService.applyTransitions(docs))
