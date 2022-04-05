@@ -1,9 +1,9 @@
-<div class="upgrade-config col-sm-12" ng-hide="currentDeploy || loading" mm-auth="can_configure">
+<div class="upgrade-config col-sm-12" ng-hide="currentDeploy || loading" mm-auth="can_upgrade">
   <legend translate>instance.upgrade.no_horti</legend>
   <p translate>instance.upgrade.no_horti.detail</p>
 </div>
 
-<div class="upgrade-config col-sm-12" ng-show="currentDeploy" mm-auth="can_configure">
+<div class="upgrade-config col-sm-12" ng-show="currentDeploy" mm-auth="can_upgrade">
   <div ng-show="upgradeDoc">
     <legend ng-hide="upgradeDoc.action === 'stage'" translate>instance.upgrade.deployment</legend>
     <legend ng-show="upgradeDoc.action === 'stage'" translate>instance.stage.deployment</legend>

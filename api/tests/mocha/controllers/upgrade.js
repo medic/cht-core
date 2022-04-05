@@ -38,7 +38,7 @@ describe('Upgrade controller', () => {
         .upgrade(req, res)
         .then(() => {
           auth.check.callCount.should.equal(1);
-          auth.check.args[0][1].should.deep.equal(['can_configure']);
+          auth.check.args[0][1].should.deep.equal(['can_upgrade']);
           serverUtils.error.callCount.should.equal(1);
         });
     });
@@ -94,7 +94,7 @@ describe('Upgrade controller', () => {
       return controller.stage(req, res)
         .then(() => {
           auth.check.callCount.should.equal(1);
-          auth.check.args[0][1].should.deep.equal(['can_configure']);
+          auth.check.args[0][1].should.deep.equal(['can_upgrade']);
           serverUtils.error.callCount.should.equal(1);
         });
     });
@@ -136,7 +136,7 @@ describe('Upgrade controller', () => {
       return controller.complete(req, res)
         .then(() => {
           auth.check.callCount.should.equal(1);
-          auth.check.args[0][1].should.deep.equal(['can_configure']);
+          auth.check.args[0][1].should.deep.equal(['can_upgrade']);
           service.complete.callCount.should.equal(1);
         });
     });
@@ -176,7 +176,7 @@ describe('Upgrade controller', () => {
       await controller.upgradeInProgress(req, res);
 
       auth.check.callCount.should.equal(1);
-      auth.check.args[0].should.deep.equal([req, ['can_configure']]);
+      auth.check.args[0].should.deep.equal([req, ['can_upgrade']]);
       res.json.callCount.should.equal(0);
       serverUtils.error.callCount.should.equal(1);
     });
@@ -232,7 +232,7 @@ describe('Upgrade controller', () => {
       await controller.abort(req, res);
 
       auth.check.callCount.should.equal(1);
-      auth.check.args[0].should.deep.equal([req, ['can_configure']]);
+      auth.check.args[0].should.deep.equal([req, ['can_upgrade']]);
       res.json.callCount.should.equal(0);
       serverUtils.error.callCount.should.equal(1);
     });
