@@ -11,6 +11,7 @@ assignees: ''
 
 - [ ] Create an GH Milestone and add this issue to it.
 - [ ] Add all the issues to be worked on to the Milestone.
+- [ ] Ensure that all issues are labelled correctly, particularly ensure that "Regressions" are labelled with "Affects: <version>" labels.
 
 # Development - Release Engineer
 
