@@ -778,14 +778,7 @@ export class EnketoService {
         getDocPromise,
         this.getFormXml(formInternalId),
       ])
-      .then(([doc, formXml]) => {
-        // /inputs is ALWAYS relevant #4875
-        $('section[name$="/inputs"]')
-          .toArray()
-          .filter(element => element.dataset)
-          .forEach(element => element.dataset.relevant = 'true()');
-        return this.xmlToDocs(doc, formXml, form.getDataStr({ irrelevant: false }));
-      })
+      .then(([doc, formXml]) => this.xmlToDocs(doc, formXml, form.getDataStr({ irrelevant: false })))
       .then(docs => this.validateAttachments(docs))
       .then((docs) => this.saveGeo(geoHandle, docs))
       .then((docs) => this.transitionsService.applyTransitions(docs))
