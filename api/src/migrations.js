@@ -58,13 +58,13 @@ const sortMigrations = (lhs, rhs) => {
   return lhs.created - rhs.created;
 };
 
-const runMigration = migration => {
+const runMigration = (migration, startupLog) => {
   if (!migration.created) {
     return Promise.reject(
       new Error(`Migration "${migration.name}" has no "created" date property`)
     );
   }
-  logger.info(`Running migration ${migration.name}...`);
+  startupLog(`Running migration ${migration.name}...`);
   return migration
     .run()
     .then(getLog)
@@ -74,15 +74,15 @@ const runMigration = migration => {
     });
 };
 
-const runMigrations = (log, migrations) => {
+const runMigrations = (log, migrations, startupLog) => {
   migrations.sort(sortMigrations);
   let chain = Promise.resolve();
   migrations.forEach(migration => {
     if (!hasRun(log, migration)) {
       chain = chain.then(() => {
-        return runMigration(migration)
+        return runMigration(migration, startupLog)
           .then(() => {
-            logger.info(`Migration ${migration.name} completed successfully`);
+            startupLog(`Migration ${migration.name} completed successfully`);
           })
           .catch(err => {
             logger.error(`Migration ${migration.name} failed`);
@@ -95,9 +95,9 @@ const runMigrations = (log, migrations) => {
 };
 
 module.exports = {
-  run: () => {
+  run: (startupLog) => {
     return Promise.all([getLog(), module.exports.get()]).then(
-      ([log, migrations]) => runMigrations(log, migrations)
+      ([log, migrations]) => runMigrations(log, migrations, startupLog)
     );
   },
   get: () => {
