@@ -71,6 +71,8 @@ class PhoneWidget extends Widget {
   }
 
   static get selector() {
+    // 'string' questions with the `numbers` appearance also become input[type="tel"].
+    // So, here we need to also specify the data-type-xml to avoid collisions.
     return 'input[type="tel"][data-type-xml="tel"]';
   }
 }
