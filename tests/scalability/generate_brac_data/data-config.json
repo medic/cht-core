@@ -1,0 +1,8 @@
+{
+    "dataDirectory": "/Users/marialorenarodriguezviruel/medic-workspace/generated-data/precondition-data/",
+    "preconditionDirectory": "/precondition-data/",
+    "mainScriptDataDirectory": "/main-script-data/",
+    "jsonDirectory": "/json_docs/",
+    "jsonDataExtension": ".doc.json",
+    "userDataNameExtension": "users.csv"
+}
