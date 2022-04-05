@@ -7,6 +7,7 @@ import EnketoDataPrepopulator from '../../../../src/js/enketo/enketo-data-prepop
 describe('EnketoPrepopulationData service', () => {
   let service;
   let UserSettings;
+  let languageSettings;
 
   const generatedForm =
     '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
@@ -36,6 +37,7 @@ describe('EnketoPrepopulationData service', () => {
     '<inputs>' +
     '<user>' +
     '<name/>' +
+    '<language/>' +
     '</user>' +
     '<meta>' +
     '<location>' +
@@ -139,6 +141,7 @@ describe('EnketoPrepopulationData service', () => {
 
   beforeEach(() => {
     UserSettings = sinon.stub();
+    languageSettings = sinon.stub();
 
     const bindJsonToXml = sinon.stub().callsFake((elem, data, childMatcher) => {
       Object.keys(data).forEach((key) => {
@@ -156,7 +159,7 @@ describe('EnketoPrepopulationData service', () => {
       });
     });
 
-    service = new EnketoDataPrepopulator({ get: UserSettings });
+    service = new EnketoDataPrepopulator({ get: UserSettings }, { get:languageSettings });
   });
 
   afterEach(() => {
@@ -227,17 +230,20 @@ describe('EnketoPrepopulationData service', () => {
       });
   });
 
-  it('binds user details and form content into model', () => {
+  it('binds user details, user language and form content into model', () => {
     const data = { person: { last_name: 'salmon' } };
     const user = { name: 'geoff' };
     UserSettings.resolves(user);
+    languageSettings.resolves('en');
     return service
       .get(editPersonForm, data)
       .then((actual) => {
         const xml = $($.parseXML(actual));
         expect(xml.find('inputs > user > name')[0].innerHTML).to.equal(user.name);
+        expect(xml.find('inputs > user > language')[0].innerHTML).to.equal('en');
         expect(xml.find('data > person > last_name')[0].innerHTML).to.equal(data.person.last_name);
         expect(UserSettings.callCount).to.equal(1);
+        expect(languageSettings.callCount).to.equal(1);
       });
   });
 

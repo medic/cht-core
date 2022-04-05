@@ -2,8 +2,9 @@ const { isString: _isString } = require('lodash');
 const { bindJsonToXml } = require('./enketo-data-translator');
 
 class EnketoDataPrepopulator {
-  constructor(userSettingsService) {
+  constructor(userSettingsService, languageService) {
     this.userSettingsService = userSettingsService;
+    this.languageService = languageService;
   }
 
   get(model, data) {
@@ -11,9 +12,11 @@ class EnketoDataPrepopulator {
       return Promise.resolve(data);
     }
 
-    return this.userSettingsService
-      .get()
-      .then((user) => {
+    return Promise.all([
+      this.userSettingsService.get(),
+      this.languageService.get()
+    ])
+      .then(([user, language]) => {
         const xml = $($.parseXML(model));
         const bindRoot = xml.find('model instance').children().first();
         const userRoot = bindRoot.find('>inputs>user');
@@ -26,7 +29,8 @@ class EnketoDataPrepopulator {
         }
 
         if(userRoot.length) {
-          bindJsonToXml(userRoot, user);
+          const userObject = Object.assign({ language }, user);
+          bindJsonToXml(userRoot, userObject);
         }
 
         return new XMLSerializer().serializeToString(bindRoot[0]);

@@ -23,19 +23,19 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
           <text id="/delivery/group_chw_info/chw_information:label">
             <value>The birth report for <output value=" /delivery/patient_name "/> has not been recorded.</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/no:label">
+          <text id="/delivery/group_chw_info/still_pregnant/no:label">
             <value>No</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/unknown:label">
+          <text id="/delivery/group_chw_info/still_pregnant/unknown:label">
             <value>I'm not sure</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/yes:label">
+          <text id="/delivery/group_chw_info/still_pregnant/yes:label">
             <value>Yes</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant:jr:constraintMsg">
+          <text id="/delivery/group_chw_info/still_pregnant:jr:constraintMsg">
             <value>Sorry, the pregnancy must be complete to continue.</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant:label">
+          <text id="/delivery/group_chw_info/still_pregnant:label">
             <value>Is <output value=" /delivery/patient_name "/> still pregnant?</value>
           </text>
           <text id="/delivery/group_chw_info:label">
@@ -196,9 +196,6 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <text id="/delivery/patient_uuid:label">
             <value>Patient UUID</value>
           </text>
-          <text id="/delivery/still_pregnant:label">
-            <value>Is <output value=" /delivery/patient_name "/> still pregnant?</value>
-          </text>
         </translation>
         <translation lang="es">
           <text id="/delivery/chw_name:label">
@@ -219,19 +216,19 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <text id="/delivery/group_chw_info/chw_information:label">
             <value>-</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/no:label">
+          <text id="/delivery/group_chw_info/still_pregnant/no:label">
             <value>-</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/unknown:label">
+          <text id="/delivery/group_chw_info/still_pregnant/unknown:label">
             <value>-</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/yes:label">
+          <text id="/delivery/group_chw_info/still_pregnant/yes:label">
             <value>-</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant:jr:constraintMsg">
+          <text id="/delivery/group_chw_info/still_pregnant:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant:label">
+          <text id="/delivery/group_chw_info/still_pregnant:label">
             <value>-</value>
           </text>
           <text id="/delivery/group_chw_info:label">
@@ -393,9 +390,6 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <text id="/delivery/patient_uuid:label">
             <value>-</value>
           </text>
-          <text id="/delivery/still_pregnant:label">
-            <value>-</value>
-          </text>
         </translation>
         <translation lang="fr">
           <text id="/delivery/chw_name:label">
@@ -416,19 +410,19 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
           <text id="/delivery/group_chw_info/chw_information:label">
             <value>Le rapport d'accouchement pour <output value=" /delivery/patient_name "/> n'a pas été soumis</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/no:label">
+          <text id="/delivery/group_chw_info/still_pregnant/no:label">
             <value>Non</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/unknown:label">
+          <text id="/delivery/group_chw_info/still_pregnant/unknown:label">
             <value>Pas sûr</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/yes:label">
+          <text id="/delivery/group_chw_info/still_pregnant/yes:label">
             <value>Oui</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant:jr:constraintMsg">
+          <text id="/delivery/group_chw_info/still_pregnant:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant:label">
+          <text id="/delivery/group_chw_info/still_pregnant:label">
             <value>Est-ce que <output value=" /delivery/patient_name "/> est toujours enceinte ?</value>
           </text>
           <text id="/delivery/group_chw_info:label">
@@ -589,9 +583,6 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <text id="/delivery/patient_uuid:label">
             <value>UUID du patient</value>
           </text>
-          <text id="/delivery/still_pregnant:label">
-            <value>Est-ce que <output value=" /delivery/patient_name "/> est toujours enceinte ?</value>
-          </text>
         </translation>
         <translation lang="hi">
           <text id="/delivery/chw_name:label">
@@ -611,19 +602,19 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <text id="/delivery/group_chw_info/chw_information:label">
             <value><output value=" /delivery/patient_name "/> के लिए जन्म की रिपोर्ट दर्ज नहीं की गयी है</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/no:label">
+          <text id="/delivery/group_chw_info/still_pregnant/no:label">
             <value>नहीं</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/unknown:label">
+          <text id="/delivery/group_chw_info/still_pregnant/unknown:label">
             <value>पता नहीं</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/yes:label">
+          <text id="/delivery/group_chw_info/still_pregnant/yes:label">
             <value>हाँ</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant:jr:constraintMsg">
+          <text id="/delivery/group_chw_info/still_pregnant:jr:constraintMsg">
             <value>माफ़ कीजिये, आगे बढ़ने से पहले गर्भावस्था को पूरा करना होगा</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant:label">
+          <text id="/delivery/group_chw_info/still_pregnant:label">
             <value>क्या <output value=" /delivery/patient_name "/> अभी भी गर्भवती है?</value>
           </text>
           <text id="/delivery/group_chw_info:label">
@@ -783,9 +774,6 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <text id="/delivery/patient_uuid:label">
             <value>मरीज UUID</value>
           </text>
-          <text id="/delivery/still_pregnant:label">
-            <value>क्या <output value=" /delivery/patient_name "/> अभी भी गर्भवती है?</value>
-          </text>
         </translation>
         <translation lang="id">
           <text id="/delivery/chw_name:label">
@@ -805,19 +793,19 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <text id="/delivery/group_chw_info/chw_information:label">
             <value>Laporan kelahiran untuk <output value=" /delivery/patient_name "/> belum terdata.</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/no:label">
+          <text id="/delivery/group_chw_info/still_pregnant/no:label">
             <value>Tidak</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/unknown:label">
+          <text id="/delivery/group_chw_info/still_pregnant/unknown:label">
             <value>Tidak yakin</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/yes:label">
+          <text id="/delivery/group_chw_info/still_pregnant/yes:label">
             <value>Iya</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant:jr:constraintMsg">
+          <text id="/delivery/group_chw_info/still_pregnant:jr:constraintMsg">
             <value>Maaf, kehamilan harus diselesaikan sebelum melanjutkan.</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant:label">
+          <text id="/delivery/group_chw_info/still_pregnant:label">
             <value>Apakah <output value=" /delivery/patient_name "/> masih hamil?</value>
           </text>
           <text id="/delivery/group_chw_info:label">
@@ -977,9 +965,6 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <text id="/delivery/patient_uuid:label">
             <value>Pasien UUID</value>
           </text>
-          <text id="/delivery/still_pregnant:label">
-            <value>Apakah <output value=" /delivery/patient_name "/> masih hamil?</value>
-          </text>
         </translation>
         <translation lang="ne">
           <text id="/delivery/chw_name:label">
@@ -1000,19 +985,19 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <text id="/delivery/group_chw_info/chw_information:label">
             <value>-</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/no:label">
+          <text id="/delivery/group_chw_info/still_pregnant/no:label">
             <value>-</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/unknown:label">
+          <text id="/delivery/group_chw_info/still_pregnant/unknown:label">
             <value>-</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/yes:label">
+          <text id="/delivery/group_chw_info/still_pregnant/yes:label">
             <value>-</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant:jr:constraintMsg">
+          <text id="/delivery/group_chw_info/still_pregnant:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant:label">
+          <text id="/delivery/group_chw_info/still_pregnant:label">
             <value>-</value>
           </text>
           <text id="/delivery/group_chw_info:label">
@@ -1172,9 +1157,6 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
             <value>-</value>
           </text>
           <text id="/delivery/patient_uuid:label">
-            <value>-</value>
-          </text>
-          <text id="/delivery/still_pregnant:label">
             <value>-</value>
           </text>
         </translation>
@@ -1197,19 +1179,19 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <text id="/delivery/group_chw_info/chw_information:label">
             <value>-</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/no:label">
+          <text id="/delivery/group_chw_info/still_pregnant/no:label">
             <value>-</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/unknown:label">
+          <text id="/delivery/group_chw_info/still_pregnant/unknown:label">
             <value>-</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant/yes:label">
+          <text id="/delivery/group_chw_info/still_pregnant/yes:label">
             <value>-</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant:jr:constraintMsg">
+          <text id="/delivery/group_chw_info/still_pregnant:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/delivery/group_chw_info/q_still_pregnant:label">
+          <text id="/delivery/group_chw_info/still_pregnant:label">
             <value>-</value>
           </text>
           <text id="/delivery/group_chw_info:label">
@@ -1371,13 +1353,10 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <text id="/delivery/patient_uuid:label">
             <value>-</value>
           </text>
-          <text id="/delivery/still_pregnant:label">
-            <value>-</value>
-          </text>
         </translation>
       </itext>
       <instance>
-        <delivery id="delivery" prefix="J1!delivery!" delimiter="#" version="2022-03-03 15-13">
+        <delivery id="delivery" prefix="J1!delivery!" delimiter="#" version="2022-04-05 15-50">
           <inputs>
             <meta>
               <location>
@@ -1423,11 +1402,10 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <geolocation tag="hidden"/>
           <patient_age_in_years tag="hidden">0</patient_age_in_years>
           <patient_contact_phone tag="hidden"/>
-          <still_pregnant tag="hidden"/>
           <group_chw_info tag="hidden">
             <chw_information/>
             <call_button/>
-            <q_still_pregnant/>
+            <still_pregnant/>
           </group_chw_info>
           <group_delivery_summary tag="hidden">
             <g_pregnancy_outcome/>
@@ -1488,18 +1466,17 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
       <bind nodeset="/delivery/geolocation" type="string" calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))"/>
       <bind nodeset="/delivery/patient_age_in_years" type="string" calculate="floor( difference-in-months(  /delivery/inputs/contact/date_of_birth , today() ) div 12 )"/>
       <bind nodeset="/delivery/patient_contact_phone" type="string" calculate="coalesce(/postnatal_care/inputs/contact/phone,/postnatal_care/inputs/contact/parent/contact/phone)"/>
-      <bind nodeset="/delivery/still_pregnant" type="string" calculate="coalesce( /delivery/group_chw_info/q_still_pregnant , 'no')"/>
       <bind nodeset="/delivery/group_chw_info" relevant=" /delivery/inputs/source  = 'task'"/>
       <bind nodeset="/delivery/group_chw_info/chw_information" readonly="true()" type="string"/>
       <bind nodeset="/delivery/group_chw_info/call_button" readonly="true()" type="string"/>
-      <bind nodeset="/delivery/group_chw_info/q_still_pregnant" type="select1" required="true()" jr:constraintMsg="jr:itext('/delivery/group_chw_info/q_still_pregnant:jr:constraintMsg')" constraint="selected(.,'no')"/>
-      <bind nodeset="/delivery/group_delivery_summary" relevant="selected( /delivery/still_pregnant , 'no')"/>
+      <bind nodeset="/delivery/group_chw_info/still_pregnant" type="select1" required="true()" constraint="selected(.,'no')" jr:constraintMsg="jr:itext('/delivery/group_chw_info/still_pregnant:jr:constraintMsg')"/>
+      <bind nodeset="/delivery/group_delivery_summary" relevant="selected(coalesce( /delivery/group_chw_info/still_pregnant , 'no'), 'no')"/>
       <bind nodeset="/delivery/group_delivery_summary/g_pregnancy_outcome" type="select1" required="true()"/>
       <bind nodeset="/delivery/group_delivery_summary/g_delivery_code" type="select1" required="true()" relevant=" /delivery/group_delivery_summary/g_pregnancy_outcome  != 'miscarriage'"/>
-      <bind nodeset="/delivery/group_delivery_summary/g_birth_date" type="date" jr:constraintMsg="jr:itext('/delivery/group_delivery_summary/g_birth_date:jr:constraintMsg')" relevant=" /delivery/group_delivery_summary/g_pregnancy_outcome  != 'miscarriage'" constraint="(decimal-date-time(.) &lt;= decimal-date-time(today())) and ((decimal-date-time(today()) - decimal-date-time(.)) &lt; 365)"/>
+      <bind nodeset="/delivery/group_delivery_summary/g_birth_date" type="date" constraint="(decimal-date-time(.) &lt;= decimal-date-time(today())) and ((decimal-date-time(today()) - decimal-date-time(.)) &lt; 365)" relevant=" /delivery/group_delivery_summary/g_pregnancy_outcome  != 'miscarriage'" jr:constraintMsg="jr:itext('/delivery/group_delivery_summary/g_birth_date:jr:constraintMsg')"/>
       <bind nodeset="/delivery/group_delivery_summary/display_birth_date" type="string" calculate="format-date ( /delivery/group_delivery_summary/g_birth_date , '%b %e, %Y')"/>
       <bind nodeset="/delivery/group_delivery_summary/display_delivery_outcome" type="string" calculate="jr:choice-name( /delivery/group_delivery_summary/g_pregnancy_outcome ,' /delivery/group_delivery_summary/g_pregnancy_outcome ')"/>
-      <bind nodeset="/delivery/group_note/default_chw_sms" type="select1" calculate="if( /delivery/still_pregnant  = 'yes',
+      <bind nodeset="/delivery/group_note/default_chw_sms" type="select1" calculate="if(coalesce( /delivery/group_chw_info/still_pregnant , 'no') = 'yes',
  'still_pregnant',
  if( /delivery/inputs/contact/parent/parent/parent/use_cases  = 'anc',
  if( /delivery/pregnancy_outcome  = 'healthy',
@@ -1551,7 +1528,7 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
       <bind nodeset="/delivery/group_note/default_chw_sms_text" type="string" calculate="jr:choice-name( /delivery/group_note/default_chw_sms ,' /delivery/group_note/default_chw_sms ')"/>
       <bind nodeset="/delivery/group_note/default_chw_sms_note" readonly="true()" type="string"/>
       <bind nodeset="/delivery/group_note/is_sms_edited" type="select1" required="true()"/>
-      <bind nodeset="/delivery/group_note/g_chw_sms" type="string" jr:constraintMsg="jr:itext('/delivery/group_note/g_chw_sms:jr:constraintMsg')" constraint="string-length(.) &lt;= 715"/>
+      <bind nodeset="/delivery/group_note/g_chw_sms" type="string" constraint="string-length(.) &lt;= 715" jr:constraintMsg="jr:itext('/delivery/group_note/g_chw_sms:jr:constraintMsg')"/>
       <bind nodeset="/delivery/group_summary/submit" readonly="true()" type="string"/>
       <bind nodeset="/delivery/group_summary/r_summary" readonly="true()" type="string"/>
       <bind nodeset="/delivery/group_summary/r_patient_id" type="string" calculate="../../inputs/contact/patient_id"/>
@@ -1599,18 +1576,18 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
       <input ref="/delivery/group_chw_info/call_button">
         <label ref="jr:itext('/delivery/group_chw_info/call_button:label')"/>
       </input>
-      <select1 ref="/delivery/group_chw_info/q_still_pregnant">
-        <label ref="jr:itext('/delivery/group_chw_info/q_still_pregnant:label')"/>
+      <select1 ref="/delivery/group_chw_info/still_pregnant">
+        <label ref="jr:itext('/delivery/group_chw_info/still_pregnant:label')"/>
         <item>
-          <label ref="jr:itext('/delivery/group_chw_info/q_still_pregnant/yes:label')"/>
+          <label ref="jr:itext('/delivery/group_chw_info/still_pregnant/yes:label')"/>
           <value>yes</value>
         </item>
         <item>
-          <label ref="jr:itext('/delivery/group_chw_info/q_still_pregnant/no:label')"/>
+          <label ref="jr:itext('/delivery/group_chw_info/still_pregnant/no:label')"/>
           <value>no</value>
         </item>
         <item>
-          <label ref="jr:itext('/delivery/group_chw_info/q_still_pregnant/unknown:label')"/>
+          <label ref="jr:itext('/delivery/group_chw_info/still_pregnant/unknown:label')"/>
           <value>unknown</value>
         </item>
       </select1>

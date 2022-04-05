@@ -451,17 +451,6 @@ describe('Enketo Form Manager', () => {
           expect(form.validate.callCount).to.equal(1);
         });
     });
-
-    it('sets inputs group to relevant on valid form', () => {
-      form.validate.resolves(true);
-
-      return enketoFormMgr.validate(form).then(() => {
-        expect(inputRelevant.dataset.relevant).to.equal('true()');
-        expect(inputNonRelevant.dataset.relevant).to.equal('true()');
-        expect(inputNoDataset.dataset).to.be.undefined;
-        expect(form.validate.callCount).to.equal(1);
-      });
-    });
   });
 
   describe('save', () => {
