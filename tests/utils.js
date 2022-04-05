@@ -9,6 +9,18 @@ const specReporter = require('jasmine-spec-reporter').SpecReporter;
 const fs = require('fs');
 const path = require('path');
 const { execSync, spawn } = require('child_process');
+const mustache = require('mustache');
+
+process.env.API_PORT = constants.API_PORT;
+process.env.COUCH_PORT = constants.COUCH_PORT;
+process.env.COUCHDB_USER = auth.username;
+process.env.COUCHDB_PASSWORD = auth.password;
+
+const CONTAINER_NAMES = {
+  couch: 'cht-couch-e2e',
+  api: 'cht-api-e2e',
+  sentinel: 'cht-sentinel-e2e',
+};
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -27,6 +39,7 @@ const hasModal = () => element(by.css('#update-available')).isPresent();
 const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 
 const COMPOSE_FILE = path.resolve(__dirname, 'cht-compose-test.yml');
+const COMPOSE_FILE_TEMPLATE = path.resolve(__dirname, '..', 'scripts', 'build', 'cht-compose.yml.template');
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
@@ -562,8 +575,26 @@ const saveBrowserLogs = () => {
     });
 };
 
+const generateComposeFile = async () => {
+  const view = {
+    couchdb_image: 'medicmobile/cht-couchdb:clustered-test4',
+    repo: buildVersions.getRepo(),
+    tag: buildVersions.getImageTag(),
+    network: 'cht-net-e2e',
+    couchdb_container_name: CONTAINER_NAMES.couch,
+    api_container_name: CONTAINER_NAMES.api,
+    sentinel_container_name: CONTAINER_NAMES.sentinel,
+    db_name: 'medic-test',
+  };
+
+  const template = await fs.promises.readFile(COMPOSE_FILE_TEMPLATE, 'utf-8');
+  const output = mustache.render(template, view);
+  await fs.promises.writeFile(COMPOSE_FILE, output);
+};
 
 const prepServices = async (defaultSettings) => {
+  await generateComposeFile();
+
   await stopServices(true);
   await startServices();
   await listenForApi();
@@ -575,14 +606,7 @@ const prepServices = async (defaultSettings) => {
 
 const dockerComposeCmd = (...params) => {
   return new Promise((resolve, reject) => {
-    const env = {
-      ...process.env,
-      VERSION: process.env.VERSION || buildVersions.getImageTag(),
-      COUCH_PORT: constants.COUCH_PORT,
-      API_PORT: constants.API_PORT,
-    };
-
-    const cmd = spawn('docker-compose', [ '-f', COMPOSE_FILE, ...params ], { env });
+    const cmd = spawn('docker-compose', [ '-f', COMPOSE_FILE, ...params ]);
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -622,9 +646,9 @@ const getDockerLogs = (container) => {
 };
 
 const saveLogs = async () => {
-  await getDockerLogs('cht-api');
-  await getDockerLogs('cht-sentinel');
-  await getDockerLogs('couch-e2e');
+  await getDockerLogs(CONTAINER_NAMES.api);
+  await getDockerLogs(CONTAINER_NAMES.sentinel);
+  await getDockerLogs(CONTAINER_NAMES.couch);
 };
 
 const startServices = async () => {
@@ -691,7 +715,7 @@ const parseCookieResponse = (cookieString) => {
 
 const dockerGateway = () => {
   try {
-    return JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
+    return JSON.parse(execSync(`docker network inspect cht-net-e2e --format='{{json .IPAM.Config}}'`));
   } catch (error) {
     console.log('docker network inspect failed. NOTE this error is not relevant if running outside of docker');
     console.log(error.message);
@@ -1147,7 +1171,7 @@ module.exports = {
   waitForDockerLogs,
   collectLogs,
 
-  waitForApiLogs: (...regex) => module.exports.waitForDockerLogs('cht-api', ...regex),
-  waitForSentinelLogs: (...regex) => module.exports.waitForDockerLogs('cht-sentinel', ...regex),
-  collectSentinelLogs: (...regex) => collectLogs('cht-sentinel', ...regex),
+  waitForApiLogs: (...regex) => module.exports.waitForDockerLogs(CONTAINER_NAMES.api, ...regex),
+  waitForSentinelLogs: (...regex) => module.exports.waitForDockerLogs(CONTAINER_NAMES.sentinel, ...regex),
+  collectSentinelLogs: (...regex) => collectLogs(CONTAINER_NAMES.sentinel, ...regex),
 };

@@ -327,7 +327,7 @@ const makeUpgradeRequest = (payload) => {
     throw new Error(`Invalid UPGRADE_SERVICE_URL: ${UPGRADE_SERVICE_URL}`);
   }
 
-  return rpn.post({ url: `${UPGRADE_SERVICE_URL}/upgrade`, json: true, body: payload });
+  return rpn.post({ url: url.toString(), json: true, body: payload });
 };
 
 module.exports = {
