@@ -84,7 +84,7 @@ export class EnketoService {
       });
   }
 
-  private replaceJavarosaMediaWithLoaders(formDoc, formHtml) {
+  private replaceJavarosaMediaWithLoaders(formHtml) {
     formHtml.find('[data-media-src]').each((idx, element) => {
       const $img = $(element);
       const lang = $img.attr('lang');
@@ -259,8 +259,8 @@ export class EnketoService {
         this.getContactSummary(doc, instanceData),
         this.languageService.get()
       ])
-      .then(([instanceStr, contactSummary, language]) => {
-        const options: any = {
+      .then(([ instanceStr, contactSummary, language ]) => {
+        const options: EnketoOptions = {
           modelStr: doc.model,
           instanceStr: instanceStr,
           language: language
@@ -291,25 +291,8 @@ export class EnketoService {
         if (loadErrors?.length) {
           return Promise.reject(new Error(JSON.stringify(loadErrors)));
         }
-        const language = options.language;
-        this.currentForm.langs.$formLanguages.val(language).trigger('change');
-        // re-set the enketo form's language when a DOM node is added to the form and the form has been edited
-        // TODO: remove this once the enketo uplift gets merged https://github.com/medic/cht-core/pull/7256
-        this.currentForm.view.$.on(
-          'click',
-          'button.add-repeat-btn:enabled',
-          () => this.currentForm.langs.setAll(language),
-        );
-        let hasFormChanged = false;
-        this.currentForm.view.$.on('change', () => hasFormChanged = true);
-        const observer = new MutationObserver((mutations) => {
-          const hasNewNodes = mutations.some(mutation => mutation.addedNodes.length > 0);
-          if (hasFormChanged && hasNewNodes) {
-            this.currentForm.langs.setAll(language);
-          }
-          hasFormChanged = false;
-        });
-        observer.observe(this.currentForm.view.html, { childList: true, subtree: true });
+
+        this.setupFormLanguage(options.language);
       })
       .then(() => this.getFormTitle(titleKey, doc))
       .then((title) => {
@@ -326,6 +309,28 @@ export class EnketoService {
 
         return this.currentForm;
       });
+  }
+
+  // set the enketo form's language, re-set it when a DOM node is added to the form and the form has been edited
+  // TODO: remove this method once the enketo uplift gets merged https://github.com/medic/cht-core/pull/7256
+  private setupFormLanguage(language: string) {
+    const setFormLanguage = (language: string) => this.currentForm.langs.$formLanguages.val(language).trigger('change');
+    setFormLanguage(language);
+    this.currentForm.view.$.on(
+      'click',
+      'button.add-repeat-btn:enabled',
+      () => setFormLanguage(language),
+    );
+    let hasFormChanged = false;
+    this.currentForm.view.$.on('change', () => hasFormChanged = true);
+    const observer = new MutationObserver((mutations) => {
+      const hasNewNodes = mutations.some(mutation => mutation.addedNodes.length > 0);
+      if (hasFormChanged && hasNewNodes) {
+        setFormLanguage(language);
+      }
+      hasFormChanged = false;
+    });
+    observer.observe(this.currentForm.view.html, { childList: true, subtree: true });
   }
 
   private getFormTitle(titleKey, doc) {
@@ -431,7 +436,7 @@ export class EnketoService {
     return this
       .transformXml(formDoc)
       .then(doc => {
-        this.replaceJavarosaMediaWithLoaders(formDoc, doc.html);
+        this.replaceJavarosaMediaWithLoaders(doc.html);
         const xmlFormContext: XmlFormContext = {
           doc,
           wrapper: $selector,
@@ -802,6 +807,18 @@ export class EnketoService {
   }
 }
 
+interface ContactSummary {
+  id: string;
+  xmlStr: string;
+}
+
+interface EnketoOptions {
+  modelStr: string;
+  instanceStr: string;
+  language: string;
+  external?: ContactSummary[];
+}
+
 interface XmlFormContext {
   doc: {
     html: JQuery;
@@ -810,14 +827,14 @@ interface XmlFormContext {
     hasContactSummary: boolean;
   };
   wrapper: JQuery;
-  instanceData: Record<string, any>;
+  instanceData: string|Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey: string;
 }
 
 export interface EnketoFormContext {
   selector: string;
-  formDoc: string;
-  instanceData: Record<string, any>;
+  formDoc: Record<string, any>;
+  instanceData: string|Record<string, any>; // String for report forms, Record<> for contact forms.
   editedListener: () => void;
   valuechangeListener: () => void;
   titleKey?: string;

@@ -1452,39 +1452,29 @@ describe('Enketo service', () => {
           .withArgs('input[type=file][name="/my-form/my_file"]')
           .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
 
-        
         form.validate.resolves(true);
         const content = loadXML('file-field');
-        form.getDataStr.returns(content);
 
+        form.getDataStr.returns(content);
+        dbGetAttachment.resolves('<form/>');
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
         dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
-        return service.save('my-form', form, () => Promise.resolve(true)).then(() => {
-          expect(AddAttachment.callCount).to.equal(2);
-          form.validate.resolves(true);
-          const content = loadXML('file-field');
+        // @ts-ignore
+        const saveDocsSpy = sinon.spy(EnketoService.prototype, 'saveDocs');
 
-          form.getDataStr.returns(content);
-          dbGetAttachment.resolves('<form/>');
-          UserContact.resolves({ _id: 'my-user', phone: '8989' });
-          dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
-          // @ts-ignore
-          const saveDocsSpy = sinon.spy(EnketoService.prototype, 'saveDocs');
+        return service
+          .save('my-form', form, () => Promise.resolve(true))
+          .then(() => {
+            expect(AddAttachment.calledTwice);
+            expect(saveDocsSpy.calledOnce);
 
-          return service
-            .save('my-form', form, () => Promise.resolve(true))
-            .then(() => {
-              expect(AddAttachment.calledTwice);
-              expect(saveDocsSpy.calledOnce);
+            expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
+            expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
+            expect(AddAttachment.args[0][3]).to.equal('image');
 
-              expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
-              expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
-              expect(AddAttachment.args[0][3]).to.equal('image');
-
-              expect(AddAttachment.args[1][1]).to.equal('content');
-              expect(globalActions.setSnackbarContent.notCalled);
-            });
-        });
+            expect(AddAttachment.args[1][1]).to.equal('content');
+            expect(globalActions.setSnackbarContent.notCalled);
+          });
       });
 
       it('should throw exception if attachments are big', () => {
@@ -1539,6 +1529,7 @@ describe('Enketo service', () => {
 </my-form>`;
 
         form.getDataStr.returns(content);
+        dbGetAttachment.resolves('<form/>');
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
         dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
         return service.save('my-form', form, () => Promise.resolve(true)).then(() => {
@@ -1570,6 +1561,7 @@ describe('Enketo service', () => {
         const content = loadXML('deep-file-fields');
 
         form.getDataStr.returns(content);
+        dbGetAttachment.resolves('<form/>');
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
         dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
         return service.save('my-form-internal-id', form, () => Promise.resolve(true)).then(() => {
@@ -1707,54 +1699,54 @@ describe('Enketo service', () => {
             ]);
         });
       });
-    });
 
-    describe('renderContactForm', () => {
-      beforeEach(() => {
-        service.setFormTitle = sinon.stub();
-        dbGetAttachment.resolves('<form/>');
-        translateService.get.callsFake((key) => `translated key ${key}`);
-        TranslateFrom.callsFake((sentence) => `translated sentence ${sentence}`);
-      });
-
-      const callbackMock = () => { };
-      const instanceData = {
-        health_center: {
-          type: 'contact',
-          contact_type: 'health_center',
-          parent: 'parent',
-        },
-      };
-      const formDoc = {
-        ...mockEnketoDoc('myform'),
-        title: 'New Area',
-      };
-
-      it('should translate titleKey when provided', async () => {
-        await service.renderContactForm({
-          selector: $('<div></div>'),
-          formDoc,
-          instanceData,
-          editedListener: callbackMock,
-          valuechangeListener: callbackMock,
-          titleKey: 'contact.type.health_center.new',
+      describe('renderContactForm', () => {
+        beforeEach(() => {
+          service.setFormTitle = sinon.stub();
+          dbGetAttachment.resolves('<form/>');
+          translateService.get.callsFake((key) => `translated key ${key}`);
+          TranslateFrom.callsFake((sentence) => `translated sentence ${sentence}`);
         });
 
-        expect(service.setFormTitle.callCount).to.be.equal(1);
-        expect(service.setFormTitle.args[0][1]).to.be.equal('translated key contact.type.health_center.new');
-      });
+        const callbackMock = () => { };
+        const instanceData = {
+          health_center: {
+            type: 'contact',
+            contact_type: 'health_center',
+            parent: 'parent',
+          },
+        };
+        const formDoc = {
+          ...mockEnketoDoc('myform'),
+          title: 'New Area',
+        };
 
-      it('should fallback to translate document title when the titleKey is not available', async () => {
-        await service.renderContactForm({
-          selector: $('<div></div>'),
-          formDoc,
-          instanceData,
-          editedListener: callbackMock,
-          valuechangeListener: callbackMock,
+        it('should translate titleKey when provided', async () => {
+          await service.renderContactForm({
+            selector: $('<div></div>'),
+            formDoc,
+            instanceData,
+            editedListener: callbackMock,
+            valuechangeListener: callbackMock,
+            titleKey: 'contact.type.health_center.new',
+          });
+
+          expect(service.setFormTitle.callCount).to.be.equal(1);
+          expect(service.setFormTitle.args[0][1]).to.be.equal('translated key contact.type.health_center.new');
         });
 
-        expect(service.setFormTitle.callCount).to.be.equal(1);
-        expect(service.setFormTitle.args[0][1]).to.be.equal('translated sentence New Area');
+        it('should fallback to translate document title when the titleKey is not available', async () => {
+          await service.renderContactForm({
+            selector: $('<div></div>'),
+            formDoc,
+            instanceData,
+            editedListener: callbackMock,
+            valuechangeListener: callbackMock,
+          });
+
+          expect(service.setFormTitle.callCount).to.be.equal(1);
+          expect(service.setFormTitle.args[0][1]).to.be.equal('translated sentence New Area');
+        });
       });
     });
   });

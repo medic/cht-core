@@ -687,5 +687,109 @@ exports.forms = {
       }
     },
     facility_reference: 'cref_rc'
+  },
+  YYYT: {
+    meta: {
+      code: 'YYYT',
+      label: 'Test bsDate'
+    },
+    fields: {
+      patient_id: {
+        labels: {
+          long: 'Patient ID',
+          tiny: 'ID'
+        },
+        type: 'string',
+        required: true
+      },
+      lmp_date: {
+        labels: {
+          short: 'LMP Date in BS',
+          tiny: 'LMP_BS'
+        },
+        type: 'bsDate',
+        required: true
+      }
+    }
+  },
+  YYYS: {
+    meta: {
+      code: 'YYYS',
+      label: 'Test date parts in BS calendar'
+    },
+    fields: {
+      patient_id: {
+        labels: {
+          long: 'Patient ID',
+          tiny: 'ID'
+        },
+        type: 'string',
+        required: true
+      },
+      lmp_year: {
+        labels: {
+          short: 'Year',
+          tiny: 'Y'
+        },
+        type: 'bsYear',
+        required: true
+      },
+      lmp_month: {
+        labels: {
+          short: 'Month',
+          tiny: 'M'
+        },
+        type: 'bsMonth',
+        required: true
+      },
+      lmp_day: {
+        labels: {
+          short: 'Day',
+          tiny: 'D'
+        },
+        type: 'bsDay',
+        required: true
+      },
+      lmp_date: {
+        labels: {
+          short: 'LMP Date',
+          tiny: 'LMP'
+        },
+        type: 'bsAggreDate',
+        required: true
+      }
+    }
+  },
+  YYYR: {
+    meta: {
+      code: 'YYYR',
+      label: 'Test date parts in BS calendar without bsMonth, bsDay'
+    },
+    fields: {
+      patient_id: {
+        labels: {
+          long: 'Patient ID',
+          tiny: 'ID'
+        },
+        type: 'string',
+        required: true
+      },
+      lmp_year: {
+        labels: {
+          short: 'Year',
+          tiny: 'Y'
+        },
+        type: 'bsYear',
+        required: true
+      },
+      lmp_date: {
+        labels: {
+          short: 'LMP Date',
+          tiny: 'LMP'
+        },
+        type: 'bsAggreDate',
+        required: true
+      }
+    }
   }
 };

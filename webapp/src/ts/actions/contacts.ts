@@ -1,5 +1,6 @@
 import { Store, createAction } from '@ngrx/store';
-import { createSingleValueAction, createMultiValueAction } from './actionUtils';
+
+import { createSingleValueAction, createMultiValueAction } from '@mm-actions/actionUtils';
 
 export const Actions = {
   updateContactsList: createSingleValueAction('UPDATE_CONTACTS_LIST', 'contacts'),
