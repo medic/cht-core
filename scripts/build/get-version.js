@@ -1,2 +1,2 @@
-const utils = require('./index');
-console.log(utils.getVersion());
+const versions = require('./versions');
+console.log(versions.getVersion());
