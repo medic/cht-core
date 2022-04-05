@@ -1,6 +1,10 @@
 const environment = require('./src/environment');
 const serverChecks = require('@medic/server-checks');
 const logger = require('./src/logger');
+const express = require('express');
+const apiPort = process.env.API_PORT || 5988;
+
+let router;
 
 process
   .on('unhandledRejection', reason => {
@@ -24,8 +28,20 @@ process
     process.exit(1);
   }
 
+  const app = express();
+  app.set('strict routing', true);
+  app.set('trust proxy', true);
+  app.use((req, res, next) => router(req, res, next));
+
+  const setupRouter = require('./src/services/setup/router');
+  router = setupRouter.router;
+
+  const server = app.listen(apiPort, () => {
+    logger.info('Medic API listening on port ' + apiPort);
+  });
+  server.setTimeout(0);
+
   const checkInstall = require('./src/services/setup/check-install');
-  const app = require('./src/routing');
   const configWatcher = require('./src/services/config-watcher');
   const migrations = require('./src/migrations');
   const generateXform = require('./src/services/generate-xform');
@@ -33,7 +49,6 @@ process
   const serverUtils = require('./src/server-utils');
   const uploadDefaultDocs = require('./src/upload-default-docs');
   const generateServiceWorker = require('./src/generate-service-worker');
-  const apiPort = process.env.API_PORT || 5988;
 
   try
   {
@@ -72,6 +87,7 @@ process
     process.exit(1);
   }
 
+  router = require('./src/routing');
   // Define error-handling middleware last.
   // http://expressjs.com/guide/error-handling.html
   app.use((err, req, res, next) => {
@@ -82,9 +98,4 @@ process
     }
     serverUtils.serverError(err, req, res);
   });
-
-  const server = app.listen(apiPort, () => {
-    logger.info('Medic API listening on port ' + apiPort);
-  });
-  server.setTimeout(0);
 })();

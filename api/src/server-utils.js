@@ -117,4 +117,6 @@ module.exports = {
     };
     return module.exports.error(err, req, res);
   },
+
+  wantsJSON,
 };

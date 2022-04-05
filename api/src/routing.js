@@ -56,7 +56,7 @@ const compression = require('compression');
 const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/'; // jshint ignore:line
 const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
-const app = express();
+const app = express.Router({ strict: true });
 
 // requires content-type application/json header
 const jsonParser = bodyParser.json({ limit: '32mb' });
@@ -89,9 +89,6 @@ const formParser = bodyParser.urlencoded({ limit: '32mb', extended: false });
 
 // requires content-type text/plain or application/xml header
 const textParser = bodyParser.text({limit: '32mb', type: [ 'text/plain', 'application/xml' ]});
-
-app.set('strict routing', true);
-app.set('trust proxy', true);
 
 // When testing random stuff in-browser, it can be useful to access the database
 // from different domains (e.g. localhost:5988 vs localhost:8080).  Adding the
