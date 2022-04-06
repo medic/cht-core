@@ -78,6 +78,8 @@ describe('Credentials controller', () => {
       res.json.resolves();
       await controller.put(req, res);
       chai.expect(secureSettings.setCredentials.callCount).to.equal(1);
+      chai.expect(secureSettings.setCredentials.args[0][0]).to.equal('mykey');
+      chai.expect(secureSettings.setCredentials.args[0][1]).to.equal('pwd');
       chai.expect(res.json.callCount).to.equal(1);
       chai.expect(res.json.args[0][0]).to.deep.equal({ ok: true });
     });
