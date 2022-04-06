@@ -31,29 +31,29 @@ module.exports = new Factory()
     return contact._id;
   })
   .attr('patient_age_in_years', ['patient'], (patient) => {
-    let ageInYears = moment().subtract(patient.date_of_birth, 'year');
+    const ageInYears = moment().subtract(patient.date_of_birth, 'year');
     return ageInYears;
   })
   .attr('patient_age_in_months', ['patient'], (patient) => {
-    let ageInMonths = moment().subtract(patient.date_of_birth, 'month');
+    const ageInMonths = moment().subtract(patient.date_of_birth, 'month');
     return ageInMonths;
   })
   .attr('patient_age_in_days', ['patient'], (patient) => {
-    let ageInDays = moment().subtract(patient.date_of_birth, 'day');
+    const ageInDays = moment().subtract(patient.date_of_birth, 'day');
     return ageInDays;
   })
   .attr('patient_age_display',
     ['patient_age_in_years', 'patient_age_in_months'],
     (patientAgeInYears, patientAgeInMonths) => {
-      let patientAgeDisplay = patientAgeInYears + ' years and ' + patientAgeInMonths % 12 + ' months';
+      const patientAgeDisplay = patientAgeInYears + ' years and ' + patientAgeInMonths % 12 + ' months';
       return patientAgeDisplay;
     })
   .attr('group_assess', () => {
-    let isAlive = Faker.faker.random.arrayElement(['yes', 'no']);
+    const isAlive = Faker.faker.random.arrayElement(['yes', 'no']);
     let deathDate = null;
     let deathCause = null;
     if (isAlive === 'no') {
-      let amount = Faker.faker.datatype.number({ min: 1, max: 6 });
+      const amount = Faker.faker.datatype.number({ min: 1, max: 6 });
       deathDate = moment().subtract(amount, 'months').format('YYYY-MM-DD');
       deathCause = Faker.faker.random
         .arrayElement(['diarrhoea', 'malaria', 'pneumonia', 'other']);
@@ -71,7 +71,7 @@ module.exports = new Factory()
       if (patientAgeInMonths < 2 || patientAgeInYears >= 12 || groupAssess.is_alive === 'no') {
         return null;
       }
-      let patientFever = Faker.faker.random.arrayElement(['yes', 'no']);
+      const patientFever = Faker.faker.random.arrayElement(['yes', 'no']);
       let patientTemperature = null;
       let feverDuration = null;
       let mrdtTreated = null;
@@ -116,7 +116,7 @@ module.exports = new Factory()
       if (patientAgeInMonths < 2 || patientAgeInYears >= 12 || groupAssess.is_alive === 'no') {
         return null;
       }
-      let patientCoughs = Faker.faker.random.arrayElement(['yes', 'no']);
+      const patientCoughs = Faker.faker.random.arrayElement(['yes', 'no']);
       let coughingDuration = null;
       let chestIndrawing = null;
       if (patientCoughs === 'yes') {
@@ -138,7 +138,7 @@ module.exports = new Factory()
       } else if (groupCough.patient_coughs !== 'yes') {
         return null;
       }
-      let breathCount = Faker.faker.datatype.number({ min: 10, max: 85 });
+      const breathCount = Faker.faker.datatype.number({ min: 10, max: 85 });
       let fastBreathing = false;
       let pneumoniaTreatmentGiven = null;
       let pneumoniaTreatment = null;
@@ -168,7 +168,7 @@ module.exports = new Factory()
       if (patientAgeInMonths < 2 || patientAgeInYears >= 12 || groupAssess.is_alive === 'no') {
         return null;
       }
-      let patientDiarrhea = Faker.faker.random.arrayElement(['yes', 'no']);
+      const patientDiarrhea = Faker.faker.random.arrayElement(['yes', 'no']);
       let diarrheaDuration = null;
       let diarrheaBlood = null;
       let diarrheaTreatmentGiven = null;
