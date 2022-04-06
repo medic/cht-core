@@ -26,7 +26,7 @@ module.exports = {
       return serverUtils.error({ code: 400, reason: 'Missing required request body' }, req, res);
     }
 
-    return checkAuth(req)
+    return checkAuth(req) // consider removing this step after upgrading to CouchDB v3 which is more secure by default
       .then(() => secureSettings.setCredentials(key, password))
       .then(() => res.json({ ok: true }))
       .catch(err => serverUtils.error(err, req, res));

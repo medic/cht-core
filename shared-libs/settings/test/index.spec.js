@@ -20,10 +20,6 @@ describe('Settings Shared Library', () => {
 
   describe('getCredentials', () => {
 
-    beforeEach(() => {
-
-    });
-
     it('rejects if no key given', () => {
       sinon.stub(request, 'get').rejects({ statusCode: 403, message: 'no perms' });
 

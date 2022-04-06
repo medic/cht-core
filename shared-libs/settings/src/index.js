@@ -2,7 +2,7 @@ const request = require('request-promise-native');
 const crypto = require('crypto');
 
 const IV_LENGTH = 16;
-const CRYTPO_ALGO = 'aes-256-cbc';
+const CRYPTO_ALGO = 'aes-256-cbc';
 
 const getCredentialId = id => `credential:${id}`;
 
@@ -25,7 +25,7 @@ const getCredentialsDoc = (id) => {
     return Promise.reject(new Error('You must pass the key for the credentials you want'));
   }
   return request
-    .get(`${getVaultUrl(id)}`, { json: true })
+    .get(getVaultUrl(id), { json: true })
     .catch(err => {
       if (err.statusCode === 404) {
         // No credentials defined
@@ -37,6 +37,8 @@ const getCredentialsDoc = (id) => {
 };
 
 const getKey = () => {
+  // NB: This path will need to change when we upgrade to CouchDB v3.2
+  // https://docs.couchdb.org/en/stable/config/auth.html#chttpd_auth/secret
   const url = `${getCouchConfigUrl()}/couch_httpd_auth/secret`;
   return request.get(url, { json: true });
 };
@@ -45,7 +47,7 @@ const encrypt = (text) => {
   return getKey()
     .then(key => {
       const iv = crypto.randomBytes(IV_LENGTH);
-      const cipher = crypto.createCipheriv(CRYTPO_ALGO, Buffer.from(key), iv);
+      const cipher = crypto.createCipheriv(CRYPTO_ALGO, Buffer.from(key), iv);
       const start = cipher.update(text);
       const end = cipher.final();
       const encrypted = Buffer.concat([ start, end ]);
@@ -59,7 +61,7 @@ const decrypt = (text) => {
       const parts = text.split(':');
       const iv = Buffer.from(parts.shift(), 'hex');
       const encryptedText = Buffer.from(parts.join(':'), 'hex');
-      const decipher = crypto.createDecipheriv(CRYTPO_ALGO, Buffer.from(key), iv);
+      const decipher = crypto.createDecipheriv(CRYPTO_ALGO, Buffer.from(key), iv);
       const start = decipher.update(encryptedText);
       const final = decipher.final();
       return Buffer.concat([ start, final ]).toString();
@@ -87,7 +89,7 @@ const setCredentials = (id, password) => {
         doc = { _id: getCredentialId(id) };
       }
       doc.password = encrypted;
-      return request.put(`${getVaultUrl(id)}`, { json: true, body: doc });
+      return request.put(getVaultUrl(id), { json: true, body: doc });
     });
 };
 
