@@ -31,9 +31,9 @@ describe('Syncing snackbar', () => {
   it('should display the snackbar with the syncing messages and then hide it', async () => {
     await commonPage.openHamburgerMenu();
     await (await commonPage.syncButton()).click();
-    const snack = await $('#snackbar');
+    const snack = await commonPage.snackbar();
     await snack.waitForDisplayed();
-    expect(await commonPage.snackbarMessage()).to.equal('Currently syncing…');
+    await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'Currently syncing…');
     await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'All reports synced');
     await browser.waitUntil(async () => await snack.isDisplayedInViewport() === false);
   });
@@ -42,9 +42,9 @@ describe('Syncing snackbar', () => {
     await browser.throttle('offline');
     await commonPage.openHamburgerMenu();
     await (await commonPage.syncButton()).click();
-    const snack = await $('#snackbar');
+    const snack = await commonPage.snackbar();
     await snack.waitForDisplayed();
-    expect(await commonPage.snackbarMessage()).to.equal('Currently syncing…');
+    await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'Currently syncing…');
     await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'Sync failed. Unable to connect.');
 
     await browser.throttle('online');
