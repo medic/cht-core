@@ -343,30 +343,3 @@ const request = (req, res) => {
 module.exports = {
   request: request,
 };
-
-// used for testing
-if (process.env.UNIT_TEST_ENV) {
-  Object.assign(module.exports, {
-    _init: init,
-    _initFeed: initFeed,
-    _processChange: processChange,
-    _writeDownstream: writeDownstream,
-    _processPendingChanges: processPendingChanges,
-    _appendChange: appendChange,
-    _generateTombstones: generateTombstones,
-    _hasAuthorizationChange: hasAuthorizationChange,
-    _generateResponse: generateResponse,
-    _reset: () => {
-      changesFeeds = [];
-      inited = false;
-      currentSeq = 0;
-      limitChangesRequests = null;
-    },
-    _getNormalFeeds: () => changesFeeds,
-    _getCurrentSeq: () => currentSeq,
-    _inited: () => inited,
-    _getContinuousFeed: () => continuousFeed,
-    _shouldLimitChangesRequests: shouldLimitChangesRequests,
-    _getLimitChangesRequests: () => limitChangesRequests
-  });
-}

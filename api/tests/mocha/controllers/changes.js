@@ -1,6 +1,7 @@
 const sinon = require('sinon');
+const rewire = require('rewire');
+
 const auth = require('../../../src/auth');
-const controller = require('../../../src/controllers/changes');
 const authorization = require('../../../src/services/authorization');
 const tombstoneUtils = require('@medic/tombstone-utils');
 const db = require('../../../src/db');
@@ -13,6 +14,8 @@ const environment = require('../../../src/environment');
 const purgedDocs = require('../../../src/services/purged-docs');
 const replicationLimitLogService = require('../../../src/services/replication-limit-log');
 const serverUtils = require('../../../src/server-utils');
+
+let controller;
 
 require('chai').should();
 
@@ -34,7 +37,6 @@ describe('Changes controller', () => {
   afterEach(() => {
     sinon.restore();
     clock.restore();
-    controller._reset();
     emitters.forEach(emitter => emitter.cancel());
   });
 
@@ -135,11 +137,13 @@ describe('Changes controller', () => {
     });
 
     sinon.stub(db.medic, 'info').resolves({ update_seq: '' });
+
+    controller = rewire('../../../src/controllers/changes');
   });
 
   describe('init', () => {
     it('initializes the continuous changes feed and used constants', () => {
-      controller._init();
+      controller.__get__('init')();
       changesSpy.callCount.should.equal(1);
       changesSpy.args[0][0].should.deep.equal({
         live: true,
@@ -148,24 +152,24 @@ describe('Changes controller', () => {
         timeout: false,
         return_docs: false,
       });
-      controller._inited().should.equal(true);
-      controller._getContinuousFeed().should.equal(emitters[0]);
+      controller.__get__('inited').should.equal(true);
+      controller.__get__('continuousFeed').should.equal(emitters[0]);
     });
 
     it('sends changes to be analyzed and updates current seq when changes come in', () => {
       tombstoneUtils.isTombstoneId.withArgs('change').returns(false);
-      controller._init();
-      const emitter = controller._getContinuousFeed();
+      controller.__get__('init')();
+      const emitter = controller.__get__('continuousFeed');
       emitter.emit('change', { id: 'change' }, 0, 'newseq');
       tombstoneUtils.isTombstoneId.callCount.should.equal(1);
       tombstoneUtils.isTombstoneId.args[0][0].should.equal('change');
-      controller._getCurrentSeq().should.equal('newseq');
+      controller.__get__('currentSeq').should.equal('newseq');
     });
 
     it('resets changes listener on error, using last received sequence', () => {
       tombstoneUtils.isTombstoneId.withArgs('change').returns(false);
-      controller._init();
-      const emitter = controller._getContinuousFeed();
+      controller.__get__('init')();
+      const emitter = controller.__get__('continuousFeed');
       emitter.emit('change', { id: 'change' }, 0, 'seq-1');
       emitter.emit('change', { id: 'change' }, 0, 'seq-2');
       emitter.emit('change', { id: 'change' }, 0, 'seq-3');
@@ -179,27 +183,27 @@ describe('Changes controller', () => {
     it('should check if changes requests can be limited', () => {
       environment.serverUrl = 'someURL';
       serverChecks.getCouchDbVersion.resolves('2.2.0');
-      return controller._init().then(() => {
+      return controller.__get__('init')().then(() => {
         serverChecks.getCouchDbVersion.callCount.should.equal(1);
         serverChecks.getCouchDbVersion.args[0].should.deep.equal(['someURL']);
-        controller._getLimitChangesRequests().should.equal(false);
+        controller.__get__('limitChangesRequests').should.equal(false);
       });
     });
 
     it('should check if changes requests can be limited', () => {
       environment.serverUrl = 'someOtherURL';
       serverChecks.getCouchDbVersion.resolves('2.3.0');
-      return controller._init().then(() => {
+      return controller.__get__('init')().then(() => {
         serverChecks.getCouchDbVersion.callCount.should.equal(1);
         serverChecks.getCouchDbVersion.args[0].should.deep.equal(['someOtherURL']);
-        controller._getLimitChangesRequests().should.equal(true);
+        controller.__get__('limitChangesRequests').should.equal(true);
       });
     });
 
     it('should initialize currentSeq', () => {
       db.medic.info.resolves({ update_seq: 'my_seq' });
-      return controller._init().then(() => {
-        controller._getCurrentSeq().should.equal('my_seq');
+      return controller.__get__('init')().then(() => {
+        controller.__get__('currentSeq').should.equal('my_seq');
       });
     });
   });
@@ -236,14 +240,14 @@ describe('Changes controller', () => {
 
     it('pushes requests to the normal feeds list', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3]);
-      controller._init();
+      controller.__get__('init')();
       controller.request(testReq, testRes);
       return nextTick().then(() => {
         testReq.on.callCount.should.equal(1);
         testReq.on.args[0][0].should.equal('close');
         testRes.type.callCount.should.equal(1);
         testRes.type.args[0][0].should.equal('json');
-        const feeds = controller._getNormalFeeds();
+        const feeds = controller.__get__('changesFeeds');
         feeds.length.should.equal(1);
         testRes.setHeader.callCount.should.equal(0);
       });
@@ -254,15 +258,15 @@ describe('Changes controller', () => {
     it('initializes feed with default values', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3]);
       return controller
-        ._init()
+        .__get__('init')()
         .then(() => {
-          const emitter = controller._getContinuousFeed();
+          const emitter = controller.__get__('continuousFeed');
           emitter.emit('change', { id: 'change' }, 0, 'seq-1');
           controller.request(testReq, testRes);
         })
         .then(nextTick)
         .then(() => {
-          const feed = controller._getNormalFeeds()[0];
+          const feed = controller.__get__('changesFeeds')[0];
           feed.req.should.equal(testReq);
           feed.res.should.equal(testRes);
           feed.req.userCtx.should.equal(userCtx);
@@ -277,7 +281,7 @@ describe('Changes controller', () => {
           clock.tick(60000);
           testRes.write.callCount.should.equal(0);
           testRes.end.callCount.should.equal(0);
-          controller._getNormalFeeds().length.should.equal(1);
+          controller.__get__('changesFeeds').length.should.equal(1);
         });
     });
 
@@ -285,7 +289,7 @@ describe('Changes controller', () => {
       db.medic.info.resolves({ update_seq: '12-seq' });
       controller.request(testReq, testRes);
       return nextTick().then(() => {
-        const feed = controller._getNormalFeeds()[0];
+        const feed = controller.__get__('changesFeeds')[0];
         feed.currentSeq.should.equal('12-seq');
       });
     });
@@ -295,7 +299,7 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3]);
       controller.request(testReq, testRes);
       return nextTick().then(() => {
-        const feed = controller._getNormalFeeds()[0];
+        const feed = controller.__get__('changesFeeds')[0];
         feed.limit.should.equal(23);
         feed.heartbeat.should.be.an('Object');
         feed.timeout.should.be.an('Object');
@@ -305,10 +309,10 @@ describe('Changes controller', () => {
           ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'] //heartbeats
         ]);
         testRes.end.callCount.should.equal(0);
-        controller._getNormalFeeds().length.should.equal(1);
+        controller.__get__('changesFeeds').length.should.equal(1);
         clock.tick(30000);
         testRes.end.callCount.should.equal(1);
-        controller._getNormalFeeds().length.should.equal(0);
+        controller.__get__('changesFeeds').length.should.equal(0);
         feed.should.not.have.property('debouncedEnd');
       });
     });
@@ -327,7 +331,7 @@ describe('Changes controller', () => {
         authorization.getAllowedDocIds
           .withArgs(sinon.match({ req: { userCtx }, subjectIds, contactsByDepthKeys }))
           .callCount.should.equal(1);
-        const feed = controller._getNormalFeeds()[0];
+        const feed = controller.__get__('changesFeeds')[0];
         feed.allowedDocIds.should.deep.equal(allowedDocIds);
       });
     });
@@ -352,7 +356,7 @@ describe('Changes controller', () => {
         authorization.getAllowedDocIds
           .withArgs(sinon.match({ req: { userCtx }, subjectIds, contactsByDepthKeys }))
           .callCount.should.equal(1);
-        const feed = controller._getNormalFeeds()[0];
+        const feed = controller.__get__('changesFeeds')[0];
         purgedDocs.getUnPurgedIds.callCount.should.equal(1);
         purgedDocs.getUnPurgedIds.args[0].should.deep.equal([['a', 'b'], allowedDocIds]);
         feed.allowedDocIds.should.deep.equal(_.difference(allowedDocIds, purgedIds));
@@ -378,7 +382,7 @@ describe('Changes controller', () => {
         authorization.getAllowedDocIds
           .withArgs(sinon.match({ req: { userCtx }, subjectIds, contactsByDepthKeys }))
           .callCount.should.equal(1);
-        const feed = controller._getNormalFeeds()[0];
+        const feed = controller.__get__('changesFeeds')[0];
         purgedDocs.getUnPurgedIds.callCount.should.equal(1);
         purgedDocs.getUnPurgedIds.args[0].should.deep.equal([['a', 'b'], allowedDocIds]);
         feed.allowedDocIds.should.deep.equal(_.difference(allowedDocIds, purgedIds));
@@ -452,7 +456,7 @@ describe('Changes controller', () => {
       return nextTick()
         .then(() => {
           changesSpy.callCount.should.equal(2);
-          feed = controller._getNormalFeeds()[0];
+          feed = controller.__get__('changesFeeds')[0];
           feed.upstreamRequest.complete('someerror', { status: 'error' });
         })
         .then(nextTick)
@@ -464,7 +468,7 @@ describe('Changes controller', () => {
           feed.error.should.deep.equal('someerror');
           testRes.write.callCount.should.equal(1);
           testRes.write.args[0].should.deep.equal([JSON.stringify({ error: 'Error processing your changes'})]);
-          controller._getNormalFeeds().length.should.equal(0);
+          controller.__get__('changesFeeds').length.should.equal(0);
           testRes.end.callCount.should.equal(1);
         });
     });
@@ -477,7 +481,7 @@ describe('Changes controller', () => {
       controller.request(testReq, testRes);
       return nextTick()
         .then(() => {
-          const feed = controller._getNormalFeeds()[0];
+          const feed = controller.__get__('changesFeeds')[0];
           feed.upstreamRequest.cancel();
         })
         .then(nextTick)
@@ -498,7 +502,7 @@ describe('Changes controller', () => {
       controller.request(testReq, testRes);
       return nextTick()
         .then(() => {
-          const feed = controller._getNormalFeeds()[0];
+          const feed = controller.__get__('changesFeeds')[0];
           feed.upstreamRequest.complete(null, expected);
         })
         .then(nextTick)
@@ -506,7 +510,7 @@ describe('Changes controller', () => {
           testRes.write.callCount.should.equal(1);
           testRes.write.args[0][0].should.equal(JSON.stringify(expected));
           testRes.end.callCount.should.equal(1);
-          controller._getNormalFeeds().length.should.equal(0);
+          controller.__get__('changesFeeds').length.should.equal(0);
         });
     });
 
@@ -529,17 +533,17 @@ describe('Changes controller', () => {
 
       return nextTick()
         .then(() => {
-          controller._getContinuousFeed().emit('change', { id: 7, changes: [], doc: { _id: 7 }, seq: 4 }, 0, 4);
+          controller.__get__('continuousFeed').emit('change', { id: 7, changes: [], doc: { _id: 7 }, seq: 4 }, 0, 4);
         })
         .then(() => {
-          controller._getContinuousFeed().emit('change', { id: 8, changes: [], doc: { _id: 8 }, seq: 5 }, 0, 5);
+          controller.__get__('continuousFeed').emit('change', { id: 8, changes: [], doc: { _id: 8 }, seq: 5 }, 0, 5);
         })
         .then(() => {
-          controller._getContinuousFeed().emit('change', { id: 9, changes: [], doc: { _id: 9 }, seq: 6 }, 0, 6);
+          controller.__get__('continuousFeed').emit('change', { id: 9, changes: [], doc: { _id: 9 }, seq: 6 }, 0, 6);
         })
         .then(nextTick)
         .then(() => {
-          const feed = controller._getNormalFeeds()[0];
+          const feed = controller.__get__('changesFeeds')[0];
           feed.pendingChanges.length.should.equal(3);
           feed.pendingChanges.should.deep.equal([
             { change: { id: 7, changes: [], seq: 4 }, id: 7, viewResults: {} },
@@ -562,7 +566,7 @@ describe('Changes controller', () => {
             last_seq: 3
           }));
           testRes.end.callCount.should.equal(1);
-          controller._getNormalFeeds().length.should.equal(0);
+          controller.__get__('changesFeeds').length.should.equal(0);
           authorization.allowedDoc.callCount.should.equal(0);
           authorization.filterAllowedDocs.callCount.should.equal(1);
           authorization.filterAllowedDocs.args[0][1].should.deep.equal([
@@ -592,17 +596,17 @@ describe('Changes controller', () => {
 
       return nextTick()
         .then(() => {
-          controller._getContinuousFeed().emit('change', { id: 7, changes: [], doc: { _id: 7 }, seq: 4 }, 0, 4);
+          controller.__get__('continuousFeed').emit('change', { id: 7, changes: [], doc: { _id: 7 }, seq: 4 }, 0, 4);
         })
         .then(() => {
-          controller._getContinuousFeed().emit('change', { id: 8, changes: [], doc: { _id: 8 }, seq: 5 }, 0, 5);
+          controller.__get__('continuousFeed').emit('change', { id: 8, changes: [], doc: { _id: 8 }, seq: 5 }, 0, 5);
         })
         .then(() => {
-          controller._getContinuousFeed().emit('change', { id: 9, changes: [], doc: { _id: 9 }, seq: 6 }, 0, 6);
+          controller.__get__('continuousFeed').emit('change', { id: 9, changes: [], doc: { _id: 9 }, seq: 6 }, 0, 6);
         })
         .then(nextTick)
         .then(() => {
-          const feed = controller._getNormalFeeds()[0];
+          const feed = controller.__get__('changesFeeds')[0];
           feed.pendingChanges.length.should.equal(3);
           feed.pendingChanges.should.deep.equal([
             { change: { id: 7, changes: [], seq: 4 }, id: 7, viewResults: {} },
@@ -625,7 +629,7 @@ describe('Changes controller', () => {
             last_seq: 3
           }));
           testRes.end.callCount.should.equal(1);
-          controller._getNormalFeeds().length.should.equal(0);
+          controller.__get__('changesFeeds').length.should.equal(0);
           authorization.allowedDoc.callCount.should.equal(0);
           authorization.filterAllowedDocs.callCount.should.equal(1);
           authorization.filterAllowedDocs.args[0][1].should.deep.equal([
@@ -643,11 +647,11 @@ describe('Changes controller', () => {
       controller.request(testReq, testRes);
       return nextTick()
         .then(() => {
-          controller._getNormalFeeds()[0].upstreamRequest.complete(null, false);
+          controller.__get__('changesFeeds')[0].upstreamRequest.complete(null, false);
         })
         .then(nextTick)
         .then(() => {
-          const feeds = controller._getNormalFeeds();
+          const feeds = controller.__get__('changesFeeds');
           feeds.length.should.equal(1);
         });
     });
@@ -661,7 +665,7 @@ describe('Changes controller', () => {
           changesCancelSpy.callCount.should.equal(1);
           testRes.end.callCount.should.equal(0);
           testRes.write.callCount.should.equal(0);
-          controller._getNormalFeeds().length.should.equal(0);
+          controller.__get__('changesFeeds').length.should.equal(0);
         });
     });
 
@@ -687,14 +691,14 @@ describe('Changes controller', () => {
       controller.request(testReq, testRes);
       return nextTick()
         .then(() => {
-          const emitter = controller._getContinuousFeed();
+          const emitter = controller.__get__('continuousFeed');
           emitter.emit('change', userChange, 0, 20);
-          initialFeed = controller._getNormalFeeds()[0];
+          initialFeed = controller.__get__('changesFeeds')[0];
           initialFeed.upstreamRequest.complete(null, { results: [], last_seq: 1 });
         })
         .then(nextTick)
         .then(() => {
-          const feeds = controller._getNormalFeeds();
+          const feeds = controller.__get__('changesFeeds');
           feeds.length.should.equal(1);
           feeds[0].should.not.deep.equal(initialFeed);
           feeds[0].id.should.equal('myFeed');
@@ -720,8 +724,8 @@ describe('Changes controller', () => {
       controller.request(testReq, testRes);
       return nextTick()
         .then(() => {
-          const emitter = controller._getContinuousFeed();
-          const feed = controller._getNormalFeeds()[0];
+          const emitter = controller.__get__('continuousFeed');
+          const feed = controller.__get__('changesFeeds')[0];
           emitter.emit('change', { id: 3, changes: [], doc: { _id: 3 }, seq: 1}, 0, 1);
           feed.pendingChanges.length.should.equal(1);
           emitter.emit('change', { id: 2, changes: [], doc: { _id: 2 }, seq: 2}, 0, 2);
@@ -764,7 +768,7 @@ describe('Changes controller', () => {
       controller.request(testReq, testRes);
       return nextTick()
         .then(() => {
-          const feed = controller._getNormalFeeds()[0];
+          const feed = controller.__get__('changesFeeds')[0];
           feed.upstreamRequest.complete(
             null,
             { results: [{ id: 1, seq: 1 }, { id: 2, seq: 2 }, { id: 3, seq: 3 }], last_seq: 22 }
@@ -778,7 +782,7 @@ describe('Changes controller', () => {
             last_seq: 3
           }));
           testRes.end.callCount.should.equal(1);
-          controller._getNormalFeeds().length.should.equal(0);
+          controller.__get__('changesFeeds').length.should.equal(0);
         });
     });
 
@@ -787,7 +791,7 @@ describe('Changes controller', () => {
       db.medic.info.resolves({ update_seq: 21 });
       authorization.getAllowedDocIds.resolves([1, 2]);
       controller.request(testReq, testRes);
-      const emitter = controller._getContinuousFeed();
+      const emitter = controller.__get__('continuousFeed');
       emitter.emit('change', { id: 22, changes: [], doc: { _id: 22 }}, 0, 22);
       return nextTick()
         .then(() => {
@@ -798,7 +802,7 @@ describe('Changes controller', () => {
         })
         .then(nextTick)
         .then(() => {
-          const feed = controller._getNormalFeeds()[0];
+          const feed = controller.__get__('changesFeeds')[0];
           feed.upstreamRequest.complete(null, { results: [], last_seq: 26 });
         })
         .then(nextTick)
@@ -809,7 +813,7 @@ describe('Changes controller', () => {
             last_seq: 21
           }));
           testRes.end.callCount.should.equal(1);
-          controller._getNormalFeeds().length.should.equal(0);
+          controller.__get__('changesFeeds').length.should.equal(0);
         });
     });
   });
@@ -822,14 +826,14 @@ describe('Changes controller', () => {
       return nextTick()
         .then(() => {
           clock.tick(20000);
-          const feed = controller._getNormalFeeds()[0];
+          const feed = controller.__get__('changesFeeds')[0];
           feed.upstreamRequest.complete(null, { results: [], last_seq: 2 });
         })
         .then(nextTick)
         .then(() => {
           testRes.write.callCount.should.equal(1);
           testRes.write.args[0].should.deep.equal( [ JSON.stringify({ results: [], last_seq: '' }) ]);
-          controller._getNormalFeeds().length.should.equal(0);
+          controller.__get__('changesFeeds').length.should.equal(0);
         });
     });
 
@@ -841,7 +845,7 @@ describe('Changes controller', () => {
       return nextTick()
         .then(() => {
           clock.tick(20000);
-          const feed = controller._getNormalFeeds()[0];
+          const feed = controller.__get__('changesFeeds')[0];
           feed.upstreamRequest.complete(null, { results: [], last_seq: 2 });
         })
         .then(nextTick)
@@ -850,7 +854,7 @@ describe('Changes controller', () => {
           for (let i = 0; i < 4; i++) {
             testRes.write.args[i][0].should.equal('\n');
           }
-          controller._getNormalFeeds().length.should.equal(0);
+          controller.__get__('changesFeeds').length.should.equal(0);
         });
     });
   });
@@ -860,7 +864,7 @@ describe('Changes controller', () => {
       const results = [{ id: 1 }, { id: 2 }];
       const changeObj = { change: { id: 3 } };
 
-      controller._appendChange(results, changeObj);
+      controller.__get__('appendChange')(results, changeObj);
       results.length.should.equal(3);
       results.should.deep.equal([{ id: 1 }, { id: 2 }, { id: 3 }]);
     });
@@ -872,7 +876,7 @@ describe('Changes controller', () => {
         { id: 3, changes: [{ rev: 1 }] }
       ];
       const changeObj = { change: { id: 2, changes: [{ rev: 1 }, { rev: 2}] }, id: 2 };
-      controller._appendChange(results, changeObj);
+      controller.__get__('appendChange')(results, changeObj);
       results.length.should.equal(3);
       results.should.deep.equal([
         { id: 1, changes: [{ rev: 1 }, { rev: 2 }] },
@@ -889,11 +893,11 @@ describe('Changes controller', () => {
       ];
 
       let changeObj = { change: { id: 1, changes: [{ rev: 2}], deleted: true }, id: 1 };
-      controller._appendChange(results, changeObj);
+      controller.__get__('appendChange')(results, changeObj);
       changeObj = { change: { id: 2, changes: [{ rev: 4 }], deleted: true }, id: 2};
-      controller._appendChange(results, changeObj);
+      controller.__get__('appendChange')(results, changeObj);
       changeObj = { change: { id: 3, changes: [{ rev: 2 }] }, id: 3};
-      controller._appendChange(results, changeObj);
+      controller.__get__('appendChange')(results, changeObj);
 
       results.should.deep.equal([
         { id: 1, changes: [{ rev: 1 }, { rev: 2 }], deleted: true },
@@ -906,7 +910,7 @@ describe('Changes controller', () => {
       const results = [];
       const changeObj = { change: { id: 1, changes: [{ rev: 1 }]}, viewResults: {}, id: 1 };
 
-      controller._appendChange(results, changeObj);
+      controller.__get__('appendChange')(results, changeObj);
       results[0].should.deep.equal(changeObj.change);
       results[0].should.not.equal(changeObj.change);
     });
@@ -932,7 +936,7 @@ describe('Changes controller', () => {
         { change: { id: 5, changes: [{ rev: 1 }]}, id: 5 }
       ]);
 
-      controller._processPendingChanges({ pendingChanges, userCtx, results });
+      controller.__get__('processPendingChanges')({ pendingChanges, userCtx, results });
       results.length.should.equal(3);
       results.should.deep.equal([
         { id: 1, changes: [{ rev: 1 }] },
@@ -957,7 +961,7 @@ describe('Changes controller', () => {
         { change: { id: 5, changes: [{ rev: 1 }], doc: { _id: 5 }}, id: 5},
       ];
 
-      controller._hasAuthorizationChange({ req: testReq, pendingChanges }).should.equal(true);
+      controller.__get__('hasAuthorizationChange')({ req: testReq, pendingChanges }).should.equal(true);
     });
 
     it('returns false when user doc change is not received', () => {
@@ -970,7 +974,7 @@ describe('Changes controller', () => {
         { change: { id: 5, changes: [{ rev: 1 }], doc: { _id: 5 }}, id: 5 },
       ];
 
-      controller._hasAuthorizationChange({ req: testReq, pendingChanges }).should.equal(false);
+      controller.__get__('hasAuthorizationChange')({ req: testReq, pendingChanges }).should.equal(false);
     });
   });
 
@@ -988,7 +992,7 @@ describe('Changes controller', () => {
       tombstoneUtils.generateChangeFromTombstone.withArgs({ id: '1-tombstone' }).returns({ id: 1 });
       tombstoneUtils.generateChangeFromTombstone.withArgs({ id: '4-tombstone' }).returns({ id: 4 });
 
-      controller._generateTombstones(results);
+      controller.__get__('generateTombstones')(results);
       results.should.deep.equal([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }]);
       tombstoneUtils.isTombstoneId.callCount.should.equal(4);
       tombstoneUtils.isTombstoneId.args.should.deep.equal([ ['1-tombstone'], [2], [3], ['4-tombstone'] ]);
@@ -1000,12 +1004,12 @@ describe('Changes controller', () => {
 
   describe('processChange', () => {
     it('builds the changeObj, to include the results of the view map functions', () => {
-      const normalFeeds = controller._getNormalFeeds();
+      const normalFeeds = controller.__get__('changesFeeds');
       authorization.getViewResults.withArgs({ _id: 1 }).returns({ view1: 'a', view2: 'b' });
       const testFeed = { lastSeq: 0, pendingChanges: [] };
       normalFeeds.push(testFeed);
 
-      controller._processChange({ id: 1, doc: { _id: 1 }}, 1);
+      controller.__get__('processChange')({ id: 1, doc: { _id: 1 }}, 1);
       testFeed.pendingChanges.length.should.equal(1);
       testFeed.pendingChanges[0].should.deep.equal({
         change: { id: 1 },
@@ -1015,16 +1019,16 @@ describe('Changes controller', () => {
     });
 
     it('does not update lastseq for feeds', () => {
-      const normalFeeds = controller._getNormalFeeds();
+      const normalFeeds = controller.__get__('changesFeeds');
       const normalFeed = { lastSeq: 0, pendingChanges: [], req: testReq, res: testRes };
       normalFeeds.push(normalFeed);
 
-      controller._processChange({ id: 1, doc: { _id: 1 }}, 'seq');
+      controller.__get__('processChange')({ id: 1, doc: { _id: 1 }}, 'seq');
       normalFeed.lastSeq.should.equal(0);
     });
 
     it('if tombstone change is detected, change content is converted to reflect deleted counterpart', () => {
-      const normalFeeds = controller._getNormalFeeds();
+      const normalFeeds = controller.__get__('changesFeeds');
       const testFeed = { lastSeq: 0, pendingChanges: [], req: testReq, res: testRes};
       authorization.getViewResults.withArgs({ _id: '1-tombstone' }).returns({ view1: 'a', view2: 'b' });
 
@@ -1033,7 +1037,7 @@ describe('Changes controller', () => {
       tombstoneUtils.generateChangeFromTombstone.returns({ id: 1, changes: [{ rev: 2 }] });
       tombstoneUtils.extractDoc.returns({ _id: 1 });
 
-      controller._processChange({ id: '1-tombstone', doc: { _id: '1-tombstone' }}, 'seq');
+      controller.__get__('processChange')({ id: '1-tombstone', doc: { _id: '1-tombstone' }}, 'seq');
 
       tombstoneUtils.isTombstoneId.callCount.should.equal(1);
       tombstoneUtils.isTombstoneId.args[0][0].should.equal('1-tombstone');
@@ -1062,7 +1066,7 @@ describe('Changes controller', () => {
         }
       };
 
-      const normalFeeds = controller._getNormalFeeds();
+      const normalFeeds = controller.__get__('changesFeeds');
       const testFeed1 = {
         id: 'feed1', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [],
       };
@@ -1073,7 +1077,7 @@ describe('Changes controller', () => {
         id: 'feed3', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [],
       };
       normalFeeds.push(testFeed1, testFeed2, testFeed3);
-      controller._processChange(change, 'seq');
+      controller.__get__('processChange')(change, 'seq');
       testFeed1.pendingChanges[0].should.deep.equal({ change, viewResults: { view1: 'a', view2: 'b' }, id: 1 });
       testFeed3.pendingChanges[0].should.deep.equal({ change, viewResults: { view1: 'a', view2: 'b' }, id: 1 });
       testFeed2.pendingChanges[0].should.deep.equal({ change, viewResults: { view1: 'a', view2: 'b' }, id: 1 });
@@ -1085,7 +1089,7 @@ describe('Changes controller', () => {
     it('does not attempt to write if response is finished', () => {
       testRes.finished = true;
       const feed = { res: testRes };
-      controller._writeDownstream(feed, 'aaa');
+      controller.__get__('writeDownstream')(feed, 'aaa');
       testRes.write.callCount.should.equal(0);
       testRes.end.callCount.should.equal(0);
       testRes.status.callCount.should.equal(0);
@@ -1093,8 +1097,8 @@ describe('Changes controller', () => {
 
     it('does not end response if not specified', () => {
       const feed = { res: testRes };
-      controller._writeDownstream(feed, 'aaa');
-      controller._writeDownstream(feed, 'bbb', false);
+      controller.__get__('writeDownstream')(feed, 'aaa');
+      controller.__get__('writeDownstream')(feed, 'bbb', false);
 
       testRes.write.callCount.should.equal(2);
       testRes.write.args.should.deep.equal([ ['aaa'], ['bbb'] ]);
@@ -1105,7 +1109,7 @@ describe('Changes controller', () => {
     it('ends the feed, if specified', () => {
       const feed = { res: testRes };
 
-      controller._writeDownstream(feed, 'aaa', true);
+      controller.__get__('writeDownstream')(feed, 'aaa', true);
       testRes.write.callCount.should.equal(1);
       testRes.write.args[0][0].should.equal('aaa');
       testRes.end.callCount.should.equal(1);
@@ -1113,14 +1117,14 @@ describe('Changes controller', () => {
     });
 
     it('calls `res.flush` after writing - necessary for compression and heartbeats', () => {
-      controller._writeDownstream({ res: testRes }, 'aaa', true);
+      controller.__get__('writeDownstream')({ res: testRes }, 'aaa', true);
       testRes.write.callCount.should.equal(1);
       testRes.flush.callCount.should.equal(1);
       testRes.status.callCount.should.equal(0);
     });
 
     it('sets response status to 500 when feed has errors', () => {
-      controller._writeDownstream({ res: testRes, error: true }, 'aaa', true);
+      controller.__get__('writeDownstream')({ res: testRes, error: true }, 'aaa', true);
       testRes.status.callCount.should.equal(1);
       testRes.status.args[0].should.deep.equal([ 500 ]);
       testRes.write.callCount.should.equal(1);
@@ -1129,7 +1133,7 @@ describe('Changes controller', () => {
 
     it('does not set response status to 500 when feed has errors and headers are already sent', () => {
       testRes.headersSent = true;
-      controller._writeDownstream({ res: testRes, error: true }, 'aaa', true);
+      controller.__get__('writeDownstream')({ res: testRes, error: true }, 'aaa', true);
       testRes.status.callCount.should.equal(0);
       testRes.write.callCount.should.equal(1);
       testRes.write.args[0].should.deep.equal([ 'aaa' ]);
@@ -1139,7 +1143,7 @@ describe('Changes controller', () => {
   describe('generateResponse', () => {
     it('returns obj with feed results and last seq when no error', () => {
       const feed = { results: 'results', lastSeq: 'lastSeq' };
-      controller._generateResponse(feed).should.deep.equal({
+      controller.__get__('generateResponse')(feed).should.deep.equal({
         results: feed.results,
         last_seq: feed.lastSeq
       });
@@ -1147,52 +1151,52 @@ describe('Changes controller', () => {
 
     it('returns error message when error exists', () => {
       const feed = { results: 'results', lastSeq: 'lastSeq', error: true };
-      controller._generateResponse(feed).should.deep.equal({ error: 'Error processing your changes' });
+      controller.__get__('generateResponse')(feed).should.deep.equal({ error: 'Error processing your changes' });
     });
   });
 
   describe('shouldLimitChangesRequests', () => {
     it('should not limit when serverChecks returns some invalid string', () => {
-      controller._shouldLimitChangesRequests();
-      controller._getLimitChangesRequests().should.equal(false);
-      controller._shouldLimitChangesRequests('dsaddada');
-      controller._getLimitChangesRequests().should.equal(false);
-      controller._shouldLimitChangesRequests([1, 2, 3]);
-      controller._getLimitChangesRequests().should.equal(false);
-      controller._shouldLimitChangesRequests(undefined);
-      controller._getLimitChangesRequests().should.equal(false);
+      controller.__get__('shouldLimitChangesRequests')();
+      controller.__get__('limitChangesRequests').should.equal(false);
+      controller.__get__('shouldLimitChangesRequests')('dsaddada');
+      controller.__get__('limitChangesRequests').should.equal(false);
+      controller.__get__('shouldLimitChangesRequests')([1, 2, 3]);
+      controller.__get__('limitChangesRequests').should.equal(false);
+      controller.__get__('shouldLimitChangesRequests')(undefined);
+      controller.__get__('limitChangesRequests').should.equal(false);
     });
 
     it('should not limit when serverChecks returns some lower than minimum version', () => {
-      controller._shouldLimitChangesRequests('1.7.1');
-      controller._getLimitChangesRequests().should.equal(false);
-      controller._shouldLimitChangesRequests('2.1.1-beta.0');
-      controller._getLimitChangesRequests().should.equal(false);
-      controller._shouldLimitChangesRequests('2.2.9');
-      controller._getLimitChangesRequests().should.equal(false);
-      controller._shouldLimitChangesRequests('1.9.9');
-      controller._getLimitChangesRequests().should.equal(false);
-      controller._shouldLimitChangesRequests('1.7.55');
-      controller._getLimitChangesRequests().should.equal(false);
+      controller.__get__('shouldLimitChangesRequests')('1.7.1');
+      controller.__get__('limitChangesRequests').should.equal(false);
+      controller.__get__('shouldLimitChangesRequests')('2.1.1-beta.0');
+      controller.__get__('limitChangesRequests').should.equal(false);
+      controller.__get__('shouldLimitChangesRequests')('2.2.9');
+      controller.__get__('limitChangesRequests').should.equal(false);
+      controller.__get__('shouldLimitChangesRequests')('1.9.9');
+      controller.__get__('limitChangesRequests').should.equal(false);
+      controller.__get__('shouldLimitChangesRequests')('1.7.55');
+      controller.__get__('limitChangesRequests').should.equal(false);
     });
 
     it('should limit when serverChecks returns some higher than minimum version', () => {
-      controller._shouldLimitChangesRequests('2.3.0');
-      controller._getLimitChangesRequests().should.equal(true);
-      controller._shouldLimitChangesRequests('2.3.1-beta.1');
-      controller._getLimitChangesRequests().should.equal(true);
-      controller._shouldLimitChangesRequests('2.3.1');
-      controller._getLimitChangesRequests().should.equal(true);
-      controller._shouldLimitChangesRequests('2.4.0');
-      controller._getLimitChangesRequests().should.equal(true);
-      controller._shouldLimitChangesRequests('3.0.0');
-      controller._getLimitChangesRequests().should.equal(true);
-      controller._shouldLimitChangesRequests('3.1.0');
-      controller._getLimitChangesRequests().should.equal(true);
-      controller._shouldLimitChangesRequests('2.10.0');
-      controller._getLimitChangesRequests().should.equal(true);
-      controller._shouldLimitChangesRequests('2.20.0');
-      controller._getLimitChangesRequests().should.equal(true);
+      controller.__get__('shouldLimitChangesRequests')('2.3.0');
+      controller.__get__('limitChangesRequests').should.equal(true);
+      controller.__get__('shouldLimitChangesRequests')('2.3.1-beta.1');
+      controller.__get__('limitChangesRequests').should.equal(true);
+      controller.__get__('shouldLimitChangesRequests')('2.3.1');
+      controller.__get__('limitChangesRequests').should.equal(true);
+      controller.__get__('shouldLimitChangesRequests')('2.4.0');
+      controller.__get__('limitChangesRequests').should.equal(true);
+      controller.__get__('shouldLimitChangesRequests')('3.0.0');
+      controller.__get__('limitChangesRequests').should.equal(true);
+      controller.__get__('shouldLimitChangesRequests')('3.1.0');
+      controller.__get__('limitChangesRequests').should.equal(true);
+      controller.__get__('shouldLimitChangesRequests')('2.10.0');
+      controller.__get__('limitChangesRequests').should.equal(true);
+      controller.__get__('shouldLimitChangesRequests')('2.20.0');
+      controller.__get__('limitChangesRequests').should.equal(true);
     });
   });
 
