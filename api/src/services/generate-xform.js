@@ -3,18 +3,15 @@
  * @module generate-xform
  */
 const childProcess = require('child_process');
-const path = require('path');
 const htmlParser = require('node-html-parser');
 const logger = require('../logger');
 const markdown = require('enketo-transformer/src/markdown');
+const { FORM_STYLESHEET, MODEL_STYLESHEET } = require('../xsl/xsl-paths');
 
 const MODEL_ROOT_OPEN = '<root xmlns="http://www.w3.org/2002/xforms" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema">';
 const ROOT_CLOSE = '</root>';
 const JAVAROSA_SRC = / src="jr:\/\//gi;
 const MEDIA_SRC_ATTR = ' data-media-src="';
-
-const FORM_STYLESHEET = path.join(__dirname, '../xsl/openrosa2html5form.xsl');
-const MODEL_STYLESHEET = path.join(__dirname, '../../node_modules/enketo-transformer/src/xsl/openrosa2xmlmodel.xsl');
 const XSLTPROC_CMD = 'xsltproc';
 
 const processErrorHandler = (xsltproc, err, reject) => {
