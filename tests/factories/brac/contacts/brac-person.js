@@ -190,7 +190,7 @@ const bracPerson = () => {
 
 };
 
-const generateBracPerson = function (parent, subtype) {
+const generateBracPerson = (parent, subtype) => {
   if (subtype === 'other') {
     subtype = Faker.faker.random.arrayElement(['member_child', 'member_eligible_woman', 'family_member']);
   }
@@ -201,7 +201,7 @@ const generateBracPerson = function (parent, subtype) {
   });
 };
 
-const generateBracPersons = function (size, parent) {
+const generateBracPersons = (size, parent) => {
   return bracPerson().buildList(size, {
     parent: parent,
   });

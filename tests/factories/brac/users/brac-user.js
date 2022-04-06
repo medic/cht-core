@@ -16,13 +16,12 @@ const bracUser = () => {
     .attr('known', true);
 };
 
-const generateBracUser = function (name, roles, facility) {
-  return bracUser().build(
-    {
-      name: name,
-      roles: roles,
-      facility_id: facility,
-    }
+const generateBracUser = (name, roles, facility) => {
+  return bracUser().build({
+    name: name,
+    roles: roles,
+    facility_id: facility,
+  }
   );
 };
 

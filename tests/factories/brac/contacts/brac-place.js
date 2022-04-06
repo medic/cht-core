@@ -31,7 +31,7 @@ const bracPlace = () => {
     });
 };
 
-const generateBracPlace = function (name, type, parent) {
+const generateBracPlace = (name, type, parent) => {
   return bracPlace().build({
     name: name,
     type: type,

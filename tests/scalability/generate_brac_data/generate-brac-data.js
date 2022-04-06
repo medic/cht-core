@@ -1,4 +1,3 @@
-//const [, , threadId] = process.argv;
 const bracPlaceFactory = require('../../factories/brac/contacts/brac-place');
 const bracPersonFactory = require('../../factories/brac/contacts/brac-person');
 const bracUserFactory = require('../../factories/brac/users/brac-user');
@@ -7,18 +6,19 @@ const fs = require('fs');
 const Faker = require('@faker-js/faker');
 const dataConfig = require('./data-config.json');
 
-//threadId from Jmeter to speed up the data creation;
-const districtHospitalName = 'uniquename';
+//const [, , threadId] = process.argv;
+//TODO threadId from Jmeter to speed up the data creation;
+const districtHospitalName = 'districthospital';
 
 //TODO maybe it is better to have this min max values on config file and use Faker to randomize the sizes
-const numberOfDistrictHospitals = 1; //Production data 150 DH
+const numberOfDistrictHospitals = 10; //Production data 150 DH
 const numberOfManagersPerDistrictHospital = 4; //Production data aprox 5 managers per DH
 
-const numberOfHealthCentersPerDistrictHospital = 1;//Production data 60 HC per DH
+const numberOfHealthCentersPerDistrictHospital = 4;//Production data 60 HC per DH
 const numberOfChwPerHealthCenter = 1;//Production data 1 CHP per HC
 
-const numberOfClinicsPerHealthCenter = 1;//Production data 150 Families per HC
-const numberOfFamilyMembers = 5;//Production data aprox 10 family member per family
+const numberOfClinicsPerHealthCenter = 10;//Production data 150 Families per HC
+const numberOfFamilyMembers = 6;//Production data aprox 10 family member per family
 
 const dataDirectory = dataConfig.dataDirectory + dataConfig.jsonDirectory;
 const usersDirectory = dataConfig.dataDirectory;
@@ -156,11 +156,12 @@ const generateData = () => {
       numberOfManagersPerDistrictHospital);
 
     for (let hc = 0; hc < numberOfHealthCentersPerDistrictHospital; hc++) {
-
       const healthCenter = generateHierarchy(
         'health_center',
         districtHospitalName + 'districthospital' + dh + 'healthcenter' + hc,
         numberOfChwPerHealthCenter, districtHospital._id);
+
+      managers.splice(0, managers.length);
 
       for (let c = 0; c < numberOfClinicsPerHealthCenter; c++) {
         generateHierarchy('clinic',
