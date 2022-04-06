@@ -15,14 +15,20 @@ const bracPlace = () => {
     .attr('reported_date', () => Date.now())
     .attr('contact', '')
     .attr('geolocation', ['type'], (type) => {
-      if (type !== 'clinic') { return null; }
-      else { return Faker.faker.address.latitude() + ' ' + Faker.faker.address.longitude(); }
+      if (type !== 'clinic') {
+        return null; 
+      } else {
+        return Faker.faker.address.latitude() + ' ' + Faker.faker.address.longitude(); 
+      }
     })
     .attr('supervisor', '')
     .attr('household_survey', ['type'], (type) => {
-      if (type !== 'clinic') { return null; }
-      else { return householdSurveyFactory.build(); }
-    })
+      if (type !== 'clinic') {
+        return null; 
+      } else {
+        return householdSurveyFactory.build(); 
+      }
+    });
 };
 
 const generateBracPlace = function (name, type, parent) {

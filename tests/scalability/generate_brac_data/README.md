@@ -1,4 +1,4 @@
-# Brac Config Data generator Script
+# Brac Config Data Generator Script (first draft)
 
 ## Introduction
 
