@@ -5,7 +5,7 @@ module.exports = new Factory()
   .attr('safe_water', Faker.faker.datatype.boolean)
   .attr('source_of_drinking_water', ['safe_water'], (safe_water) => {
     if (!safe_water) {
-      return null; 
+      return null;
     } else {
       return Faker.faker.helpers.uniqueArray(
         ['boiling', 'filtration', 'chlorination', 'other'],
@@ -16,4 +16,4 @@ module.exports = new Factory()
   .attr('drying_rack', Faker.faker.datatype.boolean)
   .attr('rubbish_pit', Faker.faker.datatype.boolean)
   .attr('hygeinic_toilet', Faker.faker.datatype.boolean)
-  .attr('mosquito_nets', Faker.faker.datatype.boolean); 
+  .attr('mosquito_nets', Faker.faker.datatype.boolean);

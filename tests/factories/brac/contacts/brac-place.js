@@ -16,17 +16,17 @@ const bracPlace = () => {
     .attr('contact', '')
     .attr('geolocation', ['type'], (type) => {
       if (type !== 'clinic') {
-        return null; 
+        return null;
       } else {
-        return Faker.faker.address.latitude() + ' ' + Faker.faker.address.longitude(); 
+        return Faker.faker.address.latitude() + ' ' + Faker.faker.address.longitude();
       }
     })
     .attr('supervisor', '')
     .attr('household_survey', ['type'], (type) => {
       if (type !== 'clinic') {
-        return null; 
+        return null;
       } else {
-        return householdSurveyFactory.build(); 
+        return householdSurveyFactory.build();
       }
     });
 };

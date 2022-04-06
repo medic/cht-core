@@ -213,5 +213,3 @@ module.exports = {
   generateBracPersons,
   bracPerson
 };
-
-

@@ -17,13 +17,13 @@ const bracSurvey = () => {
     .attr('from', '') //user phone number
     .attr('fields', ['form', 'contact', 'patient'], (form, contact, patient) => {
       if (form === 'household_survey') {
-        return householdSurveyFactory.build({}, { contact: contact }); 
+        return householdSurveyFactory.build({}, { contact: contact });
       }
       if (form === 'family_survey') {
-        return familydSurveyFactory.build({}, { contact: contact }); 
+        return familydSurveyFactory.build({}, { contact: contact });
       }
       if (form === 'pregnancy') {
-        return pregnancyFactory.build({}, { patient: patient, contact: contact }); 
+        return pregnancyFactory.build({}, { patient: patient, contact: contact });
       }
       //TODO continue with other kinds of reports
     })
