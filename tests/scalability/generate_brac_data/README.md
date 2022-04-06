@@ -21,7 +21,7 @@ Basically added new folders:
 1. Go to `/tests/scalability/generate_brac_data` and run `npm install`.
 2. Edit the `data-config.json` doc with the main dataDirectory, preconditionDirectory data subdirectory and mainScriptDataDirectory data subdirectory.
 3. Execute generate-brac-data.js.
-4. Data is generated in the subdirectories configured in step 2. 
+4. Data is generated in the subdirectories configured in step 2.
 
 ## Optional steps
 5. You can change the following scripts variables in generate-brac-data.js to test with different sizes:
@@ -33,5 +33,6 @@ Basically added new folders:
 - numberOfFamilyMembers
 
 ## Upload generated data to your local instance
-6. Navigate to the data directory configured in step 2. 
+6. Navigate to the data directory configured in step 2.
 7. Execute cht conf upload-docs create-users
+8. Login as user to check if everything looks ok (use users generated in users.csv)

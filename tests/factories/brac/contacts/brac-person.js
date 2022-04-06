@@ -207,7 +207,6 @@ const generateBracPersons = (size, parent) => {
   });
 };
 
-
 module.exports = {
   generateBracPerson,
   generateBracPersons,
