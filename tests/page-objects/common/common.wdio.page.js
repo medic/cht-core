@@ -12,8 +12,8 @@ const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
 const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
-const activeSnackbar = () => $('#snackbar.active');
-const inactiveSnackbar = () => $('#snackbar:not(.active)');
+const activeSnackbar = () => $('#snackbar.active'); // TODO remove
+const inactiveSnackbar = () => $('#snackbar:not(.active)'); // TODO remove
 const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message')).getText();
 const snackbarAction = () => $('#snackbar.active .snackbar-action');
 

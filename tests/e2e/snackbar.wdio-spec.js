@@ -35,7 +35,7 @@ describe('Syncing snackbar', () => {
     await snack.waitForDisplayed();
     expect(await commonPage.snackbarMessage()).to.equal('Currently syncing…');
     await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'All reports synced');
-    await snack.waitForDisplayed({ timeout: 6000, reverse: true });
+    await browser.waitUntil(async () => await snack.isDisplayedInViewport() === false);
   });
 
   it('should display the snackbar with a clickable action', async () => {
