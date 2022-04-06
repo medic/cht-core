@@ -196,10 +196,9 @@ const generateBracPerson = function (parent, subtype) {
   }
   return bracPerson().build({
     parent: parent
-  },
-    {
-      subtype: subtype
-    });
+  }, {
+    subtype: subtype
+  });
 };
 
 const generateBracPersons = function (size, parent) {

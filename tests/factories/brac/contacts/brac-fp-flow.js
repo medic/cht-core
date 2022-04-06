@@ -9,7 +9,8 @@ module.exports = new Factory()
     } else {
       const methods = [];
       methods.push(Faker.faker.random.arrayElement(
-        ['iud', 'condoms', 'btl', 'emergency_pill', 'norplant', 'depoprovera', 'progesterone', 'dmpa', 'cop', 'fp_none']));
+        ['iud', 'condoms', 'btl', 'emergency_pill', 'norplant', 'depoprovera',
+          'progesterone', 'dmpa', 'cop', 'fp_none']));
       if (methods[0] === 'condoms') {
         methods.push(Faker.faker.helpers.uniqueArray(
           ['iud', 'btl', 'emergency_pill', 'norplant', 'depoprovera', 'progesterone', 'dmpa', 'cop'],
