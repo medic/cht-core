@@ -14,10 +14,10 @@ const {
 const DEV = !BUILD_NUMBER;
 
 const buildUtils = require('./scripts/build');
+const buildVersions = require('./scripts/build/versions');
 const couchConfig = buildUtils.getCouchConfig();
 
 const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
-const SERVICES = ['api', 'sentinel'];
 
 const getSharedLibDirs = () => {
   return fs
@@ -146,7 +146,7 @@ module.exports = function(grunt) {
       'version': {
         options: {
           add: {
-            VERSION: buildUtils.getVersion(),
+            VERSION: buildVersions.getVersion(),
           },
         },
       }
@@ -286,31 +286,31 @@ module.exports = function(grunt) {
       },
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
       'build-service-images': {
-        cmd: () => SERVICES
+        cmd: () => buildVersions.SERVICES
           .map(service =>
             [
               `cd ${service}`,
               `npm ci --production`,
               `npm dedupe`,
               `cd ../`,
-              `docker build -f ./${service}/Dockerfile --tag ${buildUtils.getImageTag(service)} .`,
+              `docker build -f ./${service}/Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
             ].join(' && ')
           )
           .join(' && '),
       },
       'save-service-images': {
-        cmd: () => SERVICES
+        cmd: () => buildVersions.SERVICES
           .map(service =>
             [
               `mkdir -p images`,
-              `docker save ${buildUtils.getImageTag(service)} > images/${service}.tar`,
+              `docker save ${buildVersions.getImageTag(service)} > images/${service}.tar`,
             ].join(' && ')
           )
           .join(' && '),
       },
       'push-service-images': {
-        cmd: () => SERVICES
-          .map(service => `docker push ${buildUtils.getImageTag(service)}`)
+        cmd: () => buildVersions.SERVICES
+          .map(service => `docker push ${buildVersions.getImageTag(service)}`)
           .join(' && '),
       },
       'api-dev': {
@@ -372,7 +372,7 @@ module.exports = function(grunt) {
       },
       'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && cd ..`)
+          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci --legacy-peer-deps && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {
