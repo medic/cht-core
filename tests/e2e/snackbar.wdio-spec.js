@@ -18,7 +18,7 @@ const chw = {
   roles: ['chw'],
 };
 
-describe('Snackbar', () => {
+describe('Syncing snackbar', () => {
   before(async () => {
     await utils.saveDoc(district);
     await utils.createUsers([chw]);
@@ -31,18 +31,20 @@ describe('Snackbar', () => {
   it('should display the snackbar with the syncing messages and then hide it', async () => {
     await commonPage.openHamburgerMenu();
     await (await commonPage.syncButton()).click();
-    await (await commonPage.activeSnackbar()).waitForDisplayed();
-    expect(await commonPage.snackbarMessage()).to.equal('Currently syncing…');
+    const snack = await commonPage.snackbar();
+    await snack.waitForDisplayed();
+    await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'Currently syncing…');
     await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'All reports synced');
-    await (await commonPage.inactiveSnackbar()).waitForDisplayed({ timeout: 6000 });
+    await browser.waitUntil(async () => await snack.isDisplayedInViewport() === false);
   });
 
   it('should display the snackbar with a clickable action', async () => {
     await browser.throttle('offline');
     await commonPage.openHamburgerMenu();
     await (await commonPage.syncButton()).click();
-    await (await commonPage.activeSnackbar()).waitForDisplayed();
-    expect(await commonPage.snackbarMessage()).to.equal('Currently syncing…');
+    const snack = await commonPage.snackbar();
+    await snack.waitForDisplayed();
+    await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'Currently syncing…');
     await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'Sync failed. Unable to connect.');
 
     await browser.throttle('online');

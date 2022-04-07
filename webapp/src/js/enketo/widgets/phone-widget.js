@@ -55,6 +55,7 @@ class PhoneWidget extends Widget {
     const $proxyInput = $input.clone();
     $proxyInput.addClass('ignore');
     $proxyInput.removeAttr('data-relevant');
+    $proxyInput.removeAttr('data-required');
     $proxyInput.removeAttr('name');
     $input.before( $proxyInput );
     $proxyInput.val( $input.val() );
