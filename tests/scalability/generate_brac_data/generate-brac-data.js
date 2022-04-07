@@ -5,25 +5,23 @@ const bracSurvey = require('../../factories/brac/reports/brac-survey');
 const fs = require('fs');
 const Faker = require('@faker-js/faker');
 const dataConfig = require('./data-config.json');
+const sizeConfig = require('./size-config.json');
 
 //const [, , threadId] = process.argv;
 //TODO threadId from Jmeter to speed up the data creation;
 const districtHospitalName = 'finalassesment';
 
-//TODO maybe it is better to have this min max values on config file and use Faker to randomize the sizes
-const numberOfDistrictHospitals = 2; //Production data 150 DH
-const numberOfManagersPerDistrictHospital = 4; //Production data aprox 5 managers per DH
+const numberOfDistrictHospitals = sizeConfig.number_of_district_hospitals;
+const numberOfManagersPerDistrictHospital = sizeConfig.number_of_managers_per_district_hospitals;
+const numberOfHealthCentersPerDistrictHospital = sizeConfig.number_of_health_centers_per_district_hospital;
+const numberOfChwPerHealthCenter = sizeConfig.number_of_chw_per_health_center;
+const numberOfClinicsPerHealthCenter = sizeConfig.number_of_clinics_per_health_center;
+const numberOfFamilyMembers = sizeConfig.number_of_family_members;
 
-const numberOfHealthCentersPerDistrictHospital = 4;//Production data 60 HC per DH
-const numberOfChwPerHealthCenter = 1;//Production data 1 CHP per HC
-
-const numberOfClinicsPerHealthCenter = 10;//Production data 150 Families per HC
-const numberOfFamilyMembers = 6;//Production data aprox 10 family member per family
-
-const dataDirectory = dataConfig.dataDirectory + dataConfig.jsonDirectory;
-const usersDirectory = dataConfig.dataDirectory;
-const dataExtension = dataConfig.jsonDataExtension;
-const userNameExtension = dataConfig.userDataNameExtension;
+const dataDirectory = dataConfig.data_directory + dataConfig.json_directory;
+const usersDirectory = dataConfig.data_directory;
+const dataExtension = dataConfig.json_data_extension;
+const userNameExtension = dataConfig.user_data_name_extension;
 const usersStream = fs.createWriteStream(usersDirectory + userNameExtension, { flags: 'a' });
 
 //Managers that would be use as supervisors in subsequent levels

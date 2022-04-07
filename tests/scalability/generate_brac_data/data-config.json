@@ -1,8 +1,8 @@
 {
-  "dataDirectory": "/Users/marialorenarodriguezviruel/medic-workspace/generated-data/precondition-data/",
-  "preconditionDirectory": "/precondition-data/",
-  "mainScriptDataDirectory": "/main-script-data/",
-  "jsonDirectory": "/json_docs/",
-  "jsonDataExtension": ".doc.json",
-  "userDataNameExtension": "users.csv"
+  "data_directory": "/Users/marialorenarodriguezviruel/medic-workspace/generated-data/precondition-data/",
+  "precondition_directory": "/precondition-data/",
+  "main_script_data_directory": "/main-script-data/",
+  "json_directory": "/json_docs/",
+  "json_data_extension": ".doc.json",
+  "user_data_name_extension": "users.csv"
 }
