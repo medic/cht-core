@@ -8,10 +8,10 @@ const dataConfig = require('./data-config.json');
 
 //const [, , threadId] = process.argv;
 //TODO threadId from Jmeter to speed up the data creation;
-const districtHospitalName = 'districthospital';
+const districtHospitalName = 'finalassesment';
 
 //TODO maybe it is better to have this min max values on config file and use Faker to randomize the sizes
-const numberOfDistrictHospitals = 10; //Production data 150 DH
+const numberOfDistrictHospitals = 2; //Production data 150 DH
 const numberOfManagersPerDistrictHospital = 4; //Production data aprox 5 managers per DH
 
 const numberOfHealthCentersPerDistrictHospital = 4;//Production data 60 HC per DH
@@ -136,6 +136,10 @@ const generateHierarchy = (type, placeName, numberOfPersons,
         createDataDoc(dataDirectory + pregnancySurvey._id + dataExtension, JSON.stringify(pregnancySurvey, {}, 2));
       }
     }
+    if (person.family_member_type === 'member_child') {
+      const assesmentSurvey = bracSurvey.generateBracSurvey('assesment', directParentPlace, place, person);
+      createDataDoc(dataDirectory + assesmentSurvey._id + dataExtension, JSON.stringify(assesmentSurvey, {}, 2));
+    }
 
     isPrimaryContact = false;
   }
@@ -150,6 +154,7 @@ const generateData = () => {
   usersStream.write(usersCsvHeader);
 
   for (let dh = 0; dh < numberOfDistrictHospitals; dh++) {
+    managers.splice(0, managers.length);
     const districtHospital = generateHierarchy(
       'district_hospital',
       districtHospitalName + 'districthospital' + dh,
@@ -160,8 +165,6 @@ const generateData = () => {
         'health_center',
         districtHospitalName + 'districthospital' + dh + 'healthcenter' + hc,
         numberOfChwPerHealthCenter, districtHospital._id);
-
-      managers.splice(0, managers.length);
 
       for (let c = 0; c < numberOfClinicsPerHealthCenter; c++) {
         generateHierarchy('clinic',

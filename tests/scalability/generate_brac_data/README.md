@@ -33,6 +33,6 @@ Basically added new folders:
 - numberOfFamilyMembers
 
 ## Upload generated data to your local instance
-6. Navigate to the data directory configured in step 2.
+6. Navigate to the preconditionDirectory configured in step 2.
 7. Execute cht conf upload-docs create-users
 8. Login as user to check if everything looks ok (use users generated in users.csv)

@@ -1,7 +1,6 @@
 const Factory = require('rosie').Factory;
 const uuid = require('uuid');
-const householdSurveyFactory = require('./brac-household-survey');
-const familydSurveyFactory = require('./brac-family-household-survey');
+const assesmentFactory = require('./brac-assessment');
 const pregnancyFactory = require('./brac-pregnancy');
 
 const bracSurvey = () => {
@@ -9,18 +8,15 @@ const bracSurvey = () => {
     .sequence('_id', uuid.v4)
     .option('patient', '')
     .option('contact', '')
-    .attr('form', '') //household_survey | pregnancy | family_survey | ...
+    .attr('form', '')
     .attr('type', 'data_record')
     .attr('content_type', 'xml')
     .attr('reported_date', () => Date.now())
     .attr('contact', '')
-    .attr('from', '') //user phone number
+    .attr('from', '')
     .attr('fields', ['form', 'contact', 'patient'], (form, contact, patient) => {
-      if (form === 'household_survey') {
-        return householdSurveyFactory.build({}, { contact: contact });
-      }
-      if (form === 'family_survey') {
-        return familydSurveyFactory.build({}, { contact: contact });
+      if (form === 'assesment') {
+        return assesmentFactory.build({}, { patient: patient, contact: contact });
       }
       if (form === 'pregnancy') {
         return pregnancyFactory.build({}, { patient: patient, contact: contact });

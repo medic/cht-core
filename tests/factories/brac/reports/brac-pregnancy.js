@@ -2,7 +2,7 @@ const Factory = require('rosie').Factory;
 const Faker = require('@faker-js/faker');
 const moment = require('moment');
 
-const isPregnant = function (edd, lmpApprox, pregRes, pregResKit) {
+const isPregnant = (edd, lmpApprox, pregRes, pregResKit) => {
   if (edd !== null && !(lmpApprox === '61' || lmpApprox === '91')) {
     return true;
   }
