@@ -471,6 +471,7 @@ const collectLogs = (container, ...regex) => {
 const waitForDockerLogs = (container, ...regex) => {
   let timeout;
   let logs = '';
+  let firstLine = false;
 
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
@@ -489,7 +490,12 @@ const waitForDockerLogs = (container, ...regex) => {
     }, 6000);
 
     const checkOutput = (data) => {
-      receivedFirstLine();
+      if (!firstLine) {
+        firstLine = true;
+        receivedFirstLine();
+        return;
+      }
+
       data = data.toString();
       logs += data;
       if (regex.find(r => r.test(data))) {
@@ -627,7 +633,7 @@ const dockerComposeCmd = (...params) => {
 
 const getDockerLogs = (container) => {
   const logFile = path.resolve(__dirname, 'logs', `${container}.log`);
-  const logWriteStream = fs.createWriteStream(logFile);
+  const logWriteStream = fs.createWriteStream(logFile, { flags: 'w' });
 
   return new Promise((resolve, reject) => {
     const cmd = spawn('docker', ['logs', container]);
@@ -636,11 +642,12 @@ const getDockerLogs = (container) => {
       console.error('Error while collecting container logs', err);
       reject(err);
     });
-    cmd.stdout.pipe(logWriteStream);
-    cmd.stderr.pipe(logWriteStream);
+    cmd.stdout.pipe(logWriteStream, { end: false });
+    cmd.stderr.pipe(logWriteStream, { end: false });
 
     cmd.on('close', () => {
       resolve();
+      logWriteStream.end();
     });
   });
 };
