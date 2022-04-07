@@ -172,7 +172,7 @@ const getChanges = feed => {
       // Fixes race condition where a new doc is added while the changes feed is active,
       // but our continuousFeed listener receives the change after the response has been sent.
       // When receiving empty results, PouchDB considers replication to be complete and
-      // uses reponse.last_seq to write it's checkpointer doc.
+      // uses response.last_seq to write it's checkpointer doc.
       // By not advancing the checkpointer seq past our last change, we make sure these docs will be retrieved
       // in the next replication attempt.
       feed.lastSeq = results.length ? results[results.length - 1].seq : feed.currentSeq;
@@ -185,9 +185,11 @@ const getChanges = feed => {
         return reauthorizeRequest(feed);
       }
 
-      // todo in other promise?
-      processPendingChanges(feed, limitChangesRequests && feed.lastSeq);
-      return endFeed(feed);
+      // avoid race condition where the continuous listener receives a change immediately after we ended the feed
+      return Promise.resolve().then(() => {
+        processPendingChanges(feed, limitChangesRequests && feed.lastSeq);
+        return endFeed(feed);
+      });
     })
     .catch(err => {
       logger.info(`${feed.id} Error while requesting changes feed`);

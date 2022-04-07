@@ -218,10 +218,10 @@ const getChangesForIds = (username, docIds, retry = false, lastSeq = 0, limit = 
     });
 
     // simulate PouchDB 7.0.0 seq selection
-    const last_seq = changes.results.length ? changes.results[changes.results.length - 1].seq : changes.last_seq;
+    const lastSeq = changes.results.length ? changes.results[changes.results.length - 1].seq : changes.last_seq;
 
     if (docIds.find(id => !results.find(change => change.id === id)) || (retry && changes.results.length)) {
-      return getChangesForIds(username, docIds, retry, last_seq, limit, results);
+      return getChangesForIds(username, docIds, retry, lastSeq, limit, results);
     }
 
     return results;
@@ -454,7 +454,7 @@ describe('changes handler', () => {
             const receivedIds = getIds(changes.results)
               .filter(id => !isFormOrTranslation(id) && !DEFAULT_EXPECTED.includes(id));
             chai.expect(bobsIds).to.include.members(receivedIds);
-            // because we still process pending changes, it's not a given we will receive only 4 changes.
+            // because we still process pending changes,xit's not a given we will receive only 4 changes.
             chai.expect(bobsIds).to.not.have.members(receivedIds);
           } else {
             // requests should return full changes list
@@ -621,7 +621,7 @@ describe('changes handler', () => {
           }
         })
         .then(() => utils.request({ path: '/_users/org.couchdb.user:steve' }))
-        // revert steve, he didn't like it in bobville
+        // revert steve, he didn't likexit in bobville
         .then(user => utils.request({
           path: `/_users/org.couchdb.user:steve?rev=${user._rev}`,
           method: 'PUT',
@@ -684,7 +684,7 @@ describe('changes handler', () => {
         .then(changes => {
           const changeIds = getIds(changes.results)
             .filter(id => !isFormOrTranslation(id) && !DEFAULT_EXPECTED.includes(id));
-          // can't use assertChangeIds here because it ignores deletes
+          // can't use assertChangeIds here becausexit ignores deletes
           chai.expect(_.uniq(changeIds)).to.have.members([...stevesIds, ...allowedDocIds]);
         })
         .then(() => consumeChanges('steve', [], currentSeq))
@@ -848,20 +848,22 @@ describe('changes handler', () => {
     });
 
     it('normal feeds should replicate correctly when new changes are pushed', () => {
-      const allowedDocs = createSomeContacts(25, 'fixture:bobville');
-      const allowedDocs2 = createSomeContacts(25, 'fixture:bobville');
-      const ids = [...getIds(allowedDocs), ...getIds(allowedDocs2)];
+      const allowedDocs = createSomeContacts(100, 'fixture:bobville');
+      const allowedDocs2 = createSomeContacts(100, 'fixture:bobville');
+      const allowedDocs3 = createSomeContacts(100, 'fixture:bobville');
+      const ids = [...getIds(allowedDocs), ...getIds(allowedDocs2), ...getIds(allowedDocs3)];
 
       // save docs in sequence
       const promiseChain = allowedDocs.reduce((promise, doc) => {
-        return utils.delayPromise(() => promise.then(() => utils.saveDoc(doc)), 50);
+        return utils.delayPromise(() => promise.then(() => utils.saveDoc(doc)), 20);
       }, Promise.resolve());
 
       return utils
         .saveDocs(allowedDocs2)
         .then(() => Promise.all([
           getChangesForIds('bob', ids, true, currentSeq, 4),
-          promiseChain
+          promiseChain,
+          utils.delayPromise(() => utils.saveDocs(allowedDocs3), 200),
         ]))
         .then(([ changes ]) => {
           chai.expect(ids).to.have.members(_.uniq(getIds(changes)));

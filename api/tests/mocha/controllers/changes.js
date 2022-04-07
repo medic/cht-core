@@ -760,6 +760,51 @@ describe('Changes controller', () => {
         });
     });
 
+    it('handles when new pending change is received immediately after completing upstream complete', () => {
+      authorization.getAllowedDocIds.resolves([1, 2, 3]);
+      authorization.filterAllowedDocs.returns([
+        { change: { id: 1, changes: [], seq: 4 }, id: 1 },
+        { change: { id: 3, changes: [], seq: 1 }, id: 3 },
+        { change: { id: 2, changes: [], seq: 2 }, id: 2 }
+      ]);
+
+      controller.request(testReq, testRes);
+      return nextTick()
+        .then(() => {
+          const feed = controller.__get__('changesFeeds')[0];
+          feed.upstreamRequest.complete(null, { results: [{ id: 22, seq: 5 }], last_seq: 5 });
+        })
+        .then(() => {
+          const emitter = controller.__get__('continuousFeed');
+          const feed = controller.__get__('changesFeeds')[0];
+          emitter.emit('change', { id: 3, changes: [], doc: { _id: 3 }, seq: 1}, 0, 1);
+          feed.pendingChanges.length.should.equal(1);
+          emitter.emit('change', { id: 2, changes: [], doc: { _id: 2 }, seq: 2}, 0, 2);
+          feed.pendingChanges.length.should.equal(2);
+
+          emitter.emit('change', { id: 4, changes: [], doc: { _id: 4 }, seq: 3}, 0, 3);
+          feed.pendingChanges.length.should.equal(3);
+          emitter.emit('change', { id: 1, changes: [], doc: { _id: 1 }, seq: 4}, 0, 4);
+          feed.pendingChanges.length.should.equal(4);
+        })
+        .then(nextTick)
+        .then(() => {
+          testRes.end.callCount.should.equal(1);
+          testRes.write.callCount.should.equal(1);
+          testRes.write.args[0][0].should.equal(JSON.stringify({
+            results: [
+              { id: 22, seq: 5 },
+              { id: 1, changes: [], seq: 4 },
+              { id: 3, changes: [], seq: 1 },
+              { id: 2, changes: [], seq: 2 }
+            ],
+            last_seq: 5
+          }));
+          authorization.allowedDoc.callCount.should.equal(0);
+          authorization.filterAllowedDocs.callCount.should.equal(1);
+        });
+    });
+
     it('should copy last change\'s seq as last_seq', () => {
       const validatedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getAllowedDocIds.resolves(validatedIds);
