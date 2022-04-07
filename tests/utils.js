@@ -627,7 +627,7 @@ const dockerComposeCmd = (...params) => {
 
 const getDockerLogs = (container) => {
   const logFile = path.resolve(__dirname, 'logs', `${container}.log`);
-  const logWriteStream = fs.createWriteStream(logFile);
+  const logWriteStream = fs.createWriteStream(logFile, { flags: 'w' });
 
   return new Promise((resolve, reject) => {
     const cmd = spawn('docker', ['logs', container]);
@@ -636,11 +636,12 @@ const getDockerLogs = (container) => {
       console.error('Error while collecting container logs', err);
       reject(err);
     });
-    cmd.stdout.pipe(logWriteStream);
-    cmd.stderr.pipe(logWriteStream);
+    cmd.stdout.pipe(logWriteStream, { end: false });
+    cmd.stderr.pipe(logWriteStream, { end: false });
 
     cmd.on('close', () => {
       resolve();
+      logWriteStream.end();
     });
   });
 };
