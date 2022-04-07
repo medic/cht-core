@@ -56,9 +56,7 @@ describe('Changes controller', () => {
     };
 
     defaultSettings = {
-      reiterate_changes: true,
       changes_limit: 100,
-      debounce_interval: 200
     };
 
     changesSpy = sinon.spy();

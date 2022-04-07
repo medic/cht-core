@@ -122,9 +122,7 @@
     "can_export_all": ["national_admin"]
   },
   "changes_controller": {
-    "reiterate_changes": true,
-    "changes_limit": 100,
-    "debounce_interval": 200
+    "changes_limit": 100
   },
   "uhc": {
     "month_start_date": 1,
