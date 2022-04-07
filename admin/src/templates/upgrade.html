@@ -40,10 +40,6 @@
       <p class="col-xs-10" translate>instance.stage.complete</p>
       <button class="col-xs-1 btn btn-primary" ng-click="upgrade(upgradeDoc.to, 'complete')" translate>instance.upgrade.install</button>
     </div>
-    <div ng-show="upgradeDoc.state === 'complete'">
-      <p class="col-xs-10" translate>instance.upgrade.complete</p>
-      <button class="col-xs-2 btn btn-primary" ng-click="reloadPage()" translate>reload.app</button>
-    </div>
     <div ng-show="upgradeDoc.state === 'interrupted'">
       <p class="alert alert-warning" translate>instance.upgrade.interrupted</p>
       <button class="col-xs-2 btn btn-default pull-right" ng-click="retryUpgrade()" translate>instance.upgrade.retry</button>
@@ -68,6 +64,10 @@
         <dt translate>instance.upgrade.at</dt>
         <dd ng-bind-html="currentDeploy.timestamp | date"></dd>
       </dl>
+    </div>
+
+    <div class="col-sm-12 alert alert-success" ng-show="upgraded" translate>
+      instance.upgrade.complete
     </div>
 
     <div><p translate>upgrade.description</p></div>

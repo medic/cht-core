@@ -54,19 +54,17 @@ const safeInstall = async (buildInfo, stageOnly) => {
  * @return {Promise<void>}
  */
 const complete = async (buildInfo) => {
-  // todo
-  logger.debug('%o', buildInfo); // don't complain about unused variables
-  // test if build info matches
-  // this is going to send a request to the bridge container to pull new source code
-  // completing the install (overwriting the staged ddocs) is done when API starts up.
+  return upgradeSteps.complete(buildInfo);
 };
 
 const abort = () => {
   return upgradeSteps.abort();
 };
 
-const indexerProgress = () => viewIndexerProgress.query();
-// todo: how to "resume" an upgrade
+const indexerProgress = () => {
+  return viewIndexerProgress.query();
+};
+
 const upgradeInProgress = () => {
   return upgradeLog.get();
 };

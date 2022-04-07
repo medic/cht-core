@@ -1,8 +1,8 @@
 const IS_CI = !!process.env.CI;
 
 const COUCH_HOST = 'localhost';
-const COUCH_PORT = IS_CI ? 5984 : 4984;
-const API_PORT = IS_CI ? 5988 : 4988;
+const COUCH_PORT = IS_CI ? '5984' : '4984';
+const API_PORT = IS_CI ? '5988' : '4988';
 
 module.exports = {
   IS_CI: IS_CI,

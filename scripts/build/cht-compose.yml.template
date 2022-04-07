@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  couchdb:
+    image: {{{ couchdb_image }}}
+    container_name: {{ couchdb_container_name }}
+    environment:
+      - COUCHDB_USER=$COUCHDB_USER
+      - COUCHDB_PASSWORD=$COUCHDB_PASSWORD
+    restart: always
+    ports:
+      - "${COUCH_PORT:-5984}:5984"
+    networks:
+      - {{ network }}
+
+  cht-api:
+    image: {{{ repo }}}/cht-api:{{ tag }}
+    container_name: {{ api_container_name }}
+    depends_on:
+      - couchdb
+    ports:
+      - "${API_PORT:-5988}:5988"
+    environment:
+      - COUCH_URL=http://$COUCHDB_USER:$COUCHDB_PASSWORD@couchdb:5984/{{ db_name }}
+      - BUILDS_URL=${MARKET_URL_READ:-https://staging.dev.medicmobile.org}/${BUILDS_SERVER:-_couch/builds}
+      - UPGRADE_SERVICE_URL=${UPGRADE_SERVICE_URL:-http://localhost:5100}
+    networks:
+      - {{ network }}
+
+  cht-sentinel:
+    image: {{{ repo }}}/cht-sentinel:{{ tag }}
+    container_name: {{ sentinel_container_name }}
+    depends_on:
+      - couchdb
+    environment:
+      - COUCH_URL=http://$COUCHDB_USER:$COUCHDB_PASSWORD@couchdb:5984/{{ db_name }}
+      - API_HOST=cht-api
+    networks:
+      - {{ network }}
+
+networks:
+  {{ network }}:
+    name: {{ network }}

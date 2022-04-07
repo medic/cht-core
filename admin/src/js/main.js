@@ -407,7 +407,10 @@ angular.module('adminApp').config(function(
     .state('upgrade', {
       url: '/upgrade',
       controller: 'UpgradeCtrl',
-      templateUrl: 'templates/upgrade.html'
+      templateUrl: 'templates/upgrade.html',
+      params: {
+        upgraded: null
+      }
     })
     .state('message-queue', {
       url: '/message-queue',

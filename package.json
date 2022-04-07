@@ -110,6 +110,7 @@
     "mocha": "^7.2.0",
     "moment": "^2.29.1",
     "moment-locales-webpack-plugin": "^1.2.0",
+    "mustache": "^4.2.0",
     "node-sass": "^6.0.1",
     "nodemon": "^2.0.13",
     "postcss": "^8.3.6",
