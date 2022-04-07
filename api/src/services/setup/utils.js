@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
+const rpn = require('request-promise-native');
 
 const db = require('../../db');
 const logger = require('../../logger');
@@ -8,6 +9,8 @@ const environment = require('../../environment');
 const upgradeLogService = require('./upgrade-log');
 const { DATABASES, MEDIC_DATABASE } = require('./databases');
 const ddocsService = require('./ddocs');
+
+const UPGRADE_SERVICE_URL = process.env.UPGRADE_SERVICE_URL || 'http://localhost:5008';
 
 /**
  * Returns version of bundled medic/medic ddoc
@@ -291,6 +294,42 @@ const unstageStagedDdocs = async () => {
   }
 };
 
+const getUpgradeServicePayload = (stagingDoc) => {
+  const dockerCompose = {};
+  const attachmentPrefix = 'docker-compose/';
+
+  Object
+    .entries(stagingDoc._attachments)
+    .filter(([name]) => name.startsWith(attachmentPrefix))
+    .forEach(([name, contents]) => {
+      const buffer = Buffer.from(contents.data, 'base64');
+      const fileName = name.replace(attachmentPrefix, '');
+      dockerCompose[fileName] = buffer.toString('utf-8');
+    });
+
+  const tags = stagingDoc.tags.map(tag => ({
+    containerName: tag.container_name,
+    imageTag: tag.image,
+  }));
+
+  return {
+    tags,
+    'docker-compose': dockerCompose,
+  };
+};
+
+const makeUpgradeRequest = (payload) => {
+  let url;
+  try {
+    url = new URL(UPGRADE_SERVICE_URL);
+    url.pathname = '/upgrade';
+  } catch (err) {
+    throw new Error(`Invalid UPGRADE_SERVICE_URL: ${UPGRADE_SERVICE_URL}`);
+  }
+
+  return rpn.post({ url: url.toString(), json: true, body: payload });
+};
+
 module.exports = {
   cleanup,
 
@@ -304,4 +343,7 @@ module.exports = {
   getBundledDdocs,
   abortPreviousUpgrade,
   interruptPreviousUpgrade,
+  getStagingDoc,
+  getUpgradeServicePayload,
+  makeUpgradeRequest,
 };

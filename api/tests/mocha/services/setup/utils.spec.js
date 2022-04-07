@@ -2,6 +2,7 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const rewire = require('rewire');
 const fs = require('fs');
+const rpn = require('request-promise-native');
 
 const db = require('../../../../src/db');
 const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
@@ -11,6 +12,7 @@ const ddocsService = require('../../../../src/services/setup/ddocs');
 
 let utils;
 let clock;
+let originalEnv;
 
 const buildInfo = (version, namespace='medic', application='medic') => ({ version, namespace, application });
 
@@ -27,11 +29,13 @@ describe('Setup utils', () => {
   beforeEach(() => {
     clock = sinon.useFakeTimers();
     utils = rewire('../../../../src/services/setup/utils');
+    originalEnv = { ...process.env };
   });
 
   afterEach(() => {
     sinon.restore();
     clock.restore();
+    process.env = originalEnv;
   });
 
   describe('deleteStagedDdocs', () => {
@@ -812,6 +816,117 @@ describe('Setup utils', () => {
       await utils.interruptPreviousUpgrade();
 
       expect(upgradeLogService.get.callCount).to.equal(1);
+    });
+  });
+
+  describe('getUpgradeServicePayload', () => {
+    it('should return correctly formatted payload', () => {
+      const file1 = Buffer.from('file1').toString('base64');
+      const file2 = Buffer.from('file2').toString('base64');
+      const stagingDoc = {
+        version: '4.0.0',
+        _attachments: {
+          '_design/medic': { data: 'a' },
+          '_design/thing': { data: 'b' },
+          'docker-compose/file1.yml': { data: file1 },
+          'docker-compose/file2.yml': { data: file2 },
+        },
+        tags: [
+          {
+            container_name: 'cht-api',
+            image: 'registry/cht-api:4.0.0',
+          },
+          {
+            container_name: 'cht-sentinel',
+            image: 'registry/cht-sentinel:4.0.0',
+          }
+        ],
+      };
+
+      expect(utils.getUpgradeServicePayload(stagingDoc)).to.deep.equal({
+        tags: [
+          {
+            containerName: 'cht-api',
+            imageTag: 'registry/cht-api:4.0.0',
+          },
+          {
+            containerName: 'cht-sentinel',
+            imageTag: 'registry/cht-sentinel:4.0.0',
+          }
+        ],
+        'docker-compose': {
+          'file1.yml': 'file1',
+          'file2.yml': 'file2',
+        },
+      });
+    });
+
+    it('should throw errors when staging doc is malformed', () => {
+      const stagingDoc = {
+        version: '4.0.0',
+        _attachments: 'not an object'
+      };
+
+      expect(utils.getUpgradeServicePayload.bind({}, stagingDoc)).to.throw;
+    });
+
+    it('should work with no attachments', () => {
+      const stagingDoc = {
+        version: '4.0.0',
+        _attachments: {},
+        tags: []
+      };
+
+      expect(utils.getUpgradeServicePayload(stagingDoc)).to.deep.equal({
+        tags: [],
+        'docker-compose': {},
+      });
+    });
+  });
+
+  describe('makeUpgradeRequest', () => {
+    it('should call default upgrade service url', async () => {
+      const payload = { the: 'payload' };
+      sinon.stub(rpn, 'post').resolves('response');
+
+      expect(await utils.makeUpgradeRequest(payload)).to.deep.equal('response');
+      expect(rpn.post.callCount).to.equal(1);
+      expect(rpn.post.args[0]).to.deep.equal([{
+        url: 'http://localhost:5008/upgrade',
+        json: true,
+        body: payload,
+      }]);
+    });
+
+    it('should call env upgrade service url', async () => {
+      const payload = { tags: {}, 'docker-compose': {} };
+      sinon.stub(rpn, 'post').resolves('response');
+      process.env.UPGRADE_SERVICE_URL = 'http://someurl';
+      utils = rewire('../../../../src/services/setup/utils');
+
+      expect(await utils.makeUpgradeRequest(payload)).to.deep.equal('response');
+      expect(rpn.post.callCount).to.equal(1);
+      expect(rpn.post.args[0]).to.deep.equal([{
+        url: 'http://someurl/upgrade',
+        json: true,
+        body: payload,
+      }]);
+    });
+
+    it('should throw invalid url error', () => {
+      const payload = { tags: {}, 'docker-compose': {} };
+      sinon.stub(rpn, 'post').resolves('response');
+      process.env.UPGRADE_SERVICE_URL = 'whatever';
+      utils = rewire('../../../../src/services/setup/utils');
+
+      expect(utils.makeUpgradeRequest.bind({}, payload)).to.throw('Invalid UPGRADE_SERVICE_URL: whatever');
+    });
+
+    it('should throw request errors', async () => {
+      const payload = { tags: {}, 'docker-compose': {} };
+      sinon.stub(rpn, 'post').rejects(new Error('boom'));
+
+      await expect(utils.makeUpgradeRequest(payload)).to.be.rejectedWith('boom');
     });
   });
 });

@@ -6,9 +6,9 @@ angular.module('controllers').controller('UpgradeCtrl',
     $log,
     $q,
     $scope,
+    $state,
     $timeout,
     $translate,
-    $window,
     Modal,
     Version,
     pouchDB
@@ -19,9 +19,11 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     $scope.loading = true;
     $scope.versions = {};
+    $scope.upgraded = $state.params.upgraded;
     const buildsDb = pouchDB(BUILDS_DB);
 
     const UPGRADE_URL = '/api/v2/upgrade';
+    const POLL_URL = '/setup/poll';
     const UPGRADE_POLL_FREQ = 2000;
     const BUILD_LIST_LIMIT = 50;
 
@@ -35,10 +37,16 @@ angular.module('controllers').controller('UpgradeCtrl',
         });
     };
 
-    const getExistingDeployment = () => {
+    const getExistingDeployment = (expectUpgrade) => {
       return $http
         .get('/api/deploy-info')
         .then(({ data: deployInfo }) => {
+          if (expectUpgrade && $scope.currentDeploy) {
+            if ($scope.currentDeploy.version !== deployInfo.version) {
+              return reloadPage();
+            }
+            logError('instance.upgrade.error.deploy', 'instance.upgrade.error.deploy');
+          }
           $scope.currentDeploy = deployInfo;
         })
         .catch(err => logError(err, 'instance.upgrade.error.deploy_info_fetch'));
@@ -48,6 +56,10 @@ angular.module('controllers').controller('UpgradeCtrl',
       return $http
         .get(UPGRADE_URL)
         .then(({ data: { upgradeDoc, indexers } }) => {
+          if ($scope.upgradeDoc && !upgradeDoc) {
+            getExistingDeployment(true);
+          }
+
           $scope.upgradeDoc = upgradeDoc;
           $scope.indexerProgress = indexers;
 
@@ -145,7 +157,9 @@ angular.module('controllers').controller('UpgradeCtrl',
       return Version.compare(currentVersion, releaseVersion) > 0;
     };
 
-    $scope.reloadPage = () => $window.location.reload();
+    const reloadPage = () => {
+      $state.go('upgrade', { upgraded: true });
+    };
 
     $scope.upgrade = (build, action) => {
       const stageOnly = action === 'stage';
@@ -164,6 +178,14 @@ angular.module('controllers').controller('UpgradeCtrl',
       }).catch(() => {});
     };
 
+    const waitUntilApiStarts = () => new Promise((resolve) => {
+      const pollApi = () => $http
+        .get(POLL_URL)
+        .then(() => resolve())
+        .catch(() => $timeout(pollApi, 1000));
+      pollApi();
+    });
+
     const upgrade = (build, action) => {
       $scope.error = false;
 
@@ -171,6 +193,14 @@ angular.module('controllers').controller('UpgradeCtrl',
 
       return $http
         .post(url, { build })
+        .catch(err => {
+          // todo which status do we get with nginx???
+          if (err && (!err.status || err.status !== 500) && action === 'complete') {
+            // refresh page after API is back up
+            return waitUntilApiStarts().then(() => reloadPage());
+          }
+          throw err;
+        })
         .then(() => getCurrentUpgrade());
     };
 

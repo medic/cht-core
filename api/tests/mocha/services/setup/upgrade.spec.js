@@ -53,6 +53,7 @@ describe('upgrade service', () => {
       sinon.stub(upgradeSteps, 'stage').returns(new Promise(r => stage = r));
       let indexStagedViews;
       sinon.stub(upgradeSteps, 'indexStagedViews').returns(new Promise(r => indexStagedViews = r));
+      sinon.stub(upgradeSteps, 'complete').resolves();
 
       const upgradePromise = upgrade.upgrade('a_version', 'usr', false);
 
@@ -198,6 +199,25 @@ describe('upgrade service', () => {
 
       expect(result).to.deep.equal({ an: 'upgradeLog' });
       expect(upgrade.__get__('upgrading')).to.equal(true);
+    });
+  });
+
+  describe('complete', () => {
+    it('should call complete upgrade step', async () => {
+      sinon.stub(upgradeSteps, 'complete').resolves('???');
+      const buildInfo = { version: 4 };
+
+      expect(await upgrade.complete(buildInfo)).to.equal('???');
+
+      expect(upgradeSteps.complete.callCount).to.equal(1);
+      expect(upgradeSteps.complete.args[0]).to.deep.equal([buildInfo]);
+    });
+
+    it('should throw errors', async () => {
+      sinon.stub(upgradeSteps, 'complete').rejects({ status: 404 });
+      const buildInfo = { version: 4 };
+
+      await expect(upgrade.complete(buildInfo)).to.be.rejected.and.eventually.deep.equal({ status: 404 });
     });
   });
 });

@@ -2,6 +2,8 @@ const packageJson = require('../../package.json');
 const path = require('path');
 const fs = require('fs');
 const rpn = require('request-promise-native');
+const mustache = require('mustache');
+const versions = require('./versions');
 
 const {
   TAG,
@@ -9,12 +11,12 @@ const {
   BRANCH,
   BUILD_NUMBER,
   API_PORT,
-  ECR_REPO,
 } = process.env;
 const DEFAULT_API_PORT = 5988;
 
 const buildPath = path.resolve(__dirname, '..', '..', 'build');
 const stagingPath = path.resolve(buildPath, 'staging');
+const stagingAttachmentsPath = path.resolve(stagingPath, '_attachments');
 const ddocsBuildPath = path.resolve(buildPath, 'ddocs');
 
 const getCouchConfig = () => {
@@ -44,32 +46,6 @@ const getApiUrl = (pathname = '') => {
 };
 
 const releaseName = TAG || BRANCH || 'local-development';
-const buildTime = new Date().getTime();
-
-const getVersion = () => {
-  if (TAG) {
-    return TAG;
-  }
-  if (BRANCH === 'master') {
-    return `${packageJson.version}-alpha.${BUILD_NUMBER}`;
-  }
-  if (BRANCH) {
-    return `${packageJson.version}-${BRANCH}.${BUILD_NUMBER}`;
-  }
-
-  if (process.env.VERSION) {
-    return process.env.VERSION;
-  }
-
-  return `${packageJson.version}-dev.${buildTime}`;
-};
-
-const getImageTag = (service) => {
-  const version = getVersion();
-  const tag = version.replace(/\//g, '-');
-  const repo = ECR_REPO || 'medicmobile';
-  return service ? `${repo}/cht-${service}:${tag}` : tag;
-};
 
 const setBuildInfo = () => {
   const buildInfoPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'build_info');
@@ -94,11 +70,11 @@ const createStagingDoc = () => {
   mkdirSync(stagingPath);
 
   fs.writeFileSync(path.resolve(stagingPath, '_id'), `medic:medic:test-${BUILD_NUMBER}`);
-  mkdirSync(path.resolve(stagingPath, '_attachments'));
+  mkdirSync(stagingAttachmentsPath);
 };
 
 const populateStagingDoc = () => {
-  const ddocAttachmentsPath = path.resolve(stagingPath, '_attachments', 'ddocs');
+  const ddocAttachmentsPath = path.resolve(stagingAttachmentsPath, 'ddocs');
   mkdirSync(ddocAttachmentsPath);
 
   fs.readdirSync(ddocsBuildPath, { withFileTypes: true }).forEach(file => {
@@ -109,6 +85,8 @@ const populateStagingDoc = () => {
 
   // the validate_doc_update from staging.dev requires full build info in the staging document.
   copyBuildInfoToStagingDoc();
+  saveDockerComposeFile();
+  saveServiceTags();
 };
 
 const copyBuildInfoToStagingDoc = () => {
@@ -121,6 +99,44 @@ const copyBuildInfoToStagingDoc = () => {
       fs.copyFileSync(path.resolve(medicBuildInfoPath, file.name), path.resolve(stagingBuildInfoPath, file.name));
     }
   });
+};
+
+const saveDockerComposeFile = () => {
+  const templatePath = path.resolve(__dirname, 'cht-compose.yml.template');
+  const template = fs.readFileSync(templatePath, 'utf-8');
+
+  const view = {
+    couchdb_image: 'medicmobile/cht-couchdb:clustered-test4',
+    repo: versions.getRepo(),
+    tag: versions.getImageTag(undefined, undefined, true),
+    network: 'cht-net',
+    couchdb_container_name: 'cht-couch',
+    api_container_name: 'cht-api',
+    sentinel_container_name: 'cht-sentinel',
+    db_name: 'medic',
+  };
+
+  const output = mustache.render(template, view);
+
+  const dockerComposeFolder = path.resolve(stagingAttachmentsPath, 'docker-compose');
+  mkdirSync(dockerComposeFolder);
+  const dockerComposeFilePath = path.resolve(dockerComposeFolder, 'cht-compose.yml');
+  fs.writeFileSync(dockerComposeFilePath, output);
+};
+
+const saveServiceTags = () => {
+  const tags = [
+    {
+      container_name: 'cht-api',
+      image: versions.getImageTag('api', undefined, true),
+    },
+    {
+      container_name: 'cht-sentinel',
+      image: versions.getImageTag('sentinel', undefined, true),
+    },
+  ];
+  const tagsFilePath = path.resolve(stagingPath, 'tags.json');
+  fs.writeFileSync(tagsFilePath, JSON.stringify(tags));
 };
 
 const updateServiceWorker = () => {
@@ -144,7 +160,7 @@ const updateServiceWorker = () => {
 };
 
 const setDdocsVersion = () => {
-  const version = getVersion();
+  const version = versions.getVersion();
   const databases = fs.readdirSync(ddocsBuildPath);
   databases.forEach(database => {
     const dbPath = path.resolve(ddocsBuildPath, database);
@@ -166,6 +182,4 @@ module.exports = {
   createStagingDoc,
   populateStagingDoc,
   updateServiceWorker,
-  getImageTag,
-  getVersion,
 };
