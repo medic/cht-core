@@ -331,7 +331,7 @@ describe('transitions', () => {
     const deprecatedTransitions = transitions.getDeprecatedTransitions();
 
     assert.isDefined(deprecatedTransitions);
-    assert.equal(deprecatedTransitions.length, 3);
+    assert.equal(deprecatedTransitions.length, 2);
   });
 });
 
