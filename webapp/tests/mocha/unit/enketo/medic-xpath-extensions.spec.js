@@ -1,8 +1,9 @@
 const assert = require('chai').assert;
 const moment = require('moment');
+const { toBik_text } = require('bikram-sambat');
 const medicXpathExtensions = require('../../../../src/js/enketo/medic-xpath-extensions');
 
-medicXpathExtensions.init(null, null, moment);
+medicXpathExtensions.init(null, toBik_text, moment);
 const func = medicXpathExtensions.func;
 
 const getTimezoneOffset = Date.prototype.getTimezoneOffset;
@@ -54,8 +55,8 @@ describe('medic-xpath-extensions', function() {
       [ '2015-10-02', '2015-11-01', 0, ],
       [ '2014-10-01', '2015-10-01', 12, ],
       [ '2014-10-02', '2015-10-01', 11, ],
-      [ '2015-10-01T00:00:00.000', '2014-10-01T11:11:11.111', -12, ],
-      [ '2014-10-01T11:11:11.111', '2015-10-01T00:00:00.000', 12, ],
+      [ '2015-10-01T11:11:11.111', '2014-10-01T11:11:11.111', -12, ],
+      [ '2014-10-01T00:00:00.000', '2015-10-01T00:00:00.000', 12, ],
       [ 'August 19, 1975 00:00:00 GMT', 'August 18, 1976 23:15:30 GMT+07:00', 11 ],
       [ 'Sun Sep 25 2005 1:00:00 GMT+0100', 'Sun Oct 25 2005 22:00:00 GMT+2300', 0],
       [ 'Sun Sep 25 2005 1:00:00 GMT+0100', 'Sun Oct 25 2005 22:00:00 GMT+2200', 1]
@@ -142,6 +143,79 @@ describe('medic-xpath-extensions', function() {
     [[{ t:'str', v:'1999-12-12' }], []].forEach(params => {
       it(`should throw an error when ${params.length} arguments is provided`, () => {
         assert.throws(() => func['format-date'](...params), 'format-date() :: not enough args');
+      });
+    });
+  });
+
+  describe('#format-date-time()', () => {
+    [
+      [ { t:'str', v:'2015-9-2' }, '%Y-%m-%d', '2015-09-02'],
+      [ { t:'str', v:'1999-12-12 1:1:1.2' }, '%Y-%m-%d %H:%M:%S.%3', '1999-12-12 01:01:01.200'],
+      [ { t:'str', v:'1999-12-12 01:01:01.999999' }, '%Y-%m-%d %h:%M:%S.%3', '1999-12-12 1:01:01.999'],
+      [ { t:'date', v:new Date('2015-10-01T11:11:11.111') }, '(%Y/%m/%d) (%H %M %S) (%3)',
+        '(2015/10/01) (11 11 11) (111)'],
+      [ { t:'num', v:11111 }, '%Y%%m%%d %H%%M%%S%%3', '2000%06%03 00%00%00%000'],
+      [ { t:'arr', v:[{ textContent: '2014-09-22 01:01:01.999999' }] }, '%H-%M-%S-%3 %H%M%S%3',
+        '01-01-01-999 010101999'],
+    ].forEach(([date, format, expected]) => {
+      it(`should format the ${date.t} [${JSON.stringify(date.v)}] according to the mask [${format}]`, () => {
+        assert.equal(func['format-date-time'](date, { t:'str', v:format }).v, expected);
+      });
+    });
+
+    [
+      { t:'str', v:'' },
+      { t:'date', v:null },
+      { t:'num', v:NaN },
+      { t:'str', v:'NaN' },
+      { t:'str', v:'invalid' },
+      { t:'str', v:'11:11' },
+      { t:'bool', v:true },
+      { t:'num', v:'-1' },
+      { t:'nonsense', v:[{ textContent: '2014-09-22' }] },
+      { t:'arr', v:[{ textContent: 'nonsense' }] },
+      { t:'arr', v:['2014-09-22'] }
+    ].forEach(date => {
+      it(`should return an empty string when the date value is [${date.v}]`, () => {
+        assert.equal(func['format-date-time'](date, { t:'str', v:'%Y-%m-%d %H:%M:%S.%3' }).v, '');
+      });
+    });
+
+    [[{ t:'str', v:'1999-12-12' }], []].forEach(params => {
+      it(`should throw an error when ${params.length} arguments is provided`, () => {
+        assert.throws(() => func['format-date-time'](...params), 'format-date() :: not enough args');
+      });
+    });
+  });
+
+  describe('#to-bikram-sambat()', () => {
+    [
+      [ { t:'str', v:'2015-9-2' }, '१६ भदौ २०७२'],
+      [ { t:'str', v:'1999-12-12' }, '२६ मंसिर २०५६'],
+      [ { t:'date', v:new Date('2015-10-01T00:00:00.000') }, '१४ असोज २०७२'],
+      [ { t:'num', v:11111 }, '२१ जेठ २०५७'],
+      [ { t:'arr', v:[{ textContent: '2014-09-22' }] }, '६ असोज २०७१'],
+    ].forEach(([date, expected]) => {
+      it(`should format the ${date.t} [${JSON.stringify(date.v)}] according to the Bikram Sambat calendar`, () => {
+        assert.equal(func['to-bikram-sambat'](date).v, expected);
+      });
+    });
+
+    [
+      { t:'str', v:'' },
+      { t:'date', v:null },
+      { t:'num', v:NaN },
+      { t:'str', v:'NaN' },
+      { t:'str', v:'invalid' },
+      { t:'str', v:'11:11' },
+      { t:'bool', v:true },
+      { t:'num', v:'-1' },
+      { t:'nonsense', v:[{ textContent: '2014-09-22' }] },
+      { t:'arr', v:[{ textContent: 'nonsense' }] },
+      { t:'arr', v:['2014-09-22'] }
+    ].forEach(date => {
+      it(`should return an empty string when the date value is [${date.v}]`, () => {
+        assert.equal(func['to-bikram-sambat'](date).v, '');
       });
     });
   });
