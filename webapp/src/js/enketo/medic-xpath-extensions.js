@@ -101,6 +101,10 @@ const asMoment = (r) => {
     }
     const rMoment = moment(r);
     if(DATE_STRING.test(r) && rMoment.isValid()) {
+      if(r.indexOf('T')) {
+        return rMoment;
+      }
+
       const rDate = rMoment.format('YYYY-MM-DD');
       const time = `${rDate}T00:00:00.000${getTimezoneOffsetAsTime(new Date(rDate))}`;
       return moment(time);
@@ -111,12 +115,12 @@ const asMoment = (r) => {
 };
 
 const convertToBikramSambat = (value) => {
-  const date = getValue(value);
-  if (!date) {
+  const vMoment = asMoment(value);
+  if (!vMoment.isValid()) {
     return { t: 'str', v: '' };
   }
 
-  const convertedDate = toBikramSambat(moment(date));
+  const convertedDate = toBikramSambat(vMoment);
 
   return { t: 'str', v: convertedDate };
 };
@@ -129,6 +133,7 @@ const formatDate = (date, format) => {
 
   // Transform format from xform spec to Moment.
   const formatStr = asString(format)
+    .replace(/%(?![YyMmnbdeaHhS3])/g, '--PERCENT_PLACEHOLDER--')
     .replace(/%Y/g, 'YYYY')
     .replace(/%y/g, 'YY')
     .replace(/%m/g, 'MM')
@@ -136,7 +141,13 @@ const formatDate = (date, format) => {
     .replace(/%b/g, 'MMM')
     .replace(/%d/g, 'DD')
     .replace(/%e/g, 'D')
-    .replace(/%a/g, 'ddd');
+    .replace(/%a/g, 'ddd')
+    .replace(/%H/g, 'HH')
+    .replace(/%h/g, 'H')
+    .replace(/%M/g, 'mm')
+    .replace(/%S/g, 'ss')
+    .replace(/%3/g, 'SSS')
+    .replace(/--PERCENT_PLACEHOLDER--/g, '%');
   return dateMoment.format(formatStr);
 };
 
@@ -194,3 +205,6 @@ module.exports = {
     }
   }
 };
+
+// Function aliases
+module.exports.func['format-date-time'] = module.exports.func['format-date'];
