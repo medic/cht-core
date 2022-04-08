@@ -3,6 +3,7 @@ const upgradeUtils = require('./utils');
 const upgradeSteps = require('./upgrade-steps');
 const ddocsService = require('./ddocs');
 const { DATABASES } = require('./databases');
+const { logProgress } = require('./startup-log');
 
 
 const checkInstallForDb = async (database) => {
@@ -70,7 +71,7 @@ const checkInstall = async () => {
 
   const allDbsUpToDate = ddocValidation.every(check => check.upToDate);
   if (allDbsUpToDate) {
-    logger.info('Installation valid.');
+    logProgress('Installation valid.');
     // todo poll views to start view warming anyway?
     await upgradeUtils.interruptPreviousUpgrade();
     return;
@@ -78,16 +79,16 @@ const checkInstall = async () => {
 
   const allDbsStaged = ddocValidation.every(check => check.stagedUpgrade || check.upToDate);
   if (allDbsStaged) {
-    logger.info('Staged installation valid. Finalizing install.');
+    logProgress('Staged installation valid. Finalizing install.');
     return upgradeSteps.finalize();
   }
 
   const someDbsStaged = ddocValidation.every(check => check.partialStagedUpgrade || check.upToDate);
   if (someDbsStaged) {
     // this can happen if new databases exist in the new version
-    logger.info('Partially staged installation. Continuing staging.');
+    logProgress('Partially staged installation. Continuing staging.');
   } else {
-    logger.info('Installation invalid. Staging install.');
+    logProgress('Installation invalid. Staging install.');
   }
 
   logDdocCheck(ddocValidation);

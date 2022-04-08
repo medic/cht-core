@@ -1,8 +1,8 @@
 const environment = require('./src/environment');
 const serverChecks = require('@medic/server-checks');
 const logger = require('./src/logger');
+const startupLog = require('./src/services/setup/startup-log');
 const express = require('express');
-const setupRouter = require('./src/services/setup/router');
 const apiPort = process.env.API_PORT || 5988;
 
 let router;
@@ -53,34 +53,34 @@ process
 
   try
   {
-    setupRouter.logProgress('Running installation checks…');
+    startupLog.logProgress('Running installation checks…');
     await checkInstall.run();
-    setupRouter.logProgress('Installation checks passed');
+    startupLog.logProgress('Installation checks passed');
 
-    setupRouter.logProgress('Extracting initial documents…');
+    startupLog.logProgress('Extracting initial documents…');
     await uploadDefaultDocs.run();
-    setupRouter.logProgress('Extracting initial documents completed successfully');
+    startupLog.logProgress('Extracting initial documents completed successfully');
 
-    setupRouter.logProgress('Loading configuration…');
+    startupLog.logProgress('Loading configuration…');
     await configWatcher.load();
-    setupRouter.logProgress('Configuration loaded successfully');
+    startupLog.logProgress('Configuration loaded successfully');
     configWatcher.listen();
 
-    setupRouter.logProgress('Merging translations…');
+    startupLog.logProgress('Merging translations…');
     await translations.run();
-    setupRouter.logProgress('Translations merged successfully');
+    startupLog.logProgress('Translations merged successfully');
 
-    setupRouter.logProgress('Running db migrations…');
-    await migrations.run(setupRouter.logProgress);
-    setupRouter.logProgress('Database migrations completed successfully');
+    startupLog.logProgress('Running db migrations…');
+    await migrations.run();
+    startupLog.logProgress('Database migrations completed successfully');
 
-    setupRouter.logProgress('Generating service worker');
+    startupLog.logProgress('Generating service worker');
     await generateServiceWorker.run();
-    setupRouter.logProgress('Service worker generated successfully');
+    startupLog.logProgress('Service worker generated successfully');
 
-    setupRouter.logProgress('Updating xforms…');
+    startupLog.logProgress('Updating xforms…');
     await generateXform.updateAll();
-    setupRouter.logProgress('xforms updated successfully');
+    startupLog.logProgress('xforms updated successfully');
 
   } catch (err) {
     logger.error('Fatal error initialising medic-api');

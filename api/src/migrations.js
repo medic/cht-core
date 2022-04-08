@@ -7,6 +7,7 @@ const MIGRATION_LOG_ID = 'migration-log';
 const MIGRATION_LOG_TYPE = 'meta';
 const MIGRATIONS_DIR = path.join(__dirname, 'migrations');
 const logger = require('./logger');
+const startupLog = require('./services/setup/startup-log');
 
 const hasRun = (log, migration) => {
   if (!log || !log.migrations) {
@@ -58,13 +59,13 @@ const sortMigrations = (lhs, rhs) => {
   return lhs.created - rhs.created;
 };
 
-const runMigration = (migration, startupLog) => {
+const runMigration = (migration) => {
   if (!migration.created) {
     return Promise.reject(
       new Error(`Migration "${migration.name}" has no "created" date property`)
     );
   }
-  startupLog(`Running migration ${migration.name}...`);
+  startupLog.logProgress(`Running migration ${migration.name}...`);
   return migration
     .run()
     .then(getLog)
@@ -74,15 +75,15 @@ const runMigration = (migration, startupLog) => {
     });
 };
 
-const runMigrations = (log, migrations, startupLog) => {
+const runMigrations = (log, migrations) => {
   migrations.sort(sortMigrations);
   let chain = Promise.resolve();
   migrations.forEach(migration => {
     if (!hasRun(log, migration)) {
       chain = chain.then(() => {
-        return runMigration(migration, startupLog)
+        return runMigration(migration)
           .then(() => {
-            startupLog(`Migration ${migration.name} completed successfully`);
+            startupLog.logProgress(`Migration ${migration.name} completed successfully`);
           })
           .catch(err => {
             logger.error(`Migration ${migration.name} failed`);
@@ -95,9 +96,9 @@ const runMigrations = (log, migrations, startupLog) => {
 };
 
 module.exports = {
-  run: (startupLog) => {
+  run: () => {
     return Promise.all([getLog(), module.exports.get()]).then(
-      ([log, migrations]) => runMigrations(log, migrations, startupLog)
+      ([log, migrations]) => runMigrations(log, migrations)
     );
   },
   get: () => {

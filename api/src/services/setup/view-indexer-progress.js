@@ -2,6 +2,7 @@ const _ = require('lodash');
 
 const db = require('../../db');
 const logger = require('../../logger');
+const startupLog = require('./startup-log');
 
 const QUERY_TASKS_INTERVAL = 5000;
 // progress bar stretches to match console width.
@@ -83,6 +84,7 @@ const logIndexersProgress = (indexers) => {
 
     logger.info(`${ddocName}[${bar}]`);
   };
+  startupLog.logIndexers(indexers);
   indexers.forEach(logProgress);
 };
 

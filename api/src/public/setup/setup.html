@@ -2,12 +2,95 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
+  <title>The CHT is starting up</title>
   <script>
+    const getListElem = () => document.getElementById('actions');
+    const clearList = () => {
+      const actionsElem = getListElem();
+      while (actionsElem.firstChild) {
+        actionsElem.removeChild(actionsElem.firstChild);
+      }
+    };
 
+    const createProgressListItem = (action) => {
+      const liElem = document.createElement('li');
+      const date = new Date(action.date);
+      liElem.textContent = date.toLocaleString() + ' ' + action.action;
+      return liElem;
+    };
+
+    const createIndexingList = (progress) => {
+      const newUl = document.createElement('ul');
+      progress.indexerProgress.forEach(indexer => {
+        const liElem = document.createElement('li');
+        liElem.textContent = `${indexer.database}/${indexer.ddoc} - ${indexer.progress}%`;
+        newUl.appendChild(liElem);
+      });
+      return newUl;
+    }
+
+    const populateList = (progress) => {
+      const actionsElem = getListElem();
+
+      progress.startupProgress.forEach((action) => {
+        const listElement = createProgressListItem(action);
+        actionsElem.appendChild(listElement);
+        if (action.action.includes('Indexing')) {
+          const indexingList = createIndexingList(progress);
+          listElement.appendChild(indexingList);
+        }
+      });
+    }
+
+    const getProgress = async () => {
+      const result = await fetch('/progress');
+      if (result.redirected) {
+        window.location.reload();
+        return;
+      }
+
+      if (!result.ok) {
+        console.error('Error when fetching progress', await result.text());
+        return;
+      }
+
+      const progress = await result.json();
+      populateList(progress);
+    };
+
+    getProgress();
+    setInterval(getProgress, 1000);
   </script>
+  <style>
+    body {
+      background-color: #323232;
+      color: #FFFFFF;
+      font-size: 1em;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    body, input {
+      font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    }
+    .center {
+      padding-top: 2em;
+      width: 600px;
+      margin: auto;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    ul ul {
+      padding: 10px;
+    }
+  </style>
 </head>
 <body>
-
+<div class="center">
+  <h1>The CHT is starting up</h1>
+  <ul id="actions"></ul>
+</div>
 </body>
 </html>
