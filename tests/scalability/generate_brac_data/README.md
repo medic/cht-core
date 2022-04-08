@@ -21,7 +21,8 @@ Basically added new folders:
 2. Run npm ci, npm install and npm install @faker-js/faker --save-dev in cht-core root directory.
 3. Go to `/tests/scalability/generate_brac_data` and edit the `data_directory` attribute in `data-config.json` doc.
 4. Go to `/tests/scalability/generate_brac_data` and execute the script with command `node generate-brac-data.js`.
-5. Data is generated in the `data_directory` configured in step 2. The structure is as follows:
+5. Data is generated in the `data_directory/` configured in step 2. The structure is as follows:
+```
 .
 +--data_directory
 |  +--users.csv
@@ -29,7 +30,7 @@ Basically added new folders:
 |  |  +--json_directory
 |  +--main_script_data_directory
 |  |  +--userx_data_directory
-
+```
 ## Optional steps
 7. You can change the following scripts variables in `size-config.json` to test with different sizes:
 - number_of_district_hospitals
@@ -42,4 +43,4 @@ Basically added new folders:
 ## Upload generated data to your local instance
 8. Navigate to the `data_directory` configured in step 3.
 9. Execute cht --url=https://{user}:{password}@{instance}:{port} upload-docs create-users
-10. Login as user to check if everything looks good (use credentials generated in `/data_directory/users.csv`)
+10. Login as user to check if everything looks good (use credentials generated in `/data_directory/precondition_data_directory/users.csv`)
