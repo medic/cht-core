@@ -2,6 +2,7 @@ const Factory = require('rosie').Factory;
 const uuid = require('uuid');
 const assesmentFactory = require('./brac-assessment');
 const pregnancyFactory = require('./brac-pregnancy');
+const assesmentFollowUpFactory = require('./brac-assessment-follow-up');
 
 const bracSurvey = () => {
   return new Factory()
@@ -21,7 +22,9 @@ const bracSurvey = () => {
       if (form === 'pregnancy') {
         return pregnancyFactory.build({}, { patient: patient, contact: contact });
       }
-      //TODO continue with other kinds of reports
+      if (form === 'assesment_follow_up') {
+        return assesmentFollowUpFactory.build({}, { patient: patient, contact: contact });
+      }
     })
     .attr('geolocation_log', '')
     .attr('geolocation', '');

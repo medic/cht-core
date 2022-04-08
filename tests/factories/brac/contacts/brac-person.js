@@ -63,14 +63,14 @@ const bracPerson = () => {
       if (subtype === 'member_child') {
         return null;
       } else {
-        return Faker.faker.phone.phoneNumber('+256(###) ### ### ###');
+        return Faker.faker.phone.phoneNumber('+256#########');
       }
     })
     .attr('phone_alternate', ['subtype'], (subtype) => {
       if (subtype === 'member_child') {
         return null;
       } else {
-        return Faker.faker.phone.phoneNumber('+256(###) ### ### ###');
+        return Faker.faker.phone.phoneNumber('+256#########');
       }
     })
     .attr('notes', Faker.faker.lorem.sentence())

@@ -17,14 +17,21 @@ Basically added new folders:
 
 
 ## Steps to execute it
-1. Run npm ci, npm install and npm install @faker-js/faker --save-dev in cht-core root directory
-2. Go to `/tests/scalability/generate_brac_data` and edit the `data-config.json` doc with the main dataDirectory, preconditionDirectory and mainScriptDataDirectory.
-3. In your preconditionDirectory create the subfolder /json_docs/
-4. Go to `/tests/scalability/generate_brac_data` and execute the script with node generate-brac-data.js.
-5. Data is generated in the preconditionDirectory configured in step 2.
+1. Clone cht-core repo.
+2. Run npm ci, npm install and npm install @faker-js/faker --save-dev in cht-core root directory.
+3. Go to `/tests/scalability/generate_brac_data` and edit the `data_directory` attribute in `data-config.json` doc.
+4. Go to `/tests/scalability/generate_brac_data` and execute the script with command `node generate-brac-data.js`.
+5. Data is generated in the `data_directory` configured in step 2. The structure is as follows:
+.
++--data_directory
+|  +--users.csv
+|  +--precondition_data_directory
+|  |  +--json_directory
+|  +--main_script_data_directory
+|  |  +--userx_data_directory
 
 ## Optional steps
-6. You can change the following scripts variables in `size-config.json` to test with different sizes:
+7. You can change the following scripts variables in `size-config.json` to test with different sizes:
 - number_of_district_hospitals
 - number_of_managers_per_district_hospitals
 - number_of_health_centers_per_district_hospital
@@ -33,6 +40,6 @@ Basically added new folders:
 - number_of_family_members
 
 ## Upload generated data to your local instance
-7. Navigate to the preconditionDirectory configured in step 2.
-8. Execute cht --url=https://{user}:{password}@{instance}:{port} upload-docs create-users
-9. Login as user to check if everything looks good (use credentials generated in users.csv)
+8. Navigate to the `data_directory` configured in step 3.
+9. Execute cht --url=https://{user}:{password}@{instance}:{port} upload-docs create-users
+10. Login as user to check if everything looks good (use credentials generated in `/data_directory/users.csv`)
