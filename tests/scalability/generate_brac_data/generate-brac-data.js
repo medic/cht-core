@@ -23,7 +23,7 @@ const jsonDirectory = dataConfig.json_directory;
 const preconditionDataDirectory = dataConfig.data_directory
   + dataConfig.precondition_data_directory + dataConfig.json_directory;
 const mainDataDirectory = dataConfig.data_directory + dataConfig.main_script_data_directory;
-const usersDirectory = dataConfig.data_directory;
+const usersDirectory = dataConfig.data_directory + dataConfig.precondition_data_directory;
 const dataExtension = dataConfig.json_data_extension;
 const csvWriter = createCsvWriter({
   path: usersDirectory + 'users.csv',
