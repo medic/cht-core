@@ -1,20 +1,21 @@
-*** unpatched	2022-04-05 11:46:20.970352329 -0500
---- patched	2022-04-05 11:50:47.743949897 -0500
+*** unpatched	1985-10-26 03:15:00.000000000 -0500
+--- patched	2022-04-11 15:14:55.118064979 -0500
 ***************
-*** 216,222 ****
-  
-          if ( neverEnabled || this.selfRelevant( branchNode ) || forceClearNonRelevant ) {
+*** 487,494 ****
+              forceClearNonRelevant
+          ) {
               changed = true;
-!             if ( forceClearNonRelevant ) {
-                  this.clear( branchNode, path );
+! 
+!             if (forceClearNonRelevant) {
+                  this.clear(branchNode, path);
               }
   
---- 216,223 ----
-  
-          if ( neverEnabled || this.selfRelevant( branchNode ) || forceClearNonRelevant ) {
+--- 487,494 ----
+              forceClearNonRelevant
+          ) {
               changed = true;
 !             // /inputs is ALWAYS relevant #4875
-!             if ( forceClearNonRelevant && !/\/inputs$/.test(path) ) {
-                  this.clear( branchNode, path );
+!             if (forceClearNonRelevant && !/\/inputs$/.test(path)) {
+                  this.clear(branchNode, path);
               }
   
