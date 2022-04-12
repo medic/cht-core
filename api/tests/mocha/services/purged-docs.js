@@ -415,8 +415,7 @@ describe('Purged Docs service', () => {
       const ids = ['1', '2', '3', '4', '5', '6'];
       return service.getPurgedIdsSince(['a', 'b'], ids).then(result => {
         chai.expect(result).to.deep.equal({ purgedDocIds: [], lastSeq: '122-seq' });
-        chai.expect(purgeDb.get.callCount).to.equal(1);
-        chai.expect(purgeDb.get.args[0]).to.deep.equal(['_local/']);
+        chai.expect(purgeDb.get.callCount).to.equal(0);
         chai.expect(purgeDb.changes.callCount).to.equal(1);
         chai.expect(purgeDb.changes.args[0]).to.deep.equal([{
           doc_ids: ['purged:1', 'purged:2', 'purged:3', 'purged:4', 'purged:5', 'purged:6'],

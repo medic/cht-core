@@ -7,6 +7,7 @@ import * as purger from '../../js/bootstrapper/purger';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
 import { DbService } from '@mm-services/db.service';
+import { PurgeService } from '@mm-services/purge.service';
 import { AuthService } from '@mm-services/auth.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
@@ -74,6 +75,7 @@ export class DBSyncService {
     private telemetryService:TelemetryService,
     private store:Store,
     private translateService:TranslateService,
+    private purgeService:PurgeService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -198,6 +200,7 @@ export class DBSyncService {
               // no errors
               this.syncIsRecent = true;
               window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
+
             } else if (currentSeq === this.getLastReplicatedSeq()) {
               // no changes to send, but may have some to receive
               syncState = { state: SyncStatus.Unknown };
@@ -210,13 +213,19 @@ export class DBSyncService {
             if (syncState.to === SyncStatus.Success) {
               window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
             }
-
-            if (force) {
-              this.displayUserFeedback(syncState);
-            }
-
-            this.sendUpdate(syncState);
+            return syncState;
           });
+        })
+        .then(syncState => {
+          return this.purgeService.updateDocsToPurge()
+            .catch(err => console.warn('Error updating to purge list', err))
+            .then(() => syncState);
+        })
+        .then(syncState => {
+          if (force) {
+            this.displayUserFeedback(syncState);
+          }
+          this.sendUpdate(syncState);
         })
         .finally(() => {
           this.inProgressSync = undefined;
@@ -245,7 +254,9 @@ export class DBSyncService {
       .catch(err => {
         telemetryEntry.recordFailure(err, this.knownOnlineState);
       })
-      .then(() => this.ngZone.runOutsideAngular(() => purger.writePurgeMetaCheckpoint(local, currentSeq)));
+      .then(() => this.ngZone.runOutsideAngular(() => {
+        purger.writeMetaPurgeLog(local, { syncedSeq: currentSeq });
+      }));
   }
 
   private sendUpdate(syncState: SyncState) {

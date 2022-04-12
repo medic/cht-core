@@ -7,6 +7,8 @@ const personFactory = require('../../factories/cht/contacts/person');
 const genericReportFactory = require('../../factories/cht/reports/generic-report');
 const sentinelUtils = require('../sentinel/utils');
 
+const PURGE_BATCH_SIZE = 100;
+
 /* global window */
 
 const district = placeFactory.place().build({
@@ -31,7 +33,7 @@ const patient = personFactory.build({
   patient_id: 'the_patient_id',
   parent: { _id: 'health_center', parent: { _id: 'district' } },
 });
-const user = userFactory.build({ username: 'offlineuser', place: 'health_center' });
+const user = userFactory.build({ username: 'offlineuser-purge', place: 'health_center' });
 
 const purgeFn = (userCtx, contact, reports) => {
   return reports.filter(r => r.form === 'purge').map(r => r._id);
@@ -51,34 +53,7 @@ const pregnancies = Array
   .from({ length: 125 })
   .map(() => genericReportFactory.build({ form: 'pregnancy' }, { patient, submitter: contact }));
 
-
 const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
-
-const bootstrapperStatus = () => $('.bootstrap-layer .status');
-
-const hasLocalDocs = () => {
-  const localDbName = `medic-user-${user.username}`;
-  return browser.executeAsync((localDbName, callback) => {
-    const db = window.PouchDB(localDbName);
-    db
-      .allDocs({ keys: ['_design/medic-client', 'settings'] })
-      .then(results => callback(results.rows.every(row => !row.error)))
-      .catch(err => callback(err));
-  }, localDbName);
-};
-
-const waitForReplicationProgress = async () => {
-  await browser.waitUntil(hasLocalDocs, { interval: 50 });
-};
-
-const waitForPurgingProgress = async () => {
-  const purgingInfo = 'Cleaned';
-  await browser.waitUntil(
-    async () => (await (await bootstrapperStatus()).getText()).trim().startsWith(purgingInfo),
-    { interval: 50, timeout: 5000 },
-  );
-  return 'purging';
-};
 
 const getPurgeLog = () => browser.executeAsync(callback => {
   window.CHTCore.DB
@@ -96,11 +71,6 @@ const getAllReports = () => browser.executeAsync(callback => {
     .then(callback)
     .catch(callback);
 });
-
-const pageLoaded = async () => {
-  await commonElements.waitForPageLoaded();
-  return 'page-loaded';
-};
 
 const updateSettings = async (purgeFn, revert) => {
   if (revert) {
@@ -124,8 +94,10 @@ const parsePurgingLogEntries = (logEntries) => {
   });
 };
 
-describe('initial replication', () => {
-  it('interruption in initial replication should not trigger purging', async () => {
+describe('purge', () => {
+  it('purging runs on sync and startup', async () => {
+    let purgeLog;
+
     await updateSettings(purgeFn); // settings should be at the beginning of the changes feed
 
     await utils.saveDocs([district, healthCenter, contact, patient]);
@@ -137,46 +109,31 @@ describe('initial replication', () => {
 
     await runPurging();
 
-    const purgingRequestsPromise = utils.collectLogs(utils.apiLogFile, /REQ.*purging/);
-    await browser.throttle('Good3G');
     await loginPage.login({ username: user.username, password: user.password, loadPage: false });
 
-    await waitForReplicationProgress();
-    await browser.refresh();
-
-    const event = await Promise.race([
-      waitForPurgingProgress().catch(), // waitUntil will throw on timeout
-      pageLoaded(),
-    ]);
-    expect(event).to.equal('page-loaded');
-
+    const purgingRequestsPromise = utils.collectLogs(utils.apiLogFile, /REQ.*purging/);
+    await commonElements.sync();
     const purgingRequests = parsePurgingLogEntries(await purgingRequestsPromise());
     expect(purgingRequests).to.deep.equal([
-      '/purging',
+      '/purging/changes',
       '/purging/checkpoint',
-      '/purging',
-      '/purging/changes', // we still request once, and get zero changes because we're up to date
     ]);
-
-    await browser.throttle('online');
-    await commonElements.sync();
 
     let allReports = await getAllReports();
     expect(allReports.length).to.equal(homeVisits.length + pregnancies.length);
     expect(allReports.some(report => report.form === 'purge')).to.equal(false);
 
-    let purgeLog = await getPurgeLog();
-    expect(purgeLog.count).to.equal(0);
-    expect(purgeLog.history.length).to.equal(1);
-
     // Purging occurs normally when refreshing
     await updateSettings(purgeHomeVisitFn, true);
     await runPurging();
+    await browser.refresh(); // refresh to clear the purge once only flag
+    await commonElements.waitForPageLoaded();
 
-    await commonElements.sync(true);
+    await commonElements.sync(true); // get the new list of ids to purge
+    purgeLog = await getPurgeLog();
+    expect(purgeLog.to_purge.length).to.equal(homeVisits.length);
+
     await browser.refresh();
-
-    await waitForPurgingProgress();
     await commonElements.waitForPageLoaded();
 
     allReports = await getAllReports();
@@ -184,7 +141,12 @@ describe('initial replication', () => {
     expect(allReports.every(report => report.form === 'pregnancy')).to.equal(true);
 
     purgeLog = await getPurgeLog();
-    expect(purgeLog.count).to.equal(homeVisits.length);
-    expect(purgeLog.history.length).to.equal(2);
+    expect(purgeLog.count).to.equal(homeVisits.length - PURGE_BATCH_SIZE);
+    expect(purgeLog.roles).to.equal(JSON.stringify(['chw']));
+    expect(purgeLog.history.length).to.equal(3);
+    expect(purgeLog.history[0].count).to.equal(homeVisits.length - PURGE_BATCH_SIZE);
+    expect(purgeLog.history[1].count).to.equal(PURGE_BATCH_SIZE);
+    expect(purgeLog.history[2].count).to.equal(0);
+    expect(purgeLog.to_purge.length).to.equal(0); // queue is empty
   });
 });
