@@ -1,0 +1,12 @@
+[submodule "couchdb/tests/bats"]
+	path = couchdb/tests/bats
+	url = https://github.com/bats-core/bats-core.git
+[submodule "couchdb/tests/test_helper/bats-shell-mock"]
+	path = couchdb/tests/test_helper/bats-shell-mock
+	url = https://github.com/capitalone/bash_shell_mock
+[submodule "couchdb/tests/test_helper/bats-support"]
+	path = couchdb/tests/test_helper/bats-support
+	url = https://github.com/bats-core/bats-support.git
+[submodule "couchdb/tests/test_helper/bats-assert"]
+	path = couchdb/tests/test_helper/bats-assert
+	url = https://github.com/bats-core/bats-assert.git
