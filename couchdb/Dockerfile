@@ -1,0 +1,34 @@
+FROM couchdb:2.3.1 as base_couchdb_build
+
+# Add configuration
+COPY --chown=couchdb:couchdb 10-docker-default.ini /opt/couchdb/etc/default.d/
+COPY --chown=couchdb:couchdb vm.args /opt/couchdb/etc/
+
+COPY docker-entrypoint.sh /usr/local/bin
+ENTRYPOINT ["tini", "--", "/docker-entrypoint.sh"]
+
+COPY --chown=couchdb:couchdb set-up-cluster.sh /opt/couchdb/etc/set-up-cluster.sh
+RUN chmod +x /opt/couchdb/etc/set-up-cluster.sh
+
+VOLUME /opt/couchdb/data
+
+# 5984: Main CouchDB endpoint
+# 4369: Erlang portmap daemon (epmd)
+# 9100: CouchDB cluster communication port
+EXPOSE 5984 4369 9100
+CMD ["/opt/couchdb/bin/couchdb"]
+
+# Test build
+FROM ubuntu:18.04 as test_couchdb_build
+RUN apt update
+RUN apt-get install -y curl
+WORKDIR /app
+COPY ./tests/ /app/tests/
+COPY set-up-cluster.sh /app/set-up-cluster.sh
+RUN chmod +x /app/tests/tests.sh
+RUN chmod +x set-up-cluster.sh
+ENTRYPOINT [ "/bin/bash", "/app/tests/tests.sh" ]
+
+# Final
+FROM base_couchdb_build AS cht-couchdb
+LABEL Authors="MEDIC SRE TEAM<devops@medic.org>"
