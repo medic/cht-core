@@ -262,10 +262,10 @@ export class AppComponent implements OnInit {
     this.setupDb();
     this.countMessageService.init();
     this.feedbackService.init();
+    this.sessionService.init();
 
     // initialisation tasks that can occur after the UI has been rendered
-    this.setupPromise = this.sessionService
-      .init()
+    this.setupPromise = Promise.resolve()
       .then(() => this.chtScriptApiService.isInitialized())
       .then(() => this.checkPrivacyPolicy())
       .then(() => this.initRulesEngine())

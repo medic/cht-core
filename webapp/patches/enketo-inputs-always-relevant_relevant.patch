@@ -14,7 +14,7 @@
           if ( neverEnabled || this.selfRelevant( branchNode ) || forceClearNonRelevant ) {
               changed = true;
 !             // /inputs is ALWAYS relevant #4875
-!             if ( forceClearNonRelevant && !/\/inputs$/.test(path) ) {
+!             if ( forceClearNonRelevant && !path.endsWith('/inputs') ) {
                   this.clear( branchNode, path );
               }
   

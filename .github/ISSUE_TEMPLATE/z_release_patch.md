@@ -11,6 +11,7 @@ assignees: ''
 
 - [ ] Create an GH Milestone and add this issue to it.
 - [ ] Add all the issues to be worked on to the Milestone.
+- [ ] Ensure that all issues are labelled correctly, particularly ensure that "Regressions" are labelled with "Affects: <version>" labels. The "Affects" label is used in a link in the Known Issues section of the release notes of that version so it has to match exactly. To make sure the label is correct go to the [release notes](https://docs.communityhealthtoolkit.org/core/releases/#release-notes) and ensure the issue is listed.
 
 # Development - Release Engineer
 
