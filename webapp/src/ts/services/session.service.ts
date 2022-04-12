@@ -80,8 +80,9 @@ export class SessionService {
     }
 
     window.addEventListener('pageshow', (event) => {
+      console.log(`${event.persisted ? '' : 'NOT'} from cache`);
       if (event.persisted && !this.cookieService.check(COOKIE_NAME)) {
-        this.navigateToLogin();
+        // this.navigateToLogin();
       }
     });
 
