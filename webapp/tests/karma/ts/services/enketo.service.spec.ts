@@ -533,14 +533,17 @@ describe('Enketo service', () => {
       sinon.stub($.fn, 'find').returns({ toArray });
       form.validate.resolves(false);
       form.relevant = { update: sinon.stub() };
-      return service.save('V', form).catch(actual => {
-        expect(actual.message).to.equal('Form is invalid');
-        expect(form.validate.callCount).to.equal(1);
-        expect(inputRelevant.dataset.relevant).to.equal('true');
-        expect(inputNonRelevant.dataset.relevant).to.equal('false');
-        // @ts-ignore
-        expect(inputNoDataset.dataset).to.be.undefined;
-      });
+      return service
+        .save('V', form)
+        .then(() => expect.fail('expected to reject'))
+        .catch(actual => {
+          expect(actual.message).to.equal('Form is invalid');
+          expect(form.validate.callCount).to.equal(1);
+          expect(inputRelevant.dataset.relevant).to.equal('true');
+          expect(inputNonRelevant.dataset.relevant).to.equal('false');
+          // @ts-ignore
+          expect(inputNoDataset.dataset).to.be.undefined;
+        });
     });
 
     it('creates report', () => {
