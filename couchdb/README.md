@@ -4,10 +4,10 @@ Clustered CouchDB 2.3.1 Docker Image which will support 3 replicas of data store
 
 ## Deployment
 
+- For testing architecture v3 clustered couchdb or development of related services, please launch docker-compose.clustered-couchdb.example.yml
 - How to deploy CouchDB in a production environment for CHT-Core? [placeholder](link-to-docs)
 - Deploying multiple CouchDB clusters for a development or testing environment? [placeholder](link-to-docs)
 - Migrating existing data from a single-node CouchDB deployment to the above clustered CouchDB setup? [placeholder](link-to-docs)
-- For testing architecture v3 or development of related services, please use docker-compose.clustered-couchdb.example.yml 
 
 ## Requirements
 

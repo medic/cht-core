@@ -42,3 +42,4 @@ allure*
 tests/config-temp
 tests/cht-compose-test.yml
 .eslintcache
+couchdb/srv*
