@@ -25,6 +25,7 @@ describe('Session service', function() {
         return {
           angular: { callbacks: [] },
           location: location,
+          addEventListener: sinon.stub()
         };
       });
     });
