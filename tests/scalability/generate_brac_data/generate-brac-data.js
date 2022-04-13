@@ -7,9 +7,8 @@ const Faker = require('@faker-js/faker');
 const dataConfig = require('./data-config.json');
 const sizeConfig = require('./size-config.json');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
-//const [, , threadId] = process.argv;
-//TODO threadId from Jmeter to speed up the data creation;
-const districtHospitalName = 'creatingdirectories';
+const [, , threadId] = process.argv;
+const districtHospitalName = `${threadId}-districthospital`;
 const numberOfDistrictHospitals = sizeConfig.number_of_district_hospitals;
 const numberOfManagersPerDistrictHospital = sizeConfig.number_of_managers_per_district_hospitals;
 const numberOfHealthCentersPerDistrictHospital = sizeConfig.number_of_health_centers_per_district_hospital;
@@ -35,7 +34,8 @@ const csvWriter = createCsvWriter({
     { id: 'phone', title: 'phone' },
     { id: 'place', title: 'place' },
   ],
-  alwaysQuote: true
+  alwaysQuote: true,
+  append: true
 });
 
 const users = [];
@@ -153,28 +153,33 @@ const generateHierarchy = (type, placeName, numberOfPersons,
     }
     //For every even index number creates a report for the precondition script data
     //For every odd index number creates a report for the main script data
-    let reportsDirectory = preconditionDataDirectory;
-    if (i % 2 === 0) {
-      reportsDirectory = preconditionDataDirectory;
-    } else {
-      createDataDirectory(mainDataDirectory, place.contact._id);
-      reportsDirectory = mainDataDirectory + place.contact._id + '/';
-    }
-    if (person.family_member_type === 'member_eligible_woman') {
-      if (person.group_other_woman_pregnancy.other_woman_pregnant) {
-        const pregnancySurvey = bracSurvey.generateBracSurvey('pregnancy', directParentPlace, place, person);
-        createDataDoc(reportsDirectory + pregnancySurvey._id + dataExtension, JSON.stringify(pregnancySurvey, {}, 2));
+    if (person.family_member_type === 'member_eligible_woman' || person.family_member_type === 'member_child') {
+      let reportsDirectory = preconditionDataDirectory;
+      if (i % 2 === 0) {
+        reportsDirectory = preconditionDataDirectory;
+      } else {
+        createDataDirectory(mainDataDirectory, directParentPlace.contact._id);
+        reportsDirectory = mainDataDirectory + directParentPlace.contact._id + '/';
+      }
+
+      if (person.family_member_type === 'member_eligible_woman') {
+        if (person.group_other_woman_pregnancy.other_woman_pregnant) {
+          const pregnancySurvey = bracSurvey.generateBracSurvey('pregnancy', directParentPlace, place, person);
+          createDataDoc(reportsDirectory + pregnancySurvey._id + dataExtension, JSON.stringify(pregnancySurvey, {}, 2));
+        }
+      }
+      if (person.family_member_type === 'member_child') {
+        const assesmentSurvey = bracSurvey.generateBracSurvey('assesment', directParentPlace, place, person);
+        createDataDoc(reportsDirectory + assesmentSurvey._id + dataExtension, JSON.stringify(assesmentSurvey, {}, 2));
+
+        const assesmentFollowUpSurvey = bracSurvey.generateBracSurvey(
+          'assesment_follow_up', directParentPlace, place, person);
+        createDataDoc(reportsDirectory + assesmentFollowUpSurvey._id + dataExtension,
+          JSON.stringify(assesmentFollowUpSurvey, {}, 2));
       }
     }
-    if (person.family_member_type === 'member_child') {
-      const assesmentSurvey = bracSurvey.generateBracSurvey('assesment', directParentPlace, place, person);
-      createDataDoc(reportsDirectory + assesmentSurvey._id + dataExtension, JSON.stringify(assesmentSurvey, {}, 2));
 
-      const assesmentFollowUpSurvey = bracSurvey.generateBracSurvey(
-        'assesment_follow_up', directParentPlace, place, person);
-      createDataDoc(reportsDirectory + assesmentFollowUpSurvey._id + dataExtension,
-        JSON.stringify(assesmentFollowUpSurvey, {}, 2));
-    }
+
     isPrimaryContact = false;
   }
   return place;

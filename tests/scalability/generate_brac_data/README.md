@@ -4,7 +4,7 @@
 
 This script is to generate Brac config test data.
 
-Initially it only creates places, persons, users, pregnancy and assesment report. Taking into account hierarchies.
+Initially it only creates places, persons, users and reports (pregnancy, assessment and assessment follow up). Taking into account hierarchies.
 
 Changes where made in /test/factories/ and /test/scalability/
 Basically added new folders:
@@ -25,8 +25,8 @@ Basically added new folders:
 ```
 .
 +--data_directory
-|  +--users.csv
 |  +--precondition_data_directory
+|  |  +--users.csv
 |  |  +--json_directory
 |  +--main_script_data_directory
 |  |  +--userx_data_directory
