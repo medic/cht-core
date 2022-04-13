@@ -22,7 +22,7 @@ describe('bfcache', async () => {
       await commonPage.goToBase();
       expect(await browser.getUrl()).to.contain('/messages');
       await browser.back();
-      expect(await browser.getUrl()).to.contain('/messages');
+      await browser.waitUntil(async () => (await browser.getUrl()).includes('/messages'));
     });
   });
 
@@ -35,7 +35,7 @@ describe('bfcache', async () => {
       await redirectToLoginBtn.click();
       expect(await browser.getUrl()).to.contain('/medic/login?redirect=');
       await browser.back();
-      expect(await browser.getUrl()).to.contain('/medic/login?redirect=');
+      await browser.waitUntil(async () => (await browser.getUrl()).includes('/medic/login?redirect='));
     });
   });
 
@@ -46,7 +46,7 @@ describe('bfcache', async () => {
       await usersAdminPage.goToAdminUpgrade();
       expect(await browser.getUrl()).to.contain('/medic/login?redirect=');
       await browser.back();
-      expect(await browser.getUrl()).to.contain('/medic/login?redirect=');
+      await browser.waitUntil(async () => (await browser.getUrl()).includes('/medic/login?redirect='));
     });
   });
 });
