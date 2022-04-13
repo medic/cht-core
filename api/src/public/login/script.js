@@ -213,3 +213,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 });
+
+window.addEventListener('pageshow', (event) => {
+  console.log('from bfcache =', event.persisted);
+  if (event.persisted) {
+    checkSession();
+  }
+});
