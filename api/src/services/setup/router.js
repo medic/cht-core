@@ -5,7 +5,7 @@ const path = require('path');
 const environment = require('../../environment');
 const startupLog = require('./startup-log');
 
-const { wantsJSON } = require('../../middleware/wantsJSON');
+const { wantsJSON } = require('../../middleware/wants-json');
 const STATUS = 503;
 
 router.use(express.static(environment.setupPath));
