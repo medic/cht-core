@@ -101,14 +101,6 @@ const _ = require('lodash/core');
         return hasRole(userCtx, '_admin');
       };
 
-      $window.addEventListener('pageshow', (event) => {
-        // eslint-disable-next-line no-console
-        console.log('from bfcache =', event.persisted, ipCookie('userCtx'));
-        if (event.persisted && !ipCookie('userCtx')) {
-          navigateToLogin();
-        }
-      });
-
       return {
         logout: logout,
 
@@ -121,6 +113,8 @@ const _ = require('lodash/core');
         navigateToLogin: navigateToLogin,
 
         init: checkCurrentSession,
+
+        checkCurrentSession: checkCurrentSession,
 
         /**
          * Returns true if the logged in user has the db or national admin role.
