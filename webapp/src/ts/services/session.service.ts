@@ -80,7 +80,9 @@ export class SessionService {
     }
 
     window.addEventListener('pageshow', (event) => {
+      console.log('from bfcache =', event.persisted);
       if (event.persisted && !this.cookieService.check(COOKIE_NAME)) {
+        console.log('should navigate to login');
         // this.navigateToLogin();
       }
     });
