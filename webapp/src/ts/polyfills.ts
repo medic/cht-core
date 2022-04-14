@@ -75,15 +75,6 @@ import '@webcomponents/webcomponentsjs/src/platform/child-node/replace-with';
 import '@webcomponents/webcomponentsjs/src/platform/parent-node/append';
 import '@webcomponents/webcomponentsjs/src/platform/parent-node/prepend';
 
-// Enable jQuery support for self-closing xml tags
-// https://jquery.com/upgrade-guide/3.5/
-import * as $ from 'jquery';
-const rxhtmlTag = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([a-z][^/\0>\x20\t\r\n\f]*)[^>]*)\/>/gi;
-// eslint-disable-next-line no-import-assign
-Object.defineProperties($, {
-  htmlPrefilter: { value: (html) => html.replace(rxhtmlTag, '<$1></$2>') }
-});
-
 (window as any).global = window;
 declare global {
   interface Window {
