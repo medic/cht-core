@@ -54,16 +54,6 @@ const transformXml = (fileServices, translateService, form) => {
     });
 };
 
-const getFormAttachment = (fileServices, xmlFormsService, doc) => {
-  return getAttachment(fileServices, doc._id, xmlFormsService.findXFormAttachmentName(doc));
-};
-
-const getFormXml = (fileServices, xmlFormsService, form) => {
-  return xmlFormsService
-    .get(form)
-    .then(formDoc => getFormAttachment(fileServices, xmlFormsService, formDoc));
-};
-
 const replaceJavarosaMediaWithLoaders = (formDoc, formHtml) => {
   formHtml.find('[data-media-src]').each((idx, element) => {
     const $img = $(element);
@@ -360,7 +350,7 @@ const create = (contactServices, formInternalId) => {
   });
 };
 
-const xmlToDocs = (xmlServices, doc, formXml, record) => {
+const xmlToDocs = (xmlServices, doc, formXml, xmlVersion, record) => {
   const recordDoc = $.parseXML(record);
   const $record = $($(recordDoc).children()[0]);
   const repeatPaths = EnketoDataTranslator.getRepeatPaths(formXml);
@@ -475,6 +465,9 @@ const xmlToDocs = (xmlServices, doc, formXml, record) => {
     .get();
 
   doc._id = getId('/*');
+  if (xmlVersion) {
+    doc.form_version = xmlVersion;
+  }
   doc.hidden_fields = EnketoDataTranslator.getHiddenFieldList(record);
 
   const attach = (elem, file, type, alreadyEncoded, xpath) => {
@@ -754,14 +747,12 @@ class EnketoFormManager {
     return Promise
       .all([
         getDocPromise,
-        getFormXml(this.fileServices, this.xmlServices.xmlForms, formInternalId),
+        this.xmlServices.xmlForms.getDocAndFormAttachment(formInternalId)
       ])
-      .then(([doc, formXml]) => xmlToDocs(
-        this.xmlServices,
-        doc,
-        formXml,
-        form.getDataStr({ irrelevant: false })
-      ))
+      .then(([doc, formDoc]) => {
+        const dataString = form.getDataStr({ irrelevant: false });
+        return xmlToDocs(this.xmlServices, doc, formDoc.xml, formDoc.doc.xmlVersion, dataString);
+      })
       .then(docs => validateAttachments(docs, this.translationServices.translateService, this.globalActions))
       .then((docs) => saveGeo(geoHandle, docs))
       .then((docs) => this.transitionsService.applyTransitions(docs))

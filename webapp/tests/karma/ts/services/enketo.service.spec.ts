@@ -66,6 +66,8 @@ describe('Enketo service', () => {
   let extractLineageService;
   let transitionsService;
   let translateService;
+  let xmlFormGet;
+  let xmlFormGetWithAttachment;
   let zScoreService;
   let zScoreUtil;
 
@@ -90,6 +92,8 @@ describe('Enketo service', () => {
     EnketoForm = sinon.stub();
     Search = sinon.stub();
     LineageModelGenerator = { contact: sinon.stub() };
+    xmlFormGet = sinon.stub().resolves({ _id: 'abc' });
+    xmlFormGetWithAttachment = sinon.stub().resolves({ doc: { _id: 'abc', xml: '<form/>' } });
     window.EnketoForm = EnketoForm;
     window.URL.createObjectURL = createObjectURL;
     EnketoForm.returns({
@@ -141,8 +145,8 @@ describe('Enketo service', () => {
         {
           provide: XmlFormsService,
           useValue: {
-            get: sinon.stub().resolves({ _id: 'abc' }),
-            findXFormAttachmentName: sinon.stub().resolves('mydoc')
+            get: xmlFormGet,
+            getDocAndFormAttachment: xmlFormGetWithAttachment
           }
         },
         { provide: ZScoreService, useValue: zScoreService },
@@ -239,8 +243,8 @@ describe('Enketo service', () => {
         expect(actual.content_type).to.equal('xml');
         // expect(actual.contact._id).to.equal('123');
         expect(actual.from).to.equal('555');
-        expect(dbGetAttachment.callCount).to.equal(1);
-        expect(dbGetAttachment.args[0][0]).to.equal('abc');
+        expect(xmlFormGetWithAttachment.callCount).to.equal(1);
+        expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
         expect(AddAttachment.callCount).to.equal(1);
         expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
         expect(AddAttachment.args[0][1]).to.equal('content');

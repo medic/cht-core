@@ -23,6 +23,8 @@ describe('Enketo Form Manager', () => {
   let fileServices;
   let formDataService;
   let translationServices;
+  let xmlFormGet;
+  let xmlFormGetWithAttachment;
   let xmlServices;
   let transitionsService;
   let globalActions;
@@ -77,6 +79,8 @@ describe('Enketo Form Manager', () => {
       get: sinon.stub().resolves('en')
     };
     const lineageModelGeneratorService = { contact: sinon.stub() };
+    xmlFormGet = sinon.stub().resolves({ _id: 'abc' });
+    xmlFormGetWithAttachment = sinon.stub().resolves({ doc: { _id: 'abc', xml: '<form/>' } });
     const searchService = { search: sinon.stub() };
     formDataService = new FormDataServices(
       contactSummaryService,
@@ -104,8 +108,8 @@ describe('Enketo Form Manager', () => {
       REPORT_ATTACHMENT_NAME: 'content'
     };
     const xmlFormsService = {
-      get: sinon.stub().resolves({ _id: 'abc' }),
-      findXFormAttachmentName: sinon.stub().resolves('mydoc')
+      get: xmlFormGet,
+      getDocAndFormAttachment: xmlFormGetWithAttachment
     };
     xmlServices = new XmlServices(
       addAttachmentService,
@@ -472,13 +476,28 @@ describe('Enketo Form Manager', () => {
         expect(actual.content_type).to.equal('xml');
         expect(actual.contact._id).to.equal('123');
         expect(actual.from).to.equal('555');
-        expect(dbGetAttachment.callCount).to.equal(1);
-        expect(dbGetAttachment.args[0][0]).to.equal('abc');
+        expect(xmlFormGetWithAttachment.callCount).to.equal(1);
+        expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
         expect(xmlServices.addAttachment.add.callCount).to.equal(1);
         expect(xmlServices.addAttachment.add.args[0][0]._id).to.equal(actual._id);
         expect(xmlServices.addAttachment.add.args[0][1]).to.equal('content');
         expect(xmlServices.addAttachment.add.args[0][2]).to.equal(content.replace(/\n$/, ''));
         expect(xmlServices.addAttachment.add.args[0][3]).to.equal('application/xml');
+      });
+    });
+
+    it('saves form version if found', () => {
+      const content = loadXML('sally-lmp');
+      form.getDataStr.returns(content);
+      xmlFormGetWithAttachment.resolves({
+        doc: { _id: 'abc', xmlVersion: { time: '1', sha256: 'imahash' } },
+        xml: '<form/>'
+      });
+      return enketoFormMgr.save('V', form).then(actual => {
+        actual = actual[0];
+        expect(actual.form_version).to.deep.equal({ time: '1', sha256: 'imahash' });
+        expect(xmlFormGetWithAttachment.callCount).to.equal(1);
+        expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
       });
     });
 
@@ -514,8 +533,8 @@ describe('Enketo Form Manager', () => {
           expect(actual.geolocation_log.length).to.equal(1);
           expect(actual.geolocation_log[0].timestamp).to.be.greaterThan(0);
           expect(actual.geolocation_log[0].recording).to.deep.equal(geoData);
-          expect(dbGetAttachment.callCount).to.equal(1);
-          expect(dbGetAttachment.args[0][0]).to.equal('abc');
+          expect(xmlFormGetWithAttachment.callCount).to.equal(1);
+          expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
           expect(xmlServices.addAttachment.add.callCount).to.equal(1);
           expect(xmlServices.addAttachment.add.args[0][0]._id).to.equal(actual._id);
           expect(xmlServices.addAttachment.add.args[0][1]).to.equal('content');
@@ -550,8 +569,8 @@ describe('Enketo Form Manager', () => {
           expect(actual.geolocation_log.length).to.equal(1);
           expect(actual.geolocation_log[0].timestamp).to.be.greaterThan(0);
           expect(actual.geolocation_log[0].recording).to.deep.equal(geoError);
-          expect(dbGetAttachment.callCount).to.equal(1);
-          expect(dbGetAttachment.args[0][0]).to.equal('abc');
+          expect(xmlFormGetWithAttachment.callCount).to.equal(1);
+          expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
           expect(xmlServices.addAttachment.add.callCount).to.equal(1);
           expect(xmlServices.addAttachment.add.args[0][0]._id).to.equal(actual._id);
           expect(xmlServices.addAttachment.add.args[0][1]).to.equal('content');
@@ -649,8 +668,8 @@ describe('Enketo Form Manager', () => {
           expect(actual.contact._id).to.equal('123');
           expect(actual.from).to.equal('555');
           expect(actual.geolocation).to.deep.equal(geoError);
-          expect(dbGetAttachment.callCount).to.equal(1);
-          expect(dbGetAttachment.args[0][0]).to.equal('abc');
+          expect(xmlFormGetWithAttachment.callCount).to.equal(1);
+          expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
           expect(xmlServices.addAttachment.add.callCount).to.equal(1);
           expect(xmlServices.addAttachment.add.args[0][0]._id).to.equal(actual._id);
           expect(xmlServices.addAttachment.add.args[0][1]).to.equal('content');
@@ -945,11 +964,14 @@ describe('Enketo Form Manager', () => {
         { ok: true, id: '8', rev: '1-ghi' },
         { ok: true, id: '9', rev: '1-ghi' }
       ]);
-      fileServices.fileReader.utf8.resolves(`
-        <data>
-          <repeat nodeset="/data/repeat_section"></repeat>
-        </data>
-      `);
+      xmlFormGetWithAttachment.resolves({
+        xml: `
+          <data>
+            <repeat nodeset="/data/repeat_section"></repeat>
+          </data>
+        `,
+        doc: { _id: 'abc' }
+      });
       return enketoFormMgr.save('V', form).then(actual => {
         expect(form.getDataStr.callCount).to.equal(1);
         expect(dbBulkDocs.callCount).to.equal(1);
@@ -983,11 +1005,14 @@ describe('Enketo Form Manager', () => {
         { ok: true, id: '8', rev: '1-ghi' },
         { ok: true, id: '9', rev: '1-ghi' }
       ]);
-      fileServices.fileReader.utf8.resolves(`
-        <data>
-          <repeat nodeset="/data/repeat_section"></repeat>
-        </data>
-      `);
+      xmlFormGetWithAttachment.resolves({
+        xml: `
+          <data>
+            <repeat nodeset="/data/repeat_section"></repeat>
+          </data>
+        `,
+        doc: { _id: 'abc' }
+      });
       return enketoFormMgr.save('V', form).then(actual => {
         expect(form.getDataStr.callCount).to.equal(1);
         expect(dbBulkDocs.callCount).to.equal(1);
@@ -1021,11 +1046,14 @@ describe('Enketo Form Manager', () => {
         { ok: true, id: '8', rev: '1-ghi' },
         { ok: true, id: '9', rev: '1-ghi' }
       ]);
-      fileServices.fileReader.utf8.resolves(`
-        <data>
-          <repeat nodeset="/data/repeat_section"></repeat>
-        </data>
-      `);
+      xmlFormGetWithAttachment.resolves({
+        xml: `
+          <data>
+            <repeat nodeset="/data/repeat_section"></repeat>
+          </data>
+        `,
+        doc: { _id: 'abc' }
+      });
       return enketoFormMgr.save('V', form).then(actual => {
         expect(form.getDataStr.callCount).to.equal(1);
         expect(dbBulkDocs.callCount).to.equal(1);
@@ -1059,11 +1087,14 @@ describe('Enketo Form Manager', () => {
         { ok: true, id: '8', rev: '1-ghi' },
         { ok: true, id: '9', rev: '1-ghi' }
       ]);
-      fileServices.fileReader.utf8.resolves(`
-        <data>
-          <repeat nodeset="/data/repeat_section"></repeat>
-        </data>
-      `);
+      xmlFormGetWithAttachment.resolves({
+        xml: `
+          <data>
+            <repeat nodeset="/data/repeat_section"></repeat>
+          </data>
+        `,
+        doc: { _id: 'abc' }
+      });
       return enketoFormMgr.save('V', form).then(actual => {
         expect(form.getDataStr.callCount).to.equal(1);
         expect(dbBulkDocs.callCount).to.equal(1);
@@ -1097,11 +1128,14 @@ describe('Enketo Form Manager', () => {
         { ok: true, id: '8', rev: '1-ghi' },
         { ok: true, id: '9', rev: '1-ghi' }
       ]);
-      fileServices.fileReader.utf8.resolves(`
-        <data>
-          <repeat nodeset="/data/repeat_section"></repeat>
-        </data>
-      `);
+      xmlFormGetWithAttachment.resolves({
+        xml: `
+          <data>
+            <repeat nodeset="/data/repeat_section"></repeat>
+          </data>
+        `,
+        doc: { _id: 'abc' }
+      });
       return enketoFormMgr.save('V', form).then(actual => {
         expect(form.getDataStr.callCount).to.equal(1);
         expect(dbBulkDocs.callCount).to.equal(1);
@@ -1133,11 +1167,14 @@ describe('Enketo Form Manager', () => {
         { ok: true, id: '6', rev: '1-abc' },
         { ok: true, id: '7', rev: '1-def' },
       ]);
-      fileServices.fileReader.utf8.resolves(`
+      xmlFormGetWithAttachment.resolves({
+        xml: `
         <data>
           <repeat nodeset="/data/repeat_section"></repeat>
         </data>
-      `);
+        `,
+        doc: { _id: 'abc' }
+      });
       return enketoFormMgr.save('V', form).then(actual => {
         expect(form.getDataStr.callCount).to.equal(1);
         expect(dbBulkDocs.callCount).to.equal(1);
@@ -1169,11 +1206,14 @@ describe('Enketo Form Manager', () => {
         { ok: true, id: '6', rev: '1-abc' },
         { ok: true, id: '7', rev: '1-def' },
       ]);
-      fileServices.fileReader.utf8.resolves(`
-        <data>
-          <repeat nodeset="/data/repeat_section"></repeat>
-        </data>
-      `);
+      xmlFormGetWithAttachment.resolves({
+        xml: `
+          <data>
+            <repeat nodeset="/data/repeat_section"></repeat>
+          </data>
+        `,
+        doc: { _id: 'abc' }
+      });
       return enketoFormMgr.save('V', form).then(actual => {
         expect(form.getDataStr.callCount).to.equal(1);
         expect(dbBulkDocs.callCount).to.equal(1);
@@ -1219,11 +1259,14 @@ describe('Enketo Form Manager', () => {
         { ok: true, id: '6', rev: '1-abc' },
         { ok: true, id: '7', rev: '1-def' },
       ]);
-      fileServices.fileReader.utf8.resolves(`
-        <data>
-          <repeat nodeset="/data/repeat_section"></repeat>
-        </data>
-      `);
+      xmlFormGetWithAttachment.resolves({
+        xml: `
+          <data>
+            <repeat nodeset="/data/repeat_section"></repeat>
+          </data>
+        `,
+        doc: { _id: 'abc' }
+      });
       return enketoFormMgr.save('V', form).then(actual => {
         expect(form.getDataStr.callCount).to.equal(1);
         expect(dbBulkDocs.callCount).to.equal(1);
