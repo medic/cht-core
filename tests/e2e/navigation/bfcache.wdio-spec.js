@@ -33,9 +33,9 @@ describe('bfcache', async () => {
       await commonPage.goToMessages();
       const redirectToLoginBtn = await $('#session-expired .btn.submit.btn-primary');
       await redirectToLoginBtn.click();
-      expect(await browser.getUrl()).to.contain('/medic/login?redirect=');
+      expect(await browser.getUrl()).to.contain('/login?redirect=');
       await browser.back();
-      await browser.waitUntil(async () => (await browser.getUrl()).includes('/medic/login?redirect='));
+      await browser.waitUntil(async () => (await browser.getUrl()).includes('/login?redirect='));
     });
   });
 
@@ -44,9 +44,9 @@ describe('bfcache', async () => {
       await usersAdminPage.goToAdminUser();
       await browser.deleteCookies('AuthSession');
       await usersAdminPage.goToAdminUpgrade();
-      expect(await browser.getUrl()).to.contain('/medic/login?redirect=');
+      expect(await browser.getUrl()).to.contain('/login?redirect=');
       await browser.back();
-      await browser.waitUntil(async () => (await browser.getUrl()).includes('/medic/login?redirect='));
+      await browser.waitUntil(async () => (await browser.getUrl()).includes('/login?redirect='));
     });
   });
 });
