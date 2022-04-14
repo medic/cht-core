@@ -14,7 +14,6 @@ class Mrdtwidget extends Widget {
   }
 
   _init() {
-    const self = this;
     const $el = $( this.element ).parent( mainSelector );
     const $input = $el.find( 'input' );
 
@@ -38,15 +37,15 @@ class Mrdtwidget extends Widget {
       MRDT.verify().then((data = {}) => {
         const image = data.image;
         const timeTaken = data.timeTaken;
-        $( self.element )
+        $el
           .find( 'textarea' )
           .val( image )
           .trigger( 'change' );
-        $( self.element )
+        $el
           .find( '.mrdt-preview' )
           .attr('src', 'data:image/png;base64, ' + image);
         if (timeTaken) {
-          $( self.element )
+          $el
             .siblings( '.or-appearance-mrdt-time-taken' )
             .find( 'input' )
             .val( timeTaken )
