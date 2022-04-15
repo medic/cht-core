@@ -1,7 +1,7 @@
 const COOKIE_NAME = 'userCtx';
 const ONLINE_ROLE = 'mm-online';
 import * as _ from 'lodash-es';
-import { Injectable, Inject } from '@angular/core';
+import { Injectable, Inject, HostListener } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { DOCUMENT } from '@angular/common';
@@ -73,17 +73,17 @@ export class SessionService {
       .catch(this.logout);
   }
 
+  public check() {
+    if (!this.cookieService.check(COOKIE_NAME)) {
+      this.navigateToLogin();
+    }
+  }
+
   init () {
     const userCtx = this.userCtx();
     if (!userCtx || !userCtx.name) {
       return this.logout();
     }
-
-    window.addEventListener('pageshow', (event) => {
-      if (event.persisted && !this.cookieService.check(COOKIE_NAME)) {
-        this.navigateToLogin();
-      }
-    });
 
     return this.http
       .get<{ userCtx: { name:string; roles:string[] } }>('/_session', { responseType: 'json' })
