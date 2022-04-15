@@ -112,8 +112,6 @@ const _ = require('lodash/core');
 
         navigateToLogin: navigateToLogin,
 
-        init: checkCurrentSession,
-
         checkCurrentSession: checkCurrentSession,
 
         /**
