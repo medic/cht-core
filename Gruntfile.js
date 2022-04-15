@@ -249,6 +249,7 @@ module.exports = function(grunt) {
         cwd: 'api/src/public/',
         src: '**/*',
         dest: 'api/build/public/',
+        follow: true,
       },
       'admin-resources': {
         files: [
