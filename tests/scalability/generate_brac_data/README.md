@@ -6,9 +6,7 @@ This script is to generate Brac config test data.
 
 Initially it only creates places, persons, users and reports (pregnancy, assessment and assessment follow up). Taking into account hierarchies.
 
-Changes where made in /test/factories/ and /test/scalability/
-Basically added new folders:
-/test/factories/brac and /test/scalability/generate_brac_data
+Relevant factories exist in `test/factories/brac`.
 
 ## Requirements
 
