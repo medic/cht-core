@@ -52,6 +52,14 @@ angular.module('controllers').controller('UsersCtrl',
       });
     };
 
+    $scope.editBulkUsers = function(user) {
+      Modal({
+        templateUrl: 'templates/edit_bulk_users.html',
+        controller: 'editBulkUsersCtrl',
+        model: user
+      });
+    };
+
     $scope.$on('UsersUpdated', function() {
       $scope.updateList();
     });

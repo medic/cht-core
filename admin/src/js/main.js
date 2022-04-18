@@ -66,6 +66,7 @@ require('./controllers/targets-edit');
 require('./controllers/upgrade');
 require('./controllers/upgrade-confirm');
 require('./controllers/users');
+require('./controllers/edit-bulk-users');
 
 angular.module('directives', ['ngSanitize']);
 require('./directives/file-model');
@@ -242,6 +243,11 @@ angular.module('adminApp').config(function(
       url: '/users',
       controller: 'UsersCtrl',
       templateUrl: 'templates/users.html'
+    })
+    .state('edit-bulk-users', {
+      url: '/edit-bulk-users',
+      controller: 'EditBulkUsersCtrl',
+      templateUrl: 'templates/edit_bulk_users.html'
     })
     .state('export', {
       url: '/export',
