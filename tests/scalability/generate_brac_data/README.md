@@ -16,9 +16,8 @@ Relevant factories exist in `test/factories/brac`.
 ## Steps to execute it
 1. Clone cht-core repo.
 2. Run npm ci in cht-core root directory.
-3. Go to `/tests/scalability/generate_brac_data` and edit the `data_directory` attribute in `data-config.json` doc.
-4. Go to `/tests/scalability/generate_brac_data` and execute the script with command `node generate-brac-data.js`.
-5. Data is generated in the `data_directory/` configured in step 2. The structure is as follows:
+3. Go to `/tests/scalability/generate_brac_data` and execute the script with command `node generate-brac-data.js [data-directory-path]`.
+4. Data is generated in the `[data-directory-path]` passed as parameter in step 3. The structure is as follows:
 ```
 .
 +--data_directory
