@@ -15,7 +15,6 @@ import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulatio
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
-import { GetReportContentService } from '@mm-services/get-report-content.service';
 import { LanguageService } from '@mm-services/language.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { SearchService } from '@mm-services/search.service';
@@ -43,7 +42,6 @@ export class EnketoService {
     private enketoTranslationService: EnketoTranslationService,
     private extractLineageService: ExtractLineageService,
     private fileReaderService: FileReaderService,
-    private getReportContentService: GetReportContentService,
     private languageService: LanguageService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
     private searchService: SearchService,
@@ -610,8 +608,6 @@ export class EnketoService {
       });
 
     record = getOuterHTML($record[0]);
-
-    this.addAttachmentService.add(doc, this.getReportContentService.REPORT_ATTACHMENT_NAME, record, 'application/xml');
 
     docsToStore.unshift(doc);
 
