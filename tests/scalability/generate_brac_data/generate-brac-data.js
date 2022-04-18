@@ -157,17 +157,10 @@ const generateHierarchy = (type, placeName, numberOfPersons,
     //For every odd index number creates a report for the main script data
     if (person.family_member_type === 'member_eligible_woman' || person.family_member_type === 'member_child') {
       let reportsDirectory = preconditionDataDirectory;
-      if (i % 2 === 0) {
-let reportsDirectory = preconditionDataDirectory;
-if (i % 2 !== 0) {
-  reportsDirectory = path.join(mainDataDirectory, directParentPlace.contact._id);
-  await createDataDirectory(reportsDirectory);
-}
-      } else {
-        createDataDirectory(mainDataDirectory, directParentPlace.contact._id);
-        reportsDirectory = mainDataDirectory + directParentPlace.contact._id + '/';
+      if (i % 2 !== 0) {
+        reportsDirectory = path.join(mainDataDirectory, directParentPlace.contact._id);
+        await createDataDirectory(reportsDirectory);
       }
-
       if (person.family_member_type === 'member_eligible_woman') {
         if (person.group_other_woman_pregnancy.other_woman_pregnant) {
           const pregnancySurvey = bracSurvey.generateBracSurvey('pregnancy', directParentPlace, place, person);
