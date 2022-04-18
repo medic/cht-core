@@ -52,14 +52,15 @@ const createDataDoc = async (filePath, content) => {
   }
 };
 
-const createDataDirectory = (path, directoryName) => {
-  if (!fs.existsSync(pathLib.join(path, directoryName))) {
-    fs.mkdirSync(pathLib.join(path, directoryName), err => {
-      if (err) {
-        console.error('CreateDataDirectory ' + directoryName + ' - ' + err);
-        return;
-      }
-    });
+const createDataDirectory = async (directoryPath, directoryName) => {
+  try {
+    await fs.promises.mkdir(path.join(directoryPath, directoryName));
+  } catch (err) {
+    if (err.code === 'EEXIST') {
+      return;
+    }
+    console.error('CreateDataDirectory ' + directoryName + ' failed - ' + err);
+    throw err;
   }
 };
 
