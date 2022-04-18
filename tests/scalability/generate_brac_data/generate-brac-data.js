@@ -3,6 +3,7 @@ const bracPersonFactory = require('../../factories/brac/contacts/brac-person');
 const bracUserFactory = require('../../factories/brac/users/brac-user');
 const bracSurvey = require('../../factories/brac/reports/brac-survey');
 const fs = require('fs');
+const pathLib = require('path');
 const Faker = require('@faker-js/faker');
 const dataConfig = require('./data-config.json');
 const sizeConfig = require('./size-config.json');
@@ -52,8 +53,8 @@ const createDataDoc = async (filePath, content) => {
 };
 
 const createDataDirectory = (path, directoryName) => {
-  if (!fs.existsSync(path + directoryName)) {
-    fs.mkdirSync(path + directoryName, err => {
+  if (!fs.existsSync(pathLib.join(path, directoryName))) {
+    fs.mkdirSync(pathLib.join(path, directoryName), err => {
       if (err) {
         console.error('CreateDataDirectory ' + directoryName + ' - ' + err);
         return;
