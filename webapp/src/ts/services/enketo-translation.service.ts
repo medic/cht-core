@@ -36,16 +36,10 @@ export class EnketoTranslationService {
   }
 
   private nodesToJs(data, repeatPaths?, path?) {
-    console.log(repeatPaths);
     repeatPaths = repeatPaths || [];
     path = path || '';
     const result = {};
     this.withElements(data).forEach((n:any) => {
-      /*const dbDocAttribute = n.attributes.getNamedItem('db-doc');
-      if (dbDocAttribute && dbDocAttribute.value === 'true') {
-        return;
-      }*/
-
       const typeAttribute = n.attributes.getNamedItem('type');
       const updatedPath = path + '/' + n.nodeName;
       let value;
