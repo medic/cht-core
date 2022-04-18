@@ -158,7 +158,11 @@ const generateHierarchy = (type, placeName, numberOfPersons,
     if (person.family_member_type === 'member_eligible_woman' || person.family_member_type === 'member_child') {
       let reportsDirectory = preconditionDataDirectory;
       if (i % 2 === 0) {
-        reportsDirectory = preconditionDataDirectory;
+let reportsDirectory = preconditionDataDirectory;
+if (i % 2 !== 0) {
+  reportsDirectory = path.join(mainDataDirectory, directParentPlace.contact._id);
+  await createDataDirectory(reportsDirectory);
+}
       } else {
         createDataDirectory(mainDataDirectory, directParentPlace.contact._id);
         reportsDirectory = mainDataDirectory + directParentPlace.contact._id + '/';
