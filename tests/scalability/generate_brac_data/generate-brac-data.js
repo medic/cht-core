@@ -3,7 +3,7 @@ const bracPersonFactory = require('../../factories/brac/contacts/brac-person');
 const bracUserFactory = require('../../factories/brac/users/brac-user');
 const bracSurvey = require('../../factories/brac/reports/brac-survey');
 const fs = require('fs');
-const pathLib = require('path');
+const path = require('path');
 const Faker = require('@faker-js/faker');
 const dataConfig = require('./data-config.json');
 const sizeConfig = require('./size-config.json');
@@ -21,13 +21,12 @@ const dataDirectory = args[1];
 const preconditionDirectory = dataConfig.precondition_data_directory;
 const mainDirectory = dataConfig.main_script_data_directory;
 const jsonDirectory = dataConfig.json_directory;
-const preconditionDataDirectory = dataDirectory
-  + dataConfig.precondition_data_directory + dataConfig.json_directory;
-const mainDataDirectory = dataDirectory + dataConfig.main_script_data_directory;
-const usersDirectory = dataDirectory + dataConfig.precondition_data_directory;
+const preconditionDataDirectory = path.join(dataDirectory, dataConfig.precondition_data_directory, dataConfig.json_directory);
+const mainDataDirectory = path.join(dataDirectory, dataConfig.main_script_data_directory);
+const usersDirectory = path.join(dataDirectory, dataConfig.precondition_data_directory);
 const dataExtension = dataConfig.json_data_extension;
 const csvWriter = createCsvWriter({
-  path: usersDirectory + 'users.csv',
+  path: path.join(usersDirectory, 'users.csv'),
   header: [
     { id: 'username', title: 'username' },
     { id: 'password', title: 'password' },
@@ -43,9 +42,9 @@ const csvWriter = createCsvWriter({
 const users = [];
 const managers = [];
 
-const createDataDoc = async (filePath, content) => {
+const createDataDoc = async (filePath, fileName, content) => {
   try {
-    await fs.promises.writeFile(filePath, content);
+    await fs.promises.writeFile(path.join(filePath, fileName), content);
   } catch (err) {
     console.error('CreateDataDoc ' + err);
     throw err;
@@ -131,19 +130,19 @@ const generateHierarchy = (type, placeName, numberOfPersons,
       parentPersonSecondLevelId, parentPersonThirdLevelId), subtype);
     if (isPrimaryContact) {
       place.contact = person;
-      createDataDoc(preconditionDataDirectory + place._id + dataExtension, JSON.stringify(place, {}, 2));
+      createDataDoc(preconditionDataDirectory, place._id + dataExtension, JSON.stringify(place, {}, 2));
       if (type === 'district_hospital') {
         roles = ['national_admin', 'mm-online'];
       }
     }
-    createDataDoc(preconditionDataDirectory + person._id + dataExtension, JSON.stringify(person, {}, 2));
+    createDataDoc(preconditionDataDirectory, person._id + dataExtension, JSON.stringify(person, {}, 2));
     if (type === 'district_hospital') {
       managers.push(person);
     }
     if (needUser) {
       const personUser = bracUserFactory.generateBracUser(
         person.short_name.toLowerCase() + placeName + 'user' + i, roles, place._id);
-      createDataDoc(preconditionDataDirectory + personUser._id + dataExtension, JSON.stringify(personUser, {}, 2));
+      createDataDoc(preconditionDataDirectory, personUser._id + dataExtension, JSON.stringify(personUser, {}, 2));
       const user = {
         username: person.short_name.toLowerCase() + placeName + 'user' + i,
         password: personUser.password,
@@ -160,21 +159,21 @@ const generateHierarchy = (type, placeName, numberOfPersons,
       let reportsDirectory = preconditionDataDirectory;
       if (i % 2 !== 0) {
         reportsDirectory = path.join(mainDataDirectory, directParentPlace.contact._id);
-        await createDataDirectory(reportsDirectory);
+        createDataDirectory(mainDataDirectory, directParentPlace.contact._id);
       }
       if (person.family_member_type === 'member_eligible_woman') {
         if (person.group_other_woman_pregnancy.other_woman_pregnant) {
           const pregnancySurvey = bracSurvey.generateBracSurvey('pregnancy', directParentPlace, place, person);
-          createDataDoc(reportsDirectory + pregnancySurvey._id + dataExtension, JSON.stringify(pregnancySurvey, {}, 2));
+          createDataDoc(reportsDirectory, pregnancySurvey._id + dataExtension, JSON.stringify(pregnancySurvey, {}, 2));
         }
       }
       if (person.family_member_type === 'member_child') {
         const assesmentSurvey = bracSurvey.generateBracSurvey('assesment', directParentPlace, place, person);
-        createDataDoc(reportsDirectory + assesmentSurvey._id + dataExtension, JSON.stringify(assesmentSurvey, {}, 2));
+        createDataDoc(reportsDirectory, assesmentSurvey._id + dataExtension, JSON.stringify(assesmentSurvey, {}, 2));
 
         const assesmentFollowUpSurvey = bracSurvey.generateBracSurvey(
           'assesment_follow_up', directParentPlace, place, person);
-        createDataDoc(reportsDirectory + assesmentFollowUpSurvey._id + dataExtension,
+        createDataDoc(reportsDirectory, assesmentFollowUpSurvey._id + dataExtension,
           JSON.stringify(assesmentFollowUpSurvey, {}, 2));
       }
     }
@@ -188,7 +187,7 @@ const generateHierarchy = (type, placeName, numberOfPersons,
 
 const generateData = () => {
   createDataDirectory(dataDirectory, preconditionDirectory);
-  createDataDirectory(dataDirectory + preconditionDirectory, jsonDirectory);
+  createDataDirectory(path.join(dataDirectory, preconditionDirectory), jsonDirectory);
   createDataDirectory(dataDirectory, mainDirectory);
 
   for (let dh = 0; dh < numberOfDistrictHospitals; dh++) {
