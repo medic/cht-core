@@ -42,7 +42,14 @@ const users = [];
 const managers = [];
 
 const createDataDoc = (directory, content) => {
-  fs.writeFile(directory, content, err => {
+const createDataDoc = async (filePath, content) => {
+  try {
+    await fs.promises.writeFile(filePath, content);
+  } catch (err) {
+    console.error('CreateDataDoc ' + err);
+    throw err;
+  }
+};
     if (err) {
       console.error('CreateDataDoc ' + err);
       return;
