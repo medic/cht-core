@@ -103,7 +103,7 @@ if (!groupDangerSigns || !groupDangerSigns.danger_signs) {
   .attr('referral_follow_up_needed',
     ['group_better', 'group_improved', 'group_danger_signs'],
     (groupBetter, groupImproved, groupDangerSigns) => {
-      if ((groupBetter !== null && groupBetter.g_patient_better === 'no') ||
+ if ((groupBetter && groupBetter.g_patient_better === 'no') ||
         (groupImproved !== null && groupImproved.g_patient_treatment_outcome === 'bad_medicine_reaction') ||
         (groupImproved !== null && groupImproved.g_patient_treatment_outcome === 'not_improving') ||
         (groupDangerSigns !== null && groupDangerSigns.danger_signs !== null)) {
