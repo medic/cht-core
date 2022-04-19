@@ -75,7 +75,8 @@ module.exports = new Factory()
             ['cured', 'still_recovering', 'bad_medicine_reaction', 'not_improving', 'died'])
         };
         return groupImproved;
-      })
+      }
+    })
   .attr('group_referral_followup', ['group_followup_options'], (groupFollowupOptions) => {
     if (groupFollowupOptions.follow_up_type !== 'treat_refer' && groupFollowupOptions.follow_up_type !== 'refer_only') {
       return null;
