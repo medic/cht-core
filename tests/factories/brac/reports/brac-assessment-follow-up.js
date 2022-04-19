@@ -113,23 +113,23 @@ module.exports = new Factory()
       return 'false';
     })
   .attr('danger_signs', ['group_danger_signs'], (groupDangerSigns) => {
-return (groupDangerSigns && groupDangerSigns.danger_signs) || null;
+    return (groupDangerSigns && groupDangerSigns.danger_signs) || null;
   })
   .attr('patient_improved', ['group_improved'], (groupImproved) => {
-    if ((groupImproved !== null && groupImproved.g_patient_treatment_outcome === 'still_recovering')
-      || (groupImproved !== null && groupImproved.g_patient_treatment_outcome === 'cured')) {
+    if ((groupImproved && groupImproved.g_patient_treatment_outcome === 'still_recovering')
+      || (groupImproved && groupImproved.g_patient_treatment_outcome === 'cured')) {
       return 'yes';
     }
     return 'no';
   })
   .attr('patient_better', ['group_better'], (groupBetter) => {
-    if (groupBetter !== null) {
+    if (groupBetter) {
       return groupBetter.g_patient_better;
     }
     return null;
   })
   .attr('patient_health_facility_visit', ['group_better'], (groupBetter) => {
-    if (groupBetter !== null) {
+    if (groupBetter) {
       return groupBetter.g_patient_health_facility_visit;
     }
     return null;
