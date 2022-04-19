@@ -9,10 +9,6 @@ const bracUser = () => {
     .attr('roles', '')
     .attr('facility_id', '')
     .attr('password', 'Secret_1')
-    /*.attr('password_scheme', 'pbkdf2')
-    .attr('iterations', 10)
-    .attr('derived_key', '')
-    .attr('salt', '')*/
     .attr('known', true);
 };
 
