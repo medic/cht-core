@@ -14,6 +14,7 @@ import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
+import { SimprintsService } from '@mm-services/simprints.service';
 import { Selectors } from '@mm-selectors/index';
 import { SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -54,6 +55,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   defaultSortDirection = 'alpha';
   sortDirection = this.defaultSortDirection;
   additionalListItem = false;
+  simprintsEnabled;
   enketoEdited;
   selectedContact;
 
@@ -70,6 +72,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private authService: AuthService,
     private settingsService: SettingsService,
     private UHCSettings: UHCSettingsService,
+    private simprintsService: SimprintsService,
     private scrollLoaderProvider: ScrollLoaderProvider,
     private relativeDateService: RelativeDateService,
     private tourService: TourService,
@@ -127,6 +130,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       },
     });
     this.subscription.add(changesSubscription);
+    this.simprintsEnabled = this.simprintsService.enabled();
 
     Promise
       .all([
@@ -227,6 +231,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       contact.valid = true;
       contact.summary = null;
       contact.primary = contact.home;
+      contact.simprintsTier = contact.simprints && contact.simprints.tierNumber;
       contact.dod = contact.date_of_death;
       if (type && type.count_visits && Number.isInteger(contact.lastVisitedDate)) {
         if (contact.lastVisitedDate === 0) {
@@ -327,7 +332,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     }
 
     let searchFilters = this.defaultFilters;
-    if (this.filters.search) {
+    if (this.filters.search || this.filters.simprintsIdentities) {
       searchFilters = this.filters;
     }
 
@@ -349,14 +354,15 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
     return this.searchService
       .search('contacts', searchFilters, options, extensions, docIds)
-      .then(updatedContacts => {
+      .then((updatedContacts) => {
         // If you have a home place make sure its at the top
-        if (this.usersHomePlace) {
+        if(this.usersHomePlace) {
           const homeIndex = _findIndex(updatedContacts, (contact:any) => {
             return contact._id === this.usersHomePlace._id;
           });
           this.additionalListItem =
             !this.filters.search &&
+            !this.filters.simprintsIdentities &&
             (this.additionalListItem || !this.appending) &&
             homeIndex === -1;
 
@@ -365,8 +371,25 @@ export class ContactsComponent implements OnInit, OnDestroy{
               // move it to the top
               updatedContacts.splice(homeIndex, 1);
               updatedContacts.unshift(this.usersHomePlace);
-            } else if (!this.filters.search) {
+            } else if (
+              !this.filters.search &&
+              !this.filters.simprintsIdentities
+            ) {
+
               updatedContacts.unshift(this.usersHomePlace);
+            }
+            if (this.filters.simprintsIdentities) {
+              updatedContacts.forEach((contact) => {
+                const identity = this.filters.simprintsIdentities.find(
+                  function(identity) {
+                    return identity.id === contact.simprints_id;
+                  }
+                );
+                contact.simprints = identity || {
+                  confidence: 0,
+                  tierNumber: 5,
+                };
+              });
             }
           }
         }
@@ -396,12 +419,26 @@ export class ContactsComponent implements OnInit, OnDestroy{
     }
 
     this.loading = true;
-    return this.query();
+    if (this.filters.search || this.filters.simprintsIdentities) {
+      return this.query();
+    } else {
+      return this.query();
+    }
   }
 
   sort(sortDirection?) {
     this.sortDirection = sortDirection ? sortDirection : this.defaultSortDirection;
     this.query();
+  }
+
+  simprintsIdentify() {
+    this.loading = true;
+    this.simprintsService
+      .identify()
+      .then((identities) => {
+        this.filters.simprintsIdentities = identities;
+        this.search();
+      });
   }
 
   listTrackBy(index, contact) {

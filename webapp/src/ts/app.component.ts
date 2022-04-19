@@ -275,6 +275,7 @@ export class AppComponent implements OnInit {
       .then(() => this.checkDateService.check(true))
       .then(() => this.startRecurringProcesses());
 
+    this.globalActions.setIsAdmin(this.sessionService.isAdmin());
     this.watchBrandingChanges();
     this.watchDDocChanges();
     this.watchUserContextChanges();
