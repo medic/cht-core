@@ -69,7 +69,7 @@ describe('Session service', function() {
     $httpBackend
       .expect('DELETE', '/_session')
       .respond(200);
-    service.init();
+    service.checkCurrentSession();
     $httpBackend.flush();
     chai.expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
@@ -82,7 +82,7 @@ describe('Session service', function() {
     $httpBackend
       .expect('GET', '/_session')
       .respond(401);
-    service.init();
+    service.checkCurrentSession();
     $httpBackend.flush();
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
     done();
@@ -93,7 +93,7 @@ describe('Session service', function() {
     $httpBackend
       .expect('GET', '/_session')
       .respond(0);
-    service.init();
+    service.checkCurrentSession();
     $httpBackend.flush();
     chai.expect(ipCookieRemove.callCount).to.equal(0);
     done();
@@ -110,7 +110,7 @@ describe('Session service', function() {
     $httpBackend
       .expect('DELETE', '/_session')
       .respond(200);
-    service.init();
+    service.checkCurrentSession();
     $httpBackend.flush();
     chai.expect(location.href).to.equal(`/DB_NAME/login?redirect=CURRENT_URL&username=${expected.name}`);
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
@@ -122,7 +122,7 @@ describe('Session service', function() {
     $httpBackend
       .expect('GET', '/_session')
       .respond(200, { userCtx: { name: 'bryan' } });
-    service.init();
+    service.checkCurrentSession();
     $httpBackend.flush();
     chai.expect(ipCookieRemove.callCount).to.equal(0);
     done();

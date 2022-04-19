@@ -54,6 +54,7 @@ describe('Telemetry service', () => {
         userCtx: () => {
           return { name: 'greg' };
         },
+        checkCurrentSession: sinon.stub(),
       });
     });
     inject(_Telemetry_ => {
