@@ -69,9 +69,7 @@ module.exports = new Factory()
       if (groupFollowupOptions.follow_up_type !== 'treat') {
         return null;
       }
-      if (groupDangerSigns !== null && groupDangerSigns.danger_signs !== null) {
-        return null;
-      }
+if (!groupDangerSigns || !groupDangerSigns.danger_signs) {
       const groupImproved = {
         g_patient_treatment_outcome: Faker.faker.random.arrayElement(
           ['cured', 'still_recovering', 'bad_medicine_reaction', 'not_improving', 'died'])
