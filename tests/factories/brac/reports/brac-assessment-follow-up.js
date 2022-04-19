@@ -106,7 +106,7 @@ if (!groupDangerSigns || !groupDangerSigns.danger_signs) {
  if ((groupBetter && groupBetter.g_patient_better === 'no') ||
 (groupImproved && groupImproved.g_patient_treatment_outcome === 'bad_medicine_reaction') ||
         (groupImproved !== null && groupImproved.g_patient_treatment_outcome === 'not_improving') ||
-        (groupDangerSigns !== null && groupDangerSigns.danger_signs !== null)) {
+(groupDangerSigns && groupDangerSigns.danger_signs)) {
         return true;
       }
       return false;
