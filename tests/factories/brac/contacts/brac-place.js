@@ -15,19 +15,17 @@ const bracPlace = () => {
     .attr('reported_date', () => Date.now())
     .attr('contact', '')
     .attr('geolocation', ['type'], (type) => {
-      if (type !== 'clinic') {
-        return null;
-      } else {
+      if (type === 'clinic') {
         return Faker.faker.address.latitude() + ' ' + Faker.faker.address.longitude();
       }
+      return null;
     })
     .attr('supervisor', '')
     .attr('household_survey', ['type'], (type) => {
-      if (type !== 'clinic') {
-        return null;
-      } else {
+      if (type === 'clinic') {
         return householdSurveyFactory.build();
       }
+      return null;
     });
 };
 
