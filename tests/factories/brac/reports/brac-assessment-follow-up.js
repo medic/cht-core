@@ -69,9 +69,7 @@ module.exports = new Factory()
       if (groupFollowupOptions.follow_up_type !== 'treat') {
         return null;
       }
-      if (groupDangerSigns !== null && groupDangerSigns.danger_signs !== null) {
-        return null;
-      }
+if (!groupDangerSigns || !groupDangerSigns.danger_signs) {
       const groupImproved = {
         g_patient_treatment_outcome: Faker.faker.random.arrayElement(
           ['cured', 'still_recovering', 'bad_medicine_reaction', 'not_improving', 'died'])
@@ -105,10 +103,10 @@ module.exports = new Factory()
   .attr('referral_follow_up_needed',
     ['group_better', 'group_improved', 'group_danger_signs'],
     (groupBetter, groupImproved, groupDangerSigns) => {
-      if ((groupBetter !== null && groupBetter.g_patient_better === 'no') ||
-        (groupImproved !== null && groupImproved.g_patient_treatment_outcome === 'bad_medicine_reaction') ||
+ if ((groupBetter && groupBetter.g_patient_better === 'no') ||
+(groupImproved && groupImproved.g_patient_treatment_outcome === 'bad_medicine_reaction') ||
         (groupImproved !== null && groupImproved.g_patient_treatment_outcome === 'not_improving') ||
-        (groupDangerSigns !== null && groupDangerSigns.danger_signs !== null)) {
+(groupDangerSigns && groupDangerSigns.danger_signs)) {
         return true;
       }
       return false;
