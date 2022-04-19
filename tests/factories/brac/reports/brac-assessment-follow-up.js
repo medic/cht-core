@@ -113,10 +113,7 @@ module.exports = new Factory()
       return 'false';
     })
   .attr('danger_signs', ['group_danger_signs'], (groupDangerSigns) => {
-    if (groupDangerSigns !== null) {
-      return groupDangerSigns.danger_signs;
-    }
-    return null;
+return (groupDangerSigns && groupDangerSigns.danger_signs) || null;
   })
   .attr('patient_improved', ['group_improved'], (groupImproved) => {
     if ((groupImproved !== null && groupImproved.g_patient_treatment_outcome === 'still_recovering')
