@@ -128,26 +128,22 @@ const generateUser = (type, placeId, userName, person, isPrimaryContact) => {
 }
 
 const generateReports = (directParentPlace, place, person, isMainData) => {
-  if (person.family_member_type === 'member_eligible_woman' || person.family_member_type === 'member_child') {
-    let reportsDirectory = preconditionDataDirectory;
-    if (isMainData) {
-      reportsDirectory = path.join(mainDataDirectory, directParentPlace.contact._id);
-      createDataDirectory(mainDataDirectory, directParentPlace.contact._id);
-    }
-    if (person.family_member_type === 'member_eligible_woman') {
-      if (person.group_other_woman_pregnancy.other_woman_pregnant) {
-        const pregnancySurvey = bracSurvey.generateBracSurvey('pregnancy', directParentPlace, place, person);
-        createDataDoc(reportsDirectory, pregnancySurvey._id + dataExtension, JSON.stringify(pregnancySurvey, {}, 2));
-      }
-    }
-    if (person.family_member_type === 'member_child') {
-      const assesmentSurvey = bracSurvey.generateBracSurvey('assesment', directParentPlace, place, person);
-      createDataDoc(reportsDirectory, assesmentSurvey._id + dataExtension, JSON.stringify(assesmentSurvey, {}, 2));
-      const assesmentFollowUpSurvey = bracSurvey.generateBracSurvey(
-        'assesment_follow_up', directParentPlace, place, person);
-      createDataDoc(reportsDirectory, assesmentFollowUpSurvey._id + dataExtension,
-        JSON.stringify(assesmentFollowUpSurvey, {}, 2));
-    }
+  let reportsDirectory = preconditionDataDirectory;
+  if (isMainData) {
+    reportsDirectory = path.join(mainDataDirectory, directParentPlace.contact._id);
+    createDataDirectory(mainDataDirectory, directParentPlace.contact._id);
+  }
+  if (bracPersonFactory.shouldGeneratePregnancySurvey(person)) {
+    const pregnancySurvey = bracSurvey.generateBracSurvey('pregnancy', directParentPlace, place, person);
+    createDataDoc(reportsDirectory, pregnancySurvey._id + dataExtension, JSON.stringify(pregnancySurvey, {}, 2));
+  }
+  if (bracPersonFactory.shouldGenerateAssessmentSurvey(person)) {
+    const assesmentSurvey = bracSurvey.generateBracSurvey('assesment', directParentPlace, place, person);
+    createDataDoc(reportsDirectory, assesmentSurvey._id + dataExtension, JSON.stringify(assesmentSurvey, {}, 2));
+    const assesmentFollowUpSurvey = bracSurvey.generateBracSurvey(
+      'assesment_follow_up', directParentPlace, place, person);
+    createDataDoc(reportsDirectory, assesmentFollowUpSurvey._id + dataExtension,
+      JSON.stringify(assesmentFollowUpSurvey, {}, 2));
   }
 }
 
@@ -184,7 +180,9 @@ const generateHierarchy = (type, placeName, numberOfPersons,
     if (needUser) {
       generateUser(type, place._id, person.short_name.toLowerCase() + placeName + 'user' + i, person, isPrimaryContact);
     }
-    generateReports(directParentPlace, place, person, (i % 2 !== 0));
+    if (bracPersonFactory.shouldGenerateSurvey(person)) {
+      generateReports(directParentPlace, place, person, (i % 2 !== 0));
+    }
     isPrimaryContact = false;
   }
   return place;
