@@ -5,6 +5,18 @@ const chpProfile = require('./chp-profile');
 const groupOtherWomanPregnancy = require('./brac-group-other-woman-pregnancy');
 const moment = require('moment');
 
+const shouldGenerateSurvey = (person) => {
+  return person.family_member_type === 'member_eligible_woman' || person.family_member_type === 'member_child';
+}
+
+const shouldGeneratePregnancySurvey = (person) => {
+  return person.family_member_type === 'member_eligible_woman' && person.group_other_woman_pregnancy.other_woman_pregnant;
+}
+
+const shouldGenerateAssessmentSurvey = (person) => {
+  return person.family_member_type === 'member_child';
+}
+
 const bracPerson = () => {
   return new Factory()
     .sequence('_id', uuid.v4)
@@ -201,14 +213,10 @@ const generateBracPerson = (parent, subtype) => {
   });
 };
 
-const generateBracPersons = (size, parent) => {
-  return bracPerson().buildList(size, {
-    parent: parent,
-  });
-};
-
 module.exports = {
+  shouldGenerateSurvey,
+  shouldGeneratePregnancySurvey,
+  shouldGenerateAssessmentSurvey,
   generateBracPerson,
-  generateBracPersons,
   bracPerson
 };
