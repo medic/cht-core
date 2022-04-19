@@ -94,46 +94,44 @@ export class EnketoTranslationService {
           'We should only ever bind one.', elem, name);
       }
       return found;
-    } else {
-      return elem.children(name);
     }
+
+    return elem.children(name);
   }
 
   bindJsonToXml(elem, data, childMatcher?) {
+    // Enketo will remove all elements that have the "template" attribute
+    // https://github.com/enketo/enketo-core/blob/51c5c2f494f1515a67355543b435f6aaa4b151b4/src/js/form-model.js#L436-L451
+    elem.removeAttr('jr:template');
+    elem.removeAttr('template');
+
+    if (data === null || typeof data !== 'object') {
+      elem.text(data);
+      return;
+    }
+
+    if (Array.isArray(data)) {
+      const parent = elem.parent();
+      elem.remove();
+
+      data.forEach((dataEntry) => {
+        const clone = elem.clone();
+        this.bindJsonToXml(clone, dataEntry);
+        parent.append(clone);
+      });
+      return;
+    }
+
+    if (!elem.children().length) {
+      this.bindJsonToXml(elem, data._id);
+    }
+
     Object.keys(data).forEach((key) => {
       const value = data[key];
       const current = this.findCurrentElement(elem, key, childMatcher);
-      if (value === null || typeof value !== 'object') {
-        current.text(value);
-        return;
-      }
-
-      if (Array.isArray(value)) {
-        // Enketo will remove all template elements
-        // https://github.com/enketo/enketo-core/blob/51c5c2f494f1515a67355543b435f6aaa4b151b4/src/js/form-model.js#L436-L451
-        current.removeAttr('jr:template');
-        current.removeAttr('template');
-        const parent = current.parent();
-        current.remove();
-
-        value.forEach((valueEntry) => {
-          const clone = current.clone();
-          parent.append(clone);
-          this.bindJsonToXml(clone, valueEntry);
-        });
-        return;
-      }
-
-      if (current.children().length) {
-        // childMatcher intentionally does not recurse. It exists to
-        // allow the initial layer of binding to be flexible.
-        return this.bindJsonToXml(current, value);
-      }
-
-      current.text(value._id);
+      this.bindJsonToXml(current, value);
     });
   }
-
 
   getHiddenFieldList (model) {
     model = $.parseXML(model).firstChild;
