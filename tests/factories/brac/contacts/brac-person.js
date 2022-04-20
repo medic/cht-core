@@ -48,10 +48,9 @@ const bracPerson = () => {
  return Faker.faker.datatype.number({ min: 6, max: 80 });
     })
     .attr('age_months', ['date_of_birth_method'], (dateOfBirthMethod) => {
-      if (dateOfBirthMethod !== 'approx') {
-        return null;
-      }
-      return Faker.faker.datatype.number({ min: 0, max: 12 });
+if (dateOfBirthMethod === 'approx') {
+  return Faker.faker.datatype.number({ min: 0, max: 12 });
+}
     })
     .attr('date_of_birth',
       ['subtype', 'date_of_birth_method', 'age_years', 'age_months'],
