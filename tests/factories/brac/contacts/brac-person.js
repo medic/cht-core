@@ -45,9 +45,7 @@ const bracPerson = () => {
       }
       if (subtype === 'member_eligible_woman' || subtype === 'manager' || subtype === 'chw') {
         return Faker.faker.datatype.number({ min: 12, max: 52 });
-      } else {
-        return Faker.faker.datatype.number({ min: 6, max: 80 });
-      }
+ return Faker.faker.datatype.number({ min: 6, max: 80 });
     })
     .attr('age_months', ['date_of_birth_method'], (dateOfBirthMethod) => {
       if (dateOfBirthMethod !== 'approx') {
