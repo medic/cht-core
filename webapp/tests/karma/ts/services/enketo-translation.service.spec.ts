@@ -481,7 +481,24 @@ describe('EnketoTranslation service', () => {
     });
 
     it('should not duplicate hidden paths', () => {
+      const xml =
+        `<doc>
+          <name>Sally</name>
+          <secret>
+            <first tag="hidden">a</first>
+            <second>b</second>
+          </secret>
+          <lmp tag="hidden">10</lmp>
+          <lmp tag="hidden">20</lmp>
+          <lmp tag="hidden">30</lmp>
+          <lmp tag="hidden">40</lmp>
+        </doc>`;
 
+      // when
+      const hidden_fields = service.getHiddenFieldList(xml);
+
+      // then
+      assert.deepEqual(hidden_fields, [ 'secret.first', 'lmp' ]);
     });
   });
 
