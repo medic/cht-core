@@ -90,12 +90,9 @@ if (subtype === 'member_child' || subtype === 'member_eligible_woman') {
   return subtype;
 }
     .attr('other_name', ['subtype'], (subtype) => {
-      if (subtype !== 'chw') {
-        return null;
-      } else {
-        return Faker.faker.name.firstName();
-      }
-    })
+if (subtype === 'chw') {
+  return Faker.faker.name.firstName();
+}
     .attr('patient_name', ['subtype', 'name'], (subtype, name) => {
       if (subtype !== 'chw') {
         return null;
