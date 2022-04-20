@@ -27,15 +27,17 @@ describe('Pregnancy danger sign follow-up form', () => {
     await utils.saveDoc(formDocument);
     await utils.seedTestData(userData.userContactDoc, userData.docs);
     await loginPage.cookieLogin();
-    await commonPage.goToReports();
+    await commonPage.hideSnackbar();
   });
 
   it('Submit and validate Pregnancy danger sign follow-up form and keeps the report minified', async () => {
+    await commonPage.goToReports();
+
     await reportsPage.openForm('Pregnancy danger sign follow-up');
     await pregnancyDangerSignForm.selectPatient('jack');
     await genericForm.nextPage();
-    await pregnancyDangerSignForm.selectVisitedHealthFacility();
-    await pregnancyDangerSignForm.selectNoDangerSigns();
+    await pregnancyDangerSignForm.selectVisitedHealthFacility(true);
+    await pregnancyDangerSignForm.selectDangerSigns(false);
     await reportsPage.submitForm();
 
     const reportId = await reportsPage.getCurrentReportId();
@@ -53,5 +55,66 @@ describe('Pregnancy danger sign follow-up form', () => {
     const validatedReport = await utils.getDoc(reportId);
     expect(validatedReport.verified).to.be.true;
     expect(validatedReport.patient).to.be.undefined;
+  });
+
+  it('should submit and edit Pregnancy danger sign follow-up form (no changes)', async () => {
+    await commonPage.goToReports();
+
+    await reportsPage.openForm('Pregnancy danger sign follow-up');
+    await pregnancyDangerSignForm.selectPatient('jill');
+    await genericForm.nextPage();
+    await pregnancyDangerSignForm.selectVisitedHealthFacility(true);
+    await pregnancyDangerSignForm.selectDangerSigns(false);
+    await reportsPage.submitForm();
+
+    const reportId = await reportsPage.getCurrentReportId();
+    const initialReport = await utils.getDoc(reportId);
+
+    expect(initialReport._attachments).to.equal(undefined);
+
+    await reportsPage.editReport(reportId);
+    await genericForm.nextPage();
+    await reportsPage.submitForm();
+
+    const updatedReport = await utils.getDoc(reportId);
+    expect(updatedReport.fields).excludingEvery('instanceID').to.deep.equal(initialReport.fields);
+
+  });
+
+  it('should submit and edit Pregnancy danger sign follow-up form with changes', async () => {
+    await commonPage.goToReports();
+
+    await reportsPage.openForm('Pregnancy danger sign follow-up');
+    await pregnancyDangerSignForm.selectPatient('jill');
+    await genericForm.nextPage();
+    await pregnancyDangerSignForm.selectVisitedHealthFacility(true);
+    await pregnancyDangerSignForm.selectDangerSigns(false);
+    await reportsPage.submitForm();
+
+    const reportId = await reportsPage.getCurrentReportId();
+    const initialReport = await utils.getDoc(reportId);
+
+    expect(initialReport._attachments).to.equal(undefined);
+
+    await reportsPage.editReport(reportId);
+    await pregnancyDangerSignForm.selectPatient('jack');
+    await genericForm.nextPage();
+    await pregnancyDangerSignForm.selectVisitedHealthFacility(false);
+    await pregnancyDangerSignForm.selectDangerSigns(true);
+    await reportsPage.submitForm();
+
+    const updatedReport = await utils.getDoc(reportId);
+
+    await reportsPage.openForm('Pregnancy danger sign follow-up');
+    await pregnancyDangerSignForm.selectPatient('jack');
+    await genericForm.nextPage();
+    await pregnancyDangerSignForm.selectVisitedHealthFacility(false);
+    await pregnancyDangerSignForm.selectDangerSigns(true);
+    await reportsPage.submitForm();
+
+    const compareReportId = await reportsPage.getCurrentReportId();
+    const compareReport = await utils.getDoc(compareReportId);
+
+    expect(updatedReport.fields).excludingEvery('instanceID').to.deep.equal(compareReport.fields);
   });
 });

@@ -17,6 +17,7 @@ const reportsByUUID = (uuid) => $$(`li[data-record-id="${uuid}"]`);
 const reportRowSelector = `${reportListID} .content-row`;
 const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
+const editReportButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
 
 const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
 const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
@@ -72,7 +73,7 @@ const openForm = async (name) => {
 };
 
 const setDateInput = async (name, date) => {
-  const input = await $(`input[name="${name}"]`);
+  const input = await (typeof name === 'string' ? $(`input[name="${name}"]`) : name);
   const dateWidget = await input.previousElement();
   const visibleInput = await dateWidget.$('input[type="text"]');
   await visibleInput.setValue(date);
@@ -101,6 +102,7 @@ const getFieldValue = async (name) => {
 };
 
 const submitForm = async () => {
+  await (await submitButton()).waitForDisplayed();
   await (await submitButton()).click();
   await (await reportBodyDetails()).waitForDisplayed();
 };
@@ -223,6 +225,18 @@ const getReportDetailFieldValueByLabel = async (label) => {
   }
 };
 
+const openReport = async (reportId) => {
+  const reportListItem = await reportByUUID(reportId);
+  await reportListItem.waitForDisplayed();
+  await reportListItem.click();
+  await reportBodyDetails().waitForDisplayed();
+};
+
+const editReport = async (reportId) => {
+  await openReport(reportId);
+  await (await editReportButton()).click();
+  await (await formTitle()).waitForDisplayed();
+};
 
 module.exports = {
   getCurrentReportId,
@@ -262,5 +276,7 @@ module.exports = {
   allReports,
   reportsByUUID,
   getAllReportsText,
-  getReportDetailFieldValueByLabel
+  getReportDetailFieldValueByLabel,
+  openReport,
+  editReport,
 };
