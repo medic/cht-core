@@ -43,18 +43,24 @@ const docs = [
   }
 ];
 
+const configureForm = (userContactDoc) => {
+  return utils.seedTestData(userContactDoc, docs);
+};
+
+const imagePreview = () => $('form[data-form-id="photo-upload"] .file-picker .file-preview img');
+const selectImage = async (filePath) => {
+  const input = await $('form[data-form-id="photo-upload"] input[type=file]');
+  await input.setValue(filePath);
+};
+
+const reportImagePreview = () => $('.report-image');
+
+
 module.exports = {
-  configureForm: (userContactDoc, done) => {
-    utils.seedTestData(done, userContactDoc, docs);
-  },
+  docs,
+  configureForm,
 
-  configureFormNative: async (userContactDoc) => {
-    await utils.seedTestData(userContactDoc, docs);
-  },
-
-  reset: () => {
-    element(by.css('.icon.icon-refresh')).click();
-  },
-  imagePreview: () => element(by.css('form[data-form-id="photo-upload"] .file-picker .file-preview img')),
-  imagePathInput: () => element(by.css('form[data-form-id="photo-upload"] input[type=file]')),
+  imagePreview,
+  selectImage,
+  reportImagePreview,
 };
