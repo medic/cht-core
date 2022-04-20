@@ -18,6 +18,7 @@ const moment = require('moment');
  * recorded as docs.
  */
 const TIMELY_WHEN_NEWER_THAN_DAYS = 60;
+const TIMELY_WHEN_YOUNGER_THAN_DAYS = 180;
 
 // This must be a comparable string format to avoid a bunch of parsing. For example, "2000-01-01" < "2010-11-31"
 const formatString = 'YYYY-MM-DD';
@@ -125,8 +126,10 @@ module.exports = {
   states: States,
 
   isTimely: (taskEmission, timestamp) => {
-    const { endDate } = getDisplayWindow(taskEmission);
-    return endDate > moment(timestamp).add(-TIMELY_WHEN_NEWER_THAN_DAYS, 'days').format(formatString);
+    const { startDate, endDate } = getDisplayWindow(taskEmission);
+    const earliest = moment(timestamp).subtract(TIMELY_WHEN_NEWER_THAN_DAYS, 'days');
+    const latest = moment(timestamp).add(TIMELY_WHEN_YOUNGER_THAN_DAYS, 'days');
+    return earliest.isBefore(endDate) && latest.isAfter(startDate);
   },
 
   setStateOnTaskDoc: (taskDoc, updatedState, timestamp = Date.now(), reason = '') => {

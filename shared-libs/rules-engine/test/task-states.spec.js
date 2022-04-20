@@ -162,12 +162,32 @@ describe('task-states', () => {
   describe('isTimely', () => {
     it('old emission is not timely', () => {
       const emission = mockEmission(-MS_IN_DAY * 90);
-      expect(TaskStates.isTimely(emission)).to.be.false;
+      expect(TaskStates.isTimely(emission, Date.now())).to.be.false;
+    });
+
+    it('future emission is not timely', () => {
+      const emission = mockEmission(MS_IN_DAY * 200);
+      expect(TaskStates.isTimely(emission, Date.now())).to.be.false;
+    });
+
+    it('invalid date is not timely', () => {
+      const emission = {
+        _id: 'abc',
+        doc: {
+          contact: { _id: 'gen' },
+        },
+        resolved: false,
+        delete: false,
+        date: 'abc',
+        readyStart: 0,
+        readyEnd: 0,
+      };
+      expect(TaskStates.isTimely(emission, Date.now())).to.be.false;
     });
 
     it('new emission is timely', () => {
       const emission = mockEmission(-MS_IN_DAY);
-      expect(TaskStates.isTimely(emission)).to.be.true;
+      expect(TaskStates.isTimely(emission, Date.now())).to.be.true;
     });
   });
 
