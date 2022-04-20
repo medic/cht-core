@@ -5,17 +5,28 @@ const chpProfile = require('./chp-profile');
 const groupOtherWomanPregnancy = require('./brac-group-other-woman-pregnancy');
 const moment = require('moment');
 const approxDateOfBirthMethod = 'approx';
+
 const shouldGenerateSurvey = (person) => {
   return person.family_member_type === 'member_eligible_woman' || person.family_member_type === 'member_child';
-}
+};
 
 const shouldGeneratePregnancySurvey = (person) => {
   return person.family_member_type === 'member_eligible_woman' && person.group_other_woman_pregnancy.other_woman_pregnant;
-}
+};
 
 const shouldGenerateAssessmentSurvey = (person) => {
   return person.family_member_type === 'member_child';
-}
+};
+
+const getAgeInYears = (subtype) => {
+  if (subtype === 'member_child') {
+    return Faker.faker.datatype.number({ min: 0, max: 5 });
+  }
+  if (subtype === 'member_eligible_woman' || subtype === 'manager' || subtype === 'chw') {
+    return Faker.faker.datatype.number({ min: 12, max: 52 });
+  }
+  return Faker.faker.datatype.number({ min: 6, max: 80 });
+};
 
 const bracPerson = () => {
   return new Factory()
@@ -36,16 +47,9 @@ const bracPerson = () => {
     .attr('short_name', Faker.faker.name.firstName())
     .attr('date_of_birth_method', Faker.faker.random.arrayElement([approxDateOfBirthMethod, 'calendar']))
     .attr('age_years', ['subtype', 'date_of_birth_method'], (subtype, dateOfBirthMethod) => {
-      if (dateOfBirthMethod !== approxDateOfBirthMethod) {
-        return null;
+      if (dateOfBirthMethod === approxDateOfBirthMethod) {
+        return getAgeInYears(subtype);
       }
-      if (subtype === 'member_child') {
-        return Faker.faker.datatype.number({ min: 0, max: 5 });
-      }
-      if (subtype === 'member_eligible_woman' || subtype === 'manager' || subtype === 'chw') {
-        return Faker.faker.datatype.number({ min: 12, max: 52 });
-      }
-      return Faker.faker.datatype.number({ min: 6, max: 80 });
     })
     .attr('age_months', ['date_of_birth_method'], (dateOfBirthMethod) => {
       if (dateOfBirthMethod === approxDateOfBirthMethod) {
@@ -59,13 +63,7 @@ const bracPerson = () => {
           const amount = ageYears * 12 + ageMonths;
           return moment().subtract(amount, 'months').format('YYYY-MM-DD');
         }
-        if (subtype === 'member_child') {
-          return moment().subtract(Faker.faker.datatype.number({ min: 1, max: 5 }), 'year').format('YYYY-MM-DD');
-        }
-        if (subtype === 'member_eligible_woman') {
-          return moment().subtract(Faker.faker.datatype.number({ min: 12, max: 52 }), 'year').format('YYYY-MM-DD');
-        }
-        return moment().subtract(Faker.faker.datatype.number({ min: 18, max: 80 }), 'year').format('YYYY-MM-DD');
+        return moment().subtract(getAgeInYears(subtype), 'year').format('YYYY-MM-DD');
       })
     .attr('phone', ['subtype'], (subtype) => {
       if (subtype !== 'member_child') {
