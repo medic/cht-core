@@ -5,7 +5,7 @@ const chpProfile = require('./chp-profile');
 const groupOtherWomanPregnancy = require('./brac-group-other-woman-pregnancy');
 const moment = require('moment');
 const approxDateOfBirthMethod = 'approx';
-
+const phoneNumberFormat = '+256#########';
 const shouldGenerateSurvey = (person) => {
   return person.family_member_type === 'member_eligible_woman' || person.family_member_type === 'member_child';
 };
@@ -67,14 +67,14 @@ const bracPerson = () => {
       })
     .attr('phone', ['subtype'], (subtype) => {
       if (subtype !== 'member_child') {
-        return Faker.faker.phone.phoneNumber('+256#########');
+        return Faker.faker.phone.phoneNumber(phoneNumberFormat);
       }
     })
     .attr('phone_alternate', ['subtype'], (subtype) => {
       if (subtype === 'member_child') {
         return null;
       } else {
-        return Faker.faker.phone.phoneNumber('+256#########');
+        return Faker.faker.phone.phoneNumber(phoneNumberFormat);
       }
     })
     .attr('notes', Faker.faker.lorem.sentence())
