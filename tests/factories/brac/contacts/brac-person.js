@@ -195,11 +195,7 @@ const generateBracPerson = (parent, subtype) => {
   if (subtype === 'other') {
     subtype = Faker.faker.random.arrayElement(['member_child', 'member_eligible_woman', 'family_member']);
   }
-  return bracPerson().build({
-    parent: parent
-  }, {
-    subtype: subtype
-  });
+return bracPerson().build({ parent }, { subtype });
 };
 
 module.exports = {
