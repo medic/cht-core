@@ -69,11 +69,9 @@ if (dateOfBirthMethod === 'approx') {
         }
       })
     .attr('phone', ['subtype'], (subtype) => {
-      if (subtype === 'member_child') {
-        return null;
-      } else {
-        return Faker.faker.phone.phoneNumber('+256#########');
-      }
+if (subtype !== 'member_child') {
+  return Faker.faker.phone.phoneNumber('+256#########');
+}
     })
     .attr('phone_alternate', ['subtype'], (subtype) => {
       if (subtype === 'member_child') {
