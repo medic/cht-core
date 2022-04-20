@@ -86,12 +86,9 @@ if (subtype !== 'member_child') {
     .attr('imported_date', () => moment().format('YYYY-MM-DD'))
     .attr('has_disability', Faker.faker.datatype.boolean())
     .attr('family_member_type', ['subtype'], (subtype) => {
-      if (subtype !== 'member_child' && subtype !== 'member_eligible_woman') {
-        return null;
-      } else {
-        return subtype;
-      }
-    })
+if (subtype === 'member_child' || subtype === 'member_eligible_woman') {
+  return subtype;
+}
     .attr('other_name', ['subtype'], (subtype) => {
       if (subtype !== 'chw') {
         return null;
