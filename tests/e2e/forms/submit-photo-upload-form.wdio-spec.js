@@ -1,6 +1,5 @@
 const photoUpload = require('../../page-objects/forms/photo-upload.wdio.page');
 const common = require('../../page-objects/common/common.wdio.page');
-// const genericForm = require('../../page-objects/forms/generic-form.wdio.page');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 const utils = require('../../utils');
 const userData = require('../../page-objects/forms/data/user.po.data');

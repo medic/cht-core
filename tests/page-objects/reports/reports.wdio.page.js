@@ -238,6 +238,10 @@ const editReport = async (reportId) => {
   await (await formTitle()).waitForDisplayed();
 };
 
+const fieldByIndex = async (index) => {
+  return await (await $(`${reportBodyDetailsSelector} li:nth-child(${index}) p`)).getText();
+};
+
 module.exports = {
   getCurrentReportId,
   reportList,
@@ -279,4 +283,5 @@ module.exports = {
   getReportDetailFieldValueByLabel,
   openReport,
   editReport,
+  fieldByIndex,
 };
