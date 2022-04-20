@@ -173,6 +173,8 @@ describe('Submit Default Delivery Report', () => {
     // duplicated extra docs are identical
     const excludeBabyFields = ['_id', '_rev', 'reported_date', 'patient_id', 'geolocation_log', 'geolocation'];
     intialDeadBabies.forEach((initialBaby, idx) => {
+      console.log(JSON.stringify(initialBaby, null, 2));
+      console.log(JSON.stringify(updatedDeadBabies[idx], null, 2));
       expect(initialBaby).excludingEvery(excludeBabyFields).to.deep.equal(updatedDeadBabies[idx]);
       expect(initialBaby.date_of_death).to.equal(moment(initialReport.reported_date).format('YYYY-MM-DD'));
     });
