@@ -78,7 +78,7 @@ const bracPerson = () => {
       }
     })
     .attr('notes', Faker.faker.lorem.sentence())
-    .attr('patient_id', 'test')
+    .attr('patient_id', Faker.faker.datatype.number({ min: 10000, max: 99999 }))
     .attr('reported_date', () => Date.now())
     .attr('imported_date', () => moment().format('YYYY-MM-DD'))
     .attr('has_disability', Faker.faker.datatype.boolean())
