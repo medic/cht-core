@@ -29,9 +29,8 @@ const bracPerson = () => {
       }
       if (subtype === 'family_member') {
         return 'male';
-      } else {
-        return Faker.faker.name.gender(true).toLowerCase();
       }
+      return Faker.faker.name.gender(true).toLowerCase();
     })
     .attr('name', Faker.faker.name.findName())
     .attr('short_name', Faker.faker.name.firstName())
@@ -45,12 +44,13 @@ const bracPerson = () => {
       }
       if (subtype === 'member_eligible_woman' || subtype === 'manager' || subtype === 'chw') {
         return Faker.faker.datatype.number({ min: 12, max: 52 });
- return Faker.faker.datatype.number({ min: 6, max: 80 });
+      }
+      return Faker.faker.datatype.number({ min: 6, max: 80 });
     })
     .attr('age_months', ['date_of_birth_method'], (dateOfBirthMethod) => {
-if (dateOfBirthMethod === 'approx') {
-  return Faker.faker.datatype.number({ min: 0, max: 12 });
-}
+      if (dateOfBirthMethod === 'approx') {
+        return Faker.faker.datatype.number({ min: 0, max: 12 });
+      }
     })
     .attr('date_of_birth',
       ['subtype', 'date_of_birth_method', 'age_years', 'age_months'],
@@ -64,14 +64,13 @@ if (dateOfBirthMethod === 'approx') {
         }
         if (subtype === 'member_eligible_woman') {
           return moment().subtract(Faker.faker.datatype.number({ min: 12, max: 52 }), 'year').format('YYYY-MM-DD');
-        } else {
-          return moment().subtract(Faker.faker.datatype.number({ min: 18, max: 80 }), 'year').format('YYYY-MM-DD');
         }
+        return moment().subtract(Faker.faker.datatype.number({ min: 18, max: 80 }), 'year').format('YYYY-MM-DD');
       })
     .attr('phone', ['subtype'], (subtype) => {
-if (subtype !== 'member_child') {
-  return Faker.faker.phone.phoneNumber('+256#########');
-}
+      if (subtype !== 'member_child') {
+        return Faker.faker.phone.phoneNumber('+256#########');
+      }
     })
     .attr('phone_alternate', ['subtype'], (subtype) => {
       if (subtype === 'member_child') {
@@ -86,13 +85,15 @@ if (subtype !== 'member_child') {
     .attr('imported_date', () => moment().format('YYYY-MM-DD'))
     .attr('has_disability', Faker.faker.datatype.boolean())
     .attr('family_member_type', ['subtype'], (subtype) => {
-if (subtype === 'member_child' || subtype === 'member_eligible_woman') {
-  return subtype;
-}
+      if (subtype === 'member_child' || subtype === 'member_eligible_woman') {
+        return subtype;
+      }
+    })
     .attr('other_name', ['subtype'], (subtype) => {
-if (subtype === 'chw') {
-  return Faker.faker.name.firstName();
-}
+      if (subtype === 'chw') {
+        return Faker.faker.name.firstName();
+      }
+    })
     .attr('patient_name', ['subtype', 'name'], (subtype, name) => {
       if (subtype !== 'chw') {
         return null;
@@ -195,7 +196,7 @@ const generateBracPerson = (parent, subtype) => {
   if (subtype === 'other') {
     subtype = Faker.faker.random.arrayElement(['member_child', 'member_eligible_woman', 'family_member']);
   }
-return bracPerson().build({ parent }, { subtype });
+  return bracPerson().build({ parent }, { subtype });
 };
 
 module.exports = {
