@@ -33,7 +33,7 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
     # to be too aggressive about crashing here ...
     find /opt/couchdb \! \( -user couchdb -group couchdb \) -exec chown -f couchdb:couchdb '{}' +
 
-    # Ensure that data files have the correct permissions. We were previouslyclustered_couchdb1_1
+    # Ensure that data files have the correct permissions. We were previously
     # preventing any access to these files outside of couchdb:couchdb, but it
     # turns out that CouchDB itself does not set such restrictive permissions
     # when it creates the files. The approach taken here ensures that the
