@@ -8,6 +8,7 @@ const common = require('../../page-objects/common/common.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const utils = require('../../utils');
 const userData = require('../../page-objects/forms/data/user.po.data');
+const sentinelUtils = require('../sentinel/utils');
 
 const getModel = () => {
   // snackbar appears in the bottom of the page for 5 seconds when certain actions are made
@@ -82,6 +83,7 @@ describe('Submit Default Delivery Report', () => {
     //submit
     console.log(await getModel());
     await reportsPage.submitForm();
+    await sentinelUtils.waitForSentinel();
 
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
@@ -115,6 +117,7 @@ describe('Submit Default Delivery Report', () => {
     await genericForm.nextPage();
     console.log(await getModel());
     await reportsPage.submitForm();
+    await sentinelUtils.waitForSentinel();
 
     const updatedReport = await utils.getDoc(reportId);
     const exclude = [
@@ -186,8 +189,6 @@ describe('Submit Default Delivery Report', () => {
     // duplicated extra docs are identical
     const excludeBabyFields = ['_id', '_rev', 'reported_date', 'patient_id', 'geolocation_log', 'geolocation'];
     intialDeadBabies.forEach((initialBaby, idx) => {
-      console.log(JSON.stringify(initialBaby, null, 2));
-      console.log(JSON.stringify(updatedDeadBabies[idx], null, 2));
       expect(initialBaby).excludingEvery(excludeBabyFields).to.deep.equal(updatedDeadBabies[idx]);
       expect(initialBaby.date_of_death).to.equal(moment(initialReport.reported_date).format('YYYY-MM-DD'));
     });
@@ -208,6 +209,7 @@ describe('Submit Default Delivery Report', () => {
     await genericForm.nextPage();
     await genericForm.nextPage();
     await reportsPage.submitForm();
+    await sentinelUtils.waitForSentinel();
 
     const cesareanReport = await utils.getDoc(reportId);
     expect(cesareanReport.fields)
@@ -269,6 +271,7 @@ describe('Submit Default Delivery Report', () => {
 
     //submit
     await reportsPage.submitForm();
+    await sentinelUtils.waitForSentinel();
 
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
@@ -314,6 +317,7 @@ describe('Submit Default Delivery Report', () => {
     await genericForm.nextPage();
     await genericForm.nextPage();
     await reportsPage.submitForm();
+    await sentinelUtils.waitForSentinel();
 
     const updatedReport = await utils.getDoc(reportId);
 
