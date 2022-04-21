@@ -11,8 +11,7 @@ setup() {
     export SLEEP_SECONDS=1
     export COUCHDB_USER="admin"
     export COUCHDB_PASSWORD="password"
-    export NODENAME="haproxy"
-    export COUCHDB_URL=http://$COUCHDB_USER:$COUCHDB_PASSWORD@$NODENAME:5984
+    export COUCHDB_URL=http://$COUCHDB_USER:$COUCHDB_PASSWORD@$SVC_NAME:5984
 
 }
 

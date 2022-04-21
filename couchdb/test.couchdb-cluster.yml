@@ -47,28 +47,11 @@ services:
     networks:
       cht-net-test:
 
-  haproxy:
-    image: medicmobile/cht-haproxy:archv3-test6
-    hostname: haproxy
-    environment:
-      - "HAPROXY_IP=${HAPROXY_IP:-haproxy}"
-      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
-      - "COUCHDB1_SERVER=${COUCHDB1_SERVER:-couchdb.1}"
-      - "COUCHDB2_SERVER=${COUCHDB2_SERVER:-couchdb.2}"
-      - "COUCHDB3_SERVER=${COUCHDB3_SERVER:-couchdb.3}"
-      - "HAPROXY_PORT=${HAPROXY_PORT:-5984}"
-    ports:
-      - "${HAPROXY_PORT:-5984}:5984"
-    networks:
-      cht-net-test:
-
   sut:
     depends_on:
     - couchdb.1
     - couchdb.2
     - couchdb.3
-    - haproxy
     build:
       context: .
       target: test_couchdb_build
@@ -80,6 +63,6 @@ services:
       - "TEST_MODE=CLUSTERED"
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
-      - "SVC_NAME=haproxy"
+      - "SVC_NAME=couchdb.1"
     networks:
       cht-net-test:

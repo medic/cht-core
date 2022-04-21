@@ -5,7 +5,7 @@ SLEEP_SECONDS="${SLEEP_SECONDS:-5}"
 NODE_COUNT=3
 
 verify_cluster_setup(){
-    curl -s http://$COUCHDB_USER:$COUCHDB_PASSWORD@$NODENAME:5984/_cluster_setup
+    curl -s http://$COUCHDB_USER:$COUCHDB_PASSWORD@$SVC_NAME:5984/_cluster_setup
 
 }
 
@@ -24,7 +24,7 @@ enable_cluster(){
 
 enable_cluster_on_remote_node(){
     curl -X POST -H "Content-Type: application/json" http://$COUCHDB_USER:$COUCHDB_PASSWORD@$SVC_NAME:5984/_cluster_setup \
-    -d '{"action": "enable_cluster", "bind_address":"0.0.0.0", "username": "'$COUCHDB_USER'", "password":"'$COUCHDB_PASSWORD'", "port": 5984, "'$NODE_COUNT'": "3", "remote_node": "'$REMOTE_COUCHDB_NODE_FQDN'", "remote_current_user": "'$COUCHDB_USER'", "remote_current_password": "'$COUCHDB_PASSWORD'" }'
+    -d '{"action": "enable_cluster", "bind_address":"0.0.0.0", "username": "'$COUCHDB_USER'", "password":"'$COUCHDB_PASSWORD'", "port": 5984, "node_count": "'$NODE_COUNT'", "remote_node": "'$REMOTE_COUCHDB_NODE_FQDN'", "remote_current_user": "'$COUCHDB_USER'", "remote_current_password": "'$COUCHDB_PASSWORD'" }'
 }
 
 

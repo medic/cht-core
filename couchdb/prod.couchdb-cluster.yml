@@ -6,7 +6,7 @@ networks:
 
 services:
   couchdb.1:
-    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042022-test31}
+    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042122-test32}
     volumes:
     - ${DB1_DATA:-./srv1}:/opt/couchdb/data
     environment:
@@ -22,7 +22,7 @@ services:
       cht-net:
 
   couchdb.2:
-    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042022-test31}
+    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042122-test32}
     volumes:
     - ${DB2_DATA:-./srv2}:/opt/couchdb/data
     environment:
@@ -37,7 +37,7 @@ services:
       cht-net:
 
   couchdb.3:
-    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042022-test31}
+    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042122-test32}
     volumes:
     - ${DB3_DATA:-./srv3}:/opt/couchdb/data
     environment:
