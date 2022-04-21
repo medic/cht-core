@@ -226,6 +226,8 @@ const getReportDetailFieldValueByLabel = async (label) => {
 };
 
 const openReport = async (reportId) => {
+  await (await $('reset-filters')).click();
+  await (await firstReport()).waitForDisplayed();
   const reportListItem = await reportByUUID(reportId);
   await reportListItem.waitForDisplayed();
   await reportListItem.click();

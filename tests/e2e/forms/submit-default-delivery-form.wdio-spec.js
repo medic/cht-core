@@ -10,17 +10,6 @@ const utils = require('../../utils');
 const userData = require('../../page-objects/forms/data/user.po.data');
 const sentinelUtils = require('../sentinel/utils');
 
-const getModel = () => {
-  // snackbar appears in the bottom of the page for 5 seconds when certain actions are made
-  // for example when filling a form, or creating a contact
-  // and intercepts all clicks in the actionbar
-  // this action is temporary, and will be undone with a refresh
-  return browser.execute(() => {
-    // eslint-disable-next-line no-undef
-    return window.CHTCore.debugFormModel();
-  });
-};
-
 describe('Submit Default Delivery Report', () => {
   const { userContactDoc, docs } = userData;
 
@@ -81,7 +70,6 @@ describe('Submit Default Delivery Report', () => {
     await genericForm.nextPage();
 
     //submit
-    console.log(await getModel());
     await reportsPage.submitForm();
     await sentinelUtils.waitForSentinel();
 
@@ -115,7 +103,6 @@ describe('Submit Default Delivery Report', () => {
     await genericForm.nextPage();
     await genericForm.nextPage();
     await genericForm.nextPage();
-    console.log(await getModel());
     await reportsPage.submitForm();
     await sentinelUtils.waitForSentinel();
 
