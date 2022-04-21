@@ -4,7 +4,7 @@ Clustered CouchDB 2.3.1 Docker Image which will support 3 replicas of data store
 
 ## Deployment
 
-- For testing architecture v3 clustered couchdb or development of related services, please launch docker-compose.clustered-couchdb.example.yml
+- For testing architecture v3 clustered couchdb or development of related services, please launch prod.couchdb-cluster.yml
 - How to deploy CouchDB in a production environment for CHT-Core? [placeholder](link-to-docs)
 - Deploying multiple CouchDB clusters for a development or testing environment? [placeholder](link-to-docs)
 - Migrating existing data from a single-node CouchDB deployment to the above clustered CouchDB setup? [placeholder](link-to-docs)
@@ -54,15 +54,15 @@ To test that your configuration changes dont impact entrypoint and clustering se
 1. Run tests for the clustered couchdb nodes scenario
 
 ```bash
- docker-compose -f couchdb/docker-compose.test.yml  build
- docker-compose -f couchdb/docker-compose.test.yml  run  sut
+ docker-compose -f couchdb/test.couchdb-cluster.yml  build
+ docker-compose -f couchdb/test.couchdb-cluster.yml  run  sut
 
 ```
 
 2. Tear down test containers
 
 ```bash
- docker-compose -f couchdb/docker-compose.test.yml down
+ docker-compose -f couchdb/test.couchdb-cluster.yml down
 ```
 
 To create more tests, add them couchdb/tests/tests.bats
