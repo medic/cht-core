@@ -29,6 +29,7 @@ export class GetReportContentService {
       return Promise.resolve(doc.content);
     }
 
+    // old style report content
     if (doc._attachments && doc._attachments.REPORT_ATTACHMENT_NAME) {
       return this.dbService
         .get()
@@ -36,6 +37,6 @@ export class GetReportContentService {
         .then(content => this.fileReaderService.utf8(content));
     }
 
-    return doc.fields;
+    return Promise.resolve(doc.fields);
   }
 }
