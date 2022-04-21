@@ -32,28 +32,21 @@ angular
 
     Languages().then(languages => $scope.enabledLocales = languages);
 
-    const getRole = roles => {
+    const getRoles = roles => {
       if (!roles || !roles.length) {
-        return;
+        return [];
       }
       if (roles.indexOf(ADMIN_ROLE) !== -1) {
-        return ADMIN_ROLE;
+        return [ ADMIN_ROLE ];
       }
       if (!$scope.roles) {
         // no configured roles
-        return;
+        return [];
       }
       // find all the users roles that are specified in the configuration
-      const knownRoles = roles.filter(function(role) {
+      return roles.filter(function(role) {
         return !!$scope.roles[role];
       });
-      if (knownRoles.length) {
-        // Pre 2.16.0 versions stored the role we care about at the end
-        // of the roles array so for backwards compatibility return the
-        // last element.
-        // From 2.16.0 onwards users only have one role.
-        return knownRoles[knownRoles.length - 1];
-      }
     };
 
     const allowTokenLogin = settings => settings.token_login && settings.token_login.enabled;
@@ -65,6 +58,8 @@ angular
       return Settings()
         .then(settings => {
           $scope.roles = settings.roles;
+          console.log('$scope.roles', $scope.roles);
+          console.log('$scope.model.roles', getRoles($scope.model.roles));
           $scope.allowTokenLogin = allowTokenLogin(settings);
           if (!$scope.model) {
             return $q.resolve({});
@@ -89,7 +84,7 @@ angular
             // compare to later to see if it's changed once we've run computeFields();
             facilitySelect: $scope.model.facility_id,
             place: $scope.model.facility_id,
-            role: getRole($scope.model.roles),
+            roles: getRoles($scope.model.roles),
             // ^ Same with contactSelect vs. contact
             contactSelect: $scope.model.contact_id,
             contact: $scope.model.contact_id,
@@ -274,7 +269,17 @@ angular
         });
     };
 
-    const validateRole = () => validateRequired('role', 'configuration.role');
+    const validateRole = () => {
+      const roles = $scope.editUserModel.roles || [];
+      if (!roles.length) {
+        Translate.fieldIsRequired('configuration.role')
+          .then(function(value) {
+            $scope.errors.roles = value;
+          });
+        return false;
+      }
+      return true;
+    };
 
     const getUpdatedKeys = (model, existingModel) => {
       return Object.keys(model).filter(key => {
@@ -305,11 +310,7 @@ angular
         .then(existingModel => {
           const updates = {};
           getUpdatedKeys(model, existingModel).forEach(key => {
-            if (key === 'role') {
-              updates.roles = [model[key]];
-            } else {
-              updates[key] = model[key];
-            }
+            updates[key] = model[key];
           });
 
           return updates;
@@ -318,13 +319,14 @@ angular
 
     let previousQuery;
     const validateReplicationLimit = () => {
+      // TODO if ANY are online then don't replicate? What does dbsync do?
       const role = $scope.roles && $scope.roles[$scope.editUserModel.role];
       if (!role || !role.offline) {
         return $q.resolve();
       }
 
       const query = {
-        role: $scope.editUserModel.role,
+        role: $scope.editUserModel.roles, // TODO test this
         facility_id: $scope.editUserModel.place,
         contact_id: $scope.editUserModel.contact
       };
@@ -407,6 +409,16 @@ angular
             $scope.setError(err, 'Error updating user');
           }
         });
+    };
+
+    $scope.toggleRole = (role) => {
+      console.log('toggle', $scope.editUserModel.roles, role);
+      const index = $scope.editUserModel.roles.indexOf(role);
+      if (index === -1) {
+        $scope.editUserModel.roles.push(role);
+      } else {
+        $scope.editUserModel.roles.splice(index, 1);
+      }
     };
 
     // #edit-user-profile is the admin view, which has additional fields.

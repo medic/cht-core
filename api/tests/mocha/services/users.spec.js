@@ -250,6 +250,7 @@ describe('Users service', () => {
         chai.expect(lucas.phone).to.equal('123456789');
         chai.expect(lucas.place).to.deep.equal(facilityc);
         chai.expect(lucas.type).to.equal('national-admin');
+        chai.expect(lucas.roles).to.deep.equal([ 'national-admin', 'data-entry' ]);
         const milan = data[1];
         chai.expect(milan.id).to.equal('org.couchdb.user:y');
         chai.expect(milan.username).to.equal('milan');
@@ -258,6 +259,7 @@ describe('Users service', () => {
         chai.expect(milan.phone).to.equal('987654321');
         chai.expect(milan.place).to.deep.equal(facilityb);
         chai.expect(milan.type).to.equal('district-admin');
+        chai.expect(milan.roles).to.deep.equal([ 'district-admin' ]);
         chai.expect(milan.external_id).to.equal('LTT093');
       });
     });
@@ -341,6 +343,7 @@ describe('Users service', () => {
         chai.expect(lucas.phone).to.equal(undefined);
         chai.expect(lucas.facility).to.equal(undefined);
         chai.expect(lucas.type).to.equal('unknown');
+        chai.expect(lucas.roles).to.equal(undefined);
       });
     });
 
