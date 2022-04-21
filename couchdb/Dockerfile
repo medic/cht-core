@@ -19,15 +19,9 @@ EXPOSE 5984 4369 9100
 CMD ["/opt/couchdb/bin/couchdb"]
 
 # Test build
-FROM ubuntu:18.04 as test_couchdb_build
-RUN apt update
-RUN apt-get install -y curl
-WORKDIR /app
-COPY ./tests/ /app/tests/
-COPY set-up-cluster.sh /app/set-up-cluster.sh
-RUN chmod +x /app/tests/tests.sh
-RUN chmod +x set-up-cluster.sh
-ENTRYPOINT [ "/bin/bash", "/app/tests/tests.sh" ]
+FROM ghcr.io/ffurrer2/bats:1.6.0 as test_couchdb_build
+RUN apk --no-cache add curl
+ENTRYPOINT [ "/bin/bash", "/app/tests.sh" ]
 
 # Final
 FROM base_couchdb_build AS cht-couchdb

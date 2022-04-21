@@ -2,9 +2,10 @@
 set -e
 WAIT_THRESHOLD="${WAIT_THRESHOLD:-20}"
 SLEEP_SECONDS="${SLEEP_SECONDS:-5}"
+NODE_COUNT=3
 
 verify_cluster_setup(){
- curl -s http://$COUCHDB_USER:$COUCHDB_PASSWORD@$NODENAME:5984/_cluster_setup
+    curl -s http://$COUCHDB_USER:$COUCHDB_PASSWORD@$NODENAME:5984/_cluster_setup
 
 }
 
@@ -16,20 +17,20 @@ enable_cluster(){
     elif [ ! -z $( verify_cluster_setup | grep cluster_finished ) ]; then
     echo "Cluster Setup Already Finished">&2
     else
-    curl -X POST -H "Content-Type: application/json" http://$COUCHDB_USER:$COUCHDB_PASSWORD@$NODENAME:5984/_cluster_setup \
-    -d '{"action": "enable_cluster", "bind_address":"0.0.0.0", "username": "'$COUCHDB_USER'", "password":"'$COUCHDB_PASSWORD'", "node_count":"3"}'
+    curl -X POST -H "Content-Type: application/json" http://$COUCHDB_USER:$COUCHDB_PASSWORD@$SVC_NAME:5984/_cluster_setup \
+    -d '{"action": "enable_cluster", "bind_address":"0.0.0.0", "username": "'$COUCHDB_USER'", "password":"'$COUCHDB_PASSWORD'", "node_count":"'$NODE_COUNT'"}'
     fi
 }
 
 enable_cluster_on_remote_node(){
-    curl -X POST -H "Content-Type: application/json" http://$COUCHDB_USER:$COUCHDB_PASSWORD@$NODENAME:5984/_cluster_setup \
-    -d '{"action": "enable_cluster", "bind_address":"0.0.0.0", "username": "'$COUCHDB_USER'", "password":"'$COUCHDB_PASSWORD'", "port": 5984, "node_count": "3", "remote_node": "'$REMOTE_COUCHDB_NODE_FQDN'", "remote_current_user": "'$COUCHDB_USER'", "remote_current_password": "'$COUCHDB_PASSWORD'" }'
+    curl -X POST -H "Content-Type: application/json" http://$COUCHDB_USER:$COUCHDB_PASSWORD@$SVC_NAME:5984/_cluster_setup \
+    -d '{"action": "enable_cluster", "bind_address":"0.0.0.0", "username": "'$COUCHDB_USER'", "password":"'$COUCHDB_PASSWORD'", "port": 5984, "'$NODE_COUNT'": "3", "remote_node": "'$REMOTE_COUCHDB_NODE_FQDN'", "remote_current_user": "'$COUCHDB_USER'", "remote_current_password": "'$COUCHDB_PASSWORD'" }'
 }
 
 
 join_node_to_cluster(){
-curl -X POST -H "Content-Type: application/json" http://$COUCHDB_USER:$COUCHDB_PASSWORD@$NODENAME:5984/_cluster_setup \
--d '{"action": "add_node", "host":"'$REMOTE_COUCHDB_NODE_FQDN'", "port":5984, "username": "'$COUCHDB_USER'", "password":"'$COUCHDB_PASSWORD'"}'
+    curl -X POST -H "Content-Type: application/json" http://$COUCHDB_USER:$COUCHDB_PASSWORD@$SVC_NAME:5984/_cluster_setup \
+    -d '{"action": "add_node", "host":"'$REMOTE_COUCHDB_NODE_FQDN'", "port":5984, "username": "'$COUCHDB_USER'", "password":"'$COUCHDB_PASSWORD'"}'
 
 }
 
@@ -38,7 +39,7 @@ complete_cluster_setup()
     if [ ! -z $(verify_cluster_setup | grep cluster_finished ) ]; then
       echo "Cluster Setup Already Finished"
     else
-      curl -X POST -H "Content-Type: application/json" http://$COUCHDB_USER:$COUCHDB_PASSWORD@$NODENAME:5984/_cluster_setup \
+      curl -X POST -H "Content-Type: application/json" http://$COUCHDB_USER:$COUCHDB_PASSWORD@$SVC_NAME:5984/_cluster_setup \
       -d '{"action": "finish_cluster"}'
     fi
 }
@@ -46,41 +47,41 @@ complete_cluster_setup()
 
 
 check_cluster_membership(){
- curl -s http://$COUCHDB_USER:$COUCHDB_PASSWORD@$NODENAME:5984/_membership
+    curl -s http://$COUCHDB_USER:$COUCHDB_PASSWORD@$SVC_NAME:5984/_membership
 }
 
 
 check_if_couchdb_is_ready(){
-  if [ "$#" -lt 1 ]; then
-    echo "Please provide a couchdb url end point" >&2
-    exit 1
-  fi
-
-  COUCHDB_URL=$1
-  wait_count=0
-  until curl -s --head  --request GET $COUCHDB_URL | grep "200 OK" > /dev/null
-  do
-    echo "Waiting for cht couchdb" >&2
-    wait_count=$((wait_count +1))
-    if [[ "$wait_count" -gt $WAIT_THRESHOLD ]]; then
-      echo "No couchdb end point Found at $COUCHDB_URL" >&2
+    if [ "$#" -lt 1 ]; then
+      echo "Please provide a couchdb url end point" >&2
       exit 1
     fi
-    sleep $SLEEP_SECONDS
-  done
-  echo "couchdb  is ready">&2
+
+    COUCHDB_URL=$1
+    wait_count=0
+    until curl -s --head  --request GET $COUCHDB_URL | grep "200 OK" > /dev/null
+    do
+      echo "Waiting for cht couchdb" >&2
+      wait_count=$((wait_count +1))
+      if [[ "$wait_count" -gt $WAIT_THRESHOLD ]]; then
+        echo "No couchdb end point Found at $COUCHDB_URL" >&2
+        exit 1
+      fi
+      sleep $SLEEP_SECONDS
+    done
+    echo "couchdb  is ready">&2
 
 }
 
 add_peer_to_cluster(){
-  peer=$1
-  if [ ! -z $(check_cluster_membership | grep $peer)  ]; then
-  echo "Node $peer is already in the cluster"
-  else
-    check_if_couchdb_is_ready http://$COUCHDB_USER:$COUCHDB_PASSWORD@$peer:5984
-    enable_cluster_on_remote_node
-    join_node_to_cluster
-  fi
+    peer=$1
+    if [ ! -z $(check_cluster_membership | grep $peer)  ]; then
+    echo "Node $peer is already in the cluster"
+    else
+      check_if_couchdb_is_ready http://$COUCHDB_USER:$COUCHDB_PASSWORD@$peer:5984
+      enable_cluster_on_remote_node
+      join_node_to_cluster
+    fi
 }
 
 
@@ -90,7 +91,6 @@ add_peers_to_cluster() {
     export REMOTE_COUCHDB_NODE_FQDN=$PEER
     add_peer_to_cluster $PEER
     done
-    echo "Only CouchDB1 should be here."
     complete_cluster_setup
     verify_cluster_setup
     check_cluster_membership
@@ -98,14 +98,14 @@ add_peers_to_cluster() {
 
 
 main(){
-  check_if_couchdb_is_ready http://$COUCHDB_USER:$COUCHDB_PASSWORD@$NODENAME:5984
-  # only attempt clustering if CLUSTER_PEER_IPS environment variable is present.
-  if [ ! -z "$CLUSTER_PEER_IPS" ]; then
-    enable_cluster
-    add_peers_to_cluster
-  fi
-   # end process
-  exit 1
+    check_if_couchdb_is_ready http://$COUCHDB_USER:$COUCHDB_PASSWORD@$SVC_NAME:5984
+    # only attempt clustering if CLUSTER_PEER_IPS environment variable is present.
+    if [ ! -z "$CLUSTER_PEER_IPS" ]; then
+      enable_cluster
+      add_peers_to_cluster
+    fi
+     # end process
+    exit 1
 
 }
 

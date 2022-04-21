@@ -9,7 +9,7 @@ check_if_couchdb_cluster_is_ready(){
 
 
   wait_count=0
-  until curl -s http://$COUCHDB_USER:$COUCHDB_PASSWORD@$NODENAME:5984/_cluster_setup | grep "cluster_finished" > /dev/null
+  until curl -s http://$COUCHDB_USER:$COUCHDB_PASSWORD@$SVC_NAME:5984/_cluster_setup | grep "cluster_finished" > /dev/null
   do
     echo "Waiting for cht couchdb cluster to be set up" >&2
     wait_count=$((wait_count +1))
@@ -29,7 +29,7 @@ case $TEST_MODE in
 
 CLUSTERED)
 check_if_couchdb_cluster_is_ready
-/app/tests/bats/bin/bats /app/tests/tests.bats
+/usr/local/bin/bats /workdir/tests.bats
 ;;
 
 *)

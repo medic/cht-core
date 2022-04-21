@@ -77,11 +77,10 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
     fi
 
 
-    if [ "$NODENAME" ]; then
-        # Set node name it has not been set for clustered operations this value needs to change
-        # Since changing this name after it has been set can mess up clustering, this can only run once  so a new node name can not be set on subsequent runs
+    if [ "$SVC_NAME" ]; then
+        # Since changing this name after it has been set can mess up clustering, this can only run once  so a new service name can not be set on subsequent runs
         if  grep "127.0.0.1" /opt/couchdb/etc/vm.args; then
-            sed -i "s/127.0.0.1/$NODENAME/" "/opt/couchdb/etc/vm.args"
+            sed -i "s/127.0.0.1/$SVC_NAME/" "/opt/couchdb/etc/vm.args"
         fi
     fi
 

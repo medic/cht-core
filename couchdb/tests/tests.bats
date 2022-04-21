@@ -1,7 +1,6 @@
 setup() {
-    load 'test_helper/bats-support/load'
-    load 'test_helper/bats-assert/load'
-    load 'test_helper/bats-shell-mock/bin/shellmock'
+    load '/opt/bats-support/load'
+    load '/opt/bats-assert/load'
     # get the containing directory of this file
     # use $BATS_TEST_FILENAME instead of ${BASH_SOURCE[0]} or $0,
     # as those will point to the bats executable's location or the preprocessed file respectively
@@ -15,28 +14,7 @@ setup() {
     export NODENAME="haproxy"
     export COUCHDB_URL=http://$COUCHDB_USER:$COUCHDB_PASSWORD@$NODENAME:5984
 
-
-    # set shell mock env
-    source="$DIR/test_helper/bats-shell-mock/bin"
-    export PATH=$source:$PATH
-
-     #shellcheck
-    . shellmock
-
-
 }
-
-teardown()
-{
-    if [ -z "$TEST_FUNCTION" ]; then
-        shellmock_clean
-    fi
-    if [ -d "$TEST_TEMP_DIR" ]; then
-        rm -rf "$TEST_TEMP_DIR"
-    fi
-}
-
-
 
 @test "cluster membership shows all nodes" {
     run /app/set-up-cluster.sh check_cluster_membership

@@ -48,19 +48,21 @@ CLUSTER_PEER_IPS=couchdb.2,couchdb.3"
 
 After making your config changes, please run tests to make sure clustering setup and entrypoints are stable. For local use, tag your image and change your docker-compose template declarations to reflect your tag. For publishing a production image, open a PR with your config changes and assign an SRE to review. Currently, we will manually build and publish the image to dockerhub. There is an open issue to handle this via CI.
 
-To test this couchdb image,
+To test that your configuration changes dont impact entrypoint and clustering setup, please run:
 
-1. Install the test framework by ruinning `` in your repo directory.
 
-```bash
- git submodule update --init
-
-```
-
-2. Run tests for the clustered couchdb nodes scenario
+1. Run tests for the clustered couchdb nodes scenario
 
 ```bash
  docker-compose -f couchdb/docker-compose.test.yml  build
  docker-compose -f couchdb/docker-compose.test.yml  run  sut
 
 ```
+
+2. Tear down test containers
+
+```bash
+ docker-compose -f couchdb/docker-compose.test.yml down
+```
+
+To create more tests, add them couchdb/tests/tests.bats

@@ -13,7 +13,7 @@ services:
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
       - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
-      - "NODENAME=couchdb.1"
+      - "SVC_NAME=couchdb.1"
       - "CLUSTER_PEER_IPS=couchdb.2,couchdb.3"
     restart: always
     networks:
@@ -28,7 +28,7 @@ services:
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
       - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
-      - "NODENAME=couchdb.2"
+      - "SVC_NAME=couchdb.2"
     restart: always
     networks:
       cht-net-test:
@@ -42,7 +42,7 @@ services:
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
       - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
-      - "NODENAME=couchdb.3"
+      - "SVC_NAME=couchdb.3"
     restart: always
     networks:
       cht-net-test:
@@ -72,10 +72,14 @@ services:
     build:
       context: .
       target: test_couchdb_build
+    volumes:
+      - ./tests/tests.sh:/app/tests.sh
+      - ./tests/tests.bats:/workdir/tests.bats
+      - ./set-up-cluster.sh:/app/set-up-cluster.sh
     environment:
       - "TEST_MODE=CLUSTERED"
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
-      - "NODENAME=haproxy"
+      - "SVC_NAME=haproxy"
     networks:
       cht-net-test:
