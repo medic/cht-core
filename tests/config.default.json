@@ -121,9 +121,6 @@
     "can_view_outgoing_messages": ["national_admin"],
     "can_export_all": ["national_admin"]
   },
-  "changes_controller": {
-    "changes_limit": 100
-  },
   "uhc": {
     "month_start_date": 1,
     "contacts_default_sort": "",

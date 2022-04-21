@@ -266,9 +266,6 @@
       "program_officer"
     ]
   },
-  "changes_controller": {
-    "changes_limit": 100
-  },
   "uhc": {
     "contacts_default_sort": "",
     "visit_count": {

@@ -252,9 +252,8 @@ const filterPurgedIds = feed => {
 };
 
 const processRequest = (req, res) => {
-  return initFeed(req, res).then(feed => {
-    return getChanges(feed);
-  });
+  return initFeed(req, res)
+    .then(feed => getChanges(feed));
 };
 
 // restarts the request, refreshing user-settings

@@ -454,7 +454,7 @@ describe('changes handler', () => {
             const receivedIds = getIds(changes.results)
               .filter(id => !isFormOrTranslation(id) && !DEFAULT_EXPECTED.includes(id));
             chai.expect(bobsIds).to.include.members(receivedIds);
-            // because we still process pending changes,xit's not a given we will receive only 4 changes.
+            // because we still process pending changes, it's not a given we will receive only 4 changes.
             chai.expect(bobsIds).to.not.have.members(receivedIds);
           } else {
             // requests should return full changes list
@@ -621,7 +621,7 @@ describe('changes handler', () => {
           }
         })
         .then(() => utils.request({ path: '/_users/org.couchdb.user:steve' }))
-        // revert steve, he didn't likexit in bobville
+        // revert steve, he didn't like it in bobville
         .then(user => utils.request({
           path: `/_users/org.couchdb.user:steve?rev=${user._rev}`,
           method: 'PUT',
@@ -684,7 +684,7 @@ describe('changes handler', () => {
         .then(changes => {
           const changeIds = getIds(changes.results)
             .filter(id => !isFormOrTranslation(id) && !DEFAULT_EXPECTED.includes(id));
-          // can't use assertChangeIds here becausexit ignores deletes
+          // can't use assertChangeIds here because it ignores deletes
           chai.expect(_.uniq(changeIds)).to.have.members([...stevesIds, ...allowedDocIds]);
         })
         .then(() => consumeChanges('steve', [], currentSeq))

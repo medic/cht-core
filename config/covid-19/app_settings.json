@@ -162,9 +162,6 @@
       "chw_supervisor"
     ]
   },
-  "changes_controller": {
-    "changes_limit": 100
-  },
   "place_hierarchy_types": [
     "district_hospital",
     "health_center"
