@@ -77,14 +77,17 @@ module.exports = new Factory()
         return null;
       }
       const patientFever = Faker.faker.random.arrayElement(['yes', 'no']);
-      let patientTemperature = null;
-      let feverDuration = null;
-      let mrdtTreated = null;
-      let mrdtResult = null;
-      let mrdtSource = null;
-      let malariaTreatmentGiven = null;
-      let malariaTreatment = null;
-      let malariaPainkillerGiven = null;
+    const groupFever = {
+        patient_fever: Faker.faker.random.arrayElement(['yes', 'no']),
+        patient_temperature: null,
+        fever_duration: null,
+        mrdt_treated: null,
+        mrdt_result: null,
+        mrdt_source: null,
+        malaria_treatment_given: null,
+        malaria_treatment: null,
+        malaria_painkiller_given: null
+      };
       if (patientFever === 'yes') {
         patientTemperature = Faker.faker.datatype.number({ min: 32, max: 45 });
         feverDuration = Faker.faker.random.arrayElement(['1', '2', '3', '7', '14', '21']);
