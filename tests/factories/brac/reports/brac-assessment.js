@@ -127,34 +127,28 @@ module.exports = new Factory()
   .attr('group_breathing',
     ['patient_age_in_years', 'patient_age_in_months', 'patient_age_in_days', 'group_assess', 'group_cough'],
     (patientAgeInYears, patientAgeInMonths, patientAgeInDays, groupAssess, groupCough) => {
-      if (!isAChildAndAlive(5, patientAgeInMonths, patientAgeInYears, groupAssess.is_alive)) {
-        return null;
-      } else if (groupCough.patient_coughs !== 'yes') {
-        return null;
+      if (isAChildAndAlive(5, patientAgeInMonths, patientAgeInYears, groupAssess.is_alive)
+        && groupCough.patient_coughs === 'yes') {
+        const groupBreathing = {
+          breath_count: Faker.faker.datatype.number({ min: 10, max: 85 }),
+          fast_breathing: false,
+          pneumonia_treatment_given: null,
+          pneumonia_treatment: null
+        };
+        if ((groupBreathing.breath_count >= 60 && patientAgeInDays < 60)
+          || (groupBreathing.breath_count >= 50 && patientAgeInDays >= 60 && patientAgeInDays < 365)
+          || (groupBreathing.breath_count >= 40 && patientAgeInDays >= 365 && patientAgeInDays < 5 * 365)
+          || (groupBreathing.breath_count >= 30 && patientAgeInDays >= 5 * 365)) {
+          groupBreathing.fast_breathing = true;
+        }
+        if (groupBreathing.fast_breathing) {
+          groupBreathing.pneumonia_treatment_given = Faker.faker.random.arrayElement(YES_NO);
+        }
+        if (groupBreathing.pneumonia_treatment_given === 'yes') {
+          groupBreathing.pneumonia_treatment = 'amoxicillin';
+        }
+        return groupBreathing;
       }
-      const breathCount = Faker.faker.datatype.number({ min: 10, max: 85 });
-      let fastBreathing = false;
-      let pneumoniaTreatmentGiven = null;
-      let pneumoniaTreatment = null;
-      if ((breathCount >= 60 && patientAgeInDays < 60)
-        || (breathCount >= 50 && patientAgeInDays >= 60 && patientAgeInDays < 365)
-        || (breathCount >= 40 && patientAgeInDays >= 365 && patientAgeInDays < 5 * 365)
-        || (breathCount >= 30 && patientAgeInDays >= 5 * 365)) {
-        fastBreathing = true;
-      }
-      if (fastBreathing) {
-        pneumoniaTreatmentGiven = Faker.faker.random.arrayElement(YES_NO);
-      }
-      if (pneumoniaTreatmentGiven === 'yes') {
-        pneumoniaTreatment = 'amoxicillin';
-      }
-      const groupBreathing = {
-        breath_count: breathCount,
-        fast_breathing: fastBreathing,
-        pneumonia_treatment_given: pneumoniaTreatmentGiven,
-        pneumonia_treatment: pneumoniaTreatment
-      };
-      return groupBreathing;
     })
   .attr('group_diarrhea',
     ['patient_age_in_years', 'patient_age_in_months', 'group_assess'],
