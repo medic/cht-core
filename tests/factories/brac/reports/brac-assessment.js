@@ -3,10 +3,8 @@ const Faker = require('@faker-js/faker');
 const moment = require('moment');
 
 const isAChildAndAlive = (maxAge, patientAgeInMonths, patientAgeInYears, isAlive) => {
-  if (patientAgeInMonths >= 2 && patientAgeInYears < maxAge && isAlive === 'yes') {
-    return true;
-  }
-  return false;
+const isNewborn = patientAgeInMonths < 2;
+return (!isNewborn && patientAgeInYears < maxAge && isAlive === 'yes');
 };
 
 module.exports = new Factory()
@@ -79,14 +77,17 @@ module.exports = new Factory()
         return null;
       }
       const patientFever = Faker.faker.random.arrayElement(['yes', 'no']);
-      let patientTemperature = null;
-      let feverDuration = null;
-      let mrdtTreated = null;
-      let mrdtResult = null;
-      let mrdtSource = null;
-      let malariaTreatmentGiven = null;
-      let malariaTreatment = null;
-      let malariaPainkillerGiven = null;
+    const groupFever = {
+        patient_fever: Faker.faker.random.arrayElement(['yes', 'no']),
+        patient_temperature: null,
+        fever_duration: null,
+        mrdt_treated: null,
+        mrdt_result: null,
+        mrdt_source: null,
+        malaria_treatment_given: null,
+        malaria_treatment: null,
+        malaria_painkiller_given: null
+      };
       if (patientFever === 'yes') {
         patientTemperature = Faker.faker.datatype.number({ min: 32, max: 45 });
         feverDuration = Faker.faker.random.arrayElement(['1', '2', '3', '7', '14', '21']);
@@ -405,13 +406,9 @@ module.exports = new Factory()
         return null;
       }
       let diagnosisCough = '';
-      if (groupCough.patient_coughs === 'yes') {
-        if (groupCough.coughing_duration > 14) {
-          if (groupCough.chest_indrawing === 'yes') {
-            diagnosisCough = 'pneumonia2c,cough2';
-          }
-        }
-      }
+if (groupCough.patient_coughs === 'yes' && groupCough.coughing_duration > 14 && groupCough.chest_indrawing === 'yes' ) {       
+   diagnosisCough = 'pneumonia2c,cough2';       
+}
       let diagnosisDiarrhea = '';
       if (groupDiarrhea.patient_diarrhea === 'yes' &&
         (groupDiarrhea.diarrhea_duration > 14 || groupDiarrhea.diarrhea_blood === 'yes')) {
@@ -419,15 +416,11 @@ module.exports = new Factory()
       }
       let diagnosisFever = '';
       if (groupfever.patient_fever === 'yes' || groupfever.patient_temperature > 37.5) {
-        if (groupfever.mrdt_result === 'negative') {
-          if (groupfever.fever_duration > 7 || groupfever.patient_temperature >= 40) {
-            diagnosisFever = 'fever2,fever1';
-          }
-        } else {
-          if (groupfever.fever_duration > 7 || groupfever.patient_temperature >= 40) {
-            diagnosisFever = 'malaria2,malaria1';
-          }
-        }
+const seriousFever = (groupfever.fever_duration > 7 || groupfever.patient_temperature >= 40);
+const negativeMalaria = groupfever.mrdt_result === 'negative';
+if (seriousFever) {
+  diagnosisFever = negativeMalaria ? 'fever2,fever1' : 'malaria2,malaria1';
+}
       }
       const groupDiagnosis = {
         diagnosis_cough: diagnosisCough,

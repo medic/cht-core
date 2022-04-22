@@ -3,7 +3,7 @@ const Faker = require('@faker-js/faker');
 const moment = require('moment');
 
 const isPregnant = (edd, lmpApprox, pregRes, pregResKit) => {
-  if (edd !== null && !(lmpApprox === '61' || lmpApprox === '91')) {
+if (edd && lmpApprox !== '61' && lmpApprox !== '91') {
     return true;
   }
   if (lmpApprox === '122' || lmpApprox === '183' || lmpApprox === '244') {
@@ -250,9 +250,7 @@ module.exports = new Factory()
   .attr('patient_age_at_lmp', ['patient', 'group_lmp'], (patient, groupLmp) => {
     const birthDate = moment(patient.date_of_birth);
     const lmpDate = moment(groupLmp.g_lmp_date_8601);
-    const yearsDiff = birthDate.diff(lmpDate, 'years');
-    const ageAtLmp = moment(birthDate).subtract(yearsDiff);
-    return ageAtLmp;
+    return lmpDate.diff(birthDate, 'years');
   })
   .attr('days_since_lmp', ['group_lmp'], (groupLmp) => {
     const now = moment();
