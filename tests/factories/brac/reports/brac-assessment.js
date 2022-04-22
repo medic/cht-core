@@ -3,6 +3,18 @@ const Faker = require('@faker-js/faker');
 const moment = require('moment');
 
 const YES_NO = ['yes', 'no'];
+const ONE_YEAR = 365;
+const FIVE_YEARS = 5 * 365;
+
+const isBreathingFast = (breathCount, patientAgeInDays) => {
+  if ((breathCount >= 60 && patientAgeInDays < 60)
+    || (breathCount >= 50 && patientAgeInDays >= 60 && patientAgeInDays < ONE_YEAR)
+    || (breathCount >= 40 && patientAgeInDays >= ONE_YEAR && patientAgeInDays < FIVE_YEARS)
+    || (breathCount >= 30 && patientAgeInDays >= FIVE_YEARS)) {
+    return true;
+  }
+  return false;
+};
 
 const isAChildAndAlive = (maxAge, patientAgeInMonths, patientAgeInYears, isAlive) => {
   const isNewborn = patientAgeInMonths < 2;
@@ -131,16 +143,10 @@ module.exports = new Factory()
         && groupCough.patient_coughs === 'yes') {
         const groupBreathing = {
           breath_count: Faker.faker.datatype.number({ min: 10, max: 85 }),
-          fast_breathing: false,
+          fast_breathing: isBreathingFast(groupBreathing.breath_count, patientAgeInDays),
           pneumonia_treatment_given: null,
           pneumonia_treatment: null
         };
-        if ((groupBreathing.breath_count >= 60 && patientAgeInDays < 60)
-          || (groupBreathing.breath_count >= 50 && patientAgeInDays >= 60 && patientAgeInDays < 365)
-          || (groupBreathing.breath_count >= 40 && patientAgeInDays >= 365 && patientAgeInDays < 5 * 365)
-          || (groupBreathing.breath_count >= 30 && patientAgeInDays >= 5 * 365)) {
-          groupBreathing.fast_breathing = true;
-        }
         if (groupBreathing.fast_breathing) {
           groupBreathing.pneumonia_treatment_given = Faker.faker.random.arrayElement(YES_NO);
         }
