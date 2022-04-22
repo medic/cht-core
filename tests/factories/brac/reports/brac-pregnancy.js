@@ -96,53 +96,41 @@ module.exports = new Factory()
     }
   })
   .attr('group_anc_visit', ['group_lmp'], (groupLmp) => {
-    if (!isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
-      return null;
-    }
-    const ancVisit = Faker.faker.random.arrayElement(YES_NO);
-    let ancVisitRepeat = null;
-    const prophylaxisTaken = Faker.faker.random.arrayElement(YES_NO);
-    let lastDose = null;
-    let lastDoseDate = null;
-    const ttImm = Faker.faker.random.arrayElement(YES_NO);
-    let tt_received = null;
-    let tt_date = null;
-    const gAncLastVisit = moment().format('YYYY-MM-DD');
-    const gAncLastVisitEpoch = moment(gAncLastVisit).unix() / 120;
-
-    if (ancVisit === 'yes') {
-      ancVisitRepeat = {
-        anc_visit_completed: Faker.faker.random.arrayElement(
-          ['anc_1', 'anc_2', 'anc_3', 'anc_4', 'anc_5', 'anc_6', 'anc_7', 'anc_8']),
-        g_anc_last_visit: gAncLastVisit,
-        note_warning: '',
-        g_anc_last_visit_epoch: gAncLastVisitEpoch,
-        bp_reading: Faker.faker.lorem.word()
+    if (isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
+      const groupAncVisit = {
+        anc_visit: Faker.faker.random.arrayElement(YES_NO),
+        anc_visit_repeat: null,
+        prophylaxis_taken: Faker.faker.random.arrayElement(YES_NO),
+        last_dose: null,
+        last_dose_date: null,
+        tt_imm: Faker.faker.random.arrayElement(YES_NO),
+        tt_received: null,
+        tt_date: null,
+        given_mebendazole: Faker.faker.random.arrayElement(YES_NO)
       };
-    }
-    if (prophylaxisTaken === 'yes') {
-      lastDose = Faker.faker.random.arrayElement(['ipt_1', 'ipt_2', 'ipt_3', 'ipt_4']);
-      lastDoseDate = moment().subtract(Faker.faker.datatype.number({ min: 1, max: 120 }), 'month').format('YYYY-MM-DD');
+      if (groupAncVisit.anc_visit === 'yes') {
+        const ancVisitRepeat = {
+          anc_visit_completed: Faker.faker.random.arrayElement(
+            ['anc_1', 'anc_2', 'anc_3', 'anc_4', 'anc_5', 'anc_6', 'anc_7', 'anc_8']),
+          g_anc_last_visit: moment().format('YYYY-MM-DD'),
+          note_warning: '',
+          g_anc_last_visit_epoch: null,
+          bp_reading: Faker.faker.lorem.word()
+        };
+        ancVisitRepeat.g_anc_last_visit_epoch = moment(ancVisitRepeat.g_anc_last_visit).unix();
+        groupAncVisit.anc_visit_repeat = ancVisitRepeat;
+      }
+      if (groupAncVisit.prophylaxis_taken === 'yes') {
+        groupAncVisit.last_dose = Faker.faker.random.arrayElement(['ipt_1', 'ipt_2', 'ipt_3', 'ipt_4']);
+        groupAncVisit.last_dose_date = moment().subtract(Faker.faker.datatype.number({ min: 1, max: 120 }), 'month').format('YYYY-MM-DD');
+      }
+      if (groupAncVisit.tt_imm === 'yes') {
+        groupAncVisit.tt_received = Faker.faker.random.arrayElement(['tt_1', 'tt_2']);
+        groupAncVisit.tt_date = moment().subtract(Faker.faker.datatype.number({ min: 1, max: 120 }), 'month').format('YYYY-MM-DD');
 
+      }
+      return groupAncVisit;
     }
-
-    if (ttImm === 'yes') {
-      tt_received = Faker.faker.random.arrayElement(['tt_1', 'tt_2']);
-      tt_date = moment().subtract(Faker.faker.datatype.number({ min: 1, max: 120 }), 'month').format('YYYY-MM-DD');
-
-    }
-    const groupAncVisit = {
-      anc_visit: ancVisit,
-      anc_visit_repeat: ancVisitRepeat,
-      prophylaxis_taken: prophylaxisTaken,
-      last_dose: lastDose,
-      last_dose_date: lastDoseDate,
-      tt_imm: ttImm,
-      tt_received: tt_received,
-      tt_date: tt_date,
-      given_mebendazole: Faker.faker.random.arrayElement(YES_NO)
-    };
-    return groupAncVisit;
   })
   .attr('g_nutrition_screening', ['group_lmp'], (groupLmp) => {
     if (!isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
