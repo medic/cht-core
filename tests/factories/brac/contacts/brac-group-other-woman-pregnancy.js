@@ -32,7 +32,7 @@ module.exports = new Factory()
     }
   })
   .attr('p_test', ['o_lmp_approx'], (oLmpApprox) => {
-    if (oLmpApprox === '1mo' || oLmpApprox === '4mo' || oLmpApprox === '6mo' || oLmpApprox === '8mo') {
+    if (oLmpApprox === '2mo' || oLmpApprox === '3mo') {
       return Faker.faker.datatype.boolean();
     }
   })
