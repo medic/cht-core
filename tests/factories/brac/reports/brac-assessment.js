@@ -153,30 +153,24 @@ module.exports = new Factory()
   .attr('group_diarrhea',
     ['patient_age_in_years', 'patient_age_in_months', 'group_assess'],
     (patientAgeInYears, patientAgeInMonths, groupAssess) => {
-      if (!isAChildAndAlive(12, patientAgeInMonths, patientAgeInYears, groupAssess.is_alive)) {
-        return null;
-      }
-      const patientDiarrhea = Faker.faker.random.arrayElement(YES_NO);
-      let diarrheaDuration = null;
-      let diarrheaBlood = null;
-      let diarrheaTreatmentGiven = null;
-      let diarrheaTreatment = null;
-      if (patientDiarrhea === 'yes') {
-        diarrheaDuration = Faker.faker.random.arrayElement(['1', '2', '3', '7', '14', '21']);
-        diarrheaBlood = Faker.faker.random.arrayElement(YES_NO);
-        diarrheaTreatmentGiven = Faker.faker.random.arrayElement(YES_NO);
-        if (diarrheaTreatmentGiven === 'yes') {
-          diarrheaTreatment = Faker.faker.random.arrayElement(['ors', 'zinc']);
+      if (isAChildAndAlive(12, patientAgeInMonths, patientAgeInYears, groupAssess.is_alive)) {
+        const groupDiarrhea = {
+          patient_diarrhea: Faker.faker.random.arrayElement(YES_NO),
+          diarrhea_duration: null,
+          diarrhea_blood: null,
+          diarrhea_treatment_given: null,
+          diarrhea_treatment: null
+        };
+        if (groupDiarrhea.patient_diarrhea === 'yes') {
+          groupDiarrhea.diarrhea_duration = Faker.faker.random.arrayElement(['1', '2', '3', '7', '14', '21']);
+          groupDiarrhea.diarrhea_blood = Faker.faker.random.arrayElement(YES_NO);
+          groupDiarrhea.diarrhea_treatment_given = Faker.faker.random.arrayElement(YES_NO);
+          if (groupDiarrhea.diarrhea_treatment_given === 'yes') {
+            groupDiarrhea.diarrhea_treatment = Faker.faker.random.arrayElement(['ors', 'zinc']);
+          }
         }
+        return groupDiarrhea;
       }
-      const groupDiarrhea = {
-        patient_diarrhea: patientDiarrhea,
-        diarrhea_duration: diarrheaDuration,
-        diarrhea_blood: diarrheaBlood,
-        diarrhea_treatment_given: diarrheaTreatmentGiven,
-        diarrhea_treatment: diarrheaTreatment
-      };
-      return groupDiarrhea;
     })
   .attr('group_danger_signs',
     ['patient_age_in_years', 'patient_age_in_months', 'group_assess'],
