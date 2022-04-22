@@ -406,13 +406,9 @@ module.exports = new Factory()
         return null;
       }
       let diagnosisCough = '';
-      if (groupCough.patient_coughs === 'yes') {
-        if (groupCough.coughing_duration > 14) {
-          if (groupCough.chest_indrawing === 'yes') {
-            diagnosisCough = 'pneumonia2c,cough2';
-          }
-        }
-      }
+if (groupCough.patient_coughs === 'yes' && groupCough.coughing_duration > 14 && groupCough.chest_indrawing === 'yes' ) {       
+   diagnosisCough = 'pneumonia2c,cough2';       
+}
       let diagnosisDiarrhea = '';
       if (groupDiarrhea.patient_diarrhea === 'yes' &&
         (groupDiarrhea.diarrhea_duration > 14 || groupDiarrhea.diarrhea_blood === 'yes')) {
