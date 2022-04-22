@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
-import { expect, assert } from 'chai';
+import { expect } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import * as _ from 'lodash-es';
 import { toBik_text } from 'bikram-sambat';
@@ -17,7 +17,7 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { LanguageService } from '@mm-services/language.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
-import { AddAttachmentService } from '@mm-services/add-attachment.service';
+import { AttachmentService } from '@mm-services/attachment.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
 import { EnketoService } from '@mm-services/enketo.service';
@@ -60,6 +60,7 @@ describe('Enketo service', () => {
   let TranslateFrom;
   let form;
   let AddAttachment;
+  let removeAttachment;
   let EnketoForm;
   let EnketoPrepopulationData;
   let Search;
@@ -90,6 +91,7 @@ describe('Enketo service', () => {
       getDataStr: sinon.stub(),
     };
     AddAttachment = sinon.stub();
+    removeAttachment = sinon.stub();
     EnketoForm = sinon.stub();
     EnketoPrepopulationData = sinon.stub();
     Search = sinon.stub();
@@ -141,7 +143,7 @@ describe('Enketo service', () => {
         { provide: LanguageService, useValue: { get: Language } },
         { provide: TranslateFromService, useValue: { get: TranslateFrom } },
         { provide: EnketoPrepopulationDataService, useValue: { get: EnketoPrepopulationData } },
-        { provide: AddAttachmentService, useValue: { add: AddAttachment } },
+        { provide: AttachmentService, useValue: { add: AddAttachment, remove: removeAttachment } },
         {
           provide: XmlFormsService,
           useValue: {
@@ -198,7 +200,7 @@ describe('Enketo service', () => {
       return service
         .render(null, 'not-defined')
         .then(() => {
-          assert.fail('Should throw error');
+          expect.fail('Should throw error');
         })
         .catch(actual => {
           expect(actual.message).to.equal('Your user does not have an associated contact, or does not have access ' +
@@ -218,7 +220,7 @@ describe('Enketo service', () => {
       return service
         .render($('<div></div>'), mockEnketoDoc('myform'))
         .then(() => {
-          assert.fail('Should throw error');
+          expect.fail('Should throw error');
         })
         .catch(actual => {
           expect(enketoInit.callCount).to.equal(1);
@@ -576,6 +578,8 @@ describe('Enketo service', () => {
         expect(xmlFormGetWithAttachment.callCount).to.equal(1);
         expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
         expect(AddAttachment.callCount).to.equal(0);
+        expect(removeAttachment.callCount).to.equal(1);
+        expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
       });
     });
 
@@ -640,6 +644,7 @@ describe('Enketo service', () => {
           expect(xmlFormGetWithAttachment.callCount).to.equal(1);
           expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
           expect(AddAttachment.callCount).to.equal(0);
+          expect(removeAttachment.callCount).to.equal(1);
         });
       });
 
@@ -678,6 +683,7 @@ describe('Enketo service', () => {
           expect(xmlFormGetWithAttachment.callCount).to.equal(1);
           expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
           expect(AddAttachment.callCount).to.equal(0);
+          expect(removeAttachment.callCount).to.equal(1);
         });
       });
 
@@ -742,6 +748,7 @@ describe('Enketo service', () => {
           expect(actual.geolocation_log[1].timestamp).to.be.greaterThan(0);
           expect(actual.geolocation_log[1].recording).to.deep.equal(geoData);
           expect(AddAttachment.callCount).to.equal(0);
+          expect(removeAttachment.callCount).to.equal(1);
           expect(setLastChangedDoc.callCount).to.equal(1);
           expect(setLastChangedDoc.args[0]).to.deep.equal([actual]);
         });
@@ -779,6 +786,7 @@ describe('Enketo service', () => {
         expect(xmlFormGetWithAttachment.callCount).to.equal(1);
         expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
         expect(AddAttachment.callCount).to.equal(0);
+        expect(removeAttachment.callCount).to.equal(1);
       });
     });
 
@@ -842,6 +850,8 @@ describe('Enketo service', () => {
         expect(actual.reported_date).to.equal(500);
         expect(actual.content_type).to.equal('xml');
         expect(AddAttachment.callCount).to.equal(0);
+        expect(removeAttachment.callCount).to.equal(1);
+        expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
         expect(setLastChangedDoc.callCount).to.equal(1);
         expect(setLastChangedDoc.args[0]).to.deep.equal([actual]);
       });

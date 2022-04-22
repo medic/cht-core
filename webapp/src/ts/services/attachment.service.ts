@@ -3,10 +3,10 @@ import { Injectable } from '@angular/core';
 @Injectable({
   providedIn: 'root'
 })
-export class AddAttachmentService {
+export class AttachmentService {
   /**
    * @ngdoc service
-   * @name AddAttachment
+   * @name AttachmentService
    * @description Creates and attaches data to a couchdb doc
    * @memberof inboxServices
    * @param {Object} doc The doc to add the attachment to
@@ -31,5 +31,13 @@ export class AddAttachmentService {
       data: content,
       content_type: contentType
     };
+  }
+
+  remove(doc, name) {
+    if (!doc || !doc._attachments || !name) {
+      return;
+    }
+
+    delete doc._attachments[name];
   }
 }

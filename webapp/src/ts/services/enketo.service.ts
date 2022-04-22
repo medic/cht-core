@@ -9,12 +9,13 @@ import * as moment from 'moment';
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import * as enketoConstants from './../../js/enketo/constants';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
-import { AddAttachmentService } from '@mm-services/add-attachment.service';
+import { AttachmentService } from '@mm-services/attachment.service';
 import { DbService } from '@mm-services/db.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
+import { GetReportContentService } from '@mm-services/get-report-content.service';
 import { LanguageService } from '@mm-services/language.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { SearchService } from '@mm-services/search.service';
@@ -35,13 +36,14 @@ import { GlobalActions } from '@mm-actions/global';
 export class EnketoService {
   constructor(
     private store: Store,
-    private addAttachmentService: AddAttachmentService,
+    private attachmentService: AttachmentService,
     private contactSummaryService: ContactSummaryService,
     private dbService: DbService,
     private enketoPrepopulationDataService: EnketoPrepopulationDataService,
     private enketoTranslationService: EnketoTranslationService,
     private extractLineageService: ExtractLineageService,
     private fileReaderService: FileReaderService,
+    private getReportContentService: GetReportContentService,
     private languageService: LanguageService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
     private searchService: SearchService,
@@ -583,7 +585,7 @@ export class EnketoService {
       // replace instance root element node name with form internal ID
       const filename = 'user-file' +
         (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
-      this.addAttachmentService.add(doc, filename, file, type, alreadyEncoded);
+      this.attachmentService.add(doc, filename, file, type, alreadyEncoded);
     };
 
     $record
@@ -609,6 +611,8 @@ export class EnketoService {
 
     record = getOuterHTML($record[0]);
 
+    // remove old style content attachment
+    this.attachmentService.remove(doc, this.getReportContentService.REPORT_ATTACHMENT_NAME);
     docsToStore.unshift(doc);
 
     doc.fields = this.enketoTranslationService.reportRecordToJs(record, formXml);
