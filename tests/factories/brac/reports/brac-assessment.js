@@ -3,6 +3,7 @@ const Faker = require('@faker-js/faker');
 const moment = require('moment');
 
 const YES_NO = ['yes', 'no'];
+const DURATION = ['1', '2', '3', '7', '14', '21'];
 const ONE_YEAR = 365;
 const FIVE_YEARS = 5 * 365;
 
@@ -103,7 +104,7 @@ module.exports = new Factory()
       };
       if (patientFever === 'yes') {
         groupFever.patient_temperature = Faker.faker.datatype.number({ min: 32, max: 45 });
-        groupFever.fever_duration = Faker.faker.random.arrayElement(['1', '2', '3', '7', '14', '21']);
+        groupFever.fever_duration = Faker.faker.random.arrayElement(DURATION);
         groupFever.mrdt_treated = Faker.faker.random.arrayElement(YES_NO);
         groupFever.mrdt_result = Faker.faker.random.arrayElement(['positive', 'negative', 'none']);
         if (mrdtResult !== 'none') {
@@ -130,7 +131,7 @@ module.exports = new Factory()
           chest_indrawing: null
         };
         if (groupCough.patient_coughs === 'yes') {
-          groupCough.coughing_duration = Faker.faker.random.arrayElement(['1', '2', '3', '7', '14', '21']);
+          groupCough.coughing_duration = Faker.faker.random.arrayElement(DURATION);
           groupCough.chest_indrawing = Faker.faker.random.arrayElement(YES_NO);
         }
         return groupCough;
@@ -168,7 +169,7 @@ module.exports = new Factory()
           diarrhea_treatment: null
         };
         if (groupDiarrhea.patient_diarrhea === 'yes') {
-          groupDiarrhea.diarrhea_duration = Faker.faker.random.arrayElement(['1', '2', '3', '7', '14', '21']);
+          groupDiarrhea.diarrhea_duration = Faker.faker.random.arrayElement(DURATION);
           groupDiarrhea.diarrhea_blood = Faker.faker.random.arrayElement(YES_NO);
           groupDiarrhea.diarrhea_treatment_given = Faker.faker.random.arrayElement(YES_NO);
           if (groupDiarrhea.diarrhea_treatment_given === 'yes') {
