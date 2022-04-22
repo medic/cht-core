@@ -2,57 +2,57 @@ const Factory = require('rosie').Factory;
 const Faker = require('@faker-js/faker');
 const fpFlow = require('./brac-fp-flow');
 const moment = require('moment');
-
+/**
+ * BRAC International is a leading nonprofit organisation with a mission to empower people and
+ * communities in situations of poverty, illiteracy, disease, and social injustice.
+ * brac-group-other-woman-pregnancy Factory generates Javascript object that represent a survey to
+ * determine if the created women is pregnant.
+ * Terminology:
+ * o_lmp: Last menstrual cycle date is known (yes or no)
+ * o_lmp_start: Start date of the last cycle
+ * o_lmp_approx: Approximate date of last cycle
+ * p_test: Pregnancy test done (yes or no)
+ * p_test_result: The results of the test (pos or neg)
+ * p_test_kit: Use the preganancy kit to confirm pregnancy (yes or no)
+ * p_test_kit_result:	Administer the test. The results of the test (pos or neg)
+ * fp_flow: If the woman is not pregnant. She is asked to complete the family planing workflow.
+ */
 module.exports = new Factory()
   .attr('married', Faker.faker.datatype.boolean())
   .attr('other_woman_pregnant', '')
   .attr('o_lmp', Faker.faker.datatype.boolean())
   .attr('o_lmp_start', ['o_lmp'], (oLmp) => {
-    if (!oLmp) {
-      return null;
-    } else {
+    if (oLmp) {
       return moment().subtract(Faker.faker.datatype.number({ min: 1, max: 9 }), 'month').format('YYYY-MM-DD');
     }
   })
   .attr('o_lmp_approx', ['o_lmp'], (oLmp) => {
-    if (oLmp) {
-      return null;
-    } else {
+    if (!oLmp) {
       return Faker.faker.random.arrayElement(['2mo', '3mo', '4mo', '6mo', '8mo', '1mo']);
     }
   })
   .attr('p_test', ['o_lmp_approx'], (oLmpApprox) => {
-    if (oLmpApprox !== '3mo' && oLmpApprox !== '3mo') {
-      return null;
-    } else {
+    if (oLmpApprox === '1mo' || oLmpApprox === '4mo' || oLmpApprox === '6mo' || oLmpApprox === '8mo') {
       return Faker.faker.datatype.boolean();
     }
   })
   .attr('p_test_result', ['p_test'], (pTest) => {
-    if (!pTest) {
-      return null;
-    } else {
+    if (pTest) {
       return Faker.faker.random.arrayElement(['pos', 'neg']);
     }
   })
   .attr('p_test_kit', ['p_test'], (pTest) => {
-    if (pTest) {
-      return null;
-    } else {
+    if (!pTest) {
       return Faker.faker.datatype.boolean();
     }
   })
   .attr('p_test_kit_result', ['p_test_kit'], (pTestKit) => {
-    if (!pTestKit) {
-      return null;
-    } else {
+    if (pTestKit) {
       return Faker.faker.random.arrayElement(['pos', 'neg']);
     }
   })
   .attr('fp_flow', ['other_woman_pregnant'], (otherWomanPregnant) => {
-    if (otherWomanPregnant) {
-      return null;
-    } else {
+    if (!otherWomanPregnant) {
       return fpFlow.build();
     }
   });
