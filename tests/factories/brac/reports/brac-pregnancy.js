@@ -250,9 +250,7 @@ module.exports = new Factory()
   .attr('patient_age_at_lmp', ['patient', 'group_lmp'], (patient, groupLmp) => {
     const birthDate = moment(patient.date_of_birth);
     const lmpDate = moment(groupLmp.g_lmp_date_8601);
-    const yearsDiff = birthDate.diff(lmpDate, 'years');
-    const ageAtLmp = moment(birthDate).subtract(yearsDiff);
-    return ageAtLmp;
+    return lmpDate.diff(birthDate, 'years');
   })
   .attr('days_since_lmp', ['group_lmp'], (groupLmp) => {
     const now = moment();
