@@ -3,7 +3,7 @@ const Faker = require('@faker-js/faker');
 const moment = require('moment');
 
 const isPregnant = (edd, lmpApprox, pregRes, pregResKit) => {
-  if (edd !== null && !(lmpApprox === '61' || lmpApprox === '91')) {
+if (edd && lmpApprox !== '61' && lmpApprox !== '91') {
     return true;
   }
   if (lmpApprox === '122' || lmpApprox === '183' || lmpApprox === '244') {
