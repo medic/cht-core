@@ -271,8 +271,8 @@ module.exports = new Factory()
           }
         }
         const groupDewormVit = {
-          vit_received: vitReceived.toString(),
-          deworming_received: dewormingReceived.toString()
+          vit_received: vitReceived.join(' '),
+          deworming_received: dewormingReceived.join(' ')
         };
         return groupDewormVit;
       }
@@ -281,41 +281,43 @@ module.exports = new Factory()
     ['patient_age_in_years', 'patient_age_in_months', 'group_assess'],
     (patientAgeInYears, patientAgeInMonths, groupAssess) => {
       if (isAChildAndAlive(5, patientAgeInMonths, patientAgeInYears, groupAssess.is_alive)) {
-        let groupUnder2yr = null;
-        let groupFoodEaten = null;
-        let micronutrient = null;
-        let numSatchets = null;
-        let buyMpn = null;
-        let mpnNum = null;
+        const groupNutritionAssessment = {
+          muac_score: Faker.faker.datatype.float({ min: 1, max: 500 }),
+          child_weight: Faker.faker.datatype.float({ min: 1, max: 30 }),
+          has_oedema: Faker.faker.random.arrayElement(YES_NO),
+          micronutrient: null,
+          num_satchets: null,
+          buy_mpn: null,
+          mpn_num: null,
+          grou_under_2yr: null,
+          group_food_eaten: null
+        };
         if ((patientAgeInMonths > 6 && patientAgeInMonths <= 59)) {
-          micronutrient = Faker.faker.random.arrayElement(YES_NO);
-          if (micronutrient === 'yes') {
-            numSatchets = Faker.faker.datatype.number({ min: 1, max: 10 });
+          groupNutritionAssessment.micronutrient = Faker.faker.random.arrayElement(YES_NO);
+          if (groupNutritionAssessment.micronutrient === 'yes') {
+            groupNutritionAssessment.num_satchets = Faker.faker.datatype.number({ min: 1, max: 10 });
           }
-          if (micronutrient === 'no' || numSatchets < 10) {
-            buyMpn = Faker.faker.random.arrayElement(YES_NO);
-            if (buyMpn === 'yes') {
-              mpnNum = numSatchets = Faker.faker.datatype.number({ min: 1, max: 10 });
+          if (groupNutritionAssessment.micronutrient === 'no' || groupNutritionAssessment.num_satchets < 10) {
+            groupNutritionAssessment.buy_mpn = Faker.faker.random.arrayElement(YES_NO);
+            if (groupNutritionAssessment.buy_mpn === 'yes') {
+              groupNutritionAssessment.mpn_num = Faker.faker.datatype.number({ min: 1, max: 10 });
             }
           }
         }
         if (patientAgeInMonths < 24) {
-          const breastfeeding = Faker.faker.random.arrayElement(YES_NO);
-          let breastfed24hrs = null;
-          let timesBreastfed = null;
-          if (breastfeeding === 'yes') {
-            breastfed24hrs = Faker.faker.random.arrayElement(YES_NO);
-            if (breastfed24hrs === 'yes') {
-              timesBreastfed = Faker.faker.helpers.uniqueArray(
+          const groupUnder2yr = {
+            breastfeeding: Faker.faker.random.arrayElement(YES_NO),
+            breastfed_24hrs: null,
+            times_breastfed: null
+          };
+          if (groupUnder2yr.breastfeeding === 'yes') {
+            groupUnder2yr.breastfed_24hrs = Faker.faker.random.arrayElement(YES_NO);
+            if (groupUnder2yr.breastfed_24hrs === 'yes') {
+              groupUnder2yr.times_breastfed = Faker.faker.helpers.uniqueArray(
                 ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
                 Faker.faker.datatype.number({ min: 1, max: 10 })).toString();
             }
           }
-          groupUnder2yr = {
-            breastfeeding: breastfeeding,
-            breastfed_24hrs: breastfed24hrs,
-            times_breastfed: timesBreastfed
-          };
           if (patientAgeInMonths >= 6 && patientAgeInMonths < 12) {
             const foodEaten = [];
             if (breastfeeding === 'yes') {
@@ -346,18 +348,6 @@ module.exports = new Factory()
             };
           }
         }
-
-        const groupNutritionAssessment = {
-          muac_score: Faker.faker.datatype.float({ min: 1, max: 500 }),
-          child_weight: Faker.faker.datatype.float({ min: 1, max: 30 }),
-          has_oedema: Faker.faker.random.arrayElement(YES_NO),
-          micronutrient: micronutrient,
-          num_satchets: numSatchets,
-          buy_mpn: buyMpn,
-          mpn_num: mpnNum,
-          grou_under_2yr: groupUnder2yr,
-          group_food_eaten: groupFoodEaten
-        };
         return groupNutritionAssessment;
       }
     })
