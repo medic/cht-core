@@ -108,16 +108,16 @@ module.exports = new Factory()
         malaria_treatment: null,
         malaria_painkiller_given: null
       };
-      if (patientFever === 'yes') {
+      if (groupFever.patient_fever === 'yes') {
         groupFever.patient_temperature = Faker.faker.datatype.number({ min: 32, max: 45 });
         groupFever.fever_duration = Faker.faker.random.arrayElement(DURATION);
         groupFever.mrdt_treated = Faker.faker.random.arrayElement(YES_NO);
         groupFever.mrdt_result = Faker.faker.random.arrayElement(['positive', 'negative', 'none']);
-        if (mrdtResult !== 'none') {
+        if (groupFever.mrdt_result !== 'none') {
           groupFever.mrdt_source = Faker.faker.random.arrayElement(['chp', 'other']);
-          if (mrdtResult === 'positive') {
+          if (groupFever.mrdt_result === 'positive') {
             groupFever.malaria_treatment_given = Faker.faker.random.arrayElement(YES_NO);
-            if (malariaTreatmentGiven === 'yes') {
+            if (groupFever.malaria_treatment_given === 'yes') {
               groupFever.malaria_treatment = 'act';
             } else {
               groupFever.malaria_painkiller_given = Faker.faker.random.arrayElement(YES_NO);
@@ -150,10 +150,11 @@ module.exports = new Factory()
         && groupCough.patient_coughs === 'yes') {
         const groupBreathing = {
           breath_count: Faker.faker.datatype.number({ min: 10, max: 85 }),
-          fast_breathing: isBreathingFast(groupBreathing.breath_count, patientAgeInDays),
+          fast_breathing: null,
           pneumonia_treatment_given: null,
           pneumonia_treatment: null
         };
+        groupBreathing.fast_breathing = isBreathingFast(groupBreathing.breath_count, patientAgeInDays);
         if (groupBreathing.fast_breathing) {
           groupBreathing.pneumonia_treatment_given = Faker.faker.random.arrayElement(YES_NO);
         }
@@ -201,6 +202,11 @@ module.exports = new Factory()
     ['patient_age_in_years', 'patient_age_in_months', 'group_assess'],
     (patientAgeInYears, patientAgeInMonths, groupAssess) => {
       if (isAChildAndAlive(5, patientAgeInMonths, patientAgeInYears, groupAssess.is_alive)) {
+        const groupImm = {
+          group_imm_less_2mo: null,
+          group_imm_2mo_9mo: null,
+          group_imm_9mo_18mo: null
+        };
         if (isNewborn(patientAgeInMonths)) {
           const groupImmLess2mo = {
             vaccines_received_2mo: Faker.faker.random.arrayElement(YES_NO),
@@ -215,6 +221,7 @@ module.exports = new Factory()
               ['bcg', 'polio_0', 'polio_1', 'dpt_hib1', 'pcv_1', 'rota_1'],
               Faker.faker.datatype.number({ min: 1, max: 6 }));
           }
+          groupImm.group_imm_less_2mo = groupImmLess2mo;
         }
         if (patientAgeInMonths > 2 && patientAgeInMonths <= 9) {
           const groupImm2mo9mo = {
@@ -230,6 +237,7 @@ module.exports = new Factory()
               ['dpt_hib2', 'pcv_2', 'rota_2', 'dpt_hib3', 'pcv_3', 'rota_3'],
               Faker.faker.datatype.number({ min: 1, max: 6 }));
           }
+          groupImm.group_imm_less_2mo = groupImm2mo9mo;
         }
         if (patientAgeInMonths > 9 && patientAgeInMonths <= 18) {
           const groupImm9mo18mo = {
@@ -243,12 +251,8 @@ module.exports = new Factory()
           if (groupImm9mo18mo.imm_current_18mo === 'yes') {
             groupImm9mo18mo.imm_given_18mo = 'measles_1';
           }
+          groupImm.group_imm_less_2mo = groupImm9mo18mo;
         }
-        const groupImm = {
-          group_imm_less_2mo: groupImmLess2mo,
-          group_imm_2mo_9mo: groupImm2mo9mo,
-          group_imm_9mo_18mo: groupImm9mo18mo
-        };
         return groupImm;
       }
     })
