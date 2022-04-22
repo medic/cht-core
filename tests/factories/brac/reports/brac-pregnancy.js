@@ -4,6 +4,8 @@ const moment = require('moment');
 
 const YES_NO = ['yes', 'no'];
 const POSITIVE_NEGATIVE = ['pos', 'neg'];
+const LAST_FOOD = ['meat', 'eggs', 'milk'];
+const NONE = 'none';
 const DURATION_OF_PREGNANCY_IN_DAYS = 279;
 
 const isPregnant = (edd, lmpApprox, pregRes, pregResKit) => {
@@ -133,30 +135,25 @@ module.exports = new Factory()
     }
   })
   .attr('g_nutrition_screening', ['group_lmp'], (groupLmp) => {
-    if (!isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
-      return null;
+    if (isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
+      const gNutritionScreening = {
+        muac_score: Faker.faker.datatype.number(),
+        mother_weight: Faker.faker.datatype.number(),
+        last_fed: Faker.faker.random.arrayElement(['1', '2', '3', '4', '5', '6', '7']),
+        last_food: null,
+        mother_hiv_status: Faker.faker.random.arrayElement(...POSITIVE_NEGATIVE, 'unknown', 'undisclosed'),
+        mother_arv: null
+      };
+      if (Faker.faker.datatype.boolean()) {
+        gNutritionScreening.last_food.push(Faker.faker.random.uniqueArray(LAST_FOOD, Faker.faker.datatype.number({ min: 1, max: 3 })));
+      } else {
+        gNutritionScreening.last_food.push(NONE);
+      }
+      if (gNutritionScreening.mother_hiv_status === 'pos') {
+        gNutritionScreening.mother_arv = Faker.faker.random.arrayElement(YES_NO);
+      }
+      return gNutritionScreening;
     }
-    const lastFood = [];
-    lastFood.push(Faker.faker.random.arrayElement(['milk', 'eggs', 'meat', 'none']));
-    if (lastFood[0] !== 'none') {
-      lastFood.push(Faker.faker.helpers.uniqueArray(
-        ['milk', 'eggs', 'meat'],
-        Faker.faker.datatype.number({ min: 0, max: 3 })));
-    }
-    const motherHivStatus = Faker.faker.random.arrayElement(['pos', 'neg', 'unknown', 'undisclosed']);
-    let motherArv = null;
-    if (motherHivStatus === 'pos') {
-      motherArv = Faker.faker.random.arrayElement(YES_NO);
-    }
-    const gNutritionScreening = {
-      muac_score: Faker.faker.datatype.number(),
-      mother_weight: Faker.faker.datatype.number(),
-      last_fed: Faker.faker.random.arrayElement(['1', '2', '3', '4', '5', '6', '7']),
-      last_food: lastFood,
-      mother_hiv_status: motherHivStatus,
-      mother_arv: motherArv
-    };
-    return gNutritionScreening;
   })
   .attr('group_risk_factors', ['group_lmp'], (groupLmp) => {
     if (!isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
