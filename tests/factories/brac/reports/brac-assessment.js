@@ -111,22 +111,18 @@ module.exports = new Factory()
   .attr('group_cough',
     ['patient_age_in_years', 'patient_age_in_months', 'group_assess'],
     (patientAgeInYears, patientAgeInMonths, groupAssess) => {
-      if (!isAChildAndAlive(12, patientAgeInMonths, patientAgeInYears, groupAssess.is_alive)) {
-        return null;
+      if (isAChildAndAlive(12, patientAgeInMonths, patientAgeInYears, groupAssess.is_alive)) {
+        const groupCough = {
+          patient_coughs: Faker.faker.random.arrayElement(YES_NO),
+          coughing_duration: null,
+          chest_indrawing: null
+        };
+        if (groupCough.patient_coughs === 'yes') {
+          groupCough.coughing_duration = Faker.faker.random.arrayElement(['1', '2', '3', '7', '14', '21']);
+          groupCough.chest_indrawing = Faker.faker.random.arrayElement(YES_NO);
+        }
+        return groupCough;
       }
-      const patientCoughs = Faker.faker.random.arrayElement(YES_NO);
-      let coughingDuration = null;
-      let chestIndrawing = null;
-      if (patientCoughs === 'yes') {
-        coughingDuration = Faker.faker.random.arrayElement(['1', '2', '3', '7', '14', '21']);
-        chestIndrawing = Faker.faker.random.arrayElement(YES_NO);
-      }
-      const groupCough = {
-        patient_coughs: patientCoughs,
-        coughing_duration: coughingDuration,
-        chest_indrawing: chestIndrawing
-      };
-      return groupCough;
     })
   .attr('group_breathing',
     ['patient_age_in_years', 'patient_age_in_months', 'patient_age_in_days', 'group_assess', 'group_cough'],
