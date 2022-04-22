@@ -7,6 +7,10 @@ const DURATION = ['1', '2', '3', '7', '14', '21'];
 const ONE_YEAR = 365;
 const FIVE_YEARS = 5 * 365;
 
+const isNewborn = (patientAgeInMonths) => {
+  return patientAgeInMonths < 2;
+}
+
 const isBreathingFast = (breathCount, patientAgeInDays) => {
   if ((breathCount >= 60 && patientAgeInDays < 60)
     || (breathCount >= 50 && patientAgeInDays >= 60 && patientAgeInDays < ONE_YEAR)
@@ -18,8 +22,7 @@ const isBreathingFast = (breathCount, patientAgeInDays) => {
 };
 
 const isAChildAndAlive = (maxAge, patientAgeInMonths, patientAgeInYears, isAlive) => {
-  const isNewborn = patientAgeInMonths < 2;
-  return (!isNewborn && patientAgeInYears < maxAge && isAlive === 'yes');
+  return (!isNewborn(patientAgeInMonths) && patientAgeInYears < maxAge && isAlive === 'yes');
 };
 
 module.exports = new Factory()
@@ -195,63 +198,49 @@ module.exports = new Factory()
     ['patient_age_in_years', 'patient_age_in_months', 'group_assess'],
     (patientAgeInYears, patientAgeInMonths, groupAssess) => {
       if (isAChildAndAlive(5, patientAgeInMonths, patientAgeInYears, groupAssess.is_alive)) {
-        let groupImmLess2mo = null;
-        let groupImm2mo9mo = null;
-        let groupImm9mo18mo = null;
-
-        if (patientAgeInMonths <= 2) {
-          const vaccinesReceived2mo = Faker.faker.random.arrayElement(YES_NO);
-          const immCurrent2mo = null;
-          let immGiven2mo = null;
-          if (vaccinesReceived2mo === 'yes') {
-            immGiven2mo = Faker.faker.random.arrayElement(YES_NO);
+        if (isNewborn(patientAgeInMonths)) {
+          const groupImmLess2mo = {
+            vaccines_received_2mo: Faker.faker.random.arrayElement(YES_NO),
+            imm_current_2mo: null,
+            imm_given_2mo: null
+          };
+          if (groupImmLess2mo.vaccines_received_2mo === 'yes') {
+            groupImmLess2mo.imm_current_2mo = Faker.faker.random.arrayElement(YES_NO);
           }
-          if (immCurrent2mo === 'yes') {
-            immGiven2mo = Faker.faker.helpers.uniqueArray(
+          if (groupImmLess2mo.imm_current_2mo === 'yes') {
+            groupImmLess2mo.imm_given_2mo = Faker.faker.helpers.uniqueArray(
               ['bcg', 'polio_0', 'polio_1', 'dpt_hib1', 'pcv_1', 'rota_1'],
               Faker.faker.datatype.number({ min: 1, max: 6 }));
           }
-          groupImmLess2mo = {
-            vaccines_received_2mo: vaccinesReceived2mo,
-            imm_current_2mo: immCurrent2mo,
-            imm_given_2mo: immGiven2mo
-          };
         }
-
         if (patientAgeInMonths > 2 && patientAgeInMonths <= 9) {
-          const vaccinesReceived9mo = Faker.faker.random.arrayElement(YES_NO);
-          let immCurrent9mo = null;
-          let immGiven9mo = null;
-          if (vaccinesReceived9mo === 'yes') {
-            immCurrent9mo = Faker.faker.random.arrayElement(YES_NO);
+          const groupImm2mo9mo = {
+            vaccines_received_9mo: Faker.faker.random.arrayElement(YES_NO),
+            imm_current_9mo: null,
+            imm_given_9mo: null
+          };
+          if (groupImm2mo9mo.vaccines_received_9mo === 'yes') {
+            groupImm2mo9mo.imm_current_9mo = Faker.faker.random.arrayElement(YES_NO);
           }
-          if (immCurrent9mo === 'yes') {
-            immGiven9mo = Faker.faker.helpers.uniqueArray(
+          if (groupImm2mo9mo.imm_current_9mo === 'yes') {
+            groupImm2mo9mo.imm_given_9mo = Faker.faker.helpers.uniqueArray(
               ['dpt_hib2', 'pcv_2', 'rota_2', 'dpt_hib3', 'pcv_3', 'rota_3'],
               Faker.faker.datatype.number({ min: 1, max: 6 }));
           }
-          groupImm2mo9mo = {
-            vaccines_received_9mo: vaccinesReceived9mo,
-            imm_current_9mo: immCurrent9mo,
-            imm_given_9mo: immGiven9mo
-          };
         }
 
         if (patientAgeInMonths > 9 && patientAgeInMonths <= 18) {
-          const vaccinesReceived18mo = Faker.faker.random.arrayElement(YES_NO);
-          let immCurrent18mo = null;
-          let immGiven18mo = null;
-          if (vaccinesReceived18mo === 'yes') {
-            immCurrent18mo = Faker.faker.random.arrayElement(YES_NO);
-          }
-          if (immCurrent18mo === 'yes') {
-            immGiven18mo = 'measles_1';
-          }
-          groupImm9mo18mo = {
-            vaccines_received_18mo: vaccinesReceived18mo,
-            imm_current_18mo: immCurrent18mo,
-            imm_given_18mo: immGiven18mo
+          const groupImm9mo18mo = {
+            vaccines_received_18mo: Faker.faker.random.arrayElement(YES_NO),
+            imm_current_18mo: null,
+            imm_given_18mo: null
           };
+          if (groupImm9mo18mo.vaccines_received_18mo === 'yes') {
+            groupImm9mo18mo.imm_current_18mo = Faker.faker.random.arrayElement(YES_NO);
+          }
+          if (groupImm9mo18mo.imm_current_18mo === 'yes') {
+            groupImm9mo18mo.imm_given_18mo = 'measles_1';
+          }
         }
         const groupImm = {
           group_imm_less_2mo: groupImmLess2mo,
