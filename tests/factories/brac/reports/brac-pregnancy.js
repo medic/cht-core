@@ -2,8 +2,12 @@ const Factory = require('rosie').Factory;
 const Faker = require('@faker-js/faker');
 const moment = require('moment');
 
+const YES_NO = ['yes', 'no'];
+const POSITIVE_NEGATIVE = ['pos', 'neg'];
+const DURATION_OF_PREGNANCY_IN_DAYS = 279;
+
 const isPregnant = (edd, lmpApprox, pregRes, pregResKit) => {
-if (edd && lmpApprox !== '61' && lmpApprox !== '91') {
+  if (edd && lmpApprox !== '61' && lmpApprox !== '91') {
     return true;
   }
   if (lmpApprox === '122' || lmpApprox === '183' || lmpApprox === '244') {
@@ -14,8 +18,6 @@ if (edd && lmpApprox !== '61' && lmpApprox !== '91') {
   }
   return false;
 };
-
-
 
 module.exports = new Factory()
   .option('patient', '')
@@ -49,54 +51,40 @@ module.exports = new Factory()
     return patient.age_years;
   })
   .attr('group_lmp', () => {
-    const gLmpMethod = Faker.faker.random.arrayElement(['calendar', 'approx']);
-    let gLmpCalendar = null;
-    let gLmpApprox = null;
-    let gLmpDateRaw = null;
-    let gLmpDate8601 = null;
-    let gLmpDate = null;
-    let gEdd8601 = null;
-    let gEdd = null;
-    let gPregTest = null;
-    let gPregRes = null;
-    let gPregResKit = null;
-
-    if (gLmpMethod === 'calendar') {
-      gLmpCalendar = moment().subtract(Faker.faker.datatype.number({ min: 1, max: 9 }), 'month').format('YYYY-MM-DD');
-      gLmpDateRaw = gLmpCalendar;
-      gLmpDate8601 = gLmpCalendar;
-      gLmpDate = gLmpCalendar;
-    } else {
-      gLmpApprox = Faker.faker.random.arrayElement([61, 91, 122, 183, 244]);
-      gLmpDateRaw = moment().subtract(gLmpApprox, 'day');
-      gLmpDate8601 = moment().subtract(gLmpApprox, 'day').format('YYYY-MM-DD');
-      gLmpDate = moment().subtract(gLmpApprox, 'day').format('MMM D, YYYY');
-    }
-    gEdd8601 = moment(gLmpDate8601).add(279, 'days');
-    gEdd = moment(gLmpDate8601).add(279, 'days').format('MMM D, YYYY');
-
-    if (gLmpApprox === '61' || gLmpApprox === '91') {
-      gPregTest = Faker.faker.random.arrayElement(['yes', 'no']);
-    }
-
-    if (gPregTest === 'yes') {
-      gPregRes = Faker.faker.random.arrayElement(['pos', 'neg']);
-    } else {
-      gPregResKit = gPregRes = Faker.faker.random.arrayElement(['pos', 'neg']);
-    }
     const groupLmp = {
-      g_lmp_method: gLmpMethod,
-      g_lmp_calendar: gLmpCalendar,
-      g_lmp_approx: gLmpApprox,
-      g_lmp_date_raw: gLmpDateRaw,
-      g_lmp_date_8601: gLmpDate8601,
-      g_lmp_date: gLmpDate,
-      g_edd_8601: gEdd8601,
-      g_edd: gEdd,
-      g_preg_test: gPregTest,
-      g_preg_res: gPregRes,
-      g_preg_res_kit: gPregResKit,
+      g_lmp_method: Faker.faker.random.arrayElement(['calendar', 'approx']),
+      g_lmp_calendar: null,
+      g_lmp_approx: null,
+      g_lmp_date_raw: null,
+      g_lmp_date_8601: null,
+      g_lmp_date: null,
+      g_edd_8601: null,
+      g_edd: null,
+      g_preg_test: null,
+      g_preg_res: null,
+      g_preg_res_kit: null,
     };
+    if (gLmpMethod === 'calendar') {
+      groupLmp.g_lmp_calendar = moment().subtract(Faker.faker.datatype.number({ min: 1, max: 9 }), 'month').format('YYYY-MM-DD');
+      groupLmp.g_lmp_date_raw = gLmpCalendar;
+      groupLmp.g_lmp_date_8601 = gLmpCalendar;
+      groupLmp.g_lmp_date = gLmpCalendar;
+    } else {
+      groupLmp.g_lmp_approx = Faker.faker.random.arrayElement([61, 91, 122, 183, 244]);
+      groupLmp.g_lmp_date_raw = moment().subtract(groupLmp.g_lmp_approx, 'day');
+      groupLmp.g_lmp_date_8601 = moment().subtract(groupLmp.g_lmp_approx, 'day').format('YYYY-MM-DD');
+      groupLmp.g_lmp_date = moment().subtract(groupLmp.g_lmp_approx, 'day').format('MMM D, YYYY');
+    }
+    groupLmp.g_edd_8601 = moment(groupLmp.g_lmp_date_8601).add(DURATION_OF_PREGNANCY_IN_DAYS, 'days');
+    gEdd = moment(groupLmp.g_lmp_date_8601).add(DURATION_OF_PREGNANCY_IN_DAYS, 'days').format('MMM D, YYYY');
+    if (groupLmp.g_lmp_approx === '61' || groupLmp.g_lmp_approx === '91') {
+      groupLmp.g_preg_test = Faker.faker.random.arrayElement(YES_NO);
+    }
+    if (groupLmp.g_preg_test === 'yes') {
+      groupLmp.g_preg_res = Faker.faker.random.arrayElement(POSITIVE_NEGATIVE);
+    } else {
+      groupLmp.g_preg_res_kit = Faker.faker.random.arrayElement(POSITIVE_NEGATIVE);
+    }
     return groupLmp;
   })
   .attr('group_llin_parity', ['group_lmp'], (groupLmp) => {
@@ -105,7 +93,7 @@ module.exports = new Factory()
     }
 
     const groupLlinParity = {
-      patient_llin: Faker.faker.random.arrayElement(['yes', 'no'])
+      patient_llin: Faker.faker.random.arrayElement(YES_NO)
     };
     return groupLlinParity;
   })
@@ -113,12 +101,12 @@ module.exports = new Factory()
     if (!isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
       return null;
     }
-    const ancVisit = Faker.faker.random.arrayElement(['yes', 'no']);
+    const ancVisit = Faker.faker.random.arrayElement(YES_NO);
     let ancVisitRepeat = null;
-    const prophylaxisTaken = Faker.faker.random.arrayElement(['yes', 'no']);
+    const prophylaxisTaken = Faker.faker.random.arrayElement(YES_NO);
     let lastDose = null;
     let lastDoseDate = null;
-    const ttImm = Faker.faker.random.arrayElement(['yes', 'no']);
+    const ttImm = Faker.faker.random.arrayElement(YES_NO);
     let tt_received = null;
     let tt_date = null;
     const gAncLastVisit = moment().format('YYYY-MM-DD');
@@ -154,7 +142,7 @@ module.exports = new Factory()
       tt_imm: ttImm,
       tt_received: tt_received,
       tt_date: tt_date,
-      given_mebendazole: Faker.faker.random.arrayElement(['yes', 'no'])
+      given_mebendazole: Faker.faker.random.arrayElement(YES_NO)
     };
     return groupAncVisit;
   })
@@ -172,7 +160,7 @@ module.exports = new Factory()
     const motherHivStatus = Faker.faker.random.arrayElement(['pos', 'neg', 'unknown', 'undisclosed']);
     let motherArv = null;
     if (motherHivStatus === 'pos') {
-      motherArv = Faker.faker.random.arrayElement(['yes', 'no']);
+      motherArv = Faker.faker.random.arrayElement(YES_NO);
     }
     const gNutritionScreening = {
       muac_score: Faker.faker.datatype.number(),
