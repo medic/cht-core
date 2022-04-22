@@ -88,14 +88,12 @@ module.exports = new Factory()
     return groupLmp;
   })
   .attr('group_llin_parity', ['group_lmp'], (groupLmp) => {
-    if (!isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
-      return null;
+    if (isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
+      const groupLlinParity = {
+        patient_llin: Faker.faker.random.arrayElement(YES_NO)
+      };
+      return groupLlinParity;
     }
-
-    const groupLlinParity = {
-      patient_llin: Faker.faker.random.arrayElement(YES_NO)
-    };
-    return groupLlinParity;
   })
   .attr('group_anc_visit', ['group_lmp'], (groupLmp) => {
     if (!isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
