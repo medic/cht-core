@@ -8,6 +8,8 @@ const ONE_YEAR = 365;
 const FIVE_YEARS = 5 * 365;
 const DEWORMING_AND_VITAMINS = ['6', '12', '18', '24', '30', '36', '42', '48', '54', '60'];
 const NONE = 'none';
+const FOOD_EATEN = ['meat', 'eggs', 'powdered_milk'];
+const BREAST_MILK = 'breast_milk';
 const isNewborn = (patientAgeInMonths) => {
   return patientAgeInMonths < 2;
 }
@@ -289,15 +291,21 @@ module.exports = new Factory()
           num_satchets: null,
           buy_mpn: null,
           mpn_num: null,
-          grou_under_2yr: null,
+          group_under_2yr: null,
           group_food_eaten: null
         };
-        if ((patientAgeInMonths > 6 && patientAgeInMonths <= 59)) {
+        if ((patientAgeInMonths > 6 && patientAgeInMonths < 60)) {
           groupNutritionAssessment.micronutrient = Faker.faker.random.arrayElement(YES_NO);
           if (groupNutritionAssessment.micronutrient === 'yes') {
             groupNutritionAssessment.num_satchets = Faker.faker.datatype.number({ min: 1, max: 10 });
+            if (groupNutritionAssessment.num_satchets < 10) {
+              groupNutritionAssessment.buy_mpn = Faker.faker.random.arrayElement(YES_NO);
+              if (groupNutritionAssessment.buy_mpn === 'yes') {
+                groupNutritionAssessment.mpn_num = Faker.faker.datatype.number({ min: 1, max: 10 });
+              }
+            }
           }
-          if (groupNutritionAssessment.micronutrient === 'no' || groupNutritionAssessment.num_satchets < 10) {
+          if (groupNutritionAssessment.micronutrient === 'no') {
             groupNutritionAssessment.buy_mpn = Faker.faker.random.arrayElement(YES_NO);
             if (groupNutritionAssessment.buy_mpn === 'yes') {
               groupNutritionAssessment.mpn_num = Faker.faker.datatype.number({ min: 1, max: 10 });
@@ -319,34 +327,26 @@ module.exports = new Factory()
             }
           }
           if (patientAgeInMonths >= 6 && patientAgeInMonths < 12) {
-            const foodEaten = [];
-            if (breastfeeding === 'yes') {
-              foodEaten.push(Faker.faker.random.arrayElement(
-                ['none', 'meat', 'eggs', 'powdered_milk', 'breast_milk']));
-            } else {
-              foodEaten.push(Faker.faker.random.arrayElement(
-                ['none', 'meat', 'eggs', 'powdered_milk']));
-            }
-            if (foodEaten[0] !== 'none') {
-              foodEaten.push(Faker.faker.helpers.uniqueArray(
-                ['breast_milk', 'powdered_milk', 'eggs', 'meat'],
-                Faker.faker.datatype.number({ min: 1, max: 10 })));
-              if (breastfeeding === 'yes') {
-                foodEaten.push(Faker.faker.helpers.uniqueArray(
-                  ['meat', 'eggs', 'powdered_milk', 'breast_milk'],
-                  Faker.faker.datatype.number({ min: 1, max: 4 })));
-              } else {
-                foodEaten.push(Faker.faker.helpers.uniqueArray(
-                  ['meat', 'eggs', 'powdered_milk'],
-                  Faker.faker.datatype.number({ min: 1, max: 3 })));
-              }
-            }
-            groupFoodEaten = {
+            const groupFoodEaten = {
               times_eaten: Faker.faker.random.arrayElement(
                 ['0', '1', '2', '3', '4', '5', '6', 'gt_6']),
-              food_eaten: foodEaten.toString()
+              food_eaten: null
             };
+            if (Faker.faker.datatype.boolean()) {
+              if (groupUnder2yr.breastfeeding === 'yes') {
+                groupFoodEaten.food_eaten.push(...Faker.faker.random.uniqueArray(
+                  [...BREAST_MILK, FOOD_EATEN],
+                  Faker.faker.datatype.number({ min: 1, max: 4 })));
+              } else {
+                groupFoodEaten.food_eaten.push(...Faker.faker.random.uniqueArray(
+                  FOOD_EATEN, Faker.faker.datatype.number({ min: 1, max: 3 })));
+              }
+            } else {
+              groupFoodEaten.food_eaten.push(NONE);
+            }
+            groupNutritionAssessment.group_food_eaten = groupFoodEaten;
           }
+          groupNutritionAssessment.group_under_2yr = groupUnder2yr;
         }
         return groupNutritionAssessment;
       }
