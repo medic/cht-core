@@ -3,10 +3,8 @@ const Faker = require('@faker-js/faker');
 const moment = require('moment');
 
 const isAChildAndAlive = (maxAge, patientAgeInMonths, patientAgeInYears, isAlive) => {
-  if (patientAgeInMonths >= 2 && patientAgeInYears < maxAge && isAlive === 'yes') {
-    return true;
-  }
-  return false;
+const isNewborn = patientAgeInMonths < 2;
+return (!isNewborn && patientAgeInYears < maxAge && isAlive === 'yes');
 };
 
 module.exports = new Factory()
