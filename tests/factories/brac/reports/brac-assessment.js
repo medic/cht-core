@@ -6,7 +6,8 @@ const YES_NO = ['yes', 'no'];
 const DURATION = ['1', '2', '3', '7', '14', '21'];
 const ONE_YEAR = 365;
 const FIVE_YEARS = 5 * 365;
-
+const DEWORMING_AND_VITAMINS = ['6', '12', '18', '24', '30', '36', '42', '48', '54', '60'];
+const NONE = 'none';
 const isNewborn = (patientAgeInMonths) => {
   return patientAgeInMonths < 2;
 }
@@ -228,7 +229,6 @@ module.exports = new Factory()
               Faker.faker.datatype.number({ min: 1, max: 6 }));
           }
         }
-
         if (patientAgeInMonths > 9 && patientAgeInMonths <= 18) {
           const groupImm9mo18mo = {
             vaccines_received_18mo: Faker.faker.random.arrayElement(YES_NO),
@@ -257,22 +257,18 @@ module.exports = new Factory()
         const vitReceived = [];
         const dewormingReceived = [];
         if (patientAgeInMonths > 6) {
-          vitReceived.push(
-            Faker.faker.random.arrayElement(
-              ['none', '6', '12', '18', '24', '30', '36', '42', '48', '54', '60']));
-          if (vitReceived[0] !== 'none') {
-            vitReceived.push(Faker.faker.helpers.uniqueArray(
-              ['6', '12', '18', '24', '30', '36', '42', '48', '54', '60'],
+          if (Faker.faker.datatype.boolean()) {
+            vitReceived.push(...Faker.faker.helpers.uniqueArray(DEWORMING_AND_VITAMINS,
               Faker.faker.datatype.number({ min: 1, max: 10 })));
+          } else {
+            vitReceived.push(NONE);
           }
-        }
-        dewormingReceived.push(
-          Faker.faker.random.arrayElement(
-            ['none', '6', '12', '18', '24', '30', '36', '42', '48', '54', '60']));
-        if (dewormingReceived[0] !== 'none') {
-          dewormingReceived.push(Faker.faker.helpers.uniqueArray(
-            ['6', '12', '18', '24', '30', '36', '42', '48', '54', '60'],
-            Faker.faker.datatype.number({ min: 1, max: 10 })));
+          if (Faker.faker.datatype.boolean()) {
+            dewormingReceived.push(...Faker.faker.helpers.uniqueArray(DEWORMING_AND_VITAMINS,
+              Faker.faker.datatype.number({ min: 1, max: 10 })));
+          } else {
+            dewormingReceived.push(NONE);
+          }
         }
         const groupDewormVit = {
           vit_received: vitReceived.toString(),
@@ -331,7 +327,7 @@ module.exports = new Factory()
             }
             if (foodEaten[0] !== 'none') {
               foodEaten.push(Faker.faker.helpers.uniqueArray(
-                ['6', '12', '18', '24', '30', '36', '42', '48', '54', '60'],
+                ['breast_milk', 'powdered_milk', 'eggs', 'meat'],
                 Faker.faker.datatype.number({ min: 1, max: 10 })));
               if (breastfeeding === 'yes') {
                 foodEaten.push(Faker.faker.helpers.uniqueArray(
