@@ -6,23 +6,31 @@ const groupOtherWomanPregnancy = require('./brac-group-other-woman-pregnancy');
 const moment = require('moment');
 const approxDateOfBirthMethod = 'approx';
 const phoneNumberFormat = '+256414######';
+const memberEligibleWoman = 'member_eligible_woman';
+const memberChild = 'member_child';
+
+const isChw = (subtype) => subtype === 'chw';
+const isManager = (subtype) => subtype === 'manager';
+const isFamilyMember = (subtype) => !isChw(subtype) && !isManager(subtype);
+const isStaff = (subtype) => isChw(subtype) || isManager(subtype);
+
 const shouldGenerateSurvey = (person) => {
-  return person.family_member_type === 'member_eligible_woman' || person.family_member_type === 'member_child';
+  return person.family_member_type === memberEligibleWoman || person.family_member_type === memberChild;
 };
 
 const shouldGeneratePregnancySurvey = (person) => {
-  return person.family_member_type === 'member_eligible_woman' && person.group_other_woman_pregnancy.other_woman_pregnant;
+  return person.family_member_type === memberEligibleWoman && person.group_other_woman_pregnancy.other_woman_pregnant;
 };
 
 const shouldGenerateAssessmentSurvey = (person) => {
-  return person.family_member_type === 'member_child';
+  return person.family_member_type === memberChild;
 };
 
 const getAgeInYears = (subtype) => {
-  if (subtype === 'member_child') {
+  if (subtype === memberChild) {
     return Faker.faker.datatype.number({ min: 0, max: 5 });
   }
-  if (subtype === 'member_eligible_woman' || subtype === 'manager' || subtype === 'chw') {
+  if (subtype === memberEligibleWoman || isStaff(subtype)) {
     return Faker.faker.datatype.number({ min: 12, max: 52 });
   }
   return Faker.faker.datatype.number({ min: 6, max: 80 });
@@ -31,15 +39,12 @@ const getAgeInYears = (subtype) => {
 const bracPerson = () => {
   return new Factory()
     .sequence('_id', uuid.v4)
-    .option('subtype', 'manager')//manager | chw | member_child | member_eligible_woman | family_member
+    .option('subtype', 'manager')
     .attr('parent', '')
     .attr('type', 'person')
     .attr('sex', ['subtype'], (subtype) => {
-      if (subtype === 'member_eligible_woman') {
+      if (subtype === memberEligibleWoman) {
         return 'female';
-      }
-      if (subtype === 'family_member') {
-        return 'male';
       }
       return Faker.faker.name.gender(true).toLowerCase();
     })
@@ -66,14 +71,12 @@ const bracPerson = () => {
         return moment().subtract(getAgeInYears(subtype), 'year').format('YYYY-MM-DD');
       })
     .attr('phone', ['subtype'], (subtype) => {
-      if (subtype !== 'member_child') {
+      if (subtype !== memberChild) {
         return Faker.faker.phone.phoneNumber(phoneNumberFormat);
       }
     })
     .attr('phone_alternate', ['subtype'], (subtype) => {
-      if (subtype === 'member_child') {
-        return null;
-      } else {
+      if (subtype !== memberChild) {
         return Faker.faker.phone.phoneNumber(phoneNumberFormat);
       }
     })
@@ -82,7 +85,7 @@ const bracPerson = () => {
     .attr('reported_date', () => Date.now())
     .attr('has_disability', Faker.faker.datatype.boolean())
     .attr('family_member_type', ['subtype'], (subtype) => {
-      if (subtype === 'member_child' || subtype === 'member_eligible_woman') {
+      if (isFamilyMember(subtype)) {
         return subtype;
       }
     })
@@ -100,90 +103,72 @@ const bracPerson = () => {
     .attr('chp_profile',
       ['subtype', 'date_of_birth', 'sex', 'phone', 'phone_alternate'],
       (subtype, dateOfBirth, sex, phone, phoneAlternate) => {
-        if (subtype !== 'chw') {
-          return null;
-        } else {
+        if (isChw(subtype)) {
           return chpProfile.build({},
             { dob: dateOfBirth, sex: sex, phone_number: phone, alternate_number: phoneAlternate });
         }
       })
     .attr('pregnant_at_registration', ['subtype'], (subtype) => {
-      if (subtype !== 'member_eligible_woman') {
-        return null;
-      } else {
+      if (subtype === memberEligibleWoman) {
         return Faker.faker.datatype.boolean();
       }
     })
     .attr('group_other_woman_pregnancy', ['pregnant_at_registration', 'subtype'], (pregnantAtRegistration, subtype) => {
-      if (subtype !== 'member_eligible_woman') {
-        return null;
-      } else {
+      if (subtype === memberEligibleWoman) {
         return groupOtherWomanPregnancy.build({ other_woman_pregnant: pregnantAtRegistration });
       }
     })
     .attr('c_name', ['subtype', 'name'], (subtype, name) => {
-      if (subtype === 'chw' || subtype === 'manager') {
-        return null;
-      } else {
+      if (isFamilyMember(subtype)) {
         return name;
       }
     })
     .attr('dob_method', ['subtype', 'date_of_birth_method'], (subtype, dateofBirthMethod) => {
-      if (subtype === 'chw' || subtype === 'manager') {
-        return null;
-      } else {
+      if (isFamilyMember(subtype)) {
         return dateofBirthMethod;
       }
     })
     .attr('ephemeral_months', ['subtype', 'date_of_birth'], (subtype, dateofBirth) => {
-      if (subtype === 'chw' || subtype === 'manager') {
-        return null;
-      } else {
+      if (isFamilyMember(subtype)) {
         return new Date(dateofBirth).getMonth() + 1;
       }
     })
     .attr('ephemeral_years', ['subtype', 'date_of_birth'], (subtype, dateofBirth) => {
-      if (subtype === 'chw' || subtype === 'manager') {
-        return null;
+      if (isFamilyMember(subtype)) {
+        return new Date(dateofBirth).getFullYear();
       }
-      return new Date(dateofBirth).getFullYear();
     })
     .attr('dob_approx', ['subtype', 'date_of_birth'], (subtype, dateofBirth) => {
-      if (subtype === 'chw' || subtype === 'manager') {
-        return null;
+      if (isFamilyMember(subtype)) {
+        return dateofBirth;
       }
-      return dateofBirth;
     })
     .attr('dob_raw', ['subtype', 'date_of_birth'], (subtype, dateofBirth) => {
-      if (subtype === 'chw' || subtype === 'manager') {
-        return null;
+      if (isFamilyMember(subtype)) {
+        return dateofBirth;
       }
-      return dateofBirth;
     })
     .attr('c_dob_iso', ['subtype', 'date_of_birth'], (subtype, dateofBirth) => {
-      if (subtype === 'chw' || subtype === 'manager') {
-        return null;
+      if (isFamilyMember(subtype)) {
+        return dateofBirth;
       }
-      return dateofBirth;
     })
     .attr('current_age', ['subtype', 'age_years'], (subtype, ageYears) => {
-      if (subtype === 'chw' || subtype === 'manager') {
-        return null;
+      if (isFamilyMember(subtype)) {
+        return ageYears;
       }
-      return ageYears;
     })
     .attr('c_sex', ['subtype', 'sex'], (subtype, sex) => {
-      if (subtype === 'chw' || subtype === 'manager') {
-        return null;
+      if (isFamilyMember(subtype)) {
+        return sex;
       }
-      return sex;
     });
 
 };
 
 const generateBracPerson = (parent, subtype) => {
   if (subtype === 'other') {
-    subtype = Faker.faker.random.arrayElement(['member_child', 'member_eligible_woman', 'family_member']);
+    subtype = Faker.faker.random.arrayElement(['member_child', 'member_eligible_woman', null]);
   }
   return bracPerson().build({ parent }, { subtype });
 };
