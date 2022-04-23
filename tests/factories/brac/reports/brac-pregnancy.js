@@ -67,7 +67,9 @@ module.exports = new Factory()
       g_preg_res_kit: null,
     };
     if (groupLmp.g_lmp_method === 'calendar') {
-      groupLmp.g_lmp_calendar = moment().subtract(Faker.faker.datatype.number({ min: 1, max: 9 }), 'month').format('YYYY-MM-DD');
+      groupLmp.g_lmp_calendar = moment()
+        .subtract(Faker.faker.datatype.number({ min: 1, max: 9 }), 'month')
+        .format('YYYY-MM-DD');
       groupLmp.g_lmp_date_raw = groupLmp.g_lmp_calendar;
       groupLmp.g_lmp_date_8601 = groupLmp.g_lmp_calendar;
       groupLmp.g_lmp_date = groupLmp.g_lmp_calendar;
@@ -78,7 +80,7 @@ module.exports = new Factory()
       groupLmp.g_lmp_date = moment().subtract(groupLmp.g_lmp_approx, 'day').format('MMM D, YYYY');
     }
     groupLmp.g_edd_8601 = moment(groupLmp.g_lmp_date_8601).add(DURATION_OF_PREGNANCY_IN_DAYS, 'days');
-    gEdd = moment(groupLmp.g_lmp_date_8601).add(DURATION_OF_PREGNANCY_IN_DAYS, 'days').format('MMM D, YYYY');
+    groupLmp.g_edd = moment(groupLmp.g_lmp_date_8601).add(DURATION_OF_PREGNANCY_IN_DAYS, 'days').format('MMM D, YYYY');
     if (groupLmp.g_lmp_approx === '61' || groupLmp.g_lmp_approx === '91') {
       groupLmp.g_preg_test = Faker.faker.random.arrayElement(YES_NO);
     }
@@ -124,11 +126,15 @@ module.exports = new Factory()
       }
       if (groupAncVisit.prophylaxis_taken === 'yes') {
         groupAncVisit.last_dose = Faker.faker.random.arrayElement(['ipt_1', 'ipt_2', 'ipt_3', 'ipt_4']);
-        groupAncVisit.last_dose_date = moment().subtract(Faker.faker.datatype.number({ min: 1, max: 120 }), 'month').format('YYYY-MM-DD');
+        groupAncVisit.last_dose_date = moment()
+          .subtract(Faker.faker.datatype.number({ min: 1, max: 120 }), 'month')
+          .format('YYYY-MM-DD');
       }
       if (groupAncVisit.tt_imm === 'yes') {
         groupAncVisit.tt_received = Faker.faker.random.arrayElement(['tt_1', 'tt_2']);
-        groupAncVisit.tt_date = moment().subtract(Faker.faker.datatype.number({ min: 1, max: 120 }), 'month').format('YYYY-MM-DD');
+        groupAncVisit.tt_date = moment()
+          .subtract(Faker.faker.datatype.number({ min: 1, max: 120 }), 'month')
+          .format('YYYY-MM-DD');
 
       }
       return groupAncVisit;
@@ -145,7 +151,8 @@ module.exports = new Factory()
         mother_arv: null
       };
       if (Faker.faker.datatype.boolean()) {
-        gNutritionScreening.last_food.push(Faker.faker.random.uniqueArray(LAST_FOOD, Faker.faker.datatype.number({ min: 1, max: 3 })));
+        gNutritionScreening.last_food.push(
+          Faker.faker.random.uniqueArray(LAST_FOOD, Faker.faker.datatype.number({ min: 1, max: 3 })));
       } else {
         gNutritionScreening.last_food.push(NONE);
       }

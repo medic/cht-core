@@ -19,7 +19,7 @@ const generateFpMethods = () => {
       Faker.faker.datatype.number({ min: 0, max: 1 })).toString());
   }
   return methods.join(' ');
-}
+};
 /**
  * BRAC International is a leading nonprofit organisation with a mission to empower people and
  * communities in situations of poverty, illiteracy, disease, and social injustice

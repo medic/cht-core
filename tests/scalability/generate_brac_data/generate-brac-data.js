@@ -21,7 +21,10 @@ const dataDirectory = args[1];
 const preconditionDirectory = dataConfig.precondition_data_directory;
 const mainDirectory = dataConfig.main_script_data_directory;
 const jsonDirectory = dataConfig.json_directory;
-const preconditionDataDirectory = path.join(dataDirectory, dataConfig.precondition_data_directory, dataConfig.json_directory);
+const preconditionDataDirectory = path.join(
+  dataDirectory,
+  dataConfig.precondition_data_directory,
+  dataConfig.json_directory);
 const mainDataDirectory = path.join(dataDirectory, dataConfig.main_script_data_directory);
 const usersDirectory = path.join(dataDirectory, dataConfig.precondition_data_directory);
 const dataExtension = dataConfig.json_data_extension;
@@ -104,7 +107,7 @@ const generatePerson = (type, parents, isPrimaryContact) => {
     managers.push(person);
   }
   return person;
-}
+};
 
 const generateUser = (type, placeId, userName, person, isPrimaryContact) => {
   let roles = pairPlaceTypesRoles[type];
@@ -125,7 +128,7 @@ const generateUser = (type, placeId, userName, person, isPrimaryContact) => {
     place: personUser.facility_id
   };
   users.push(user);
-}
+};
 
 const generateReports = (directParentPlace, place, person, isMainData) => {
   let reportsDirectory = preconditionDataDirectory;
@@ -145,11 +148,11 @@ const generateReports = (directParentPlace, place, person, isMainData) => {
     createDataDoc(reportsDirectory, assesmentFollowUpSurvey._id + dataExtension,
       JSON.stringify(assesmentFollowUpSurvey, {}, 2));
   }
-}
+};
 
 const generateHierarchy = (type, placeName, numberOfPersons,
   parentFirstLevelId, parentSecondLevelId, directParentPlace) => {
-  let place = bracPlaceFactory.generateBracPlace(placeName, type,
+  const place = bracPlaceFactory.generateBracPlace(placeName, type,
     setParents(parentFirstLevelId, parentSecondLevelId));
   let parentPersonThirdLevelId = null;
   let parentPersonSecondLevelId = null;
