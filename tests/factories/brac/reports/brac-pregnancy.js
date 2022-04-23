@@ -7,6 +7,16 @@ const POSITIVE_NEGATIVE = ['pos', 'neg'];
 const LAST_FOOD = ['meat', 'eggs', 'milk'];
 const NONE = 'none';
 const DURATION_OF_PREGNANCY_IN_DAYS = 279;
+const RISK_FACTORS_CODES = {
+  'First pregnancy': 'r1'
+  'More than 4 children': 'r2'
+  'Last baby born less than 1 year before': 'r3'
+  'Had previous miscarriages or previous difficulties in childbirth': 'r4'
+  'Has any of the following conditions: heart conditions, asthma, high blood pressure, known diabetes': 'r5'
+  'HIV positive': 'r6'
+  'Is gravida 4+': 'r7'
+  'None': 'r8'
+};
 
 const isPregnant = (edd, lmpApprox, pregRes, pregResKit) => {
   if (edd && lmpApprox !== '61' && lmpApprox !== '91') {
@@ -157,30 +167,27 @@ module.exports = new Factory()
   })
   .attr('group_risk_factors', ['group_lmp'], (groupLmp) => {
     if (!isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
-      return null;
-    }
-    const gravida = Faker.faker.datatype.number({ min: 0, max: 4 });
-    const parity = Faker.faker.datatype.number({ min: 0, max: gravida });
-
-    const gRiskFactors = [];
-    gRiskFactors.push(Faker.faker.random.arrayElement(['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8']));
-    if (gRiskFactors[0] !== 'r8') {
-      if (gRiskFactors[0] === 'r1') {
-        gRiskFactors.push(Faker.faker.helpers.uniqueArray(
-          ['r5', 'r6'],
-          Faker.faker.datatype.number({ min: 0, max: 2 })));
-      } else {
-        gRiskFactors.push(Faker.faker.helpers.uniqueArray(
-          ['r2', 'r3', 'r4', 'r5', 'r6', 'r7'],
-          Faker.faker.datatype.number({ min: 0, max: 6 })));
+      const groupRiskFactors = {
+        gravida: Faker.faker.datatype.number({ min: 0, max: 4 }),
+        parity: Faker.faker.datatype.number({ min: 0, max: gravida }),
+        g_risk_factors: gRiskFactors
+      };
+      const gRiskFactors = [];
+      gRiskFactors.push(Faker.faker.random.arrayElement(['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8']));
+      if (gRiskFactors[0] !== 'r8') {
+        if (gRiskFactors[0] === 'r1') {
+          gRiskFactors.push(Faker.faker.helpers.uniqueArray(
+            ['r5', 'r6'],
+            Faker.faker.datatype.number({ min: 0, max: 2 })));
+        } else {
+          gRiskFactors.push(Faker.faker.helpers.uniqueArray(
+            ['r2', 'r3', 'r4', 'r5', 'r6', 'r7'],
+            Faker.faker.datatype.number({ min: 0, max: 6 })));
+        }
       }
+      c
+      return groupRiskFactors;
     }
-    const groupRiskFactors = {
-      gravida: gravida,
-      parity: parity,
-      g_risk_factors: gRiskFactors
-    };
-    return groupRiskFactors;
   })
   .attr('group_danger_signs', ['group_lmp'], (groupLmp) => {
     if (!isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
