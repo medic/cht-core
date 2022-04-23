@@ -10,9 +10,10 @@ const DEWORMING_AND_VITAMINS = ['6', '12', '18', '24', '30', '36', '42', '48', '
 const NONE = 'none';
 const FOOD_EATEN = ['meat', 'eggs', 'powdered_milk'];
 const BREAST_MILK = 'breast_milk';
-const isNewborn = (patientAgeInMonths) => {
-  return patientAgeInMonths < 2;
-}
+
+const isNewborn = (patientAgeInMonths) => patientAgeInMonths < 2;
+const is2moTo9mo = (patientAgeInMonths) => patientAgeInMonths >= 2 && patientAgeInMonths < 9;
+const is9moTo18mo = (patientAgeInMonths) => patientAgeInMonths >= 9 && patientAgeInMonths < 18;
 
 const isBreathingFast = (breathCount, patientAgeInDays) => {
   if ((breathCount >= 60 && patientAgeInDays < 60)
@@ -223,7 +224,7 @@ module.exports = new Factory()
           }
           groupImm.group_imm_less_2mo = groupImmLess2mo;
         }
-        if (patientAgeInMonths > 2 && patientAgeInMonths <= 9) {
+        if (is2moTo9mo(patientAgeInMonths)) {
           const groupImm2mo9mo = {
             vaccines_received_9mo: Faker.faker.random.arrayElement(YES_NO),
             imm_current_9mo: null,
@@ -239,7 +240,7 @@ module.exports = new Factory()
           }
           groupImm.group_imm_less_2mo = groupImm2mo9mo;
         }
-        if (patientAgeInMonths > 9 && patientAgeInMonths <= 18) {
+        if (is9moTo18mo(patientAgeInMonths)) {
           const groupImm9mo18mo = {
             vaccines_received_18mo: Faker.faker.random.arrayElement(YES_NO),
             imm_current_18mo: null,
