@@ -66,11 +66,11 @@ module.exports = new Factory()
       g_preg_res: null,
       g_preg_res_kit: null,
     };
-    if (gLmpMethod === 'calendar') {
+    if (groupLmp.g_lmp_method === 'calendar') {
       groupLmp.g_lmp_calendar = moment().subtract(Faker.faker.datatype.number({ min: 1, max: 9 }), 'month').format('YYYY-MM-DD');
-      groupLmp.g_lmp_date_raw = gLmpCalendar;
-      groupLmp.g_lmp_date_8601 = gLmpCalendar;
-      groupLmp.g_lmp_date = gLmpCalendar;
+      groupLmp.g_lmp_date_raw = groupLmp.g_lmp_calendar;
+      groupLmp.g_lmp_date_8601 = groupLmp.g_lmp_calendar;
+      groupLmp.g_lmp_date = groupLmp.g_lmp_calendar;
     } else {
       groupLmp.g_lmp_approx = Faker.faker.random.arrayElement([61, 91, 122, 183, 244]);
       groupLmp.g_lmp_date_raw = moment().subtract(groupLmp.g_lmp_approx, 'day');
@@ -171,9 +171,9 @@ module.exports = new Factory()
       const groupRiskFactors = {
         gravida: Faker.faker.datatype.number({ min: 0, max: 4 }),
         parity: null,
-        g_risk_factors: null
+        g_risk_factors: []
       };
-      groupRiskFactors.parity = Faker.faker.datatype.number({ min: 0, max: gravida });
+      groupRiskFactors.parity = Faker.faker.datatype.number({ min: 0, max: groupRiskFactors.gravida });
       const noRisk = Faker.faker.datatype.boolean();
       if (noRisk) {
         groupRiskFactors.g_risk_factors.push('r8');
@@ -193,14 +193,13 @@ module.exports = new Factory()
     }
   })
   .attr('group_danger_signs', ['group_lmp'], (groupLmp) => {
-    if (!isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
-      return null;
+    if (isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
+      const groupDangerSigns = {
+        g_danger_signs: Faker.faker.helpers.uniqueArray(['d1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9'],
+          Faker.faker.datatype.number({ min: 0, max: 9 }))
+      };
+      return groupDangerSigns;
     }
-    const groupDangerSigns = {
-      g_danger_signs: Faker.faker.helpers.uniqueArray(['d1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9'],
-        Faker.faker.datatype.number({ min: 0, max: 9 }))
-    };
-    return groupDangerSigns;
   })
   .attr('lmp_method', ['group_lmp'], (groupLmp) => {
     return groupLmp.g_lmp_method;
@@ -220,11 +219,15 @@ module.exports = new Factory()
   .attr('risk_factors', ['group_risk_factors'], (groupRiskFactors) => {
     return groupRiskFactors.g_risk_factors;
   })
-  .attr('danger_signs', ['group_danger_signs'], (groupDangerDigns) => {
-    return groupDangerDigns.g_danger_signs;
+  .attr('danger_signs', ['group_danger_signs'], (groupDangerSigns) => {
+    if (groupDangerSigns) {
+      return groupDangerSigns.g_danger_signs;
+    }
   })
   .attr('anc_last_visit', ['group_anc_visit'], (groupAncVisit) => {
-    return groupAncVisit.g_anc_last_visit;
+    if (groupAncVisit) {
+      return groupAncVisit.g_anc_last_visit;
+    }
   })
   .attr('anc_visit_identifier', '')
   .attr('anc_last_bp_reading', '')
