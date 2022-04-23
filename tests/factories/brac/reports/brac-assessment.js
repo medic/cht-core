@@ -335,15 +335,15 @@ module.exports = new Factory()
             const groupFoodEaten = {
               times_eaten: Faker.faker.random.arrayElement(
                 ['0', '1', '2', '3', '4', '5', '6', 'gt_6']),
-              food_eaten: null
+              food_eaten: []
             };
             if (Faker.faker.datatype.boolean()) {
               if (groupUnder2yr.breastfeeding === 'yes') {
-                groupFoodEaten.food_eaten.push(...Faker.faker.random.uniqueArray(
+                groupFoodEaten.food_eaten.push(...Faker.faker.helpers.uniqueArray(
                   [...BREAST_MILK, FOOD_EATEN],
                   Faker.faker.datatype.number({ min: 1, max: 4 })));
               } else {
-                groupFoodEaten.food_eaten.push(...Faker.faker.random.uniqueArray(
+                groupFoodEaten.food_eaten.push(...Faker.faker.helpers.uniqueArray(
                   FOOD_EATEN, Faker.faker.datatype.number({ min: 1, max: 3 })));
               }
             } else {
