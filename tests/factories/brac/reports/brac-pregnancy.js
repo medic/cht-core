@@ -7,12 +7,26 @@ const POSITIVE_NEGATIVE = ['pos', 'neg'];
 const LAST_FOOD = ['meat', 'eggs', 'milk'];
 const NONE = 'none';
 const DURATION_OF_PREGNANCY_IN_DAYS = 279;
+const UP_TO_2_MONTHS_AGO = 61;
+const UP_TO_3_MONTHS_AGO = 91;
+const UP_TO_4_MONTHS_AGO = 122;
+const BETWEEN_5_TO_6_MONTHS_AGO = 183;
+const BETWEEN_7_TO_8_MONTHS_AGO = 244;
 
+/**
+ * Calculate if women is pregnant.
+ * @param {string} edd the estimate delivery time
+ * @param {number} lmpApprox the approximate start date of last menstrual cycle
+ * @param {string} pregRes the results of the pregnancy test
+ * @param {string} pregResKit the pregnancy kit results.
+ */
 const isPregnant = (edd, lmpApprox, pregRes, pregResKit) => {
-  if (edd && lmpApprox !== '61' && lmpApprox !== '91') {
+  if (edd && lmpApprox !== UP_TO_2_MONTHS_AGO && lmpApprox !== UP_TO_3_MONTHS_AGO) {
     return true;
   }
-  if (lmpApprox === '122' || lmpApprox === '183' || lmpApprox === '244') {
+  if (lmpApprox === UP_TO_4_MONTHS_AGO
+    || lmpApprox === BETWEEN_5_TO_6_MONTHS_AGO
+    || lmpApprox === BETWEEN_7_TO_8_MONTHS_AGO) {
     return true;
   }
   if (edd !== null && (pregRes === 'pos' || pregResKit === 'pos')) {
@@ -81,7 +95,7 @@ module.exports = new Factory()
     }
     groupLmp.g_edd_8601 = moment(groupLmp.g_lmp_date_8601).add(DURATION_OF_PREGNANCY_IN_DAYS, 'days');
     groupLmp.g_edd = moment(groupLmp.g_lmp_date_8601).add(DURATION_OF_PREGNANCY_IN_DAYS, 'days').format('MMM D, YYYY');
-    if (groupLmp.g_lmp_approx === '61' || groupLmp.g_lmp_approx === '91') {
+    if (groupLmp.g_lmp_approx === UP_TO_2_MONTHS_AGO || groupLmp.g_lmp_approx === UP_TO_3_MONTHS_AGO) {
       groupLmp.g_preg_test = Faker.faker.random.arrayElement(YES_NO);
     }
     if (groupLmp.g_preg_test === 'yes') {
