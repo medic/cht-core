@@ -3,9 +3,7 @@
     <contacts-filters
       *ngIf="!useSearchNewDesign"
       (search)="search()"
-      (simIdentify)="simprintsIdentify()"
       (sort)="sort($event)"
-      [simprintsEnabled]="simprintsEnabled"
       [disabled]="false"
       [sortDirection]="sortDirection"
       [lastVisitedDateExtras]="lastVisitedDateExtras">
@@ -58,8 +56,6 @@
                   <span>{{contact.visits.summary}}</span>
                 </div>
               </div>
-
-              <div *ngIf="contact.simprintsTier" class="simprints-stars tier-{{contact.simprintsTier}}"></div>
             </div>
           </a>
         </li>

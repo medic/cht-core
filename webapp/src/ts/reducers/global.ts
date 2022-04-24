@@ -25,7 +25,6 @@ const initialState = {
   filters: {}, // Selected criteria to filter data.
   sidebarFilter: {}, // Component state.
   forms: null,
-  isAdmin: false,
   lastChangedDoc: false,
   loadingContent: false,
   loadingSubActionBar: false,
@@ -97,9 +96,6 @@ const _globalReducer = createReducer(
       ...state,
       filters: { ...state.filters, ...filter }
     };
-  }),
-  on(Actions.setIsAdmin, (state, { payload: { isAdmin } }) => {
-    return { ...state, isAdmin };
   }),
   on(Actions.setSidebarFilter, (state, { payload: { sidebarFilter } }) => {
     return {

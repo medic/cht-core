@@ -152,11 +152,6 @@ describe('Global Reducer', () => {
     expect(state).to.deep.equal({ filters: { search: 'aaaaa', forms: [{ id: 'f2' }, { id: 'f3' }] } });
   });
 
-  it('should set is Admin', () => {
-    expect(globalReducer(state, Actions.setIsAdmin(true))).to.deep.equal({ isAdmin: true });
-    expect(globalReducer(state, Actions.setIsAdmin(false))).to.deep.equal({ isAdmin: false });
-  });
-
   it('should clear sidebarFilter', () => {
     state = {
       sidebarFilter: {

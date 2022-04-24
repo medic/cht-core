@@ -14,7 +14,6 @@ import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
-import { SimprintsService } from '@mm-services/simprints.service';
 import { Selectors } from '@mm-selectors/index';
 import { SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -56,7 +55,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
   defaultSortDirection = 'alpha';
   sortDirection = this.defaultSortDirection;
   additionalListItem = false;
-  simprintsEnabled;
   useSearchNewDesign = true;
   enketoEdited;
   selectedContact;
@@ -74,7 +72,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
     private authService: AuthService,
     private settingsService: SettingsService,
     private UHCSettings: UHCSettingsService,
-    private simprintsService: SimprintsService,
     private scrollLoaderProvider: ScrollLoaderProvider,
     private relativeDateService: RelativeDateService,
     private tourService: TourService,
@@ -132,7 +129,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
       },
     });
     this.subscription.add(changesSubscription);
-    this.simprintsEnabled = this.simprintsService.enabled();
 
     Promise
       .all([
@@ -238,7 +234,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
       contact.valid = true;
       contact.summary = null;
       contact.primary = contact.home;
-      contact.simprintsTier = contact.simprints && contact.simprints.tierNumber;
       contact.dod = contact.date_of_death;
       if (type && type.count_visits && Number.isInteger(contact.lastVisitedDate)) {
         if (contact.lastVisitedDate === 0) {
@@ -339,7 +334,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
     }
 
     let searchFilters = this.defaultFilters;
-    if (this.filters.search || this.filters.simprintsIdentities) {
+    if (this.filters.search) {
       searchFilters = this.filters;
     }
 
@@ -369,7 +364,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
           });
           this.additionalListItem =
             !this.filters.search &&
-            !this.filters.simprintsIdentities &&
             (this.additionalListItem || !this.appending) &&
             homeIndex === -1;
 
@@ -378,25 +372,8 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
               // move it to the top
               updatedContacts.splice(homeIndex, 1);
               updatedContacts.unshift(this.usersHomePlace);
-            } else if (
-              !this.filters.search &&
-              !this.filters.simprintsIdentities
-            ) {
-
+            } else if (!this.filters.search) {
               updatedContacts.unshift(this.usersHomePlace);
-            }
-            if (this.filters.simprintsIdentities) {
-              updatedContacts.forEach((contact) => {
-                const identity = this.filters.simprintsIdentities.find(
-                  function(identity) {
-                    return identity.id === contact.simprints_id;
-                  }
-                );
-                contact.simprints = identity || {
-                  confidence: 0,
-                  tierNumber: 5,
-                };
-              });
             }
           }
         }
@@ -426,26 +403,12 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
     }
 
     this.loading = true;
-    if (this.filters.search || this.filters.simprintsIdentities) {
-      return this.query();
-    } else {
-      return this.query();
-    }
+    return this.query();
   }
 
   sort(sortDirection?) {
     this.sortDirection = sortDirection ? sortDirection : this.defaultSortDirection;
     this.query();
-  }
-
-  simprintsIdentify() {
-    this.loading = true;
-    this.simprintsService
-      .identify()
-      .then((identities) => {
-        this.filters.simprintsIdentities = identities;
-        this.search();
-      });
   }
 
   listTrackBy(index, contact) {

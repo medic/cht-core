@@ -7,7 +7,6 @@ import { AndroidApiService } from '@mm-services/android-api.service';
 import { SessionService } from '@mm-services/session.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
-import { SimprintsService } from '@mm-services/simprints.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.service';
 
@@ -17,7 +16,6 @@ describe('AndroidApi service', () => {
   let sessionService;
   let mrdtService;
   let geolocationService;
-  let simprintsService;
   let consoleErrorMock;
   let navigationService;
   let androidAppLauncherService;
@@ -38,11 +36,6 @@ describe('AndroidApi service', () => {
       permissionRequestResolved: sinon.stub()
     };
 
-    simprintsService = {
-      identifyResponse: sinon.stub(),
-      registerResponse: sinon.stub()
-    };
-
     navigationService = {
       goBack: sinon.stub(),
       goToPrimaryTab: sinon.stub(),
@@ -58,7 +51,6 @@ describe('AndroidApi service', () => {
       providers: [
         { provide: SessionService, useValue: sessionService },
         { provide: GeolocationService, useValue: geolocationService },
-        { provide: SimprintsService, useValue: simprintsService },
         { provide: MRDTService, useValue: mrdtService },
         { provide: NavigationService, useValue: navigationService },
         { provide: AndroidAppLauncherService, useValue: androidAppLauncherService },
@@ -70,59 +62,6 @@ describe('AndroidApi service', () => {
 
   afterEach(() => {
     sinon.restore();
-  });
-
-  describe('simprintsResponse', () => {
-    it('errors when given string id', () => {
-      service.v1.simprintsResponse(null, 'hello', null);
-      expect(consoleErrorMock.callCount).to.equal(1);
-      expect(consoleErrorMock.args[0][0].message).to.equal('Unable to parse requestId: "hello"');
-      expect(simprintsService.identifyResponse.callCount).to.equal(0);
-      expect(simprintsService.registerResponse.callCount).to.equal(0);
-    });
-
-    it('errors when given invalid response', () => {
-      service.v1.simprintsResponse(null, '1', 'not json');
-      expect(consoleErrorMock.callCount).to.equal(1);
-      expect(consoleErrorMock.args[0][0].message).to.equal(
-        'Unable to parse JSON response from android app: "not json"'
-      );
-      expect(simprintsService.identifyResponse.callCount).to.equal(0);
-      expect(simprintsService.registerResponse.callCount).to.equal(0);
-    });
-
-    it('errors when given unknown request type', () => {
-      service.v1.simprintsResponse('query', '1', '{ "id": 153 }');
-      expect(consoleErrorMock.callCount).to.equal(1);
-      expect(consoleErrorMock.args[0][0].message).to.equal('Unknown request type: "query"');
-      expect(simprintsService.identifyResponse.callCount).to.equal(0);
-      expect(simprintsService.registerResponse.callCount).to.equal(0);
-    });
-
-    it('calls identify', () => {
-      const expectedRequestId = 55498890;
-      const expectedResponse = [
-        { id: 153, tier: 'TIER_1' },
-        { id: 486, tier: 'TIER_5' }
-      ];
-      service.v1.simprintsResponse('identify', expectedRequestId.toString(), JSON.stringify(expectedResponse));
-      expect(consoleErrorMock.callCount).to.equal(0);
-      expect(simprintsService.identifyResponse.callCount).to.equal(1);
-      expect(simprintsService.identifyResponse.args[0][0]).to.equal(expectedRequestId);
-      expect(simprintsService.identifyResponse.args[0][1]).to.deep.equal(expectedResponse);
-      expect(simprintsService.registerResponse.callCount).to.equal(0);
-    });
-
-    it('calls register', () => {
-      const expectedRequestId = 54895590;
-      const expectedResponse = { id: 849556216 };
-      service.v1.simprintsResponse('register', expectedRequestId.toString(), JSON.stringify(expectedResponse));
-      expect(consoleErrorMock.callCount).to.equal(0);
-      expect(simprintsService.identifyResponse.callCount).to.equal(0);
-      expect(simprintsService.registerResponse.callCount).to.equal(1);
-      expect(simprintsService.registerResponse.args[0][0]).to.equal(expectedRequestId);
-      expect(simprintsService.registerResponse.args[0][1]).to.deep.equal(expectedResponse);
-    });
   });
 
   describe('logout', () => {

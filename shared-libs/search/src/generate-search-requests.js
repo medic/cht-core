@@ -144,19 +144,6 @@ const contactTypeRequest = function(filters, sortByLastVisitedDate) {
   return request;
 };
 
-const simprintsRequest = function(filters) {
-  if (!filters.simprintsIdentities) {
-    return;
-  }
-  const keys = filters.simprintsIdentities.map(function(identity) {
-    return [ 'simprints', identity.id ];
-  });
-  return {
-    view: 'medic-client/contacts_by_reference',
-    params: { keys: keys }
-  };
-};
-
 const defaultReportRequest = function() {
   return {
     view: 'medic-client/reports_by_date',
@@ -206,11 +193,6 @@ const requestBuilders = {
     return requests;
   },
   contacts: function(filters, extensions) {
-    const simprints = simprintsRequest(filters);
-    if (simprints) {
-      return [ simprints ];
-    }
-
     const shouldSortByLastVisitedDate = module.exports.shouldSortByLastVisitedDate(extensions);
 
     const typeRequest = contactTypeRequest(filters, shouldSortByLastVisitedDate);

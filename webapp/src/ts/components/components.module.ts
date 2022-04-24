@@ -23,7 +23,6 @@ import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
-import { SimprintsFilterComponent} from '@mm-components/filters/simprints-filter/simprints-filter.component';
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
 import { SenderComponent } from '@mm-components/sender/sender.component';
 import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
@@ -55,7 +54,6 @@ import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile
     FreetextFilterComponent,
     SearchBarComponent,
     ResetFiltersComponent,
-    SimprintsFilterComponent,
     SortFilterComponent,
     SenderComponent,
     ReportImageComponent,
@@ -89,7 +87,6 @@ import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile
     SearchBarComponent,
     FreetextFilterComponent,
     ResetFiltersComponent,
-    SimprintsFilterComponent,
     SortFilterComponent,
     SenderComponent,
     ReportImageComponent,
