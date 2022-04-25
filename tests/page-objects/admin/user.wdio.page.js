@@ -26,6 +26,10 @@ const goToAdminUser = async () => {
   await browser.url('/admin/#/users');
 };
 
+const goToAdminUpgrade = async () => {
+  await browser.url('/admin/#/upgrade');
+};
+
 const openAddUserDialog = async () => {
   await (await addUserButton()).waitForDisplayed();
   await (await addUserButton()).click();
@@ -40,7 +44,7 @@ const closeUserDialog = async () => {
   await (await addUserDialog()).waitForDisplayed({ reverse: true });
 };
 
-const inputAddUserFields = async (username, fullname, role, place, associatedContact, password, 
+const inputAddUserFields = async (username, fullname, role, place, associatedContact, password,
   confirmPassword = password) => {
   await (await userName()).addValue(username);
   await (await userFullName()).addValue(fullname);
@@ -53,7 +57,7 @@ const inputAddUserFields = async (username, fullname, role, place, associatedCon
   if (!_.isEmpty(associatedContact)) {
     await selectContact(associatedContact);
   }
-  
+
   await (await userPassword()).addValue(password);
   await (await userConfirmPassword()).addValue(confirmPassword);
 };
@@ -117,6 +121,7 @@ const getContactErrorText = async () => {
 
 module.exports = {
   goToAdminUser,
+  goToAdminUpgrade,
   openAddUserDialog,
   closeUserDialog,
   inputAddUserFields,
