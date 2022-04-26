@@ -58,8 +58,6 @@ angular
       return Settings()
         .then(settings => {
           $scope.roles = settings.roles;
-          console.log('$scope.roles', $scope.roles);
-          console.log('$scope.model.roles', getRoles($scope.model.roles));
           $scope.allowTokenLogin = allowTokenLogin(settings);
           if (!$scope.model) {
             return $q.resolve({});
@@ -412,7 +410,6 @@ angular
     };
 
     $scope.toggleRole = (role) => {
-      console.log('toggle', $scope.editUserModel.roles, role);
       const index = $scope.editUserModel.roles.indexOf(role);
       if (index === -1) {
         $scope.editUserModel.roles.push(role);
