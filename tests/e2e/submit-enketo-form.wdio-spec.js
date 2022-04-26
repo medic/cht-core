@@ -5,7 +5,7 @@ const commonElements = require('../page-objects/common/common.wdio.page');
 const reportsPo = require('../page-objects/reports/reports.wdio.page');
 const genericForm = require('../page-objects/forms/generic-form.wdio.page');
 const loginPage = require('../page-objects/login/login.wdio.page');
-const requireNodeXml = fs.readFileSync(`${__dirname}/../forms/required-note.xml`, 'utf8');
+const requiredNoteXml = fs.readFileSync(`${__dirname}/../forms/required-note.xml`, 'utf8');
 
 
 describe('Submit Enketo form', () => {
@@ -69,7 +69,7 @@ describe('Submit Enketo form', () => {
       _attachments: {
         xml: {
           content_type: 'application/octet-stream',
-          data: Buffer.from(requireNodeXml).toString('base64')
+          data: Buffer.from(requiredNoteXml).toString('base64')
         }
       }
     }

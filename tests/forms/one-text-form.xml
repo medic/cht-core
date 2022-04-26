@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+  <h:head>
+    <h:title>One text form</h:title>
+    <model>
+      <instance>
+        <one_text_form id="one_text_form" prefix="J1!one_text_form!" delimiter="#" version="2021-12-01 00:00:00">
+          <intro/>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </one_text_form>
+      </instance>
+      <bind nodeset="/one_text_form/intro" type="string" required="true()"/>
+      <bind nodeset="/one_text_form/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <input ref="/one_text_form/intro">
+      <label>Enter text</label>
+    </input>
+  </h:body>
+</h:html>
