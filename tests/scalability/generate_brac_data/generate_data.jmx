@@ -17,6 +17,11 @@
             <stringProp name="Argument.value">/usr/local/bin/node</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
+          <elementProp name="data_directory" elementType="Argument">
+            <stringProp name="Argument.name">data_directory</stringProp>
+            <stringProp name="Argument.value">/Users/marialorenarodriguezviruel/medic-workspace/generated-data</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
         </collectionProp>
       </elementProp>
       <stringProp name="TestPlan.user_define_classpath"></stringProp>
@@ -54,6 +59,11 @@
                 <stringProp name="Argument.value">${__threadNum}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">${data_directory}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
             </collectionProp>
           </elementProp>
           <elementProp name="SystemSampler.environment" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
@@ -61,8 +71,8 @@
           </elementProp>
           <stringProp name="SystemSampler.directory"></stringProp>
           <longProp name="SystemSampler.timeout">-1</longProp>
-          <stringProp name="SystemSampler.stderr">./report/stderr${__threadNum}</stringProp>
-          <stringProp name="SystemSampler.stdout">./report/stdout${__threadNum}</stringProp>
+          <stringProp name="SystemSampler.stderr">/Users/marialorenarodriguezviruel/medic-workspace/cht-core/tests/scalability/generate_brac_data/report/stdout2</stringProp>
+          <stringProp name="SystemSampler.stdout">/Users/marialorenarodriguezviruel/medic-workspace/cht-core/tests/scalability/generate_brac_data/report/stdout1</stringProp>
         </SystemSampler>
         <hashTree/>
         <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">

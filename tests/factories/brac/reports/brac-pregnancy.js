@@ -160,13 +160,13 @@ module.exports = new Factory()
         muac_score: Faker.faker.datatype.number(),
         mother_weight: Faker.faker.datatype.number(),
         last_fed: Faker.faker.random.arrayElement(['1', '2', '3', '4', '5', '6', '7']),
-        last_food: null,
+        last_food: [],
         mother_hiv_status: Faker.faker.random.arrayElement(...POSITIVE_NEGATIVE, 'unknown', 'undisclosed'),
         mother_arv: null
       };
       if (Faker.faker.datatype.boolean()) {
         gNutritionScreening.last_food.push(
-          Faker.faker.random.uniqueArray(LAST_FOOD, Faker.faker.datatype.number({ min: 1, max: 3 })));
+          Faker.faker.helpers.uniqueArray(LAST_FOOD, Faker.faker.datatype.number({ min: 1, max: 3 })));
       } else {
         gNutritionScreening.last_food.push(NONE);
       }
@@ -238,7 +238,9 @@ module.exports = new Factory()
     return groupLmp.g_edd;
   })
   .attr('risk_factors', ['group_risk_factors'], (groupRiskFactors) => {
-    return groupRiskFactors.g_risk_factors;
+    if (typeof (groupRiskFactors) !== 'undefined') {
+      return groupRiskFactors.g_risk_factors;
+    }
   })
   .attr('danger_signs', ['group_danger_signs'], (groupDangerSigns) => {
     if (groupDangerSigns) {
