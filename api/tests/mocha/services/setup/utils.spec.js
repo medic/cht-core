@@ -844,7 +844,7 @@ describe('Setup utils', () => {
       };
 
       expect(utils.getUpgradeServicePayload(stagingDoc)).to.deep.equal({
-        tags: [
+        containers: [
           {
             containerName: 'cht-api',
             imageTag: 'registry/cht-api:4.0.0',
@@ -854,7 +854,7 @@ describe('Setup utils', () => {
             imageTag: 'registry/cht-sentinel:4.0.0',
           }
         ],
-        'docker-compose': {
+        dockerCompose: {
           'file1.yml': 'file1',
           'file2.yml': 'file2',
         },
@@ -878,8 +878,8 @@ describe('Setup utils', () => {
       };
 
       expect(utils.getUpgradeServicePayload(stagingDoc)).to.deep.equal({
-        tags: [],
-        'docker-compose': {},
+        containers: [],
+        dockerCompose: {},
       });
     });
   });

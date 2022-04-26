@@ -307,14 +307,14 @@ const getUpgradeServicePayload = (stagingDoc) => {
       dockerCompose[fileName] = buffer.toString('utf-8');
     });
 
-  const tags = stagingDoc.tags.map(tag => ({
+  const containers = stagingDoc.tags.map(tag => ({
     containerName: tag.container_name,
     imageTag: tag.image,
   }));
 
   return {
-    tags,
-    'docker-compose': dockerCompose,
+    containers,
+    dockerCompose,
   };
 };
 
