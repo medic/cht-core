@@ -235,6 +235,7 @@ const openReport = async (reportId) => {
 };
 
 const editReport = async (reportId) => {
+  await commonElements.goToReports();
   await openReport(reportId);
   await (await editReportButton()).click();
   await (await formTitle()).waitForDisplayed();
