@@ -195,7 +195,6 @@ const generateData = () => {
   createDataDirectory(dataDirectory, preconditionDirectory);
   createDataDirectory(dataDirectory, mainDirectory);
   createDataDirectory(path.join(dataDirectory, preconditionDirectory), jsonDirectory);
-
   for (let dh = 0; dh < numberOfDistrictHospitals; dh++) {
     managers.splice(0, managers.length);
     const districtHospital = generateHierarchy(
