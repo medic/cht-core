@@ -75,6 +75,25 @@ describe('GetReportContentService service', () => {
       expect(db.getAttachment.args).to.deep.equal([['whatever', 'content']]);
     });
 
+    it('should throw db attachment errors', async () => {
+      const doc = {
+        _id: 'whatever',
+        fields: {
+          field: '1',
+        },
+        _attachments: {
+          content: 'defined',
+        }
+      };
+      db.getAttachment.rejects({ error: 'whatever' });
+      try {
+        await service.getReportContent(doc);
+        expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ error: 'whatever' });
+      }
+    });
+
     it('should return fields if there are no attachments', async () => {
       const doc = {
         _id: 'whatever',
@@ -105,7 +124,6 @@ describe('GetReportContentService service', () => {
       const content = await service.getReportContent(doc);
       expect(content).to.deep.equal({ one: '1', two: 2, three: false });
       expect(db.getAttachment.called).to.be.false;
-
     });
   });
 });
