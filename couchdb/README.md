@@ -31,7 +31,7 @@ This field sets the secret that is used by the CouchDB peers to communicate with
 
 This field identifies each CouchDB instance. If you are adding a new node to a cluster, you need to set this field to the same value as this is what identified your node to be part of a cluster. The UUID is used in identifying the cluster when replicating. If this value is not consistent across all nodes in the cluster, replications may be forced to rewind the changes feed to zero, leading to excessive memory, CPU and network use.
 
-#### NODENAME
+#### SVC_NAME
 
 This is an identifier by which other nodes can access this node. This value should contain either the node's IP address or the [FQDN](https://en.wikipedia.org/wiki/Fully_qualified_domain_name) of the node. 
 
@@ -42,6 +42,10 @@ This field should only be set on the cluster set up coordination node aka `setup
 ```yaml
 CLUSTER_PEER_IPS=couchdb.2,couchdb.3"
 ```
+
+#### COUCHDB_SYNC_ADMINS_NODE
+
+T
 
 
 ## Contributing configuration and testing automatic cluster setup

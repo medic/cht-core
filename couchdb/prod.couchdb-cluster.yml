@@ -6,9 +6,10 @@ networks:
 
 services:
   couchdb.1:
-    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042122-test33}
+    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042622-test35}
     volumes:
     - ${DB1_DATA:-./srv1}:/opt/couchdb/data
+    - cht-credentials:/opt/couchdb/etc/local.d/
     environment:
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
@@ -22,7 +23,7 @@ services:
       cht-net:
 
   couchdb.2:
-    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042122-test33}
+    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042622-test35}
     volumes:
     - ${DB2_DATA:-./srv2}:/opt/couchdb/data
     environment:
@@ -32,12 +33,13 @@ services:
       - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
       - "SVC_NAME=${SVC2_NAME:-couchdb.2}"
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
+      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
     restart: always
     networks:
       cht-net:
 
   couchdb.3:
-    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042122-test33}
+    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042622-test35}
     volumes:
     - ${DB3_DATA:-./srv3}:/opt/couchdb/data
     environment:
@@ -47,6 +49,7 @@ services:
       - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
       - "SVC_NAME=${SVC3_NAME:-couchdb.3}"
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
+      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
     restart: always
     networks:
       cht-net:
@@ -64,3 +67,8 @@ services:
       - "HAPROXY_PORT=${HAPROXY_PORT:-5984}"
     networks:
       cht-net:
+    ports:
+      - ${HAPROXY_PORT:-5984}:${HAPROXY_PORT:-5984}
+
+volumes:
+  cht-credentials:

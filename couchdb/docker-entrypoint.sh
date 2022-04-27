@@ -52,7 +52,7 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
     # Ensure that CouchDB will write custom settings in this file
     touch /opt/couchdb/etc/local.d/cluster-credentials.ini
 
-    if [ "$COUCHDB_USER" ] && [ "$COUCHDB_PASSWORD" ]; then
+    if [ "$COUCHDB_USER" ] && [ "$COUCHDB_PASSWORD" ] && [ -z "$COUCHDB_SYNC_ADMINS_NODE" ]; then
         # Create admin only if not already present
         if ! grep -Pzoqr "\[admins\]\n$COUCHDB_USER =" /opt/couchdb/etc/local.d/*.ini; then
             printf "\n[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_PASSWORD" >> /opt/couchdb/etc/local.d/cluster-credentials.ini
@@ -89,6 +89,15 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
             printf "\n[log]\nlevel = %s\n" "$COUCHDB_LOG_LEVEL" >> /opt/couchdb/etc/local.d/cluster-credentials.ini
         fi
     fi
+
+    if [ "$COUCHDB_SYNC_ADMINS_NODE" ]; then
+        # Wait until couchdb1 node is ready and then retrieve salted password. We need to use same
+        # hashed password across all nodes so that session cookies can be reused.
+        /bin/bash /opt/couchdb/etc/set-up-cluster.sh check_if_couchdb_is_ready http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SYNC_ADMINS_NODE:5984
+        COUCHDB_HASHED_PASSWORD=`curl http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SYNC_ADMINS_NODE:5984/_node/couchdb@$COUCHDB_SYNC_ADMINS_NODE/_config/admins/$COUCHDB_USER | sed "s/^\([\"]\)\(.*\)\1\$/\2/g"`
+        printf "[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_HASHED_PASSWORD" > /opt/couchdb/etc/local.d/cluster-credentials.ini
+    fi
+
 
     #Start clustering after UUID, Secret and Nodename are written. 
     /bin/bash /opt/couchdb/etc/set-up-cluster.sh
