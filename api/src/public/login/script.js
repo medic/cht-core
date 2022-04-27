@@ -213,3 +213,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 });
+
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    checkSession();
+  }
+});

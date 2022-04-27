@@ -22,6 +22,7 @@ angular.module('inboxServices').factory('DB',
     const isOnlineOnly = Session.isOnlineOnly();
 
     const getUsername = remote => {
+      Session.checkCurrentSession();
       const username = Session.userCtx().name;
       if (!remote) {
         return username;
