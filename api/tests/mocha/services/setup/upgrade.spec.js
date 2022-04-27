@@ -214,10 +214,12 @@ describe('upgrade service', () => {
     });
 
     it('should throw errors', async () => {
+      sinon.stub(upgradeLogService, 'setErrored').resolves();
       sinon.stub(upgradeSteps, 'complete').rejects({ status: 404 });
       const buildInfo = { version: 4 };
 
       await expect(upgrade.complete(buildInfo)).to.be.rejected.and.eventually.deep.equal({ status: 404 });
+      expect(upgradeLogService.setErrored.callCount).to.equal(1);
     });
   });
 });

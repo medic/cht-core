@@ -54,7 +54,12 @@ const safeInstall = async (buildInfo, stageOnly) => {
  * @return {Promise<void>}
  */
 const complete = async (buildInfo) => {
-  return upgradeSteps.complete(buildInfo);
+  try {
+    return await upgradeSteps.complete(buildInfo);
+  } catch (err) {
+    await upgradeLog.setErrored();
+    throw err;
+  }
 };
 
 const abort = () => {

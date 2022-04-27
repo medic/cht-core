@@ -195,11 +195,12 @@ angular.module('controllers').controller('UpgradeCtrl',
         .post(url, { build })
         .catch(err => {
           // todo which status do we get with nginx???
-          if (err && (!err.status || err.status !== 500) && action === 'complete') {
+          // exclude "50x" like statuses that come from nginx
+          if (err && !err.status && action === 'complete') {
             // refresh page after API is back up
             return waitUntilApiStarts().then(() => reloadPage());
           }
-          throw err;
+          return logError(err, 'instance.upgrade.error.deploy');
         })
         .then(() => getCurrentUpgrade());
     };
