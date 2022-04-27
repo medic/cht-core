@@ -12,7 +12,7 @@
 # the License.
 
 set -e
-
+CLUSTER_CREDENTIALS="/opt/couchdb/etc/local.d/cluster-credentials.ini"
 # first arg is `-something` or `+something`
 if [ "${1#-}" != "$1" ] || [ "${1#+}" != "$1" ]; then
     set -- /opt/couchdb/bin/couchdb "$@"
@@ -50,12 +50,12 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
     find /opt/couchdb/etc -type f ! -perm 0644 -exec chmod -f 0644 '{}' +
 
     # Ensure that CouchDB will write custom settings in this file
-    touch /opt/couchdb/etc/local.d/cluster-credentials.ini
+    touch $CLUSTER_CREDENTIALS
 
     if [ "$COUCHDB_USER" ] && [ "$COUCHDB_PASSWORD" ] && [ -z "$COUCHDB_SYNC_ADMINS_NODE" ]; then
         # Create admin only if not already present
         if ! grep -Pzoqr "\[admins\]\n$COUCHDB_USER =" /opt/couchdb/etc/local.d/*.ini; then
-            printf "\n[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_PASSWORD" >> /opt/couchdb/etc/local.d/cluster-credentials.ini
+            printf "\n[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_PASSWORD" >> $CLUSTER_CREDENTIALS
         fi
 
     fi
@@ -63,7 +63,7 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
     if [ "$COUCHDB_SECRET" ]; then
         # Set secret only if not already present
         if ! grep -Pzoqr "\[couch_httpd_auth\]\nsecret =" /opt/couchdb/etc/local.d/*.ini; then
-            printf "\n[couch_httpd_auth]\nsecret = %s\n" "$COUCHDB_SECRET" >> /opt/couchdb/etc/local.d/cluster-credentials.ini
+            printf "\n[couch_httpd_auth]\nsecret = %s\n" "$COUCHDB_SECRET" >> $CLUSTER_CREDENTIALS
         fi
     fi
 
@@ -72,7 +72,7 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
     if [ "$COUCHDB_UUID" ]; then
         # Set uuid only if not already present
         if ! grep -Pzoqr "\[couchdb\]\nuuid =" /opt/couchdb/etc/local.d/*.ini; then
-            printf "\n[couchdb]\nuuid = %s\n" "$COUCHDB_UUID" >> /opt/couchdb/etc/local.d/cluster-credentials.ini
+            printf "\n[couchdb]\nuuid = %s\n" "$COUCHDB_UUID" >> $CLUSTER_CREDENTIALS
         fi
     fi
 
@@ -86,7 +86,7 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 
     if [ "$COUCHDB_LOG_LEVEL" ]; then
         if ! grep -Pzoqr "\[log\]\nlevel =" /opt/couchdb/etc/local.d/*.ini; then
-            printf "\n[log]\nlevel = %s\n" "$COUCHDB_LOG_LEVEL" >> /opt/couchdb/etc/local.d/cluster-credentials.ini
+            printf "\n[log]\nlevel = %s\n" "$COUCHDB_LOG_LEVEL" >> $CLUSTER_CREDENTIALS
         fi
     fi
 
@@ -95,14 +95,17 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
         # hashed password across all nodes so that session cookies can be reused.
         /bin/bash /opt/couchdb/etc/set-up-cluster.sh check_if_couchdb_is_ready http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SYNC_ADMINS_NODE:5984
         COUCHDB_HASHED_PASSWORD=`curl http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SYNC_ADMINS_NODE:5984/_node/couchdb@$COUCHDB_SYNC_ADMINS_NODE/_config/admins/$COUCHDB_USER | sed "s/^\([\"]\)\(.*\)\1\$/\2/g"`
-        printf "[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_HASHED_PASSWORD" > /opt/couchdb/etc/local.d/cluster-credentials.ini
+
+        if ! grep -Pzoqr "$COUCHDB_USER = $COUCHDB_HASHED_PASSWORD" /opt/couchdb/etc/local.d/*.ini; then
+            printf "[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_HASHED_PASSWORD" >> $CLUSTER_CREDENTIALS
+        fi
     fi
 
 
     #Start clustering after UUID, Secret and Nodename are written. 
     /bin/bash /opt/couchdb/etc/set-up-cluster.sh
 
-    chown -f couchdb:couchdb /opt/couchdb/etc/local.d/cluster-credentials.ini || true
+    chown -f couchdb:couchdb $CLUSTER_CREDENTIALS || true
 
     su -c "ulimit -n 100000 && exec $@" couchdb
 fi

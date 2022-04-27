@@ -45,7 +45,7 @@ CLUSTER_PEER_IPS=couchdb.2,couchdb.3"
 
 #### COUCHDB_SYNC_ADMINS_NODE
 
-T
+This field ensures that the hash that CouchDB generates during bootup for saving your admin password syncs across nodes in the cluster. This sync of the hashed password is required for user session cookies to work across nodes. We omit this field from our setup-coordination-node, which is commonly couchdb.1. This is a required field for the other nodes in your cluster.
 
 
 ## Contributing configuration and testing automatic cluster setup
