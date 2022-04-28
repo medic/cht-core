@@ -55,7 +55,11 @@ const safeInstall = async (buildInfo, stageOnly) => {
  */
 const complete = async (buildInfo) => {
   try {
-    return await upgradeSteps.complete(buildInfo);
+    // this request, when actually performing an upgrade, would stop the container running API, and restart it using
+    // the updated image. However, when upgrading to the "same" version, the request will just succeed
+    const result = await upgradeSteps.complete(buildInfo);
+    await upgradeSteps.finalize();
+    return result;
   } catch (err) {
     await upgradeLog.setErrored();
     throw err;

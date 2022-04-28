@@ -436,10 +436,12 @@ describe('Upgrade steps', () => {
       sinon.stub(upgradeUtils, 'getStagingDoc').resolves({ the: 'staging_doc' });
       sinon.stub(upgradeUtils, 'getUpgradeServicePayload').returns({ the: 'payload' });
       sinon.stub(upgradeUtils, 'makeUpgradeRequest').rejects({ error: 'boom' });
+      sinon.stub(upgradeSteps, 'finalize');
 
       const buildInfo = { version: '4.0.0' };
 
       await expect(upgradeSteps.complete(buildInfo)).to.be.rejected.and.eventually.deep.equal({ error: 'boom' });
+      expect(upgradeSteps.finalize.callCount).to.equal(0);
     });
   });
 });
