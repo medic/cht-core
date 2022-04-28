@@ -55,7 +55,7 @@ services:
       cht-net:
 
   haproxy:
-    image: medicmobile/cht-haproxy:${CHT_CORE_RELEASE:-archv3-test6}
+    image: medicmobile/cht-haproxy:${CHT_CORE_RELEASE:-archv3-042822-v256}
     hostname: haproxy
     environment:
       - "HAPROXY_IP=${HAPROXY_IP:-haproxy}"
