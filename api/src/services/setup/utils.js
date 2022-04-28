@@ -308,13 +308,13 @@ const getUpgradeServicePayload = (stagingDoc) => {
     });
 
   const containers = stagingDoc.tags.map(tag => ({
-    containerName: tag.container_name,
-    imageTag: tag.image,
+    container_name: tag.container_name,
+    image_tag: tag.image,
   }));
 
   return {
     containers,
-    dockerCompose,
+    docker_compose: dockerCompose,
   };
 };
 
