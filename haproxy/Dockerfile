@@ -1,6 +1,9 @@
-FROM haproxy:1.8.14
+FROM haproxy:2.5.6
 
+USER root
 RUN apt-get update && apt-get install rsyslog luarocks gettext -y
+
+USER haproxy
 
 ADD haproxy.cfg /usr/local/etc/haproxy
 ADD haproxy.conf /etc/rsyslog.d
