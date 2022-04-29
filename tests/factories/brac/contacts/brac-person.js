@@ -153,9 +153,9 @@ const bracPerson = () => {
         return dateofBirth;
       }
     })
-    .attr('current_age', ['subtype', 'age_years'], (subtype, ageYears) => {
+    .attr('current_age', ['subtype', 'date_of_birth'], (subtype, dateOfBirth) => {
       if (isFamilyMember(subtype)) {
-        return ageYears;
+        return moment().subtract(dateOfBirth, 'year').format('YYYY-MM-DD');
       }
     })
     .attr('c_sex', ['subtype', 'sex'], (subtype, sex) => {
