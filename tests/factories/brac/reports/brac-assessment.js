@@ -76,20 +76,17 @@ module.exports = new Factory()
       return patientAgeDisplay;
     })
   .attr('group_assess', () => {
-    const isAlive = Faker.faker.random.arrayElement(YES_NO);
-    let deathDate = null;
-    let deathCause = null;
+    const groupAssess = {
+      is_alive: Faker.faker.random.arrayElement(YES_NO),
+      death_date: null,
+      death_cause: null
+    };
     if (isAlive === 'no') {
       const amount = Faker.faker.datatype.number({ min: 1, max: 6 });
-      deathDate = moment().subtract(amount, 'months').format('YYYY-MM-DD');
-      deathCause = Faker.faker.random
+      groupAssess.death_date = moment().subtract(amount, 'months').format('YYYY-MM-DD');
+      groupAssess.death_cause = Faker.faker.random
         .arrayElement(['diarrhoea', 'malaria', 'pneumonia', 'other']);
     }
-    const groupAssess = {
-      is_alive: isAlive,
-      death_date: deathDate,
-      death_cause: deathCause
-    };
     return groupAssess;
   })
   .attr('group_fever',
