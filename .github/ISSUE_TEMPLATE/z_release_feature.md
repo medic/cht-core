@@ -13,7 +13,6 @@ When development is ready to begin on a [Feature Release](https://docs.community
 
 - [ ] Create a GH Milestone for the release.
 - [ ] Add all the issues to be worked on to the Milestone.
-- [ ] Identify any features and improvements in the release that need end-user documentation (beyond eng team documentation improvements) and create corresponding issues in the cht-docs repo
 - [ ] Have an actual named deployment and specific end user that will be testing this Feature Release. The need to test in production, on the latest version. No speculative Feature Releases.
 - [ ] Assign an engineer as Release Engineer for this release.
 
