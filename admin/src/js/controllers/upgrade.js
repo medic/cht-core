@@ -58,7 +58,6 @@ angular.module('controllers').controller('UpgradeCtrl',
         .then(({ data: { upgradeDoc, indexers } }) => {
           if ($scope.upgradeDoc && !upgradeDoc) {
             const expectedVersion = $scope.upgradeDoc.to && $scope.upgradeDoc.to.build;
-            console.log(expectedVersion);
             getExistingDeployment(true, expectedVersion);
           }
 
