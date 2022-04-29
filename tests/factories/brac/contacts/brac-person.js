@@ -94,12 +94,9 @@ const bracPerson = () => {
       return name;
     })
     .attr('chp_id', ['subtype', '_id'], (subtype, _id) => {
-      if (subtype !== 'chw') {
-        return null;
-      } else {
-        return _id;
-      }
-    })
+if (isChw(subtype)) {
+  return _id;
+}
     .attr('chp_profile',
       ['subtype', 'date_of_birth', 'sex', 'phone', 'phone_alternate'],
       (subtype, dateOfBirth, sex, phone, phoneAlternate) => {
