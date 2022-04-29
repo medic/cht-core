@@ -278,8 +278,8 @@ describe('UpgradeCtrl controller', () => {
   it('should continue following when request errors', async () => {
     const deployInfo = { the: 'deplopy info', version: '4.1.0' };
     const upgradeDoc = {
-      from: { version: '4.1.0' },
-      to: { version: '4.2.0' },
+      from: { version: '4.1.0', build: '4.1.0' },
+      to: { version: '4.2.0', build: '4.2.0' },
     };
     Object.freeze(deployInfo);
     Object.freeze(upgradeDoc);
@@ -399,9 +399,19 @@ describe('UpgradeCtrl controller', () => {
       http.get.withArgs('/api/deploy-info')
         .onCall(0).resolves({ data: deployInfo })
         .onCall(1).resolves({ data: deployInfoUpgraded });
+      const upgradeDoc = {
+        from: {
+          version: '4.1.0',
+          build: '4.1.0',
+        },
+        to: {
+          version: '4.2.0',
+          build: '4.2.0',
+        }
+      };
       http.get.withArgs('/api/v2/upgrade')
         .onCall(0).resolves({ data: { upgradeDoc: undefined  } })
-        .onCall(1).resolves({ data: { upgradeDoc: { up: 'grade' }, indexers: [] } })
+        .onCall(1).resolves({ data: { upgradeDoc, indexers: [] } })
         .onCall(2).resolves({ data: { upgradeDoc: undefined, indexers: [] } });
       http.post.withArgs('/api/v2/upgrade').resolves();
 
@@ -429,7 +439,7 @@ describe('UpgradeCtrl controller', () => {
         { build: { version: '4.2.0' } },
       ]);
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
-      expect(scope.upgradeDoc).to.deep.equal({ up: 'grade' });
+      expect(scope.upgradeDoc).to.deep.equal(upgradeDoc);
 
       expect(state.go.callCount).to.equal(0);
 
