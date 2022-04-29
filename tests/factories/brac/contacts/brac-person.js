@@ -94,19 +94,15 @@ const bracPerson = () => {
       return name;
     })
     .attr('chp_id', ['subtype', '_id'], (subtype, _id) => {
-      if (subtype !== 'chw') {
-        return null;
-      } else {
-        return _id;
-      }
-    })
+if (isChw(subtype)) {
+  return _id;
+}
     .attr('chp_profile',
       ['subtype', 'date_of_birth', 'sex', 'phone', 'phone_alternate'],
       (subtype, dateOfBirth, sex, phone, phoneAlternate) => {
         if (isChw(subtype)) {
-          return chpProfile.build({},
-            { dob: dateOfBirth, sex: sex, phone_number: phone, alternate_number: phoneAlternate });
-        }
+const chpData = { dob: dateOfBirth, sex: sex, phone_number: phone, alternate_number: phoneAlternate };
+return return chpProfile.build({}, chpData);
       })
     .attr('pregnant_at_registration', ['subtype'], (subtype) => {
       if (subtype === memberEligibleWoman) {
@@ -168,7 +164,7 @@ const bracPerson = () => {
 
 const generateBracPerson = (parent, subtype) => {
   if (subtype === 'other') {
-    subtype = Faker.faker.random.arrayElement(['member_child', 'member_eligible_woman', null]);
+subtype = Faker.faker.random.arrayElement([memberChild, memberEligibleWoman, null]);
   }
   return bracPerson().build({ parent }, { subtype });
 };
