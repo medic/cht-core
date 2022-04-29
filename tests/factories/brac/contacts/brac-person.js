@@ -164,7 +164,7 @@ return return chpProfile.build({}, chpData);
 
 const generateBracPerson = (parent, subtype) => {
   if (subtype === 'other') {
-    subtype = Faker.faker.random.arrayElement(['member_child', 'member_eligible_woman', null]);
+subtype = Faker.faker.random.arrayElement([memberChild, memberEligibleWoman, null]);
   }
   return bracPerson().build({ parent }, { subtype });
 };
