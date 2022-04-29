@@ -357,30 +357,29 @@ module.exports = new Factory()
     ['patient_age_in_years', 'patient_age_in_months', 'group_assess', 'group_cough', 'group_diarrhea', 'group_fever'],
     (patientAgeInYears, patientAgeInMonths, groupAssess, groupCough, groupDiarrhea, groupfever) => {
       if (isAChildAndAlive(12, patientAgeInMonths, patientAgeInYears, groupAssess.is_alive)) {
-        let diagnosisCough = '';
+        const groupDiagnosis = {
+          diagnosis_cough: diagnosisCough,
+          diagnosis_diarrhea: diagnosisDiarrhea,
+          diagnosis_fever: diagnosisFever
+        };
         if (groupCough.patient_coughs === 'yes'
           && groupCough.coughing_duration > 14
           && groupCough.chest_indrawing === 'yes') {
-          diagnosisCough = 'pneumonia2c,cough2';
+          groupDiagnosis.diagnosis_cough = 'pneumonia2c,cough2';
         }
         let diagnosisDiarrhea = '';
         if (groupDiarrhea.patient_diarrhea === 'yes' &&
           (groupDiarrhea.diarrhea_duration > 14 || groupDiarrhea.diarrhea_blood === 'yes')) {
-          diagnosisDiarrhea = 'diarrhea2,diarrhea1';
+          groupDiagnosis.diagnosis_diarrhea = 'diarrhea2,diarrhea1';
         }
         let diagnosisFever = '';
         if (groupfever.patient_fever === 'yes' || groupfever.patient_temperature > 37.5) {
           const seriousFever = (groupfever.fever_duration > 7 || groupfever.patient_temperature >= 40);
           const negativeMalaria = groupfever.mrdt_result === 'negative';
           if (seriousFever) {
-            diagnosisFever = negativeMalaria ? 'fever2,fever1' : 'malaria2,malaria1';
+            groupDiagnosis.diagnosis_fever = negativeMalaria ? 'fever2,fever1' : 'malaria2,malaria1';
           }
         }
-        const groupDiagnosis = {
-          diagnosis_cough: diagnosisCough,
-          diagnosis_diarrhea: diagnosisDiarrhea,
-          diagnosis_fever: diagnosisFever
-        };
         return groupDiagnosis;
       }
     });
