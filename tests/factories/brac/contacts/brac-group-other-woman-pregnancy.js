@@ -17,6 +17,9 @@ const moment = require('moment');
  * p_test_kit_result:	Administer the test. The results of the test (pos or neg)
  * fp_flow: If the woman is not pregnant. She is asked to complete the family planing workflow.
  */
+
+const POSITIVE_NEGATIVE = ['pos', 'neg'];
+
 module.exports = new Factory()
   .attr('married', Faker.faker.datatype.boolean())
   .attr('other_woman_pregnant', '')
@@ -38,7 +41,7 @@ module.exports = new Factory()
   })
   .attr('p_test_result', ['p_test'], (pTest) => {
     if (pTest) {
-      return Faker.faker.random.arrayElement(['pos', 'neg']);
+      return Faker.faker.random.arrayElement(POSITIVE_NEGATIVE);
     }
   })
   .attr('p_test_kit', ['p_test'], (pTest) => {
@@ -48,7 +51,7 @@ module.exports = new Factory()
   })
   .attr('p_test_kit_result', ['p_test_kit'], (pTestKit) => {
     if (pTestKit) {
-      return Faker.faker.random.arrayElement(['pos', 'neg']);
+      return Faker.faker.random.arrayElement(POSITIVE_NEGATIVE);
     }
   })
   .attr('fp_flow', ['other_woman_pregnant'], (otherWomanPregnant) => {
