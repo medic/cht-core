@@ -8,7 +8,7 @@ const NONE = 'fp_none';
 /**
  * Generates birth control method.
  * None cannot be selected along with the other options.
- * Condoms are the only family planing method that can be combined with another family planning method.
+ * Condoms are the only family planning method combined with another family planning method.
  */
 const generateFpMethods = () => {
   const methods = [];
