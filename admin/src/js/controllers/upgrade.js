@@ -159,7 +159,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     };
 
     const reloadPage = () => {
-      $state.go('upgrade', { upgraded: true });
+      $state.go('upgrade', { upgraded: true }, { reload: true });
     };
 
     $scope.upgrade = (build, action) => {

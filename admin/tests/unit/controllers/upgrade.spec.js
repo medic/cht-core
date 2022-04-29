@@ -452,7 +452,7 @@ describe('UpgradeCtrl controller', () => {
       await nextTick();
       expect(http.get.withArgs('/api/deploy-info').callCount).to.equal(2);
       expect(state.go.callCount).to.equal(1);
-      expect(state.go.args[0]).to.deep.equal(['upgrade', { upgraded: true }]);
+      expect(state.go.args[0]).to.deep.equal(['upgrade', { upgraded: true }, { reload: true }]);
     });
 
     it('should display an error when upgrade could not complete', async () => {
