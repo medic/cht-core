@@ -65,8 +65,8 @@ const bracPerson = () => {
       ['subtype', 'date_of_birth_method', 'age_years', 'age_months'],
       (subtype, dateOfBirthMethod, ageYears, ageMonths) => {
         if (dateOfBirthMethod === approxDateOfBirthMethod) {
-          const amount = ageYears * 12 + ageMonths;
-          return moment().subtract(amount, 'months').format('YYYY-MM-DD');
+          const ageInMonths = ageYears * 12 + ageMonths;
+          return moment().subtract(ageInMonths, 'months').format('YYYY-MM-DD');
         }
         return moment().subtract(getAgeInYears(subtype), 'year').format('YYYY-MM-DD');
       })

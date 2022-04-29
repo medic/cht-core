@@ -8,12 +8,12 @@ const moment = require('moment');
  * brac-group-other-woman-pregnancy Factory generates Javascript object that represent a survey to
  * determine if the created women is pregnant.
  * Terminology:
- * o_lmp: Last menstrual cycle date is known (yes or no)
+ * o_lmp: Last menstrual cycle date is known (true or false)
  * o_lmp_start: Start date of the last cycle
  * o_lmp_approx: Approximate date of last cycle
- * p_test: Pregnancy test done (yes or no)
+ * p_test: Pregnancy test done (true or false)
  * p_test_result: The results of the test (pos or neg)
- * p_test_kit: Use the preganancy kit to confirm pregnancy (yes or no)
+ * p_test_kit: Use the preganancy kit to confirm pregnancy (true or false)
  * p_test_kit_result:	Administer the test. The results of the test (pos or neg)
  * fp_flow: If the woman is not pregnant. She is asked to complete the family planing workflow.
  */
