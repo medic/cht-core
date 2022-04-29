@@ -101,9 +101,8 @@ if (isChw(subtype)) {
       ['subtype', 'date_of_birth', 'sex', 'phone', 'phone_alternate'],
       (subtype, dateOfBirth, sex, phone, phoneAlternate) => {
         if (isChw(subtype)) {
-          return chpProfile.build({},
-            { dob: dateOfBirth, sex: sex, phone_number: phone, alternate_number: phoneAlternate });
-        }
+const chpData = { dob: dateOfBirth, sex: sex, phone_number: phone, alternate_number: phoneAlternate };
+return return chpProfile.build({}, chpData);
       })
     .attr('pregnant_at_registration', ['subtype'], (subtype) => {
       if (subtype === memberEligibleWoman) {
