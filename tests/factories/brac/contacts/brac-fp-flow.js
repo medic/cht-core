@@ -23,7 +23,7 @@ const generateFpMethods = () => {
 /**
  * BRAC International is a leading nonprofit organisation with a mission to empower people and
  * communities in situations of poverty, illiteracy, disease, and social injustice
- * brac-fp-flow Factory generates Javascript object that represent Family Planing Workflow
+ * brac-fp-flow Factory generates Javascript object that represent Family Planning Workflow
  * for the brac configuration.
  */
 module.exports = new Factory()
