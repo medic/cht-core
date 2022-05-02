@@ -315,40 +315,38 @@ module.exports = new Factory()
           }
         }
         if (patientAgeInMonths < 24) {
-          const groupUnder2yr = {
+          groupNutritionAssessment.group_under_2yr = {
             breastfeeding: Faker.faker.random.arrayElement(YES_NO),
             breastfed_24hrs: null,
             times_breastfed: null
           };
-          if (groupUnder2yr.breastfeeding === 'yes') {
-            groupUnder2yr.breastfed_24hrs = Faker.faker.random.arrayElement(YES_NO);
-            if (groupUnder2yr.breastfed_24hrs === 'yes') {
-              groupUnder2yr.times_breastfed = Faker.faker.helpers.uniqueArray(
+          if (groupNutritionAssessment.group_under_2yr.breastfeeding === 'yes') {
+            groupNutritionAssessment.group_under_2yr.breastfed_24hrs = Faker.faker.random.arrayElement(YES_NO);
+            if (groupNutritionAssessment.group_under_2yr.breastfed_24hrs === 'yes') {
+              groupNutritionAssessment.group_under_2yr.times_breastfed = Faker.faker.helpers.uniqueArray(
                 ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
                 Faker.faker.datatype.number({ min: 1, max: 10 })).toString();
             }
           }
           if (patientAgeInMonths >= 6 && patientAgeInMonths < 12) {
-            const groupFoodEaten = {
+            groupNutritionAssessment.group_food_eaten = {
               times_eaten: Faker.faker.random.arrayElement(
                 ['0', '1', '2', '3', '4', '5', '6', 'gt_6']),
               food_eaten: []
             };
             if (Faker.faker.datatype.boolean()) {
-              if (groupUnder2yr.breastfeeding === 'yes') {
-                groupFoodEaten.food_eaten.push(...Faker.faker.helpers.uniqueArray(
+              if (groupNutritionAssessment.group_under_2yr.breastfeeding === 'yes') {
+                groupNutritionAssessment.group_food_eaten.food_eaten.push(...Faker.faker.helpers.uniqueArray(
                   [...BREAST_MILK, FOOD_EATEN],
                   Faker.faker.datatype.number({ min: 1, max: 4 })));
               } else {
-                groupFoodEaten.food_eaten.push(...Faker.faker.helpers.uniqueArray(
+                groupNutritionAssessment.group_food_eaten.food_eaten.push(...Faker.faker.helpers.uniqueArray(
                   FOOD_EATEN, Faker.faker.datatype.number({ min: 1, max: 3 })));
               }
             } else {
-              groupFoodEaten.food_eaten.push(NONE);
+              groupNutritionAssessment.group_food_eaten.food_eaten.push(NONE);
             }
-            groupNutritionAssessment.group_food_eaten = groupFoodEaten;
           }
-          groupNutritionAssessment.group_under_2yr = groupUnder2yr;
         }
         return groupNutritionAssessment;
       }
