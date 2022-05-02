@@ -2,11 +2,17 @@
 
   <legend translate>Users</legend>
 
-  <div class="tab-content">
+  <div class="btn-toolbar">
     <a id="add-user" class="btn btn-primary" ng-click="editUser({})">
-      <i class="fa fa-plus"></i>
+      <i class="fa fa-user"></i>
       <span translate>Add User</span>
     </a>
+
+    <a id="add-users" class="btn btn-primary" ng-click="editBulkUsers({})">
+      <i class="fa fa-users"></i>
+      <span translate>Add multiple</span>
+    </a>
+
   </div>
 
   <div class="loader" ng-show="loading"></div>
