@@ -2,6 +2,8 @@ const Factory = require('rosie').Factory;
 const Faker = require('@faker-js/faker');
 const moment = require('moment');
 
+const referPatient = (groupFollowupOptions) => ['treat_refer', 'refer_only'].includes(groupFollowupOptions.follow_up_type);
+
 module.exports = new Factory()
   .option('patient', '')
   .option('contact', '')
@@ -53,53 +55,48 @@ module.exports = new Factory()
     return groupFollowupOptions;
   })
   .attr('group_danger_signs', ['group_followup_options'], (groupFollowupOptions) => {
-    if (groupFollowupOptions.follow_up_type !== 'treat') {
-      return null;
+    if (groupFollowupOptions.follow_up_type === 'treat') {
+      const groupDangerSigns = {
+        danger_signs: Faker.faker.helpers.uniqueArray(
+          ['convulsions', 'unable_to_feed', 'vomits_everything', 'very_sleepy', 'chest_indrawing'],
+          Faker.faker.datatype.number({ min: 1, max: 5 }))
+      };
+      return groupDangerSigns;
     }
-    const groupDangerSigns = {
-      danger_signs: Faker.faker.helpers.uniqueArray(
-        ['convulsions', 'unable_to_feed', 'vomits_everything', 'very_sleepy', 'chest_indrawing'],
-        Faker.faker.datatype.number({ min: 1, max: 5 }))
-    };
-    return groupDangerSigns;
   })
   .attr('group_improved',
     ['group_followup_options', 'group_danger_signs'],
     (groupFollowupOptions, groupDangerSigns) => {
-      if (groupFollowupOptions.follow_up_type !== 'treat') {
-        return null;
-      }
-      if (!groupDangerSigns || !groupDangerSigns.danger_signs) {
-        const groupImproved = {
-          g_patient_treatment_outcome: Faker.faker.random.arrayElement(
-            ['cured', 'still_recovering', 'bad_medicine_reaction', 'not_improving', 'died'])
-        };
-        return groupImproved;
+      if (groupFollowupOptions.follow_up_type === 'treat') {
+        if (!groupDangerSigns || !groupDangerSigns.danger_signs) {
+          const groupImproved = {
+            g_patient_treatment_outcome: Faker.faker.random.arrayElement(
+              ['cured', 'still_recovering', 'bad_medicine_reaction', 'not_improving', 'died'])
+          };
+          return groupImproved;
+        }
       }
     })
   .attr('group_referral_followup', ['group_followup_options'], (groupFollowupOptions) => {
-    if (groupFollowupOptions.follow_up_type !== 'treat_refer' && groupFollowupOptions.follow_up_type !== 'refer_only') {
-      return null;
+    if (referPatient(groupFollowupOptions)) {
+      const groupReferralFollowup = {
+        g_patient_health_facility_visit: Faker.faker.random.arrayElement(['yes', 'no'])
+      };
+      return groupReferralFollowup;
     }
-    const groupReferralFollowup = {
-      g_patient_health_facility_visit: Faker.faker.random.arrayElement(['yes', 'no'])
-    };
-    return groupReferralFollowup;
   })
   .attr('group_better',
     ['group_followup_options', 'group_referral_followup'],
     (groupFollowupOptions, groupReferralFollowup) => {
-      if (groupFollowupOptions.follow_up_type !== 'treat_refer'
-        && groupFollowupOptions.follow_up_type !== 'refer_only') {
-        return null;
+      if (referPatient(groupFollowupOptions)) {
+        if (groupReferralFollowup.g_patient_health_facility_visit === 'yes') {
+          return null;
+        }
+        const groupBetter = {
+          g_patient_better: Faker.faker.random.arrayElement(['cured', 'still_recovering', 'still_in_facility', 'died'])
+        };
+        return groupBetter;
       }
-      if (groupReferralFollowup.g_patient_health_facility_visit === 'yes') {
-        return null;
-      }
-      const groupBetter = {
-        g_patient_better: Faker.faker.random.arrayElement(['cured', 'still_recovering', 'still_in_facility', 'died'])
-      };
-      return groupBetter;
     })
   .attr('referral_follow_up_needed',
     ['group_better', 'group_improved', 'group_danger_signs'],
@@ -117,8 +114,8 @@ module.exports = new Factory()
     return (groupDangerSigns && groupDangerSigns.danger_signs) || null;
   })
   .attr('patient_improved', ['group_improved'], (groupImproved) => {
-    if ((groupImproved && groupImproved.g_patient_treatment_outcome === 'still_recovering')
-      || (groupImproved && groupImproved.g_patient_treatment_outcome === 'cured')) {
+    const improvedOutcome = ['still_recovering', 'cured'];
+    if (groupImproved && improvedOutcome.includes(groupImproved.g_patient_treatment_outcome)) {
       return 'yes';
     }
     return 'no';
@@ -127,11 +124,9 @@ module.exports = new Factory()
     if (groupBetter) {
       return groupBetter.g_patient_better;
     }
-    return null;
   })
   .attr('patient_health_facility_visit', ['group_better'], (groupBetter) => {
     if (groupBetter) {
       return groupBetter.g_patient_health_facility_visit;
     }
-    return null;
   });
