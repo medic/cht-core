@@ -88,13 +88,17 @@ module.exports = new Factory()
       groupLmp.g_lmp_date_8601 = groupLmp.g_lmp_calendar;
       groupLmp.g_lmp_date = groupLmp.g_lmp_calendar;
     } else {
-      groupLmp.g_lmp_approx = Faker.faker.random.arrayElement([61, 91, 122, 183, 244]);
+      groupLmp.g_lmp_approx = Faker.faker.random.arrayElement([UP_TO_2_MONTHS_AGO,
+        UP_TO_3_MONTHS_AGO,
+        UP_TO_4_MONTHS_AGO,
+        BETWEEN_5_TO_6_MONTHS_AGO,
+        BETWEEN_7_TO_8_MONTHS_AGO]);
       groupLmp.g_lmp_date_raw = moment().subtract(groupLmp.g_lmp_approx, 'day');
       groupLmp.g_lmp_date_8601 = moment().subtract(groupLmp.g_lmp_approx, 'day').format('YYYY-MM-DD');
       groupLmp.g_lmp_date = moment().subtract(groupLmp.g_lmp_approx, 'day').format('MMM D, YYYY');
     }
     groupLmp.g_edd_8601 = moment(groupLmp.g_lmp_date_8601).add(DURATION_OF_PREGNANCY_IN_DAYS, 'days');
-    groupLmp.g_edd = moment(groupLmp.g_lmp_date_8601).add(DURATION_OF_PREGNANCY_IN_DAYS, 'days').format('MMM D, YYYY');
+    groupLmp.g_edd = groupLmp.g_edd_8601.format('MMM D, YYYY');
     if (groupLmp.g_lmp_approx === UP_TO_2_MONTHS_AGO || groupLmp.g_lmp_approx === UP_TO_3_MONTHS_AGO) {
       groupLmp.g_preg_test = Faker.faker.random.arrayElement(YES_NO);
     }
@@ -130,7 +134,7 @@ module.exports = new Factory()
         const ancVisitRepeat = {
           anc_visit_completed: Faker.faker.random.arrayElement(
             ['anc_1', 'anc_2', 'anc_3', 'anc_4', 'anc_5', 'anc_6', 'anc_7', 'anc_8']),
-          g_anc_last_visit: moment().format('YYYY-MM-DD'),
+          g_anc_last_visit: moment().unix(),
           note_warning: '',
           g_anc_last_visit_epoch: null,
           bp_reading: Faker.faker.lorem.word()
