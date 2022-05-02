@@ -576,6 +576,59 @@ const validateUserFields = (users) => {
   };
 };
 
+const assignCsvCellValue = (data, attribute, value) => {
+  attribute = (attribute || '').trim();
+  if (!attribute.length) {
+    return;
+  }
+  data[attribute] = typeof value === 'string' ? value.replace(/^"|"$/g, '').trim() : value;
+};
+
+const parseCsvRow = (data, header, value, valueIdx) => {
+  const deepAttributes = header[valueIdx].split('.');
+
+  if (deepAttributes.length === 1) {
+    assignCsvCellValue(data, deepAttributes[0], value);
+    return;
+  }
+
+  let deepObject = data;
+  deepAttributes.forEach((attr, idx) => {
+    if (idx === deepAttributes.length - 1) {
+      return assignCsvCellValue(deepObject, attr, value);
+    }
+
+    if (!deepObject[attr]) {
+      assignCsvCellValue(deepObject, attr, {});
+    }
+    deepObject = deepObject[attr];
+  });
+
+  return data;
+};
+
+const parseCsv = (csv) => {
+  if (!csv || !csv.length) {
+    throw new Error('CSV is empty.');
+  }
+
+  const allRows = csv.split(/\r\n|\n/);
+
+  const header = allRows
+    .shift()
+    .split(',');
+
+  return allRows
+    .filter(row => row.length)
+    .map(row => {
+      const user = {};
+      row
+        .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+        .forEach((value, idx) => parseCsvRow(user, header, value, idx));
+      return user;
+    });
+};
+
 /*
  * Everything not exported directly is private.  Underscore prefix is only used
  * to export functions needed for testing.
@@ -756,6 +809,13 @@ module.exports = {
 
     return tokenLogin.manageTokenLogin(data, appUrl, response);
   },
+
+  /**
+   * Parses a CSV of users to an array of objects.
+   *
+   * @param {string} csv CSV of users.
+   */
+  parseCsv,
 
   DOC_IDS_WARN_LIMIT,
 };

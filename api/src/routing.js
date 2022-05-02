@@ -56,6 +56,10 @@ const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/'; // jshin
 const cookie = require('./services/cookie');
 const app = express();
 
+// requires content-type application/x-www-form-urlencoded header
+const formParser = bodyParser.urlencoded({ limit: '32mb', extended: false });
+// requires content-type text/plain or application/xml header
+const textParser = bodyParser.text({ limit: '32mb', type: [ 'text/plain', 'application/xml', 'text/csv' ] });
 // requires content-type application/json header
 const jsonParser = bodyParser.json({ limit: '32mb' });
 const jsonQueryParser = require('./middleware/query-parser').json;
@@ -78,16 +82,26 @@ const handleJsonRequest = (method, path, callback) => {
     }
   });
 };
+
+const handleJsonOrCsvRequest = (method, path, callback) => {
+  app[method](path, [jsonParser, textParser], (req, res, next) => {
+    const contentType = req.headers['content-type'];
+    if (!contentType || (contentType !== 'application/json' && contentType !== 'text/csv')) {
+      return serverUtils.error(
+        { code: 400, message: 'Content-Type must be application/json or text/csv' },
+        req,
+        res
+      );
+    }
+    callback(req, res, next);
+  });
+};
+
 app.deleteJson = (path, callback) =>
   handleJsonRequest('delete', path, callback);
+app.postJsonOrCsv = (path, callback) => handleJsonOrCsvRequest('post', path, callback);
 app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
 app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
-
-// requires content-type application/x-www-form-urlencoded header
-const formParser = bodyParser.urlencoded({ limit: '32mb', extended: false });
-
-// requires content-type text/plain or application/xml header
-const textParser = bodyParser.text({limit: '32mb', type: [ 'text/plain', 'application/xml' ]});
 
 app.set('strict routing', true);
 app.set('trust proxy', true);
@@ -389,7 +403,7 @@ app.get('/api/v1/forms/:form', forms.get);
 app.post('/api/v1/forms/validate', textParser, forms.validate);
 
 app.get('/api/v1/users', users.get);
-app.postJson('/api/v1/users', users.create);
+app.postJsonOrCsv('/api/v1/users', users.create);
 app.postJson('/api/v1/users/:username', users.update);
 app.delete('/api/v1/users/:username', users.delete);
 app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getUserSettings, users.info);

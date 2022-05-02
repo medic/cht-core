@@ -127,7 +127,8 @@ module.exports = {
   create: (req, res) => {
     return auth
       .check(req, 'can_create_users')
-      .then(() => usersService.createUsers(req.body, getAppUrl(req)))
+      .then(() => typeof req.body === 'string' ? usersService.parseCsv(req.body) : req.body)
+      .then(users => usersService.createUsers(users, getAppUrl(req)))
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
   },
