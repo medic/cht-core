@@ -33,7 +33,6 @@ describe('Syncing snackbar', () => {
     await (await commonPage.syncButton()).click();
     const snack = await commonPage.snackbar();
     await snack.waitForDisplayed();
-    await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'Currently syncing…');
     await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'All reports synced');
     await browser.waitUntil(async () => await snack.isDisplayedInViewport() === false);
   });
@@ -44,7 +43,6 @@ describe('Syncing snackbar', () => {
     await (await commonPage.syncButton()).click();
     const snack = await commonPage.snackbar();
     await snack.waitForDisplayed();
-    await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'Currently syncing…');
     await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'Sync failed. Unable to connect.');
 
     await browser.throttle('online');
