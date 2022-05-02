@@ -20,7 +20,7 @@ When development is ready to begin on a [Feature Release](https://docs.community
 
 - [ ] Create a new release branch in `cht-core` from the most recent release and call it  `<major>.<minor>.<patch>-FR-<FEATURE-NAME>`. If latest is `3.15.0` and the feature is to "allow movies to be uploaded", call it `3.15.0-FR-movie-upload`. Done before the release so all PRs can be set to merge to this branch, and not to `master`.
 - [ ] Set the version number in `package.json` and `package-lock.json` and submit a PR. The easiest way to do this is to use `npm --no-git-tag-version version <feature-release>`.
-- [ ] Ensure QA is debriefed and is partnering with the Trio to ensure early and often checks of the feature are on track to be of production quality from the start.
+- [ ] Ensure QA is briefed and is partnering with the Trio to ensure early and often checks of the feature are on track to be of production quality from the start.
 
 # Releasing
 
