@@ -553,6 +553,7 @@ export class EnketoService {
       return $('<temproot>').append($(xml).clone()).html();
     };
 
+    const dbDocTags = [];
     $record
       .find('[db-doc]')
       .filter((idx, element) => {
@@ -560,6 +561,7 @@ export class EnketoService {
       })
       .each((idx, element) => {
         mapOrAssignId(element);
+        dbDocTags.push(element.tagName);
       });
 
     $record
@@ -587,7 +589,7 @@ export class EnketoService {
     if (xmlVersion) {
       doc.form_version = xmlVersion;
     }
-    doc.hidden_fields = this.enketoTranslationService.getHiddenFieldList(record);
+    doc.hidden_fields = this.enketoTranslationService.getHiddenFieldList(record, dbDocTags);
 
     const attach = (elem, file, type, alreadyEncoded, xpath?) => {
       xpath = xpath || Xpath.getElementXPath(elem);

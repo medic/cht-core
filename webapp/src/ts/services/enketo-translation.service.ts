@@ -16,18 +16,13 @@ export class EnketoTranslationService {
       .find((node:any) => node.nodeName === childNodeName);
   }
 
-  private getHiddenFieldListRecursive(nodes, prefix, current) {
+  private getHiddenFieldListRecursive(nodes, prefix, current:Set<string>) {
     nodes.forEach(node => {
       const path = prefix + node.nodeName;
 
-      if (current.includes(path)) {
-        return;
-      }
-
       const attr = node.attributes.getNamedItem('tag');
-      const dbDocAttribute = node.attributes.getNamedItem('db-doc');
-      if ((attr && attr.value === 'hidden') || (dbDocAttribute && dbDocAttribute.value === 'true')) {
-        current.push(path);
+      if (attr && attr.value && attr.value.toLowerCase() === 'hidden') {
+        current.add(path);
       } else {
         const children = this.withElements(node.childNodes);
         this.getHiddenFieldListRecursive(children, path + '.', current);
@@ -133,15 +128,15 @@ export class EnketoTranslationService {
     });
   }
 
-  getHiddenFieldList (model) {
+  getHiddenFieldList (model, dbDocXpath:Array<string>) {
     model = $.parseXML(model).firstChild;
     if (!model) {
       return;
     }
     const children = this.withElements(model.childNodes);
-    const fields = [];
+    const fields = new Set(dbDocXpath);
     this.getHiddenFieldListRecursive(children, '', fields);
-    return fields;
+    return [...fields];
   }
 
   getRepeatPaths(formXml) {

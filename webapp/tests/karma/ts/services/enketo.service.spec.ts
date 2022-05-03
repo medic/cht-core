@@ -892,7 +892,7 @@ describe('Enketo service', () => {
         expect(actualReport.content_type).to.equal('xml');
         expect(actualReport.contact._id).to.equal('123');
         expect(actualReport.from).to.equal('555');
-        expect(actualReport.hidden_fields).to.deep.equal(['secret_code_name', 'doc1', 'doc2']);
+        expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
 
         expect(actualReport.fields.doc1).to.deep.equal({
           some_property_1: 'some_value_1',
@@ -964,7 +964,7 @@ describe('Enketo service', () => {
         expect(actualReport.content_type).to.equal('xml');
         expect(actualReport.contact._id).to.equal('123');
         expect(actualReport.from).to.equal('555');
-        expect(actualReport.hidden_fields).to.deep.equal(['secret_code_name', 'doc1', 'doc2']);
+        expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
 
         expect(actualReport.fields.doc1).to.deep.equal({
           some_property_1: 'some_value_1',
@@ -1032,7 +1032,7 @@ describe('Enketo service', () => {
         expect(actualReport.content_type).to.equal('xml');
         expect(actualReport.contact._id).to.equal('123');
         expect(actualReport.from).to.equal('555');
-        expect(actualReport.hidden_fields).to.deep.equal(['secret_code_name', 'doc1', 'doc2']);
+        expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
 
         expect(actualReport.fields.doc1).to.deep.equal({
           type: 'thing_1',
@@ -1098,7 +1098,7 @@ describe('Enketo service', () => {
         expect(actualReport.content_type).to.equal('xml');
         expect(actualReport.contact._id).to.equal('123');
         expect(actualReport.from).to.equal('555');
-        expect(actualReport.hidden_fields).to.deep.equal(['secret_code_name', 'repeat_doc']);
+        expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'repeat_doc']);
 
         for (let i = 1; i <= 3; ++i) {
           const repeatDocN = actual[i];
