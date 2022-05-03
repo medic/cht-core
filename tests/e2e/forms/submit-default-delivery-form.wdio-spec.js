@@ -158,6 +158,9 @@ describe('Submit Default Delivery Report', () => {
     expect(_.uniq(updatedDeadBabyUUIds).length).to.equal(noOfDeadBabies);
     expect(_.uniq(updatedAliveBabyUUIds).length).to.deep.equal(noOfAliveBabies);
 
+    expect(_.intersection(deadBabyUUIds, updatedDeadBabyUUIds)).to.deep.equal([]);
+    expect(_.intersection(aliveBabyUUIds, updatedAliveBabyUUIds)).to.deep.equal([]);
+
     const updatedDeadBabies = await utils.getDocs(updatedDeadBabyUUIds);
     const updatedAliveBabiles = await utils.getDocs(updatedAliveBabyUUIds);
 
