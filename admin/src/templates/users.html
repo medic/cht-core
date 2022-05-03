@@ -5,12 +5,16 @@
   <div class="btn-toolbar">
     <a id="add-user" class="btn btn-primary" ng-click="editUser({})">
       <i class="fa fa-user"></i>
-      <span translate>Add User</span>
+      <span>Add User</span>
     </a>
 
-    <a id="add-users" class="btn btn-primary" ng-click="editBulkUsers({})">
+    <a id="add-users" class="btn btn-primary" ng-click="showAddMultipleUsersModal()">
       <i class="fa fa-users"></i>
       <span translate>Add multiple</span>
+    </a>
+
+    <a class="btn btn-primary" ng-click="showFullscreen()">
+      <span >showFullscreen</span>
     </a>
 
   </div>
@@ -43,5 +47,32 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div ng-if="displayAddMultipleUsersModal">
+    <mm-modal
+            status="status"
+            id="'edit-translation'"
+            title-key="editing ? 'Edit translation' : 'translation.add'"
+            submit-key="'Submit'"
+            submitting-key="'Submitting'"
+            on-cancel="cancel()"
+            on-submit="submit()"
+            on-delete="delete()"
+            show-delete="isCustom"
+    >
+      <form action="" method="POST">
+        <div class="form-group" ng-class="{ required: !editing }">
+          <label translate>translation.key</label>
+          <input class="form-control" ng-model="model.key" ng-disabled="editing">
+          <span class="error" ng-if="errors.key">{{errors.key}}</span>
+        </div>
+        <div class="form-group" ng-repeat="locale in model.locales track by locale._id">
+          <label>{{locale.name}}</label>
+          <textarea class="form-control" ng-model="model.values[locale.code]"></textarea>
+        </div>
+      </form>
+    </mm-modal>
+<strong>holqqqqq</strong>
   </div>
 </div>

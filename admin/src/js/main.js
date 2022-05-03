@@ -66,6 +66,7 @@ require('./controllers/targets-edit');
 require('./controllers/upgrade');
 require('./controllers/upgrade-confirm');
 require('./controllers/users');
+require('./controllers/multiple-user');
 
 angular.module('directives', ['ngSanitize']);
 require('./directives/file-model');
@@ -73,6 +74,7 @@ require('./directives/modal');
 require('./directives/pagination');
 require('./directives/relative-date');
 require('./directives/release');
+require('./directives/fullscreen-window');
 
 // directives we borrow from webapp
 angular.module('inboxDirectives', []);

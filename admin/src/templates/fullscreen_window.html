@@ -1,0 +1,13 @@
+<div  ng-attr-id="{{id}}">
+    <div class="modal-dialog" style="width: 100% !important; height: 100%">
+      <div class="modal-header header">
+        <button type="button" class="cancel close" ng-if="showCloseButton" ng-disabled="status.processing"
+                ng-click="onCancel()">&times;
+        </button>
+        <h1 class="navbar-brand">{{titleKey}}</h1>
+      </div>
+      <div class="modal-body" ng-transclude>
+      </div>
+  </div>
+</div>
+
