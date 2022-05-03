@@ -9,7 +9,6 @@ const dataConfig = require('./data-config.json');
 const sizeConfig = require('./size-config.json');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const args = process.argv.slice(2);
-//const [, , threadId, directory] = process.argv;
 const districtHospitalName = args[0] + '-districthospital';
 const numberOfDistrictHospitals = sizeConfig.number_of_district_hospitals;
 const numberOfManagersPerDistrictHospital = sizeConfig.number_of_managers_per_district_hospitals;
