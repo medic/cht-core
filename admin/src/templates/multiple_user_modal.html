@@ -1,0 +1,45 @@
+  <mm-modal
+    cancel-key="'Cancel'"
+    id="'edit-language'"
+    status="status"
+    titleKey=""
+    hideFooter="hideFooter"
+    on-cancel="onCancel()"
+
+  >
+    <div ng-if="displayAddMultipleModal">
+      <div>
+      <form id="users-upload">
+        <div class="text-center">
+          <h3>
+            <span>Add multiple users</span>
+          </h3>
+          <p>To add multiple users, please upload the appropriate spreadsheet.</p>
+          <p><strong>Only .csv file are accepted.</strong></p>
+
+          <div class="form-actions">
+            <a class="btn btn-primary choose">
+              <span >Upload .csv</span>
+            </a>
+            <div class="loader small inline" ng-show="status.uploading"></div>
+            <div class="">
+              <input class="uploader" type="file" accept=".csv">
+            </div>
+          </div>
+
+        </div>
+
+      </form>
+      </div>
+    </div>
+
+    <div ng-if="displayUnavailableModal" class="window-center">
+        <div class="text-center">
+          <h3>
+            <span>Currently unavailable</span>
+          </h3>
+          <p>Someone else in the system is currently in the process of adding multiple users.</p>
+          <p><strong>Please try again later</strong></p>
+        </div>
+    </div>
+  </mm-modal>
