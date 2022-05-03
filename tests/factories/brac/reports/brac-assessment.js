@@ -81,7 +81,7 @@ module.exports = new Factory()
       death_date: null,
       death_cause: null
     };
-    if (isAlive === 'no') {
+    if (groupAssess.is_alive === 'no') {
       const amount = Faker.faker.datatype.number({ min: 1, max: 6 });
       groupAssess.death_date = moment().subtract(amount, 'months').format('YYYY-MM-DD');
       groupAssess.death_cause = Faker.faker.random
@@ -356,21 +356,19 @@ module.exports = new Factory()
     (patientAgeInYears, patientAgeInMonths, groupAssess, groupCough, groupDiarrhea, groupfever) => {
       if (isAChildAndAlive(12, patientAgeInMonths, patientAgeInYears, groupAssess.is_alive)) {
         const groupDiagnosis = {
-          diagnosis_cough: diagnosisCough,
-          diagnosis_diarrhea: diagnosisDiarrhea,
-          diagnosis_fever: diagnosisFever
+          diagnosis_cough: null,
+          diagnosis_diarrhea: null,
+          diagnosis_fever: null
         };
         if (groupCough.patient_coughs === 'yes'
           && groupCough.coughing_duration > 14
           && groupCough.chest_indrawing === 'yes') {
           groupDiagnosis.diagnosis_cough = 'pneumonia2c,cough2';
         }
-        let diagnosisDiarrhea = '';
         if (groupDiarrhea.patient_diarrhea === 'yes' &&
           (groupDiarrhea.diarrhea_duration > 14 || groupDiarrhea.diarrhea_blood === 'yes')) {
           groupDiagnosis.diagnosis_diarrhea = 'diarrhea2,diarrhea1';
         }
-        let diagnosisFever = '';
         if (groupfever.patient_fever === 'yes' || groupfever.patient_temperature > 37.5) {
           const seriousFever = (groupfever.fever_duration > 7 || groupfever.patient_temperature >= 40);
           const negativeMalaria = groupfever.mrdt_result === 'negative';

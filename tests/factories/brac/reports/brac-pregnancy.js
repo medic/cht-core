@@ -16,7 +16,7 @@ const BETWEEN_7_TO_8_MONTHS_AGO = 244;
 /**
  * Calculate if women is pregnant.
  * @param {string} edd the estimate delivery time
- * @param {number} lmpApprox the approximate start date of last menstrual cycle
+ * @param {number} lmpApprox the approximate start date of last menstrual cycle (possible values: 61,91,122,183,244)
  * @param {string} pregRes the results of the pregnancy test
  * @param {string} pregResKit the pregnancy kit results.
  */

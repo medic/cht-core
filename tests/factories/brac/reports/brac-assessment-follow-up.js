@@ -2,7 +2,8 @@ const Factory = require('rosie').Factory;
 const Faker = require('@faker-js/faker');
 const moment = require('moment');
 
-const referPatient = (groupFollowupOptions) => ['treat_refer', 'refer_only'].includes(groupFollowupOptions.follow_up_type);
+const referPatient = (groupFollowupOptions) => ['treat_refer', 'refer_only']
+  .includes(groupFollowupOptions.follow_up_type);
 
 module.exports = new Factory()
   .option('patient', '')
