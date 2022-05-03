@@ -44,9 +44,10 @@ const csvWriter = createCsvWriter({
 const users = [];
 const managers = [];
 
-const createDataDoc = async (filePath, fileName, content) => {
+const createDataDoc = async (folderPath, fileName, content) => {
   try {
-    await fs.promises.writeFile(path.join(filePath, fileName), content);
+    const filePath = path.join(folderPath, fileName + dataExtension);
+    await fs.promises.writeFile(path.join(filePath, fileName), JSON.strigify(content, {}, 2));
   } catch (err) {
     console.error('CreateDataDoc ' + err);
     throw err;
@@ -65,7 +66,7 @@ const createDataDirectory = async (directoryPath, directoryName) => {
   }
 };
 
-const setParents = (firstLevelId, secondLevelId, thirdLevelId) => {
+const getLineage = (firstLevelId, secondLevelId, thirdLevelId) => {
   return {
     _id: firstLevelId,
     parent: {
@@ -95,20 +96,20 @@ const pairPlaceTypesPersonSubtype = {
   'clinic': 'member_eligible_woman'
 };
 
-const generatePerson = (type, parents, isPrimaryContact) => {
+const generatePerson = async (type, parents, isPrimaryContact) => {
   let subtype = pairPlaceTypesPersonSubtype[type];
   if (type === 'clinic' && !isPrimaryContact) {
     subtype = 'other';
   }
   const person = bracPersonFactory.generateBracPerson(parents, subtype);
-  createDataDoc(preconditionDataDirectory, person._id + dataExtension, JSON.stringify(person, {}, 2));
+  await createDataDoc(preconditionDataDirectory, person._id, person);
   if (type === 'district_hospital') {
     managers.push(person);
   }
   return person;
 };
 
-const generateUser = (type, placeId, userName, person, isPrimaryContact) => {
+const generateUser = async (type, placeId, userName, person, isPrimaryContact) => {
   let roles = pairPlaceTypesRoles[type];
   if (isPrimaryContact && type === 'district_hospital') {
     roles = ['national_admin', 'mm-online'];
@@ -117,7 +118,7 @@ const generateUser = (type, placeId, userName, person, isPrimaryContact) => {
     userName,
     roles,
     placeId);
-  createDataDoc(preconditionDataDirectory, personUser._id + dataExtension, JSON.stringify(personUser, {}, 2));
+  await createDataDoc(preconditionDataDirectory, personUser._id, personUser);
   const user = {
     username: userName,
     password: personUser.password,
@@ -129,61 +130,42 @@ const generateUser = (type, placeId, userName, person, isPrimaryContact) => {
   users.push(user);
 };
 
-const generateReports = (directParentPlace, place, person, isMainData) => {
+const generateReports = async (parentPlace, place, person, isMainData) => {
   let reportsDirectory = preconditionDataDirectory;
   if (isMainData) {
-    reportsDirectory = path.join(mainDataDirectory, directParentPlace.contact._id);
-    createDataDirectory(mainDataDirectory, directParentPlace.contact._id);
+    reportsDirectory = path.join(mainDataDirectory, parentPlace.contact._id);
+    createDataDirectory(mainDataDirectory, parentPlace.contact._id);
   }
   if (bracPersonFactory.shouldGeneratePregnancySurvey(person)) {
-    const pregnancySurvey = bracSurvey.generateBracSurvey('pregnancy', directParentPlace, place, person);
-    createDataDoc(reportsDirectory, pregnancySurvey._id + dataExtension, JSON.stringify(pregnancySurvey, {}, 2));
+    const pregnancySurvey = bracSurvey.generateBracSurvey('pregnancy', parentPlace, place, person);
+    await createDataDoc(reportsDirectory, pregnancySurvey._id, pregnancySurvey);
   }
   if (bracPersonFactory.shouldGenerateAssessmentSurvey(person)) {
-    const assesmentSurvey = bracSurvey.generateBracSurvey('assesment', directParentPlace, place, person);
-    createDataDoc(reportsDirectory, assesmentSurvey._id + dataExtension, JSON.stringify(assesmentSurvey, {}, 2));
+    const assesmentSurvey = bracSurvey.generateBracSurvey('assesment', parentPlace, place, person);
+    await createDataDoc(reportsDirectory, assesmentSurvey._id, assesmentSurvey);
     const assesmentFollowUpSurvey = bracSurvey.generateBracSurvey(
-      'assesment_follow_up', directParentPlace, place, person);
-    createDataDoc(reportsDirectory, assesmentFollowUpSurvey._id + dataExtension,
-      JSON.stringify(assesmentFollowUpSurvey, {}, 2));
+      'assesment_follow_up', parentPlace, place, person);
+    await createDataDoc(reportsDirectory, assesmentFollowUpSurvey._id, assesmentFollowUpSurvey);
   }
 };
 
-const generateHierarchy = (type, placeName, numberOfPersons,
-  parentFirstLevelId, parentSecondLevelId, directParentPlace) => {
-  const place = bracPlaceFactory.generateBracPlace(placeName, type,
-    setParents(parentFirstLevelId, parentSecondLevelId));
-  let parentPersonThirdLevelId = null;
-  let parentPersonSecondLevelId = null;
-  let parentPersonFirstLevelId = null;
-  if (type === 'district_hospital') {
-    parentPersonFirstLevelId = place._id;
-  }
-  if (type === 'health_center') {
-    parentPersonFirstLevelId = place._id;
-    parentPersonSecondLevelId = parentFirstLevelId;
-    const randomIndex = Faker.faker.datatype.number(numberOfManagersPerDistrictHospital - 1);
-    place.supervisor = managers[randomIndex]._id;
-  }
-  if (type === 'clinic') {
-    parentPersonFirstLevelId = place._id;
-    parentPersonSecondLevelId = parentFirstLevelId;
-    parentPersonThirdLevelId = parentSecondLevelId;
-  }
+const generateHierarchy = async (type, placeName, parentPlace, numberOfPersons) => {
+  const placeLineage = { _id: parent._id, parent: parentPlace.parent };
+  const place = bracPlaceFactory.generateBracPlace(placeName, type, placeLineage);
+  const personLineage = { _id: place._id, parent: place.parent };
   let isPrimaryContact = true;
   for (let i = 0; i < numberOfPersons; i++) {
-    const person = generatePerson(type, setParents(parentPersonFirstLevelId,
-      parentPersonSecondLevelId, parentPersonThirdLevelId), isPrimaryContact);
+    const person = await generatePerson(type, personLineage, isPrimaryContact);
     if (isPrimaryContact) {
       place.contact = person;
-      createDataDoc(preconditionDataDirectory, place._id + dataExtension, JSON.stringify(place, {}, 2));
+      await createDataDoc(preconditionDataDirectory, place._id, place);
     }
     const needUser = pairPlaceTypesNeedsUsers[type];
     if (needUser) {
-      generateUser(type, place._id, person.short_name.toLowerCase() + placeName + 'user' + i, person, isPrimaryContact);
+      await generateUser(type, place._id, person.short_name.toLowerCase() + placeName + 'user' + i, person, isPrimaryContact);
     }
     if (bracPersonFactory.shouldGenerateSurvey(person)) {
-      generateReports(directParentPlace, place, person, (i % 2 !== 0));
+      await generateReports(parentPlace, place, person, (i % 2 !== 0));
     }
     isPrimaryContact = false;
   }
@@ -191,30 +173,37 @@ const generateHierarchy = (type, placeName, numberOfPersons,
 };
 
 const generateData = () => {
-  createDataDirectory(dataDirectory, preconditionDirectory);
-  createDataDirectory(dataDirectory, mainDirectory);
-  createDataDirectory(path.join(dataDirectory, preconditionDirectory), jsonDirectory);
+  await createDataDirectory(dataDirectory, preconditionDirectory);
+  await createDataDirectory(dataDirectory, mainDirectory);
+  await createDataDirectory(path.join(dataDirectory, preconditionDirectory), jsonDirectory);
   for (let dh = 0; dh < numberOfDistrictHospitals; dh++) {
     managers.splice(0, managers.length);
-    const districtHospital = generateHierarchy(
+    const districtHospital = await generateHierarchy(
       'district_hospital',
       districtHospitalName + 'districthospital' + dh,
       numberOfManagersPerDistrictHospital);
 
     for (let hc = 0; hc < numberOfHealthCentersPerDistrictHospital; hc++) {
-      const healthCenter = generateHierarchy(
+      const healthCenterName = districtHospitalName + 'districthospital' + dh + 'healthcenter' + hc;
+      const healthCenter = await generateHierarchy(
         'health_center',
-        districtHospitalName + 'districthospital' + dh + 'healthcenter' + hc,
-        numberOfChwPerHealthCenter, districtHospital._id);
+        healthCenterName,
+        numberOfChwPerHealthCenter,
+        districtHospital._id);
 
       for (let c = 0; c < numberOfClinicsPerHealthCenter; c++) {
-        generateHierarchy('clinic',
-          districtHospitalName + 'districthospital' + dh + 'healthcenter' + hc + 'clinic' + c,
-          numberOfFamilyMembers, healthCenter._id, districtHospital._id, healthCenter);
+        const clinicName = districtHospitalName + 'districthospital' + dh + 'healthcenter' + hc + 'clinic' + c;
+        await generateHierarchy(
+          'clinic',
+          clinicName,
+          numberOfFamilyMembers,
+          healthCenter._id,
+          districtHospital._id,
+          healthCenter);
       }
     }
   }
-  csvWriter.writeRecords(users);
+  await csvWriter.writeRecords(users);
 };
 
 generateData();
