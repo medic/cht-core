@@ -43,7 +43,10 @@ describe('Syncing snackbar', () => {
     await (await commonPage.syncButton()).click();
     const snack = await commonPage.snackbar();
     await snack.waitForDisplayed();
-    await browser.waitUntil(async () => await commonPage.snackbarMessage() === 'Sync failed. Unable to connect.', { interval: 10 });
+    await browser.waitUntil(
+      async () => await commonPage.snackbarMessage() === 'Sync failed. Unable to connect.',
+      { interval: 10 }
+    );
 
     await browser.throttle('online');
     const retryButton = await commonPage.snackbarAction();
