@@ -133,7 +133,7 @@ const generateReports = async (parentPlace, place, person, isMainData) => {
   let reportsDirectory = preconditionDataDirectory;
   if (isMainData) {
     reportsDirectory = path.join(mainDataDirectory, parentPlace.contact._id);
-    createDataDirectory(mainDataDirectory, parentPlace.contact._id);
+    await createDataDirectory(mainDataDirectory, parentPlace.contact._id);
   }
   if (bracPersonFactory.shouldGeneratePregnancySurvey(person)) {
     const pregnancySurvey = bracSurvey.generateBracSurvey('pregnancy', parentPlace, place, person);
