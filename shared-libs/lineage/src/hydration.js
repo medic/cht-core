@@ -234,6 +234,7 @@ module.exports = function(Promise, DB) {
       endkey: [id, {}],
       include_docs: true
     };
+    console.log('docs_by_id_lineage', { startkey: [id], endkey: [id, {}] });
     return DB.query('medic-client/docs_by_id_lineage', options)
       .then(function(result) {
         return result.rows.map(function(row) {
@@ -289,6 +290,7 @@ module.exports = function(Promise, DB) {
             err.code = 404;
             throw err;
           } else {
+            console.warn('document not found!!!!');
             // Not a doc that has lineage, just do a normal fetch.
             return fetchDoc(id);
           }

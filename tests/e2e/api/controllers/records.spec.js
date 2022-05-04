@@ -55,7 +55,7 @@ describe('Import Records', () => {
               from: '+447765902000'
             },
             some_data: 'hello',
-            a_number: 42,
+            a_number: 41,
             a_boolean: false,
             another_boolean: 0,
             an_optional_date: '2018-11-10'
@@ -67,6 +67,7 @@ describe('Import Records', () => {
           reduce: false
         }))
         .then(({rows}) => {
+          console.log(JSON.stringify(rows, null, 2));
           expect(rows.length).to.equal(1);
           const doc = rows[0].doc;
           expect(doc).to.include({
@@ -76,7 +77,7 @@ describe('Import Records', () => {
           });
           expect(doc.fields).to.deep.equal({
             some_data: 'hello',
-            a_number: 42,
+            a_number: 41,
             a_boolean: false,
             another_boolean: false,
             an_optional_date: moment.utc('2018-11-10').valueOf()
@@ -111,6 +112,7 @@ describe('Import Records', () => {
           reduce: false
         }))
         .then(({rows}) => {
+          console.log(JSON.stringify(rows, null, 2));
           expect(rows.length).to.equal(1);
           const doc = rows[0].doc;
           expect(doc).to.include({
@@ -142,7 +144,7 @@ describe('Import Records', () => {
               form: 'TEST',
               from: '+447765902000'
             },
-            a_number: 42,
+            a_number: 43,
             an_optional_date: '2018-11-10'
           }
         }))
@@ -152,6 +154,7 @@ describe('Import Records', () => {
           reduce: false
         }))
         .then(({rows}) => {
+          console.log(JSON.stringify(rows, null, 2));
           expect(rows.length).to.equal(1);
           const doc = rows[0].doc;
           expect(doc).to.include({
@@ -160,7 +163,7 @@ describe('Import Records', () => {
             from: '+447765902000'
           });
           expect(doc.fields).to.deep.equal({
-            a_number: 42,
+            a_number: 43,
             an_optional_date: moment.utc('2018-11-10').valueOf()
           });
           expect(doc.errors.length).to.equal(1);

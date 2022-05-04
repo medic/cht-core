@@ -289,10 +289,10 @@ module.exports = function(grunt) {
         cmd: () => buildVersions.SERVICES
           .map(service =>
             [
-              `cd ${service}`,
-              `npm ci --production`,
-              `npm dedupe`,
-              `cd ../`,
+              // `cd ${service}`,
+              // `npm ci --production`,
+              // `npm dedupe`,
+              // `cd ../`,
               `docker build -f ./${service}/Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
             ].join(' && ')
           )

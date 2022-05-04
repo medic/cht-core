@@ -32,13 +32,18 @@ const getEventType = muted => muted ? 'mute' : 'unmute';
 
 const isContact = doc => !!contactTypesUtils.getContactType(config.getAll(), doc);
 
-const isRelevantReport = (doc, info = {}) =>
-  Boolean(doc &&
+const isRelevantReport = (doc, info = {}) => {
+  console.log(doc && isMuteForm(doc.form), 'isMuteForm');
+  console.log(doc && isUnmuteForm(doc.form), 'isUnmuteForm');
+  console.log(doc && utils.isValidSubmission(doc), 'isValidSubmission');
+
+  return Boolean(doc &&
           doc.form &&
           doc.type === 'data_record' &&
           ( isMuteForm(doc.form) || isUnmuteForm(doc.form) ) &&
           !transitionUtils.hasRun(info, TRANSITION_NAME) &&
           utils.isValidSubmission(doc));
+};
 
 const isNewContactWithMutedParent = (doc, infoDoc = {}) => {
   return Boolean(

@@ -17,7 +17,12 @@ process.env.COUCHDB_USER = auth.username;
 process.env.COUCHDB_PASSWORD = auth.password;
 
 const CONTAINER_NAMES = {
-  couch: 'cht-couch-e2e',
+  // couch: 'cht-couch-e2e',
+  haproxy: 'cht-e2e-haproxy',
+  couch1: 'cht-e2e-couchdb.1',
+  couch2: 'cht-e2e-couchdb.2',
+  couch3: 'cht-e2e-couchdb.3',
+
   api: 'cht-api-e2e',
   sentinel: 'cht-sentinel-e2e',
 };
@@ -587,7 +592,11 @@ const generateComposeFile = async () => {
     repo: buildVersions.getRepo(),
     tag: buildVersions.getImageTag(),
     network: 'cht-net-e2e',
-    couchdb_container_name: CONTAINER_NAMES.couch,
+    // couchdb_container_name: CONTAINER_NAMES.couch,
+    couch1_container_name: CONTAINER_NAMES.couch1,
+    couch2_container_name: CONTAINER_NAMES.couch2,
+    couch3_container_name: CONTAINER_NAMES.couch3,
+    haproxy_container_name: CONTAINER_NAMES.haproxy,
     api_container_name: CONTAINER_NAMES.api,
     sentinel_container_name: CONTAINER_NAMES.sentinel,
     db_name: 'medic-test',
@@ -655,7 +664,10 @@ const getDockerLogs = (container) => {
 const saveLogs = async () => {
   await getDockerLogs(CONTAINER_NAMES.api);
   await getDockerLogs(CONTAINER_NAMES.sentinel);
-  await getDockerLogs(CONTAINER_NAMES.couch);
+  await getDockerLogs(CONTAINER_NAMES.haproxy);
+  await getDockerLogs(CONTAINER_NAMES.couch1);
+  await getDockerLogs(CONTAINER_NAMES.couch2);
+  await getDockerLogs(CONTAINER_NAMES.couch3);
 };
 
 const startServices = async () => {
@@ -668,7 +680,7 @@ const startServices = async () => {
 
 const stopServices = async (removeOrphans) => {
   if (removeOrphans) {
-    return dockerComposeCmd('down', '--remove-orphans');
+    return dockerComposeCmd('down', '--remove-orphans', '--volumes');
   }
   await saveLogs();
   return dockerComposeCmd('stop');

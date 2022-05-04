@@ -368,6 +368,8 @@ describe('muting', () => {
       }
     };
 
+    console.log(mute1._id, mute2._id, unmute1._id, unmute2._id);
+
     let muteTime;
     let unmuteTime;
 
@@ -514,6 +516,8 @@ describe('muting', () => {
 
     let muteTime;
 
+    console.log(mute._id, unmute._id);
+
     return utils
       .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs(extraContacts))
@@ -628,6 +632,8 @@ describe('muting', () => {
         parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
+
+    console.log(mutePerson._id, muteClinic._id);
 
     let personMuteTime;
     let clinicMuteTime;
@@ -746,6 +752,8 @@ describe('muting', () => {
         parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
+
+    console.log(mute._id, muteHC._id, unmute._id);
 
     let mutePersonTime;
     let muteHCTime;
@@ -894,6 +902,8 @@ describe('muting', () => {
       parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
       phone: '+444999'
     };
+
+    console.log(mute._id);
 
     return utils
       .updateSettings(settings, 'sentinel')
@@ -1151,6 +1161,8 @@ describe('muting', () => {
       reported_date: new Date().getTime()
     };
 
+    console.log(mute._id, unmute._id);
+
     const nonRegistrationIds = [
       'no_registration_config', 'incorrect_content', 'sms_without_contact', 'registration_4',
       'no_registration_config_clinic', 'incorrect_content_clinic',
@@ -1263,7 +1275,10 @@ describe('muting', () => {
         },
       ];
 
+
       const reportIds = reports.map(r => r._id);
+
+      console.log(contact._id, ...reportIds);
 
       return utils
         .updateSettings(settings, 'sentinel')
@@ -1352,6 +1367,7 @@ describe('muting', () => {
       ];
 
       const reportIds = reports.map(r => r._id);
+      console.log(contact._id, ...reportIds);
 
       return utils
         .updateSettings(settings, 'sentinel')

@@ -49,6 +49,7 @@ const processChange = (change, callback) => {
   lineage
     .fetchHydratedDoc(change.id)
     .then(doc => {
+      console.log('hydrated', JSON.stringify(doc, null, 2));
       change.doc = doc;
       return infodoc.get(change).then(infoDoc => {
         change.info = infoDoc;

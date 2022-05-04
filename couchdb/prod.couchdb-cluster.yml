@@ -6,7 +6,7 @@ networks:
 
 services:
   couchdb.1:
-    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042622-test37}
+    image: 6e9740d43dc2
     volumes:
     - ${DB1_DATA:-./srv1}:/opt/couchdb/data
     - cht-credentials:/opt/couchdb/etc/local.d/
@@ -23,7 +23,7 @@ services:
       cht-net:
 
   couchdb.2:
-    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042622-test37}
+    image: 6e9740d43dc2
     volumes:
     - ${DB2_DATA:-./srv2}:/opt/couchdb/data
     environment:
@@ -39,7 +39,7 @@ services:
       cht-net:
 
   couchdb.3:
-    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042622-test37}
+    image: 6e9740d43dc2
     volumes:
     - ${DB3_DATA:-./srv3}:/opt/couchdb/data
     environment:
@@ -55,7 +55,7 @@ services:
       cht-net:
 
   haproxy:
-    image: medicmobile/cht-haproxy:${CHT_CORE_RELEASE:-archv3-test6}
+    image: 1067b75d0b84
     hostname: haproxy
     environment:
       - "HAPROXY_IP=${HAPROXY_IP:-haproxy}"

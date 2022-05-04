@@ -68,6 +68,13 @@ const couchDbNoAdminPartyModeCheck = (couchUrl) => {
   });
 };
 
+const checkCluster = async (couchUrl) => {
+  const membership = await request.get({ url: `${couchUrl}_membership`, json: true });
+  if (membership.all_nodes.length < 3 || membership.cluster_nodes.length < 3) {
+    throw new Error('Cluster not ready');
+  }
+};
+
 const getCouchDbVersion = (couchUrl) => {
   return request.get({ url: couchUrl, json: true }).then(response => response.version);
 };
@@ -78,6 +85,14 @@ const couchDbVersionCheck = (couchUrl) => {
   });
 };
 
+const logRequestError = (error, message) => {
+  delete error.options;
+  delete error.request;
+  delete error.response;
+
+  console.error(message, error);
+};
+
 const couchDbCheck = async (couchUrl) => {
   const retryTimeout = () => new Promise(resolve => setTimeout(resolve, 1000));
   const serverUrl = new URL(couchUrl);
@@ -86,10 +101,11 @@ const couchDbCheck = async (couchUrl) => {
   do {
     try {
       await couchDbVersionCheck(serverUrl.toString());
+      await checkCluster(serverUrl.toString());
       await couchDbNoAdminPartyModeCheck(serverUrl.toString());
       return;
     } catch (err) {
-      console.log('CouchDb check failed', err);
+      logRequestError(err);
       await retryTimeout();
     }
     // eslint-disable-next-line no-constant-condition
