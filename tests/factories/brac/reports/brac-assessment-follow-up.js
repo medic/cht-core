@@ -99,18 +99,6 @@ module.exports = new Factory()
         return groupBetter;
       }
     })
-  .attr('referral_follow_up_needed',
-    ['group_better', 'group_improved', 'group_danger_signs'],
-    (groupBetter, groupImproved, groupDangerSigns) => {
-      if ((groupBetter && groupBetter.g_patient_better === 'no') ||
-        (groupImproved && groupImproved.g_patient_treatment_outcome === 'bad_medicine_reaction') ||
-        (groupImproved && groupImproved.g_patient_treatment_outcome === 'not_improving') ||
-        (groupDangerSigns && groupDangerSigns.danger_signs)
-      ) {
-        return 'true';
-      }
-      return 'false';
-    })
   .attr('danger_signs', ['group_danger_signs'], (groupDangerSigns) => {
     return (groupDangerSigns && groupDangerSigns.danger_signs) || null;
   })
@@ -121,6 +109,18 @@ module.exports = new Factory()
     }
     return 'no';
   })
+  .attr('referral_follow_up_needed',
+    ['patient_improved', 'group_improved', 'group_danger_signs'],
+    (patientImproved, groupImproved, groupDangerSigns) => {
+      if ((patientImproved === 'no') ||
+        (groupImproved && groupImproved.g_patient_treatment_outcome === 'bad_medicine_reaction') ||
+        (groupImproved && groupImproved.g_patient_treatment_outcome === 'not_improving') ||
+        (groupDangerSigns && groupDangerSigns.danger_signs)
+      ) {
+        return 'true';
+      }
+      return 'false';
+    })
   .attr('patient_better', ['group_better'], (groupBetter) => {
     if (groupBetter) {
       return groupBetter.g_patient_better;

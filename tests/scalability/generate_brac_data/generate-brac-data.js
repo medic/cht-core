@@ -4,7 +4,6 @@ const bracUserFactory = require('../../factories/brac/users/brac-user');
 const bracSurvey = require('../../factories/brac/reports/brac-survey');
 const fs = require('fs');
 const path = require('path');
-const Faker = require('@faker-js/faker');
 const dataConfig = require('./data-config.json');
 const sizeConfig = require('./size-config.json');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
