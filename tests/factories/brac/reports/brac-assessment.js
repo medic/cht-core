@@ -2,7 +2,9 @@ const Factory = require('rosie').Factory;
 const Faker = require('@faker-js/faker');
 const moment = require('moment');
 
-const YES_NO = ['yes', 'no'];
+const YES = 'yes';
+const NO = 'no';
+const YES_NO = [YES, NO];
 const SYMPTOM_DURATION_DAYS = ['1', '2', '3', '7', '14', '21'];
 const ONE_YEAR = 365;
 const FIVE_YEARS = 5 * 365;
