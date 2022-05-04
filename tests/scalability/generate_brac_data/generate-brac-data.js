@@ -43,7 +43,7 @@ const csvWriter = createCsvWriter({
 const users = [];
 const managers = [];
 
-const createDataDoc = async (folderPath, fileName, content) => {
+async function createDataDoc(folderPath, fileName, content) {
   try {
     const filePath = path.join(folderPath, fileName + dataExtension);
     await fs.promises.writeFile(path.join(filePath, fileName), JSON.strigify(content, {}, 2));
@@ -51,7 +51,7 @@ const createDataDoc = async (folderPath, fileName, content) => {
     console.error('CreateDataDoc ' + err);
     throw err;
   }
-};
+}
 
 const createDataDirectory = async (directoryPath, directoryName) => {
   try {
