@@ -9,6 +9,7 @@ const getRoles = require('./types-and-roles');
 const auth = require('../auth');
 const tokenLogin = require('./token-login');
 const moment = require('moment');
+const bulkUploadLog = require('../services/bulk-upload-log');
 const { allPromisesSettled } = require('../promise-utils');
 
 const USER_PREFIX = 'org.couchdb.user:';
@@ -609,26 +610,39 @@ const parseCsvRow = (data, header, value, valueIdx) => {
   return data;
 };
 
-const parseCsv = (csv) => {
+const parseCsv = async (csv, logId) => {
   if (!csv || !csv.length) {
     throw new Error('CSV is empty.');
   }
 
-  const allRows = csv.split(/\r\n|\n/);
-
+  let allRows = csv.split(/\r\n|\n/);
   const header = allRows
     .shift()
     .split(',');
+  allRows = allRows.filter(row => row.length);
 
-  return allRows
-    .filter(row => row.length)
-    .map(row => {
-      const user = {};
-      row
-        .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
-        .forEach((value, idx) => parseCsvRow(user, header, value, idx));
-      return user;
-    });
+  const progress = { status: 'parsing', parsing: { total: allRows.length, done: 0 } };
+  await bulkUploadLog.updateProgress(logId, progress);
+
+  const users = [];
+  for (let rowIdx = 0; rowIdx < allRows.length; rowIdx++) {
+    const user = {};
+    allRows[rowIdx]
+      .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+      .forEach((value, idx) => parseCsvRow(user, header, value, idx));
+
+    if (rowIdx % 10) {
+      // ToDo: log error per row if failing on parsing
+      progress.parsing.done = rowIdx + 1;
+      await bulkUploadLog.updateProgress(logId, progress);
+    }
+
+    users.push(user);
+  }
+  progress.parsing.done = users.length;
+  progress.status = 'parsed';
+  await bulkUploadLog.updateProgress(logId, progress);
+  return users;
 };
 
 /*

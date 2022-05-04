@@ -5,6 +5,7 @@ const serverUtils = require('../server-utils');
 const usersService = require('../services/users');
 const authorization = require('../services/authorization');
 const purgedDocs = require('../services/purged-docs');
+const bulkUploadLog = require('../services/bulk-upload-log');
 
 const hasFullPermission = req => {
   return auth
@@ -229,7 +230,8 @@ module.exports = {
     create: (req, res) => {
       return auth
         .check(req, 'can_create_users')
-        .then(() => typeof req.body === 'string' ? usersService.parseCsv(req.body) : req.body)
+        .then(() => bulkUploadLog.createLog(req, 'user'))
+        .then(logId => typeof req.body === 'string' ? usersService.parseCsv(req.body, logId) : req.body)
         .then(users => usersService.createUsers(users, getAppUrl(req), true))
         .then(body => res.json(body))
         .catch(err => serverUtils.error(err, req, res));
