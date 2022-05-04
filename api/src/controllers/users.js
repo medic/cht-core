@@ -127,8 +127,7 @@ module.exports = {
   create: (req, res) => {
     return auth
       .check(req, 'can_create_users')
-      .then(() => typeof req.body === 'string' ? usersService.parseCsv(req.body) : req.body)
-      .then(users => usersService.createUsers(users, getAppUrl(req)))
+      .then(() => usersService.createUsers(req.body, getAppUrl(req)))
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
   },
@@ -209,7 +208,6 @@ module.exports = {
       .then(result => res.json(result))
       .catch(err => serverUtils.error(err, req, res));
   },
-
   info: (req, res) => {
     let userCtx;
     try {
@@ -226,4 +224,15 @@ module.exports = {
       }))
       .catch(err => serverUtils.error(err, req, res));
   },
+
+  v2: {
+    create: (req, res) => {
+      return auth
+        .check(req, 'can_create_users')
+        .then(() => typeof req.body === 'string' ? usersService.parseCsv(req.body) : req.body)
+        .then(users => usersService.createUsers(users, getAppUrl(req), true))
+        .then(body => res.json(body))
+        .catch(err => serverUtils.error(err, req, res));
+    },
+  }
 };

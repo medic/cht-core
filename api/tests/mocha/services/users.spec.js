@@ -2531,7 +2531,7 @@ describe('Users service', () => {
     });
   });
 
-  describe.only('parseCsv', () => {
+  describe('parseCsv', () => {
     it('should throw error when csv is empty', () => {
       try {
         service.parseCsv('');
@@ -2663,6 +2663,38 @@ describe('Users service', () => {
         'Secret1234,mary,person,498a394e-f98,Mary\'s name!,"#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_"\n' +
         'Secret5678, peter ,person,498a394e-f99,Peter,"ce fût une belle saison, le maïs sera prêt à partir ' +
         'de l’été c’est-à-dire dès demain, d’où l’invaitation"';
+
+      const result = service.parseCsv(csv);
+
+      chai.expect(result).to.have.deep.members([
+        {
+          password: 'Secret1234',
+          username: 'mary',
+          type: 'person',
+          place: '498a394e-f98',
+          contact: {
+            name: 'Mary\'s name!',
+            notes: '#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_' }
+        },
+        {
+          password: 'Secret5678',
+          username: 'peter',
+          type: 'person',
+          place: '498a394e-f99',
+          contact: {
+            name: 'Peter',
+            notes: 'ce fût une belle saison, le maïs sera prêt à partir' +
+              ' de l’été c’est-à-dire dès demain, d’où l’invaitation'
+          }
+        }
+      ]);
+    });
+
+    it('should ignore excluded header columns', () => {
+      const csv = 'password,username,type,place,contact.meta:excluded,contact.name,contact.notes\n' +
+        'Secret1234,mary,person,498a394e-f98,excluded column,Mary\'s name!,"#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_"\n' +
+        'Secret5678, peter ,person,498a394e-f99,excluded column,Peter,' +
+        '"ce fût une belle saison, le maïs sera prêt à partir de l’été c’est-à-dire dès demain, d’où l’invaitation"';
 
       const result = service.parseCsv(csv);
 

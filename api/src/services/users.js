@@ -222,7 +222,7 @@ const createPlace = data => {
   });
 };
 
-const storeUpdatedPlace = (data, retry = 0) => {
+const storeUpdatedPlace = (data, preservePrimaryContact, retry = 0) => {
   if (!data.place) {
     return;
   }
@@ -233,14 +233,16 @@ const storeUpdatedPlace = (data, retry = 0) => {
   return db.medic
     .get(data.place._id)
     .then(place => {
+      if (preservePrimaryContact) {
+        return;
+      }
       place.contact = data.place.contact;
       place.parent = data.place.parent;
-
       return db.medic.put(place);
     })
     .catch(err => {
       if (err.status === 409 && retry < MAX_CONFLICT_RETRY) {
-        return storeUpdatedPlace(data, retry + 1);
+        return storeUpdatedPlace(data, preservePrimaryContact, retry + 1);
       }
       throw err;
     });
@@ -532,13 +534,13 @@ const validateUserContact = (data, user, userSettings) => {
   }
 };
 
-const createUserEntities = async (user, appUrl) => {
+const createUserEntities = async (user, appUrl, preservePrimaryContact) => {
   const response = {};
   await validateNewUsername(user.username);
   await createPlace(user);
   await setContactParent(user);
   await createContact(user, response);
-  await storeUpdatedPlace(user);
+  await storeUpdatedPlace(user, preservePrimaryContact);
   await createUser(user, response);
   await createUserSettings(user, response);
   await tokenLogin.manageTokenLogin(user, appUrl, response);
@@ -578,7 +580,7 @@ const validateUserFields = (users) => {
 
 const assignCsvCellValue = (data, attribute, value) => {
   attribute = (attribute || '').trim();
-  if (!attribute.length) {
+  if (!attribute.length || attribute.toLowerCase().indexOf(':excluded') > 0) {
     return;
   }
   data[attribute] = typeof value === 'string' ? value.replace(/^"|"$/g, '').trim() : value;
@@ -687,9 +689,10 @@ module.exports = {
    * @param {(Object|string)=} users[].place Can either be a place object or an existing place id.
    * @param {(Object|string)=} users[].contact Can either be a contact object or an existing place id.
    * @param {string=} users[].type Deprecated. Used to infer user's roles
-   * @param {string} appUrl   request protocol://hostname
+   * @param {string} appUrl request protocol://hostname
+   * @param {boolean} preservePrimaryContact Default false. Prevent updating the place's primary contact.
    */
-  async createUsers(users, appUrl) {
+  async createUsers(users, appUrl, preservePrimaryContact) {
     if (!Array.isArray(users)) {
       return module.exports.createUser(users, appUrl);
     }
@@ -720,7 +723,9 @@ module.exports = {
     }
 
     // create all valid users even if some are failing
-    const promises = await allPromisesSettled(users.map(async (user) => await createUserEntities(user, appUrl)));
+    const promises = await allPromisesSettled(users.map(async (user) => {
+      return await createUserEntities(user, appUrl, preservePrimaryContact);
+    }));
     return promises.map((promise) => promise.status === 'rejected' ? { error: promise.reason.message } : promise.value);
   },
 
