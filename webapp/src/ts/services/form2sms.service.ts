@@ -69,7 +69,6 @@ export class Form2smsService {
       .get()
       .get(`form:${doc.form}`)
       .then(form => {
-        console.log(form);
         if (!form.xml2sms) {
           console.debug('Not sending SMS. `xml2sms` form property not defined or falsy.');
           return;

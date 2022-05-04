@@ -16,7 +16,7 @@ export class EnketoTranslationService {
       .find((node:any) => node.nodeName === childNodeName);
   }
 
-  private getHiddenFieldListRecursive(nodes, prefix, current:Set<string>) {
+  private getHiddenFieldListRecursive(nodes, prefix, current:Set<any>) {
     nodes.forEach(node => {
       const path = prefix + node.nodeName;
 
@@ -128,13 +128,13 @@ export class EnketoTranslationService {
     });
   }
 
-  getHiddenFieldList (model, dbDocXpath:Array<string>) {
+  getHiddenFieldList (model, dbDocFields:Array<any>) {
     model = $.parseXML(model).firstChild;
     if (!model) {
       return;
     }
     const children = this.withElements(model.childNodes);
-    const fields = new Set(dbDocXpath);
+    const fields = new Set(dbDocFields);
     this.getHiddenFieldListRecursive(children, '', fields);
     return [...fields];
   }
