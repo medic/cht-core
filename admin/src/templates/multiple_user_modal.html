@@ -3,10 +3,11 @@
     id="'edit-language'"
     status="status"
     titleKey=""
-    hideFooter="hideFooter"
+    hideFooter="true"
     on-cancel="onCancel()"
 
   >
+
     <div ng-if="displayAddMultipleModal">
       <div>
       <form id="users-upload">
@@ -16,21 +17,36 @@
           </h3>
           <p>To add multiple users, please upload the appropriate spreadsheet.</p>
           <p><strong>Only .csv file are accepted.</strong></p>
-
           <div class="form-actions">
-            <a class="btn btn-primary choose">
+            <a class="btn btn-primary choose" ng-disabled="status.uploading">
               <span >Upload .csv</span>
             </a>
             <div class="loader small inline" ng-show="status.uploading"></div>
-            <div class="">
+            <div class="hide">
               <input class="uploader" type="file" accept=".csv">
             </div>
           </div>
-
         </div>
-
       </form>
       </div>
+    </div>
+
+    <div id="upload-confirm" class="row"  ng-if="displayUploadConfirm">
+      <h3 class="text-center"><p>Are you sure you want to upload {{usersFilename}} ?</p></h3>
+      <p class="text-center"><a id="upload-btn" class="btn btn-primary" ng-click="processUpload()">
+        <span translate>Yes, upload</span>
+      </a></p>
+      <p class="text-center"><a class="btn cancel" id="cancel-btn"  ng-click="onCancel()"> Cancel</a></p>
+    </div>
+
+    <div id="processing-status" class="row" ng-if="displayProcessingStatus">
+      <div class="loader" ></div>
+      <h3 class="text-center"><p>Processing (25 of 100 users)...</p></h3>
+      <p class="text-center">
+        <a class="btn btn-primary"  ng-click="showFinishSummary()">
+          <span >showFinishSummary</span>
+        </a>
+      </p>
     </div>
 
     <div ng-if="displayUnavailableModal" class="window-center">
@@ -42,4 +58,25 @@
           <p><strong>Please try again later</strong></p>
         </div>
     </div>
+
+    <div id="finish-summary" ng-if="displayFinishSummary">
+      <h3 class="text-center"><p>[X] users have been successfully added</p></h3>
+      <p class="text-center">
+        Click <a class="" ng-click="downloadSuccessFile()"> here </a>
+        to download the .csv of <strong>added users</strong>
+        and <a class="" ng-click="downloadFailedFile()"> here </a>  for the .csv <strong>containing errors.</strong>
+      </p>
+      <p class="text-center"><strong>To resubmit the users containing errors.</strong><p>
+      <p>
+        1. Open the .csv containing errors <br />
+        2. Review spreadsheet to fix errors and/or add missing information <br />
+        3. Reupload updated .csv <br />
+      </p>
+      <p class="text-center">
+        <a id="back-to-app-btn" class="btn btn-primary" ng-click="backToAppManagement()" ui-sref="users">
+          <span translate>Back to App Management</span>
+        </a>
+      </p>
+    </div>
   </mm-modal>
+

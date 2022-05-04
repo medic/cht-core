@@ -1,12 +1,16 @@
 angular.module('controllers').controller('MultipleUserCtrl', function(
   $scope,
-  $uibModalInstance,
-  Modal,
-  $window) {
+  $uibModalInstance
+) {
+
   'use strict';
+  'ngInject';
+
+  // $scope.hideFooter = true;
+  $scope.status = { uploading: false };
   $scope.displayAddMultipleModal = true;
   $scope.displayUnavailableModal = false;
-  $scope.displayUploadConfirm = true;
+  $scope.displayUploadConfirm = false;
   $scope.displayProcessingStatus = false;
   $scope.displayFinishSummary = false;
 
@@ -22,14 +26,15 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
 
   $scope.showFinishSummary = function () {
     $scope.clearScreen();
-    $scope.displayProcessingStatus = false;
     $scope.displayFinishSummary = true;
-    Modal({
-      templateUrl: 'templates/multiple_user_fullscreen.html',
-      controller: 'MultipleUserCtrl',
-      model: {}
-    });
   };
+
+  $scope.showDisplayUploadConfirm = function () {
+    $scope.clearScreen();
+    $scope.displayUploadConfirm = true;
+    $scope.$apply();
+  };
+
 
   $scope.backToAppManagement = function () {
     $scope.clearScreen();
@@ -43,5 +48,24 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
     $scope.displayProcessingStatus = false;
     $scope.displayFinishSummary = false;
   };
+
+  const upload = function() {
+
+    const files = $('#users-upload .uploader')[0].files;
+    if (!files || files.length === 0) {
+      return;
+    }
+    $scope.usersFilename = files[0].name;
+    $scope.showDisplayUploadConfirm();
+  };
+      
+  angular.element(function () {
+    $('#users-upload .uploader').on('change', upload);
+    $('#users-upload .choose').on('click', function(e) {
+      e.preventDefault();
+      $('#users-upload .uploader').click();
+    });
+  });
+
 }
 );
