@@ -53,9 +53,6 @@ angular.module('directives').directive('mmModal', function() {
 
       // string: (optional) the expression which, if true, will show the delete button
       showDelete: '=',
-
-      // boolean: (optional) the expression which, if true, will hide the footer
-      hideFooter: '='
     }
   };
 });

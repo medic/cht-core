@@ -74,7 +74,6 @@ require('./directives/modal');
 require('./directives/pagination');
 require('./directives/relative-date');
 require('./directives/release');
-require('./directives/fullscreen-window');
 
 // directives we borrow from webapp
 angular.module('inboxDirectives', []);
@@ -469,5 +468,12 @@ angular.module('adminApp').config(function(
 angular.element(document).ready(function() {
   angular.bootstrap(document, [ 'adminApp' ], {
     strictDi: true
+  });
+});
+
+angular.element(function () {
+  $('#edit-users-bulk').modal({
+    backdrop: 'static',
+    keyboard: false
   });
 });

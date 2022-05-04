@@ -60,6 +60,10 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
   };
       
   angular.element(function () {
+  /* $('.modal-dialog ').modal({
+      backdrop: 'static',
+      keyboard: false
+    });*/
     $('#users-upload .uploader').on('change', upload);
     $('#users-upload .choose').on('click', function(e) {
       e.preventDefault();

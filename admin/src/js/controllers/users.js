@@ -56,18 +56,10 @@ angular.module('controllers').controller('UsersCtrl',
       Modal({
         templateUrl: 'templates/multiple_user_modal.html',
         controller: 'MultipleUserCtrl',
-        model: {}
-      });
-    };
-    $scope.showFullscreen = function() {
-      Modal({
-        templateUrl: 'templates/multiple_user_fullscreen.html',
-        controller: 'MultipleUserCtrl',
-        model: {}
-      });
-    };
-    $scope.displayAddMultipleUsersModal = false;
+        model: {},
 
+      });
+    };
 
     $scope.$on('UsersUpdated', function() {
       $scope.updateList();

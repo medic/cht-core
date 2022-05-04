@@ -1,13 +1,13 @@
 <div mm-auth="can_configure">
 
   <legend translate>Users</legend>
-
   <div class="btn-toolbar">
     <a id="add-user" class="btn btn-primary" ng-click="editUser({})">
       <i class="fa fa-user"></i>
       <span>Add User</span>
     </a>
-    <a id="add-users" class="btn btn-primary" ng-click="showAddMultipleUsersModal()">
+    <a id="add-users" class="btn btn-primary" ng-click="showAddMultipleUsersModal()"
+       data-controls-modal="edit-users-bulk" data-backdrop="static" data-keyboard="false" href="#">
       <i class="fa fa-users"></i>
       <span translate>Add multiple</span>
     </a>
