@@ -4,7 +4,6 @@ import { Injectable } from '@angular/core';
 import { DbService } from '@mm-services/db.service';
 import { GetReportContentService } from '@mm-services/get-report-content.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
-import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 
@@ -15,7 +14,6 @@ export class Form2smsService {
   constructor(
     private dbService:DbService,
     private getReportContentService:GetReportContentService,
-    private enketoTranslationService:EnketoTranslationService,
     private fileReaderService: FileReaderService,
     private parseProvider:ParseProvider,
     private enketoPrepopulationDataService: EnketoPrepopulationDataService,
