@@ -227,14 +227,16 @@ module.exports = {
   },
 
   v2: {
-    create: (req, res) => {
-      return auth
-        .check(req, 'can_create_users')
-        .then(() => bulkUploadLog.createLog(req, 'user'))
-        .then(logId => typeof req.body === 'string' ? usersService.parseCsv(req.body, logId) : req.body)
-        .then(users => usersService.createUsers(users, getAppUrl(req), true))
-        .then(body => res.json(body))
-        .catch(err => serverUtils.error(err, req, res));
+    create: async (req, res) => {
+      try {
+        await auth.check(req, 'can_create_users');
+        const logId = await bulkUploadLog.createLog(req, 'user');
+        const users = typeof req.body === 'string' ? await usersService.parseCsv(req.body, logId) : req.body;
+        const response = await usersService.createUsers(users, getAppUrl(req), logId, true);
+        res.json(response);
+      } catch (error) {
+        serverUtils.error(error, req, res);
+      }
     },
   }
 };

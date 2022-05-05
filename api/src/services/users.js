@@ -10,7 +10,6 @@ const auth = require('../auth');
 const tokenLogin = require('./token-login');
 const moment = require('moment');
 const bulkUploadLog = require('../services/bulk-upload-log');
-const { allPromisesSettled } = require('../promise-utils');
 
 const USER_PREFIX = 'org.couchdb.user:';
 const DOC_IDS_WARN_LIMIT = 10000;
@@ -621,25 +620,29 @@ const parseCsv = async (csv, logId) => {
     .split(',');
   allRows = allRows.filter(row => row.length);
 
-  const progress = { status: 'parsing', parsing: { total: allRows.length, done: 0 } };
+  const progress = { status: 'parsing', parsing: { total: allRows.length, failed: 0, successful: 0 } };
   await bulkUploadLog.updateProgress(logId, progress);
 
   const users = [];
   for (let rowIdx = 0; rowIdx < allRows.length; rowIdx++) {
     const user = {};
-    allRows[rowIdx]
-      .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
-      .forEach((value, idx) => parseCsvRow(user, header, value, idx));
+    try {
+      allRows[rowIdx]
+        .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+        .forEach((value, idx) => parseCsvRow(user, header, value, idx));
+      progress.parsing.successful++;
+    } catch (error) {
+      progress.parsing.failed++;
+    }
 
     if (rowIdx % 10) {
       // ToDo: log error per row if failing on parsing
-      progress.parsing.done = rowIdx + 1;
       await bulkUploadLog.updateProgress(logId, progress);
     }
 
     users.push(user);
   }
-  progress.parsing.done = users.length;
+
   progress.status = 'parsed';
   await bulkUploadLog.updateProgress(logId, progress);
   return users;
@@ -706,7 +709,7 @@ module.exports = {
    * @param {string} appUrl request protocol://hostname
    * @param {boolean} preservePrimaryContact Default false. Prevent updating the place's primary contact.
    */
-  async createUsers(users, appUrl, preservePrimaryContact) {
+  async createUsers(users, appUrl, logId, preservePrimaryContact) {
     if (!Array.isArray(users)) {
       return module.exports.createUser(users, appUrl);
     }
@@ -736,11 +739,36 @@ module.exports = {
       return Promise.reject(error400(errorMessage, { failingIndexes: passwordFailingIndexes }));
     }
 
-    // create all valid users even if some are failing
-    const promises = await allPromisesSettled(users.map(async (user) => {
-      return await createUserEntities(user, appUrl, preservePrimaryContact);
-    }));
-    return promises.map((promise) => promise.status === 'rejected' ? { error: promise.reason.message } : promise.value);
+    const progress = {
+      status: 'saving',
+      saving: { total: users.length, failed: 0, successful: 0, ignored: 0 }
+    };
+    await bulkUploadLog.updateProgress(logId, progress);
+
+    const responses = [];
+    for (let userIdx = 0; userIdx < users.length; userIdx++) {
+      const user = users[userIdx];
+      let response;
+
+      try {
+        response = await createUserEntities(user, appUrl, preservePrimaryContact);
+        progress.saving.successful++;
+      } catch(error) {
+        response = { error: error.message };
+        progress.saving.failed++;
+      }
+
+      if (userIdx % 10) {
+        // ToDo: log error per row if failing on parsing
+        await bulkUploadLog.updateProgress(logId, progress);
+      }
+
+      responses.push(response);
+    }
+
+    progress.status = 'finished';
+    await bulkUploadLog.updateProgress(logId, progress);
+    return responses;
   },
 
   /*
