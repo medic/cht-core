@@ -470,10 +470,3 @@ angular.element(document).ready(function() {
     strictDi: true
   });
 });
-
-angular.element(function () {
-  $('#edit-users-bulk').modal({
-    backdrop: 'static',
-    keyboard: false
-  });
-});
