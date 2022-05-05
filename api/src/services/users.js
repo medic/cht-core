@@ -547,37 +547,6 @@ const createUserEntities = async (user, appUrl, preservePrimaryContact) => {
   return response;
 };
 
-const validateUserFields = (users) => {
-  const missingFieldsFailingIndexes = [];
-  const tokenLoginFailingIndexes = [];
-  const passwordFailingIndexes = [];
-  users.forEach((user, index) => {
-    const fields = missingFields(user);
-    const hasMissingFields = fields.length > 0;
-    if (hasMissingFields) {
-      missingFieldsFailingIndexes.push({ fields, index });
-      return;
-    }
-
-    const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
-    if (tokenLoginError) {
-      tokenLoginFailingIndexes.push({ tokenLoginError, index });
-      return;
-    }
-
-    const passwordError = validatePassword(user.password);
-    if (passwordError) {
-      passwordFailingIndexes.push({ passwordError, index });
-    }
-  });
-
-  return {
-    missingFieldsFailingIndexes,
-    tokenLoginFailingIndexes,
-    passwordFailingIndexes,
-  };
-};
-
 const assignCsvCellValue = (data, attribute, value) => {
   attribute = (attribute || '').trim();
   if (!attribute.length || attribute.toLowerCase().indexOf(':excluded') > 0) {
@@ -621,6 +590,7 @@ const parseCsv = async (csv, logId) => {
   allRows = allRows.filter(row => row.length);
 
   const progress = { status: 'parsing', parsing: { total: allRows.length, failed: 0, successful: 0 } };
+  const logData = [];
   await bulkUploadLog.updateLog(logId, progress);
 
   const users = [];
@@ -631,32 +601,39 @@ const parseCsv = async (csv, logId) => {
         .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
         .forEach((value, idx) => parseCsvRow(user, header, value, idx));
       progress.parsing.successful++;
+      logData.push(createRecordBulkLog(user, 'parsed'));
     } catch (error) {
       progress.parsing.failed++;
+      logData.push(createRecordBulkLog(user, 'error', error));
     }
 
     if (rowIdx % 10) {
-      // ToDo: log error per row if failing on parsing
-      await bulkUploadLog.updateLog(logId, progress);
+      await bulkUploadLog.updateLog(logId, progress, logData);
     }
 
     users.push(user);
   }
 
   progress.status = 'parsed';
-  await bulkUploadLog.updateLog(logId, progress);
+  await bulkUploadLog.updateLog(logId, progress, logData);
   return users;
 };
 
 const createRecordBulkLog = (record, status, error) => {
+  let message;
+
+  if (error) {
+    message = typeof error.message === 'object' ? error.message.message : error.message;
+  }
+
   const meta = {
     import: {
       status,
-      message: error.message || error,
+      message,
       datetime: new Date().toISOString()
     }
   };
-  const recordBulkLog = Object.assign(record, meta);
+  const recordBulkLog = Object.assign({}, record, meta);
   delete recordBulkLog.password;
   return recordBulkLog;
 };
@@ -727,31 +704,6 @@ module.exports = {
       return module.exports.createUser(users, appUrl);
     }
 
-    const { missingFieldsFailingIndexes, tokenLoginFailingIndexes, passwordFailingIndexes } = validateUserFields(users);
-    if (missingFieldsFailingIndexes.length > 0) {
-      const errorMessages = missingFieldsFailingIndexes.map(({ fields, index }) => {
-        return `Missing fields ${fields.join(', ')} for user at index ${index}`;
-      });
-      const errorMessage = ['Missing required fields:', ...errorMessages].join('\n');
-      return Promise.reject(error400(errorMessage, { failingIndexes: missingFieldsFailingIndexes }));
-    }
-
-    if (tokenLoginFailingIndexes.length > 0) {
-      const errorMessages = tokenLoginFailingIndexes.map(({ tokenLoginError, index }) => {
-        return `Error ${tokenLoginError.msg} for user at index ${index}`;
-      });
-      const errorMessage = ['Token login errors:', ...errorMessages].join('\n');
-      return Promise.reject(error400(errorMessage, { failingIndexes: tokenLoginFailingIndexes }));
-    }
-
-    if (passwordFailingIndexes.length > 0) {
-      const errorMessages = tokenLoginFailingIndexes.map(({ passwordError, index }) => {
-        return `Error ${passwordError.message.message} for user at index ${index}`;
-      });
-      const errorMessage = ['Password errors:', ...errorMessages].join('\n');
-      return Promise.reject(error400(errorMessage, { failingIndexes: passwordFailingIndexes }));
-    }
-
     const progress = {
       status: 'saving',
       saving: { total: users.length, failed: 0, successful: 0, ignored: 0 }
@@ -765,6 +717,21 @@ module.exports = {
       let response;
 
       try {
+        const missing = missingFields(user);
+        if (missing.length > 0) {
+          throw new Error('Missing required fields: ' + missing.join(', '));
+        }
+
+        const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
+        if (tokenLoginError) {
+          throw new Error(tokenLoginError.msg);
+        }
+
+        const passwordError = validatePassword(user.password);
+        if (passwordError) {
+          throw new Error(passwordError);
+        }
+
         response = await createUserEntities(user, appUrl, preservePrimaryContact);
         progress.saving.successful++;
         logData.push(createRecordBulkLog(user, 'imported'));
