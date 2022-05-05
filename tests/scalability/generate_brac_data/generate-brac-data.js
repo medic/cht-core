@@ -51,7 +51,7 @@ const createDataDoc = async (folderPath, fileName, content) => {
     console.error('CreateDataDoc ' + err);
     throw err;
   }
-}
+};
 
 const createDataDirectory = async (directoryPath, directoryName) => {
   try {
@@ -63,18 +63,6 @@ const createDataDirectory = async (directoryPath, directoryName) => {
     console.error('CreateDataDirectory ' + directoryName + ' failed - ' + err);
     throw err;
   }
-};
-
-const getLineage = (firstLevelId, secondLevelId, thirdLevelId) => {
-  return {
-    _id: firstLevelId,
-    parent: {
-      _id: secondLevelId,
-      parent: {
-        _id: thirdLevelId
-      }
-    }
-  };
 };
 
 const pairPlaceTypesRoles = {
@@ -165,7 +153,12 @@ const generateHierarchy = async (type, placeName, parentPlace, numberOfPersons) 
     }
     const needUser = pairPlaceTypesNeedsUsers[type];
     if (needUser) {
-      await generateUser(type, place._id, person.short_name.toLowerCase() + placeName + 'user' + i, person, isPrimaryContact);
+      await generateUser(
+        type,
+        place._id,
+        person.short_name.toLowerCase() + placeName + 'user' + i,
+        person,
+        isPrimaryContact);
     }
     if (bracPersonFactory.shouldGenerateSurvey(person)) {
       await generateReports(parentPlace, place, person, (i % 2 !== 0));
