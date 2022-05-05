@@ -68,7 +68,7 @@ module.exports = new Factory()
   })
   .attr('group_lmp', () => {
     const groupLmp = {
-      g_lmp_method: Faker.faker.random.arrayElement(['calendar', 'approx']),
+      g_lmp_method: Faker.faker.helpers.arrayElement(['calendar', 'approx']),
       g_lmp_calendar: null,
       g_lmp_approx: null,
       g_lmp_date_raw: null,
@@ -88,7 +88,7 @@ module.exports = new Factory()
       groupLmp.g_lmp_date_8601 = groupLmp.g_lmp_calendar;
       groupLmp.g_lmp_date = groupLmp.g_lmp_calendar;
     } else {
-      groupLmp.g_lmp_approx = Faker.faker.random.arrayElement([UP_TO_2_MONTHS_AGO,
+      groupLmp.g_lmp_approx = Faker.faker.helpers.arrayElement([UP_TO_2_MONTHS_AGO,
         UP_TO_3_MONTHS_AGO,
         UP_TO_4_MONTHS_AGO,
         BETWEEN_5_TO_6_MONTHS_AGO,
@@ -100,19 +100,19 @@ module.exports = new Factory()
     groupLmp.g_edd_8601 = moment(groupLmp.g_lmp_date_8601).add(DURATION_OF_PREGNANCY_IN_DAYS, 'days');
     groupLmp.g_edd = groupLmp.g_edd_8601.format('MMM D, YYYY');
     if (groupLmp.g_lmp_approx === UP_TO_2_MONTHS_AGO || groupLmp.g_lmp_approx === UP_TO_3_MONTHS_AGO) {
-      groupLmp.g_preg_test = Faker.faker.random.arrayElement(YES_NO);
+      groupLmp.g_preg_test = Faker.faker.helpers.arrayElement(YES_NO);
     }
     if (groupLmp.g_preg_test === 'yes') {
-      groupLmp.g_preg_res = Faker.faker.random.arrayElement(POSITIVE_NEGATIVE);
+      groupLmp.g_preg_res = Faker.faker.helpers.arrayElement(POSITIVE_NEGATIVE);
     } else {
-      groupLmp.g_preg_res_kit = Faker.faker.random.arrayElement(POSITIVE_NEGATIVE);
+      groupLmp.g_preg_res_kit = Faker.faker.helpers.arrayElement(POSITIVE_NEGATIVE);
     }
     return groupLmp;
   })
   .attr('group_llin_parity', ['group_lmp'], (groupLmp) => {
     if (isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
       const groupLlinParity = {
-        patient_llin: Faker.faker.random.arrayElement(YES_NO)
+        patient_llin: Faker.faker.helpers.arrayElement(YES_NO)
       };
       return groupLlinParity;
     }
@@ -120,19 +120,19 @@ module.exports = new Factory()
   .attr('group_anc_visit', ['group_lmp'], (groupLmp) => {
     if (isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
       const groupAncVisit = {
-        anc_visit: Faker.faker.random.arrayElement(YES_NO),
+        anc_visit: Faker.faker.helpers.arrayElement(YES_NO),
         anc_visit_repeat: null,
-        prophylaxis_taken: Faker.faker.random.arrayElement(YES_NO),
+        prophylaxis_taken: Faker.faker.helpers.arrayElement(YES_NO),
         last_dose: null,
         last_dose_date: null,
-        tt_imm: Faker.faker.random.arrayElement(YES_NO),
+        tt_imm: Faker.faker.helpers.arrayElement(YES_NO),
         tt_received: null,
         tt_date: null,
-        given_mebendazole: Faker.faker.random.arrayElement(YES_NO)
+        given_mebendazole: Faker.faker.helpers.arrayElement(YES_NO)
       };
       if (groupAncVisit.anc_visit === 'yes') {
         const ancVisitRepeat = {
-          anc_visit_completed: Faker.faker.random.arrayElement(
+          anc_visit_completed: Faker.faker.helpers.arrayElement(
             ['anc_1', 'anc_2', 'anc_3', 'anc_4', 'anc_5', 'anc_6', 'anc_7', 'anc_8']),
           g_anc_last_visit: moment().unix(),
           note_warning: '',
@@ -143,13 +143,13 @@ module.exports = new Factory()
         groupAncVisit.anc_visit_repeat = ancVisitRepeat;
       }
       if (groupAncVisit.prophylaxis_taken === 'yes') {
-        groupAncVisit.last_dose = Faker.faker.random.arrayElement(['ipt_1', 'ipt_2', 'ipt_3', 'ipt_4']);
+        groupAncVisit.last_dose = Faker.faker.helpers.arrayElement(['ipt_1', 'ipt_2', 'ipt_3', 'ipt_4']);
         groupAncVisit.last_dose_date = moment()
           .subtract(Faker.faker.datatype.number({ min: 1, max: 120 }), 'month')
           .format('YYYY-MM-DD');
       }
       if (groupAncVisit.tt_imm === 'yes') {
-        groupAncVisit.tt_received = Faker.faker.random.arrayElement(['tt_1', 'tt_2']);
+        groupAncVisit.tt_received = Faker.faker.helpers.arrayElement(['tt_1', 'tt_2']);
         groupAncVisit.tt_date = moment()
           .subtract(Faker.faker.datatype.number({ min: 1, max: 120 }), 'month')
           .format('YYYY-MM-DD');
@@ -163,9 +163,9 @@ module.exports = new Factory()
       const gNutritionScreening = {
         muac_score: Faker.faker.datatype.number(),
         mother_weight: Faker.faker.datatype.number(),
-        last_fed: Faker.faker.random.arrayElement(['1', '2', '3', '4', '5', '6', '7']),
+        last_fed: Faker.faker.helpers.arrayElement(['1', '2', '3', '4', '5', '6', '7']),
         last_food: [],
-        mother_hiv_status: Faker.faker.random.arrayElement(...POSITIVE_NEGATIVE, 'unknown', 'undisclosed'),
+        mother_hiv_status: Faker.faker.helpers.arrayElement(...POSITIVE_NEGATIVE, 'unknown', 'undisclosed'),
         mother_arv: null
       };
       if (Faker.faker.datatype.boolean()) {
@@ -175,7 +175,7 @@ module.exports = new Factory()
         gNutritionScreening.last_food.push(NONE);
       }
       if (gNutritionScreening.mother_hiv_status === 'pos') {
-        gNutritionScreening.mother_arv = Faker.faker.random.arrayElement(YES_NO);
+        gNutritionScreening.mother_arv = Faker.faker.helpers.arrayElement(YES_NO);
       }
       return gNutritionScreening;
     }

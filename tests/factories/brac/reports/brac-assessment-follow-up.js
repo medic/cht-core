@@ -50,8 +50,8 @@ module.exports = new Factory()
   })
   .attr('group_followup_options', () => {
     const groupFollowupOptions = {
-      follow_up_type: Faker.faker.random.arrayElement(['treat', 'treat_refer', 'refer_only']),
-      follow_up_method: Faker.faker.random.arrayElement(['phone', 'in_person']),
+      follow_up_type: Faker.faker.helpers.arrayElement(['treat', 'treat_refer', 'refer_only']),
+      follow_up_method: Faker.faker.helpers.arrayElement(['phone', 'in_person']),
     };
     return groupFollowupOptions;
   })
@@ -71,7 +71,7 @@ module.exports = new Factory()
       if (groupFollowupOptions.follow_up_type === 'treat') {
         if (!groupDangerSigns || !groupDangerSigns.danger_signs) {
           const groupImproved = {
-            g_patient_treatment_outcome: Faker.faker.random.arrayElement(
+            g_patient_treatment_outcome: Faker.faker.helpers.arrayElement(
               ['cured', 'still_recovering', 'bad_medicine_reaction', 'not_improving', 'died'])
           };
           return groupImproved;
@@ -81,7 +81,7 @@ module.exports = new Factory()
   .attr('group_referral_followup', ['group_followup_options'], (groupFollowupOptions) => {
     if (referPatient(groupFollowupOptions)) {
       const groupReferralFollowup = {
-        g_patient_health_facility_visit: Faker.faker.random.arrayElement(['yes', 'no'])
+        g_patient_health_facility_visit: Faker.faker.helpers.arrayElement(['yes', 'no'])
       };
       return groupReferralFollowup;
     }
@@ -94,7 +94,7 @@ module.exports = new Factory()
           return null;
         }
         const groupBetter = {
-          g_patient_better: Faker.faker.random.arrayElement(['cured', 'still_recovering', 'still_in_facility', 'died'])
+          g_patient_better: Faker.faker.helpers.arrayElement(['cured', 'still_recovering', 'still_in_facility', 'died'])
         };
         return groupBetter;
       }

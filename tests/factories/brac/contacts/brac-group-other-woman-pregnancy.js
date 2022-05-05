@@ -31,7 +31,7 @@ module.exports = new Factory()
   })
   .attr('o_lmp_approx', ['o_lmp'], (oLmp) => {
     if (!oLmp) {
-      return Faker.faker.random.arrayElement(['2mo', '3mo', '4mo', '6mo', '8mo', '1mo']);
+      return Faker.faker.helpers.arrayElement(['2mo', '3mo', '4mo', '6mo', '8mo', '1mo']);
     }
   })
   .attr('p_test', ['o_lmp_approx'], (oLmpApprox) => {
@@ -41,7 +41,7 @@ module.exports = new Factory()
   })
   .attr('p_test_result', ['p_test'], (pTest) => {
     if (pTest) {
-      return Faker.faker.random.arrayElement(POSITIVE_NEGATIVE);
+      return Faker.faker.helpers.arrayElement(POSITIVE_NEGATIVE);
     }
   })
   .attr('p_test_kit', ['p_test'], (pTest) => {
@@ -51,7 +51,7 @@ module.exports = new Factory()
   })
   .attr('p_test_kit_result', ['p_test_kit'], (pTestKit) => {
     if (pTestKit) {
-      return Faker.faker.random.arrayElement(POSITIVE_NEGATIVE);
+      return Faker.faker.helpers.arrayElement(POSITIVE_NEGATIVE);
     }
   })
   .attr('fp_flow', ['other_woman_pregnant'], (otherWomanPregnant) => {

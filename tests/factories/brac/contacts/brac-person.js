@@ -50,7 +50,7 @@ const bracPerson = () => {
     })
     .attr('name', Faker.faker.name.findName())
     .attr('short_name', Faker.faker.name.firstName())
-    .attr('date_of_birth_method', Faker.faker.random.arrayElement([approxDateOfBirthMethod, 'calendar']))
+    .attr('date_of_birth_method', Faker.faker.helpers.arrayElement([approxDateOfBirthMethod, 'calendar']))
     .attr('age_years', ['subtype', 'date_of_birth_method'], (subtype, dateOfBirthMethod) => {
       if (dateOfBirthMethod === approxDateOfBirthMethod) {
         return getAgeInYears(subtype);
@@ -166,7 +166,7 @@ const bracPerson = () => {
 
 const generateBracPerson = (parent, subtype) => {
   if (subtype === 'other') {
-    subtype = Faker.faker.random.arrayElement([memberChild, memberEligibleWoman, null]);
+    subtype = Faker.faker.helpers.arrayElement([memberChild, memberEligibleWoman, null]);
   }
   return bracPerson().build({ parent }, { subtype });
 };

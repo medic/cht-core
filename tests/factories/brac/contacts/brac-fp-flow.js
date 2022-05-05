@@ -12,7 +12,7 @@ const NONE = 'fp_none';
  */
 const generateFpMethods = () => {
   const methods = [];
-  methods.push(Faker.faker.random.arrayElement([...BIRTH_CONTROL, CONDOMS, NONE]));
+  methods.push(Faker.faker.helpers.arrayElement([...BIRTH_CONTROL, CONDOMS, NONE]));
   if (methods[0] === CONDOMS) {
     methods.push(...Faker.faker.helpers.uniqueArray(
       BIRTH_CONTROL,

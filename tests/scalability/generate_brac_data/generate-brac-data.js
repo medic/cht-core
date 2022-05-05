@@ -43,10 +43,10 @@ const csvWriter = createCsvWriter({
 const users = [];
 const managers = [];
 
-async function createDataDoc(folderPath, fileName, content) {
+const createDataDoc = async (folderPath, fileName, content) => {
   try {
     const filePath = path.join(folderPath, fileName + dataExtension);
-    await fs.promises.writeFile(path.join(filePath, fileName), JSON.strigify(content, {}, 2));
+    await fs.promises.writeFile(filePath, JSON.stringify(content, {}, 2));
   } catch (err) {
     console.error('CreateDataDoc ' + err);
     throw err;
@@ -149,9 +149,13 @@ const generateReports = async (parentPlace, place, person, isMainData) => {
 };
 
 const generateHierarchy = async (type, placeName, parentPlace, numberOfPersons) => {
-  const placeLineage = { _id: parent._id, parent: parentPlace.parent };
+  let placeLineage = null;
+  if (parentPlace) {
+    placeLineage = { _id: parentPlace._id, parent: parentPlace.parent };
+  }
   const place = bracPlaceFactory.generateBracPlace(placeName, type, placeLineage);
   const personLineage = { _id: place._id, parent: place.parent };
+
   let isPrimaryContact = true;
   for (let i = 0; i < numberOfPersons; i++) {
     const person = await generatePerson(type, personLineage, isPrimaryContact);
@@ -171,7 +175,7 @@ const generateHierarchy = async (type, placeName, parentPlace, numberOfPersons) 
   return place;
 };
 
-const generateData = () => {
+const generateData = async () => {
   await createDataDirectory(dataDirectory, preconditionDirectory);
   await createDataDirectory(dataDirectory, mainDirectory);
   await createDataDirectory(path.join(dataDirectory, preconditionDirectory), jsonDirectory);
@@ -180,25 +184,23 @@ const generateData = () => {
     const districtHospital = await generateHierarchy(
       'district_hospital',
       districtHospitalName + 'districthospital' + dh,
+      null,
       numberOfManagersPerDistrictHospital);
-
     for (let hc = 0; hc < numberOfHealthCentersPerDistrictHospital; hc++) {
       const healthCenterName = districtHospitalName + 'districthospital' + dh + 'healthcenter' + hc;
       const healthCenter = await generateHierarchy(
         'health_center',
         healthCenterName,
-        numberOfChwPerHealthCenter,
-        districtHospital._id);
+        districtHospital,
+        numberOfChwPerHealthCenter);
 
       for (let c = 0; c < numberOfClinicsPerHealthCenter; c++) {
         const clinicName = districtHospitalName + 'districthospital' + dh + 'healthcenter' + hc + 'clinic' + c;
         await generateHierarchy(
           'clinic',
           clinicName,
-          numberOfFamilyMembers,
-          healthCenter._id,
-          districtHospital._id,
-          healthCenter);
+          healthCenter,
+          numberOfFamilyMembers);
       }
     }
   }

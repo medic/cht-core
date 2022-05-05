@@ -17,7 +17,7 @@ module.exports = new Factory()
       village: Faker.faker.address.secondaryAddress(),
       dob: dob,
       sex: sex,
-      marital_status: Faker.faker.random.arrayElement(['married', 'single', 'separated'])
+      marital_status: Faker.faker.helpers.arrayElement(['married', 'single', 'separated'])
     };
     return gIndividualInfo;
   })
@@ -31,7 +31,7 @@ module.exports = new Factory()
   })
   .attr('g_position_info', () => {
     const gPositionInfo = {
-      chw_type: Faker.faker.random.arrayElement(['rct', 'non_rct', 'vht']),
+      chw_type: Faker.faker.helpers.arrayElement(['rct', 'non_rct', 'vht']),
       start_date: moment().subtract(Faker.faker.datatype.number({ min: 1, max: 10 }, 'year')).format('YYYY-MM-DD'),
       facility_name: Faker.faker.name.firstName(),
       facility_level: Faker.faker.name.firstName(),
@@ -41,7 +41,7 @@ module.exports = new Factory()
   })
   .attr('g_education', () => {
     const gEducation = {
-      education_level: Faker.faker.random.arrayElement(
+      education_level: Faker.faker.helpers.arrayElement(
         ['basic', 'below_primary', 'primary_7', 'o_level', 'a_level', 'tertiary', 'diploma', 'degree']),
       institution: Faker.faker.name.firstName(),
       completion_year: moment().subtract(Faker.faker.datatype.number({ min: 1, max: 10 }, 'year')).format('YYYY-MM-DD')
