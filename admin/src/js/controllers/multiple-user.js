@@ -35,7 +35,6 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
     $scope.$apply();
   };
 
-
   $scope.backToAppManagement = function () {
     $scope.clearScreen();
     $uibModalInstance.dismiss();
@@ -50,7 +49,6 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
   };
 
   const upload = function() {
-
     const files = $('#users-upload .uploader')[0].files;
     if (!files || files.length === 0) {
       return;
@@ -70,6 +68,5 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
       $('#users-upload .uploader').click();
     });
   });
-
 }
 );
