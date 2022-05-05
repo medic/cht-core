@@ -621,7 +621,7 @@ const parseCsv = async (csv, logId) => {
   allRows = allRows.filter(row => row.length);
 
   const progress = { status: 'parsing', parsing: { total: allRows.length, failed: 0, successful: 0 } };
-  await bulkUploadLog.updateProgress(logId, progress);
+  await bulkUploadLog.updateLog(logId, progress);
 
   const users = [];
   for (let rowIdx = 0; rowIdx < allRows.length; rowIdx++) {
@@ -637,15 +637,28 @@ const parseCsv = async (csv, logId) => {
 
     if (rowIdx % 10) {
       // ToDo: log error per row if failing on parsing
-      await bulkUploadLog.updateProgress(logId, progress);
+      await bulkUploadLog.updateLog(logId, progress);
     }
 
     users.push(user);
   }
 
   progress.status = 'parsed';
-  await bulkUploadLog.updateProgress(logId, progress);
+  await bulkUploadLog.updateLog(logId, progress);
   return users;
+};
+
+const createRecordBulkLog = (record, status, error) => {
+  const meta = {
+    import: {
+      status,
+      message: error.message || error,
+      datetime: new Date().toISOString()
+    }
+  };
+  const recordBulkLog = Object.assign(record, meta);
+  delete recordBulkLog.password;
+  return recordBulkLog;
 };
 
 /*
@@ -743,7 +756,8 @@ module.exports = {
       status: 'saving',
       saving: { total: users.length, failed: 0, successful: 0, ignored: 0 }
     };
-    await bulkUploadLog.updateProgress(logId, progress);
+    const logData = [];
+    await bulkUploadLog.updateLog(logId, progress);
 
     const responses = [];
     for (let userIdx = 0; userIdx < users.length; userIdx++) {
@@ -753,21 +767,22 @@ module.exports = {
       try {
         response = await createUserEntities(user, appUrl, preservePrimaryContact);
         progress.saving.successful++;
+        logData.push(createRecordBulkLog(user, 'imported'));
       } catch(error) {
         response = { error: error.message };
         progress.saving.failed++;
+        logData.push(createRecordBulkLog(user, 'error', error));
       }
 
       if (userIdx % 10) {
-        // ToDo: log error per row if failing on parsing
-        await bulkUploadLog.updateProgress(logId, progress);
+        await bulkUploadLog.updateLog(logId, progress, logData);
       }
 
       responses.push(response);
     }
 
     progress.status = 'finished';
-    await bulkUploadLog.updateProgress(logId, progress);
+    await bulkUploadLog.updateLog(logId, progress, logData);
     return responses;
   },
 

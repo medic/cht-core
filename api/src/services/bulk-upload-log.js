@@ -5,12 +5,12 @@ const createLog = (request, entity) => {
   return auth
     .getUserCtx(request)
     .then(user => {
-      const datetime = new Date().getTime();
+      const datetime = new Date();
       return db.medicLogs
         .put({
-          _id: 'bulk-' + entity + '-upload-' + datetime,
+          _id: 'bulk-' + entity + '-upload-' + datetime.getTime(),
           bulk_uploaded_by: user.name,
-          bulk_uploaded_on: datetime,
+          bulk_uploaded_on: datetime.toISOString(),
           progress: {
             status: 'initiated'
           },
@@ -20,26 +20,17 @@ const createLog = (request, entity) => {
     });
 };
 
-const updateProgress = (id, progress) => {
+const updateLog = (id, progress, data) => {
   return db.medicLogs
     .get(id)
     .then(doc => {
       doc.progress = Object.assign(doc.progress, progress);
-      return db.medicLogs.put(doc);
-    });
-};
-
-const updateData = (id, data) => {
-  return db.medicLogs
-    .get(id)
-    .then(doc => {
-      doc.data = Object.assign(doc.data, data);
+      doc.data = data;
       return db.medicLogs.put(doc);
     });
 };
 
 module.exports = {
   createLog,
-  updateProgress,
-  updateData,
+  updateLog,
 };
