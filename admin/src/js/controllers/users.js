@@ -57,7 +57,6 @@ angular.module('controllers').controller('UsersCtrl',
         templateUrl: 'templates/multiple_user_modal.html',
         controller: 'MultipleUserCtrl',
         model: {},
-
       });
     };
 
