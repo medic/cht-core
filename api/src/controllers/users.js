@@ -231,8 +231,24 @@ module.exports = {
       try {
         await auth.check(req, 'can_create_users');
         const logId = await bulkUploadLog.createLog(req, 'user');
-        const users = typeof req.body === 'string' ? await usersService.parseCsv(req.body, logId) : req.body;
-        const response = await usersService.createUsers(users, getAppUrl(req), logId, true);
+        let users;
+        let ignoredUsers;
+
+        if (typeof req.body === 'string') {
+          const parsedCsv = await usersService.parseCsv(req.body, logId);
+          users = parsedCsv.users;
+          ignoredUsers = parsedCsv.ignoredUsers;
+        } else {
+          users = req.body;
+        }
+
+        const response = await usersService.createUsers(
+          users,
+          getAppUrl(req),
+          ignoredUsers,
+          logId,
+          true
+        );
         res.json(response);
       } catch (error) {
         serverUtils.error(error, req, res);

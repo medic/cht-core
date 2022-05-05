@@ -20,6 +20,23 @@ const USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
 
 const MAX_CONFLICT_RETRY = 3;
 
+const BULK_UPLOAD_STATUSES = {
+  IMPORTED: 'imported',
+  SKIPPED: 'skipped',
+  ERROR: 'error',
+};
+const BULK_UPLOAD_PROGRESS_STATUSES = {
+  PARSING: 'parsing',
+  PARSED: 'parsed',
+  ERROR: 'error',
+  SAVING: 'saving',
+  FINISHED: 'finished',
+};
+const BULK_UPLOAD_RESERVED_COLS = {
+  IMPORT_STATUS: 'import.status:excluded',
+  IMPORT_MESSAGE: 'import.message:excluded',
+};
+
 const RESTRICTED_USER_EDITABLE_FIELDS = [
   'password',
   'known'
@@ -557,7 +574,6 @@ const assignCsvCellValue = (data, attribute, value) => {
 
 const parseCsvRow = (data, header, value, valueIdx) => {
   const deepAttributes = header[valueIdx].split('.');
-
   if (deepAttributes.length === 1) {
     assignCsvCellValue(data, deepAttributes[0], value);
     return;
@@ -589,22 +605,39 @@ const parseCsv = async (csv, logId) => {
     .split(',');
   allRows = allRows.filter(row => row.length);
 
-  const progress = { status: 'parsing', parsing: { total: allRows.length, failed: 0, successful: 0 } };
+  const progress = {
+    status: BULK_UPLOAD_PROGRESS_STATUSES.PARSING,
+    parsing: { total: allRows.length, failed: 0, successful: 0 }
+  };
   const logData = [];
   await bulkUploadLog.updateLog(logId, progress);
 
   const users = [];
+  const ignoredUsers = {};
   for (let rowIdx = 0; rowIdx < allRows.length; rowIdx++) {
+    let ignoreUser = false;
+    let ignoreMessage = '';
     const user = {};
     try {
       allRows[rowIdx]
         .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
-        .forEach((value, idx) => parseCsvRow(user, header, value, idx));
+        .forEach((value, idx) => {
+          const ignoreStatus = [BULK_UPLOAD_STATUSES.IMPORTED, BULK_UPLOAD_STATUSES.SKIPPED];
+          if (header[idx].toLowerCase() === BULK_UPLOAD_RESERVED_COLS.IMPORT_STATUS
+            && ignoreStatus.indexOf(value.toLowerCase()) > -1) {
+            ignoreUser = true;
+          }
+          if (header[idx].toLowerCase() === BULK_UPLOAD_RESERVED_COLS.IMPORT_MESSAGE) {
+            ignoreMessage = value;
+            return;
+          }
+          parseCsvRow(user, header, value, idx);
+        });
       progress.parsing.successful++;
-      logData.push(createRecordBulkLog(user, 'parsed'));
+      logData.push(createRecordBulkLog(user, BULK_UPLOAD_PROGRESS_STATUSES.PARSED));
     } catch (error) {
       progress.parsing.failed++;
-      logData.push(createRecordBulkLog(user, 'error', error));
+      logData.push(createRecordBulkLog(user, BULK_UPLOAD_PROGRESS_STATUSES.ERROR, error));
     }
 
     if (rowIdx % 10) {
@@ -612,25 +645,29 @@ const parseCsv = async (csv, logId) => {
     }
 
     users.push(user);
+    if (ignoreUser) {
+      ignoredUsers[user.username] = { user, ignoreMessage };
+    }
   }
 
-  progress.status = 'parsed';
+  progress.status = BULK_UPLOAD_PROGRESS_STATUSES.PARSED;
   await bulkUploadLog.updateLog(logId, progress, logData);
-  return users;
+  return { users, ignoredUsers };
 };
 
-const createRecordBulkLog = (record, status, error) => {
-  let message;
-
+const createRecordBulkLog = (record, status, error, message) => {
   if (error) {
     message = typeof error.message === 'object' ? error.message.message : error.message;
+  }
+
+  if (!message) {
+    message = status + ' on ' + new Date().toISOString();
   }
 
   const meta = {
     import: {
       status,
       message,
-      datetime: new Date().toISOString()
     }
   };
   const recordBulkLog = Object.assign({}, record, meta);
@@ -699,13 +736,13 @@ module.exports = {
    * @param {string} appUrl request protocol://hostname
    * @param {boolean} preservePrimaryContact Default false. Prevent updating the place's primary contact.
    */
-  async createUsers(users, appUrl, logId, preservePrimaryContact) {
+  async createUsers(users, appUrl, ignoredUsers, logId, preservePrimaryContact) {
     if (!Array.isArray(users)) {
       return module.exports.createUser(users, appUrl);
     }
 
     const progress = {
-      status: 'saving',
+      status: BULK_UPLOAD_PROGRESS_STATUSES.SAVING,
       saving: { total: users.length, failed: 0, successful: 0, ignored: 0 }
     };
     const logData = [];
@@ -715,6 +752,18 @@ module.exports = {
     for (let userIdx = 0; userIdx < users.length; userIdx++) {
       const user = users[userIdx];
       let response;
+
+      if (ignoredUsers && ignoredUsers[user.username]) {
+        progress.saving.ignored++;
+        const log = createRecordBulkLog(
+          user,
+          BULK_UPLOAD_STATUSES.SKIPPED,
+          null,
+          ignoredUsers[user.username].ignoreMessage
+        );
+        logData.push(log);
+        continue;
+      }
 
       try {
         const missing = missingFields(user);
@@ -734,11 +783,11 @@ module.exports = {
 
         response = await createUserEntities(user, appUrl, preservePrimaryContact);
         progress.saving.successful++;
-        logData.push(createRecordBulkLog(user, 'imported'));
+        logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.IMPORTED));
       } catch(error) {
         response = { error: error.message };
         progress.saving.failed++;
-        logData.push(createRecordBulkLog(user, 'error', error));
+        logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.ERROR, error));
       }
 
       if (userIdx % 10) {
@@ -748,7 +797,7 @@ module.exports = {
       responses.push(response);
     }
 
-    progress.status = 'finished';
+    progress.status = BULK_UPLOAD_PROGRESS_STATUSES.FINISHED;
     await bulkUploadLog.updateLog(logId, progress, logData);
     return responses;
   },
