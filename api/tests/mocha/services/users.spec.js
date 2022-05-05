@@ -2530,5 +2530,197 @@ describe('Users service', () => {
       });
     });
   });
+
+  describe('parseCsv', () => {
+    it('should throw error when csv is empty', () => {
+      try {
+        service.parseCsv('');
+        chai.assert.fail('Should have thrown');
+      } catch (error) {
+        chai.expect(error.message).to.equal('CSV is empty.');
+      }
+
+      try {
+        service.parseCsv(null);
+        chai.assert.fail('Should have thrown');
+      } catch (error) {
+        chai.expect(error.message).to.equal('CSV is empty.');
+      }
+    });
+
+    it('should parse csv, trim spaces and not split strings with commas inside', () => {
+      const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n' +
+        'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,2652527222,"1 King ST, Kent Town, 55555"\n' +
+        'Secret5678, peter ,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,Peter, 2652279,"15 King ST, Kent Town, 55555 "';
+
+      const result = service.parseCsv(csv);
+
+      chai.expect(result).to.have.deep.members([
+        {
+          password: 'Secret1234',
+          username: 'mary',
+          type: 'person',
+          place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
+          contact: { name: 'mary', phone: '2652527222', address: '1 King ST, Kent Town, 55555' }
+        },
+        {
+          password: 'Secret5678',
+          username: 'peter',
+          type: 'person',
+          place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
+          contact: { name: 'Peter', phone: '2652279', address: '15 King ST, Kent Town, 55555' }
+        }
+      ]);
+    });
+
+    it('should return empty array when there is not users in the csv', () => {
+      const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n';
+
+      const result = service.parseCsv(csv);
+
+      chai.expect(result).to.have.deep.members([]);
+    });
+
+    it('should ignore empty header columns', () => {
+      const csv = 'password,username,type,,contact.name,,contact.address\n' +
+        'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,2652527222,"1 King ST, Kent Town, 55555"\n';
+
+      const result = service.parseCsv(csv);
+
+      chai.expect(result).to.have.deep.members([
+        {
+          password: 'Secret1234',
+          username: 'mary',
+          type: 'person',
+          contact: { name: 'mary', address: '1 King ST, Kent Town, 55555' }
+        }
+      ]);
+    });
+
+    it('should keep attributes if there is not value', () => {
+      const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n' +
+        'Secret1234,mary,person,,mary,     ,"1 King ST, Kent Town, 55555"\n';
+
+      const result = service.parseCsv(csv);
+
+      chai.expect(result).to.have.deep.members([
+        {
+          password: 'Secret1234',
+          username: 'mary',
+          type: 'person',
+          place: '',
+          contact: { name: 'mary', phone: '', address: '1 King ST, Kent Town, 55555' }
+        }
+      ]);
+    });
+
+    it('should parse csv with deep object structure', () => {
+      const csv = 'password,username,type,place,contact.name,contact.address.country' +
+        ',contact.address.city.street,contact.address.city.name\n' +
+        'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,US,"5th ST", Kent Town\n' +
+        'Secret555,peter,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,Peter,CA,,Victoria Town\n';
+
+      const result = service.parseCsv(csv);
+
+      chai.expect(result).to.have.deep.members([
+        {
+          password: 'Secret1234',
+          username: 'mary',
+          type: 'person',
+          place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
+          contact: {
+            name: 'mary',
+            address: {
+              city: {
+                name: 'Kent Town',
+                street: '5th ST'
+              },
+              country: 'US'
+            }
+          }
+        },
+        {
+          password: 'Secret555',
+          username: 'peter',
+          type: 'person',
+          place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
+          contact: {
+            name: 'Peter',
+            address: {
+              city: {
+                name: 'Victoria Town',
+                street: ''
+              },
+              country: 'CA'
+            }
+          }
+        }
+      ]);
+    });
+
+    it('should parse csv with special characters', () => {
+      const csv = 'password,username,type,place,contact.name,contact.notes\n' +
+        'Secret1234,mary,person,498a394e-f98,Mary\'s name!,"#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_"\n' +
+        'Secret5678, peter ,person,498a394e-f99,Peter,"ce fût une belle saison, le maïs sera prêt à partir ' +
+        'de l’été c’est-à-dire dès demain, d’où l’invaitation"';
+
+      const result = service.parseCsv(csv);
+
+      chai.expect(result).to.have.deep.members([
+        {
+          password: 'Secret1234',
+          username: 'mary',
+          type: 'person',
+          place: '498a394e-f98',
+          contact: {
+            name: 'Mary\'s name!',
+            notes: '#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_' }
+        },
+        {
+          password: 'Secret5678',
+          username: 'peter',
+          type: 'person',
+          place: '498a394e-f99',
+          contact: {
+            name: 'Peter',
+            notes: 'ce fût une belle saison, le maïs sera prêt à partir' +
+              ' de l’été c’est-à-dire dès demain, d’où l’invaitation'
+          }
+        }
+      ]);
+    });
+
+    it('should ignore excluded header columns', () => {
+      const csv = 'password,username,type,place,contact.meta:excluded,contact.name,contact.notes\n' +
+        'Secret1234,mary,person,498a394e-f98,excluded column,Mary\'s name!,"#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_"\n' +
+        'Secret5678, peter ,person,498a394e-f99,excluded column,Peter,' +
+        '"ce fût une belle saison, le maïs sera prêt à partir de l’été c’est-à-dire dès demain, d’où l’invaitation"';
+
+      const result = service.parseCsv(csv);
+
+      chai.expect(result).to.have.deep.members([
+        {
+          password: 'Secret1234',
+          username: 'mary',
+          type: 'person',
+          place: '498a394e-f98',
+          contact: {
+            name: 'Mary\'s name!',
+            notes: '#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_' }
+        },
+        {
+          password: 'Secret5678',
+          username: 'peter',
+          type: 'person',
+          place: '498a394e-f99',
+          contact: {
+            name: 'Peter',
+            notes: 'ce fût une belle saison, le maïs sera prêt à partir' +
+              ' de l’été c’est-à-dire dès demain, d’où l’invaitation'
+          }
+        }
+      ]);
+    });
+  });
 });
 

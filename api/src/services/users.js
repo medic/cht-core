@@ -9,7 +9,7 @@ const getRoles = require('./types-and-roles');
 const auth = require('../auth');
 const tokenLogin = require('./token-login');
 const moment = require('moment');
-const { allPromisesSettled } = require('../promise-utils');
+const bulkUploadLog = require('../services/bulk-upload-log');
 
 const USER_PREFIX = 'org.couchdb.user:';
 const DOC_IDS_WARN_LIMIT = 10000;
@@ -222,7 +222,7 @@ const createPlace = data => {
   });
 };
 
-const storeUpdatedPlace = (data, retry = 0) => {
+const storeUpdatedPlace = (data, preservePrimaryContact, retry = 0) => {
   if (!data.place) {
     return;
   }
@@ -233,14 +233,16 @@ const storeUpdatedPlace = (data, retry = 0) => {
   return db.medic
     .get(data.place._id)
     .then(place => {
+      if (preservePrimaryContact) {
+        return;
+      }
       place.contact = data.place.contact;
       place.parent = data.place.parent;
-
       return db.medic.put(place);
     })
     .catch(err => {
       if (err.status === 409 && retry < MAX_CONFLICT_RETRY) {
-        return storeUpdatedPlace(data, retry + 1);
+        return storeUpdatedPlace(data, preservePrimaryContact, retry + 1);
       }
       throw err;
     });
@@ -532,13 +534,13 @@ const validateUserContact = (data, user, userSettings) => {
   }
 };
 
-const createUserEntities = async (user, appUrl) => {
+const createUserEntities = async (user, appUrl, preservePrimaryContact) => {
   const response = {};
   await validateNewUsername(user.username);
   await createPlace(user);
   await setContactParent(user);
   await createContact(user, response);
-  await storeUpdatedPlace(user);
+  await storeUpdatedPlace(user, preservePrimaryContact);
   await createUser(user, response);
   await createUserSettings(user, response);
   await tokenLogin.manageTokenLogin(user, appUrl, response);
@@ -574,6 +576,89 @@ const validateUserFields = (users) => {
     tokenLoginFailingIndexes,
     passwordFailingIndexes,
   };
+};
+
+const assignCsvCellValue = (data, attribute, value) => {
+  attribute = (attribute || '').trim();
+  if (!attribute.length || attribute.toLowerCase().indexOf(':excluded') > 0) {
+    return;
+  }
+  data[attribute] = typeof value === 'string' ? value.replace(/^"|"$/g, '').trim() : value;
+};
+
+const parseCsvRow = (data, header, value, valueIdx) => {
+  const deepAttributes = header[valueIdx].split('.');
+
+  if (deepAttributes.length === 1) {
+    assignCsvCellValue(data, deepAttributes[0], value);
+    return;
+  }
+
+  let deepObject = data;
+  deepAttributes.forEach((attr, idx) => {
+    if (idx === deepAttributes.length - 1) {
+      return assignCsvCellValue(deepObject, attr, value);
+    }
+
+    if (!deepObject[attr]) {
+      assignCsvCellValue(deepObject, attr, {});
+    }
+    deepObject = deepObject[attr];
+  });
+
+  return data;
+};
+
+const parseCsv = async (csv, logId) => {
+  if (!csv || !csv.length) {
+    throw new Error('CSV is empty.');
+  }
+
+  let allRows = csv.split(/\r\n|\n/);
+  const header = allRows
+    .shift()
+    .split(',');
+  allRows = allRows.filter(row => row.length);
+
+  const progress = { status: 'parsing', parsing: { total: allRows.length, failed: 0, successful: 0 } };
+  await bulkUploadLog.updateLog(logId, progress);
+
+  const users = [];
+  for (let rowIdx = 0; rowIdx < allRows.length; rowIdx++) {
+    const user = {};
+    try {
+      allRows[rowIdx]
+        .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+        .forEach((value, idx) => parseCsvRow(user, header, value, idx));
+      progress.parsing.successful++;
+    } catch (error) {
+      progress.parsing.failed++;
+    }
+
+    if (rowIdx % 10) {
+      // ToDo: log error per row if failing on parsing
+      await bulkUploadLog.updateLog(logId, progress);
+    }
+
+    users.push(user);
+  }
+
+  progress.status = 'parsed';
+  await bulkUploadLog.updateLog(logId, progress);
+  return users;
+};
+
+const createRecordBulkLog = (record, status, error) => {
+  const meta = {
+    import: {
+      status,
+      message: error.message || error,
+      datetime: new Date().toISOString()
+    }
+  };
+  const recordBulkLog = Object.assign(record, meta);
+  delete recordBulkLog.password;
+  return recordBulkLog;
 };
 
 /*
@@ -634,9 +719,10 @@ module.exports = {
    * @param {(Object|string)=} users[].place Can either be a place object or an existing place id.
    * @param {(Object|string)=} users[].contact Can either be a contact object or an existing place id.
    * @param {string=} users[].type Deprecated. Used to infer user's roles
-   * @param {string} appUrl   request protocol://hostname
+   * @param {string} appUrl request protocol://hostname
+   * @param {boolean} preservePrimaryContact Default false. Prevent updating the place's primary contact.
    */
-  async createUsers(users, appUrl) {
+  async createUsers(users, appUrl, logId, preservePrimaryContact) {
     if (!Array.isArray(users)) {
       return module.exports.createUser(users, appUrl);
     }
@@ -666,9 +752,38 @@ module.exports = {
       return Promise.reject(error400(errorMessage, { failingIndexes: passwordFailingIndexes }));
     }
 
-    // create all valid users even if some are failing
-    const promises = await allPromisesSettled(users.map(async (user) => await createUserEntities(user, appUrl)));
-    return promises.map((promise) => promise.status === 'rejected' ? { error: promise.reason.message } : promise.value);
+    const progress = {
+      status: 'saving',
+      saving: { total: users.length, failed: 0, successful: 0, ignored: 0 }
+    };
+    const logData = [];
+    await bulkUploadLog.updateLog(logId, progress);
+
+    const responses = [];
+    for (let userIdx = 0; userIdx < users.length; userIdx++) {
+      const user = users[userIdx];
+      let response;
+
+      try {
+        response = await createUserEntities(user, appUrl, preservePrimaryContact);
+        progress.saving.successful++;
+        logData.push(createRecordBulkLog(user, 'imported'));
+      } catch(error) {
+        response = { error: error.message };
+        progress.saving.failed++;
+        logData.push(createRecordBulkLog(user, 'error', error));
+      }
+
+      if (userIdx % 10) {
+        await bulkUploadLog.updateLog(logId, progress, logData);
+      }
+
+      responses.push(response);
+    }
+
+    progress.status = 'finished';
+    await bulkUploadLog.updateLog(logId, progress, logData);
+    return responses;
   },
 
   /*
@@ -756,6 +871,13 @@ module.exports = {
 
     return tokenLogin.manageTokenLogin(data, appUrl, response);
   },
+
+  /**
+   * Parses a CSV of users to an array of objects.
+   *
+   * @param {string} csv CSV of users.
+   */
+  parseCsv,
 
   DOC_IDS_WARN_LIMIT,
 };
