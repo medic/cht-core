@@ -1,11 +1,12 @@
 <div mm-auth="can_configure">
 
   <legend translate>Users</legend>
-
-  <div class="tab-content">
+  <div class="btn-toolbar">
     <a id="add-user" class="btn btn-primary" ng-click="editUser({})">
-      <i class="fa fa-plus"></i>
-      <span translate>Add User</span>
+      <span>Add User</span>
+    </a>
+    <a id="add-users" class="btn btn-primary" ng-click="showAddMultipleUsersModal()" href="#">
+      <span translate>Import from file</span>
     </a>
   </div>
 
