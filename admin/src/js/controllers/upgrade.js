@@ -37,12 +37,12 @@ angular.module('controllers').controller('UpgradeCtrl',
         });
     };
 
-    const getExistingDeployment = (expectUpgrade) => {
+    const getExistingDeployment = (expectUpgrade, expectedVersion) => {
       return $http
         .get('/api/deploy-info')
         .then(({ data: deployInfo }) => {
-          if (expectUpgrade && $scope.currentDeploy) {
-            if ($scope.currentDeploy.version !== deployInfo.version) {
+          if (expectUpgrade) {
+            if (expectedVersion === deployInfo.version) {
               return reloadPage();
             }
             logError('instance.upgrade.error.deploy', 'instance.upgrade.error.deploy');
@@ -57,7 +57,8 @@ angular.module('controllers').controller('UpgradeCtrl',
         .get(UPGRADE_URL)
         .then(({ data: { upgradeDoc, indexers } }) => {
           if ($scope.upgradeDoc && !upgradeDoc) {
-            getExistingDeployment(true);
+            const expectedVersion = $scope.upgradeDoc.to && $scope.upgradeDoc.to.build;
+            getExistingDeployment(true, expectedVersion);
           }
 
           $scope.upgradeDoc = upgradeDoc;
@@ -158,7 +159,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     };
 
     const reloadPage = () => {
-      $state.go('upgrade', { upgraded: true });
+      $state.go('upgrade', { upgraded: true }, { reload: true });
     };
 
     $scope.upgrade = (build, action) => {
@@ -195,11 +196,12 @@ angular.module('controllers').controller('UpgradeCtrl',
         .post(url, { build })
         .catch(err => {
           // todo which status do we get with nginx???
-          if (err && (!err.status || err.status !== 500) && action === 'complete') {
+          // exclude "50x" like statuses that come from nginx
+          if (err && !err.status && action === 'complete') {
             // refresh page after API is back up
             return waitUntilApiStarts().then(() => reloadPage());
           }
-          throw err;
+          return logError(err, 'instance.upgrade.error.deploy');
         })
         .then(() => getCurrentUpgrade());
     };
