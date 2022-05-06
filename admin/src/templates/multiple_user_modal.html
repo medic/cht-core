@@ -39,6 +39,9 @@
       <div id="processing-status" ng-if="displayProcessingStatus">
         <div class="loader" ></div>
         <h3 class="text-center"><p>Processing {{processTotal}} users...</p></h3>
+        <p  class="text-center">
+          <small>This process can take a long time, if you're uploading a lot of users, please be patient.</small>
+        </p>
       </div>
 
       <div ng-if="displayUnavailableModal" class="window-center">

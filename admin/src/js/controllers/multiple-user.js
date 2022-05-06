@@ -112,6 +112,7 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
   $scope.backToAppManagement = function () {
     $scope.clearScreen();
     $uibModalInstance.dismiss();
+    $scope.$apply();
   };
 
   $scope.clearScreen = function () {
