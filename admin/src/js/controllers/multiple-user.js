@@ -15,7 +15,7 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
   $scope.displayUploadConfirm = false;
   $scope.displayProcessingStatus = false;
   $scope.displayFinishSummary = false;
-  const USER_LOG_DOC_ID = 'bulk-user-upload';
+  const USER_LOG_DOC_ID = 'bulk-user-upload-';
 
   $scope.onCancel = function () {
     $scope.clearScreen();
@@ -30,12 +30,22 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
   const getLogsByType = (docPrefix) => {
     const options = {
       startkey: docPrefix,
-      // endkey: docPrefix + '\ufff0',
+      endkey: docPrefix + '\ufff0',
       include_docs: true
     };
-    return DB().medicLogs
+    return DB({ logsDB: true })
       .allDocs(options)
-      .then((result) => result.rows.map(row => row.doc));
+      .then(result => {
+        if (!result || !result.rows || !result.rows.length) {
+          return;
+        }
+        const sortedDocs = result.rows
+          .map(row => row.doc)
+          .sort((a, b) => new Date(b.bulk_uploaded_on) - new Date(a.bulk_uploaded_on));
+        // eslint-disable-next-line no-console
+        console.warn('getLogsByType2', sortedDocs);
+        return sortedDocs;
+      });
   };
       
   $scope.processUpload = function () {
