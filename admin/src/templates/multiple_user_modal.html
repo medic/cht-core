@@ -38,12 +38,7 @@
 
       <div id="processing-status" ng-if="displayProcessingStatus">
         <div class="loader" ></div>
-        <h3 class="text-center"><p>Processing (25 of 100 users)...</p></h3>
-        <p class="text-center">
-          <a class="btn btn-primary"  ng-click="showFinishSummary()">
-            <span >showFinishSummary</span>
-          </a>
-        </p>
+        <h3 class="text-center"><p>Processing {{processTotal}} users...</p></h3>
       </div>
 
       <div ng-if="displayUnavailableModal" class="window-center">
@@ -59,15 +54,15 @@
       <div id="finish-summary" ng-if="displayFinishSummary">
         <div class="row text-center summary-box">
           <div class="col-sm-4">
-            <p class="text-success summary-number">5</p>
+            <p class="text-success summary-number">{{successUsersNumber}}</p>
             <strong>users added</strong>
           </div>
           <div class="col-sm-4">
-            <p class="text-muted summary-number">43</p>
+            <p class="text-muted summary-number">{{ignoredUsersNumber}}</p>
             <strong>previously imported</strong>
           </div>
           <div class="col-sm-4">
-            <p class="text-danger summary-number">2</p>
+            <p class="text-danger summary-number">{{failedUsersNumber}}</p>
             <strong>contained errors</strong>
           </div>
         </div>

@@ -16,6 +16,7 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
   $scope.displayProcessingStatus = false;
   $scope.displayFinishSummary = false;
   $scope.outputFileUrl = '';
+  $scope.processTotal = '';
   const USER_LOG_DOC_ID = 'bulk-user-upload-';
 
   $scope.onCancel = function () {
@@ -78,8 +79,16 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
       .then(data => CreateMultipleUser(data))
       .then(() => getLogsByType(USER_LOG_DOC_ID))
       .then(docs => {
-        $scope.outputFileUrl = convertToCSV(docs[0]);
-        $scope.displayFinishSummary = true;
+        $scope.uploadProcessLog = docs[0];
+        // eslint-disable-next-line no-console
+        console.log(docs[0]);
+        $scope.processTotal = $scope.uploadProcessLog.progress.parsing.total;
+        $scope.successUsersNumber = $scope.uploadProcessLog.progress.saving.successful;
+        $scope.ignoredUsersNumber = $scope.uploadProcessLog.progress.saving.ignored;
+        $scope.failedUsersNumber = $scope.uploadProcessLog.progress.saving.failed;
+        $scope.$apply();
+        $scope.outputFileUrl = convertToCSV( $scope.uploadProcessLog);
+        $scope.showFinishSummary();
       })
       .catch(error => {
         // eslint-disable-next-line no-console
@@ -91,6 +100,7 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
   $scope.showFinishSummary = function () {
     $scope.clearScreen();
     $scope.displayFinishSummary = true;
+    $scope.$apply();
   };
 
   $scope.showDisplayUploadConfirm = function () {
