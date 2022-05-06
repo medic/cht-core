@@ -15,6 +15,7 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
   $scope.displayUploadConfirm = false;
   $scope.displayProcessingStatus = false;
   $scope.displayFinishSummary = false;
+  $scope.outputFileUrl = '';
   const USER_LOG_DOC_ID = 'bulk-user-upload-';
 
   $scope.onCancel = function () {
@@ -22,48 +23,69 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
     $uibModalInstance.dismiss();
   };
 
-
-  const getLastUserLogDocId = function() {
-    return getLogsByType(USER_LOG_DOC_ID);
-  };
-
   const getLogsByType = (docPrefix) => {
-    const options = {
-      startkey: docPrefix,
-      endkey: docPrefix + '\ufff0',
-      include_docs: true
-    };
     return DB({ logsDB: true })
-      .allDocs(options)
+      .allDocs({
+        startkey: docPrefix,
+        endkey: docPrefix + '\ufff0',
+        include_docs: true
+      })
       .then(result => {
         if (!result || !result.rows || !result.rows.length) {
           return;
         }
-        const sortedDocs = result.rows
+        return result.rows
           .map(row => row.doc)
           .sort((a, b) => new Date(b.bulk_uploaded_on) - new Date(a.bulk_uploaded_on));
-        // eslint-disable-next-line no-console
-        console.warn('getLogsByType2', sortedDocs);
-        return sortedDocs;
       });
   };
-      
-  $scope.processUpload = function () {
-    $scope.uploadedData.text().then((data) => {
-      // eslint-disable-next-line no-console
-      console.log('uploaded data: '+ data);
-      return CreateMultipleUser(data);
-    }).catch(err => {
-      // eslint-disable-next-line no-console
-      console.log('CreateMultipleUser : Error processing data after upload');
-      $scope.setError(err, 'CreateMultipleUser : Error processing data after upload');
-    }).then(() => {
-      // eslint-disable-next-line no-console
-      console.log('getLastUserLogDocId' + getLastUserLogDocId());
+
+  const prepareStringForCSV = (str) => {
+    if (!str) {
+      return str;
     }
-    );
+    return '"' + str.replace(/"/g, '""') + '"';
+  };
+
+  const convertToCSV = doc => {
+    if (!doc || !doc.data) {
+      return;
+    }
+    const eol = '\r\n';
+    const delimiter = ',';
+    const columns = ['import.status:excluded', 'import.message:excluded', 'import.username:excluded'];
+    let output = columns.join(delimiter) + eol;
+
+    doc.data.forEach(record => {
+      if (record.import) {
+        output += [
+          prepareStringForCSV(record.import.status),
+          prepareStringForCSV(record.import.message),
+          prepareStringForCSV(record.username),
+        ].join(delimiter) + eol;
+      }
+    });
+
+    const file = new Blob([output], { type: 'text/csv;charset=utf-8;' });
+    return URL.createObjectURL(file);
+  };
+
+  $scope.processUpload = function () {
     $scope.clearScreen();
     $scope.displayProcessingStatus = true;
+    $scope.uploadedData
+      .text()
+      .then(data => CreateMultipleUser(data))
+      .then(() => getLogsByType(USER_LOG_DOC_ID))
+      .then(docs => {
+        $scope.outputFileUrl = convertToCSV(docs[0]);
+        $scope.displayFinishSummary = true;
+      })
+      .catch(error => {
+        // eslint-disable-next-line no-console
+        console.warn(error, 'CreateMultipleUser : Error processing data after upload');
+        $scope.setError(error, 'CreateMultipleUser : Error processing data after upload');
+      });
   };
 
   $scope.showFinishSummary = function () {
