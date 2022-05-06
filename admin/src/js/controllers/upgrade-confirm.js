@@ -26,7 +26,7 @@ angular.module('controllers').controller('UpgradeConfirmCtrl',
         .then(() => $uibModalInstance.close(true))
         .catch(err => {
           $log.error('Error when confirming', err);
-          const key = $scope.model.errorKey || 'instance.upgrade.error.confirm';
+          const key = $scope.model.errorKey || 'instance.upgrade.error.deploy';
           return $translate(key).then(msg => {
             $scope.status.error = msg;
             $scope.status.processing = false;
