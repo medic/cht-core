@@ -1,5 +1,6 @@
 angular.module('controllers').controller('MultipleUserCtrl', function(
   $scope,
+  $window,
   $uibModalInstance,
   CreateMultipleUser,
   DB
@@ -110,6 +111,7 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
   };
 
   $scope.backToAppManagement = function () {
+    $window.location.reload();
     $scope.clearScreen();
     $uibModalInstance.dismiss();
     $scope.$apply();
