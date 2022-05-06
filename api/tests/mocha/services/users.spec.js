@@ -697,6 +697,7 @@ describe('Users service', () => {
 
     it('returns error if one of the users has missing fields', async () => {
       try {
+        sinon.stub(db.medicLogs, 'get').resolves({});
         await service.createUsers([
           {},
           { password: 'x', place: 'x', contact: { parent: 'x' }},
@@ -737,6 +738,7 @@ describe('Users service', () => {
 
     it('returns error if one of the users has password errors', async () => {
       try {
+        sinon.stub(db.medicLogs, 'get').resolves({});
         await service.createUsers([
           {
             username: 'x',
@@ -784,7 +786,7 @@ describe('Users service', () => {
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('url');
       sinon.stub(auth, 'isOffline').returns(false);
-
+      sinon.stub(db.medicLogs, 'get').resolves({});
       try {
         await service.createUsers([
           {
@@ -813,7 +815,7 @@ describe('Users service', () => {
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('url');
       sinon.stub(auth, 'isOffline').returns(false);
-
+      sinon.stub(db.medicLogs, 'get').resolves({});
       try {
         await service.createUsers([
           {
@@ -880,7 +882,7 @@ describe('Users service', () => {
           phone: '+40755696969',
           name: 'sally',
         });
-
+      sinon.stub(db.medicLogs, 'get').resolves({});
       sinon.stub(db.medic, 'allDocs').resolves({ rows: [{ error: 'not_found' }] });
 
       const response = await service.createUsers(users, 'http://realhost');
@@ -963,8 +965,10 @@ describe('Users service', () => {
         service.__set__('validateNewUsername', sinon.stub().resolves());
         service.__set__('createPlace', sinon.stub().resolves());
         service.__set__('setContactParent', sinon.stub().rejects(new Error('kablooey')));
+        sinon.stub(db.medicLogs, 'get').resolves({});
 
         const response = await service.createUsers([userData]);
+
         chai.expect(response[0].error).to.equal('kablooey');
       });
 
@@ -978,8 +982,10 @@ describe('Users service', () => {
         };
         service.__set__('validateNewUsername', sinon.stub().resolves());
         service.__set__('createPlace', sinon.stub().rejects(new Error('fail')));
+        sinon.stub(db.medicLogs, 'get').resolves({});
 
         const response = await service.createUsers([userData]);
+
         chai.expect(response[0].error).to.equal('fail');
       });
 
@@ -992,8 +998,10 @@ describe('Users service', () => {
           type: 'national-manager'
         };
         service.__set__('validateNewUsername', sinon.stub().rejects(new Error('fail username validation')));
+        sinon.stub(db.medicLogs, 'get').resolves({});
 
         const response = await service.createUsers([userData]);
+
         chai.expect(response[0].error).to.equal('fail username validation');
       });
 
@@ -1010,8 +1018,10 @@ describe('Users service', () => {
         service.__set__('createUser', sinon.stub().resolves());
         service.__set__('setContactParent', sinon.stub().resolves());
         service.__set__('createContact', sinon.stub().rejects(new Error('fail contact creation')));
+        sinon.stub(db.medicLogs, 'get').resolves({});
 
         const response = await service.createUsers([userData]);
+
         chai.expect(response[0].error).to.equal('fail contact creation');
       });
 
@@ -1029,8 +1039,10 @@ describe('Users service', () => {
         service.__set__('setContactParent', sinon.stub().resolves());
         service.__set__('createContact', sinon.stub().resolves());
         service.__set__('storeUpdatedPlace', sinon.stub().rejects(new Error('fail place update')));
+        sinon.stub(db.medicLogs, 'get').resolves({});
 
         const response = await service.createUsers([userData]);
+
         chai.expect(response[0].error).to.equal('fail place update');
       });
 
@@ -1057,8 +1069,10 @@ describe('Users service', () => {
         service.__set__('createUser', sinon.stub().resolves());
         service.__set__('createUserSettings', sinon.stub().resolves());
         sinon.stub(tokenLogin, 'manageTokenLogin').rejects(new Error('fail to enable token login'));
+        sinon.stub(db.medicLogs, 'get').resolves({});
 
         const response = await service.createUsers([userData]);
+
         chai.expect(response[0].error).to.equal('fail to enable token login');
       });
 
@@ -1078,8 +1092,10 @@ describe('Users service', () => {
             _id: 'florida'
           }
         });
+        sinon.stub(db.medicLogs, 'get').resolves({});
 
         const response = await service.createUsers([userData]);
+
         chai.expect(response[0].error.message).to.equal('Contact is not within place.');
         chai.expect(response[0].error.translationKey).to.equal('configuration.user.place.contact');
       });
@@ -1101,7 +1117,7 @@ describe('Users service', () => {
         parent: 'user1-contact'
       });
       getPlaceStub.withArgs('user2-contact').resolves();
-
+      sinon.stub(db.medicLogs, 'get').resolves({});
       const response = await service.createUsers([
         {
           username: 'user1',
@@ -1140,7 +1156,10 @@ describe('Users service', () => {
       service.__set__('createUserSettings', sinon.stub().resolves());
       sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
       userData.place = 'foo';
+      sinon.stub(db.medicLogs, 'get').resolves({});
+
       const response = await service.createUsers([userData]);
+
       chai.expect(response).to.deep.equal([{}]);
     });
 
@@ -1177,8 +1196,10 @@ describe('Users service', () => {
       usersPut.callsFake(user => Promise.resolve({ id: user._id, rev: 1 }));
       medicQuery.resolves({ rows: [] });
       medicPut.callsFake(userSettings => Promise.resolve({ id: userSettings._id, rev: 1 }));
+      sinon.stub(db.medicLogs, 'get').resolves({});
 
       const response = await service.createUsers(users);
+
       chai.expect(response).to.deep.equal([
         {
           contact: {
@@ -1232,7 +1253,10 @@ describe('Users service', () => {
         }
       });
       userData.place = 'florida';
+      sinon.stub(db.medicLogs, 'get').resolves({});
+
       const response = await service.createUsers([userData]);
+
       chai.expect(response).to.deep.equal([{}]);
     });
 
@@ -1246,6 +1270,7 @@ describe('Users service', () => {
       };
       sinon.stub(db.users, 'get').resolves('bob lives here already.');
       sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      sinon.stub(db.medicLogs, 'get').resolves({});
       const insert = sinon.stub(db.medic, 'put');
       const response = await service.createUsers([userData]);
       chai.expect(response[0].error.message).to.equal('Username "x" already taken.');
@@ -1264,6 +1289,7 @@ describe('Users service', () => {
       };
       sinon.stub(db.users, 'get').rejects({ status: 404 });
       sinon.stub(db.medic, 'get').resolves('jane lives here too.');
+      sinon.stub(db.medicLogs, 'get').resolves({});
       const insert = sinon.stub(db.medic, 'put');
       const response = await service.createUsers([userData]);
       chai.expect(response[0].error.message).to.equal('Username "x" already taken.');
@@ -2532,30 +2558,32 @@ describe('Users service', () => {
   });
 
   describe('parseCsv', () => {
-    it('should throw error when csv is empty', () => {
+    it('should throw error when csv is empty', async () => {
       try {
-        service.parseCsv('');
+        await service.parseCsv('');
         chai.assert.fail('Should have thrown');
       } catch (error) {
         chai.expect(error.message).to.equal('CSV is empty.');
       }
 
       try {
-        service.parseCsv(null);
+        await service.parseCsv(null);
         chai.assert.fail('Should have thrown');
       } catch (error) {
         chai.expect(error.message).to.equal('CSV is empty.');
       }
     });
 
-    it('should parse csv, trim spaces and not split strings with commas inside', () => {
+    it('should parse csv, trim spaces and not split strings with commas inside', async () => {
       const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n' +
         'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,2652527222,"1 King ST, Kent Town, 55555"\n' +
         'Secret5678, peter ,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,Peter, 2652279,"15 King ST, Kent Town, 55555 "';
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
 
-      const result = service.parseCsv(csv);
+      const result = await service.parseCsv(csv);
 
-      chai.expect(result).to.have.deep.members([
+      chai.expect(result.users).to.have.deep.members([
         {
           password: 'Secret1234',
           username: 'mary',
@@ -2573,21 +2601,25 @@ describe('Users service', () => {
       ]);
     });
 
-    it('should return empty array when there is not users in the csv', () => {
+    it('should return empty array when there is not users in the csv', async () => {
       const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n';
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
 
-      const result = service.parseCsv(csv);
+      const result = await service.parseCsv(csv);
 
-      chai.expect(result).to.have.deep.members([]);
+      chai.expect(result.users).to.have.deep.members([]);
     });
 
-    it('should ignore empty header columns', () => {
+    it('should ignore empty header columns', async () => {
       const csv = 'password,username,type,,contact.name,,contact.address\n' +
         'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,2652527222,"1 King ST, Kent Town, 55555"\n';
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
 
-      const result = service.parseCsv(csv);
+      const result = await service.parseCsv(csv);
 
-      chai.expect(result).to.have.deep.members([
+      chai.expect(result.users).to.have.deep.members([
         {
           password: 'Secret1234',
           username: 'mary',
@@ -2597,13 +2629,15 @@ describe('Users service', () => {
       ]);
     });
 
-    it('should keep attributes if there is not value', () => {
+    it('should keep attributes if there is not value', async () => {
       const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n' +
         'Secret1234,mary,person,,mary,     ,"1 King ST, Kent Town, 55555"\n';
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
 
-      const result = service.parseCsv(csv);
+      const result = await service.parseCsv(csv);
 
-      chai.expect(result).to.have.deep.members([
+      chai.expect(result.users).to.have.deep.members([
         {
           password: 'Secret1234',
           username: 'mary',
@@ -2614,15 +2648,17 @@ describe('Users service', () => {
       ]);
     });
 
-    it('should parse csv with deep object structure', () => {
+    it('should parse csv with deep object structure', async () => {
       const csv = 'password,username,type,place,contact.name,contact.address.country' +
         ',contact.address.city.street,contact.address.city.name\n' +
         'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,US,"5th ST", Kent Town\n' +
         'Secret555,peter,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,Peter,CA,,Victoria Town\n';
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
 
-      const result = service.parseCsv(csv);
+      const result = await service.parseCsv(csv);
 
-      chai.expect(result).to.have.deep.members([
+      chai.expect(result.users).to.have.deep.members([
         {
           password: 'Secret1234',
           username: 'mary',
@@ -2658,15 +2694,17 @@ describe('Users service', () => {
       ]);
     });
 
-    it('should parse csv with special characters', () => {
+    it('should parse csv with special characters', async () => {
       const csv = 'password,username,type,place,contact.name,contact.notes\n' +
         'Secret1234,mary,person,498a394e-f98,Mary\'s name!,"#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_"\n' +
         'Secret5678, peter ,person,498a394e-f99,Peter,"ce fût une belle saison, le maïs sera prêt à partir ' +
         'de l’été c’est-à-dire dès demain, d’où l’invaitation"';
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
 
-      const result = service.parseCsv(csv);
+      const result = await service.parseCsv(csv);
 
-      chai.expect(result).to.have.deep.members([
+      chai.expect(result.users).to.have.deep.members([
         {
           password: 'Secret1234',
           username: 'mary',
@@ -2690,15 +2728,17 @@ describe('Users service', () => {
       ]);
     });
 
-    it('should ignore excluded header columns', () => {
+    it('should ignore excluded header columns', async () => {
       const csv = 'password,username,type,place,contact.meta:excluded,contact.name,contact.notes\n' +
         'Secret1234,mary,person,498a394e-f98,excluded column,Mary\'s name!,"#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_"\n' +
         'Secret5678, peter ,person,498a394e-f99,excluded column,Peter,' +
         '"ce fût une belle saison, le maïs sera prêt à partir de l’été c’est-à-dire dès demain, d’où l’invaitation"';
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
 
-      const result = service.parseCsv(csv);
+      const result = await service.parseCsv(csv);
 
-      chai.expect(result).to.have.deep.members([
+      chai.expect(result.users).to.have.deep.members([
         {
           password: 'Secret1234',
           username: 'mary',
