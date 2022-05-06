@@ -20,6 +20,23 @@ const USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
 
 const MAX_CONFLICT_RETRY = 3;
 
+const BULK_UPLOAD_STATUSES = {
+  IMPORTED: 'imported',
+  SKIPPED: 'skipped',
+  ERROR: 'error',
+};
+const BULK_UPLOAD_PROGRESS_STATUSES = {
+  PARSING: 'parsing',
+  PARSED: 'parsed',
+  ERROR: 'error',
+  SAVING: 'saving',
+  FINISHED: 'finished',
+};
+const BULK_UPLOAD_RESERVED_COLS = {
+  IMPORT_STATUS: 'import.status:excluded',
+  IMPORT_MESSAGE: 'import.message:excluded',
+};
+
 const RESTRICTED_USER_EDITABLE_FIELDS = [
   'password',
   'known'
@@ -547,37 +564,6 @@ const createUserEntities = async (user, appUrl, preservePrimaryContact) => {
   return response;
 };
 
-const validateUserFields = (users) => {
-  const missingFieldsFailingIndexes = [];
-  const tokenLoginFailingIndexes = [];
-  const passwordFailingIndexes = [];
-  users.forEach((user, index) => {
-    const fields = missingFields(user);
-    const hasMissingFields = fields.length > 0;
-    if (hasMissingFields) {
-      missingFieldsFailingIndexes.push({ fields, index });
-      return;
-    }
-
-    const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
-    if (tokenLoginError) {
-      tokenLoginFailingIndexes.push({ tokenLoginError, index });
-      return;
-    }
-
-    const passwordError = validatePassword(user.password);
-    if (passwordError) {
-      passwordFailingIndexes.push({ passwordError, index });
-    }
-  });
-
-  return {
-    missingFieldsFailingIndexes,
-    tokenLoginFailingIndexes,
-    passwordFailingIndexes,
-  };
-};
-
 const assignCsvCellValue = (data, attribute, value) => {
   attribute = (attribute || '').trim();
   if (!attribute.length || attribute.toLowerCase().indexOf(':excluded') > 0) {
@@ -588,7 +574,6 @@ const assignCsvCellValue = (data, attribute, value) => {
 
 const parseCsvRow = (data, header, value, valueIdx) => {
   const deepAttributes = header[valueIdx].split('.');
-
   if (deepAttributes.length === 1) {
     assignCsvCellValue(data, deepAttributes[0], value);
     return;
@@ -620,43 +605,72 @@ const parseCsv = async (csv, logId) => {
     .split(',');
   allRows = allRows.filter(row => row.length);
 
-  const progress = { status: 'parsing', parsing: { total: allRows.length, failed: 0, successful: 0 } };
+  const progress = {
+    status: BULK_UPLOAD_PROGRESS_STATUSES.PARSING,
+    parsing: { total: allRows.length, failed: 0, successful: 0 }
+  };
+  const logData = [];
   await bulkUploadLog.updateLog(logId, progress);
 
   const users = [];
+  const ignoredUsers = {};
   for (let rowIdx = 0; rowIdx < allRows.length; rowIdx++) {
+    let ignoreUser = false;
+    let ignoreMessage = '';
     const user = {};
     try {
       allRows[rowIdx]
         .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
-        .forEach((value, idx) => parseCsvRow(user, header, value, idx));
+        .forEach((value, idx) => {
+          const ignoreStatus = [BULK_UPLOAD_STATUSES.IMPORTED, BULK_UPLOAD_STATUSES.SKIPPED];
+          if (header[idx].toLowerCase() === BULK_UPLOAD_RESERVED_COLS.IMPORT_STATUS
+            && ignoreStatus.indexOf(value.toLowerCase()) > -1) {
+            ignoreUser = true;
+          }
+          if (header[idx].toLowerCase() === BULK_UPLOAD_RESERVED_COLS.IMPORT_MESSAGE) {
+            ignoreMessage = value;
+            return;
+          }
+          parseCsvRow(user, header, value, idx);
+        });
       progress.parsing.successful++;
+      logData.push(createRecordBulkLog(user, BULK_UPLOAD_PROGRESS_STATUSES.PARSED));
     } catch (error) {
       progress.parsing.failed++;
+      logData.push(createRecordBulkLog(user, BULK_UPLOAD_PROGRESS_STATUSES.ERROR, error));
     }
 
     if (rowIdx % 10) {
-      // ToDo: log error per row if failing on parsing
-      await bulkUploadLog.updateLog(logId, progress);
+      await bulkUploadLog.updateLog(logId, progress, logData);
     }
 
     users.push(user);
+    if (ignoreUser) {
+      ignoredUsers[user.username] = { user, ignoreMessage };
+    }
   }
 
-  progress.status = 'parsed';
-  await bulkUploadLog.updateLog(logId, progress);
-  return users;
+  progress.status = BULK_UPLOAD_PROGRESS_STATUSES.PARSED;
+  await bulkUploadLog.updateLog(logId, progress, logData);
+  return { users, ignoredUsers };
 };
 
-const createRecordBulkLog = (record, status, error) => {
+const createRecordBulkLog = (record, status, error, message) => {
+  if (error) {
+    message = typeof error.message === 'object' ? error.message.message : error.message;
+  }
+
+  if (!message) {
+    message = status + ' on ' + new Date().toISOString();
+  }
+
   const meta = {
     import: {
       status,
-      message: error.message || error,
-      datetime: new Date().toISOString()
+      message,
     }
   };
-  const recordBulkLog = Object.assign(record, meta);
+  const recordBulkLog = Object.assign({}, record, meta);
   delete recordBulkLog.password;
   return recordBulkLog;
 };
@@ -722,38 +736,13 @@ module.exports = {
    * @param {string} appUrl request protocol://hostname
    * @param {boolean} preservePrimaryContact Default false. Prevent updating the place's primary contact.
    */
-  async createUsers(users, appUrl, logId, preservePrimaryContact) {
+  async createUsers(users, appUrl, ignoredUsers, logId, preservePrimaryContact) {
     if (!Array.isArray(users)) {
       return module.exports.createUser(users, appUrl);
     }
 
-    const { missingFieldsFailingIndexes, tokenLoginFailingIndexes, passwordFailingIndexes } = validateUserFields(users);
-    if (missingFieldsFailingIndexes.length > 0) {
-      const errorMessages = missingFieldsFailingIndexes.map(({ fields, index }) => {
-        return `Missing fields ${fields.join(', ')} for user at index ${index}`;
-      });
-      const errorMessage = ['Missing required fields:', ...errorMessages].join('\n');
-      return Promise.reject(error400(errorMessage, { failingIndexes: missingFieldsFailingIndexes }));
-    }
-
-    if (tokenLoginFailingIndexes.length > 0) {
-      const errorMessages = tokenLoginFailingIndexes.map(({ tokenLoginError, index }) => {
-        return `Error ${tokenLoginError.msg} for user at index ${index}`;
-      });
-      const errorMessage = ['Token login errors:', ...errorMessages].join('\n');
-      return Promise.reject(error400(errorMessage, { failingIndexes: tokenLoginFailingIndexes }));
-    }
-
-    if (passwordFailingIndexes.length > 0) {
-      const errorMessages = tokenLoginFailingIndexes.map(({ passwordError, index }) => {
-        return `Error ${passwordError.message.message} for user at index ${index}`;
-      });
-      const errorMessage = ['Password errors:', ...errorMessages].join('\n');
-      return Promise.reject(error400(errorMessage, { failingIndexes: passwordFailingIndexes }));
-    }
-
     const progress = {
-      status: 'saving',
+      status: BULK_UPLOAD_PROGRESS_STATUSES.SAVING,
       saving: { total: users.length, failed: 0, successful: 0, ignored: 0 }
     };
     const logData = [];
@@ -764,14 +753,41 @@ module.exports = {
       const user = users[userIdx];
       let response;
 
+      if (ignoredUsers && ignoredUsers[user.username]) {
+        progress.saving.ignored++;
+        const log = createRecordBulkLog(
+          user,
+          BULK_UPLOAD_STATUSES.SKIPPED,
+          null,
+          ignoredUsers[user.username].ignoreMessage
+        );
+        logData.push(log);
+        continue;
+      }
+
       try {
+        const missing = missingFields(user);
+        if (missing.length > 0) {
+          throw new Error('Missing required fields: ' + missing.join(', '));
+        }
+
+        const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
+        if (tokenLoginError) {
+          throw new Error(tokenLoginError.msg);
+        }
+
+        const passwordError = validatePassword(user.password);
+        if (passwordError) {
+          throw new Error(passwordError);
+        }
+
         response = await createUserEntities(user, appUrl, preservePrimaryContact);
         progress.saving.successful++;
-        logData.push(createRecordBulkLog(user, 'imported'));
+        logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.IMPORTED));
       } catch(error) {
         response = { error: error.message };
         progress.saving.failed++;
-        logData.push(createRecordBulkLog(user, 'error', error));
+        logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.ERROR, error));
       }
 
       if (userIdx % 10) {
@@ -781,7 +797,7 @@ module.exports = {
       responses.push(response);
     }
 
-    progress.status = 'finished';
+    progress.status = BULK_UPLOAD_PROGRESS_STATUSES.FINISHED;
     await bulkUploadLog.updateLog(logId, progress, logData);
     return responses;
   },
