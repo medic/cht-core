@@ -22,6 +22,22 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
     $uibModalInstance.dismiss();
   };
 
+
+  const getLastUserLogDocId = function() {
+    return getLogsByType(USER_LOG_DOC_ID);
+  };
+
+  const getLogsByType = (docPrefix) => {
+    const options = {
+      startkey: docPrefix,
+      // endkey: docPrefix + '\ufff0',
+      include_docs: true
+    };
+    return DB().medicLogs
+      .allDocs(options)
+      .then((result) => result.rows.map(row => row.doc));
+  };
+      
   $scope.processUpload = function () {
     $scope.uploadedData.text().then((data) => {
       // eslint-disable-next-line no-console
@@ -31,8 +47,10 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
       // eslint-disable-next-line no-console
       console.log('CreateMultipleUser : Error processing data after upload');
       $scope.setError(err, 'CreateMultipleUser : Error processing data after upload');
-    }).then(
-
+    }).then(() => {
+      // eslint-disable-next-line no-console
+      console.log('getLastUserLogDocId' + getLastUserLogDocId());
+    }
     );
     $scope.clearScreen();
     $scope.displayProcessingStatus = true;
