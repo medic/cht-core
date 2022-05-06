@@ -778,7 +778,7 @@ module.exports = {
 
         const passwordError = validatePassword(user.password);
         if (passwordError) {
-          throw new Error(passwordError);
+          throw passwordError;
         }
 
         response = await createUserEntities(user, appUrl, preservePrimaryContact);
