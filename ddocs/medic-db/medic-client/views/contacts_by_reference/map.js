@@ -25,9 +25,6 @@ function(doc) {
     if (doc.patient_id) {
       emitReference('shortcode', doc.patient_id);
     }
-    if (doc.simprints_id) {
-      emitReference('simprints', doc.simprints_id);
-    }
     if (doc.rc_code) {
       // need String because rewriter wraps everything in quotes
       // keep refid case-insenstive since data is usually coming from SMS
