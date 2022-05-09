@@ -35,14 +35,12 @@ const getChanges = (docs) => {
 };
 
 describe('view test', () => {
-  xit('should ', async () => {
-    console.log((await getThing()).cluster);
-    console.log((await getThing()).cluster);
+  it('should ', async () => {
     console.log((await getThing()).cluster);
   });
 
   for (let i = 0; i < iterations; i++) {
-    xit(`should get correct query results ${i}`, async () => {
+    it(`should get correct query results ${i}`, async () => {
       const doc = {
         _id: `doc_${i}`,
         type: 'data_record',
@@ -70,7 +68,7 @@ describe('view test', () => {
   }
 
   for (let i = 0; i < iterations; i++) {
-    it(`should get correct changes results ${i}`, async () => {
+    xit(`should get correct changes results ${i}`, async () => {
       const doc = {
         _id: `doc_${i}`,
         type: 'data_record',
@@ -98,7 +96,7 @@ describe('view test', () => {
   }
 
   for (let i = 0; i < iterations; i++) {
-    xit(`should get correct query results after delete ${i}`, async () => {
+    it(`should get correct query results after delete ${i}`, async () => {
       const [{ _id: docId }] = docs.splice(0, 1);
       await utils.deleteDoc(docId);
 

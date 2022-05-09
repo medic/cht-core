@@ -67,7 +67,6 @@ describe('Import Records', () => {
           reduce: false
         }))
         .then(({rows}) => {
-          console.log(JSON.stringify(rows, null, 2));
           expect(rows.length).to.equal(1);
           const doc = rows[0].doc;
           expect(doc).to.include({
@@ -112,7 +111,6 @@ describe('Import Records', () => {
           reduce: false
         }))
         .then(({rows}) => {
-          console.log(JSON.stringify(rows, null, 2));
           expect(rows.length).to.equal(1);
           const doc = rows[0].doc;
           expect(doc).to.include({
@@ -154,7 +152,6 @@ describe('Import Records', () => {
           reduce: false
         }))
         .then(({rows}) => {
-          console.log(JSON.stringify(rows, null, 2));
           expect(rows.length).to.equal(1);
           const doc = rows[0].doc;
           expect(doc).to.include({

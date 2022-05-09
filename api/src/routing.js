@@ -114,13 +114,6 @@ if (process.argv.slice(2).includes('--allow-cors')) {
 
 app.use((req, res, next) => {
   req.id = uuid.v4();
-  if (req.url.indexOf('?') > 0) {
-    req.url += '&w=3&r=3';
-  } else {
-    req.url += '?w=3&r=3';
-  }
-
-  console.log('modifying req', req.url);
   next();
 });
 
@@ -795,7 +788,6 @@ const canEdit = function(req, res) {
         serverUtils.serverError('not-authorized', req, res);
         return;
       }
-      console.log(req.query, 'can edit');
       proxyForAuth.web(req, res);
     })
     .catch(() => {

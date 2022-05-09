@@ -62,12 +62,9 @@ if (UNIT_TEST_ENV) {
   });
 } else {
   const fetch = (url, opts) => {
-    const parsed = new URL(url);
-    parsed.searchParams.append('w', 3);
-    parsed.searchParams.append('r', 3);
     // Adding audit flag (haproxy) Service that made the request initially.
     opts.headers.set('X-Medic-Service', 'api');
-    return PouchDB.fetch(parsed.toString(), opts);
+    return PouchDB.fetch(url, opts);
   };
 
   const DB = new PouchDB(environment.couchUrl, { fetch });

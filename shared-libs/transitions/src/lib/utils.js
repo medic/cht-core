@@ -241,7 +241,6 @@ module.exports = {
            (form && module.exports.hasKnownSender(doc)); // json submission by known submitter
   },
   hasKnownSender: doc => {
-    console.log('contact', JSON.stringify(doc.contact, null, 2));
     const contact = doc && doc.contact;
     if (!contact) {
       return false;

@@ -64,14 +64,10 @@ if (UNIT_TEST_ENV) {
   module.exports.serverUrl = couchUrl.slice(0, couchUrl.lastIndexOf('/'));
 
   const fetchFn = (url, opts) => {
-    const parsed = new URL(url);
-    parsed.searchParams.append('w', 3);
-    parsed.searchParams.append('r', 3);
-
     // Adding audit flags (haproxy) Service and user that made the request initially.
     opts.headers.set('X-Medic-Service', 'sentinel');
     opts.headers.set('X-Medic-User', 'sentinel');
-    return PouchDB.fetch(parsed.toString(), opts);
+    return PouchDB.fetch(url, opts);
   };
 
   module.exports.medic = new PouchDB(couchUrl, { fetch: fetchFn });

@@ -30,9 +30,9 @@ const CONTAINER_NAMES = {
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
-const db = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`, { auth });
-const sentinel = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-sentinel`, { auth });
-const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-logs`, { auth });
+const db = new PouchDB(`http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}`, { auth });
+const sentinel = new PouchDB(`http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}-sentinel`, { auth });
+const medicLogs = new PouchDB(`http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}-logs`, { auth });
 let browserLogStream;
 const userSettings = require('./factories/cht/users/user-settings');
 const buildVersions = require('../scripts/build/versions');
