@@ -30,10 +30,10 @@ describe('EditUserCtrl controller', () => {
     UserSettings = sinon.stub();
     Settings = sinon.stub().resolves({
       roles: {
-        'district-manager': { name: 'xyz', offline: true }, 'data-entry': { name: 'abc' },
+        'district-manager': { name: 'xyz', offline: true },
+        'data-entry': { name: 'abc' },
         supervisor: { name: 'qrt', offline: true },
         'national-manager': { name: 'national-manager', offline: false },
-        'data-entry': { name: 'data-entry', offline: false },
       }
     });
     http = { get: sinon.stub() };
