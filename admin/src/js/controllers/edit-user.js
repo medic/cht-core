@@ -223,9 +223,22 @@ angular
       return true;
     };
 
+    const isOnlineUser = (roles) => { // TODO extract as common function?
+      // TODO if ANY are online then don't replicate? What does dbsync do? WHat does API do?
+      if (!$scope.roles) {
+        return true;
+      }
+      for (const [key, value] of Object.entries($scope.roles)) {
+        if (value.offline && roles.includes(key)) {
+          return false;
+        }
+      }
+      return true;
+    };
+
     const validateContactAndFacility = () => {
-      const role = $scope.roles && $scope.roles[$scope.editUserModel.role];
-      if (!role || !role.offline) {
+      const isOnline = isOnlineUser($scope.editUserModel.roles);
+      if (isOnline) {
         return !$scope.editUserModel.contact || validateRequired('place', 'Facility');
       }
       const hasPlace = validateRequired('place', 'Facility');
@@ -317,9 +330,8 @@ angular
 
     let previousQuery;
     const validateReplicationLimit = () => {
-      // TODO if ANY are online then don't replicate? What does dbsync do?
-      const role = $scope.roles && $scope.roles[$scope.editUserModel.role];
-      if (!role || !role.offline) {
+      const isOnline = isOnlineUser($scope.editUserModel.roles);
+      if (isOnline) {
         return $q.resolve();
       }
 
