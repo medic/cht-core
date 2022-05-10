@@ -8,6 +8,11 @@ const dataConfig = require('./data-config.json');
 const sizeConfig = require('./size-config.json');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const args = process.argv.slice(2);
+/**
+* The initial idea was to parallelize this script and use the thread as the district hospital name.
+* We need to improve this script to generate the users.csv header and config.json so that multiple threads
+* can write simultaneously in the docs.
+*/
 const districtHospitalName = args[0] + '-districthospital';
 const numberOfDistrictHospitals = sizeConfig.number_of_district_hospitals;
 const numberOfManagersPerDistrictHospital = sizeConfig.number_of_managers_per_district_hospitals;
@@ -36,8 +41,7 @@ const csvWriter = createCsvWriter({
     { id: 'phone', title: 'phone' },
     { id: 'place', title: 'place' },
   ],
-  alwaysQuote: true,
-  append: true
+  alwaysQuote: true
 });
 
 const users = [];
@@ -197,6 +201,7 @@ const generateData = async () => {
       }
     }
   }
+
   await csvWriter.writeRecords(users);
 };
 
