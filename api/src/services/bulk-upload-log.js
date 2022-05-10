@@ -27,6 +27,12 @@ const updateLog = (id, progress, data) => {
       doc.progress = Object.assign(doc.progress, progress);
       doc.data = data;
       return db.medicLogs.put(doc);
+    })
+    .catch(error => {
+      if (error.status !== 404) {
+        // calls to POST /api/v1/users don't create a log
+        throw error;
+      }
     });
 };
 
