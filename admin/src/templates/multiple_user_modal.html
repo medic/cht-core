@@ -33,12 +33,12 @@
         <p class="text-center"><a id="upload-btn" class="btn btn-primary" ng-click="processUpload()">
           <span translate>Yes, upload</span>
         </a></p>
-        <p class="text-center"><a class="btn cancel" id="cancel-btn"  ng-click="onCancel()"> Cancel</a></p>
+        <p class="text-center"><a class="btn cancel" id="cancel-btn"  ng-click="onCancel()" translate>Cancel</a></p>
       </div>
 
       <div id="processing-status" ng-if="displayProcessingStatus">
         <div class="loader" ></div>
-        <h3 class="text-center"><p><span translate>Processing</span> {{processTotal}} <span>users</span>...</p></h3>
+        <h3 class="text-center"><p><span translate>Processing users</span>...</p></h3>
         <p  class="text-center">
           <small translate>This process can take a long time, if you're uploading a lot of users, please be patient.</small>
         </p>
