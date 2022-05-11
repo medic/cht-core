@@ -21,6 +21,7 @@ const numberOfChwPerHealthCenter = sizeConfig.number_of_chw_per_health_center;
 const numberOfClinicsPerHealthCenter = sizeConfig.number_of_clinics_per_health_center;
 const numberOfFamilyMembers = sizeConfig.number_of_family_members;
 const dataDirectory = args[1];
+const medicInstance = args[2];
 const preconditionDirectory = dataConfig.precondition_data_directory;
 const mainDirectory = dataConfig.main_script_data_directory;
 const jsonDirectory = dataConfig.json_directory;
@@ -47,10 +48,10 @@ const csvWriter = createCsvWriter({
 const users = [];
 const managers = [];
 
-const createDataDoc = async (folderPath, fileName, content) => {
+const createDataDoc = async (folderPath, fileName, content, extension = dataExtension, replacer = {}) => {
   try {
-    const filePath = path.join(folderPath, fileName + dataExtension);
-    await fs.promises.writeFile(filePath, JSON.stringify(content, {}, 2));
+    const filePath = path.join(folderPath, fileName + extension);
+    await fs.promises.writeFile(filePath, JSON.stringify(content, replacer, 2));
   } catch (err) {
     console.error('CreateDataDoc ' + err);
     throw err;
@@ -68,6 +69,11 @@ const createDataDirectory = async (directoryPath, directoryName) => {
     throw err;
   }
 };
+
+function renameKey(obj, oldKey, newKey) {
+  obj[newKey] = obj[oldKey];
+  delete obj[oldKey];
+}
 
 const pairPlaceTypesRoles = {
   'district_hospital': 'supervisor',
@@ -201,8 +207,17 @@ const generateData = async () => {
       }
     }
   }
-
   await csvWriter.writeRecords(users);
+
+  users.forEach(obj => renameKey(obj, 'username', 'name'));
+  users.forEach(obj => renameKey(obj, 'password', 'pass'));
+
+  const config2 = {
+    url: medicInstance,
+    users: users
+  }
+  await createDataDoc("../", "config2", config2, ".json", ['url', 'users', 'name', 'pass']);
+
 };
 
 generateData();
