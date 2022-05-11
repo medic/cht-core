@@ -1,0 +1,91 @@
+<mm-modal
+    cancel-key="''"
+    id="'edit-users-bulk'"
+    status="status"
+    titleKey=""
+    on-cancel="onCancel()"
+  >
+      <div ng-if="displayAddMultipleModal">
+        <div>
+        <form id="users-upload" >
+          <div class="text-center">
+            <h3>
+              <span>Import from file</span>
+            </h3>
+            <p>To add multiple users, please upload the appropriate spreadsheet.</p>
+            <p><strong>Only .csv file are accepted.</strong></p>
+            <div class="form-actions">
+              <a class="btn btn-primary choose" ng-disabled="status.uploading">
+                <span >Upload .csv</span>
+              </a>
+              <div class="loader small inline" ng-show="status.uploading"></div>
+              <div class="hide">
+                <input class="uploader" type="file" accept=".csv">
+              </div>
+            </div>
+          </div>
+        </form>
+        </div>
+      </div>
+
+      <div id="upload-confirm" ng-if="displayUploadConfirm">
+        <h3 class="text-center"><p>Are you sure you want to upload {{usersFilename}} ?</p></h3>
+        <p class="text-center"><a id="upload-btn" class="btn btn-primary" ng-click="processUpload()">
+          <span translate>Yes, upload</span>
+        </a></p>
+        <p class="text-center"><a class="btn cancel" id="cancel-btn"  ng-click="onCancel()"> Cancel</a></p>
+      </div>
+
+      <div id="processing-status" ng-if="displayProcessingStatus">
+        <div class="loader" ></div>
+        <h3 class="text-center"><p>Processing {{processTotal}} users...</p></h3>
+        <p  class="text-center">
+          <small>This process can take a long time, if you're uploading a lot of users, please be patient.</small>
+        </p>
+      </div>
+
+      <div ng-if="displayUnavailableModal" class="window-center">
+          <div class="text-center">
+            <h3>
+              <span>Currently unavailable</span>
+            </h3>
+            <p>Someone else in the system is currently in the process of adding multiple users.</p>
+            <p><strong>Please try again later</strong></p>
+          </div>
+      </div>
+
+      <div id="finish-summary" ng-if="displayFinishSummary">
+        <div class="row text-center summary-box">
+          <div class="col-sm-4">
+            <p class="text-success summary-number">{{successUsersNumber}}</p>
+            <strong>users added</strong>
+          </div>
+          <div class="col-sm-4">
+            <p class="text-muted summary-number">{{ignoredUsersNumber}}</p>
+            <strong>previously imported</strong>
+          </div>
+          <div class="col-sm-4">
+            <p class="text-danger summary-number">{{failedUsersNumber}}</p>
+            <strong>contained errors</strong>
+          </div>
+        </div>
+        <div>
+          <p class="text-center">
+            Click <a ng-href="{{outputFileUrl}}" download="cht-imported-users.csv">here</a> to download your status file.
+          </p>
+          <hr />
+        </div>
+        <p class="text-center" style="margin-bottom: 0px;"><strong>To resubmit the users containing errors :</strong></p>
+        <p class="row col-xs-10 col-xs-offset-1">
+          1. Open the downloaded status file <br />
+          2. Cross-reference the errors against your formatted spreadsheet <br />
+          3. Correct rows with errors and export to .csv <br />
+          4. Reupload updated spreadsheet
+        </p>
+        <p class="text-center">
+          <a id="back-to-app-btn" class="btn btn-primary" ng-click="backToAppManagement()" ui-sref="users">
+            Back to user list
+          </a>
+        </p>
+      </div>
+  </mm-modal>

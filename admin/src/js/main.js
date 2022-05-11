@@ -66,6 +66,7 @@ require('./controllers/targets-edit');
 require('./controllers/upgrade');
 require('./controllers/upgrade-confirm');
 require('./controllers/users');
+require('./controllers/multiple-user');
 
 angular.module('directives', ['ngSanitize']);
 require('./directives/file-model');
