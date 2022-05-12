@@ -8,8 +8,8 @@ services:
   couchdb.1:
     image: 6e9740d43dc2
     volumes:
-    - ${DB1_DATA:-./srv1}:/opt/couchdb/data
-    - cht-credentials:/opt/couchdb/etc/local.d/
+      - ${DB1_DATA:-./srv1}:/opt/couchdb/data
+      - cht-credentials:/opt/couchdb/etc/local.d/
     environment:
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
