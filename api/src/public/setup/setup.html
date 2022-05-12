@@ -86,12 +86,61 @@
     ul ul {
       padding: 10px;
     }
+
+    .loader {
+      margin: 10px;
+      position: relative;
+      border: 5px solid rgba(255, 255, 255, 0.5);
+      /*border-left-color: rgba(0, 0, 0, 0.5);*/
+      transform: translateZ(0);
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: inline-block;
+      vertical-align: baseline;
+    }
+    .loader.done {
+      border-color: #218E7F;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      justify-items: left;
+    }
   </style>
 </head>
 <body>
 <div class="center">
   <h1>The CHT is starting up</h1>
   <ul id="actions"></ul>
+  <ul id="steps">
+    <li class="step">
+      <div class="loader"></div>
+      <span>Running installation checks</span>
+    </li>
+    <li class="step">
+      <div class="loader"></div>
+      <span>Installing</span>
+    </li>
+    <li class="step">
+      <div class="loader"></div>
+      <span>Indexing data</span>
+    </li>
+    <li class="step">
+      <div class="loader"></div>
+      <span>Configuring CHT</span>
+    </li>
+    <li class="step">
+      <div class="loader"></div>
+      <span>Migrating data</span>
+    </li>
+    <li class="step">
+      <div class="loader"></div>
+      <span>Configuring forms</span>
+    </li>
+  </ul>
+
+  <div class="loader done"></div>
 </div>
 </body>
 </html>

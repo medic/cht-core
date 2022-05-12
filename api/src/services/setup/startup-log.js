@@ -1,5 +1,7 @@
 const logger = require('../../logger');
 
+
+
 const startupProgress = [];
 const logProgress = (action) => {
   logger.info(action);

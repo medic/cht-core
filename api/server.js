@@ -53,11 +53,11 @@ process
 
   try
   {
-    startupLog.logProgress('Running installation checks…');
+    startupLog.logProgress('Running installation checks…', 'install');
     await checkInstall.run();
     startupLog.logProgress('Installation checks passed');
 
-    startupLog.logProgress('Extracting initial documents…');
+    startupLog.logProgress('Extracting initial documents…', 'config');
     await uploadDefaultDocs.run();
     startupLog.logProgress('Extracting initial documents completed successfully');
 
@@ -70,7 +70,7 @@ process
     await translations.run();
     startupLog.logProgress('Translations merged successfully');
 
-    startupLog.logProgress('Running db migrations…');
+    startupLog.logProgress('Running db migrations…', 'migrations');
     await migrations.run();
     startupLog.logProgress('Database migrations completed successfully');
 
@@ -78,7 +78,7 @@ process
     await generateServiceWorker.run();
     startupLog.logProgress('Service worker generated successfully');
 
-    startupLog.logProgress('Updating xforms…');
+    startupLog.logProgress('Updating xforms…', 'forms');
     await generateXform.updateAll();
     startupLog.logProgress('xforms updated successfully');
 

@@ -101,7 +101,7 @@ const stage = async (buildInfo) => {
  * @return {Promise}
  */
 const indexStagedViews = async () => {
-  startupLog.logProgress('Indexing views');
+  startupLog.logProgress('Indexing views', 'views');
   const viewsToIndex = await viewIndexer.getViewsToIndex();
   const viewIndexingPromise = viewIndexer.indexViews(viewsToIndex);
   const stopQueryingIndexers = viewIndexerProgress.log();
