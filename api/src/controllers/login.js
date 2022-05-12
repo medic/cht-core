@@ -273,7 +273,7 @@ module.exports = {
         res.setHeader(
           'Link',
           '</login/style.css>; rel=preload; as=style, '
-          + '</login/script.js>; rel=preload; as=script'
+          + '</login/script.js>; rel=preload; as=script, '
           + '</login/bowser.js>; rel=preload; as=script'
         );
         res.send(body);
