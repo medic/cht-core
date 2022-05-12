@@ -31,3 +31,5 @@ In your docker-compose.yml template, the HAproxy container declaration will requ
 - COUCHDB1_SERVER: The docker service name or fqdn of the first CouchDB server. Defaults to couchdb.1 in our templates.
 - COUCHDB2_SERVER: The docker service name or fqdn of the second CouchDB server. Defaults to couchdb.2 in our templates.
 - COUCHDB3_SERVER: The docker service name or fqdn of the third CouchDB server. Defaults to couchdb.3 in our templates.
+- COUCHDB_USER: The admininstrator that created the couchdb cluster
+- COUCHDB_PASSWORD: The above admin's password
