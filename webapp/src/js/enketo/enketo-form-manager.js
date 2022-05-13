@@ -252,11 +252,12 @@ const overrideNavigationButtons = (form, $wrapper) => {
     .on('click.pagemode', () => {
       form.pages
         ._next()
-        .then((valid) => {
+        .then(valid => {
           if(valid) {
             const currentIndex = form.pages._getCurrentIndex();
             window.history.pushState({ enketo_page_number: currentIndex }, '');
             setupNavButtons(form, $wrapper, currentIndex);
+            pauseMultimedia($wrapper);
           }
           forceRecalculate(form);
         });
@@ -270,8 +271,16 @@ const overrideNavigationButtons = (form, $wrapper) => {
       window.history.back();
       setupNavButtons(form, $wrapper, form.pages._getCurrentIndex() - 1);
       forceRecalculate(form);
+      pauseMultimedia($wrapper);
       return false;
     });
+};
+
+// This code can be removed once this issue is fixed: https://github.com/enketo/enketo-core/issues/816
+const pauseMultimedia = ($wrapper) => {
+  $wrapper
+    .find('audio, video')
+    .each((idx, element) => element.pause());
 };
 
 const addPopStateHandler = (form, $wrapper) => {

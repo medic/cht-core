@@ -141,7 +141,15 @@ describe('Enketo Form Manager', () => {
       model: { getStr: sinon.stub().returns(VISIT_MODEL) },
       output: { update: sinon.stub() },
       validate: sinon.stub(),
-      relevant: { update: sinon.stub() }
+      relevant: { update: sinon.stub() },
+      resetView: sinon.stub(),
+      pages: {
+        activePages: {
+          length: 1
+        },
+        _next: sinon.stub(),
+        _getCurrentIndex: sinon.stub()
+      }
     };
 
     EnketoForm = sinon.stub().returns(form);
@@ -1634,6 +1642,96 @@ describe('Enketo Form Manager', () => {
 
       expect(titleTextStub.callCount).to.be.equal(1);
       expect(titleTextStub.args[0][0]).to.be.equal('translated sentence New Area');
+    });
+  });
+
+  describe('multimedia', () => {
+    let pauseStubs;
+    let $form;
+    let $nextBtn;
+    let $prevBtn;
+    let originalJQueryFind;
+
+    before(() => {
+      $nextBtn = $('<button class="btn next-page"></button>');
+      $prevBtn = $('<button class="btn previous-page"></button>');
+      originalJQueryFind = $.fn.find;
+    });
+
+    beforeEach(() => {
+      $form = $(`<div></div>`);
+      $form
+        .append($nextBtn)
+        .append($prevBtn);
+
+      pauseStubs = {};
+      sinon
+        .stub($.fn, 'find')
+        .callsFake(selector => {
+          const result = originalJQueryFind.call($form, selector);
+
+          result.each((idx, element) => {
+            if (element.pause) {
+              pauseStubs[element.id] = sinon.stub(element, 'pause');
+            }
+          });
+          return result;
+        });
+    });
+
+    after(() => $.fn.find = originalJQueryFind);
+
+    it('should pause the multimedia when going to the previous page', function(done) {
+      $form.prepend('<video id="video"></video><audio id="audio"></audio>');
+
+      // eslint-disable-next-line promise/catch-or-return
+      enketoFormMgr
+        .render($form, mockEnketoDoc('myform'))
+        .then(() => {
+          $prevBtn.trigger('click.pagemode');
+
+          setTimeout(() => {
+            expect(pauseStubs.video.calledOnce).to.be.true;
+            expect(pauseStubs.audio.calledOnce).to.be.true;
+            done();
+          }, 0);
+        });
+    });
+
+    it('should pause the multimedia when going to the next page', function(done) {
+      form.pages._next.resolves(true);
+      $form.prepend('<video id="video"></video><audio id="audio"></audio>');
+
+      // eslint-disable-next-line promise/catch-or-return
+      enketoFormMgr
+        .render($form, mockEnketoDoc('myform'))
+        .then(() => {
+          $nextBtn.trigger('click.pagemode');
+
+          setTimeout(() => {
+            expect(pauseStubs.video.calledOnce).to.be.true;
+            expect(pauseStubs.audio.calledOnce).to.be.true;
+            done();
+          }, 0);
+        });
+    });
+
+    it('should not pause the multimedia when trying to go to the next page and form is invalid', function(done) {
+      form.pages._next.resolves(false);
+      $form.prepend('<video id="video"></video><audio id="audio"></audio>');
+
+      // eslint-disable-next-line promise/catch-or-return
+      enketoFormMgr
+        .render($form, mockEnketoDoc('myform'))
+        .then(() => {
+          $nextBtn.trigger('click.pagemode');
+
+          setTimeout(() => {
+            expect(pauseStubs.video).to.be.undefined;
+            expect(pauseStubs.audio).to.be.undefined;
+            done();
+          }, 0);
+        });
     });
   });
 });
