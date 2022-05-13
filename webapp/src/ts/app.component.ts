@@ -675,6 +675,13 @@ export class AppComponent implements OnInit {
     this.changesService.killWatchers();
   }
 
+  @HostListener('window:pageshow', ['$event'])
+  private pageshow(event) {
+    if (event.persisted) {
+      this.sessionService.check();
+    }
+  }
+
   private async initAnalyticsModules() {
     try {
       const modules = await this.analyticsModulesService.get();

@@ -55,7 +55,12 @@ export class SessionService {
    */
   userCtx () {
     if (!this.userCtxCookieValue) {
-      this.userCtxCookieValue = JSON.parse(this.cookieService.get(COOKIE_NAME));
+      try {
+        this.userCtxCookieValue = JSON.parse(this.cookieService.get(COOKIE_NAME));
+      } catch(error) {
+        console.error('Cookie parsing error', error);
+        this.userCtxCookieValue = null;
+      }
     }
 
     return this.userCtxCookieValue;
@@ -68,11 +73,18 @@ export class SessionService {
       .catch(this.logout);
   }
 
+  public check() {
+    if (!this.cookieService.check(COOKIE_NAME)) {
+      this.navigateToLogin();
+    }
+  }
+
   init () {
     const userCtx = this.userCtx();
     if (!userCtx || !userCtx.name) {
       return this.logout();
     }
+
     return this.http
       .get<{ userCtx: { name:string; roles:string[] } }>('/_session', { responseType: 'json' })
       .toPromise()
