@@ -47,6 +47,7 @@ const csvWriter = createCsvWriter({
 
 const users = [];
 const managers = [];
+const chwUsers = [];
 
 const createDataDoc = async (folderPath, fileName, content, extension = dataExtension, replacer = {}) => {
   try {
@@ -70,7 +71,7 @@ const createDataDirectory = async (directoryPath, directoryName) => {
   }
 };
 
-function renameKey(obj, oldKey, newKey) {
+const renameKey = (obj, oldKey, newKey) => {
   obj[newKey] = obj[oldKey];
   delete obj[oldKey];
 }
@@ -125,6 +126,9 @@ const generateUser = async (type, placeId, userName, person, isPrimaryContact) =
     place: personUser.facility_id
   };
   users.push(user);
+  if (user.roles === 'district_admin') {
+    chwUsers.push(user);
+  }
 };
 
 const generateReports = async (parentPlace, place, person, isMainData) => {
@@ -209,15 +213,14 @@ const generateData = async () => {
   }
   await csvWriter.writeRecords(users);
 
-  users.forEach(obj => renameKey(obj, 'username', 'name'));
-  users.forEach(obj => renameKey(obj, 'password', 'pass'));
+  chwUsers.forEach(obj => renameKey(obj, 'username', 'name'));
+  chwUsers.forEach(obj => renameKey(obj, 'password', 'pass'));
 
   const config2 = {
     url: medicInstance,
-    users: users
+    users: chwUsers
   }
-  await createDataDoc("../", "config2", config2, ".json", ['url', 'users', 'name', 'pass']);
-
+  await createDataDoc("../replicate-brac-docs", "config", config2, ".json", ['url', 'users', 'name', 'pass', 'contact']);
 };
 
 generateData();
