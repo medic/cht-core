@@ -22,17 +22,17 @@ const remoteDb = new PouchDB(config.url, {
 
 const addDocToRemote = async (filePath) => {
   try {
-    let buffer = await fs.promises.readFile(filePath);
-    let jsonString = buffer.toString('utf8');
-    let jsonObject = JSON.parse(jsonString);
-    let response = await remoteDb.post(jsonObject);
+    const buffer = await fs.promises.readFile(filePath);
+    const jsonString = buffer.toString('utf8');
+    const jsonObject = JSON.parse(jsonString);
+    const response = await remoteDb.post(jsonObject);
     console.log(response);
   } catch (err) {
     console.error('addDocToLocal error ');
     console.error(err);
     throw err;
   }
-}
+};
 
 const addDocs = async () => {
   try {
@@ -43,6 +43,6 @@ const addDocs = async () => {
     console.error(err);
     throw err;
   }
-}
+};
 
 addDocs();

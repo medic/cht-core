@@ -6,6 +6,8 @@ This script is to generate Brac config test data.
 
 Initially it only creates places, persons, users and reports (pregnancy, assessment and assessment follow up). Taking into account hierarchies.
 
+It also creates `../replicate-brac-docs/config.json` file to be used by the second phase script `add-docs-to-remote.js`
+
 Relevant factories exist in `test/factories/brac`.
 
 ## Requirements
@@ -16,7 +18,7 @@ Relevant factories exist in `test/factories/brac`.
 ## Steps to execute it
 1. Clone cht-core repo.
 2. Run npm ci in cht-core root directory.
-3. Go to `/tests/scalability/generate_brac_data` and execute the script with command `node generate-brac-data.js [thread-name] [data-directory-path]`.
+3. Go to `/tests/scalability/generate_brac_data` and execute the script with command `node generate-brac-data.js [thread-name] [data-directory-path] [medic-instance]`.
 4. Data is generated in the `[data-directory-path]` passed as parameter in step 3. The structure is as follows:
 ```
 .
@@ -27,6 +29,7 @@ Relevant factories exist in `test/factories/brac`.
 |  +--main_script_data_directory
 |  |  +--userx_data_directory
 ```
+
 ## Optional steps
 7. You can change the following scripts variables in `size-config.json` to test with different sizes:
 - number_of_district_hospitals

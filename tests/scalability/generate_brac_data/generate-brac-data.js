@@ -49,6 +49,15 @@ const users = [];
 const managers = [];
 const chwUsers = [];
 
+const checkDataDirectory = (directoryPath) => {
+  fs.access(directoryPath, function (error) {
+    if (error) {
+      console.log('Directory does not exist.');
+      throw error;
+    }
+  });
+};
+
 const createDataDoc = async (folderPath, fileName, content, extension = dataExtension, replacer = {}) => {
   try {
     const filePath = path.join(folderPath, fileName + extension);
@@ -74,7 +83,7 @@ const createDataDirectory = async (directoryPath, directoryName) => {
 const renameKey = (obj, oldKey, newKey) => {
   obj[newKey] = obj[oldKey];
   delete obj[oldKey];
-}
+};
 
 const pairPlaceTypesRoles = {
   'district_hospital': 'supervisor',
@@ -183,6 +192,7 @@ const generateHierarchy = async (type, placeName, parentPlace, numberOfPersons) 
 };
 
 const generateData = async () => {
+  checkDataDirectory(dataDirectory);
   await createDataDirectory(dataDirectory, preconditionDirectory);
   await createDataDirectory(dataDirectory, mainDirectory);
   await createDataDirectory(path.join(dataDirectory, preconditionDirectory), jsonDirectory);
@@ -219,8 +229,13 @@ const generateData = async () => {
   const config2 = {
     url: medicInstance,
     users: chwUsers
-  }
-  await createDataDoc("../replicate-brac-docs", "config", config2, ".json", ['url', 'users', 'name', 'pass', 'contact']);
+  };
+  await createDataDoc(
+    '../replicate-brac-docs',
+    'config',
+    config2,
+    '.json',
+    ['url', 'users', 'name', 'pass', 'contact']);
 };
 
 generateData();

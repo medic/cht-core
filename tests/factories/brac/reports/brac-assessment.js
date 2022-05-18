@@ -339,7 +339,8 @@ module.exports = new Factory()
             };
             if (Faker.faker.datatype.boolean()) {
               if (groupNutritionAssessment.group_under_2yr.breastfeeding === YES) {
-                const foodEaten = Faker.faker.helpers.uniqueArray([...FOOD_EATEN, BREAST_MILK], Faker.faker.datatype.number({ min: 1, max: 4 }));
+                const foodEaten = Faker.faker.helpers
+                  .uniqueArray([...FOOD_EATEN, BREAST_MILK], Faker.faker.datatype.number({ min: 1, max: 4 }));
                 groupNutritionAssessment.group_food_eaten.food_eaten.push(...foodEaten);
               } else {
                 groupNutritionAssessment.group_food_eaten.food_eaten.push(...Faker.faker.helpers.uniqueArray(
