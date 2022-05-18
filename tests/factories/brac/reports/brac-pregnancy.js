@@ -192,7 +192,7 @@ module.exports = new Factory()
  * r8	None
  */
   .attr('group_risk_factors', ['group_lmp'], (groupLmp) => {
-    if (!isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
+    if (isPregnant(groupLmp.g_edd, groupLmp.g_lmp_approx, groupLmp.g_preg_res, groupLmp.g_preg_res_kit)) {
       const groupRiskFactors = {
         gravida: Faker.faker.datatype.number({ min: 0, max: 4 }),
         parity: null,
