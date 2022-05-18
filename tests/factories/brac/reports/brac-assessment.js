@@ -325,9 +325,10 @@ module.exports = new Factory()
           if (groupNutritionAssessment.group_under_2yr.breastfeeding === YES) {
             groupNutritionAssessment.group_under_2yr.breastfed_24hrs = Faker.faker.helpers.arrayElement(YES_NO);
             if (groupNutritionAssessment.group_under_2yr.breastfed_24hrs === YES) {
-              groupNutritionAssessment.group_under_2yr.times_breastfed = Faker.faker.helpers.uniqueArray(
-                ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
-                Faker.faker.datatype.number({ min: 1, max: 10 })).toString();
+              groupNutritionAssessment.group_under_2yr.times_breastfed = Faker.faker.helpers
+                .uniqueArray(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+                  Faker.faker.datatype.number({ min: 1, max: 10 }))
+                .join(' ');
             }
           }
           if (patientAgeInMonths >= 6 && patientAgeInMonths < 12) {
