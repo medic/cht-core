@@ -10,7 +10,7 @@ Initially it tests a number of users (thread),to replicates a number of document
 
 - jMeter
 - a target medic instance
-- multiple test users
+- multiple test users (generated in the first phase script)
 - realistic data (places, persons, reports generated in the first phase script `./generate_brac_data/generate-brac-data.js`)
 
 ## Setup
@@ -19,5 +19,5 @@ Initially it tests a number of users (thread),to replicates a number of document
 1. Go to `/tests/scalability/replicate-brac-docs`
 3. Load jMeter and open the `add-docs.jmx` file.
 4. In the Test Plan configure the `working_dir` and `node_binary` variables.
-5. In the Test Plan > Thread Group configure the number of threads you want to execute. The users configured in step 2 will be used in round robin so you can have more or fewer threads than users.
+5. In the Test Plan > Thread Group configure the number of threads you want to execute based on the numbers of users generated in the first phase script.
 6. Run it!

@@ -227,6 +227,7 @@ const generateData = async () => {
   chwUsers.forEach(obj => renameKey(obj, 'password', 'pass'));
 
   const config2 = {
+    data_directory: mainDataDirectory,
     url: medicInstance,
     users: chwUsers
   };
@@ -235,7 +236,7 @@ const generateData = async () => {
     'config',
     config2,
     '.json',
-    ['url', 'users', 'name', 'pass', 'contact']);
+    ['data_directory', 'url', 'users', 'name', 'pass', 'contact']);
 };
 
 generateData();

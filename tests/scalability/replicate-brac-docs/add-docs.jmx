@@ -9,12 +9,12 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="working_dir" elementType="Argument">
             <stringProp name="Argument.name">working_dir</stringProp>
-            <stringProp name="Argument.value">${__P(working_dir)}</stringProp>
+            <stringProp name="Argument.value">/Users/marialorenarodriguezviruel/medic-workspace/cht-core/tests/scalability/replicate-brac-docs</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="node_binary" elementType="Argument">
             <stringProp name="Argument.name">node_binary</stringProp>
-            <stringProp name="Argument.value">${__P(node_binary)}</stringProp>
+            <stringProp name="Argument.value">/usr/local/bin/node</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -28,7 +28,7 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">${__P(loop_count, 1)}</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">${__P(number_of_threads, 9)}</stringProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(number_of_threads, 10)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">${__P(ramp_up_period, 1)}</stringProp>
         <longProp name="ThreadGroup.start_time">1526955245000</longProp>
         <longProp name="ThreadGroup.end_time">1526955245000</longProp>
@@ -46,7 +46,7 @@
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="Argument">
                 <stringProp name="Argument.name"></stringProp>
-                <stringProp name="Argument.value">${working_dir}/initial-replication.js</stringProp>
+                <stringProp name="Argument.value">${working_dir}/add-docs-to-remote.js</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="" elementType="Argument">
@@ -61,8 +61,8 @@
           </elementProp>
           <stringProp name="SystemSampler.directory"></stringProp>
           <longProp name="SystemSampler.timeout">-1</longProp>
-          <stringProp name="SystemSampler.stderr">${working_dir}/report/stderr${__threadNum}</stringProp>
-          <stringProp name="SystemSampler.stdout">${working_dir}/report/stdout${__threadNum}</stringProp>
+          <stringProp name="SystemSampler.stderr">${working_dir}/stderr${__threadNum}</stringProp>
+          <stringProp name="SystemSampler.stdout">${working_dir}/stdout${__threadNum}</stringProp>
         </SystemSampler>
         <hashTree/>
         <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
@@ -127,7 +127,7 @@
             <bytes>true</bytes>
           </value>
         </objProp>
-        <stringProp name="filename">${working_dir}/report/initial-replication.jtl</stringProp>
+        <stringProp name="filename">${working_dir}/add-docs.jtl</stringProp>
         <boolProp name="ResultCollector.success_only_logging">true</boolProp>
       </ResultCollector>
       <hashTree/>

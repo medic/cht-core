@@ -1,9 +1,6 @@
 const args = process.argv.slice(2);
 const threadId = args[0];
-const dataDirectory = args[1];
 const config = require('./config.json');
-
-const dataConfig = require('../generate_brac_data/data-config.json');
 const user = config.users[threadId % config.users.length];
 
 const PouchDB = require('pouchdb');
@@ -11,8 +8,8 @@ PouchDB.plugin(require('pouchdb-adapter-http'));
 const path = require('path');
 const fs = require('fs');
 
-const mainDataDirectory = dataConfig.main_script_data_directory;
-const directoryPath = path.join(dataDirectory, mainDataDirectory, user.contact);
+const mainDataDirectory = config.data_directory;
+const directoryPath = path.join(mainDataDirectory, user.contact);
 
 const remoteDb = new PouchDB(config.url, {
   skip_setup: true,
@@ -26,8 +23,6 @@ const addDocToRemote = async (filePath) => {
     const jsonObject = JSON.parse(jsonString);
     await remoteDb.post(jsonObject);
   } catch (err) {
-    console.error('addDocToLocal error ');
-    console.error(err);
     throw err;
   }
 };
@@ -39,10 +34,17 @@ const addDocs = async () => {
       files.map(file => addDocToRemote(path.join(directoryPath, file)))
     );
   } catch (err) {
-    console.error('addDocs ');
-    console.error(err);
     throw err;
   }
 };
 
-addDocs();
+addDocs().then(() => {
+  console.log('Adding docs complete'); // eslint-disable-line no-console
+  process.exit(0);
+})
+  .catch(err => {
+    console.error('Adding docs failed', err); // eslint-disable-line no-console
+    process.exit(1);
+  });
+
+
