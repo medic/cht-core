@@ -7,13 +7,22 @@ import { Selectors } from '@mm-selectors/index';
   providedIn: 'root'
 })
 export class BrowserDetectorService {
-  private readonly parser = Bowser.getParser(window.navigator.userAgent);
+  private _parser: Bowser.Parser.Parser;
   private androidAppVersion: VersionNumber | undefined;
 
   public constructor(private store: Store) {
     this.store.select(Selectors.getAndroidAppVersion).subscribe(androidAppVersion => {
       this.androidAppVersion = androidAppVersion;
     });
+  }
+
+  private get parser() {
+    // lazy initialization to allow unit tests to use a different user agent
+    if (typeof this._parser === 'undefined') {
+      this._parser = Bowser.getParser(window.navigator.userAgent);
+    }
+
+    return this._parser;
   }
 
   public detect() {
