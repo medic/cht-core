@@ -105,7 +105,7 @@ const couchDbCheck = async (couchUrl) => {
   do {
     try {
       await couchDbVersionCheck(serverUrl.toString());
-      // await checkCluster(serverUrl.toString());
+      await checkCluster(serverUrl.toString());
       await couchDbNoAdminPartyModeCheck(serverUrl.toString());
       return;
     } catch (err) {

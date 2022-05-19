@@ -2,6 +2,7 @@ const utils = require('../../utils');
 const querystring = require('querystring');
 const constants = require('../../constants');
 const _ = require('lodash');
+const { addWarning } = require('@angular-devkit/build-angular/src/utils/webpack-diagnostics');
 
 const SKIPPED_BY_SENTINEL = /^_design\/|(-info|____tombstone)$/;
 const TRANSITION_SEQ = '/_local/transitions-seq';
@@ -40,7 +41,8 @@ const waitForSeq = (metadataId, docIds) => {
       // so we ignore those too
       if (!response.results.length || response.results.every(change => SKIPPED_BY_SENTINEL.test(change.id))) {
         // sentinel has caught up and processed our doc
-        return;
+        //return;
+        return utils.delayPromise(() => Promise.resolve(), 500);
       }
 
       return utils.delayPromise(() => waitForSeq(metadataId, docIds), 100);

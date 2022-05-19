@@ -20,7 +20,8 @@ const addRole = (dbname, role) => {
       user: environment.username,
       pass: environment.password
     },
-    json: true
+    json: true,
+    headers: { authsession: 'generic-api' }
   })
     .then(body => {
       // In CouchDB 1.x, if you have not written to the _security object before
@@ -44,6 +45,7 @@ const addRole = (dbname, role) => {
           user: environment.username,
           pass: environment.password
         },
+        headers: { authsession: 'generic-api' },
         json: true,
         body: body
       });

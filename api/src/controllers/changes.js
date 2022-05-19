@@ -233,16 +233,18 @@ const getChanges = feed => {
         return reauthorizeRequest(feed);
       }
 
-      processPendingChanges(feed, limitChangesRequests && feed.lastSeq);
+      return Promise.resolve().then(() => {
+        processPendingChanges(feed, limitChangesRequests && feed.lastSeq);
 
-      if (feed.results.length || !isLongpoll(feed.req)) {
-        // send response downstream
-        return endFeed(feed);
-      }
+        if (feed.results.length || !isLongpoll(feed.req)) {
+          // send response downstream
+          return endFeed(feed);
+        }
 
-      // move the feed to the longpoll list to receive new changes
-      normalFeeds = _.without(normalFeeds, feed);
-      longpollFeeds.push(feed);
+        // move the feed to the longpoll list to receive new changes
+        normalFeeds = _.without(normalFeeds, feed);
+        longpollFeeds.push(feed);
+      });
     })
     .catch(err => {
       logger.info(`${feed.id} Error while requesting 'normal' changes feed`);

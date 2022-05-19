@@ -3,9 +3,9 @@
 This stylesheet extends the default one to allow for additional input types.
 -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
- 
-  <xsl:import href="../../node_modules/enketo-xslt/xsl/openrosa2html5form.xsl"/>
-   
+
+  <xsl:import href="../../../node_modules/enketo-xslt/xsl/openrosa2html5form.xsl"/>
+
   <xsl:template name="html_type">
     <xsl:param name="xml_type" />
     <xsl:choose>
@@ -31,5 +31,5 @@ This stylesheet extends the default one to allow for additional input types.
       <!-- Medic specific section end -->
     </xsl:choose>
   </xsl:template>
- 
+
 </xsl:stylesheet>

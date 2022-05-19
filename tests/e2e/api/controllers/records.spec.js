@@ -146,6 +146,7 @@ describe('Import Records', () => {
             an_optional_date: '2018-11-10'
           }
         }))
+        .then(() => utils.delayPromise(() => Promise.resolve(), 100))
         .then(() => utils.db.query('medic-client/reports_by_form', {
           key: ['TEST'],
           include_docs: true,

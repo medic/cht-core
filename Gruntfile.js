@@ -289,11 +289,25 @@ module.exports = function(grunt) {
         cmd: () => buildVersions.SERVICES
           .map(service =>
             [
+              `cp -r ${service}/src ${service}/dist`,
               `cd ${service}`,
-              `npm ci --production`,
-              `npm dedupe`,
-              `cd ../`,
+              // `npm ci --production`,
+              // `npm dedupe`,
+              '../node_modules/.bin/babel server.js -d dist',
+              '../node_modules/.bin/babel src/ -d dist/src',
+              'cd ../',
               `docker build -f ./${service}/Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
+            ].join(' && ')
+          )
+          .join(' && '),
+      },
+      'build-images': {
+        cmd: () => ['couchdb', 'haproxy']
+          .map(service =>
+            [
+              `cd ${service}`,
+              `docker build -f ./Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
+              'cd ../',
             ].join(' && ')
           )
           .join(' && '),
@@ -314,8 +328,14 @@ module.exports = function(grunt) {
           .join(' && '),
       },
       'api-dev': {
-        cmd:
-          'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "api/build/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
+        cmd: [
+          'cp -r api/src api/dist',
+          'cd api',
+          '../node_modules/.bin/babel server.js -d dist',
+          '../node_modules/.bin/babel src/ -d dist/src',
+          'cd ../',
+          'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "api/build/**" --watch api --watch "shared-libs/**/src/**" api/dist/server.js -- --allow-cors',
+        ].join(' && '),
       },
       'sentinel-dev': {
         cmd:
@@ -863,6 +883,7 @@ module.exports = function(grunt) {
     'cssmin:api',
     'env:version',
     'exec:build-service-images',
+    'exec:build-images',
   ]);
 
   grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [

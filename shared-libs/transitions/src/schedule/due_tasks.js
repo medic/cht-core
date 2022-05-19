@@ -91,7 +91,8 @@ const getBatch = (query, startKey, startKeyDocId) => {
     baseUrl: db.couchUrl,
     uri: '/_design/medic/_view/messages_by_state',
     qs: queryString,
-    json: true
+    json: true,
+    headers: { authsession: 'generic-sentinel' },
   };
 
   let nextKey;

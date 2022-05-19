@@ -45,11 +45,11 @@ if (UNIT_TEST_ENV) {
   process.exit(1);
 }
 
-module.exports.buildPath = path.join(__dirname, '..', 'build');
+module.exports.buildPath = path.join(__dirname, '..', '..', 'build');
 module.exports.staticPath = path.join(module.exports.buildPath, 'static');
 module.exports.webappPath = path.join(module.exports.staticPath, 'webapp');
 module.exports.loginPath = path.join(module.exports.staticPath, 'login');
 module.exports.defaultDocsPath = path.join(module.exports.buildPath, 'default-docs');
 module.exports.ddocsPath = path.join(module.exports.buildPath, 'ddocs');
-module.exports.resourcesPath = path.join(__dirname, '..', 'resources');
+module.exports.resourcesPath = path.join(__dirname, '..', '..', 'resources');
 module.exports.isTesting = module.exports.db === 'medic-test';

@@ -1,6 +1,7 @@
 const environment = require('./src/environment');
 const serverChecks = require('@medic/server-checks');
 const logger = require('./src/logger');
+require('zone.js/dist/zone-node');
 
 process
   .on('unhandledRejection', reason => {
@@ -12,6 +13,45 @@ process
     logger.error('  Error: %o', err);
     process.exit(1);
   });
+
+const serverInit = async () => {
+  console.error('current zone', Zone.current.name);
+  logger.info('Running installation checks…');
+  const checkInstall = require('./src/services/setup/check-install');
+  await checkInstall.run();
+  logger.info('Installation checks passed');
+
+  logger.info('Extracting initial documents…');
+  const uploadDefaultDocs = require('./src/upload-default-docs');
+  await uploadDefaultDocs.run();
+  logger.info('Extracting initial documents completed successfully');
+
+  logger.info('Loading configuration…');
+  const configWatcher = require('./src/services/config-watcher');
+  await configWatcher.load();
+  logger.info('Configuration loaded successfully');
+  configWatcher.listen();
+
+  logger.info('Merging translations…');
+  const translations = require('./src/translations');
+  await translations.run();
+  logger.info('Translations merged successfully');
+
+  logger.info('Running db migrations…');
+  const migrations = require('./src/migrations');
+  await migrations.run();
+  logger.info('Database migrations completed successfully');
+
+  logger.info('Generating service worker');
+  const generateServiceWorker = require('./src/generate-service-worker');
+  await generateServiceWorker.run(true);
+  logger.info('Service worker generated successfully');
+
+  logger.info('Updating xforms…');
+  const generateXform = require('./src/services/generate-xform');
+  await generateXform.updateAll();
+  logger.info('xforms updated successfully');
+};
 
 (async () => {
   try {
@@ -29,42 +69,12 @@ process
 
   try
   {
-    logger.info('Running installation checks…');
-    const checkInstall = require('./src/services/setup/check-install');
-    await checkInstall.run();
-    logger.info('Installation checks passed');
-
-    logger.info('Extracting initial documents…');
-    const uploadDefaultDocs = require('./src/upload-default-docs');
-    await uploadDefaultDocs.run();
-    logger.info('Extracting initial documents completed successfully');
-
-    logger.info('Loading configuration…');
-    const configWatcher = require('./src/services/config-watcher');
-    await configWatcher.load();
-    logger.info('Configuration loaded successfully');
-    configWatcher.listen();
-
-    logger.info('Merging translations…');
-    const translations = require('./src/translations');
-    await translations.run();
-    logger.info('Translations merged successfully');
-
-    logger.info('Running db migrations…');
-    const migrations = require('./src/migrations');
-    await migrations.run();
-    logger.info('Database migrations completed successfully');
-
-    logger.info('Generating service worker');
-    const generateServiceWorker = require('./src/generate-service-worker');
-    await generateServiceWorker.run(true);
-    logger.info('Service worker generated successfully');
-
-    logger.info('Updating xforms…');
-    const generateXform = require('./src/services/generate-xform');
-    await generateXform.updateAll();
-    logger.info('xforms updated successfully');
-
+    await Zone.current
+      .fork({ name: 'api-install' })
+      .run(() => {
+        console.error('current zone', Zone.current.name);
+        return serverInit();
+      });
   } catch (err) {
     logger.error('Fatal error initialising medic-api');
     logger.error('%o',err);

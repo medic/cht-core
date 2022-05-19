@@ -20,7 +20,8 @@ const addSecurityToDb = () => {
       pass: environment.password
     },
     json: true,
-    body: securityObject
+    body: securityObject,
+    headers: { authsession: 'generic-api' },
   });
 };
 

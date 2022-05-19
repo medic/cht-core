@@ -30,6 +30,7 @@ const purgeDocs = (sourceDb, changes) => {
         uri: `${db.serverUrl}/${info.db_name}/_purge`,
         json: true,
         body: docsToPurge,
+        headers: { authsession: 'generic-sentinel' }
       };
 
       return rpn.post(opts);

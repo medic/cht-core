@@ -18,10 +18,10 @@ process.env.COUCHDB_PASSWORD = auth.password;
 
 const CONTAINER_NAMES = {
   // couch: 'cht-couch-e2e',
-  haproxy: 'cht-e2e-haproxy',
-  couch1: 'cht-e2e-couchdb.1',
-  couch2: 'cht-e2e-couchdb.2',
-  couch3: 'cht-e2e-couchdb.3',
+  haproxy: 'cht-haproxy-e2e',
+  couch1: 'cht-couchdb.1-e2e',
+  couch2: 'cht-couchdb.2-e2e',
+  couch3: 'cht-couchdb.3-e2e',
 
   api: 'cht-api-e2e',
   sentinel: 'cht-sentinel-e2e',
@@ -588,7 +588,7 @@ const saveBrowserLogs = () => {
 
 const generateComposeFile = async () => {
   const view = {
-    couchdb_image: 'medicmobile/cht-couchdb:clustered-test4',
+    //couchdb_image: 'medicmobile/cht-couchdb:clustered-test4',
     repo: buildVersions.getRepo(),
     tag: buildVersions.getImageTag(),
     network: 'cht-net-e2e',
@@ -844,7 +844,7 @@ module.exports = {
         'Content-Length': JSON.stringify(doc).length,
       },
       body: doc,
-    });
+    }).then((result) => module.exports.delayPromise(() => Promise.resolve(result)), 50);
   },
 
   saveDocs: docs => {
@@ -859,7 +859,8 @@ module.exports = {
           throw Error(JSON.stringify(results, null, 2));
         }
         return results;
-      });
+      })
+      .then((result) => module.exports.delayPromise(() => Promise.resolve(result)), 50);
   },
 
   saveMetaDocs: (user, docs) => {
@@ -1164,7 +1165,7 @@ module.exports = {
 
       Object.assign(translationsDoc.generic, translations);
       return db.put(translationsDoc);
-    });
+    }).then(() => module.exports.delayPromise(() => Promise.resolve(), 100));
   },
 
   getSettings: () => module.exports.getDoc('settings').then(settings => settings.settings),

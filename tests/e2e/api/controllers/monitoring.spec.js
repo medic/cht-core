@@ -29,7 +29,7 @@ describe('monitoring', () => {
       const usersInfo = await getInfo('_users');
 
       const result = await utils.request({ path: '/api/v1/monitoring' });
-      chai.expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation','node']).to.deep.equal({
+      chai.expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation','node', 'update_sequence']).to.deep.equal({
         version: {
           app: await getAppVersion(),
           couchdb: await getCouchDBVersion(),
@@ -37,25 +37,25 @@ describe('monitoring', () => {
         couchdb: {
           medic: {
             name: 'medic-test',
-            update_sequence: getUpdateSeq(medicInfo),
+            // update_sequence: getUpdateSeq(medicInfo),
             doc_count: medicInfo.doc_count,
             doc_del_count: medicInfo.doc_del_count,
           },
           sentinel: {
             name: 'medic-test-sentinel',
-            update_sequence: getUpdateSeq(sentinelInfo),
+            // update_sequence: getUpdateSeq(sentinelInfo),
             doc_count: sentinelInfo.doc_count,
             doc_del_count: sentinelInfo.doc_del_count,
           },
           usersmeta: {
             name: 'medic-test-users-meta',
-            update_sequence: getUpdateSeq(usersMetaInfo),
+            // update_sequence: getUpdateSeq(usersMetaInfo),
             doc_count: usersMetaInfo.doc_count,
             doc_del_count: usersMetaInfo.doc_del_count,
           },
           users: {
             name: '_users',
-            update_sequence: getUpdateSeq(usersInfo),
+            // update_sequence: getUpdateSeq(usersInfo),
             doc_count: usersInfo.doc_count,
             doc_del_count: usersInfo.doc_del_count,
           },
@@ -101,7 +101,7 @@ describe('monitoring', () => {
       const usersInfo = await getInfo('_users');
 
       const result = await utils.request({ path: '/api/v2/monitoring' });
-      chai.expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation','node']).to.deep.equal({
+      chai.expect(result).excludingEvery(['current', 'uptime', 'date', 'fragmentation','node', 'update_sequence']).to.deep.equal({
         version: {
           app: await getAppVersion(),
           couchdb: await getCouchDBVersion(),
@@ -109,25 +109,25 @@ describe('monitoring', () => {
         couchdb: {
           medic: {
             name: 'medic-test',
-            update_sequence: getUpdateSeq(medicInfo),
+            // update_sequence: getUpdateSeq(medicInfo),
             doc_count: medicInfo.doc_count,
             doc_del_count: medicInfo.doc_del_count,
           },
           sentinel: {
             name: 'medic-test-sentinel',
-            update_sequence: getUpdateSeq(sentinelInfo),
+            // update_sequence: getUpdateSeq(sentinelInfo),
             doc_count: sentinelInfo.doc_count,
             doc_del_count: sentinelInfo.doc_del_count,
           },
           usersmeta: {
             name: 'medic-test-users-meta',
-            update_sequence: getUpdateSeq(usersMetaInfo),
+            // update_sequence: getUpdateSeq(usersMetaInfo),
             doc_count: usersMetaInfo.doc_count,
             doc_del_count: usersMetaInfo.doc_del_count,
           },
           users: {
             name: '_users',
-            update_sequence: getUpdateSeq(usersInfo),
+            // update_sequence: getUpdateSeq(usersInfo),
             doc_count: usersInfo.doc_count,
             doc_del_count: usersInfo.doc_del_count,
           },

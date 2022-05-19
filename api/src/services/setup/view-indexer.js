@@ -67,6 +67,7 @@ const indexView = async (dbName, ddocId, viewName) => {
         json: true,
         qs: { limit: 1 },
         timeout: 2000,
+        headers: { authsession: 'generic-api' },
       });
     } catch (requestError) {
       if (!continueIndexing) {

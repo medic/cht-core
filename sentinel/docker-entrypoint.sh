@@ -11,7 +11,7 @@ welcome_message(){
 
 main(){
   welcome_message
-  node /sentinel/server.js
+  node /sentinel/dist/server.js
 }
 
 "$@"

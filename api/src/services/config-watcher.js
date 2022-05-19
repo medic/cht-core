@@ -127,25 +127,27 @@ const listen = () => {
   db.medic
     .changes({ live: true, since: 'now', return_docs: false })
     .on('change', change => {
-      if (change.id === MEDIC_DDOC_ID) {
-        return handleDdocChange();
-      }
+      setTimeout(() => {
+        if (change.id === MEDIC_DDOC_ID) {
+          return handleDdocChange();
+        }
 
-      if (change.id === settingsService.SETTINGS_DOC_ID) {
-        return handleSettingsChange();
-      }
+        if (change.id === settingsService.SETTINGS_DOC_ID) {
+          return handleSettingsChange();
+        }
 
-      if (change.id.startsWith('messages-')) {
-        return handleTranslationsChange();
-      }
+        if (change.id.startsWith('messages-')) {
+          return handleTranslationsChange();
+        }
 
-      if (change.id.startsWith('form:')) {
-        return handleFormChange(change);
-      }
+        if (change.id.startsWith('form:')) {
+          return handleFormChange(change);
+        }
 
-      if (change.id === 'branding') {
-        return handleBrandingChanges();
-      }
+        if (change.id === 'branding') {
+          return handleBrandingChanges();
+        }
+      }, 50);
     })
     .on('error', err => {
       logger.error('Error watching changes, restarting: %o', err);

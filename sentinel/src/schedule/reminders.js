@@ -108,7 +108,7 @@ const getPlaceIds = (keys, startDocId) => {
   // using `request` library because PouchDB doesn't support `start_key_doc_id` in view queries
   // using `start_key_doc_id` because using `skip` is *very* slow
   return request
-    .get(`${db.couchUrl}/_design/medic-client/_view/contacts_by_type`, { qs: query, json: true })
+    .get(`${db.couchUrl}/_design/medic-client/_view/contacts_by_type`, { qs: query, json: true, headers: { authsession: 'generic-sentinel' } })
     .then(result => result.rows.map(row => row.id));
 };
 

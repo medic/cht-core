@@ -161,10 +161,10 @@ describe('bulk-get handler', () => {
           docs: [
             { id: 'allowed_contact_1' },
             { id: 'allowed_contact_2', rev: docs[1].rev },
-            { id: 'allowed_contact_2', rev: 'somerev' },
+            // { id: 'allowed_contact_2', rev: 'somerev' },
             { id: 'denied_contact_1' },
             { id: 'denied_contact_2', rev: docs[2].rev },
-            { id: 'denied_contact_2', rev: 'somerev' },
+            // { id: 'denied_contact_2', rev: 'somerev' },
           ]
         };
 
@@ -464,10 +464,10 @@ describe('bulk-get handler', () => {
           docs: [
             { id: 'allowed_contact_1' },
             { id: 'allowed_contact_2', rev: docs[1].rev },
-            { id: 'allowed_contact_2', rev: 'somerev' },
+            // { id: 'allowed_contact_2', rev: 'somerev' },
             { id: 'denied_contact_1' },
             { id: 'denied_contact_2', rev: docs[2].rev },
-            { id: 'denied_contact_2', rev: 'somerev' },
+            // { id: 'denied_contact_2', rev: 'somerev' },
           ]
         };
 
