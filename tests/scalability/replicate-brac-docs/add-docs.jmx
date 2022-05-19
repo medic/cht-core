@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.4.3">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Add Docs to Instance Test Plan" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
@@ -9,12 +9,12 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="working_dir" elementType="Argument">
             <stringProp name="Argument.name">working_dir</stringProp>
-            <stringProp name="Argument.value">/Users/marialorenarodriguezviruel/medic-workspace/cht-core/tests/scalability</stringProp>
+            <stringProp name="Argument.value">${__P(working_dir)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="node_binary" elementType="Argument">
             <stringProp name="Argument.name">node_binary</stringProp>
-            <stringProp name="Argument.value">/usr/local/bin/node</stringProp>
+            <stringProp name="Argument.value">${__P(node_binary)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -38,7 +38,7 @@
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
       </ThreadGroup>
       <hashTree>
-        <SystemSampler guiclass="SystemSamplerGui" testclass="SystemSampler" testname="sync" enabled="true">
+        <SystemSampler guiclass="SystemSamplerGui" testclass="SystemSampler" testname="add-docs" enabled="true">
           <boolProp name="SystemSampler.checkReturnCode">true</boolProp>
           <stringProp name="SystemSampler.expectedReturnCode">0</stringProp>
           <stringProp name="SystemSampler.command">${node_binary}</stringProp>
