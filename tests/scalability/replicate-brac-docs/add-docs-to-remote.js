@@ -18,24 +18,16 @@ const remoteDb = new PouchDB(config.url, {
 });
 
 const addDocToRemote = async (filePath) => {
-  try {
-    const jsonString = await fs.promises.readFile(filePath, 'utf8');
-    const jsonObject = JSON.parse(jsonString);
-    await remoteDb.post(jsonObject);
-  } catch (err) {
-    throw err;
-  }
+  const jsonString = await fs.promises.readFile(filePath, 'utf8');
+  const jsonObject = JSON.parse(jsonString);
+  await remoteDb.post(jsonObject);
 };
 
 const addDocs = async () => {
-  try {
-    const files = await fs.promises.readdir(directoryPath);
-    await Promise.all(
-      files.map(file => addDocToRemote(path.join(directoryPath, file)))
-    );
-  } catch (err) {
-    throw err;
-  }
+  const files = await fs.promises.readdir(directoryPath);
+  await Promise.all(
+    files.map(file => addDocToRemote(path.join(directoryPath, file)))
+  );
 };
 
 addDocs().then(() => {
