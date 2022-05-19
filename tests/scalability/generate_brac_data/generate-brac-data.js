@@ -49,13 +49,13 @@ const users = [];
 const managers = [];
 const chwUsers = [];
 
-const checkDataDirectory = (directoryPath) => {
-  fs.access(directoryPath, function (error) {
-    if (error) {
-      console.log('Directory does not exist.');
-      throw error;
-    }
-  });
+const checkDataDirectory = async (directoryPath) => {
+  try {
+    await fs.promises.access(directoryPath);
+  } catch (err) {
+    console.error(err);
+    throw new Error('Cant access data directory');
+  }
 };
 
 const createDataDoc = async (folderPath, fileName, content, extension = dataExtension, replacer = {}) => {
@@ -192,7 +192,7 @@ const generateHierarchy = async (type, placeName, parentPlace, numberOfPersons) 
 };
 
 const generateData = async () => {
-  checkDataDirectory(dataDirectory);
+  await checkDataDirectory(dataDirectory);
   await createDataDirectory(dataDirectory, preconditionDirectory);
   await createDataDirectory(dataDirectory, mainDirectory);
   await createDataDirectory(path.join(dataDirectory, preconditionDirectory), jsonDirectory);
