@@ -7,7 +7,7 @@ const dataConfig = require('../generate_brac_data/data-config.json');
 const user = config.users[threadId % config.users.length];
 
 const PouchDB = require('pouchdb');
-PouchDB.plugin(require('pouchdb-adapter-memory'));
+PouchDB.plugin(require('pouchdb-adapter-http'));
 const path = require('path');
 const fs = require('fs');
 
@@ -22,11 +22,9 @@ const remoteDb = new PouchDB(config.url, {
 
 const addDocToRemote = async (filePath) => {
   try {
-    const buffer = await fs.promises.readFile(filePath);
-    const jsonString = buffer.toString('utf8');
+    const jsonString = await fs.promises.readFile(filePath, 'utf8');
     const jsonObject = JSON.parse(jsonString);
-    const response = await remoteDb.post(jsonObject);
-    console.log(response);
+    await remoteDb.post(jsonObject);
   } catch (err) {
     console.error('addDocToLocal error ');
     console.error(err);
@@ -37,7 +35,9 @@ const addDocToRemote = async (filePath) => {
 const addDocs = async () => {
   try {
     const files = await fs.promises.readdir(directoryPath);
-    files.forEach(async (file) => await addDocToRemote(path.join(directoryPath, file)));
+    await Promise.all(
+      files.map(file => addDocToRemote(path.join(directoryPath, file)))
+    );
   } catch (err) {
     console.error('addDocs ');
     console.error(err);
