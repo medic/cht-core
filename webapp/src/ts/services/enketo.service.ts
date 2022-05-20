@@ -709,7 +709,7 @@ export class EnketoService {
     return this.getUserContact().then((contact) => {
       return {
         form: formInternalId,
-        type: 'data_record',
+        type: formInternalId.startsWith('training:') ? 'data_training' : 'data_record',
         content_type: 'xml',
         reported_date: Date.now(),
         contact: this.extractLineageService.extract(contact),

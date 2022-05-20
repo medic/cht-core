@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
@@ -15,7 +15,7 @@ import { TranslateService } from '@mm-services/translate.service';
   selector: 'training-cards-modal',
   templateUrl: './training-cards.component.html'
 })
-export class TrainingCardsComponent extends MmModalAbstract implements OnInit, AfterViewInit, OnDestroy {
+export class TrainingCardsComponent extends MmModalAbstract implements OnInit, OnDestroy {
 
   constructor(
     bsModalRef: BsModalRef,
@@ -34,7 +34,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, A
   private geoHandle:any;
   private globalActions;
   form;
-  formInternalId;
+  trainingForm;
   formWrapperId = 'training-cards-form';
   modalTitleKey = 'training_cards.modal.title';
   loadingContent;
@@ -50,10 +50,6 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, A
     // todo this.telemetryData = { preRender: Date.now() };
     this.reset();
     this.subscribeToStore();
-  }
-
-  ngAfterViewInit() {
-    this.loadForm();
   }
 
   ngOnDestroy() {
@@ -80,7 +76,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, A
       this.hideModalFooter = true;
       this.geoHandle && this.geoHandle.cancel();
       this.geoHandle = this.geolocationService.init();
-      const form = await this.xmlFormsService.get(this.formInternalId);
+      const form = await this.xmlFormsService.get(this.trainingForm);
       return this.ngZone.run(() => this.renderForm(form));
     } catch(error) {
       this.setError();
@@ -105,14 +101,21 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, A
       this.store.select(Selectors.getEnketoStatus),
       this.store.select(Selectors.getEnketoSavingStatus),
       this.store.select(Selectors.getEnketoError),
+      this.store.select(Selectors.getTrainingCard),
     ).subscribe(([
       enketoStatus,
       enketoSaving,
       enketoError,
+      trainingForm,
     ]) => {
       this.enketoStatus = enketoStatus;
       this.enketoSaving = enketoSaving;
       this.enketoError = enketoError;
+
+      if (trainingForm && trainingForm !== this.trainingForm) {
+        this.trainingForm = trainingForm;
+        this.loadForm();
+      }
     });
     this.subscription.add(reduxSubscription);
   }
@@ -120,7 +123,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, A
   private reset() {
     this.resetFormError();
     this.contentError = false;
-    this.formInternalId = null;
+    this.trainingForm = null;
     this.form = null;
     this.loadingContent = true;
     this.hideModalFooter = true;
@@ -150,7 +153,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, A
     this.resetFormError();
 
     try {
-      const docs = await this.enketoService.save(this.formInternalId, this.form, this.geoHandle);
+      const docs = await this.enketoService.save(this.trainingForm, this.form, this.geoHandle);
       console.debug('Saved form and associated docs', docs);
       this.globalActions.setSnackbarContent(this.translateService.instant('training_cards.form.saved'));
       this.globalActions.setEnketoSavingStatus(false);
@@ -170,7 +173,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, A
     /* TODO telemetry
         this.telemetryData.postRender = Date.now();
         this.telemetryData.action = model.doc ? 'edit' : 'add';
-        this.telemetryData.form = model.formInternalId;
+        this.telemetryData.form = model.trainingForm;
 
         this.telemetryService.record(
           `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:render`,

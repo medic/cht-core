@@ -175,6 +175,13 @@ export class XmlFormsService {
       }
     }
 
+    if (options.trainingForms !== undefined) {
+      const isTrainingForm = form._id.indexOf('form:training:') === 0;
+      if (options.trainingForms !== isTrainingForm) {
+        return false;
+      }
+    }
+
     // Context filters
     if (options.ignoreContext) {
       return true;
@@ -205,6 +212,8 @@ export class XmlFormsService {
    *
    * @param {Object} [options={}] Object for filtering. Possible values:
    *   - contactForms (boolean) : true will return only contact forms. False will exclude contact forms.
+   *     Undefined will ignore this filter.
+   *   - trainingForms (boolean) : true will return only training forms. False will exclude training forms.
    *     Undefined will ignore this filter.
    *   - ignoreContext (boolean) : Each xml form has a context field, which helps specify in which cases
    * it should be shown or not shown.

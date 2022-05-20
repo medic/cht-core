@@ -48,6 +48,7 @@ function (doc) {
   };
   var value = { type: doc.type };
   switch (doc.type) {
+    case 'data_training':
     case 'data_record':
       value.subject = getSubject() || '_unassigned';
       if (doc.form && doc.contact) {
