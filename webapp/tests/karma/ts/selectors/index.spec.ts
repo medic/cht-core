@@ -18,6 +18,7 @@ const state = {
     showActionBar: 'is showing action bar',
     forms: ['these', 'are', 'some', 'forms'],
     filters: { some: 'filters' },
+    trainingCard: 'form:training:new_change',
     navigation: {
       cancelCallback: function() {},
       preventNavigation: 'prevent',
@@ -225,6 +226,10 @@ describe('Selectors', () => {
 
     it('should getEnketoError', () => {
       expect(Selectors.getEnketoError(state)).to.equal(clonedState.global.enketoStatus.error);
+    });
+
+    it('should getTrainingCard', () => {
+      expect(Selectors.getTrainingCard(state)).to.equal(clonedState.global.trainingCard);
     });
 
     // null checks

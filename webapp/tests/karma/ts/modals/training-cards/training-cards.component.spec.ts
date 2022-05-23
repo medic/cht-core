@@ -1,6 +1,6 @@
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { provideMockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { Subject } from 'rxjs';
 import { expect } from 'chai';
@@ -19,6 +19,7 @@ import { GlobalActions } from '@mm-actions/global';
 describe('TrainingCardsComponent', () => {
   let fixture:ComponentFixture<TrainingCardsComponent>;
   let component:TrainingCardsComponent;
+  let store: MockStore;
   let bsModalRef;
   let modalSuperCloseStub;
   let geolocationService;
@@ -52,6 +53,7 @@ describe('TrainingCardsComponent', () => {
       { selector: Selectors.getEnketoStatus, value: {} },
       { selector: Selectors.getEnketoSavingStatus, value: false },
       { selector: Selectors.getEnketoError, value: false },
+      { selector: Selectors.getTrainingCard, value: null },
     ];
     globalActions = {
       clearEnketoStatus: sinon.stub(GlobalActions.prototype, 'clearEnketoStatus'),
@@ -81,6 +83,7 @@ describe('TrainingCardsComponent', () => {
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(TrainingCardsComponent);
+        store = TestBed.inject(MockStore);
         component = fixture.componentInstance;
         fixture.detectChanges();
       });
@@ -92,16 +95,20 @@ describe('TrainingCardsComponent', () => {
     expect(component).to.exist;
   });
 
-  it('should unsubscribe from everything, cancel geohandle and clear enketo form', () => {
+  it('should unsubscribe from everything, cancel geohandle and clear enketo form', fakeAsync(() => {
     const unsubscribeStub = sinon.stub(component.subscription, 'unsubscribe');
 
+    store.overrideSelector(Selectors.getTrainingCard, 'training:a_form_id');
+    store.refreshState();
+    tick();
     component.ngOnDestroy();
+    tick();
 
     expect(unsubscribeStub.calledOnce).to.be.true;
     expect(geoHandle.cancel.calledOnce).to.be.true;
     expect(enketoService.unload.calledOnce).to.be.true;
     expect(globalActions.clearEnketoStatus.calledOnce).to.be.true;
-  });
+  }));
 
   it('should close modal when canceling', () => {
     component.close();
@@ -118,7 +125,7 @@ describe('TrainingCardsComponent', () => {
 
       expect(AddSpy.calledOnce).to.be.true;
       expect(component.contentError).to.be.false;
-      expect(component.formInternalId).to.be.null;
+      expect(component.trainingForm).to.be.null;
       expect(component.form).to.be.null;
       expect(component.loadingContent).to.be.true;
       expect(component.hideModalFooter).to.be.true;
@@ -126,7 +133,7 @@ describe('TrainingCardsComponent', () => {
 
     it('should reset component', () => {
       component.contentError = true;
-      component.formInternalId = 'training_form_id';
+      component.trainingForm = 'training:a_form_id';
       component.form = { the: 'rendered training form' };
       component.loadingContent = false;
       component.hideModalFooter = false;
@@ -138,7 +145,7 @@ describe('TrainingCardsComponent', () => {
       expect(globalActions.setEnketoError.calledOnce).to.be.true;
       expect(globalActions.setEnketoError.args[0]).to.deep.equal([ null ]);
       expect(component.contentError).to.be.false;
-      expect(component.formInternalId).to.be.null;
+      expect(component.trainingForm).to.be.null;
       expect(component.form).to.be.null;
       expect(component.loadingContent).to.be.true;
       expect(component.hideModalFooter).to.be.true;
@@ -166,17 +173,20 @@ describe('TrainingCardsComponent', () => {
     }));
 
     it('should call enketo save, set content in snackbar and unload form', fakeAsync(() => {
-      component.form = { the: 'rendered training form' };
-      component.formInternalId = 'training_form_id';
+      xmlFormsService.get.resolves({ the: 'rendered training form' });
+      enketoService.render.resolves({ the: 'rendered training form' });
       enketoService.save.resolves([{ _id: 'completed_training' }]);
       const consoleDebugMock = sinon.stub(console, 'debug');
+      store.overrideSelector(Selectors.getTrainingCard, 'training:a_form_id');
+      store.refreshState();
+      tick();
 
       component.saveForm();
       tick();
 
       expect(enketoService.save.calledOnce).to.be.true;
       expect(enketoService.save.args[0]).to.deep.equal([
-        'training_form_id',
+        'training:a_form_id',
         { the: 'rendered training form' },
         geoHandle
       ]);
@@ -197,16 +207,19 @@ describe('TrainingCardsComponent', () => {
 
     it('should catch enketo saving error', fakeAsync(() => {
       const consoleErrorMock = sinon.stub(console, 'error');
-      component.form = { the: 'rendered training form' };
-      component.formInternalId = 'training_form_id';
+      xmlFormsService.get.resolves({ the: 'rendered training form' });
+      enketoService.render.resolves({ the: 'rendered training form' });
       enketoService.save.rejects({ some: 'error' });
+      store.overrideSelector(Selectors.getTrainingCard, 'training:a_form_id');
+      store.refreshState();
+      tick();
 
       component.saveForm();
       tick();
 
       expect(enketoService.save.calledOnce).to.be.true;
       expect(enketoService.save.args[0]).to.deep.equal([
-        'training_form_id',
+        'training:a_form_id',
         { the: 'rendered training form' },
         geoHandle
       ]);
@@ -229,19 +242,18 @@ describe('TrainingCardsComponent', () => {
     it('should load form', fakeAsync(() => {
       sinon.resetHistory();
 
-      component.formInternalId = 'training_form_id';
-      const xmlForm = { _id: 'training_form_id', some: 'content' };
+      const xmlForm = { _id: 'training:a_form_id', some: 'content' };
       const renderedForm = { rendered: 'form', model: {}, instance: {} };
       const consoleErrorMock = sinon.stub(console, 'error');
       xmlFormsService.get.resolves(xmlForm);
       enketoService.render.resolves(renderedForm);
-
-      component.ngAfterViewInit();
+      store.overrideSelector(Selectors.getTrainingCard, 'training:a_form_id');
+      store.refreshState();
       tick();
 
       expect(geolocationService.init.calledOnce).to.be.true;
       expect(xmlFormsService.get.calledOnce).to.be.true;
-      expect(xmlFormsService.get.args[0]).to.deep.equal([ 'training_form_id' ]);
+      expect(xmlFormsService.get.args[0]).to.deep.equal([ 'training:a_form_id' ]);
       expect(enketoService.render.calledOnce).to.be.true;
       expect(enketoService.render.args[0][1]).to.deep.equal(xmlForm);
       expect(enketoService.render.args[0][2]).to.equal(undefined);
@@ -258,10 +270,15 @@ describe('TrainingCardsComponent', () => {
     }));
 
     it('should reset geohandle on reload', fakeAsync(() => {
+      store.overrideSelector(Selectors.getTrainingCard, 'training:a_form_id');
+      store.refreshState();
+      tick();
+
       expect(geoHandle.cancel.notCalled).to.be.true;
       expect(geolocationService.init.calledOnce).to.be.true;
 
-      component.ngAfterViewInit();
+      store.overrideSelector(Selectors.getTrainingCard, 'training:another_form_id');
+      store.refreshState();
       tick();
 
       expect(geolocationService.init.calledTwice).to.be.true;
@@ -274,7 +291,8 @@ describe('TrainingCardsComponent', () => {
       const consoleErrorMock = sinon.stub(console, 'error');
       xmlFormsService.get.rejects({ error: 'boom' });
 
-      component.ngAfterViewInit();
+      store.overrideSelector(Selectors.getTrainingCard, 'training:a_form_id');
+      store.refreshState();
       tick();
 
       expect(xmlFormsService.get.calledOnce).to.be.true;
@@ -289,15 +307,16 @@ describe('TrainingCardsComponent', () => {
     it('should catch enketo errors', fakeAsync(() => {
       sinon.resetHistory();
       const consoleErrorMock = sinon.stub(console, 'error');
-      xmlFormsService.get.resolves({ _id: 'training_form_id', some: 'content' });
+      xmlFormsService.get.resolves({ _id: 'training:a_form_id', some: 'content' });
       enketoService.render.rejects({ some: 'error' });
 
-      component.ngAfterViewInit();
+      store.overrideSelector(Selectors.getTrainingCard, 'training:a_form_id');
+      store.refreshState();
       tick();
 
       expect(xmlFormsService.get.calledOnce).to.be.true;
       expect(enketoService.render.calledOnce).to.be.true;
-      expect(component.form).to.equal(undefined);
+      expect(component.form).to.equal(null);
       expect(consoleErrorMock.calledOnce).to.be.true;
       expect(consoleErrorMock.args[0]).to.deep.equal([
         'Error rendering form.',

@@ -71,6 +71,7 @@ export class TrainingCardsService {
       async (error, xForms) => {
         if (error) {
           console.error('Error fetching training cards.', error);
+          return;
         }
 
         try {
@@ -92,6 +93,7 @@ export class TrainingCardsService {
           this.modalService.show(TrainingCardsComponent);
         } catch (error) {
           console.error('Error showing training cards modal.', error);
+          return;
         }
       });
   }

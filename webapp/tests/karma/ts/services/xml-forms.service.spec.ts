@@ -496,7 +496,6 @@ describe('XmlForms service', () => {
       });
     });
 
-
     it('broken custom functions log clean errors and count as filtered', () => {
       const given = [
         {
@@ -559,15 +558,67 @@ describe('XmlForms service', () => {
             internalId: 'registration',
             _attachments: { xml: { something: true } },
           },
+        },
+        {
+          id: 'form:training:new-feature',
+          doc: {
+            _id: 'form:training:new-feature',
+            internalId: 'new-feature',
+            _attachments: { xml: { something: true } },
+          },
         }
       ];
       dbQuery.resolves({ rows: given });
       UserContact.resolves();
       const service = getService();
-      return service.list({ contactForms: true }).then(actual => {
+      return service.list({ contactForms: true, trainingForms: false }).then(actual => {
         expect(actual.length).to.equal(2);
         expect(actual[0]).to.deep.equal(given[1].doc);
         expect(actual[1]).to.deep.equal(given[2].doc);
+      });
+    });
+
+    it('should filter for training forms', () => {
+      const given = [
+        {
+          id: 'visit',
+          doc: {
+            _id: 'visit',
+            internalId: 'visit',
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form:contact:person',
+          doc: {
+            _id: 'form:contact:person',
+            internalId: 'stock-report',
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form:contact:clinic',
+          doc: {
+            _id: 'form:contact:clinic',
+            internalId: 'registration',
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form:training:new-feature',
+          doc: {
+            _id: 'form:training:new-feature',
+            internalId: 'new-feature',
+            _attachments: { xml: { something: true } },
+          },
+        }
+      ];
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      const service = getService();
+      return service.list({ contactForms: false, trainingForms: true }).then(actual => {
+        expect(actual.length).to.equal(1);
+        expect(actual[0]).to.deep.equal(given[3].doc);
       });
     });
 
@@ -596,14 +647,23 @@ describe('XmlForms service', () => {
             internalId: 'registration',
             _attachments: { xml: { something: true } },
           },
+        },
+        {
+          id: 'form:training:new-feature',
+          doc: {
+            _id: 'form:training:new-feature',
+            internalId: 'new-feature',
+            _attachments: { xml: { something: true } },
+          },
         }
       ];
       dbQuery.resolves({ rows: given });
       UserContact.resolves();
       const service = getService();
       return service.list({ contactForms: false }).then(actual => {
-        expect(actual.length).to.equal(1);
+        expect(actual.length).to.equal(2);
         expect(actual[0]).to.deep.equal(given[0].doc);
+        expect(actual[1]).to.deep.equal(given[3].doc);
       });
     });
 
@@ -698,7 +758,7 @@ describe('XmlForms service', () => {
       });
     });
 
-    it('filter for non-contact forms but ignore context', () => {
+    it('filter for non-contact and non-training forms but ignore context', () => {
       const given = [
         {
           id: 'visit',
@@ -731,12 +791,20 @@ describe('XmlForms service', () => {
             _attachments: { xml: { something: true } },
             context: { person: true },
           },
+        },
+        {
+          id: 'form:training:new-feature',
+          doc: {
+            _id: 'form:training:new-feature',
+            internalId: 'new-feature',
+            _attachments: { xml: { something: true } },
+          },
         }
       ];
       dbQuery.resolves({ rows: given });
       UserContact.resolves();
       const service = getService();
-      return service.list({ ignoreContext: true, contactForms: false }).then(actual => {
+      return service.list({ ignoreContext: true, contactForms: false, trainingForms: false }).then(actual => {
         expect(actual[0]).to.deep.equal(given[0].doc);
         expect(hasAuth.callCount).to.equal(0);
       });
