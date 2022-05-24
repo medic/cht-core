@@ -6,6 +6,7 @@ import { TrainingCardsComponent } from '@mm-modals/training-cards/training-cards
 import { DbService } from '@mm-services/db.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { SessionService } from '@mm-services/session.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +19,7 @@ export class TrainingCardsService {
     private xmlFormsService: XmlFormsService,
     private dbService: DbService,
     private modalService:ModalService,
+    private sessionService: SessionService
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -62,6 +64,10 @@ export class TrainingCardsService {
 
   public initTrainingCards() {
     if (!this.canOpenTraining()) {
+      return;
+    }
+
+    if (this.sessionService.isDbAdmin()) {
       return;
     }
 

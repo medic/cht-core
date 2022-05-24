@@ -8,6 +8,7 @@ import { DbService } from '@mm-services/db.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
+import { SessionService } from '@mm-services/session.service';
 
 describe('TrainingCardsService', () => {
   let service: TrainingCardsService;
@@ -18,6 +19,7 @@ describe('TrainingCardsService', () => {
   let localDb;
   let clock;
   let consoleErrorMock;
+  let sessionService;
 
   beforeEach(() => {
     localDb = { query: sinon.stub() };
@@ -25,6 +27,7 @@ describe('TrainingCardsService', () => {
     globalActions = { setTrainingCard: sinon.stub(GlobalActions.prototype, 'setTrainingCard') };
     xmlFormsService = { subscribe: sinon.stub() };
     modalService = { show: sinon.stub() };
+    sessionService = { isDbAdmin: sinon.stub() };
     consoleErrorMock = sinon.stub(console, 'error');
 
     TestBed.configureTestingModule({
@@ -33,7 +36,7 @@ describe('TrainingCardsService', () => {
         { provide: DbService, useValue: dbService },
         { provide: XmlFormsService, useValue: xmlFormsService },
         { provide: ModalService, useValue: modalService },
-        { provide: ModalService, useValue: modalService },
+        { provide: SessionService, useValue: sessionService },
       ]
     });
 
@@ -275,6 +278,18 @@ describe('TrainingCardsService', () => {
     divElement.setAttribute('id', 'enketo-test');
     divElement.className += 'enketo';
     document.body.appendChild(divElement);
+
+    service.initTrainingCards();
+
+    expect(xmlFormsService.subscribe.callCount).to.equal(0);
+    expect(localDb.query.callCount).to.equal(0);
+    expect(globalActions.setTrainingCard.callCount).to.equal(0);
+    expect(modalService.show.callCount).to.equal(0);
+    expect(consoleErrorMock.callCount).to.equal(0);
+  });
+
+  it('should do nothing if user is admin', async () => {
+    sessionService.isDbAdmin.returns(true);
 
     service.initTrainingCards();
 
