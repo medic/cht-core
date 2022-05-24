@@ -79,7 +79,7 @@ describe('RapidPro SMS Gateway', () => {
     const endpoint = '/api/v1/sms/radpidpro/incoming-messages';
     const smsSettings = { outgoing_service: 'rapidpro' };
 
-    it('should fail with no incoming key configured', async () => {
+    xit('should fail with no incoming key configured', async () => {
       await utils.updateSettings({ sms: smsSettings });
 
       try {
@@ -95,7 +95,7 @@ describe('RapidPro SMS Gateway', () => {
       }
     });
 
-    it('should fail with no authentication provided', async () => {
+    xit('should fail with no authentication provided', async () => {
       await setIncomingKey();
       await utils.updateSettings({ sms: smsSettings }, true);
 
@@ -111,7 +111,7 @@ describe('RapidPro SMS Gateway', () => {
       }
     });
 
-    it('should fail with incorrect authentication', async () => {
+    xit('should fail with incorrect authentication', async () => {
       await setIncomingKey();
       await utils.updateSettings({ sms: smsSettings }, true);
 
@@ -128,7 +128,7 @@ describe('RapidPro SMS Gateway', () => {
       }
     });
 
-    it('should fail with malformed authentication', async () => {
+    xit('should fail with malformed authentication', async () => {
       await setIncomingKey();
       await utils.updateSettings({ sms: smsSettings }, true);
 
@@ -145,7 +145,7 @@ describe('RapidPro SMS Gateway', () => {
       }
     });
 
-    it('should fail when message was not created', async () => {
+    xit('should fail when message was not created', async () => {
       await setIncomingKey();
       await utils.updateSettings({ sms: smsSettings }, true);
 
@@ -163,7 +163,7 @@ describe('RapidPro SMS Gateway', () => {
       }
     });
 
-    it('should create messages', async () => {
+    xit('should create messages', async () => {
       const message = {
         id: 'the_gateway_ref',
         from: 'the_phone',
@@ -211,7 +211,7 @@ describe('RapidPro SMS Gateway', () => {
       expect(doc.sms_message && doc.sms_message.gateway_ref).toEqual('the_gateway_ref');
     });
 
-    it('should create reports', async () => {
+    xit('should create reports', async () => {
       const forms = {
         FORM: {
           meta: {
@@ -313,7 +313,7 @@ describe('RapidPro SMS Gateway', () => {
 
     afterEach(() => utils.revertDb([], true));
 
-    it('should not call RapidPro endpoint when credentials are not set', async () => {
+    xit('should not call RapidPro endpoint when credentials are not set', async () => {
       await utils.updateSettings(settings, true);
 
       await utils.saveDoc(reportWithTasks);
@@ -322,7 +322,7 @@ describe('RapidPro SMS Gateway', () => {
       expect(broadcastsEndpointRequests.length).toEqual(0);
     });
 
-    it('should call endpoint with set credentials', async () => {
+    xit('should call endpoint with set credentials', async () => {
       await utils.updateSettings(settings, true);
       await setOutgoingKey();
 
@@ -346,7 +346,7 @@ describe('RapidPro SMS Gateway', () => {
       expect(headers[3].authorization).toEqual(`Token ${OUTGOING_KEY}`);
     });
 
-    it('should set correct states from broadcast api', async () => {
+    xit('should set correct states from broadcast api', async () => {
       await utils.updateSettings(settings, true);
       await setOutgoingKey();
 
@@ -381,7 +381,7 @@ describe('RapidPro SMS Gateway', () => {
       expect(report.scheduled_tasks[2].state).toEqual('failed');
     });
 
-    it('should update the states correctly from messages api', async () => {
+    xit('should update the states correctly from messages api', async () => {
       const genReport = (id, idx) => ({
         _id: id,
         type: 'data_record',
@@ -451,7 +451,7 @@ describe('RapidPro SMS Gateway', () => {
       });
     });
 
-    it('should not poll messages for docs that are in pending or scheduled states or lack gateway ref', async () => {
+    xit('should not poll messages for docs that are in pending or scheduled states or lack gateway ref', async () => {
       const docs = [
         {
           _id: uuid(),
@@ -534,7 +534,7 @@ describe('RapidPro SMS Gateway', () => {
       expect(messagesEndpointRequests.length).toEqual(0); // no requests made
     });
 
-    it('should keep updating until record is in final state', async () => {
+    xit('should keep updating until record is in final state', async () => {
       const statusChangeList = [
         'queued',
         'wired',
@@ -591,7 +591,7 @@ describe('RapidPro SMS Gateway', () => {
       });
     });
 
-    it('should poll for state updates and consume queue', async () => {
+    xit('should poll for state updates and consume queue', async () => {
       const nonFinalStates = ['received-by-gateway', 'forwarded-by-gateway', 'sent'];
       const finalStates = ['delivered', 'failed'];
 
@@ -640,7 +640,7 @@ describe('RapidPro SMS Gateway', () => {
       });
     });
 
-    it('should handle rate limiting when polling', async () => {
+    xit('should handle rate limiting when polling', async () => {
       const docs = Array.from({ length: 90 }).map((_, idx) => ({
         _id: uuid(),
         type: 'data_record',
