@@ -1,5 +1,5 @@
 {
-  "url": "http://localhost:6500/medic",
+  "url": "http://localhost:4988/medic",
   "users": [
     { "name": "disownment", "pass": "medic.123" },
     { "name": "focusers", "pass": "medic.123" },

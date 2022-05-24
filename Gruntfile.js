@@ -299,7 +299,7 @@ module.exports = function(grunt) {
           .join(' && '),
       },
       'build-images': {
-        cmd: () => ['couchdb', 'haproxy']
+        cmd: () => buildVersions.INFRASTRUCTURE
           .map(service =>
             [
               `cd ${service}`,
@@ -320,7 +320,7 @@ module.exports = function(grunt) {
           .join(' && '),
       },
       'push-service-images': {
-        cmd: () => buildVersions.SERVICES
+        cmd: () => [...buildVersions.SERVICES, buildVersions.INFRASTRUCTURE]
           .map(service => `docker push ${buildVersions.getImageTag(service)}`)
           .join(' && '),
       },
