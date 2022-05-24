@@ -164,7 +164,7 @@ describe('africas talking api', () => {
 
     beforeEach(() => submitSms({ from: '+64271234567', text: 'hello', id: 'a' }));
 
-    it('- shows content', async () => {
+    xit('- shows content', async () => {
       await commonElements.goToTasks();
       await commonElements.goToMessagesNative();
 
@@ -231,7 +231,7 @@ describe('africas talking api', () => {
 
     afterEach(() => utils.deleteDoc(savedDoc));
 
-    it('- shows content', async () => {
+    xit('- shows content', async () => {
       await commonElements.goToReportsNative();
       const firstReport = reportsElements.firstReport();
 

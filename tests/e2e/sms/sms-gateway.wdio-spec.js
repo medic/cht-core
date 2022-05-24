@@ -77,7 +77,7 @@ describe('sms-gateway api', () => {
       await pollSmsApi(body);
     });
 
-    it('- shows content', async () => {
+    xit('- shows content', async () => {
 
       await reportsPo.goToReportById(savedDoc);
 
@@ -114,7 +114,7 @@ describe('sms-gateway api', () => {
       response = await pollSmsApi({});
     });
 
-    it('- returns list and updates state', async () => {
+    xit('- returns list and updates state', async () => {
       const scheduledTaskMessage = reportWithTwoMessagesToSend.scheduled_tasks[0].messages[0];
       const taskMessage = reportWithTwoMessagesToSend.tasks[0].messages[0];
       expect(response.messages.length).to.equal(2);
