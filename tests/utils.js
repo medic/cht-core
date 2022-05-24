@@ -683,7 +683,7 @@ const stopServices = async (removeOrphans) => {
     return dockerComposeCmd('down', '--remove-orphans', '--volumes');
   }
   await saveLogs();
-  return dockerComposeCmd('stop');
+  //return dockerComposeCmd('stop');
 };
 const startService = (service) => dockerComposeCmd('start', `cht-${service}`);
 const stopService = (service) => dockerComposeCmd('stop', '-t', 0, `cht-${service}`);
@@ -844,7 +844,7 @@ module.exports = {
         'Content-Length': JSON.stringify(doc).length,
       },
       body: doc,
-    }).then((result) => module.exports.delayPromise(() => Promise.resolve(result)), 50);
+    }).then((result) => module.exports.delayPromise(() => Promise.resolve(result)), 100);
   },
 
   saveDocs: docs => {
@@ -860,7 +860,7 @@ module.exports = {
         }
         return results;
       })
-      .then((result) => module.exports.delayPromise(() => Promise.resolve(result)), 50);
+      .then((result) => module.exports.delayPromise(() => Promise.resolve(result)), 100);
   },
 
   saveMetaDocs: (user, docs) => {

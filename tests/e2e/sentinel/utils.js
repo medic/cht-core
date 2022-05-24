@@ -17,6 +17,10 @@ const BACKGROUND_SEQ = '/_local/background-seq';
 // @return     {<promise>}        resolves once the wait is over
 //
 const waitForSeq = (metadataId, docIds) => {
+
+  return Promise.resolve();
+
+
   return requestOnSentinelTestDb(metadataId)
     .catch(err => {
       if (err.statusCode === 404) { // maybe Sentinel hasn't started yet

@@ -79,16 +79,16 @@ services:
     networks:
       - {{ network }}
 
-  cht-sentinel:
-    image: {{{ repo }}}/cht-sentinel:{{ tag }}
-    container_name: {{ sentinel_container_name }}
-    depends_on:
-      - haproxy
-    environment:
-      - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-pass}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
-      - API_HOST=cht-api
-    networks:
-      - {{ network }}
+#  cht-sentinel:
+#    image: {{{ repo }}}/cht-sentinel:{{ tag }}
+#    container_name: {{ sentinel_container_name }}
+#    depends_on:
+#      - haproxy
+#    environment:
+#      - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-pass}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
+#      - API_HOST=cht-api
+#    networks:
+#      - {{ network }}
 
 volumes:
   cht-credentials:

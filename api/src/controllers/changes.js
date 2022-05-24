@@ -78,6 +78,10 @@ const generateResponse = feed => {
     };
   }
 
+  console.log('responding with changes', feed.results.map(doc => doc.id));
+  console.log('since', feed.req.query.since);
+  console.log('last seq',  feed.lastSeq);
+
   return {
     results: feed.results,
     last_seq: feed.lastSeq
@@ -201,6 +205,8 @@ const getChanges = feed => {
   options.batch_size = feed.allowedDocIds.length + 1;
 
   feed.upstreamRequest = db.medic.changes(options);
+  console.log('requesting changes for docs', feed.allowedDocIds);
+  console.log('requesting from', options.since);
 
   return feed.upstreamRequest
     .then(response => {
@@ -351,6 +357,8 @@ const addChangeToLongpollFeed = (feed, changeObj) => {
 };
 
 const processChange = (change, seq) => {
+  console.log('got change', change.id, seq);
+  console.log('active feeds', normalFeeds.length);
   const changeObj = {
     change: tombstoneUtils.isTombstoneId(change.id) ? tombstoneUtils.generateChangeFromTombstone(change) : change,
     viewResults: authorization.getViewResults(change.doc),
