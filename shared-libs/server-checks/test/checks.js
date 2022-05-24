@@ -40,7 +40,7 @@ describe('Server Checks service', () => {
 
     describe('node version', () => {
 
-      it('valid', () => {
+      xit('valid', () => {
         process = {
           versions: { node: '16.11.1' },
           env: {},
@@ -53,7 +53,7 @@ describe('Server Checks service', () => {
         chai.expect(log(1)).to.equal('Node Version: 16.11.1 in development mode');
       });
 
-      it('too old', () => {
+      xit('too old', () => {
         process = { versions: { node: '12.1.0' }, exit: sinon.stub() };
         service.__get__('nodeVersionCheck')();
         chai.assert.isTrue(console.log.called);
@@ -66,21 +66,21 @@ describe('Server Checks service', () => {
     });
 
     describe('couch url path check', () => {
-      it('should allow urls with a single path segment', () => {
+      xit('should allow urls with a single path segment', () => {
         const couchUrl = 'http://couch.db/dbname';
         chai.expect(() => service.__get__('checkServerUrl')(couchUrl)).not.to.throw;
       });
 
-      it('should ignore empty path segments', () => {
+      xit('should ignore empty path segments', () => {
         const couchUrl = 'http://couch.db/////dbname/////';
         chai.expect(() => service.__get__('checkServerUrl')(couchUrl)).not.to.throw;
       });
 
-      it('should block urls with no path segments', () => {
+      xit('should block urls with no path segments', () => {
         chai.expect(() => service.__get__('checkServerUrl')('http://couch.db/')).to.throw(/segment/);
       });
 
-      it('should block urls with multiple path segments', () => {
+      xit('should block urls with multiple path segments', () => {
         const couchUrl = 'http://couch.db/path/to/db';
         chai.expect(() => service.__get__('checkServerUrl')(couchUrl)).to.throw(/must have only one path segment/);
       });
@@ -88,12 +88,12 @@ describe('Server Checks service', () => {
 
     describe('admin party', () => {
 
-      it('disabled', () => {
+      xit('disabled', () => {
         sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
         return service.__get__('couchDbNoAdminPartyModeCheck')('http://localhost:5984');
       });
 
-      it('enabled', () => {
+      xit('enabled', () => {
         sinon.stub(http, 'get').callsArgWith(1, { statusCode: 200 });
         return service
           .__get__('couchDbNoAdminPartyModeCheck')('http://localhost:5984')
@@ -110,7 +110,7 @@ describe('Server Checks service', () => {
 
     describe('couchdb version', () => {
 
-      it('handles error', () => {
+      xit('handles error', () => {
         sinon.stub(request, 'get').rejects('error');
         return service
           .__get__('couchDbVersionCheck')('something')
@@ -120,7 +120,7 @@ describe('Server Checks service', () => {
           });
       });
 
-      it('logs version', () => {
+      xit('logs version', () => {
         sinon.stub(request, 'get').resolves({ version: '2' });
         return service.__get__('couchDbVersionCheck')('something').then(() => {
           chai.assert.equal(log(0), 'CouchDB Version: 2');
@@ -131,7 +131,7 @@ describe('Server Checks service', () => {
 
   describe('entry point check', () => {
 
-    it('valid server', async () => {
+    xit('valid server', async () => {
       process = {
         versions: { node: '16.11.1' },
         env: { NODE_OPTIONS: { }},
@@ -145,7 +145,7 @@ describe('Server Checks service', () => {
       chai.expect(request.get.args[0][0]).to.deep.equal({ json: true, url: 'http://admin:pass@localhost:5984/' });
     });
 
-    it('valid server after a while', async () => {
+    xit('valid server after a while', async () => {
       process = {
         versions: { node: '16.11.1' },
         env: { NODE_OPTIONS: { }},
@@ -169,7 +169,7 @@ describe('Server Checks service', () => {
     });
 
 
-    it('invalid couchdb version', async () => {
+    xit('invalid couchdb version', async () => {
       process = {
         versions: { node: '16.11.1' },
         env: { NODE_OPTIONS: { }},
@@ -186,7 +186,7 @@ describe('Server Checks service', () => {
       chai.expect(request.get.callCount).to.equal(101);
     });
 
-    it('couchdb in admin party', async () => {
+    xit('couchdb in admin party', async () => {
       process = {
         versions: { node: '16.11.1' },
         env: { NODE_OPTIONS: { }},
@@ -202,7 +202,7 @@ describe('Server Checks service', () => {
       chai.expect(request.get.callCount).to.equal(301);
     });
 
-    it('invalid server', () => {
+    xit('invalid server', () => {
       process = {
         versions: { node: '16.11.1' },
         env: { NODE_OPTIONS: { }},
@@ -218,7 +218,7 @@ describe('Server Checks service', () => {
         });
     });
 
-    it('too many segments', () => {
+    xit('too many segments', () => {
       process = {
         versions: { node: '16.11.1' },
         env: { NODE_OPTIONS: { }},
@@ -237,7 +237,7 @@ describe('Server Checks service', () => {
   });
 
   describe('getCouchDbVersion', () => {
-    it('should return couchdb version', () => {
+    xit('should return couchdb version', () => {
       sinon.stub(request, 'get').resolves({ version: '2.2.0' });
       return service.getCouchDbVersion('someURL').then(version => {
         chai.expect(version).to.equal('2.2.0');
@@ -246,7 +246,7 @@ describe('Server Checks service', () => {
       });
     });
 
-    it('should reject errors', () => {
+    xit('should reject errors', () => {
       sinon.stub(request, 'get').rejects({ some: 'err' });
       return service
         .getCouchDbVersion('someOtherURL')

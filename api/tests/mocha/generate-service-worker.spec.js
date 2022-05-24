@@ -36,7 +36,7 @@ describe('generate service worker', () => {
     sinon.restore();
   });
 
-  it('should generate the service worker file and update the service worker meta doc', () => {
+  xit('should generate the service worker file and update the service worker meta doc', () => {
     loginController.renderLogin.resolves('loginpage html');
     swPrecache.write.resolves();
     db.medic.get.resolves({ _id: 'service-worker-meta' });
@@ -94,7 +94,7 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should not update the service worker meta doc if the service-worker file is not changed', () => {
+  xit('should not update the service worker meta doc if the service-worker file is not changed', () => {
     getServiceWorkerHash.onCall(0).resolves('same');
     getServiceWorkerHash.onCall(1).resolves('same');
 
@@ -106,7 +106,7 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should update the meta doc if the request to hash the old service worker file contents fails', () => {
+  xit('should update the meta doc if the request to hash the old service worker file contents fails', () => {
     getServiceWorkerHash.onCall(0).resolves(undefined);
     getServiceWorkerHash.onCall(1).resolves('same');
     db.medic.get.resolves({ _id: 'service-worker-meta' });
@@ -125,7 +125,7 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should not update the meta doc if the request to hash the new service worker file fails', () => {
+  xit('should not update the meta doc if the request to hash the new service worker file fails', () => {
     getServiceWorkerHash.onCall(0).resolves('thing');
     getServiceWorkerHash.onCall(1).resolves(undefined);
     db.medic.get.resolves({ _id: 'service-worker-meta' });
@@ -139,7 +139,7 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should not update the meta doc if hashing both old and new service worker files fail', () => {
+  xit('should not update the meta doc if hashing both old and new service worker files fail', () => {
     getServiceWorkerHash.onCall(0).resolves(undefined);
     getServiceWorkerHash.onCall(1).resolves(undefined);
     db.medic.get.resolves({ _id: 'service-worker-meta' });
@@ -153,7 +153,7 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should default to caching the template file if rendering login fails', () => {
+  xit('should default to caching the template file if rendering login fails', () => {
     loginController.renderLogin.rejects({ some: 'error' });
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.resolves();
@@ -209,7 +209,7 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should throw error when generating the service worker fails', () => {
+  xit('should throw error when generating the service worker fails', () => {
     loginController.renderLogin.resolves('aaa');
     swPrecache.write.rejects({ an: 'error' });
 
@@ -224,7 +224,7 @@ describe('generate service worker', () => {
       });
   });
 
-  it('should handle sw doc get 404s', () => {
+  xit('should handle sw doc get 404s', () => {
     db.medic.get.rejects({ status: 404 });
     db.medic.put.resolves();
     sinon.stub(logger, 'error');
@@ -243,7 +243,7 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should handle sw doc put 409s', () => {
+  xit('should handle sw doc put 409s', () => {
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.rejects({ status: 409 });
     loginController.renderLogin.resolves('aaa');
@@ -255,7 +255,7 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should log other db get errors', () => {
+  xit('should log other db get errors', () => {
     db.medic.get.rejects({ status: 500 });
     loginController.renderLogin.resolves('aaa');
     swPrecache.write.resolves();
@@ -267,7 +267,7 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should log other db put errors', () => {
+  xit('should log other db put errors', () => {
     db.medic.get.resolves({});
     db.medic.put.rejects({ status: 502 });
     loginController.renderLogin.resolves('aaa');
@@ -299,7 +299,7 @@ describe('generate service worker', () => {
       };
     });
 
-    it('should return undefined if the file is not found', () => {
+    xit('should return undefined if the file is not found', () => {
       fs.access.callsArgWith(1, { error: true });
 
       return getServiceWorkerHash().then((result) => {
@@ -310,7 +310,7 @@ describe('generate service worker', () => {
       });
     });
 
-    it('should return the sha1 hash of the current service-worker file', () => {
+    xit('should return the sha1 hash of the current service-worker file', () => {
       fs.access.callsArgWith(1, undefined);
       fs.createReadStream.returns(stream);
 
@@ -343,7 +343,7 @@ describe('generate service worker', () => {
         });
     });
 
-    it('should return undefined on stream read error', () => {
+    xit('should return undefined on stream read error', () => {
       fs.access.callsArgWith(1, undefined);
       fs.createReadStream.returns(stream);
 
@@ -377,7 +377,7 @@ describe('generate service worker', () => {
         });
     });
 
-    it('should return undefined when other error happens', () => {
+    xit('should return undefined when other error happens', () => {
       fs.access.callsArgWith(1, false);
       fs.createReadStream.returns(stream);
       stream.setEncoding.throws(new Error('boom'));
