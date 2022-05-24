@@ -24,10 +24,6 @@ module.exports = {
       .then(userCtx => {
         req.userCtx = userCtx;
         req.replicationId = req.headers['medic-replication-id'];
-
-        Zone.current._properties.userCtx = req.userCtx;
-        Zone.current._properties.replicationId = req.replicationId;
-        req.headers.authsession = req.headers.authsession || userCtx.name || 'generic-api';
       })
       .catch(err => {
         req.authErr = err;

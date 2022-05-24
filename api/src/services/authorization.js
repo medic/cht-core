@@ -131,14 +131,14 @@ const allowedDoc = (docId, authorizationContext, { replicationKeys, contactsByDe
   //it's a report, task or target
   const allowedDepth = isAllowedDepth(authorizationContext, replicationKeys);
   return replicationKeys.some(replicationKey => {
-    const { key: subjectId, value: { submitter: submitterId, private: isPrivate } = {} } = replicationKey;
+    const { key: subjectId, value: { submitter: submitterId, private } = {} } = replicationKey;
     const allowedSubmitter = submitterId && authorizationContext.subjectIds.includes(submitterId);
     if (!subjectId && allowedSubmitter) {
       return true;
     }
     const allowedSubject = subjectId && authorizationContext.subjectIds.includes(subjectId);
     return allowedSubject &&
-           !isSensitive(authorizationContext.userCtx, subjectId, submitterId, isPrivate, allowedSubmitter) &&
+           !isSensitive(authorizationContext.userCtx, subjectId, submitterId, private, allowedSubmitter) &&
            allowedDepth;
   });
 };
@@ -478,9 +478,9 @@ const getDocsByReplicationKey = (authorizationContext) => {
     const docsByReplicationKey = [];
 
     results.rows.forEach(row => {
-      const { key: subject, value: { submitter, private: isPrivate } = {} } = row;
+      const { key: subject, value: { submitter, private } = {} } = row;
       const allowedSubmitter = () => sortedIncludes(sortedSubjects, submitter);
-      if (isSensitive(authorizationContext.userCtx, subject, submitter, isPrivate, allowedSubmitter)) {
+      if (isSensitive(authorizationContext.userCtx, subject, submitter, private, allowedSubmitter)) {
         return;
       }
 

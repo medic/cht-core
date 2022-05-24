@@ -238,8 +238,6 @@ const getChangesForIds = (username, docIds, retry = false, lastSeq = 0, limit = 
     const last_seq = changes.results.length ? changes.results[changes.results.length - 1].seq : changes.last_seq;
 
     if (docIds.find(id => !results.find(change => change.id === id)) || (retry && changes.results.length)) {
-      const missing = docIds.filter(id => !results.find(change => change.id === id));
-      //console.warn('missing', missing);
       return getChangesForIds(username, docIds, --retry, last_seq, limit, results);
     }
 
@@ -274,16 +272,16 @@ describe('changes handler', () => {
 
   after( async () => {
     // Clean up like normal
-    // await utils.revertDb([], true);// And also revert users we created in before
-    // await utils.deleteUsers(users, true);
+    await utils.revertDb([], true);// And also revert users we created in before
+    await utils.deleteUsers(users, true);
   });
 
 
   beforeEach(() => getCurrentSeq());
-  // afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
+  afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
 
   describe('requests', () => {
-    xit('should allow DB admins to POST to _changes', () => {
+    it('should allow DB admins to POST to _changes', () => {
       return utils
         .requestOnTestDb({
           path: '/_changes?since=0&filter=_doc_ids&heartbeat=10000',
@@ -295,7 +293,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('should copy proxied response headers', () => {
+    it('should copy proxied response headers', () => {
       return utils
         .requestOnTestDb({
           path: '/_changes?limit=1',
@@ -308,7 +306,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('should send heartbeats at specified intervals for all types of _changes requests', () => {
+    it('should send heartbeats at specified intervals for all types of _changes requests', () => {
       const heartRateMonitor = options => {
         options = options || {};
         options.hostname = constants.API_HOST;
@@ -472,7 +470,7 @@ describe('changes handler', () => {
       await getCurrentSeq();
     });
 
-    xit('should successfully fully replicate (with or without limit)', () => {
+    it('should successfully fully replicate (with or without limit)', () => {
       const allowedDocs = createSomeContacts(12, 'fixture:bobville');
       const deniedDocs = createSomeContacts(10, 'irrelevant-place');
 
@@ -487,7 +485,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('depending on CouchDB version, should limit changes requests or specifically ignore limit', () => {
+    it('depending on CouchDB version, should limit changes requests or specifically ignore limit', () => {
       const allowedDocs = createSomeContacts(12, 'fixture:bobville');
       const deniedDocs = createSomeContacts(10, 'irrelevant-place');
       bobsIds.push(...getIds(allowedDocs));
@@ -513,7 +511,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('filters allowed changes in longpolls', () => {
+    it('filters allowed changes in longpolls', () => {
       const allowedDocs = createSomeContacts(3, 'fixture:bobville');
       const deniedDocs = createSomeContacts(3, 'irrelevant-place');
 
@@ -527,7 +525,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('filters correctly for concurrent users on initial replication', () => {
+    it('filters correctly for concurrent users on initial replication', () => {
       const allowedBob = createSomeContacts(3, 'fixture:bobville');
       const allowedSteve = createSomeContacts(3, 'fixture:steveville');
 
@@ -546,7 +544,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('filters correctly for concurrent users on longpolls', () => {
+    it('filters correctly for concurrent users on longpolls', () => {
       const allowedBob = createSomeContacts(3, 'fixture:bobville');
       const allowedSteve = createSomeContacts(3, 'fixture:steveville');
 
@@ -562,7 +560,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('returns newly added docs', () => {
+    it('returns newly added docs', () => {
       const newDocs = [
         {_id: 'new_allowed_contact', place_id: '12345', parent: {_id: 'fixture:bobville'}, type: 'clinic'},
         {_id: 'new_denied_contact', place_id: '88888', parent: {_id: 'fixture:steveville'}, type: 'clinic'},
@@ -600,7 +598,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('restarts longpoll feeds when settings are changed', () => {
+    it('restarts longpoll feeds when settings are changed', () => {
       const settingsUpdates = { changes_controller: _.defaults({ reiterate_changes: false }, defaultSettings) };
       return Promise
         .all([
@@ -619,7 +617,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('returns newly added docs when in restart mode', () => {
+    it('returns newly added docs when in restart mode', () => {
       const newDocs = [
         {_id: 'new_allowed_contact_bis', place_id: '123456', parent: {_id: 'fixture:bobville'}, type: 'clinic'},
         {_id: 'new_denied_contact_bis', place_id: '888888', parent: {_id: 'fixture:steveville'}, type: 'clinic'},
@@ -662,7 +660,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('returns correct results when only medic user-settings doc facility_id is updated', () => {
+    it('returns correct results when only medic user-settings doc facility_id is updated', () => {
       const allowedBob = createSomeContacts(3, 'fixture:bobville');
       const allowedSteve = createSomeContacts(3, 'fixture:steveville');
 
@@ -685,7 +683,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('returns correct results when user is updated while changes request is active', () => {
+    it('returns correct results when user is updated while changes request is active', () => {
       const allowedBob = createSomeContacts(3, 'fixture:bobville');
       const allowedSteve = createSomeContacts(3, 'fixture:steveville');
 
@@ -740,7 +738,7 @@ describe('changes handler', () => {
         }));
     });
 
-    xit('filters allowed deletes in longpolls', () => {
+    it('filters allowed deletes in longpolls', () => {
       const allowedDocs = createSomeContacts(3, 'fixture:bobville');
       const deniedDocs = createSomeContacts(3, 'irrelevant-place');
 
@@ -765,7 +763,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('filters deletions (tombstones)', () => {
+    it('filters deletions (tombstones)', () => {
       const allowedDocs = createSomeContacts(5, 'fixture:steveville');
       const deniedDocs = createSomeContacts(5, 'irrelevant-place');
       const allowedDocIds = getIds(allowedDocs);
@@ -805,7 +803,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('filters deletions (tombstones) for concurrent users', () => {
+    it('filters deletions (tombstones) for concurrent users', () => {
       const allowedBob = createSomeContacts(3, 'fixture:bobville');
       const allowedSteve = createSomeContacts(3, 'fixture:steveville');
 
@@ -843,7 +841,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('should forward changes requests when db name is not medic', () => {
+    it('should forward changes requests when db name is not medic', () => {
       return utils
         .requestOnMedicDb({ path: '/_changes', auth: { username: 'bob', password } })
         .then(results => {
@@ -851,7 +849,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('filters calls with irregular urls which match couchdb endpoint', () => {
+    it('filters calls with irregular urls which match couchdb endpoint', () => {
       const options = {
         auth: { username: 'bob', password },
         method: 'GET'
@@ -894,7 +892,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('sends an error when couchdb returns an error', () => {
+    it('sends an error when couchdb returns an error', () => {
       return requestChanges('bob', { style: 'couchdb will love this', seq_interval: 'this as well' })
         .catch(err => {
           chai.expect(err).to.be.ok;
@@ -902,29 +900,7 @@ describe('changes handler', () => {
         });
     });
 
-    xit('should return the tombstone of a deleted doc', () => {
-      const contact = createSomeContacts(1, 'fixture:bobville')[0];
-
-      return utils
-        .saveDoc(contact)
-        .then(result => {
-          contact._rev = result.rev;
-          contact._deleted = true;
-
-          return utils.saveDoc(contact);
-        })
-        .then(result => contact._rev = result.rev)
-        .then(() => sentinelUtils.waitForSentinel())
-        .then(() => getChangesForIds('bob', [contact._id], false, currentSeq))
-        .then(changes => {
-          console.log(JSON.stringify(changes, null, 2));
-          chai.expect(changes.length).to.greaterThanOrEqual(1);
-          chai.expect(changes[0]).to.include({ id: contact._id, deleted: true });
-          chai.expect(changes[0].changes[0].rev).to.equal(contact._rev);
-        });
-    });
-
-    xit('should not return tombstone of a deleted doc if doc is re-added', () => {
+    it('should return the tombstone of a deleted doc', () => {
       const contact = createSomeContacts(1, 'fixture:bobville')[0];
 
       return utils.saveDoc(contact)
@@ -934,12 +910,33 @@ describe('changes handler', () => {
 
           return utils.saveDoc(contact);
         })
-        .then(result => contact._rev = result.rev)
-        .then(() => sentinelUtils.waitForSentinel())
-        .then(() => getChangesForIds('bob', [contact._id], false, currentSeq))
+        .then(result => {
+          contact._rev = result.rev;
+          return getChangesForIds('bob', [contact._id], false, currentSeq);
+        })
         .then(changes => {
-          console.log(JSON.stringify(changes, null, 2));
-          chai.expect(changes.length).to.be.greaterThanOrEqual(1);
+          chai.expect(changes.length).to.equal(1);
+          chai.expect(changes[0]).to.include({ id: contact._id, deleted: true });
+          chai.expect(changes[0].changes[0].rev).to.equal(contact._rev);
+        });
+    });
+
+    it('should not return tombstone of a deleted doc if doc is re-added', () => {
+      const contact = createSomeContacts(1, 'fixture:bobville')[0];
+
+      return utils.saveDoc(contact)
+        .then(result => {
+          contact._rev = result.rev;
+          contact._deleted = true;
+
+          return utils.saveDoc(contact);
+        })
+        .then(result => {
+          contact._rev = result.rev;
+          return getChangesForIds('bob', [contact._id], false, currentSeq);
+        })
+        .then(changes => {
+          chai.expect(changes.length).to.equal(1);
           chai.expect(changes[0]).to.include({ id: contact._id, deleted: true });
           chai.expect(changes[0].changes[0].rev).to.equal(contact._rev);
 
@@ -959,8 +956,7 @@ describe('changes handler', () => {
         });
     });
 
-    it('normal feeds should replicate correctly when new changes are pushed', async () => {
-      const since = await getCurrentSeq();
+    it('normal feeds should replicate correctly when new changes are pushed', () => {
       const allowedDocs = createSomeContacts(25, 'fixture:bobville');
       const allowedDocs2 = createSomeContacts(25, 'fixture:bobville');
       const ids = [...getIds(allowedDocs), ...getIds(allowedDocs2)];
@@ -973,7 +969,7 @@ describe('changes handler', () => {
       return utils
         .saveDocs(allowedDocs2)
         .then(() => Promise.all([
-          getChangesForIds('bob', ids, true, since, 4),
+          getChangesForIds('bob', ids, true, currentSeq, 4),
           promiseChain
         ]))
         .then(([ changes ]) => {
@@ -983,7 +979,7 @@ describe('changes handler', () => {
     });
   });
 
-  xit('should filter the changes to relevant ones', () =>
+  it('should filter the changes to relevant ones', () =>
     utils.saveDoc({ type:'clinic', parent:{ _id:'nowhere' } })
       .then(() => utils.saveDoc({ type:'clinic', _id:'very-relevant', parent:{ _id:'fixture:bobville' } }))
       .then(() => utils.saveDoc({ type:'clinic', parent:{ _id:'irrelevant-place' } }))
@@ -998,7 +994,7 @@ describe('changes handler', () => {
   describe('reports with no associated contact', () => {
     describe('can_view_unallocated_data_records permission', () => {
 
-      xit('should be supplied if user has this perm and district_admins_access_unallocated_messages is enabled', () =>
+      it('should be supplied if user has this perm and district_admins_access_unallocated_messages is enabled', () =>
         utils.updateSettings({district_admins_access_unallocated_messages: true}, true)
           .then(() => utils.saveDoc({ _id:'unallocated_report', type:'data_record' }))
           .then(() => requestChanges('bob'))
@@ -1009,7 +1005,7 @@ describe('changes handler', () => {
               'fixture:user:bob',
               'unallocated_report')));
 
-      xit('should not be supplied if user has perm but district_admins_access_unallocated_messages is disabled', () =>
+      it('should not be supplied if user has perm but district_admins_access_unallocated_messages is disabled', () =>
         utils.saveDoc({ _id:'unallocated_report', type:'data_record' })
           .then(() => requestChanges('bob'))
           .then(changes  =>
@@ -1018,7 +1014,7 @@ describe('changes handler', () => {
               'fixture:user:bob',
               'fixture:bobville')));
 
-      xit('should NOT be supplied for a user without can_view_unallocated_data_records permission', () =>
+      it('should NOT be supplied for a user without can_view_unallocated_data_records permission', () =>
         utils.saveDoc({ _id:'unallocated_report', type:'data_record' })
           .then(() => requestChanges('clare')) // She does not have the correct role
           .then(changes =>
@@ -1030,7 +1026,7 @@ describe('changes handler', () => {
   });
   describe('replication depth', () => {
 
-    xit('should show contacts to a user only if they are within the configured depth', () =>
+    it('should show contacts to a user only if they are within the configured depth', () =>
       utils.updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]}, true)
         .then(() => utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } }))
         .then(() => utils.saveDoc({
@@ -1045,7 +1041,7 @@ describe('changes handler', () => {
             'fixture:chwville',
             'should-be-visible')));
 
-    xit('should correspond to the largest number for any role the user has', () =>
+    it('should correspond to the largest number for any role the user has', () =>
       utils.updateSettings({
         replication_depth: [
           { role:'district_admin', depth:1 },
@@ -1066,7 +1062,7 @@ describe('changes handler', () => {
             'should-be-visible',
             'should-be-visible-too')));
 
-    xit('should have no effect if not configured', () =>
+    it('should have no effect if not configured', () =>
       utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } })
         .then(() => utils.saveDoc({
           _id:'should-also-be-visible', reported_date: 1, type:'person',
@@ -1082,7 +1078,7 @@ describe('changes handler', () => {
             'should-also-be-visible')));
 
     describe('report replication depth', () => {
-      xit('should show reports to a user only if they are within the configured depth', () => {
+      it('should show reports to a user only if they are within the configured depth', () => {
         const contacts = [
           {
             // depth = 2
@@ -1155,7 +1151,7 @@ describe('changes handler', () => {
           });
       });
 
-      xit('should replicate targets correctly', () => {
+      it('should replicate targets correctly', () => {
         const docs = [
           {
             // depth = 2, but not a report
@@ -1197,7 +1193,7 @@ describe('changes handler', () => {
           });
       });
 
-      xit('users should replicate tasks and targets correctly', () => {
+      it('users should replicate tasks and targets correctly', () => {
         const docs = [
           {
             // depth = 1
@@ -1280,7 +1276,7 @@ describe('changes handler', () => {
         return utils.saveDocs([patient, healthCenterPatient]);
       });
 
-      xit('should do nothing when not truthy or not present', () => {
+      it('should do nothing when not truthy or not present', () => {
         const clinicReport = {
           _id: 'clinic_report',
           type: 'data_record',
@@ -1370,7 +1366,7 @@ describe('changes handler', () => {
           });
       });
 
-      xit('should replicate to all ancestors when present and truthy', () => {
+      it('should replicate to all ancestors when present and truthy', () => {
         const clinicReport = {
           _id: 'clinic_report',
           type: 'data_record',
@@ -1465,7 +1461,7 @@ describe('changes handler', () => {
           });
       });
 
-      xit('should work with report replication depth', () => {
+      it('should work with report replication depth', () => {
         const clinicReport = {
           _id: 'clinic_report',
           type: 'data_record',
@@ -1562,7 +1558,7 @@ describe('changes handler', () => {
     });
   });
 
-  xit('should not return sensitive reports about your place by someone above you in the hierarchy', () => {
+  it('should not return sensitive reports about your place by someone above you in the hierarchy', () => {
     const docs = [
       {
         // report about home place submitted by logged in user
@@ -1675,7 +1671,7 @@ describe('changes handler', () => {
       });
   });
 
-  xit('should update the feed when the doc is updated', () => {
+  it('should update the feed when the doc is updated', () => {
     let seq_number;
 
     return utils.saveDoc({ _id:'visible', type:'clinic', parent: { _id:'fixture:chwville' } })

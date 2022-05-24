@@ -40,15 +40,13 @@ const initFeed = () => {
   db.medic
     .changes({ live: true, since: 'now' })
     .on('change', change => {
-      setTimeout(() => {
-        if (change.id === 'settings') {
-          logger.info('Reloading configuration');
-          initConfig();
-        } else if (change.id.startsWith('messages-')) {
-          logger.info('Detected translations change - reloading');
-          loadTranslations().then(() => initTransitionLib());
-        }
-      }, 50);
+      if (change.id === 'settings') {
+        logger.info('Reloading configuration');
+        initConfig();
+      } else if (change.id.startsWith('messages-')) {
+        logger.info('Detected translations change - reloading');
+        loadTranslations().then(() => initTransitionLib());
+      }
     })
     .on('error', err => {
       logger.error('Error watching changes, restarting: %o', err);

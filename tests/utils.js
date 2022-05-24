@@ -844,7 +844,7 @@ module.exports = {
         'Content-Length': JSON.stringify(doc).length,
       },
       body: doc,
-    }).then((result) => module.exports.delayPromise(() => Promise.resolve(result)), 100);
+    });
   },
 
   saveDocs: docs => {
@@ -859,8 +859,7 @@ module.exports = {
           throw Error(JSON.stringify(results, null, 2));
         }
         return results;
-      })
-      .then((result) => module.exports.delayPromise(() => Promise.resolve(result)), 100);
+      });
   },
 
   saveMetaDocs: (user, docs) => {
@@ -1165,7 +1164,7 @@ module.exports = {
 
       Object.assign(translationsDoc.generic, translations);
       return db.put(translationsDoc);
-    }).then(() => module.exports.delayPromise(() => Promise.resolve(), 100));
+    });
   },
 
   getSettings: () => module.exports.getDoc('settings').then(settings => settings.settings),

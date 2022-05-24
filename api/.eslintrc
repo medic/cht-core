@@ -24,7 +24,6 @@
     }
   ],
   "globals": {
-    "emit": true,
-    "Zone": true,
+    "emit": true
   }
 }

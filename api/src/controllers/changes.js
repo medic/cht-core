@@ -78,10 +78,6 @@ const generateResponse = feed => {
     };
   }
 
-  console.log('responding with changes', feed.results.map(doc => doc.id));
-  console.log('since', feed.req.query.since);
-  console.log('last seq',  feed.lastSeq);
-
   return {
     results: feed.results,
     last_seq: feed.lastSeq
@@ -205,8 +201,6 @@ const getChanges = feed => {
   options.batch_size = feed.allowedDocIds.length + 1;
 
   feed.upstreamRequest = db.medic.changes(options);
-  console.log('requesting changes for docs', feed.allowedDocIds);
-  console.log('requesting from', options.since);
 
   return feed.upstreamRequest
     .then(response => {
@@ -239,18 +233,16 @@ const getChanges = feed => {
         return reauthorizeRequest(feed);
       }
 
-      return Promise.resolve().then(() => {
-        processPendingChanges(feed, limitChangesRequests && feed.lastSeq);
+      processPendingChanges(feed, limitChangesRequests && feed.lastSeq);
 
-        if (feed.results.length || !isLongpoll(feed.req)) {
-          // send response downstream
-          return endFeed(feed);
-        }
+      if (feed.results.length || !isLongpoll(feed.req)) {
+        // send response downstream
+        return endFeed(feed);
+      }
 
-        // move the feed to the longpoll list to receive new changes
-        normalFeeds = _.without(normalFeeds, feed);
-        longpollFeeds.push(feed);
-      });
+      // move the feed to the longpoll list to receive new changes
+      normalFeeds = _.without(normalFeeds, feed);
+      longpollFeeds.push(feed);
     })
     .catch(err => {
       logger.info(`${feed.id} Error while requesting 'normal' changes feed`);
@@ -357,8 +349,6 @@ const addChangeToLongpollFeed = (feed, changeObj) => {
 };
 
 const processChange = (change, seq) => {
-  console.log('got change', change.id, seq);
-  console.log('active feeds', normalFeeds.length);
   const changeObj = {
     change: tombstoneUtils.isTombstoneId(change.id) ? tombstoneUtils.generateChangeFromTombstone(change) : change,
     viewResults: authorization.getViewResults(change.doc),

@@ -66,8 +66,7 @@
     "url": "^0.11.0",
     "uuid": "^8.3.2",
     "winston": "^3.3.3",
-    "xmlbuilder": "^15.1.1",
-    "zone.js": "^0.11.5"
+    "xmlbuilder": "^15.1.1"
   },
   "bundledDependencies": [
     "@medic/bulk-docs-utils",

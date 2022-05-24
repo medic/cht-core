@@ -330,7 +330,7 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
   // using `request` library because PouchDB doesn't support `startkey_docid` in view queries
   // using `startkey_docid` because using `skip` is *very* slow
   return request
-    .get(`${db.couchUrl}/_design/medic-client/_view/contacts_by_type`, { qs: queryString, json: true, headers: { authsession: 'generic-sentinel' } })
+    .get(`${db.couchUrl}/_design/medic-client/_view/contacts_by_type`, { qs: queryString, json: true })
     .then(result => {
       result.rows.forEach(row => {
         if (row.id === startKeyDocId) {
@@ -450,7 +450,7 @@ const batchedPurge = (type, uri, getQueryParams, purgeCallback, roles, startKeyD
   logger.debug(`Starting ${type} purge batch with id ${startKeyDocId}`);
   // using `rpn` because PouchDB doesn't support `start_key_doc_id`
   return request
-    .get(uri, { qs: getQueryParams(startKeyDocId, startKey), json: true, headers: { authsession: 'generic-sentinel' } })
+    .get(uri, { qs: getQueryParams(startKeyDocId, startKey), json: true })
     .then(result => {
       result.rows.forEach(row => {
         if (row.id === startKeyDocId) {

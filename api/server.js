@@ -1,7 +1,6 @@
 const environment = require('./src/environment');
 const serverChecks = require('@medic/server-checks');
 const logger = require('./src/logger');
-require('zone.js/dist/zone-node');
 
 process
   .on('unhandledRejection', reason => {
@@ -14,45 +13,6 @@ process
     process.exit(1);
   });
 
-const serverInit = async () => {
-  console.error('current zone', Zone.current.name);
-  logger.info('Running installation checks…');
-  const checkInstall = require('./src/services/setup/check-install');
-  await checkInstall.run();
-  logger.info('Installation checks passed');
-
-  logger.info('Extracting initial documents…');
-  const uploadDefaultDocs = require('./src/upload-default-docs');
-  await uploadDefaultDocs.run();
-  logger.info('Extracting initial documents completed successfully');
-
-  logger.info('Loading configuration…');
-  const configWatcher = require('./src/services/config-watcher');
-  await configWatcher.load();
-  logger.info('Configuration loaded successfully');
-  configWatcher.listen();
-
-  logger.info('Merging translations…');
-  const translations = require('./src/translations');
-  await translations.run();
-  logger.info('Translations merged successfully');
-
-  logger.info('Running db migrations…');
-  const migrations = require('./src/migrations');
-  await migrations.run();
-  logger.info('Database migrations completed successfully');
-
-  logger.info('Generating service worker');
-  const generateServiceWorker = require('./src/generate-service-worker');
-  await generateServiceWorker.run(true);
-  logger.info('Service worker generated successfully');
-
-  logger.info('Updating xforms…');
-  const generateXform = require('./src/services/generate-xform');
-  await generateXform.updateAll();
-  logger.info('xforms updated successfully');
-};
-
 (async () => {
   try {
     logger.info('Running server checks…');
@@ -64,17 +24,48 @@ const serverInit = async () => {
     process.exit(1);
   }
 
+  const checkInstall = require('./src/services/setup/check-install');
+  const app = require('./src/routing');
+  const configWatcher = require('./src/services/config-watcher');
+  const migrations = require('./src/migrations');
+  const generateXform = require('./src/services/generate-xform');
+  const translations = require('./src/translations');
   const serverUtils = require('./src/server-utils');
+  const uploadDefaultDocs = require('./src/upload-default-docs');
+  const generateServiceWorker = require('./src/generate-service-worker');
   const apiPort = process.env.API_PORT || 5988;
 
   try
   {
-    await Zone.current
-      .fork({ name: 'api-install' })
-      .run(() => {
-        console.error('current zone', Zone.current.name);
-        return serverInit();
-      });
+    logger.info('Running installation checks…');
+    await checkInstall.run();
+    logger.info('Installation checks passed');
+
+    logger.info('Extracting initial documents…');
+    await uploadDefaultDocs.run();
+    logger.info('Extracting initial documents completed successfully');
+
+    logger.info('Loading configuration…');
+    await configWatcher.load();
+    logger.info('Configuration loaded successfully');
+    configWatcher.listen();
+
+    logger.info('Merging translations…');
+    await translations.run();
+    logger.info('Translations merged successfully');
+
+    logger.info('Running db migrations…');
+    await migrations.run();
+    logger.info('Database migrations completed successfully');
+
+    logger.info('Generating service worker');
+    await generateServiceWorker.run();
+    logger.info('Service worker generated successfully');
+
+    logger.info('Updating xforms…');
+    await generateXform.updateAll();
+    logger.info('xforms updated successfully');
+
   } catch (err) {
     logger.error('Fatal error initialising medic-api');
     logger.error('%o',err);
@@ -83,7 +74,6 @@ const serverInit = async () => {
 
   // Define error-handling middleware last.
   // http://expressjs.com/guide/error-handling.html
-  const app = require('./src/routing');
   app.use((err, req, res, next) => {
     if (res.headersSent) {
       // If we've already started a response (eg streaming), pass on to express to abort it

@@ -114,14 +114,7 @@ if (process.argv.slice(2).includes('--allow-cors')) {
 
 app.use((req, res, next) => {
   req.id = uuid.v4();
-  const authSession = cookie.get(req, 'AuthSession');
-  if (authSession) {
-    req.headers.authsession = authSession;
-  }
-
-  Zone.current
-    .fork({ name: 'req', properties: { authSession } })
-    .run(() => next());
+  next();
 });
 
 morgan.token('id', req => req.id);
@@ -318,7 +311,7 @@ UNAUDITED_ENDPOINTS.forEach(function(url) {
 });
 
 app.get('/setup/poll', function(req, res) {
-  const p = require('../../package.json');
+  const p = require('../package.json');
   res.json({
     ready: true,
     handler: 'medic-api',
@@ -340,7 +333,7 @@ app.all('/setup/finish', function(req, res) {
 });
 
 app.get('/api/info', function(req, res) {
-  const p = require('../../package.json');
+  const p = require('../package.json');
   res.json({ version: p.version });
 });
 

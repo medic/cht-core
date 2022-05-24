@@ -2,7 +2,6 @@ const utils = require('../../utils');
 const querystring = require('querystring');
 const constants = require('../../constants');
 const _ = require('lodash');
-const { addWarning } = require('@angular-devkit/build-angular/src/utils/webpack-diagnostics');
 
 const SKIPPED_BY_SENTINEL = /^_design\/|(-info|____tombstone)$/;
 const TRANSITION_SEQ = '/_local/transitions-seq';
@@ -17,10 +16,6 @@ const BACKGROUND_SEQ = '/_local/background-seq';
 // @return     {<promise>}        resolves once the wait is over
 //
 const waitForSeq = (metadataId, docIds) => {
-
-  return Promise.resolve();
-
-
   return requestOnSentinelTestDb(metadataId)
     .catch(err => {
       if (err.statusCode === 404) { // maybe Sentinel hasn't started yet
@@ -45,8 +40,7 @@ const waitForSeq = (metadataId, docIds) => {
       // so we ignore those too
       if (!response.results.length || response.results.every(change => SKIPPED_BY_SENTINEL.test(change.id))) {
         // sentinel has caught up and processed our doc
-        //return;
-        return utils.delayPromise(() => Promise.resolve(), 500);
+        return;
       }
 
       return utils.delayPromise(() => waitForSeq(metadataId, docIds), 100);

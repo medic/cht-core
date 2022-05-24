@@ -64,12 +64,6 @@ if (UNIT_TEST_ENV) {
   const fetch = (url, opts) => {
     // Adding audit flag (haproxy) Service that made the request initially.
     opts.headers.set('X-Medic-Service', 'api');
-
-    const authsession =
-            Zone.current._properties.authsession ||
-            (Zone.current._properties.userCtx && Zone.current._properties.userCtx.name) ||
-            'generic-api';
-    opts.headers.set('authsession', authsession);
     return PouchDB.fetch(url, opts);
   };
 

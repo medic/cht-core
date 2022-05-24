@@ -79,7 +79,6 @@ module.exports = {
         pass: environment.password
       },
       json: true,
-      headers: { authsession: 'generic-api' },
       body: {
         admins: { names: [ username ], roles: [] },
         members: { names: [ username ], roles: [] }

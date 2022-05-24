@@ -289,13 +289,10 @@ module.exports = function(grunt) {
         cmd: () => buildVersions.SERVICES
           .map(service =>
             [
-              `cp -r ${service}/src ${service}/dist`,
               `cd ${service}`,
-              // `npm ci --production`,
-              // `npm dedupe`,
-              '../node_modules/.bin/babel server.js -d dist',
-              '../node_modules/.bin/babel src/ -d dist/src',
-              'cd ../',
+              `npm ci --production`,
+              `npm dedupe`,
+              `cd ../`,
               `docker build -f ./${service}/Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
             ].join(' && ')
           )
@@ -328,14 +325,8 @@ module.exports = function(grunt) {
           .join(' && '),
       },
       'api-dev': {
-        cmd: [
-          'cp -r api/src api/dist',
-          'cd api',
-          '../node_modules/.bin/babel server.js -d dist',
-          '../node_modules/.bin/babel src/ -d dist/src',
-          'cd ../',
-          'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "api/build/**" --watch api --watch "shared-libs/**/src/**" api/dist/server.js -- --allow-cors',
-        ].join(' && '),
+        cmd:
+          'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "api/build/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
       },
       'sentinel-dev': {
         cmd:

@@ -63,8 +63,7 @@ const getSentinelBacklog = () => {
       return request.get({
         url: `${environment.couchUrl}/_changes`,
         qs: { since: processedSeq, limit: 0 },
-        json: true,
-        headers: { authsession: 'generic-api' },
+        json: true
       });
     })
     .then(changes => changes.pending)
@@ -113,7 +112,7 @@ const getDbInfos = () => {
       url: `${environment.serverUrl}/_dbs_info`,
       json: true,
       body: { keys: Object.values(DBS_TO_MONITOR) },
-      headers: { authsession: 'generic-api' },
+      headers: { 'Content-Type': 'application/json' }
     })
     .then(dbInfos => {
       dbInfos.forEach((dbInfo, i) => {

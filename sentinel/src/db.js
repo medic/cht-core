@@ -67,9 +67,6 @@ if (UNIT_TEST_ENV) {
     // Adding audit flags (haproxy) Service and user that made the request initially.
     opts.headers.set('X-Medic-Service', 'sentinel');
     opts.headers.set('X-Medic-User', 'sentinel');
-
-    const authsession = 'generic-sentinel';
-    opts.headers.set('authsession', authsession);
     return PouchDB.fetch(url, opts);
   };
 

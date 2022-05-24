@@ -15,7 +15,7 @@ const JAVAROSA_SRC = / src="jr:\/\//gi;
 const MEDIA_SRC_ATTR = ' data-media-src="';
 
 const FORM_STYLESHEET = path.join(__dirname, '../xsl/openrosa2html5form.xsl');
-const MODEL_STYLESHEET = path.join(__dirname, '../../../node_modules/enketo-xslt/xsl/openrosa2xmlmodel.xsl');
+const MODEL_STYLESHEET = path.join(__dirname, '../../node_modules/enketo-xslt/xsl/openrosa2xmlmodel.xsl');
 const XSLTPROC_CMD = 'xsltproc';
 
 const processErrorHandler = (xsltproc, err, reject) => {
@@ -180,7 +180,6 @@ module.exports = {
    * Updates the model and form attachments for all forms if necessary.
    */
   updateAll: () => {
-    console.error('current zone', Zone.current.name);
     return formsService.getFormDocs()
       .then(docs => {
         if (!docs.length) {
