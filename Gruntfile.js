@@ -320,7 +320,7 @@ module.exports = function(grunt) {
           .join(' && '),
       },
       'push-service-images': {
-        cmd: () => [...buildVersions.SERVICES, buildVersions.INFRASTRUCTURE]
+        cmd: () => [...buildVersions.SERVICES, ...buildVersions.INFRASTRUCTURE]
           .map(service => `docker push ${buildVersions.getImageTag(service)}`)
           .join(' && '),
       },
