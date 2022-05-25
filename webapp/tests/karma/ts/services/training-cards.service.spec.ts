@@ -10,7 +10,7 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { SessionService } from '@mm-services/session.service';
 
-describe.only('TrainingCardsService', () => {
+describe('TrainingCardsService', () => {
   let service: TrainingCardsService;
   let globalActions;
   let xmlFormsService;

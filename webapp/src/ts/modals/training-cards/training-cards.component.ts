@@ -10,6 +10,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 @Component({
   selector: 'training-cards-modal',
@@ -25,6 +26,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     private enketoService: EnketoService,
     private geolocationService: GeolocationService,
     private translateService: TranslateService,
+    private telemetryService: TelemetryService,
   ) {
     super(bsModalRef);
     this.globalActions = new GlobalActions(this.store);
@@ -44,10 +46,11 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
   enketoError;
   enketoStatus;
   enketoSaving;
+  telemetryData;
   subscription: Subscription = new Subscription();
 
   ngOnInit() {
-    // todo this.telemetryData = { preRender: Date.now() };
+    this.telemetryData = { preRender: Date.now() };
     this.reset();
     this.subscribeToStore();
   }
@@ -170,34 +173,30 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
   }
 
   private recordTelemetryPostRender() {
-    /* TODO telemetry
-        this.telemetryData.postRender = Date.now();
-        this.telemetryData.action = model.doc ? 'edit' : 'add';
-        this.telemetryData.form = model.trainingForm;
+    this.telemetryData.postRender = Date.now();
+    this.telemetryData.action = 'add';
+    this.telemetryData.form = this.trainingForm.replace('training:', '');
 
-        this.telemetryService.record(
-          `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:render`,
-          this.telemetryData.postRender - this.telemetryData.preRender);
-    */
+    this.telemetryService.record(
+      `enketo:training:${this.telemetryData.form}:${this.telemetryData.action}:render`,
+      this.telemetryData.postRender - this.telemetryData.preRender
+    );
   }
 
   private recordTelemetryPreSave() {
-    /** ToDo telemetry
-     this.telemetryData.preSave = Date.now();
-     this.telemetryService.record(
-     `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
-     this.telemetryData.preSave - this.telemetryData.postRender);
-     */
+    this.telemetryData.preSave = Date.now();
+    this.telemetryService.record(
+      `enketo:training:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
+      this.telemetryData.preSave - this.telemetryData.postRender
+    );
   }
 
   private recordTelemetryPostSave() {
-    /** todo telemetry
-     this.telemetryData.postSave = Date.now();
-
-     this.telemetryService.record(
-     `enketo:tasks:${this.telemetryData.form}:${this.telemetryData.action}:save`,
-     this.telemetryData.postSave - this.telemetryData.preSave);
-     */
+    this.telemetryData.postSave = Date.now();
+    this.telemetryService.record(
+      `enketo:training:${this.telemetryData.form}:${this.telemetryData.action}:save`,
+      this.telemetryData.postSave - this.telemetryData.preSave
+    );
   }
 
   cancel() {

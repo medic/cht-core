@@ -15,6 +15,7 @@ import { EnketoService } from '@mm-services/enketo.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 describe('TrainingCardsComponent', () => {
   let fixture:ComponentFixture<TrainingCardsComponent>;
@@ -28,6 +29,7 @@ describe('TrainingCardsComponent', () => {
   let translateService;
   let enketoService;
   let globalActions;
+  let telemetryService;
 
   beforeEach(() => {
     bsModalRef = {
@@ -49,6 +51,7 @@ describe('TrainingCardsComponent', () => {
       save: sinon.stub(),
       render: sinon.stub().resolves(),
     };
+    telemetryService = { record: sinon.stub() };
     const mockedSelectors = [
       { selector: Selectors.getEnketoStatus, value: {} },
       { selector: Selectors.getEnketoSavingStatus, value: false },
@@ -77,7 +80,8 @@ describe('TrainingCardsComponent', () => {
           { provide: GeolocationService, useValue: geolocationService },
           { provide: XmlFormsService, useValue: xmlFormsService },
           { provide: TranslateService, useValue: translateService },
-          { provide: EnketoService, useValue: enketoService }
+          { provide: EnketoService, useValue: enketoService },
+          { provide: TelemetryService, useValue: telemetryService },
         ],
       })
       .compileComponents()
@@ -201,6 +205,10 @@ describe('TrainingCardsComponent', () => {
       expect(globalActions.setEnketoSavingStatus.args).to.deep.equal([[ true ], [ false ]]);
       expect(globalActions.setSnackbarContent.calledOnce).to.be.true;
       expect(globalActions.setSnackbarContent.args[0]).to.deep.equal([ 'training_cards.form.saved' ]);
+      expect(telemetryService.record.callCount).to.equal(3);
+      expect(telemetryService.record.args[0][0]).to.equal('enketo:training:a_form_id:add:render');
+      expect(telemetryService.record.args[1][0]).to.equal('enketo:training:a_form_id:add:user_edit_time');
+      expect(telemetryService.record.args[2][0]).to.equal('enketo:training:a_form_id:add:save');
       expect(globalActions.setEnketoError.notCalled).to.be.true;
       expect(modalSuperCloseStub.calledOnce).to.be.true;
     }));
@@ -259,6 +267,8 @@ describe('TrainingCardsComponent', () => {
       expect(enketoService.render.args[0][2]).to.equal(undefined);
       expect(component.form).to.equal(renderedForm);
       expect(consoleErrorMock.notCalled).to.be.true;
+      expect(telemetryService.record.calledOnce).to.be.true;
+      expect(telemetryService.record.args[0][0]).to.equal('enketo:training:a_form_id:add:render');
 
       const resetFormError = enketoService.render.args[0][4];
       resetFormError();
