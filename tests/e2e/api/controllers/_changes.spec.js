@@ -910,10 +910,9 @@ describe('changes handler', () => {
 
           return utils.saveDoc(contact);
         })
-        .then(result => {
-          contact._rev = result.rev;
-          return getChangesForIds('bob', [contact._id], false, currentSeq);
-        })
+        .then(result => contact._rev = result.rev)
+        .then(() => sentinelUtils.waitForSentinel())
+        .then(() => getChangesForIds('bob', [contact._id], false, currentSeq))
         .then(changes => {
           chai.expect(changes.length).to.equal(1);
           chai.expect(changes[0]).to.include({ id: contact._id, deleted: true });
@@ -931,10 +930,9 @@ describe('changes handler', () => {
 
           return utils.saveDoc(contact);
         })
-        .then(result => {
-          contact._rev = result.rev;
-          return getChangesForIds('bob', [contact._id], false, currentSeq);
-        })
+        .then(result => contact._rev = result.rev)
+        .then(() => sentinelUtils.waitForSentinel())
+        .then(() => getChangesForIds('bob', [contact._id], false, currentSeq))
         .then(changes => {
           chai.expect(changes.length).to.equal(1);
           chai.expect(changes[0]).to.include({ id: contact._id, deleted: true });
