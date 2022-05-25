@@ -25,19 +25,27 @@ export class TrainingCardsService {
   }
 
   private canOpenTraining() {
-    return !document.getElementsByClassName('enketo').length;
+    return !this.sessionService.isDbAdmin() && !document.getElementsByClassName('enketo').length;
   }
 
   private getActiveTrainingForms(xForms) {
+    const userCtx = this.sessionService.userCtx();
     const today = new Date();
+
     return xForms
       .map(xForm => ({
         id: xForm._id,
         code: xForm.internalId,
         startDate: xForm.start_date,
         duration: xForm.duration,
+        userRoles: xForm.user_roles,
       }))
       .filter(form => {
+        const hasRole = form.userRoles?.find(role => userCtx.roles.includes(role));
+        if (form.userRoles?.length && !hasRole) {
+          return false;
+        }
+
         const startDate = new Date(form.startDate);
         if (!form.duration) {
           return startDate < today;
@@ -64,10 +72,6 @@ export class TrainingCardsService {
 
   public initTrainingCards() {
     if (!this.canOpenTraining()) {
-      return;
-    }
-
-    if (this.sessionService.isDbAdmin()) {
       return;
     }
 
