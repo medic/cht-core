@@ -14,6 +14,7 @@ const actions = [
   'upload-contact-forms',
   'upload-resources',
   'upload-custom-translations',
+  'convert-collect-forms', 'upload-collect-form', 'upload-branding', 'upload-partners', 'upload-privacy-policies'
 ];
 const configPath = 'config/default';
 
