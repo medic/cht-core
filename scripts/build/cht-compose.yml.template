@@ -69,6 +69,11 @@ services:
       {{ network }}:
     ports:
       - ${HAPROXY_PORT:-5984}:${HAPROXY_PORT:-5984}
+    ulimits:
+      nproc: 100000000
+      nofile:
+        soft: 100000000
+        hard: 100000000
 
   cht-api:
     image: {{{ repo }}}/cht-api:{{ tag }}

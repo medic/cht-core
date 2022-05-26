@@ -19,7 +19,7 @@ const localDb = new PouchDB(`scalability-test-${threadId}`, {
 const replicate = () => {
   return localDb.replicate.from(remoteDb, {
     live: false,
-    retry: true,
+    retry: false,
     heartbeat: 10000
   });
 };
