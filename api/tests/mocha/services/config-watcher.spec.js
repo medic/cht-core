@@ -335,17 +335,17 @@ describe('Configuration', () => {
       });
 
       it('should handle deletions gracefully - #7608', () => {
-        sinon.stub(generateXform, 'update');
+        sinon.stub(updateXform, 'update');
         return emitChange({ id: 'form:id', deleted: true }).then(() => {
-          chai.expect(generateXform.update.callCount).to.equal(0);
+          chai.expect(updateXform.update.callCount).to.equal(0);
         });
       });
 
       it('should ignore tombstones - #7608', () => {
-        sinon.stub(generateXform, 'update');
+        sinon.stub(updateXform, 'update');
         const tombstoneId = 'form:pnc_danger_sign_follow_up_mother____3-336f91959e14966f9baec1c3dd1c7fa2____tombstone';
         return emitChange({ id: tombstoneId }).then(() => {
-          chai.expect(generateXform.update.callCount).to.equal(0);
+          chai.expect(updateXform.update.callCount).to.equal(0);
         });
       });
     });
