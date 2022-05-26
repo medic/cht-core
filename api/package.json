@@ -34,7 +34,7 @@
     "mustache": "^4.2.0",
     "node-cache": "^5.1.2",
     "object-path": "^0.11.8",
-    "openrosa-formlist": "github:medic/openrosa-formlist#sax",
+    "openrosa-formlist": "https://github.com/medic/openrosa-formlist#sax",
     "pass-stream": "^1.0.0",
     "pouchdb-adapter-http": "^7.2.2",
     "pouchdb-core": "^7.2.2",
