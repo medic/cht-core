@@ -19,10 +19,6 @@
       width: 100%;
       padding: 5px;
     }
-    .item-content {
-      padding: 0;
-      background: none;
-    }
   }
 
   .modal-footer {
@@ -38,8 +34,38 @@
     }
   }
 
-  .content-pane {
-    position: relative;
+  .enketo-modal {
+    &.content-pane {
+      position: relative;
+    }
+    .item-content {
+      padding: 0;
+      background: none;
+    }
+    .enketo {
+      .or h2,
+      .or h3,
+      .or h4,
+      .form-footer,
+      .label,
+      .question,
+      .note,
+      .invalid-constraint,
+      .invalid-required,
+      .or-appearance-android-app-launcher .android-app-launcher-actions {
+        padding-left: 0;
+        padding-right: 0;
+      }
+      .or-appearance-summary {
+        .or-appearance-h1:not(.disabled) {
+          padding-left: 5px;
+          padding-right: 5px;
+        }
+        .or-appearance-li:not(.disabled):before {
+          left: -10px;
+        }
+      }
+    }
   }
 }
 

@@ -9,6 +9,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { SessionService } from '@mm-services/session.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 describe('TrainingCardsService', () => {
   let service: TrainingCardsService;
@@ -20,6 +21,7 @@ describe('TrainingCardsService', () => {
   let clock;
   let consoleErrorMock;
   let sessionService;
+  let userSettingsService;
 
   beforeEach(() => {
     localDb = { query: sinon.stub() };
@@ -31,6 +33,7 @@ describe('TrainingCardsService', () => {
       isDbAdmin: sinon.stub(),
       userCtx: sinon.stub(),
     };
+    userSettingsService = { get: sinon.stub() };
     consoleErrorMock = sinon.stub(console, 'error');
 
     TestBed.configureTestingModule({
@@ -40,6 +43,7 @@ describe('TrainingCardsService', () => {
         { provide: XmlFormsService, useValue: xmlFormsService },
         { provide: ModalService, useValue: modalService },
         { provide: SessionService, useValue: sessionService },
+        { provide: UserSettingsService, useValue: userSettingsService },
       ]
     });
 
@@ -56,6 +60,7 @@ describe('TrainingCardsService', () => {
 
   it('should show uncompleted training form when none are completed', async () => {
     sessionService.userCtx.returns({ roles: [] });
+    userSettingsService.get.resolves({ contact_id: 'a_contact_id' });
     localDb.query.resolves({ rows: [] });
     clock = sinon.useFakeTimers(1653312565642); // 23/05/2022 20:29:25
     const xforms = [
@@ -94,8 +99,12 @@ describe('TrainingCardsService', () => {
     await callback(null, xforms);
 
     expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(userSettingsService.get.calledOnce).to.be.true;
     expect(localDb.query.calledOnce).to.be.true;
-    expect(localDb.query.args[0]).to.have.members([ 'medic-client/trainings_by_form' ]);
+    expect(localDb.query.args[0]).to.have.deep.members([
+      'medic-client/trainings_by_contact',
+      { key: [ 'a_contact_id' ]}
+    ]);
     expect(globalActions.setTrainingCard.calledOnce);
     expect(globalActions.setTrainingCard.args[0]).to.have.members([ 'training:form-a' ]);
     expect(modalService.show.calledOnce).to.be.true;
@@ -104,9 +113,10 @@ describe('TrainingCardsService', () => {
 
   it('should show uncompleted training form when there are some completed', async () => {
     sessionService.userCtx.returns({ roles: [] });
+    userSettingsService.get.resolves({ contact_id: 'a_contact_id' });
     localDb.query.resolves({ rows: [
-      { key: [ 'training:form-a' ] },
-      { key: [ 'training:form-b' ] },
+      { key: [ 'a_contact_id' ], value: 'training:form-a' },
+      { key: [ 'a_contact_id' ], value: 'training:form-b' },
     ]});
     clock = sinon.useFakeTimers(1653312565642); // 23/05/2022 20:29:25
     const xforms = [
@@ -145,8 +155,12 @@ describe('TrainingCardsService', () => {
     await callback(null, xforms);
 
     expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(userSettingsService.get.calledOnce).to.be.true;
     expect(localDb.query.calledOnce).to.be.true;
-    expect(localDb.query.args[0]).to.have.members([ 'medic-client/trainings_by_form' ]);
+    expect(localDb.query.args[0]).to.have.deep.members([
+      'medic-client/trainings_by_contact',
+      { key: [ 'a_contact_id' ]}
+    ]);
     expect(globalActions.setTrainingCard.calledOnce);
     expect(globalActions.setTrainingCard.args[0]).to.have.members([ 'training:form-d' ]);
     expect(modalService.show.calledOnce).to.be.true;
@@ -155,9 +169,10 @@ describe('TrainingCardsService', () => {
 
   it('should show uncompleted training form when they dont have duration set', async () => {
     sessionService.userCtx.returns({ roles: [] });
+    userSettingsService.get.resolves({ contact_id: 'a_contact_id' });
     localDb.query.resolves({ rows: [
-      { key: [ 'training:form-a' ] },
-      { key: [ 'training:form-b' ] },
+      { key: [ 'a_contact_id' ], value: 'training:form-a' },
+      { key: [ 'a_contact_id' ], value: 'training:form-b' },
     ]});
     clock = sinon.useFakeTimers(1653312565642); // 23/05/2022 20:29:25
     const xforms = [
@@ -187,8 +202,12 @@ describe('TrainingCardsService', () => {
     await callback(null, xforms);
 
     expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(userSettingsService.get.calledOnce).to.be.true;
     expect(localDb.query.calledOnce).to.be.true;
-    expect(localDb.query.args[0]).to.have.members([ 'medic-client/trainings_by_form' ]);
+    expect(localDb.query.args[0]).to.have.deep.members([
+      'medic-client/trainings_by_contact',
+      { key: [ 'a_contact_id' ]}
+    ]);
     expect(globalActions.setTrainingCard.calledOnce);
     expect(globalActions.setTrainingCard.args[0]).to.have.members([ 'training:form-c' ]);
     expect(modalService.show.calledOnce).to.be.true;
@@ -197,10 +216,11 @@ describe('TrainingCardsService', () => {
 
   it('should not show training form when all trainings are completed', async () => {
     sessionService.userCtx.returns({ roles: [] });
+    userSettingsService.get.resolves({ contact_id: 'a_contact_id' });
     localDb.query.resolves({ rows: [
-      { key: [ 'training:form-a' ] },
-      { key: [ 'training:form-b' ] },
-      { key: [ 'training:form-c' ] },
+      { key: [ 'a_contact_id' ], value: 'training:form-a' },
+      { key: [ 'a_contact_id' ], value: 'training:form-b' },
+      { key: [ 'a_contact_id' ], value: 'training:form-c' },
     ]});
     clock = sinon.useFakeTimers(1653312565642); // 23/05/2022 20:29:25
     const xforms = [
@@ -233,8 +253,12 @@ describe('TrainingCardsService', () => {
     await callback(null, xforms);
 
     expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(userSettingsService.get.calledOnce).to.be.true;
     expect(localDb.query.calledOnce).to.be.true;
-    expect(localDb.query.args[0]).to.have.members([ 'medic-client/trainings_by_form' ]);
+    expect(localDb.query.args[0]).to.have.deep.members([
+      'medic-client/trainings_by_contact',
+      { key: [ 'a_contact_id' ]}
+    ]);
     expect(globalActions.setTrainingCard.callCount).to.equal(0);
     expect(modalService.show.callCount).to.equal(0);
     expect(consoleErrorMock.callCount).to.equal(0);
@@ -252,6 +276,7 @@ describe('TrainingCardsService', () => {
 
     expect(localDb.query.callCount).to.equal(0);
     expect(sessionService.userCtx.callCount).to.equal(0);
+    expect(userSettingsService.get.callCount).to.equal(0);
     expect(globalActions.setTrainingCard.callCount).to.equal(0);
     expect(modalService.show.callCount).to.equal(0);
     expect(consoleErrorMock.calledOnce).to.be.true;
@@ -261,6 +286,7 @@ describe('TrainingCardsService', () => {
 
   it('should catch exception', async () => {
     sessionService.userCtx.returns({ roles: [] });
+    userSettingsService.get.resolves({ contact_id: 'a_contact_id' });
     localDb.query.rejects(new Error('some error'));
     clock = sinon.useFakeTimers(1653312565642); // 23/05/2022 20:29:25
     const xforms = [{
@@ -279,7 +305,8 @@ describe('TrainingCardsService', () => {
     await callback(null, xforms);
 
     expect(sessionService.userCtx.calledOnce).to.be.true;
-    expect(localDb.query.callCount).to.equal(1);
+    expect(localDb.query.calledOnce).to.be.true;
+    expect(userSettingsService.get.calledOnce).to.be.true;
     expect(globalActions.setTrainingCard.callCount).to.equal(0);
     expect(modalService.show.callCount).to.equal(0);
     expect(consoleErrorMock.calledOnce).to.be.true;
@@ -298,6 +325,7 @@ describe('TrainingCardsService', () => {
     expect(sessionService.userCtx.callCount).to.equal(0);
     expect(xmlFormsService.subscribe.callCount).to.equal(0);
     expect(localDb.query.callCount).to.equal(0);
+    expect(userSettingsService.get.callCount).to.equal(0);
     expect(globalActions.setTrainingCard.callCount).to.equal(0);
     expect(modalService.show.callCount).to.equal(0);
     expect(consoleErrorMock.callCount).to.equal(0);
@@ -311,6 +339,7 @@ describe('TrainingCardsService', () => {
     expect(sessionService.userCtx.callCount).to.equal(0);
     expect(xmlFormsService.subscribe.callCount).to.equal(0);
     expect(localDb.query.callCount).to.equal(0);
+    expect(userSettingsService.get.callCount).to.equal(0);
     expect(globalActions.setTrainingCard.callCount).to.equal(0);
     expect(modalService.show.callCount).to.equal(0);
     expect(consoleErrorMock.callCount).to.equal(0);
@@ -318,8 +347,9 @@ describe('TrainingCardsService', () => {
 
   it('should show uncompleted training form based on user role', async () => {
     sessionService.userCtx.returns({ roles: [ 'role_a' ] });
+    userSettingsService.get.resolves({ contact_id: 'a_contact_id' });
     localDb.query.resolves({ rows: [
-      { key: [ 'training:form-b' ] },
+      { key: [ 'a_contact_id' ], value: 'training:form-b' },
     ]});
     clock = sinon.useFakeTimers(1653312565642); // 23/05/2022 20:29:25
     const xforms = [
@@ -362,8 +392,12 @@ describe('TrainingCardsService', () => {
     await callback(null, xforms);
 
     expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(userSettingsService.get.calledOnce).to.be.true;
     expect(localDb.query.calledOnce).to.be.true;
-    expect(localDb.query.args[0]).to.have.members([ 'medic-client/trainings_by_form' ]);
+    expect(localDb.query.args[0]).to.have.deep.members([
+      'medic-client/trainings_by_contact',
+      { key: [ 'a_contact_id' ]}
+    ]);
     expect(globalActions.setTrainingCard.calledOnce);
     expect(globalActions.setTrainingCard.args[0]).to.have.members([ 'training:form-d' ]);
     expect(modalService.show.calledOnce).to.be.true;
