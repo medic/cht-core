@@ -15,14 +15,16 @@ const actions = [
   'upload-contact-forms',
   'upload-resources',
   'upload-custom-translations',
-  'upload-branding', 'upload-partners'
+  'upload-branding',
+  'upload-partners'
 ];
 const configPath = 'config/default';
+let originalVersion;
 
 describe('cht-conf actions tests', () => {
   before(async () => {
     const settings = await utils.getDoc('settings');
-    expect(settings._rev.startsWith('1-')).to.be.true;
+    originalVersion = Number(settings._rev.charAt(0));
     expect(settings.settings.roles).to.not.include.any.keys('program_officer', 'chw_supervisor', 'chw');
   });
 
@@ -32,7 +34,8 @@ describe('cht-conf actions tests', () => {
     const result = await runCommand('upload-app-settings', configPath);
     expect(result).to.contain(`INFO Settings updated successfully`);
     const settings = await utils.getDoc('settings');
-    expect(settings._rev.startsWith('2-')).to.be.true;
+    const newVersion = Number(settings._rev.charAt(0));
+    expect(newVersion).to.be.greaterThan(originalVersion);
     expect(settings.settings.roles).to.include.all.keys('program_officer', 'chw_supervisor', 'chw');
   });
 
@@ -89,7 +92,6 @@ describe('cht-conf actions tests', () => {
         console.log(error);
       }
     });
-    console.log(resources);
     expect(resources.resources).to.deep.equal({
       'icon-area': 'icon-places-CHW-area@2x.png',
       'icon-branch': 'icon-places-clinic@2x.png',
