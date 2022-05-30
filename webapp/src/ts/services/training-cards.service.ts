@@ -30,7 +30,7 @@ export class TrainingCardsService {
     return !this.sessionService.isDbAdmin() && !document.getElementsByClassName('enketo').length;
   }
 
-  private getActiveTrainingForms(xForms) {
+  private getAvailableTrainingForms(xForms) {
     const userCtx = this.sessionService.userCtx();
     const today = new Date();
 
@@ -73,6 +73,35 @@ export class TrainingCardsService {
     return new Set(docs.rows.map(row => row.value));
   }
 
+  private async handleTrainingCards(error, xForms) {
+    if (error) {
+      console.error('Error fetching training cards.', error);
+      return;
+    }
+
+    try {
+      let trainingForms = this.getAvailableTrainingForms(xForms);
+      if (!trainingForms?.length) {
+        return;
+      }
+
+      const completedTrainings = await this.getCompletedTrainings();
+      if (completedTrainings) {
+        trainingForms = trainingForms.filter(form => !completedTrainings.has(form.code));
+      }
+
+      if (!trainingForms.length) {
+        return;
+      }
+
+      this.globalActions.setTrainingCard(trainingForms[0].code);
+      this.modalService.show(TrainingCardsComponent, { backdrop: 'static' });
+    } catch (error) {
+      console.error('Error showing training cards modal.', error);
+      return;
+    }
+  }
+
   public initTrainingCards() {
     if (!this.canOpenTraining()) {
       return;
@@ -81,34 +110,8 @@ export class TrainingCardsService {
     this.xmlFormsService.subscribe(
       'TrainingCards',
       { trainingForms: true, contactForms: false },
-      async (error, xForms) => {
-        if (error) {
-          console.error('Error fetching training cards.', error);
-          return;
-        }
-
-        try {
-          let trainingForms = this.getActiveTrainingForms(xForms);
-          if (!trainingForms?.length) {
-            return;
-          }
-
-          const completedTrainings = await this.getCompletedTrainings();
-          if (completedTrainings) {
-            trainingForms = trainingForms.filter(form => !completedTrainings.has(form.code));
-          }
-
-          if (!trainingForms.length) {
-            return;
-          }
-
-          this.globalActions.setTrainingCard(trainingForms[0].code);
-          this.modalService.show(TrainingCardsComponent);
-        } catch (error) {
-          console.error('Error showing training cards modal.', error);
-          return;
-        }
-      });
+      (error, xForms) => this.handleTrainingCards(error, xForms)
+    );
   }
 
 }
