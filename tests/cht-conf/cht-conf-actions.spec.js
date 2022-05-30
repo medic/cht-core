@@ -37,7 +37,7 @@ describe('cht-conf actions tests', () => {
     const settings = await utils.getDoc('settings');
     console.log('newVersion', settings);
     const newVersion = Number(settings._rev.charAt(0));
-    //expect(newVersion).to.be.greaterThan(originalVersion);
+    expect(newVersion).to.be.greaterThanOrEqual(originalVersion);
     expect(settings.settings.roles).to.include.all.keys('program_officer', 'chw_supervisor', 'chw');
   });
 
