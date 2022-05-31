@@ -19,6 +19,9 @@
 .mm-icon-inverse {
   &, &:focus {
     .button-text-inverse;
+    span:before{
+      background-color: @button-text-inverse-color !important;
+    }
   }
 }
 
@@ -81,3 +84,40 @@
     transform: rotate(360deg);
   }
 }
+
+.fa-comments:before{
+  -webkit-mask-image: url('../img/navicon-messages.svg');
+  mask: url('../img/navicon-messages.svg');
+  background-color: black;
+  content: '';
+}
+
+.fa-tasks:before{
+  -webkit-mask-image: url('../img/navicon-tasks.svg');
+  mask: url('../img/navicon-tasks.svg');
+  background-color: black;
+  content: '';
+}
+
+.fa-book:before{
+  -webkit-mask-image: url('../img/navicon-reports.svg');
+  mask: url('../img/navicon-reports.svg');
+  background-color: black;
+  content: '';
+}
+
+.fa-users:before{
+  -webkit-mask-image: url('../img/navicon-people.svg');
+  mask: url('../img/navicon-people.svg');
+  background-color: black;
+  content: '';
+}
+
+.fa-line-chart:before{
+  -webkit-mask-image: url('../img/navicon-targets.svg');
+  mask: url('../img/navicon-targets.svg');
+  background-color: black;
+  content: '';
+}
+
+
