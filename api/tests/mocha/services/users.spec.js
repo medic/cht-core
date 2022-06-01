@@ -2609,6 +2609,7 @@ describe('Users service', () => {
       const csv = 'password,username,type,place,token_login,contact.name,contact.phone,contact.address\n' +
         ',mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,TRUE,mary,2652527222,"1 King ST, Kent Town, 55555"\n' +
         'Secret9876,devi,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,truthy mistake,devi,265252,"12 King ST, Kent Town, 55555"\n' +
+        'Secret1144,jeff,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,,jeff,26599102,"27 King ST, Kent Town, 55555"\n' +
         'Secret5678, peter ,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,FALSE,Peter, 2652279,"15 King ST, Kent Town, 55555 "';
       /* eslint-enable max-len */
       sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
@@ -2632,6 +2633,14 @@ describe('Users service', () => {
           place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
           contact: { name: 'devi', phone: '265252', address: '12 King ST, Kent Town, 55555' },
           token_login: 'truthy mistake',
+        },
+        {
+          password: 'Secret1144',
+          username: 'jeff',
+          type: 'person',
+          place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
+          contact: { name: 'jeff', phone: '26599102', address: '27 King ST, Kent Town, 55555' },
+          token_login: '',
         },
         {
           password: 'Secret5678',
