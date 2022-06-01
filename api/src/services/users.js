@@ -663,7 +663,6 @@ const parseCsv = async (csv, logId) => {
 
   progress.status = BULK_UPLOAD_PROGRESS_STATUSES.PARSED;
   await bulkUploadLog.updateLog(logId, progress, logData);
-  console.log("users", users[0]);
   return { users, ignoredUsers };
 };
 
