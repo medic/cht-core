@@ -2604,6 +2604,46 @@ describe('Users service', () => {
       ]);
     });
 
+    it.only('should parse csv, trim spaces and not split strings with commas inside', async () => {
+      /* eslint-disable max-len */
+      const csv = 'password,username,type,place,token_login,contact.name,contact.phone,contact.address\n' +
+        ',mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,TRUE,mary,2652527222,"1 King ST, Kent Town, 55555"\n' +
+        'Secret9876,devi,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,truthy mistake,devi,265252,"12 King ST, Kent Town, 55555"\n' +
+        'Secret5678, peter ,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,FALSE,Peter, 2652279,"15 King ST, Kent Town, 55555 "';
+      /* eslint-enable max-len */
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+
+      const result = await service.parseCsv(csv);
+
+      chai.expect(result.users).to.have.deep.members([
+        {
+          password: '',
+          username: 'mary',
+          type: 'person',
+          place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
+          contact: { name: 'mary', phone: '2652527222', address: '1 King ST, Kent Town, 55555' },
+          token_login: true,
+        },
+        {
+          password: 'Secret9876',
+          username: 'devi',
+          type: 'person',
+          place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
+          contact: { name: 'devi', phone: '265252', address: '12 King ST, Kent Town, 55555' },
+          token_login: 'truthy mistake',
+        },
+        {
+          password: 'Secret5678',
+          username: 'peter',
+          type: 'person',
+          place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
+          contact: { name: 'Peter', phone: '2652279', address: '15 King ST, Kent Town, 55555' },
+          token_login: false,
+        }
+      ]);
+    });
+
     it('should return empty array when there is not users in the csv', async () => {
       const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n';
       sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
