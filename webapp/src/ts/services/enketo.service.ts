@@ -709,21 +709,21 @@ export class EnketoService {
   }
 
   private create(formInternalId) {
-    const isTrainingForm = this.isTrainingForm(formInternalId);
     return this
       .getUserContact()
       .then(contact => {
         const doc:any = {
           form: formInternalId,
-          type: isTrainingForm ? 'data_training' : 'data_record',
+          type: 'data_record',
           content_type: 'xml',
           reported_date: Date.now(),
           contact: this.extractLineageService.extract(contact),
           from: contact && contact.phone
         };
 
-        if (isTrainingForm) {
+        if (this.isTrainingForm(formInternalId)) {
           doc._id = `${this.TRAINING_PREFIX}${this.sessionService.userCtx()?.name}:${uuid()}`;
+          doc.isTraining = true;
         }
 
         return doc;
@@ -834,7 +834,7 @@ export class EnketoService {
     this.objUrls.length = 0;
   }
 
-  isTrainingForm(formInternalId) {
+  private isTrainingForm(formInternalId) {
     return formInternalId?.startsWith(this.TRAINING_PREFIX);
   }
 }

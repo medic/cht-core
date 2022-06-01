@@ -522,6 +522,7 @@ describe('Enketo service', () => {
       form.validate.resolves(true);
       const content = loadXML('sally-lmp');
       form.getDataStr.returns(content);
+      sessionService.userCtx.returns({ name: 'user-jim' });
       dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
       dbGetAttachment.resolves('<form/>');
       UserContact.resolves({ _id: '123', phone: '555' });
@@ -534,6 +535,8 @@ describe('Enketo service', () => {
         expect(dbBulkDocs.callCount).to.equal(1);
         expect(UserContact.callCount).to.equal(1);
         expect(actual._id).to.match(/(\w+-)\w+/);
+        expect(actual._id.startsWith('training:user-jim:')).to.be.false;
+        expect(actual.isTraining).to.be.undefined;
         expect(actual._rev).to.equal('1-abc');
         expect(actual.fields.name).to.equal('Sally');
         expect(actual.fields.lmp).to.equal('10');
@@ -550,6 +553,45 @@ describe('Enketo service', () => {
         expect(AddAttachment.args[0][2]).to.equal(content.replace(/\n$/, ''));
         expect(AddAttachment.args[0][3]).to.equal('application/xml');
       });
+    });
+
+    it('creates training', () => {
+      const content = loadXML('sally-lmp');
+      form.getDataStr.returns(content);
+      sessionService.userCtx.returns({ name: 'user-jim' });
+      form.validate.resolves(true);
+      dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+      dbGetAttachment.resolves('<form/>');
+      UserContact.resolves({ _id: '123', phone: '555' });
+      UserSettings.resolves({ name: 'Jim' });
+
+      return service
+        .save('training:a_new_training', form)
+        .then(actual => {
+          actual = actual[0];
+
+          expect(form.validate.calledOnce).to.be.true;
+          expect(form.getDataStr.calledOnce).to.be.true;
+          expect(dbBulkDocs.calledOnce).to.be.true;
+          expect(UserContact.calledOnce).to.be.true;
+          expect(actual._id.startsWith('training:user-jim:')).to.be.true;
+          expect(actual.isTraining).to.be.true;
+          expect(actual._rev).to.equal('1-abc');
+          expect(actual.fields.name).to.equal('Sally');
+          expect(actual.fields.lmp).to.equal('10');
+          expect(actual.form).to.equal('training:a_new_training');
+          expect(actual.type).to.equal('data_record');
+          expect(actual.content_type).to.equal('xml');
+          expect(actual.contact._id).to.equal('123');
+          expect(actual.from).to.equal('555');
+          expect(dbGetAttachment.callCount).to.equal(1);
+          expect(dbGetAttachment.args[0][0]).to.equal('abc');
+          expect(AddAttachment.callCount).to.equal(1);
+          expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
+          expect(AddAttachment.args[0][1]).to.equal('content');
+          expect(AddAttachment.args[0][2]).to.equal(content.replace(/\n$/, ''));
+          expect(AddAttachment.args[0][3]).to.equal('application/xml');
+        });
     });
 
     describe('Geolocation recording', () => {

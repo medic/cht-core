@@ -13,6 +13,7 @@ import { SessionService } from '@mm-services/session.service';
 })
 export class TrainingCardsService {
   private globalActions;
+  private readonly TRAINING_PREFIX = 'training:'
 
   constructor(
     private store:Store,
@@ -62,8 +63,8 @@ export class TrainingCardsService {
       .get()
       .allDocs({
         include_docs: true,
-        startkey: `training:${userCtx.name}:`,
-        endkey: `training:${userCtx.name}:\ufff0`,
+        startkey: `${this.TRAINING_PREFIX}${userCtx.name}:`,
+        endkey: `${this.TRAINING_PREFIX}${userCtx.name}:\ufff0`,
       });
 
     if (!docs?.rows?.length) {
