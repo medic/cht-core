@@ -7,7 +7,6 @@ import { DbService } from '@mm-services/db.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SessionService } from '@mm-services/session.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +20,6 @@ export class TrainingCardsService {
     private dbService: DbService,
     private modalService:ModalService,
     private sessionService: SessionService,
-    private userSettingsService: UserSettingsService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -30,8 +28,7 @@ export class TrainingCardsService {
     return !this.sessionService.isDbAdmin() && !document.getElementsByClassName('enketo').length;
   }
 
-  private getAvailableTrainingForms(xForms) {
-    const userCtx = this.sessionService.userCtx();
+  private getAvailableTrainingForms(xForms, userCtx) {
     const today = new Date();
 
     return xForms
@@ -60,17 +57,20 @@ export class TrainingCardsService {
       .sort((a, b) => a.startDate - b.startDate);
   }
 
-  private async getCompletedTrainings() {
-    const userSettings:any = await this.userSettingsService.get();
+  private async getCompletedTrainings(userCtx) {
     const docs = await this.dbService
       .get()
-      .query('medic-client/trainings_by_contact', { key: [ userSettings.contact_id ] });
+      .allDocs({
+        include_docs: true,
+        startkey: `training:${userCtx.name}:`,
+        endkey: `training:${userCtx.name}:\ufff0`,
+      });
 
     if (!docs?.rows?.length) {
       return;
     }
 
-    return new Set(docs.rows.map(row => row.value));
+    return new Set(docs.rows.map(row => row?.doc?.form));
   }
 
   private async handleTrainingCards(error, xForms) {
@@ -80,12 +80,13 @@ export class TrainingCardsService {
     }
 
     try {
-      let trainingForms = this.getAvailableTrainingForms(xForms);
+      const userCtx = this.sessionService.userCtx();
+      let trainingForms = this.getAvailableTrainingForms(xForms, userCtx);
       if (!trainingForms?.length) {
         return;
       }
 
-      const completedTrainings = await this.getCompletedTrainings();
+      const completedTrainings = await this.getCompletedTrainings(userCtx);
       if (completedTrainings) {
         trainingForms = trainingForms.filter(form => !completedTrainings.has(form.code));
       }

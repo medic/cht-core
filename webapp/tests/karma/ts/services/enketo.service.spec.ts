@@ -27,6 +27,7 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { GlobalActions } from '@mm-actions/global';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
+import { SessionService } from '@mm-services/session.service';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -69,6 +70,7 @@ describe('Enketo service', () => {
   let zScoreService;
   let zScoreUtil;
   let globalActions;
+  let sessionService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -116,6 +118,9 @@ describe('Enketo service', () => {
     zScoreService = { getScoreUtil: sinon.stub().resolves(zScoreUtil) };
     globalActions = { setSnackbarContent: sinon.stub(GlobalActions.prototype, 'setSnackbarContent') };
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
+    sessionService = {
+      userCtx: sinon.stub(),
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -148,6 +153,7 @@ describe('Enketo service', () => {
         { provide: ZScoreService, useValue: zScoreService },
         { provide: TransitionsService, useValue: transitionsService },
         { provide: TranslateService, useValue: translateService },
+        { provide: SessionService, useValue: sessionService },
       ],
     });
 

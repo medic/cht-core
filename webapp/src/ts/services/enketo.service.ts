@@ -29,6 +29,7 @@ import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { GlobalActions } from '@mm-actions/global';
+import { SessionService } from '@mm-services/session.service';
 
 @Injectable({
   providedIn: 'root'
@@ -55,6 +56,7 @@ export class EnketoService {
     private transitionsService:TransitionsService,
     private translateService:TranslateService,
     private ngZone:NgZone,
+    private sessionService:SessionService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -65,6 +67,7 @@ export class EnketoService {
   private servicesActions: ServicesActions;
   private readonly HTML_ATTACHMENT_NAME = 'form.html';
   private readonly MODEL_ATTACHMENT_NAME = 'model.xml';
+  private readonly TRAINING_PREFIX = 'training:';
   private readonly objUrls = [];
   private inited = false;
 
@@ -706,16 +709,25 @@ export class EnketoService {
   }
 
   private create(formInternalId) {
-    return this.getUserContact().then((contact) => {
-      return {
-        form: formInternalId,
-        type: formInternalId.startsWith('training:') ? 'data_training' : 'data_record',
-        content_type: 'xml',
-        reported_date: Date.now(),
-        contact: this.extractLineageService.extract(contact),
-        from: contact && contact.phone
-      };
-    });
+    const isTrainingForm = this.isTrainingForm(formInternalId);
+    return this
+      .getUserContact()
+      .then(contact => {
+        const doc:any = {
+          form: formInternalId,
+          type: isTrainingForm ? 'data_training' : 'data_record',
+          content_type: 'xml',
+          reported_date: Date.now(),
+          contact: this.extractLineageService.extract(contact),
+          from: contact && contact.phone
+        };
+
+        if (isTrainingForm) {
+          doc._id = `${this.TRAINING_PREFIX}${this.sessionService.userCtx()?.name}:${uuid()}`;
+        }
+
+        return doc;
+      });
   }
 
   private forceRecalculate(form) {
@@ -789,7 +801,6 @@ export class EnketoService {
 
   private _save(formInternalId, form, geoHandle, docId?) {
     const getDocPromise = docId ? this.update(docId) : this.create(formInternalId);
-
     return Promise
       .all([
         getDocPromise,
@@ -821,6 +832,10 @@ export class EnketoService {
     delete window.CHTCore.debugFormModel;
     delete this.currentForm;
     this.objUrls.length = 0;
+  }
+
+  isTrainingForm(formInternalId) {
+    return formInternalId?.startsWith(this.TRAINING_PREFIX);
   }
 }
 
