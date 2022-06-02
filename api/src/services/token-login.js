@@ -225,7 +225,7 @@ const generateTokenLoginDoc = (user, userSettings, token, appUrl) => {
   });
 };
 
-const shouldEnableTokenLogin = data => isTokenLoginEnabled() && data.token_login;
+const shouldEnableTokenLogin = data => isTokenLoginEnabled() && data.token_login === true;
 const shouldDisableTokenLogin = data => data.token_login === false;
 
 const isTokenLoginEnabled = () => {
