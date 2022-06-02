@@ -114,11 +114,22 @@ describe('TrainingCardsComponent', () => {
     expect(globalActions.clearEnketoStatus.calledOnce).to.be.true;
   }));
 
-  it('should close modal when canceling', () => {
-    component.close();
+  it('should close modal when quiting training', fakeAsync(() => {
+    const xmlForm = { _id: 'training:a_form_id', some: 'content' };
+    const renderedForm = { rendered: 'form', model: {}, instance: {} };
+    xmlFormsService.get.resolves(xmlForm);
+    enketoService.render.resolves(renderedForm);
+    store.overrideSelector(Selectors.getTrainingCard, 'training:a_form_id');
+    store.refreshState();
+    tick();
+
+    component.quitTraining();
 
     expect(modalSuperCloseStub.calledOnce).to.be.true;
-  });
+    expect(telemetryService.record.callCount).to.equal(2);
+    expect(telemetryService.record.args[0][0]).to.equal('enketo:training:a_form_id:add:render');
+    expect(telemetryService.record.args[1][0]).to.equal('enketo:training:a_form_id:add:quit');
+  }));
 
   describe('onInit', () => {
     it('should subscribe to redux and init component', () => {
@@ -248,8 +259,6 @@ describe('TrainingCardsComponent', () => {
 
   describe('loadForm', () => {
     it('should load form', fakeAsync(() => {
-      sinon.resetHistory();
-
       const xmlForm = { _id: 'training:a_form_id', some: 'content' };
       const renderedForm = { rendered: 'form', model: {}, instance: {} };
       const consoleErrorMock = sinon.stub(console, 'error');
@@ -296,8 +305,6 @@ describe('TrainingCardsComponent', () => {
     }));
 
     it('should catch form loading errors', fakeAsync(() => {
-      sinon.resetHistory();
-
       const consoleErrorMock = sinon.stub(console, 'error');
       xmlFormsService.get.rejects({ error: 'boom' });
 
@@ -315,7 +322,6 @@ describe('TrainingCardsComponent', () => {
     }));
 
     it('should catch enketo errors', fakeAsync(() => {
-      sinon.resetHistory();
       const consoleErrorMock = sinon.stub(console, 'error');
       xmlFormsService.get.resolves({ _id: 'training:a_form_id', some: 'content' });
       enketoService.render.rejects({ some: 'error' });

@@ -47,6 +47,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
   enketoStatus;
   enketoSaving;
   telemetryData;
+  showConfirmExit;
   subscription: Subscription = new Subscription();
 
   ngOnInit() {
@@ -199,7 +200,18 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     );
   }
 
-  cancel() {
+  private recordTelemetryQuitTraining() {
+    this.telemetryService.record(
+      `enketo:training:${this.telemetryData.form}:${this.telemetryData.action}:quit`
+    );
+  }
+
+  confirmExit(confirm) {
+    this.showConfirmExit = confirm;
+  }
+
+  quitTraining() {
+    this.recordTelemetryQuitTraining();
     this.close();
   }
 }
