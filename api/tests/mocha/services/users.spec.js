@@ -2604,7 +2604,7 @@ describe('Users service', () => {
       ]);
     });
 
-    it.only('should parse csv, trim spaces and not split strings with commas inside', async () => {
+    i('should parse csv, trim spaces and not split strings with commas inside', async () => {
       /* eslint-disable max-len */
       const csv = 'password,username,type,place,token_login,contact.name,contact.phone,contact.address\n' +
         ',mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,TRUE,mary,2652527222,"1 King ST, Kent Town, 55555"\n' +
