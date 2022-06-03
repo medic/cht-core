@@ -104,6 +104,14 @@ main(){
       enable_cluster
       add_peers_to_cluster
     fi
+    # only attempt to setup initial databases if single node is used
+    if [ -z "$CLUSTER_PEER_IPS" ] && [ -z "$COUCHDB_SYNC_ADMINS_NODE" ]; then
+      for db in _users _replicator _global_changes; do
+        if ! curl -sfX PUT "http://$COUCHDB_USER:$COUCHDB_PASSWORD@$SVC_NAME:5984/$db" > /dev/null; then
+          warn "Failed to create system database '$db'"
+        fi
+      done
+    fi
      # end process
     exit 1
 
