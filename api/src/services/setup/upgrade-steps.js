@@ -14,7 +14,6 @@ const startupLog = require('./startup-log');
  * @return {Promise}
  */
 const finalize = async () => {
-  startupLog.logProgress('Finalizing install');
   await upgradeLogService.setComplete();
   await upgradeLogService.setFinalizing();
   await upgradeUtils.unstageStagedDdocs();
@@ -50,7 +49,6 @@ const abort = async () => {
  * @return {Promise}
  */
 const prep = async (buildInfo, username, stageOnly = true) => {
-  startupLog.logProgress('Prepping install');
   if (!upgradeUtils.validBuildInfo(buildInfo)) {
     logger.error('Build info is invalid: %o', buildInfo);
     throw new Error(`Invalid build info`);
@@ -82,7 +80,6 @@ const prep = async (buildInfo, username, stageOnly = true) => {
  * @return {Promise}
  */
 const stage = async (buildInfo) => {
-  startupLog.logProgress('Staging install');
   if (!upgradeUtils.validBuildInfo(buildInfo)) {
     logger.error('Build info is invalid: %o', buildInfo);
     throw new Error(`Invalid build info`);
@@ -101,7 +98,7 @@ const stage = async (buildInfo) => {
  * @return {Promise}
  */
 const indexStagedViews = async () => {
-  startupLog.logProgress('Indexing views', 'views');
+  startupLog.start('index');
   const viewsToIndex = await viewIndexer.getViewsToIndex();
   const viewIndexingPromise = viewIndexer.indexViews(viewsToIndex);
   const stopQueryingIndexers = viewIndexerProgress.log();
@@ -115,7 +112,6 @@ const indexStagedViews = async () => {
  * @return {Promise}
  */
 const complete = async (buildInfo) => {
-  startupLog.logProgress('Completing install');
   await upgradeLogService.setCompleting();
   const stagingDoc = await upgradeUtils.getStagingDoc(buildInfo);
   const payload = upgradeUtils.getUpgradeServicePayload(stagingDoc);

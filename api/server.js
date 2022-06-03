@@ -53,34 +53,38 @@ process
 
   try
   {
-    startupLog.logProgress('Running installation checks…', 'install');
+    startupLog.start('check');
+    logger.info('Running installation checks…');
     await checkInstall.run();
-    startupLog.logProgress('Installation checks passed');
+    logger.info('Installation checks passed');
 
-    startupLog.logProgress('Extracting initial documents…', 'config');
+    startupLog.start('config');
+    logger.info('Extracting initial documents…');
     await uploadDefaultDocs.run();
-    startupLog.logProgress('Extracting initial documents completed successfully');
+    logger.info('Extracting initial documents completed successfully');
 
-    startupLog.logProgress('Loading configuration…');
+    logger.info('Loading configuration…');
     await configWatcher.load();
-    startupLog.logProgress('Configuration loaded successfully');
+    logger.info('Configuration loaded successfully');
     configWatcher.listen();
 
-    startupLog.logProgress('Merging translations…');
+    logger.info('Merging translations…');
     await translations.run();
-    startupLog.logProgress('Translations merged successfully');
+    logger.info('Translations merged successfully');
 
-    startupLog.logProgress('Running db migrations…', 'migrations');
+    startupLog.start('migrate');
+    logger.info('Running db migrations…');
     await migrations.run();
-    startupLog.logProgress('Database migrations completed successfully');
+    logger.info('Database migrations completed successfully');
 
-    startupLog.logProgress('Generating service worker');
+    startupLog.start('config_forms');
+    logger.info('Generating service worker');
     await generateServiceWorker.run();
-    startupLog.logProgress('Service worker generated successfully');
+    logger.info('Service worker generated successfully');
 
-    startupLog.logProgress('Updating xforms…', 'forms');
+    logger.info('Updating xforms…');
     await generateXform.updateAll();
-    startupLog.logProgress('xforms updated successfully');
+    logger.info('xforms updated successfully');
 
   } catch (err) {
     logger.error('Fatal error initialising medic-api');
