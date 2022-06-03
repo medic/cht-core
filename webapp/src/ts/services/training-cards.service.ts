@@ -7,6 +7,7 @@ import { DbService } from '@mm-services/db.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SessionService } from '@mm-services/session.service';
+import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,17 +17,21 @@ export class TrainingCardsService {
   private readonly TRAINING_PREFIX = 'training:'
 
   constructor(
-    private store:Store,
+    private store: Store,
     private xmlFormsService: XmlFormsService,
     private dbService: DbService,
-    private modalService:ModalService,
+    private modalService: ModalService,
     private sessionService: SessionService,
+    private routeSnapshotService: RouteSnapshotService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
 
   private canOpenTraining() {
-    return !this.sessionService.isDbAdmin() && !document.getElementsByClassName('enketo').length;
+    const routeSnapshot = this.routeSnapshotService.get();
+    return !this.sessionService.isDbAdmin() &&
+      (!document.getElementsByClassName('enketo').length ||
+        (routeSnapshot?.data?.tab === 'tasks' && !routeSnapshot?.params?.id));
   }
 
   private getAvailableTrainingForms(xForms, userCtx) {

@@ -9,6 +9,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { SessionService } from '@mm-services/session.service';
+import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 
 describe('TrainingCardsService', () => {
   let service: TrainingCardsService;
@@ -20,6 +21,7 @@ describe('TrainingCardsService', () => {
   let clock;
   let consoleErrorMock;
   let sessionService;
+  let routeSnapshotService;
 
   beforeEach(() => {
     localDb = { allDocs: sinon.stub() };
@@ -32,6 +34,7 @@ describe('TrainingCardsService', () => {
       userCtx: sinon.stub(),
     };
     consoleErrorMock = sinon.stub(console, 'error');
+    routeSnapshotService = { get: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -39,7 +42,8 @@ describe('TrainingCardsService', () => {
         { provide: DbService, useValue: dbService },
         { provide: XmlFormsService, useValue: xmlFormsService },
         { provide: ModalService, useValue: modalService },
-        { provide: SessionService, useValue: sessionService }
+        { provide: SessionService, useValue: sessionService },
+        { provide: RouteSnapshotService, useValue: routeSnapshotService },
       ]
     });
 
@@ -308,6 +312,7 @@ describe('TrainingCardsService', () => {
     divElement.setAttribute('id', 'enketo-test');
     divElement.className += 'enketo';
     document.body.appendChild(divElement);
+    routeSnapshotService.get.returns({ data: { tab: 'reports' } });
 
     service.initTrainingCards();
 
@@ -329,6 +334,54 @@ describe('TrainingCardsService', () => {
     expect(localDb.allDocs.callCount).to.equal(0);
     expect(globalActions.setTrainingCard.callCount).to.equal(0);
     expect(modalService.show.callCount).to.equal(0);
+    expect(consoleErrorMock.callCount).to.equal(0);
+  });
+
+  it('should do nothing if a tasks form is open', async () => {
+    const divElement = document.createElement('div');
+    divElement.setAttribute('id', 'enketo-test');
+    divElement.className += 'enketo';
+    document.body.appendChild(divElement);
+    routeSnapshotService.get.returns({ data: { tab: 'tasks' }, params: { id: '1234' } });
+
+    service.initTrainingCards();
+
+    expect(sessionService.userCtx.callCount).to.equal(0);
+    expect(xmlFormsService.subscribe.callCount).to.equal(0);
+    expect(localDb.allDocs.callCount).to.equal(0);
+    expect(globalActions.setTrainingCard.callCount).to.equal(0);
+    expect(modalService.show.callCount).to.equal(0);
+    expect(consoleErrorMock.callCount).to.equal(0);
+  });
+
+  it('should show uncompleted training form if no tasks form is open', async () => {
+    sessionService.userCtx.returns({ roles: [ 'role_a' ], name: 'a_user' });
+    routeSnapshotService.get.returns({ data: { tab: 'tasks' } });
+    localDb.allDocs.resolves({ rows: [] });
+    clock = sinon.useFakeTimers(1653312565642); // 23/05/2022 20:29:25
+    const xforms = [
+      {
+        _id: 'abc-123',
+        internalId: 'training:form-a',
+        start_date: 1653139765642, // 21/05/2022 20:29:25
+        duration: 4,
+        user_roles: [ 'role_a', 'role_c' ],
+      }
+    ];
+    service.initTrainingCards();
+
+    expect(xmlFormsService.subscribe.calledOnce).to.be.true;
+    expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true, contactForms: false });
+    const callback = xmlFormsService.subscribe.args[0][2];
+
+    await callback(null, xforms);
+
+    expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(localDb.allDocs.calledOnce).to.be.true;
+    expect(globalActions.setTrainingCard.calledOnce);
+    expect(globalActions.setTrainingCard.args[0]).to.have.members([ 'training:form-a' ]);
+    expect(modalService.show.calledOnce).to.be.true;
     expect(consoleErrorMock.callCount).to.equal(0);
   });
 
