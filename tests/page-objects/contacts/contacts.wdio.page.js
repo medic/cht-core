@@ -56,6 +56,9 @@ const childrenCards = () => $$('.right-pane .card.children');
 const newActionContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-stack');
 const forms = () => $$('/html/body/app-root/div/mm-actionbar/div/div/div/div[2]/div/span/ul/li');
 const formTitle = () => $('#form-title');
+const contactCardTitle = () => $('/html/body/app-root/div/div[2]/div/ng-component/div[2]/div/contacts-content/div/div/div/div[1]/div[2]/div/div[1]/h3');
+const contactInfoName = () => $('/html/body/app-root/div/div[2]/div/ng-component/div[2]/div/contacts-content/div/div/div/div[1]/div/div[1]/div');
+const contactInfoSex = () => $('//*[@id="contact_summary"]/div[3]/div/div/p');
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
@@ -229,7 +232,6 @@ const openForm = async (name) => {
   await (await $('.action-container .detail-actions #relevant-contacts-form')).waitForDisplayed();
   await browser.pause(50);
   for (const form of await forms()) {
-    console.log(await form.getText());
     if (await form.getText() === name) {
       await form.click();
       await (await formTitle()).waitForDisplayed();
@@ -237,6 +239,26 @@ const openForm = async (name) => {
     }
   }
   throw new Error(`Form with name: "${name}" not found`);
+};
+
+const openReport = async () => {
+  await (await rhsReportListElement()).waitForDisplayed();
+  await (await rhsReportListElement()).click();
+};
+
+const getContactCardTitle = async () => {
+  await contactCardTitle().waitForDisplayed();
+  return (await contactCardTitle()).getText();
+};
+
+const getContactInfoName = async () => {
+  await contactInfoName().waitForDisplayed();
+  return (await contactInfoName()).getText();
+};
+
+const getContactInfoSex = async () => {
+  await contactInfoSex().waitForDisplayed();
+  return (await contactInfoSex()).getText();
 };
 
 module.exports = {
@@ -269,5 +291,9 @@ module.exports = {
   allContactsList,
   editDistrict,
   childrenCards,
-  createNewAction
+  createNewAction,
+  openReport,
+  getContactCardTitle,
+  getContactInfoName,
+  getContactInfoSex
 };
