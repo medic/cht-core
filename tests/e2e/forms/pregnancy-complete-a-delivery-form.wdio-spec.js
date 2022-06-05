@@ -1,7 +1,9 @@
 const fs = require('fs');
 const moment = require('moment');
+const expect = require('chai').expect;
 const utils = require('../../utils');
-const userData = require('../../page-objects/forms/data/patient-woman.po.data');
+const sentinelUtils = require('../sentinel/utils');
+const analyticsPage = require('../../page-objects/analytics/analytics.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const contactPage = require('../../page-objects/contacts/contacts.wdio.page');
@@ -9,7 +11,9 @@ const reportPage = require('../../page-objects/reports/reports.wdio.page');
 const genericForm = require('../../page-objects/forms/generic-form.wdio.page');
 const deliveryForm = require('../../page-objects/forms/delivery-form.wdio.page');
 
+const DEFAULT_LOCALE = 'en';
 const BABYSNAME = 'Benja';
+const MOTHESRNAME = 'Woman'
 const BABYSDATEOFBIRTH = moment().subtract(1, 'day').format('YYYY-MM-DD');
 const BABYSSEX = 'male';
 const YES = 'yes';
@@ -22,6 +26,49 @@ const chw = {
   contact: { _id: 'fixture:user:bob', name: 'Bob' },
   roles: ['chw'],
 };
+
+const contacts = [
+  {
+    _id: 'fixture:district',
+    type: 'district_hospital',
+    name: 'District',
+    place_id: 'district',
+    reported_date: new Date().getTime(),
+  },
+  {
+    _id: 'fixture:center',
+    type: 'health_center',
+    name: 'Health Center',
+    parent: { _id: 'fixture:district' },
+    place_id: 'health_center',
+    reported_date: new Date().getTime(),
+  },
+  {
+    _id: 'fixture:woman',
+    type: 'person',
+    name: MOTHESRNAME,
+    sex: 'female',
+    date_of_birth: '1994-05-12',
+    date_of_birth_method: 'approx',
+    phone: '+64274444444',
+    alternate_phone: '',
+    notes: '',
+    role: 'patient',
+    ephemeral_dob: {
+      age_label: '',
+      age_years: '28',
+      age_months: '',
+      dob_method: 'approx',
+      ephemeral_months: '5',
+      ephemeral_years: '1994',
+      dob_approx: '1994-05-12',
+      dob_raw: '1994-05-12',
+      dob_iso: '1994-05-12'
+    },
+    parent: { _id: 'fixture:center' },
+    reported_date: new Date().getTime(),
+  },
+];
 
 const xml = fs.readFileSync(`${__dirname}/../../forms/delivery.xml`, 'utf8');
 
@@ -41,9 +88,12 @@ const formDocument = {
 describe('Contact Delivery Form', () => {
   before(async () => {
     await utils.saveDoc(formDocument);
-    await utils.seedTestData(userData.userContactDoc, userData.docs);
-    await loginPage.cookieLogin();
-    await commonPage.goToPeople(userData.userContactDoc._id, true);
+    await utils.saveDocs(contacts);
+    await utils.createUsers([chw]);
+    await sentinelUtils.waitForSentinel();
+    await loginPage.login({ username: chw.username, password: chw.password, locale: DEFAULT_LOCALE });
+    await commonPage.closeTour();
+    await commonPage.goToPeople('fixture:woman', true);
   });
 
   it('Complete a delivery: Process a delivery with a live child and facility birth', async () => {
@@ -93,7 +143,7 @@ describe('Contact Delivery Form', () => {
 
   it('The report should show associated to the person', async () => {
     await contactPage.openReport();
-    expect((await reportPage.getReportSubject())).to.equal(userData.userContactDoc.name);
+    expect((await reportPage.getReportSubject())).to.equal(MOTHESRNAME);
     expect((await reportPage.getReportType())).to.equal(formDocument.title);
   });
 
@@ -102,5 +152,21 @@ describe('Contact Delivery Form', () => {
     await contactPage.selectLHSRowByText(BABYSNAME);
     expect((await contactPage.getContactInfoName())).to.equal(BABYSNAME);
     expect((await contactPage.getContactInfoSex()).toLocaleUpperCase()).to.equal(BABYSSEX.toLocaleUpperCase());
+  });
+
+  it('The targets page should be updated (active pregnancies, live births is updated, and in-facility deliveries)', async () => {
+    await commonPage.goToAnalytics();
+    await analyticsPage.goToTargets();
+    const targets = await analyticsPage.getTargets();
+    expect(targets).to.have.deep.members([
+      { title: 'Deaths', goal: '0', count: '0' },
+      { title: 'New pregnancies', goal: '20', count: '0' },
+      { title: 'Live births', count: '2' },
+      { title: 'Active pregnancies', count: '0' },
+      { title: 'Active pregnancies with 1+ routine facility visits', count: '0' },
+      { title: 'In-facility deliveries', percent: '100%', percentCount: '(1 of 1)' },
+      { title: 'Active pregnancies with 4+ routine facility visits', count: '0' },
+      { title: 'Active pregnancies with 8+ routine contacts', count: '0' },
+    ]);
   });
 });
