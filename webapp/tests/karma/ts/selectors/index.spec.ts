@@ -18,6 +18,7 @@ const state = {
     showActionBar: 'is showing action bar',
     forms: ['these', 'are', 'some', 'forms'],
     filters: { some: 'filters' },
+    isAdmin: 'is it an admin',
     trainingCard: 'form:training:new_change',
     navigation: {
       cancelCallback: function() {},
@@ -170,6 +171,10 @@ describe('Selectors', () => {
 
     it('should getFilters', () => {
       expect(Selectors.getFilters(state)).to.deep.equal(clonedState.global.filters);
+    });
+
+    it('should getIsAdmin', () => {
+      expect(Selectors.getIsAdmin(state)).to.equal(clonedState.global.isAdmin);
     });
 
     it('should getCancelCallback', () => {

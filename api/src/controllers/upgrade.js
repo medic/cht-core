@@ -4,7 +4,7 @@ const serverUtils = require('../server-utils');
 const service = require('../services/upgrade');
 
 const upgrade = (req, res, stageOnly) => {
-  return auth.check(req, 'can_configure')
+  return auth.check(req, 'can_upgrade')
     .then(userCtx => {
       const buildInfo = req.body.build;
       if (!buildInfo) {
@@ -24,7 +24,7 @@ module.exports = {
   upgrade: (req, res) => upgrade(req, res, false),
   stage: (req, res) => upgrade(req, res, true),
   complete: (req, res) => {
-    return auth.check(req, 'can_configure')
+    return auth.check(req, 'can_upgrade')
       .then(() => {
         return service.complete()
           .then(() => res.json({ ok: true }));

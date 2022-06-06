@@ -6,6 +6,8 @@ const mpParser = require('./mp-parser');
 const javarosaParser = require('./javarosa-parser');
 const textformsParser = require('./textforms-parser');
 const logger = require('../../logger');
+const moment = require('moment');
+const bs = require('bikram-sambat');
 
 const MUVUKU_REGEX = /^\s*([A-Za-z]?\d)!.+!.+/;
 
@@ -117,6 +119,25 @@ const parseNum = raw => {
   return Number(std);
 };
 
+const bsToEpoch = (bsYear, bsMonth, bsDay) => {
+  try {
+    const gregDate = bs.toGreg_text(bsYear, bsMonth, bsDay);
+    return moment(gregDate).valueOf();
+  } catch (exception) {
+    logger.error('The provided date could not be converted: %o.', exception);
+    return null;//should be caught by validation in registration
+  }
+};
+
+const getFieldByType = (def, type) => {
+  if (!def || !def.fields) {
+    return;
+  }
+  return Object
+    .keys(def.fields)
+    .find(k => def.fields[k] && def.fields[k].type === type);
+};
+
 const lower = str => (str && str.toLowerCase ? str.toLowerCase() : str);
 
 exports.parseField = (field, raw) => {
@@ -159,7 +180,15 @@ exports.parseField = (field, raw) => {
     }
     // YYYY-MM-DD assume muvuku format for now
     // store in milliseconds since Epoch
-    return new Date(raw).valueOf();
+    return moment(raw).valueOf();
+  case 'bsDate': {
+    if (!raw) {
+      return null;
+    }
+    const separator = raw[raw.search(/[^0-9]/)];//non-numeric character
+    const dateParts = raw.split(separator);
+    return bsToEpoch(...dateParts);
+  }
   case 'boolean': {
     if (raw === undefined) {
       return;
@@ -194,7 +223,7 @@ exports.parse = (def, doc) => {
   let msgData;
   const formData = {};
   let addOmittedFields = false;
-
+  const aggregateBSDateField = getFieldByType(def, 'bsAggreDate');
   if (!def || !doc || !doc.message || !def.fields) {
     return {};
   }
@@ -235,6 +264,32 @@ exports.parse = (def, doc) => {
       const value = exports.parseField(def.fields[k], msgData[k]);
       createDeepKey(formData, k.split('.'), value);
     }
+  }
+
+  if(aggregateBSDateField) {
+    let bsYear;
+    let bsMonth = 1;
+    let bsDay = 1;
+    for (const k of Object.keys(def.fields)) {
+      switch (def.fields[k].type) {
+      case 'bsYear':
+        bsYear = msgData[k];
+        break;
+      case 'bsMonth':
+        bsMonth = msgData[k];
+        break;
+      case 'bsDay':
+        bsDay = msgData[k];
+        break;
+      }
+    }
+
+    if(!bsYear) {      
+      logger.error('Can not aggregate bsAggreDate without bsYear');
+      return;
+    }
+    
+    formData[aggregateBSDateField] = bsToEpoch(bsYear, bsMonth, bsDay);
   }
 
   // pass along some system generated fields

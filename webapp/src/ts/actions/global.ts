@@ -1,6 +1,6 @@
 import { createAction, Store } from '@ngrx/store';
 
-import { createSingleValueAction, createMultiValueAction } from './actionUtils';
+import { createSingleValueAction, createMultiValueAction } from '@mm-actions/actionUtils';
 
 export const Actions = {
   updateReplicationStatus: createSingleValueAction('UPDATE_REPLICATION_STATUS', 'replicationStatus'),
@@ -21,6 +21,7 @@ export const Actions = {
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
   setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
+  setIsAdmin: createSingleValueAction('SET_IS_ADMIN', 'isAdmin'),
   setTitle: createSingleValueAction('SET_TITLE', 'title'),
   setPrivacyPolicyAccepted: createSingleValueAction('SET_PRIVACY_POLICY_ACCEPTED', 'accepted'),
   setShowPrivacyPolicy: createSingleValueAction('SET_SHOW_PRIVACY_POLICY', 'show'),
@@ -103,6 +104,10 @@ export class GlobalActions {
 
   setSelectMode(selectMode) {
     return this.store.dispatch(Actions.setSelectMode(selectMode));
+  }
+
+  setIsAdmin(isAdmin) {
+    return this.store.dispatch(Actions.setIsAdmin(isAdmin));
   }
 
   setLoadingShowContent(id) {

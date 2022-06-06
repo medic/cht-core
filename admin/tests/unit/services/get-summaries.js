@@ -188,6 +188,7 @@ describe('GetSummaries service', () => {
               _id: 'g'
             }
           },
+          simprints_id: '987',
           muted: true
         } },
       ] });
@@ -206,6 +207,7 @@ describe('GetSummaries service', () => {
             contact: 'c',
             lineage: [],
             date_of_death: 999,
+            simprints_id: undefined,
             muted: undefined
           },
           {
@@ -218,6 +220,7 @@ describe('GetSummaries service', () => {
             contact: undefined,
             lineage: [ 'f', 'g' ],
             date_of_death: undefined,
+            simprints_id: '987',
             muted: true
           }
         ]);

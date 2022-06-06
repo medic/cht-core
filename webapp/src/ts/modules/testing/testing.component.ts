@@ -7,6 +7,7 @@ import { DebugService } from '@mm-services/debug.service';
 import { DbService } from '@mm-services/db.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { SessionService } from '@mm-services/session.service';
+import { PurgeService } from '@mm-services/purge.service';
 
 @Component({
   templateUrl: './testing.component.html',
@@ -23,7 +24,8 @@ export class TestingComponent implements OnInit {
     private debugService: DebugService,
     private feedbackService: FeedbackService,
     private sessionService: SessionService,
-    private cookieService: CookieService
+    private cookieService: CookieService,
+    private purgeService: PurgeService,
   ) { }
 
   ngOnInit(): void {
@@ -82,12 +84,14 @@ export class TestingComponent implements OnInit {
     }
 
     this.purging = true;
-    const localDb = this.dbService.get({ remote: false });
-    const userCtx = this.sessionService.userCtx();
 
-    Purger
-      .purge(localDb, userCtx)
-      .on('progress', progress => console.info('Purge progress', progress))
+    this.purgeService.updateDocsToPurge()
+      .then(() => {
+        const localDb = this.dbService.get({ remote: false });
+        const userCtx = this.sessionService.userCtx();
+        return Purger.purgeMain(localDb, userCtx)
+          .on('progress', progress => console.info('Purge progress', progress));
+      })
       .catch(err => console.error('Error attempting to purge:', err))
       .then(() => this.purging = false);
   }

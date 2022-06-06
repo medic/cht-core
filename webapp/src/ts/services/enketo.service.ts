@@ -36,27 +36,27 @@ import { SessionService } from '@mm-services/session.service';
 })
 export class EnketoService {
   constructor(
-    private store:Store,
-    private addAttachmentService:AddAttachmentService,
-    private contactSummaryService:ContactSummaryService,
-    private dbService:DbService,
-    private enketoPrepopulationDataService:EnketoPrepopulationDataService,
-    private enketoTranslationService:EnketoTranslationService,
-    private extractLineageService:ExtractLineageService,
-    private fileReaderService:FileReaderService,
-    private getReportContentService:GetReportContentService,
-    private languageService:LanguageService,
-    private lineageModelGeneratorService:LineageModelGeneratorService,
-    private searchService:SearchService,
-    private submitFormBySmsService:SubmitFormBySmsService,
-    private translateFromService:TranslateFromService,
-    private userContactService:UserContactService,
-    private xmlFormsService:XmlFormsService,
-    private zScoreService:ZScoreService,
-    private transitionsService:TransitionsService,
-    private translateService:TranslateService,
-    private ngZone:NgZone,
-    private sessionService:SessionService,
+    private store: Store,
+    private addAttachmentService: AddAttachmentService,
+    private contactSummaryService: ContactSummaryService,
+    private dbService: DbService,
+    private enketoPrepopulationDataService: EnketoPrepopulationDataService,
+    private enketoTranslationService: EnketoTranslationService,
+    private extractLineageService: ExtractLineageService,
+    private fileReaderService: FileReaderService,
+    private getReportContentService: GetReportContentService,
+    private languageService: LanguageService,
+    private lineageModelGeneratorService: LineageModelGeneratorService,
+    private searchService: SearchService,
+    private submitFormBySmsService: SubmitFormBySmsService,
+    private translateFromService: TranslateFromService,
+    private userContactService: UserContactService,
+    private xmlFormsService: XmlFormsService,
+    private zScoreService: ZScoreService,
+    private transitionsService: TransitionsService,
+    private translateService: TranslateService,
+    private ngZone: NgZone,
+    private sessionService: SessionService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -87,7 +87,7 @@ export class EnketoService {
       });
   }
 
-  private replaceJavarosaMediaWithLoaders(formDoc, formHtml) {
+  private replaceJavarosaMediaWithLoaders(formHtml) {
     formHtml.find('[data-media-src]').each((idx, element) => {
       const $img = $(element);
       const lang = $img.attr('lang');
@@ -127,10 +127,6 @@ export class EnketoService {
       .then(blob => this.fileReaderService.utf8(blob));
   }
 
-  private getFormAttachment(doc) {
-    return this.getAttachment(doc._id, this.xmlFormsService.findXFormAttachmentName(doc));
-  }
-
   private transformXml(form) {
     return Promise
       .all([
@@ -156,7 +152,7 @@ export class EnketoService {
 
   private handleKeypressOnInputField(e) {
     // Here we capture both CR and TAB characters, and handle field-skipping
-    if(!window.medicmobile_android || (e.keyCode !== 9 && e.keyCode !== 13)) {
+    if (!window.medicmobile_android || (e.keyCode !== 9 && e.keyCode !== 13)) {
       return;
     }
 
@@ -168,12 +164,12 @@ export class EnketoService {
     const $thisQuestion = $input.closest('.question');
 
     // If there's another question on the current page, focus on that
-    if($thisQuestion.attr('role') !== 'page') {
+    if ($thisQuestion.attr('role') !== 'page') {
       const $nextQuestion = $thisQuestion.find(
         '~ .question:not(.disabled):not(.or-appearance-hidden), ~ .repeat-buttons button.repeat:not(:disabled)'
       );
-      if($nextQuestion.length) {
-        if($nextQuestion[0].tagName !== 'LABEL') {
+      if ($nextQuestion.length) {
+        if ($nextQuestion[0].tagName !== 'LABEL') {
           // The next question is something complicated, so we can't just
           // focus on it.  Next best thing is to blur the current selection
           // so the on-screen keyboard closes.
@@ -199,7 +195,7 @@ export class EnketoService {
     // If there's no question on the current page, try to go to change page,
     // or submit the form.
     const next = enketoContainer.find('.btn.next-page:enabled:not(.disabled)');
-    if(next.length) {
+    if (next.length) {
       next.trigger('click');
     } else {
       enketoContainer.find('.btn.submit').trigger('click');
@@ -221,7 +217,7 @@ export class EnketoService {
   }
 
   private getContactReports(contact) {
-    const subjectIds = [ contact._id ];
+    const subjectIds = [contact._id];
     const shortCode = contact.patient_id || contact.place_id;
     if (shortCode) {
       subjectIds.push(shortCode);
@@ -242,7 +238,7 @@ export class EnketoService {
       .then(([reports, lineage]) => {
         return this.contactSummaryService.get(contact, reports, lineage);
       })
-      .then((summary:any) => {
+      .then((summary: any) => {
         if (!summary) {
           return;
         }
@@ -267,13 +263,13 @@ export class EnketoService {
         this.languageService.get()
       ])
       .then(([ instanceStr, contactSummary, language ]) => {
-        const options:any = {
+        const options: EnketoOptions = {
           modelStr: doc.model,
           instanceStr: instanceStr,
           language: language
         };
         if (contactSummary) {
-          options.external = [ contactSummary ];
+          options.external = [contactSummary];
         }
         return options;
       });
@@ -298,25 +294,8 @@ export class EnketoService {
         if (loadErrors?.length) {
           return Promise.reject(new Error(JSON.stringify(loadErrors)));
         }
-        const language = options.language;
-        this.currentForm.langs.$formLanguages.val(language).trigger('change');
-        // re-set the enketo form's language when a DOM node is added to the form and the form has been edited
-        // TODO: remove this once the enketo uplift gets merged https://github.com/medic/cht-core/pull/7256
-        this.currentForm.view.$.on(
-          'click',
-          'button.add-repeat-btn:enabled',
-          () => this.currentForm.langs.setAll(language),
-        );
-        let hasFormChanged = false;
-        this.currentForm.view.$.on('change', () => hasFormChanged = true);
-        const observer = new MutationObserver((mutations) => {
-          const hasNewNodes = mutations.some(mutation => mutation.addedNodes.length > 0);
-          if (hasFormChanged && hasNewNodes) {
-            this.currentForm.langs.setAll(language);
-          }
-          hasFormChanged = false;
-        });
-        observer.observe(this.currentForm.view.html, { childList: true, subtree: true });
+
+        this.setupFormLanguage(options.language);
       })
       .then(() => this.getFormTitle(titleKey, doc))
       .then((title) => {
@@ -337,6 +316,28 @@ export class EnketoService {
 
         return this.currentForm;
       });
+  }
+
+  // set the enketo form's language, re-set it when a DOM node is added to the form and the form has been edited
+  // TODO: remove this method once the enketo uplift gets merged https://github.com/medic/cht-core/pull/7256
+  private setupFormLanguage(language: string) {
+    const setFormLanguage = (language: string) => this.currentForm.langs.$formLanguages.val(language).trigger('change');
+    setFormLanguage(language);
+    this.currentForm.view.$.on(
+      'click',
+      'button.add-repeat-btn:enabled',
+      () => setFormLanguage(language),
+    );
+    let hasFormChanged = false;
+    this.currentForm.view.$.on('change', () => hasFormChanged = true);
+    const observer = new MutationObserver((mutations) => {
+      const hasNewNodes = mutations.some(mutation => mutation.addedNodes.length > 0);
+      if (hasFormChanged && hasNewNodes) {
+        setFormLanguage(language);
+      }
+      hasFormChanged = false;
+    });
+    observer.observe(this.currentForm.view.html, { childList: true, subtree: true });
   }
 
   private getFormTitle(titleKey, doc) {
@@ -405,8 +406,8 @@ export class EnketoService {
   }
 
   private addPopStateHandler(form, $wrapper) {
-    $(window).on('popstate.enketo-pagemode', (event:any) => {
-      if(event.originalEvent &&
+    $(window).on('popstate.enketo-pagemode', (event: any) => {
+      if (event.originalEvent &&
         event.originalEvent.state &&
         typeof event.originalEvent.state.enketo_page_number === 'number') {
         const targetPage = event.originalEvent.state.enketo_page_number;
@@ -456,7 +457,7 @@ export class EnketoService {
     return this
       .transformXml(formDoc)
       .then(doc => {
-        this.replaceJavarosaMediaWithLoaders(formDoc, doc.html);
+        this.replaceJavarosaMediaWithLoaders(doc.html);
         const xmlFormContext: XmlFormContext = {
           doc,
           wrapper: $selector,
@@ -505,7 +506,7 @@ export class EnketoService {
     return this.renderForm(formContext);
   }
 
-  private xmlToDocs(doc, formXml, record) {
+  private xmlToDocs(doc, formXml, xmlVersion, record) {
     const recordDoc = $.parseXML(record);
     const $record = $($(recordDoc).children()[0]);
     const repeatPaths = this.enketoTranslationService.getRepeatPaths(formXml);
@@ -609,7 +610,7 @@ export class EnketoService {
     const docsToStore = $record
       .find('[db-doc=true]')
       .map((idx, element) => {
-        const docToStore:any = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
+        const docToStore: any = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
         docToStore._id = getId(Xpath.getElementXPath(element));
         docToStore.reported_date = Date.now();
         return docToStore;
@@ -617,6 +618,9 @@ export class EnketoService {
       .get();
 
     doc._id = getId('/*');
+    if (xmlVersion) {
+      doc.form_version = xmlVersion;
+    }
     doc.hidden_fields = this.enketoTranslationService.getHiddenFieldList(record);
 
     const attach = (elem, file, type, alreadyEncoded, xpath?) => {
@@ -631,7 +635,7 @@ export class EnketoService {
       .find('[type=file]')
       .each((idx, element) => {
         const xpath = Xpath.getElementXPath(element);
-        const $input:any = $('input[type=file][name="' + xpath + '"]');
+        const $input: any = $('input[type=file][name="' + xpath + '"]');
         const file = $input[0].files[0];
         if (file) {
           attach(element, file, file.type, false, xpath);
@@ -656,12 +660,6 @@ export class EnketoService {
 
     doc.fields = this.enketoTranslationService.reportRecordToJs(record, formXml);
     return docsToStore;
-  }
-
-  private getFormXml(form) {
-    return this.xmlFormsService
-      .get(form)
-      .then(formDoc => this.getFormAttachment(formDoc));
   }
 
   private saveDocs(docs) {
@@ -699,7 +697,7 @@ export class EnketoService {
       .get()
       .then((contact) => {
         if (!contact) {
-          const err:any = new Error('Your user does not have an associated contact, or does not have access to the ' +
+          const err: any = new Error('Your user does not have an associated contact, or does not have access to the ' +
             'associated contact. Talk to your administrator to correct this.');
           err.translationKey = 'error.loading.form.no_contact';
           throw err;
@@ -801,12 +799,16 @@ export class EnketoService {
 
   private _save(formInternalId, form, geoHandle, docId?) {
     const getDocPromise = docId ? this.update(docId) : this.create(formInternalId);
+
     return Promise
       .all([
         getDocPromise,
-        this.getFormXml(formInternalId),
+        this.xmlFormsService.getDocAndFormAttachment(formInternalId)
       ])
-      .then(([doc, formXml]) => this.xmlToDocs(doc, formXml, form.getDataStr({ irrelevant: false })))
+      .then(([doc, formDoc]) => {
+        const dataString = form.getDataStr({ irrelevant: false });
+        return this.xmlToDocs(doc, formDoc.xml, formDoc.doc.xmlVersion, dataString);
+      })
       .then(docs => this.validateAttachments(docs))
       .then((docs) => this.saveGeo(geoHandle, docs))
       .then((docs) => this.transitionsService.applyTransitions(docs))
@@ -839,6 +841,18 @@ export class EnketoService {
   }
 }
 
+interface ContactSummary {
+  id: string;
+  xmlStr: string;
+}
+
+interface EnketoOptions {
+  modelStr: string;
+  instanceStr: string;
+  language: string;
+  external?: ContactSummary[];
+}
+
 interface XmlFormContext {
   doc: {
     html: JQuery;
@@ -847,14 +861,14 @@ interface XmlFormContext {
     hasContactSummary: boolean;
   };
   wrapper: JQuery;
-  instanceData: Record<string, any>;
+  instanceData: string|Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey: string;
 }
 
 export interface EnketoFormContext {
   selector: string;
-  formDoc: string;
-  instanceData: Record<string, any>;
+  formDoc: Record<string, any>;
+  instanceData: string|Record<string, any>; // String for report forms, Record<> for contact forms.
   editedListener: () => void;
   valuechangeListener: () => void;
   titleKey?: string;

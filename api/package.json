@@ -15,10 +15,10 @@
     "toc": "doctoc --github --maxlevel 2 README.md"
   },
   "dependencies": {
-    "async": "^3.2.1",
+    "async": "^3.2.3",
     "bikram-sambat": "^1.7.0",
     "bikram-sambat-bootstrap": "^1.5.0",
-    "body-parser": "^1.19.0",
+    "body-parser": "^1.19.2",
     "buffer-shims": "^1.0.0",
     "compression": "^1.7.4",
     "enketo-xslt": "^1.15.2",
@@ -52,7 +52,7 @@
     "xmlbuilder": "^15.1.1"
   },
   "devDependencies": {
-    "doctoc": "^2.0.1"
+    "doctoc": "^2.1.0"
   },
   "bundledDependencies": [
     "async",

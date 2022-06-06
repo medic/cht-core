@@ -14,7 +14,7 @@ import { GuidedSetupComponent } from '@mm-modals/guided-setup/guided-setup.compo
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
 import { UpdatePasswordComponent } from '@mm-modals/edit-user/update-password.component';
-import { ConfirmPasswordUpdatedComponent } from './edit-user/confirm-password-updated.component';
+import { ConfirmPasswordUpdatedComponent } from '@mm-modals/edit-user/confirm-password-updated.component';
 import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settings.component';
 import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
 import { TourSelectComponent } from '@mm-modals/tour/tour-select.component';
@@ -27,7 +27,7 @@ import { CheckDateComponent } from '@mm-modals/check-date/check-date.component';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
 import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expired.component';
 import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
-import { ContactsMutedComponent } from './contacts-muted/contacts-muted.component';
+import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted.component';
 
 
 @NgModule({

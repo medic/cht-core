@@ -12,7 +12,7 @@ Developers are actively using both Linux and MacOS, so both of those platforms a
 
 You will need to install the following:
 
-- [Node.js](https://nodejs.org) 8.11.x and above LTS release (designated with an even major version number)
+- [Node.js](https://nodejs.org) 12.x
 - [npm](https://npmjs.com/) 6.x.x and above (to support npm ci)
 - [grunt cli](https://gruntjs.com/using-the-cli)
 - [CouchDB](https://couchdb.apache.org) 2.x ([installation instructions](http://docs.couchdb.org/en/2.3.1/install/index.html)). For simplicity we [recommend installing via docker](#couchdb-on-docker). If on a Mac, please note that installation via homebrew is **not** supported. If on Ubuntu and you don't want to use docker, see [our notes below](#couchdb-on-docker).
@@ -33,7 +33,7 @@ We recommend using Docker to install and use CouchDB. This ensures you are getti
 After [installing docker](https://docs.docker.com/get-docker/), you can create a docker container like so:
 
 ```sh
-docker run -d -p 5984:5984 -p 5986:5986 --name medic-couchdb -e COUCHDB_USER=myadminuser -e COUCHDB_PASSWORD=myadminpass --rm -v <data path>:/opt/couchdb/data -v <config path>:/opt/couchdb/etc/local.d apache/couchdb:2
+docker run -d -p 5984:5984 -p 5986:5986 --name medic-couchdb -e COUCHDB_USER=myadminuser -e COUCHDB_PASSWORD=myadminpass -v <data path>:/opt/couchdb/data -v <config path>:/opt/couchdb/etc/local.d apache/couchdb:2
 ```
 
 Notes before copy pasting:
@@ -44,7 +44,7 @@ Notes before copy pasting:
 
 Once this downloads and starts, you will need to [initialise CouchDB](http://localhost:5984/_utils/#/setup) as noted in [their install instructions](https://docs.couchdb.org/en/2.3.1/setup/index.html#setup).
 
-You can use `docker stop medic-couchdb` to stop it and `docker start medic-couchdb` to start it again. Remember that you'll need to start it whenever you restart your OS, which might not be the case if you use a normal OS package.
+You can use `docker stop medic-couchdb` to stop it and `docker start medic-couchdb` to start it again. Remember that you'll need to start it whenever you restart your OS, which might not be the case if you use a normal OS package. `docker rm medic-couchdb` will totally remove the container.
 
 Medic recommends you familiarise yourself with other Docker commands to make docker image and container management clearer.
 

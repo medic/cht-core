@@ -24,6 +24,7 @@ const initialState = {
   facilities: [],
   filters: {},
   forms: null,
+  isAdmin: false,
   lastChangedDoc: false,
   loadingContent: false,
   loadingSubActionBar: false,
@@ -95,6 +96,9 @@ const _globalReducer = createReducer(
       ...state,
       filters: { ...state.filters, ...filter }
     };
+  }),
+  on(Actions.setIsAdmin, (state, { payload: { isAdmin } }) => {
+    return { ...state, isAdmin };
   }),
   on(Actions.setTitle, (state, { payload: { title} }) => {
     return { ...state, title };
