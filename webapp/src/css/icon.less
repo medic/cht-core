@@ -21,6 +21,7 @@
     .button-text-inverse;
     span:before{
       background-color: @button-text-inverse-color !important;
+      text-shadow: none;
     }
   }
 }
@@ -31,6 +32,10 @@
     cursor: default;
     pointer-events: none;
     .button-text-disabled;
+    span:before{
+      background-color: @label-color !important;
+      text-shadow: none;
+    }
   }
 }
 
@@ -86,22 +91,32 @@
 }
 
 .fa-comments:before{
-  -webkit-mask-image: url('../img/navicon-messages.svg');
-  mask: url('../img/navicon-messages.svg');
+  -webkit-mask-image: url('../img/comments-solid.svg');
+  mask: url('../img/comments-solid.svg');
+  mask-repeat: no-repeat;
   background-color: black;
   content: '';
+}
+
+.fa-envelope:before{
+  -webkit-mask-image: url('../img/comments-solid.svg');
+  mask: url('../img/comments-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
 }
 
 .fa-tasks:before{
   -webkit-mask-image: url('../img/navicon-tasks.svg');
   mask: url('../img/navicon-tasks.svg');
+  mask-repeat: no-repeat;
   background-color: black;
   content: '';
 }
 
 .fa-book:before{
-  -webkit-mask-image: url('../img/navicon-reports.svg');
-  mask: url('../img/navicon-reports.svg');
+  -webkit-mask-image: url('../img/book-open-solid.svg');
+  mask: url('../img/book-open-solid.svg');
+  mask-repeat: no-repeat;
   background-color: black;
   content: '';
 }
@@ -109,15 +124,150 @@
 .fa-users:before{
   -webkit-mask-image: url('../img/navicon-people.svg');
   mask: url('../img/navicon-people.svg');
+  mask-repeat: no-repeat;
   background-color: black;
   content: '';
 }
 
 .fa-line-chart:before{
-  -webkit-mask-image: url('../img/navicon-targets.svg');
-  mask: url('../img/navicon-targets.svg');
+  -webkit-mask-image: url('../img/bars-progress-solid.svg');
+  mask: url('../img/bars-progress-solid.svg');
+  mask-repeat: no-repeat;
   background-color: black;
   content: '';
 }
+
+.fa-bars:before{
+  -webkit-mask-image: url('../img/bars-solid.svg');
+  mask: url('../img/bars-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+  font-size: 30px;
+}
+
+.fa-cog:before{
+  -webkit-mask-image: url('../img/gear-solid.svg');
+  mask: url('../img/gear-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+  font-size: 20px;
+}
+
+.fa-list-ol:before{
+  -webkit-mask-image: url('../img/list-check-solid.svg');
+  mask: url('../img/list-check-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+  font-size: 20px;
+}
+
+.fa-graduation-cap:before{
+  -webkit-mask-image: url('../img/graduation-cap-solid.svg');
+  mask: url('../img/graduation-cap-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+  font-size: 20px;
+}
+
+.fa-info-circle:before{
+  -webkit-mask-image: url('../img/circle-info-solid.svg');
+  mask: url('../img/circle-info-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+  font-size: 20px;
+}
+
+.fa-user-o:before{
+  -webkit-mask-image: url('../img/user-gear-solid.svg');
+  mask: url('../img/user-gear-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+  font-size: 20px;
+}
+
+.fa-bug:before{
+  -webkit-mask-image: url('../img/bug-solid.svg');
+  mask: url('../img/bug-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+  font-size: 20px;
+}
+
+.fa-power-off:before{
+  -webkit-mask-image: url('../img/power-off-solid.svg');
+  mask: url('../img/power-off-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+  font-size: 20px;
+}
+
+.fa-power-off:before{
+  -webkit-mask-image: url('../img/power-off-solid.svg');
+  mask: url('../img/power-off-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+  font-size: 20px;
+}
+
+.fa-refresh:before{
+  -webkit-mask-image: url('../img/arrows-rotate-solid.svg');
+  mask: url('../img/arrows-rotate-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+  font-size: 20px;
+}
+
+.fa-plus:before{
+  -webkit-mask-image: url('../img/plus-solid.svg');
+  mask: url('../img/plus-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+}
+
+.fa-arrow-down:before{
+  -webkit-mask-image: url('../img/arrow-down-solid.svg');
+  mask: url('../img/arrow-down-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+}
+
+.fa-check-circle:before{
+  -webkit-mask-image: url('../img/circle-check-solid.svg');
+  mask: url('../img/circle-check-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+}
+
+.fa-trash-o:before{
+  -webkit-mask-image: url('../img/trash-can-solid.svg');
+  mask: url('../img/trash-can-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+}
+
+.fa-list-alt:before{
+  -webkit-mask-image: url('../img/rectangle-list-solid.svg');
+  mask: url('../img/rectangle-list-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+}
+
+.fa-pencil:before{
+  -webkit-mask-image: url('../img/pencil-solid.svg');
+  mask: url('../img/pencil-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+}
+
+.fa-check:before{
+  -webkit-mask-image: url('../img/check-solid.svg');
+  mask: url('../img/check-solid.svg');
+  mask-repeat: no-repeat;
+  background-color: black;
+}
+
+
+
+
 
 
