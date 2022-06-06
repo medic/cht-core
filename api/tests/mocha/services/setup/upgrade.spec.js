@@ -21,38 +21,38 @@ describe('upgrade service', () => {
       sinon.stub(upgradeSteps, 'prep').resolves();
       let stage;
       sinon.stub(upgradeSteps, 'stage').returns(new Promise(r => stage = r));
-      let indexStagedViews;
-      sinon.stub(upgradeSteps, 'indexStagedViews').returns(new Promise(r => indexStagedViews = r));
+      let indexViews;
+      sinon.stub(upgradeSteps, 'indexViews').returns(new Promise(r => indexViews = r));
 
       const upgradePromise = upgrade.upgrade('theversion', 'admin', true);
 
       expect(upgradeSteps.prep.callCount).to.equal(1);
       expect(upgradeSteps.prep.args[0]).to.deep.equal(['theversion', 'admin', true]);
       expect(upgradeSteps.stage.callCount).to.equal(0);
-      expect(upgradeSteps.indexStagedViews.callCount).to.equal(0);
+      expect(upgradeSteps.indexViews.callCount).to.equal(0);
 
       await Promise.resolve();
 
       expect(upgradeSteps.prep.callCount).to.equal(1);
       expect(upgradeSteps.stage.callCount).to.equal(1);
       expect(upgradeSteps.stage.args[0]).to.deep.equal(['theversion']);
-      expect(upgradeSteps.indexStagedViews.callCount).to.equal(0);
+      expect(upgradeSteps.indexViews.callCount).to.equal(0);
 
       await upgradePromise;
 
-      expect(upgradeSteps.indexStagedViews.callCount).to.equal(0);
+      expect(upgradeSteps.indexViews.callCount).to.equal(0);
 
       await stage();
-      expect(upgradeSteps.indexStagedViews.callCount).to.equal(1);
-      await indexStagedViews();
+      expect(upgradeSteps.indexViews.callCount).to.equal(1);
+      await indexViews();
     });
 
     it('should prep and not wait for stage or views indexing when not only staging', async () => {
       sinon.stub(upgradeSteps, 'prep').resolves();
       let stage;
       sinon.stub(upgradeSteps, 'stage').returns(new Promise(r => stage = r));
-      let indexStagedViews;
-      sinon.stub(upgradeSteps, 'indexStagedViews').returns(new Promise(r => indexStagedViews = r));
+      let indexViews;
+      sinon.stub(upgradeSteps, 'indexViews').returns(new Promise(r => indexViews = r));
       sinon.stub(upgradeSteps, 'complete').resolves();
 
       const upgradePromise = upgrade.upgrade('a_version', 'usr', false);
@@ -60,24 +60,24 @@ describe('upgrade service', () => {
       expect(upgradeSteps.prep.callCount).to.equal(1);
       expect(upgradeSteps.prep.args[0]).to.deep.equal(['a_version', 'usr', false]);
       expect(upgradeSteps.stage.callCount).to.equal(0);
-      expect(upgradeSteps.indexStagedViews.callCount).to.equal(0);
+      expect(upgradeSteps.indexViews.callCount).to.equal(0);
 
       await Promise.resolve();
 
       expect(upgradeSteps.prep.callCount).to.equal(1);
       expect(upgradeSteps.stage.callCount).to.equal(1);
       expect(upgradeSteps.stage.args[0]).to.deep.equal(['a_version']);
-      expect(upgradeSteps.indexStagedViews.callCount).to.equal(0);
+      expect(upgradeSteps.indexViews.callCount).to.equal(0);
 
       await upgradePromise;
 
       expect(upgradeSteps.prep.callCount).to.equal(1);
       expect(upgradeSteps.stage.callCount).to.equal(1);
-      expect(upgradeSteps.indexStagedViews.callCount).to.equal(0);
+      expect(upgradeSteps.indexViews.callCount).to.equal(0);
 
       await stage();
-      expect(upgradeSteps.indexStagedViews.callCount).to.equal(1);
-      await indexStagedViews();
+      expect(upgradeSteps.indexViews.callCount).to.equal(1);
+      await indexViews();
     });
 
     it('should throw error when build info is invalid', async () => {
@@ -107,7 +107,7 @@ describe('upgrade service', () => {
       sinon.stub(upgradeSteps, 'prep').resolves();
       let stage;
       sinon.stub(upgradeSteps, 'stage').returns(new Promise((res, rej) => stage = rej));
-      sinon.stub(upgradeSteps, 'indexStagedViews');
+      sinon.stub(upgradeSteps, 'indexViews');
       sinon.stub(upgradeLogService, 'setErrored').resolves();
 
       const upgradePromise = upgrade.upgrade('v', 'admin', true);
@@ -116,7 +116,7 @@ describe('upgrade service', () => {
 
       expect(upgradeSteps.prep.callCount).to.equal(1);
       expect(upgradeSteps.stage.callCount).to.equal(1);
-      expect(upgradeSteps.indexStagedViews.callCount).to.equal(0);
+      expect(upgradeSteps.indexViews.callCount).to.equal(0);
 
       await upgradePromise;
       expect(upgradeLogService.setErrored.callCount).to.equal(0);
@@ -124,14 +124,14 @@ describe('upgrade service', () => {
       stage({ code: 'omg' });
       await Promise.resolve();
       expect(upgradeLogService.setErrored.callCount).to.equal(1);
-      expect(upgradeSteps.indexStagedViews.callCount).to.equal(0);
+      expect(upgradeSteps.indexViews.callCount).to.equal(0);
     });
 
     it('should set the upgrade as errored when indexing views fails despite of stage only', async () => {
       sinon.stub(upgradeSteps, 'prep').resolves();
       sinon.stub(upgradeSteps, 'stage').resolves();
-      let indexStagedViews;
-      sinon.stub(upgradeSteps, 'indexStagedViews').returns(new Promise((res, rej) => indexStagedViews = rej));
+      let indexViews;
+      sinon.stub(upgradeSteps, 'indexViews').returns(new Promise((res, rej) => indexViews = rej));
       sinon.stub(upgradeLogService, 'setErrored').resolves();
 
       const upgradePromise = upgrade.upgrade('aaa', 'admin', true);
@@ -139,12 +139,12 @@ describe('upgrade service', () => {
       await Promise.resolve(); // stage
       expect(upgradeSteps.prep.callCount).to.equal(1);
       expect(upgradeSteps.stage.callCount).to.equal(1);
-      expect(upgradeSteps.indexStagedViews.callCount).to.equal(1);
+      expect(upgradeSteps.indexViews.callCount).to.equal(1);
 
       await upgradePromise;
       expect(upgradeLogService.setErrored.callCount).to.equal(0);
 
-      indexStagedViews({ code: 'omg' });
+      indexViews({ code: 'omg' });
       await Promise.resolve();
       expect(upgradeLogService.setErrored.callCount).to.equal(1);
     });

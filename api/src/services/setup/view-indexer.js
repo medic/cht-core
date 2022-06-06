@@ -28,16 +28,17 @@ const indexViews = async (viewsToIndex) => {
 
 
 /**
- * Returns an array of functions that, when called, start indexing all views of staged ddocs
+ * Returns an array of functions that, when called, start indexing all views of requested ddocs
  * and return view indexing promises
+ * @param {Boolean} staged
  * @return {Promise<[function]>}
  */
-const getViewsToIndex = async () => {
+const getViewsToIndex = async (staged = true) => {
   const viewsToIndex = [];
 
   for (const database of DATABASES) {
-    const stagedDdocs = await ddocsService.getStagedDdocs(database);
-    stagedDdocs.forEach(ddoc => {
+    const ddocs = staged ? await ddocsService.getStagedDdocs(database) : await ddocsService.getLiveDdocs(database);
+    ddocs.forEach(ddoc => {
       if (!ddoc.views || !_.isObject(ddoc.views)) {
         return;
       }
