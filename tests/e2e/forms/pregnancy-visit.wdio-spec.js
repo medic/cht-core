@@ -8,6 +8,7 @@ const commonPage = require('../../page-objects/common/common.wdio.page');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 const genericForm = require('../../page-objects/forms/generic-form.wdio.page');
 const pregnancyVisitForm = require('../../page-objects/forms/pregnancy-visit-form.wdio.page');
+const { expect } = require('chai');
 const xml = fs.readFileSync(`${__dirname}/../../../config/standard/forms/app/pregnancy_visit.xml`, 'utf8');
 const formDocument = {
   _id: 'form:pregnancy-visit',
@@ -32,14 +33,17 @@ describe('Pregnancy Visit', () => {
 
   it('Submit and validate Pregnancy Visit form and keeps the report minified', async () => {
     await reportsPage.openForm('Pregnancy Visit');
-    await browser.pause(10000);
     await pregnancyVisitForm.selectPatient('jack');
     await genericForm.nextPage();
-    //await pregnancyDangerSignForm.selectVisitedHealthFacility();
-    await pregnancyVisitForm.selectDangerSign('d3');
+    const selectedDangerSigns = await pregnancyVisitForm.selectAllDangerSigns();
     await genericForm.nextPage();
     pregnancyVisitForm.addNotes;
     await genericForm.nextPage();
+
+    await expect(await pregnancyVisitForm.dangerSignLabel().getText()).to.equal('Danger Signs');
+    await expect(await pregnancyVisitForm.dangerSignSummary().length).to.equal(selectedDangerSigns + 1);
+    await expect(await pregnancyVisitForm.followUpMessage().getText())
+      .to.have.string('Please note that Jack has one or more danger signs for a high risk pregnancy');
     await reportsPage.submitForm();
 
     await genericForm.verifyReport();
