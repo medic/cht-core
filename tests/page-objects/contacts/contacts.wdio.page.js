@@ -1,7 +1,5 @@
 const genericForm = require('../forms/generic-form.wdio.page');
 const commonElements = require('../common/common.wdio.page');
-const { convertCompilerOptionsFromJson } = require('typescript');
-
 const searchBox = () => $('#freetext');
 const searchButton = () => $('#search');
 const contentRowSelector = '#contacts-list .content-row';
@@ -56,8 +54,11 @@ const childrenCards = () => $$('.right-pane .card.children');
 const newActionContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-stack');
 const forms = () => $$('/html/body/app-root/div/mm-actionbar/div/div/div/div[2]/div/span/ul/li');
 const formTitle = () => $('#form-title');
-const contactCardTitle = () => $('/html/body/app-root/div/div[2]/div/ng-component/div[2]/div/contacts-content/div/div/div/div[1]/div[2]/div/div[1]/h3');
-const contactInfoName = () => $('/html/body/app-root/div/div[2]/div/ng-component/div[2]/div/contacts-content/div/div/div/div[1]/div/div[1]/div');
+const contactCardTitle = () =>
+  $('/html/body/app-root/div/div[2]/div/ng-component/div[2]/div/' +
+    'contacts-content/div/div/div/div[1]/div[2]/div/div[1]/h3');
+const contactInfoName = () =>
+  $('/html/body/app-root/div/div[2]/div/ng-component/div[2]/div/contacts-content/div/div/div/div[1]/div/div[1]/div');
 const contactInfoSex = () => $('//*[@id="contact_summary"]/div[3]/div/div/p');
 
 const search = async (query) => {

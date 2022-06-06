@@ -13,7 +13,7 @@ const deliveryForm = require('../../page-objects/forms/delivery-form.wdio.page')
 
 const DEFAULT_LOCALE = 'en';
 const BABYSNAME = 'Benja';
-const MOTHESRNAME = 'Woman'
+const MOTHESRNAME = 'Woman';
 const BABYSDATEOFBIRTH = moment().subtract(1, 'day').format('YYYY-MM-DD');
 const BABYSSEX = 'male';
 const YES = 'yes';
@@ -97,8 +97,8 @@ describe('Contact Delivery Form', () => {
   });
 
   it('Complete a delivery: Process a delivery with a live child and facility birth', async () => {
-    await contactPage.createNewAction('Delivery')
-    await deliveryForm.selectDeliveryConditionWomanOutcome("alive_well");
+    await contactPage.createNewAction('Delivery');
+    await deliveryForm.selectDeliveryConditionWomanOutcome('alive_well');
     await genericForm.nextPage();
     await deliveryForm.selectDeliveryPosnatalDangerSignsFever(NO);
     await deliveryForm.selectDeliveryPosnatalDangerSevereFever(NO);
@@ -106,18 +106,18 @@ describe('Contact Delivery Form', () => {
     await deliveryForm.selectDeliveryPosnatalDangerVaginalDischarge(NO);
     await deliveryForm.selectDeliveryPosnatalDangerConvulsion(NO);
     await genericForm.nextPage();
-    await deliveryForm.selectDeliveryOutcomeBabiesDelivered("1");
-    await deliveryForm.selectDeliveryOutcomeBabiesAlive("1");
-    await deliveryForm.selectDeliveryOutcomeDeliveryPlace("health_facility");
-    await deliveryForm.selectDeliveryOutcomeDeliveryMode("vaginal");
+    await deliveryForm.selectDeliveryOutcomeBabiesDelivered('1');
+    await deliveryForm.selectDeliveryOutcomeBabiesAlive('1');
+    await deliveryForm.selectDeliveryOutcomeDeliveryPlace('health_facility');
+    await deliveryForm.selectDeliveryOutcomeDeliveryMode('vaginal');
     await deliveryForm.setDeliveryOutcomeDateOfDelivery(BABYSDATEOFBIRTH);
     await genericForm.nextPage();
-    await deliveryForm.selectDeliveryBabysCondition("alive_well");
+    await deliveryForm.selectDeliveryBabysCondition('alive_well');
     await deliveryForm.setDeliveryBabysName(BABYSNAME);
     await deliveryForm.selectDeliveryBabysSex(BABYSSEX);
     await deliveryForm.selectDeliveryBabysBirthWeightKnow(NO);
     await deliveryForm.selectDeliveryBabysBirthLengthKnow(NO);
-    await deliveryForm.selectDeliveryBabysVaccinesReveived("none");
+    await deliveryForm.selectDeliveryBabysVaccinesReveived('none');
     await deliveryForm.selectDeliveryBabyBreatfeeding(YES);
     await deliveryForm.selectDeliveryBabyBreatfeedingWithin1Hour(YES);
     await deliveryForm.selectDeliveryBabyInfectedUmbilicalCord(NO);
@@ -131,7 +131,7 @@ describe('Contact Delivery Form', () => {
     await deliveryForm.selectDeliveryBabyBlueSkin(NO);
     await genericForm.nextPage();
     await genericForm.nextPage();
-    await deliveryForm.selectDeliveryPncVisits("none");
+    await deliveryForm.selectDeliveryPncVisits('none');
     await genericForm.nextPage();
     await deliveryForm.submitForm();
   });
@@ -154,7 +154,7 @@ describe('Contact Delivery Form', () => {
     expect((await contactPage.getContactInfoSex()).toLocaleUpperCase()).to.equal(BABYSSEX.toLocaleUpperCase());
   });
 
-  it('The targets page should be updated (active pregnancies, live births is updated, and in-facility deliveries)', async () => {
+  it('The targets page should be updated', async () => {
     await commonPage.goToAnalytics();
     await analyticsPage.goToTargets();
     const targets = await analyticsPage.getTargets();
