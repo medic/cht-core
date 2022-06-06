@@ -82,9 +82,9 @@ describe('Upgrade ddocs library', () => {
     it('should return live ddocs, excluding staged ddocs', async () => {
       sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [
         { id: '_design/ddoc1', value: { rev: 'rev1' }, doc: { _id: 'ddoc1', _rev: 'rev1', field: 'a' }  },
-        { id: '_design/:stagged:ddoc1', value: { rev: 'rev1' }, doc: { _id: '_design/stagged:ddoc1', _rev: 'rev1' }  },
+        { id: '_design/:staged:ddoc1', value: { rev: 'rev1' }, doc: { _id: '_design/:staged:ddoc1', _rev: 'rev1' }  },
         { id: 'ddoc2', key: 'ddoc2', value: { rev: 'rev2' }, doc: { _id: 'ddoc2', _rev: 'rev2', field: 'b' }, },
-        { id: '_design/:stagged:ddoc2', value: { rev: 'rev1' }, doc: { _id: '_design/stagged:ddoc2', _rev: 'rev1' }  },
+        { id: '_design/:staged:ddoc2', value: { rev: 'rev1' }, doc: { _id: '_design/:staged:ddoc2', _rev: 'rev1' }  },
       ] });
 
       const result = await ddocsService.getLiveDdocs({ db: db.sentinel });
