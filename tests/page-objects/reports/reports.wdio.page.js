@@ -56,6 +56,7 @@ const getTaskState = async (first, second) => {
 };
 
 const openForm = async (name) => {
+  await (await submitReportButton()).waitForClickable();
   await (await submitReportButton()).click();
   // this is annoying but there's a race condition where the click could end up on another form if we don't
   // wait for the animation to finish
@@ -64,6 +65,7 @@ const openForm = async (name) => {
   for (const form of await forms()) {
     if (await form.getText() === name) {
       await form.click();
+      await browser.refresh();
       await (await formTitle()).waitForDisplayed();
       return;
     }
