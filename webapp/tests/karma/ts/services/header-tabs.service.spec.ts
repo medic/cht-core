@@ -30,11 +30,11 @@ describe('HeaderTabs service', () => {
       const tabs = service.get();
       // @ts-ignore
       expect(tabs).to.shallowDeepEqual([
-        { name: 'messages', defaultIcon: 'fa-envelope', icon: undefined },
-        { name: 'tasks', defaultIcon: 'fa-flag', icon: undefined },
-        { name: 'reports', defaultIcon: 'fa-list-alt', icon: undefined },
-        { name: 'contacts', defaultIcon: 'fa-user', icon: undefined },
-        { name: 'analytics', defaultIcon: 'fa-bar-chart-o', icon: undefined },
+        { name: 'messages', defaultIcon: 'fa-comments', icon: undefined },
+        { name: 'tasks', defaultIcon: 'fa-tasks', icon: undefined },
+        { name: 'reports', defaultIcon: 'fa-book', icon: undefined },
+        { name: 'contacts', defaultIcon: 'fa-users', icon: undefined },
+        { name: 'analytics', defaultIcon: 'fa-line-chart', icon: undefined },
       ]);
 
       expect(service.get({})).to.deep.equal(tabs);
@@ -53,11 +53,11 @@ describe('HeaderTabs service', () => {
       const tabs = service.get({ header_tabs: headerTabsSettings });
       // @ts-ignore
       expect(tabs).to.shallowDeepEqual([
-        { name: 'messages', icon: undefined, resourceIcon: undefined, defaultIcon: 'fa-envelope' },
-        { name: 'tasks', icon: 'fa-whatever', resourceIcon: undefined, defaultIcon: 'fa-flag' },
-        { name: 'reports', icon: undefined, resourceIcon: 'some-icon', defaultIcon: 'fa-list-alt' },
-        { name: 'contacts', icon: undefined, resourceIcon: 'one-icon', defaultIcon: 'fa-user' },
-        { name: 'analytics', icon: 'fa-icon', resourceIcon: 'other-icon', defaultIcon: 'fa-bar-chart-o' },
+        { name: 'messages', icon: undefined, resourceIcon: undefined, defaultIcon: 'fa-comments' },
+        { name: 'tasks', icon: 'fa-whatever', resourceIcon: undefined, defaultIcon: 'fa-tasks' },
+        { name: 'reports', icon: undefined, resourceIcon: 'some-icon', defaultIcon: 'fa-book' },
+        { name: 'contacts', icon: undefined, resourceIcon: 'one-icon', defaultIcon: 'fa-users' },
+        { name: 'analytics', icon: 'fa-icon', resourceIcon: 'other-icon', defaultIcon: 'fa-line-chart' },
       ]);
     });
   });
@@ -76,7 +76,7 @@ describe('HeaderTabs service', () => {
         {
           name: 'messages',
           route: 'messages',
-          defaultIcon: 'fa-envelope',
+          defaultIcon: 'fa-comments',
           translation: 'Messages',
           permissions: ['can_view_messages', 'can_view_messages_tab'],
           typeName: 'message',
@@ -86,7 +86,7 @@ describe('HeaderTabs service', () => {
         {
           name: 'reports',
           route: 'reports',
-          defaultIcon: 'fa-list-alt',
+          defaultIcon: 'fa-book',
           translation: 'Reports',
           permissions: ['can_view_reports', 'can_view_reports_tab'],
           typeName: 'report',
@@ -96,7 +96,7 @@ describe('HeaderTabs service', () => {
         {
           name: 'analytics',
           route: 'analytics',
-          defaultIcon: 'fa-bar-chart-o',
+          defaultIcon: 'fa-line-chart',
           translation: 'Analytics',
           permissions: ['can_view_analytics', 'can_view_analytics_tab'],
           icon: undefined,
@@ -126,7 +126,7 @@ describe('HeaderTabs service', () => {
         {
           name: 'tasks',
           route: 'tasks',
-          defaultIcon: 'fa-flag',
+          defaultIcon: 'fa-tasks',
           translation: 'Tasks',
           permissions: ['can_view_tasks', 'can_view_tasks_tab'],
           icon: undefined,
@@ -135,7 +135,7 @@ describe('HeaderTabs service', () => {
         {
           name:'contacts',
           route:'contacts',
-          defaultIcon:'fa-user',
+          defaultIcon:'fa-users',
           translation:'Contacts',
           permissions: ['can_view_contacts', 'can_view_contacts_tab'],
           icon: undefined,
@@ -144,7 +144,7 @@ describe('HeaderTabs service', () => {
         {
           name: 'analytics',
           route: 'analytics',
-          defaultIcon: 'fa-bar-chart-o',
+          defaultIcon: 'fa-line-chart',
           translation: 'Analytics',
           permissions: ['can_view_analytics', 'can_view_analytics_tab'],
           icon: undefined,
@@ -173,7 +173,7 @@ describe('HeaderTabs service', () => {
         {
           name: 'messages',
           route: 'messages',
-          defaultIcon: 'fa-envelope',
+          defaultIcon: 'fa-comments',
           translation: 'Messages',
           permissions: ['can_view_messages', 'can_view_messages_tab'],
           typeName: 'message',
@@ -183,7 +183,7 @@ describe('HeaderTabs service', () => {
         {
           name: 'tasks',
           route: 'tasks',
-          defaultIcon: 'fa-flag',
+          defaultIcon: 'fa-tasks',
           translation: 'Tasks',
           permissions: ['can_view_tasks', 'can_view_tasks_tab'],
           icon: 'fa-apple',
@@ -192,7 +192,7 @@ describe('HeaderTabs service', () => {
         {
           name:'contacts',
           route:'contacts',
-          defaultIcon:'fa-user',
+          defaultIcon:'fa-users',
           translation:'Contacts',
           permissions: ['can_view_contacts', 'can_view_contacts_tab'],
           icon: undefined,
@@ -201,7 +201,7 @@ describe('HeaderTabs service', () => {
         {
           name: 'analytics',
           route: 'analytics',
-          defaultIcon: 'fa-bar-chart-o',
+          defaultIcon: 'fa-line-chart',
           translation: 'Analytics',
           permissions: ['can_view_analytics', 'can_view_analytics_tab'],
           icon: 'fa-mango-icon',
@@ -224,7 +224,7 @@ describe('HeaderTabs service', () => {
       expect(tab).to.deep.equal({
         name: 'messages',
         route: 'messages',
-        defaultIcon: 'fa-envelope',
+        defaultIcon: 'fa-comments',
         translation: 'Messages',
         permissions: ['can_view_messages', 'can_view_messages_tab'],
         typeName: 'message',
@@ -274,7 +274,7 @@ describe('HeaderTabs service', () => {
       expect(tab).to.deep.equal({
         name:'contacts',
         route:'contacts',
-        defaultIcon:'fa-user',
+        defaultIcon:'fa-users',
         translation:'Contacts',
         permissions: ['can_view_contacts', 'can_view_contacts_tab'],
         icon: undefined,
@@ -301,7 +301,7 @@ describe('HeaderTabs service', () => {
       expect(tab).to.deep.equal({
         name: 'analytics',
         route: 'analytics',
-        defaultIcon: 'fa-bar-chart-o',
+        defaultIcon: 'fa-line-chart',
         translation: 'Analytics',
         permissions: ['can_view_analytics', 'can_view_analytics_tab'],
         icon: 'fa-mango-icon',
