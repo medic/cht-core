@@ -569,7 +569,18 @@ const assignCsvCellValue = (data, attribute, value) => {
   if (!attribute.length || attribute.toLowerCase().indexOf(':excluded') > 0) {
     return;
   }
-  data[attribute] = typeof value === 'string' ? value.replace(/^"|"$/g, '').trim() : value;
+
+  if (typeof value !== 'string') {
+    data[attribute] = value;
+    return;
+  }
+
+  data[attribute] = value.replace(/^"|"$/g, '').trim();
+
+  if (['TRUE', 'FALSE'].includes(data[attribute])) {
+    // converts the "TRUE" or "FALSE" string to boolean
+    data[attribute] = eval(data[attribute].toLowerCase());
+  }
 };
 
 const parseCsvRow = (data, header, value, valueIdx) => {
