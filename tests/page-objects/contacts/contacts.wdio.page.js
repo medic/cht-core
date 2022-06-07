@@ -244,7 +244,7 @@ const openForm = async (name) => {
 
 const openReport = async () => {
   await (await rhsReportListElement()).waitForDisplayed();
-  await (await rhsReportListElement()).click();
+  return (await rhsReportListElement()).click();
 };
 
 const getContactCardTitle = async () => {
