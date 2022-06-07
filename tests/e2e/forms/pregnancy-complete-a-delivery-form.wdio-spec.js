@@ -70,7 +70,7 @@ const contacts = [
   },
 ];
 
-const xml = fs.readFileSync(`${__dirname}/../../forms/delivery.xml`, 'utf8');
+const deliveryXml = fs.readFileSync(`${__dirname}/../../forms/delivery.xml`, 'utf8');
 
 const formDocument = {
   _id: 'form:delivery2',
