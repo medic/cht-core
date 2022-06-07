@@ -207,6 +207,10 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
   }
 
   confirmExit(confirm) {
+    if (this.contentError) {
+      this.close();
+      return;
+    }
     this.showConfirmExit = confirm;
   }
 
