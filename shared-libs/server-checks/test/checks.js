@@ -13,14 +13,14 @@ describe('Server Checks service', () => {
   'use strict';
 
   let originalProcess;
-  // let originalSetTimeout;
+  let originalSetTimeout;
   let clock;
 
   beforeEach(() => {
     originalProcess = process;
     sinon.spy(console, 'log');
     sinon.spy(console, 'error');
-    // originalSetTimeout = setTimeout;
+    originalSetTimeout = setTimeout;
     clock = sinon.useFakeTimers();
     service = rewire('../src/checks');
   });
@@ -129,112 +129,131 @@ describe('Server Checks service', () => {
     });
   });
 
-  // describe('entry point check', () => {
-  //
-  //   it('valid server', async () => {
-  //     process = {
-  //       versions: { node: '16.11.1' },
-  //       env: { NODE_OPTIONS: { }},
-  //       exit: sinon.stub(),
-  //     };
-  //     sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
-  //     sinon.stub(request, 'get').resolves({ version: '2' });
-  //     await service.check('http://admin:pass@localhost:5984/medic');
-  //
-  //     chai.expect(http.get.args[0][0]).to.equal('http://localhost:5984/');
-  //     chai.expect(request.get.args[0][0]).to.deep.equal({ json: true, url: 'http://admin:pass@localhost:5984/' });
-  //   });
-  //
-  //   it('valid server after a while', async () => {
-  //     process = {
-  //       versions: { node: '16.11.1' },
-  //       env: { NODE_OPTIONS: { }},
-  //       exit: sinon.stub(),
-  //     };
-  //
-  //     sinon.stub(http, 'get').callsArgWith(1, { statusCode: 200 });
-  //     sinon.stub(request, 'get').rejects({ an: 'error' });
-  //
-  //     request.get.onCall(70).resolves({ version: '2' });
-  //     request.get.onCall(71).resolves({ version: '2' });
-  //     request.get.onCall(72).resolves({ version: '2' });
-  //     http.get.onCall(2).callsArgWith(1, { statusCode: 401 });
-  //
-  //     const promise = service.check('http://admin:pass@localhost:5984/medic');
-  //     Array.from({ length: 100 }).map(() => originalSetTimeout(() => clock.tick(1000)));
-  //     await promise;
-  //
-  //     chai.expect(request.get.callCount).to.equal(73);
-  //     chai.expect(http.get.callCount).to.deep.equal(3);
-  //   });
-  //
-  //
-  //   it('invalid couchdb version', async () => {
-  //     process = {
-  //       versions: { node: '16.11.1' },
-  //       env: { NODE_OPTIONS: { }},
-  //       exit: sinon.stub(),
-  //     };
-  //     sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
-  //     sinon.stub(request, 'get').rejects({ an: 'error' });
-  //     request.get.onCall(100).resolves({ version: '2' });
-  //
-  //     const promise = service.check('http://admin:pass@localhost:5984/medic');
-  //     // request will be retried 100 times
-  //     Array.from({ length: 100 }).map(() => originalSetTimeout(() => clock.tick(1000)));
-  //     await promise;
-  //     chai.expect(request.get.callCount).to.equal(101);
-  //   });
-  //
-  //   it('couchdb in admin party', async () => {
-  //     process = {
-  //       versions: { node: '16.11.1' },
-  //       env: { NODE_OPTIONS: { }},
-  //       exit: sinon.stub(),
-  //     };
-  //     sinon.stub(http, 'get').callsArgWith(1, { statusCode: 200 });
-  //     http.get.onCall(300).callsArgWith(1, { statusCode: 401 });
-  //     sinon.stub(request, 'get').resolves({ version: '2' });
-  //
-  //     const promise = service.check('http://admin:pass@localhost:5984/medic');
-  //     Array.from({ length: 300 }).map(() => originalSetTimeout(() => clock.tick(1000)));
-  //     await promise;
-  //     chai.expect(request.get.callCount).to.equal(301);
-  //   });
-  //
-  //   it('invalid server', () => {
-  //     process = {
-  //       versions: { node: '16.11.1' },
-  //       env: { NODE_OPTIONS: { }},
-  //       exit: sinon.stub(),
-  //     };
-  //     sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
-  //     sinon.stub(request, 'get').resolves({ version: '2' });
-  //     return service
-  //       .check()
-  //       .then(() => chai.expect.fail('Should have thrown'))
-  //       .catch(err => {
-  //         chai.assert.include(err.message, 'Environment variable "COUCH_URL" is required');
-  //       });
-  //   });
-  //
-  //   it('too many segments', () => {
-  //     process = {
-  //       versions: { node: '16.11.1' },
-  //       env: { NODE_OPTIONS: { }},
-  //       exit: sinon.stub(),
-  //     };
-  //     sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
-  //     sinon.stub(request, 'get').resolves({ version: '2' });
-  //     return service
-  //       .check('http://admin:pass@localhost:5984/path/to/db')
-  //       .then(() => chai.assert.fail('should have thrown'))
-  //       .catch(err => {
-  //         chai.assert.include(err.message, 'Environment variable "COUCH_URL" must have only one path segment');
-  //       });
-  //   });
-  //
-  // });
+  describe('entry point check', () => {
+
+    it('valid server', async () => {
+      process = {
+        versions: { node: '16.11.1' },
+        env: { NODE_OPTIONS: { }},
+        exit: sinon.stub(),
+      };
+      sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
+      sinon.stub(request, 'get');
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '2' });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' })).resolves({
+        all_nodes: ['a'],
+        cluster_nodes: ['b'],
+      });
+      await service.check('http://admin:pass@localhost:5984/medic');
+
+      chai.expect(http.get.args[0][0]).to.equal('http://localhost:5984/');
+      chai.expect(request.get.args[0][0]).to.deep.equal({ json: true, url: 'http://admin:pass@localhost:5984/' });
+    });
+
+    it('valid server after a while', async () => {
+      process = {
+        versions: { node: '16.11.1' },
+        env: { NODE_OPTIONS: { }},
+        exit: sinon.stub(),
+      };
+
+      sinon.stub(http, 'get').callsArgWith(1, { statusCode: 200 });
+      sinon.stub(request, 'get');
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '2' });
+      const unfinishedCluster = { all_nodes: ['a', 'b'], cluster_nodes: ['a'] };
+      const finishedCluster = { all_nodes: ['a', 'b'], cluster_nodes: ['a', 'b'] };
+      const membershipQuery = request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' }));
+      membershipQuery.resolves(unfinishedCluster);
+
+      membershipQuery.onCall(70).resolves(finishedCluster);
+      membershipQuery.onCall(71).resolves(finishedCluster);
+      membershipQuery.onCall(72).resolves(finishedCluster);
+      http.get.onCall(2).callsArgWith(1, { statusCode: 401 });
+
+      const promise = service.check('http://admin:pass@localhost:5984/medic');
+      Array.from({ length: 100 }).map(() => originalSetTimeout(() => clock.tick(1000)));
+      await promise;
+
+      chai.expect(request.get.callCount).to.equal(146);
+      chai.expect(http.get.callCount).to.deep.equal(3);
+    });
+
+
+    it('invalid couchdb version', async () => {
+      process = {
+        versions: { node: '16.11.1' },
+        env: { NODE_OPTIONS: { }},
+        exit: sinon.stub(),
+      };
+      sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
+      sinon.stub(request, 'get').rejects({ an: 'error' });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).onCall(100).resolves({ version: '2' });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' })).resolves({
+        cluster_nodes: ['1', '2'],
+        all_nodes: ['1', '2'],
+      });
+
+      const promise = service.check('http://admin:pass@localhost:5984/medic');
+      // request will be retried 100 times
+      Array.from({ length: 100 }).map(() => originalSetTimeout(() => clock.tick(1000)));
+      await promise;
+      chai.expect(request.get.callCount).to.equal(102);
+    });
+
+    it('couchdb in admin party', async () => {
+      process = {
+        versions: { node: '16.11.1' },
+        env: { NODE_OPTIONS: { }},
+        exit: sinon.stub(),
+      };
+      sinon.stub(http, 'get').callsArgWith(1, { statusCode: 200 });
+      http.get.onCall(300).callsArgWith(1, { statusCode: 401 });
+      sinon.stub(request, 'get');
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '2' });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' })).resolves({
+        cluster_nodes: ['1', '2'],
+        all_nodes: ['1', '2'],
+      });
+
+      const promise = service.check('http://admin:pass@localhost:5984/medic');
+      Array.from({ length: 300 }).map(() => originalSetTimeout(() => clock.tick(1000)));
+      await promise;
+      chai.expect(request.get.callCount).to.equal(602);
+    });
+
+    it('invalid server', () => {
+      process = {
+        versions: { node: '16.11.1' },
+        env: { NODE_OPTIONS: { }},
+        exit: sinon.stub(),
+      };
+      sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
+      sinon.stub(request, 'get').resolves({ version: '2' });
+      return service
+        .check()
+        .then(() => chai.expect.fail('Should have thrown'))
+        .catch(err => {
+          chai.assert.include(err.message, 'Environment variable "COUCH_URL" is required');
+        });
+    });
+
+    it('too many segments', () => {
+      process = {
+        versions: { node: '16.11.1' },
+        env: { NODE_OPTIONS: { }},
+        exit: sinon.stub(),
+      };
+      sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
+      sinon.stub(request, 'get').resolves({ version: '2' });
+      return service
+        .check('http://admin:pass@localhost:5984/path/to/db')
+        .then(() => chai.assert.fail('should have thrown'))
+        .catch(err => {
+          chai.assert.include(err.message, 'Environment variable "COUCH_URL" must have only one path segment');
+        });
+    });
+
+  });
 
   describe('getCouchDbVersion', () => {
     it('should return couchdb version', () => {

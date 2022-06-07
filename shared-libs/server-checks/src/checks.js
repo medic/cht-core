@@ -70,13 +70,9 @@ const couchDbNoAdminPartyModeCheck = (couchUrl) => {
 
 const checkCluster = async (couchUrl) => {
   const membership = await request.get({ url: `${couchUrl}_membership`, json: true });
-  if (membership.all_nodes.length < 3 || membership.cluster_nodes.length < 3) {
+  if (membership.all_nodes.length !== membership.cluster_nodes.length) {
     throw new Error('Cluster not ready');
   }
-  /*const cluster = await request.get({ uri: `${couchUrl}_cluster_setup`});
-  if (cluster.state !== 'cluster_enabled') {
-    throw new Error('Cluster not ready');
-  }*/
 };
 
 const getCouchDbVersion = (couchUrl) => {
