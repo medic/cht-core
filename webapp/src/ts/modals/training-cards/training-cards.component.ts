@@ -71,7 +71,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
   }
 
   private loadForm() {
-    return this.ngZone.runOutsideAngular(() => this._loadForm());
+    this.ngZone.runOutsideAngular(() => this._loadForm());
   }
 
   private async _loadForm() {
@@ -81,7 +81,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
       this.geoHandle && this.geoHandle.cancel();
       this.geoHandle = this.geolocationService.init();
       const form = await this.xmlFormsService.get(this.trainingForm);
-      return this.ngZone.run(() => this.renderForm(form));
+      this.ngZone.run(() => this.renderForm(form));
     } catch(error) {
       this.setError();
       console.error('Error fetching form.', error);
@@ -159,7 +159,8 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     try {
       const docs = await this.enketoService.save(this.trainingForm, this.form, this.geoHandle);
       console.debug('Saved form and associated docs', docs);
-      this.globalActions.setSnackbarContent(this.translateService.instant('training_cards.form.saved'));
+      const snackText = await this.translateService.get('training_cards.form.saved');
+      this.globalActions.setSnackbarContent(snackText);
       this.globalActions.setEnketoSavingStatus(false);
       this.enketoService.unload(this.form);
       this.recordTelemetryPostSave();

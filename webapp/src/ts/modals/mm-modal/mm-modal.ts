@@ -26,6 +26,7 @@ export class MmModal {
   @Input() disableSubmit;
   @Input() danger;
   @Input() hideFooter;
+  @Input() hideCloseButton;
 
 
   constructor() {

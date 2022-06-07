@@ -18,8 +18,8 @@ import { GlobalActions } from '@mm-actions/global';
 import { TelemetryService } from '@mm-services/telemetry.service';
 
 describe('TrainingCardsComponent', () => {
-  let fixture:ComponentFixture<TrainingCardsComponent>;
-  let component:TrainingCardsComponent;
+  let fixture: ComponentFixture<TrainingCardsComponent>;
+  let component: TrainingCardsComponent;
   let store: MockStore;
   let bsModalRef;
   let modalSuperCloseStub;

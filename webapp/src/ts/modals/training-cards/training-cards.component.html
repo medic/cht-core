@@ -1,4 +1,9 @@
-<mm-modal class="enketo-modal content-pane" id="id" [titleKey]="modalTitleKey | translate" (onCancel)="confirmExit(true)" [hideFooter]="hideModalFooter">
+<mm-modal
+  class="enketo-modal content-pane"
+  id="id" [titleKey]="modalTitleKey | translate"
+  (onCancel)="confirmExit(true)"
+  [hideFooter]="hideModalFooter"
+  [hideCloseButton]="showConfirmExit">
 
   <div class="item-content empty-selection" *ngIf="loadingContent">
     <div><div class="loader"></div></div>
@@ -18,7 +23,12 @@
 
   <div class="item-content" [hidden]="showConfirmExit || loadingContent || contentError">
     <div class="body">
-      <mm-enketo [formId]="formWrapperId" [status]="enketoStatus" (onSubmit)="saveForm()" (onCancel)="confirmExit(true)"></mm-enketo>
+      <mm-enketo
+        [formId]="formWrapperId"
+        [status]="enketoStatus"
+        (onSubmit)="saveForm()"
+        (onCancel)="confirmExit(true)">
+      </mm-enketo>
     </div>
   </div>
 
