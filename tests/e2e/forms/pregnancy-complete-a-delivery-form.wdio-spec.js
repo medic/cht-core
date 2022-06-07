@@ -12,10 +12,10 @@ const genericForm = require('../../page-objects/forms/generic-form.wdio.page');
 const deliveryForm = require('../../page-objects/forms/delivery-form.wdio.page');
 
 const DEFAULT_LOCALE = 'en';
-const BABYSNAME = 'Benja';
-const MOTHESRNAME = 'Woman';
-const BABYSDATEOFBIRTH = moment().subtract(1, 'day').format('YYYY-MM-DD');
-const BABYSSEX = 'male';
+const BABYS_NAME = 'Benja';
+const MOTHERS_NAME = 'Woman';
+const BABYS_DOB = moment().subtract(1, 'day').format('YYYY-MM-DD');
+const BABYS_SEX = 'male';
 const YES = 'yes';
 const NO = 'no';
 
