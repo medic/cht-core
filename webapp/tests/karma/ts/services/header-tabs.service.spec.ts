@@ -245,7 +245,7 @@ describe('HeaderTabs service', () => {
       expect(tab).to.deep.equal({
         name: 'reports',
         route: 'reports',
-        defaultIcon: 'fa-list-alt',
+        defaultIcon: 'fa-book',
         translation: 'Reports',
         permissions: ['can_view_reports', 'can_view_reports_tab'],
         typeName: 'report',
