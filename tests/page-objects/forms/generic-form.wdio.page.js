@@ -26,7 +26,6 @@ const invalidateReport = async () => {
 };
 
 const validateReport = async () => {
-  console.log('validating reports...');
   const reportValidBtn = await $('.actions .sub-actions .verify-valid');
   await reportValidBtn.click();
   const reportValidMessage = await $('.actions .sub-actions .verify-valid.active');

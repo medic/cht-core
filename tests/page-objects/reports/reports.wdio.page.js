@@ -65,7 +65,6 @@ const openForm = async (name) => {
   for (const form of await forms()) {
     if (await form.getText() === name) {
       await form.click();
-      await browser.refresh();
       await (await formTitle()).waitForDisplayed();
       return;
     }

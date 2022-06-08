@@ -1,10 +1,24 @@
+const fs = require('fs');
+const utils = require('../../utils');
 const genericForm = require('./generic-form.wdio.page');
-const dangerSignLabel  =  () =>
+const xmlForm = fs.readFileSync(`${__dirname}/../../../config/standard/forms/app/pregnancy_visit.xml`, 'utf8');
+const formDocument = {
+  _id: 'form:pregnancy-visit',
+  internalId: 'Pregnancy visit',
+  title: 'Pregnancy Visit',
+  type: 'form',
+  _attachments: {
+    xml: {
+      content_type: 'application/octet-stream',
+      data: Buffer.from(xmlForm).toString('base64')
+    }
+  }
+};
+const dangerSignLabel = () =>
   $('label.question.note.or-branch.non-select.or-appearance-h1.or-appearance-red > span.question-label');
-const dangerSignSummary  =  () =>
+const dangerSignSummary = () =>
   $$('label.question.note.or-branch.non-select.or-appearance-li');
-const followUpMessage =   () =>  $('[data-value=" /pregnancy_visit/chw_sms "]');
-
+const followUpMessage = () => $('[data-value=" /pregnancy_visit/chw_sms "]');
 
 const selectPatient = (patientName) => {
   return genericForm.selectContact('/pregnancy_visit/inputs/contact', patientName);
@@ -18,11 +32,15 @@ const selectAllDangerSigns = async () => {
   for (const checkbox of checkboxes) {
     await checkbox.click();
   }
-  return await checkboxes.length;
+  return checkboxes.length;
 };
 const addNotes = async (notes = 'Some notes') => {
   const notesArea = await $('textarea[name="/pregnancy_visit/group_note/g_chw_sms"]');
   await notesArea.setValue(notes);
+};
+
+const uploadPregnancyVisitForm = async () => {
+  await utils.saveDoc(formDocument);
 };
 
 module.exports = {
@@ -32,5 +50,6 @@ module.exports = {
   addNotes,
   dangerSignLabel,
   dangerSignSummary,
-  followUpMessage
+  followUpMessage,
+  uploadPregnancyVisitForm
 };
