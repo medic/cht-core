@@ -273,7 +273,7 @@ describe('TrainingCardsComponent', () => {
       expect(xmlFormsService.get.args[0]).to.deep.equal([ 'training:a_form_id' ]);
       expect(enketoService.render.calledOnce).to.be.true;
       expect(enketoService.render.args[0][1]).to.deep.equal(xmlForm);
-      expect(enketoService.render.args[0][2]).to.equal(undefined);
+      expect(enketoService.render.args[0][2]).to.equal(null);
       expect(component.form).to.equal(renderedForm);
       expect(consoleErrorMock.notCalled).to.be.true;
       expect(telemetryService.record.calledOnce).to.be.true;

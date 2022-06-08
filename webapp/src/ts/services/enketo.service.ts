@@ -30,6 +30,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { GlobalActions } from '@mm-actions/global';
 import { SessionService } from '@mm-services/session.service';
+import { TRAINING_PREFIX } from '@mm-services/training-cards.service';
 
 @Injectable({
   providedIn: 'root'
@@ -67,7 +68,6 @@ export class EnketoService {
   private servicesActions: ServicesActions;
   private readonly HTML_ATTACHMENT_NAME = 'form.html';
   private readonly MODEL_ATTACHMENT_NAME = 'model.xml';
-  private readonly TRAINING_PREFIX = 'training:';
   private readonly objUrls = [];
   private inited = false;
 
@@ -276,7 +276,7 @@ export class EnketoService {
   }
 
   private renderFromXmls(xmlFormContext: XmlFormContext) {
-    const { doc, instanceData, titleKey, wrapper } = xmlFormContext;
+    const { doc, instanceData, titleKey, wrapper, isFormInModal } = xmlFormContext;
     wrapper
       .find('.form-footer')
       .addClass('end')
@@ -305,12 +305,12 @@ export class EnketoService {
           .find('input')
           .on('keydown', this.handleKeypressOnInputField);
 
-        if (!this.isFormInModal(wrapper)) {
+        if (!isFormInModal) {
           // handle page turning using browser history
           window.history.replaceState({ enketo_page_number: 0 }, '');
         }
 
-        this.overrideNavigationButtons(this.currentForm, wrapper);
+        this.overrideNavigationButtons(this.currentForm, wrapper, isFormInModal);
         this.addPopStateHandler(this.currentForm, wrapper);
         this.forceRecalculate(this.currentForm);
 
@@ -365,9 +365,7 @@ export class EnketoService {
     } // else the title is hardcoded in the form definition - leave it alone
   }
 
-  private overrideNavigationButtons(form, $wrapper) {
-    const isModal = this.isFormInModal($wrapper);
-
+  private overrideNavigationButtons(form, $wrapper, isFormInModal) {
     $wrapper
       .find('.btn.next-page')
       .off('.pagemode')
@@ -375,7 +373,7 @@ export class EnketoService {
         form.pages
           .next()
           .then((newPageIndex) => {
-            if (typeof newPageIndex === 'number' && !isModal) {
+            if (typeof newPageIndex === 'number' && !isFormInModal) {
               window.history.pushState({ enketo_page_number: newPageIndex }, '');
             }
             this.forceRecalculate(form);
@@ -387,7 +385,7 @@ export class EnketoService {
       .find('.btn.previous-page')
       .off('.pagemode')
       .on('click.pagemode', () => {
-        if (isModal) {
+        if (isFormInModal) {
           form.pages.prev();
         } else {
           window.history.back();
@@ -395,14 +393,6 @@ export class EnketoService {
         this.forceRecalculate(form);
         return false;
       });
-  }
-
-  private isFormInModal($wrapper) {
-    if (!$wrapper || !$wrapper.length) {
-      return false;
-    }
-
-    return $wrapper.closest('.modal .modal-body').length > 0;
   }
 
   private addPopStateHandler(form, $wrapper) {
@@ -451,6 +441,7 @@ export class EnketoService {
       selector,
       titleKey,
       valuechangeListener,
+      isFormInModal,
     } = formContext;
 
     const $selector = $(selector);
@@ -463,6 +454,7 @@ export class EnketoService {
           wrapper: $selector,
           instanceData,
           titleKey,
+          isFormInModal
         };
         return this.renderFromXmls(xmlFormContext);
       })
@@ -478,13 +470,13 @@ export class EnketoService {
       });
   }
 
-  render(selector, form, instanceData, editedListener, valuechangeListener) {
+  render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal = false) {
     return this.ngZone.runOutsideAngular(() => {
-      return this._render(selector, form, instanceData, editedListener, valuechangeListener);
+      return this._render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal);
     });
   }
 
-  private _render(selector, form, instanceData, editedListener, valuechangeListener) {
+  private _render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal) {
     return Promise
       .all([
         this.inited,
@@ -497,6 +489,7 @@ export class EnketoService {
           instanceData,
           editedListener,
           valuechangeListener,
+          isFormInModal,
         };
         return this.renderForm(formContext);
       });
@@ -720,7 +713,8 @@ export class EnketoService {
         };
 
         if (this.isTrainingForm(formInternalId)) {
-          doc._id = `${this.TRAINING_PREFIX}${this.sessionService.userCtx()?.name}:${uuid()}`;
+          const userName = this.sessionService.userCtx()?.name;
+          doc._id = [ TRAINING_PREFIX, userName, uuid() ].join(':');
           doc.is_training = true;
         }
 
@@ -837,7 +831,7 @@ export class EnketoService {
   }
 
   private isTrainingForm(formInternalId) {
-    return formInternalId?.startsWith(this.TRAINING_PREFIX);
+    return formInternalId?.startsWith(TRAINING_PREFIX);
   }
 }
 
@@ -863,6 +857,7 @@ interface XmlFormContext {
   wrapper: JQuery;
   instanceData: string|Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey: string;
+  isFormInModal?: boolean;
 }
 
 export interface EnketoFormContext {
@@ -872,4 +867,5 @@ export interface EnketoFormContext {
   editedListener: () => void;
   valuechangeListener: () => void;
   titleKey?: string;
+  isFormInModal?: boolean;
 }

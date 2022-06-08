@@ -91,7 +91,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
   private async renderForm(form) {
     try {
       const selector = `#${this.formWrapperId}`;
-      this.form = await this.enketoService.render(selector, form, undefined, undefined, this.resetFormError.bind(this));
+      this.form = await this.enketoService.render(selector, form, null, null, this.resetFormError.bind(this), true);
       this.loadingContent = false;
       this.recordTelemetryPostRender();
     } catch(error) {
@@ -177,10 +177,10 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
   private recordTelemetryPostRender() {
     this.telemetryData.postRender = Date.now();
     this.telemetryData.action = 'add';
-    this.telemetryData.form = this.trainingForm.replace('training:', '');
+    this.telemetryData.form = this.trainingForm;
 
     this.telemetryService.record(
-      `enketo:training:${this.telemetryData.form}:${this.telemetryData.action}:render`,
+      `enketo:${this.telemetryData.form}:${this.telemetryData.action}:render`,
       this.telemetryData.postRender - this.telemetryData.preRender
     );
   }
@@ -188,7 +188,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
   private recordTelemetryPreSave() {
     this.telemetryData.preSave = Date.now();
     this.telemetryService.record(
-      `enketo:training:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
+      `enketo:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
       this.telemetryData.preSave - this.telemetryData.postRender
     );
   }
@@ -196,14 +196,14 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
   private recordTelemetryPostSave() {
     this.telemetryData.postSave = Date.now();
     this.telemetryService.record(
-      `enketo:training:${this.telemetryData.form}:${this.telemetryData.action}:save`,
+      `enketo:${this.telemetryData.form}:${this.telemetryData.action}:save`,
       this.telemetryData.postSave - this.telemetryData.preSave
     );
   }
 
   private recordTelemetryQuitTraining() {
     this.telemetryService.record(
-      `enketo:training:${this.telemetryData.form}:${this.telemetryData.action}:quit`
+      `enketo:${this.telemetryData.form}:${this.telemetryData.action}:quit`
     );
   }
 

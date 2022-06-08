@@ -59,7 +59,7 @@ describe('TrainingCardsService', () => {
   });
 
   it('should show uncompleted training form when none are completed', async () => {
-    sessionService.userCtx.returns({ roles: [], name: 'a_user' });
+    sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
     localDb.allDocs.resolves({ rows: [] });
     clock = sinon.useFakeTimers(1653312565642); // 23/05/2022 20:29:25
     const xforms = [
@@ -67,25 +67,29 @@ describe('TrainingCardsService', () => {
         _id: 'abc-123',
         internalId: 'training:form-a',
         start_date: 1653139765642, // 21/05/2022 20:29:25
-        duration: 3
+        duration: 3,
+        user_roles: [ 'chw' ],
       },
       {
         _id: 'abc-456',
         internalId: 'training:form-b',
         start_date: 1652880565642, // 18/05/2022 20:29:25
-        duration: 2
+        duration: 2,
+        user_roles: [ 'chw' ],
       },
       {
         _id: 'abc-789',
         internalId: 'training:form-c',
         start_date: 1653744565642, // 28/05/2022 20:29:25
-        duration: 6
+        duration: 6,
+        user_roles: [ 'chw' ],
       },
       {
         _id: 'abc-098',
         internalId: 'training:form-d',
         start_date: 1653139765642, // 21/05/2022 20:29:25
-        duration: 9
+        duration: 9,
+        user_roles: [ 'chw' ],
       },
     ];
     service.initTrainingCards();
@@ -101,7 +105,7 @@ describe('TrainingCardsService', () => {
     expect(localDb.allDocs.calledOnce).to.be.true;
     expect(localDb.allDocs.args[0][0]).to.deep.equal({
       include_docs: true,
-      startkey: 'training:a_user:',
+      startkey: 'training:a_user',
       endkey: 'training:a_user:\ufff0',
     });
     expect(globalActions.setTrainingCard.calledOnce);
@@ -111,7 +115,7 @@ describe('TrainingCardsService', () => {
   });
 
   it('should show uncompleted training form when there are some completed', async () => {
-    sessionService.userCtx.returns({ roles: [], name: 'a_user' });
+    sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
     localDb.allDocs.resolves({ rows: [
       { doc: { form: 'training:form-a' } },
       { doc: { form: 'training:form-b' } },
@@ -122,25 +126,29 @@ describe('TrainingCardsService', () => {
         _id: 'abc-123',
         internalId: 'training:form-a',
         start_date: 1653139765642, // 21/05/2022 20:29:25
-        duration: 3
+        duration: 3,
+        user_roles: [ 'chw' ],
       },
       {
         _id: 'abc-456',
         internalId: 'training:form-b',
         start_date: 1652880565642, // 18/05/2022 20:29:25
-        duration: 2
+        duration: 2,
+        user_roles: [ 'chw' ],
       },
       {
         _id: 'abc-789',
         internalId: 'training:form-c',
         start_date: 1653744565642, // 28/05/2022 20:29:25
-        duration: 6
+        duration: 6,
+        user_roles: [ 'chw' ],
       },
       {
         _id: 'abc-098',
         internalId: 'training:form-d',
         start_date: 1653139765642, // 21/05/2022 20:29:25
-        duration: 9
+        duration: 9,
+        user_roles: [ 'chw' ],
       },
     ];
     service.initTrainingCards();
@@ -156,7 +164,7 @@ describe('TrainingCardsService', () => {
     expect(localDb.allDocs.calledOnce).to.be.true;
     expect(localDb.allDocs.args[0][0]).to.deep.equal({
       include_docs: true,
-      startkey: 'training:a_user:',
+      startkey: 'training:a_user',
       endkey: 'training:a_user:\ufff0',
     });
     expect(globalActions.setTrainingCard.calledOnce);
@@ -166,7 +174,7 @@ describe('TrainingCardsService', () => {
   });
 
   it('should show uncompleted training form when they dont have duration set', async () => {
-    sessionService.userCtx.returns({ roles: [], name: 'a_user' });
+    sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
     localDb.allDocs.resolves({ rows: [
       { doc: { form: 'training:form-a' } },
       { doc: { form: 'training:form-b' } },
@@ -177,16 +185,19 @@ describe('TrainingCardsService', () => {
         _id: 'abc-789',
         internalId: 'training:form-a',
         start_date: 1653744565642, // 28/05/2022 20:29:25
+        user_roles: [ 'chw' ],
       },
       {
         _id: 'abc-098',
         internalId: 'training:form-b',
         start_date: 1653139765642, // 21/05/2022 20:29:25
+        user_roles: [ 'chw' ],
       },
       {
         _id: 'abc-098',
         internalId: 'training:form-c',
         start_date: 1653139765642, // 21/05/2022 20:29:25
+        user_roles: [ 'chw' ],
       },
     ];
     service.initTrainingCards();
@@ -202,7 +213,7 @@ describe('TrainingCardsService', () => {
     expect(localDb.allDocs.calledOnce).to.be.true;
     expect(localDb.allDocs.args[0][0]).to.deep.equal({
       include_docs: true,
-      startkey: 'training:a_user:',
+      startkey: 'training:a_user',
       endkey: 'training:a_user:\ufff0',
     });
     expect(globalActions.setTrainingCard.calledOnce);
@@ -212,7 +223,7 @@ describe('TrainingCardsService', () => {
   });
 
   it('should not show training form when all trainings are completed', async () => {
-    sessionService.userCtx.returns({ roles: [], name: 'a_user' });
+    sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
     localDb.allDocs.resolves({ rows: [
       { doc: { form: 'training:form-a' } },
       { doc: { form: 'training:form-b' } },
@@ -224,19 +235,22 @@ describe('TrainingCardsService', () => {
         _id: 'abc-123',
         internalId: 'training:form-a',
         start_date: 1653139765642, // 21/05/2022 20:29:25
-        duration: 3
+        duration: 3,
+        user_roles: [ 'chw' ],
       },
       {
         _id: 'abc-456',
         internalId: 'training:form-b',
         start_date: 1652880565642, // 18/05/2022 20:29:25
-        duration: 2
+        duration: 2,
+        user_roles: [ 'chw' ],
       },
       {
         _id: 'abc-098',
         internalId: 'training:form-c',
         start_date: 1653139765642, // 21/05/2022 20:29:25
-        duration: 9
+        duration: 9,
+        user_roles: [ 'chw' ],
       },
     ];
     service.initTrainingCards();
@@ -252,7 +266,7 @@ describe('TrainingCardsService', () => {
     expect(localDb.allDocs.calledOnce).to.be.true;
     expect(localDb.allDocs.args[0][0]).to.deep.equal({
       include_docs: true,
-      startkey: 'training:a_user:',
+      startkey: 'training:a_user',
       endkey: 'training:a_user:\ufff0',
     });
     expect(globalActions.setTrainingCard.callCount).to.equal(0);
@@ -280,14 +294,15 @@ describe('TrainingCardsService', () => {
   });
 
   it('should catch exception', async () => {
-    sessionService.userCtx.returns({ roles: [], name: 'a_user' });
+    sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
     localDb.allDocs.rejects(new Error('some error'));
     clock = sinon.useFakeTimers(1653312565642); // 23/05/2022 20:29:25
     const xforms = [{
       _id: 'abc-123',
       internalId: 'training:form-a',
       start_date: 1653139765642, // 21/05/2022 20:29:25
-      duration: 3
+      duration: 3,
+      user_roles: [ 'chw' ],
     }];
     service.initTrainingCards();
 
@@ -417,6 +432,12 @@ describe('TrainingCardsService', () => {
         _id: 'abc-098',
         internalId: 'training:form-d',
         start_date: 1653139765642, // 21/05/2022 20:29:25
+        duration: 19,
+      },
+      {
+        _id: 'abc-098',
+        internalId: 'training:form-e',
+        start_date: 1653139765642, // 21/05/2022 20:29:25
         duration: 9,
         user_roles: [ 'role_a', 'role_c' ],
       },
@@ -434,11 +455,11 @@ describe('TrainingCardsService', () => {
     expect(localDb.allDocs.calledOnce).to.be.true;
     expect(localDb.allDocs.args[0][0]).to.deep.equal({
       include_docs: true,
-      startkey: 'training:a_user:',
+      startkey: 'training:a_user',
       endkey: 'training:a_user:\ufff0',
     });
     expect(globalActions.setTrainingCard.calledOnce);
-    expect(globalActions.setTrainingCard.args[0]).to.have.members([ 'training:form-d' ]);
+    expect(globalActions.setTrainingCard.args[0]).to.have.members([ 'training:form-e' ]);
     expect(modalService.show.calledOnce).to.be.true;
     expect(consoleErrorMock.callCount).to.equal(0);
   });

@@ -9,12 +9,13 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 
+export const TRAINING_PREFIX: string = 'training';
+
 @Injectable({
   providedIn: 'root'
 })
 export class TrainingCardsService {
   private globalActions;
-  private readonly TRAINING_PREFIX = 'training:'
 
   constructor(
     private store: Store,
@@ -47,18 +48,24 @@ export class TrainingCardsService {
       }))
       .filter(form => {
         const hasRole = form.userRoles?.find(role => userCtx.roles.includes(role));
-        if (form.userRoles?.length && !hasRole) {
+        console.log('form.userRoles', form.userRoles, 'hasRole', hasRole);
+        if (!hasRole) {
           return false;
         }
 
         const startDate = new Date(form.startDate);
+        console.log('startDate', startDate, 'today', today);
+        if (startDate > today) {
+          return false; // Training has not started yet
+        }
+
         if (!form.duration) {
-          return startDate < today;
+          return true; // Training never ends
         }
 
         const endDate = new Date(form.startDate);
         endDate.setDate(endDate.getDate() + form.duration);
-        return startDate < today && endDate > today;
+        return endDate > today;
       })
       .sort((a, b) => a.startDate - b.startDate);
   }
@@ -68,8 +75,8 @@ export class TrainingCardsService {
       .get()
       .allDocs({
         include_docs: true,
-        startkey: `${this.TRAINING_PREFIX}${userCtx.name}:`,
-        endkey: `${this.TRAINING_PREFIX}${userCtx.name}:\ufff0`,
+        startkey: [ TRAINING_PREFIX, userCtx.name ].join(':'),
+        endkey: [ TRAINING_PREFIX, userCtx.name, '\ufff0' ].join(':'),
       });
 
     if (!docs?.rows?.length) {
