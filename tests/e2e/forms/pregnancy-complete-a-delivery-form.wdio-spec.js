@@ -46,7 +46,7 @@ const contacts = [
   {
     _id: 'fixture:woman',
     type: 'person',
-    name: MOTHESRNAME,
+    name: MOTHERS_NAME,
     sex: 'female',
     date_of_birth: '1994-05-12',
     date_of_birth_method: 'approx',
@@ -80,7 +80,7 @@ const formDocument = {
   _attachments: {
     xml: {
       content_type: 'application/octet-stream',
-      data: Buffer.from(xml).toString('base64')
+      data: Buffer.from(deliveryXml).toString('base64')
     }
   }
 };
@@ -96,7 +96,7 @@ describe('Contact Delivery Form', () => {
     await commonPage.goToPeople('fixture:woman', true);
   });
 
-  it('Complete a delivery: Process a delivery with a live child and facility birth', async () => {
+  it('Complete a delivery: Process a delivery with a live child and facility birth. The report should show associated to the person', async () => {
     await contactPage.createNewAction('Delivery');
     await deliveryForm.selectDeliveryConditionWomanOutcome('alive_well');
     await genericForm.nextPage();
@@ -110,11 +110,11 @@ describe('Contact Delivery Form', () => {
     await deliveryForm.selectDeliveryOutcomeBabiesAlive('1');
     await deliveryForm.selectDeliveryOutcomeDeliveryPlace('health_facility');
     await deliveryForm.selectDeliveryOutcomeDeliveryMode('vaginal');
-    await deliveryForm.setDeliveryOutcomeDateOfDelivery(BABYSDATEOFBIRTH);
+    await deliveryForm.setDeliveryOutcomeDateOfDelivery(BABYS_DOB);
     await genericForm.nextPage();
     await deliveryForm.selectDeliveryBabysCondition('alive_well');
-    await deliveryForm.setDeliveryBabysName(BABYSNAME);
-    await deliveryForm.selectDeliveryBabysSex(BABYSSEX);
+    await deliveryForm.setDeliveryBabysName(BABYS_NAME);
+    await deliveryForm.selectDeliveryBabysSex(BABYS_SEX);
     await deliveryForm.selectDeliveryBabysBirthWeightKnow(NO);
     await deliveryForm.selectDeliveryBabysBirthLengthKnow(NO);
     await deliveryForm.selectDeliveryBabysVaccinesReveived('none');
@@ -134,24 +134,21 @@ describe('Contact Delivery Form', () => {
     await deliveryForm.selectDeliveryPncVisits('none');
     await genericForm.nextPage();
     await deliveryForm.submitForm();
+    await contactPage.openReport();
+    expect((await reportPage.getReportSubject())).to.equal(MOTHERS_NAME);
+    expect((await reportPage.getReportType())).to.equal(formDocument.title);
   });
 
   it('The past pregnancy card should show', async () => {
+    await commonPage.goToPeople('fixture:woman', true);
     await contactPage.getContactCardTitle();
     expect((await contactPage.getContactCardTitle())).to.equal('Past pregnancy');
   });
 
-  it('The report should show associated to the person', async () => {
-    await contactPage.openReport();
-    expect((await reportPage.getReportSubject())).to.equal(MOTHESRNAME);
-    expect((await reportPage.getReportType())).to.equal(formDocument.title);
-  });
-
   it('The child registered during birth should be created and should display the proper information', async () => {
-    await commonPage.goToPeople();
-    await contactPage.selectLHSRowByText(BABYSNAME);
-    expect((await contactPage.getContactInfoName())).to.equal(BABYSNAME);
-    expect((await contactPage.getContactInfoSex()).toLocaleUpperCase()).to.equal(BABYSSEX.toLocaleUpperCase());
+    await contactPage.selectLHSRowByText(BABYS_NAME);
+    expect((await contactPage.getContactInfoName())).to.equal(BABYS_NAME);
+    expect((await contactPage.getContactInfoSex()).toLocaleUpperCase()).to.equal(BABYS_SEX.toLocaleUpperCase());
   });
 
   it('The targets page should be updated', async () => {
