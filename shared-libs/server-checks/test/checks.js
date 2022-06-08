@@ -157,25 +157,26 @@ describe('Server Checks service', () => {
         exit: sinon.stub(),
       };
 
-      sinon.stub(http, 'get').callsArgWith(1, { statusCode: 200 });
+      sinon.stub(http, 'get').onCall(0).callsArgWith(1, { statusCode: 200 });
       sinon.stub(request, 'get');
       request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '2' });
       const unfinishedCluster = { all_nodes: ['a', 'b'], cluster_nodes: ['a'] };
       const finishedCluster = { all_nodes: ['a', 'b'], cluster_nodes: ['a', 'b'] };
       const membershipQuery = request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' }));
       membershipQuery.resolves(unfinishedCluster);
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_users' })).resolves();
 
       membershipQuery.onCall(70).resolves(finishedCluster);
       membershipQuery.onCall(71).resolves(finishedCluster);
       membershipQuery.onCall(72).resolves(finishedCluster);
-      http.get.onCall(2).callsArgWith(1, { statusCode: 401 });
+      http.get.callsArgWith(1, { statusCode: 401 });
 
       const promise = service.check('http://admin:pass@localhost:5984/medic');
       Array.from({ length: 100 }).map(() => originalSetTimeout(() => clock.tick(1000)));
       await promise;
 
-      chai.expect(request.get.callCount).to.equal(146);
-      chai.expect(http.get.callCount).to.deep.equal(3);
+      chai.expect(request.get.callCount).to.equal(214);
+      chai.expect(http.get.callCount).to.deep.equal(72);
     });
 
 
@@ -192,12 +193,13 @@ describe('Server Checks service', () => {
         cluster_nodes: ['1', '2'],
         all_nodes: ['1', '2'],
       });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_users' })).resolves();
 
       const promise = service.check('http://admin:pass@localhost:5984/medic');
       // request will be retried 100 times
       Array.from({ length: 100 }).map(() => originalSetTimeout(() => clock.tick(1000)));
       await promise;
-      chai.expect(request.get.callCount).to.equal(102);
+      chai.expect(request.get.callCount).to.equal(103);
     });
 
     it('couchdb in admin party', async () => {
@@ -214,11 +216,12 @@ describe('Server Checks service', () => {
         cluster_nodes: ['1', '2'],
         all_nodes: ['1', '2'],
       });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_users' })).resolves();
 
       const promise = service.check('http://admin:pass@localhost:5984/medic');
       Array.from({ length: 300 }).map(() => originalSetTimeout(() => clock.tick(1000)));
       await promise;
-      chai.expect(request.get.callCount).to.equal(602);
+      chai.expect(request.get.callCount).to.equal(303);
     });
 
     it('invalid server', () => {

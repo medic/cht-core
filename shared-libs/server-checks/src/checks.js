@@ -69,6 +69,7 @@ const couchDbNoAdminPartyModeCheck = (couchUrl) => {
 };
 
 const checkCluster = async (couchUrl) => {
+  await request.get({ url: `${couchUrl}_users`, json: true });
   const membership = await request.get({ url: `${couchUrl}_membership`, json: true });
   if (membership.all_nodes.length !== membership.cluster_nodes.length) {
     throw new Error('Cluster not ready');
@@ -101,8 +102,8 @@ const couchDbCheck = async (couchUrl) => {
   do {
     try {
       await couchDbVersionCheck(serverUrl.toString());
-      await checkCluster(serverUrl.toString());
       await couchDbNoAdminPartyModeCheck(serverUrl.toString());
+      await checkCluster(serverUrl.toString());
       return;
     } catch (err) {
       logRequestError(err);

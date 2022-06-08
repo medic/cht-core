@@ -57,23 +57,22 @@ services:
     image: {{{ repo }}}/cht-haproxy:{{ tag }}
     container_name: {{ haproxy_container_name }}
     hostname: haproxy
+    depends_on:
+      - {{ couch1_container_name }}
+      - {{ couch2_container_name }}
+      - {{ couch3_container_name }}
     environment:
       - "HAPROXY_IP=${HAPROXY_IP:-haproxy}"
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-pass}"
-      - "COUCHDB1_SERVER=${COUCHDB1_SERVER:-couchdb.1}"
-      - "COUCHDB2_SERVER=${COUCHDB2_SERVER:-couchdb.2}"
-      - "COUCHDB3_SERVER=${COUCHDB3_SERVER:-couchdb.3}"
+      - "COUCHDB1_SERVER=${COUCHDB1_SERVER:-{{ couch1_container_name }}}"
+      - "COUCHDB2_SERVER=${COUCHDB2_SERVER:-{{ couch2_container_name }}}"
+      - "COUCHDB3_SERVER=${COUCHDB3_SERVER:-{{ couch3_container_name }}}"
       - "HAPROXY_PORT=${HAPROXY_PORT:-5984}"
     networks:
       {{ network }}:
     ports:
       - ${HAPROXY_PORT:-5984}:${HAPROXY_PORT:-5984}
-#    ulimits:
-#      nproc: 100000000
-#      nofile:
-#        soft: 100000000
-#        hard: 100000000
 
   cht-api:
     image: {{{ repo }}}/cht-api:{{ tag }}
