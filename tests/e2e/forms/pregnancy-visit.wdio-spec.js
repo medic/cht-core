@@ -29,7 +29,11 @@ describe('Pregnancy Visit', () => {
       .to.have.string('Please note that Jack has one or more danger signs for a high risk pregnancy');
     await reportsPage.submitForm();
 
-    await genericForm.verifyReport();
+    expect(await (await reportsPage.submitterName()).getText())
+      .to.equal(`Submitted by ${userData.userContactDoc.name} `);
+    expect(await (await reportsPage.submitterPhone()).getText()).to.equal(userData.userContactDoc.phone);
+    expect(await (await reportsPage.submitterPlace()).getText()).to.equal(userData.userContactDoc.parent.name);
+    expect(await (await reportsPage.selectedCaseId()).getText()).to.match(/^\d{5}$/);
   });
 });
 
