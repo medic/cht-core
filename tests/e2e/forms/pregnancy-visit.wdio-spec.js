@@ -16,7 +16,7 @@ describe('Pregnancy Visit', () => {
 
   it('Submit and validate Pregnancy Visit form and keeps the report minified', async () => {
     await reportsPage.openForm('Pregnancy Visit');
-    await pregnancyVisitForm.selectPatient('jack');
+    await pregnancyVisitForm.selectPatient(userData.userContactDoc.name);
     await genericForm.nextPage();
     const selectedDangerSigns = await pregnancyVisitForm.selectAllDangerSigns();
     await genericForm.nextPage();
@@ -26,7 +26,7 @@ describe('Pregnancy Visit', () => {
     expect(await pregnancyVisitForm.dangerSignLabel().getText()).to.equal('Danger Signs');
     expect(await pregnancyVisitForm.dangerSignSummary().length).to.equal(selectedDangerSigns + 1);
     expect(await pregnancyVisitForm.followUpMessage().getText())
-      .to.have.string('Please note that Jack has one or more danger signs for a high risk pregnancy');
+      .to.have.string(`${userData.userContactDoc.name} has one or more danger signs for a high risk pregnancy`);
     await reportsPage.submitForm();
 
     expect(await (await reportsPage.submitterName()).getText())
