@@ -118,6 +118,7 @@ describe('bootstrapper', () => {
   const setUserCtxCookie = userCtx => {
     document.cookie = `userCtx=${JSON.stringify(userCtx)};something=true`;
   };
+  const wait = time => new Promise(resolve => setTimeout(resolve, time));
 
   it('does nothing for admins', done => {
     setUserCtxCookie({ name: 'jimbo', roles: [ '_admin' ] });
@@ -303,26 +304,27 @@ describe('bootstrapper', () => {
     });
   });
 
-  // fails with Uncaught UnhandledPromiseRejection: This error originated either by throwing inside of an as
-  // when running node 16 and mocha 7. just works on node 16 and mocha 8
-  it('returns redirect to login error when no userCtx cookie found', done => {
+  it('should redirect to login when no userCtx cookie found', async () => {
     localGet.withArgs('_design/medic-client').rejects();
     sinon.stub(purger, 'setOptions');
+
+    const localReplicateResult = Promise.reject({ status: 401 });
+    localReplicateResult.on = () => {};
+    localReplicate.returns(localReplicateResult);
 
     localAllDocs.resolves({ total_rows: 0 });
     fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
 
-    bootstrapper(pouchDbOptions, err => {
-      assert.equal(err.status, 401);
-      assert.equal(
-        err.redirect,
-        '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
-      );
-      done();
-    });
+    bootstrapper(pouchDbOptions, () => assert.fail('should not have executed callback'));
+
+    await wait(100);
+    assert.equal(
+      window.location.href,
+      '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
+    );
   });
 
-  it('returns redirect to login error when initial replication returns unauthorized', done => {
+  it('should redirect to login when initial replication returns unauthorized', async () => {
     setUserCtxCookie({ name: 'jim' });
 
     localGet.withArgs('_design/medic-client').rejects();
@@ -330,21 +332,23 @@ describe('bootstrapper', () => {
     sinon.stub(purger, 'info').resolves('some-info');
     sinon.stub(purger, 'checkpoint').resolves();
 
-    const localReplicateResult = new Promise((resolve, reject) => setTimeout(() => reject({ status: 401 })));
+    const localReplicateResult = Promise.reject({ status: 401 });
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
 
     localAllDocs.resolves({ total_rows: 0 });
     fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
 
-    bootstrapper(pouchDbOptions, err => {
-      assert.equal(err.status, 401);
-      assert.equal(
-        err.redirect,
-        '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
-      );
-      done();
-    });
+    bootstrapper(pouchDbOptions, () => assert.fail('should not have executed callback'));
+
+    await wait(100);
+    assert.equal(
+      window.location.href,
+      '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
+    );
+    assert.equal(purger.info.calledOnce, true);
+    assert.equal(purger.checkpoint.calledOnce, true);
+    assert.deepEqual(purger.checkpoint.args[0], ['some-info']);
   });
 
   it('returns other errors in initial replication', done => {
@@ -364,6 +368,47 @@ describe('bootstrapper', () => {
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 404);
       assert.equal(err.redirect, null);
+      assert.equal(purger.info.callCount, 1);
+      assert.equal(purger.checkpoint.callCount, 1);
+      assert.deepEqual(purger.checkpoint.args[0], ['some-info']);
+      done();
+    });
+  });
+
+  it('should return purger info errors', (done) => {
+    setUserCtxCookie({ name: 'jim' });
+    localGet.withArgs('_design/medic-client').rejects();
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'info').rejects({ error: 'boom' });
+    sinon.stub(purger, 'checkpoint');
+
+    localAllDocs.resolves({ total_rows: 0 });
+    fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
+
+    bootstrapper(pouchDbOptions, err => {
+      assert.equal(err.error, 'boom');
+      assert.equal(purger.info.callCount, 1);
+      assert.equal(purger.checkpoint.callCount, 0);
+      assert.equal(localReplicate.callCount, 0);
+      done();
+    });
+  });
+
+  it('should return purger checkpoint errors', (done) => {
+    setUserCtxCookie({ name: 'jim' });
+    localGet.withArgs('_design/medic-client').rejects();
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'info').resolves('info');
+    sinon.stub(purger, 'checkpoint').rejects({ some: 'error' });
+
+    localAllDocs.resolves({ total_rows: 0 });
+    fetch.resolves({ json: sinon.stub().resolves({ total_docs: 2500, warn: false }) });
+
+    bootstrapper(pouchDbOptions, err => {
+      assert.deepEqual(err, { some: 'error' });
+      assert.equal(purger.info.callCount, 1);
+      assert.equal(purger.checkpoint.callCount, 1);
+      assert.equal(localReplicate.callCount, 0);
       done();
     });
   });
@@ -434,6 +479,32 @@ describe('bootstrapper', () => {
       done();
     });
 
+  });
+
+  it('should not ignore the error and redirect to login if the users-info fetch fails with 401', async () => {
+    setUserCtxCookie({ name: 'jim' });
+    localGet.withArgs('_design/medic-client').onCall(0).rejects();
+    localGet.withArgs('_design/medic-client').onCall(1).resolves();
+    localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
+    sinon.stub(purger, 'info').resolves('some-info');
+
+    const localReplicateResult = Promise.resolve();
+    localReplicateResult.on = () => {};
+    localReplicate.returns(localReplicateResult);
+    localId.resolves('some random string');
+    localAllDocs.resolves({ total_rows: 0 });
+    fetch.resolves({ json: sinon.stub().resolves({ code: 401, error: 'user is not authenticated' }) });
+
+    bootstrapper(pouchDbOptions, () => assert.fail('should not have executed callback'));
+
+    await wait(100);
+    assert.equal(
+      window.location.href,
+      '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
+    );
+    assert.equal(fetch.calledOnce, true);
+    // It didn't continue with the execution of purge.
+    assert.equal(purger.info.callCount, 0);
   });
 
   it('error results if service worker fails registration', done => {

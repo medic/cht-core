@@ -395,7 +395,7 @@ module.exports = function(grunt) {
       },
       'start-webdriver-ci': {
         cmd:
-          'scripts/e2e/start_webdriver.sh'
+          'tests/scripts/start_webdriver.sh'
       },
       'check-env-vars':
         'if [ -z $COUCH_URL ]; then ' +
@@ -664,7 +664,7 @@ module.exports = function(grunt) {
             suite: 'mobile',
             capabilities: {
               chromeOptions: {
-                'args': ['headless','disable-gpu'],
+                'args': ['headless', 'disable-gpu'],
                 mobileEmulation: { 'deviceName': 'Nexus 5' }
               }
             }

@@ -15,7 +15,7 @@ const expectedOptions = {
 };
 
 describe('poe', () => {
-  beforeEach(()=> {
+  beforeEach(() => {
     console = { log: jest.fn() };
     process = { env: {POE_API_URL: 'http://poe'} };
   });

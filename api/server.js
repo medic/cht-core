@@ -68,7 +68,7 @@ process
 
   } catch (err) {
     logger.error('Fatal error initialising medic-api');
-    logger.error('%o',err);
+    logger.error('%o', err);
     process.exit(1);
   }
 

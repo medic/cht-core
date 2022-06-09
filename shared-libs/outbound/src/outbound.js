@@ -114,7 +114,7 @@ const sendPayload = (payload, config) => {
     }
 
     if (authConf.type.toLowerCase() === 'basic') {
-      return fetchPassword(authConf['password_key'])
+      return fetchPassword(authConf.password_key)
         .then(password => {
           sendOptions.auth = {
             username: authConf.username,
@@ -126,7 +126,7 @@ const sendPayload = (payload, config) => {
 
     if (authConf.type.toLowerCase() === 'header') {
       if (authConf.name && authConf.name.toLowerCase() === 'authorization') {
-        return fetchPassword(authConf['value_key'])
+        return fetchPassword(authConf.value_key)
           .then(value => {
             sendOptions.headers = {
               Authorization: value
@@ -139,7 +139,7 @@ const sendPayload = (payload, config) => {
     }
 
     if (authConf.type.toLowerCase() === 'muso-sih') {
-      return fetchPassword(authConf['password_key'])
+      return fetchPassword(authConf.password_key)
         .then(password => {
           const authOptions = {
             form: {

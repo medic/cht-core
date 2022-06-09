@@ -1,7 +1,7 @@
 const Factory = require('rosie').Factory;
 
 module.exports = new Factory()
-  .attr('_id','org.couchdb.user:admin')
+  .attr('_id', 'org.couchdb.user:admin')
   .attr('id', 'org.couchdb.user:admin')
   .attr('name', 'admin')
   .attr('type', 'user-settings')
@@ -9,5 +9,5 @@ module.exports = new Factory()
   .attr('language', 'en')
   .attr('known', true)
   .attr('roles', ['_admin']);
-  
-  
+
+

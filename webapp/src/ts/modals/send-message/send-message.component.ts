@@ -22,6 +22,7 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
     message: false,
     phone: false
   };
+
   fields = { // Field values are automatically assigned by BsModal, if initialState defined.
     to: '',
     message: '',
@@ -105,7 +106,7 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
     });
   }
 
-  private templateResult(contactTypes = [], row) {
+  private templateResult(contactTypes, row) {
     if (!row) {
       return;
     }

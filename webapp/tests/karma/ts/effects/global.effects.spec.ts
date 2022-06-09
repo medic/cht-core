@@ -68,7 +68,7 @@ describe('GlobalEffects', () => {
   });
 
   describe('deleteDocConfirm', () => {
-    it('should not be triggered by random actions', waitForAsync (() => {
+    it('should not be triggered by random actions', waitForAsync(() => {
       actions$ = of([
         GlobalActionsList.setLoadingContent(true),
         GlobalActionsList.clearSelected(),
@@ -78,7 +78,7 @@ describe('GlobalEffects', () => {
       expect(modalService.show.callCount).to.equal(0);
     }));
 
-    it('should open modal with payload', waitForAsync (() => {
+    it('should open modal with payload', waitForAsync(() => {
       const doc = { _id: 'some_doc' };
       actions$ = of(GlobalActionsList.deleteDocConfirm(doc));
       effects.deleteDocConfirm$.subscribe();
@@ -113,7 +113,7 @@ describe('GlobalEffects', () => {
         expect(router.navigateByUrl.args[0]).to.deep.equal(['next']);
       }));
 
-      it('when not saving edited and no cancel callback and no route', waitForAsync (async () => {
+      it('when not saving edited and no cancel callback and no route', waitForAsync(async () => {
         store.overrideSelector(Selectors.getEnketoStatus, { form: true, saving: false, edited: true });
         actions$ = of(GlobalActionsList.navigationCancel(''));
         effects.navigationCancel.subscribe();
@@ -124,7 +124,7 @@ describe('GlobalEffects', () => {
         expect(router.navigateByUrl.callCount).to.equal(0);
       }));
 
-      it('when not saving edited and no cancel callback and route', waitForAsync (async () => {
+      it('when not saving edited and no cancel callback and route', waitForAsync(async () => {
         store.overrideSelector(Selectors.getEnketoStatus, { form: true, saving: false, edited: true });
         actions$ = of(GlobalActionsList.navigationCancel('next'));
         effects.navigationCancel.subscribe();
@@ -135,7 +135,7 @@ describe('GlobalEffects', () => {
         expect(router.navigateByUrl.callCount).to.equal(0);
       }));
 
-      it('when not saving edited and cancel callback but user cancels modal', waitForAsync (async () => {
+      it('when not saving edited and cancel callback but user cancels modal', waitForAsync(async () => {
         modalService.show.rejects({ means: 'that user cancelled' });
         store.overrideSelector(Selectors.getNavigation, { cancelCallback });
         store.overrideSelector(Selectors.getEnketoStatus, { form: true, saving: false, edited: true });

@@ -14,7 +14,7 @@ const pollSmsApi = body => {
 };
 
 describe('sms-gateway api', () => {
-  before(async ()=> {
+  before(async () => {
     await loginPage.cookieLogin();
   });
 

@@ -27,7 +27,7 @@ describe('RouteGuard provider', () => {
     });
   }));
 
-  it('should return true when no permissions', waitForAsync (() => {
+  it('should return true when no permissions', waitForAsync(() => {
     const snapshot = new ActivatedRouteSnapshot();
     snapshot.data = { no: 'permissions', name: 'thing' };
     provider.canActivate(snapshot).subscribe(value => {

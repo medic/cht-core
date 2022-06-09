@@ -41,7 +41,7 @@ const validateKey = req => {
     const given = req.query.key;
     if (expected !== given) {
       logger.warn(`Attempt to access Africa's Talking endpoint without the correct incoming key`);
-      return Promise.reject({ code: 403, message: `Incorrect key: "${given}"` });
+      return Promise.reject({ code: 403, message: 'Incorrect token' });
     }
   });
 };

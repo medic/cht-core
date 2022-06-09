@@ -21,7 +21,6 @@ const person = {
 };
 const personBis = Object.assign({}, person, {
   _id: '2bba279f-8ad9-4823-be69-a8eb09879402-bis',
-  simprints_id: 22,
   date_of_death: 10,
   type: 'contact',
   contact_type: 'patient',
@@ -228,7 +227,6 @@ describe('doc_summaries_by_id view', () => {
         type: 'person',
         contact_type: undefined,
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
-        simprints_id: undefined,
         date_of_death: undefined,
         contact: undefined,
         muted: undefined
@@ -243,7 +241,6 @@ describe('doc_summaries_by_id view', () => {
         type: 'contact',
         contact_type: 'patient',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
-        simprints_id: 22,
         date_of_death: 10,
         contact: undefined,
         muted: true

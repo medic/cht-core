@@ -82,7 +82,7 @@ describe('Standard Configuration Targets', () => {
 
         // when
         const targets = await harness.getEmittedTargetInstances();
-    
+
         // then
         const expectedTargets = [
           {
@@ -1263,7 +1263,8 @@ describe('Standard Configuration Targets', () => {
                 type: 'pnc-3-visits',
                 pass: false,
                 date: 1469358731456
-              }];
+              },
+            ];
 
             assertTargetsEqual(targets, expectedTargets, 'date');
           });

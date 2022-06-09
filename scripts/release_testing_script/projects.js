@@ -32,7 +32,7 @@ async function addColumnsToProject(columnName, projectId) {
 
 function sortColumnData(columns) {
   const sorted = columns.map((column, index) => {
-    sorted.push([index, column.order]);
+    return [index, column.order];
   });
   sorted.sort((a, b) => a[1] - b[1]);
   return sorted;

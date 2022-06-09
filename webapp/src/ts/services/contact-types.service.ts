@@ -87,8 +87,8 @@ export class ContactTypesService {
     return contactTypesUtils.getTypeId(contact);
   }
 
-  getTypeById(contactTypes = [], typeId) {
-    return contactTypes.find(type => type?.id === typeId);
+  getTypeById(contactTypes, typeId) {
+    return contactTypes?.find(type => type?.id === typeId);
   }
 
   /**

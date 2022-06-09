@@ -7,7 +7,7 @@ module.exports = {
   color: true,
   checkLeaks: true,
   fullTrace: true,
-  asyncOnly: true,
+  asyncOnly: false,
   spec: [
     'tests/e2e/api/**/*.js',
     'tests/integration/**/*.js',

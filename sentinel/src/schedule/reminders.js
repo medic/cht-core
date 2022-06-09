@@ -302,6 +302,7 @@ module.exports = {
           return true;
         }
         logger.warn('Reminder configuration invalid: %o', reminder);
+        return false;
       })
       .reduce((p, reminder) => p.then(() => runReminder(reminder)), Promise.resolve());
   },

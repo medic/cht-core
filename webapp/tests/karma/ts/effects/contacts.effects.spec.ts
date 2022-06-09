@@ -123,7 +123,7 @@ describe('Contacts effects', () => {
       simulateContactsReducer();
     });
 
-    it('should deselect when no provided id', waitForAsync (() => {
+    it('should deselect when no provided id', waitForAsync(() => {
       clearSelection = sinon.stub(ContactsActions.prototype, 'clearSelection');
       actions$ = of(ContactActionList.selectContact({  }));
       effects.selectContact.subscribe();

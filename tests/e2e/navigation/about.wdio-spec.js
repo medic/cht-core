@@ -4,7 +4,7 @@ const loginPage = require('../../page-objects/login/login.wdio.page');
 const aboutPage = require('../../page-objects/common/about.wdio.page');
 const partnersFactory = require('../../factories/cht/config/partners');
 
-describe('About page' , async () => {
+describe('About page', async () => {
   beforeEach(async () => {
     await loginPage.cookieLogin();
   });

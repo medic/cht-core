@@ -5,7 +5,9 @@ const usersDb = require('../../../src/services/user-db');
 const rewire = require('rewire');
 
 let migration;
-const validateDocUpdate = function(){ return 'validate_doc_update'; };
+const validateDocUpdate = function() {
+  return 'validate_doc_update';
+};
 
 describe('add-meta-validate-doc-update', () => {
   beforeEach(() => {
@@ -120,11 +122,8 @@ describe('add-meta-validate-doc-update', () => {
       'medic-user-chw2-meta',
     ];
 
-    //const validateDocUpdate = function(){ return 'validate_doc_update'; };
-
     usersDb.isDbName.withArgs('medic-user-chw1-meta').returns(true);
     usersDb.isDbName.withArgs('medic-user-chw2-meta').returns(true);
-    //usersDb.validateDocUpdate.returns(validateDocUpdate);
     db.allDbs.resolves(dbNames);
     const metaChw1Db = { get: sinon.stub().rejects({ status: 404 }) };
     const metaChw2Db = { get: sinon.stub().resolves({}), put: sinon.stub().resolves() };
@@ -158,7 +157,6 @@ describe('add-meta-validate-doc-update', () => {
       'medic-user-gamma-meta',
     ];
 
-    const validateDocUpdate = function(){ return 'validate_doc_update'; };
     const ddoc = { _id: '_design/medic-user', views: 'whatever' };
     const ddocWithBadValidate = Object.assign({ validate_doc_update: 'not the same' }, ddoc);
     const ddocWithGoodValidate = Object.assign({ validate_doc_update: validateDocUpdate.toString() }, ddoc);

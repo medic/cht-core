@@ -11,7 +11,7 @@ const now = '2000-01-01';
 const facilityReminderTask = {
   pre: 3,
   post: 7,
-  triggers: [14],//2000-01-15, pregnancyRegistrationScenarios.safe
+  triggers: [14], //2000-01-15, pregnancyRegistrationScenarios.safe
   triggerUnit: 'days'
 };
 

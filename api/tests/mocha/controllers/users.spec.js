@@ -417,7 +417,7 @@ describe('Users Controller', () => {
           serverUtils.error.resolves();
         });
 
-        scenarios.map(scenario => {
+        scenarios.forEach(scenario => {
           it(scenario.name, () => {
             req.query = {
               role: scenario.role,

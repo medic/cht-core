@@ -2,7 +2,7 @@ const sinon = require('sinon');
 require('chai').should();
 const lib = require('../src/view-map-utils');
 
-describe('Replication Helper Views Lib', () =>{
+describe('Replication Helper Views Lib', () => {
   afterEach(() => {
     sinon.restore();
     lib._reset();
@@ -146,7 +146,7 @@ describe('Replication Helper Views Lib', () =>{
       };
       lib.loadViewMaps(ddoc, 'view1', 'view2');
       const viewMapStrings = lib._getViewMapStrings();
-      viewMapStrings['ddoc']['view1'].should.equal('function(a) { return a; }');
+      viewMapStrings.ddoc.view1.should.equal('function(a) { return a; }');
     });
   });
 
