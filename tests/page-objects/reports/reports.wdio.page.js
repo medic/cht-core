@@ -43,7 +43,8 @@ const sentTask = async () => (await reportBodyDetails()).$('ul .task-list .task-
 const reportByUUID = (uuid) => $(`li[data-record-id="${uuid}"]`);
 
 const patientName = () => $('.subject .name');
-const reportType = () => $('#reports-content > div.body.report-body > div.item-summary > div > div:nth-child(2)');
+const reportType = () => $('div[test-id="form-title"]');
+
 
 // warning: the unread element is not displayed when there are no unread reports
 const getUnreadCount = async () => {
