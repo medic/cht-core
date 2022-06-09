@@ -148,7 +148,7 @@ describe('Contact Delivery Form', () => {
   it('The child registered during birth should be created and should display the proper information', async () => {
     await contactPage.selectLHSRowByText(BABYS_NAME);
     expect((await contactPage.getContactInfoName())).to.equal(BABYS_NAME);
-    expect((await contactPage.getContactInfoSex()).toLocaleUpperCase()).to.equal(BABYS_SEX.toLocaleUpperCase());
+    expect((await contactPage.getContactSummaryField('contact.sex')).toLocaleUpperCase()).to.equal(BABYS_SEX.toLocaleUpperCase());
   });
 
   it('The targets page should be updated', async () => {
