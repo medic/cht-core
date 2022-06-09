@@ -16,6 +16,7 @@ if (UNIT_TEST_ENV) {
     'sentinel',
     'medicLogs',
     'builds',
+    'vault',
   ];
   const DB_FUNCTIONS_TO_STUB = [
     'allDocs',

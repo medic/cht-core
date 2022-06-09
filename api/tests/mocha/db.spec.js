@@ -3,6 +3,7 @@ require('chai').use(require('chai-as-promised'));
 const { expect } = require('chai');
 const rewire = require('rewire');
 const rpn = require('request-promise-native');
+const PouchDB = require('pouchdb-core');
 
 let db;
 let unitTestEnv;
@@ -16,6 +17,7 @@ describe('db', () => {
     sinon.stub(env, 'couchUrl').value('http://admin:pass@couch:5984/medic');
     sinon.stub(env, 'buildsUrl').value('http://admin:pass@builds:5984/builds');
     sinon.stub(env, 'serverUrl').value('http://admin:pass@couch:5984/');
+    sinon.stub(PouchDB, 'fetch').resolves({ ok: true, json: sinon.stub().resolves({}) });
 
     db = rewire('../../src/db');
   });

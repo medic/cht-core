@@ -6,8 +6,6 @@ const CRYPTO_ALGO = 'aes-256-cbc';
 
 const getCredentialId = id => `credential:${id}`;
 
-const getCouchNodeName = () => process.env.COUCH_NODE_NAME;
-
 const getCouchUrl = () => {
   const couchUrl = process.env.COUCH_URL;
   return couchUrl && couchUrl.replace(/\/$/, '');
@@ -99,12 +97,7 @@ const getCouchConfigUrl = () => {
     throw new Error('Failed to find the CouchDB server');
   }
 
-  const nodeName = getCouchNodeName();
-  if (!nodeName) {
-    throw new Error('Failed to find the CouchDB node name');
-  }
-
-  return `${serverUrl}/_node/${nodeName}/_config`;
+  return `${serverUrl}/_node/_local/_config`;
 };
 
 const getCouchConfig = (param) => {
