@@ -58,9 +58,9 @@ services:
     container_name: {{ haproxy_container_name }}
     hostname: haproxy
     depends_on:
-      - {{ couch1_container_name }}
-      - {{ couch2_container_name }}
-      - {{ couch3_container_name }}
+      - couchdb.1
+      - couchdb.2
+      - couchdb.3
     environment:
       - "HAPROXY_IP=${HAPROXY_IP:-haproxy}"
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
