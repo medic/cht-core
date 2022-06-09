@@ -54,9 +54,7 @@ const childrenCards = () => $$('.right-pane .card.children');
 const newActionContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-stack');
 const forms = () => $$('.action-container .detail-actions .actions.dropup .open .dropdown-menu li');
 const formTitle = () => $('#form-title');
-const contactCardTitle = () =>
-  $('/html/body/app-root/div/div[2]/div/ng-component/div[2]/div/' +
-    'contacts-content/div/div/div/div[1]/div[2]/div/div[1]/h3');
+const contactCardTitle = () => $('.inbox .content-pane .material .body .action-header');
 const contactInfoName = () =>
   $('/html/body/app-root/div/div[2]/div/ng-component/div[2]/div/contacts-content/div/div/div/div[1]/div/div[1]/div');
 const contactInfoSex = () => $('//*[@id="contact_summary"]/div[3]/div/div/p');
