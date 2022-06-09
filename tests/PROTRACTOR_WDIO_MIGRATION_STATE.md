@@ -14,7 +14,6 @@
 |e2e/forms/submit-z-score-form.spec.js	|	|	|	|	|
 |e2e/login/db-sync-filter.spec.js	|	|	|	|	|
 |e2e/login/privacy-policy.spec.js	|	|	|	|	|
-|e2e/login/purge.spec.js	|	|	|	|	|
 |e2e/login/token-login.spec.js	|	|	|	|	|
 |e2e/navigation/common.specs.js	|Done	|	|	|	|
 |e2e/navigation/hamburger-menu.js	|Done	|	|	|	|

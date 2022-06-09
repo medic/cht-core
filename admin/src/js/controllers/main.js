@@ -4,11 +4,12 @@ angular.module('controllers').controller('MainCtrl',
     $q,
     $scope,
     $state,
-    $translate,
     $window,
     Auth,
+    Language,
     Location,
-    Session
+    Session,
+    SetLanguage
   ) {
     'ngInject';
 
@@ -24,7 +25,7 @@ angular.module('controllers').controller('MainCtrl',
         });
     };
 
-    $translate.use('en');
+    Language().then(locale => SetLanguage(locale));
     $scope.authorized = false;
     $scope.navbarCollapsed = true;
     $q

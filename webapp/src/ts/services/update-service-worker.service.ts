@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
-import {environment} from '@mm-environments/environment';
+import { environment } from '@mm-environments/environment';
 
 @Injectable({
   providedIn: 'root'

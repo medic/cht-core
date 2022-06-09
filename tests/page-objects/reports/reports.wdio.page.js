@@ -18,6 +18,9 @@ const reportRowSelector = `${reportListID} .content-row`;
 const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 
+const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
+const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
+
 const submitReportButton = () => $('.action-container .general-actions:not(.ng-hide) .fa-plus');
 const deleteAllButton = () => $('.action-container .detail-actions .delete-all');
 const dateFilter = () => $('#date-filter');
@@ -27,8 +30,6 @@ const datePickerEnd = () => $('.daterangepicker [name="daterangepicker_end"]');
 const formActionsLink = (formId) => {
   return $(`.action-container .general-actions .dropup.open .dropdown-menu li a[href="#/reports/add/${formId}"]`);
 };
-const addRepeatButton = () => $('.btn.btn-default.add-repeat-btn');
-const repeatForm = async () => (await addRepeatButton()).click();
 const unreadCount = () => $('#reports-tab .mm-badge');
 const formTitle = () => $('#report-form #form-title');
 const submitButton = () => $('#report-form .form-footer .btn.submit');
@@ -212,6 +213,17 @@ const getCurrentReportId = async () => {
   return currentUrl.slice(reportBaseUrl.length);
 };
 
+const getReportDetailFieldValueByLabel = async (label) => {
+  await reportBodyDetails().waitForDisplayed();
+  for (const field of await reportDetailsFields()) {
+    const fieldLabel = await (await field.$('label span')).getText();
+    if (fieldLabel === label) {
+      return await (await field.$('p span')).getText();
+    }
+  }
+};
+
+
 module.exports = {
   getCurrentReportId,
   reportList,
@@ -223,8 +235,6 @@ module.exports = {
   selectedCaseIdLabel,
   submitReportButton,
   formActionsLink,
-  addRepeatButton,
-  repeatForm,
   getUnreadCount,
   goToReportById,
   sentTask,
@@ -252,4 +262,5 @@ module.exports = {
   allReports,
   reportsByUUID,
   getAllReportsText,
+  getReportDetailFieldValueByLabel
 };

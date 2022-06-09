@@ -33,6 +33,7 @@ process
   const serverUtils = require('./src/server-utils');
   const uploadDefaultDocs = require('./src/upload-default-docs');
   const generateServiceWorker = require('./src/generate-service-worker');
+  const manifest = require('./src/services/manifest');
   const apiPort = process.env.API_PORT || 5988;
 
   try
@@ -57,6 +58,10 @@ process
     logger.info('Running db migrations…');
     await migrations.run();
     logger.info('Database migrations completed successfully');
+
+    logger.info('Generating manifest');
+    await manifest.generate();
+    logger.info('Manifest generated successfully');
 
     logger.info('Generating service worker');
     await generateServiceWorker.run(true);

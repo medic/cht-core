@@ -37,7 +37,8 @@ describe('DB service', () => {
       });
       $provide.value('Session', {
         userCtx: userCtx,
-        isOnlineOnly: isOnlineOnly
+        isOnlineOnly: isOnlineOnly,
+        checkCurrentSession: sinon.stub(),
       } );
       $provide.value('Location', Location);
     });

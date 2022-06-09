@@ -936,12 +936,15 @@ module.exports = {
 
   deleteDocs: ids => {
     return module.exports.getDocs(ids).then(docs => {
-      docs.forEach(doc => doc._deleted = true);
-      return module.exports.requestOnTestDb({
-        path: '/_bulk_docs',
-        method: 'POST',
-        body: { docs },
-      });
+      docs = docs.filter(doc => !!doc);
+      if (docs.length) {
+        docs.forEach(doc => doc._deleted = true);
+        return module.exports.requestOnTestDb({
+          path: '/_bulk_docs',
+          method: 'POST',
+          body: { docs },
+        });
+      }
     });
   },
 

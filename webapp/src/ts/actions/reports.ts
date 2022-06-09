@@ -1,6 +1,6 @@
 import { Store, createAction } from '@ngrx/store';
 
-import { createMultiValueAction, createSingleValueAction } from './actionUtils';
+import { createMultiValueAction, createSingleValueAction } from '@mm-actions/actionUtils';
 import { GlobalActions } from '@mm-actions/global';
 
 export const Actions = {

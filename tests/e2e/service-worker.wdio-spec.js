@@ -78,7 +78,7 @@ const login = async () => {
   await commonPage.waitForPageLoaded();
 };
 
-const SW_SUCCESSFULL_REGEX = /Service worker generated successfully/;
+const SW_SUCCESSFUL_REGEX = /Service worker generated successfully/;
 
 describe('Service worker cache', () => {
   before(async () => {
@@ -93,13 +93,14 @@ describe('Service worker cache', () => {
     const cacheDetails = await getCachedRequests();
 
     expect(cacheDetails.name.startsWith('sw-precache-v3-cache-')).to.be.true;
-    expect(cacheDetails.urls).to.deep.eq([
+    expect(cacheDetails.urls).to.have.members([
       '/',
       '/audio/alert.mp3',
       '/fontawesome-webfont.woff2',
       '/fonts/NotoSans-Bold.ttf',
       '/fonts/NotoSans-Regular.ttf',
       '/fonts/enketo-icons-v2.woff',
+      '/img/icon.png',
       '/img/icon-chw-selected.svg',
       '/img/icon-chw.svg',
       '/img/icon-nurse-selected.svg',
@@ -199,6 +200,19 @@ describe('Service worker cache', () => {
 
   it('should load the page while offline', async () => {
     await browser.throttle('offline');
+    await browser.refresh();
+    await (await commonPage.analyticsTab()).waitForDisplayed();
+    await browser.throttle('online');
+  });
+
+  it('should load the page while on a very slow connection', async () => {
+    const turtleMode = {
+      offline: false,
+      latency: 60000, // take a minute to respond to any request
+      downloadThroughput: -1,
+      uploadThroughput: -1
+    };
+    await browser.throttle(turtleMode);
     await browser.refresh();
     await (await commonPage.analyticsTab()).waitForDisplayed();
     await browser.throttle('online');
