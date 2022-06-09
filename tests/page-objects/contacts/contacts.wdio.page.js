@@ -52,7 +52,7 @@ const contactCards = () => $$('.card.children');
 const districtHospitalName = () => $('[name="/data/district_hospital/name"]');
 const childrenCards = () => $$('.right-pane .card.children');
 const newActionContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-stack');
-const forms = () => $$('/html/body/app-root/div/mm-actionbar/div/div/div/div[2]/div/span/ul/li');
+const forms = () => $$('.action-container .detail-actions .actions.dropup .open .dropdown-menu li');
 const formTitle = () => $('#form-title');
 const contactCardTitle = () =>
   $('/html/body/app-root/div/div[2]/div/ng-component/div[2]/div/' +
