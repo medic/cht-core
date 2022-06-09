@@ -263,6 +263,5 @@ module.exports = {
   allReports,
   reportsByUUID,
   getAllReportsText,
-  getReportDetailFieldValueByLabel,
-  getListReportInfo
+  getReportDetailFieldValueByLabel
 };
