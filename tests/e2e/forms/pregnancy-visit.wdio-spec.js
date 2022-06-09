@@ -29,6 +29,13 @@ describe('Pregnancy Visit', () => {
       .to.have.string(`${userData.userContactDoc.name} has one or more danger signs for a high risk pregnancy`);
     await reportsPage.submitForm();
 
+    //report summary
+    const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
+    expect(firstReport.heading).to.equal(userData.userContactDoc.name);
+    expect(firstReport.form).to.equal('Pregnancy Visit');
+    expect(firstReport.lineage).to.equal(userData.userContactDoc.parent.name);
+
+    //report details
     expect(await (await reportsPage.submitterName()).getText())
       .to.equal(`Submitted by ${userData.userContactDoc.name} `);
     expect(await (await reportsPage.submitterPhone()).getText()).to.equal(userData.userContactDoc.phone);
