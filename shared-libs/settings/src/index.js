@@ -45,7 +45,7 @@ const encrypt = (text) => {
   return getKey()
     .then(key => {
       const iv = crypto.randomBytes(IV_LENGTH);
-      const cipher = crypto.createCipheriv(CRYPTO_ALGO, Buffer.from(key), iv);
+      const cipher = crypto.createCipheriv(CRYPTO_ALGO, Buffer.from(key).slice(0, 32), iv);
       const start = cipher.update(text);
       const end = cipher.final();
       const encrypted = Buffer.concat([ start, end ]);
@@ -59,7 +59,7 @@ const decrypt = (text) => {
       const parts = text.split(':');
       const iv = Buffer.from(parts.shift(), 'hex');
       const encryptedText = Buffer.from(parts.join(':'), 'hex');
-      const decipher = crypto.createDecipheriv(CRYPTO_ALGO, Buffer.from(key), iv);
+      const decipher = crypto.createDecipheriv(CRYPTO_ALGO, Buffer.from(key).slice(0, 32), iv);
       const start = decipher.update(encryptedText);
       const final = decipher.final();
       return Buffer.concat([ start, final ]).toString();

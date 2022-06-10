@@ -328,7 +328,7 @@ describe('Users API', () => {
       await utils.request({
         port: constants.COUCH_PORT,
         method: 'PUT',
-        path: `/_node/${constants.COUCH_NODE_NAME}/_config/admins/${otherAdmin.username}`,
+        path: `/_node/_local/_config/admins/${otherAdmin.username}`,
         body: `"${otherAdmin.password}"`,
       });
 

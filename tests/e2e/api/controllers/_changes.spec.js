@@ -211,7 +211,7 @@ const batchedChanges = (username, limit, results = [], lastSeq = 0) => {
 
 const getChangesForIds = (username, docIds, retry = false, lastSeq = 0, limit = 100, results = []) => {
   if (retry === true) {
-    retry = 50;
+    retry = 100;
   }
 
   if (retry < 0) {

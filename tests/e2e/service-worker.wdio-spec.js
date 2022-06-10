@@ -78,7 +78,7 @@ const login = async () => {
   await commonPage.waitForPageLoaded();
 };
 
-const SW_SUCCESSFUL_REGEX = /Service worker generated successfully/;
+const SW_SUCCESSFULL_REGEX = /Service worker generated successfully/;
 
 describe('Service worker cache', () => {
   before(async () => {

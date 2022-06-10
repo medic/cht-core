@@ -34,6 +34,7 @@ describe('Configuration', () => {
     sinon.spy(config, 'set');
     sinon.spy(config, 'setTranslationCache');
     sinon.spy(config, 'setTransitionsLib');
+    sinon.stub(manifest, 'generate');
     sinon.stub(fs, 'watch');
   });
 

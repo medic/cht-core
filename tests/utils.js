@@ -1207,4 +1207,17 @@ module.exports = {
   waitForApiLogs: (...regex) => module.exports.waitForDockerLogs(CONTAINER_NAMES.api, ...regex),
   waitForSentinelLogs: (...regex) => module.exports.waitForDockerLogs(CONTAINER_NAMES.sentinel, ...regex),
   collectSentinelLogs: (...regex) => collectLogs(CONTAINER_NAMES.sentinel, ...regex),
+
+  saveCredentials: (key, password) => {
+    const options = {
+      path: `/api/v1/credentials/${key}`,
+      method: 'PUT',
+      body: password,
+      json: false,
+      headers: {
+        'Content-Type': 'text/plain'
+      }
+    };
+    return request(options);
+  },
 };

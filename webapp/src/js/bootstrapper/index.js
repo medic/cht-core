@@ -66,6 +66,7 @@
           throw remote;
         }
 
+        console.warn(statusCode);
         if (statusCode !== 200) {
           console.warn('Error fetching users-info - ignoring', remote);
         }
