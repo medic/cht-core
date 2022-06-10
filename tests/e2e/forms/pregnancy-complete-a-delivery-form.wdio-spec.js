@@ -96,7 +96,7 @@ describe('Contact Delivery Form', () => {
     await commonPage.goToPeople('fixture:woman', true);
   });
 
-  it('Complete a delivery: Process a delivery with a live child and facility birth. The report should show associated to the person', async () => {
+  it('Complete a delivery: Process a delivery with a live child and facility birth.', async () => {
     await contactPage.createNewAction('Delivery');
     await deliveryForm.selectDeliveryConditionWomanOutcome('alive_well');
     await genericForm.nextPage();
@@ -148,7 +148,8 @@ describe('Contact Delivery Form', () => {
   it('The child registered during birth should be created and should display the proper information', async () => {
     await contactPage.selectLHSRowByText(BABYS_NAME);
     expect((await contactPage.getContactInfoName())).to.equal(BABYS_NAME);
-    expect((await contactPage.getContactSummaryField('contact.sex')).toLocaleUpperCase()).to.equal(BABYS_SEX.toLocaleUpperCase());
+    expect((await contactPage.getContactSummaryField('contact.sex')).toLocaleUpperCase())
+      .to.equal(BABYS_SEX.toLocaleUpperCase());
   });
 
   it('The targets page should be updated', async () => {
