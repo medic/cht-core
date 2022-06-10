@@ -56,6 +56,7 @@ const getTaskState = async (first, second) => {
 };
 
 const openForm = async (name) => {
+  await (await submitReportButton()).waitForClickable();
   await (await submitReportButton()).click();
   // this is annoying but there's a race condition where the click could end up on another form if we don't
   // wait for the animation to finish
@@ -262,5 +263,6 @@ module.exports = {
   allReports,
   reportsByUUID,
   getAllReportsText,
-  getReportDetailFieldValueByLabel
+  getReportDetailFieldValueByLabel,
+  getListReportInfo
 };
