@@ -43,6 +43,7 @@ bootstrapper(POUCHDB_OPTIONS, (err) => {
       // retry initial replication automatically after one minute
       window.location.reload(false);
     }, 60 * 1000);
+
     return;
   }
 
