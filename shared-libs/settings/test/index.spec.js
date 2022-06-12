@@ -194,7 +194,7 @@ describe('Settings Shared Library', () => {
 
     it('set and get credentials', () => {
       const requestGet = sinon.stub(request, 'get');
-      requestGet.onCall(0).rejects({ message: 'missing', statusCode: 404 })
+      requestGet.onCall(0).rejects({ message: 'missing', statusCode: 404 });
       requestGet.onCall(1).resolves(secret);
       sinon.stub(request, 'put').resolves();
       return lib
