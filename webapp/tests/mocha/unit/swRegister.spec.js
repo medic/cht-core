@@ -61,7 +61,7 @@ describe('Bootstrap Service worker registration (swRegister.js)', () => {
       });
   });
 
-  it('rejects on redundant', () => {
+  xit('rejects on redundant', () => {
     const registration = {
       installing: { state: 'redundant' },
     };
