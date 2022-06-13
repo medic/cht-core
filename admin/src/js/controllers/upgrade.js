@@ -60,6 +60,8 @@ angular.module('controllers').controller('UpgradeCtrl',
         const buildsDb = pouchDB(BUILDS_DB);
 
         const minVersion = Version.minimumNextRelease($scope.currentDeploy.version);
+        const currentVersion = Version.currentVersion($scope.currentDeploy);
+        const isUsingFeatureRelease = typeof currentVersion.featureRelease !== 'undefined';
 
         const builds = function(options) {
           return buildsDb.query('builds/releases', options)
@@ -94,7 +96,21 @@ angular.module('controllers').controller('UpgradeCtrl',
             endkey: [ 'release', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch],
             descending: true,
             limit: 50
-          })
+          }),
+          featureReleases: isUsingFeatureRelease ? builds({
+            startkey: [minVersion.featureRelease, 'medic', 'medic', {}],
+            endkey: [
+              minVersion.featureRelease,
+              'medic',
+              'medic',
+              minVersion.major,
+              minVersion.minor,
+              minVersion.patch,
+              minVersion.beta,
+            ],
+            descending: true,
+            limit: 50,
+          }) : null
         }).then(function(results) {
           $scope.versions = results;
         });

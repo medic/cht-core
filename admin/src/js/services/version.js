@@ -17,7 +17,7 @@ angular.module('services').factory('Version',
 
     const versionInformation = function(versionString) {
       const versionMatch = versionString &&
-          versionString.match(/^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta\.([0-9]+))?$/);
+          versionString.match(/^(\d+)\.(\d+)\.(\d+)(-FR(?:-\w+)+)?(?:-beta\.(\d+))?$/);
 
       if (versionMatch) {
         const version = {
@@ -27,7 +27,11 @@ angular.module('services').factory('Version',
         };
 
         if (versionMatch[4] !== undefined) {
-          version.beta = parseInt(versionMatch[4]);
+          version.featureRelease = versionMatch[4].slice(1); // remove leading dash '-'
+        }
+
+        if (versionMatch[5] !== undefined) {
+          version.beta = parseInt(versionMatch[5]);
         }
 
         return version;
