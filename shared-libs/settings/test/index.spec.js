@@ -184,6 +184,34 @@ describe('Settings Shared Library', () => {
 
   });
 
+  /*
+   * Because the crypto module changes frequently and is difficult to integrate with it's worth
+   * including these integration tests which don't mock the crypto module.
+   */
+  describe('crypto integration', () => {
+
+    const secret = 'myreallylongsecret - myreallylongsecret - myreallylongsecret'; // > 32 characters long
+
+    it('set and get credentials', () => {
+      const requestGet = sinon.stub(request, 'get');
+      requestGet.onCall(0).rejects({ message: 'missing', statusCode: 404 });
+      requestGet.onCall(1).resolves(secret);
+      sinon.stub(request, 'put').resolves();
+      return lib
+        .setCredentials('mykey', 'mypass')
+        .then(() => {
+          const doc = request.put.args[0][1].body;
+          requestGet.onCall(2).resolves(doc);
+          requestGet.onCall(3).resolves(secret);
+          return lib.getCredentials('mykey');
+        })
+        .then(pass => {
+          expect(pass).to.equal('mypass');
+        });
+    });
+
+  });
+
 
   describe('getCouchConfig', () => {
 
