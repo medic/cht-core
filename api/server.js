@@ -20,7 +20,7 @@ process
     logger.info('Checks passed successfully');
   } catch (err) {
     logger.error('Fatal error initialising medic-api');
-    logger.error('%o',err);
+    logger.error('%o', err);
     process.exit(1);
   }
 
@@ -36,8 +36,7 @@ process
   const manifest = require('./src/services/manifest');
   const apiPort = process.env.API_PORT || 5988;
 
-  try
-  {
+  try {
     logger.info('Running installation checks…');
     await checkInstall.run();
     logger.info('Installation checks passed');
