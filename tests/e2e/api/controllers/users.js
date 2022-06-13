@@ -325,12 +325,16 @@ describe('Users API', () => {
       };
       await utils.createUsers([ otherAdmin ]);
       // Set admin user's password in CouchDB config.
-      await utils.request({
-        port: constants.COUCH_PORT,
-        method: 'PUT',
-        path: `/_node/_local/_config/admins/${otherAdmin.username}`,
-        body: `"${otherAdmin.password}"`,
-      });
+      const membership = await utils.request({ path: '/_membership' });
+      const nodes = membership.all_nodes;
+      for (const nodeName of nodes) {
+        await utils.request({
+          port: constants.COUCH_PORT,
+          method: 'PUT',
+          path: `/_node/${nodeName}/_config/admins/${otherAdmin.username}`,
+          body: `"${otherAdmin.password}"`,
+        });
+      }
 
       // Update password with new value.
       const userResponse = await utils
@@ -340,6 +344,7 @@ describe('Users API', () => {
           body: { password: newPassword }
         })
         .catch(() => chai.assert.fail('Should not throw error'));
+      await utils.delayPromise(() => Promise.resolve(), 200);
 
       chai.expect(userResponse.user).to.not.be.undefined;
       chai.expect(userResponse.user.id).to.equal('org.couchdb.user:admin2');

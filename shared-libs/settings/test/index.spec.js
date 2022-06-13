@@ -217,7 +217,6 @@ describe('Settings Shared Library', () => {
 
     it('should return the expected value', () => {
       environment.COUCH_URL = 'http://user:pass@localhost:6929/medic';
-      environment.COUCH_NODE_NAME = 'nonode@noname';
       sinon.stub(request, 'get').resolves('couch config');
 
       return lib
@@ -225,7 +224,20 @@ describe('Settings Shared Library', () => {
         .then(actual => {
           expect(actual).to.equal('couch config');
           expect(request.get.callCount).to.equal(1);
-          expect(request.get.args[0][0].url).to.equal('http://user:pass@localhost:6929/_node/nonode@noname/_config/attachments');
+          expect(request.get.args[0][0].url).to.equal('http://user:pass@localhost:6929/_node/_local/_config/attachments');
+        });
+    });
+
+    it('should return the expected value when passing nodename', () => {
+      environment.COUCH_URL = 'http://user:pass@localhost:6929/medic';
+      sinon.stub(request, 'get').resolves('couch config');
+
+      return lib
+        .getCouchConfig('attachments', 'nodename')
+        .then(actual => {
+          expect(actual).to.equal('couch config');
+          expect(request.get.callCount).to.equal(1);
+          expect(request.get.args[0][0].url).to.equal('http://user:pass@localhost:6929/_node/nodename/_config/attachments');
         });
     });
 
@@ -235,17 +247,29 @@ describe('Settings Shared Library', () => {
 
     it('should save password', () => {
       environment.COUCH_URL = 'http://user:pass@localhost:6929/medic';
-      environment.COUCH_NODE_NAME = 'nonode@noname';
       sinon.stub(request, 'put').resolves('-pbkdf2-8266a0adb');
+      sinon.stub(request, 'get').resolves({ all_nodes: ['a', 'b', 'c'] });
 
       return lib
         .updateAdminPassword('admin1', 'pass1234')
-        .then(result => {
-          expect(result).to.equal('-pbkdf2-8266a0adb');
-          expect(request.put.callCount).to.equal(1);
+        .then(() => {
+          expect(request.get.callCount).to.equal(1);
+          expect(request.get.args[0][0]).to.deep.equal({
+            url: 'http://user:pass@localhost:6929/_membership',
+            json: true,
+          });
+          expect(request.put.callCount).to.equal(3);
           expect(request.put.args[0][0]).to.deep.equal({
             body: '"pass1234"',
-            url: 'http://user:pass@localhost:6929/_node/nonode@noname/_config/admins/admin1',
+            url: 'http://user:pass@localhost:6929/_node/a/_config/admins/admin1',
+          });
+          expect(request.put.args[1][0]).to.deep.equal({
+            body: '"pass1234"',
+            url: 'http://user:pass@localhost:6929/_node/b/_config/admins/admin1',
+          });
+          expect(request.put.args[2][0]).to.deep.equal({
+            body: '"pass1234"',
+            url: 'http://user:pass@localhost:6929/_node/c/_config/admins/admin1',
           });
         });
     });

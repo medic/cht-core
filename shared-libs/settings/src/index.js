@@ -94,28 +94,37 @@ const setCredentials = (id, password) => {
     });
 };
 
-const getCouchConfigUrl = () => {
+const getCouchConfigUrl = (nodeName = '_local') => {
   const serverUrl = getServerUrl();
   if (!serverUrl) {
     throw new Error('Failed to find the CouchDB server');
   }
 
-  return `${serverUrl}/_node/_local/_config`;
+  return `${serverUrl}/_node/${nodeName}/_config`;
 };
 
-const getCouchConfig = (param) => {
+const getCouchConfig = (param, nodeName) => {
   try {
-    const couchConfigUrl = getCouchConfigUrl();
+    const couchConfigUrl = getCouchConfigUrl(nodeName);
     return request.get({ url: `${couchConfigUrl}/${param}`, json: true });
   } catch (error) {
     return Promise.reject(error);
   }
 };
 
-const updateAdminPassword = (userName, password) => {
+const getCouchNodes = async () => {
+  const serverUrl = getServerUrl();
+  const membership = await request.get({ url: `${serverUrl}/_membership`, json: true });
+  return membership.all_nodes;
+};
+
+const updateAdminPassword = async (userName, password) => {
   try {
-    const couchConfigUrl = getCouchConfigUrl();
-    return request.put({ url: `${couchConfigUrl}/admins/${userName}`, body: `"${password}"` });
+    const nodes = await getCouchNodes();
+    for (const nodeName of nodes) {
+      const couchConfigUrl = getCouchConfigUrl(nodeName);
+      await request.put({ url: `${couchConfigUrl}/admins/${userName}`, body: `"${password}"` });
+    }
   } catch (error) {
     return Promise.reject(error);
   }
