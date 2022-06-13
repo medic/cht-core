@@ -1207,6 +1207,7 @@ module.exports = {
   waitForApiLogs: (...regex) => module.exports.waitForDockerLogs(CONTAINER_NAMES.api, ...regex),
   waitForSentinelLogs: (...regex) => module.exports.waitForDockerLogs(CONTAINER_NAMES.sentinel, ...regex),
   collectSentinelLogs: (...regex) => collectLogs(CONTAINER_NAMES.sentinel, ...regex),
+  collectApiLogs: (...regex) => collectLogs(CONTAINER_NAMES.api, ...regex),
 
   saveCredentials: (key, password) => {
     const options = {
