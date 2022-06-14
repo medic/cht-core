@@ -29,11 +29,6 @@ describe('Training Cards', () => {
     await commonPage.closeTour();
   });
 
-  afterEach(async () => {
-    await utils.resetBrowser();
-    await utils.revertDb();
-  });
-
   it('should display training cards', async () => {
     await commonPage.goToMessages();
     await trainingCardsPo.waitForTrainingCards();
