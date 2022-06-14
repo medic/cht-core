@@ -158,5 +158,7 @@
       "maxSize": "70 kB"
     }
   ],
-  "dependencies": {}
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.1.1"
+  }
 }
