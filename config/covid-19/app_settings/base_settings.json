@@ -162,11 +162,6 @@
       "chw_supervisor"
     ]
   },
-  "changes_controller": {
-    "reiterate_changes": true,
-    "changes_limit": 100,
-    "debounce_interval": 200
-  },
   "place_hierarchy_types": [
     "district_hospital",
     "health_center"
