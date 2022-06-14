@@ -28,13 +28,6 @@ export class TrainingCardsService {
     this.globalActions = new GlobalActions(store);
   }
 
-  private canOpenTraining() {
-    const routeSnapshot = this.routeSnapshotService.get();
-    return !this.sessionService.isDbAdmin() &&
-      (!document.getElementsByClassName('enketo').length ||
-        (routeSnapshot?.data?.tab === 'tasks' && !routeSnapshot?.params?.id));
-  }
-
   private getAvailableTrainingForms(xForms, userCtx) {
     const today = new Date();
 
@@ -92,6 +85,11 @@ export class TrainingCardsService {
       return;
     }
 
+    const routeSnapshot = this.routeSnapshotService.get();
+    if (routeSnapshot?.data?.hideTraining) {
+      return;
+    }
+
     try {
       const userCtx = this.sessionService.userCtx();
       let trainingForms = this.getAvailableTrainingForms(xForms, userCtx);
@@ -117,7 +115,7 @@ export class TrainingCardsService {
   }
 
   public initTrainingCards() {
-    if (!this.canOpenTraining()) {
+    if (this.sessionService.isDbAdmin()) {
       return;
     }
 
