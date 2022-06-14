@@ -142,7 +142,7 @@ describe('Server Checks service', () => {
       request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '2' });
       request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' })).resolves({
         all_nodes: ['a'],
-        cluster_nodes: ['b'],
+        cluster_nodes: ['a'],
       });
       await service.check('http://admin:pass@localhost:5984/medic');
 

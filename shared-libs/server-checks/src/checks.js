@@ -68,10 +68,16 @@ const couchDbNoAdminPartyModeCheck = (couchUrl) => {
   });
 };
 
+const difference = (arr1, arr2) => [
+  ...arr1.filter(item => !arr2.includes(item)),
+  ...arr2.filter(item => !arr1.includes(item)),
+];
+
 const checkCluster = async (couchUrl) => {
   await request.get({ url: `${couchUrl}_users`, json: true });
   const membership = await request.get({ url: `${couchUrl}_membership`, json: true });
-  if (membership.all_nodes.length !== membership.cluster_nodes.length) {
+  const differentNodes = difference(membership.all_nodes, membership.cluster_nodes);
+  if (differentNodes.length) {
     throw new Error('Cluster not ready');
   }
 };
