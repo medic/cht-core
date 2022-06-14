@@ -14,7 +14,7 @@ export class HeaderTabsService {
     {
       name: 'messages',
       route: 'messages',
-      defaultIcon: 'fa-envelope',
+      defaultIcon: 'fa-comments',
       translation: 'Messages',
       permissions: ['can_view_messages', 'can_view_messages_tab'],
       typeName: 'message',
@@ -24,7 +24,7 @@ export class HeaderTabsService {
     {
       name: 'tasks',
       route: 'tasks',
-      defaultIcon: 'fa-flag',
+      defaultIcon: 'fa-person-walking',
       translation: 'Tasks',
       permissions: ['can_view_tasks', 'can_view_tasks_tab'],
       icon: undefined,
@@ -33,7 +33,7 @@ export class HeaderTabsService {
     {
       name: 'reports',
       route: 'reports',
-      defaultIcon: 'fa-list-alt',
+      defaultIcon: 'fa-book-open',
       translation: 'Reports',
       permissions: ['can_view_reports', 'can_view_reports_tab'],
       typeName: 'report',
@@ -43,7 +43,7 @@ export class HeaderTabsService {
     {
       name:'contacts',
       route:'contacts',
-      defaultIcon:'fa-user',
+      defaultIcon:'fa-people-roof',
       translation:'Contacts',
       permissions: ['can_view_contacts', 'can_view_contacts_tab'],
       icon: undefined,
@@ -52,7 +52,7 @@ export class HeaderTabsService {
     {
       name: 'analytics',
       route: 'analytics',
-      defaultIcon: 'fa-bar-chart-o',
+      defaultIcon: 'fa-chart-line',
       translation: 'Analytics',
       permissions: ['can_view_analytics', 'can_view_analytics_tab'],
       icon: undefined,

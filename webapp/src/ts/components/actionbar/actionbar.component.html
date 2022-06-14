@@ -129,7 +129,7 @@
         <div *ngIf="selectMode">
           <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs?.length && (!loadingContent) && snapshotData?.name === 'reports.detail'">
             <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mmAuth="can_bulk_delete_reports" (click)="bulkDelete(selectedReportsDocs)">
-              <span class="fa fa-trash-o"></span>
+              <span class="fa fa-trash-can"></span>
               <p>{{'select.mode.delete.all' | translate}}</p>
             </a>
           </div>
@@ -138,11 +138,11 @@
         <div *ngIf="!selectMode">
           <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs && !loadingContent && snapshotData?.name === 'reports.detail'">
             <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
-              <span class="fa fa-envelope"></span>
+              <span class="fa fa-comments"></span>
               <p>{{'Send Message' | translate}}</p>
             </a>
             <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" *ngIf="actionBar?.right?.openSendMessageModal" (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
-              <span class="fa fa-envelope"></span>
+              <span class="fa fa-comments"></span>
               <p>{{'Send Message' | translate}}</p>
             </a>
             <div class="dropdown-menu sub-actions" *ngIf="actionBar?.right?.verifyingReport && loadingSubActionBar">
@@ -171,7 +171,7 @@
               <p>{{'Update Facility' | translate}}</p>
             </a>
             <a class="mm-icon mm-icon-inverse mm-icon-caption" (click)="deleteDoc(selectedReportsDocs[0])" mmAuth="can_delete_reports">
-              <span class="fa fa-trash-o"></span>
+              <span class="fa fa-trash-can"></span>
               <p>{{'Delete' | translate}}</p>
             </a>
           </div>
@@ -183,7 +183,7 @@
           <span>
             <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" [ngClass]="{'mm-icon-disabled': (!actionBar?.right?.relevantForms || !actionBar?.right?.relevantForms?.length)}">
               <span class="fa-stack">
-                <i class="fa fa-list-alt"></i>
+                <i class="fa fa-book-open"></i>
                 <i class="fa fa-plus fa-stack-1x"></i>
               </span>
               <p>{{'action.report.add' | translate}}</p>
@@ -244,7 +244,7 @@
              [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'"
              [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
           >
-            <span class="fa fa-envelope"></span>
+            <span class="fa fa-comments"></span>
             <p>{{'Send Message' | translate}}</p>
           </a>
           <a *ngIf="actionBar?.right?.sendTo"
@@ -253,7 +253,7 @@
              [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
              (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)"
           >
-            <span class="fa fa-envelope"></span>
+            <span class="fa fa-comments"></span>
             <p>{{'Send Message' | translate}}</p>
           </a>
 
@@ -270,7 +270,7 @@
              (click)="deleteDoc(selectedContactDoc)"
              [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.canDelete }"
           >
-            <span class="fa fa-trash-o"></span>
+            <span class="fa fa-trash-can"></span>
             <p>{{'Delete' | translate}}</p>
           </a>
         </div>
