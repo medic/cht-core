@@ -16,6 +16,8 @@ angular.module('services').factory('Version',
     };
 
     const versionInformation = function(versionString) {
+      // TODO: replace this regex with named capture groups once we deprecate node 8
+      // /^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(?<featureRelease>-FR(?:-\w+)+)?(?:-beta\.(?<beta>\d+))?$/
       const versionMatch = versionString &&
           versionString.match(/^(\d+)\.(\d+)\.(\d+)(-FR(?:-\w+)+)?(?:-beta\.(\d+))?$/);
 
@@ -26,12 +28,16 @@ angular.module('services').factory('Version',
           patch: parseInt(versionMatch[3])
         };
 
-        if (versionMatch[4] !== undefined) {
-          version.featureRelease = versionMatch[4].slice(1); // remove leading dash '-'
-        }
-
         if (versionMatch[5] !== undefined) {
           version.beta = parseInt(versionMatch[5]);
+        }
+
+        if (versionMatch[4] !== undefined) {
+          version.featureRelease = versionMatch[4].slice(1); // remove leading dash '-'
+
+          if (version.beta) {
+            version.featureRelease += '-beta';
+          }
         }
 
         return version;
