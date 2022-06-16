@@ -28,8 +28,7 @@ function register(onInstalling) {
 
           if (installingWorker.state === 'redundant') {
             installingWorker.onstatechange = undefined;
-            // return reject(new Error('Service worker labeled redundant'));
-            return resolve(installingWorker);
+            return reject(new Error('Service worker labeled redundant'));
           }
 
           console.debug(`Service worker state changed to ${installingWorker.state}`);

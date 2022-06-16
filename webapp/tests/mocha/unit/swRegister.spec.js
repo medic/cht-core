@@ -61,7 +61,7 @@ describe('Bootstrap Service worker registration (swRegister.js)', () => {
       });
   });
 
-  /*it('rejects on redundant', () => {
+  it('rejects on redundant', () => {
     const registration = {
       installing: { state: 'redundant' },
     };
@@ -77,7 +77,7 @@ describe('Bootstrap Service worker registration (swRegister.js)', () => {
       });
     executeSwLifecycle(registration);
     return promise;
-  });*/
+  });
 
   it('rejects on error', () => {
     fakeRegisterFunc.rejects('Error');
