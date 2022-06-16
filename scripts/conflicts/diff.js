@@ -53,7 +53,6 @@ let mainConflictFilesDirectory = "./doc-conflicts"
           .then(results => {
 
             // Get the main_doc. Maindoc is the doc that isn't in the conflict list
-            //const main_doc = results.find(r => r.ok._rev !== arrayRevsIdThatShouldNotBeThere).ok;
             const main_doc = results.filter(r=>!arrayRevsIdThatShouldNotBeThere.includes(r.ok._rev))[0].ok 
 
             //Now we are going to put each doc, its conflicts and thier diff in one file for manual inspection if required.
