@@ -41,13 +41,11 @@ export class TrainingCardsService {
       }))
       .filter(form => {
         const hasRole = form.userRoles?.find(role => userCtx.roles.includes(role));
-        console.log('form.userRoles', form.userRoles, 'hasRole', hasRole);
         if (!hasRole) {
           return false;
         }
 
         const startDate = new Date(form.startDate);
-        console.log('startDate', startDate, 'today', today);
         if (startDate > today) {
           return false; // Training has not started yet
         }
