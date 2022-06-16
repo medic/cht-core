@@ -1,0 +1,12 @@
+*** ./node_modules/node-fetch/lib/index.js	Thu Jun 16 13:29:54 2022
+--- ./patches/node-fetch-json-patch.js	Thu Jun 16 13:30:41 2022
+***************
+*** 269,274 ****
+--- 269,275 ----
+  			try {
+  				return JSON.parse(buffer.toString());
+  			} catch (err) {
++ 				console.warn(buffer.toString());
+  				return Body.Promise.reject(new FetchError(`invalid json response body at ${_this2.url} reason: ${err.message}`, 'invalid-json'));
+  			}
+  		});

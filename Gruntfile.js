@@ -292,6 +292,8 @@ module.exports = function(grunt) {
               `cd ${service}`,
               `npm ci --production`,
               `npm dedupe`,
+              `tail ./node_modules/node-fetch/lib/index.js`,
+              `patch ./node_modules/node-fetch/lib/index.js < ./patches/node-fetch.patch`,
               `cd ../`,
               `docker build -f ./${service}/Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
             ].join(' && ')
