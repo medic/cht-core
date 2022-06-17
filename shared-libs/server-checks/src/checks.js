@@ -74,12 +74,19 @@ const difference = (arr1, arr2) => [
 ];
 
 const checkCluster = async (couchUrl) => {
-  await request.get({ url: `${couchUrl}_users`, json: true });
   const membership = await request.get({ url: `${couchUrl}_membership`, json: true });
   const differentNodes = difference(membership.all_nodes, membership.cluster_nodes);
   if (differentNodes.length) {
     throw new Error('Cluster not ready');
   }
+  try {
+    await request.get({ url: `${couchUrl}_users`, json: true });
+    await request.get({ url: `${couchUrl}_replicator`, json: true });
+    await request.get({ url: `${couchUrl}_global_changes`, json: true });
+  } catch (err) {
+    throw new Error('System databases do not exist');
+  }
+
 };
 
 const getCouchDbVersion = (couchUrl) => {

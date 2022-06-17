@@ -165,6 +165,8 @@ describe('Server Checks service', () => {
       const membershipQuery = request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' }));
       membershipQuery.resolves(unfinishedCluster);
       request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_users' })).resolves();
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_replicator' })).resolves();
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_global_changes' })).resolves();
 
       membershipQuery.onCall(70).resolves(finishedCluster);
       membershipQuery.onCall(71).resolves(finishedCluster);
@@ -175,7 +177,7 @@ describe('Server Checks service', () => {
       Array.from({ length: 100 }).map(() => originalSetTimeout(() => clock.tick(1000)));
       await promise;
 
-      chai.expect(request.get.callCount).to.equal(214);
+      chai.expect(request.get.callCount).to.equal(146);
       chai.expect(http.get.callCount).to.deep.equal(72);
     });
 
@@ -194,12 +196,14 @@ describe('Server Checks service', () => {
         all_nodes: ['1', '2'],
       });
       request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_users' })).resolves();
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_replicator' })).resolves();
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_global_changes' })).resolves();
 
       const promise = service.check('http://admin:pass@localhost:5984/medic');
       // request will be retried 100 times
       Array.from({ length: 100 }).map(() => originalSetTimeout(() => clock.tick(1000)));
       await promise;
-      chai.expect(request.get.callCount).to.equal(103);
+      chai.expect(request.get.callCount).to.equal(105);
     });
 
     it('couchdb in admin party', async () => {
@@ -217,11 +221,13 @@ describe('Server Checks service', () => {
         all_nodes: ['1', '2'],
       });
       request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_users' })).resolves();
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_replicator' })).resolves();
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_global_changes' })).resolves();
 
       const promise = service.check('http://admin:pass@localhost:5984/medic');
       Array.from({ length: 300 }).map(() => originalSetTimeout(() => clock.tick(1000)));
       await promise;
-      chai.expect(request.get.callCount).to.equal(303);
+      chai.expect(request.get.callCount).to.equal(305);
     });
 
     it('invalid server', () => {
