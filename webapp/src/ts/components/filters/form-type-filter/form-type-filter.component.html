@@ -6,7 +6,7 @@
   labelFilter="Number of form types"
   [disabled]="disabled"
 >
-  <span class="fa fa-list-alt"></span>
+  <span class="fa fa-book-open"></span>
   <ul>
     <li role="presentation" *ngFor="let form of forms; trackBy: trackByFn" [class.selected]="dropdownFilter?.selected.has(form)">
       <a role="menuitem" tabindex="-1" [attr.data-value]="form" (click)="dropdownFilter?.toggle(form)">

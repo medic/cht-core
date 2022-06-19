@@ -24,7 +24,7 @@ export class HeaderTabsService {
     {
       name: 'tasks',
       route: 'tasks',
-      defaultIcon: 'fa-person-walking',
+      defaultIcon: 'fa-person-walking-arrow-right',
       translation: 'Tasks',
       permissions: ['can_view_tasks', 'can_view_tasks_tab'],
       icon: undefined,
@@ -43,7 +43,7 @@ export class HeaderTabsService {
     {
       name:'contacts',
       route:'contacts',
-      defaultIcon:'fa-people-roof',
+      defaultIcon:'fa-users',
       translation:'Contacts',
       permissions: ['can_view_contacts', 'can_view_contacts_tab'],
       icon: undefined,

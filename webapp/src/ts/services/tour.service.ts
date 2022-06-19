@@ -432,7 +432,7 @@ export class TourService {
         return canView && {
           order: 0,
           id: 'messages',
-          icon: 'fa-envelope',
+          icon: 'fa-comments',
           name: 'Messages'
         };
       });
@@ -447,7 +447,7 @@ export class TourService {
         return canView && {
           order: 1,
           id: 'tasks',
-          icon: 'fa-flag',
+          icon: 'fa-person-walking-arrow-right',
           name: 'Tasks'
         };
       });
@@ -459,7 +459,7 @@ export class TourService {
         return canView && {
           order: 2,
           id: 'reports',
-          icon: 'fa-list-alt',
+          icon: 'fa-book-open',
           name: 'Reports'
         };
       });
@@ -471,7 +471,7 @@ export class TourService {
         return canView && {
           order: 3,
           id: 'contacts',
-          icon: 'fa-user',
+          icon: 'fa-users',
           name: 'Contacts'
         };
       });
@@ -487,7 +487,7 @@ export class TourService {
         return canView && {
           order: 4,
           id: 'analytics',
-          icon: 'fa-bar-chart-o',
+          icon: 'fa-chart-line',
           name: 'Analytics'
         };
       });

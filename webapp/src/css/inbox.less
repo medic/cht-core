@@ -175,6 +175,9 @@ body {
 
       .mm-icon {
         color: @top-header-color;
+        svg path{
+          fill : @top-header-color;
+        }
       }
     }
   }
@@ -196,6 +199,13 @@ body {
       margin-top: 0;
       white-space: normal;
       font-size: 1rem;
+      svg {
+        width: 20px;
+        height: 20px;
+        path {
+        fill : @top-header-color;
+        }
+      }
     }
     .disabled a {
       color: #999999;
@@ -247,8 +257,8 @@ body {
           &, &:before {
             display: block;
             margin: auto;
-            height: 24px;
-            max-width: 24px;
+            height: 30px;
+            max-width: 30px;
             overflow: hidden;
           }
         }
@@ -268,7 +278,8 @@ body {
             &,
             .mm-icon-inverse,
             .mm-icon-inverse:hover,
-            .resource-icon svg * {
+            .resource-icon svg *,
+            svg path {
               color: @messages-color;
               fill: @messages-color;
             }
@@ -278,7 +289,8 @@ body {
             &,
             .mm-icon-inverse,
             .mm-icon-inverse:hover,
-            .resource-icon svg * {
+            .resource-icon svg *,
+            svg path {
               color: @tasks-color;
               fill: @tasks-color;
             }
@@ -288,7 +300,8 @@ body {
             &,
             .mm-icon-inverse,
             .mm-icon-inverse:hover,
-            .resource-icon svg * {
+            .resource-icon svg *,
+            svg path {
               color: @reports-color;
               fill: @reports-color;
             }
@@ -298,7 +311,8 @@ body {
             &,
             .mm-icon-inverse,
             .mm-icon-inverse:hover,
-            .resource-icon svg * {
+            .resource-icon svg *,
+            svg path {
               color: @analytics-color;
               fill: @analytics-color;
             }
@@ -308,7 +322,8 @@ body {
             &,
             .mm-icon-inverse,
             .mm-icon-inverse:hover,
-            .resource-icon svg * {
+            .resource-icon svg *,
+            svg path {
               color: @contacts-color;
               fill: @contacts-color;
             }
@@ -960,6 +975,9 @@ a.fa:hover {
         text-shadow: 0 0 2px rgba(255, 255, 255, 1);
         font-size: 20px;
         color: #000000;
+        path {
+          fill : #000000;
+        }
       }
     }
 

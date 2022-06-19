@@ -31,10 +31,10 @@ describe('HeaderTabs service', () => {
       // @ts-ignore
       expect(tabs).to.shallowDeepEqual([
         { name: 'messages', defaultIcon: 'fa-comments', icon: undefined },
-        { name: 'tasks', defaultIcon: 'fa-tasks', icon: undefined },
-        { name: 'reports', defaultIcon: 'fa-book', icon: undefined },
+        { name: 'tasks', defaultIcon: 'fa-person-walking-arrow-right', icon: undefined },
+        { name: 'reports', defaultIcon: 'fa-book-open', icon: undefined },
         { name: 'contacts', defaultIcon: 'fa-users', icon: undefined },
-        { name: 'analytics', defaultIcon: 'fa-line-chart', icon: undefined },
+        { name: 'analytics', defaultIcon: 'fa-chart-line', icon: undefined },
       ]);
 
       expect(service.get({})).to.deep.equal(tabs);
@@ -54,10 +54,10 @@ describe('HeaderTabs service', () => {
       // @ts-ignore
       expect(tabs).to.shallowDeepEqual([
         { name: 'messages', icon: undefined, resourceIcon: undefined, defaultIcon: 'fa-comments' },
-        { name: 'tasks', icon: 'fa-whatever', resourceIcon: undefined, defaultIcon: 'fa-tasks' },
-        { name: 'reports', icon: undefined, resourceIcon: 'some-icon', defaultIcon: 'fa-book' },
+        { name: 'tasks', icon: 'fa-whatever', resourceIcon: undefined, defaultIcon: 'fa-person-walking-arrow-right' },
+        { name: 'reports', icon: undefined, resourceIcon: 'some-icon', defaultIcon: 'fa-book-open' },
         { name: 'contacts', icon: undefined, resourceIcon: 'one-icon', defaultIcon: 'fa-users' },
-        { name: 'analytics', icon: 'fa-icon', resourceIcon: 'other-icon', defaultIcon: 'fa-line-chart' },
+        { name: 'analytics', icon: 'fa-icon', resourceIcon: 'other-icon', defaultIcon: 'fa-chart-line' },
       ]);
     });
   });
@@ -86,7 +86,7 @@ describe('HeaderTabs service', () => {
         {
           name: 'reports',
           route: 'reports',
-          defaultIcon: 'fa-book',
+          defaultIcon: 'fa-book-open',
           translation: 'Reports',
           permissions: ['can_view_reports', 'can_view_reports_tab'],
           typeName: 'report',
@@ -96,7 +96,7 @@ describe('HeaderTabs service', () => {
         {
           name: 'analytics',
           route: 'analytics',
-          defaultIcon: 'fa-line-chart',
+          defaultIcon: 'fa-chart-line',
           translation: 'Analytics',
           permissions: ['can_view_analytics', 'can_view_analytics_tab'],
           icon: undefined,
@@ -126,7 +126,7 @@ describe('HeaderTabs service', () => {
         {
           name: 'tasks',
           route: 'tasks',
-          defaultIcon: 'fa-tasks',
+          defaultIcon: 'fa-person-walking-arrow-right',
           translation: 'Tasks',
           permissions: ['can_view_tasks', 'can_view_tasks_tab'],
           icon: undefined,
@@ -144,7 +144,7 @@ describe('HeaderTabs service', () => {
         {
           name: 'analytics',
           route: 'analytics',
-          defaultIcon: 'fa-line-chart',
+          defaultIcon: 'fa-chart-line',
           translation: 'Analytics',
           permissions: ['can_view_analytics', 'can_view_analytics_tab'],
           icon: undefined,
@@ -183,7 +183,7 @@ describe('HeaderTabs service', () => {
         {
           name: 'tasks',
           route: 'tasks',
-          defaultIcon: 'fa-tasks',
+          defaultIcon: 'fa-person-walking-arrow-right',
           translation: 'Tasks',
           permissions: ['can_view_tasks', 'can_view_tasks_tab'],
           icon: 'fa-apple',
@@ -201,7 +201,7 @@ describe('HeaderTabs service', () => {
         {
           name: 'analytics',
           route: 'analytics',
-          defaultIcon: 'fa-line-chart',
+          defaultIcon: 'fa-chart-line',
           translation: 'Analytics',
           permissions: ['can_view_analytics', 'can_view_analytics_tab'],
           icon: 'fa-mango-icon',
@@ -245,7 +245,7 @@ describe('HeaderTabs service', () => {
       expect(tab).to.deep.equal({
         name: 'reports',
         route: 'reports',
-        defaultIcon: 'fa-list-alt',
+        defaultIcon: 'fa-book-open',
         translation: 'Reports',
         permissions: ['can_view_reports', 'can_view_reports_tab'],
         typeName: 'report',
@@ -301,7 +301,7 @@ describe('HeaderTabs service', () => {
       expect(tab).to.deep.equal({
         name: 'analytics',
         route: 'analytics',
-        defaultIcon: 'fa-line-chart',
+        defaultIcon: 'fa-chart-line',
         translation: 'Analytics',
         permissions: ['can_view_analytics', 'can_view_analytics_tab'],
         icon: 'fa-mango-icon',
