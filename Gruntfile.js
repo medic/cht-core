@@ -532,10 +532,6 @@ module.exports = function(grunt) {
             // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
             'patch webapp/node_modules/bootstrap-daterangepicker/daterangepicker.js < webapp/patches/bootstrap-daterangepicker.patch',
 
-            // patch font-awesome to remove version attributes
-            // https://github.com/FortAwesome/Font-Awesome/issues/3286 (apparently fixed)
-            // 'patch webapp/node_modules/font-awesome/less/path.less < webapp/patches/font-awesome-remove-version-attribute.patch',
-
             // patch moment.js to use western arabic (european) numerals in Hindi
             'patch webapp/node_modules/moment/locale/hi.js < webapp/patches/moment-hindi-use-euro-numerals.patch',
 

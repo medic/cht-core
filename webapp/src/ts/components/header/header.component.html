@@ -123,7 +123,7 @@
     <div class="tabs small-font">
       <a *ngFor="let tab of permittedTabs" routerLink="{{tab.route}}" id="{{tab.name}}-tab" class="{{tab.name}}-tab" [class.selected]="currentTab === tab.name">
         <div class="mm-icon" [class.mm-icon-inverse]="currentTab !== tab.name">
-          <span *ngIf="!tab.resourceIcon" class="fa {{tab.icon === undefined ? tab.defaultIcon : tab.icon}}"></span>
+          <span *ngIf="!tab.resourceIcon" class="fa" [ngClass]="tab.icon || tab.defaultIcon"></span>
           <span *ngIf="tab.resourceIcon" [innerHTML]="tab.resourceIcon | resourceIcon:tab.defaultIcon"></span>
           <span class="mm-badge-overlay mm-badge-overlay-top" *ngIf="unreadCount[tab.typeName] > 0">
             <span class="mm-badge mm-badge-red mm-badge-border" *ngIf="unreadCount[tab.typeName] < 100">{{unreadCount[tab.typeName] | localizeNumber}}</span>
