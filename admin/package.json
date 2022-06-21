@@ -7,6 +7,7 @@
     "npm": ">=6.4.1"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.1.1",
     "@uirouter/angularjs": "^1.0.30",
     "angular": "^1.8.2",
     "angular-cookie": "^4.1.0",
@@ -18,7 +19,6 @@
     "bikram-sambat": "^1.7.0",
     "bikram-sambat-bootstrap": "^1.5.0",
     "bootstrap": "^3.4.1",
-    "font-awesome": "^4.7.0",
     "google-libphonenumber": "^3.2.27",
     "gsm": "^0.1.4",
     "jquery": "^3.5.1",
