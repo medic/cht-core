@@ -11,7 +11,7 @@ env:
   INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
   DOCKERHUB_USERNAME: 'dockermedic'
   ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
-  COUCHDB_LOG_LEVEL: 'log'
+  COUCHDB_LOG_LEVEL: 'debug'
 
 jobs:
 
