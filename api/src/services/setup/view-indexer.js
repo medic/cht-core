@@ -6,7 +6,7 @@ const environment = require('../../environment');
 const { DATABASES } = require('./databases');
 const ddocsService = require('./ddocs');
 
-const SOCKET_TIMEOUT_ERROR_CODE = 'ESOCKETTIMEDOUT';
+const SOCKET_TIMEOUT_ERROR_CODE = ['ESOCKETTIMEDOUT', 'ETIMEDOUT'];
 let continueIndexing;
 
 const indexViews = async (viewsToIndex) => {
@@ -73,7 +73,7 @@ const indexView = async (dbName, ddocId, viewName) => {
         return;
       }
 
-      if (!requestError || !requestError.error || requestError.error.code !== SOCKET_TIMEOUT_ERROR_CODE) {
+      if (!requestError || !requestError.error || !SOCKET_TIMEOUT_ERROR_CODE.includes(requestError.error.code)) {
         throw requestError;
       }
     }
