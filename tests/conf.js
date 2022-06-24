@@ -17,7 +17,7 @@ const baseConfig = {
     'e2e/api/**/*.js',
     'e2e/sentinel/**/*.js',
     'e2e/transitions/**/*.js',
-    'e2e/**/*-config/*.js',
+    'e2e/**/*-config/*.js'
   ],
   suites: {
     web: [
