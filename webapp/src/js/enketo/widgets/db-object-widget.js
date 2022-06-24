@@ -82,7 +82,6 @@ const changeHandler = function() {
     // Re-validate the current question now that we have loaded the doc data.
     // This will clear any constraint errors that were resolved by the doc data.
     window.CHTCore.Enketo.getCurrentForm().validateContent($this.parent());
-
   }
 };
 
