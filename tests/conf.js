@@ -22,7 +22,7 @@ const baseConfig = {
   suites: {
     web: [
       'e2e/!(cht)/**/*.js',
-      'e2e/**/*.js'
+      'e2e/**/*.js',
     ],
     cht: [
       'e2e/cht/*.spec.js'
