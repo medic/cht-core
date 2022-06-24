@@ -78,6 +78,11 @@ const changeHandler = function() {
     const index = $('[name="' + field + '"]').index(this);
     const keyRoot = field.substring(0, field.lastIndexOf('/'));
     updateFields(doc, keyRoot, index, field);
+    // https://github.com/enketo/enketo-core/issues/910
+    // Re-validate the current question now that we have loaded the doc data.
+    // This will clear any constraint errors that were resolved by the doc data.
+    window.CHTCore.Enketo.getCurrentForm().validateContent($this.parent());
+
   }
 };
 
