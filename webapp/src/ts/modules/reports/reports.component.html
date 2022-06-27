@@ -1,6 +1,7 @@
 <div class="filters">
   <div class="inner">
-    <reports-filters (search)="search($event)" [disabled]="selectMode && selectedReports?.length"></reports-filters>
+    <reports-filters (search)="search($event)" [disabled]="selectMode && selectedReports?.length" *ngIf="!showSidebarFilter"></reports-filters>
+    <mm-reports-sidebar-filter *ngIf="showSidebarFilter"></mm-reports-sidebar-filter>
     <mm-navigation></mm-navigation>
   </div>
 </div>

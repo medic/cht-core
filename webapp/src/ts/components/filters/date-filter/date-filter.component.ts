@@ -24,6 +24,9 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter, AfterView
   };
 
   @Input() disabled;
+  @Input() isRange;
+  @Input() isStartDate;
+  @Input() fieldId;
   @Output() search: EventEmitter<any> = new EventEmitter();
 
   constructor(
@@ -39,8 +42,9 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter, AfterView
   }
 
   ngAfterViewInit() {
-    const datepicker = (<any>$('#date-filter')).daterangepicker(
+    const datepicker:any = $(`#${this.fieldId}`).daterangepicker(
       {
+        singleDatePicker: !this.isRange,
         startDate: moment().subtract(1, 'months'),
         endDate: moment(),
         maxDate: moment(),
@@ -53,7 +57,7 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter, AfterView
         }
       },
       (from, to) => {
-        this.date = { from, to };
+        this.setDate(from, to);
         this.applyFilter();
       }
     );
@@ -68,7 +72,7 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter, AfterView
     });
 
     datepicker.on('mm.dateSelected.daterangepicker', (e, picker) => {
-      if (this.responsiveService.isMobile()) {
+      if (this.responsiveService.isMobile() && this.isRange) {
         // mobile version - only show one calendar at a time
         if (picker.container.is('.show-from')) {
           picker.container.removeClass('show-from').addClass('show-to');
@@ -78,11 +82,25 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter, AfterView
       }
     });
 
-    $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
+    if (this.isRange) {
+      $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
+    }
+  }
+
+  setDate(from, to) {
+    if (this.isRange) {
+      this.date = { from, to };
+      return;
+    }
+    if (this.isStartDate) {
+      this.date = { ...this.date, from };
+      return;
+    }
+    this.date = { ...this.date, to };
   }
 
   ngOnDestroy() {
-    const datePicker = (<any>$('#date-filter')).data('daterangepicker');
+    const datePicker:any = $(`#${this.fieldId}`).data('daterangepicker');
 
     if (datePicker) {
       // avoid dom-nodes leaks
@@ -91,9 +109,6 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter, AfterView
   }
 
   clear() {
-    this.date = {
-      from: undefined,
-      to: undefined,
-    };
+    this.setDate(undefined, undefined);
   }
 }

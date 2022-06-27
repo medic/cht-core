@@ -6,7 +6,8 @@ import {
   Input,
   OnInit,
   NgZone,
-  AfterViewChecked
+  AfterViewChecked,
+  AfterViewInit
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { flatten as _flatten, sortBy as _sortBy } from 'lodash-es';
@@ -20,15 +21,16 @@ import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 import { SessionService } from '@mm-services/session.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { InlineFilter } from '@mm-components/filters/inline-filter';
 
 @Component({
   selector: 'mm-facility-filter',
   templateUrl: './facility-filter.component.html'
 })
-export class FacilityFilterComponent implements OnInit, AbstractFilter, AfterViewChecked {
+export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractFilter, AfterViewChecked {
   private globalActions;
   private isOnlineOnly;
-
+  inlineFilter;
   facilities = [];
   flattenedFacilities = [];
   displayedFacilities = [];
@@ -40,6 +42,7 @@ export class FacilityFilterComponent implements OnInit, AbstractFilter, AfterVie
   private readonly MAX_LIST_HEIGHT = 300; // this is set in CSS
 
   @Input() disabled;
+  @Input() inline;
   @Output() search: EventEmitter<any> = new EventEmitter();
   @ViewChild(MultiDropdownFilterComponent)
   dropdownFilter = new MultiDropdownFilter(); // initialize variable to avoid change detection errors
@@ -52,10 +55,17 @@ export class FacilityFilterComponent implements OnInit, AbstractFilter, AfterVie
     private sessionService:SessionService,
   ) {
     this.globalActions = new GlobalActions(store);
+    this.inlineFilter = new InlineFilter(this.applyFilter.bind(this));
   }
 
   ngOnInit() {
     this.isOnlineOnly = this.sessionService.isOnlineOnly();
+  }
+
+  ngAfterViewInit() {
+    if (this.inline) {
+      this.loadFacilities();
+    }
   }
 
   // this method is called on dropdown open
@@ -166,8 +176,9 @@ export class FacilityFilterComponent implements OnInit, AbstractFilter, AfterVie
   }
 
   toggle(facility) {
+    const filter = this.inline ? this.inlineFilter : this.dropdownFilter;
     const recursiveFacilities = this.getFacilitiesRecursive(facility);
-    recursiveFacilities.forEach(facility => this.dropdownFilter.toggle(facility));
+    recursiveFacilities.forEach(facility => filter.toggle(facility));
   }
 
   itemLabel(facility) {
@@ -179,6 +190,10 @@ export class FacilityFilterComponent implements OnInit, AbstractFilter, AfterVie
   }
 
   clear() {
+    if (this.inline) {
+      this.inlineFilter.clear(false);
+      return;
+    }
     this.dropdownFilter?.clear(false);
   }
 }

@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { sortBy as _sortBy } from 'lodash-es';
-import { combineLatest, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
@@ -18,6 +18,7 @@ import {
   MultiDropdownFilter,
 } from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
+import { InlineFilter } from '@mm-components/filters/inline-filter';
 
 @Component({
   selector: 'mm-form-type-filter',
@@ -25,11 +26,12 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 })
 export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilter {
   private globalActions;
-
-  subscription: Subscription = new Subscription();
   forms;
+  subscription: Subscription = new Subscription();
+  inlineFilter;
 
   @Input() disabled;
+  @Input() inline;
   @Output() search: EventEmitter<any> = new EventEmitter();
   @ViewChild(MultiDropdownFilterComponent)
   dropdownFilter = new MultiDropdownFilter(); // initialize variable to avoid change detection errors
@@ -38,16 +40,13 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
     private store:Store,
   ) {
     this.globalActions = new GlobalActions(store);
+    this.inlineFilter = new InlineFilter(this.applyFilter.bind(this));
   }
 
   ngOnInit() {
-    const subscription = combineLatest(
-      this.store.select(Selectors.getForms),
-    ).subscribe(([
-      forms,
-    ]) => {
-      this.forms = _sortBy(forms, 'title');
-    });
+    const subscription = this.store
+      .select(Selectors.getForms)
+      .subscribe(forms => this.forms = _sortBy(forms, 'title'));
     this.subscription.add(subscription);
   }
 
@@ -69,6 +68,10 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
   }
 
   clear() {
+    if (this.inline) {
+      this.inlineFilter.clear(false);
+      return;
+    }
     this.dropdownFilter?.clear(false);
   }
 }

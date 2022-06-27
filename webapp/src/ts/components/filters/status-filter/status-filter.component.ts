@@ -7,6 +7,7 @@ import {
   MultiDropdownFilter,
 } from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
+import { InlineFilter } from '@mm-components/filters/inline-filter';
 
 @Component({
   selector: 'mm-status-filter',
@@ -14,7 +15,7 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 })
 export class StatusFilterComponent implements AbstractFilter {
   private globalActions;
-
+  inlineFilter;
   statuses = {
     valid: ['valid', 'invalid'],
     verified: ['unverified', 'errors', 'correct'],
@@ -23,6 +24,7 @@ export class StatusFilterComponent implements AbstractFilter {
   allStatuses = [...this.statuses.valid, ...this.statuses.verified];
 
   @Input() disabled;
+  @Input() inline;
   @Output() search: EventEmitter<any> = new EventEmitter();
 
   @ViewChild(MultiDropdownFilterComponent)
@@ -32,6 +34,7 @@ export class StatusFilterComponent implements AbstractFilter {
     private store: Store,
   ) {
     this.globalActions = new GlobalActions(store);
+    this.inlineFilter = new InlineFilter(this.applyFilter.bind(this));
   }
 
   private getValidStatus(statuses) {
@@ -73,6 +76,10 @@ export class StatusFilterComponent implements AbstractFilter {
   }
 
   clear() {
+    if (this.inline) {
+      this.inlineFilter.clear(false);
+      return;
+    }
     this.dropdownFilter?.clear(false);
   }
 }
