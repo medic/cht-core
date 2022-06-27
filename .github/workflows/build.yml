@@ -54,7 +54,7 @@ jobs:
       run: ./scripts/ci/couch-start
     - name: Create logs directory
       run: mkdir tests/logs
-    - run: npm ci
+    - run: npm ci --legacy-peer-deps
     - name: Grunt Install
       run: npm install -g grunt-cli
     - name: Grunt CI-Compile
@@ -125,7 +125,7 @@ jobs:
       if: ${{ github.event_name != 'pull_request' }}
       run: |
         cd scripts/ci
-        npm ci
+        npm ci --legacy-peer-deps
         node ./publish.js
         node ./tag-docker-images.js
 
