@@ -468,7 +468,8 @@ describe('sms parser', () => {
         }
       }
     };
-    const given = { message: 'ABCD Q 1#Name a\u200Bb\u200Cc\u200Dd\uFEFFe' }; // contains a zero width invisible unicode character U+200D which should be stripped out
+    // contains a zero width invisible unicode characters which should be stripped out
+    const given = { message: 'ABCD Q 1#Name a\u200Bb\u200Cc\u200Dd\uFEFFe' };
     const expected = { q: 'No', name: 'abcde' };
     chai.expect(smsparser.parse(def, given)).to.deep.equal(expected);
   });
