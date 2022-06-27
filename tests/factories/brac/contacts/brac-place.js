@@ -31,9 +31,9 @@ const bracPlace = () => {
 
 const generateBracPlace = (name, type, parent) => {
   return bracPlace().build({
-    name: name,
-    type: type,
-    parent: parent
+    name: name || Faker.faker.name.findName(),
+    type,
+    parent
   });
 };
 

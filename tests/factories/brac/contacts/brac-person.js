@@ -39,7 +39,7 @@ const getAgeInYears = (subtype) => {
 const bracPerson = () => {
   return new Factory()
     .sequence('_id', uuid.v4)
-    .option('subtype', 'manager')
+    .option('subtype', memberEligibleWoman)
     .attr('parent', '')
     .attr('type', 'person')
     .attr('sex', ['subtype'], (subtype) => {

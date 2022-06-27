@@ -30,20 +30,13 @@ const bracSurvey = () => {
     .attr('geolocation', '');
 };
 
-const generateBracSurvey = (form, parentPlace, place, patient) => {
-  const contactParent = {
-    _id: parentPlace.contact._id,
-    parent: place.parent
+const generateBracSurvey = (form, parent, patient) => {
+  const contact = {
+    _id: parent.contact._id,
+    parent: { _id: parent._id, parent: parent.parent },
   };
 
-  return bracSurvey().build({
-    form: form,
-    contact: contactParent,
-    from: parentPlace.contact.phone
-  }, {
-    patient: patient,
-    contact: place
-  });
+  return bracSurvey().build({ form, contact, from: parent.contact.phone }, { patient, contact });
 };
 
 module.exports = {

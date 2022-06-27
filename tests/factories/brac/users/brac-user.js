@@ -1,24 +1,29 @@
 const Factory = require('rosie').Factory;
-const uuid = require('uuid');
+const Faker = require('@faker-js/faker');
 
 const bracUser = () => {
   return new Factory()
-    .sequence('_id', uuid.v4)
-    .attr('name', '')
-    .attr('type', 'user')
+    .attr('username', '')
     .attr('roles', '')
-    .attr('facility_id', '')
-    .attr('password', 'Secret_1')
-    .attr('known', true);
+    .attr('place', '')
+    .attr('contact', '')
+    .attr('password', 'Secret_1');
 };
 
-const generateBracUser = (name, roles, facility) => {
+const generateUsername = (name) => {
+  const username = name || Faker.faker.internet.userName();
+  return username
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, '-');
+};
+
+const generateBracUser = (name, roles, facility, contact) => {
   return bracUser().build({
-    name: name,
+    username: generateUsername(name),
     roles: roles,
-    facility_id: facility,
-  }
-  );
+    place: facility._id,
+    contact: contact._id
+  });
 };
 
 module.exports = {

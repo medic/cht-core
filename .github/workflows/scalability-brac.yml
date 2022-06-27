@@ -1,9 +1,6 @@
 name: Scalability Workflow
 # This workflow is triggered on pushes to the repository.
-on:
-  push:
-    tags:
-      - "*-beta.*"
+on: [push]
 
 jobs:
   build:
@@ -21,8 +18,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.SCALABILITY_SECRET_ACCESS_KEY }}
           aws-region: ca-central-1
       - name: Start EC2 and Medics
-        run: cd tests/scalability && ./start_ec2_medic.sh $TAG_NAME
+        run: cd tests/scalability/brac && ./start_ec2_medic.sh $TAG_NAME
       - name: Execute Jmeter
         env:
           SCALABILITY_ARN: ${{ secrets.SCALABILITY_ARN }}
-        run: cd tests/scalability && ./start_jmeter_ec2.sh
+        run: cd tests/scalability/brac && ./start_jmeter_ec2.sh

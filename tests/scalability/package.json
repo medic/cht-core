@@ -3,9 +3,11 @@
   "author": "garethbowen",
   "private": true,
   "dependencies": {
+    "cht-conf": "^3.11.1",
     "csv-parser": "^3.0.0",
     "minimist": "^1.2.5",
     "pouchdb": "^7.2.1",
+    "pouchdb-adapter-leveldb": "^7.3.0",
     "pouchdb-adapter-memory": "^7.2.1"
   }
 }
