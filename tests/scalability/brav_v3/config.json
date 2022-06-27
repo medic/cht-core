@@ -1,0 +1,13 @@
+{
+  "url": "/medic",
+  "users": [
+    {
+      "name": "ac1",
+      "pass": "Secret_1"
+    },
+    {
+      "name": "ac2",
+      "pass": "Secret_1"
+    }
+  ]
+}
