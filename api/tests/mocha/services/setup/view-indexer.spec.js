@@ -106,7 +106,7 @@ describe('View indexer service', () => {
       }]);
     });
 
-    it('should retry if the error is a timeout error', async () => {
+    it('should retry if the error is a ESOCKETTIMEDOUT error', async () => {
       sinon.stub(env, 'serverUrl').value('http://localhost');
       sinon.stub(rpn, 'get').rejects({ error: { code: 'ESOCKETTIMEDOUT' } });
       rpn.get.onCall(20).resolves();
@@ -123,6 +123,25 @@ describe('View indexer service', () => {
       };
       expect(rpn.get.args).to.deep.equal(Array.from({ length: 21 }).map(() => [params]));
     });
+
+    it('should retry if the error is a ETIMEDOUT error', async () => {
+      sinon.stub(env, 'serverUrl').value('http://localhost');
+      sinon.stub(rpn, 'get').rejects({ error: { code: 'ETIMEDOUT' } });
+      rpn.get.onCall(20).resolves();
+      viewIndexer.__set__('continueIndexing', true);
+
+      await viewIndexer.__get__('indexView')('other', '_design/mydesign', 'viewname');
+
+      expect(rpn.get.callCount).to.equal(21);
+      const params = {
+        uri: 'http://localhost/other/_design/mydesign/_view/viewname',
+        json: true,
+        qs: { limit: 1 },
+        timeout: 2000,
+      };
+      expect(rpn.get.args).to.deep.equal(Array.from({ length: 21 }).map(() => [params]));
+    });
+
 
     it('should terminate when other errors are thrown', async () => {
       sinon.stub(env, 'serverUrl').value('http://localhost');
