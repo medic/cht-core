@@ -447,6 +447,32 @@ describe('sms parser', () => {
     });
   });
 
+  it('strips unicode whitespace from textforms submission - #7654', () => {
+    const def = {
+      meta: {
+        code: 'ABCD'
+      },
+      fields: {
+        q: {
+          type: 'integer',
+          list: [[0, 'Yes'], [1, 'No']],
+          labels: {
+            tiny: 'q'
+          }
+        },
+        name: {
+          type: 'string',
+          labels: {
+            tiny: 'name'
+          }
+        }
+      }
+    };
+    const given = { message: 'ABCD Q 1#Name a\u200Bb\u200Cc\u200Dd\uFEFFe' }; // contains a zero width invisible unicode character U+200D which should be stripped out
+    const expected = { q: 'No', name: 'abcde' };
+    chai.expect(smsparser.parse(def, given)).to.deep.equal(expected);
+  });
+
   it('ignore whitespace in list field muvuku', () => {
     const def = {
       fields: {
