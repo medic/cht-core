@@ -236,7 +236,7 @@ exports.parse = (def, doc) => {
   }
 
   // replace zero-width unicode characters
-  doc.message = doc.message.replace(/[\u200B\u200C\u200D\uFEFF]/g, '');
+  doc.message = doc.message.replace(/[\u200B-\u200D\uFEFF]/g, '');
 
   if (isMuvukuFormat(doc.message)) {
     msgData = parser(def, doc);
