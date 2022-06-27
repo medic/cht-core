@@ -1,5 +1,6 @@
 const logger = require('../../logger');
 
+// TODO add translations (just like bootstrap) once the actions are decided upon
 const actions = [
   {
     id: 'check',
