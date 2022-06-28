@@ -19,16 +19,6 @@ process
   });
 
 (async () => {
-  try {
-    logger.info('Running server checks…');
-    await serverChecks.check(environment.couchUrl);
-    logger.info('Checks passed successfully');
-  } catch (err) {
-    logger.error('Fatal error initialising medic-api');
-    logger.error('%o',err);
-    process.exit(1);
-  }
-
   const app = express();
   app.set('strict routing', true);
   app.set('trust proxy', true);
@@ -42,6 +32,17 @@ process
   });
   server.setTimeout(0);
 
+  try {
+    startupLog.start('serverChecks');
+    logger.info('Running server checks…');
+    await serverChecks.check(environment.couchUrl);
+    logger.info('Checks passed successfully');
+  } catch (err) {
+    logger.error('Fatal error initialising medic-api');
+    logger.error('%o',err);
+    process.exit(1);
+  }
+
   const checkInstall = require('./src/services/setup/check-install');
   const configWatcher = require('./src/services/config-watcher');
   const migrations = require('./src/migrations');
@@ -53,7 +54,7 @@ process
 
   try
   {
-    startupLog.start('check');
+    startupLog.start('installationChecks');
     logger.info('Running installation checks…');
     await checkInstall.run();
     logger.info('Installation checks passed');
@@ -77,7 +78,7 @@ process
     await migrations.run();
     logger.info('Database migrations completed successfully');
 
-    startupLog.start('config_forms');
+    startupLog.start('configForms');
     logger.info('Generating service worker');
     await generateServiceWorker.run();
     logger.info('Service worker generated successfully');
@@ -92,7 +93,7 @@ process
     process.exit(1);
   }
 
-  router = require('./src/routing');
+  // router = require('./src/routing');
   // Define error-handling middleware last.
   // http://expressjs.com/guide/error-handling.html
   app.use((err, req, res, next) => {

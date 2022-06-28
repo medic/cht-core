@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>The CHT is starting up</title>
   <script>
     const getListElem = () => document.getElementById('actions');
@@ -37,7 +38,7 @@
     const populateList = (progress) => {
       const actionsElem = getListElem();
 
-      progress.forEach((action) => {
+      Object.values(progress).forEach((action) => {
         if (!action.display) {
           return;
         }
@@ -68,6 +69,11 @@
     setInterval(getProgress, 1000);
   </script>
   <style>
+    html {
+      margin: 0;
+      padding: 0;
+
+    }
     body {
       background-color: #323232;
       color: #FFFFFF;
@@ -75,13 +81,18 @@
       height: 100%;
       padding: 0;
       margin: 0;
+      overflow-y: hidden;
+
     }
     body, input {
       font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
     }
     .center {
-      padding-top: 2em;
-      width: 600px;
+      box-sizing: border-box;
+      padding: 2em;
+      width: 450px;
+      min-width: 350px;
+      max-width: 100%;
       margin: auto;
     }
     ul {
@@ -106,6 +117,7 @@
 
     .loader.done {
       border-color: #218E7F;
+      background: #218E7F;
     }
 
     @-webkit-keyframes loader {

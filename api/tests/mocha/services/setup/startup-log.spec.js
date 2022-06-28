@@ -3,40 +3,36 @@ const rewire = require('rewire');
 const { expect } = require('chai');
 
 let startupLog;
-const initialActions = [
-  {
-    id: 'check',
+const initialActions = {
+  serverChecks: {
+    translation: 'Running server checks',
+    display: true,
+  },
+  installationChecks: {
     translation: 'Running installation checks',
     display: true,
   },
-  {
-    id: 'install',
+  install: {
     translation: 'Installing',
     display: false,
   },
-  {
-    id: 'index',
+  index: {
     translation: 'Indexing data',
     display: false,
   },
-  {
-    id: 'config',
+  config: {
     translation: 'Configuring CHT',
     display: true,
   },
-  {
-    id: 'migrate',
+  migrate: {
     translation: 'Migrating data',
     display: true,
   },
-  {
-    id: 'config_forms',
+  configForms: {
     translation: 'Configuring forms',
     display: true,
-  },
-];
-
-const findAction = (actions, actionId) => actions.find(action => action.id === actionId);
+  }
+};
 
 describe('StartUp log', () => {
   beforeEach(() => {
@@ -62,76 +58,78 @@ describe('StartUp log', () => {
     it('should set the action as started', () => {
       startupLog.start('check');
       const actions = startupLog.getProgress();
-      actions.forEach(action => {
-        const initialAction = findAction(initialActions, action.id);
-        if (action.id === 'check') {
+      for (const [actionId, action] of Object.entries(actions)) {
+        const initialAction = initialActions[actionId];
+        if (actionId === 'check') {
           expect(action).to.deep.equal({ ...initialAction, started: true });
         } else {
           expect(action).to.deep.equal(initialAction);
         }
-      });
+      }
     });
 
     it('should set an non-displayed action to be displayed', () => {
       startupLog.start('install');
       const actions = startupLog.getProgress();
-      actions.forEach(action => {
-        const initialAction = findAction(initialActions, action.id);
-        if (action.id === 'install') {
+      for (const [actionId, action] of Object.entries(actions)) {
+        const initialAction = initialActions[actionId];
+        if (actionId === 'install') {
           expect(action).to.deep.equal({ ...initialAction, started: true, display: true });
         } else {
           expect(action).to.deep.equal(initialAction);
         }
-      });
+      }
     });
 
     it('should set the other started tasks as completed', () => {
       startupLog.start('check');
       startupLog.start('install');
       let actions = startupLog.getProgress();
-      actions.forEach(action => {
-        const initialAction = findAction(initialActions, action.id);
-        if (action.id === 'check') {
-          expect(action).to.deep.equal({ ...initialAction, started: true, completed: true });
-        } else if (action.id === 'install') {
+
+      for (const [actionId, action] of Object.entries(actions)) {
+        const initialAction = initialActions[actionId];
+        if (actionId === 'check') {
+          expect(action).to.deep.equal({ ...initialAction, started: true, display: true });
+        } else if (actionId === 'install') {
           expect(action).to.deep.equal({ ...initialAction, started: true, display: true });
         } else {
           expect(action).to.deep.equal(initialAction);
         }
-      });
+      }
 
       startupLog.start('index');
       actions = startupLog.getProgress();
-      actions.forEach(action => {
-        const initialAction = findAction(initialActions, action.id);
-        if (action.id === 'check') {
+
+      for (const [actionId, action] of Object.entries(actions)) {
+        const initialAction = initialActions[actionId];
+        if (actionId === 'check') {
           expect(action).to.deep.equal({ ...initialAction, started: true, completed: true });
-        } else if (action.id === 'install') {
+        } else if (actionId === 'install') {
           expect(action).to.deep.equal({ ...initialAction, started: true, display: true, completed: true });
-        } else if (action.id === 'index') {
+        } else if (actionId === 'index') {
           expect(action).to.deep.equal({ ...initialAction, started: true, display: true });
         } else {
           expect(action).to.deep.equal(initialAction);
         }
-      });
+      }
 
       startupLog.start('migrate');
       actions = startupLog.getProgress();
 
-      actions.forEach(action => {
-        const initialAction = findAction(initialActions, action.id);
-        if (action.id === 'check') {
+      for (const [actionId, action] of Object.entries(actions)) {
+        const initialAction = initialActions[actionId];
+        if (actionId === 'check') {
           expect(action).to.deep.equal({ ...initialAction, started: true, completed: true });
-        } else if (action.id === 'install') {
+        } else if (actionId === 'install') {
           expect(action).to.deep.equal({ ...initialAction, started: true, display: true, completed: true });
-        } else if (action.id === 'index') {
+        } else if (actionId === 'index') {
           expect(action).to.deep.equal({ ...initialAction, started: true, display: true, completed: true });
-        } else if (action.id === 'migrate') {
+        } else if (actionId === 'migrate') {
           expect(action).to.deep.equal({ ...initialAction, started: true });
         } else {
           expect(action).to.deep.equal(initialAction);
         }
-      });
+      }
     });
   });
 });
