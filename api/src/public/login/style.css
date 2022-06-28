@@ -147,10 +147,6 @@ form {
   text-decoration: none;
 }
 
-#unsupported-browser a:visited {
-  color: inherit;
-}
-
 .hidden {
   display: none;
   visibility: hidden;

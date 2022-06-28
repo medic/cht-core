@@ -197,6 +197,47 @@ const isUsingSupportedBrowser = () => {
   });
 };
 
+const isUsingChtAndroid = () => typeof window.medicmobile_android !== 'undefined';
+
+const getAndroidAppVersion = () => {
+  if (isUsingChtAndroid() && typeof window.medicmobile_android.getAppVersion === 'function') {
+    return window.medicmobile_android.getAppVersion();
+  }
+};
+
+const isUsingChtAndroidV1 = () => {
+  if (!isUsingChtAndroid()) {
+    return false;
+  }
+
+  return getAndroidAppVersion().startsWith('v1.');
+};
+
+const checkUnsupportedBrowser = () => {
+  if (!selectedLocale) {
+    return;
+  }
+
+  const warningMessage = translations[selectedLocale]['login.unsupported_browser'];
+  let outdatedComponentKey;
+  if (isUsingChtAndroid()) {
+    if (isUsingChtAndroidV1()) {
+      outdatedComponentKey = 'login.unsupported_browser.outdated_cht_android';
+    } else if (!isUsingSupportedBrowser()) {
+      outdatedComponentKey = 'login.unsupported_browser.outdated_webview_apk';
+    }
+  } else if (!isUsingSupportedBrowser()) {
+    outdatedComponentKey = 'login.unsupported_browser.outdated_browser';
+  }
+
+  if (typeof outdatedComponentKey !== 'undefined') {
+    document.getElementById('unsupported-browser-warning').innerText = warningMessage;
+    document.getElementById('unsupported-browser-update').innerText =
+      translations[selectedLocale][outdatedComponentKey];
+    document.getElementById('unsupported-browser').classList.remove('hidden');
+  }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
   translations = parseTranslations();
   selectedLocale = getLocale();
@@ -221,9 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  if (!isUsingSupportedBrowser()) {
-    document.getElementById('unsupported-browser').classList.remove('hidden');
-  }
+  checkUnsupportedBrowser();
 });
 
 window.addEventListener('pageshow', (event) => {
