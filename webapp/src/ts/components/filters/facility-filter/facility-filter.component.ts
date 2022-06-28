@@ -30,7 +30,7 @@ import { InlineFilter } from '@mm-components/filters/inline-filter';
 export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractFilter, AfterViewChecked {
   private globalActions;
   private isOnlineOnly;
-  inlineFilter;
+  inlineFilter: InlineFilter;
   facilities = [];
   flattenedFacilities = [];
   displayedFacilities = [];
@@ -43,6 +43,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
 
   @Input() disabled;
   @Input() inline;
+  @Input() fieldId;
   @Output() search: EventEmitter<any> = new EventEmitter();
   @ViewChild(MultiDropdownFilterComponent)
   dropdownFilter = new MultiDropdownFilter(); // initialize variable to avoid change detection errors
@@ -195,5 +196,9 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
       return;
     }
     this.dropdownFilter?.clear(false);
+  }
+
+  countSelected() {
+    return this.inline && this.inlineFilter?.countSelected();
   }
 }

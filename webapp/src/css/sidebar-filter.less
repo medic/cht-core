@@ -1,11 +1,38 @@
 @import 'variables';
 
- .sidebar-filter {
-   * {
-     outline: none !important;
-   }
+.sidebar-filter {
+  * {
+    outline: none !important;
+  }
 
-   .sidebar-backdrop {
+  .filter-action-bar {
+    padding-top: 4px;
+
+    .freetext-filter {
+      input, .btn {
+        background-color: rgba(255, 255, 255, 0.70);
+      }
+    }
+
+    .btn.open-filter {
+      background-color: rgba(255, 255, 255, 0.45);
+      padding: 7px 12px;
+
+      .filter-counter {
+        color: @white;
+        font-size: @font-small;
+        background: @blue-dark;
+        border-radius: 100px;
+        padding: 0 5px;
+      }
+    }
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .sidebar-backdrop {
     position: fixed;
     width: 100%;
     height: 100%;
@@ -13,7 +40,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 1040;
+    z-index: 1020;
     overflow-x: hidden;
     overflow-y: auto;
     opacity: 0.4;
@@ -26,8 +53,8 @@
     height: 100%;
     top: 0;
     right: 0;
-    z-index: 1050;
-    overflow:hidden;
+    z-index: 1030;
+    overflow: hidden;
     background-color: @white;
     background-clip: padding-box;
     box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.24);
@@ -49,11 +76,13 @@
 
     .sidebar-header {
       border-bottom: 1px solid @gray-light;
+
       .sidebar-title {
         font-size: @font-extra-large;
         font-weight: bold;
         margin: 0;
       }
+
       .sidebar-close {
         font-size: @font-large;
         font-weight: lighter;
@@ -72,26 +101,33 @@
           font-size: @font-medium;
           font-weight: bold;
           padding: 0;
+
           &, &:hover {
             text-decoration: none;
           }
+
           .title {
             display: inline-block;
           }
         }
+
         &:before {
           content: none;
         }
+
         &:after {
           font-size: @font-medium;
           margin: 5px;
         }
+
         &[aria-expanded="false"]:after {
           content: '\f078'; // https://fontawesome.com/v4/icon/chevron-down
         }
+
         &[aria-expanded="true"]:after {
           content: '\f077'; // https://fontawesome.com/v4/icon/chevron-up
         }
+
         .chip {
           background: @blue-dark;
           color: @white;
@@ -99,6 +135,7 @@
           padding: 2px 15px;
           margin-left: 10px;
           display: inline-block;
+
           .fa {
             margin-left: 10px;
             font-size: @font-medium;
@@ -116,8 +153,9 @@
       }
 
       mm-date-filter {
-        margin: 10px 0;
+        margin-bottom: 15px;
         padding: 0 5px;
+
         .mm-button {
           box-shadow: none;
           border: 1px solid @gray-light;
@@ -130,6 +168,7 @@
         ul {
           margin-left: 10px;
         }
+
         li {
           text-overflow: ellipsis;
           overflow: hidden;
@@ -137,22 +176,27 @@
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           white-space: normal;
+
           &.group-header {
             font-size: @font-medium;
             color: @gray-medium;
             padding: 3px 25px;
+
             &:not(:first-child) {
               margin-top: 10px;
             }
           }
+
           &.selected a:before {
             content: '\f14a'; // https://fontawesome.com/v4/icon/check-square
             color: @blue-dark;
           }
+
           a {
             color: @gray-ultra-dark;
             font-size: @font-medium;
             text-decoration: none;
+
             &:before {
               content: '\f096'; // http://fontawesome.io/icon/square-o/
               font-family: FontAwesome;
@@ -168,6 +212,7 @@
 
     .sidebar-footer {
       box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.24);
+
       .btn {
         width: 100%;
       }

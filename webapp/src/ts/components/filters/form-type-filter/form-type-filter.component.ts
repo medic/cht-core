@@ -28,10 +28,11 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
   private globalActions;
   forms;
   subscription: Subscription = new Subscription();
-  inlineFilter;
+  inlineFilter: InlineFilter;
 
   @Input() disabled;
   @Input() inline;
+  @Input() fieldId;
   @Output() search: EventEmitter<any> = new EventEmitter();
   @ViewChild(MultiDropdownFilterComponent)
   dropdownFilter = new MultiDropdownFilter(); // initialize variable to avoid change detection errors
@@ -73,5 +74,9 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
       return;
     }
     this.dropdownFilter?.clear(false);
+  }
+
+  countSelected() {
+    return this.inline && this.inlineFilter?.countSelected();
   }
 }

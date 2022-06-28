@@ -111,4 +111,8 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter, AfterView
   clear() {
     this.setDate(undefined, undefined);
   }
+
+  countSelected() {
+    return this.date.from || this.date.to ? 1 : 0;
+  }
 }

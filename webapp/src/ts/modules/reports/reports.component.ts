@@ -50,7 +50,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   verifyingReport;
   showContent;
   enketoEdited;
-  showSidebarFilter = true;
+  showSidebarFilter = false;
 
   constructor(
     private store:Store,

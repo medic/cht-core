@@ -15,7 +15,7 @@ import { InlineFilter } from '@mm-components/filters/inline-filter';
 })
 export class StatusFilterComponent implements AbstractFilter {
   private globalActions;
-  inlineFilter;
+  inlineFilter: InlineFilter;
   statuses = {
     valid: ['valid', 'invalid'],
     verified: ['unverified', 'errors', 'correct'],
@@ -25,6 +25,7 @@ export class StatusFilterComponent implements AbstractFilter {
 
   @Input() disabled;
   @Input() inline;
+  @Input() fieldId;
   @Output() search: EventEmitter<any> = new EventEmitter();
 
   @ViewChild(MultiDropdownFilterComponent)
@@ -81,5 +82,9 @@ export class StatusFilterComponent implements AbstractFilter {
       return;
     }
     this.dropdownFilter?.clear(false);
+  }
+
+  countSelected() {
+    return this.inline && this.inlineFilter?.countSelected();
   }
 }

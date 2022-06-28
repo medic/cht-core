@@ -28,4 +28,8 @@ export class InlineFilter {
     }
     this.applyCallback(Array.from(this.selected));
   }
+
+  countSelected() {
+    return this.selected.size;
+  }
 }

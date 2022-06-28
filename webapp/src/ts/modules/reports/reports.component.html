@@ -1,10 +1,20 @@
 <div class="filters">
   <div class="inner">
-    <reports-filters (search)="search($event)" [disabled]="selectMode && selectedReports?.length" *ngIf="!showSidebarFilter"></reports-filters>
-    <mm-reports-sidebar-filter *ngIf="showSidebarFilter"></mm-reports-sidebar-filter>
+    <reports-filters
+      *ngIf="!showSidebarFilter"
+      (search)="search($event)"
+      [disabled]="selectMode && selectedReports?.length">
+    </reports-filters>
+    <mm-reports-sidebar-filter
+      *ngIf="showSidebarFilter"
+      (search)="search($event)"
+      [disabled]="selectMode && selectedReports?.length">
+    </mm-reports-sidebar-filter>
     <mm-navigation></mm-navigation>
   </div>
 </div>
+
+<button (click)="showSidebarFilter =!showSidebarFilter">Toggle filter</button>
 
 <div class="inner">
   <div class="inbox page">
