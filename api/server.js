@@ -93,7 +93,7 @@ process
     process.exit(1);
   }
 
-  // router = require('./src/routing');
+  router = require('./src/routing');
   // Define error-handling middleware last.
   // http://expressjs.com/guide/error-handling.html
   app.use((err, req, res, next) => {
