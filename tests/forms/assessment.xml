@@ -1,0 +1,2311 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+  <h:head>
+    <h:title>Assess Patient</h:title>
+    <model>
+      <itext>
+        <translation lang="default">
+          <text id="/assessment/group_fever/mrdt_negative:label">
+            <value>Negative MRDT</value>
+            <value form="image">jr://images/negative.png</value>
+          </text>
+          <text id="/assessment/group_fever/mrdt_positive:label">
+            <value>Positive MRDT</value>
+            <value form="image">jr://images/positive.png</value>
+          </text>
+          <text id="static_instance-select_danger_signs-0">
+            <value>Convulsions</value>
+          </text>
+          <text id="static_instance-select_danger_signs-1">
+            <value>Unable to feed</value>
+          </text>
+          <text id="static_instance-select_danger_signs-2">
+            <value>Vomits everything</value>
+          </text>
+          <text id="static_instance-select_danger_signs-3">
+            <value>Very sleepy</value>
+          </text>
+          <text id="static_instance-select_danger_signs-4">
+            <value>Chest indrawing</value>
+          </text>
+          <text id="static_instance-select_death_cause-0">
+            <value>Diarrhea</value>
+          </text>
+          <text id="static_instance-select_death_cause-1">
+            <value>Malaria</value>
+          </text>
+          <text id="static_instance-select_death_cause-2">
+            <value>Pneumonia</value>
+          </text>
+          <text id="static_instance-select_death_cause-3">
+            <value>Other</value>
+          </text>
+          <text id="static_instance-select_diarrhea_treatment-0">
+            <value>ORS</value>
+          </text>
+          <text id="static_instance-select_diarrhea_treatment-1">
+            <value>zinc</value>
+          </text>
+          <text id="static_instance-select_duration-0">
+            <value>One day or less</value>
+          </text>
+          <text id="static_instance-select_duration-1">
+            <value>2 days</value>
+          </text>
+          <text id="static_instance-select_duration-2">
+            <value>3 days</value>
+          </text>
+          <text id="static_instance-select_duration-3">
+            <value>4 days - 1 week</value>
+          </text>
+          <text id="static_instance-select_duration-4">
+            <value>1 - 2 weeks</value>
+          </text>
+          <text id="static_instance-select_duration-5">
+            <value>2 weeks or more</value>
+          </text>
+          <text id="static_instance-select_food_eaten-0">
+            <value>Breast Milk</value>
+          </text>
+          <text id="static_instance-select_food_eaten-1">
+            <value>Milk (powdered milk, fresh milk)</value>
+          </text>
+          <text id="static_instance-select_food_eaten-2">
+            <value>Eggs</value>
+          </text>
+          <text id="static_instance-select_food_eaten-3">
+            <value>Meat (beef, goat, lamb, chicken, duck) or Fish</value>
+          </text>
+          <text id="static_instance-select_food_eaten-4">
+            <value>None of the above</value>
+          </text>
+          <text id="static_instance-select_hint-0">
+            <value>Show mRDT Tip</value>
+          </text>
+          <text id="static_instance-select_imm_18mo-0">
+            <value>Measles 1</value>
+          </text>
+          <text id="static_instance-select_imm_2mo-0">
+            <value>BCG</value>
+          </text>
+          <text id="static_instance-select_imm_2mo-1">
+            <value>Polio 0</value>
+          </text>
+          <text id="static_instance-select_imm_2mo-2">
+            <value>Polio 1</value>
+          </text>
+          <text id="static_instance-select_imm_2mo-3">
+            <value>DPT- HepB + Hib1</value>
+          </text>
+          <text id="static_instance-select_imm_2mo-4">
+            <value>PCV1</value>
+          </text>
+          <text id="static_instance-select_imm_2mo-5">
+            <value>Rota 1</value>
+          </text>
+          <text id="static_instance-select_imm_9mo-0">
+            <value>DPT- HepB + Hib2</value>
+          </text>
+          <text id="static_instance-select_imm_9mo-1">
+            <value>PCV2</value>
+          </text>
+          <text id="static_instance-select_imm_9mo-2">
+            <value>Rota 2</value>
+          </text>
+          <text id="static_instance-select_imm_9mo-3">
+            <value>DPT- HepB + Hib3</value>
+          </text>
+          <text id="static_instance-select_imm_9mo-4">
+            <value>PCV3</value>
+          </text>
+          <text id="static_instance-select_imm_9mo-5">
+            <value>Rota 3</value>
+          </text>
+          <text id="static_instance-select_malaria_treatment-0">
+            <value>ACT</value>
+          </text>
+          <text id="static_instance-select_mrdt-0">
+            <value>Positive</value>
+          </text>
+          <text id="static_instance-select_mrdt-1">
+            <value>Negative</value>
+          </text>
+          <text id="static_instance-select_mrdt-2">
+            <value>Test not done</value>
+          </text>
+          <text id="static_instance-select_mrdt_source-0">
+            <value>CHP</value>
+          </text>
+          <text id="static_instance-select_mrdt_source-1">
+            <value>Other (Clinic, Dispensary, Pharmacy)</value>
+          </text>
+          <text id="static_instance-select_pneumonia_treatment-0">
+            <value>Amoxicillin</value>
+          </text>
+          <text id="static_instance-select_times_breastfed-0">
+            <value>0</value>
+          </text>
+          <text id="static_instance-select_times_breastfed-1">
+            <value>1</value>
+          </text>
+          <text id="static_instance-select_times_breastfed-2">
+            <value>2</value>
+          </text>
+          <text id="static_instance-select_times_breastfed-3">
+            <value>3</value>
+          </text>
+          <text id="static_instance-select_times_breastfed-4">
+            <value>4</value>
+          </text>
+          <text id="static_instance-select_times_breastfed-5">
+            <value>5</value>
+          </text>
+          <text id="static_instance-select_times_breastfed-6">
+            <value>6</value>
+          </text>
+          <text id="static_instance-select_times_breastfed-7">
+            <value>7</value>
+          </text>
+          <text id="static_instance-select_times_breastfed-8">
+            <value>8</value>
+          </text>
+          <text id="static_instance-select_times_breastfed-9">
+            <value>More than 8 times</value>
+          </text>
+          <text id="static_instance-select_times_eaten-0">
+            <value>0</value>
+          </text>
+          <text id="static_instance-select_times_eaten-1">
+            <value>1</value>
+          </text>
+          <text id="static_instance-select_times_eaten-2">
+            <value>2</value>
+          </text>
+          <text id="static_instance-select_times_eaten-3">
+            <value>3</value>
+          </text>
+          <text id="static_instance-select_times_eaten-4">
+            <value>4</value>
+          </text>
+          <text id="static_instance-select_times_eaten-5">
+            <value>5</value>
+          </text>
+          <text id="static_instance-select_times_eaten-6">
+            <value>6</value>
+          </text>
+          <text id="static_instance-select_times_eaten-7">
+            <value>More than 6 times</value>
+          </text>
+          <text id="static_instance-select_vit_a-0">
+            <value>None</value>
+          </text>
+          <text id="static_instance-select_vit_a-1">
+            <value>6 months</value>
+          </text>
+          <text id="static_instance-select_vit_a-10">
+            <value>5 years</value>
+          </text>
+          <text id="static_instance-select_vit_a-2">
+            <value>12 months</value>
+          </text>
+          <text id="static_instance-select_vit_a-3">
+            <value>18 months</value>
+          </text>
+          <text id="static_instance-select_vit_a-4">
+            <value>24 months</value>
+          </text>
+          <text id="static_instance-select_vit_a-5">
+            <value>2.5 years</value>
+          </text>
+          <text id="static_instance-select_vit_a-6">
+            <value>3 years</value>
+          </text>
+          <text id="static_instance-select_vit_a-7">
+            <value>3.5 years</value>
+          </text>
+          <text id="static_instance-select_vit_a-8">
+            <value>4 years</value>
+          </text>
+          <text id="static_instance-select_vit_a-9">
+            <value>4.5 years</value>
+          </text>
+          <text id="static_instance-select_yes_no-0">
+            <value>Yes</value>
+          </text>
+          <text id="static_instance-select_yes_no-1">
+            <value>No</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <assessment id="assessment" prefix="J1!assessment!" delimiter="#" version="2016-04-06">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <source>user</source>
+            <source_id/>
+            <contact>
+              <_id/>
+              <name/>
+              <date_of_birth/>
+              <sex/>
+              <parent>
+                <_id/>
+              </parent>
+            </contact>
+          </inputs>
+          <visited_contact_uuid/>
+          <patient_age_in_years>0</patient_age_in_years>
+          <patient_age_in_months>0</patient_age_in_months>
+          <patient_age_in_days/>
+          <patient_age_display/>
+          <patient_id/>
+          <patient_name/>
+          <measured_temperature/>
+          <symptom_cough/>
+          <symptom_indrawn_chest/>
+          <symptom_fast_breathing/>
+          <symptom_diarrhea/>
+          <symptom_fever/>
+          <symptom_malaria_test/>
+          <symptom_danger_signs/>
+          <symptom_danger_signs_codes/>
+          <treatment_follow_up/>
+          <referral_follow_up/>
+          <referral_m_24h/>
+          <referral_m_48h/>
+          <p_note/>
+          <group_assess>
+            <is_alive/>
+            <death_date/>
+            <death_cause/>
+            <note/>
+          </group_assess>
+          <group_fever>
+            <patient_fever/>
+            <fever_note/>
+            <patient_temperature/>
+            <fever_duration/>
+            <mrdt_treated/>
+            <mrdt_result/>
+            <mrdt_positive/>
+            <mrdt_negative/>
+            <mrdt_note/>
+            <mrdt_source/>
+            <malaria_treatment_given/>
+            <malaria_treatment/>
+            <malaria_painkiller_given/>
+            <malaria_referral_note/>
+          </group_fever>
+          <group_cough>
+            <patient_coughs/>
+            <coughing_duration/>
+            <chest_indrawing/>
+          </group_cough>
+          <group_breathing>
+            <breath_timer/>
+            <breath_note/>
+            <breath_count/>
+            <fast_breathing/>
+            <fast_breathing_note_true/>
+            <fast_breathing_note_false/>
+            <fast_breathing_refer/>
+            <pneumonia_treatment_given/>
+            <pneumonia_treatment/>
+          </group_breathing>
+          <group_diarrhea>
+            <patient_diarrhea/>
+            <diarrhea_duration/>
+            <diarrhea_blood/>
+            <diarrhea_refer/>
+            <diarrhea_treatment_given/>
+            <diarrhea_treatment/>
+          </group_diarrhea>
+          <group_danger_signs>
+            <danger_signs/>
+          </group_danger_signs>
+          <group_imm>
+            <note_imm/>
+            <group_imm_less_2mo>
+              <vaccines_received_2mo/>
+              <imm_importance_note/>
+              <imm_current_2mo/>
+              <imm_given_2mo/>
+            </group_imm_less_2mo>
+            <group_imm_2mo_9mo>
+              <vaccines_received_9mo/>
+              <imm_importance_note/>
+              <imm_current_9mo/>
+              <imm_given_9mo/>
+            </group_imm_2mo_9mo>
+            <group_imm_9mo_18mo>
+              <vaccines_received_18mo/>
+              <imm_importance_note/>
+              <imm_current_18mo/>
+              <imm_given_18mo/>
+            </group_imm_9mo_18mo>
+          </group_imm>
+          <group_deworm_vit>
+            <vit_received/>
+            <deworming_received/>
+          </group_deworm_vit>
+          <group_nutrition_assessment>
+            <note_nutrition/>
+            <muac_score/>
+            <group_muac_color>
+              <r_note_normal/>
+              <r_note_mam_24h/>
+              <r_note_mam_48h/>
+              <r_note_sam_24h/>
+              <r_note_sam_48h/>
+            </group_muac_color>
+            <note_mam_24h/>
+            <note_mam_48h/>
+            <note_sam_24h/>
+            <note_sam_48h/>
+            <child_weight/>
+            <has_oedema/>
+            <note_has_oedema/>
+            <micronutrient/>
+            <num_satchets/>
+            <buy_mpn/>
+            <mpn_num/>
+            <group_under_2yr>
+              <breastfeeding/>
+              <breastfed_24hrs/>
+              <times_breastfed/>
+              <note_nutrition_0/>
+              <note_nutrition_1/>
+              <note_nutrition_2/>
+              <note_nutrition_3/>
+              <note_nutrition_4/>
+            </group_under_2yr>
+            <group_food_eaten>
+              <times_eaten/>
+              <food_eaten/>
+              <validation_error_breast_feeding/>
+              <validation_error_none/>
+              <note_food_eaten/>
+            </group_food_eaten>
+          </group_nutrition_assessment>
+          <group_diagnosis>
+            <diagnosis_cough/>
+            <diagnosis_diarrhea/>
+            <diagnosis_fever/>
+            <submit/>
+            <r_summary/>
+            <r_patient_info/>
+            <r_symptoms/>
+            <r_symptom_cough/>
+            <r_symptom_indrawn_chest/>
+            <r_symptom_fast_breathing/>
+            <r_symptom_diarrhea/>
+            <r_symptom_fever/>
+            <r_symptom_malaria_test/>
+            <r_symptom_danger_signs/>
+            <r_symptom_none/>
+            <r_referral/>
+            <r_referral_age_under_2/>
+            <r_referral_age_over_12/>
+            <r_referral_cough/>
+            <r_referral_pneumonia/>
+            <r_referral_diarrhea/>
+            <r_referral_fever/>
+            <r_referral_malaria/>
+            <r_referral_danger_signs/>
+            <r_referral_mam_24h/>
+            <r_referral_mam_48h/>
+            <r_referral_sam_24h/>
+            <r_referral_sam_48h/>
+            <r_diagnosis/>
+            <r_diagnosis_cough/>
+            <r_diagnosis_pneumonia/>
+            <r_no_pneumonia_treament/>
+            <r_treat_pneumonia>
+              <r_cough_cough_syrup/>
+              <r_cough_cough_syrup_1/>
+              <r_cough_cough_syrup_2/>
+              <r_cough_amox/>
+              <r_cough_amox_1/>
+              <r_cough_amox_2/>
+            </r_treat_pneumonia>
+            <r_cough_instruction/>
+            <r_cough_instruction1/>
+            <r_cough_instruction2/>
+            <r_cough_instruction3/>
+            <r_cough_instruction4/>
+            <r_cough_instruction5/>
+            <r_diagnosis_diarrhea/>
+            <r_no_diarrhea_treatment/>
+            <r_diarrhea_breastfeeding/>
+            <r_diarrhea_breastfeeding1/>
+            <r_treat_diarrhea>
+              <r_diarrhea_ors_infants/>
+              <r_diarrhea_ors/>
+              <r_diarrhea_ors1/>
+              <r_diarrhea_ors2/>
+              <r_diarrhea_ors3/>
+              <r_diarrhea_zinc/>
+              <r_diarrhea_zinc_1/>
+              <r_diarrhea_zinc_2/>
+              <r_diarrhea_zinc_3/>
+            </r_treat_diarrhea>
+            <r_diarrhea_instruction/>
+            <r_diarrhea_instructions1/>
+            <r_diarrhea_instructions2/>
+            <r_diarrhea_instructions3/>
+            <r_diarrhea_instructions4/>
+            <r_diarrhea_instructions5/>
+            <r_diarrhea_instructions6/>
+            <r_diagnosis_fever/>
+            <r_diagnosis_malaria/>
+            <r_no_malaria_treament/>
+            <r_treat_malaria>
+              <r_fever_act/>
+              <r_fever_act_1/>
+              <r_fever_act_2/>
+              <r_fever_act_3/>
+              <r_fever_paracetamol/>
+              <r_fever_paracetamol_1/>
+              <r_fever_paracetamol_2/>
+              <r_fever_paracetamol_3/>
+              <r_fever_paracetamol_4/>
+            </r_treat_malaria>
+            <r_fever_instruction/>
+            <r_fever_instructions1/>
+            <r_fever_instructions2/>
+            <r_fever_instructions3/>
+            <r_feeding/>
+            <r_feeding_note1/>
+            <r_feeding_note2/>
+            <r_feeding_note3/>
+            <r_feeding_note4/>
+            <r_followup_instructions/>
+            <r_followup/>
+            <r_followup_note/>
+          </group_diagnosis>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </assessment>
+      </instance>
+      <instance id="contact-summary"/>
+      <instance id="select_yes_no">
+        <root>
+          <item>
+            <itextId>static_instance-select_yes_no-0</itextId>
+            <name>yes</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_yes_no-1</itextId>
+            <name>no</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_duration">
+        <root>
+          <item>
+            <itextId>static_instance-select_duration-0</itextId>
+            <name>1</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_duration-1</itextId>
+            <name>2</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_duration-2</itextId>
+            <name>3</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_duration-3</itextId>
+            <name>7</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_duration-4</itextId>
+            <name>14</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_duration-5</itextId>
+            <name>21</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_mrdt">
+        <root>
+          <item>
+            <itextId>static_instance-select_mrdt-0</itextId>
+            <name>positive</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_mrdt-1</itextId>
+            <name>negative</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_mrdt-2</itextId>
+            <name>none</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_danger_signs">
+        <root>
+          <item>
+            <itextId>static_instance-select_danger_signs-0</itextId>
+            <name>convulsions</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_danger_signs-1</itextId>
+            <name>unable_to_feed</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_danger_signs-2</itextId>
+            <name>vomits_everything</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_danger_signs-3</itextId>
+            <name>very_sleepy</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_danger_signs-4</itextId>
+            <name>chest_indrawing</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_mrdt_source">
+        <root>
+          <item>
+            <itextId>static_instance-select_mrdt_source-0</itextId>
+            <name>chp</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_mrdt_source-1</itextId>
+            <name>other</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_hint">
+        <root>
+          <item>
+            <itextId>static_instance-select_hint-0</itextId>
+            <name>show</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_death_cause">
+        <root>
+          <item>
+            <itextId>static_instance-select_death_cause-0</itextId>
+            <name>diarrhoea</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_death_cause-1</itextId>
+            <name>malaria</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_death_cause-2</itextId>
+            <name>pneumonia</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_death_cause-3</itextId>
+            <name>other</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_imm_2mo">
+        <root>
+          <item>
+            <itextId>static_instance-select_imm_2mo-0</itextId>
+            <name>bcg</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_imm_2mo-1</itextId>
+            <name>polio_0</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_imm_2mo-2</itextId>
+            <name>polio_1</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_imm_2mo-3</itextId>
+            <name>dpt_hib1</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_imm_2mo-4</itextId>
+            <name>pcv_1</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_imm_2mo-5</itextId>
+            <name>rota_1</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_imm_9mo">
+        <root>
+          <item>
+            <itextId>static_instance-select_imm_9mo-0</itextId>
+            <name>dpt_hib2</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_imm_9mo-1</itextId>
+            <name>pcv_2</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_imm_9mo-2</itextId>
+            <name>rota_2</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_imm_9mo-3</itextId>
+            <name>dpt_hib3</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_imm_9mo-4</itextId>
+            <name>pcv_3</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_imm_9mo-5</itextId>
+            <name>rota_3</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_imm_18mo">
+        <root>
+          <item>
+            <itextId>static_instance-select_imm_18mo-0</itextId>
+            <name>measles_1</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_vit_a">
+        <root>
+          <item>
+            <itextId>static_instance-select_vit_a-0</itextId>
+            <custom_value>0</custom_value>
+            <name>none</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_vit_a-1</itextId>
+            <custom_value>6</custom_value>
+            <name>6</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_vit_a-2</itextId>
+            <custom_value>12</custom_value>
+            <name>12</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_vit_a-3</itextId>
+            <custom_value>18</custom_value>
+            <name>18</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_vit_a-4</itextId>
+            <custom_value>24</custom_value>
+            <name>24</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_vit_a-5</itextId>
+            <custom_value>30</custom_value>
+            <name>30</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_vit_a-6</itextId>
+            <custom_value>36</custom_value>
+            <name>36</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_vit_a-7</itextId>
+            <custom_value>42</custom_value>
+            <name>42</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_vit_a-8</itextId>
+            <custom_value>48</custom_value>
+            <name>48</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_vit_a-9</itextId>
+            <custom_value>54</custom_value>
+            <name>54</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_vit_a-10</itextId>
+            <custom_value>60</custom_value>
+            <name>60</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_times_eaten">
+        <root>
+          <item>
+            <itextId>static_instance-select_times_eaten-0</itextId>
+            <name>0</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_times_eaten-1</itextId>
+            <name>1</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_times_eaten-2</itextId>
+            <name>2</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_times_eaten-3</itextId>
+            <name>3</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_times_eaten-4</itextId>
+            <name>4</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_times_eaten-5</itextId>
+            <name>5</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_times_eaten-6</itextId>
+            <name>6</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_times_eaten-7</itextId>
+            <name>gt_6</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_food_eaten">
+        <root>
+          <item>
+            <itextId>static_instance-select_food_eaten-0</itextId>
+            <name>breast_milk</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_food_eaten-1</itextId>
+            <name>powdered_milk</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_food_eaten-2</itextId>
+            <name>eggs</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_food_eaten-3</itextId>
+            <name>meat</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_food_eaten-4</itextId>
+            <name>none</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_times_breastfed">
+        <root>
+          <item>
+            <itextId>static_instance-select_times_breastfed-0</itextId>
+            <name>0</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_times_breastfed-1</itextId>
+            <name>1</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_times_breastfed-2</itextId>
+            <name>2</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_times_breastfed-3</itextId>
+            <name>3</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_times_breastfed-4</itextId>
+            <name>4</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_times_breastfed-5</itextId>
+            <name>5</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_times_breastfed-6</itextId>
+            <name>6</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_times_breastfed-7</itextId>
+            <name>7</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_times_breastfed-8</itextId>
+            <name>8</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_times_breastfed-9</itextId>
+            <name>gt_8</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_malaria_treatment">
+        <root>
+          <item>
+            <itextId>static_instance-select_malaria_treatment-0</itextId>
+            <name>act</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_pneumonia_treatment">
+        <root>
+          <item>
+            <itextId>static_instance-select_pneumonia_treatment-0</itextId>
+            <name>amoxicillin</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_diarrhea_treatment">
+        <root>
+          <item>
+            <itextId>static_instance-select_diarrhea_treatment-0</itextId>
+            <name>ors</name>
+          </item>
+          <item>
+            <itextId>static_instance-select_diarrhea_treatment-1</itextId>
+            <name>zinc</name>
+          </item>
+        </root>
+      </instance>
+      <bind nodeset="/assessment/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/assessment/inputs/source" type="string"/>
+      <bind nodeset="/assessment/inputs/source_id" type="string"/>
+      <bind nodeset="/assessment/inputs/contact/_id" type="db:person" jr:constraintMsg="Patient must be under 12 years old" required="true()" constraint=" /assessment/patient_age_in_years  &lt; 12"/>
+      <bind nodeset="/assessment/inputs/contact/name" type="string"/>
+      <bind nodeset="/assessment/inputs/contact/date_of_birth" type="string"/>
+      <bind nodeset="/assessment/inputs/contact/sex" type="string"/>
+      <bind nodeset="/assessment/inputs/contact/parent/_id" type="string"/>
+      <bind nodeset="/assessment/visited_contact_uuid" type="string" calculate="../inputs/contact/parent/_id"/>
+      <bind nodeset="/assessment/patient_age_in_years" type="string" calculate="floor( difference-in-months(  /assessment/inputs/contact/date_of_birth , today() ) div 12 )"/>
+      <bind nodeset="/assessment/patient_age_in_months" type="string" calculate="difference-in-months(  /assessment/inputs/contact/date_of_birth , today() )"/>
+      <bind nodeset="/assessment/patient_age_in_days" type="string" calculate="floor( decimal-date-time(today()) - decimal-date-time( /assessment/inputs/contact/date_of_birth ) )"/>
+      <bind nodeset="/assessment/patient_age_display" type="string" calculate="concat(
+ concat( /assessment/patient_age_in_years , if( /assessment/patient_age_in_years =1,' year and ',' years and ')),
+ concat( /assessment/patient_age_in_months  mod 12, if(( /assessment/patient_age_in_months  mod 12)=1,' month old',' months old'))
+)"/>
+      <bind nodeset="/assessment/patient_id" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/assessment/patient_name" type="string" calculate="../inputs/contact/name"/>
+      <bind nodeset="/assessment/measured_temperature" type="string" calculate=" /assessment/group_fever/patient_temperature "/>
+      <bind nodeset="/assessment/symptom_cough" type="string" calculate="if ( /assessment/group_cough/patient_coughs ='yes',
+ concat (
+ 'Cough',
+ if( string-length( /assessment/group_cough/coughing_duration ) != 0,
+ concat (
+ ' for ',
+ jr:choice-name( /assessment/group_cough/coughing_duration , ' /assessment/group_cough/coughing_duration ')
+ ),
+ ''
+ )
+ ),
+ ''
+)"/>
+      <bind nodeset="/assessment/symptom_indrawn_chest" type="string" calculate="if ( /assessment/group_cough/chest_indrawing ='yes', 'In-drawn chest', '')"/>
+      <bind nodeset="/assessment/symptom_fast_breathing" type="string" calculate="if ( /assessment/group_breathing/fast_breathing  = 'true', 'Fast breathing', '')"/>
+      <bind nodeset="/assessment/symptom_diarrhea" type="string" calculate="if ( /assessment/group_diarrhea/patient_diarrhea ='yes',
+ concat(
+ 'Diarrhoea',
+ if( string-length( /assessment/group_diarrhea/diarrhea_duration ) != 0,
+ concat (
+ ' for ',
+ jr:choice-name( /assessment/group_diarrhea/diarrhea_duration , ' /assessment/group_diarrhea/diarrhea_duration ')
+ ),
+ ''
+ ),
+ if ( /assessment/group_diarrhea/diarrhea_blood ='yes', ' with blood', '')
+ ),
+ ''
+)"/>
+      <bind nodeset="/assessment/symptom_fever" type="string" calculate="if ( /assessment/group_fever/patient_fever ='yes' or  /assessment/group_fever/patient_temperature  &gt; 37.5,
+ concat (
+ if( /assessment/group_fever/patient_temperature  &gt;= 40,
+ 'Severe fever',
+ 'Fever'
+ ),
+ if( string-length( /assessment/group_fever/fever_duration ) != 0,
+ concat (
+ ' for ',
+ jr:choice-name( /assessment/group_fever/fever_duration , ' /assessment/group_fever/fever_duration ')
+ ),
+ ''
+ )
+ ),
+ ''
+)"/>
+      <bind nodeset="/assessment/symptom_malaria_test" type="string" calculate="if( string-length( /assessment/group_fever/mrdt_result ) != 0,
+ concat (
+ 'Malaria: ',
+ jr:choice-name( /assessment/group_fever/mrdt_result , ' /assessment/group_fever/mrdt_result ')
+ ),
+ ''
+)"/>
+      <bind nodeset="/assessment/symptom_danger_signs" type="string" calculate="if( count-selected( /assessment/group_danger_signs/danger_signs ) &gt; 0, 'Danger signs', '')"/>
+      <bind nodeset="/assessment/symptom_danger_signs_codes" type="string" calculate=" /assessment/group_danger_signs/danger_signs "/>
+      <bind nodeset="/assessment/treatment_follow_up" type="string" calculate="if ((( /assessment/group_diagnosis/diagnosis_cough ='cough1' and  /assessment/patient_age_in_years  &gt;= 2 and  /assessment/patient_age_in_years  &lt; 6))
+ or ( /assessment/group_diagnosis/diagnosis_cough ='pneumonia1' and  /assessment/patient_age_in_years  &lt;5)
+ or  /assessment/group_diagnosis/diagnosis_diarrhea ='diarrhea1'
+ or  /assessment/group_diagnosis/diagnosis_fever ='fever1'
+ or  /assessment/group_diagnosis/diagnosis_fever ='malaria1',
+ 'true',
+ 'false'
+)"/>
+      <bind nodeset="/assessment/referral_follow_up" type="string" calculate="if ( /assessment/group_diagnosis/diagnosis_cough ='cough2'
+ or ( /assessment/group_diagnosis/diagnosis_cough ='pneumonia1' and  /assessment/patient_age_in_years  &gt;= 5)
+ or  /assessment/group_diagnosis/diagnosis_cough ='cough3'
+ or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia2b'
+ or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia2c'
+ or ( /assessment/group_diagnosis/diagnosis_diarrhea ='diarrhea1' and  /assessment/patient_age_in_years  &gt;= 5)
+ or  /assessment/group_diagnosis/diagnosis_diarrhea ='diarrhea2'
+ or ( /assessment/group_diagnosis/diagnosis_fever ='fever1' and  /assessment/patient_age_in_months  &lt; 3)
+ or  /assessment/group_diagnosis/diagnosis_fever ='fever2'
+ or ( /assessment/group_diagnosis/diagnosis_fever ='malaria1' and  /assessment/patient_age_in_months  &lt; 4)
+ or  /assessment/group_diagnosis/diagnosis_fever ='malaria2'
+ or count-selected( /assessment/group_danger_signs/danger_signs ) &gt; 0
+ or  /assessment/patient_age_in_months  &lt; 2
+ or  /assessment/patient_age_in_years  &gt;= 12,
+ 'true',
+ 'false'
+)"/>
+      <bind nodeset="/assessment/referral_m_24h" type="string" calculate="if ((( /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_months  &lt;=6) and ( /assessment/group_nutrition_assessment/muac_score  &gt;= 11.5 and  /assessment/group_nutrition_assessment/muac_score  &lt;= 12.5) or ( /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_months  &lt;=6) and ( /assessment/group_nutrition_assessment/muac_score  &gt;= 1.0 and  /assessment/group_nutrition_assessment/muac_score  &lt; 11.5)), 'true', 'false')"/>
+      <bind nodeset="/assessment/referral_m_48h" type="string" calculate="if ((( /assessment/patient_age_in_months  &gt; 6 and  /assessment/patient_age_in_months  &lt;= 59) and ( /assessment/group_nutrition_assessment/muac_score  &gt;= 11.5 and  /assessment/group_nutrition_assessment/muac_score  &lt;= 12.5) or ( /assessment/patient_age_in_months  &gt; 6 and  /assessment/patient_age_in_months  &lt;= 59) and ( /assessment/group_nutrition_assessment/muac_score  &gt;= 1.0 and  /assessment/group_nutrition_assessment/muac_score  &lt; 11.5)), 'true', 'false')"/>
+      <bind nodeset="/assessment/p_note" readonly="true()" type="string" relevant="0"/>
+      <bind nodeset="/assessment/group_assess/is_alive" type="select1" required="true()"/>
+      <bind nodeset="/assessment/group_assess/death_date" type="date" jr:constraintMsg="Date can not be in the future" relevant="selected( /assessment/group_assess/is_alive , 'no')" constraint=".&lt;= today()"/>
+      <bind nodeset="/assessment/group_assess/death_cause" type="select1" relevant="selected( /assessment/group_assess/is_alive , 'no')"/>
+      <bind nodeset="/assessment/group_assess/note" readonly="true()" type="string" relevant="selected( /assessment/group_assess/is_alive , 'no')"/>
+      <bind nodeset="/assessment/group_fever" relevant=" /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_years  &lt; 12 and selected( /assessment/group_assess/is_alive , 'yes')"/>
+      <bind nodeset="/assessment/group_fever/patient_fever" type="select1" required="true()"/>
+      <bind nodeset="/assessment/group_fever/fever_note" readonly="true()" type="string" relevant=" /assessment/group_fever/patient_fever  = 'yes'"/>
+      <bind nodeset="/assessment/group_fever/patient_temperature" type="decimal" jr:constraintMsg="Temperature must be between 32 and 45." relevant=" /assessment/group_fever/patient_fever  = 'yes'" constraint=". &gt;= 32 and . &lt;= 45"/>
+      <bind nodeset="/assessment/group_fever/fever_duration" type="select1" relevant=" /assessment/group_fever/patient_fever  = 'yes'" required="true()"/>
+      <bind nodeset="/assessment/group_fever/mrdt_treated" type="select1" relevant=" /assessment/group_fever/patient_fever  = 'yes'" required="true()"/>
+      <bind nodeset="/assessment/group_fever/mrdt_result" type="select1" relevant=" /assessment/group_fever/patient_fever  = 'yes'" required="true()"/>
+      <bind nodeset="/assessment/group_fever/mrdt_positive" readonly="true()" type="string" relevant=" /assessment/group_fever/mrdt_result ='positive'"/>
+      <bind nodeset="/assessment/group_fever/mrdt_negative" readonly="true()" type="string" relevant=" /assessment/group_fever/mrdt_result ='negative'"/>
+      <bind nodeset="/assessment/group_fever/mrdt_note" readonly="true()" type="string" relevant="selected( /assessment/group_fever/mrdt_result , 'none')"/>
+      <bind nodeset="/assessment/group_fever/mrdt_source" type="select1" relevant="selected( /assessment/group_fever/mrdt_result , 'positive') or selected( /assessment/group_fever/mrdt_result , 'negative')" required="true()"/>
+      <bind nodeset="/assessment/group_fever/malaria_treatment_given" type="select1" relevant="selected( /assessment/group_fever/mrdt_result , 'positive')" required="true()"/>
+      <bind nodeset="/assessment/group_fever/malaria_treatment" type="select1" relevant=" /assessment/group_fever/malaria_treatment_given  = 'yes'" required="true()"/>
+      <bind nodeset="/assessment/group_fever/malaria_painkiller_given" type="select1" relevant=" /assessment/group_fever/malaria_treatment_given  = 'no'"/>
+      <bind nodeset="/assessment/group_fever/malaria_referral_note" readonly="true()" type="string" relevant="( /assessment/group_fever/fever_duration  = 14 or  /assessment/group_fever/fever_duration  = 21) or ( /assessment/group_fever/patient_temperature  &gt; 37.5 and  /assessment/group_fever/mrdt_result  = 'positive') or ( /assessment/group_fever/malaria_treatment_given  = 'no' and  /assessment/group_fever/mrdt_result  = 'positive')"/>
+      <bind nodeset="/assessment/group_cough" relevant=" /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_years  &lt; 12 and selected( /assessment/group_assess/is_alive , 'yes')"/>
+      <bind nodeset="/assessment/group_cough/patient_coughs" type="select1" required="true()"/>
+      <bind nodeset="/assessment/group_cough/coughing_duration" type="select1" relevant=" /assessment/group_cough/patient_coughs  = 'yes'" required="true()"/>
+      <bind nodeset="/assessment/group_cough/chest_indrawing" type="select1" relevant=" /assessment/group_cough/patient_coughs  = 'yes'" required="true()"/>
+      <bind nodeset="/assessment/group_breathing" relevant=" /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_years  &lt; 5 and selected( /assessment/group_assess/is_alive , 'yes') and selected( /assessment/group_cough/patient_coughs , 'yes')"/>
+      <bind nodeset="/assessment/group_breathing/breath_timer" readonly="true()" type="string"/>
+      <bind nodeset="/assessment/group_breathing/breath_note" readonly="true()" type="string"/>
+      <bind nodeset="/assessment/group_breathing/breath_count" type="int" jr:constraintMsg="Breaths per minute must be between 10 and 85" required="true()" constraint=". &gt;= 10 and . &lt;= 85"/>
+      <bind nodeset="/assessment/group_breathing/fast_breathing" type="string" calculate="if(( /assessment/group_breathing/breath_count &gt;=60) and ( /assessment/patient_age_in_days &lt;60), &quot;true&quot;,
+ if(( /assessment/group_breathing/breath_count &gt;=50) and ( /assessment/patient_age_in_days &gt;=60) and ( /assessment/patient_age_in_days &lt;365), &quot;true&quot;,
+ if(( /assessment/group_breathing/breath_count &gt;=40) and ( /assessment/patient_age_in_days &gt;=365) and ( /assessment/patient_age_in_days &lt;(5*365.25)), &quot;true&quot;,
+ if(( /assessment/group_breathing/breath_count &gt;=30) and ( /assessment/patient_age_in_days &gt;=(5*365.25)), &quot;true&quot;, &quot;false&quot; ))))"/>
+      <bind nodeset="/assessment/group_breathing/fast_breathing_note_true" readonly="true()" type="string" relevant="( /assessment/group_breathing/breath_count  &gt; 0) and ( /assessment/group_breathing/fast_breathing  = &quot;true&quot;)"/>
+      <bind nodeset="/assessment/group_breathing/fast_breathing_note_false" readonly="true()" type="string" relevant="( /assessment/group_breathing/breath_count  &gt; 0) and ( /assessment/group_breathing/fast_breathing  != &quot;true&quot;)"/>
+      <bind nodeset="/assessment/group_breathing/fast_breathing_refer" readonly="true()" type="string" relevant="coalesce( /assessment/group_fever/malaria_treatment_given , 'no') = 'yes' and  /assessment/group_breathing/fast_breathing  = 'true'"/>
+      <bind nodeset="/assessment/group_breathing/pneumonia_treatment_given" type="select1" relevant=" /assessment/group_breathing/fast_breathing  = 'true' and coalesce( /assessment/group_fever/malaria_treatment_given , 'no') = 'no'" required="true()"/>
+      <bind nodeset="/assessment/group_breathing/pneumonia_treatment" type="select1" relevant=" /assessment/group_breathing/pneumonia_treatment_given  = 'yes'" required="true()"/>
+      <bind nodeset="/assessment/group_diarrhea" relevant=" /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_years  &lt; 12 and selected( /assessment/group_assess/is_alive , 'yes')"/>
+      <bind nodeset="/assessment/group_diarrhea/patient_diarrhea" type="select1" required="true()"/>
+      <bind nodeset="/assessment/group_diarrhea/diarrhea_duration" type="select1" relevant=" /assessment/group_diarrhea/patient_diarrhea  = 'yes'" required="true()"/>
+      <bind nodeset="/assessment/group_diarrhea/diarrhea_blood" type="select1" relevant=" /assessment/group_diarrhea/patient_diarrhea  = 'yes'" required="true()"/>
+      <bind nodeset="/assessment/group_diarrhea/diarrhea_refer" readonly="true()" type="string" relevant="(coalesce( /assessment/group_fever/malaria_treatment_given , 'no') = 'yes' or coalesce( /assessment/group_breathing/pneumonia_treatment_given , 'no') = 'yes') and  /assessment/group_diarrhea/patient_diarrhea  = 'yes'"/>
+      <bind nodeset="/assessment/group_diarrhea/diarrhea_treatment_given" type="select1" relevant=" /assessment/group_diarrhea/patient_diarrhea  = 'yes' and coalesce( /assessment/group_fever/malaria_treatment_given , 'no') = 'no' and coalesce( /assessment/group_breathing/pneumonia_treatment_given , 'no') = 'no'" required="true()"/>
+      <bind nodeset="/assessment/group_diarrhea/diarrhea_treatment" type="select" relevant=" /assessment/group_diarrhea/diarrhea_treatment_given  = 'yes'" required="true()"/>
+      <bind nodeset="/assessment/group_danger_signs" relevant=" /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_years  &lt; 12 and selected( /assessment/group_assess/is_alive , 'yes')"/>
+      <bind nodeset="/assessment/group_danger_signs/danger_signs" type="select"/>
+      <bind nodeset="/assessment/group_imm" relevant=" /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_years  &lt; 5 and selected( /assessment/group_assess/is_alive , 'yes')"/>
+      <bind nodeset="/assessment/group_imm/note_imm" readonly="true()" type="string"/>
+      <bind nodeset="/assessment/group_imm/group_imm_less_2mo" relevant=" /assessment/patient_age_in_months  &lt;= 2"/>
+      <bind nodeset="/assessment/group_imm/group_imm_less_2mo/vaccines_received_2mo" type="select1" required="true()"/>
+      <bind nodeset="/assessment/group_imm/group_imm_less_2mo/imm_importance_note" readonly="true()" type="string" relevant="selected( /assessment/group_imm/group_imm_less_2mo/vaccines_received_2mo , 'no')"/>
+      <bind nodeset="/assessment/group_imm/group_imm_less_2mo/imm_current_2mo" type="select1" relevant="selected( /assessment/group_imm/group_imm_less_2mo/vaccines_received_2mo , 'yes')" required="true()"/>
+      <bind nodeset="/assessment/group_imm/group_imm_less_2mo/imm_given_2mo" type="select" relevant="selected( /assessment/group_imm/group_imm_less_2mo/imm_current_2mo , 'yes')" required="true()"/>
+      <bind nodeset="/assessment/group_imm/group_imm_2mo_9mo" relevant=" /assessment/patient_age_in_months  &gt; 2 and  /assessment/patient_age_in_months  &lt;= 9"/>
+      <bind nodeset="/assessment/group_imm/group_imm_2mo_9mo/vaccines_received_9mo" type="select1" required="true()"/>
+      <bind nodeset="/assessment/group_imm/group_imm_2mo_9mo/imm_importance_note" readonly="true()" type="string" relevant="selected( /assessment/group_imm/group_imm_2mo_9mo/vaccines_received_9mo , 'no')"/>
+      <bind nodeset="/assessment/group_imm/group_imm_2mo_9mo/imm_current_9mo" type="select1" relevant="selected( /assessment/group_imm/group_imm_2mo_9mo/vaccines_received_9mo , 'yes')" required="true()"/>
+      <bind nodeset="/assessment/group_imm/group_imm_2mo_9mo/imm_given_9mo" type="select" relevant="selected( /assessment/group_imm/group_imm_2mo_9mo/imm_current_9mo , 'yes') or selected( /assessment/group_imm/group_imm_2mo_9mo/imm_current_9mo , 'no')" required="true()"/>
+      <bind nodeset="/assessment/group_imm/group_imm_9mo_18mo" relevant=" /assessment/patient_age_in_months  &gt; 9 and  /assessment/patient_age_in_months  &lt;= 18"/>
+      <bind nodeset="/assessment/group_imm/group_imm_9mo_18mo/vaccines_received_18mo" type="select1" required="true()"/>
+      <bind nodeset="/assessment/group_imm/group_imm_9mo_18mo/imm_importance_note" readonly="true()" type="string" relevant="selected( /assessment/group_imm/group_imm_9mo_18mo/vaccines_received_18mo , 'no')"/>
+      <bind nodeset="/assessment/group_imm/group_imm_9mo_18mo/imm_current_18mo" type="select1" relevant="selected( /assessment/group_imm/group_imm_9mo_18mo/vaccines_received_18mo , 'yes')" required="true()"/>
+      <bind nodeset="/assessment/group_imm/group_imm_9mo_18mo/imm_given_18mo" type="select" relevant="selected( /assessment/group_imm/group_imm_9mo_18mo/imm_current_18mo , 'yes')" required="true()"/>
+      <bind nodeset="/assessment/group_deworm_vit" relevant=" /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_years  &lt; 5 and selected( /assessment/group_assess/is_alive , 'yes')"/>
+      <bind nodeset="/assessment/group_deworm_vit/vit_received" type="select" relevant=" /assessment/patient_age_in_months  &gt; 6" jr:constraintMsg="'None' can not be selected in combination with other options" required="true()" constraint="not(selected(., 'none') and count-selected(.) &gt;=2)"/>
+      <bind nodeset="/assessment/group_deworm_vit/deworming_received" type="select" jr:constraintMsg="'None' can not be selected in combination with other options" required="true()" constraint="not(selected(., 'none') and count-selected(.) &gt;=2)"/>
+      <bind nodeset="/assessment/group_nutrition_assessment" relevant=" /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_years  &lt; 5 and selected( /assessment/group_assess/is_alive , 'yes')"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/note_nutrition" readonly="true()" type="string"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/muac_score" type="decimal" constraint=". &gt;= 1.0"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_muac_color/r_note_normal" readonly="true()" type="string" relevant="( /assessment/group_nutrition_assessment/muac_score  &gt; 12.5)"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_muac_color/r_note_mam_24h" readonly="true()" type="string" relevant="( /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_months  &lt;=6) and ( /assessment/group_nutrition_assessment/muac_score  &gt;= 11.5 and  /assessment/group_nutrition_assessment/muac_score  &lt;= 12.5)"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_muac_color/r_note_mam_48h" readonly="true()" type="string" relevant="( /assessment/patient_age_in_months  &gt; 6 and  /assessment/patient_age_in_months  &lt;= 59) and ( /assessment/group_nutrition_assessment/muac_score  &gt;= 11.5 and  /assessment/group_nutrition_assessment/muac_score  &lt;= 12.5)"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_muac_color/r_note_sam_24h" readonly="true()" type="string" relevant="( /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_months  &lt;=6) and ( /assessment/group_nutrition_assessment/muac_score  &gt;= 1.0 and  /assessment/group_nutrition_assessment/muac_score  &lt; 11.5)"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_muac_color/r_note_sam_48h" readonly="true()" type="string" relevant="( /assessment/patient_age_in_months  &gt; 6 and  /assessment/patient_age_in_months  &lt;= 59) and ( /assessment/group_nutrition_assessment/muac_score  &gt;= 1.0 and  /assessment/group_nutrition_assessment/muac_score  &lt; 11.5)"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/note_mam_24h" readonly="true()" type="string" relevant="( /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_months  &lt;=6) and ( /assessment/group_nutrition_assessment/muac_score  &gt;= 11.5 and  /assessment/group_nutrition_assessment/muac_score  &lt;= 12.5)"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/note_mam_48h" readonly="true()" type="string" relevant="( /assessment/patient_age_in_months  &gt; 6 and  /assessment/patient_age_in_months  &lt;= 59) and ( /assessment/group_nutrition_assessment/muac_score  &gt;= 11.5 and  /assessment/group_nutrition_assessment/muac_score  &lt;= 12.5)"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/note_sam_24h" readonly="true()" type="string" relevant="( /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_months  &lt;=6) and ( /assessment/group_nutrition_assessment/muac_score  &gt;= 1.0 and  /assessment/group_nutrition_assessment/muac_score  &lt; 11.5)"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/note_sam_48h" readonly="true()" type="string" relevant="( /assessment/patient_age_in_months  &gt; 6 and  /assessment/patient_age_in_months  &lt;= 59) and ( /assessment/group_nutrition_assessment/muac_score  &gt;= 1.0 and  /assessment/group_nutrition_assessment/muac_score  &lt; 11.5)"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/child_weight" type="decimal"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/has_oedema" type="select1" required="true()"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/note_has_oedema" readonly="true()" type="string" relevant="(selected( /assessment/group_nutrition_assessment/has_oedema , 'yes'))"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/micronutrient" type="select1" relevant="( /assessment/patient_age_in_months  &gt; 6 and  /assessment/patient_age_in_months  &lt;= 59)"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/num_satchets" type="int" relevant="selected( /assessment/group_nutrition_assessment/micronutrient , 'yes') and ( /assessment/patient_age_in_months  &gt; 6 and  /assessment/patient_age_in_months  &lt;= 59)"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/buy_mpn" type="select1" relevant="(selected( /assessment/group_nutrition_assessment/micronutrient , 'no') or /assessment/group_nutrition_assessment/num_satchets  &lt; 10) and ( /assessment/patient_age_in_months  &gt; 6 and  /assessment/patient_age_in_months  &lt;= 59)"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/mpn_num" type="int" relevant=" /assessment/group_nutrition_assessment/buy_mpn ='yes'"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_under_2yr" relevant=" /assessment/patient_age_in_months  &lt; 24"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_under_2yr/breastfeeding" type="select1" required="true()"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_under_2yr/breastfed_24hrs" type="select1" relevant="selected( /assessment/group_nutrition_assessment/group_under_2yr/breastfeeding , 'yes')" required="true()"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_under_2yr/times_breastfed" type="select1" relevant="selected( /assessment/group_nutrition_assessment/group_under_2yr/breastfed_24hrs , 'yes')" required="true()"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_under_2yr/note_nutrition_0" readonly="true()" type="string" relevant="selected( /assessment/group_nutrition_assessment/group_under_2yr/times_breastfed , '0') or selected( /assessment/group_nutrition_assessment/group_under_2yr/times_breastfed , '1') or selected( /assessment/group_nutrition_assessment/group_under_2yr/times_breastfed , '2') or selected( /assessment/group_nutrition_assessment/group_under_2yr/times_breastfed , '3') or selected( /assessment/group_nutrition_assessment/group_under_2yr/times_breastfed , '4')"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_under_2yr/note_nutrition_1" readonly="true()" type="string" relevant="selected( /assessment/group_nutrition_assessment/group_under_2yr/breastfed_24hrs , 'yes') and  /assessment/patient_age_in_months  &lt;= 6"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_under_2yr/note_nutrition_2" readonly="true()" type="string" relevant="selected( /assessment/group_nutrition_assessment/group_under_2yr/breastfed_24hrs , 'no') and ( /assessment/patient_age_in_months  &gt; 6 and  /assessment/patient_age_in_months  &lt;= 12)"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_under_2yr/note_nutrition_3" readonly="true()" type="string" relevant="selected( /assessment/group_nutrition_assessment/group_under_2yr/breastfed_24hrs , 'no') and ( /assessment/patient_age_in_months  &gt; 12 and  /assessment/patient_age_in_months  &lt;= 24)"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_under_2yr/note_nutrition_4" readonly="true()" type="string"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_food_eaten" relevant=" /assessment/patient_age_in_months  &gt;= 6 and  /assessment/patient_age_in_years  &lt; 12"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_food_eaten/times_eaten" type="select1"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_food_eaten/food_eaten" type="select" constraint="not((selected(., 'none') and count-selected(.) &gt;=2) or (selected(., 'breast_milk') and (selected( /assessment/group_nutrition_assessment/group_under_2yr/breastfeeding , 'no') or selected( /assessment/group_nutrition_assessment/group_under_2yr/breastfed_24hrs , 'no'))))"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_food_eaten/validation_error_breast_feeding" readonly="true()" type="string" relevant="selected( /assessment/group_nutrition_assessment/group_food_eaten/food_eaten , 'breast_milk') and (selected( /assessment/group_nutrition_assessment/group_under_2yr/breastfeeding , 'no') or selected( /assessment/group_nutrition_assessment/group_under_2yr/breastfed_24hrs , 'no'))"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_food_eaten/validation_error_none" readonly="true()" type="string" relevant="selected( /assessment/group_nutrition_assessment/group_food_eaten/food_eaten , 'none') and count-selected( /assessment/group_nutrition_assessment/group_food_eaten/food_eaten ) &gt;=2"/>
+      <bind nodeset="/assessment/group_nutrition_assessment/group_food_eaten/note_food_eaten" readonly="true()" type="string" relevant="selected( /assessment/group_nutrition_assessment/group_food_eaten/food_eaten , 'none')"/>
+      <bind nodeset="/assessment/group_diagnosis" relevant="selected( /assessment/group_assess/is_alive , 'yes')"/>
+      <bind nodeset="/assessment/group_diagnosis/diagnosis_cough" type="string" calculate="if ( /assessment/group_cough/patient_coughs ='yes',
+ if ( int( /assessment/group_cough/coughing_duration ) &gt; 14,
+ if (  /assessment/group_cough/chest_indrawing ='yes' or  /assessment/group_breathing/fast_breathing ='true',
+ 'pneumonia2c',
+ 'cough2'
+ ),
+ if (  /assessment/group_cough/chest_indrawing ='yes' and  /assessment/group_breathing/fast_breathing ='true',
+ 'pneumonia2b',
+ if (  /assessment/group_cough/chest_indrawing ='yes',
+ 'cough3',
+ if (  /assessment/group_breathing/fast_breathing ='true',
+ 'pneumonia1',
+ 'cough1'
+ )
+ )
+ )
+ ),
+ ''
+)"/>
+      <bind nodeset="/assessment/group_diagnosis/diagnosis_diarrhea" type="string" calculate="if ( /assessment/group_diarrhea/patient_diarrhea ='yes',
+ if ( int( /assessment/group_diarrhea/diarrhea_duration ) &gt; 14 or  /assessment/group_diarrhea/diarrhea_blood  = 'yes',
+ 'diarrhea2',
+ 'diarrhea1'
+ ),
+ ''
+)"/>
+      <bind nodeset="/assessment/group_diagnosis/diagnosis_fever" type="string" calculate="if ( /assessment/group_fever/patient_fever ='yes' or  /assessment/group_fever/patient_temperature  &gt; 37.5,
+ if (  /assessment/group_fever/mrdt_result  = 'negative',
+ if ( int( /assessment/group_fever/fever_duration ) &gt; 7 or  /assessment/group_fever/patient_temperature  &gt;= 40,
+ 'fever2',
+ 'fever1'
+ ),
+ if ( int( /assessment/group_fever/fever_duration ) &gt; 7 or  /assessment/group_fever/patient_temperature  &gt;= 40,
+ 'malaria2',
+ 'malaria1'
+ )
+ ),
+ ''
+)"/>
+      <bind nodeset="/assessment/group_diagnosis/submit" readonly="true()" type="string"/>
+      <bind nodeset="/assessment/group_diagnosis/r_summary" readonly="true()" type="string"/>
+      <bind nodeset="/assessment/group_diagnosis/r_patient_info" readonly="true()" type="string"/>
+      <bind nodeset="/assessment/group_diagnosis/r_symptoms" readonly="true()" type="string"/>
+      <bind nodeset="/assessment/group_diagnosis/r_symptom_cough" readonly="true()" type="string" relevant=" /assessment/symptom_cough  != ''"/>
+      <bind nodeset="/assessment/group_diagnosis/r_symptom_indrawn_chest" readonly="true()" type="string" relevant=" /assessment/symptom_indrawn_chest  != ''"/>
+      <bind nodeset="/assessment/group_diagnosis/r_symptom_fast_breathing" readonly="true()" type="string" relevant=" /assessment/symptom_fast_breathing  != ''"/>
+      <bind nodeset="/assessment/group_diagnosis/r_symptom_diarrhea" readonly="true()" type="string" relevant=" /assessment/symptom_diarrhea  != ''"/>
+      <bind nodeset="/assessment/group_diagnosis/r_symptom_fever" readonly="true()" type="string" relevant=" /assessment/symptom_fever  != ''"/>
+      <bind nodeset="/assessment/group_diagnosis/r_symptom_malaria_test" readonly="true()" type="string" relevant=" /assessment/symptom_malaria_test  != ''"/>
+      <bind nodeset="/assessment/group_diagnosis/r_symptom_danger_signs" readonly="true()" type="string" relevant=" /assessment/symptom_danger_signs  != ''"/>
+      <bind nodeset="/assessment/group_diagnosis/r_symptom_none" readonly="true()" type="string" relevant=" /assessment/symptom_cough  = '' and
+ /assessment/symptom_indrawn_chest  = '' and
+ /assessment/symptom_fast_breathing  = '' and
+ /assessment/symptom_diarrhea  = '' and
+ /assessment/symptom_fever  = '' and
+ /assessment/symptom_malaria_test  = '' and
+ /assessment/symptom_danger_signs  = ''"/>
+      <bind nodeset="/assessment/group_diagnosis/r_referral" readonly="true()" type="string" relevant=" /assessment/referral_follow_up  = 'true'"/>
+      <bind nodeset="/assessment/group_diagnosis/r_referral_age_under_2" readonly="true()" type="string" relevant=" /assessment/patient_age_in_months  &lt; 2"/>
+      <bind nodeset="/assessment/group_diagnosis/r_referral_age_over_12" readonly="true()" type="string" relevant=" /assessment/patient_age_in_years  &gt;= 12"/>
+      <bind nodeset="/assessment/group_diagnosis/r_referral_cough" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_cough ='cough2' or  /assessment/group_diagnosis/diagnosis_cough  = 'cough3'"/>
+      <bind nodeset="/assessment/group_diagnosis/r_referral_pneumonia" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_cough ='pneumonia1' and  /assessment/patient_age_in_years  &gt;= 5)
+ or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia2b'
+ or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia2c'"/>
+      <bind nodeset="/assessment/group_diagnosis/r_referral_diarrhea" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_diarrhea ='diarrhea1' and  /assessment/patient_age_in_years  &gt;= 5)
+ or  /assessment/group_diagnosis/diagnosis_diarrhea ='diarrhea2'"/>
+      <bind nodeset="/assessment/group_diagnosis/r_referral_fever" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_fever ='fever1' and  /assessment/patient_age_in_months  &lt; 3)
+ or  /assessment/group_diagnosis/diagnosis_fever ='fever2'"/>
+      <bind nodeset="/assessment/group_diagnosis/r_referral_malaria" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_fever ='malaria1' and  /assessment/patient_age_in_months  &lt; 4)
+ or  /assessment/group_diagnosis/diagnosis_fever ='malaria2'"/>
+      <bind nodeset="/assessment/group_diagnosis/r_referral_danger_signs" readonly="true()" type="string" relevant="count-selected( /assessment/group_danger_signs/danger_signs ) &gt; 0"/>
+      <bind nodeset="/assessment/group_diagnosis/r_referral_mam_24h" readonly="true()" type="string" relevant="( /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_months  &lt;=6) and ( /assessment/group_nutrition_assessment/muac_score  &gt;= 11.5 and  /assessment/group_nutrition_assessment/muac_score  &lt;= 12.5)"/>
+      <bind nodeset="/assessment/group_diagnosis/r_referral_mam_48h" readonly="true()" type="string" relevant="( /assessment/patient_age_in_months  &gt; 6 and  /assessment/patient_age_in_months  &lt;= 59) and ( /assessment/group_nutrition_assessment/muac_score  &gt;= 11.5 and  /assessment/group_nutrition_assessment/muac_score  &lt;= 12.5)"/>
+      <bind nodeset="/assessment/group_diagnosis/r_referral_sam_24h" readonly="true()" type="string" relevant="( /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_months  &lt;=6) and ( /assessment/group_nutrition_assessment/muac_score  &gt;= 1.0 and  /assessment/group_nutrition_assessment/muac_score  &lt; 11.5)"/>
+      <bind nodeset="/assessment/group_diagnosis/r_referral_sam_48h" readonly="true()" type="string" relevant="( /assessment/patient_age_in_months  &gt; 6 and  /assessment/patient_age_in_months  &lt;= 59) and ( /assessment/group_nutrition_assessment/muac_score  &gt;= 1.0 and  /assessment/group_nutrition_assessment/muac_score  &lt; 11.5)"/>
+      <bind nodeset="/assessment/group_diagnosis/r_diagnosis" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_cough !='' or  /assessment/group_diagnosis/diagnosis_diarrhea !='' or  /assessment/group_diagnosis/diagnosis_fever !=''"/>
+      <bind nodeset="/assessment/group_diagnosis/r_diagnosis_cough" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_cough ='cough1' or  /assessment/group_diagnosis/diagnosis_cough ='cough2' or  /assessment/group_diagnosis/diagnosis_cough  = 'cough3'"/>
+      <bind nodeset="/assessment/group_diagnosis/r_diagnosis_pneumonia" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_cough ='pneumonia1' or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia2b' or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia2c')"/>
+      <bind nodeset="/assessment/group_diagnosis/r_no_pneumonia_treament" readonly="true()" type="string" relevant="selected( /assessment/group_breathing/pneumonia_treatment_given , 'no')"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_pneumonia" relevant="selected( /assessment/group_breathing/pneumonia_treatment_given , 'yes')"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_pneumonia/r_cough_cough_syrup" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_cough ='cough1' or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia1') and  /assessment/patient_age_in_years  &gt;= 2 and  /assessment/patient_age_in_years  &lt; 5"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_pneumonia/r_cough_cough_syrup_1" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_cough ='cough1' or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia1') and  /assessment/patient_age_in_years  &gt;= 2 and  /assessment/patient_age_in_years  &lt; 3"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_pneumonia/r_cough_cough_syrup_2" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_cough ='cough1' or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia1') and  /assessment/patient_age_in_years  &gt;= 3 and  /assessment/patient_age_in_years  &lt; 5"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_pneumonia/r_cough_amox" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_cough ='pneumonia1' or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia2b' or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia2c') and  /assessment/patient_age_in_months  &gt; 2 and  /assessment/patient_age_in_years  &lt; 5"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_pneumonia/r_cough_amox_1" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_cough ='pneumonia1' or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia2b' or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia2c') and  /assessment/patient_age_in_months  &gt; 2 and  /assessment/patient_age_in_months  &lt; 12"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_pneumonia/r_cough_amox_2" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_cough ='pneumonia1' or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia2b' or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia2c') and  /assessment/patient_age_in_months  &gt;= 12 and  /assessment/patient_age_in_years  &lt; 5"/>
+      <bind nodeset="/assessment/group_diagnosis/r_cough_instruction" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_cough !=''"/>
+      <bind nodeset="/assessment/group_diagnosis/r_cough_instruction1" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_cough ='cough1' and ( /assessment/patient_age_in_years  &lt; 2 or  /assessment/patient_age_in_years  &gt;= 6)"/>
+      <bind nodeset="/assessment/group_diagnosis/r_cough_instruction2" readonly="true()" type="string" relevant="(( /assessment/group_diagnosis/diagnosis_cough ='pneumonia1' and  /assessment/patient_age_in_years  &lt; 5) or
+( /assessment/group_diagnosis/diagnosis_cough ='cough1' and  /assessment/patient_age_in_years  &gt;= 2 and  /assessment/patient_age_in_years  &lt; 6)) and selected( /assessment/group_breathing/pneumonia_treatment_given , 'yes')"/>
+      <bind nodeset="/assessment/group_diagnosis/r_cough_instruction3" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_cough ='pneumonia2b' or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia2c') and  /assessment/patient_age_in_years  &lt; 5 and selected( /assessment/group_breathing/pneumonia_treatment_given , 'yes')"/>
+      <bind nodeset="/assessment/group_diagnosis/r_cough_instruction4" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_cough ='pneumonia1' or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia2b' or  /assessment/group_diagnosis/diagnosis_cough ='pneumonia2c') and  /assessment/patient_age_in_years  &gt;= 5"/>
+      <bind nodeset="/assessment/group_diagnosis/r_cough_instruction5" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_cough ='cough2' or  /assessment/group_diagnosis/diagnosis_cough ='cough3'"/>
+      <bind nodeset="/assessment/group_diagnosis/r_diagnosis_diarrhea" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !=''"/>
+      <bind nodeset="/assessment/group_diagnosis/r_no_diarrhea_treatment" readonly="true()" type="string" relevant="selected( /assessment/group_diarrhea/diarrhea_treatment_given , 'no')"/>
+      <bind nodeset="/assessment/group_diagnosis/r_diarrhea_breastfeeding" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !='' and  /assessment/patient_age_in_months  &gt; 2 and  /assessment/patient_age_in_months  &lt; 6"/>
+      <bind nodeset="/assessment/group_diagnosis/r_diarrhea_breastfeeding1" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !='' and  /assessment/patient_age_in_months  &gt; 2 and  /assessment/patient_age_in_months  &lt; 6"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_diarrhea" relevant="selected( /assessment/group_diarrhea/diarrhea_treatment_given , 'yes')"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_ors_infants" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !='' and  /assessment/patient_age_in_months  &gt; 2 and  /assessment/patient_age_in_months  &lt; 6"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_ors" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !='' and  /assessment/patient_age_in_months  &gt;= 6 and  /assessment/patient_age_in_years  &lt; 10"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_ors1" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !='' and  /assessment/patient_age_in_months  &gt; 2 and  /assessment/patient_age_in_months  &lt; 6"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_ors2" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !='' and  /assessment/patient_age_in_months  &gt;= 6 and  /assessment/patient_age_in_years  &lt; 2"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_ors3" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !='' and  /assessment/patient_age_in_years  &gt;= 2 and  /assessment/patient_age_in_years  &lt; 10"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_zinc" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !='' and  /assessment/patient_age_in_months  &gt; 2 and  /assessment/patient_age_in_years  &lt; 5"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_zinc_1" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !='' and  /assessment/patient_age_in_months  &gt; 2 and  /assessment/patient_age_in_months  &lt; 6"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_zinc_2" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !='' and  /assessment/patient_age_in_months  &gt;= 6 and  /assessment/patient_age_in_months  &lt; 6"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_zinc_3" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !='' and  /assessment/patient_age_in_months  &gt;= 6 and  /assessment/patient_age_in_years  &lt; 5"/>
+      <bind nodeset="/assessment/group_diagnosis/r_diarrhea_instruction" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !=''"/>
+      <bind nodeset="/assessment/group_diagnosis/r_diarrhea_instructions1" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !='' and  /assessment/patient_age_in_months  &gt; 2 and  /assessment/patient_age_in_months  &lt; 6 and selected( /assessment/group_diarrhea/diarrhea_treatment_given , 'yes')"/>
+      <bind nodeset="/assessment/group_diagnosis/r_diarrhea_instructions2" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !='' and  /assessment/patient_age_in_months  &gt;= 6 and  /assessment/patient_age_in_years  &lt; 5 and selected( /assessment/group_diarrhea/diarrhea_treatment_given , 'yes')"/>
+      <bind nodeset="/assessment/group_diagnosis/r_diarrhea_instructions3" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !='' and  /assessment/patient_age_in_years  &gt;= 5 and  /assessment/patient_age_in_years  &lt; 10 and selected( /assessment/group_diarrhea/diarrhea_treatment_given , 'yes')"/>
+      <bind nodeset="/assessment/group_diagnosis/r_diarrhea_instructions4" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea !='' and  /assessment/patient_age_in_months  &gt;= 6 and  /assessment/patient_age_in_years  &lt; 10 and selected( /assessment/group_diarrhea/diarrhea_treatment_given , 'yes')"/>
+      <bind nodeset="/assessment/group_diagnosis/r_diarrhea_instructions5" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea ='diarrhea2' or  /assessment/patient_age_in_years  &gt;= 10"/>
+      <bind nodeset="/assessment/group_diagnosis/r_diarrhea_instructions6" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_diarrhea ='diarrhea2' and  /assessment/patient_age_in_years  &lt; 10 and selected( /assessment/group_diarrhea/diarrhea_treatment_given , 'yes')"/>
+      <bind nodeset="/assessment/group_diagnosis/r_diagnosis_fever" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_fever ='fever1' or  /assessment/group_diagnosis/diagnosis_fever ='fever2'"/>
+      <bind nodeset="/assessment/group_diagnosis/r_diagnosis_malaria" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_fever ='malaria1' or  /assessment/group_diagnosis/diagnosis_fever ='malaria2') and  /assessment/patient_age_in_months  &gt;=4"/>
+      <bind nodeset="/assessment/group_diagnosis/r_no_malaria_treament" readonly="true()" type="string" relevant="selected( /assessment/group_fever/malaria_treatment_given , 'no')"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_malaria" relevant="selected( /assessment/group_fever/malaria_treatment_given , 'yes')"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_malaria/r_fever_act" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_fever ='malaria1' or  /assessment/group_diagnosis/diagnosis_fever ='malaria2') and  /assessment/patient_age_in_months  &gt;=4 and  /assessment/patient_age_in_years  &lt; 12"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_malaria/r_fever_act_1" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_fever ='malaria1' or  /assessment/group_diagnosis/diagnosis_fever ='malaria2') and  /assessment/patient_age_in_months  &gt;=4 and  /assessment/patient_age_in_years  &lt; 3"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_malaria/r_fever_act_2" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_fever ='malaria1' or  /assessment/group_diagnosis/diagnosis_fever ='malaria2') and  /assessment/patient_age_in_years  &gt;= 3 and  /assessment/patient_age_in_years  &lt; 7"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_malaria/r_fever_act_3" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_fever ='malaria1' or  /assessment/group_diagnosis/diagnosis_fever ='malaria2') and  /assessment/patient_age_in_years  &gt;= 7 and  /assessment/patient_age_in_years  &lt; 12"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_malaria/r_fever_paracetamol" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_fever !='' and  /assessment/patient_age_in_months  &gt;=3 and  /assessment/patient_age_in_years  &lt; 12"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_malaria/r_fever_paracetamol_1" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_fever  != '' and  /assessment/patient_age_in_months  &lt; 6 and  /assessment/patient_age_in_months  &gt;= 3"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_malaria/r_fever_paracetamol_2" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_fever  != '' and  /assessment/patient_age_in_months  &gt;= 6 and  /assessment/patient_age_in_years  &lt; 2"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_malaria/r_fever_paracetamol_3" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_fever  != '' and  /assessment/patient_age_in_years  &gt;= 2 and  /assessment/patient_age_in_years  &lt; 8"/>
+      <bind nodeset="/assessment/group_diagnosis/r_treat_malaria/r_fever_paracetamol_4" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_fever  != '' and  /assessment/patient_age_in_years  &gt;= 8 and  /assessment/patient_age_in_years  &lt; 12"/>
+      <bind nodeset="/assessment/group_diagnosis/r_fever_instruction" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_fever !=''"/>
+      <bind nodeset="/assessment/group_diagnosis/r_fever_instructions1" readonly="true()" type="string" relevant="( /assessment/group_diagnosis/diagnosis_fever ='malaria1' or  /assessment/group_diagnosis/diagnosis_fever ='malaria2') and  /assessment/patient_age_in_months  &gt;=4 and selected( /assessment/group_fever/malaria_treatment_given , 'yes')"/>
+      <bind nodeset="/assessment/group_diagnosis/r_fever_instructions2" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_fever !='' and  /assessment/patient_age_in_months  &gt;=3 and selected( /assessment/group_fever/malaria_treatment_given , 'yes')"/>
+      <bind nodeset="/assessment/group_diagnosis/r_fever_instructions3" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_fever ='fever2' or  /assessment/group_diagnosis/diagnosis_fever ='malaria2' or ( /assessment/group_diagnosis/diagnosis_fever ='malaria1' and  /assessment/patient_age_in_months  &lt;4) or ( /assessment/group_diagnosis/diagnosis_fever ='fever1' and  /assessment/patient_age_in_months  &lt;3)"/>
+      <bind nodeset="/assessment/group_diagnosis/r_feeding" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/diagnosis_cough !='' or  /assessment/group_diagnosis/diagnosis_diarrhea !='' or  /assessment/group_diagnosis/diagnosis_fever !='' or count-selected( /assessment/group_danger_signs/danger_signs ) &gt; 0 or  /assessment/patient_age_in_months  &lt; 2"/>
+      <bind nodeset="/assessment/group_diagnosis/r_feeding_note1" readonly="true()" type="string" relevant=" /assessment/patient_age_in_months  &lt; 2"/>
+      <bind nodeset="/assessment/group_diagnosis/r_feeding_note2" readonly="true()" type="string" relevant="( /assessment/patient_age_in_months  &gt;= 2 and  /assessment/patient_age_in_months  &lt; 6) and ( /assessment/group_diagnosis/diagnosis_cough !='' or  /assessment/group_diagnosis/diagnosis_diarrhea !='' or  /assessment/group_diagnosis/diagnosis_fever !='' or count-selected( /assessment/group_danger_signs/danger_signs ) &gt; 0)"/>
+      <bind nodeset="/assessment/group_diagnosis/r_feeding_note3" readonly="true()" type="string" relevant="( /assessment/patient_age_in_months  &gt;= 6 and  /assessment/patient_age_in_years  &lt; 2) and ( /assessment/group_diagnosis/diagnosis_cough !='' or  /assessment/group_diagnosis/diagnosis_diarrhea !='' or  /assessment/group_diagnosis/diagnosis_fever !='' or count-selected( /assessment/group_danger_signs/danger_signs ) &gt; 0)"/>
+      <bind nodeset="/assessment/group_diagnosis/r_feeding_note4" readonly="true()" type="string" relevant="( /assessment/patient_age_in_years  &gt;= 2) and ( /assessment/group_diagnosis/diagnosis_cough !='' or  /assessment/group_diagnosis/diagnosis_diarrhea !='' or  /assessment/group_diagnosis/diagnosis_fever !='' or count-selected( /assessment/group_danger_signs/danger_signs ) &gt; 0)"/>
+      <bind nodeset="/assessment/group_diagnosis/r_followup_instructions" type="string" calculate="if ( /assessment/referral_follow_up  = 'true',
+ 'Follow up in 1 day to ensure that patient goes to a health facility',
+ if ( /assessment/treatment_follow_up  = 'true',
+ 'Follow up in 2 days to see if there is improvement with treatment',
+ ''
+ )
+)"/>
+      <bind nodeset="/assessment/group_diagnosis/r_followup" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/r_followup_instructions  != ''"/>
+      <bind nodeset="/assessment/group_diagnosis/r_followup_note" readonly="true()" type="string" relevant=" /assessment/group_diagnosis/r_followup_instructions  != ''"/>
+      <bind nodeset="/assessment/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/assessment/inputs">
+      <label>Patient</label>
+      <input appearance="hidden" ref="/assessment/inputs/source">
+        <label>Source</label>
+      </input>
+      <input appearance="hidden" ref="/assessment/inputs/source_id">
+        <label>Source ID</label>
+      </input>
+      <group ref="/assessment/inputs/contact">
+        <label></label>
+        <input appearance="db-object" ref="/assessment/inputs/contact/_id">
+          <label>What is the patient's name?</label>
+          <hint>Select a person from list</hint>
+        </input>
+        <input appearance="hidden" ref="/assessment/inputs/contact/name">
+          <label>Name</label>
+        </input>
+        <input appearance="hidden" ref="/assessment/inputs/contact/date_of_birth">
+          <label>Date of Birth</label>
+        </input>
+        <input appearance="hidden" ref="/assessment/inputs/contact/sex">
+          <label>Sex</label>
+        </input>
+        <group ref="/assessment/inputs/contact/parent">
+          <label>Parent</label>
+          <input ref="/assessment/inputs/contact/parent/_id">
+            <label>parent ID</label>
+          </input>
+        </group>
+      </group>
+    </group>
+    <input ref="/assessment/p_note">
+      <label>ID: <output value=" /assessment/patient_id "/>
+Name: <output value=" /assessment/patient_name "/>
+Date of birth: <output value=" /assessment/inputs/contact/date_of_birth "/>
+days old: <output value=" /assessment/patient_age_in_days "/>
+months old: <output value=" /assessment/patient_age_in_months "/>
+years old: <output value=" /assessment/patient_age_in_years "/>
+display age: <output value=" /assessment/patient_age_display "/></label></input>
+    <group ref="/assessment/group_assess">
+      <label>Assess the Patient</label>
+      <select1 appearance="horizontal" ref="/assessment/group_assess/is_alive">
+        <label>Is the child alive?</label>
+        <hint>Please do not ask this question directly. Just observe</hint>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <input ref="/assessment/group_assess/death_date">
+        <label>When did the child die?</label>
+      </input>
+      <select1 ref="/assessment/group_assess/death_cause">
+        <label>What is the cause of death</label>
+        <item>
+          <label>Diarrhea</label>
+          <value>diarrhoea</value>
+        </item>
+        <item>
+          <label>Malaria</label>
+          <value>malaria</value>
+        </item>
+        <item>
+          <label>Pneumonia</label>
+          <value>pneumonia</value>
+        </item>
+        <item>
+          <label>Other</label>
+          <value>other</value>
+        </item>
+      </select1>
+      <input ref="/assessment/group_assess/note">
+        <label>&lt;b&gt;MESSAGE TO CHP&lt;/b&gt;: Notify the facility within 48 hours of death</label>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/assessment/group_fever">
+      <label>Fever</label>
+      <select1 appearance="horizontal" ref="/assessment/group_fever/patient_fever">
+        <label>Does the child have a fever?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <input ref="/assessment/group_fever/fever_note">
+        <label>**Use your thermometer to take the patient's temperature**</label>
+      </input>
+      <input ref="/assessment/group_fever/patient_temperature">
+        <label>What is the child's temperature?</label>
+      </input>
+      <select1 ref="/assessment/group_fever/fever_duration">
+        <label>How long has the fever lasted?</label>
+        <item>
+          <label>One day or less</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>2 days</label>
+          <value>2</value>
+        </item>
+        <item>
+          <label>3 days</label>
+          <value>3</value>
+        </item>
+        <item>
+          <label>4 days - 1 week</label>
+          <value>7</value>
+        </item>
+        <item>
+          <label>1 - 2 weeks</label>
+          <value>14</value>
+        </item>
+        <item>
+          <label>2 weeks or more</label>
+          <value>21</value>
+        </item>
+      </select1>
+      <select1 ref="/assessment/group_fever/mrdt_treated">
+        <label>Has the child been treated for Malaria in the last two weeks?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/assessment/group_fever/mrdt_result">
+        <label>Malaria rapid test</label>
+        <item>
+          <label>Positive</label>
+          <value>positive</value>
+        </item>
+        <item>
+          <label>Negative</label>
+          <value>negative</value>
+        </item>
+        <item>
+          <label>Test not done</label>
+          <value>none</value>
+        </item>
+      </select1>
+      <input ref="/assessment/group_fever/mrdt_positive">
+        <label ref="jr:itext('/assessment/group_fever/mrdt_positive:label')"/>
+      </input>
+      <input ref="/assessment/group_fever/mrdt_negative">
+        <label ref="jr:itext('/assessment/group_fever/mrdt_negative:label')"/>
+      </input>
+      <input ref="/assessment/group_fever/mrdt_note">
+        <label>**Encourage patient to take an mRDT so they are sure about their malaria diagnosis**</label>
+      </input>
+      <select1 appearance="horizontal" ref="/assessment/group_fever/mrdt_source">
+        <label>Who did the mRDT test?</label>
+        <item>
+          <label>CHP</label>
+          <value>chp</value>
+        </item>
+        <item>
+          <label>Other (Clinic, Dispensary, Pharmacy)</label>
+          <value>other</value>
+        </item>
+      </select1>
+      <select1 appearance="horizontal" ref="/assessment/group_fever/malaria_treatment_given">
+        <label>Have you given the patient any malaria treatment?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 appearance="horizontal" ref="/assessment/group_fever/malaria_treatment">
+        <label>Please indicate which treatment was given</label>
+        <item>
+          <label>ACT</label>
+          <value>act</value>
+        </item>
+      </select1>
+      <select1 appearance="horizontal" ref="/assessment/group_fever/malaria_painkiller_given">
+        <label>Was client given a pain killer?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <input ref="/assessment/group_fever/malaria_referral_note">
+        <label>&lt;b&gt;MESSAGE TO CHP&lt;/b&gt;: Refer the patient to the nearest Health Facility for further diagnosis and treatment</label>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/assessment/group_cough">
+      <label>Cough</label>
+      <select1 appearance="horizontal" ref="/assessment/group_cough/patient_coughs">
+        <label>Does the child have a cough?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/assessment/group_cough/coughing_duration">
+        <label>How long has this cough lasted?</label>
+        <item>
+          <label>One day or less</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>2 days</label>
+          <value>2</value>
+        </item>
+        <item>
+          <label>3 days</label>
+          <value>3</value>
+        </item>
+        <item>
+          <label>4 days - 1 week</label>
+          <value>7</value>
+        </item>
+        <item>
+          <label>1 - 2 weeks</label>
+          <value>14</value>
+        </item>
+        <item>
+          <label>2 weeks or more</label>
+          <value>21</value>
+        </item>
+      </select1>
+      <select1 appearance="horizontal" ref="/assessment/group_cough/chest_indrawing">
+        <label>Is their chest indrawing?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+    </group>
+    <group appearance="field-list" ref="/assessment/group_breathing">
+      <label>Breathing</label>
+      <input appearance="countdown-timer" ref="/assessment/group_breathing/breath_timer">
+        <label>**Press timer and count number of breaths for a full 60 seconds**</label>
+      </input>
+      <input appearance="hidden" ref="/assessment/group_breathing/breath_note">
+        <label>**Fast breathing depends on age**
+0 to 7 day old: _60 or more breaths per minute._
+2 weeks to 11 months: _50 or more breaths per minute._
+1 year to 5 years: _40 or more breaths per minute._</label>
+      </input>
+      <input ref="/assessment/group_breathing/breath_count">
+        <label>How many breaths per minute?</label>
+      </input>
+      <input ref="/assessment/group_breathing/fast_breathing_note_true">
+        <label>**The patient has fast breathing**</label>
+      </input>
+      <input ref="/assessment/group_breathing/fast_breathing_note_false">
+        <label>The patient does not have fast breathing</label>
+      </input>
+      <input ref="/assessment/group_breathing/fast_breathing_refer">
+        <label>**MESSAGE: Refer the child to the hospital for further management**</label>
+      </input>
+      <select1 appearance="horizontal" ref="/assessment/group_breathing/pneumonia_treatment_given">
+        <label>Have you given the patient any pneumonia treatment?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 appearance="horizontal" ref="/assessment/group_breathing/pneumonia_treatment">
+        <label>Please indicate which treatment was given</label>
+        <item>
+          <label>Amoxicillin</label>
+          <value>amoxicillin</value>
+        </item>
+      </select1>
+    </group>
+    <group appearance="field-list" ref="/assessment/group_diarrhea">
+      <label>Diarrhoea</label>
+      <select1 appearance="horizontal" ref="/assessment/group_diarrhea/patient_diarrhea">
+        <label>Does the child have diarrhoea?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/assessment/group_diarrhea/diarrhea_duration">
+        <label>How long has the diarrhoea lasted?</label>
+        <item>
+          <label>One day or less</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>2 days</label>
+          <value>2</value>
+        </item>
+        <item>
+          <label>3 days</label>
+          <value>3</value>
+        </item>
+        <item>
+          <label>4 days - 1 week</label>
+          <value>7</value>
+        </item>
+        <item>
+          <label>1 - 2 weeks</label>
+          <value>14</value>
+        </item>
+        <item>
+          <label>2 weeks or more</label>
+          <value>21</value>
+        </item>
+      </select1>
+      <select1 appearance="horizontal" ref="/assessment/group_diarrhea/diarrhea_blood">
+        <label>Is there blood in the diarrhoea?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <input ref="/assessment/group_diarrhea/diarrhea_refer">
+        <label>**MESSAGE: Refer the child to the hospital for further management**</label>
+      </input>
+      <select1 appearance="horizontal" ref="/assessment/group_diarrhea/diarrhea_treatment_given">
+        <label>Have you given the patient any diarrhea treatment?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <select appearance="horizontal" ref="/assessment/group_diarrhea/diarrhea_treatment">
+        <label>Please indicate which treatment was given</label>
+        <item>
+          <label>ORS</label>
+          <value>ors</value>
+        </item>
+        <item>
+          <label>zinc</label>
+          <value>zinc</value>
+        </item>
+      </select>
+    </group>
+    <group appearance="field-list" ref="/assessment/group_danger_signs">
+      <label>Danger Signs</label>
+      <select ref="/assessment/group_danger_signs/danger_signs">
+        <label>Does the child have any danger signs?</label>
+        <hint>Select all that apply</hint>
+        <item>
+          <label>Convulsions</label>
+          <value>convulsions</value>
+        </item>
+        <item>
+          <label>Unable to feed</label>
+          <value>unable_to_feed</value>
+        </item>
+        <item>
+          <label>Vomits everything</label>
+          <value>vomits_everything</value>
+        </item>
+        <item>
+          <label>Very sleepy</label>
+          <value>very_sleepy</value>
+        </item>
+        <item>
+          <label>Chest indrawing</label>
+          <value>chest_indrawing</value>
+        </item>
+      </select>
+    </group>
+    <group appearance="field-list" ref="/assessment/group_imm">
+      <label>Immunization</label>
+      <input ref="/assessment/group_imm/note_imm">
+        <label>Check the mother child card for immunizations done so far</label>
+      </input>
+      <group ref="/assessment/group_imm/group_imm_less_2mo">
+        <label>For children up to 2 months</label>
+        <select1 ref="/assessment/group_imm/group_imm_less_2mo/vaccines_received_2mo">
+          <label>Has the child received any vaccines?</label>
+          <item>
+            <label>Yes</label>
+            <value>yes</value>
+          </item>
+          <item>
+            <label>No</label>
+            <value>no</value>
+          </item>
+        </select1>
+        <input ref="/assessment/group_imm/group_imm_less_2mo/imm_importance_note">
+          <label>Message to caregiver: Explain to the caregiver the importance of immunisation and REFER the child to the nearest Health Center where the child can be immunised. Trigger follow up in 7 days to see if child has been immunised.</label>
+        </input>
+        <select1 ref="/assessment/group_imm/group_imm_less_2mo/imm_current_2mo">
+          <label>Is the child's immunization up to date?</label>
+          <item>
+            <label>Yes</label>
+            <value>yes</value>
+          </item>
+          <item>
+            <label>No</label>
+            <value>no</value>
+          </item>
+        </select1>
+        <select ref="/assessment/group_imm/group_imm_less_2mo/imm_given_2mo">
+          <label>Check child health card and tick all that are complete. If health card not available, ask the caregiver to recall what immunisations are complete, if any</label>
+          <item>
+            <label>BCG</label>
+            <value>bcg</value>
+          </item>
+          <item>
+            <label>Polio 0</label>
+            <value>polio_0</value>
+          </item>
+          <item>
+            <label>Polio 1</label>
+            <value>polio_1</value>
+          </item>
+          <item>
+            <label>DPT- HepB + Hib1</label>
+            <value>dpt_hib1</value>
+          </item>
+          <item>
+            <label>PCV1</label>
+            <value>pcv_1</value>
+          </item>
+          <item>
+            <label>Rota 1</label>
+            <value>rota_1</value>
+          </item>
+        </select>
+      </group>
+      <group ref="/assessment/group_imm/group_imm_2mo_9mo">
+        <label>For children between 2 months - 9 months</label>
+        <select1 ref="/assessment/group_imm/group_imm_2mo_9mo/vaccines_received_9mo">
+          <label>Has the child received any vaccines?</label>
+          <item>
+            <label>Yes</label>
+            <value>yes</value>
+          </item>
+          <item>
+            <label>No</label>
+            <value>no</value>
+          </item>
+        </select1>
+        <input ref="/assessment/group_imm/group_imm_2mo_9mo/imm_importance_note">
+          <label>Message to caregiver: Explain to the caregiver the importance of immunisation and REFER the child to the nearest Health Center where the child can be immunised. Trigger follow up in 7 days to see if child has been immunised.</label>
+        </input>
+        <select1 ref="/assessment/group_imm/group_imm_2mo_9mo/imm_current_9mo">
+          <label>Is the child's immunization up to date?</label>
+          <item>
+            <label>Yes</label>
+            <value>yes</value>
+          </item>
+          <item>
+            <label>No</label>
+            <value>no</value>
+          </item>
+        </select1>
+        <select ref="/assessment/group_imm/group_imm_2mo_9mo/imm_given_9mo">
+          <label>Check child health card and tick all that are complete. If health card not available, ask the caregiver to recall what immunisations are complete, if any</label>
+          <item>
+            <label>DPT- HepB + Hib2</label>
+            <value>dpt_hib2</value>
+          </item>
+          <item>
+            <label>PCV2</label>
+            <value>pcv_2</value>
+          </item>
+          <item>
+            <label>Rota 2</label>
+            <value>rota_2</value>
+          </item>
+          <item>
+            <label>DPT- HepB + Hib3</label>
+            <value>dpt_hib3</value>
+          </item>
+          <item>
+            <label>PCV3</label>
+            <value>pcv_3</value>
+          </item>
+          <item>
+            <label>Rota 3</label>
+            <value>rota_3</value>
+          </item>
+        </select>
+      </group>
+      <group ref="/assessment/group_imm/group_imm_9mo_18mo">
+        <label>For children between 9 months- 18 months</label>
+        <select1 ref="/assessment/group_imm/group_imm_9mo_18mo/vaccines_received_18mo">
+          <label>Has the child received any vaccines?</label>
+          <item>
+            <label>Yes</label>
+            <value>yes</value>
+          </item>
+          <item>
+            <label>No</label>
+            <value>no</value>
+          </item>
+        </select1>
+        <input ref="/assessment/group_imm/group_imm_9mo_18mo/imm_importance_note">
+          <label>Message to caregiver: Explain to the caregiver the importance of immunisation and REFER the child to the nearest Health Center where the child can be immunised. Trigger follow up in 7 days to see if child has been immunised.</label>
+        </input>
+        <select1 ref="/assessment/group_imm/group_imm_9mo_18mo/imm_current_18mo">
+          <label>Is the child's immunization up to date?</label>
+          <item>
+            <label>Yes</label>
+            <value>yes</value>
+          </item>
+          <item>
+            <label>No</label>
+            <value>no</value>
+          </item>
+        </select1>
+        <select ref="/assessment/group_imm/group_imm_9mo_18mo/imm_given_18mo">
+          <label>Check child health card and tick all that are complete. If health card not available, ask the caregiver to recall what immunisations are complete, if any</label>
+          <item>
+            <label>Measles 1</label>
+            <value>measles_1</value>
+          </item>
+        </select>
+      </group>
+    </group>
+    <group appearance="field-list" ref="/assessment/group_deworm_vit">
+      <label>Deworming and Vitamin A</label>
+      <select ref="/assessment/group_deworm_vit/vit_received">
+        <label>Which Vit A has the child received?</label>
+        <itemset nodeset="instance('select_vit_a')/root/item[custom_value &lt;= /assessment/patient_age_in_months ]">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
+      </select>
+      <select ref="/assessment/group_deworm_vit/deworming_received">
+        <label>Which Deworming has the child received?</label>
+        <itemset nodeset="instance('select_vit_a')/root/item[custom_value &lt;= /assessment/patient_age_in_months ]">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
+      </select>
+    </group>
+    <group appearance="field-list" ref="/assessment/group_nutrition_assessment">
+      <label>Nutrition</label>
+      <input ref="/assessment/group_nutrition_assessment/note_nutrition">
+        <label>Assess child for malnutrition using Mid Upper Arm Circumference (MUAC) assessment</label>
+      </input>
+      <input ref="/assessment/group_nutrition_assessment/muac_score">
+        <label>What is the child's MUAC score? (in cm)</label>
+      </input>
+      <group appearance="field-list summary" ref="/assessment/group_nutrition_assessment/group_muac_color">
+        <label></label>
+        <input appearance="h1 lime" ref="/assessment/group_nutrition_assessment/group_muac_color/r_note_normal">
+          <label>Normal &lt;i class="fa fa-child"&gt;&lt;/i&gt;</label>
+        </input>
+        <input appearance="h1 yellow" ref="/assessment/group_nutrition_assessment/group_muac_color/r_note_mam_24h">
+          <label>MAM &lt;i class="fa fa-warning"&gt;&lt;/i&gt;</label>
+        </input>
+        <input appearance="h1 yellow" ref="/assessment/group_nutrition_assessment/group_muac_color/r_note_mam_48h">
+          <label>MAM &lt;i class="fa fa-warning"&gt;&lt;/i&gt;</label>
+        </input>
+        <input appearance="h1 red" ref="/assessment/group_nutrition_assessment/group_muac_color/r_note_sam_24h">
+          <label>SAM &lt;i class="fa fa-warning"&gt;&lt;/i&gt;</label>
+        </input>
+        <input appearance="h1 red" ref="/assessment/group_nutrition_assessment/group_muac_color/r_note_sam_48h">
+          <label>SAM &lt;i class="fa fa-warning"&gt;&lt;/i&gt;</label>
+        </input>
+      </group>
+      <input ref="/assessment/group_nutrition_assessment/note_mam_24h">
+        <label>**REFER TO HEALTH FACILITY FOR TREATMENT**: Child has Moderate Acute Malnutrition (MAM). Follow up after 24 hours.</label>
+      </input>
+      <input ref="/assessment/group_nutrition_assessment/note_mam_48h">
+        <label>**REFER TO HEALTH FACILITY FOR TREATMENT**: Child has Moderate Acute Malnutrition (MAM). Follow up after 48 hours</label>
+      </input>
+      <input ref="/assessment/group_nutrition_assessment/note_sam_24h">
+        <label>**REFER TO HEALTH FACILITY FOR TREATMENT**: Child has Severe Acute Malnutrition (SAM). Follow up after 24 hours</label>
+      </input>
+      <input ref="/assessment/group_nutrition_assessment/note_sam_48h">
+        <label>**REFER TO HEALTH FACILITY FOR TREATMENT**: Child has Severe Acute Malnutrition (SAM). Follow up after 48 hours</label>
+      </input>
+      <input ref="/assessment/group_nutrition_assessment/child_weight">
+        <label>What is the child's weight in kgs</label>
+      </input>
+      <select1 appearance="horizontal" ref="/assessment/group_nutrition_assessment/has_oedema">
+        <label>Does the child have Oedema?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <input ref="/assessment/group_nutrition_assessment/note_has_oedema">
+        <label>REFER TO HEALTH FACILITY FOR TREATMENT</label>
+      </input>
+      <select1 appearance="horizontal" ref="/assessment/group_nutrition_assessment/micronutrient">
+        <label>Have you fed the child using Micronutrient Powder?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <input appearance=". &gt;= 0" ref="/assessment/group_nutrition_assessment/num_satchets">
+        <label>How many satchets have you given the child this month?</label>
+      </input>
+      <select1 appearance="horizontal" ref="/assessment/group_nutrition_assessment/buy_mpn">
+        <label>Would you like to buy some MNP?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <input ref="/assessment/group_nutrition_assessment/mpn_num">
+        <label>How many satchets would you like to buy?</label>
+      </input>
+      <group appearance="field-list" ref="/assessment/group_nutrition_assessment/group_under_2yr">
+        <label>For children under 24 months</label>
+        <select1 ref="/assessment/group_nutrition_assessment/group_under_2yr/breastfeeding">
+          <label>Is the mother still breast feeding the child?</label>
+          <item>
+            <label>Yes</label>
+            <value>yes</value>
+          </item>
+          <item>
+            <label>No</label>
+            <value>no</value>
+          </item>
+        </select1>
+        <select1 ref="/assessment/group_nutrition_assessment/group_under_2yr/breastfed_24hrs">
+          <label>Did the mother breastfeed her child in the last 24 hours?</label>
+          <item>
+            <label>Yes</label>
+            <value>yes</value>
+          </item>
+          <item>
+            <label>No</label>
+            <value>no</value>
+          </item>
+        </select1>
+        <select1 ref="/assessment/group_nutrition_assessment/group_under_2yr/times_breastfed">
+          <label>How many times did the baby breasfeed in the last 24 hrs</label>
+          <item>
+            <label>0</label>
+            <value>0</value>
+          </item>
+          <item>
+            <label>1</label>
+            <value>1</value>
+          </item>
+          <item>
+            <label>2</label>
+            <value>2</value>
+          </item>
+          <item>
+            <label>3</label>
+            <value>3</value>
+          </item>
+          <item>
+            <label>4</label>
+            <value>4</value>
+          </item>
+          <item>
+            <label>5</label>
+            <value>5</value>
+          </item>
+          <item>
+            <label>6</label>
+            <value>6</value>
+          </item>
+          <item>
+            <label>7</label>
+            <value>7</value>
+          </item>
+          <item>
+            <label>8</label>
+            <value>8</value>
+          </item>
+          <item>
+            <label>More than 8 times</label>
+            <value>gt_8</value>
+          </item>
+        </select1>
+        <input ref="/assessment/group_nutrition_assessment/group_under_2yr/note_nutrition_0">
+          <label>Refer child to health facility immediately</label>
+        </input>
+        <input ref="/assessment/group_nutrition_assessment/group_under_2yr/note_nutrition_1">
+          <label>Message to caregiver: Breastfeed whenever the baby wants, both day and night so that they get enough milk. Be sure to empty one breast before switching to the other. Do not give other foods and drinks like water or juice</label>
+        </input>
+        <input ref="/assessment/group_nutrition_assessment/group_under_2yr/note_nutrition_2">
+          <label>Message to caregiver: At 6 months, your child's body is ready to accept food and now needs food in addition to breast milk to get enough energy and nutrition. Begin offering mushy foods 2-3 times per day. Thick porridge made from millet, cassava, maize, soya or a packaged mix are a good first food.</label>
+        </input>
+        <input ref="/assessment/group_nutrition_assessment/group_under_2yr/note_nutrition_3">
+          <label>Message to caregiver: Your child needs a good diet to grow well and prevent stunting and sickness. Feed your child a variety of foods many times a day. Continue breastfeeding as often as the child wants both day and night. Your baby still needs breast milk to grow well and fight disease</label>
+        </input>
+        <input ref="/assessment/group_nutrition_assessment/group_under_2yr/note_nutrition_4">
+          <label>Message to caregiver: Your child needs food from 2 or 3 of the different types of foods at every meal. In addition to breast milk, ensure that your child also feeds on one of these as regularly as possible: meats, fish, chicken, eggs, or milk. These foods are especially important for your child's proper growth.</label>
+        </input>
+      </group>
+      <group appearance="field-list" ref="/assessment/group_nutrition_assessment/group_food_eaten">
+        <label></label>
+        <select1 ref="/assessment/group_nutrition_assessment/group_food_eaten/times_eaten">
+          <label>In the last 24 hours, how many times has your child eaten any solid or semi-solid foods?</label>
+          <item>
+            <label>0</label>
+            <value>0</value>
+          </item>
+          <item>
+            <label>1</label>
+            <value>1</value>
+          </item>
+          <item>
+            <label>2</label>
+            <value>2</value>
+          </item>
+          <item>
+            <label>3</label>
+            <value>3</value>
+          </item>
+          <item>
+            <label>4</label>
+            <value>4</value>
+          </item>
+          <item>
+            <label>5</label>
+            <value>5</value>
+          </item>
+          <item>
+            <label>6</label>
+            <value>6</value>
+          </item>
+          <item>
+            <label>More than 6 times</label>
+            <value>gt_6</value>
+          </item>
+        </select1>
+        <select ref="/assessment/group_nutrition_assessment/group_food_eaten/food_eaten">
+          <label>What did your child eat and drink in the last 24 hours? (tick all that apply as mentioned by client)</label>
+          <item>
+            <label>Breast Milk</label>
+            <value>breast_milk</value>
+          </item>
+          <item>
+            <label>Milk (powdered milk, fresh milk)</label>
+            <value>powdered_milk</value>
+          </item>
+          <item>
+            <label>Eggs</label>
+            <value>eggs</value>
+          </item>
+          <item>
+            <label>Meat (beef, goat, lamb, chicken, duck) or Fish</label>
+            <value>meat</value>
+          </item>
+          <item>
+            <label>None of the above</label>
+            <value>none</value>
+          </item>
+        </select>
+        <input ref="/assessment/group_nutrition_assessment/group_food_eaten/validation_error_breast_feeding">
+          <label>Validation Errror: You can't select breast feeding If mother isn't breastfeeding</label>
+        </input>
+        <input ref="/assessment/group_nutrition_assessment/group_food_eaten/validation_error_none">
+          <label>Validation Errror: You can't select None with another option</label>
+        </input>
+        <input ref="/assessment/group_nutrition_assessment/group_food_eaten/note_food_eaten">
+          <label>Message to caregiver: Your child needs food from 2 or 3 of the different types of foods at every meal. Ensure that your child feeds on one of these as regularly as possible: meats, fish, chicken, eggs, or milk. These foods are especially important for your child's proper growth.</label>
+        </input>
+      </group>
+    </group>
+    <group appearance="field-list summary" ref="/assessment/group_diagnosis">
+      <label></label>
+      <input ref="/assessment/group_diagnosis/submit">
+        <label>&lt;h4 style="text-align:center;"&gt;Be sure you Submit to complete this action.&lt;/h4&gt;</label>
+      </input>
+      <input appearance="h1 yellow" ref="/assessment/group_diagnosis/r_summary">
+        <label>Patient Summary&lt;I class="fa fa-user"&gt;&lt;/i&gt;</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_patient_info">
+        <label>&lt;h4 style=&quot;text-align:center;&quot;&gt;<output value=" /assessment/patient_name "/>&lt;/h4&gt;&lt;h5 style=&quot;text-align:center;&quot;&gt;<output value=" /assessment/patient_age_display "/> &lt;/h5&gt;</label>
+      </input>
+      <input appearance="h2 yellow" ref="/assessment/group_diagnosis/r_symptoms">
+        <label>Signs &amp; Symptoms</label>
+      </input>
+      <input appearance="li" ref="/assessment/group_diagnosis/r_symptom_cough">
+        <label><output value=" /assessment/symptom_cough "/></label>
+      </input>
+      <input appearance="li" ref="/assessment/group_diagnosis/r_symptom_indrawn_chest">
+        <label><output value=" /assessment/symptom_indrawn_chest "/></label>
+      </input>
+      <input appearance="li" ref="/assessment/group_diagnosis/r_symptom_fast_breathing">
+        <label><output value=" /assessment/symptom_fast_breathing "/></label>
+      </input>
+      <input appearance="li" ref="/assessment/group_diagnosis/r_symptom_diarrhea">
+        <label><output value=" /assessment/symptom_diarrhea "/></label>
+      </input>
+      <input appearance="li" ref="/assessment/group_diagnosis/r_symptom_fever">
+        <label><output value=" /assessment/symptom_fever "/></label>
+      </input>
+      <input appearance="li" ref="/assessment/group_diagnosis/r_symptom_malaria_test">
+        <label><output value=" /assessment/symptom_malaria_test "/></label>
+      </input>
+      <input appearance="li" ref="/assessment/group_diagnosis/r_symptom_danger_signs">
+        <label><output value=" /assessment/symptom_danger_signs "/></label>
+      </input>
+      <input appearance="li" ref="/assessment/group_diagnosis/r_symptom_none">
+        <label>No symptom reported</label>
+      </input>
+      <input appearance="h1 red" ref="/assessment/group_diagnosis/r_referral">
+        <label>Refer to a health facility&lt;i class="fa fa-warning"&gt;&lt;/i&gt;</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_referral_age_under_2">
+        <label>Refer patient under 2 months old to the health facility.</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_referral_age_over_12">
+        <label>Refer patient 12 years or older to the health facility.</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_referral_cough">
+        <label>Refer to the health facility for <output value=" /assessment/symptom_cough "/>.</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_referral_pneumonia">
+        <label>Refer to the health facility for Pneumonia.</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_referral_diarrhea">
+        <label>Refer to the health facility for <output value=" /assessment/symptom_diarrhea "/>.</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_referral_fever">
+        <label>Refer to the health facility for <output value=" /assessment/symptom_fever "/>.</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_referral_malaria">
+        <label>Refer to the health facility for Malaria.</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_referral_danger_signs">
+        <label>Refer to the health facility for Danger Signs.</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_referral_mam_24h">
+        <label>Refer to health facility for treatment: Child has Moderate Acute Malnutrition (MAM). Follow up after 24 hours.</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_referral_mam_48h">
+        <label>Refer to health facility for treatment: Child has Moderate Acute Malnutrition (MAM). Follow up after 48 hours</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_referral_sam_24h">
+        <label>Refer to health facility for treatment: Child has Severe Acute Malnutrition (SAM). Follow up after 24 hours</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_referral_sam_48h">
+        <label>Refer to health facility for treatment: Child has Severe Acute Malnutrition (SAM). Follow up after 48 hours</label>
+      </input>
+      <input appearance="h1 blue" ref="/assessment/group_diagnosis/r_diagnosis">
+        <label>Diagnosis &amp; Treatment &lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</label>
+      </input>
+      <input appearance="h2 blue" ref="/assessment/group_diagnosis/r_diagnosis_cough">
+        <label>Cough</label>
+      </input>
+      <input appearance="h2 blue" ref="/assessment/group_diagnosis/r_diagnosis_pneumonia">
+        <label>Pneumonia</label>
+      </input>
+      <input appearance="li" ref="/assessment/group_diagnosis/r_no_pneumonia_treament">
+        <label>No pneumonia treatment given</label>
+      </input>
+      <group ref="/assessment/group_diagnosis/r_treat_pneumonia">
+        <input appearance="h3 blue" ref="/assessment/group_diagnosis/r_treat_pneumonia/r_cough_cough_syrup">
+          <label>Treat with Cough Syrup</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_pneumonia/r_cough_cough_syrup_1">
+          <label>5 ml&lt;br /&gt;3 times a day&lt;br /&gt;For 5 days</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_pneumonia/r_cough_cough_syrup_2">
+          <label>10 ml&lt;br /&gt;3 times a day&lt;br /&gt;For 3 days</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_pneumonia/r_cough_amox">
+          <label>Treat with Amoxicillin</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_pneumonia/r_cough_amox_1">
+          <label>1 tab (250mg each)&lt;br /&gt; 2 times a day&lt;br /&gt; For 5 days&lt;br /&gt; Total of 10 tablets</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_pneumonia/r_cough_amox_2">
+          <label>2 tablets (250mg each) &lt;br /&gt;2 times a day &lt;br /&gt;For 5 days &lt;br /&gt;Total of 20 tablets</label>
+        </input>
+      </group>
+      <input appearance="h3 blue" ref="/assessment/group_diagnosis/r_cough_instruction">
+        <label>Special Instructions</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_cough_instruction1">
+        <label>&lt;em&gt;No treatment needed right now. Remind the caregiver to go to a health facility if cough persists for more than 2 weeks or if child becomes more ill.&lt;/em&gt;</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_cough_instruction2">
+        <label>&lt;em&gt;Help the caregiver give the first dose now. &lt;b&gt;Refer to a health facility if symptoms persist.&lt;/b&gt;&lt;/em&gt;&lt;p&gt;&lt;em&gt;Remind the caregiver to give the &lt;b&gt;full&lt;/b&gt; course of medication to the child.&lt;/em&gt;&lt;/p&gt;</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_cough_instruction3">
+        <label>&lt;em&gt;Help the caregiver give the first dose now. &lt;b&gt;Refer to a health facility.&lt;/b&gt;&lt;/em&gt;&lt;p&gt;&lt;em&gt;Remind the caregiver to give the &lt;b&gt;full&lt;/b&gt; course of medication to the child.&lt;/em&gt;&lt;/p&gt;</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_cough_instruction4">
+        <label>&lt;b&gt;The child likely has pneumonia. Advise the caregiver to take the child to a health facility immediately.&lt;/b&gt;</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_cough_instruction5">
+        <label>&lt;em&gt;&lt;b&gt;Refer to a health facility.&lt;/b&gt;&lt;/em&gt;</label>
+      </input>
+      <input appearance="h2 blue" ref="/assessment/group_diagnosis/r_diagnosis_diarrhea">
+        <label>Diarrhoea</label>
+      </input>
+      <input appearance="li" ref="/assessment/group_diagnosis/r_no_diarrhea_treatment">
+        <label>No diarrhea treatment given</label>
+      </input>
+      <input appearance="h3 blue" ref="/assessment/group_diagnosis/r_diarrhea_breastfeeding">
+        <label>Continue Breastfeeding</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_diarrhea_breastfeeding1">
+        <label>Give breastmilk more frequently, ever hour, to fight sickness and prevent weight loss.</label>
+      </input>
+      <group ref="/assessment/group_diagnosis/r_treat_diarrhea">
+        <input appearance="h3 blue" ref="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_ors_infants">
+          <label>Give ORS if needed</label>
+        </input>
+        <input appearance="h3 blue" ref="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_ors">
+          <label>Give ORS</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_ors1">
+          <label>Supply with 2 packets.&lt;br /&gt;Instruct caregiver that after each loose stool to give at least 1/4 cup.&lt;br /&gt;Always mix with treated, filtered or boiled water.&lt;br /&gt;Advise caregiver to make fresh ORS each day.</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_ors2">
+          <label>Supply with 2 packets.&lt;br /&gt;Instruct caregiver that after each loose stool to give at least 1/4 cup.&lt;br /&gt;Always mix with treated, filtered or boiled water.</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_ors3">
+          <label>Supply with 2 packets.&lt;br /&gt;Instruct caregiver that after each loose stool to give 1/2 cup - 1 cup.&lt;br /&gt;Always mix with treated, filtered or boiled water.</label>
+        </input>
+        <input appearance="h3 blue" ref="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_zinc">
+          <label>Treat with Zinc</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_zinc_1">
+          <label>½ tab once a day mixed with breastmilk&lt;br /&gt; For 10 days&lt;br /&gt; Total of 5</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_zinc_2">
+          <label>½ tab once a day&lt;br /&gt; For 10 days&lt;br /&gt; Total of 5</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_diarrhea/r_diarrhea_zinc_3">
+          <label>1 tab once a day&lt;br /&gt; For 10 days&lt;br /&gt; Total of 10</label>
+        </input>
+      </group>
+      <input appearance="h3 blue" ref="/assessment/group_diagnosis/r_diarrhea_instruction">
+        <label>Special Instructions</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_diarrhea_instructions1">
+        <label>&lt;p&gt;&lt;em&gt;Remind parent to continue breastfeeding.&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;Help caregiver give the first dose of Zinc now.&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;Remind caregiver to give the &lt;b&gt;full&lt;/b&gt; course of medication to the child.&lt;/em&gt;&lt;/p&gt;</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_diarrhea_instructions2">
+        <label>&lt;p&gt;&lt;em&gt;Help the caregiver give first drink of ORS and dose of Zinc now.&lt;/em&gt;&lt;/p&gt;</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_diarrhea_instructions3">
+        <label>&lt;p&gt;&lt;em&gt;Help the caregiver give first drink of ORS now.&lt;/em&gt;&lt;/p&gt;</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_diarrhea_instructions4">
+        <label>&lt;p&gt;&lt;em&gt;Advise caregiver to: Make fresh ORS each day. If a child is still on the breast, keep breastfeeding. Continue giving other clean drinks. Give extra food during diarrhoea and for 2 weeks after it stops.&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;Remind the caregiver to give the &lt;b&gt;full&lt;/b&gt; course of medication to the child.&lt;/em&gt;&lt;/p&gt;</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_diarrhea_instructions5">
+        <label>&lt;em&gt;&lt;b&gt;Refer to a health facility.&lt;/b&gt;</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_diarrhea_instructions6">
+        <label>&lt;em&gt;Advise caregiver to continue giving ORS on the way to a health facility.&lt;/em&gt;</label>
+      </input>
+      <input appearance="h2 blue" ref="/assessment/group_diagnosis/r_diagnosis_fever">
+        <label>Fever</label>
+      </input>
+      <input appearance="h2 blue" ref="/assessment/group_diagnosis/r_diagnosis_malaria">
+        <label>Malaria</label>
+      </input>
+      <input appearance="li" ref="/assessment/group_diagnosis/r_no_malaria_treament">
+        <label>No malaria treatment given</label>
+      </input>
+      <group ref="/assessment/group_diagnosis/r_treat_malaria">
+        <input appearance="h3 blue" ref="/assessment/group_diagnosis/r_treat_malaria/r_fever_act">
+          <label>Treat with ACT</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_malaria/r_fever_act_1">
+          <label>1 tab&lt;br /&gt;Twice a day&lt;br /&gt;For 3 days&lt;br /&gt;Total of 6</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_malaria/r_fever_act_2">
+          <label>2 tabs&lt;br /&gt;Twice a day&lt;br /&gt;For 3 days&lt;br /&gt;Total of 12</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_malaria/r_fever_act_3">
+          <label>3 tabs&lt;br /&gt;Twice a day&lt;br /&gt;For 3 days&lt;br /&gt;Total of 18</label>
+        </input>
+        <input appearance="h3 blue" ref="/assessment/group_diagnosis/r_treat_malaria/r_fever_paracetamol">
+          <label>Treat with Paracetamol</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_malaria/r_fever_paracetamol_1">
+          <label>2.5ml of syrup&lt;br /&gt;Every 6 hours&lt;br /&gt;For 3 days</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_malaria/r_fever_paracetamol_2">
+          <label>¼ of a 500mg tablet&lt;br /&gt;Every 6 hours&lt;br /&gt;For 3 days</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_malaria/r_fever_paracetamol_3">
+          <label>½ of a 500mg tablet&lt;br /&gt;Every 6 hours&lt;br /&gt;For 3 days</label>
+        </input>
+        <input ref="/assessment/group_diagnosis/r_treat_malaria/r_fever_paracetamol_4">
+          <label>1 tablet (500mg)&lt;br /&gt;Every 6 hours&lt;br /&gt;For 3 days</label>
+        </input>
+      </group>
+      <input appearance="h3 blue" ref="/assessment/group_diagnosis/r_fever_instruction">
+        <label>Special Instructions</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_fever_instructions1">
+        <label>&lt;em&gt;Help the caregiver give the first dose of ACT now.&lt;/em&gt;</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_fever_instructions2">
+        <label>&lt;p&gt;&lt;em&gt;Help the caregiver give the first dose of Paracetamol now.&lt;/em&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;Remind the caregiver to give the &lt;b&gt;full&lt;/b&gt; course of medication to the child.&lt;/em&gt;&lt;/p&gt;</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_fever_instructions3">
+        <label>&lt;em&gt;&lt;b&gt;Refer to a health facility.&lt;/b&gt;&lt;/em&gt;</label>
+      </input>
+      <input appearance="h1 lime" ref="/assessment/group_diagnosis/r_feeding">
+        <label>Feeding the Sick Child&lt;i class="fa fa-child"&gt;&lt;/i&gt;</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_feeding_note1">
+        <label>Give breastmilk at least every hour
+
+No other liquids or food. Do not even give water.</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_feeding_note2">
+        <label>Give breastmilk every hour to fight sickness and prevent weight loss.
+
+No other liquids or food.</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_feeding_note3">
+        <label>Continue breastfeeding.
+
+Offer other liquids, such as porridge, soup, and natural fruit juices.
+
+Give soft foods, offer small amounts of food frequently.
+
+Actively encourage the child to eat as much as he/she is willing.
+
+Speed recovery and growth with more and varied foods, especially extra snacks.</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_feeding_note4">
+        <label>Give more liquids, such as porridge, soup, and natural fruit juices.
+
+Give soft foods, offer small amounts of food frequently.
+
+Actively encourage the child to eat as much as he/she is willing.
+
+Speed recovery and growth with more and varied foods, especially extra snacks.</label>
+      </input>
+      <input appearance="h1 green" ref="/assessment/group_diagnosis/r_followup">
+        <label>Follow Up&lt;i class="fa fa-flag"&gt;&lt;/i&gt;</label>
+      </input>
+      <input ref="/assessment/group_diagnosis/r_followup_note">
+        <label><output value=" /assessment/group_diagnosis/r_followup_instructions "/></label>
+      </input>
+    </group>
+  </h:body>
+</h:html>
