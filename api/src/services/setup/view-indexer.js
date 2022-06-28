@@ -8,6 +8,9 @@ const ddocsService = require('./ddocs');
 
 const SOCKET_TIMEOUT_ERROR_CODE = ['ESOCKETTIMEDOUT', 'ETIMEDOUT'];
 let continueIndexing;
+const requiredIndexedDdocs = [
+  '_design/medic-client',
+];
 
 const indexViews = async (viewsToIndex) => {
   continueIndexing = true;
@@ -40,6 +43,9 @@ const getViewsToIndex = async (staged = true) => {
     const ddocs = staged ? await ddocsService.getStagedDdocs(database) : await ddocsService.getLiveDdocs(database);
     ddocs.forEach(ddoc => {
       if (!ddoc.views || !_.isObject(ddoc.views)) {
+        return;
+      }
+      if (!staged && !requiredIndexedDdocs.includes(ddoc._id)) {
         return;
       }
 

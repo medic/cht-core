@@ -8,7 +8,7 @@ const QUERY_TASKS_INTERVAL = 5000;
 // 60 is roughly the nbr of chars displayed around the bar (ddoc name + debug padding)
 const INDEXER_BAR_PREFIX = 60;
 const DDOC_NAME_PAD = 35;
-const DDOC_PREFIX = /^_design\/:staged:/;
+const DDOC_PREFIX = /^_design\//;
 // example "database" is "shards/a0000000-bfffffff/medic.1637673820" (shards/<shard_name>/<db_name>.???)
 const INDEXER_DB_RE = /^shards\/[^/]+\/([^.]+)\..*$/;
 
