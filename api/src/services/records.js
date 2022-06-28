@@ -167,6 +167,9 @@ const createByForm = (data, { locale }={}) => {
     throw new PublicError('Missing required field: message');
   }
 
+  // replace zero-width unicode characters
+  data.message = data.message.replace(/[\u200B-\u200D\uFEFF]/g, '');
+
   const content = {
     type: 'sms_message',
     message: data.message,

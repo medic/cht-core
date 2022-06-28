@@ -235,9 +235,6 @@ exports.parse = (def, doc) => {
     return {};
   }
 
-  // replace zero-width unicode characters
-  doc.message = doc.message.replace(/[\u200B-\u200D\uFEFF]/g, '');
-
   if (isMuvukuFormat(doc.message)) {
     msgData = parser(def, doc);
     addOmittedFields = true;
