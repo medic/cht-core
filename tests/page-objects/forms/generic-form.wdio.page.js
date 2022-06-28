@@ -5,6 +5,7 @@ const nextButton = () => $('button.btn.btn-primary.next-page');
 const nameField = () => $('#report-form form [name="/data/name"]');
 
 
+
 const nextPage = async (numberOfPages = 1) => {
   for (let i = 0; i < numberOfPages; i++) {
     await (await nextButton()).waitForDisplayed();
@@ -16,7 +17,6 @@ const openReportReviewMenu = async () => {
   const reviewButton = await $('.actions>.mm-icon-inverse>.fa-check');
   await reviewButton.click();
 };
-
 
 const invalidateReport = async () => {
   const reportInvalidBtn = await $('.actions .sub-actions .verify-error');
@@ -59,6 +59,25 @@ const verifyReport = async () => {
   expect(validatedReport.patient).to.be.undefined;
 };
 
+const selectNo = async () => {
+  const noRadioButtons = await $$('[value="no"]');
+  for (const radioButton of noRadioButtons) {
+    await radioButton.click();
+  }
+};
+
+const selectAllBoxes = async () => {
+  const checkboxes = await $$('input[type="checkbox"]');
+  for (const checkbox of checkboxes) {
+    await checkbox.click();
+  }
+  return checkboxes.length;
+};
+
+const selectYes = async () => {
+  const yesRadioButton = await $('[value="no"]');
+  await yesRadioButton.click();
+};
 module.exports = {
   submitButton,
   nextPage,
@@ -67,5 +86,8 @@ module.exports = {
   validateReport,
   nameField,
   selectContact,
-  verifyReport
+  verifyReport,
+  selectNo,
+  selectYes,
+  selectAllBoxes,
 };
