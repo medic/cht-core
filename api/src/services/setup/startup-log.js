@@ -45,10 +45,14 @@ const start = (actionId) => {
   action.started = true;
 };
 
-const getProgress = (locale) => Object.values(actions).map(progressItem => ({
-  ...progressItem,
-  text: config.translate(progressItem.translation, locale),
-}));
+const getProgress = (locale) => {
+  return Object
+    .values(actions)
+    .map(action => ({
+      ...action,
+      text: config.translate(action.translation, locale)
+    }));
+};
 
 module.exports = {
   start,

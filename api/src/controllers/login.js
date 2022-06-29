@@ -72,11 +72,9 @@ const getRedirectUrl = (userCtx, requested) => {
 
 const getEnabledLocales = () => {
   return translations
-    .getTranslationDocs()
+    .getEnabledLocales()
     .then(docs => {
-      const enabledLocales = docs
-        .filter(doc => doc.enabled)
-        .map(doc => ({ key: doc.code, label: doc.name }));
+      const enabledLocales = docs.map(doc => ({ key: doc.code, label: doc.name }));
       return enabledLocales.length < 2 ? [] : enabledLocales; // hide selector if only one option
     })
     .catch(err => {

@@ -37,22 +37,17 @@ const getBranding = () => {
 
 const getEnabledLocales = () => {
   return translations
-    .getTranslationDocs()
-    .then(docs => {
-      const enabledLocales = docs
-        .filter(doc => doc.enabled)
-        .map(doc => ({ key: doc.code, label: doc.name }));
-      return enabledLocales.length < 2 ? [] : enabledLocales; // hide selector if only one option
-    })
+    .getEnabledLocales()
+    .then(docs => docs.map(doc => doc.code))
     .catch(err => {
-      logger.error('Error loading translations: %o', err);
+      logger.error('Error getting enabled locales: %o', err);
       return [];
     });
 };
 
 const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
   const headerLocales = new localeUtils.Locales(acceptedLanguages);
-  const supportedLocales = new localeUtils.Locales(locales.map(locale => locale.key), defaultLocale);
+  const supportedLocales = new localeUtils.Locales(locales, defaultLocale);
   return headerLocales.best(supportedLocales).language;
 };
 
