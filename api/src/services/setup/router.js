@@ -62,12 +62,11 @@ const renderStartupPage = async (req) => {
   const locale = getBestLocaleCode(acceptLanguageHeader, enabledLocales, config.get('locale'));
 
   const templatePath = path.join(environment.templatePath, 'setup', 'setup.html');
-  const fileContents = fs.promises.readFile(templatePath, 'utf8');
+  const fileContents = await fs.promises.readFile(templatePath, 'utf8');
   const template = _.template(fileContents);
 
   return template({
-    branding: await getBranding(),
-    'api.startup.starting': config.translate('api.startup.starting', locale),
+    title: config.translate('api.startup.title', locale, { branding: await getBranding() }),
     locale: locale,
   });
 };
@@ -78,7 +77,8 @@ router.get('/progress', (req, res) => {
 });
 
 router.all('*', async (req, res) => {
-  res.send(await renderStartupPage(req));
+  const page = await renderStartupPage(req);
+  res.send(page);
 });
 
 module.exports = {

@@ -3,7 +3,7 @@ const config = require('../../config');
 
 const actions = {
   installationChecks: {
-    translation: 'api.startup.installation.checks',
+    translation: 'api.startup.checks',
     display: true,
   },
   install: {
@@ -45,7 +45,7 @@ const start = (actionId) => {
   action.started = true;
 };
 
-const getProgress = (locale) => Object.values.map(progressItem => ({
+const getProgress = (locale) => Object.values(actions).map(progressItem => ({
   ...progressItem,
   text: config.translate(progressItem.translation, locale),
 }));
