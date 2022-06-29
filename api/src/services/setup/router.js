@@ -15,6 +15,7 @@ const translations = require('../../translations');
 const config = require('../../config');
 const STATUS = 503;
 
+router.use(express.static(environment.staticPath));
 router.get('/progress', (req, res) => {
   res.json(startupLog.getProgress());
 });
