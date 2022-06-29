@@ -59,7 +59,7 @@ describe('Assessment', () => {
     assessmentForm.selectBreastfeeding('no');
     genericForm.nextPage();
     await (await genericForm.submitButton()).click();
-
+    await browser.pause(1000);
   });
 
   it('Check MUAC follow up task', async () => {
