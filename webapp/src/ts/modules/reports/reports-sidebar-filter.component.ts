@@ -36,6 +36,7 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   statusFilter: StatusFilterComponent;
 
   private globalActions;
+  isResettingFilters = false;
   isFilterOpen = false;
   filterCount:any = {};
   filters = [];
@@ -61,17 +62,16 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
 
   applyFilters(force?) {
     // Todo what happens to the search if just one date is set
+    if (this.isResettingFilters) {
+      return;
+    }
     this.search.emit(force);
     this.countSelected();
   }
 
   clearFilters(fieldIds?) {
-    // todo is it updating the global store?
-
     const filters = fieldIds ? this.filters.filter(filter => fieldIds.includes(filter.fieldId)) : this.filters;
-
     filters.forEach(filter => filter?.clear());
-    this.applyFilters();
   }
 
   countSelected() {
@@ -87,8 +87,11 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   }
 
   resetFilters() {
+    this.isResettingFilters = true;
     this.globalActions.clearFilters();
     this.clearFilters();
+    this.isResettingFilters = false;
+    this.applyFilters();
   }
 
   closeSidebarFilter() {

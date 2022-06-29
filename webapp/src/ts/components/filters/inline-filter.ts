@@ -15,11 +15,9 @@ export class InlineFilter {
     this.apply();
   }
 
-  clear(apply=true) {
+  clear() {
     this.selected.clear();
-    if (apply) {
-      return this.apply();
-    }
+    this.apply();
   }
 
   apply() {
