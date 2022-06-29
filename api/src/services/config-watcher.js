@@ -157,4 +157,5 @@ module.exports = {
   load,
   listen,
   updateServiceWorker,
+  loadTranslations,
 };

@@ -1,35 +1,31 @@
 const logger = require('../../logger');
+const config = require('../../config');
 
-// TODO add translations (just like bootstrap) once the actions are decided upon
 const actions = {
-  serverChecks: {
-    translation: 'Running server checks',
-    display: true,
-  },
   installationChecks: {
-    translation: 'Running installation checks',
+    translation: 'api.startup.installation.checks',
     display: true,
   },
   install: {
-    translation: 'Installing',
+    translation: 'api.startup.install',
     display: false,
   },
   index: {
-    translation: 'Indexing data',
+    translation: 'api.startup.index',
     display: false,
   },
   config: {
-    translation: 'Configuring CHT',
+    translation: 'api.startup.config',
     display: true,
   },
   migrate: {
-    translation: 'Migrating data',
+    translation: 'api.startup.migrate',
     display: true,
   },
   configForms: {
-    translation: 'Configuring forms',
+    translation: 'api.startup.forms',
     display: true,
-  }
+  },
 };
 
 const start = (actionId) => {
@@ -49,7 +45,10 @@ const start = (actionId) => {
   action.started = true;
 };
 
-const getProgress = () => actions;
+const getProgress = (locale) => Object.values.map(progressItem => ({
+  ...progressItem,
+  text: config.translate(progressItem.translation, locale),
+}));
 
 module.exports = {
   start,

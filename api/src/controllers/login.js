@@ -13,6 +13,7 @@ const logger = require('../logger');
 const db = require('../db');
 const localeUtils = require('locale');
 const cookie = require('../services/cookie');
+const translations = require('../translations');
 
 const templates = {
   login: {
@@ -70,11 +71,14 @@ const getRedirectUrl = (userCtx, requested) => {
 };
 
 const getEnabledLocales = () => {
-  const options = { key: ['translations', true], include_docs: true };
-  return db.medic
-    .query('medic-client/doc_by_type', options)
-    .then(result => result.rows.map(row => ({ key: row.doc.code, label: row.doc.name })))
-    .then(enabled => (enabled.length < 2) ? [] : enabled) // hide selector if only one option
+  return translations
+    .getTranslationDocs()
+    .then(docs => {
+      const enabledLocales = docs
+        .filter(doc => doc.enabled)
+        .map(doc => ({ key: doc.code, label: doc.name }));
+      return enabledLocales.length < 2 ? [] : enabledLocales; // hide selector if only one option
+    })
     .catch(err => {
       logger.error('Error loading translations: %o', err);
       return [];

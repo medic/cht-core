@@ -1,7 +1,6 @@
 const environment = require('./src/environment');
 const serverChecks = require('@medic/server-checks');
 const logger = require('./src/logger');
-const startupLog = require('./src/services/setup/startup-log');
 const express = require('express');
 const apiPort = process.env.API_PORT || 5988;
 
@@ -19,6 +18,31 @@ process
   });
 
 (async () => {
+  try {
+    logger.info('Running server checks…');
+    await serverChecks.check(environment.couchUrl);
+    logger.info('Checks passed successfully');
+
+    const uploadDefaultDocs = require('./src/upload-default-docs');
+    logger.info('Extracting initial documents…');
+    await uploadDefaultDocs.run();
+    logger.info('Extracting initial documents completed successfully');
+
+    logger.info('Merging translations…');
+    const translations = require('./src/translations');
+    await translations.run();
+    logger.info('Translations merged successfully');
+
+    logger.info('Loading translations…');
+    const configWatcher = require('./src/services/config-watcher');
+    await configWatcher.loadTranslations();
+    logger.info('Translations loaded successfully');
+  } catch (err) {
+    logger.error('Fatal error initialising medic-api');
+    logger.error('%o',err);
+    process.exit(1);
+  }
+
   const app = express();
   app.set('strict routing', true);
   app.set('trust proxy', true);
@@ -32,25 +56,13 @@ process
   });
   server.setTimeout(0);
 
-  try {
-    startupLog.start('serverChecks');
-    logger.info('Running server checks…');
-    await serverChecks.check(environment.couchUrl);
-    logger.info('Checks passed successfully');
-  } catch (err) {
-    logger.error('Fatal error initialising medic-api');
-    logger.error('%o',err);
-    process.exit(1);
-  }
-
   const checkInstall = require('./src/services/setup/check-install');
   const configWatcher = require('./src/services/config-watcher');
   const migrations = require('./src/migrations');
   const generateXform = require('./src/services/generate-xform');
-  const translations = require('./src/translations');
   const serverUtils = require('./src/server-utils');
-  const uploadDefaultDocs = require('./src/upload-default-docs');
   const generateServiceWorker = require('./src/generate-service-worker');
+  const startupLog = require('./src/services/setup/startup-log');
 
   try
   {
@@ -60,18 +72,10 @@ process
     logger.info('Installation checks passed');
 
     startupLog.start('config');
-    logger.info('Extracting initial documents…');
-    await uploadDefaultDocs.run();
-    logger.info('Extracting initial documents completed successfully');
-
     logger.info('Loading configuration…');
     await configWatcher.load();
     logger.info('Configuration loaded successfully');
     configWatcher.listen();
-
-    logger.info('Merging translations…');
-    await translations.run();
-    logger.info('Translations merged successfully');
 
     startupLog.start('migrate');
     logger.info('Running db migrations…');

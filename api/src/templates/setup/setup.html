@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>The CHT is starting up</title>
+  <title>{{ branding.name }} {{ api.startup.starting }}</title>
   <script>
+    const locale = "{{ locale }}";
     const getListElem = () => document.getElementById('actions');
     const clearList = () => {
       const actionsElem = getListElem();
@@ -29,7 +30,7 @@
       liElem.appendChild(loader);
 
       const span = document.createElement('span');
-      span.textContent = action.translation;
+      span.textContent = action.text;
       liElem.appendChild(span);
 
       return liElem;
@@ -38,7 +39,7 @@
     const populateList = (progress) => {
       const actionsElem = getListElem();
 
-      Object.values(progress).forEach((action) => {
+      progress.forEach((action) => {
         if (!action.display) {
           return;
         }
@@ -49,7 +50,8 @@
     }
 
     const getProgress = async () => {
-      const result = await fetch('/progress');
+      const headers = new Headers([{ 'accept-language': locale }]);
+      const result = await fetch('/progress', { headers });
       if (result.redirected) {
         window.location.reload();
         return;
@@ -150,7 +152,7 @@
 </head>
 <body>
 <div class="center">
-  <h1>The CHT is starting up</h1>
+  <h1>The {{ branding.name }} is starting up</h1>
   <ul id="actions"></ul>
 </div>
 </body>
