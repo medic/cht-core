@@ -326,24 +326,22 @@ describe('Check install service', () => {
   });
 
   describe('checkInstall', () => {
-    it('should index views if install is valid', async () => {
+    it('should do nothing if install is valid', async () => {
       const dbs = [{ name: 'one'}, { name: 'two'}, { name: 'three' }];
       setDatabases(dbs);
 
       const checkInstallForDb = sinon.stub().resolves({ upToDate: true });
       checkInstall.__set__('checkInstallForDb', checkInstallForDb);
       sinon.stub(upgradeUtils, 'interruptPreviousUpgrade');
-      sinon.stub(upgradeSteps, 'indexViews');
 
       await checkInstall.run();
 
       expect(checkInstallForDb.callCount).to.equal(3);
       expect(checkInstallForDb.args).to.deep.equal([ [dbs[0]], [dbs[1]], [dbs[2]] ]);
       expect(upgradeUtils.interruptPreviousUpgrade.callCount).to.equal(1);
-      expect(upgradeSteps.indexViews.args).to.deep.equal([[false]]);
     });
 
-    it('should index all views and complete install if some dbs are staged and some are valid', async () => {
+    it('should complete install if some dbs are staged and some are valid', async () => {
       const dbs = [{ name: 'one'}, { name: 'two'}, { name: 'three' }, { name: 'four' }];
       setDatabases(dbs);
 
@@ -355,17 +353,15 @@ describe('Check install service', () => {
       checkInstall.__set__('checkInstallForDb', checkInstallForDb);
 
       sinon.stub(upgradeSteps, 'finalize');
-      sinon.stub(upgradeSteps, 'indexViews');
 
       await checkInstall.run();
 
       expect(checkInstallForDb.callCount).to.equal(4);
       expect(checkInstallForDb.args).to.deep.equal([ [dbs[0]], [dbs[1]], [dbs[2]], [dbs[3]] ]);
       expect(upgradeSteps.finalize.callCount).to.equal(1);
-      expect(upgradeSteps.indexViews.args).to.deep.equal([[false]]);
     });
 
-    it('should index views and complete install if all dbs are staged', async () => {
+    it('should complete install if all dbs are staged', async () => {
       const dbs = [{ name: 'one'}, { name: 'two'}, { name: 'three' }];
       setDatabases(dbs);
 
@@ -373,14 +369,12 @@ describe('Check install service', () => {
       checkInstall.__set__('checkInstallForDb', checkInstallForDb);
 
       sinon.stub(upgradeSteps, 'finalize').resolves();
-      sinon.stub(upgradeSteps, 'indexViews');
 
       await checkInstall.run();
 
       expect(checkInstallForDb.callCount).to.equal(3);
       expect(checkInstallForDb.args).to.deep.equal([ [dbs[0]], [dbs[1]], [dbs[2]] ]);
       expect(upgradeSteps.finalize.callCount).to.equal(1);
-      expect(upgradeSteps.indexViews.args).to.deep.equal([[false]]);
     });
 
     it('should prep and stage installation, index views and complete install if only some dbs are staged', async () => {
@@ -399,7 +393,7 @@ describe('Check install service', () => {
       let stageResolve;
       sinon.stub(upgradeSteps, 'prep').returns(new Promise(r => prepResolve = r));
       sinon.stub(upgradeSteps, 'stage').returns(new Promise(r => stageResolve = r));
-      sinon.stub(upgradeSteps, 'indexViews').returns(new Promise(r => indexViewsResolve = r));
+      sinon.stub(upgradeSteps, 'indexStagedViews').returns(new Promise(r => indexViewsResolve = r));
       sinon.stub(upgradeSteps, 'finalize').resolves();
 
       const checkInstallPromise = checkInstall.run();
@@ -413,35 +407,34 @@ describe('Check install service', () => {
 
       expect(upgradeSteps.prep.callCount).to.equal(0);
       expect(upgradeSteps.stage.callCount).to.equal(0);
-      expect(upgradeSteps.indexViews.callCount).to.equal(0);
+      expect(upgradeSteps.indexStagedViews.callCount).to.equal(0);
       expect(upgradeSteps.finalize.callCount).to.equal(0);
 
       await Promise.resolve();
 
       expect(upgradeSteps.prep.callCount).to.equal(1);
       expect(upgradeSteps.stage.callCount).to.equal(0);
-      expect(upgradeSteps.indexViews.callCount).to.equal(0);
+      expect(upgradeSteps.indexStagedViews.callCount).to.equal(0);
       expect(upgradeSteps.finalize.callCount).to.equal(0);
 
       await prepResolve();
 
       expect(upgradeSteps.prep.callCount).to.equal(1);
       expect(upgradeSteps.stage.callCount).to.equal(1);
-      expect(upgradeSteps.indexViews.callCount).to.equal(0);
+      expect(upgradeSteps.indexStagedViews.callCount).to.equal(0);
       expect(upgradeSteps.finalize.callCount).to.equal(0);
 
       await stageResolve();
 
       expect(upgradeSteps.prep.callCount).to.equal(1);
       expect(upgradeSteps.stage.callCount).to.equal(1);
-      expect(upgradeSteps.indexViews.callCount).to.equal(1);
-      expect(upgradeSteps.indexViews.args[0]).to.deep.equal([true]);
+      expect(upgradeSteps.indexStagedViews.callCount).to.equal(1);
       expect(upgradeSteps.finalize.callCount).to.equal(0);
 
       await indexViewsResolve();
 
       expect(upgradeSteps.stage.callCount).to.equal(1);
-      expect(upgradeSteps.indexViews.callCount).to.equal(1);
+      expect(upgradeSteps.indexStagedViews.callCount).to.equal(1);
       expect(upgradeSteps.finalize.callCount).to.equal(1);
 
       await checkInstallPromise;
@@ -463,7 +456,7 @@ describe('Check install service', () => {
       let indexViewsResolve;
       sinon.stub(upgradeSteps, 'prep').returns(new Promise(r => prepResolve = r));
       sinon.stub(upgradeSteps, 'stage').returns(new Promise(r => stageResolve = r));
-      sinon.stub(upgradeSteps, 'indexViews').returns(new Promise(r => indexViewsResolve = r));
+      sinon.stub(upgradeSteps, 'indexStagedViews').returns(new Promise(r => indexViewsResolve = r));
       sinon.stub(upgradeSteps, 'finalize').resolves();
 
       const checkInstallPromise = checkInstall.run();
@@ -477,34 +470,33 @@ describe('Check install service', () => {
 
       expect(upgradeSteps.prep.callCount).to.equal(0);
       expect(upgradeSteps.stage.callCount).to.equal(0);
-      expect(upgradeSteps.indexViews.callCount).to.equal(0);
+      expect(upgradeSteps.indexStagedViews.callCount).to.equal(0);
       expect(upgradeSteps.finalize.callCount).to.equal(0);
 
       await Promise.resolve();
 
       expect(upgradeSteps.prep.callCount).to.equal(1);
       expect(upgradeSteps.stage.callCount).to.equal(0);
-      expect(upgradeSteps.indexViews.callCount).to.equal(0);
+      expect(upgradeSteps.indexStagedViews.callCount).to.equal(0);
       expect(upgradeSteps.finalize.callCount).to.equal(0);
 
       await prepResolve();
 
       expect(upgradeSteps.prep.callCount).to.equal(1);
       expect(upgradeSteps.stage.callCount).to.equal(1);
-      expect(upgradeSteps.indexViews.callCount).to.equal(0);
+      expect(upgradeSteps.indexStagedViews.callCount).to.equal(0);
       expect(upgradeSteps.finalize.callCount).to.equal(0);
 
       await stageResolve();
 
       expect(upgradeSteps.stage.callCount).to.equal(1);
-      expect(upgradeSteps.indexViews.callCount).to.equal(1);
-      expect(upgradeSteps.indexViews.args[0]).to.deep.equal([true]);
+      expect(upgradeSteps.indexStagedViews.callCount).to.equal(1);
       expect(upgradeSteps.finalize.callCount).to.equal(0);
 
       await indexViewsResolve();
 
       expect(upgradeSteps.stage.callCount).to.equal(1);
-      expect(upgradeSteps.indexViews.callCount).to.equal(1);
+      expect(upgradeSteps.indexStagedViews.callCount).to.equal(1);
       expect(upgradeSteps.finalize.callCount).to.equal(1);
 
       await checkInstallPromise;
@@ -520,7 +512,7 @@ describe('Check install service', () => {
 
       sinon.stub(upgradeSteps, 'prep').resolves();
       sinon.stub(upgradeSteps, 'stage').resolves();
-      sinon.stub(upgradeSteps, 'indexViews').resolves();
+      sinon.stub(upgradeSteps, 'indexStagedViews').resolves();
       sinon.stub(upgradeSteps, 'finalize').resolves();
 
       await checkInstall.run();
@@ -530,8 +522,7 @@ describe('Check install service', () => {
 
       expect(upgradeSteps.prep.callCount).to.equal(1);
       expect(upgradeSteps.stage.callCount).to.equal(1);
-      expect(upgradeSteps.indexViews.callCount).to.equal(1);
-      expect(upgradeSteps.indexViews.args[0]).to.deep.equal([true]);
+      expect(upgradeSteps.indexStagedViews.callCount).to.equal(1);
       expect(upgradeSteps.finalize.callCount).to.equal(1);
     });
 
@@ -605,7 +596,7 @@ describe('Check install service', () => {
 
       sinon.stub(upgradeSteps, 'prep').resolves();
       sinon.stub(upgradeSteps, 'stage').resolves();
-      sinon.stub(upgradeSteps, 'indexViews').rejects({ code: 500 });
+      sinon.stub(upgradeSteps, 'indexStagedViews').rejects({ code: 500 });
 
       try {
         await checkInstall.run();
@@ -613,8 +604,7 @@ describe('Check install service', () => {
       } catch (err) {
         expect(err).to.deep.equal({ code: 500 });
         expect(checkInstallForDb.callCount).to.equal(3);
-        expect(upgradeSteps.indexViews.callCount).to.equal(1);
-        expect(upgradeSteps.indexViews.args[0]).to.deep.equal([true]);
+        expect(upgradeSteps.indexStagedViews.callCount).to.equal(1);
       }
     });
 
@@ -627,7 +617,7 @@ describe('Check install service', () => {
 
       sinon.stub(upgradeSteps, 'prep').resolves();
       sinon.stub(upgradeSteps, 'stage').resolves();
-      sinon.stub(upgradeSteps, 'indexViews').resolves();
+      sinon.stub(upgradeSteps, 'indexStagedViews').resolves();
       sinon.stub(upgradeSteps, 'finalize').rejects({ status: 503 });
 
       try {
@@ -637,8 +627,7 @@ describe('Check install service', () => {
         expect(err).to.deep.equal({ status: 503 });
         expect(checkInstallForDb.callCount).to.equal(3);
         expect(upgradeSteps.stage.callCount).to.equal(1);
-        expect(upgradeSteps.indexViews.callCount).to.equal(1);
-        expect(upgradeSteps.indexViews.args[0]).to.deep.equal([true]);
+        expect(upgradeSteps.indexStagedViews.callCount).to.equal(1);
         expect(upgradeSteps.finalize.callCount).to.equal(1);
       }
     });

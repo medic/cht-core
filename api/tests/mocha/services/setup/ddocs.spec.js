@@ -78,39 +78,6 @@ describe('Upgrade ddocs library', () => {
     });
   });
 
-  describe('getLiveDdocs', () => {
-    it('should return live ddocs, excluding staged ddocs', async () => {
-      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [
-        { id: '_design/ddoc1', value: { rev: 'rev1' }, doc: { _id: 'ddoc1', _rev: 'rev1', field: 'a' }  },
-        { id: '_design/:staged:ddoc1', value: { rev: 'rev1' }, doc: { _id: '_design/:staged:ddoc1', _rev: 'rev1' }  },
-        { id: 'ddoc2', key: 'ddoc2', value: { rev: 'rev2' }, doc: { _id: 'ddoc2', _rev: 'rev2', field: 'b' }, },
-        { id: '_design/:staged:ddoc2', value: { rev: 'rev1' }, doc: { _id: '_design/:staged:ddoc2', _rev: 'rev1' }  },
-      ] });
-
-      const result = await ddocsService.getLiveDdocs({ db: db.sentinel });
-
-      expect(result).to.deep.equal([
-        { _id: 'ddoc1', _rev: 'rev1', field: 'a' },
-        { _id: 'ddoc2', _rev: 'rev2', field: 'b' },
-      ]);
-      expect(db.sentinel.allDocs.callCount).to.equal(1);
-      expect(db.sentinel.allDocs.args[0]).to.deep.equal([{
-        startkey: '_design/', endkey: `_design/\ufff0`, include_docs: true,
-      }]);
-    });
-
-    it('should throw error on allDocs error', async () => {
-      sinon.stub(db.medicLogs, 'allDocs').rejects({ the: 'err' });
-
-      try {
-        await ddocsService.getDdocs({ db: db.medicLogs });
-        expect.fail('should have thrown');
-      } catch (err) {
-        expect(err).to.deep.equal({ the: 'err' });
-      }
-    });
-  });
-
   describe('compareDdocs', () => {
     it('should return empty lists when all bundled are uploaded', () => {
       const bundled = [

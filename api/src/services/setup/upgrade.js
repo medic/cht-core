@@ -38,7 +38,7 @@ const upgrade = async (buildInfo, username, stageOnly) => {
 const safeInstall = async (buildInfo, stageOnly) => {
   try {
     await upgradeSteps.stage(buildInfo);
-    await upgradeSteps.indexViews();
+    await upgradeSteps.indexStagedViews();
     if (stageOnly) {
       return;
     }

@@ -72,7 +72,6 @@ const checkInstall = async () => {
   const allDbsUpToDate = ddocValidation.every(check => check.upToDate);
   if (allDbsUpToDate) {
     logger.info('Installation valid.');
-    await upgradeSteps.indexViews(false);
     await upgradeUtils.interruptPreviousUpgrade();
     return;
   }
@@ -82,9 +81,7 @@ const checkInstall = async () => {
   const allDbsStaged = ddocValidation.every(check => check.stagedUpgrade || check.upToDate);
   if (allDbsStaged) {
     logger.info('Staged installation valid. Finalizing install.');
-    await upgradeSteps.finalize();
-    await upgradeSteps.indexViews(false);
-    return;
+    return upgradeSteps.finalize();
   }
 
   const someDbsStaged = ddocValidation.every(check => check.partialStagedUpgrade || check.upToDate);
@@ -99,7 +96,7 @@ const checkInstall = async () => {
 
   await upgradeSteps.prep();
   await upgradeSteps.stage();
-  await upgradeSteps.indexViews(true);
+  await upgradeSteps.indexStagedViews();
   await upgradeSteps.finalize();
 };
 

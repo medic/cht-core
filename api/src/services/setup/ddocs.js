@@ -39,16 +39,6 @@ const getDdocs = async (database) => {
 };
 
 /**
- * Returns all "live" ddocs
- * @param {Database} database
- * @return {Promise<Array<DesignDocument>>}
- */
-const getLiveDdocs = async (database) => {
-  const ddocs = await getDdocs(database);
-  return ddocs.filter(ddoc => !ddoc._id.startsWith(STAGED_DDOC_PREFIX));
-};
-
-/**
  * Compares a list of bundled ddocs with a list of uploaded ddocs.
  * Returns a list of missing ddocs ids and a list of different ddocs ids.
  * A ddoc is missing if it is bundled and not uploaded.
@@ -91,5 +81,4 @@ module.exports = {
 
   getStagedDdocs,
   getDdocs,
-  getLiveDdocs,
 };

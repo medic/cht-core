@@ -27,7 +27,7 @@ describe('View indexer service', () => {
   });
 
   describe('getViewsToIndex', () => {
-    it('should return an array of functions that will start view indexing', async () => {
+    it('should return an array of function that will start view indexing', async () => {
       sinon.stub(db.medic, 'allDocs').resolves({
         rows: [
           { doc: { _id: '_design/:staged:one', views: { view1: {}, view2: {}, view3: {}} } },
@@ -82,53 +82,6 @@ describe('View indexer service', () => {
         }],
         [{
           uri: 'http://localhost/thedb-users-meta/_design/:staged:four/_view/view',
-          json: true,
-          qs: { limit: 1 },
-          timeout: 2000,
-        }],
-      ]);
-    });
-
-    it('should only index required live views', async () => {
-      sinon.stub(db.medic, 'allDocs').resolves({
-        rows: [
-          { doc: { _id: '_design/:staged:one', views: { view1: {}, view2: {}, view3: {}} } },
-          { doc: { _id: '_design/:staged:three', views: { view4: {} }} },
-          { doc: { _id: '_design/medic', views: { view1: {}, view2: {} }} },
-          { doc: { _id: '_design/medic-client', views: { view1: {}, view2: {} }} },
-          { doc: { _id: '_design/medic-conflicts', views: { view1: {}, view2: {} }} },
-        ]
-      });
-      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [] });
-      sinon.stub(db.medicLogs, 'allDocs').resolves({ rows: [{ doc: { _id: '_design/:staged:two' } }] });
-      sinon.stub(db.medicUsersMeta, 'allDocs').resolves({
-        rows: [
-          { doc: { _id: '_design/:staged:four', views: { view: {} }} },
-        ],
-      });
-
-      sinon.stub(rpn, 'get').resolves();
-      sinon.stub(env, 'serverUrl').value('http://localhost');
-
-      const result = await viewIndexer.getViewsToIndex(false);
-
-      expect(result.length).to.equal(2);
-      result.forEach(item => expect(item).to.be.a('function'));
-
-      expect(rpn.get.callCount).to.equal(0);
-
-      await Promise.all(result.map(item => item()));
-
-      expect(rpn.get.callCount).to.equal(2);
-      expect(rpn.get.args).to.deep.equal([
-        [{
-          uri: 'http://localhost/thedb/_design/medic-client/_view/view1',
-          json: true,
-          qs: { limit: 1 },
-          timeout: 2000,
-        }],
-        [{
-          uri: 'http://localhost/thedb/_design/medic-client/_view/view2',
           json: true,
           qs: { limit: 1 },
           timeout: 2000,

@@ -94,12 +94,12 @@ const stage = async (buildInfo) => {
 };
 
 /**
- * Indexes views, querying and logging view indexer progress until view indexing is complete.
+ * Indexes staged views, querying and logging view indexer progress until view indexing is complete.
  * @return {Promise}
  */
-const indexViews = async (staged = true) => {
+const indexStagedViews = async () => {
   startupLog.start('index');
-  const viewsToIndex = await viewIndexer.getViewsToIndex(staged);
+  const viewsToIndex = await viewIndexer.getViewsToIndex();
   const viewIndexingPromise = viewIndexer.indexViews(viewsToIndex);
   const stopQueryingIndexers = viewIndexerProgress.log();
   await viewIndexingPromise;
@@ -122,7 +122,7 @@ const complete = async (buildInfo) => {
 module.exports = {
   prep,
   stage,
-  indexViews,
+  indexStagedViews,
   finalize,
   complete,
   abort,

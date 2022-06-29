@@ -8,9 +8,6 @@ const ddocsService = require('./ddocs');
 
 const SOCKET_TIMEOUT_ERROR_CODE = ['ESOCKETTIMEDOUT', 'ETIMEDOUT'];
 let continueIndexing;
-const requiredIndexedDdocs = [
-  '_design/medic-client',
-];
 
 const indexViews = async (viewsToIndex) => {
   continueIndexing = true;
@@ -31,21 +28,17 @@ const indexViews = async (viewsToIndex) => {
 
 
 /**
- * Returns an array of functions that, when called, start indexing all views of requested ddocs
+ * Returns an array of functions that, when called, start indexing all views of staged ddocs
  * and return view indexing promises
- * @param {Boolean} staged
  * @return {Promise<[function]>}
  */
-const getViewsToIndex = async (staged = true) => {
+const getViewsToIndex = async () => {
   const viewsToIndex = [];
 
   for (const database of DATABASES) {
-    const ddocs = staged ? await ddocsService.getStagedDdocs(database) : await ddocsService.getLiveDdocs(database);
-    ddocs.forEach(ddoc => {
+    const stagedDdocs = await ddocsService.getStagedDdocs(database);
+    stagedDdocs.forEach(ddoc => {
       if (!ddoc.views || !_.isObject(ddoc.views)) {
-        return;
-      }
-      if (!staged && !requiredIndexedDdocs.includes(ddoc._id)) {
         return;
       }
 

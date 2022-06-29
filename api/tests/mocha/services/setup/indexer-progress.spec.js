@@ -49,7 +49,7 @@ describe('indexer progress', () => {
       expect(indexers).to.deep.equal([
         {
           database: 'd1',
-          ddoc: ':staged:ddoc1',
+          ddoc: 'ddoc1',
           tasks: {
             '1-d1-1-1': 3,
             '1-d1-1-2': 7,
@@ -58,7 +58,7 @@ describe('indexer progress', () => {
         },
         {
           database: 'd1',
-          ddoc: ':staged:ddoc2',
+          ddoc: 'ddoc2',
           tasks: {
             '1-d1-2-1': 9,
             '1-d1-2-2': 21,
@@ -68,7 +68,7 @@ describe('indexer progress', () => {
         },
         {
           database: 'd2',
-          ddoc: ':staged:ddoc1',
+          ddoc: 'ddoc1',
           tasks: {
             '1-d2-1-1': 4,
             '1-d2-1-2': 12,
@@ -77,7 +77,7 @@ describe('indexer progress', () => {
         },
         {
           database: 'd3',
-          ddoc: ':staged:ddoc2',
+          ddoc: 'ddoc2',
           tasks: {
             '1-d3-2-1': 2,
             '1-d3-2-2': 8,
@@ -106,7 +106,7 @@ describe('indexer progress', () => {
       expect(indexers).to.deep.equal([
         {
           database: 'd1',
-          ddoc: ':staged:ddoc1',
+          ddoc: 'ddoc1',
           tasks: {
             'nonode@nohost-d1-1-1': 12,
             'nonode@nohost-d1-1-2': 98,
@@ -114,18 +114,8 @@ describe('indexer progress', () => {
           progress: 55,
         },
         {
-          database: 'd1',
-          ddoc: 'ddoc2',
-          progress: 14,
-          tasks: {
-            'nonode@nohost-d1-2-1': 9,
-            'nonode@nohost-d1-2-2': 21,
-            'nonode@nohost-d1-2-3': 12,
-          }
-        },
-        {
           database: 'd3',
-          ddoc: ':staged:ddoc2',
+          ddoc: 'ddoc2',
           tasks: {
             'nonode@nohost-d3-2-1': 3,
             'nonode@nohost-d3-2-2': 54,
@@ -139,7 +129,7 @@ describe('indexer progress', () => {
       const indexers = [
         {
           database: 'd1',
-          ddoc: ':staged:ddoc1',
+          ddoc: 'ddoc1',
           tasks: {
             'n1-d1-1-1': 12,
             'n1-d1-1-2': 16,
@@ -148,7 +138,7 @@ describe('indexer progress', () => {
         },
         {
           database: 'd1',
-          ddoc: ':staged:ddoc2',
+          ddoc: 'ddoc2',
           tasks: {
             'n1-d1-2-1': 39,
             'n1-d1-2-2': 43,
@@ -157,7 +147,7 @@ describe('indexer progress', () => {
         },
         {
           database: 'd2',
-          ddoc: ':staged:ddoc1',
+          ddoc: 'ddoc1',
           tasks: {
             'n1-d2-1-1': 75,
             'n1-d2-1-2': 88,
@@ -166,7 +156,7 @@ describe('indexer progress', () => {
         },
         {
           database: 'd3',
-          ddoc: ':staged:ddoc2',
+          ddoc: 'ddoc2',
           tasks: {
             'n1-d3-2-1': 25,
             'n1-d3-2-2': 36,
@@ -231,7 +221,7 @@ describe('indexer progress', () => {
       expect(updatedIndexers).to.deep.equal([
         {
           database: 'd1',
-          ddoc: ':staged:ddoc1',
+          ddoc: 'ddoc1',
           tasks: {
             'n1-d1-1-1': 14,
             'n1-d1-1-2': 21,
@@ -240,7 +230,7 @@ describe('indexer progress', () => {
         },
         {
           database: 'd1',
-          ddoc: ':staged:ddoc2',
+          ddoc: 'ddoc2',
           tasks: {
             'n1-d1-2-1': 59,
             'n1-d1-2-2': 78,
@@ -249,7 +239,7 @@ describe('indexer progress', () => {
         },
         {
           database: 'd2',
-          ddoc: ':staged:ddoc1',
+          ddoc: 'ddoc1',
           tasks: {
             'n1-d2-1-1': 100,
             'n1-d2-1-2': 100,
@@ -258,7 +248,7 @@ describe('indexer progress', () => {
         },
         {
           database: 'd3',
-          ddoc: ':staged:ddoc2',
+          ddoc: 'ddoc2',
           tasks: {
             'n1-d3-2-1': 28,
             'n1-d3-2-2': 54,
@@ -291,7 +281,7 @@ describe('indexer progress', () => {
       expect(indexers).to.deep.equal([
         {
           database: 'd1',
-          ddoc: ':staged:1',
+          ddoc: '1',
           tasks: {
             [`${node1}-d1-1-1`]: 12,
             [`${node1}-d1-1-2`]: 98,
@@ -302,7 +292,7 @@ describe('indexer progress', () => {
         },
         {
           database: 'd2',
-          ddoc: ':staged:1',
+          ddoc: '1',
           tasks: {
             [`${node1}-d2-1-1`]: 9,
             [`${node1}-d2-1-2`]: 21,

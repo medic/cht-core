@@ -345,18 +345,17 @@ describe('Upgrade steps', () => {
     });
   });
 
-  describe('indexViews', () => {
-    it('should get staged views to index, start indexing and log indexing progress', async () => {
+  describe('indexStagedViews', () => {
+    it('should get views to index, start indexing and log indexing progress', async () => {
       sinon.stub(viewIndexer, 'getViewsToIndex').resolves(['views', 'to', 'index']);
       let doneIndexingViews;
       sinon.stub(viewIndexer, 'indexViews').returns(new Promise(r => doneIndexingViews = r));
       const stopViewIndexerProgress = sinon.stub();
       sinon.stub(viewIndexerProgress, 'log').returns(stopViewIndexerProgress);
 
-      const indexViewsPromise = upgradeSteps.indexViews(true);
+      const indexStagedViewsPromise = upgradeSteps.indexStagedViews();
 
       expect(viewIndexer.getViewsToIndex.callCount).to.equal(1);
-      expect(viewIndexer.getViewsToIndex.args[0]).to.deep.equal([true]);
       expect(viewIndexer.indexViews.callCount).to.equal(0);
       await Promise.resolve();
       expect(viewIndexer.indexViews.callCount).to.equal(1);
@@ -375,46 +374,14 @@ describe('Upgrade steps', () => {
       await Promise.resolve();
       expect(stopViewIndexerProgress.callCount).to.equal(1);
 
-      await indexViewsPromise;
-    });
-
-    it('should get live views to index, start indexing and log indexing progress', async () => {
-      sinon.stub(viewIndexer, 'getViewsToIndex').resolves(['views', 'to', 'index']);
-      let doneIndexingViews;
-      sinon.stub(viewIndexer, 'indexViews').returns(new Promise(r => doneIndexingViews = r));
-      const stopViewIndexerProgress = sinon.stub();
-      sinon.stub(viewIndexerProgress, 'log').returns(stopViewIndexerProgress);
-
-      const indexViewsPromise = upgradeSteps.indexViews(false);
-
-      expect(viewIndexer.getViewsToIndex.callCount).to.equal(1);
-      expect(viewIndexer.getViewsToIndex.args[0]).to.deep.equal([false]);
-      expect(viewIndexer.indexViews.callCount).to.equal(0);
-      await Promise.resolve();
-      expect(viewIndexer.indexViews.callCount).to.equal(1);
-      expect(viewIndexer.indexViews.args[0]).to.deep.equal([['views', 'to', 'index']]);
-      expect(viewIndexerProgress.log.callCount).to.equal(1);
-      expect(stopViewIndexerProgress.callCount).to.equal(0);
-
-      await Promise.resolve();
-      expect(stopViewIndexerProgress.callCount).to.equal(0);
-      await Promise.resolve();
-      expect(stopViewIndexerProgress.callCount).to.equal(0);
-      await Promise.resolve();
-      expect(stopViewIndexerProgress.callCount).to.equal(0);
-
-      doneIndexingViews();
-      await Promise.resolve();
-      expect(stopViewIndexerProgress.callCount).to.equal(1);
-
-      await indexViewsPromise;
+      await indexStagedViewsPromise;
     });
 
     it('should throw an error if starting view indexing throws an error', async () => {
       sinon.stub(viewIndexer, 'getViewsToIndex').rejects({ an: 'error' });
 
       try {
-        await upgradeSteps.indexViews();
+        await upgradeSteps.indexStagedViews();
         expect.fail('Should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ an: 'error' });
@@ -469,10 +436,12 @@ describe('Upgrade steps', () => {
       sinon.stub(upgradeUtils, 'getStagingDoc').resolves({ the: 'staging_doc' });
       sinon.stub(upgradeUtils, 'getUpgradeServicePayload').returns({ the: 'payload' });
       sinon.stub(upgradeUtils, 'makeUpgradeRequest').rejects({ error: 'boom' });
+      sinon.stub(upgradeSteps, 'finalize');
 
       const buildInfo = { version: '4.0.0' };
 
       await expect(upgradeSteps.complete(buildInfo)).to.be.rejected.and.eventually.deep.equal({ error: 'boom' });
+      expect(upgradeSteps.finalize.callCount).to.equal(0);
     });
   });
 });
