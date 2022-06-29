@@ -53,8 +53,9 @@ const waitForQuestion = async (symptom) => {
 };
 
 const selectRadioButton = async (group, choice) => {
-  const radioButton = group === 'cough'?await $(`[name="/assessment/${group}/patient_${group}s"][value="${choice}"]`):
-    await $(`[name="/assessment/${group}/patient_${group}"][value="${choice}"]`);
+  const radioButton =
+  group === 'cough'?await $(`[name="/assessment/group_${group}/patient_${group}s"][value="${choice}"]`):
+    await $(`[name="/assessment/group_${group}/patient_${group}"][value="${choice}"]`);
   await radioButton.click();
 };
 
