@@ -16,14 +16,6 @@ const config = require('../../config');
 const STATUS = 503;
 
 router.use(express.static(environment.staticPath));
-router.get('/progress', (req, res) => {
-  res.json(startupLog.getProgress());
-});
-
-router.all('*', wantsJSON, (req, res) => {
-  res.status(STATUS);
-  res.json({ error: 'Service unavailable' });
-});
 
 // todo
 // master contains a library for branding, replace this with that library when merging
@@ -70,6 +62,11 @@ const renderStartupPage = async (req) => {
 router.get('/progress', (req, res) => {
   const locale = req && req.headers && req.headers['accept-language'];
   res.json(startupLog.getProgress(locale));
+});
+
+router.all('*', wantsJSON, (req, res) => {
+  res.status(STATUS);
+  res.json({ error: 'Service unavailable' });
 });
 
 router.all('*', async (req, res) => {
