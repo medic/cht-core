@@ -52,6 +52,23 @@ const waitForQuestion = async (symptom) => {
   await title.waitForDisplayed();
 };
 
+const selectRadioButton = async (group, choice) => {
+  const radioButton = group === 'cough'?await $(`[name="/assessment/${group}/patient_${group}s"][value="${choice}"]`):
+    await $(`[name="/assessment/${group}/patient_${group}"][value="${choice}"]`);
+  await radioButton.click();
+};
+
+const selectBreastfeeding = async (choice) => {
+  const radioButton =
+  await $(`[name="/assessment/group_nutrition_assessment/group_under_2yr/breastfeeding"][value="${choice}"]`);
+  await radioButton.click();
+};
+
+const selectOedemia = async (choice) => {
+  const radioButton = await $(`[name="/assessment/group_nutrition_assessment/has_oedema"][value="${choice}"]`);
+  await radioButton.click();
+};
+
 module.exports = {
   selectPatient,
   selectAllDangerSigns,
@@ -62,5 +79,8 @@ module.exports = {
   muacNormal,
   muacSevere,
   waitForQuestion,
+  selectRadioButton,
+  selectOedemia,
+  selectBreastfeeding,
 };
 

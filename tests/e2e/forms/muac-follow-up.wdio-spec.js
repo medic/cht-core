@@ -1,3 +1,4 @@
+const moment = require('moment');
 const utils = require('../../utils');
 const userData = require('../../page-objects/forms/data/user.po.data');
 const loginPage = require('../../page-objects/login/login.wdio.page');
@@ -11,7 +12,10 @@ const tasksPage = require('../../page-objects/tasks/tasks.wdio.page');
 describe('Assessment', () => {
   before(async () => {
     await assessmentForm.uploadForm();
+    await browser.pause(1000);
+    userData.userContactDoc.date_of_birth = moment().subtract(4, 'months').format('YYYY-MM-DD');
     await utils.seedTestData(userData.userContactDoc, userData.docs);
+    await browser.pause(1000);
     await loginPage.cookieLogin();
     await commonPage.goToReports();
   });
@@ -20,49 +24,42 @@ describe('Assessment', () => {
     await reportsPage.openForm('Assess Patient');
     await assessmentForm.selectPatient(userData.userContactDoc.name);
     await genericForm.nextPage();
-    //alive
+
     await genericForm.selectYes();
     await genericForm.nextPage();
 
-    //fever
-    await assessmentForm.waitForQuestion('fever');
-    await genericForm.selectNo();
+    await assessmentForm.selectRadioButton('fever', 'no');
     await genericForm.nextPage();
 
-    //cough
-    await assessmentForm.waitForQuestion('cough');
-    await genericForm.selectNo();
+    await assessmentForm.selectRadioButton('cough', 'no');
     await genericForm.nextPage();
 
-    //diarrhoea
-    await assessmentForm.waitForQuestion('diarrhea');
-    await genericForm.selectNo();
+    await assessmentForm.selectRadioButton('diarrhea', 'no');
     await genericForm.nextPage();
 
-    //danger signs
-    await assessmentForm.waitForQuestion('danger_signs');
     await genericForm.selectAllBoxes();
     await genericForm.nextPage();
 
-    // vaccines
-    await assessmentForm.waitForQuestion('imm');
-    await genericForm.selectNo();
+    await assessmentForm.selectRadioButton('imm', 'no');
     await genericForm.nextPage();
 
-    // deworming
-    await assessmentForm.waitForQuestion('deworm_vit');
     await assessmentForm.checkDewormingBox();
     await genericForm.nextPage();
 
     await assessmentForm.insertMuacScore(13);
-    //expect normal
+    expect(await (await assessmentForm.muacNormal).isDisplayed()).to.be.true;
+
     await assessmentForm.insertMuacScore(12);
-    //exect moderate
+    expect(await (await assessmentForm.muacModerate).isDisplayed()).to.be.true;
+
     await assessmentForm.insertMuacScore(11);
-    //expect severe
-    //
-    genericForm.selectNo();
-    await genericForm.nextPage();
+    expect(await (await assessmentForm.muacSevere).isDisplayed()).to.be.true;
+
+    assessmentForm.selectOedemia('no');
+    assessmentForm.selectBreastfeeding('no');
+    genericForm.nextPage();
+    await (await genericForm.submitButton()).click();
+
   });
 
   it('Check MUAC follow up task', async () => {

@@ -59,13 +59,6 @@ const verifyReport = async () => {
   expect(validatedReport.patient).to.be.undefined;
 };
 
-const selectNo = async () => {
-  const noRadioButtons = await $$('[value="no"]');
-  for (const radioButton of noRadioButtons) {
-    await radioButton.click();
-  }
-};
-
 const selectAllBoxes = async () => {
   const checkboxes = await $$('input[type="checkbox"]');
   for (const checkbox of checkboxes) {
@@ -75,9 +68,11 @@ const selectAllBoxes = async () => {
 };
 
 const selectYes = async () => {
-  const yesRadioButton = await $('[value="no"]');
+  const yesRadioButton = await $('[value="yes"]');
   await yesRadioButton.click();
 };
+
+
 module.exports = {
   submitButton,
   nextPage,
@@ -87,7 +82,6 @@ module.exports = {
   nameField,
   selectContact,
   verifyReport,
-  selectNo,
   selectYes,
   selectAllBoxes,
 };
