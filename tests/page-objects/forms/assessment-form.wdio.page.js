@@ -47,11 +47,6 @@ const insertMuacScore = async (value) => {
   await(await $('[name="/assessment/group_nutrition_assessment/child_weight"]')).click();
 };
 
-const waitForQuestion = async (symptom) => {
-  const title = await $(`[name="/assessment/group_${symptom}"]`);
-  await title.waitForDisplayed();
-};
-
 const selectRadioButton = async (group, choice) => {
   const radioButton =
   group === 'cough'?await $(`[name="/assessment/group_${group}/patient_${group}s"][value="${choice}"]`):
@@ -79,7 +74,6 @@ module.exports = {
   muacModerate,
   muacNormal,
   muacSevere,
-  waitForQuestion,
   selectRadioButton,
   selectOedemia,
   selectBreastfeeding,
