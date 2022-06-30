@@ -57,10 +57,5 @@ describe('Assessment', () => {
 
     await assessmentForm.insertMuacScore(11);
     expect(await assessmentForm.getMuacAssessmentDisplayed('red')).to.equal(true);
-
-    genericForm.selectAllRadioButtons('no');
-    genericForm.nextPage();
-    await (await genericForm.submitButton()).click();
-    await browser.pause(1000);
   });
 });

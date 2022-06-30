@@ -73,7 +73,7 @@ const selectAllRadioButtons = async (choice) => {
   const radioButtons = await $$(`input[type="radio"][value="${choice}"]`);
   for (const button of radioButtons) {
     if(await button.isClickable()){
-      await browser.pause(1000);
+      await button.scrollIntoView();
       return await button.click();
     }
   }
