@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const localeUtils = require('locale');
-const _ = require('lodash');
-const fs = require('fs');
 
 const environment = require('../../environment');
 const startupLog = require('./startup-log');
@@ -14,9 +12,8 @@ const db = require('../../db');
 const logger = require('../../logger');
 const translations = require('../../translations');
 const config = require('../../config');
+const template = require('../template');
 const STATUS = 503;
-
-let templateCache;
 
 router.use(express.static(environment.staticPath));
 router.use(getLocale);
@@ -49,14 +46,8 @@ const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
 };
 
 const getTemplate = async () => {
-  if (templateCache) {
-    return templateCache;
-  }
-
   const templatePath = path.join(environment.templatePath, 'setup', 'setup.html');
-  const fileContents = await fs.promises.readFile(templatePath, 'utf8');
-  templateCache = _.template(fileContents);
-  return templateCache;
+  return template.getTemplate(templatePath);
 };
 
 const renderStartupPage = async (req) => {

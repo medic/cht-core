@@ -1,5 +1,4 @@
 const fs = require('fs');
-const { promisify } = require('util');
 const url = require('url');
 const path = require('path');
 const request = require('request-promise-native');
@@ -14,6 +13,7 @@ const db = require('../db');
 const localeUtils = require('locale');
 const cookie = require('../services/cookie');
 const translations = require('../translations');
+const template = require('../services/template');
 
 const templates = {
   login: {
@@ -84,12 +84,8 @@ const getEnabledLocales = () => {
 };
 
 const getTemplate = (page) => {
-  if (templates[page].content) {
-    return templates[page].content;
-  }
   const filepath = path.join(__dirname, '..', 'templates', 'login', templates[page].file);
-  templates[page].content = promisify(fs.readFile)(filepath, { encoding: 'utf-8' })
-    .then(file => _.template(file));
+  templates[page].content = template.getTemplate(filepath);
   return templates[page].content;
 };
 
@@ -198,7 +194,7 @@ const getInlineImage = (data, contentType) => `data:${contentType};base64,${data
 
 const getDefaultBranding = () => {
   const logoPath = path.join(__dirname, '..', 'resources', 'logo', 'medic-logo-light-full.svg');
-  return promisify(fs.readFile)(logoPath, {}).then(logo => {
+  return fs.promises.readFile(logoPath, {}).then(logo => {
     const data = Buffer.from(logo).toString('base64');
     return {
       name: 'Medic',
