@@ -260,7 +260,6 @@ module.exports = function(grunt) {
             expand: true,
             flatten: true,
             src: [
-              'admin/node_modules/font-awesome/fonts/*',
               'webapp/src/fonts/**/*'
             ],
             dest: 'build/ddocs/medic-db/medic-admin/_attachments/fonts/',
