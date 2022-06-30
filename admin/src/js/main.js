@@ -1,7 +1,8 @@
 window.PouchDB = require('pouchdb-browser');
 window.$ = window.jQuery = require('jquery');
 require('../../node_modules/select2/dist/js/select2.full')(window.jQuery);
-require('./fontawesome/js/all');
+require('./fontawesome/js/fontawesome');
+require('./fontawesome/js/solid');
 require('./fontawesome/js/v4-shims');
 
 require('bootstrap');

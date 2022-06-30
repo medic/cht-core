@@ -39,7 +39,8 @@
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/select2/dist/js/select2.min.js",
-              "src/js/fontawesome/js/all.js",
+              "src/js/fontawesome/js/fontawesome.js",
+              "src/js/fontawesome/js/solid.js",
               "src/js/fontawesome/js/v4-shims.js"
             ],
             "customWebpackConfig": {
@@ -122,7 +123,8 @@
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/select2/dist/js/select2.min.js",
-              "src/js/fontawesome/js/all.js",
+              "src/js/fontawesome/js/fontawesome.js",
+              "src/js/fontawesome/js/solid.js",
               "src/js/fontawesome/js/v4-shims.js"
             ]
           }
