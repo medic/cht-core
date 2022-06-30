@@ -49,12 +49,15 @@ describe('Assessment', () => {
     await genericForm.selectAllBoxes();
     await genericForm.nextPage();
 
+    //Normal
     await assessmentForm.insertMuacScore(13);
     expect(await assessmentForm.getMuacAssessmentDisplayed('lime')).to.equal(true);
 
+    //moderate muac
     await assessmentForm.insertMuacScore(12);
     expect(await assessmentForm.getMuacAssessmentDisplayed('yellow')).to.equal(true);
 
+    //severe
     await assessmentForm.insertMuacScore(11);
     expect(await assessmentForm.getMuacAssessmentDisplayed('red')).to.equal(true);
   });
