@@ -62,9 +62,21 @@ const verifyReport = async () => {
 const selectAllBoxes = async () => {
   const checkboxes = await $$('input[type="checkbox"]');
   for (const checkbox of checkboxes) {
-    await checkbox.click();
+    if(await checkbox.isClickable()){
+      await checkbox.click();
+    }
   }
   return checkboxes.length;
+};
+
+const selectAllRadioButtons = async (choice) => {
+  const radioButtons = await $$(`input[type="radio"][value="${choice}"]`);
+  for (const button of radioButtons) {
+    if(await button.isClickable()){
+      await browser.pause(1000);
+      return await button.click();
+    }
+  }
 };
 
 const selectYes = async () => {
@@ -72,6 +84,10 @@ const selectYes = async () => {
   await yesRadioButton.click();
 };
 
+const waitForDangerSigns = async () => {
+  const dangerSignTitle = await $('[name="/assessment/group_danger_signs"]');
+  await dangerSignTitle.waitForDisplayed();
+};
 
 module.exports = {
   submitButton,
@@ -84,4 +100,6 @@ module.exports = {
   verifyReport,
   selectYes,
   selectAllBoxes,
+  waitForDangerSigns,
+  selectAllRadioButtons,
 };

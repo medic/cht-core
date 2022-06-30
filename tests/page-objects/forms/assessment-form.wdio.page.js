@@ -16,9 +16,9 @@ const formDocument = {
   }
 };
 
-const muacNormal = () => $('[name="/assessment/group_nutrition_assessment/group_muac_color/r_note_normal"]');
-const muacModerate = () => $('[name="/assessment/group_nutrition_assessment/group_muac_color/r_note_mam_24h"]');
-const muacSevere = () => $('[name="/assessment/group_nutrition_assessment/group_muac_color/r_note_sam_24h"]');
+const muacNormal = () => $('label.question.note.or-branch.non-select.or-appearance-h1.or-appearance-lime');
+const muacModerate = () => $('label.question.note.or-branch.non-select.or-appearance-h1.or-appearance-yellow');
+const muacSevere = () => $('label.question.note.or-branch.non-select.or-appearance-h1.or-appearance-red');
 
 const selectPatient = (patientName) => {
   return genericForm.selectContact('/assessment/inputs/contact', patientName);
@@ -37,7 +37,8 @@ const uploadForm = async () => {
 };
 
 const checkDewormingBox = async () => {
-  const dewormingCheckBox = await $('[data-itext-id="static_instance-select_vit_a-0"]');
+  const dewormingCheckBox = await $('input[type="checkbox"][name="/assessment/group_deworm_vit/deworming_received"]');
+  await dewormingCheckBox.click();
   await dewormingCheckBox.click();
 };
 
@@ -47,6 +48,15 @@ const insertMuacScore = async (value) => {
   await(await $('[name="/assessment/group_nutrition_assessment/child_weight"]')).click();
 };
 
+const waitForQuestion = async (symptom) => {
+  const title = await $(`[name="/assessment/group_${symptom}"]`);
+  await title.waitForDisplayed();
+};
+const selectVaccines = async (choice) => {
+  const radioButton =
+  await $(`[name="/assessment/group_imm/group_imm_2mo_9mo/vaccines_received_9mo"][value="${choice}"]`);
+  await radioButton.click();
+};
 const selectRadioButton = async (group, choice) => {
   const radioButton =
   group === 'cough'?await $(`[name="/assessment/group_${group}/patient_${group}s"][value="${choice}"]`):
@@ -65,6 +75,11 @@ const selectOedemia = async (choice) => {
   await radioButton.click();
 };
 
+const getMuacAssessmentDisplayed = async (color) => {
+  const form = await $(`label.question.note.or-branch.non-select.or-appearance-h1.or-appearance-${color}`);
+  return await form.isDisplayed();
+};
+
 module.exports = {
   selectPatient,
   selectAllDangerSigns,
@@ -74,8 +89,11 @@ module.exports = {
   muacModerate,
   muacNormal,
   muacSevere,
+  waitForQuestion,
   selectRadioButton,
   selectOedemia,
   selectBreastfeeding,
+  selectVaccines,
+  getMuacAssessmentDisplayed,
 };
 

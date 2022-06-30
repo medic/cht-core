@@ -78,7 +78,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: ['--headless', '--disable-gpu', '--deny-permission-prompts']
+      args: ['--disable-gpu', '--deny-permission-prompts']
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
@@ -120,7 +120,7 @@ const baseConfig = {
   baseUrl: constants.BASE_URL,
   //
   // Default timeout for all waitFor* commands.
-  waitforTimeout: 15000,
+  waitforTimeout: 40000,
   //
   // Default timeout in milliseconds for request
   // if browser driver or grid doesn't send response

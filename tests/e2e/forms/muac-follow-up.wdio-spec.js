@@ -6,18 +6,21 @@ const commonPage = require('../../page-objects/common/common.wdio.page');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 const genericForm = require('../../page-objects/forms/generic-form.wdio.page');
 const assessmentForm = require('../../page-objects/forms/assessment-form.wdio.page');
-const tasksPage = require('../../page-objects/tasks/tasks.wdio.page');
+//const tasksPage = require('../../page-objects/tasks/tasks.wdio.page');
 
 
 describe('Assessment', () => {
   before(async () => {
     await assessmentForm.uploadForm();
-    await browser.pause(1000);
+    await browser.pause(5000);
     userData.userContactDoc.date_of_birth = moment().subtract(4, 'months').format('YYYY-MM-DD');
     await utils.seedTestData(userData.userContactDoc, userData.docs);
-    await browser.pause(1000);
+    await browser.pause(5000);
     await loginPage.cookieLogin();
+    await commonPage.closeReloadModal();
     await commonPage.goToReports();
+    await commonPage.closeReloadModal();
+    await browser.pause(5000);
   });
 
   it('Submit Assessment form', async () => {
@@ -37,35 +40,27 @@ describe('Assessment', () => {
     await assessmentForm.selectRadioButton('diarrhea', 'no');
     await genericForm.nextPage();
 
+    await genericForm.waitForDangerSigns();
+    await genericForm.nextPage();
+
+    await assessmentForm.selectVaccines('no');
+    await genericForm.nextPage();
+
     await genericForm.selectAllBoxes();
     await genericForm.nextPage();
 
-    await assessmentForm.selectRadioButton('imm', 'no');
-    await genericForm.nextPage();
-
-    await assessmentForm.checkDewormingBox();
-    await genericForm.nextPage();
-
     await assessmentForm.insertMuacScore(13);
-    expect(await (await assessmentForm.muacNormal).isDisplayed()).to.be.true;
+    expect(await assessmentForm.getMuacAssessmentDisplayed('lime')).to.equal(true);
 
     await assessmentForm.insertMuacScore(12);
-    expect(await (await assessmentForm.muacModerate).isDisplayed()).to.be.true;
+    expect(await assessmentForm.getMuacAssessmentDisplayed('yellow')).to.equal(true);
 
     await assessmentForm.insertMuacScore(11);
-    expect(await (await assessmentForm.muacSevere).isDisplayed()).to.be.true;
+    expect(await assessmentForm.getMuacAssessmentDisplayed('red')).to.equal(true);
 
-    assessmentForm.selectOedemia('no');
-    assessmentForm.selectBreastfeeding('no');
+    genericForm.selectAllRadioButtons('no');
     genericForm.nextPage();
     await (await genericForm.submitButton()).click();
     await browser.pause(1000);
-  });
-
-  it('Check MUAC follow up task', async () => {
-    await tasksPage.goToTasksTab();
-    expect(await(await tasksPage.getTasks()).count()).to.equal(1);
-
-    //check this list
   });
 });
