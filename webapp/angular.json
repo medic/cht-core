@@ -122,8 +122,8 @@
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/select2/dist/js/select2.min.js",
-              "node_modules/@fortawesome/fontawesome-free/js/all.js",
-              "node_modules/@fortawesome/fontawesome-free/js/v4-shims.js"
+              "src/js/fontawesome/js/all.js",
+              "src/js/fontawesome/js/v4-shims.js"
             ]
           }
         }
