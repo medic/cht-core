@@ -2,7 +2,7 @@ const logger = require('../../logger');
 const config = require('../../config');
 
 const actions = {
-  installationChecks: {
+  checks: {
     translation: 'api.startup.checks',
     display: true,
   },
@@ -22,7 +22,7 @@ const actions = {
     translation: 'api.startup.migrate',
     display: true,
   },
-  configForms: {
+  forms: {
     translation: 'api.startup.forms',
     display: true,
   },
@@ -35,26 +35,41 @@ const start = (actionId) => {
     return;
   }
   // complete previously started actions
-  Object.values(actions).forEach(action => {
-    if (action.started) {
-      action.completed = true;
-    }
-  });
+  complete();
 
   action.display = true;
   action.started = true;
 };
 
+const complete = () => {
+  Object.values(actions).forEach(action => {
+    if (action.started) {
+      action.completed = true;
+    }
+  });
+};
+
 const getProgress = (locale) => {
-  return Object
-    .values(actions)
-    .map(action => ({
+  const translatedActions = {};
+  Object.entries(actions).forEach(([actionId, action]) => {
+    translatedActions[actionId] = {
       ...action,
       text: config.translate(action.translation, locale)
-    }));
+    };
+  });
+  const completed = !Object.values(actions).find(action => {
+    return (action.started && !action.completed) ||
+           (action.display && !action.completed);
+  });
+
+  return {
+    actions: translatedActions,
+    completed,
+  };
 };
 
 module.exports = {
   start,
   getProgress,
+  complete,
 };

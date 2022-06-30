@@ -66,7 +66,7 @@ process
 
   try
   {
-    startupLog.start('installationChecks');
+    startupLog.start('checks');
     logger.info('Running installation checks…');
     await checkInstall.run();
     logger.info('Installation checks passed');
@@ -82,7 +82,7 @@ process
     await migrations.run();
     logger.info('Database migrations completed successfully');
 
-    startupLog.start('configForms');
+    startupLog.start('forms');
     logger.info('Generating service worker');
     await generateServiceWorker.run();
     logger.info('Service worker generated successfully');
@@ -97,6 +97,7 @@ process
     process.exit(1);
   }
 
+  startupLog.complete();
   router = require('./src/routing');
   // Define error-handling middleware last.
   // http://expressjs.com/guide/error-handling.html

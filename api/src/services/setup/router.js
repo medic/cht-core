@@ -9,13 +9,17 @@ const environment = require('../../environment');
 const startupLog = require('./startup-log');
 
 const { wantsJSON } = require('../../middleware/wants-json');
+const { getLocale } = require('../../middleware/locale');
 const db = require('../../db');
 const logger = require('../../logger');
 const translations = require('../../translations');
 const config = require('../../config');
 const STATUS = 503;
 
+let templateCache;
+
 router.use(express.static(environment.staticPath));
+router.use(getLocale);
 
 // todo
 // master contains a library for branding, replace this with that library when merging
@@ -44,24 +48,32 @@ const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
   return headerLocales.best(supportedLocales).language;
 };
 
-const renderStartupPage = async (req) => {
-  const acceptLanguageHeader = req && req.headers && req.headers['accept-language'];
-  const enabledLocales = await getEnabledLocales();
-  const locale = getBestLocaleCode(acceptLanguageHeader, enabledLocales, config.get('locale'));
+const getTemplate = async () => {
+  if (templateCache) {
+    return templateCache;
+  }
 
   const templatePath = path.join(environment.templatePath, 'setup', 'setup.html');
   const fileContents = await fs.promises.readFile(templatePath, 'utf8');
-  const template = _.template(fileContents);
+  templateCache = _.template(fileContents);
+  return templateCache;
+};
 
+const renderStartupPage = async (req) => {
+  const enabledLocales = await getEnabledLocales();
+  const locale = getBestLocaleCode(req.locale, enabledLocales, config.get('locale'));
+  const progress = startupLog.getProgress(locale);
+
+  const template = await getTemplate();
   return template({
     title: config.translate('api.startup.title', locale, { branding: await getBranding() }),
+    actions: progress.actions,
     locale: locale,
   });
 };
 
-router.get('/progress', (req, res) => {
-  const locale = req && req.headers && req.headers['accept-language'];
-  res.json(startupLog.getProgress(locale));
+router.get('/api/v1/startup-progress', (req, res) => {
+  res.json(startupLog.getProgress(req.locale));
 });
 
 router.all('*', wantsJSON, (req, res) => {

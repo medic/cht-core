@@ -7,51 +7,44 @@
   <script>
     const locale = "{{ locale }}";
     const getListElem = () => document.getElementById('actions');
-    const clearList = () => {
+    const hideList = () => {
       const actionsElem = getListElem();
-      while (actionsElem.firstChild) {
-        actionsElem.removeChild(actionsElem.firstChild);
-      }
+      [...actionsElem.children].forEach(listItem => {
+        if (!listItem.classList.contains('hidden')) {
+          listItem.classList.add('hidden');
+        }
+        const loader = listItem.getElementsByClassName('loader')[0];
+        loader.classList.remove('loading');
+        loader.classList.remove('done');
+      });
     };
 
-    const createProgressListItem = (action) => {
-      const liElem = document.createElement('li');
-      liElem.className = 'step';
-
-      const loader = document.createElement('div');
-      let loaderClass;
-      if (action.completed) {
-        loaderClass = 'done';
-      } else if (action.started) {
-        loaderClass = 'loading';
+    const showList = (progress) => {
+      if (!progress.actions) {
+        // something went wrong
+        return;
       }
-
-      loader.className = `loader ${loaderClass}`;
-      liElem.appendChild(loader);
-
-      const span = document.createElement('span');
-      span.textContent = action.text;
-      liElem.appendChild(span);
-
-      return liElem;
-    };
-
-    const populateList = (progress) => {
-      const actionsElem = getListElem();
-
-      progress.forEach((action) => {
-        if (!action.display) {
+      Object.entries(progress.actions).forEach(([actionId, action]) => {
+        const actionElem = document.getElementById(`action_${actionId}`);
+        if (!actionElem) {
           return;
         }
+        const loader = actionElem.getElementsByClassName('loader')[0];
 
-        const listElement = createProgressListItem(action);
-        actionsElem.appendChild(listElement);
+        if (action.display) {
+          actionElem.classList.remove('hidden');
+        }
+        if (action.completed) {
+          loader.classList.add('done');
+        } else if (action.started) {
+          loader.classList.add('loading');
+        }
       });
-    }
+    };
 
     const getProgress = async () => {
 
-      const result = await fetch('/progress', { headers: { 'accept-language': locale } });
+      const result = await fetch('/api/v1/startup-progress', { headers: { 'accept-language': locale } });
       if (result.redirected) {
         window.location.reload();
         return;
@@ -63,8 +56,12 @@
       }
 
       const progress = await result.json();
-      clearList();
-      populateList(progress);
+      if (progress.completed) {
+        window.location.reload();
+        return;
+      }
+      hideList();
+      showList(progress);
     };
 
     getProgress();
@@ -79,9 +76,6 @@
       font-family: 'Noto';
       src: url(/fonts/NotoSans-Regular.ttf) format("truetype");
       font-weight: normal;
-    }
-    body, input {
-
     }
     body {
       background-color: #323232;
@@ -147,17 +141,45 @@
       }
     }
 
-    .step {
+    .action {
       display: flex;
       align-items: center;
       justify-items: left;
+    }
+    .action.hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
 <div class="center">
   <h1>{{ title }}</h1>
-  <ul id="actions"></ul>
+  <ul id="actions">
+    <li class="action hidden" id="action_checks">
+      <div class="loader"></div>
+      <span>{{ actions.checks.text }}</span>
+    </li>
+    <li class="action hidden" id="action_install">
+      <div class="loader"></div>
+      <span>{{ actions.install.text }}</span>
+    </li>
+    <li class="action hidden" id="action_index">
+      <div class="loader"></div>
+      <span>{{ actions.index.text }}</span>
+    </li>
+    <li class="action hidden" id="action_config">
+      <div class="loader"></div>
+      <span>{{ actions.config.text }}</span>
+    </li>
+    <li class="action hidden" id="action_migrate">
+      <div class="loader"></div>
+      <span>{{ actions.migrate.text }}</span>
+    </li>
+    <li class="action hidden" id="action_forms">
+      <div class="loader"></div>
+      <span>{{ actions.forms.text }}</span>
+    </li>
+  </ul>
 </div>
 </body>
 </html>

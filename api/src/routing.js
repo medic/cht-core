@@ -43,6 +43,7 @@ const purgedDocsController = require('./controllers/purged-docs');
 const couchConfigController = require('./controllers/couch-config');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
 const connectedUserLog = require('./middleware/connected-user-log').log;
+const getLocale = require('./middleware/locale').getLocale;
 const staticResources = /\/(templates|static)\//;
 // CouchDB is very relaxed in matching routes
 const routePrefix = '/+' + environment.db + '/+';
@@ -113,6 +114,7 @@ app.use((req, res, next) => {
   req.id = uuid.v4();
   next();
 });
+app.use(getLocale);
 
 morgan.token('id', req => req.id);
 
@@ -319,6 +321,10 @@ app.get('/setup/poll', function(req, res) {
 
 app.all('/setup', function(req, res) {
   res.status(503).send('Setup services are not currently available');
+});
+
+app.get('/api/v1/startup-progress', (req, res) => {
+  res.json(startupLog.getProgress(req.locale));
 });
 
 app.all('/setup/password', function(req, res) {
@@ -579,6 +585,7 @@ app.post(
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
 const dbDocHandler = require('./controllers/db-doc');
+const startupLog = require('./services/setup/startup-log');
 const docPath = routePrefix + ':docId/{0,}';
 const attachmentPath = routePrefix + ':docId/+:attachmentId*';
 const ddocPath = routePrefix + '_design/+:ddocId*';

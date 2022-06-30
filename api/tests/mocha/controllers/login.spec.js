@@ -259,7 +259,7 @@ describe('login controller', () => {
     });
 
     it('uses best request header locale available', () => {
-      req.headers = { 'accept-language': 'fr_CA, en' };
+      req.locale = 'fr_CA, en';
       sinon.stub(translations, 'getEnabledLocales').resolves([
         { code: 'en', name: 'English' },
         { code: 'fr', name: 'French' },

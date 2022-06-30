@@ -6,38 +6,38 @@ const { expect } = require('chai');
 const config = require('../../../../src/config');
 
 let startupLog;
-const initialActions = [
-  {
+const initialActions = {
+  checks: {
     translation: 'api.startup.checks',
     text: undefined,
     display: true,
   },
-  {
+  install: {
     translation: 'api.startup.install',
     text: undefined,
     display: false,
   },
-  {
+  index: {
     translation: 'api.startup.index',
     text: undefined,
     display: false,
   },
-  {
+  config: {
     translation: 'api.startup.config',
     text: undefined,
     display: true,
   },
-  {
+  migrate: {
     translation: 'api.startup.migrate',
     text: undefined,
     display: true,
   },
-  {
+  forms: {
     translation: 'api.startup.forms',
     text: undefined,
     display: true,
   },
-];
+};
 
 describe('StartUp log', () => {
   beforeEach(() => {
@@ -50,61 +50,85 @@ describe('StartUp log', () => {
   });
 
   it('should have correct actions', () => {
-    const actions = startupLog.getProgress();
-    expect(actions).to.deep.equal(initialActions);
+    const progress = startupLog.getProgress();
+    expect(progress).to.deep.equal({
+      actions: initialActions,
+      completed: false,
+    });
   });
 
   describe('start', () => {
     it('should do nothing when action not found', () => {
       startupLog.start('not an action');
-      const actions = startupLog.getProgress();
-      expect(actions).to.deep.equal(initialActions);
+      const progress = startupLog.getProgress();
+      expect(progress).to.deep.equal({
+        actions: initialActions,
+        completed: false,
+      });
     });
 
     it('should set the action as started', () => {
-      startupLog.start('installationChecks');
-      const actions = startupLog.getProgress();
+      startupLog.start('checks');
+      const progress = startupLog.getProgress();
       const expectedActions = _.cloneDeep(initialActions);
-      expectedActions[0].started = true;
+      expectedActions.checks.started = true;
 
-      expect(actions).to.deep.equal(expectedActions);
+      expect(progress).to.deep.equal({
+        actions: expectedActions,
+        completed: false,
+      });
     });
 
     it('should set an non-displayed action to be displayed', () => {
       startupLog.start('install');
-      const actions = startupLog.getProgress();
+      const progress = startupLog.getProgress();
       const expectedActions = _.cloneDeep(initialActions);
-      expectedActions[1].started = true;
-      expectedActions[1].display = true;
+      expectedActions.install.started = true;
+      expectedActions.install.display = true;
 
-      expect(actions).to.deep.equal(expectedActions);
+      expect(progress).to.deep.equal({
+        actions: expectedActions,
+        completed: false,
+      });
     });
 
     it('should set the other started tasks as completed', () => {
-      startupLog.start('installationChecks');
+      startupLog.start('checks');
       startupLog.start('install');
-      let actions = startupLog.getProgress();
+      let progress = startupLog.getProgress();
       const expectedActions = _.cloneDeep(initialActions);
-      expectedActions[0].started = true;
-      expectedActions[0].completed = true;
-      expectedActions[1].started = true;
-      expectedActions[1].display = true;
-      expect(actions).to.deep.equal(expectedActions);
+      expectedActions.checks.started = true;
+      expectedActions.checks.completed = true;
+
+      expectedActions.install.started = true;
+      expectedActions.install.display = true;
+
+      expect(progress).to.deep.equal({
+        actions: expectedActions,
+        completed: false,
+      });
 
       startupLog.start('index');
-      actions = startupLog.getProgress();
+      progress = startupLog.getProgress();
 
-      expectedActions[0].completed = true;
-      expectedActions[1].completed = true;
-      expectedActions[2].started = true;
-      expectedActions[2].display = true;
-      expect(actions).to.deep.equal(expectedActions);
+      expectedActions.install.completed = true;
+      expectedActions.index.display = true;
+      expectedActions.index.started = true;
+
+      expect(progress).to.deep.equal({
+        actions: expectedActions,
+        completed: false,
+      });
 
       startupLog.start('migrate');
-      actions = startupLog.getProgress();
-      expectedActions[2].completed = true;
-      expectedActions[4].started = true;
-      expect(actions).to.deep.equal(expectedActions);
+      progress = startupLog.getProgress();
+      expectedActions.index.completed = true;
+      expectedActions.migrate.started = true;
+
+      expect(progress).to.deep.equal({
+        actions: expectedActions,
+        completed: false,
+      });
     });
   });
 
@@ -112,45 +136,79 @@ describe('StartUp log', () => {
     it('should translate actions texts', () => {
       config.translate.callsFake((key, locale) => `translated ${key} in ${locale}`);
       startupLog = rewire('../../../../src/services/setup/startup-log');
-      const actions = startupLog.getProgress('thelocale');
-      expect(actions).to.deep.equal([
-        {
-          translation: 'api.startup.checks',
-          text: 'translated api.startup.checks in thelocale',
-          display: true,
-        },
-        {
-          translation: 'api.startup.install',
-          text: 'translated api.startup.install in thelocale',
-          display: false,
-        },
-        {
-          translation: 'api.startup.index',
-          text: 'translated api.startup.index in thelocale',
-          display: false,
-        },
-        {
-          translation: 'api.startup.config',
-          text: 'translated api.startup.config in thelocale',
-          display: true,
-        },
-        {
-          translation: 'api.startup.migrate',
-          text: 'translated api.startup.migrate in thelocale',
-          display: true,
-        },
-        {
-          translation: 'api.startup.forms',
-          text: 'translated api.startup.forms in thelocale',
-          display: true,
-        },
-      ]);
+      const progress = startupLog.getProgress('thelocale');
 
-      expect(config.translate.callCount).to.equal(initialActions.length);
-      expect(config.translate.args).to.deep.equal(initialActions.map(action => ([
+      expect(progress).to.deep.equal({
+        actions: {
+          checks: {
+            translation: 'api.startup.checks',
+            text: 'translated api.startup.checks in thelocale',
+            display: true,
+          },
+          install: {
+            translation: 'api.startup.install',
+            text: 'translated api.startup.install in thelocale',
+            display: false,
+          },
+          index: {
+            translation: 'api.startup.index',
+            text: 'translated api.startup.index in thelocale',
+            display: false,
+          },
+          config: {
+            translation: 'api.startup.config',
+            text: 'translated api.startup.config in thelocale',
+            display: true,
+          },
+          migrate: {
+            translation: 'api.startup.migrate',
+            text: 'translated api.startup.migrate in thelocale',
+            display: true,
+          },
+          forms: {
+            translation: 'api.startup.forms',
+            text: 'translated api.startup.forms in thelocale',
+            display: true,
+          },
+        },
+        completed: false,
+      });
+
+      expect(config.translate.callCount).to.equal(Object.keys(initialActions).length);
+      expect(config.translate.args).to.deep.equal(Object.values(initialActions).map(action => ([
         action.translation,
         'thelocale',
       ])));
     });
+  });
+
+  it('should return as completed when all initially displayed actions are completed', () => {
+    startupLog.start('checks');
+    startupLog.start('config');
+    startupLog.start('migrate');
+    startupLog.start('forms');
+    startupLog.complete();
+
+    expect(startupLog.getProgress().completed).to.equal(true);
+  });
+
+  it('should return as completed when all displayed actions are completed', () => {
+    startupLog.start('checks');
+    startupLog.start('install');
+    startupLog.start('config');
+    startupLog.start('migrate');
+    startupLog.start('forms');
+    startupLog.complete();
+
+    expect(startupLog.getProgress().completed).to.equal(true);
+  });
+
+  it('should return as not completed when at least one displayed action is not completed', () => {
+    startupLog.start('checks');
+    startupLog.start('install');
+    startupLog.start('config');
+    startupLog.start('migrate');
+
+    expect(startupLog.getProgress().completed).to.equal(false);
   });
 });
