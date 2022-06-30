@@ -64,7 +64,8 @@ describe('Assessment', () => {
 
   it('Check MUAC follow up task', async () => {
     await tasksPage.goToTasksTab();
-    await tasksPage.getTasks();
+    expect(await(await tasksPage.getTasks()).count()).to.equal(1);
+
     //check this list
   });
 });
