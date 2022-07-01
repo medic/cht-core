@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, Output, Input, AfterViewInit } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output, Input, AfterViewInit, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import 'bootstrap-daterangepicker';
 import * as moment from 'moment';
@@ -10,14 +10,16 @@ interface LocaleWithWeekSpec extends moment.Locale {
 import { GlobalActions } from '@mm-actions/global';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { Subscription } from 'rxjs';
+import { Selectors } from '@mm-selectors/index';
 
 @Component({
   selector: 'mm-date-filter',
   templateUrl: './date-filter.component.html'
 })
-export class DateFilterComponent implements OnDestroy, AbstractFilter, AfterViewInit {
+export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, AfterViewInit {
   private globalActions;
-
+  subscription: Subscription = new Subscription();
   date = {
     from: undefined,
     to: undefined,
@@ -36,9 +38,11 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter, AfterView
     this.globalActions = new GlobalActions(store);
   }
 
-  applyFilter() {
-    this.globalActions.setFilter({ date: this.date });
-    this.search.emit();
+  ngOnInit() {
+    const subscription = this.store
+      .select(Selectors.getFilters)
+      .subscribe(({ date }) => this.date = { ...date });
+    this.subscription.add(subscription);
   }
 
   ngAfterViewInit() {
@@ -57,8 +61,8 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter, AfterView
         }
       },
       (from, to) => {
-        this.setDate(from, to);
-        this.applyFilter();
+        const dateRange = this.createDateRange(from, to);
+        this.applyFilter(dateRange);
       }
     );
 
@@ -87,32 +91,38 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter, AfterView
     }
   }
 
-  setDate(from, to) {
+  applyFilter(date) {
+    this.globalActions.setFilter({ date });
+    this.search.emit();
+  }
+
+  createDateRange(from, to) {
     if (this.isRange) {
-      this.date = { from, to };
-      return;
+      return { from, to };
     }
+
     if (this.isStartDate) {
-      this.date = { ...this.date, from };
-      return;
+      return { ...this.date, from };
     }
-    this.date = { ...this.date, to };
+
+    return { ...this.date, to };
+  }
+
+  clear() {
+    this.applyFilter({ from: undefined, to: undefined });
+  }
+
+  countSelected() {
+    return this.date.from || this.date.to ? 1 : 0;
   }
 
   ngOnDestroy() {
+    this.subscription.unsubscribe();
     const datePicker:any = $(`#${this.fieldId}`).data('daterangepicker');
 
     if (datePicker) {
       // avoid dom-nodes leaks
       datePicker.remove();
     }
-  }
-
-  clear() {
-    this.setDate(undefined, undefined);
-  }
-
-  countSelected() {
-    return this.date.from || this.date.to ? 1 : 0;
   }
 }
