@@ -13,7 +13,7 @@ services:
       - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
       - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
       - "SVC_NAME=${SVC1_NAME:-couchdb.1}"
-      - "CLUSTER_PEER_IPS=couchdb.2"
+      - "CLUSTER_PEER_IPS=couchdb.2,couchdb.3"
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
     restart: always
     networks:
@@ -36,6 +36,23 @@ services:
     networks:
       {{ network }}:
 
+  couchdb.3:
+    image: {{{ repo }}}/cht-couchdb:{{ tag }}
+    container_name: {{ couch3_container_name }}
+    volumes:
+      - ${DB3_DATA:-./srv3}:/opt/couchdb/data
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-pass}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "SVC_NAME=${SVC3_NAME:-couchdb.3}"
+      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
+      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+    restart: always
+    networks:
+      {{ network }}:
+
   haproxy:
     image: {{{ repo }}}/cht-haproxy:{{ tag }}
     container_name: {{ haproxy_container_name }}
@@ -43,12 +60,14 @@ services:
     depends_on:
       - couchdb.1
       - couchdb.2
+      - couchdb.3
     environment:
       - "HAPROXY_IP=${HAPROXY_IP:-haproxy}"
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-pass}"
       - "COUCHDB1_SERVER=${COUCHDB1_SERVER:-{{ couch1_container_name }}}"
       - "COUCHDB2_SERVER=${COUCHDB2_SERVER:-{{ couch2_container_name }}}"
+      - "COUCHDB3_SERVER=${COUCHDB3_SERVER:-{{ couch3_container_name }}}"
       - "HAPROXY_PORT=${HAPROXY_PORT:-5984}"
     networks:
       {{ network }}:
