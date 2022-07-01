@@ -31,11 +31,13 @@ export const routes:Routes = [
         path: 'add/:formId',
         component: ReportsAddComponent,
         canDeactivate: [ReportsAddDeactivationGuardProvider],
+        data: { hideTraining: true },
       },
       {
         path: 'edit/:reportId',
         component: ReportsAddComponent,
         canDeactivate: [ReportsAddDeactivationGuardProvider],
+        data: { hideTraining: true },
       }
     ]
   },

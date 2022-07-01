@@ -44,6 +44,7 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
+import { TrainingCardsService } from '@mm-services/training-cards.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -125,6 +126,7 @@ export class AppComponent implements OnInit {
     private ngZone:NgZone,
     private chtScriptApiService: CHTScriptApiService,
     private analyticsModulesService: AnalyticsModulesService,
+    private trainingCardsService: TrainingCardsService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
@@ -462,7 +464,7 @@ export class AppComponent implements OnInit {
         });
         this.xmlFormsService.subscribe(
           'FormsFilter',
-          { contactForms: false, ignoreContext: true },
+          { contactForms: false, trainingForms: false, ignoreContext: true },
           (err, xForms) => {
             if (err) {
               return console.error('Error fetching form definitions', err);
@@ -480,20 +482,27 @@ export class AppComponent implements OnInit {
             this.globalActions.setForms(forms);
           }
         );
+
         // get the forms for the Add Report menu
-        this.xmlFormsService.subscribe('AddReportMenu', { contactForms: false }, (err, xForms) => {
-          if (err) {
-            return console.error('Error fetching form definitions', err);
-          }
-          this.nonContactForms = xForms
-            .map((xForm) => ({
-              id: xForm._id,
-              code: xForm.internalId,
-              icon: xForm.icon,
-              title: translateTitle(xForm.translation_key, xForm.title),
-            }))
-            .sort((a, b) => a.title - b.title);
-        });
+        this.xmlFormsService.subscribe(
+          'AddReportMenu',
+          { contactForms: false, trainingForms: false },
+          (err, xForms) => {
+            if (err) {
+              return console.error('Error fetching form definitions', err);
+            }
+            this.nonContactForms = xForms
+              .map((xForm) => ({
+                id: xForm._id,
+                code: xForm.internalId,
+                icon: xForm.icon,
+                title: translateTitle(xForm.translation_key, xForm.title),
+              }))
+              .sort((a, b) => a.title - b.title);
+          });
+
+        // Get forms for training cards and display the cards if necessary
+        this.trainingCardsService.initTrainingCards();
       })
       .catch(err => console.error('Failed to retrieve forms', err));
   }

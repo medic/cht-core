@@ -473,7 +473,7 @@ describe('Contacts content component', () => {
 
       expect(xmlFormsService.subscribe.callCount).to.equal(2);
       expect(xmlFormsService.subscribe.args[0][0]).to.equal('SelectedContactChildrenForms');
-      expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ contactForms: true });
+      expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ contactForms: true, trainingForms: false });
 
       xmlFormsService.subscribe.args[0][2](null, forms);
 
@@ -527,6 +527,7 @@ describe('Contacts content component', () => {
       expect(xmlFormsService.subscribe.args[1][0]).to.equal('SelectedContactReportForms');
       expect(xmlFormsService.subscribe.args[1][1]).to.deep.equal({
         contactForms: false,
+        trainingForms: false,
         contactSummary: 'test',
         doc: { _id: 'district-123', phone: '123', muted: true }
       });
@@ -587,6 +588,7 @@ describe('Contacts content component', () => {
       expect(xmlFormsService.subscribe.args[1][0]).to.equal('SelectedContactReportForms');
       expect(xmlFormsService.subscribe.args[1][1]).to.deep.equal({
         contactForms: false,
+        trainingForms: false,
         contactSummary: 'test',
         doc: { _id: 'district-123', phone: '123' }
       });

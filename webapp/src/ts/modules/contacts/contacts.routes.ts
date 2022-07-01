@@ -34,21 +34,25 @@ export const routes: Routes = [
         path: 'add/:type',
         component: ContactsEditComponent,
         canDeactivate: [ContactRouteGuardProvider],
+        data: { hideTraining: true },
       },
       {
         path: ':parent_id/add/:type',
         component: ContactsEditComponent,
         canDeactivate: [ContactRouteGuardProvider],
+        data: { hideTraining: true },
       },
       {
         path: ':id/edit',
         component: ContactsEditComponent,
         canDeactivate: [ContactRouteGuardProvider],
+        data: { hideTraining: true },
       },
       {
         path: ':id/report/:formId',
         component: ContactsReportComponent,
         canDeactivate: [ContactRouteGuardProvider],
+        data: { hideTraining: true },
       }
     ],
   },
