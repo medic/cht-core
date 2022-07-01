@@ -155,30 +155,12 @@
 <div class="center">
   <h1>{{ title }}</h1>
   <ul id="actions">
-    <li class="action hidden" id="action_checks">
-      <div class="loader"></div>
-      <span>{{ actions.checks.text }}</span>
-    </li>
-    <li class="action hidden" id="action_install">
-      <div class="loader"></div>
-      <span>{{ actions.install.text }}</span>
-    </li>
-    <li class="action hidden" id="action_index">
-      <div class="loader"></div>
-      <span>{{ actions.index.text }}</span>
-    </li>
-    <li class="action hidden" id="action_config">
-      <div class="loader"></div>
-      <span>{{ actions.config.text }}</span>
-    </li>
-    <li class="action hidden" id="action_migrate">
-      <div class="loader"></div>
-      <span>{{ actions.migrate.text }}</span>
-    </li>
-    <li class="action hidden" id="action_forms">
-      <div class="loader"></div>
-      <span>{{ actions.forms.text }}</span>
-    </li>
+    <% Object.entries(actions).forEach(function(actionItem) { %>
+      <li class="action hidden" id="action_{{ actionItem[0] }}">
+        <div class="loader"></div>
+        <span>{{ actionItem[1].text }}</span>
+      </li>
+    <% }); %>
   </ul>
 </div>
 </body>
