@@ -48,38 +48,38 @@ function (doc) {
   };
   var value = { type: doc.type };
   switch (doc.type) {
-    case 'data_record':
-      value.subject = getSubject() || '_unassigned';
-      if (doc.form && doc.contact) {
-        value.submitter = doc.contact._id;
-      }
-      if (doc.fields && doc.fields.private) {
-        value.private = true;
-      }
-      emit(value.subject, value);
-      if (doc.fields &&
-          doc.fields.needs_signoff &&
-          doc.contact
-      ) {
-        value.needs_signoff = true;
-        var contact = doc.contact;
-        while (contact) {
-          if (contact._id && contact._id !== value.subject) {
-            emit(contact._id, value);
-          }
-          contact = contact.parent;
+  case 'data_record':
+    value.subject = getSubject() || '_unassigned';
+    if (doc.form && doc.contact) {
+      value.submitter = doc.contact._id;
+    }
+    if (doc.fields && doc.fields.private) {
+      value.private = true;
+    }
+    emit(value.subject, value);
+    if (doc.fields &&
+        doc.fields.needs_signoff &&
+        doc.contact
+    ) {
+      value.needs_signoff = true;
+      var contact = doc.contact;
+      while (contact) {
+        if (contact._id && contact._id !== value.subject) {
+          emit(contact._id, value);
         }
+        contact = contact.parent;
       }
-      return;
-    case 'task':
-      return emit(doc.user, value);
-    case 'target':
-      return emit(doc.owner, value);
-    case 'contact':
-    case 'clinic':
-    case 'district_hospital':
-    case 'health_center':
-    case 'person':
-      return emit(doc._id, value);
+    }
+    return;
+  case 'task':
+    return emit(doc.user, value);
+  case 'target':
+    return emit(doc.owner, value);
+  case 'contact':
+  case 'clinic':
+  case 'district_hospital':
+  case 'health_center':
+  case 'person':
+    return emit(doc._id, value);
   }
 }
