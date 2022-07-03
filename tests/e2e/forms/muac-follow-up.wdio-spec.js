@@ -18,9 +18,7 @@ describe('Assessment', () => {
     await utils.seedTestData(userData.userContactDoc, userData.docs);
     await browser.pause(5000);
     await loginPage.cookieLogin();
-    await commonPage.closeReloadModal();
     await commonPage.goToReports();
-    await commonPage.closeReloadModal();
     await browser.pause(5000);
   });
 
