@@ -21,6 +21,10 @@ const usernameErrorMessage = () => $('span.help-block.ng-binding');
 const passwordErrorMessage = () => $('#edit-password ~ .help-block');
 const placeErrorMessage = () => $('#facilitySelect ~ .help-block');
 const contactErrorMessage = () => $('#contactSelect ~ .help-block');
+const uploadUsersButton = () => $('a#add-users');
+const uploadUsersDialog = () => $('div#edit-users-bulk');
+const confirmUploadUsersButton = () => $('a#upload-btn');
+const uploadSummaryDialog = () => $('div.finish-summary');
 
 const goToAdminUser = async () => {
   await browser.url('/admin/#/users');
@@ -62,6 +66,10 @@ const inputAddUserFields = async (username, fullname, role, place, associatedCon
   await (await userConfirmPassword()).addValue(confirmPassword);
 };
 
+const inputUploadUsersFields = async (filePath) => {
+  await (await $('input[type="file"]')).setValue(filePath);
+};
+
 const selectPlace = async (place) => {
   await (await userPlace()).waitForDisplayed();
   await (await userPlace()).scrollIntoView();
@@ -87,6 +95,11 @@ const saveUser = async (isSuccessExpected = true)  => {
   if (isSuccessExpected) {
     await (await addUserDialog()).waitForDisplayed({ reverse: true });
   }
+};
+
+const uploadUsers = async () => {
+  await (await confirmUploadUsersButton()).waitForDisplayed();
+  await (await confirmUploadUsersButton()).click();
 };
 
 const logout = async () => {
@@ -119,6 +132,18 @@ const getContactErrorText = async () => {
   return await (await contactErrorMessage()).getText();
 };
 
+const openUploadUsersDialog = async () => {
+  await (await uploadUsersButton()).waitForDisplayed();
+  await (await uploadUsersButton()).click();
+  await (await uploadUsersDialog()).waitForDisplayed();
+  // wait for animations to finish
+  await browser.pause(500);
+};
+
+const uploadSummary = async () => {
+  await (await uploadSummaryDialog()).waitForDisplayed({ timeout: 100000 });
+};
+
 module.exports = {
   goToAdminUser,
   goToAdminUpgrade,
@@ -131,5 +156,9 @@ module.exports = {
   getUsernameErrorText,
   getPasswordErrorText,
   getPlaceErrorText,
-  getContactErrorText
+  getContactErrorText,
+  openUploadUsersDialog,
+  inputUploadUsersFields,
+  uploadUsers,
+  uploadSummary,
 };
