@@ -1,5 +1,6 @@
 const helper = require('../../helper');
 const utils = require('../../utils');
+const { browser, element } = require('protractor');
 
 const medicLogo = element(by.className('logo-full'));
 const genericSubmitButton = element(by.css('.btn.btn-primary'));
