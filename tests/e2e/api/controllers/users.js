@@ -336,6 +336,8 @@ describe('Users API', () => {
         });
       }
 
+      await utils.delayPromise(() => Promise.resolve(), 200);
+
       // Update password with new value.
       const userResponse = await utils
         .request({
