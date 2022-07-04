@@ -336,7 +336,7 @@ describe('Users API', () => {
         });
       }
 
-      await utils.delayPromise(() => Promise.resolve(), 200);
+      await utils.delayPromise(() => Promise.resolve(), 500);
 
       // Update password with new value.
       const userResponse = await utils
@@ -346,7 +346,8 @@ describe('Users API', () => {
           body: { password: newPassword }
         })
         .catch(() => chai.assert.fail('Should not throw error'));
-      await utils.delayPromise(() => Promise.resolve(), 200);
+
+      await utils.delayPromise(() => Promise.resolve(), 500);
 
       chai.expect(userResponse.user).to.not.be.undefined;
       chai.expect(userResponse.user.id).to.equal('org.couchdb.user:admin2');
