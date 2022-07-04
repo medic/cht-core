@@ -107,7 +107,6 @@ const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
 };
 
 const render = (page, req, extras = {}) => {
-  [ brandingService.get(), privacyPolicy.get() ]
   const acceptLanguageHeader = req && req.headers && req.headers['accept-language'];
   return Promise
     .all([

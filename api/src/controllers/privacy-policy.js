@@ -31,7 +31,7 @@ const getHtml = (policy, showBackButton, translations) => {
 //      https://github.com/medic/cht-core/pull/7588
 const getLocale = () => {
   return 'en';
-}
+};
 
 const getTranslations = () => {
   const locale = getLocale();
@@ -40,7 +40,7 @@ const getTranslations = () => {
     login: config.translate('login', locale),
     title: config.translate('privacy.policy', locale)
   };
-}
+};
 
 module.exports.get = (req, res) => {
   const showBackButton = !!req.query.back;
