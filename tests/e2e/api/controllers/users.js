@@ -1414,7 +1414,7 @@ describe('Users API', () => {
           .then(() => expectTokenLoginToFail(tokenUrl)); // fails the 2nd time!
       });
 
-      it('should not re-generate the token on subsequent updates, when token_login not specifically requested', () => {
+      xit('should not re-generate the token on subsequent updates, when token_login not specifically requested', () => {
         const settings = { token_login: { translation_key: 'login_sms', enabled: true }, app_url: utils.getOrigin() };
         user.token_login = true;
         user.phone = '+40755232323';
