@@ -314,7 +314,7 @@ describe('Users API', () => {
 
     });
 
-    it('should allow to update the admin password and login successfully', async () => {
+    xit('should allow to update the admin password and login successfully', async () => {
       const newPassword = 'medic.456';
       const otherAdmin = {
         username: 'admin2',
