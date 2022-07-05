@@ -3,6 +3,7 @@ const querystring = require('querystring');
 const constants = require('../../constants');
 const _ = require('lodash');
 
+
 const SKIPPED_BY_SENTINEL = /^_design\/|(-info|____tombstone)$/;
 const TRANSITION_SEQ = '/_local/transitions-seq';
 const BACKGROUND_SEQ = '/_local/background-seq';
