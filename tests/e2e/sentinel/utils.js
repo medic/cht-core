@@ -5,7 +5,7 @@ const _ = require('lodash');
 
 const SKIPPED_BY_SENTINEL = /^_design\/|(-info|____tombstone)$/;
 const TRANSITION_SEQ = '/_local/transitions-seq';
-const BACKGROUND_SEQ = '/_local/background-seq'
+const BACKGROUND_SEQ = '/_local/background-seq';
 
 //
 // Waits for a procedure that logs its progress to a metadata document (such as sentinel
