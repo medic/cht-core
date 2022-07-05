@@ -1,21 +1,36 @@
+const sanitizeHtml = require('sanitize-html');
 const db = require('../db');
 const logger = require('../logger');
-const sanitizeHtml = require('sanitize-html');
 
 const PRIVACY_POLICY_DOC_ID = 'privacy-policies';
 
-const getAttachment = (doc) => {
+const getAttachmentName = (doc, locale) => {
   const policies = doc.privacy_policies;
-  const first = Object.keys(policies)[0]; // TODO find the right one for this lang
-  const data = doc._attachments[policies[first]].data;
+  return policies[locale] || Object.values(policies)[0];
+};
+
+const getAttachment = (doc, locale) => {
+  const attachmentName = getAttachmentName(doc, locale);
+  const data = doc._attachments[attachmentName].data;
   const html = Buffer.from(data, 'base64').toString();
   return sanitizeHtml(html);
 };
 
+const getDoc = (options=({})) => {
+  return db.medic.get(PRIVACY_POLICY_DOC_ID, options)
+    .then(doc => {
+      const policies = doc.privacy_policies;
+      if (!policies || !Object.keys(policies).length) { // invalid doc
+        throw new Error(`Invalid ${PRIVACY_POLICY_DOC_ID} doc: missing required "privacy_policies" property`);
+      }
+      return doc;
+    });
+};
+
 module.exports = {
-  get: () => {
-    return db.medic.get(PRIVACY_POLICY_DOC_ID, { attachments: true })
-      .then(doc => getAttachment(doc))
+  get: (locale) => {
+    return getDoc({ attachments: true })
+      .then(doc => getAttachment(doc, locale))
       .catch(err => {
         if (err.status !== 404) {
           logger.error('Error retrieving privacy policies: %o', err);
@@ -24,7 +39,7 @@ module.exports = {
       });
   },
   exists: () => {
-    return db.medic.get(PRIVACY_POLICY_DOC_ID)
+    return getDoc()
       .then(() => true)
       .catch(() => false);
   }

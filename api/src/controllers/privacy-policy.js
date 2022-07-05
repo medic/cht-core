@@ -8,6 +8,8 @@ const config = require('../config');
 
 let template;
 
+// TODO replace with template service in this PR
+//      https://github.com/medic/cht-core/pull/7588
 const getTemplate = () => {
   if (template) {
     return template;
@@ -33,8 +35,7 @@ const getLocale = () => {
   return 'en';
 };
 
-const getTranslations = () => {
-  const locale = getLocale();
+const getTranslations = (locale) => {
   return {
     back: config.translate('Back', locale),
     login: config.translate('login', locale),
@@ -44,9 +45,10 @@ const getTranslations = () => {
 
 module.exports.get = (req, res) => {
   const showBackButton = !!req.query.back;
-  const translations = getTranslations();
-  privacyPolicyService
-    .get()
+  const locale = getLocale();
+  const translations = getTranslations(locale);
+  return privacyPolicyService
+    .get(locale)
     .then(content => getHtml(content, showBackButton, translations))
     .then(html => res.send(html))
     .catch(err => {
