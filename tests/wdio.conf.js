@@ -40,7 +40,7 @@ const baseConfig = {
   // will be called from there.
   //
   specs: [
-    './tests/e2e/**/muac-follow-up.wdio-spec.js',
+    './tests/e2e/**/*.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [
@@ -78,7 +78,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: [ '--disable-gpu', '--deny-permission-prompts']
+      args: ['--headless', '--disable-gpu', '--deny-permission-prompts']
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
@@ -120,7 +120,7 @@ const baseConfig = {
   baseUrl: constants.BASE_URL,
   //
   // Default timeout for all waitFor* commands.
-  waitforTimeout: 40000,
+  waitforTimeout: 15000,
   //
   // Default timeout in milliseconds for request
   // if browser driver or grid doesn't send response
