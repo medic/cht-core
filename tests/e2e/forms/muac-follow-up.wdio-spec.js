@@ -6,7 +6,7 @@ const commonPage = require('../../page-objects/common/common.wdio.page');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 const genericForm = require('../../page-objects/forms/generic-form.wdio.page');
 const assessmentForm = require('../../page-objects/forms/assessment-form.wdio.page');
-const tasksPage = require('../../page-objects/tasks/tasks.wdio.page')
+const tasksPage = require('../../page-objects/tasks/tasks.wdio.page');
 describe('Assessment', () => {
   before(async () => {
     await assessmentForm.uploadForm();
@@ -62,7 +62,6 @@ describe('Assessment', () => {
     await browser.pause(10000);
     await tasksPage.goToTasksTab();
     const taskList = await tasksPage.getTasks();
-    expect(tasksList.length).to.equal(1);
-
+    expect(taskList.length).to.equal(1);
   });
 });
