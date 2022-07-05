@@ -7,7 +7,6 @@ const SKIPPED_BY_SENTINEL = /^_design\/|(-info|____tombstone)$/;
 const TRANSITION_SEQ = '/_local/transitions-seq';
 const BACKGROUND_SEQ = '/_local/background-seq';
 
-
 //
 // Waits for a procedure that logs its progress to a metadata document (such as sentinel
 // transitions) to catch up, either to now, or far enough that it has processed all passed docIds.
