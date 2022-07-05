@@ -26,25 +26,25 @@ describe('Assessment', () => {
     await genericForm.selectYes();
     await genericForm.nextPage();
 
-    await assessmentForm.selectRadioButton('fever', 'no');
-    await genericForm.nextPage();
+    // await assessmentForm.selectRadioButton('fever', 'no');
+    // await genericForm.nextPage();
 
-    await assessmentForm.selectRadioButton('cough', 'no');
-    await genericForm.nextPage();
+    // await assessmentForm.selectRadioButton('cough', 'no');
+    // await genericForm.nextPage();
 
-    await assessmentForm.selectRadioButton('diarrhea', 'no');
-    await genericForm.nextPage();
+    // await assessmentForm.selectRadioButton('diarrhea', 'no');
+    // await genericForm.nextPage();
 
-    await genericForm.waitForDangerSigns();
-    await genericForm.nextPage();
+    // await genericForm.waitForDangerSigns();
+    // await genericForm.nextPage();
 
-    await assessmentForm.selectVaccines('no');
-    await genericForm.nextPage();
+    // await assessmentForm.selectVaccines('no');
+    // await genericForm.nextPage();
 
-    await genericForm.selectAllBoxes();
-    await genericForm.nextPage();
+    // await genericForm.selectAllBoxes();
+    // await genericForm.nextPage();
 
-    //Normal - lime 
+    //Normal - lime
     await assessmentForm.insertMuacScore(13);
     expect(await assessmentForm.getMuacAssessmentDisplayed('lime')).to.equal(true);
 
@@ -55,5 +55,7 @@ describe('Assessment', () => {
     //severe - red
     await assessmentForm.insertMuacScore(11);
     expect(await assessmentForm.getMuacAssessmentDisplayed('red')).to.equal(true);
+    // submit
+
   });
 });
