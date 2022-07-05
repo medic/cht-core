@@ -314,7 +314,7 @@ describe('Users API', () => {
 
     });
 
-    xit('should allow to update the admin password and login successfully', async () => {
+    it('should allow to update the admin password and login successfully', async () => {
       const newPassword = 'medic.456';
       const otherAdmin = {
         username: 'admin2',
@@ -336,8 +336,6 @@ describe('Users API', () => {
         });
       }
 
-      await utils.delayPromise(() => Promise.resolve(), 500);
-
       // Update password with new value.
       const userResponse = await utils
         .request({
@@ -345,9 +343,9 @@ describe('Users API', () => {
           method: 'POST',
           body: { password: newPassword }
         })
-        .catch(() => chai.assert.fail('Should not throw error'));
-
-      await utils.delayPromise(() => Promise.resolve(), 500);
+        .catch((err) => {
+          chai.assert.fail(err);
+        });
 
       chai.expect(userResponse.user).to.not.be.undefined;
       chai.expect(userResponse.user.id).to.equal('org.couchdb.user:admin2');
@@ -1414,7 +1412,7 @@ describe('Users API', () => {
           .then(() => expectTokenLoginToFail(tokenUrl)); // fails the 2nd time!
       });
 
-      xit('should not re-generate the token on subsequent updates, when token_login not specifically requested', () => {
+      it('should not re-generate the token on subsequent updates, when token_login not specifically requested', () => {
         const settings = { token_login: { translation_key: 'login_sms', enabled: true }, app_url: utils.getOrigin() };
         user.token_login = true;
         user.phone = '+40755232323';

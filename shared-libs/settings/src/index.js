@@ -118,12 +118,32 @@ const getCouchNodes = async () => {
   return membership.all_nodes;
 };
 
+const getPasswordHash = (password) => {
+  const encoding = 'hex';
+  const iterations = 10;
+  const keylen = 20;
+
+  const salt = crypto.randomBytes(keylen).toString(encoding);
+  return new Promise((resolve, reject) => {
+    crypto.pbkdf2(password, salt, iterations, keylen, 'SHA1', (err, buffer) => {
+      if (err) {
+        return reject(err);
+      }
+      const derivedKey = buffer.toString(encoding);
+      const raw = `-pbkdf2-${derivedKey},${salt},${iterations}`;
+      return resolve(raw);
+    });
+  });
+};
+
 const updateAdminPassword = async (userName, password) => {
+
   try {
+    const hash = await getPasswordHash(password);
     const nodes = await getCouchNodes();
     for (const nodeName of nodes) {
       const couchConfigUrl = getCouchConfigUrl(nodeName);
-      await request.put({ url: `${couchConfigUrl}/admins/${userName}`, body: `"${password}"` });
+      await request.put({ url: `${couchConfigUrl}/admins/${userName}?raw=true`, body: `"${hash}"` });
     }
   } catch (error) {
     return Promise.reject(error);
