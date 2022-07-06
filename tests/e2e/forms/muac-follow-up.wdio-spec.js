@@ -7,16 +7,29 @@ const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 const genericForm = require('../../page-objects/forms/generic-form.wdio.page');
 const assessmentForm = require('../../page-objects/forms/assessment-form.wdio.page');
 const tasksPage = require('../../page-objects/tasks/tasks.wdio.page');
+const sentinelUtils = require('../sentinel/utils');
+
+const chw = {
+  username: 'bob',
+  password: 'Password@123',
+  place: userData.docs[0]._id,
+  contact: userData.userContactDoc,
+  roles: [ 'chw' ],
+};
+
+
+
 describe('Assessment', () => {
   before(async () => {
     await assessmentForm.uploadForm();
-    await browser.pause(5000);
     userData.userContactDoc.date_of_birth = moment().subtract(4, 'months').format('YYYY-MM-DD');
     await utils.seedTestData(userData.userContactDoc, userData.docs);
-    await browser.pause(5000);
-    await loginPage.cookieLogin();
+    await sentinelUtils.waitForSentinel();
+    await utils.createUsers([ chw ]);
+    await loginPage.login({ username: chw.username, password: chw.password });
+    await commonPage.closeTour();
+    await (await commonPage.analyticsTab()).waitForDisplayed();
     await commonPage.goToReports();
-    await browser.pause(5000);
   });
 
   it('Submit Assessment form', async () => {
