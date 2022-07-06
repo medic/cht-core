@@ -185,6 +185,13 @@ describe('Muting', () => {
     expect(doc.muting_history).to.be.undefined;
   };
 
+  const setBrowserOffline = () => {
+    return browser.driver.setNetworkConditions({ offline: true, latency: 0, throughput: 0 });
+  };
+  const setBrowserOnline = () => {
+    return browser.driver.setNetworkConditions({ latency: 0, throughput: 1000 * 1000 }, 'No throttling');
+  };
+
   beforeAll(async () => {
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
@@ -252,15 +259,24 @@ describe('Muting', () => {
 
     afterEach(async () => {
       await commonElements.syncNative();
+      await setBrowserOffline();
       await utils.revertSettings(true);
       await unmuteContacts();
+      await setBrowserOnline();
       await utils.refreshToGetNewSettings();
     });
 
     const updateSettings = async (settings) => {
+      await setBrowserOffline();
       await utils.updateSettings(settings, true);
-      await commonElements.syncNative();
-      await utils.refreshToGetNewSettings();
+      await setBrowserOnline();
+      try {
+        await commonElements.syncNative();
+      } catch (err) {
+        // sometimes sync happens by itself, on timeout
+      } finally {
+        await utils.refreshToGetNewSettings();
+      }
     };
 
     const unmuteContacts = () => {

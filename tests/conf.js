@@ -21,8 +21,8 @@ const baseConfig = {
   ],
   suites: {
     web: [
-      'e2e/!(cht)/**/*.js',
-      'e2e/**/*.js'
+      // 'e2e/!(cht)/**/*.js',
+      'e2e/**/muting*.js'
     ],
     cht: [
       'e2e/cht/*.spec.js'
@@ -38,7 +38,7 @@ const baseConfig = {
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
-      args: ['--window-size=1024,768', '--headless', '--disable-gpu'],
+      args: ['--window-size=1024,768', '--headless', '--disable-gpu', '--deny-permission-prompts', '--no-sandbox'],
       prefs: {
         intl: { accept_languages: 'en-US' },
       },
