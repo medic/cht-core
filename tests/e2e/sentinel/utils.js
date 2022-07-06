@@ -15,6 +15,7 @@ const BACKGROUND_SEQ = '/_local/background-seq';
 // @param      {<array[string]>}  docIds    documents that must be processed before returning
 // @return     {<promise>}        resolves once the wait is over
 //
+
 const waitForSeq = (metadataId, docIds) => {
   return requestOnSentinelTestDb(metadataId)
     .catch(err => {
