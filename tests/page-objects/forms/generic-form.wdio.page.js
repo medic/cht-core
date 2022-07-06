@@ -69,16 +69,6 @@ const selectAllBoxes = async () => {
   return checkboxes.length;
 };
 
-const selectAllRadioButtons = async (choice) => {
-  const radioButtons = await $$(`input[type="radio"][value="${choice}"]`);
-  for (const button of radioButtons) {
-    if(await button.isClickable()){
-      await button.scrollIntoView();
-      return await button.click();
-    }
-  }
-};
-
 const selectYes = async () => {
   const yesRadioButton = await $('[value="yes"]');
   await yesRadioButton.click();
@@ -101,5 +91,4 @@ module.exports = {
   selectYes,
   selectAllBoxes,
   waitForDangerSigns,
-  selectAllRadioButtons,
 };

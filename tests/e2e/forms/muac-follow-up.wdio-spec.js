@@ -6,57 +6,26 @@ const commonPage = require('../../page-objects/common/common.wdio.page');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 const genericForm = require('../../page-objects/forms/generic-form.wdio.page');
 const assessmentForm = require('../../page-objects/forms/assessment-form.wdio.page');
-const tasksPage = require('../../page-objects/tasks/tasks.wdio.page');
-const sentinelUtils = require('../sentinel/utils');
-
-const chw = {
-  username: 'bob',
-  password: 'Password@123',
-  place: userData.docs[0]._id,
-  contact: userData.userContactDoc,
-  roles: [ 'chw' ],
-};
-
-
+const formTitle = assessmentForm.formDocument.title;
 
 describe('Assessment', () => {
   before(async () => {
     await assessmentForm.uploadForm();
     userData.userContactDoc.date_of_birth = moment().subtract(4, 'months').format('YYYY-MM-DD');
     await utils.seedTestData(userData.userContactDoc, userData.docs);
-    await sentinelUtils.waitForSentinel();
-    await utils.createUsers([ chw ]);
-    await loginPage.login({ username: chw.username, password: chw.password });
+    await loginPage.cookieLogin();
     await commonPage.closeTour();
     await (await commonPage.analyticsTab()).waitForDisplayed();
     await commonPage.goToReports();
   });
 
   it('Submit Assessment form', async () => {
-    await reportsPage.openForm('Assess Patient');
+    await reportsPage.openForm(formTitle);
     await assessmentForm.selectPatient(userData.userContactDoc.name);
     await genericForm.nextPage();
 
     await genericForm.selectYes();
     await genericForm.nextPage();
-
-    // await assessmentForm.selectRadioButton('fever', 'no');
-    // await genericForm.nextPage();
-
-    // await assessmentForm.selectRadioButton('cough', 'no');
-    // await genericForm.nextPage();
-
-    // await assessmentForm.selectRadioButton('diarrhea', 'no');
-    // await genericForm.nextPage();
-
-    // await genericForm.waitForDangerSigns();
-    // await genericForm.nextPage();
-
-    // await assessmentForm.selectVaccines('no');
-    // await genericForm.nextPage();
-
-    // await genericForm.selectAllBoxes();
-    // await genericForm.nextPage();
 
     //Normal - lime
     await assessmentForm.insertMuacScore(13);
@@ -69,12 +38,22 @@ describe('Assessment', () => {
     //severe - red
     await assessmentForm.insertMuacScore(11);
     expect(await assessmentForm.getMuacAssessmentDisplayed('red')).to.equal(true);
+
     // submit
     await genericForm.nextPage();
     await (await genericForm.submitButton()).click();
-    await browser.pause(10000);
-    await tasksPage.goToTasksTab();
-    const taskList = await tasksPage.getTasks();
-    expect(taskList.length).to.equal(1);
+    await browser.pause(5000);
+    //report summary
+    const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
+    expect(firstReport.heading).to.equal(userData.userContactDoc.name);
+    expect(firstReport.form).to.equal(formTitle);
+    expect(firstReport.lineage).to.equal(userData.userContactDoc.parent.name);
+
+    //report details
+    expect(await (await reportsPage.submitterName()).getText())
+      .to.equal(`Submitted by ${userData.userContactDoc.name} `);
+    expect(await (await reportsPage.submitterPhone()).getText()).to.equal(userData.userContactDoc.phone);
+    expect(await (await reportsPage.submitterPlace()).getText()).to.equal(userData.userContactDoc.parent.name);
+    expect(await (await reportsPage.selectedCaseId()).getText()).to.equal(userData.docs[0].contact._id);
   });
 });
