@@ -41,7 +41,7 @@ const baseConfig = {
   // /Users/njugunandungu/Documents/work/medic/cht-core/tests/e2e/users/bulk-user-upload.wdio-spec.js
   //
   specs: [
-    './tests/e2e/users/bulk-user-upload.wdio-spec.js',
+    './tests/e2e/**/*.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [
