@@ -2,7 +2,7 @@
 
 This style guide provides editorial guidelines for anyone creating new automated test cases for the CHT-Core.
 
-There are three files that are the base of every new automaated test case, the most importat one is the `<name>.wdio.spec.js` that it will contains the actual test that is going to be executed. It needs to have that name convention because the [config file](https://github.com/medic/cht-core/blob/master/tests/wdio.conf.js#L42-L44) has as an attribute to execute all the files that have `*.wdio-spec.js`.
+There are three files that are the base of every new automated test case, the most important one is the `<name>.wdio.spec.js`, which contains the actual test that will be executed. It needs to have that name convention because the [config file](https://github.com/medic/cht-core/blob/master/tests/wdio.conf.js#L42-L44) has as an attribute to execute all the files that have `*.wdio-spec.js`.
 ## Base files to use
 
 * Page-object file. (`../tests/page-objects/forms/<name>.wdio.page.js`)
