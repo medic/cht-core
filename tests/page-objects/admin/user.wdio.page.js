@@ -162,7 +162,7 @@ const openUploadUsersDialog = async () => {
 };
 
 const uploadSummary = async () => {
-  await (await uploadSummaryDialog()).waitForDisplayed({ timeout: 50000 });
+  await (await uploadSummaryDialog()).waitForDisplayed();
 };
 
 module.exports = {
