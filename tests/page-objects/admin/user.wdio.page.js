@@ -24,7 +24,11 @@ const contactErrorMessage = () => $('#contactSelect ~ .help-block');
 const uploadUsersButton = () => $('a#add-users');
 const uploadUsersDialog = () => $('div#edit-users-bulk');
 const confirmUploadUsersButton = () => $('a#upload-btn');
-const uploadSummaryDialog = () => $('div.finish-summary');
+const uploadSummaryDialog = () => $('#finish-summary');
+const successfulyUploadedUsers = () => $('p.text-success');
+const previouslyUploadedUsers = () => $('p.text-muted');
+const failedUploadedUsers = () => $('p.text-danger');
+const backToUserListButton = () => $('a#back-to-app-btn');
 
 const goToAdminUser = async () => {
   await browser.url('/admin/#/users');
@@ -132,6 +136,23 @@ const getContactErrorText = async () => {
   return await (await contactErrorMessage()).getText();
 };
 
+const getSuccessfulyUploadedUsers = async () => {
+  return await (await successfulyUploadedUsers()).getText();
+};
+
+const getPreviouslyUploadedUsers = async () => {
+  return await (await previouslyUploadedUsers()).getText();
+};
+
+const getFailedUploadedUsers = async () => {
+  return await (await failedUploadedUsers()).getText();
+};
+
+const backToUserList = async () => {
+  await (await backToUserListButton()).waitForDisplayed();
+  await (await backToUserListButton()).click();
+};
+
 const openUploadUsersDialog = async () => {
   await (await uploadUsersButton()).waitForDisplayed();
   await (await uploadUsersButton()).click();
@@ -141,7 +162,7 @@ const openUploadUsersDialog = async () => {
 };
 
 const uploadSummary = async () => {
-  await (await uploadSummaryDialog()).waitForDisplayed({ timeout: 100000 });
+  await (await uploadSummaryDialog()).waitForDisplayed({ timeout: 50000 });
 };
 
 module.exports = {
@@ -161,4 +182,8 @@ module.exports = {
   inputUploadUsersFields,
   uploadUsers,
   uploadSummary,
+  getSuccessfulyUploadedUsers,
+  getPreviouslyUploadedUsers,
+  getFailedUploadedUsers,
+  backToUserList
 };
