@@ -15,7 +15,7 @@ describe('Assessment', () => {
     await utils.seedTestData(userData.userContactDoc, userData.docs);
     await loginPage.cookieLogin();
     await commonPage.closeTour();
-    await (await commonPage.analyticsTab()).waitForDisplayed();
+    await commonPage.waitForPageLoaded();
     await commonPage.goToReports();
   });
 
@@ -41,8 +41,7 @@ describe('Assessment', () => {
 
     // submit
     await genericForm.nextPage();
-    await (await genericForm.submitButton()).click();
-    await browser.pause(5000);
+    await (await reportsPage.submitForm());
     //report summary
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
     expect(firstReport.heading).to.equal(userData.userContactDoc.name);

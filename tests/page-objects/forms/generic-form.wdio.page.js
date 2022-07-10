@@ -59,24 +59,9 @@ const verifyReport = async () => {
   expect(validatedReport.patient).to.be.undefined;
 };
 
-const selectAllBoxes = async () => {
-  const checkboxes = await $$('input[type="checkbox"]');
-  for (const checkbox of checkboxes) {
-    if(await checkbox.isClickable()){
-      await checkbox.click();
-    }
-  }
-  return checkboxes.length;
-};
-
 const selectYes = async () => {
   const yesRadioButton = await $('[value="yes"]');
   await yesRadioButton.click();
-};
-
-const waitForDangerSigns = async () => {
-  const dangerSignTitle = await $('[name="/assessment/group_danger_signs"]');
-  await dangerSignTitle.waitForDisplayed();
 };
 
 module.exports = {
@@ -89,6 +74,4 @@ module.exports = {
   selectContact,
   verifyReport,
   selectYes,
-  selectAllBoxes,
-  waitForDangerSigns,
 };
