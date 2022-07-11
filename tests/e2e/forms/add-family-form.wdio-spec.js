@@ -4,6 +4,7 @@ const common = require('../../page-objects/common/common.wdio.page.js');
 const utils = require('../../utils');
 const userData = require('../../page-objects/forms/data/user.po.data');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
+const { cookieLogin } = require('../../page-objects/login/login.wdio.page');
 
 describe('Family form', () => {
   const contactId = userData.contactId;
@@ -12,6 +13,7 @@ describe('Family form', () => {
   before(async () => {
     await utils.saveDocs(docs);
     await familyForm.configureForm(contactId);
+    await cookieLogin();
   });
 
   it('Submit Add Family form', async () => {
