@@ -62,10 +62,10 @@ describe('Assessment', () => {
 
     const muacColor = await reportsPage
       .getReportDetailFieldValueByLabel('report.assessment.group_nutrition_assessment.group_muac_color');
-    expect(muacColor).to.not.be.empty;
+    expect(muacColor).to.be.defined;
 
     const muacReferral = await reportsPage
       .getReportDetailFieldValueByLabel('report.assessment.group_diagnosis.r_referral_sam_24h');
-    expect(muacReferral).to.not.be.empty;
+    expect(muacReferral).to.be.defined;
   });
 });
