@@ -24,6 +24,7 @@ describe('Create new lineage structure', () => {
     // avoid race conditions by not starting next test until all changes were processed by Sentinel
     // todo remove this when/after fixing https://github.com/medic/cht-core/issues/7250
     await sentinelUtils.waitForSentinel();
+    await commonPage.goToPeople();
   });
 
   it('Create new health center', async () => {
