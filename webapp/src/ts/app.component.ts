@@ -80,6 +80,7 @@ export class AppComponent implements OnInit {
 
   currentTab = '';
   privacyPolicyAccepted;
+  sidebarFilter;
   showPrivacyPolicy;
   selectMode;
   adminUrl;
@@ -421,6 +422,7 @@ export class AppComponent implements OnInit {
       this.store.select(Selectors.getCurrentTab),
       this.store.select(Selectors.getPrivacyPolicyAccepted),
       this.store.select(Selectors.getShowPrivacyPolicy),
+      this.store.select(Selectors.getSidebarFilter),
       this.store.select(Selectors.getSelectMode),
     ).subscribe(([
       replicationStatus,
@@ -428,6 +430,7 @@ export class AppComponent implements OnInit {
       currentTab,
       privacyPolicyAccepted,
       showPrivacyPolicy,
+      sidebarFilter,
       selectMode,
     ]) => {
       this.replicationStatus = replicationStatus;
@@ -435,6 +438,7 @@ export class AppComponent implements OnInit {
       this.currentTab = currentTab;
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.privacyPolicyAccepted = privacyPolicyAccepted;
+      this.sidebarFilter = sidebarFilter;
       this.selectMode = selectMode;
     });
   }

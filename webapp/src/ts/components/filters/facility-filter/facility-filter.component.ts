@@ -129,7 +129,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
 
     // keep displaying facilities until we have a scroll or we've displayed all
     if (!this.listHasScroll && this.facilities.length && this.totalFacilitiesDisplayed < this.facilities.length) {
-      const listHeight = $('#facility-dropdown-list')[0].scrollHeight;
+      const listHeight = $('#facility-dropdown-list')[0]?.scrollHeight;
       const hasScroll = listHeight > this.MAX_LIST_HEIGHT;
       if (!hasScroll) {
         setTimeout(() => this.displayOneMoreFacility());

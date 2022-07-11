@@ -1,7 +1,10 @@
 @import 'variables';
 
 .sidebar-filter-active {
-  max-width: calc(100vw - ((100vw - 1170px)/2)) !important; // ToDo move 1170 to variable
+  .inbox.page,
+  mm-actionbar .inner {
+    max-width: calc(100vw - @content-margin) !important;
+  }
 }
 
 .sidebar-filter-wrapper {
@@ -131,11 +134,20 @@
         margin-bottom: 15px;
         padding: 0 5px;
 
+        .mm-dropdown {
+          width: 100%;
+        }
+
         .mm-button {
+          display: block;
           box-shadow: none;
           border: 1px solid @gray-light;
           border-radius: 5px;
-          display: block;
+          margin-right: 8px;
+
+          .mm-button-icon {
+            padding-right: 10px;
+          }
         }
       }
 
@@ -191,8 +203,25 @@
       }
     }
   }
+}
 
-  &.mobile {
+@media (min-width: @content-width) {
+  .sidebar-filter-active {
+    mm-actionbar .inner {
+      margin-left: @content-margin !important;
+    }
+  }
+}
+
+@media (max-width: @media-mobile) {
+  .sidebar-filter-active {
+    .header,
+    .action-container {
+      z-index: 2;
+    }
+  }
+
+  .sidebar-filter {
     .sidebar-backdrop {
       display: block;
       position: fixed;

@@ -11,8 +11,7 @@
       (openFilter)="openFilter()"
       (resetFilter)="resetFilter()"
       (search)="search($event)"
-      [disabled]="selectMode && selectedReports?.length"
-      [filterCount]="filterCount">
+      [disabled]="selectMode && selectedReports?.length">
     </mm-reports-actions-bar>
   </div>
 </div>
@@ -20,12 +19,12 @@
 <button (click)="showSidebarFilter =!showSidebarFilter">Toggle filter</button>
 
 <div class="inner">
-  <div class="inbox page" [ngClass]="{ 'sidebar-filter-active': isSidebarFilterOpen }">
+  <div class="inbox page">
 
     <div
       id="reports-list"
       class="inbox-items left-pane"
-      [ngClass]="{ 'col-sm-3': isSidebarFilterOpen, 'col-sm-4': !isSidebarFilterOpen }">
+      [ngClass]="{ 'col-sm-3': sidebarFilter.isOpen, 'col-sm-4': !sidebarFilter.isOpen }">
 
       <div class="selection-count" *ngIf="selectMode">
         <span *ngIf="selectedReports?.length === 1">{{'select.mode.count.singular' | translate}}</span>
@@ -82,14 +81,13 @@
     </div>
 
     <div class="content-pane right-pane">
-      <div [ngClass]="{ 'col-sm-6': isSidebarFilterOpen, 'col-sm-8': !isSidebarFilterOpen }">
+      <div [ngClass]="{ 'col-sm-6': sidebarFilter.isOpen, 'col-sm-8': !sidebarFilter.isOpen }">
         <router-outlet></router-outlet>
       </div>
       <mm-reports-sidebar-filter
         class="col-sm-3 sidebar-filter-wrapper"
         *ngIf="showSidebarFilter"
         (search)="search($event)"
-        (onFilterChange)="onFilterChange($event)"
         [disabled]="selectMode && selectedReports?.length">
       </mm-reports-sidebar-filter>
     </div>

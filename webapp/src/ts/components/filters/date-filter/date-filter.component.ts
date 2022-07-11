@@ -1,7 +1,9 @@
 import { Component, EventEmitter, OnDestroy, Output, Input, AfterViewInit, OnInit } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { Store } from '@ngrx/store';
 import 'bootstrap-daterangepicker';
 import * as moment from 'moment';
+import { Subscription } from 'rxjs';
 // the default declaration of moment doesn't include _week property
 interface LocaleWithWeekSpec extends moment.Locale {
   _week: moment.WeekSpec;
@@ -10,7 +12,6 @@ interface LocaleWithWeekSpec extends moment.Locale {
 import { GlobalActions } from '@mm-actions/global';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 import { ResponsiveService } from '@mm-services/responsive.service';
-import { Subscription } from 'rxjs';
 import { Selectors } from '@mm-selectors/index';
 
 @Component({
@@ -20,6 +21,7 @@ import { Selectors } from '@mm-selectors/index';
 export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, AfterViewInit {
   private globalActions;
   subscription: Subscription = new Subscription();
+  inputLabel;
   date = {
     from: undefined,
     to: undefined,
@@ -34,6 +36,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
   constructor(
     private store: Store,
     private responsiveService:ResponsiveService,
+    private datePipe: DatePipe,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -41,7 +44,10 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
   ngOnInit() {
     const subscription = this.store
       .select(Selectors.getFilters)
-      .subscribe(({ date }) => this.date = { ...date });
+      .subscribe(({ date }) => {
+        this.date = { ...date };
+        this.setLabel();
+      });
     this.subscription.add(subscription);
   }
 
@@ -49,7 +55,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
     const datepicker:any = $(`#${this.fieldId}`).daterangepicker(
       {
         singleDatePicker: !this.isRange,
-        startDate: moment().subtract(1, 'months'),
+        startDate: this.isRange ? moment().subtract(1, 'months') : moment(),
         endDate: moment(),
         maxDate: moment(),
         opens: 'center',
@@ -62,6 +68,9 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
       },
       (from, to) => {
         const dateRange = this.createDateRange(from, to);
+        if (dateRange.from && dateRange.to && dateRange.to < dateRange.from) {
+          return;
+        }
         this.applyFilter(dateRange);
       }
     );
@@ -113,7 +122,30 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
   }
 
   countSelected() {
-    return this.date.from || this.date.to ? 1 : 0;
+    const date = this.isStartDate ? this.date.from : this.date.to;
+    return date ? 1 : 0;
+  }
+
+  setLabel() {
+    this.inputLabel = '';
+    const divider = ' - ';
+    const format = 'd MMM';
+    const dates = {
+      from: this.date.from ? this.datePipe.transform(this.date.from, format) : undefined,
+      to: this.date.to ? this.datePipe.transform(this.date.to, format) : undefined,
+    };
+
+    if (dates.from && (this.isRange || this.isStartDate)) {
+      this.inputLabel += dates.from;
+    }
+
+    if (this.isRange && dates.to) {
+      this.inputLabel += divider;
+    }
+
+    if (dates.to && (this.isRange || !this.isStartDate)) {
+      this.inputLabel += dates.to;
+    }
   }
 
   ngOnDestroy() {

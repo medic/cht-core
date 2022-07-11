@@ -6,7 +6,6 @@ import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
-import { ResponsiveService } from '@mm-services/responsive.service';
 
 @Component({
   selector: 'mm-reports-sidebar-filter',
@@ -14,7 +13,6 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 })
 export class ReportsSidebarFilterComponent implements AfterViewInit {
   @Output() search: EventEmitter<any> = new EventEmitter();
-  @Output() onFilterChange: EventEmitter<any> = new EventEmitter();
   @Input() disabled;
 
   @ViewChild(FormTypeFilterComponent)
@@ -33,17 +31,13 @@ export class ReportsSidebarFilterComponent implements AfterViewInit {
   statusFilter: StatusFilterComponent;
 
   private globalActions;
-  isMobile = false;
   isResettingFilters = false;
   filters = [];
-  sideBarFilter:any = {
-    isFilterOpen: false,
-    filterCount: { },
-  };
+  isOpen = false;
+  filterCount:any = { };
 
   constructor(
     private store: Store,
-    private responsiveService: ResponsiveService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -73,16 +67,16 @@ export class ReportsSidebarFilterComponent implements AfterViewInit {
   }
 
   countSelected() {
-    this.sideBarFilter.filterCount.total = 0;
+    this.filterCount.total = 0;
     this.filters.forEach(filter => {
       if (!filter?.countSelected) {
         return;
       }
       const count = filter.countSelected() || 0;
-      this.sideBarFilter.filterCount.total += count;
-      this.sideBarFilter.filterCount[filter.fieldId] = count;
+      this.filterCount.total += count;
+      this.filterCount[filter.fieldId] = count;
     });
-    this.onFilterChange.emit(this.sideBarFilter);
+    this.globalActions.setSidebarFilter({ filterCount: { ...this.filterCount }});
   }
 
   resetFilters() {
@@ -94,8 +88,7 @@ export class ReportsSidebarFilterComponent implements AfterViewInit {
   }
 
   toggleSidebarFilter(open) {
-    this.isMobile = this.responsiveService.isMobile();
-    this.sideBarFilter.isFilterOpen = !!open;
-    this.onFilterChange.emit(this.sideBarFilter);
+    this.isOpen = open;
+    this.globalActions.setSidebarFilter({ isOpen: !!this.isOpen });
   }
 }

@@ -23,6 +23,7 @@ const initialState = {
   },
   facilities: [],
   filters: {},
+  sidebarFilter: {},
   forms: null,
   isAdmin: false,
   lastChangedDoc: false,
@@ -94,6 +95,12 @@ const _globalReducer = createReducer(
     return {
       ...state,
       filters: { ...state.filters, ...filter }
+    };
+  }),
+  on(Actions.setSidebarFilter, (state, { payload: { sidebarFilter } }) => {
+    return {
+      ...state,
+      sidebarFilter: { ...state.sidebarFilter, ...sidebarFilter }
     };
   }),
   on(Actions.setIsAdmin, (state, { payload: { isAdmin } }) => {

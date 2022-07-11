@@ -1275,7 +1275,7 @@ a.fa:hover {
 }
 
 .reports-action-bar {
-  padding-top: 4px;
+  padding: 3px;
   display: flex;
   justify-content: flex-start;
 
@@ -1288,15 +1288,33 @@ a.fa:hover {
 
     .freetext-filter {
       width: 100%;
-      input, .btn {
-        background-color: rgba(255, 255, 255, 0.70);
+
+      input {
+        background-color: @yellow-highlight;
+      }
+
+      .btn {
+        border-left: 3px solid @white;
+        background-color: @yellow-highlight;
+      }
+    }
+
+    .mobile-freetext-filter {
+      background-color: @yellow-highlight;
+      border-radius: 4px;
+
+      #mobile-search {
+        box-shadow: none;
       }
     }
   }
 
   .btn.open-filter {
-    background-color: rgba(255, 255, 255, 0.45);
+    background-color: transparent;
     padding: 7px 12px;
+    &:active {
+      box-shadow: none;
+    }
 
     .filter-counter {
       color: @white;
@@ -1505,6 +1523,9 @@ a.fa:hover {
     }
     .right-pane {
       left: 0;
+    }
+    .reports-action-bar {
+      display: none;
     }
   }
 

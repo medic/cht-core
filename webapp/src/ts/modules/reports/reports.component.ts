@@ -54,9 +54,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
   verifyingReport;
   showContent;
   enketoEdited;
-  filterCount:any = {};
   showSidebarFilter = false;
-  isSidebarFilterOpen = false;
+  sidebarFilter;
 
   constructor(
     private store:Store,
@@ -84,6 +83,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.listContains),
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getFilters),
+      this.store.select(Selectors.getSidebarFilter),
       this.store.select(Selectors.getShowContent),
       this.store.select(Selectors.getEnketoEditedStatus),
       this.store.select(Selectors.getSelectMode),
@@ -93,6 +93,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       listContains,
       forms,
       filters,
+      sidebarFilter,
       showContent,
       enketoEdited,
       selectMode,
@@ -107,6 +108,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.listContains = listContains;
       this.forms = forms;
       this.filters = filters;
+      this.sidebarFilter = sidebarFilter;
       this.showContent = showContent;
       this.enketoEdited = enketoEdited;
       this.selectMode = selectMode;
@@ -321,10 +323,5 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   resetFilter() {
     this.reportsSidebarFilter?.resetFilters();
-  }
-
-  onFilterChange(event) {
-    this.isSidebarFilterOpen = !!event?.isFilterOpen;
-    this.filterCount = event?.filterCount;
   }
 }

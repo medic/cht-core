@@ -6,9 +6,7 @@
     <span class="mm-button-dropdown">
       <span class="fa fa-chevron-down"></span>
     </span>
-    <span class="mm-button-text" *ngIf="date.from || date.to">
-      {{ date.from | date:'d MMM' }} {{ date.from && date.to ? '-' : '' }} {{ date.to | date:'d MMM' }}
-    </span>
-    <span class="mm-button-text" *ngIf="!date.from && !date.to">{{ 'Any date' | translate }}</span>
+    <span class="mm-button-text" *ngIf="inputLabel">{{ inputLabel }}</span>
+    <span class="mm-button-text" *ngIf="!inputLabel">{{ 'Any date' | translate }}</span>
   </a>
 </div>
