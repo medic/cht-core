@@ -54,5 +54,18 @@ describe('Assessment', () => {
     expect(await (await reportsPage.submitterPhone()).getText()).to.equal(userData.userContactDoc.phone);
     expect(await (await reportsPage.submitterPlace()).getText()).to.equal(userData.userContactDoc.parent.name);
     expect(await (await reportsPage.selectedCaseId()).getText()).to.equal(userData.docs[0].contact._id);
+
+    //muac fields
+    const muacScore = await reportsPage
+      .getReportDetailFieldValueByLabel('report.assessment.group_nutrition_assessment.muac_score');
+    expect(muacScore).to.equal(10);
+
+    const muacColor = await reportsPage
+      .getReportDetailFieldValueByLabel('report.assessment.group_nutrition_assessment.group_muac_color');
+    expect(muacColor).to.not.be.empty;
+
+    const muacReferral = await reportsPage
+      .getReportDetailFieldValueByLabel('report.assessment.group_diagnosis.r_referral_sam_24h');
+    expect(muacReferral).to.not.be.empty;
   });
 });
