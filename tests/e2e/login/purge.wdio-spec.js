@@ -105,13 +105,11 @@ describe('purge', () => {
     await utils.saveDocs(reportsToPurge);
     await utils.saveDocs(homeVisits);
     await utils.saveDocs(pregnancies);
-    console.log('wait for sentinel');
     await sentinelUtils.waitForSentinel();
 
-    console.log('run purging');
     await runPurging();
 
-    await loginPage.login({ username: user.username, password: user.password, loadPage: false });
+    await loginPage.login({ username: user.username, password: user.password });
 
     const purgingRequestsPromise = await utils.collectApiLogs(/REQ.*purging/);
     await commonElements.sync();
@@ -127,7 +125,6 @@ describe('purge', () => {
 
     // Purging occurs normally when refreshing
     await updateSettings(purgeHomeVisitFn, true);
-    console.log('run purging');
     await runPurging();
     await browser.refresh(); // refresh to clear the purge once only flag
     await commonElements.waitForPageLoaded();
