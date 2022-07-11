@@ -18,4 +18,6 @@ There are three files that are the base of every new automated test case, the mo
     This file should contain **only** the implementation of the test that is going to be executed. All the logging and contact creation should be only referenced in this file. For a better understanding follow the [`pregnancy-visit.wdio-spec.js`](https://github.com/medic/cht-core/blob/master/tests/e2e/forms/pregnancy-visit.wdio-spec.js) file as an example.
 
 ### Note:
-We decided to separate every functionality in files/folders because we want to make sure that we can reuse as much code as we can. If something new is implemented and might be used for another test will be important to insolate it in a separate file so it can be used in future tests.
+We decided to separate every functionality in files/folders because we want to make sure that we can reuse as much code as we can. If something new is implemented and might be used for another test will be important to isolate it in a separate file so it can be used in future tests.
+
+For `brac` and `cht` configurations, there are [factory models](https://github.com/medic/cht-core/tree/master/tests/factories) that generate test data out of the box with the possibility to cusomize if needed
