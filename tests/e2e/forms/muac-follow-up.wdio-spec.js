@@ -58,7 +58,7 @@ describe('Assessment', () => {
     //muac fields
     const muacScore = await reportsPage
       .getReportDetailFieldValueByLabel('report.assessment.group_nutrition_assessment.muac_score');
-    expect(muacScore).to.equal(10);
+    expect(muacScore).to.equal(11);
 
     const muacColor = await reportsPage
       .getReportDetailFieldValueByLabel('report.assessment.group_nutrition_assessment.group_muac_color');
