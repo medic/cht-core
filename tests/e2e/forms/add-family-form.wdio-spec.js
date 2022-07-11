@@ -9,6 +9,7 @@ const { cookieLogin } = require('../../page-objects/login/login.wdio.page');
 describe('Family form', () => {
   const contactId = userData.contactId;
   const docs = userData.docs;
+  const formTitle = familyForm.docs[0].title;
 
   before(async () => {
     await utils.saveDocs(docs);
@@ -18,7 +19,7 @@ describe('Family form', () => {
 
   it('Submit Add Family form', async () => {
     await common.goToReports();
-    await genericForm.selectForm('any');
+    await reportsPage.openForm(formTitle);
     await familyForm.fillPrimaryCaregiver('test');
     await genericForm.nextPage();
     await familyForm.fillPrimaryTel();

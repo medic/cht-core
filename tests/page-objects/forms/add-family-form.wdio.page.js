@@ -136,4 +136,5 @@ module.exports =  {
   finalSurvey,
 
   reportCheck,
+  docs,
 };
