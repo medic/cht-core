@@ -34,18 +34,21 @@ describe('Create new lineage structure', () => {
   });
 
   it('Create new area', async () => {
+    await contactPage.selectLHSRowByText(centerName);
     await contactPage.addPlace('health_center', area, areaContact);
     await sentinelUtils.waitForSentinel(); // prevent stale element references
     chai.expect(await contactPage.getPrimaryContactName()).to.equal(areaContact);
   });
 
   it('Create new household', async () => {
+    await contactPage.selectLHSRowByText(area);
     await contactPage.addPlace('clinic', household, householdContact);
     await sentinelUtils.waitForSentinel(); // prevent stale element references
     chai.expect(await contactPage.getPrimaryContactName()).to.equal(householdContact);
   });
 
   it('Create new person', async () => {
+    await contactPage.selectLHSRowByText(household);
     chai.expect(await contactPage.addPerson('James')).to.equal('James');
   });
 
