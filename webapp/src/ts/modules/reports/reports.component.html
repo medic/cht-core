@@ -5,21 +5,28 @@
       (search)="search($event)"
       [disabled]="selectMode && selectedReports?.length">
     </reports-filters>
-    <mm-reports-sidebar-filter
-      *ngIf="showSidebarFilter"
-      (search)="search($event)"
-      [disabled]="selectMode && selectedReports?.length">
-    </mm-reports-sidebar-filter>
     <mm-navigation></mm-navigation>
+    <mm-reports-actions-bar
+      *ngIf="showSidebarFilter"
+      (openFilter)="openFilter()"
+      (resetFilter)="resetFilter()"
+      (search)="search($event)"
+      [disabled]="selectMode && selectedReports?.length"
+      [filterCount]="filterCount">
+    </mm-reports-actions-bar>
   </div>
 </div>
 
 <button (click)="showSidebarFilter =!showSidebarFilter">Toggle filter</button>
 
 <div class="inner">
-  <div class="inbox page">
+  <div class="inbox page" [ngClass]="{ 'sidebar-filter-active': isSidebarFilterOpen }">
 
-    <div id="reports-list" class="col-sm-4 inbox-items left-pane">
+    <div
+      id="reports-list"
+      class="inbox-items left-pane"
+      [ngClass]="{ 'col-sm-3': isSidebarFilterOpen, 'col-sm-4': !isSidebarFilterOpen }">
+
       <div class="selection-count" *ngIf="selectMode">
         <span *ngIf="selectedReports?.length === 1">{{'select.mode.count.singular' | translate}}</span>
         <span *ngIf="selectedReports?.length !== 1" translate [translateParams]="{ number: selectedReports?.length || 0 | localizeNumber }">select.mode.count.plural</span>
@@ -70,9 +77,21 @@
       <p class="loading-status" *ngIf="!error && !loading && !hasReports">{{'reports.none' | translate}}</p>
       <p class="loading-status" *ngIf="!loading && hasReports && !moreItems">{{'No more reports' | translate}}</p>
       <div class="loader" *ngIf="loading"></div>
-
       <div class="padding"></div>
+
     </div>
-    <router-outlet></router-outlet>
+
+    <div class="content-pane right-pane">
+      <div [ngClass]="{ 'col-sm-6': isSidebarFilterOpen, 'col-sm-8': !isSidebarFilterOpen }">
+        <router-outlet></router-outlet>
+      </div>
+      <mm-reports-sidebar-filter
+        class="col-sm-3 sidebar-filter-wrapper"
+        *ngIf="showSidebarFilter"
+        (search)="search($event)"
+        (onFilterChange)="onFilterChange($event)"
+        [disabled]="selectMode && selectedReports?.length">
+      </mm-reports-sidebar-filter>
+    </div>
   </div>
 </div>

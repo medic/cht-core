@@ -1274,6 +1274,40 @@ a.fa:hover {
   }
 }
 
+.reports-action-bar {
+  padding-top: 4px;
+  display: flex;
+  justify-content: flex-start;
+
+  * {
+    outline: none !important;
+  }
+
+  mm-freetext-filter {
+    flex: 1 1 auto;
+
+    .freetext-filter {
+      width: 100%;
+      input, .btn {
+        background-color: rgba(255, 255, 255, 0.70);
+      }
+    }
+  }
+
+  .btn.open-filter {
+    background-color: rgba(255, 255, 255, 0.45);
+    padding: 7px 12px;
+
+    .filter-counter {
+      color: @white;
+      font-size: @font-small;
+      background: @blue-dark;
+      border-radius: 100px;
+      padding: 0 5px;
+    }
+  }
+}
+
 @media (max-width: 767px) {
   #mobile-detection {
     display: inline;

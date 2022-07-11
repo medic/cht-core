@@ -4,6 +4,7 @@ import {
   NgZone,
   OnDestroy,
   OnInit,
+  ViewChild,
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
@@ -21,6 +22,7 @@ import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 
 const PAGE_SIZE = 50;
 
@@ -29,6 +31,8 @@ const PAGE_SIZE = 50;
 })
 export class ReportsComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();
+  @ViewChild(ReportsSidebarFilterComponent)
+  reportsSidebarFilter: ReportsSidebarFilterComponent;
 
   private globalActions;
   private reportsActions;
@@ -50,7 +54,9 @@ export class ReportsComponent implements OnInit, OnDestroy {
   verifyingReport;
   showContent;
   enketoEdited;
+  filterCount:any = {};
   showSidebarFilter = false;
+  isSidebarFilterOpen = false;
 
   constructor(
     private store:Store,
@@ -307,5 +313,18 @@ export class ReportsComponent implements OnInit, OnDestroy {
     } else {
       this.reportsActions.removeSelectedReport(report);
     }
+  }
+
+  openFilter() {
+    this.reportsSidebarFilter?.toggleSidebarFilter(true);
+  }
+
+  resetFilter() {
+    this.reportsSidebarFilter?.resetFilters();
+  }
+
+  onFilterChange(event) {
+    this.isSidebarFilterOpen = !!event?.isFilterOpen;
+    this.filterCount = event?.filterCount;
   }
 }

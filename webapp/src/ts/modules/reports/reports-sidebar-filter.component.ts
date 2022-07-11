@@ -1,24 +1,21 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 
-import { SearchFiltersService } from '@mm-services/search-filters.service';
 import { GlobalActions } from '@mm-actions/global';
-import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
+import { ResponsiveService } from '@mm-services/responsive.service';
 
 @Component({
   selector: 'mm-reports-sidebar-filter',
   templateUrl: './reports-sidebar-filter.component.html'
 })
-export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
+export class ReportsSidebarFilterComponent implements AfterViewInit {
   @Output() search: EventEmitter<any> = new EventEmitter();
+  @Output() onFilterChange: EventEmitter<any> = new EventEmitter();
   @Input() disabled;
-
-  @ViewChild(FreetextFilterComponent)
-  freetextFilter: FreetextFilterComponent;
 
   @ViewChild(FormTypeFilterComponent)
   formTypeFilter: FormTypeFilterComponent;
@@ -36,28 +33,29 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   statusFilter: StatusFilterComponent;
 
   private globalActions;
+  isMobile = false;
   isResettingFilters = false;
-  isFilterOpen = false;
-  filterCount:any = {};
   filters = [];
+  sideBarFilter:any = {
+    isFilterOpen: false,
+    filterCount: { },
+  };
 
   constructor(
     private store: Store,
-    private searchFiltersService: SearchFiltersService,
+    private responsiveService: ResponsiveService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
 
   ngAfterViewInit() {
     this.filters = [
-      this.freetextFilter,
       this.formTypeFilter,
       this.facilityFilter,
       this.fromDateFilter,
       this.toDateFilter,
       this.statusFilter,
     ];
-    this.searchFiltersService.init(this.freetextFilter);
   }
 
   applyFilters(force?) {
@@ -75,15 +73,16 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   }
 
   countSelected() {
-    this.filterCount.total = 0;
+    this.sideBarFilter.filterCount.total = 0;
     this.filters.forEach(filter => {
       if (!filter?.countSelected) {
         return;
       }
       const count = filter.countSelected() || 0;
-      this.filterCount.total += count;
-      this.filterCount[filter.fieldId] = count;
+      this.sideBarFilter.filterCount.total += count;
+      this.sideBarFilter.filterCount[filter.fieldId] = count;
     });
+    this.onFilterChange.emit(this.sideBarFilter);
   }
 
   resetFilters() {
@@ -94,11 +93,9 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
     this.applyFilters();
   }
 
-  closeSidebarFilter() {
-    this.isFilterOpen = false;
-  }
-
-  ngOnDestroy() {
-    this.searchFiltersService.destroy();
+  toggleSidebarFilter(open) {
+    this.isMobile = this.responsiveService.isMobile();
+    this.sideBarFilter.isFilterOpen = !!open;
+    this.onFilterChange.emit(this.sideBarFilter);
   }
 }
