@@ -7,8 +7,16 @@ describe('Bulk User Creation ->', () => {
   });
 
   beforeEach(async () => {
+    await browser.execute(function() {
+      this.localStorage.setItem('dbName', 'medic-test');
+    });
     await usersAdminPage.goToAdminUser();
     await usersAdminPage.openUploadUsersDialog();
+  });
+  afterEach(() => {
+    browser.execute(function() {
+      this.localStorage.removeItem('dbName');
+    });
   });
   
   it('should show an upload summary with a successful upload', async () => {

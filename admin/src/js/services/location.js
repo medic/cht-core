@@ -5,7 +5,7 @@ angular.module('inboxServices').factory('Location',
     'ngInject';
 
     const location = $window.location;
-    const dbName = 'medic';
+    const dbName = $window.localStorage.getItem('dbName') || 'medic';
     const path = '/';
     const adminPath = '/admin/';
     const port = location.port ? ':' + location.port : '';
