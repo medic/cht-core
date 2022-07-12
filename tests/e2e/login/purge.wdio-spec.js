@@ -113,7 +113,9 @@ describe('purge', () => {
 
     const purgingRequestsPromise = await utils.collectApiLogs(/REQ.*purging/);
     await commonElements.sync();
-    const purgingRequests = parsePurgingLogEntries(await purgingRequestsPromise());
+    const purgingEntries = await purgingRequestsPromise();
+    console.log(purgingEntries);
+    const purgingRequests = parsePurgingLogEntries(purgingRequestsPromise);
     expect(purgingRequests).to.deep.equal([
       '/purging/changes',
       '/purging/checkpoint',
