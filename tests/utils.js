@@ -457,7 +457,8 @@ const collectLogs = (container, ...regex) => {
     receivedFirstLine();
     data = data.toString();
     logs += data;
-    regex.forEach(r => r.test(data) && matches.push(data));
+    const lines = data.split('\n');
+    lines.forEach(line => regex.forEach(r => r.test(line) && matches.push(line)));
   });
   proc.stderr.on('err', err => {
     receivedFirstLine();
@@ -514,7 +515,8 @@ const waitForDockerLogs = (container, ...regex) => {
 
       data = data.toString();
       logs += data;
-      if (regex.find(r => r.test(data))) {
+      const lines = data.split('\n');
+      if (lines.find(line => regex.find(r => r.test(line)))) {
         resolve();
         clearTimeout(timeout);
         killSpawnedProcess(proc);
