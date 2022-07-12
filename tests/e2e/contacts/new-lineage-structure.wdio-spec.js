@@ -67,9 +67,9 @@ describe('Create new lineage structure', () => {
 
   it('should edit a name of the health facility', async () => {
     await contactPage.selectLHSRowByText(centerName);
-    const name = 'SomePerson';
+    const name = 'Georgiana';
     chai.expect(await contactPage.addPerson(name)).to.equal(name);
-    const updatedName = 'SomePersonNew';
+    const updatedName = 'Karina';
     chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
   });
 
@@ -81,17 +81,17 @@ describe('Create new lineage structure', () => {
 
   it('should edit the name of the CHW area', async () => {
     await contactPage.selectLHSRowByText(area);
-    const name = 'SomePerson';
+    const name = 'Paul Luca';
     chai.expect(await contactPage.addPerson(name)).to.equal(name);
-    const updatedName = 'SomePersonNew';
+    const updatedName = 'Cora Mi';
     chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
   });
 
   it('should edit the name of the Family', async () => {
     await contactPage.selectLHSRowByText(household);
-    const name = 'SomePerson';
+    const name = 'Sumeria';
     chai.expect(await contactPage.addPerson(name)).to.equal(name);
-    const updatedName = 'SomePersonNew';
+    const updatedName = 'Kaleb';
     chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
   });
 
