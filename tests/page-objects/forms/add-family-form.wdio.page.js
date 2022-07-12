@@ -35,7 +35,7 @@ const fillPrimaryTel =  async () => {
 const fillSexAndAge =  async () => {
   // 0 - female; 1 - male
   const sex = await $$('[name="/data/ephemeral_dob/g_sex"]');
-  const female = sex.get(0);
+  const female = sex[0];
   const age = await $('[name="/data/ephemeral_dob/age"]');
   await female.click();
   await age.setValue(20);
@@ -46,13 +46,13 @@ const fillChildren =  async () => {
   // 0 - yes; 1 - no
   const currentlyPregnant = await $$('[name="/data/ephemeral_pregnancy/pregnant"]');
   await childrenUnderFiveField.setValue(2);
-  await currentlyPregnant.get(0).click();
+  await currentlyPregnant[0].click();
 };
 
 const registerChildrenOption =  async () => {
   // 0 - yes; 1 - no
   const registerChildren = await $$('[name="/data/repeat-relevant/child"]');
-  await registerChildren.get(1).click();
+  await registerChildren[0].click();
 };
 
 const womenBetween =  async () => {
@@ -63,7 +63,7 @@ const womenBetween =  async () => {
 const registerWomenOption =  async () => {
   // 0 - yes; 1 - no
   const registerChildren = await $$('[name="/data/repeat-women/women"]');
-  await registerChildren.get(1).click();
+  await registerChildren[1].click();
 };
 
 const finalSurvey =  async (sourceWater, mosqNet, hygenicToilet, familyPlan) => {
@@ -92,24 +92,24 @@ const reportCheck =  async (
   const savedParameters = await $$('.details>ul>li');
 
   // Primary Caregiver
-  expect(await savedParameters.get(2).getText()).to.equal(
+  expect(await savedParameters[2].getText()).to.equal(
     'report.any.clinic.name\n' + caregiverName
   );
   // Source of water
-  expect(await savedParameters.get(6).getText()).to.equal(
+  expect(await savedParameters[6].getText()).to.equal(
     'report.any.clinic.household_survey.source_of_drinking_water\n' +
       sourceOfWater
   );
   // Mosquito net
-  expect(await savedParameters.get(7).getText()).to.equal(
+  expect(await savedParameters[7].getText()).to.equal(
     'report.any.clinic.household_survey.mosquito_nets\n' + mosquitoNet
   );
   // Hygeinic toilet
-  expect(await savedParameters.get(8).getText()).to.equal(
+  expect(await savedParameters[8].getText()).to.equal(
     'report.any.clinic.household_survey.hygeinic_toilet\n' + hygeinicToilet
   );
   // Planning method
-  expect(await savedParameters.get(9).getText()).to.equal(
+  expect(await savedParameters[9].getText()).to.equal(
     'report.any.clinic.household_survey.family_planning_method\n' +
       planningMethod
   );
