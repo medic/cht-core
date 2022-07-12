@@ -358,6 +358,8 @@ const createUsers = async (users, meta = false) => {
     await request(Object.assign({ body: user }, createUserOpts));
   }
 
+  await module.exports.delayPromise(() => Promise.resolve(), 500);
+
   if (!meta) {
     return;
   }
