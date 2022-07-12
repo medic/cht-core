@@ -38,7 +38,6 @@ const baseConfig = {
   // If you are calling `wdio` from an NPM script (see https://docs.npmjs.com/cli/run-script),
   // then the current working directory is where your `package.json` resides, so `wdio`
   // will be called from there.
-  // /Users/njugunandungu/Documents/work/medic/cht-core/tests/e2e/users/bulk-user-upload.wdio-spec.js
   //
   specs: [
     './tests/e2e/**/*.wdio-spec.js',
@@ -79,7 +78,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: ['--disable-gpu', '--deny-permission-prompts']
+      args: ['--headless', '--disable-gpu', '--deny-permission-prompts']
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
