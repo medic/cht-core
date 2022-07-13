@@ -104,10 +104,9 @@ const updateFields = function(data, keyRoot, index, originatingKeyPath) {
       return updateFields(value, path, index, originatingKeyPath);
     }
 
-    const node = Enketo.getCurrentForm().model.node(path, index);
+    const node = Enketo.getCurrentForm().model.node(path, index, { onlyLeaf: true });
 
-    // Non-existant nodes are undefined
-    if (typeof node.getVal() !== 'undefined') {
+    if(node.getElements().length) {
       node.setVal(value);
     }
   });
