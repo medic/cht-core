@@ -76,10 +76,10 @@ const finalSurvey =  async (sourceWater, mosqNet, hygenicToilet, familyPlan) => 
   // Family Planning: 0 - UCID; 1 - Condoms
   const familyPlanning = await $$('.current fieldset:nth-of-type(4) input');
 
-  await sourceOfWater.get(sourceWater).click();
-  await mosquitoNet.get(mosqNet).click();
-  await hygienicToilet.get(hygenicToilet).click();
-  await familyPlanning.get(familyPlan).click();
+  await sourceOfWater[sourceWater].click();
+  await mosquitoNet[mosqNet].click();
+  await hygienicToilet[hygenicToilet].click();
+  await familyPlanning[familyPlan].click();
 };
 
 const reportCheck =  async (
