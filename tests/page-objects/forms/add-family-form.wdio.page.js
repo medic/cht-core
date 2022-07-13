@@ -52,7 +52,7 @@ const fillChildren =  async () => {
 const registerChildrenOption =  async () => {
   // 0 - yes; 1 - no
   const registerChildren = await $$('[name="/data/repeat-relevant/child"]');
-  await registerChildren[0].click();
+  await registerChildren[1].click();
 };
 
 const womenBetween =  async () => {
@@ -116,25 +116,15 @@ const reportCheck =  async (
 };
 
 module.exports =  {
-
   configureForm,
-
   fillPrimaryCaregiver,
-
   fillPrimaryTel,
-
   fillSexAndAge,
-
   fillChildren,
-
   registerChildrenOption,
-
   womenBetween,
-
   registerWomenOption,
-
   finalSurvey,
-
   reportCheck,
   docs,
 };
