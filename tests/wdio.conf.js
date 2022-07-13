@@ -268,10 +268,11 @@ const baseConfig = {
   /**
    * Function to be executed before a test (in Mocha/Jasmine) starts.
    */
-  beforeTest: (test) => {
+  beforeTest: async (test) => {
     testTile = test.title;
     const title = `~~~~~~~~~~~~~ ${testTile} ~~~~~~~~~~~~~~~~~~~~~~\n`;
     fs.appendFileSync(browserLogPath, title);
+    await utils.requestOnTestDb(`/?start=${testTile}`);
   },
   /**
    * Hook that gets executed _before_ a hook within the suite starts (e.g. runs before calling
@@ -298,8 +299,9 @@ const baseConfig = {
       passed = false;
     }
     if (passed === false) {
-      await browser.takeScreenshot();
+      browser.takeScreenshot();
     }
+    await utils.requestOnTestDb(`/?end=${testTile}`);
   },
 
   /**
