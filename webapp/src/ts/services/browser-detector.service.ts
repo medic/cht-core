@@ -3,6 +3,9 @@ import * as Bowser from 'bowser';
 import { Store } from '@ngrx/store';
 import { Selectors } from '@mm-selectors/index';
 
+type VersionSuffix = `` | `-${string}`;
+type VersionNumber = 'SNAPSHOT' | `v${string}.${string}.${string}${VersionSuffix}`;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -48,6 +51,3 @@ export class BrowserDetectorService {
     return this.androidAppVersion.startsWith('v1.');
   }
 }
-
-type VersionSuffix = `` | `-${string}`;
-type VersionNumber = 'SNAPSHOT' | `v${string}.${string}.${string}${VersionSuffix}`;
